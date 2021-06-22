@@ -1,32 +1,24 @@
 import { connect } from 'react-redux';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { without } from 'common/utils/rzp-utils';
-import { classList } from 'common/utils/rzp-utils';
-import { activationDuration } from 'merchant/helpers/data';
 
-import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { LinkCard } from 'common/new-ui/Cards';
 import ActivationWizard from 'merchant/components/Activation';
-import OldActivationWizard from './index';
 import Button from 'common/new-ui/Button';
 
 import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
 import { showKYCStatusModal, showTnC } from 'merchant/reducers/home';
-import {
-  rxCaSelectedFlag,
-  caReqEventType,
-  rxCaExp,
-} from 'merchant/containers/Home/OnboardingCard/data';
+import { rxCaSelectedFlag, caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
 
 import RTracking from 'react-tracking';
 import { withRouter } from 'react-router-dom';
 import { trackLinkClick, trackGoToConfig } from './ga_new';
 
 import { LLPIN_BusinessTypes } from 'merchant/components/Activation/ActivationFormMap';
-
-import { isDedupe, isSourceRX } from 'merchant/components/Activation/ActivationUtils';
+import { isSourceRX, isDedupeOldFunc } from 'merchant/components/Activation/ActivationUtils';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 
 const welcomeImg = '/img/activation/welcome.svg';
 const successImg = '/img/activation/submit-success.svg';
@@ -180,6 +172,9 @@ export default class ActivationContainer extends React.Component {
       submitted,
       business_website,
       contact_email,
+      activation_form_milestone,
+      dedupe,
+      poi_verification_status,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -192,6 +187,9 @@ export default class ActivationContainer extends React.Component {
       submitted: +submitted,
       business_website,
       contact_email,
+      activation_form_milestone,
+      dedupe,
+      poi_verification_status,
     });
 
     this.props.updateSession({
@@ -206,57 +204,105 @@ export default class ActivationContainer extends React.Component {
     });
   };
 
-  submitForm = (data) => {
-    return merchantFetch({
-      url: 'merchant/activation',
-      method: 'post',
-      // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
-      mode: !!this.props.accountId ? this.props.session.mode : 'live',
-      data: { submit: 1 },
-      accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
-    })
-      .then((response) => {
-        if (!response.data.can_submit) {
-          throw { errors: ['Some mandatory fields are required'] };
-        }
-
-        if (this.onKYCSuccess) {
-          this.onKYCSuccess(response);
-          return response;
-        }
-
-        if (isDedupe(response.data)) {
-          location.href = '/app/dashboard';
-        } else if (
-          response.data &&
-          !response.data.business_website &&
-          !isSourceRX() &&
-          this.props.user.canGenerateTnCPage
-        ) {
-          this.props.showTnC();
-          this.updateSession(response.data);
-          this.goToDashboard();
-        } else {
-          this.postSubmitStep(response);
-        }
-
-        return response;
+  submitForm = ({ data }) => {
+    if (this.props.user.isInstantActivationEnabled) {
+      const isL1Done = this.props.user.instantActivation.isL1Submitted;
+      return merchantFetch({
+        url: 'merchant/activation',
+        method: 'post',
+        mode: 'live',
+        data: {
+          activation_form_milestone: this.props.user.instantActivation.isL1Submitted ? 'L2' : 'L1',
+          ...data,
+        },
+        accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
       })
-      .catch((err) => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
+        .then((response) => {
+          if (isL1Done && !response.data.can_submit) {
+            throw { errors: ['Some mandatory fields are required'] };
+          }
 
-        // throw err;
-      });
+          if (this.onKYCSuccess) {
+            this.onKYCSuccess(response);
+            return response;
+          }
+
+          this.props.tracking.trackEvent(
+            window.rzpQ.onbr().success('act.submit_form', {
+              clickSource: 'Dashboard_CTA',
+            }),
+          );
+          analyticsTrack({
+            objectName: 'act submit form success',
+            actionName: 'clicked',
+            screen: 'home page',
+            properties: {
+              ...getCommonSegmentProperties(),
+            },
+          });
+
+          this.updateSession(response.data);
+          this.postSubmitStep(response);
+
+          return response;
+        })
+        .catch((err) => {
+          this.props.showNotification({
+            type: 'error',
+            message: err.errors,
+          });
+        });
+    } else {
+      return merchantFetch({
+        url: 'merchant/activation',
+        method: 'post',
+        // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
+        mode: 'live',
+        data: { submit: 1 },
+        accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
+      })
+        .then((response) => {
+          if (!response.data.can_submit) {
+            throw { errors: ['Some mandatory fields are required'] };
+          }
+
+          if (this.onKYCSuccess) {
+            this.onKYCSuccess(response);
+            return response;
+          }
+
+          if (isDedupeOldFunc(response.data)) {
+            location.href = '/app/dashboard';
+          } else if (
+            response.data &&
+            !response.data.business_website &&
+            !isSourceRX() &&
+            this.props.user.canGenerateTnCPage
+          ) {
+            this.props.showTnC();
+            this.updateSession(response.data);
+            this.goToDashboard();
+          } else {
+            this.postSubmitStep(response);
+          }
+
+          return response;
+        })
+        .catch((err) => {
+          this.props.showNotification({
+            type: 'error',
+            message: err.errors,
+          });
+
+          // throw err;
+        });
+    }
   };
 
   saveStep = (data) => {
     return merchantFetch({
       url: 'merchant/activation',
-      // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
-      mode: !!this.props.accountId ? this.props.session.mode : 'live',
+      mode: 'live',
       method: 'post',
       headers: {
         'content-type': 'application/json',
@@ -312,28 +358,13 @@ export default class ActivationContainer extends React.Component {
       });
   };
 
-  verifyData = (payload) => {
-    let { type, ...data } = payload;
-    merchantFetch({
-      url: `merchant/verify/${type}`,
-      // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
-      mode: !!this.props.accountId ? this.props.session.mode : 'live',
-      method: 'post',
-      headers: {
-        'content-type': 'application/json',
-      },
-      accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
-      data,
-    }).catch(() => {});
-  };
-
   postSubmitStep(response) {
     if (this.props.accountId) {
       this.props.callback && this.props.callback(); // Support for callback for linked_account activation
     } else {
       this.setState({ showSuccessScreen: true });
     }
-    this.updateSession(response.data); // Updating % activation_progress (side bar)
+    this.updateSession(response.data);
     this.sendRXcaDetailsToSF();
   }
 
@@ -493,7 +524,7 @@ export default class ActivationContainer extends React.Component {
     const accountId = this.props.accountId; // If accountId present, then Welcome screen and Success screen are not required.
 
     let { data, categories, aovRange } = this.props;
-    let content, spinner, modalClass;
+    let content, modalClass;
 
     if (!accountId && this.state.showSuccessScreen) {
       if (!this.props.user.showInstantActivation) {
@@ -530,7 +561,6 @@ export default class ActivationContainer extends React.Component {
           defaultMsg={this.props.defaultMsg}
           handleUIUpdate={this.handleUIUpdate}
           deleteFile={this.deleteFile}
-          verifyData={this.verifyData}
           rxCaCheckboxSelect={this.state.rxCaCheckboxSelect}
           handleRxCaCheckboxChange={this.handleRxCaCheckboxChange}
           fetchBusinessCategory={this.fetchBusinessCategory}

@@ -17,7 +17,6 @@ import debounce from 'common/utils/debounce';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
-import { activationDuration } from 'merchant/helpers/data';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 
 import * as HomeActions from 'merchant/reducers/home';
@@ -33,6 +32,7 @@ import LakshmiVilasBankBanner from 'merchant/components/Announcements/LakshmiVil
 import InstantActivationSuccess from 'merchant/components/Home/InstantActivationSuccess';
 import PANVerificationStatusModal from 'merchant/components/Home/PANVerificationStatusModal';
 import KYCStatusModal from 'merchant/components/Home/KYCStatusModal';
+import KYCStatusModalOld from 'merchant/components/Home/KYCStatusModal-old';
 import KycDetailsModal from 'merchant/components/Home/KycDetailsModal';
 import FraudDetectionModal from 'merchant/components/Home/FraudDetectionModal';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
@@ -247,7 +247,11 @@ export default class HomeContainer extends Component {
         this.state = {
           ...this.state,
           showOnboardingBanner: true,
-          showOnboardingBannerFirstStep: user.showInstantActivation ? !user.submitted : true,
+          showOnboardingBannerFirstStep: user.showInstantActivation
+            ? user.isInstantActivationEnabled
+              ? !user.instantActivation.isL1Submitted
+              : !user.submitted
+            : true,
           expandOnboardingBanner: true,
         };
 
@@ -707,8 +711,6 @@ export default class HomeContainer extends Component {
     else return false;
   };
 
-  
-
   render() {
     let {
       mode,
@@ -772,7 +774,7 @@ export default class HomeContainer extends Component {
         rolesList.SUPPORT,
         rolesList.OWNER,
       ].indexOf(user.role) >= 0;
-    
+
     const isValueFilled =
       support_detail.error && support_detail.error[0] === 'Merchant email type does not Exist'
         ? false
@@ -833,7 +835,9 @@ export default class HomeContainer extends Component {
         size: 'xlarge',
         disableClose: true,
         component: <PartnerOnbr disableClose={true} />,
-        className: this.state.isMobile ? 'partner-onboarding-popup mobile-app-popup': 'partner-onboarding-popup',
+        className: this.state.isMobile
+          ? 'partner-onboarding-popup mobile-app-popup'
+          : 'partner-onboarding-popup',
       });
     }
 
@@ -934,8 +938,6 @@ export default class HomeContainer extends Component {
             </ModalMask>
           )}
 
-        
-
         {showInstantActivationSuccess && (
           <InstantActivationSuccess
             onClose={() => {
@@ -967,8 +969,26 @@ export default class HomeContainer extends Component {
             user={user}
           />
         )}
-        {showKYCStatus && (
+        {showKYCStatus && this.props.user.isInstantActivationEnabled && (
           <KYCStatusModal
+            onClose={() => {
+              iaActivations.trackClose(activation_flow);
+              this.props.hideKYCStatusModal();
+              if (isMobile && user.isOnboardingV2Enabled) {
+                window.location.reload();
+              }
+            }}
+            onGoToDashboard={() => {
+              iaActivations.trackClose(activation_flow);
+              this.onInstantActivationSuccess();
+            }}
+            user={user}
+            modalType={kycStatusModalType}
+            activationDuration={kycStatusActivationDuration}
+          />
+        )}
+        {showKYCStatus && !this.props.user.isInstantActivationEnabled && (
+          <KYCStatusModalOld
             onClose={() => {
               iaActivations.trackClose(activation_flow);
               this.props.hideKYCStatusModal();
@@ -1029,6 +1049,7 @@ export default class HomeContainer extends Component {
             }}
           />
         )}
+
         {showInstantActivationFraudModal && (
           <FraudDetectionModal onClose={() => this.props.hideFraudDetectionModal()} />
         )}

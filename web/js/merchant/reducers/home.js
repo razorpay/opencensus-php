@@ -1,6 +1,7 @@
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
 import { createLineData } from 'common/utils/chart/index.js';
+import { paiseToRupees } from 'common/utils/rzp-utils';
 
 // graph data
 // fetched everytime date is changed
@@ -30,6 +31,7 @@ const SHOW_FRAUD_DETECTION_MODAL = 'SHOW_FRAUD_DETECTION_MODAL';
 const HIDE_FRAUD_DETECTION_MODAL = 'HIDE_FRAUD_DETECTION_MODAL';
 const SHOW_TNC_MODAL = 'SHOW_TNC_MODAL';
 const HIDE_TNC_MODAL = 'HIDE_TNC_MODAL';
+const ESCALATIONS_FETCH = 'ESCALATIONS_FETCH';
 
 let initialState = {
   analytics: {
@@ -80,6 +82,11 @@ let initialState = {
   kycStatusModalType: '',
   kycStatusActivationDuration: '1-2 working days',
   showTnCModal: false,
+  limitBreach: {
+    amount: null,
+    type: null,
+    limit: null,
+  },
 };
 
 const getTransactionCountData = (data, mode) => {
@@ -134,6 +141,16 @@ export const fetchEntityTotals = () => {
   return {
     type: ENTITY_TOTALS_FETCH,
     payload: ajax('/analytics/aggregations'),
+  };
+};
+
+export const fetchEscalations = () => {
+  return {
+    type: ESCALATIONS_FETCH,
+    payload: merchantFetch({
+      url: 'merchants/onboarding/escalations',
+      mode: 'live',
+    }),
   };
 };
 
@@ -458,6 +475,15 @@ export default function (state = initialState, action) {
     case HIDE_TNC_MODAL:
       return merge(state, {
         showTnCModal: false,
+      });
+    case `${ESCALATIONS_FETCH}::SUCCESS`:
+      return merge(state, {
+        limitBreach: {
+          ...state.limitBreach,
+          amount: paiseToRupees(action.payload.data.amount),
+          type: action.payload.data.type,
+          limit: paiseToRupees(action.payload.data.limit.payment),
+        },
       });
 
     default:

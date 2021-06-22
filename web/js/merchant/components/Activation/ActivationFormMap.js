@@ -45,6 +45,7 @@ import {
   isBusinessProofTypeDocFieldVisible,
   canShowEAadharComponent,
   showAadharDoc,
+  isDedupe,
 } from './ActivationUtils';
 
 import { ADDITIONAL_DOCS_LABEL_VALUE_MAP, BUSINESS_PROOF_TYPE_DOCS, BUSINESS_PROOF_CERTIFICATE_TYPES } from './Constants';
@@ -391,8 +392,10 @@ const businessModel = [
       ),
       info: 'Payments will be enabled for the website/App after KYC approval.',
       _when: (activation) => activation.state.has_url === '1',
-      // _disabledWhen: (activation) =>
-      //   isL1Completed(activation) && isPresent(activation.props.data.business_website),
+      _disabledWhen: (activation) =>
+        activation.props.user.isInstantActivationEnabled &&
+        isL1Completed(activation) &&
+        isPresent(activation.props.data.business_website),
     },
   ],
 ];
@@ -435,10 +438,11 @@ const businessDetails = [
           : validateCompanyAB(value, contactName, showCompanyName);
       },
       _when: excludeFor_Indiv,
-      // _disabledWhen: (activation) =>
-      //   !isSourceRX() &&
-      //   isL1Completed(activation) &&
-      //   isPresent(activation.props.data.business_name),
+      _disabledWhen: (activation) =>
+        activation.props.user.isInstantActivationEnabled &&
+        !isSourceRX() &&
+        isL1Completed(activation) &&
+        isPresent(activation.props.data.business_name),
       optionLabelPath: 'company_name',
       searchIndices: ['company_name'],
       className: 'ps-in-modal',
@@ -565,15 +569,19 @@ const businessDetails = [
       options: ['We have a registered GSTIN', "We don't have a GSTIN"],
       className: 'Input--vTop Input--capitalize',
       _cmp: Input.Radio,
-      _when: (activation) => excludeFor_Indiv(activation) && isL1Completed(activation),
+      _when: (activation) =>
+        excludeFor_Indiv(activation) &&
+        isL1Completed(activation) &&
+        isDedupe(activation.props.data) !== 'blocked',
       description: (activation) => {
         if (activation.state.has_gstin == '1') {
           const currentBusinessType =
             activation.state.dirty.business_type || activation.props.data.business_type;
           if (currentBusinessType == PROPRIETORSHIP) {
             return (
-              <span className='text-danger'>
-                Please note that skipping GSTIN might lead to delay in your account review by upto two weeks, usually it takes 3-4 days
+              <span className="text-danger">
+                Please note that skipping GSTIN might lead to delay in your account review by upto
+                two weeks, usually it takes 3-4 days
               </span>
             );
           }
@@ -593,7 +601,8 @@ const businessDetails = [
         return (
           excludeFor_Indiv(activation) &&
           activation.state.has_gstin === '0' &&
-          isL1Completed(activation)
+          isL1Completed(activation) &&
+          isDedupe(activation.props.data) !== 'blocked'
         );
       },
       _autoRenderImpure: true, // Re-render to show the error
@@ -972,8 +981,9 @@ const uploadFields = [
   },
   {
     name: 'gstin',
-    _when: (activation) => (isBusinessProofTypeDocFieldVisible(activation)
-      && activation.state.business_proof_type === 'gst_certificate'),
+    _when: (activation) =>
+      isBusinessProofTypeDocFieldVisible(activation) &&
+      activation.state.business_proof_type === 'gst_certificate',
     label: 'GSTIN',
     _autoRenderImpure: true, // Re-render to show the error
     placeholder: 'Enter GSTIN',
@@ -1175,7 +1185,15 @@ const tabsData = [contactFields, businessModel, businessDetails, bankAccountFiel
 
 /* Handles not allowing changing Biz Type cross Reg -> Unreg / Unreg -> Reg after L1 Completion */
 export const getBusinessTypeOptions = (activation) => {
-  return DefaultBusinessTypeOptions;
+  if (activation.props.user.isInstantActivationEnabled) {
+    if (!isL1Completed(activation)) return DefaultBusinessTypeOptions;
+
+    return isUnregisteredBusiness(activation)
+      ? UnregisteredBusinessTypeOptions
+      : RegisteredBusinessTypeOptions;
+  } else {
+    return DefaultBusinessTypeOptions;
+  }
 };
 
 /*

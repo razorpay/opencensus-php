@@ -3,8 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import LocalStorageService from 'common/utils/localStorage';
-import { showProductsModal } from 'merchant/reducers/home';
-
+import { merchantFetch } from 'merchant/utils/ajax';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import SupportButton from 'merchant/components/Home/SupportButton';
 
@@ -14,10 +13,22 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
+import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
+import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
+import ProductsModal from 'merchant/components/Home/ProductsModal';
 
-@connect(null, { showProductsModal, openModal, closeModal })
+@connect(
+  (state) => ({
+    showProducts: state.home.instantActivations.showProductsModal,
+  }),
+  { showProductsModal, openModal, closeModal, hideProductsModal },
+)
 @RTracking(() => window.rzpQ.component('InstantActivationAnnouncements'))
 export default class InstantActivationAnnouncements extends Component {
+  constructor(props) {
+    super(props);
+  }
+
   trackEvent = (eventOrigin) => {
     const { tracking } = this.props;
     tracking.trackEvent(
@@ -28,16 +39,439 @@ export default class InstantActivationAnnouncements extends Component {
   };
 
   render() {
-    const { user, mode, payments } = this.props;
+    const {
+      user,
+      mode,
+      payments,
+      tracking,
+      showProductsModal,
+      openModal,
+      closeModal,
+      hideProductsModal,
+      showProducts,
+      limitBreach,
+    } = this.props;
     const commonSettlementBanner = {
       theme: 'success',
       title: 'Account Activated',
     };
     let theme = 'warning',
       title,
-      content,
-      isPaymentsOfTypeObject = payments instanceof Object;
-    if (!user.isSubmitted) {
+      content = payments instanceof Object;
+
+
+    const limitBreachHappened =
+      !!limitBreach && limitBreach.type === 'payment_breach'
+        ? (limitBreach.amount * 100) / limitBreach.limit >= 100
+        : false;
+
+    if (user.isInstantActivationEnabled) {
+      const activationState = getActivationState(user, user.isUnregisteredBusiness);
+      const L2_dedupe_blocked = activationState === 'L2_dedupe_blocked';
+      switch (activationState) {
+        case 'L1_dedupe_blocked':
+        case 'L2_dedupe_blocked': {
+          theme = 'danger';
+          title = 'Business not supported';
+          content = (
+            <div class="announcement-container">
+              <div class="announcement-info">
+                We cant support your business because it doesnt meet our compliance requirements. If
+                you think this is a mistake please reach out to our support{' '}
+                {L2_dedupe_blocked &&
+                  'In case you have pending settlements, you can raise a ticket and get your funds settled to your account.'}
+              </div>
+              <div className="big-circle-seprator" />
+              <SupportButton
+                type="anchor"
+                buttonLabel="contact support"
+                category="merchant"
+                openSection="account-activation"
+              />
+            </div>
+          );
+          break;
+        }
+        case 'poi_failed':
+        case 'payment_disabled': {
+          theme = 'warning';
+          title = 'Complete KYC details';
+          content = (
+            <div class="announcement-container">
+              <div class="announcement-info">
+                Please submit your KYC details to get your account activated and start accepting
+                payments{' '}
+              </div>
+              <div className="big-circle-seprator" />
+              <Link to="/activation">Complete KYC</Link>
+            </div>
+          );
+          break;
+        }
+        case 'poi_verified':
+        case 'L1_instantly_activated': {
+          if (limitBreachHappened) {
+            theme = 'warning';
+            title = 'Complete KYC details';
+            content = (
+              <div class="announcement-container">
+                <div class="announcement-info">
+                  Complete your KYC form to extend payment limits. Please note that your payments
+                  have been <b>temporarily paused </b> until you finish your KYC.{' '}
+                </div>
+                <div className="big-circle-seprator" />
+                <Link to="/activation">Complete KYC</Link>
+              </div>
+            );
+          } else {
+            theme = 'warning';
+            title = 'Accept Payments';
+            content = (
+              <div class="announcement-container">
+                <div class="announcement-info">
+                  You can use our products to accept payments upto ₹15000 right away. Your
+                  settlements will only be enabled after your KYC details are reviewed and approved.{' '}
+                </div>
+                <div className="big-circle-seprator" />
+                <Link to="/activation" onClick={() => showProductsModal()}>
+                  Accept Payments
+                </Link>
+              </div>
+            );
+          }
+          break;
+        }
+        case 'under_review_with_tnc_partial': {
+          theme = 'warning';
+          title = (
+            <div>
+              Payment paused <br /> temporarily
+            </div>
+          );
+          content = (
+            <div>
+              Our compliance team and banking partners are reviewing your KYC and your payments have
+              been temporarily paused. We will review your KYC and reach out to you for any
+              clarifications within 3-4 days.
+            </div>
+          );
+          break;
+        }
+        case 'under_review_without_tnc_partial': {
+          theme = 'warning';
+          title = (
+            <div>
+              Payment paused <br /> temporarily
+            </div>
+          );
+          content = (
+            <div class="announcement-container">
+              <div class="announcement-info">
+                Our compliance team and banking partners are reviewing your KYC and your payments
+                have been temporarily paused. We will reach out to you for any clarifications within
+                3-4 days. Meanwhile you can generate your Tnc page{' '}
+              </div>
+              <div className="big-circle-seprator" />
+              <Button.Secondary
+                type="button"
+                children="Generate Page now"
+                onClick={() => {
+                  openModal({
+                    size: 'small',
+                    component: <GenerateTnCPage onCloseModal={closeModal} openModal={openModal} />,
+                  });
+                  tracking.trackEvent(
+                    window.rzpQ.onbr().initiated('act.generate_page_now', {
+                      clickSource: 'Banner',
+                    }),
+                  );
+                  analyticsTrack({
+                    objectName: 'Act Generate Page Now',
+                    actionName: 'initiated',
+                    screen: 'home page',
+                    properties: {
+                      clickSource: 'Banner',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+              />
+            </div>
+          );
+
+          break;
+        }
+        case 'under_review_with_tnc_passed': {
+          theme = 'warning';
+          title = <div>Payment limits removed</div>;
+          content = (
+            <div>
+              You can accept unlimited payments now. Settlements will be enabled after we
+              successfully review your KYC details. It usually takes 3-4 business days. We will
+              notify you if we require any clarifications on your KYC
+            </div>
+          );
+          break;
+        }
+        case 'under_review_without_tnc_passed': {
+          theme = 'warning';
+          title = (
+            <div>
+              Payment limits removed,
+              <br /> Generate TnC
+            </div>
+          );
+          content = (
+            <div class="announcement-container">
+              <div class="announcement-info">
+                You can accept unlimited payments now. Settlements will be enabled after we
+                successfully review your KYC details. It usually takes 3-4 business days. Generate
+                TnC page at the earliest, failing which KYC review might get delayed{' '}
+              </div>
+              <div className="big-circle-seprator" />
+              <Button.Secondary
+                type="button"
+                children="Generate Page now"
+                onClick={() => {
+                  openModal({
+                    size: 'small',
+                    component: <GenerateTnCPage onCloseModal={closeModal} openModal={openModal} />,
+                  });
+                  tracking.trackEvent(
+                    window.rzpQ.onbr().initiated('act.generate_page_now', {
+                      clickSource: 'Banner',
+                    }),
+                  );
+                  analyticsTrack({
+                    objectName: 'Act Generate Page Now',
+                    actionName: 'initiated',
+                    screen: 'home page',
+                    properties: {
+                      clickSource: 'Banner',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+              />
+            </div>
+          );
+
+          break;
+        }
+        case 'under_review_with_tnc': {
+          theme = 'warning';
+          title = <div>KYC Under Review</div>;
+          content = (
+            <div>
+              We are reviewing your KYC details. It usually takes 3-4 business days. We will notify
+              you if we require any clarifications on your KYC
+            </div>
+          );
+          break;
+        }
+        case 'under_review_without_tnc': {
+          theme = 'warning';
+          title = <div>Generate TnC Page</div>;
+          content = (
+            <div class="announcement-container">
+              <div class="announcement-info">
+                Generate the terms and conditions page for your business. KYC review might get
+                delayed in case of delays in generating TnC{' '}
+              </div>
+              <div className="big-circle-seprator" />
+              <Button.Secondary
+                type="button"
+                children="Generate Page now"
+                onClick={() => {
+                  openModal({
+                    size: 'small',
+                    component: <GenerateTnCPage onCloseModal={closeModal} openModal={openModal} />,
+                  });
+                  tracking.trackEvent(
+                    window.rzpQ.onbr().initiated('act.generate_page_now', {
+                      clickSource: 'Banner',
+                    }),
+                  );
+                  analyticsTrack({
+                    objectName: 'Act Generate Page Now',
+                    actionName: 'initiated',
+                    screen: 'home page',
+                    properties: {
+                      clickSource: 'Banner',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+              />
+            </div>
+          );
+
+          break;
+        }
+        case 'needs_clarificarion': {
+          theme = 'danger';
+          title = 'KYC Clarification';
+          content = content = (
+            <div class="announcement-container">
+              <div class="announcement-info">
+                We need some clarfication regarding your KYC details. Please clarify at the earliest
+                to get your KYC approved{' '}
+              </div>
+              <div className="big-circle-seprator" />
+              <Link to="/activation">Update details</Link>
+            </div>
+          );
+          break;
+        }
+        case 'needs_clarification_mcc_pending': {
+          theme = 'danger';
+          title = 'KYC Clarification';
+          content = content = (
+            <div class="announcement-container">
+              <div class="announcement-info">
+                Your KYC details require further clarifications. Update required details within 1
+                day, otherwise your settlements might get paused.{' '}
+              </div>
+              <div className="big-circle-seprator" />
+              <Link to="/activation">Update details</Link>
+            </div>
+          );
+          break;
+        }
+        case 'needs_clarification_funds_on_hold': {
+          theme = 'danger';
+          title = 'settlements have been paused';
+          content = content = (
+            <div class="announcement-container">
+              <div class="announcement-info">
+                Your funds are on hold now. Update required details immediately to unblock your
+                settlements{' '}
+              </div>
+              <div className="big-circle-seprator" />
+              <Link to="/activation">Update details</Link>
+            </div>
+          );
+          break;
+        }
+        case 'needs_clarification': {
+          theme = 'danger';
+          title = 'KYC Clarification';
+          content = content = (
+            <div class="announcement-container">
+              <div class="announcement-info">
+                We need some clarfication regarding your KYC details. Please clarify at the earliest
+                to get your KYC approved{' '}
+              </div>
+              <div className="big-circle-seprator" />
+              <Link to="/activation">Update details</Link>
+            </div>
+          );
+          break;
+        }
+        case 'rejected': {
+          theme = 'danger';
+          title = 'Business not supported';
+          content = (
+            <div class="announcement-container">
+              <div class="announcement-info">
+                We can't support your business because it doesn't meet our compliance requirements.
+                Please raise a ticket to request for settlement of payments accepted via your
+                account{' '}
+              </div>
+            </div>
+          );
+          break;
+        }
+        case 'account_activated': {
+          theme = 'success';
+          title = 'Account Activated';
+          content = (
+            <div>
+              Congratulations! Your KYC has been successfully verified and your account has been
+              activated. Payments received by you will be settled to your account as per your
+              settlement schedule.
+            </div>
+          );
+          break;
+        }
+        case 'funds_on_hold': {
+          theme = 'danger';
+          title = 'KYC Under Review';
+          content = content = (
+            <div>
+              Our compliance team and banking partners are reviewing your KYC and your funds have
+              been temporarily put on hold. We will review your KYC and reach out to you for any
+              clarifications within 3-4 days
+            </div>
+          );
+          break;
+        }
+        case 'activated_mcc_pending_with_tnc': {
+          theme = 'success';
+          title = 'Payment and Settlements Enabled';
+          content = (
+            <div>
+              Congratulations, now you can accept unlimited payments. Settlements to your bank
+              account have been enabled. Please note that as part of routine compliance checks
+              mandated by our banking partners, we may review your KYC again and reach out in case
+              of further clarifications
+            </div>
+          );
+          break;
+        }
+        case 'activated_mcc_pending_without_tnc': {
+          theme = 'success';
+          title = (
+            <div>
+              Settlements enabled, <br />
+              Generate TnC Page
+            </div>
+          );
+          content = (
+            <div class="announcement-container">
+              <div class="announcement-info">
+                Your payments can now be settled to your bank account according to your settlement
+                schedule. As part of the routine compliance checks mandated by our banking partners,
+                we will review your kyc and reach out for further
+              </div>
+              <div className="big-circle-seprator" />
+              <div>
+                <Button.Secondary
+                  type="button"
+                  children="Generate Page now"
+                  onClick={() => {
+                    openModal({
+                      size: 'small',
+                      component: (
+                        <GenerateTnCPage onCloseModal={closeModal} openModal={openModal} />
+                      ),
+                    });
+                    tracking.trackEvent(
+                      window.rzpQ.onbr().initiated('act.generate_page_now', {
+                        clickSource: 'Banner',
+                      }),
+                    );
+                    analyticsTrack({
+                      objectName: 'Act Generate Page Now',
+                      actionName: 'initiated',
+                      screen: 'home page',
+                      properties: {
+                        clickSource: 'Banner',
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                  }}
+                />
+              </div>
+            </div>
+          );
+          break;
+        }
+
+        default:
+          break;
+      }
+    } else if (!user.isSubmitted) {
       if (user.instantActivation.isWhitelistFlow && !user.isAccepted && mode === 'live') {
         if (payments && payments.items.length === 0) {
           title = 'Accept Payments';
@@ -197,7 +631,7 @@ export default class InstantActivationAnnouncements extends Component {
             We need more information regarding your submitted details. Please{' '}
             <SupportButton
               type="anchor"
-              buttonLabel="contact support"
+              buttonLabel="Contact Support"
               category="merchant"
               openSection="account-activation"
             />{' '}
@@ -230,14 +664,9 @@ export default class InstantActivationAnnouncements extends Component {
               type="button"
               children="Generate Page now"
               onClick={() => {
-                this.props.openModal({
+                openModal({
                   size: 'small',
-                  component: (
-                    <GenerateTnCPage
-                      onCloseModal={this.props.closeModal}
-                      openModal={this.props.openModal}
-                    />
-                  ),
+                  component: <GenerateTnCPage onCloseModal={closeModal} openModal={openModal} />,
                 });
                 tracking.trackEvent(
                   window.rzpQ.onbr().initiated('act.generate_page_now', {
@@ -321,15 +750,23 @@ export default class InstantActivationAnnouncements extends Component {
         }
       }
     }
+
     return (
-      <AnnouncementBanner
-        title={title}
-        theme={theme}
-        bannerKey={`announcement-banner-${user.activation_status}-${user.current}`}
-        canBeClosed={user.isAccepted}
-      >
-        {content}
-      </AnnouncementBanner>
+      <>
+        {!!title ? (
+          <AnnouncementBanner
+            title={title}
+            theme={theme}
+            bannerKey={`announcement-banner-${user.activation_status}-${user.current}`}
+            canBeClosed={user.isAccepted}
+          >
+            {content}
+          </AnnouncementBanner>
+        ) : null}
+        {showProducts ? (
+          <ProductsModal onClose={hideProductsModal} track={trackProductsModal} />
+        ) : null}
+      </>
     );
   }
 }

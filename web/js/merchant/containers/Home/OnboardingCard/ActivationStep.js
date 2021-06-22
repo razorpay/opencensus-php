@@ -1,23 +1,17 @@
 import React, { Component } from 'react';
-import TetherComponent from 'react-tether';
 import { Link } from 'react-router-dom';
 
-import LocalStorageService from 'common/utils/localStorage';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import ProgressBar from 'common/ui/ProgressBar';
 
-import { activationDuration } from 'merchant/helpers/data';
 
 import {
-  NEEDS_CLARIFICATION,
   ACTIVATION_URL,
-  CLARIFICATION_THROUGH_CALL,
   CLARIFICATION_THROUGH_EMAIL,
   TEST_MODE,
   PERSONALISE_URL,
 } from './data';
 import {
-  trackActivationCardAction,
   trackGoToActivation,
   trackGoToPersonalise,
   trackSwitchToLive,

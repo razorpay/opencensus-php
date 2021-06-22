@@ -143,7 +143,7 @@ export default class Sidebar extends Component {
       this.props.toggleMobileMenu();
     }
 
-    if (user.isSubmitted) {
+    if (user.isSubmitted && user.activation_progress === 100) {
       this.props.history.push('/config');
     } else if (
       user.activation_progress < 100 &&

@@ -2036,7 +2036,7 @@ $stepIndicatorSize = 36px;
 
     width: 100%;
     height: 100%;
-    padding: 66px 300px 40px 40px;
+    padding: 66px 300px 50px 50px;
     position: relative;
     background-color: #fff;
 
@@ -2121,12 +2121,20 @@ $stepIndicatorSize = 36px;
           padding-right: 26px;
           height: 4px;
 
+          &.align-left {
+            transform: translate(-96%, 0);
+          }
+
           .step-connector-content {
 
             background: transparent url('assets/onboarding/inactive_connector.png') 50% 0 no-repeat;
             width: 100%;
             height: 100%;
           }
+        }
+
+        &.align-left {
+          text-align: left;
         }
 
         &.status-active {
@@ -2155,6 +2163,10 @@ $stepIndicatorSize = 36px;
           margin-bottom: 22px;
           padding: 6px;
 
+          &.align-left {
+            margin: 0 0 20px -6px;  
+          }
+
           .PlaceholderLoader {
 
             vertical-align: top;
@@ -2174,6 +2186,14 @@ $stepIndicatorSize = 36px;
         .step-content {
 
           padding: 0 8px;
+
+          &.align-left{
+            padding: 0 40px 0 0;
+
+            .step-content { 
+                padding: 0;
+            }
+          }
 
           .step-content-title {
 
@@ -2520,7 +2540,7 @@ $stepIndicatorSize = 36px;
 
     .modal-description {
       margin-bottom: 30px;
-      text-align: justify;
+      text-align: center;
 
       > p {
         margin-bottom: 10px;
@@ -2831,4 +2851,62 @@ p.small-txt{
   display: flex;
   padding: 10px 0px 10px 5px;
   background: #fff5d5;
+}
+.PaymentProgressBar-onboarding {
+  background: #F9FBFE;
+  border: 1px solid #C4DDF9;
+  box-sizing: border-box;
+  box-shadow: 0px 4px 10px rgba(11, 112, 231, 0.05);
+  border-radius: 4px;
+  margin: 38px 0 0;
+  display: flex;
+  padding: 15px;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  .info {
+    font-weight: bold;
+    font-size: 12px;
+    line-height: 20px;
+    color: rgba(22, 47, 86, 0.87);
+    max-width: 500px;
+  }
+
+  .amount-total {
+    font-size: 16px;
+    line-height: 17px;
+    color: #6F7691;
+    margin-bottom: 10px;
+
+    .amount-accepted {
+      color: #2B83EA;
+    }
+  }
+
+  .progressbar {
+    width: 30%;
+    padding: 0 35px;
+    flex-shrink: 0;
+  }
+
+  .progress-div {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .progress-container {
+    height: 5px;
+    border-radius: 10px;
+    transition: 1s ease;
+    transition-delay: 0.5s;
+  }
+}
+
+.announcement-container {
+  display: flex;
+  align-items: center;
+}
+
+.announcement-info {
+  max-width: 75%;
 }

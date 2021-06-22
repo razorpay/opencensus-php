@@ -10,7 +10,6 @@ import Slider from 'common/ui/Slider';
 import { ModalMask } from 'common/new-ui/Modal';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
-import { isMobileDevice } from 'merchant/components/Home/data';
 
 import lazy from './LazyLoader';
 import Loader from 'common/ui/Loader';

@@ -10,7 +10,6 @@ import Amount from 'common/ui/Amount';
 import {
   titleCase,
   isPresent,
-  getFormattedAmount,
   getCommonAnalyticsProperties,
 } from 'common/utils/rzp-utils';
 

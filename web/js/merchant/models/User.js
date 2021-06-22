@@ -199,6 +199,8 @@ export default class User {
       business_type: this.business_type,
       activated: this.activated,
       isUnregisteredBusiness: this.isUnregisteredBusiness,
+      isInstantActivationEnabled: this.isInstantActivationEnabled,
+      activation_form_milestone: this.activation_form_milestone,
 
       get isWhitelistFlow() {
         return this.activation_flow === 'whitelist';
@@ -220,17 +222,24 @@ export default class User {
         if (isSourceRX) {
           return true;
         }
-        //Returning true for PG
-        if (!isSourceRX) {
-          return true;
+
+        if (this.isInstantActivationEnabled) {
+          if (this.activation_form_milestone === 'L1') {
+            return true;
+          }
+        } else {
+          if (!isSourceRX) {
+            return true;
+          }
+
+          if (!!this.activated) {
+            return true;
+          }
+          if (!this.isUnregisteredBusiness) {
+            return !!this.activation_flow;
+          }
         }
 
-        if (!!this.activated) {
-          return true;
-        }
-        if (!this.isUnregisteredBusiness) {
-          return !!this.activation_flow;
-        }
         return false;
       },
     };
@@ -583,6 +592,10 @@ export default class User {
 
   get isExpireByRequired() {
     return this.isFeatureEnabled('invoice_expire_by_reqd');
+  }
+
+  get isInstantActivationEnabled() {
+    return this.getExpStatus('instant-activations-functionality');
   }
 
   get isInttCurrenciesEnabled() {

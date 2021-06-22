@@ -2,13 +2,7 @@ import Entity from './Entity';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { uniqueArray } from 'common/utils/rzp-utils';
 
-import {
-  normalizeBoolean,
-  isBlank,
-  arrayDiff,
-  autoPrefixUrls,
-  trim,
-} from 'common/utils/rzp-utils';
+import { normalizeBoolean, isBlank, arrayDiff, autoPrefixUrls, trim } from 'common/utils/rzp-utils';
 
 // Used for Activation
 const activationStepMap = {
@@ -76,7 +70,7 @@ const activationFields = Object.keys(activationStepMap).reduce((prev, curr) => {
   return prev;
 }, []);
 
-const getFileDetails = data => {
+const getFileDetails = (data) => {
   const fileFieldNameMapping = {
     business_proof_url: 'business_proof',
     business_operation_proof_url: 'business_operation_proof',
@@ -108,7 +102,7 @@ export default class Activation extends Entity {
       accountId: this.accountId,
     };
 
-    return merchantFetch(params).then(response => {
+    return merchantFetch(params).then((response) => {
       response.data = this.getActivation(response.data);
       return new Activation(response.data);
     });
@@ -129,7 +123,7 @@ export default class Activation extends Entity {
       stepMap = activationStepMap;
     }
 
-    let steps = Object.keys(stepMap).map(step => +step);
+    let steps = Object.keys(stepMap).map((step) => +step);
     if (data.can_submit) {
       data.steps_finished = steps;
     } else {
@@ -140,7 +134,7 @@ export default class Activation extends Entity {
           : [];
 
       let unfinishedSteps = requiredFields.reduce((prev, curr) => {
-        let step = steps.find(step => stepMap[step].indexOf(curr) > -1);
+        let step = steps.find((step) => stepMap[step].indexOf(curr) > -1);
         if (step) prev.push(parseInt(step));
         return prev;
       }, []);
@@ -175,16 +169,6 @@ export default class Activation extends Entity {
 
     return merchantFetch({
       url: 'merchant/activation',
-      mode: 'live',
-      method: 'post',
-      data,
-      accountId: this.accountId,
-    });
-  }
-
-  submitL1Form(data) {
-    return merchantFetch({
-      url: 'merchant/instant_activation',
       mode: 'live',
       method: 'post',
       data,

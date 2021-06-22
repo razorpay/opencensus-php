@@ -759,7 +759,7 @@ export default class CreateVirtualAccount extends React.Component {
                         label="Close By"
                         checkboxFieldLabel="Disable Auto Close"
                         onChange={this.updateDate}
-                        description="You won’t be able to recieve payments after the specified date"
+                        description="You won’t be able to receive payments after the specified date"
                         isInline
                         onDateChange={() => {
                           this.track('advance.autoclose.date');

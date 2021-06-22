@@ -80,6 +80,7 @@ export default class TestMode extends Component {
                 track.viewTestProducts(), this.props.showProductsModal()
               )}
             />
+            {' '}to find the right fit for your use-case
           </span>
         );
       } else {
@@ -137,7 +138,7 @@ export default class TestMode extends Component {
     const { status, title, content } = this.state;
 
     return (
-      <Step status={status}>
+      <Step status={status} isInstantActivationEnabled={this.props.user.isInstantActivationEnabled}>
         <StepTitle>{title}</StepTitle>
         <StepContent>{content}</StepContent>
       </Step>

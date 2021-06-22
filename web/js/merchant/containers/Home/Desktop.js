@@ -5,11 +5,9 @@ import { Link } from 'react-router-dom';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import Header from 'common/ui/Header';
 import Amount from 'common/ui/Amount';
-import Sticky from 'common/ui/Sticky';
 import Group, { GroupItem } from 'common/ui/Group';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import ShowWhen from 'merchant/components/ShowWhen';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
@@ -34,12 +32,9 @@ import {
   trackSettleNow,
   EVENT_CATEGORY_DASHBOARD_HOME,
 } from './ga';
-import OnHoldBanner from 'common/ui/OnHoldBanner';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
-import DedupeModal from 'merchant/components/Home/DedupeModal';
 import { handleNegativeBalanceLimit, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
-import NCModal from 'merchant/components/Activation/NCModal';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { analyticsTrack } from 'common/utils/analytics';
 import LocalStorageService from 'common/utils/localStorage';
@@ -47,7 +42,12 @@ import { fetchUser } from 'merchant/reducers/session';
 import AsyncButton from 'react-async-button';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
+import { showKYCStatusModal } from 'merchant/reducers/home';
+import { isDedupe, getActivationState } from 'merchant/components/Activation/ActivationUtils';
+import NCModal from 'merchant/components/Activation/NCModal';
 import FamPay from 'merchant/components/Announcements/FamPay';
+import DedupeModal from 'merchant/components/Home/DedupeModal';
+import { fetchEscalations } from 'merchant/reducers/home';
 
 @withRouter
 @connect(
@@ -56,12 +56,15 @@ import FamPay from 'merchant/components/Announcements/FamPay';
     mode: state.session.mode,
     config: state.config,
     internationalProductsStatus: state.config.internationalProductsStatus,
+    limitBreach: state.home.limitBreach,
   }),
   {
     openModal,
     fetchInternationalProductsStatus,
     ...NotificationActions,
     fetchUser,
+    showKYCStatusModal,
+    fetchEscalations,
   },
 )
 class AnalyticsDesktop extends Component {
@@ -91,6 +94,7 @@ class AnalyticsDesktop extends Component {
   }
 
   componentDidMount() {
+    this.props.fetchEscalations();
     analyticsTrack({
       objectName: 'home page',
       actionName: 'displayed',
@@ -114,6 +118,27 @@ class AnalyticsDesktop extends Component {
       });
 
     this.checkIfFirstEverSettlement();
+
+    const { user } = this.props;
+    const activationState = getActivationState(user, user.isUnregisteredBusiness);
+    const shouldShowModal =
+      isDedupe(user) === 'blocked' ||
+      activationState === 'needs_clarification_mcc_pending' ||
+      activationState === 'needs_clarification' ||
+      activationState === 'rejected';
+
+    if (user.isInstantActivationEnabled && shouldShowModal) {
+      this.props.showKYCStatusModal({
+        modalType: 'KYC_ACTIVATION_SUBMIT_MODAL',
+      });
+    }
+
+    if (user.isInstantActivationEnabled) {
+      const isTestMode = localStorage.getItem(`rzp_mode--${user.current}`) === 'test';
+      if (user.activated && isTestMode) {
+        localStorage.setItem(`rzp_mode--${user.current}`, 'live');
+      }
+    }
   }
 
   checkIfFirstEverSettlement = (callbackSettlementStatus) => {
@@ -256,11 +281,9 @@ class AnalyticsDesktop extends Component {
       trafficSectionTitle,
       merchantBalanceConfigs,
       lateAuthConfig,
-      hasMinTransactionSD,
-      isValueFilled,
-      roleToShowSupportDetailForm,
       ondemand_restrictions,
       settleNowRestrictionMsg,
+      limitBreach,
     } = this.props;
 
     const {
@@ -301,10 +324,10 @@ class AnalyticsDesktop extends Component {
 
           {/* nps banner */}
           {user.isAccepted && <NPSAnnouncement user={user} />}
-
           {/* onboarding banner */}
-          {showInstantActivation && <Announcement mode={mode} user={user} payments={payments} />}
-
+          {showInstantActivation && (
+            <Announcement mode={mode} user={user} payments={payments} limitBreach={limitBreach} />
+          )}
           {/* international onboarding banner */}
           {mode === 'live' &&
             user.instantActivation.isGraylistFlow &&
@@ -315,11 +338,14 @@ class AnalyticsDesktop extends Component {
             )}
 
           {/* needs clarification modal */}
-          {this.state.showNcPopup && user.needsClarification && (
-            <NCModal onClose={this.onNcModalClose} />
-          )}
+          {this.state.showNcPopup &&
+            user.needsClarification &&
+            !this.props.user.isInstantActivationEnabled && (
+              <NCModal onClose={this.onNcModalClose} />
+            )}
 
-          {!!this.props.user.locked &&
+          {!this.props.user.isInstantActivationEnabled &&
+            !!this.props.user.locked &&
             this.props.user.activation_status === 'under_review' &&
             this.props.user.isDedupe && <DedupeModal />}
 
@@ -366,7 +392,6 @@ class AnalyticsDesktop extends Component {
               to configure your capture setting.
             </AnnouncementBanner>
           )}
-
           {this.showGSTOptOutFlow() === true && (
             <AnnouncementBanner title="GST Address Mismatch" theme="warning" canBeClosed={false}>
               The business address you provided to Razorpay does not match with your address details
@@ -382,7 +407,6 @@ class AnalyticsDesktop extends Component {
               </Link>
             </AnnouncementBanner>
           )}
-
           {current_balance.data.balance < 0 && (
             <AnnouncementBanner title="Add Funds" theme="warning" canBeClosed={true}>
               Your balance went into negative value. Add funds to avoid the transaction failures.{' '}
@@ -407,7 +431,6 @@ class AnalyticsDesktop extends Component {
               </Link>
             </AnnouncementBanner>
           )}
-
           {handleNegativeBalanceLimit(merchantBalanceConfigs, current_balance.data.balance) && (
             <AnnouncementBanner title="On Hold!" theme="danger" canBeClosed={true}>
               Your current balance had reached the maximum negative limit. Transactions will start
@@ -433,7 +456,6 @@ class AnalyticsDesktop extends Component {
               </Link>
             </AnnouncementBanner>
           )}
-
           {!LocalStorageService.getItem('rtb_page_visited') && (
             <AnnouncementBanner title="Get the trusted badge" theme="warning">
               Become a trusted merchant and flaunt the badge of trust on checkout to increase
@@ -457,12 +479,9 @@ class AnalyticsDesktop extends Component {
               </Link>
             </AnnouncementBanner>
           )}
-
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
-
           {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
-
           <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
             {showOnboardingBanner && (
               <NewUserOnboardingCard
@@ -471,10 +490,10 @@ class AnalyticsDesktop extends Component {
                 onFirstStepClose={onFirstStepClose}
                 isFirstStep={showOnboardingBannerFirstStep}
                 showInstantActivation={showInstantActivation}
+                limitBreach={limitBreach}
               />
             )}
           </div>
-
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
               <PersonaliseBanner track={trackPersonaliseBanner} />

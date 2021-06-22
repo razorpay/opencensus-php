@@ -9,13 +9,11 @@ export default ({ onClose, onBack, track }) => {
       <Modal className="products-suite-modal" onClose={onClose}>
         <div className="product-suite">
           <h1>
-            <i className="i i-arrow-back cursor-pointer" onClick={onBack} />
+            {onBack ? <i className="i i-arrow-back cursor-pointer" onClick={onBack} /> : null}
+
             <span>Our Product Suite</span>
           </h1>
-          <p>
-            You can start receiving payments immediately using the following
-            products
-          </p>
+          <p>You can start receiving payments immediately using the following products</p>
           <ul className="nav">
             {/*
             <li>
@@ -37,10 +35,7 @@ export default ({ onClose, onBack, track }) => {
               >
                 <img src="https://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg" />
                 <p className="text-primary">Payment Pages</p>
-                <p>
-                  Effortlessly create personalised web pages without the need to
-                  code
-                </p>
+                <p>Effortlessly create personalised web pages without the need to code</p>
                 <i className="i i-chevron-right" />
               </Link>
             </li>

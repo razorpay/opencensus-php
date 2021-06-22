@@ -371,6 +371,20 @@ function canShowEAadharComponent(activation) {
 }
 
 function isDedupe(activation) {
+  if (activation.dedupe && Object.keys(activation.dedupe).length) {
+    const { isMatch, isUnderReview } = activation.dedupe;
+    if (isMatch) {
+      if (isUnderReview) {
+        return 'partial';
+      }
+      return 'blocked';
+    }
+    return 'passed';
+  }
+  return 'passed';
+}
+
+function isDedupeOldFunc(activation) {
   if (
     !!activation.locked &&
     activation.activation_status === 'under_review' &&
@@ -394,6 +408,80 @@ function showAadharDoc(activation) {
     return false;
   }
   return true;
+}
+
+function getActivationState(activationData = {}, isUnregisteredBusiness) {
+  let activationState;
+
+  const {
+    business_website,
+    canGenerateTnCPage,
+    activation_status,
+    activation_form_milestone,
+    poi_verification_status,
+    activated,
+    activationStatusChangeLogs,
+    merchant,
+    isHardLimitReached,
+  } = activationData;
+
+  const tncRequired = !business_website && !isSourceRX() && canGenerateTnCPage;
+
+  const dedupeStatus = isDedupe(activationData);
+
+  if (activation_status === 'activated') {
+    activationState = 'account_activated';
+  } else if (!activation_form_milestone) {
+    activationState = 'L1_Start';
+  } else if (activation_form_milestone === 'L1') {
+    if (dedupeStatus === 'blocked') {
+      activationState = 'L1_dedupe_blocked';
+    } else if (dedupeStatus === 'passed' || dedupeStatus === 'partial') {
+      if (activation_status === 'instantly_activated') {
+        activationState = 'L1_instantly_activated';
+      } else if (isUnregisteredBusiness) {
+        if (poi_verification_status === 'initiated') {
+          activationState = 'poi_initiated';
+        } else if (poi_verification_status === 'verified' && activated) {
+          activationState = 'poi_verified';
+        } else activationState = 'poi_failed';
+      } else activationState = 'payment_disabled';
+    }
+  } else if (activation_form_milestone === 'L2') {
+    if (dedupeStatus === 'blocked') {
+      activationState = 'L2_dedupe_blocked';
+    } else if (activation_status === 'under_review') {
+      if (dedupeStatus === 'partial') {
+        activationState = tncRequired
+          ? 'under_review_without_tnc_partial'
+          : 'under_review_with_tnc_partial';
+      } else if (activationStatusChangeLogs.includes('needs_clarification')) {
+        activationState = tncRequired
+          ? 'under_review_without_tnc'
+          : 'under_review_with_tnc';
+      } else if (dedupeStatus === 'passed') {
+        activationState = tncRequired
+          ? 'under_review_without_tnc_passed'
+          : 'under_review_with_tnc_passed';
+      }
+    } else if (activation_status === 'needs_clarification') {
+      if (activationStatusChangeLogs.includes('activated_mcc_pending')) {
+        activationState = merchant.hold_funds
+          ? 'needs_clarification_funds_on_hold'
+          : 'needs_clarification_mcc_pending';
+      } else activationState = 'needs_clarification';
+    } else if (activation_status === 'activated_mcc_pending') {
+      activationState = tncRequired
+        ? 'activated_mcc_pending_without_tnc'
+        : 'activated_mcc_pending_with_tnc';
+    } else if (activation_status === 'rejected') {
+      activationState = 'rejected';
+    } else if (merchant.hold_funds && isHardLimitReached) {
+      activationState = 'funds_on_hold';
+    }
+  }
+
+  return activationState;
 }
 
 export {
@@ -433,4 +521,6 @@ export {
   isBusinessProofTypeDocFieldVisible,
   canShowEAadharComponent,
   showAadharDoc,
+  getActivationState,
+  isDedupeOldFunc,
 };

@@ -10,7 +10,6 @@ import Spinner from 'common/ui/Spinner';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import KycForm from './new';
-import InstantActivation from './Instant';
 import { setInstantActivationsTracking } from './ga_new';
 
 const SOURCE_RAZORPAY_X = 'x';
@@ -116,8 +115,7 @@ export default class ActivationContainer extends Component {
     return Promise.all([
       merchantFetch({
         url: 'merchant/activation',
-        // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
-        mode: !!accountId ? this.props.session.mode : 'live',
+        mode: 'live',
         accountId,
       }),
       !accountId && merchantFetch('merchant/activation/business_categories'),
@@ -188,22 +186,6 @@ export default class ActivationContainer extends Component {
     this.props.tracking.trackEvent(event);
   };
 
-  get shouldShowL1Modal() {
-    const { user, accountId } = this.props;
-    const { instantActivation, showInstantActivation } = user;
-    const { isL1Submitted, isWhitelistFlow, isBlacklistFlow, isGraylistFlow } = instantActivation;
-
-    const showL1Modal = !accountId && showInstantActivation && (!isL1Submitted || isBlacklistFlow);
-
-    if (this.isSourceRX) {
-      // if Source RX return whatever is computed value of showL1Modal - Since Unreg is not supported there
-      return showL1Modal;
-    }
-
-    // show new activation flow for all other users
-    return false;
-  }
-
   render() {
     const { data, categories, additionalModalClass, aovRange } = this.state;
     const { user } = this.props;
@@ -220,7 +202,6 @@ export default class ActivationContainer extends Component {
     const isLoading = !data;
     // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
     const isModal = !!this.props.onClose;
-    const showL1Modal = this.shouldShowL1Modal;
 
     let content = null;
     let modalClasses = ['animate-down'];
@@ -234,16 +215,6 @@ export default class ActivationContainer extends Component {
           <div className={classList('spin-btn large page-center visible', isModal && 'gray')} />
         </div>
       );
-    } else if (showL1Modal) {
-      modalClasses = modalClasses.concat(['Activation--wizard', 'Activation--wizard--Instant']);
-      content = (
-        <InstantActivation
-          {...commonProps}
-          onFormValidityChange={this.handleIAFormValidityChange}
-          sendEventsForSubMerchantView={this.sendEventsForSubMerchantView}
-        />
-      );
-      trackerIntent = 'act.form_fill';
     } else {
       content = (
         <KycForm
@@ -261,7 +232,7 @@ export default class ActivationContainer extends Component {
     }
 
     return isModal ? (
-      <div className={showL1Modal ? 'instant-activations-modal-container' : ''}>
+      <div>
         <Modal
           class={classList(...modalClasses)}
           onClose={this.props.onClose}
@@ -271,7 +242,7 @@ export default class ActivationContainer extends Component {
         </Modal>
       </div>
     ) : (
-      <div className={`ActivationContainer${showL1Modal ? ' instant' : ' kyc'}`}>
+      <div className="ActivationContainer kyc">
         {content || spinner}
       </div>
     );

@@ -2,6 +2,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import ProgressBar from 'common/ui/ProgressBar';
 import { classList } from 'common/utils/rzp-utils';
 import RTracking from 'react-tracking';
+import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 
 export default RTracking((state, props, args) => {
   return window.rzpQ.component('ActivationProgress');
@@ -14,7 +15,7 @@ export default RTracking((state, props, args) => {
   } = user;
 
   let actionCopy;
-  let actionContent = null;
+  let subText;
   let trackingIntent = null;
 
   if (user.activation_status === 'under_review') {
@@ -41,7 +42,20 @@ export default RTracking((state, props, args) => {
     actionCopy = 'Submit Form';
   }
 
-  return !isBlacklistFlow ? (
+  const activationState = getActivationState(user, user.isUnregisteredBusiness);
+
+  if (user.isInstantActivationEnabled) {
+    if (activationState === 'account_activated') {
+      actionCopy = 'Account Activated';
+    } else {
+      actionCopy = 'Account Activation';
+    }
+  }
+
+  return !isBlacklistFlow &&
+    activationState !== 'L1_dedupe_blocked' &&
+    activationState !== 'L2_dedupe_blocked' &&
+    activationState !== 'rejected' ? (
     <ShowWhen
       additionalCondition={(user) =>
         user.isAllowedEdit('activation') &&
@@ -64,7 +78,9 @@ export default RTracking((state, props, args) => {
         <div
           className={classList(
             'activation-status',
-            user.isSubmitted && !config.hasPersonalised ? 'not-personalised' : '',
+            user.isSubmitted && user.activation_progress === 100 && !config.hasPersonalised
+              ? 'not-personalised'
+              : '',
           )}
         >
           <div className="clearfix">
@@ -73,33 +89,38 @@ export default RTracking((state, props, args) => {
               <i className="i i-chevron-right" />
             </div>
           </div>
-          {do {
-            if (showInstantActivation && !isL1Submitted) {
-              actionContent = <div className="activation-status-secondary">Form not Completed</div>;
-            } else {
-              actionContent = !user.isSubmitted ? (
-                <div className="activation-bar-content activation-status-secondary">
-                  {user.activation_progress < 100 &&
-                  isL1Submitted &&
-                  user.isActivated &&
-                  !user.isUnregisteredBusiness ? (
-                    <div className="activation-bar-text">Click here to know more</div>
-                  ) : (
-                    <>
-                      <div className="activation-bar-text">
-                        {user.activation_progress}% Complete
-                      </div>
-                      <div className="activation-bar">
-                        <ProgressBar type="success" max={100} value={user.activation_progress} />
-                      </div>
-                    </>
-                  )}
+
+          {/*  if isInstantActivationEnabled */}
+          {user.isInstantActivationEnabled &&
+            (activationState === 'poi_initiated' ? (
+              <div className="activation-status-secondary">KYC under review</div>
+            ) : activationState === 'account_activated' ? (
+              <div className="activation-status-secondary">Personalise your Account</div>
+            ) : (
+              <div className="activation-bar-content activation-status-secondary">
+                <div className="activation-bar-text">{user.activation_progress}% Complete</div>
+                <div className="activation-bar">
+                  <ProgressBar type="success" max={100} value={user.activation_progress} />
                 </div>
-              ) : (
-                <div className="activation-status-secondary">Personalise your Account</div>
-              );
-            }
-          }}
+              </div>
+            ))}
+
+          {/*  if not isInstantActivationEnabled */}
+          {!user.isInstantActivationEnabled ?
+          showInstantActivation &&
+          !isL1Submitted &&
+          user.activation_form_milestone !== 'L2' ? (
+            <div className="activation-status-secondary">KYC not completed</div>
+          ) : !user.isSubmitted || user.activation_progress < 100 ? (
+            <div className="activation-bar-content activation-status-secondary">
+              <div className="activation-bar-text">{user.activation_progress}% Complete</div>
+              <div className="activation-bar">
+                <ProgressBar type="success" max={100} value={user.activation_progress} />
+              </div>
+            </div>
+          ) : (
+            <div className="activation-status-secondary">Personalise your Account</div>
+          ):null}
         </div>
       </div>
     </ShowWhen>

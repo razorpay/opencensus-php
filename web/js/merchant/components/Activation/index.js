@@ -13,14 +13,12 @@ import {
   prevent,
   classList,
   checkIsObjectEmpty,
-  getCommonSegmentProperties,
 } from 'common/utils/rzp-utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { trackDiffInFormFields } from 'merchant/utils/track-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'common/utils/localStorage';
 import { addDropShield, removeDropShield } from 'merchant/components/File/Upload';
-import { fireAnalyticsEvents } from 'common/utils/googleAnalytics'; // fb, bing, linkedin, twitter
 import * as trackers from 'merchant/containers/Activation/ga_new';
 import {
   fireFormStartEvents,
@@ -41,12 +39,9 @@ import accountFormTabsContent, {
   accountFormTabs,
   accountFormFieldNamesMeta,
 } from './AccountActivationFormMap';
-import BingDataObj from 'common/utils/bingDataObj';
 import RTracking from 'react-tracking';
 import { updateSession } from 'merchant/reducers/session';
 import {
-  rxCaSelectedFlag,
-  caReqEventType,
   rxCaExp,
   rxKYCvisitedFlag,
   RX_HOTJAR_DATA,
@@ -74,9 +69,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import L1FormFieldNames from './L1FormFieldNames';
-import * as activationUtils from './ActivationUtils';
 import {
-  UNREGISTERED_TYPES,
   isL1Completed,
   hasSelectedBlacklistedCategory,
   doesHaveAdditionalDocs,
@@ -86,12 +79,11 @@ import {
   displayCompanyPAN,
   doesHaveBusinessProofDocs,
   getDefaultBusinessProofDoc,
+  isDedupe,
+  isSourceRX,
 } from './ActivationUtils';
 
-import {
-  fireL1FormSuccessEvents,
-  fireL1FormErrorEvents,
-} from 'merchant/containers/Activation/ActivationFormMarketingEvents';
+import { fireL1FormSuccessEvents } from 'merchant/containers/Activation/ActivationFormMarketingEvents';
 import QueryString from 'query-string';
 import { getNeedsClarificationTabsData } from './NeedsClarificationFormMap';
 import SubmitFormLayer from './components/SubmitFormLayer';
@@ -191,7 +183,7 @@ export default class ActivationWizard extends React.Component {
       }
     }
 
-    this.formName = 'Activation Form';
+    this.formName = 'KYC Form';
     this.formDescription = 'Complete and submit the form to accept payments.';
     this.trackingType = 'act';
     if (props.user.showInstantActivation && props.user.instantActivation.isL1Submitted) {
@@ -256,8 +248,14 @@ export default class ActivationWizard extends React.Component {
         FORM_TABS_NAMES.push(ndcFields.map((f) => f.name).filter((f) => Boolean(f)));
         NEEDS_CLARIFICATION_STEP = 5;
       }
+      const userCanSubmitForm = this.props.user.isUnregisteredBusiness
+        ? this.props.user.poi_verification_status !== 'initiated'
+        : true;
 
-      if (!isL1Completed(this)) {
+      if (
+        this.props.user.isInstantActivationEnabled &&
+        (!userCanSubmitForm || !isL1Completed(this) || isDedupe(this.props.user) === 'blocked')
+      ) {
         //Code needs some refactoring
         FORM_TABS = FORM_TABS.slice(0, BANK_ACCOUNT_TAB);
         FORM_TABS_CONTENT = FORM_TABS_CONTENT.slice(0, BANK_ACCOUNT_TAB);
@@ -392,13 +390,11 @@ export default class ActivationWizard extends React.Component {
   componentDidMount() {
     addDropShield('.Activation--wizard');
 
-    const isL1Completed = activationUtils.isL1Completed(this);
-
-    if (!this.props.user.isAccepted && isL1Completed) {
+    if (!this.props.user.isAccepted && isL1Completed(this)) {
       trackers.trackKYCFormOpen();
     }
 
-    fireFormStartEvents(isL1Completed);
+    fireFormStartEvents(isL1Completed(this));
 
     const query = QueryString.parse(this.props.location.search);
     this.handleActionBasedOnQuery(query);
@@ -514,7 +510,7 @@ export default class ActivationWizard extends React.Component {
         });
       };
 
-    if (!activationUtils.isL1Completed(this)) {
+    if (!isL1Completed(this)) {
       callBack = () => {};
     }
 
@@ -541,7 +537,7 @@ export default class ActivationWizard extends React.Component {
         });
       };
 
-    if (!activationUtils.isL1Completed(this)) {
+    if (!isL1Completed(this)) {
       callBack = () => {};
     }
 
@@ -561,7 +557,7 @@ export default class ActivationWizard extends React.Component {
         });
       };
 
-    if (!activationUtils.isL1Completed(this)) {
+    if (!isL1Completed(this)) {
       callBack = () => {};
     }
 
@@ -591,7 +587,7 @@ export default class ActivationWizard extends React.Component {
         }
       };
 
-    if (!activationUtils.isL1Completed(this)) {
+    if (!isL1Completed(this)) {
       callBack = () => {};
     }
 
@@ -1008,88 +1004,6 @@ export default class ActivationWizard extends React.Component {
     } catch (e) {}
   };
 
-  submitL1 = async (currenActiveTab) => {
-    const data = this.formData;
-
-    this.trackSubmitL1(data);
-
-    this.setState({ callingAPI: true });
-
-    try {
-      const response = await this.props.submitL1Form({
-        data,
-        accountId: this.props.accountId,
-      });
-
-      this.props.submitL1FormSuccess({ data: response.data });
-
-      if (this.onActivationSuccess) {
-        return this.onActivationSuccess(response);
-      }
-
-      this.updateSession(response.data); // Updating % activation_progress (side bar)
-
-      const user = this.user;
-
-      const {
-        showPANStatusModal,
-        showFraudDetectionModal,
-        showKYCDetailsModal,
-        showInstantActivationSuccessModal,
-        tracking,
-      } = this.props;
-
-      const props = {
-        user,
-        showKYCDetailsModal,
-        showPANStatusModal,
-        showFraudDetectionModal,
-        showInstantActivationSuccessModal,
-        tracking,
-      };
-
-      handleInstantActivationSuccess(props);
-      this.saveCurrentTab();
-      analyticsTrack({
-        objectName: 'SignUp',
-        actionName: 'Submit L1 CTA Clicked',
-        screen: 'L1 form',
-        properties: {
-          ...getCommonSegmentProperties(),
-        },
-      });
-
-      this.setState({ callingAPI: false }, () => {
-        if (
-          !hasAPIL1Error({
-            poi_verification_status: user.poi_verification_status,
-            is_unreg: this.isUnregBiz,
-          })
-        ) {
-          return this.props.history.replace('/');
-        }
-      });
-      return response;
-    } catch (err) {
-      this.setState({ callingAPI: false });
-      this.saveCurrentTab();
-      if (err.errors && err.errors.length && err.errors[0]) {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-      }
-
-      fireL1FormErrorEvents();
-
-      // if (this.onActivationSuccess) {
-      //   this.onActivationSuccess({ success: false });
-      // }
-
-      return err;
-    }
-  };
-
   isValidL1Field = (field_name) => {
     let field;
     for (let i = 1; i < FORM_TABS_CONTENT.length; i++) {
@@ -1157,7 +1071,9 @@ export default class ActivationWizard extends React.Component {
   submitForm = async () => {
     const businessCategories = await this.props.fetchBusinessCategory();
 
-    return this.props.submitForm().then((data) => {
+    const data = !this.props.data.activation_form_milestone ? this.formData : {};
+
+    return this.props.submitForm({ data }).then((data) => {
       if (data.errors) {
         // Track session for any error on submission (non-LA account)
         if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
@@ -1277,10 +1193,17 @@ export default class ActivationWizard extends React.Component {
           dirty: newStateDirty,
         });
       } else if (response.success) {
-        this.props.showKYCStatusModal({
-          modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
-          activationDuration: '3 days',
-        });
+        if (this.props.user.isInstantActivationEnabled) {
+          this.props.showKYCStatusModal({
+            modalType: 'KYC_ACTIVATION_SUBMIT_MODAL',
+          });
+        } else {
+          this.props.showKYCStatusModal({
+            modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
+            activationDuration: '3 days',
+          });
+        }
+
         LocalStorageService.setItem(
           `rzp_onboarding--${this.props.user.current}--clarification_submitted`,
           true,
@@ -1370,7 +1293,7 @@ export default class ActivationWizard extends React.Component {
     // Company Search only available for PG Activation
     if (
       placeholder === 'Business name as per PAN' &&
-      !activationUtils.isSourceRX() &&
+      !isSourceRX() &&
       (CIN_BusinessTypes.includes(Number(currentBusinessType)) ||
         LLPIN_BusinessTypes.includes(Number(currentBusinessType)))
     ) {
@@ -1489,11 +1412,7 @@ export default class ActivationWizard extends React.Component {
       let el = document.querySelector('.form-container [name=business_subcategory]');
       el && (el.value = '');
       // Reset Business Model as well.
-      if (
-        activationUtils.isSourceRX() ||
-        !this.props.user.isBDAndAovEnabled ||
-        !this.props.user.isOrgRZP
-      ) {
+      if (isSourceRX() || !this.props.user.isBDAndAovEnabled || !this.props.user.isOrgRZP) {
         sideEffectFieldsToUpdate.business_model = '';
         // Update Business Model in view
         el = document.querySelector('.form-container [name=business_model]');
@@ -1541,11 +1460,7 @@ export default class ActivationWizard extends React.Component {
     }
 
     // update gstin radio button to show gstin input
-    if (
-      fieldName === 'gstin' &&
-      fieldValue &&
-      has_gstin === '1'
-    ) {
+    if (fieldName === 'gstin' && fieldValue && has_gstin === '1') {
       this.setState({ has_gstin: '0' });
     }
 
@@ -1736,7 +1651,12 @@ export default class ActivationWizard extends React.Component {
       footerButtons.push(FOOTER_BUTTONS.SAVE_AND_NEXT);
     }
 
-    if (isLastTab && isBusinessDetailsStep && !isLinkedAccountForm) {
+    if (
+      isLastTab &&
+      isBusinessDetailsStep &&
+      !isLinkedAccountForm &&
+      !user.instantActivation.isL1Submitted
+    ) {
       footerButtons.push(FOOTER_BUTTONS.SUBMIT_L1_FORM);
     }
 
@@ -1756,6 +1676,10 @@ export default class ActivationWizard extends React.Component {
     const isFormLocked = this.isFormLocked;
     const isFormActivated = !!this.props.data.activated;
     const isFormSubmitted = !!this.props.data.submitted;
+
+    const userCanSubmitForm = this.props.user.isUnregisteredBusiness
+      ? this.props.user.poi_verification_status !== 'initiated'
+      : true;
 
     let activeTab = this.state.activeTab;
     activeTab = activeTab < 0 || !activeTab ? 0 : activeTab; // Graceful failure in case activeTab becomes negative. To handle non-reproducible weird error.
@@ -1786,7 +1710,13 @@ export default class ActivationWizard extends React.Component {
         return ActivationField.call(this, field);
       });
     const moreTabs = [];
-    if (this.props.user.instantActivation.isL1Submitted && !isFormSubmitted) {
+
+    if (
+      this.props.user.instantActivation.isL1Submitted &&
+      !isFormSubmitted &&
+      isDedupe(this.props.user) !== 'blocked' &&
+      userCanSubmitForm
+    ) {
       moreTabs.push(
         <li
           key="submit-tab"
@@ -1996,18 +1926,21 @@ export default class ActivationWizard extends React.Component {
         </main>
 
         {/* Submit form overlay view, Lock check not necessary here. Just ensured, 'Submit Form' checkbox must be disabled if locked */}
-        {!isFormSubmitted && this.state.showSubmitLayer && (
-          <main className={classList('overlay-container', isFormLocked && 'main--full')}>
-            <SubmitFormLayer
-              closeActivationForm={() => {
-                this.goto(FORM_TABS.length - 1);
-              }}
-              isFormLocked={isFormLocked}
-              isLinkedAccount={this.isLinkedAccountForm}
-              submitActivationForm={this.submitForm}
-            />
-          </main>
-        )}
+        {!isFormSubmitted &&
+          this.state.showSubmitLayer &&
+          isDedupe(this.props.user) !== 'blocked' &&
+          userCanSubmitForm && (
+            <main className={classList('overlay-container', isFormLocked && 'main--full')}>
+              <SubmitFormLayer
+                closeActivationForm={() => {
+                  this.goto(FORM_TABS.length - 1);
+                }}
+                isFormLocked={isFormLocked}
+                isLinkedAccount={this.isLinkedAccountForm}
+                submitActivationForm={this.submitForm}
+              />
+            </main>
+          )}
 
         {/* Form Footer, to show actions btns / saving state */}
         <Footer
@@ -2018,7 +1951,7 @@ export default class ActivationWizard extends React.Component {
           canSubmitNeedsClarification={this.hasFilledClarificationDetails && !this.state.callingAPI}
           isUnregBiz={this.isUnregBiz}
           isAllTabsValid={this.isAllTabsValid}
-          submitL1={this.submitL1}
+          submitL1={this.submitForm}
           saveCurrentTab={this.saveCurrentTab}
           next={this.next}
           toggleSubmitLayer={this.toggleSubmitLayer}
@@ -2339,13 +2272,7 @@ function isFieldValid(field, activation) {
 
 function handleInstantActivationSuccess(props) {
   if (props.user.business_type == 11) {
-    const {
-      poi_verification_status,
-      locked,
-      instantActivation,
-      isActivated,
-      merchant,
-    } = props.user;
+    const { poi_verification_status, locked, isActivated, merchant } = props.user;
     if (poi_verification_status == 'verified' && !locked) {
       props.showPANStatusModal();
       fireL1FormSuccessEvents(props.user);

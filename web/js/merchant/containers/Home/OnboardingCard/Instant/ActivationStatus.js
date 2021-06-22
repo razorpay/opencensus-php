@@ -1,23 +1,38 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-
 import { analyticsTrack } from 'common/utils/analytics';
-import { activationDuration } from 'merchant/helpers/data';
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
-import { trackGoToActivationFromError } from '../../ga';
 import RTracking from 'react-tracking';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
-import SupportButton from 'merchant/components/Home/SupportButton';
+import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
+import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
+import { openModal } from 'merchant_common/reducers/modals';
+import ProductsModal from 'merchant/components/Home/ProductsModal';
+import { trackProductsModal } from './ga';
+import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 
 const initialState = {
   status: null,
   content: null,
   title: 'Account Activation',
+  showProductModal: false,
 };
 
 @RTracking(() => {
   return window.rzpQ.component('ActivationCard');
 })
+@connect(
+  (state) => ({
+    showProducts: state.home.instantActivations.showProductsModal,
+    limitBreach: state.home.limitBreach,
+  }),
+  {
+    openModal,
+    showProductsModal,
+    hideProductsModal,
+  },
+)
 export default class ActivationCard extends Component {
   constructor(props) {
     super(props);
@@ -40,196 +55,471 @@ export default class ActivationCard extends Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    const {
-        instantActivation,
-        isSubmitted,
-        needsClarification,
-        isActivated,
-        isRejected,
-        onActive,
-        track,
-        international,
-        tracking,
-        activated,
-        business_type,
-        poi_verification_status,
-        isUnregisteredBusiness,
-        locked,
-        isHardLimitReached,
-        merchant,
-        canSkipPoiValidation,
-      } = nextProps,
-      { isL1Submitted, isWhitelistFlow, isBlacklistFlow, isGraylistFlow } = instantActivation;
-
     let { status, content, title } = initialState;
+    const { onActive, track, user } = nextProps;
+    const { limitBreach } = this.props;
 
-    const KYCPending = () => {
-      return (
-        <div>
-          Give us a few KYC details to start transacting
-          <div>
-            <Link
-              to="/activation"
-              className="btn btn-primary"
-              onClick={(e) => {
-                track.activateAccount();
-                this.props.tracking.trackEvent(
-                  window.rzpQ.onbr().initiated('act.form_fill', {
-                    clickSource: 'Dashboard_CTA',
-                  }),
-                );
-                analyticsTrack({
-                  objectName: 'SignUp Activate Account Progress Bar CTA',
-                  actionName: 'clicked',
-                  screen: 'home page',
-                  properties: {
-                    ...getCommonSegmentProperties(),
-                  },
-                });
-              }}
-            >
-              Activate Account
-            </Link>
-          </div>
-        </div>
-      );
-    };
+    const limitBreachHappened =
+      !!limitBreach && limitBreach.type === 'payment_breach'
+        ? (limitBreach.amount * 100) / limitBreach.limit >= 100
+        : false;
 
-    if (isActivated) {
-      title = 'Account Activated';
-      status = possibleStatuses.done;
-      content = this.activatedAccountContent;
-    } else if (isSubmitted) {
-      // if (!isSubmitted) {
-      //   status = possibleStatuses.active;
-      //   content = (
-      //     <div>
-      //       <div>For your business model, we need a few more details for activation</div>
-      //       <Link
-      //         to="/activation"
-      //         className="btn btn-primary"
-      //         onClick={() => {
-      //           track.fillKyc();
-      //           tracking.trackEvent(
-      //             window.rzpQ.onbr().initiated('kyc.form_fill', {
-      //               clickSource: 'Dashboard_CTA',
-      //             }),
-      //           );
-      //         }}
-      //       >
-      //         Fill KYC Form
-      //       </Link>
-      //     </div>
-      //   );
-      // } else {
-      if (needsClarification) {
-        status = possibleStatuses.blocked;
+    const activationState = getActivationState(user, user.isUnregisteredBusiness);
+    const L2_dedupe_blocked = activationState === 'L2_dedupe_blocked';
+
+    switch (activationState) {
+      case 'L1_Start': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.active;
         content = (
-          <span>
-            Your KYC details require further clarification. Please update required details{' '}
-            <Link to="/activation" className="btn-link">
-              here
-            </Link>
-          </span>
+          <>
+            <div>
+              Submit a few KYC details to start accepting payments and receive{' '}
+              <a
+                className="btn-link"
+                target="_blank"
+                rel="noopener noreferrer"
+                href="http://razorpay.com/settlement"
+              >
+                settlement
+              </a>{' '}
+              in your account
+            </div>
+            <div>
+              <Link
+                to="/activation"
+                className="btn btn-primary"
+                onClick={(e) => {
+                  track.activateAccount();
+                  this.props.tracking.trackEvent(
+                    window.rzpQ.onbr().initiated('act.form_fill', {
+                      clickSource: 'onboarding banner',
+                    }),
+                  );
+                  analyticsTrack({
+                    objectName: 'act form fill initiated',
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      clickSource: 'onboarding card',
+                      ...getCommonSegmentProperties(),
+                    },
+                  });
+                }}
+              >
+                Submit KYC
+              </Link>
+            </div>
+          </>
         );
-      } else if (isRejected) {
-        status = possibleStatuses.blocked;
-        content = 'Your KYC form has been rejected.';
-      } else if (isHardLimitReached) {
-        title = 'Account Under Review';
+        break;
+      }
+      case 'L2_dedupe_blocked':
+      case 'L1_dedupe_blocked': {
+        title = 'Live payments and Settlements';
         status = possibleStatuses.blocked;
         content =
-          'Your submitted KYC documents are being reviewed. This will be done in less than 48 hours.';
-      } else if (!!locked && !activated && merchant.hold_funds) {
-        status = possibleStatuses.blocked;
-        content = (
-          <span>
-            Please{' '}
-            <SupportButton
-              type="anchor"
-              buttonLabel="contact support"
-              category="merchant"
-              openSection="account-activation"
-            />{' '}
-            to activate your account
-          </span>
-        );
-      } else {
-        status = possibleStatuses.progress;
-        content = this.accountUnderReviewContent;
+          'We can’t support your business to accept payments. Please reach out to support for any queriest';
+        {
+          L2_dedupe_blocked &&
+            'In case you have pending settlements, you can raise a ticket and get your funds settled to your account.';
+        }
+        break;
       }
-      // }
-    } else if (isBlacklistFlow) {
-      status = possibleStatuses.blocked;
-      content = (
-        <span>
-          We do not support your selected business model. In case you entered it wrong, change it{' '}
-          <Link to="/activation" className="btn-link" onClick={this.handleBlackListFlowClick}>
-            here
-          </Link>
-        </span>
-      );
-    } else {
-      status = possibleStatuses.active;
-      if (poi_verification_status && isUnregisteredBusiness) {
-        status = possibleStatuses.blocked;
-        if (poi_verification_status == 'failed' && !canSkipPoiValidation) {
-          content = (
+      case 'payment_disabled':
+      case 'poi_failed': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.active;
+        content = (
+          <div>
+            Submit a few KYC details to start accepting payments and receive{' '}
+            <a
+              className="btn-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="http://razorpay.com/settlement"
+            >
+              settlement
+            </a>{' '}
+            in your account
             <div>
-              Unable to verify PAN with the central database at the moment.
-              <div>
-                <Link
-                  to="/activation"
-                  className="btn btn-primary"
-                  onClick={(e) => {
-                    track.activateAccount();
-                    this.props.tracking.trackEvent(
-                      window.rzpQ.onbr().initiated('act.form_fill', {
-                        clickSource: 'Dashboard_CTA',
-                      }),
-                    );
-                  }}
-                >
-                  Try Again
-                </Link>
-              </div>
+              <Link
+                to="/activation"
+                className="btn btn-primary"
+                onClick={(e) => {
+                  track.activateAccount();
+                  this.props.tracking.trackEvent(
+                    window.rzpQ.onbr().initiated('kyc.form_fill', {
+                      clickSource: 'onboarding banner',
+                    }),
+                  );
+                  analyticsTrack({
+                    objectName: 'kyc form fill initiated',
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      clickSource: 'onboarding banner',
+                      ...getCommonSegmentProperties(),
+                    },
+                  });
+                }}
+              >
+                Complete KYC
+              </Link>
             </div>
-          );
-        } else if (
-          (poi_verification_status == 'incorrect_details' ||
-            poi_verification_status == 'not_matched') &&
-          !canSkipPoiValidation
-        ) {
+          </div>
+        );
+        break;
+      }
+      case 'poi_initiated': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.active;
+        content =
+          'Your submitted KYC details are under review. You can start accepting payments once the KYC is approved';
+        break;
+      }
+      case 'poi_verified':
+      case 'L1_instantly_activated': {
+        if (limitBreachHappened) {
+          title = 'Live payments and Settlements';
+          status = possibleStatuses.blocked;
           content = (
             <div>
-              Your PAN details did not match with the government database. Please review your
-              details
-              <div>
-                <Link
-                  to="/activation"
-                  className="btn btn-primary"
-                  onClick={(e) => {
-                    track.activateAccount();
-                    this.props.tracking.trackEvent(
-                      window.rzpQ.onbr().initiated('act.form_fill', {
-                        clickSource: 'Dashboard_CTA',
-                      }),
-                    );
-                    trackGoToActivationFromError();
-                  }}
-                >
-                  Review Details
-                </Link>
-              </div>
+              <a
+                className="btn-link"
+                target="_blank"
+                rel="noopener noreferrer"
+                href="http://razorpay.com/settlement"
+              >
+                Settlements
+              </a>{' '}
+              will be enabled and payments limit will be extended after successful KYC review
             </div>
           );
         } else {
+          title = 'Live payments and Settlements';
           status = possibleStatuses.active;
-          content = KYCPending();
+          content = (
+            <div>
+              <a className="btn-link" onClick={() => this.props.showProductsModal()}>
+                Start Accepting payments.
+              </a>{' '}
+              Settlements will be enabled once your KYC has been reviewed successfully
+            </div>
+          );
         }
-      } else {
-        content = KYCPending();
+        break;
       }
+      case 'under_review_with_tnc_partial': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.active;
+        content = (
+          <div>
+            Payments have been temporarily paused Payments and{' '}
+            <a
+              className="btn-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="http://razorpay.com/settlement"
+            >
+              Settlements
+            </a>{' '}
+            will be enabled after successfull KYC review
+          </div>
+        );
+
+        break;
+      }
+      case 'under_review_without_tnc_partial': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.active;
+        content = (
+          <div>
+            You can accept unlimited payments now. Start recieving{' '}
+            <a
+              className="btn-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="http://razorpay.com/settlement"
+            >
+              Settlements
+            </a>{' '}
+            in your account after successfull KYC review
+          </div>
+        );
+
+        break;
+      }
+      case 'under_review_with_tnc_passed': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.active;
+        content = (
+          <div>
+            You can accept unlimited payments now. Start recieving{' '}
+            <a
+              className="btn-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="http://razorpay.com/settlement"
+            >
+              Settlements
+            </a>{' '}
+            in your account after successfull KYC review
+          </div>
+        );
+
+        break;
+      }
+      case 'under_review_without_tnc_passed': {
+        title = 'Live payments and Settlements';
+        status = limitBreachHappened ? possibleStatuses.blocked : possibleStatuses.active;
+        content = (
+          <div>
+            You can accept unlimited payments now. Start recieving{' '}
+            <a
+              className="btn-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="http://razorpay.com/settlement"
+            >
+              Settlements
+            </a>{' '}
+            in your account after successfull KYC review
+          </div>
+        );
+
+        break;
+      }
+      case 'under_review_with_tnc': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.active;
+        content = (
+          <div>
+            You can start accepting payments and recieve{' '}
+            <a
+              className="btn-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="http://razorpay.com/settlement"
+            >
+              Settlements
+            </a>{' '}
+            in your account after successful KYC review
+          </div>
+        );
+
+        break;
+      }
+      case 'under_review_without_tnc': {
+        title = 'Live payments and Settlements';
+        status = limitBreachHappened ? possibleStatuses.blocked : possibleStatuses.active;
+        content = (
+          <div>
+            You can start accepting payments and recieve{' '}
+            <a
+              className="btn-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="http://razorpay.com/settlement"
+            >
+              Settlements
+            </a>{' '}
+            in your account after successful KYC review
+          </div>
+        );
+
+        break;
+      }
+      case 'needs_clarificarion': {
+        if (user.activated) {
+          // if user.activated is 1 it means payment enabled
+          title = 'Live payments and Settlements';
+          status = limitBreachHappened ? possibleStatuses.blocked : possibleStatuses.active;
+          content = (
+            <div>
+              Payments have been enabled. Start receiving{' '}
+              <a
+                className="btn-link"
+                target="_blank"
+                rel="noopener noreferrer"
+                href="http://razorpay.com/settlement"
+              >
+                settlements
+              </a>{' '}
+              in your account post successfull KYC review
+            </div>
+          );
+        } else {
+          title = 'Live payments and Settlements';
+          status = limitBreachHappened ? possibleStatuses.blocked : possibleStatuses.active;
+          content = (
+            <div>
+              You can start accepting payments and receive settlements{' '}
+              <a
+                className="btn-link"
+                target="_blank"
+                rel="noopener noreferrer"
+                href="http://razorpay.com/settlement"
+              >
+                settlements
+              </a>{' '}
+              in your account after your successful review of your KYC
+            </div>
+          );
+        }
+        break;
+      }
+      case 'needs_clarification_mcc_pending': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.active;
+        content = (
+          <div>
+            Now you can accept unlimited payments and it will be settled into your account according
+            to your{' '}
+            <a
+              className="btn-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="http://razorpay.com/settlement"
+            >
+              settlements schedule
+            </a>{' '}
+          </div>
+        );
+        break;
+      }
+      case 'needs_clarification_funds_on_hold': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.blocked;
+        content = (
+          <div>
+            Your settlements have been paused please update your KYC details to enable{' '}
+            <a
+              className="btn-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="http://razorpay.com/settlement"
+            >
+              settlements
+            </a>
+          </div>
+        );
+        break;
+      }
+      case 'needs_clarification': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.active;
+        content = (
+          <div>
+            You can start accepting payments and recieve{' '}
+            <a
+              className="btn-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="http://razorpay.com/settlement"
+            >
+              settlements
+            </a>{' '}
+            in your account after your successful review of your KYC
+          </div>
+        );
+        break;
+      }
+      case 'rejected': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.blocked;
+        content =
+          'We can’t support your business to accept payments. Please reach out to support for any queries';
+        break;
+      }
+      case 'funds_on_hold': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.blocked;
+        content = (
+          <div>
+            You can keep accepting payments{' '}
+            <a
+              className="btn-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="http://razorpay.com/settlement"
+            >
+              settlements
+            </a>{' '}
+            will be enabled after successfull KYC review
+          </div>
+        );
+        break;
+      }
+      case 'account_activated': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.done;
+        content = (
+          <div>
+            Now you can accept unlimited payments and it will be settled into your account according
+            to your{' '}
+            <a
+              className="btn-link"
+              onClick={() =>
+                this.props.openModal({
+                  size: 'medium',
+                  component: <SettlementSchedule />,
+                })
+              }
+            >
+              settlement schedule
+            </a>
+          </div>
+        );
+        break;
+      }
+      case 'activated_mcc_pending_with_tnc': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.done;
+        content = (
+          <div>
+            You can accept unlimited payments. Settlements are enabled for your account according to
+            your{' '}
+            <a
+              className="btn-link"
+              onClick={() =>
+                this.props.openModal({
+                  size: 'medium',
+                  component: <SettlementSchedule />,
+                })
+              }
+            >
+              settlement schedule
+            </a>
+          </div>
+        );
+        break;
+      }
+      case 'activated_mcc_pending_without_tnc': {
+        title = 'Live payments and Settlements';
+        status = possibleStatuses.done;
+        content = (
+          <div>
+            Now you can accept unlimited payments and it will be settled into your account according
+            to your{' '}
+            <a
+              className="btn-link"
+              onClick={() =>
+                this.props.openModal({
+                  size: 'medium',
+                  component: <SettlementSchedule />,
+                })
+              }
+            >
+              settlement schedule
+            </a>
+          </div>
+        );
+        break;
+      }
+
+      default:
+        break;
     }
 
     if (
@@ -485,12 +775,21 @@ export default class ActivationCard extends Component {
 
   render() {
     const { status, content, title } = this.state;
+    const { showProducts, hideProductsModal } = this.props;
 
     return (
-      <Step status={status}>
-        <StepTitle>{title}</StepTitle>
-        <StepContent>{content}</StepContent>
-      </Step>
+      <>
+        <Step
+          status={status}
+          isInstantActivationEnabled={this.props.user.isInstantActivationEnabled}
+        >
+          <StepTitle>{title}</StepTitle>
+          <StepContent>{content}</StepContent>
+        </Step>
+        {showProducts ? (
+          <ProductsModal onClose={hideProductsModal} track={trackProductsModal} />
+        ) : null}
+      </>
     );
   }
 }

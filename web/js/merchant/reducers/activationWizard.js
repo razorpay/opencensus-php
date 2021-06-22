@@ -1,6 +1,5 @@
-import { merchantFetch } from 'merchant/utils/ajax';
 import Activation from 'merchant/models/Activation';
-import { set, merge, push } from 'common/utils/immutable';
+import { merge } from 'common/utils/immutable';
 
 const initialState = {
   loading: false,
@@ -28,7 +27,7 @@ export const setCurrentTab = ({ tab_name }) => ({
   payload: tab_name,
 });
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case `${SUBMIT_L1_FORM}::SUCCESS`:
       return merge(state, {

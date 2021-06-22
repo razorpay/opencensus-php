@@ -136,7 +136,7 @@ class SubmitFormLayer extends React.Component {
           {/* Secondary copy */}
           <p className="text-fade">
             Please review the form before submitting. For any changes after
-            submission, you can <Link to="#ticket">write to support</Link>
+            submission, you can write to support
           </p>
 
           {/* Action button */}

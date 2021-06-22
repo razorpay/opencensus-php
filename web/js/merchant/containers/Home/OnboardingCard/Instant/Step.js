@@ -30,7 +30,7 @@ class StepContent extends Component {
   }
 
   render() {
-    return <div className="step-content">{this.props.children}</div>;
+    return <div className={`step-content ${this.props.isInstantActivationEnabled ? 'align-left' : ''}`}>{this.props.children}</div>;
   }
 }
 
@@ -57,11 +57,19 @@ class Step extends Component {
       isLoading = status === loading;
 
     return (
-      <div className={`onboarding-step status-${status}`}>
-        <div className="step-connector">
+      <div
+        className={`onboarding-step status-${status} ${
+          this.props.isInstantActivationEnabled ? 'align-left' : ''
+        }`}
+      >
+        <div
+          className={`step-connector ${this.props.isInstantActivationEnabled ? 'align-left' : ''}`}
+        >
           <div className="step-connector-content" />
         </div>
-        <div className="step-indicator">
+        <div
+          className={`step-indicator ${this.props.isInstantActivationEnabled ? 'align-left' : ''}`}
+        >
           {isLoading ? (
             <PlaceholderLoader />
           ) : (
@@ -72,7 +80,7 @@ class Step extends Component {
             />
           )}
         </div>
-        <div className="step-content">
+        <div className={`step-content ${this.props.isInstantActivationEnabled ? 'align-left' : ''}`}>
           <div className="step-content-title">
             {stepTitle && (
               <stepTitle.type>
@@ -82,16 +90,16 @@ class Step extends Component {
           </div>
           <div className="step-content-body">
             {stepContent && (
-              <stepContent.type>
-                {isLoading ? (
-                  <div>
-                    <PlaceholderLoader />
-                    <PlaceholderLoader />
-                  </div>
-                ) : (
-                  stepContent.props.children
-                )}
-              </stepContent.type>
+                <stepContent.type>
+                  {isLoading ? (
+                    <div>
+                      <PlaceholderLoader />
+                      <PlaceholderLoader />
+                    </div>
+                  ) : (
+                    stepContent.props.children
+                  )}
+                </stepContent.type>
             )}
           </div>
         </div>

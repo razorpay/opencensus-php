@@ -4,10 +4,10 @@ import { connect } from 'react-redux';
 import { trackhubsContactUpdate } from 'common/utils/googleAnalytics';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import Button from 'common/new-ui/Button';
 import TestModeCard from './TestMode';
 import ActivationStatusCard from './ActivationStatus';
 import LiveModeCard from './LiveMode';
+import ActivationStatusCardOld from './Activationstatus-old';
 import RxCard from './RxCard';
 import RTracking from 'react-tracking';
 import { hasNeoCouponCode } from './RxCa/data';
@@ -15,6 +15,7 @@ import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reduc
 import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import CaInfoContainer from './RxCa/CaInfo';
+import PaymentProgressBar from '../PaymentProgressBar';
 
 import {
   trackTestModeCard,
@@ -113,7 +114,7 @@ export default class OnboardingCardInstant extends Component {
   }
 
   render() {
-    const { mode, user, integration, internationalProductsStatus } = this.props,
+    const { mode, user, integration, internationalProductsStatus, limitBreach } = this.props,
       {
         has_key_access: hasKeyAccess,
         business_website: businessWebsite,
@@ -138,7 +139,7 @@ export default class OnboardingCardInstant extends Component {
         kyc_clarification_reasons,
         canSkipPoiValidation,
       } = user,
-      { showTransactionsHelper, isKLA, isWebsiteInWorkflow, contentWidth, activeStep } = this.state,
+      { isKLA, isWebsiteInWorkflow, activeStep } = this.state,
       commonModeCardProps = {
         mode,
         integration,
@@ -149,6 +150,7 @@ export default class OnboardingCardInstant extends Component {
         merchantId: user.current,
         internationalActivationFlow,
         locked,
+        user,
       },
       activationCardProps = {
         mode,
@@ -175,6 +177,7 @@ export default class OnboardingCardInstant extends Component {
         merchant,
         kyc_clarification_reasons,
         canSkipPoiValidation,
+        user,
       };
     const showJuggernautCaFlow = isActivated && hasNeoCouponCode(campaigns);
     const hasAppliedCa = this.props.user.user.settings['clicked_ca_apply_request_done'];
@@ -195,11 +198,21 @@ export default class OnboardingCardInstant extends Component {
                 onActive={() => this.setActiveStep(0)}
                 track={trackTestModeCard}
               />
-              <ActivationStatusCard
-                {...activationCardProps}
-                onActive={() => this.setActiveStep(1)}
-                track={trackActivationCard}
-              />
+              {user.isInstantActivationEnabled ? (
+                <ActivationStatusCard
+                  {...activationCardProps}
+                  onActive={() => this.setActiveStep(1)}
+                  track={trackActivationCard}
+                  limitBreach={limitBreach}
+                />
+              ) : (
+                <ActivationStatusCardOld
+                  {...activationCardProps}
+                  onActive={() => this.setActiveStep(1)}
+                  track={trackActivationCard}
+                />
+              )}
+
               <LiveModeCard
                 instantActivation={instantActivation}
                 isRejected={user.isRejected}
@@ -211,6 +224,10 @@ export default class OnboardingCardInstant extends Component {
                 track={trackLiveModeCard}
               />
             </div>
+            {user.isInstantActivationEnabled ? (
+              <PaymentProgressBar user={user} mode={mode} limitBreach={limitBreach} />
+            ) : null}
+
             <div className="onboarding-illustration-top">
               <img src="/dist/css/assets/onboarding/top_bg.png" />
             </div>
