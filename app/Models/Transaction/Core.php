@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 
 use RZP\Constants\Environment;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
@@ -49,6 +50,8 @@ class Core extends Base\Core
 {
     // July 1st, 2016 00:00:00 IST
     const JULY_FIRST_EPOCH = '1467311400';
+
+    const CREDIT_LOCK_BEFORE_BALANCE = 'credit_lock_before_balance';
 
     protected $merchantBalance = null;
 
@@ -506,7 +509,7 @@ class Core extends Base\Core
 
         $merchantBalance = $this->getBalanceLockForUpdate($merchantId);
 
-        list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchantBalance);
+        list($amountCredits, $feeCredits) = $this->getMerchantCredits($transaction->merchant);
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transaction);
 
@@ -542,7 +545,7 @@ class Core extends Base\Core
 
         $merchantBalance = $this->getBalanceLockForUpdate($merchantId);
 
-        list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchantBalance);
+        list($amountCredits, $feeCredits) = $this->getMerchantCredits($transaction->merchant);
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transaction);
 
@@ -1484,21 +1487,21 @@ class Core extends Base\Core
         return $credits;
     }
 
-    protected function getMerchantCredits(Merchant\Balance\Entity $merchantBalance): array
+    protected function getMerchantCredits(Merchant\Entity $merchant): array
     {
-        $merchant = $merchantBalance->merchant;
-
         $feature = Feature\Constants::OLD_CREDITS_FLOW;
 
         if ($merchant->isFeatureEnabled($feature) === true)
         {
+            $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
+
             $amountCredits = $merchantBalance->getAmountCredits();
 
             $feeCredits = $merchantBalance->getFeeCredits();
         }
         else
         {
-            $merchantId = $merchantBalance->merchant->getId();
+            $merchantId = $merchant->getId();
 
             $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($merchantId);
 
@@ -1547,7 +1550,24 @@ class Core extends Base\Core
 
         $startTime = microtime(true);
 
-        $merchantBalance = $this->getBalanceLockForUpdate($merchant->getId());
+        $result = $this->app->razorx->getTreatment($merchant->getId(), self::CREDIT_LOCK_BEFORE_BALANCE, $this->mode ?? Mode::LIVE);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_CREDIT_LOCK_RAZORX,
+            [
+                'razorx_result'=> $result,
+                'mode' => $this->mode,
+                'merchant_id' => $merchant->getId(),
+            ]);
+
+        $creditLockBeforeBalance = ($result === 'on');
+
+        if ($creditLockBeforeBalance === true)
+        {
+            list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchant);
+        }
+
+        $this->getBalanceLockForUpdate($merchant->getId());
 
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_AFTER_MERCHANT_BALANCE,
@@ -1558,7 +1578,10 @@ class Core extends Base\Core
                 'time_taken'    => (microtime(true) - $startTime) * 1000
             ]);
 
-        list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchantBalance);
+        if ($creditLockBeforeBalance === false)
+        {
+            list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchant);
+        }
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transaction);
 
