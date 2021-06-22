@@ -7,7 +7,7 @@ const S0 = (props) => {
       window.rzpQ.onbr().interaction('partnerships.partner.welcome', {
         merchantId: props.merchantId,
         lpVariant: props.lpVariant,
-        lpFold: props.lpFold
+        lpFold: props.lpFold,
       }),
     );
 
@@ -24,7 +24,7 @@ const S0 = (props) => {
       window.rzpQ.onbr().interaction('partnerships.partner.welcome.learn_about_program', {
         merchantId: props.merchantId,
         lpVariant: props.lpVariant,
-        lpFold: props.lpFold
+        lpFold: props.lpFold,
       }),
     );
   };
@@ -43,7 +43,7 @@ const S0 = (props) => {
             advocate online payments.
           </p>
         </div>
-        <div className='learn-more'>
+        <div className="learn-more">
           <a
             href="https://razorpay.com/partners/"
             target="_blank"

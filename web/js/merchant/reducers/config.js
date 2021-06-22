@@ -17,13 +17,21 @@ const CREATE_LATE_AUTH_CONFIG = 'CREATE_LATE_AUTH_CONFIG';
 const GET_ONBOARDING_STATUS = 'GET_ONBOARDING_STATUS';
 const FETCH_REFUND_PRICING = 'FETCH_REFUND_PRICING';
 const FETCH_CALL_ELIGIBILITY = 'FETCH_CALL_ELIGIBILITY';
+const FETCH_SCHEDULE_CALL_CONFIG = 'FETCH_SCHEDULE_CALL_CONFIG';
 const UPDATE_BRAND_COLOR_CONTRAST = 'UPDATE_BRAND_COLOR_CONTRAST';
 const FETCH_INTERNATIONAL_PRODUCTS_STATUS = 'FETCH_INTERNATIONAL_PRODUCTS_STATUS';
 const REPLY_TO_CONVERSATION = 'REPLY_TO_CONVERSATION';
 const FETCH_SUPPORT_TICKETS = 'FETCH_SUPPORT_TICKETS';
 const FETCH_ACTIVE_TICKETS = 'FETCH_ACTIVE_TICKETS';
+const FETCH_CALL_SLOTS = 'FETCH_CALL_SLOTS';
+const CALLBACK_SERVICE = 'rzp.care.callback.v1.CallbackService';
 
 export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
+
+const DEFAULT_CALL_BACK_SCHEDULE_RESPONSE = {
+  is_eligible: false,
+  reason: 'NOT AVAILABLE',
+};
 
 export const fetchConfigAjax = () => {
   return merchantFetch('account/config');
@@ -74,6 +82,26 @@ export const CheckCallEligibility = () => {
   return merchantFetch('merchants/support_call/can_submit').then(
     (res) => res && res.success && res.data && res.data.response === true,
   );
+};
+
+export const actionCheckScheduleCallConfig = (mode) => {
+  return merchantFetch({
+    url: `care_service/merchant/twirp/${CALLBACK_SERVICE}/CheckEligibility`,
+    mode: mode || 'live',
+    method: 'POST',
+  }).then((res) => {
+    return res && res.data ? res.data : DEFAULT_CALL_BACK_SCHEDULE_RESPONSE;
+  });
+};
+
+export const fetchSlots = (mode) => {
+  return merchantFetch({
+    url: `care_service/merchant/twirp/${CALLBACK_SERVICE}/GetSlots`,
+    mode: mode || 'live',
+    method: 'POST',
+  }).then((res) => {
+    return res && res.data ? res.data : [];
+  });
 };
 
 export const fetchFeaturesAjax = (currentUserId, mode) => {
@@ -183,6 +211,20 @@ export const checkCallEligibility = () => {
   return {
     type: FETCH_CALL_ELIGIBILITY,
     payload: CheckCallEligibility(),
+  };
+};
+
+export const checkScheduleCallConfig = () => {
+  return {
+    type: FETCH_SCHEDULE_CALL_CONFIG,
+    payload: actionCheckScheduleCallConfig(),
+  };
+};
+
+export const fetchCallSlots = () => {
+  return {
+    type: FETCH_CALL_SLOTS,
+    payload: fetchSlots(),
   };
 };
 
@@ -338,6 +380,7 @@ let initialState = {
   loading: true,
   error: null,
   refund_pricing: { rules: [], custom_pricing: true, not_loaded: true },
+  call_slots: [],
   config: {},
   locale: null,
   isBrandColorDark: false,
@@ -363,6 +406,7 @@ let initialState = {
     error: null,
   },
   isCallEnabled: false,
+  scheduleCallConfig: DEFAULT_CALL_BACK_SCHEDULE_RESPONSE,
 };
 
 const defaultLocale = {
@@ -391,8 +435,25 @@ export default function (state = initialState, action) {
         error: null,
       });
 
+    case `${FETCH_CALL_SLOTS}::SUCCESS`:
+      return merge(state, {
+        loading: false,
+        call_slots: action.payload.slots ? action.payload.slots : [],
+        error: null,
+      });
+
+    case `${FETCH_CALL_SLOTS}::ERROR`:
+      return merge(state, {
+        loading: false,
+        error: action.payload.data,
+        ...initialState,
+      });
+
     case `${FETCH_CALL_ELIGIBILITY}::SUCCESS`:
       return set(state, 'isCallEnabled', !!action.payload);
+
+    case `${FETCH_SCHEDULE_CALL_CONFIG}::SUCCESS`:
+      return set(state, 'scheduleCallConfig', action.payload);
 
     case `${FEATURES_FETCH}::ERROR`:
       return merge(state, {

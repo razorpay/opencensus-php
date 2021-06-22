@@ -87,7 +87,7 @@ export default class Tickets extends React.Component {
     }
   };
 
-  showTickets = (totalTickets, currentPageTickets) => {
+  showTickets = (totalTickets, currentPageTickets,user) => {
     if (this.props.support_tickets.loading) {
       return null;
     }
@@ -125,6 +125,7 @@ export default class Tickets extends React.Component {
           {OPEN_TICKETS.map((ticket, index) => {
             return (
               <TicketBrief
+              user={user}
                 last={index == currentPageTickets.length - 1}
                 ticket={ticket}
                 key={index}
@@ -145,6 +146,7 @@ export default class Tickets extends React.Component {
           {CLOSED_TICKETS.map((ticket, index) => {
             return (
               <TicketBrief
+              user={user}
                 last={index == currentPageTickets.length - 1}
                 ticket={ticket}
                 key={index}
@@ -182,7 +184,7 @@ export default class Tickets extends React.Component {
                     <Spinner />
                   </div>
                 ) : null}
-                {this.showTickets(total_tickets, tickets)}
+                {this.showTickets(total_tickets, tickets,this.props.user)}
               </div>
             </div>
           </div>

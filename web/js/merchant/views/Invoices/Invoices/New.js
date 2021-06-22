@@ -230,8 +230,8 @@ export default class InvoicesNewContainer extends Component {
         data.terms = data.terms || '';
 
         //removing ids from line_items
-        (data.line_items || []).map(line_item => {
-          if(line_item.id) {
+        (data.line_items || []).map((line_item) => {
+          if (line_item.id) {
             delete line_item.id;
           }
         });

@@ -11,16 +11,15 @@ const s2 = ({
   merchantId,
   isMobile,
   lpVariant,
-  lpFold
+  lpFold,
 }) => {
-
   const handleNextClick = () => {
     tracking.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.partner.type.next', {
         merchantId: merchantId,
         partnerType: role,
         lpVariant: lpVariant,
-        lpFold: lpFold
+        lpFold: lpFold,
       }),
     );
   };
@@ -31,7 +30,7 @@ const s2 = ({
         merchantId: merchantId,
         otherCTA: action,
         lpVariant: lpVariant,
-        lpFold: lpFold
+        lpFold: lpFold,
       }),
     );
   };
@@ -99,7 +98,9 @@ const s2 = ({
             onClick={() => onRoleSelect('aggregator')}
             checked={role === 'aggregator'}
             icon={'/dist/css/assets/onboarding/aggregator-icon.svg'}
-            description={'Manage account and payment cycle of your merchants (Tech integration required)'}
+            description={
+              'Manage account and payment cycle of your merchants (Tech integration required)'
+            }
             hoverContent={
               'Business that manage end-to-end payment collection for their customers. Eg: ERP, Restaurant Management Platform'
             }

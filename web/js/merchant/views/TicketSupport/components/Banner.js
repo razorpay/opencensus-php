@@ -35,34 +35,7 @@ const Banner = ({ ticket }) => {
   ) {
     return null;
   }
-
-  if (ESCALATION_TYPE === 'able-to-escalate') {
-    analyticsTrack({
-      objectName: 'raise grievance',
-      actionName: 'rendered',
-      screen: 'support tickets',
-      properties: {
-        ticketId: ticket.id,
-        status: statuses[ticket.status] ? statuses[ticket.status].name : ticket.status,
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-
-    return (
-      <div className="row escalate-banner">
-        <div className="col-xs-2" />
-        <div className="col-xs-10" style={{ paddingLeft: 0 }}>
-          <div className="message-escalation">
-            <i class="i i-forward ticket-escalated-icon" />
-            <span>Have any issues with this query? </span>
-            <a className="link" onClick={openGrievanceFlow}>
-              Raise Concern
-            </a>
-          </div>
-        </div>
-      </div>
-    );
-  } else if (ESCALATION_TYPE === 'escalated' || RESPONSE_ARRIVAL_TYPE === 'within-expected-time') {
+  if (ESCALATION_TYPE === 'escalated' || RESPONSE_ARRIVAL_TYPE === 'within-expected-time') {
     return (
       <div className="row escalate-banner escalation-warning">
         <div className="col-xs-2"></div>

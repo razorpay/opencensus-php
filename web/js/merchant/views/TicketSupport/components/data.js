@@ -238,6 +238,7 @@ export const SAMPLE_TICKET = {
     closed_at: null,
     pending_since: null,
   },
+  tags: [],
   nr_due_by: null,
   nr_escalated: false,
 };

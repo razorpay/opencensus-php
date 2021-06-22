@@ -67,7 +67,7 @@ export default class Message extends React.Component {
       <Fragment>
         <div className="message panel ticket-row-panel" key={i}>
           <div className="panel-body" style={{ paddingLeft: 0 }}>
-            <div className="row">
+            <div className="row min-ht-56">
               <div className="col-xs-2">{img}</div>
               <div className="col-xs-10 reply-message-container">
                 <h5 style={{ marginBottom: 0, marginTop: 0 }}>

@@ -23,7 +23,7 @@ import { getCookie } from 'common/utils/cookies';
   (state) => ({
     session: state.session,
     user: state.session.user,
-    isMobileResolution: state.app.isMobileResolution
+    isMobileResolution: state.app.isMobileResolution,
   }),
   {
     updateSession,
@@ -38,7 +38,7 @@ export default class BaseScreen extends React.Component {
     super(props);
     const defaultVariant = 'not_in_exp';
     let landingPageVariantInfo = getCookie('partner-lp-experiment');
-    if(landingPageVariantInfo) {
+    if (landingPageVariantInfo) {
       landingPageVariantInfo = JSON.parse(atob(landingPageVariantInfo));
     }
     this.state = {
@@ -53,7 +53,7 @@ export default class BaseScreen extends React.Component {
       window.rzpQ.onbr().interaction('partnerships.pure_platform_signup', {
         merchantId: this.props.user.merchant.id,
         lpVariant: this.state.lpVariant,
-        lpFold: this.state.lpFold
+        lpFold: this.state.lpFold,
       }),
     );
     triggerHotjarRecording('pure_platform_experiment', ['pure_platform_experiment']);
@@ -72,7 +72,7 @@ export default class BaseScreen extends React.Component {
         merchantId: this.props.user.merchant.id,
         partnerType: role,
         lpVariant: this.state.lpVariant,
-        lpFold: this.state.lpFold
+        lpFold: this.state.lpFold,
       }),
     );
 
@@ -90,7 +90,7 @@ export default class BaseScreen extends React.Component {
         merchantId: this.props.user.merchant.id,
         partnerType: this.state.role,
         lpVariant: this.state.lpVariant,
-        lpFold: this.state.lpFold
+        lpFold: this.state.lpFold,
       }),
     );
     this.props.tracking.trackEvent(
@@ -175,9 +175,7 @@ export default class BaseScreen extends React.Component {
 
   render() {
     return (
-      <div
-        className={`partner-onboarding-base-screen new-screen`}
-      >
+      <div className={`partner-onboarding-base-screen new-screen`}>
         <Slider>
           {!this.props.disableClose
             ? (sliderProps) => (
@@ -192,11 +190,7 @@ export default class BaseScreen extends React.Component {
               )
             : null}
           {(sliderProps) => (
-            <S1
-              key={1}
-              sliderProps={sliderProps}
-              onNext={this.handleNewUserGetStarted}
-            />
+            <S1 key={1} sliderProps={sliderProps} onNext={this.handleNewUserGetStarted} />
           )}
           {(sliderProps) => (
             <S2
@@ -212,13 +206,7 @@ export default class BaseScreen extends React.Component {
               lpFold={this.state.lpFold}
             />
           )}
-          {(sliderProps) => (
-            <S3
-              key={3}
-              sliderProps={sliderProps}
-              onNext={this.onCompleteClick}
-            />
-          )}
+          {(sliderProps) => <S3 key={3} sliderProps={sliderProps} onNext={this.onCompleteClick} />}
         </Slider>
         {!this.props.disableClose && (
           <button

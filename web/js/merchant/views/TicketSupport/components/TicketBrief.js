@@ -18,9 +18,10 @@ export default class TicketBrief extends React.Component {
 
     let subject = ticket.subject;
     subject = subject.replace('[Merchant]', '');
-
+    const isScheduleCallbackEnabled = this.props.user.isScheduleCallbackEnabled;
     const formattedDate = moment(ticket.created_at).fromNow();
-    const responseFormatDate = moment(ticket.fr_due_by).format('HH:mm, DD MMM');
+    const responseFormatDate = moment(ticket.fr_due_by).format('DD MMM');
+    // only date showed here
     return (
       <div className="panel ticket-row-panel">
         <div
@@ -72,6 +73,27 @@ export default class TicketBrief extends React.Component {
                       )}
                   </div>
                 </div>
+                {isScheduleCallbackEnabled && ticket.tags.includes('callback') ? (
+                  <p class="call-requested">
+                    <img
+                      class="schedule-call-icon"
+                      src="https://cdn.razorpay.com/static/assets/ticket-system/icon-call.svg"
+                      alt=""
+                    />{' '}
+                    Call is requested on this query.{' '}
+                    <b
+                      onClick={() => {
+                        window.rzpTicketSystem &&
+                          window.rzpTicketSystem.openModal(`#call-details`, {
+                            id: ticket.custom_fields.cf_callback_id,
+                          });
+                      }}
+                      class="pointer"
+                    >
+                      View Details
+                    </b>
+                  </p>
+                ) : null}
               </div>
             </div>
           </div>

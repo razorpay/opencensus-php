@@ -22,6 +22,11 @@ export function getEscalationType(ticket) {
   return '';
 }
 
+export function getTicketStatus(ticket) {
+  const STATUS = statuses[ticket.status] && statuses[ticket.status].name;
+  return STATUS;
+}
+
 export function getResponseArrivalType(ticket) {
   const STATUS = statuses[ticket.status] && statuses[ticket.status].name;
 

@@ -104,6 +104,7 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
       &:hover:not(.disabled)
         background-color: #f6fcfd
       &.disabled
+        pointer-events: none
         background-color: #f6f6f6
         cursor: auto
         .help-block
@@ -117,6 +118,10 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
         background-image: url(assets/support_widget/bulb.svg)
       &.ticket
         background-image: url($ticketSystemCdn/icon-paper.png)
+      &.callback
+        background-image: url($ticketSystemCdn/icon-call.svg)
+      &.callback.disabled
+        filter: grayscale(100%)
       &.chat:not(.disabled)
         background-image: url($ticketSystemCdn/icon-chat.png)
       &.history:not(.disabled)

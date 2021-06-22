@@ -3,7 +3,11 @@ import { Component } from 'react';
 import { trackSupportButton } from './ga';
 import { withRouter } from 'react-router-dom';
 
-import { checkCallEligibility } from 'merchant/reducers/config';
+import {
+  checkCallEligibility,
+  checkScheduleCallConfig,
+  fetchCallSlots,
+} from 'merchant/reducers/config';
 import SupportHeader from 'merchant/components/Support/components/SupportHeader';
 import SupportBody from 'merchant/components/Support/components/SupportBody';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -17,12 +21,15 @@ import { classList } from 'common/utils/rzp-utils';
   (state) => {
     return {
       isCallEnabled: state.config.isCallEnabled,
+      scheduleCallConfig: state.config.scheduleCallConfig,
       user: state.session.user,
       org: state.session.org,
     };
   },
   {
     checkCallEligibility,
+    checkScheduleCallConfig,
+    fetchCallSlots,
   },
 )
 export default class Support extends Component {
@@ -42,6 +49,7 @@ export default class Support extends Component {
 
   componentDidMount() {
     this.props.checkCallEligibility();
+    this.props.checkScheduleCallConfig();
     this.bindEvents();
     merchantFetch({
       url: 'merchants/support/option/flags',
@@ -78,7 +86,7 @@ export default class Support extends Component {
     const { user } = this.props;
 
     if (user.isComdelApiEnabled) return window.open(COMDEL_URL, '_blank');
-    
+
     const { isOpened } = this.state;
 
     if (!isOpened) {
@@ -113,7 +121,10 @@ export default class Support extends Component {
     const DASHBOARD_HOST_REGEX = /(dashboard.*\.razorpay\.(com|in)|localhost)$/;
 
     // Don't show support for Axis org
-    if (!user.isComdelApiEnabled && (!DASHBOARD_HOST_REGEX.test(location.hostname) || org.custom_code === 'axis')) {
+    if (
+      !user.isComdelApiEnabled &&
+      (!DASHBOARD_HOST_REGEX.test(location.hostname) || org.custom_code === 'axis')
+    ) {
       return null;
     }
 
@@ -135,6 +146,7 @@ export default class Support extends Component {
           onChat={this.handleChat}
           notifyCount={notifyCount}
           isCallEnabled={isCallEnabled}
+          scheduleCallConfig={this.props.scheduleCallConfig}
           supportFlags={this.state.supportFlags}
           user={this.props.user}
         />

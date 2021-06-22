@@ -32,7 +32,7 @@ import RTracking from 'react-tracking';
       ...state.session,
       ...state.config.config,
       user: state.session.user,
-      isMobileResolution: state.app.isMobileResolution
+      isMobileResolution: state.app.isMobileResolution,
     };
   },
   { logout, closeModal, openModal, updateSession },
@@ -109,7 +109,9 @@ export default class ProfileDropdown extends Component {
       size: 'xlarge',
       disableClose: false,
       component: <PartnerOnbr closeModal={this.props.closeModal} disableClose={false} />,
-      className: this.props.isMobileResolution ? 'partner-onboarding-popup mobile-app-popup': 'partner-onboarding-popup',
+      className: this.props.isMobileResolution
+        ? 'partner-onboarding-popup mobile-app-popup'
+        : 'partner-onboarding-popup',
     });
 
     this.props.tracking.trackEvent(

@@ -549,6 +549,14 @@ export default class User {
     return this.getExpStatus('show_new_grievance_flow');
   }
 
+  get isScheduleCallbackEnabled() {
+    return this.getExpStatus('show_schedule_callback');
+  }
+
+  get isTicketCreationFlowRevamp() {
+    return this.getExpStatus('ticket_creation_flow_revamp');
+  }
+
   get isAnnouncementIconEnabled() {
     return this.getExpStatus('AnnouncementIconJan2021');
   }

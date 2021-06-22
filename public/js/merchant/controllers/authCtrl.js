@@ -2343,7 +2343,7 @@ app
           properties: {
             captcha_verified_by: 'v2',
             captcha_variant: getCaptchaVariant(),
-            called_on_v3_failure: $scope.isV3ValidationFailedTriggered
+            called_on_v3_failure: $scope.isV3ValidationFailedTriggered,
           },
         });
         login(val);

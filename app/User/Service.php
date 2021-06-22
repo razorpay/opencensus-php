@@ -1469,6 +1469,8 @@ class Service extends Base\Service
             'support_dashboard_rzpsolutions',
             'capital_freshdesk_integration',
             'show_new_grievance_flow',
+            'show_schedule_callback',
+            'ticket_creation_flow_revamp',
             'settlement_ux_revamp_p2',
             'rx_scheduled_payouts_rollout',
             'validate_user_2fa_status',

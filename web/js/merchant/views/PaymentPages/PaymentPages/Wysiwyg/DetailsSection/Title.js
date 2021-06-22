@@ -18,12 +18,10 @@ export default class extends React.Component {
   }
 
   componentDidMount() {
-    this.autoAdjustHeight(
-      document.body.querySelector('#title textarea[name="title"]')
-    );
+    this.autoAdjustHeight(document.body.querySelector('#title textarea[name="title"]'));
   }
 
-  onChange = value => {
+  onChange = (value) => {
     const hasError = !!document.querySelectorAll('#title .is-invalid').length;
 
     this.props.updateData({
@@ -47,10 +45,7 @@ export default class extends React.Component {
     const hasVal = ele ? ele.value : this.props.title;
 
     return (
-      <div
-        id="title"
-        class={classList('title title--big', !hasVal && 'Input-highlight')}
-      >
+      <div id="title" class={classList('title title--big', !hasVal && 'Input-highlight')}>
         <textarea class="fake-textarea" readOnly />
         <Input.Textarea
           name="title"
@@ -59,7 +54,7 @@ export default class extends React.Component {
           defaultValue={this.props.title}
           onInput={this.handleOnInput}
           required
-          validator={val => {
+          validator={(val) => {
             if (!val.trim()) {
               return 'Page title cannot be empty';
             }
@@ -67,7 +62,7 @@ export default class extends React.Component {
               return 'Title cannot be more than 40 characters';
             }
           }}
-          onKeyPress={e => {
+          onKeyPress={(e) => {
             if (e.which === 13) {
               e.preventDefault();
               return;

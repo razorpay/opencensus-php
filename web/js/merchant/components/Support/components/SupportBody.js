@@ -1,13 +1,13 @@
 import { Component } from 'react';
 import Banner from 'common/ui/Banner';
+
+import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { classList } from 'common/utils/rzp-utils';
 import { trackSupportOptions } from 'merchant/components/Support/ga';
 import { Link } from 'react-router-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import WriteToUsPopup from './WriteToUsPopup';
@@ -17,10 +17,18 @@ const isWorkingDay = () => {
   return window.RZP && window.RZP.holidays && window.RZP.holidays.isExtendedWorkingDay;
 };
 
-@connect(null, {
-  openModal,
-  closeModal,
-})
+@connect(
+  (state) => {
+    return {
+      call_slots: state.config.call_slots,
+      scheduleCallConfig: state.config.scheduleCallConfig,
+    };
+  },
+  {
+    openModal,
+    closeModal,
+  },
+)
 class SupportBody extends Component {
   state = {
     timings: [],
@@ -98,12 +106,14 @@ class SupportBody extends Component {
     const rzpTicketSystem = window.rzpTicketSystem;
     if (rzpTicketSystem) {
       trackSupportOptions(id);
-
-      // if not working day for call/chat support, do nothing
       if (id === 'call') {
         if (!isWorkingDay()) {
           return;
         }
+      }
+
+      if (id === 'schedule-call') {
+        return rzpTicketSystem.openModal(`#schedule-call`);
       }
 
       if (id === 'chat') {
@@ -142,7 +152,7 @@ class SupportBody extends Component {
         actionName: 'clicked',
         screen: 'my account',
         properties: {
-          location:'widget',
+          location: 'widget',
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });
@@ -191,9 +201,24 @@ class SupportBody extends Component {
   };
 
   render() {
-    const { notifyCount, isOpened, onToggle, isCallEnabled } = this.props;
+    const { notifyCount, isOpened, onToggle, isCallEnabled, scheduleCallConfig } = this.props;
     const { handleClick, openDashboardGuide } = this;
-    const shouldDisable = !isWorkingDay();
+    let shouldDisable = !isWorkingDay();
+    let scheduleCallbackReason =
+      scheduleCallConfig && scheduleCallConfig.is_eligible === false && scheduleCallConfig.reason
+        ? scheduleCallConfig.reason
+        : 'For elaborate queries needing quick resolution';
+
+    if (scheduleCallConfig.reason === 'NOT_AVAILABLE') {
+      scheduleCallbackReason = (
+        <span class="text-danger">Slots are unavailable right now, try later.</span>
+      );
+    }
+
+    if (scheduleCallConfig.reason === 'ALREADY_BOOKED') {
+      scheduleCallbackReason = <span class="text-danger">Call already requested.</span>;
+    }
+
     const today = new Date().getDay();
     let date;
     if (this.state.timings.length) {
@@ -231,7 +256,19 @@ class SupportBody extends Component {
               class={`support-item p-all ticket ${
                 !this.props.supportFlags.loaded ? 'disabled' : ''
               }`}
-              onClick={() => handleClick('ticket')}
+              onClick={() => {
+                analyticsTrack({
+                  objectName: 'help and support',
+                  actionName: 'clicked',
+                  screen: 'home page',
+                  properties: {
+                    item: 'have a query',
+                    location: 'Help and Support',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+                handleClick('tickets');
+              }}
             >
               Have a query?
               <small class="help-block">For integration, account and payment issues</small>
@@ -249,6 +286,22 @@ class SupportBody extends Component {
             >
               Have a query?
               <small class="help-block">Check existing query/raise a new one</small>
+            </li>
+          </ShowWhen>
+          <ShowWhen
+            myRole="owner admin"
+            additionalCondition={(user) =>
+              user.isScheduleCallbackEnabled && scheduleCallbackReason !== 'NOT AVAILABLE'
+            }
+          >
+            <li
+              class={`support-item p-all callback ${
+                !scheduleCallConfig.is_eligible ? 'disabled' : ''
+              }`}
+              onClick={() => handleClick('schedule-call')}
+            >
+              <span>Request a call</span>
+              <small class="help-block">{scheduleCallbackReason}</small>
             </li>
           </ShowWhen>
           <ShowWhen
@@ -279,7 +332,19 @@ class SupportBody extends Component {
                 class={`support-item p-all chat ${
                   !this.props.supportFlags.show_chat && notifyCount < 1 ? 'disabled' : ''
                 }`}
-                onClick={() => handleClick('chat')}
+                onClick={() => {
+                  analyticsTrack({
+                    objectName: 'help and support',
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      item: 'chat with us',
+                      location: 'Help and Support',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                  handleClick('chat');
+                }}
               >
                 Chat with us
                 {this.state.timings.length ? (
@@ -307,7 +372,22 @@ class SupportBody extends Component {
               </small>
             </li>
           ) : null}
-          <li className="support-item p-all dashboard_guide" onClick={openDashboardGuide}>
+          <li
+            className="support-item p-all dashboard_guide"
+            onClick={() => {
+              analyticsTrack({
+                objectName: 'help and support',
+                actionName: 'clicked',
+                screen: 'home page',
+                properties: {
+                  item: 'dashboard guide',
+                  location: 'Help and Support',
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              });
+              openDashboardGuide();
+            }}
+          >
             Dashboard Guide{' '}
             <small className="help-block">Read more about how to use the dashboard</small>
           </li>

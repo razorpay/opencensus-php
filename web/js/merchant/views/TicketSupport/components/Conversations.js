@@ -4,13 +4,18 @@ import { Fragment } from 'react';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { param_to_qs, SAMPLE_TICKET, MAX_CONVERSATION, MIN_TIME_TO_REFRESH } from './data.js';
-import { getExpiryTime, getEscalationType } from '../utils';
+import {
+  getExpiryTime,
+  getEscalationType,
+  getResponseArrivalType,
+  getTicketStatus,
+} from '../utils';
 import Ticket from './Ticket';
-import * as axios from 'axios';
 import { withRouter } from 'react-router-dom';
 import Message from './Message.js';
 import { merchantFetch } from 'merchant/utils/ajax.js';
 import Spinner from 'common/ui/Spinner';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import {
   fetchSupportTickets,
   replyToConversation,
@@ -42,6 +47,7 @@ export default class Conversations extends React.Component {
       data: { 1: [] },
       loading: false,
     },
+    toggleReply: false,
     loadingTicket: true,
     size: MAX_CONVERSATION,
     current_page: 1,
@@ -166,17 +172,99 @@ export default class Conversations extends React.Component {
     return !isEscalationReply;
   }
 
+  openCallDetails = (id) => {
+    if (window.rzpTicketSystem) {
+      window.rzpTicketSystem.openModal(`#call-details`, {
+        id: id,
+      });
+    }
+  };
+
+  openGrievanceFlow(ticket) {
+    if (window.rzpTicketSystem) {
+      window.rzpTicketSystem.openModal('#grievance-new', {
+        ticketID: ticket.id,
+      });
+    }
+  }
+
   render() {
     let conversations = [];
     let total_conversations = [];
     const TICKET_ID = this.props.match.params.id;
-
+    const has_callback = this.state.ticket.tags.includes('callback');
     Object.keys(this.state.conversations.data).forEach((k) => {
       total_conversations.push(...this.state.conversations.data[k]);
     });
 
-    // Remove escalations/private messages from the conversation
     total_conversations = total_conversations.filter(this.shouldBeVisible);
+    let message;
+    let MESSAGE = getResponseArrivalType(this.state.ticket);
+    const STATUS = getTicketStatus(this.state.ticket);
+    const responseFormatTime = moment(this.state.ticket.fr_due_by).format('DD MMM');
+    const is_escalated = getEscalationType(this.state.ticket) === 'escalated';
+    const can_be_escalated =
+      getEscalationType(this.state.ticket) === 'able-to-escalate' && !has_callback;
+
+    message = (
+      <h3 class="fsz-14">
+        This query is open and our team is working on it.{' '}
+        {!has_callback ? (
+          <span>
+            You can expect reply within <b>8 working hours</b>.
+          </span>
+        ) : null}
+      </h3>
+    );
+    if (is_escalated) {
+      message = (
+        <h3 class="fsz-14">
+          This query is open and our team is working on it. You <br /> can expect reply before:{' '}
+          <b style={{ color: '#F89A23' }} class="text-warning">
+            {responseFormatTime}
+          </b>
+        </h3>
+      );
+    }
+    if (STATUS === 'Work In Progress' && MESSAGE === 'within-expected-time') {
+      message = (
+        <h3 class="fsz-14">
+          This query is open and our team is working on it. You <br /> can expect reply before:{' '}
+          <b style={{ color: '#F89A23' }} class="text-warning">
+            {responseFormatTime}
+          </b>
+        </h3>
+      );
+    }
+    if (MESSAGE === 'waiting-for-customer') {
+      message = <h3 class="fsz-14">This query is open and our team is waiting for your reply.</h3>;
+    }
+
+    if (MESSAGE === 'Closed') {
+      message = (
+        <h3 class="fsz-14">
+          This query has been marked closed. If you need further help, please{' '}
+          <a onClick={() => window.rzpTicketSystem && window.rzpTicketSystem.openModal(`#ticket`)}>
+            <b>create a new query</b>
+          </a>
+          .
+        </h3>
+      );
+    }
+
+    if (MESSAGE === 'Resolved') {
+      message = (
+        <h3 class="fsz-14">
+          This query has been marked resolved. If you need further help, please{' '}
+          <a onClick={() => window.rzpTicketSystem && window.rzpTicketSystem.openModal(`#ticket`)}>
+            <b>create a new query</b>
+          </a>
+          .
+        </h3>
+      );
+    }
+
+    const isScheduleCallbackEnabled = this.props.user.isScheduleCallbackEnabled;
 
     return (
       <Fragment>
@@ -215,44 +303,131 @@ export default class Conversations extends React.Component {
                   {total_conversations && total_conversations.length > 0 ? 'All Replies' : ''}
                 </h1>
                 <div class="ticket-replies-container">
-                  {total_conversations &&
-                    total_conversations.map((conversation, i) => {
-                      return (
-                        <Message
-                          last={i == total_conversations.length - 1}
-                          ticket={this.state.ticket}
-                          key={i}
-                          message={conversation}
-                        />
-                      );
-                    })}
+                  <div className="Message-Cards-Container">
+                    {total_conversations &&
+                      total_conversations.map((conversation, i) => {
+                        return (
+                          <Message
+                            last={i == total_conversations.length - 1}
+                            ticket={this.state.ticket}
+                            key={i}
+                            message={conversation}
+                          />
+                        );
+                      })}
+                  </div>
+                  {isScheduleCallbackEnabled ? (
+                    <div className="q-open">
+                      {message}
+                      {!(MESSAGE === 'Closed' || MESSAGE === 'Resolved') ? (
+                        <div className="row flex">
+                          <button
+                            onClick={() => {
+                              const state = this.state;
+                              this.setState({ toggleReply: !state.toggleReply });
+                            }}
+                            style={{ position: 'relative' }}
+                            className={`btn btn-outline ${this.state.toggleReply ? 'active' : ''}`}
+                          >
+                            {' '}
+                            <i className="i i-reply"></i> Send a reply
+                            {this.state.toggleReply ? (
+                              <i className="i i-caret-down chev-down"></i>
+                            ) : null}
+                          </button>
+
+                          <span>
+                            <button
+                              className={`btn btn-outline grievance-related-btn ${
+                                is_escalated ? 'btn-warning' : ''
+                              } ${!can_be_escalated ? 'disabled-style' : ''}`}
+                              onClick={() => {
+                                if (can_be_escalated) {
+                                  this.openGrievanceFlow(this.state.ticket);
+                                }
+                              }}
+                            >
+                              <i className="i i-followup"></i>{' '}
+                              {is_escalated ? 'Requested follow-up' : 'Request follow-up'}
+                            </button>
+                            {!can_be_escalated ? (
+                              <Popover align="bottom" theme="dark">
+                                <PopoverBody>
+                                  {has_callback
+                                    ? is_escalated
+                                      ? `You can expect reply before: ${responseFormatTime}`
+                                      : `We will resolve this query over call`
+                                    : is_escalated
+                                    ? `You can expect reply before: ${responseFormatTime}`
+                                    : `You can expect reply within 8 working hours.`}
+                                </PopoverBody>
+                              </Popover>
+                            ) : null}
+                          </span>
+                          {!has_callback ? (
+                            <button
+                              onClick={() => {
+                                window.rzpTicketSystem &&
+                                  window.rzpTicketSystem.openModal(`#schedule-call`, {
+                                    ticket: this.state.ticket,
+                                  });
+                              }}
+                              className={`btn btn-outline`}
+                              disabled={has_callback}
+                            >
+                              {' '}
+                              <i className="i i-call-new"></i> Request a call
+                            </button>
+                          ) : (
+                            <button className="btn btn-outline requested">
+                              {' '}
+                              <i className="i i-call-new"></i> <span>Call requested,</span>{' '}
+                              <b
+                                onClick={() =>
+                                  this.openCallDetails(
+                                    this.state.ticket.custom_fields.cf_callback_id,
+                                  )
+                                }
+                                class="details"
+                              >
+                                View Details
+                              </b>
+                            </button>
+                          )}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+
                   {this.state.conversations.loading || this.state.loadingTicket ? (
                     <div className="ticket-cont-spinner">
                       <Spinner />
                     </div>
                   ) : null}
-                  <Reply
-                    email={this.props.user.contact_email}
-                    last={total_conversations.length === 0}
-                    logo_url={this.props.user.logo_url}
-                    replyToConversation={this.props.replyToConversation}
-                    ticket={this.state.ticket}
-                    ticketID={TICKET_ID}
-                    onSuccess={(reply) => {
-                      const data = { ...this.state.conversations.data };
-                      let k = Object.keys(this.state.conversations.data);
-                      const last = k[k.length - 1];
-                      if (data[last].length < this.state.size) {
-                        data[last].push(reply);
-                      }
-                      this.setState({ data });
-                      this.props.showNotification({
-                        type: 'success',
-                        message: 'Reply has been sent',
-                        closeTimeout: 5000,
-                      });
-                    }}
-                  />
+                  {(isScheduleCallbackEnabled ? this.state.toggleReply : true) ? (
+                    <Reply
+                      email={this.props.user.contact_email}
+                      last={total_conversations.length === 0}
+                      logo_url={this.props.user.logo_url}
+                      replyToConversation={this.props.replyToConversation}
+                      ticket={this.state.ticket}
+                      ticketID={TICKET_ID}
+                      onSuccess={(reply) => {
+                        const data = { ...this.state.conversations.data };
+                        let k = Object.keys(this.state.conversations.data);
+                        const last = k[k.length - 1];
+                        if (data[last].length < this.state.size) {
+                          data[last].push(reply);
+                        }
+                        this.setState({ data });
+                        this.props.showNotification({
+                          type: 'success',
+                          message: 'Reply has been sent',
+                          closeTimeout: 5000,
+                        });
+                      }}
+                    />
+                  ) : null}
                 </div>
               </div>
             </div>

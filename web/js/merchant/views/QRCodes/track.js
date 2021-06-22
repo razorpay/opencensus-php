@@ -6,12 +6,7 @@ export function trackLJ(event, options) {
   window.rzpQ.qrCode().interaction(`qr.${event}`, options);
 }
 
-export function trackSegment({
-  event,
-  screen,
-  actionName,
-  options = {}
-}) {
+export function trackSegment({ event, screen, actionName, options = {} }) {
   if (!event) return;
   // console.log({
   //   objectName: event.replaceAll('_', '.'),

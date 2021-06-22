@@ -80,10 +80,7 @@ export default class QRCodesOnBoarding extends React.Component {
 
     return (
       <OnBoardingWrapper class="QRCodes">
-        <Slider
-          active={active}
-          afterSlide={getOnBoardingSliderDots(this.renderSkipButton)}
-        >
+        <Slider active={active} afterSlide={getOnBoardingSliderDots(this.renderSkipButton)}>
           {(sliderProps) => (
             <Landing
               {...sliderProps}
@@ -111,11 +108,7 @@ export default class QRCodesOnBoarding extends React.Component {
 }
 
 function getOnBoardingSliderDots(renderSkipButton) {
-  return (sliderProps) => (
-    <SliderDots {...sliderProps}>
-      {renderSkipButton(sliderProps)}
-    </SliderDots>
-  );
+  return (sliderProps) => <SliderDots {...sliderProps}>{renderSkipButton(sliderProps)}</SliderDots>;
 }
 
 export function getIsAllowedResetQRCodesOnBoarding(qrCodes, loading) {

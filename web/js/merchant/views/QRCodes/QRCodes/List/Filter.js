@@ -32,17 +32,32 @@ export default (props) => {
 
       <div class="form-group list-filter-item">
         <label>Customer Name</label>
-        <Field name="cust_name" component="input" class="form-control input-sm" onBlur={track.field} />
+        <Field
+          name="cust_name"
+          component="input"
+          class="form-control input-sm"
+          onBlur={track.field}
+        />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Customer Contact</label>
-        <Field name="cust_contact" component="input" class="form-control input-sm" onBlur={track.field} />
+        <Field
+          name="cust_contact"
+          component="input"
+          class="form-control input-sm"
+          onBlur={track.field}
+        />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Customer Email</label>
-        <Field name="cust_email" component="input" class="form-control input-sm" onBlur={track.field} />
+        <Field
+          name="cust_email"
+          component="input"
+          class="form-control input-sm"
+          onBlur={track.field}
+        />
       </div>
     </ListFilter>
   );

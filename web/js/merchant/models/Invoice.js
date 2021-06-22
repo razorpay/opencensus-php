@@ -1,10 +1,6 @@
 import GenericEntity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
-import {
-  getFixedINRAmount,
-  isBlank,
-  rupeesToPaise,
-} from 'common/utils/rzp-utils';
+import { getFixedINRAmount, isBlank, rupeesToPaise } from 'common/utils/rzp-utils';
 import Payment from 'merchant/models/Payment';
 
 const createFields = [
@@ -48,9 +44,7 @@ export default class Invoice extends GenericEntity {
   }
 
   resourceFields() {
-    return this.status === 'issued'
-      ? editableFieldsInIssuedState
-      : createFields;
+    return this.status === 'issued' ? editableFieldsInIssuedState : createFields;
   }
 
   get isEditable() {
@@ -68,7 +62,7 @@ export default class Invoice extends GenericEntity {
     return this.makeGenericAjaxCall({
       url: `/${this.resourceUrl}/${this.id}/issue`,
       method: 'post',
-    }).then(response => {
+    }).then((response) => {
       return new Invoice(response.data).deserialize();
     });
   }
@@ -77,7 +71,7 @@ export default class Invoice extends GenericEntity {
     return this.makeGenericAjaxCall({
       url: `${this.resourceUrl}/${this.id}/cancel`,
       method: 'post',
-    }).then(response => {
+    }).then((response) => {
       return new Invoice(response.data).deserialize();
     });
   }
@@ -92,11 +86,7 @@ export default class Invoice extends GenericEntity {
   serializeProperty(prop) {
     // console.log('serializeProperty......', prop);
 
-    if (
-      prop === 'sms_notify' ||
-      prop === 'email_notify' ||
-      prop === 'partial_payment'
-    ) {
+    if (prop === 'sms_notify' || prop === 'email_notify' || prop === 'partial_payment') {
       return this[prop] ? 1 : 0;
     }
 
@@ -105,11 +95,7 @@ export default class Invoice extends GenericEntity {
     }
 
     // Serialize the `this.customer` property.
-    if (
-      this.type === 'invoice' &&
-      prop === 'customer' &&
-      typeof this['customer'] === 'object'
-    ) {
+    if (this.type === 'invoice' && prop === 'customer' && typeof this['customer'] === 'object') {
       let keys = Object.keys(this[prop]);
       let obj = {};
       for (let i = 0; i < keys.length; i++) {
@@ -136,7 +122,7 @@ export default class Invoice extends GenericEntity {
 
     if (prop === 'line_items' && !isBlank(this.line_items)) {
       if (this.type === 'link') {
-        return this.line_items.map(item => {
+        return this.line_items.map((item) => {
           return {
             name: item.name,
             amount: rupeesToPaise(item.amount),
@@ -144,7 +130,7 @@ export default class Invoice extends GenericEntity {
         });
       } else if (this.type === 'invoice') {
         return this.line_items
-          .filter(item => !!(item.item_id || item.id || item.name))
+          .filter((item) => !!(item.item_id || item.id || item.name))
           .map((item, index) => {
             let lineItem = {
               quantity: item.quantity,
@@ -199,18 +185,10 @@ export default class Invoice extends GenericEntity {
         // Get address IDs.
         let billingAddressID = value.billing_address;
         let shippingAddressID = value.shipping_address;
-        if (
-          billingAddressID &&
-          typeof billingAddressID === 'object' &&
-          billingAddressID.id
-        ) {
+        if (billingAddressID && typeof billingAddressID === 'object' && billingAddressID.id) {
           billingAddressID = billingAddressID.id;
         }
-        if (
-          shippingAddressID &&
-          typeof shippingAddressID === 'object' &&
-          shippingAddressID.id
-        ) {
+        if (shippingAddressID && typeof shippingAddressID === 'object' && shippingAddressID.id) {
           shippingAddressID = shippingAddressID.id;
         }
 
@@ -230,7 +208,7 @@ export default class Invoice extends GenericEntity {
         break;
 
       case 'line_items':
-        value = value.map(item => {
+        value = value.map((item) => {
           item.amountInINR = getFixedINRAmount(item.amount);
           return item;
         });

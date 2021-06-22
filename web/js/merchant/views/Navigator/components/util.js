@@ -127,7 +127,7 @@ const customIdentifierParameter = getExpStatus('optimizer_custom_identifier')
             number: false,
             type: 'input',
             multiple: true,
-          }
+          },
         },
         type: 'string',
       },
@@ -150,7 +150,7 @@ const customIdentifierParameter = getExpStatus('optimizer_custom_identifier')
             number: false,
             type: 'input',
             multiple: true,
-          }
+          },
         },
         type: 'string',
       },
@@ -173,7 +173,7 @@ const customIdentifierParameter = getExpStatus('optimizer_custom_identifier')
             number: false,
             type: 'input',
             multiple: true,
-          }
+          },
         },
         type: 'string',
       },

@@ -215,7 +215,7 @@ export default class Expression extends React.Component {
                               ],
                             });
                           }}
-                          type='text'
+                          type="text"
                           placeholder="Enter comma separated text"
                           name="enter_text"
                           class="form-control"
