@@ -27,7 +27,7 @@ interface BusinessOverviewProps {
 
 const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => {
   const { data, postData } = useActivation();
-  const { user } = useApp();
+  const { user, experiments } = useApp();
   const [status, businessCategoriesData] = useBusinessCategory('');
   const businessOverview = data.business_overview;
   const setBusinessOverviewCompleted = useActivationFormState(
@@ -197,7 +197,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
             <FormSection title="About Your Business">
               <Field>
                 <BusinessType
-                  onboardingMilestone={data.onboarding_milestone}
+                  onboardingMilestone={data.activation_form_milestone}
                   value={formikProps.values.business_type}
                   errorText={formikProps.touched.business_type && formikProps.errors.business_type}
                   onChange={(value) => {
@@ -390,10 +390,10 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                       {websiteOption === '1' && (
                         <Space margin={[0, 0, 0, 3.5]}>
                           <Text color="shade.950" size="xsmall">
-                            {user.canGenerateTnCPage ? (
+                            {experiments.canGenerateTnCPage ? (
                               <WithoutWebsiteListText>
                                 <List>
-                                  Recieve payments from your customers in under 5 minutes using
+                                  Receive payments from your customers in under 5 minutes using
                                   Razorpay’s payment pages and payment links
                                 </List>
                                 <List>

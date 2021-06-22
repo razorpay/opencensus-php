@@ -11,15 +11,17 @@ const App: React.FC = () => {
   return <DocumentUpload />;
 };
 const waitForLoadingToFinish = () => waitForElementToBeRemoved(screen.queryByText('Loading...'));
+
 test('should render all option available for Address ', async () => {
   render(<App />, {});
   await waitForLoadingToFinish();
-  const proofTypeSlect = screen.getByPlaceholderText('SELECT PROOF TYPE');
+  const proofTypeSlect = screen.getAllByPlaceholderText('SELECT PROOF TYPE')[0];
   fireEvent.click(proofTypeSlect); //click on select
   Object.keys(ADDRESS_PROOF_TYPES).forEach((key) => {
     expect(screen.getByText(ADDRESS_PROOF_TYPES[key].label)).toBeInTheDocument();
   });
 });
+
 test('should manage the uploaded state of all types individually', async () => {
   render(<App />, {});
   await waitForLoadingToFinish();
@@ -28,12 +30,13 @@ test('should manage the uploaded state of all types individually', async () => {
   fireEvent.change(backUploadInput, { target: { files: [file] } }); //upload Back of the Aadhaar
   expect(screen.getByText('abc.png')).toBeInTheDocument();
   await waitFor(() => expect(screen.getByText('File Uploaded')).toBeInTheDocument());
-  fireEvent.click(screen.getByPlaceholderText('SELECT PROOF TYPE')); //click on select
+  fireEvent.click(screen.getAllByPlaceholderText('SELECT PROOF TYPE')[0]); //click on select
   fireEvent.click(screen.getByText('Voter Id')); //select Voter ID as preferred type
   /*     expect not uploaded state for Voter Id       */
   expect(screen.queryByText('abc.png')).not.toBeInTheDocument();
   expect(screen.queryByText('File Uploaded')).not.toBeInTheDocument();
 });
+
 test('on changing category or sub-category expected doc is visible or not', async () => {
   render(<App />, {});
   await waitForLoadingToFinish();

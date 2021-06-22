@@ -1,5 +1,6 @@
 {
-  "onboarding_milestone": null,
+  "activation_form_milestone": null,
+  "activationStatusChangeLogs": [],
   "contact_name": "Zameer",
   "contact_email": "basicacc@razorpay.com",
   "contact_mobile": "9211420420",
@@ -137,7 +138,9 @@
     "billing_label": "Zameer",
     "receipt_email_enabled": true,
     "receipt_email_trigger_event": "authorized",
-    "transaction_report_email": ["basicacc@razorpay.com"],
+    "transaction_report_email": [
+      "basicacc@razorpay.com"
+    ],
     "invoice_label_field": null,
     "channel": "axis2",
     "convert_currency": false,

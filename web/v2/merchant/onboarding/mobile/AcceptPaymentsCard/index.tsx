@@ -1,14 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useQuery } from 'react-query';
+import { useQuery, useMutation } from 'react-query';
 import { fetch } from 'v2/services/rest/rest-fetch';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import View from '@razorpay/blade-old/src/atoms/View';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import { useSnackbar } from 'v2/components/SnackBar/SnackbarContext';
 import useActivation from '../hooks/useActivation';
-import { isUnregisteredBusiness } from '../services/utils';
+import useEscalation from '../hooks/useEscalation';
+import { checkIfDedupe, getFormatedCurrency, isUnregisteredBusiness } from '../services/utils';
+import { getMode } from 'v2/services/mode';
 import AcceptPaymentsIcon from './Icons/AcceptPaymentsIcon.svg';
+import { useApp } from 'v2/context/App';
 import * as Messages from './Constants';
 
 const ViewWithBackground = styled(View)`
@@ -33,7 +37,34 @@ const Description = ({ content }) => (
   </Space>
 );
 
-const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkflowData) => {
+const PaymentEscalation = ({ limit, transactionAmount, isLimitReached }) => {
+  return (
+    <Flex>
+      <Space margin={[0, 0, 0.5, 0]}>
+        <View>
+          <Space padding={[0, 1, 0, 0]}>
+            <Text color={isLimitReached ? 'negative.900' : 'shade.980'} weight="bold">
+              {getFormatedCurrency(transactionAmount)}
+            </Text>
+          </Space>
+          <Text color="shade.600" weight="bold">
+            /&nbsp; {getFormatedCurrency(limit)}
+          </Text>
+        </View>
+      </Space>
+    </Flex>
+  );
+};
+
+const getCardContent = ({
+  activationData,
+  isWebsiteInWorkflow,
+  internationalWorkflowData,
+  escalationsData,
+  transactionAmount,
+  isInstantActivationEnabled,
+  isDedupe,
+}) => {
   const isAccepted = activationData.activation_status === 'activated';
   const businessWebsite = activationData.business_website;
   const isAnyProductInReview =
@@ -67,16 +98,13 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
     }
   }
 
-  if (isUnregisteredBusiness(activationData.business_type)) {
-    if (isAccepted) {
-      return (
-        <>
-          <Title content={Messages.INTERNATIONAL_FLOW.unreg.account_activated.title} />
-          <Description content={Messages.INTERNATIONAL_FLOW.unreg.account_activated.description} />
-        </>
-      );
-    }
-    return null;
+  if (isUnregisteredBusiness(activationData.business_type) && isAccepted) {
+    return (
+      <>
+        <Title content={Messages.INTERNATIONAL_FLOW.unreg.account_activated.title} />
+        <Description content={Messages.INTERNATIONAL_FLOW.unreg.account_activated.description} />
+      </>
+    );
   }
 
   if (isAccepted && activationData.international_activation_flow === 'blacklist') {
@@ -86,6 +114,39 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
         <Description content={Messages.INTERNATIONAL_BLACKLIST.description} />
       </>
     );
+  }
+
+  if (
+    activationData.activation_flow === 'whitelist' ||
+    isUnregisteredBusiness(activationData.business_type)
+  ) {
+    const isLimitReached =
+      escalationsData && escalationsData?.amount >= escalationsData?.limit?.payment;
+
+    if (
+      (activationData.activated || isLimitReached) &&
+      activationData.activation_form_milestone === 'L1' &&
+      !isDedupe &&
+      isInstantActivationEnabled &&
+      escalationsData
+    ) {
+      return (
+        <>
+          <PaymentEscalation
+            limit={escalationsData?.limit?.payment}
+            transactionAmount={escalationsData?.amount || transactionAmount}
+            isLimitReached={isLimitReached}
+          />
+          <Description
+            content={
+              isLimitReached
+                ? Messages.PAYMENT_ESCALATION.breach
+                : Messages.PAYMENT_ESCALATION.not_breach
+            }
+          />
+        </>
+      );
+    }
   }
 
   if (activationData.activation_flow === 'whitelist') {
@@ -100,14 +161,6 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
           </>
         );
       }
-      return (
-        <>
-          <Title content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.l1_submitted.title} />
-          <Description
-            content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.l1_submitted.description}
-          />
-        </>
-      );
     } else if (activationData.international_activation_flow === 'whitelist') {
       if (!businessWebsite) {
         if (isWebsiteInWorkflow) {
@@ -189,8 +242,22 @@ const fetchInternationalProductStatus = () =>
 const fetchWebsiteWorkflowStatus = () =>
   fetch<any>({ url: 'merchant/activation/websites/status', mode: 'live' });
 
+const fetchPaymentVolume = async (payload) => {
+  const response = await fetch<any>({
+    url: 'merchant/analytics',
+    mode: 'live',
+    method: 'POST',
+    data: payload,
+  });
+  return response;
+};
+
 const AcceptPaymentsCard: React.FC = () => {
   const snackbar = useSnackbar();
+  const { user, experiments } = useApp();
+  const [transactionAmount, setTransactionAmount] = useState<number>(0);
+  const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
+
   const { status: activationQueryStatus, data: activationData } = useActivation();
   const { data: internationalWorkflowData } = useQuery(
     'internationalWorkflowStatus',
@@ -211,13 +278,61 @@ const AcceptPaymentsCard: React.FC = () => {
     },
   );
 
-  const isError = activationQueryStatus === 'error' || websiteWorkflowQueryStatus === 'error';
+  const { status: escalationsStatus, data: escalationsData } = useEscalation();
+
+  const [fetchPayment] = useMutation(fetchPaymentVolume, {
+    onSuccess: (res) =>
+      res?.transactionVolume?.result.length &&
+      setTransactionAmount(res.transactionVolume.result[0].value),
+  });
+
+  useEffect(() => {
+    if (activationQueryStatus === 'success' && activationData.activation_form_milestone === 'L1') {
+      const payload = {
+        filters: {
+          default: [
+            {
+              created_at: { gte: user.created_at, lte: new Date().getTime() },
+              authorized_at: { gt: 0 },
+            },
+          ],
+        },
+        aggregations: {
+          transactionVolume: {
+            agg_type: 'sum',
+            details: { index: 'payments', column: 'base_amount', mode: getMode(user.current) },
+          },
+        },
+      };
+      fetchPayment(payload);
+    }
+  }, [activationQueryStatus]);
+
+  const isError =
+    activationQueryStatus === 'error' ||
+    websiteWorkflowQueryStatus === 'error' ||
+    (escalationsStatus === 'error' && isInstantActivationEnabled);
   if (isError) {
     return <div>Something Went Wrong</div>;
   }
+
   if (activationData) {
-    const content = getCardContent(activationData, isWebsiteInWorkflow, internationalWorkflowData);
-    if ((activationData.onboarding_milestone === 'L1' || activationData.submitted) && content) {
+    const isDedupe = checkIfDedupe({ ...activationData, isInstantActivationEnabled }) === 'blocked';
+
+    const content = getCardContent({
+      activationData,
+      isWebsiteInWorkflow,
+      internationalWorkflowData,
+      escalationsData,
+      transactionAmount,
+      isInstantActivationEnabled,
+      isDedupe,
+    });
+    if (
+      (activationData.activation_form_milestone === 'L1' || activationData.submitted) &&
+      content &&
+      !isDedupe
+    ) {
       return (
         <Space padding={[2, 6, 2, 2]}>
           <ViewWithBackground>{content}</ViewWithBackground>

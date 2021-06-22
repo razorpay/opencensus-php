@@ -7,8 +7,23 @@ import { createMemoryHistory } from 'history';
 import Wrapper from '../../components/Bootstrap/Wrapper';
 
 const AllTheProviders: React.FC<{ children: ReactElement<any, any> | null }> = ({ children }) => {
+  const mockRazorXExp = {
+    isInstantActivationEnabled: true,
+    canSkipPoiValidation: false,
+    canGenerateTnCPage: false,
+    canSkipPOADocument: true,
+    isBDAndAovEnabled: true,
+    isEsignAadharEnabled: true,
+  };
   return (
-    <Wrapper context={{ mode: 'test', org: { id: '123' }, user: { contact_name: 'prashant' } }}>
+    <Wrapper
+      context={{
+        mode: 'test',
+        org: { id: '123' },
+        user: { contact_name: 'prashant' },
+        experiments: mockRazorXExp,
+      }}
+    >
       <Router history={createMemoryHistory({ initialEntries: ['/'] })}>
         <Route path="/" component={() => children} />
       </Router>

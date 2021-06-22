@@ -172,7 +172,7 @@ export default class App extends Component {
         const activatedAt = user.activated_at;
 
         const segmentIdentiyCall = (dataFromAPI) =>
-          analytics.identify(user.user.id,{
+          analytics.identify(user.user.id, {
             id: user.user.id,
             userId: user.user.id,
             emailId: user.email,
@@ -728,6 +728,18 @@ export default class App extends Component {
     );
   };
 
+  getOnboardingExperiment = () => {
+    const { user } = this.props;
+    return {
+      canGenerateTnCPage: user.canGenerateTnCPage,
+      canSkipPOADocument: user.canSkipPOADocument,
+      isBDAndAovEnabled: user.isBDAndAovEnabled,
+      canSkipPoiValidation: user.canSkipPoiValidation,
+      isEsignAadharEnabled: user.isEsignAadharEnabled,
+      isInstantActivationEnabled: user.isInstantActivationEnabled,
+    };
+  };
+
   render() {
     const { user, config, org, mode, modeFormatted, merchant_gst } = this.props;
 
@@ -741,6 +753,7 @@ export default class App extends Component {
       <Wrapper
         context={{
           user,
+          experiments: this.getOnboardingExperiment(),
           org,
           mode,
         }}

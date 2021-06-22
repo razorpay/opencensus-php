@@ -201,7 +201,7 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
                 <Space padding={[0, 0, 1.5]}>
                   <View>
                     <Text size="small" color="shade.960">
-                      Did not recieve OTP?
+                      Did not receive OTP?
                     </Text>
                     <Button
                       variant="tertiary"

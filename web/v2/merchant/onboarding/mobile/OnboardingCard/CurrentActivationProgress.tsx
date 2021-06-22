@@ -1,7 +1,8 @@
 import React from 'react';
-import { withRouter, RouteComponentProps } from 'react-router-dom';
-import { isUnregisteredBusiness, checkIfDedupe } from '../services/utils';
-import RemainingStepsInfo from './RemainingStepsInfo';
+import styled from 'styled-components';
+import { withRouter, RouteComponentProps, Link as Redirect } from 'react-router-dom';
+import { isUnregisteredBusiness, checkIfDedupe, isL1Submitted } from '../services/utils';
+import Link from '@commander/shield/src/shared/Link';
 import { getMode, switchMode } from 'v2/services/mode';
 import Info from './Info';
 import Buttons from './Buttons';
@@ -9,19 +10,24 @@ import * as Messages from './Constants';
 import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
 
-const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; payments: any }> = ({
+const InlineText = styled.span`
+  color: #162f5661;
+`;
+
+const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; escalation: any }> = ({
   data,
-  payments,
+  escalation,
   history,
 }) => {
-  const { user } = useApp();
+  const { user, experiments } = useApp();
   const onCTAClick = () => {
     history.push('/onboarding/steps');
     analyticsTrack({
-      objectName: 'SignUp',
+      objectName: `${isL1Submitted(data.activation_form_milestone) ? 'L2' : 'L1'} Start`,
       actionName: 'form fill',
       screen: 'home page',
       eventAction: 'initiated',
+      activationType: isL1Submitted(data.activation_form_milestone) ? 'kyc' : 'act',
       user,
     });
   };
@@ -36,49 +42,87 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
     history.push('activation');
   };
 
-  const isDedupeState = checkIfDedupe(data);
+  const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
+  const dedupeStatus = checkIfDedupe({ ...data, isInstantActivationEnabled });
+  const statusLog = data?.activationStatusChangeLogs || [];
+
+  if (
+    dedupeStatus === 'blocked' &&
+    isL1Submitted(data.activation_form_milestone) &&
+    !data.activated &&
+    data.activation_status !== 'rejected'
+  ) {
+    return (
+      <>
+        <Info
+          title={isInstantActivationEnabled ? Messages.DEDUPE.title : Messages.DEDUPE.old_title}
+          description={
+            isInstantActivationEnabled
+              ? Messages.DEDUPE.description
+              : Messages.DEDUPE.old_description
+          }
+          titleColor="negative.900"
+          hasError
+          descriptionJSX={
+            data.activation_form_milestone === 'L2' ? (
+              <InlineText>{Messages.DEDUPE.L2_description}</InlineText>
+            ) : (
+              <span />
+            )
+          }
+        />
+        <Buttons.Primary onClick={() => contactSupport()} title="Contact Support" />
+      </>
+    );
+  }
 
   if (data.submitted) {
-    if (isDedupeState) {
+    if (
+      experiments.canGenerateTnCPage &&
+      !data.business_website &&
+      !data.merchant_tnc &&
+      ['under_review', 'activated_mcc_pending'].includes(data.activation_status)
+    ) {
+      let title = 'Payments and Settlements have been enabled, Generate TnC';
+      let titleColor = 'shade.970';
+      let desc = isTestMode
+        ? Messages.GENERATE_TNC.mcc_pending.old_description_with_test
+        : Messages.GENERATE_TNC.mcc_pending.old_description_with_live;
+      let descriptionJSX: React.ReactNode = isTestMode && (
+        <Redirect to="/tncform">Generate TnC</Redirect>
+      );
+
+      if (data.activation_status === 'under_review') {
+        title = Messages.GENERATE_TNC.under_review.old_title;
+        titleColor = 'neutral.960';
+        desc = Messages.GENERATE_TNC.under_review.description;
+        descriptionJSX = <Redirect to="/onboarding/steps">View submitted details</Redirect>;
+        if (dedupeStatus === 'partial_match' && isInstantActivationEnabled) {
+          title = Messages.GENERATE_TNC.under_review.partial_match_title;
+          desc = Messages.GENERATE_TNC.under_review.partial_match_desc;
+        } else if (
+          !statusLog.includes('needs_clarification') &&
+          !!data.activated &&
+          isInstantActivationEnabled
+        ) {
+          title = Messages.GENERATE_TNC.under_review.title;
+        }
+      } else if (data.activation_status === 'activated_mcc_pending' && isInstantActivationEnabled) {
+        title = Messages.GENERATE_TNC.mcc_pending.title;
+        desc = Messages.GENERATE_TNC.mcc_pending.description;
+      }
+
       return (
         <>
           <Info
-            title={Messages.DEDUPE.title}
-            description={Messages.DEDUPE.description}
-            titleColor="negative.900"
-            hasError
+            title={title}
+            titleColor={titleColor}
+            description={desc}
+            descriptionJSX={descriptionJSX}
           />
-          <Buttons.Primary onClick={() => contactSupport()} title="Contact support" />
-        </>
-      );
-    }
-
-    if (
-      user.canGenerateTnCPage &&
-      !data.business_website &&
-      !data.merchant_tnc &&
-      data.activation_status !== 'activated'
-    ) {
-      let title = '';
-      let titleColor = 'shade.970';
-      let desc: React.ReactNode | string;
-
-      if (data.activation_status === 'under_review') {
-        title = Messages.GENERATE_TNC.under_review.title;
-        titleColor = 'neutral.960';
-        desc = Messages.GENERATE_TNC.under_review.description;
-      } else if (data.activation_status === 'activated_mcc_pending') {
-        title = 'Payments and Settlements have been enabled, Generate TnC';
-        titleColor = 'shade.970';
-        desc = isTestMode
-          ? Messages.GENERATE_TNC.mcc_pending_with_test_mode.description
-          : Messages.GENERATE_TNC.mcc_pending_with_live_mode.description;
-      }
-      return (
-        <>
-          <Info title={title} titleColor={titleColor} description={desc} />
           {data.activation_status === 'under_review' ||
-          (data.activation_status === 'activated_mcc_pending' && !isTestMode) ? (
+          (data.activation_status === 'activated_mcc_pending' &&
+            (!isTestMode || isInstantActivationEnabled)) ? (
             <Buttons.Primary
               onClick={() => {
                 history.push('/tncform');
@@ -91,7 +135,7 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
                   user,
                 });
               }}
-              title="Generate terms and conditions"
+              title="Generate Terms And Conditions"
             />
           ) : (
             data.activation_status === 'activated_mcc_pending' &&
@@ -110,17 +154,31 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
     }
 
     if (data.isHardLimitReached) {
+      const title = isInstantActivationEnabled
+        ? Messages.HARD_LIMIT_REACHED.title
+        : Messages.HARD_LIMIT_REACHED.old_title;
+
       return (
         <Info
-          title={Messages.HARD_LIMIT_REACHED.title}
+          title={title}
           titleColor="neutral.960"
           description={Messages.HARD_LIMIT_REACHED.description}
+          descriptionJSX={
+            <Link
+              href="https://knowledgebase.razorpay.com/support/solutions/articles/11000103841-why-is-my-settle[%E2%80%A6]ld-and-my-account-under-review-after-getting-activated"
+              target="_blank"
+            >
+              More details
+            </Link>
+          }
         />
       );
     }
 
     if (data.activation_status === 'under_review') {
+      let title = Messages.ACTIVATION_STATUS_UNDER_REVIEW.old_flow.title;
       let description = '';
+      let titleColor = 'neutral.960';
       if (isUnregisteredBusiness(data.business_type)) {
         description = `This process usually takes ${
           data.kyc_clarification_reasons?.nc_count ? ' 3 ' : ' 3 - 4 '
@@ -130,15 +188,24 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
           data.kyc_clarification_reasons?.nc_count ? ' 3 ' : '3 - 4'
         } working days. We will notify you if we require any clarifications on your KYC.`;
       } else {
-        description = Messages.ACTIVATION_STATUS_UNDER_REVIEW.registered.description;
+        description = Messages.ACTIVATION_STATUS_UNDER_REVIEW.old_flow.description;
+      }
+      if (isInstantActivationEnabled) {
+        if (dedupeStatus === 'partial_match') {
+          title = Messages.ACTIVATION_STATUS_UNDER_REVIEW.new_flow.partial_match_title;
+          description = Messages.ACTIVATION_STATUS_UNDER_REVIEW.new_flow.partial_match_desc;
+        } else if (statusLog.includes('needs_clarification') || !data.activated) {
+          description = Messages.ACTIVATION_STATUS_UNDER_REVIEW.new_flow.post_nc_description;
+        } else {
+          title = Messages.ACTIVATION_STATUS_UNDER_REVIEW.new_flow.title;
+          titleColor = 'positive.960';
+          description =
+            Messages.ACTIVATION_STATUS_UNDER_REVIEW.new_flow.description_with_payment_enable;
+        }
       }
       return (
         <>
-          <Info
-            title={Messages.ACTIVATION_STATUS_UNDER_REVIEW.registered.title}
-            titleColor="neutral.960"
-            description={description}
-          />
+          <Info title={title} titleColor={titleColor} description={description} />
           <Buttons.LinkButton
             onClick={onCTAClick}
             title="View Submitted Details"
@@ -149,15 +216,38 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
     }
 
     if (data.activation_status === 'needs_clarification') {
+      let description = Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.description.normal;
+      if (isInstantActivationEnabled) {
+        if (!data?.merchant?.hold_funds && statusLog.includes('activated_mcc_pending')) {
+          description =
+            Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.description.activated_mcc_pending;
+        } else if (statusLog.includes('activated_mcc_pending') && data?.merchant?.hold_funds) {
+          description = Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.description.funds_onhold;
+        }
+      }
       return (
         <>
           <Info
             title={Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.title}
-            description={Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.description}
+            description={description}
             titleColor="negative.900"
             hasError
           />
           <Buttons.Primary onClick={() => goToNcFlow()} title="Clarify Details" />
+        </>
+      );
+    }
+
+    if (data.activation_status === 'rejected') {
+      let description = Messages.ACTIVATION_STATUS_REJECTED.old_description;
+      let title = Messages.ACTIVATION_STATUS_REJECTED.old_title;
+      if (isInstantActivationEnabled) {
+        description = Messages.ACTIVATION_STATUS_REJECTED.description;
+        title = Messages.ACTIVATION_STATUS_REJECTED.title;
+      }
+      return (
+        <>
+          <Info title={title} description={description} titleColor="negative.900" hasError />
         </>
       );
     }
@@ -167,11 +257,7 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
         <>
           <Info
             title={Messages.ACTIVATION_STATUS_ACTIVATED.title}
-            description={
-              isTestMode
-                ? Messages.ACTIVATION_STATUS_ACTIVATED.description
-                : Messages.ACTIVATION_STATUS_ACTIVATED.description_live_mode
-            }
+            description={Messages.ACTIVATION_STATUS_ACTIVATED.description}
           />
           {isTestMode && (
             <Buttons.Secondary
@@ -187,12 +273,15 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
     }
 
     if (data.activation_status === 'activated_mcc_pending') {
+      let title = Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.title;
+      let description = Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.description;
+      if (isInstantActivationEnabled) {
+        title = Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.new_title;
+        description = Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.new_description;
+      }
       return (
         <>
-          <Info
-            title={Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.title}
-            description={Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.description}
-          />
+          <Info title={title} description={description} />
           {isTestMode && (
             <Buttons.Secondary
               onClick={() => {
@@ -222,11 +311,11 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
         </>
       );
     }
-  } else {
+  } else if (isUnregisteredBusiness(data.business_type) || !isInstantActivationEnabled) {
     if (
       (data.poi_verification_status === 'incorrect_details' ||
         data.poi_verification_status === 'not_matched') &&
-      !user.canSkipPoiValidation
+      !experiments.canSkipPoiValidation
     ) {
       return (
         <>
@@ -241,7 +330,7 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
       );
     }
 
-    if (data.poi_verification_status === 'failed' && !user.canSkipPoiValidation) {
+    if (data.poi_verification_status === 'failed' && !experiments.canSkipPoiValidation) {
       return (
         <>
           <Info
@@ -255,7 +344,7 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
       );
     }
 
-    if (data.poi_verification_status === 'pending') {
+    if (data.poi_verification_status === 'pending' && !isInstantActivationEnabled) {
       return (
         <>
           <Info
@@ -263,7 +352,7 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
             description={Messages.POI_VERIFICATION_STATUS.pending.description}
             titleColor="neutral.960"
           />
-          {!data.submitted && user.canSkipPoiValidation && (
+          {!data.submitted && experiments.canSkipPoiValidation && (
             <Buttons.LinkButton
               onClick={onCTAClick}
               title="Fill Remaining Details"
@@ -273,24 +362,70 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
         </>
       );
     }
+    if (
+      data.poi_verification_status === 'initiated' &&
+      data.activation_form_milestone === 'L1' &&
+      experiments.canSkipPoiValidation &&
+      isInstantActivationEnabled
+    ) {
+      return (
+        <>
+          <Info
+            title={Messages.POI_VERIFICATION_STATUS.initiated.title}
+            description={Messages.POI_VERIFICATION_STATUS.initiated.description}
+            titleColor="neutral.960"
+            titleJSX={<i className="fa fa-spinner fa-spin spin-big" />}
+          />
+          <Buttons.LinkButton
+            onClick={onCTAClick}
+            title="View Submitted Details"
+            icon="arrowRight"
+          />
+        </>
+      );
+    }
   }
 
-  if (
-    data.onboarding_milestone === 'activation_flow' ||
-    data.onboarding_milestone === 'L1' ||
-    data.onboarding_milestone === 'L2'
-  ) {
-    return <RemainingStepsInfo data={data} payments={payments} />;
+  if (data.activation_form_milestone === 'L1' && isInstantActivationEnabled) {
+    const isLimitReached = escalation && escalation?.amount >= escalation?.limit?.payment;
+    if (!!data.activated || isLimitReached) {
+      return (
+        <>
+          <Info
+            title={Messages.PAYMENT_ACTIVATED.title}
+            description={
+              isLimitReached
+                ? Messages.PAYMENT_ACTIVATED.limit_breach_desc
+                : Messages.PAYMENT_ACTIVATED.description
+            }
+          />
+          <Buttons.Primary onClick={onCTAClick} title="Complete KYC" icon="arrowRight" />
+        </>
+      );
+    }
+    return (
+      <>
+        <Info
+          title={Messages.GREYLIST_STEP.title}
+          description={Messages.GREYLIST_STEP.description}
+        />
+        <Buttons.Primary onClick={onCTAClick} title="Submit KYC" icon="arrowRight" />
+      </>
+    );
   }
 
-  if (data.activation_progress >= 24) {
+  if (!isL1Submitted(data.activation_form_milestone)) {
     return (
       <>
         <Info
           title={Messages.ACTIVATION_PROGRESS.title}
           description={Messages.ACTIVATION_PROGRESS.description}
         />
-        <Buttons.Primary onClick={onCTAClick} title="Fill Remaining Details" icon="arrowRight" />
+        <Buttons.Primary
+          onClick={onCTAClick}
+          title={isInstantActivationEnabled ? 'Submit KYC' : 'Fill Remaining Details'}
+          icon="arrowRight"
+        />
       </>
     );
   }

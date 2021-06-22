@@ -4,6 +4,7 @@ import * as PaymentsDB from '../v2/merchant/onboarding/mobile/services/data/Paym
 import * as WebsiteWorkflowDB from '../v2/merchant/onboarding/mobile/services/data/WebsiteWorkflowDB';
 import * as InternationalWorkflowDB from '../v2/merchant/onboarding/mobile/services/data/InternationalWorkflowDB';
 import * as BusinessCategoryDB from '../v2/merchant/onboarding/mobile/services/data/BusinessCategoryDB';
+import * as PaymentEscalationDB from '../v2/merchant/onboarding/mobile/services/data/PaymentEscalationDB';
 
 export const handlers = [
   // Handles a "Login" mutation
@@ -83,7 +84,7 @@ export const handlers = [
     );
   }),
 
-  rest.post('http://localhost:6006/merchant/api/test/merchant/activation', (req, res, ctx) => {
+  rest.post('http://localhost:6006/merchant/api/live/merchant/activation', (req, res, ctx) => {
     if (req.body) {
       if (req.body.submit) {
         req.body.submitted = true;
@@ -146,7 +147,7 @@ export const handlers = [
   ),
 
   rest.post(
-    'http://localhost:6006/merchant/api/test/merchant/documents/upload',
+    'http://localhost:6006/merchant/api/live/merchant/documents/upload',
     (req, res, ctx) => {
       if (req.body) {
         ActivationDB.update({
@@ -174,7 +175,7 @@ export const handlers = [
   ),
 
   rest.delete(
-    `http://localhost:6006/merchant/api/test/merchant/documents/doc_:params`,
+    `http://localhost:6006/merchant/api/live/merchant/documents/doc_:params`,
     (req, res, ctx) => {
       const docId = req.url.pathname.split('doc_')[1];
       if (docId) {
@@ -250,6 +251,20 @@ export const handlers = [
         };
       }
       return res(ctx.status(200), ctx.delay(1000), ctx.json(response));
+    },
+  ),
+
+  rest.get(
+    'http://localhost:6006/merchant/api/live/merchants/onboarding/escalations',
+    (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.delay(50),
+        ctx.json({
+          status_code: 200,
+          data: { ...PaymentEscalationDB.read() },
+        }),
+      );
     },
   ),
 ];

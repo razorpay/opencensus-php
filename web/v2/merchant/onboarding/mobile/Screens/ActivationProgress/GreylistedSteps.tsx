@@ -5,14 +5,16 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import OnboardingStepCard from '../../OnboardingStepCard';
 import { useActivationFormState } from '../../context/store';
 import useActivation from '../../hooks/useActivation';
-import { getMerchantFlow } from '../../services/utils';
+import { checkIfDedupe } from '../../services/utils';
 import { analyticsTrack } from '../../../../../services/tracking/segment';
-import { SubmitForm as SubmitFormModal } from '../../ActivationModals';
+import { ActivationModal, ModalTypeT } from 'v2/merchant/onboarding/mobile/ActivationModals';
 import { useApp } from 'v2/context/App';
 
-const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
+const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any) => void }> = ({
+  history,
+}) => {
   const { data, postData } = useActivation();
-  const { user } = useApp();
+  const { user, experiments } = useApp();
   const {
     isContactDetailsCompleted,
     isBusinessOverviewCompleted,
@@ -31,16 +33,37 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
     }),
     shallow,
   );
-  const merchantFlow = getMerchantFlow(data.business_type, data.activation_flow);
-  const [isSubmitFormModalOpen, setIsSubmitFormModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [modalType, setModalType] = useState<ModalTypeT>('');
+  const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
   const onClick = (step: string) => {
     setActiveTabId(step);
     history.push('/onboarding/form');
   };
+
+  const goToNcFlow = () => {
+    history.push('/activation');
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
   const submitL2 = () => {
-    postData({ submit: 1 }).then((res) => {
-      if (res && res.submitted) {
-        setIsSubmitFormModalOpen(true);
+    const payload = isInstantActivationEnabled
+      ? { activation_form_milestone: 'L2' }
+      : { submit: 1 };
+    postData(payload).then((res) => {
+      if (res) {
+        const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
+        if (res.submitted && dedupeStatus === 'blocked') {
+          setModalType('dedupe');
+        } else if (!res.business_website && experiments.canGenerateTnCPage) {
+          setModalType('tnc');
+        } else {
+          setModalType('under_review');
+        }
+        setIsModalOpen(true);
       }
       analyticsTrack({
         objectName: 'SignUp',
@@ -51,25 +74,65 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
       });
     });
   };
-  const isStatusUnderReview =
-    data.activation_status === 'under_review' ||
-    data.activation_status === 'activated' ||
-    data.activation_status === 'activated_mcc_pending';
-  const underReviewInfo = isStatusUnderReview
-    ? 'Your details are under review . We will get back to you in 3-4 working days'
-    : '';
+
+  const isAllTabCompleted =
+    isContactDetailsCompleted &&
+    isBusinessOverviewCompleted &&
+    isBusinessDetailsCompleted &&
+    isBankAndCompanyDetailsCompleted &&
+    isDocumentsUploadCompleted;
+
+  const dedupeStatus = checkIfDedupe({ ...data, isInstantActivationEnabled });
+  const isDedupe = dedupeStatus === 'blocked';
+
+  const canShowCTA =
+    [
+      'under_review',
+      'activated',
+      'activated_mcc_pending',
+      'needs_clarification',
+      'rejected',
+    ].includes(data.activation_status) || isDedupe;
+
+  const getMessageInfo = (context) => {
+    switch (context.activation_status) {
+      case 'under_review':
+        return !isDedupe ? 'You have submitted all the details. Our team is reviewing them' : '';
+      case 'activated_mcc_pending':
+        return 'Payments and settlements have been enabled. We might do some periodic checks for your KYC and ask for clarifications';
+      case 'needs_clarification':
+        return 'Please provide clarification regarding some issues with your submitted details by on your web dashboard';
+      default:
+        return '';
+    }
+  };
+
   const hasPoiStatus =
     data.poi_verification_status === 'incorrect_details' ||
     data.poi_verification_status === 'not_matched';
 
-  const shouldShowPoiError = !data.submitted && hasPoiStatus && !user.canSkipPoiValidation;
+  const shouldShowPoiError = !data.submitted && hasPoiStatus && !experiments.canSkipPoiValidation;
 
   return (
     <View>
       <OnboardingStepCard
-        title="Enable Payments and Settlements"
-        subtitle="Submit these details to accept payments and recieve settlements in your account"
-        info={underReviewInfo}
+        title="Submit KYC details"
+        subtitle={
+          data.activated
+            ? 'Submit all the details and get your KYC approved to complete account activation and enable settlements'
+            : 'Submit these details to accept payments and receive settlements in your account'
+        }
+        info={getMessageInfo(data)}
+        errorInfo={
+          (isDedupe && !data.activated) || data.activation_status === 'rejected'
+            ? 'We can’t support your business because it doesn’t meet our compliance requirements'
+            : ''
+        }
+        sucessInfo={
+          data.activation_status === 'activated'
+            ? 'KYC details have been reviewed successfully and account has been activated'
+            : ''
+        }
         steps={[
           {
             name: 'Contact Details',
@@ -104,14 +167,19 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
           },
         ]}
         showSettlement
-        showCTA={!isStatusUnderReview}
-        greyListFlowCanSubmit={data.can_submit}
-        activationFlow={merchantFlow}
+        showCTA={!canShowCTA}
+        canSubmitL2Form={!data.can_submit || !isAllTabCompleted}
+        activationStatus={data.activation_status}
         onCTAClick={submitL2}
+        milestone={data.activation_form_milestone || !isInstantActivationEnabled}
+        goToNcFlow={goToNcFlow}
       />
-      <SubmitFormModal
-        isOpen={isSubmitFormModalOpen}
-        hasClarificationReasons={data.kyc_clarification_reasons?.nc_count}
+      <ActivationModal
+        isOpen={isModalOpen}
+        modalType={modalType}
+        closeModal={closeModal}
+        dedupeStatus={dedupeStatus}
+        activationData={data}
       />
     </View>
   );

@@ -117,7 +117,7 @@ export const getCaState = (caAccountStatus, GoToCaDocs, showNitroRXCAFlow) => {
   ) {
     pillType = 'yellow';
     pillText = 'Bank KYC In Progress';
-    headState = 'Documents Recieved';
+    headState = 'Documents Received';
     viewType = 'default';
     content = (
       <>

@@ -1,27 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useQuery } from 'react-query';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import { spacings } from '@razorpay/blade-old/src/tokens';
-import { fetch } from 'v2/services/rest/rest-fetch';
 import { ProgressBar } from 'v2/components/ProgressBar';
-import { useSnackbar } from 'v2/components/SnackBar/SnackbarContext';
 import Card from '../../../../components/Card';
 import useActivation from '../hooks/useActivation';
-// import BusinessModelDetails from './BusinessModelDetails';
+import useEscalation from '../hooks/useEscalation';
 import CurrentActivationProgress from './CurrentActivationProgress';
 import FormIcon from './Icons/FormIcon.svg';
 import OnboardingCardShimmer from './OnboardingCardShimmer';
+import { getMode, switchMode } from 'v2/services/mode';
+import { checkIfDedupe, isUnregisteredBusiness, setLocalStorage } from '../services/utils';
+import { ActivationModal, ModalTypeT } from '../ActivationModals';
+import { useApp } from 'v2/context/App';
 
-const fetchPayments = async () => {
-  const data = await fetch<any>({ url: 'payments' });
-  return data;
-};
-// rgba(224, 228, 249, 0.38);
 const Separator = styled(View)`
   height: 1px;
   background-color: ${({ theme }) => getColor(theme, 'cloud.950')};
@@ -35,18 +31,91 @@ const HeadingContainer = styled(View)`
   width: 100%;
 `;
 
-const OnboardingCard: React.FC = () => {
-  const snackbar = useSnackbar();
-  const { status: activationQueryStatus, data: activationData } = useActivation();
-  const { status: paymentsQueryStatus, data: paymentsData } = useQuery('payments', fetchPayments, {
-    onError: (err: any) => snackbar.error(err.response.errors[0]),
-  });
+const AccountBlock = styled(View)`
+  background: #edf0f5;
+  border-radius: 4px;
+  display: inline-block;
+  padding: 4px 8px;
+`;
 
-  if (activationQueryStatus === 'loading' || paymentsQueryStatus === 'loading') {
+const OnboardingCard: React.FC = () => {
+  const { user, experiments } = useApp();
+  const { status: activationQueryStatus, data: activationData } = useActivation();
+  const { status: escalationsStatus, data: escalationsData } = useEscalation();
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [modalType, setModalType] = useState<ModalTypeT>('');
+  const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
+  const dedupeStatus = checkIfDedupe({ ...activationData, isInstantActivationEnabled });
+  const isDedupe = dedupeStatus === 'blocked';
+  const isTestMode = getMode(user.current) === 'test';
+
+  useEffect(() => {
+    if (activationQueryStatus === 'success' && isInstantActivationEnabled) {
+      let canShowModals: any = localStorage.getItem(`${user.current}--mweb_modal`);
+      canShowModals = JSON.parse(canShowModals);
+      const status = activationData.activation_status;
+      const isUnreg = isUnregisteredBusiness(activationData.business_type);
+      const isPoifailed = ['failed', 'incorrect_details', 'not_matched'].includes(
+        activationData.poi_verification_status,
+      );
+      if (
+        !canShowModals?.dedupe &&
+        isDedupe &&
+        !activationData.activated &&
+        activationData.activation_status !== 'rejected'
+      ) {
+        setModalType('dedupe');
+        setIsModalOpen(true);
+        setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, dedupe: true });
+      }
+      if (activationData.activation_form_milestone === 'L1') {
+        if (isUnreg && isPoifailed && !canShowModals?.poi_failed) {
+          setModalType('payment_disable');
+          setIsModalOpen(true);
+          setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, poi_failed: true });
+        } else if (
+          isUnreg &&
+          activationData.poi_verification_status === 'verified' &&
+          !!activationData.activated &&
+          !canShowModals?.poi_verified
+        ) {
+          setModalType('payment_enable');
+          setIsModalOpen(true);
+          setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, poi_verified: true });
+        }
+      }
+      if (activationData.submitted) {
+        if (activationData.isHardLimitReached && !canShowModals?.settlement_onhold) {
+          setModalType('settelment_onhold');
+          setIsModalOpen(true);
+          setLocalStorage(`${user.current}--mweb_modal`, {
+            ...canShowModals,
+            settlement_onhold: true,
+          });
+        } else if (status === 'needs_clarification' && !canShowModals?.nc) {
+          setModalType('needs_clarification');
+          setIsModalOpen(true);
+          setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, nc: true });
+        } else if (!canShowModals?.rejected && status === 'rejected') {
+          setModalType('rejected');
+          setIsModalOpen(true);
+          setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, rejected: true });
+        }
+      }
+      if (isTestMode && !!activationData.activated) {
+        switchMode(user.current, 'live');
+      }
+    }
+  }, [activationQueryStatus]);
+
+  if (activationQueryStatus === 'loading' || escalationsStatus === 'loading') {
     return <OnboardingCardShimmer />;
   }
 
-  if (activationQueryStatus === 'error' || paymentsQueryStatus === 'error') {
+  if (
+    activationQueryStatus === 'error' ||
+    (escalationsStatus === 'error' && isInstantActivationEnabled)
+  ) {
     return <div>Something went wrong</div>;
   }
 
@@ -59,11 +128,15 @@ const OnboardingCard: React.FC = () => {
               <Space margin={[0, 0, 0.5, 0]}>
                 <HeadingContainer>
                   <Text size="large" weight="bold">
-                    Account Details
+                    Account Activation
                   </Text>
                 </HeadingContainer>
               </Space>
-              {activationData.activation_progress >= 24 ? (
+              {((isDedupe && !activationData.activated) ||
+                activationData.activation_status === 'rejected') &&
+              isInstantActivationEnabled ? (
+                <AccountBlock>Paused</AccountBlock>
+              ) : (
                 <>
                   <Space margin={[1, 2, 0, 0]}>
                     <Text size="small" color="positive.960" weight="bold">
@@ -81,22 +154,21 @@ const OnboardingCard: React.FC = () => {
                     </View>
                   </Space>
                 </>
-              ) : (
-                <Space margin={[0, 2.5, 0, 0]}>
-                  <Text size="xsmall" color="shade.950">
-                    Provide following details to start your activation process.
-                  </Text>
-                </Space>
               )}
             </HeadingContainer>
             <img src={FormIcon} alt="fill_activation_form_icon" />
           </View>
         </Flex>
 
-        <Separator $onboardingMilestone={activationData.onboarding_milestone} />
-        {/* since we dont have activation milestone relaying on activation_progress to check for initial step and show start activation */}
-        {/* {activationData.activation_progress === 24 ? <BusinessModelDetails /> : null} */}
-        <CurrentActivationProgress data={activationData} payments={paymentsData} />
+        <Separator $onboardingMilestone={activationData.activation_form_milestone} />
+        <CurrentActivationProgress data={activationData} escalation={escalationsData} />
+        <ActivationModal
+          isOpen={isModalOpen}
+          modalType={modalType}
+          closeModal={() => setIsModalOpen(false)}
+          dedupeStatus={dedupeStatus}
+          activationData={activationData}
+        />
       </Card>
     </View>
   );

@@ -1,0 +1,77 @@
+export const DEDUPE = {
+  title: 'Business not supported',
+  old_title: 'Clarification required',
+  description:
+    'We cant support your business because it doesnt meet our compliance requirements If you think this is a mistake please reach out to our support.',
+  L2_description:
+    'In case you have pending settlements, you can raise a ticket and get your funds settled to your account.',
+  old_description:
+    ' We need some clarification regarding your submitted details. Please contact support to activate your account.',
+  buttonText: 'Contact Support',
+};
+
+export const POI_INITIATED = {
+  title: 'Reviewing your KYC details',
+  description:
+    'We are verifying your KYC details. We will notify you once it has been reviewed successfully',
+  buttonText: 'Okay, Got It',
+};
+
+export const PAYMENT_ENABLE = {
+  title: 'Congrats! You can start accepting payments',
+  description:
+    'You can accept payments by integrating with our payment products upto ₹15000. However to extend the limit and enable settlements you will need to submit a few more KYC details',
+  buttonText: 'Start Accepting Payments',
+  secondryButtonText: 'Complete KYC',
+};
+
+export const PAYMENT_DISABLE = {
+  title: 'Few more details required',
+  description:
+    'We need a few more KYC details to enable payments and settlements for your business model.',
+  buttonText: 'Complete KYC',
+};
+
+export const TNC = {
+  title: 'KYC is under review Generate TnC now',
+  partial_match_title: 'KYC is under review, payments have been temporarily paused',
+  description:
+    'Your KYC details are under review. KYC review process usually takes 3-4 working days. We will reach out to you in case we need any clarifications Meanwhile you can generate your Terms and Conditons page. Your KYC review might get delayed in case of delays in generating TnC.',
+  partial_match_description:
+    'Our compliance team and banking partners are reviewing your KYC and your payments have been temporarily paused. We will review your KYC and reach out to you for any clarifications within 3-4 days. Meanwhile you can generate your Terms and Conditons page. Your KYC review might get delayed in case of delays in generating TnC',
+  payment_enable_description:
+    'Your payment limits have been removed and KYC is under review. It usually takes 3-4 working days. We will reach out to you in case we need any clarifications Meanwhile you can generate your Terms and Conditons page. Your KYC review might get delayed in case of delays in generating TnC.',
+  buttonText: 'Generate Terms And Conditions',
+};
+
+export const NC = {
+  title: 'We need some clarification regarding some of your KYC details',
+  description: {
+    normal_nc: 'Please resolve some of the issues that we found with your uploaded KYC details',
+    mcc_pending_nc:
+      'Update required details within 1 day, otherwise your settlements might get paused.',
+    onhold_nc: 'Please clarify some of your KYC details on web dashboard to enable settlements',
+  },
+  buttonText: 'Clarify Details Now',
+  secondryButtonText: 'I’ll Do It Later',
+};
+
+export const REJECTED = {
+  title: 'Account Rejected',
+  description:
+    "We can't support your business because it doesn't meet our compliance requirements Please contact support to request for settlement of any payments accepted via your account",
+  buttonText: 'Contact Support',
+};
+
+export const UNDER_REVIEW = {
+  title: 'KYC is under review',
+  payment_enable_title: 'KYC is under review and payment limit has been removed',
+  partial_match_title: 'KYC is under review, payments have been temporarily paused',
+  description:
+    "Your documents and KYC detail are under review. It's now our responsibility to make sure your documents are processed. It usually takes 3-4 working days for our team to review your documents. We will reach out to you if we need any clarification.",
+  partial_match_description:
+    'Our compliance team and banking partners are reviewing your KYC and your payments have been temporarily paused. We will review your KYC and reach out to you for any clarifications within 3-4 days.',
+  payment_enable_description:
+    'Your payment limits have been removed and KYC is under review. KYC review process usually takes 3-4 working days. We will notify you if we require any clarifications on your KYC.',
+  buttonText: 'Generate Terms And Conditions',
+};

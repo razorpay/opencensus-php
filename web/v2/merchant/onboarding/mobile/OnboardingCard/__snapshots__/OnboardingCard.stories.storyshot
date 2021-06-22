@@ -25,16 +25,12 @@ exports[`Storyshots Onboarding/OnboardingCard Default 1`] = `
                   color="shade.980"
                   data-testid="ds-text"
                 >
-                  Activate Details
+                  Account Activation
                 </div>
               </div>
               <div
-                class="Textweb__Text-sc-1qrdpx3-0 dFPmAI Spaceweb__Space-sc-1abqisc-0 eWXaAy"
-                color="shade.950"
-                data-testid="ds-text"
-              >
-                Provide following details to start your activation process.
-              </div>
+                class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-sc-1e5yf1-0 eAGDot Spaceweb__Space-sc-1abqisc-0 eWXaAy"
+              />
             </div>
             <img
               alt="fill_activation_form_icon"
@@ -48,31 +44,20 @@ exports[`Storyshots Onboarding/OnboardingCard Default 1`] = `
             class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
           >
             <div
-              class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-sc-1e5yf1-0 cBoAPd Spaceweb__Space-sc-1abqisc-0 hKFrEA"
+              class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-sc-1e5yf1-0 dmNVka Spaceweb__Space-sc-1abqisc-0 jxpzzb"
+            />
+            <div
+              class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-sc-1e5yf1-0 cBoAPd Spaceweb__Space-sc-1abqisc-0 jxpzzb"
+            />
+            <div
+              class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-sc-1e5yf1-0 dmNVka Spaceweb__Space-sc-1abqisc-0 jxpzzb"
+            />
+            <div
+              class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-sc-1e5yf1-0 cBoAPd Spaceweb__Space-sc-1abqisc-0 jxpzzb"
             />
             <div
               class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-sc-1e5yf1-0 dmNVka"
             />
-            <br />
-            <br />
-            <div
-              class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 bqJhhe"
-            >
-              <button
-                class="Buttonweb__StyledButton-sc-18xf15a-0 eKmDKL Spaceweb__Space-sc-1abqisc-0 dBqoYd Sizeweb__Size-sc-1e5yf1-0 bcdMJc Flexweb__Flex-sc-1yhcoea-0 fXsEZI"
-                data-testid="ds-button"
-                disabled=""
-                type="button"
-              >
-                <div
-                  class="Textweb__Text-sc-1qrdpx3-0 bnCvli"
-                  color="light.950"
-                  data-testid="ds-text"
-                >
-                  Start Activation
-                </div>
-              </button>
-            </div>
           </div>
         </div>
       </div>

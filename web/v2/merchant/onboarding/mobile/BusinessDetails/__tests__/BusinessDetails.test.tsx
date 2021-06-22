@@ -63,6 +63,7 @@ test('should not render Company Details fields for unregistered business', async
 });
 test('should render Company Details section for registered business', async () => {
   ActivationDB.update({
+    ...DataPieces.OnboardingMileStoneL1,
     business_type: '4',
   });
   render(<App />, {});

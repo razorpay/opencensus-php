@@ -13,12 +13,8 @@ export const POIStatus = {
   },
 };
 
-export const OnboardingMileStoneBizPicker = {
-  onboarding_milestone: 'activation_flow',
-};
-
 export const OnboardingMileStoneL1 = {
-  onboarding_milestone: 'L1',
+  activation_form_milestone: 'L1',
 };
 
 export const OnboardingMileStoneL2 = {
@@ -101,4 +97,8 @@ export const bankAndCompanyDetails = {
 
 export const BusinessModelPicker = {
   business_subcategory: 'others',
+};
+
+export const PaymentEnable = {
+  activated: true,
 };

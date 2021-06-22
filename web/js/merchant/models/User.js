@@ -7,6 +7,7 @@ import isEmpty from '@universe/utils/isEmpty';
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import { getOrg } from 'merchant/store';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
+import { isMobileDevice } from 'merchant/components/Home/data';
 import LocalStorageService from 'common/utils/localStorage';
 import { getMode } from 'merchant/store';
 
@@ -271,6 +272,10 @@ export default class User {
     return this.activation_status === 'needs_clarification';
   }
 
+  get isActivatedMCCPending() {
+    return this.activation_status === 'activated_mcc_pending';
+  }
+
   // KYC form submitted
   get isSubmitted() {
     return !!parseInt(this.submitted);
@@ -493,6 +498,18 @@ export default class User {
   get isHavingPartnerConfigs() {
     const currentMerchant = (this.merchants || {})[this.current];
     return !!currentMerchant.partner_type && (currentMerchant.partner || {}).has_commission_configs;
+  }
+
+  get showActivationMobileForm() {
+    return (
+      isMobileDevice() &&
+      this.isInstantActivationEnabled &&
+      ((this.dedupe?.isMatch && !this.isAccepted) ||
+        this.isAccepted ||
+        this.needsClarification ||
+        this.isRejected ||
+        this.isActivatedMCCPending)
+    );
   }
 
   get isHavingSubventionConfigs() {
@@ -775,7 +792,7 @@ export default class User {
       return true;
     }
 
-    const status = !!(LocalStorageService.getItem(`QR-codes-${getMode()}-${this.current}`))
+    const status = !!LocalStorageService.getItem(`QR-codes-${getMode()}-${this.current}`);
 
     return status;
   }
@@ -1035,6 +1052,7 @@ export default class User {
   get canGenerateTnCPage() {
     return this.getExpStatus('merchant_tnc');
   }
+
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

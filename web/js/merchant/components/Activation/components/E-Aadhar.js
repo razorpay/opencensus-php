@@ -44,7 +44,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking,
           readOnly={true}
         />
         <div className="Input-content e-aadhar-success-text">
-          We have recieved your Aadhar details
+          We have receive your Aadhar details
         </div>
       </>
     );

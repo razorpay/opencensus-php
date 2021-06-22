@@ -9,32 +9,30 @@ import Button from '@razorpay/blade-old/src/atoms/Button';
 import Link from '@commander/shield/src/shared/Link';
 import { FullPageLoader } from 'v2/components/Loader';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-// import { getMerchantFlow, isL1Submitted, getPoiVerificationStatus } from '../../services/utils';
-import { Tabs, Tab } from '../../../../../components/Tabs';
 import {
-  // isVisible,
-  useActivationFormState,
-} from '../../context/store';
+  isL1Submitted,
+  getPoiVerificationStatus,
+  hasSelectedBlacklistCategory,
+  isUnregisteredBusiness,
+} from 'v2/merchant/onboarding/mobile/services/utils';
+import { Tabs, Tab } from '../../../../../components/Tabs';
+import { useActivationFormState } from '../../context/store';
 import useActivation from '../../hooks/useActivation';
+import useBusinessCategory from '../../hooks/useBusinessCategory';
 import BankDetails from '../../BankDetails';
 import ContactDetails from '../../ContactDetails';
 import BusinessOverview from '../../BusinessOverview';
 import BusinessDetails from '../../BusinessDetails';
 import DocumentUpload from '../../DocumentUpload';
-import {
-  EnableSettlements as EnableSettlementModal,
-  SubmitForm as SubmitFormModal,
-  Dedupe as DedupeModal,
-  TnC as TnCModal,
-} from '../../ActivationModals';
 import SaveAndExitModal from '../../SaveAndExitModal';
 import FAQs from '../../FAQs/FAQs';
 import { checkIfDedupe } from '../../services/utils';
-// import { L1_FORM_FIELD_NAMES } from '../../Constants/OnboardingConstants';
 import { analyticsTrack } from '../../../../../services/tracking/segment';
-
+import { ActivationModal, ModalTypeT } from '../../ActivationModals';
 import { useApp } from 'v2/context/App';
-type NextTextT = 'Submit And Verify' | 'Save And Verify' | 'Next';
+import { switchMode } from 'v2/services/mode';
+
+type NextTextT = 'Submit And Verify' | 'Submit KYC' | 'Next';
 
 const StyledFooter = styled(View)`
   box-sizing: border-box;
@@ -56,13 +54,9 @@ const StyledHeader = styled(View)`
 `;
 
 const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
-  const {
-    status,
-    data,
-    postData,
-    // instantPostData
-  } = useActivation();
-  const { user } = useApp();
+  const { status: activationStatus, data, postData } = useActivation();
+  const { user, experiments } = useApp();
+  const [status, businessCategoriesData] = useBusinessCategory('');
   const isContactDetailsCompleted = useActivationFormState(
     (state) => state.isContactDetailsCompleted,
   );
@@ -78,52 +72,62 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   const isDocumentsUploadCompleted = useActivationFormState(
     (state) => state.isDocumentsUploadCompleted,
   );
-  // const isL1Complete = [
-  //   isContactDetailsCompleted,
-  //   isBusinessOverviewCompleted,
-  //   isBusinessDetailsCompleted,
-  // ].every((isComplete) => isComplete);
 
   const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
   const activeTabId = useActivationFormState((state) => state.active_tab_id);
   const setActiveTabId = useActivationFormState((state) => state.setActiveTabId);
-  const [
-    isEnableSettlementModalOpen,
-    // setIsEnableSettlementModalOpen
-  ] = useState(false);
-  const [isSubmitFormModalOpen, setIsSubmitFormModalOpen] = useState(false);
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
-  const [isDedupeModalOpen, setIsDedupeModalOpen] = useState(false);
-  const [isTncModalOpen, setIsTncModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [modalType, setModalType] = useState<ModalTypeT>('');
 
-  // const isUnregPoiStatus = getPoiVerificationStatus(data);
-  if (status === 'loading') {
+  if (activationStatus === 'loading') {
     return <FullPageLoader />;
   }
 
-  if (status === 'error') {
+  if (activationStatus === 'error') {
     return <div>Something went wrong</div>;
   }
 
-  // const merchantFlow = getMerchantFlow(data.business_type, data.activation_flow);
   const {
-    // onboarding_milestone,
+    activation_form_milestone,
     can_submit,
+    submitted,
+    locked,
+    poi_verification_status,
+    activation_status,
   } = data;
-  // const submitL1 = () => {
-  //   const l1ReqData = L1_FORM_FIELD_NAMES.reduce((acc, key) => {
-  //     if (isVisible(key, data)) {
-  //       acc[key] = data[key];
-  //     }
-  //     return acc;
-  //   }, {});
 
-  //   instantPostData(l1ReqData).then((res) => {
-  //     if (res && res.onboarding_milestone === 'L1') {
-  //       setIsEnableSettlementModalOpen(true);
-  //     }
-  //   });
-  // };
+  const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
+
+  const merchantDedupeStatus = checkIfDedupe({ ...data, isInstantActivationEnabled });
+  const isDedupe = merchantDedupeStatus === 'blocked';
+
+  const isBlackListCategory =
+    status === 'success' && hasSelectedBlacklistCategory(data, businessCategoriesData);
+
+  const submitL1 = () => {
+    postData({ activation_form_milestone: 'L1' }).then((res) => {
+      if (res && res.activation_form_milestone === 'L1') {
+        const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
+        if (dedupeStatus === 'blocked') {
+          setModalType('dedupe');
+        } else if (
+          isUnregisteredBusiness(res.business_type) &&
+          res.poi_verification_status === 'initiated' &&
+          experiments.canSkipPoiValidation
+        ) {
+          setModalType('poi_initiated');
+        } else if (res.activated && res.activation_status === 'instantly_activated') {
+          setModalType('payment_enable');
+          switchMode(user.current, 'live');
+        } else if (dedupeStatus === 'partial_match' || res?.activation_flow === 'greylist') {
+          setModalType('payment_disable');
+        }
+        setIsModalOpen(true);
+      }
+    });
+  };
+
   const submitL2 = () => {
     analyticsTrack({
       objectName: 'SignUp',
@@ -135,24 +139,30 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         clickSource: 'submit-and-verify',
       },
     });
-    postData({ submit: 1 }).then((res) => {
-      const isDedupeState = checkIfDedupe(res);
-      if (res && res.submitted && isDedupeState) {
-        setIsDedupeModalOpen(true);
-      } else if (res && !res.business_website && user.canGenerateTnCPage) {
-        setIsTncModalOpen(true);
-      } else {
-        analyticsTrack({
-          objectName: 'SignUp',
-          actionName: 'submit form',
-          screen: 'home page',
-          eventAction: 'success',
-          user,
-          properties: {
-            clickSource: 'submit-and-verify',
-          },
-        });
-        setIsSubmitFormModalOpen(true);
+    const payload = isInstantActivationEnabled
+      ? { activation_form_milestone: 'L2' }
+      : { submit: 1 };
+    postData(payload).then((res) => {
+      if (res) {
+        const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
+        if (res.submitted && dedupeStatus === 'blocked') {
+          setModalType('dedupe');
+        } else if (!res.business_website && experiments.canGenerateTnCPage) {
+          setModalType('tnc');
+        } else {
+          analyticsTrack({
+            objectName: 'SignUp',
+            actionName: 'submit form',
+            screen: 'home page',
+            eventAction: 'success',
+            user,
+            properties: {
+              clickSource: 'submit-and-verify',
+            },
+          });
+          setModalType('under_review');
+        }
+        setIsModalOpen(true);
       }
     });
   };
@@ -160,15 +170,15 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     if (activeTabId === 'documents') {
       return 'Submit And Verify';
     }
-    // if (
-    //   activeTabId === 'business_details' &&
-    //   (!isL1Submitted(onboarding_milestone) || isUnregPoiStatus)
-    // ) {
-    //   if (merchantFlow === 'greylist') {
-    //     return 'Next';
-    //   }
-    //   return 'Save And Verify';
-    // }
+    if (
+      activeTabId === 'business_details' &&
+      isInstantActivationEnabled &&
+      (!isL1Submitted(activation_form_milestone) ||
+        isDedupe ||
+        poi_verification_status === 'initiated')
+    ) {
+      return 'Submit KYC';
+    }
     return 'Next';
   };
   const handleNextClick = () => {
@@ -234,15 +244,11 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             currentTabName: 'business details',
           },
         });
-        // if (
-        //   (isL1Submitted(onboarding_milestone) && !isUnregPoiStatus) ||
-        //   merchantFlow === 'greylist'
-        // ) {
-        setActiveTabId('bank_details');
-        // }
-        // if (!isL1Submitted(onboarding_milestone) || isUnregPoiStatus) {
-        //   submitL1();
-        // }
+        if (!isL1Submitted(activation_form_milestone) && isInstantActivationEnabled) {
+          submitL1();
+        } else {
+          setActiveTabId('bank_details');
+        }
         break;
       case 'bank_details':
         analyticsTrack({
@@ -294,12 +300,11 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     history.push('/onboarding/steps');
   };
 
+  const isL1AllTabComplete =
+    isContactDetailsCompleted && isBusinessOverviewCompleted && isBusinessDetailsCompleted;
+
   const isAllTabCompleted =
-    isContactDetailsCompleted &&
-    isBusinessOverviewCompleted &&
-    isBusinessDetailsCompleted &&
-    isBankAndCompanyDetailsCompleted &&
-    isDocumentsUploadCompleted;
+    isL1AllTabComplete && isBankAndCompanyDetailsCompleted && isDocumentsUploadCompleted;
 
   if (isContactDetailsCompleted) {
     analyticsTrack({
@@ -367,6 +372,43 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     });
   }
 
+  const canSubmitActivationForm = (): boolean => {
+    if (activeTabId === 'documents') {
+      return (
+        !can_submit ||
+        !isAllTabCompleted ||
+        (submitted && (locked || activation_status === 'needs_clarification'))
+      );
+    } else if (
+      activeTabId === 'business_details' &&
+      !isL1Submitted(activation_form_milestone) &&
+      isInstantActivationEnabled
+    ) {
+      return (
+        !isL1AllTabComplete ||
+        isBlackListCategory ||
+        (getPoiVerificationStatus(data) && !experiments.canSkipPoiValidation)
+      );
+    } else {
+      return (
+        false ||
+        (activeTabId === 'business_details' &&
+          (isDedupe || poi_verification_status === 'initiated') &&
+          isInstantActivationEnabled)
+      );
+    }
+  };
+
+  const isFormLocked = () => {
+    return (
+      !!locked ||
+      activation_status === 'needs_clarification' ||
+      (isUnregisteredBusiness(data.business_type) &&
+        activation_form_milestone === 'L1' &&
+        poi_verification_status === 'initiated')
+    );
+  };
+
   const getTabs = () => {
     const tabs = [
       <Tab
@@ -375,7 +417,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         tabId="contact_details"
         completed={isContactDetailsCompleted}
       >
-        <ContactDetails isFormLocked={!!data.locked} />
+        <ContactDetails isFormLocked={isFormLocked()} />
       </Tab>,
       <Tab
         key="business_overview"
@@ -383,7 +425,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         tabId="business_overview"
         completed={isBusinessOverviewCompleted}
       >
-        <BusinessOverview isFormLocked={!!data.locked} />
+        <BusinessOverview isFormLocked={isFormLocked()} />
       </Tab>,
       <Tab
         key="business_details"
@@ -391,48 +433,35 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         tabId="business_details"
         completed={isBusinessDetailsCompleted}
       >
-        <BusinessDetails isFormLocked={!!data.locked} />
-      </Tab>,
-      <Tab
-        key="bank_details"
-        title="Bank Details"
-        tabId="bank_details"
-        completed={isBankAndCompanyDetailsCompleted}
-      >
-        <BankDetails isFormLocked={!!data.locked} />
-      </Tab>,
-      <Tab
-        key="documents"
-        title="Documents"
-        tabId="documents"
-        completed={isDocumentsUploadCompleted}
-      >
-        <DocumentUpload isFormLocked={!!data.locked} />
+        <BusinessDetails isFormLocked={isFormLocked()} />
       </Tab>,
     ];
-    // if (
-    //   merchantFlow === 'greylist'
-    //  || (isL1Submitted(onboarding_milestone) && !isUnregPoiStatus)
-    // ) {
-    //   tabs.push(
-    //     <Tab
-    //       key="bank_details"
-    //       title="Bank Details"
-    //       tabId="bank_details"
-    //       completed={isBankAndCompanyDetailsCompleted}
-    //     >
-    //       <BankDetails />
-    //     </Tab>,
-    //     <Tab
-    //       key="documents"
-    //       title="Documents"
-    //       tabId="documents"
-    //       completed={isDocumentsUploadCompleted}
-    //     >
-    //       <DocumentUpload />
-    //     </Tab>,
-    //   );
-    // }
+    if (
+      (!isDedupe &&
+        (!isUnregisteredBusiness(data.business_type) || poi_verification_status !== 'initiated') &&
+        activation_form_milestone === 'L1') ||
+      ((isDedupe || !!submitted) && activation_form_milestone === 'L2') ||
+      !isInstantActivationEnabled
+    ) {
+      tabs.push(
+        <Tab
+          key="bank_details"
+          title="Bank Details"
+          tabId="bank_details"
+          completed={isBankAndCompanyDetailsCompleted}
+        >
+          <BankDetails isFormLocked={isFormLocked()} />
+        </Tab>,
+        <Tab
+          key="documents"
+          title="Documents"
+          tabId="documents"
+          completed={isDocumentsUploadCompleted}
+        >
+          <DocumentUpload isFormLocked={isFormLocked()} />
+        </Tab>,
+      );
+    }
     return tabs;
   };
   return (
@@ -449,20 +478,13 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
                   </View>
                 </Space>
                 <View>
-                  <Heading size="large">
-                    Account Details
-                    {/* {merchantFlow === 'greylist'
-                      ? 'Account Activation'
-                      : !isL1Submitted(onboarding_milestone) || isUnregPoiStatus
-                      ? 'Enable Payments'
-                      : 'Enable Settlements'} */}
-                  </Heading>
+                  <Heading size="large">Account Activation</Heading>
                 </View>
               </View>
             </Flex>
             <Link
               onClick={() => {
-                if (!data.submitted) {
+                if (!submitted && !isDedupe && data.poi_verification_status !== 'initiated') {
                   setIsSaveAndExitModalOpen(true);
                 } else {
                   history.push('/dashboard');
@@ -529,14 +551,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           </Button>
           <Button
             onClick={() => handleNextClick()}
-            disabled={
-              activeTabId === 'documents' ? !can_submit || !isAllTabCompleted : false
-              // (activeTabId === 'business_details' &&
-              //     !isL1Complete &&
-              //     merchantFlow !== 'greylist' &&
-              //     !isL1Submitted(onboarding_milestone)) ||
-              //   isUnregPoiStatus
-            }
+            disabled={canSubmitActivationForm()}
             icon="chevronRight"
             iconAlign="right"
           >
@@ -544,13 +559,13 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           </Button>
         </StyledFooter>
       </Flex>
-      <EnableSettlementModal isOpen={isEnableSettlementModalOpen} />
-      <SubmitFormModal
-        isOpen={isSubmitFormModalOpen}
-        hasClarificationReasons={data.kyc_clarification_reasons?.nc_count}
+      <ActivationModal
+        isOpen={isModalOpen}
+        modalType={modalType}
+        closeModal={() => setIsModalOpen(false)}
+        dedupeStatus={merchantDedupeStatus}
+        activationData={data}
       />
-      <DedupeModal isOpen={isDedupeModalOpen} />
-      <TnCModal isOpen={isTncModalOpen} onClose={() => setIsTncModalOpen(false)} />
       <SaveAndExitModal
         isOpen={isSaveAndExitModalOpen}
         onClose={() => setIsSaveAndExitModalOpen(false)}

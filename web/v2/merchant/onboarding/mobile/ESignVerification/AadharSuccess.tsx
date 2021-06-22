@@ -11,7 +11,7 @@ const AadharSuccess: React.FC = () => {
         Aadhar Verification ( Via OTP )
       </Text>
       <Text size="xsmall" color="positive.900">
-        We have recieved your Aadhar details successfully
+        We have Received your Aadhar details successfully
       </Text>
       <Space margin={[4, 0, 0, 0]}>
         <View>

@@ -50,6 +50,7 @@ export const analyticsTrack = ({
   screen,
   properties = {},
   eventAction,
+  activationType = 'kyc',
   user,
 }) => {
   if (!objectName) {
@@ -73,7 +74,7 @@ export const analyticsTrack = ({
   }
 
   const eventName = titleCase(`${objectName} ${actionName} ${eventAction}`);
-  const dataLakeEventName = `kyc.${actionName.split(' ').join('_')}`;
+  const dataLakeEventName = `${activationType}.${actionName.split(' ').join('_')}`;
   const commonProperties = getCommonProperties({ screen, properties, user });
   if (window.analytics) {
     window.analytics.track(eventName, {

@@ -11,6 +11,15 @@ if (typeof global.process === 'undefined') {
   worker.start();
 }
 
+const mockRazorXExp = {
+  isInstantActivationEnabled: true,
+  canSkipPoiValidation: false,
+  canGenerateTnCPage: false,
+  canSkipPOADocument: true,
+  isBDAndAovEnabled: true,
+  isEsignAadharEnabled: true,
+};
+
 addParameters({
   viewport: {
     viewports: INITIAL_VIEWPORTS, // newViewports would be an ViewportMap. (see below for examples)
@@ -23,7 +32,9 @@ addDecorator((story) => (
   </Router>
 ));
 addDecorator((StoryFn) => (
-  <Wrapper context={{ mode: 'test', org: {}, user: {} }}>{<StoryFn />}</Wrapper>
+  <Wrapper context={{ mode: 'test', org: {}, user: {}, experiments: mockRazorXExp }}>
+    {<StoryFn />}
+  </Wrapper>
 ));
 
 //export const decorators = [addDecorator];

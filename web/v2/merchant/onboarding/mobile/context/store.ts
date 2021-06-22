@@ -8,6 +8,7 @@ import {
   isBusinessProofUrlVisible,
   isBusinessPanVisible,
   isPersonalPanVisible,
+  isL1Submitted,
 } from 'v2/merchant/onboarding/mobile/services/utils';
 import { CIN_BusinessTypes, LLPIN_BusinessTypes } from '../../mobile/Constants/OnboardingConstants';
 
@@ -29,7 +30,8 @@ const isVisible = (fieldName, context) => {
       );
     case 'gstin':
       return (
-        !isUnregisteredBusiness(context.business_overview.business_type.value) && !context.hasGSTIN
+        !isUnregisteredBusiness(context.business_overview.business_type.value) &&
+        (isL1Submitted(context.activation_form_milestone) || !context.isInstantActivationEnabled)
       );
     case 'company_cin':
       return (

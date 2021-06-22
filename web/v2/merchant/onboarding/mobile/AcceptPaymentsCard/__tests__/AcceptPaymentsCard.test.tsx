@@ -1,63 +1,61 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
+import { useQuery } from 'react-query';
 import AcceptPaymentsCard from '../index';
 import * as ActivationDB from '../../services/data/ActivationDB';
 import * as InternationalWorkflowDB from '../../services/data/InternationalWorkflowDB';
 import * as WebsiteWorkflowDB from '../../services/data/WebsiteWorkflowDB';
+import * as PaymentEscalationDB from '../../services/data/PaymentEscalationDB';
 import * as ActivationDataPieces from '../../services/data/pieces';
 import * as Messages from '../Constants';
-import { NOT_REGISTERED, PROPRIETORSHIP } from '../../Constants/OnboardingConstants';
+import useActivation from '../../hooks/useActivation';
+import useEscalation from '../../hooks/useEscalation';
+import { PROPRIETORSHIP } from '../../Constants/OnboardingConstants';
 import { render, screen, waitForElementToBeRemoved } from 'test-utils';
-
-const waitForLoadingToFinish = () =>
-  waitForElementToBeRemoved(() => [...screen.queryAllByRole('payment_card')], { timeout: 8000 });
+import { fetch } from 'v2/services/rest/rest-fetch';
 
 afterEach(() => {
   ActivationDB.reset();
   InternationalWorkflowDB.reset();
   WebsiteWorkflowDB.reset();
+  PaymentEscalationDB.reset();
 });
 
-test.skip('should render correct message for unregistered merchant after submitting L1', async () => {
-  ActivationDB.update({
-    ...ActivationDataPieces.ActivationFlowUnreg,
-    ...ActivationDataPieces.OnboardingMileStoneL1,
-    business_type: NOT_REGISTERED,
-  });
-  render(<AcceptPaymentsCard />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.INTERNATIONAL_FLOW.unreg.l1_submitted.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.INTERNATIONAL_FLOW.unreg.l1_submitted.description),
-  ).toBeInTheDocument();
-});
+const fetchInternationalProductStatus = () =>
+  fetch<any>({ url: 'merchants/product_international/workflow/status/all', mode: 'live' }).then(
+    (res: any) => {
+      return res.data;
+    },
+  );
 
-test.skip('should render correct message for AF whitelist IAF greylist merchant after submitting L1', async () => {
-  ActivationDB.update({
-    ...ActivationDataPieces.ActivationFlowWG,
-    ...ActivationDataPieces.OnboardingMileStoneL1,
-    business_type: PROPRIETORSHIP,
-  });
-  render(<AcceptPaymentsCard />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.l1_submitted.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.l1_submitted.description),
-  ).toBeInTheDocument();
-});
+const App: React.FC = () => {
+  const { status } = useActivation();
+  const { status: workFlowStatus } = useQuery(
+    'internationalWorkflowStatus',
+    fetchInternationalProductStatus,
+    {
+      retry: false,
+      staleTime: Infinity,
+    },
+  );
+  const { status: escalationsStatus } = useEscalation();
 
-test.skip('should render correct message for AF whitelist IAF greylist merchant after comepleting activation', async () => {
+  if (status === 'loading' || workFlowStatus === 'loading' || escalationsStatus === 'loading')
+    return <div>Loading...</div>;
+  return <AcceptPaymentsCard />;
+};
+
+const waitForLoadingToFinish = () =>
+  waitForElementToBeRemoved(() => screen.queryByText('Loading...'));
+
+test('should render correct message for AF whitelist IAF greylist merchant after comepleting activation', async () => {
   ActivationDB.update({
     ...ActivationDataPieces.ActivationFlowWG,
     ...ActivationDataPieces.OnboardingMileStoneL2,
     activation_status: 'activated',
     business_type: PROPRIETORSHIP,
   });
-  render(<AcceptPaymentsCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.account_activated.title),
@@ -67,13 +65,13 @@ test.skip('should render correct message for AF whitelist IAF greylist merchant 
   ).toBeInTheDocument();
 });
 
-test.skip('should render correct message for AF whitelist IAF whitelist merchant after submitting L1 (no website)', async () => {
+test('should render correct message for AF whitelist IAF whitelist merchant after submitting L1 (no website)', async () => {
   ActivationDB.update({
     ...ActivationDataPieces.ActivationFlowWW,
     ...ActivationDataPieces.OnboardingMileStoneL1,
     business_type: PROPRIETORSHIP,
   });
-  render(<AcceptPaymentsCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.no_website.title),
@@ -83,7 +81,7 @@ test.skip('should render correct message for AF whitelist IAF whitelist merchant
   ).toBeInTheDocument();
 });
 
-test.skip('should render correct message for AF whitelist IAF whitelist merchant after submitting L1 (has website)', async () => {
+test('should render correct message for AF whitelist IAF whitelist merchant after submitting L1 (has website)', async () => {
   InternationalWorkflowDB.update({
     payment_gateway: 'approved',
   });
@@ -93,7 +91,7 @@ test.skip('should render correct message for AF whitelist IAF whitelist merchant
     business_website: 'https://www.google.com',
     business_type: PROPRIETORSHIP,
   });
-  render(<AcceptPaymentsCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.has_website.title),
@@ -103,14 +101,14 @@ test.skip('should render correct message for AF whitelist IAF whitelist merchant
   ).toBeInTheDocument();
 });
 
-test.skip('should render correct message for AF whitelist IAF whitelist merchant after submitting L2 (no website)', async () => {
+test('should render correct message for AF whitelist IAF whitelist merchant after submitting L2 (no website)', async () => {
   ActivationDB.update({
     ...ActivationDataPieces.ActivationFlowWW,
     ...ActivationDataPieces.OnboardingMileStoneL2,
     activation_status: 'activated',
     business_type: PROPRIETORSHIP,
   });
-  render(<AcceptPaymentsCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.account_activated.no_website.title),
@@ -122,7 +120,7 @@ test.skip('should render correct message for AF whitelist IAF whitelist merchant
   ).toBeInTheDocument();
 });
 
-test.skip('should render correct message for AF whitelist IAF whitelist merchant after submitting L2 (has website)', async () => {
+test('should render correct message for AF whitelist IAF whitelist merchant after submitting L2 (has website)', async () => {
   InternationalWorkflowDB.update({
     payment_gateway: 'approved',
   });
@@ -133,7 +131,7 @@ test.skip('should render correct message for AF whitelist IAF whitelist merchant
     activation_status: 'activated',
     business_type: PROPRIETORSHIP,
   });
-  render(<AcceptPaymentsCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.account_activated.has_website.title),
@@ -145,27 +143,27 @@ test.skip('should render correct message for AF whitelist IAF whitelist merchant
   ).toBeInTheDocument();
 });
 
-test.skip('should render correct message for AF greylist IAF blacklist merchant after submitting L2', async () => {
+test('should render correct message for AF greylist IAF blacklist merchant after submitting L2', async () => {
   ActivationDB.update({
     ...ActivationDataPieces.ActivationFlowGB,
     ...ActivationDataPieces.OnboardingMileStoneL2,
     business_type: PROPRIETORSHIP,
     activation_status: 'activated',
   });
-  render(<AcceptPaymentsCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(screen.getByText(Messages.INTERNATIONAL_BLACKLIST.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.INTERNATIONAL_BLACKLIST.description)).toBeInTheDocument();
 });
 
-test.skip('should render correct message for AF greylist IAF greylist merchant after submitting L1', async () => {
+test('should render correct message for AF greylist IAF greylist merchant after submitting L1', async () => {
   ActivationDB.update({
     ...ActivationDataPieces.ActivationFlowGG,
     ...ActivationDataPieces.OnboardingMileStoneL2,
     activation_status: 'activated',
     business_type: PROPRIETORSHIP,
   });
-  render(<AcceptPaymentsCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(screen.getByText(Messages.INTERNATIONAL_FLOW.af_gl_iaf_gl.title)).toBeInTheDocument();
   expect(
@@ -173,7 +171,7 @@ test.skip('should render correct message for AF greylist IAF greylist merchant a
   ).toBeInTheDocument();
 });
 
-test.skip('should render correct message if international payments request is in review', async () => {
+test('should render correct message if international payments request is in review', async () => {
   InternationalWorkflowDB.update({
     payment_gateway: 'in_review',
   });
@@ -183,7 +181,7 @@ test.skip('should render correct message if international payments request is in
     activation_status: 'activated',
     business_type: PROPRIETORSHIP,
   });
-  render(<AcceptPaymentsCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(screen.getByText(Messages.INTERNATIONAL_REQUEST.in_review.title)).toBeInTheDocument();
   expect(
@@ -191,7 +189,7 @@ test.skip('should render correct message if international payments request is in
   ).toBeInTheDocument();
 });
 
-test.skip('should render correct message if international payments request was rejected', async () => {
+test('should render correct message if international payments request was rejected', async () => {
   InternationalWorkflowDB.update({
     payment_gateway: 'rejected',
   });
@@ -201,8 +199,46 @@ test.skip('should render correct message if international payments request was r
     activation_status: 'activated',
     business_type: PROPRIETORSHIP,
   });
-  render(<AcceptPaymentsCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(screen.getByText(Messages.INTERNATIONAL_REQUEST.rejected.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.INTERNATIONAL_REQUEST.rejected.description)).toBeInTheDocument();
+});
+
+test('should render correct message for payment get breached if payment enable', async () => {
+  ActivationDB.update({
+    ...ActivationDataPieces.OnboardingMileStoneL1,
+  });
+  PaymentEscalationDB.update({
+    amount: '1700000',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.getByText(Messages.PAYMENT_ESCALATION.breach)).toBeInTheDocument();
+});
+
+test('should render correct message if payment not breached', async () => {
+  ActivationDB.update({
+    ...ActivationDataPieces.PaymentEnable,
+    ...ActivationDataPieces.regBusinessOverview,
+    ...ActivationDataPieces.OnboardingMileStoneL1,
+  });
+  PaymentEscalationDB.update({
+    amount: '1000000',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.getByText(Messages.PAYMENT_ESCALATION.not_breach)).toBeInTheDocument();
+});
+
+test('should not render payment escalation card if payment is disable and not breached', async () => {
+  ActivationDB.update({
+    ...ActivationDataPieces.OnboardingMileStoneL1,
+  });
+  PaymentEscalationDB.update({
+    amount: '900000',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(() => screen.getByText(Messages.PAYMENT_ESCALATION.not_breach)).toThrow();
 });

@@ -5,7 +5,6 @@ import Size from '@razorpay/blade-old/src/atoms/Size';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
-import Button from '@razorpay/blade-old/src/atoms/Button';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import Card from '../../../../components/Card';
 import FormIcon from './Icons/FormIcon.svg';
@@ -35,14 +34,14 @@ const OnboardingCardShimmer: React.FC = () => {
               <Space margin={[0, 0, 0.5, 0]}>
                 <HeadingContainer>
                   <Text size="large" weight="bold">
-                    Activate Details
+                    Account Activation
                   </Text>
                 </HeadingContainer>
               </Space>
               <Space margin={[0, 2.5, 0, 0]}>
-                <Text size="xsmall" color="shade.950">
-                  Provide following details to start your activation process.
-                </Text>
+                <Size height="10px">
+                  <Container />
+                </Size>
               </Space>
             </HeadingContainer>
             <img src={FormIcon} alt="fill_activation_form_icon" />
@@ -50,7 +49,22 @@ const OnboardingCardShimmer: React.FC = () => {
         </Flex>
         <Separator />
         <View>
-          <Space margin={[0, 0, 1.375, 0]}>
+          <Space margin={[0, 0, 2, 0]}>
+            <Size height="20px">
+              <Container />
+            </Size>
+          </Space>
+          <Space margin={[0, 0, 2, 0]}>
+            <Size height="8px" width="48%">
+              <Container />
+            </Size>
+          </Space>
+          <Space margin={[0, 0, 2, 0]}>
+            <Size height="20px">
+              <Container />
+            </Size>
+          </Space>
+          <Space margin={[0, 0, 2, 0]}>
             <Size height="8px" width="48%">
               <Container />
             </Size>
@@ -58,23 +72,6 @@ const OnboardingCardShimmer: React.FC = () => {
           <Size height="20px">
             <Container />
           </Size>
-          <br />
-          {/* <Space margin={[1.5, 0, 1.375, 0]}>
-            <Size height="8px" width="48%">
-              <Container />
-            </Size>
-          </Space>
-          <Size height="20px">
-            <Container />
-          </Size> */}
-          <br />
-          <Space margin={[2.5, 0, 0, 0]}>
-            <View>
-              <Button block size="large" disabled={true}>
-                Start Activation
-              </Button>
-            </View>
-          </Space>
         </View>
       </Card>
     </View>

@@ -1,41 +1,33 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { useQuery } from 'react-query';
 import * as Messages from '../Constants';
-import * as PaymentsDB from '../../services/data/PaymentsDB';
 import * as ActivationDB from '../../services/data/ActivationDB';
 import * as DataPieces from '../../services/data/pieces';
 import OnboardingCardShimmer from '../OnboardingCardShimmer';
 import useActivation from '../../hooks/useActivation';
+import useEscalation from '../../hooks/useEscalation';
 import CurrentActivationProgress from 'v2/merchant/onboarding/mobile/OnboardingCard/CurrentActivationProgress';
 import { render, screen, waitForElementToBeRemoved } from 'test-utils';
-import { fetch } from 'v2/services/rest/rest-fetch';
 
 afterEach(() => {
   ActivationDB.reset();
-  PaymentsDB.reset();
 });
-
-const fetchPayments = async () => {
-  const data = await fetch<any>({ url: 'payments' });
-  return data;
-};
 
 const waitForLoadingToFinish = () =>
   waitForElementToBeRemoved(() => [...screen.queryAllByRole('shimmer')], { timeout: 4000 });
 
 const App: React.FC = () => {
   const { status: activationQueryStatus, data: activationData } = useActivation();
-  const { status: paymentsQueryStatus, data: paymentsData } = useQuery('payments', fetchPayments);
-  if (activationQueryStatus === 'loading' || paymentsQueryStatus === 'loading')
+  const { status: escalationsStatus, data: escalationsData } = useEscalation();
+  if (activationQueryStatus === 'loading' || escalationsStatus === 'loading')
     return <OnboardingCardShimmer />;
-  return <CurrentActivationProgress data={activationData} payments={paymentsData} />;
+  return <CurrentActivationProgress data={activationData} escalation={escalationsData} />;
 };
 
 test('should render correct message for poi_verification_status = incorrect_details', async () => {
   ActivationDB.update({
     ...DataPieces.ActivationFlowGG,
-    ...DataPieces.OnboardingMileStoneBizPicker,
+    ...DataPieces.unregBusinessOverview,
     ...DataPieces.POIStatus.incorrect_details,
   });
   render(<App />, {});
@@ -51,7 +43,7 @@ test('should render correct message for poi_verification_status = incorrect_deta
 test('should render correct message for poi_verification_status = failed', async () => {
   ActivationDB.update({
     ...DataPieces.ActivationFlowGG,
-    ...DataPieces.OnboardingMileStoneBizPicker,
+    ...DataPieces.unregBusinessOverview,
     ...DataPieces.POIStatus.failed,
   });
   render(<App />, {});
@@ -63,18 +55,16 @@ test('should render correct message for poi_verification_status = failed', async
 test('should render correct message for poi_verification_status = pending', async () => {
   ActivationDB.update({
     ...DataPieces.ActivationFlowGG,
-    ...DataPieces.OnboardingMileStoneBizPicker,
+    ...DataPieces.unregBusinessOverview,
     ...DataPieces.POIStatus.pending,
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.POI_VERIFICATION_STATUS.pending.title)).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.POI_VERIFICATION_STATUS.pending.description),
-  ).toBeInTheDocument();
+  expect(() => screen.getByText(Messages.POI_VERIFICATION_STATUS.pending.title)).toThrow();
+  expect(() => screen.getByText(Messages.POI_VERIFICATION_STATUS.pending.description)).toThrow();
 });
 
-test.skip('should render correct message for bank_details_verification_status = failed', async () => {
+test('should render correct message for bank_details_verification_status = failed', async () => {
   ActivationDB.update({
     ...DataPieces.ActivationFlowGG,
     ...DataPieces.OnboardingMileStoneL2,
@@ -91,25 +81,28 @@ test.skip('should render correct message for bank_details_verification_status = 
   ).toBeInTheDocument();
 });
 
-test.skip('should render correct message for activation_status = under_review', async () => {
+test('should render correct message for activation_status = under_review if payment is enabled', async () => {
   ActivationDB.update({
     ...DataPieces.ActivationFlowGG,
     ...DataPieces.regBusinessOverview,
     ...DataPieces.OnboardingMileStoneL2,
     ...DataPieces.POIStatus.pending,
+    ...DataPieces.PaymentEnable,
     activation_status: 'under_review',
   });
   render(<App />, {});
   await waitForLoadingToFinish();
   expect(
-    screen.getByText(Messages.ACTIVATION_STATUS_UNDER_REVIEW.registered.title),
+    screen.getByText(Messages.ACTIVATION_STATUS_UNDER_REVIEW.new_flow.title),
   ).toBeInTheDocument();
   expect(
-    screen.getByText(Messages.ACTIVATION_STATUS_UNDER_REVIEW.registered.description),
+    screen.getByText(
+      Messages.ACTIVATION_STATUS_UNDER_REVIEW.new_flow.description_with_payment_enable,
+    ),
   ).toBeInTheDocument();
 });
 
-test.skip('should render correct message for activation_status = needs_clarification', async () => {
+test('should render correct message for activation_status = needs_clarification', async () => {
   ActivationDB.update({
     ...DataPieces.ActivationFlowGG,
     ...DataPieces.regBusinessOverview,
@@ -123,11 +116,11 @@ test.skip('should render correct message for activation_status = needs_clarifica
     screen.getByText(Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.title),
   ).toBeInTheDocument();
   expect(
-    screen.getByText(Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.description),
+    screen.getByText(Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.description.normal),
   ).toBeInTheDocument();
 });
 
-test.skip('should render correct message for activation_status = activated', async () => {
+test('should render correct message for activation_status = activated', async () => {
   ActivationDB.update({
     ...DataPieces.ActivationFlowGG,
     ...DataPieces.regBusinessOverview,
@@ -141,339 +134,76 @@ test.skip('should render correct message for activation_status = activated', asy
   expect(screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED.description)).toBeInTheDocument();
 });
 
-test('should render correct message for AF = greylist and IAF = greylist when multiple steps are pending', async () => {
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowGG,
-    ...DataPieces.regBusinessOverview,
-    ...DataPieces.OnboardingMileStoneBizPicker,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_gl.iaf_gl.multiple.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_gl.iaf_gl.multiple.description),
-  ).toBeInTheDocument();
-});
-
-test.skip('should render correct message for AF = greylist and IAF = greylist when one step is pending', async () => {
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowGG,
-    ...DataPieces.contactDetails,
-    ...DataPieces.regBusinessOverview,
-    ...DataPieces.businessDetails,
-    ...DataPieces.bankAndCompanyDetails,
-    ...DataPieces.OnboardingMileStoneBizPicker,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.REMAINING_STEPS.af_gl.iaf_gl.single.title)).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_gl.iaf_gl.single.description),
-  ).toBeInTheDocument();
-});
-
-test('should render correct message for AF = greylist and IAF = blacklist when multiple steps are pending', async () => {
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowGB,
-    ...DataPieces.regBusinessOverview,
-    ...DataPieces.OnboardingMileStoneBizPicker,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_gl.iaf_bl.multiple.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_gl.iaf_bl.multiple.description),
-  ).toBeInTheDocument();
-});
-
-test.skip('should render correct message for AF = greylist and IAF = blacklist when one step is pending', async () => {
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowGB,
-    ...DataPieces.contactDetails,
-    ...DataPieces.regBusinessOverview,
-    ...DataPieces.businessDetails,
-    ...DataPieces.bankAndCompanyDetails,
-    ...DataPieces.OnboardingMileStoneBizPicker,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.REMAINING_STEPS.af_gl.iaf_bl.single.title)).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_gl.iaf_bl.single.description),
-  ).toBeInTheDocument();
-});
-
-test('should render correct message for AF = whitelist and IAF = whitelist when multiple payment enable steps pending', async () => {
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowWW,
-    ...DataPieces.OnboardingMileStoneBizPicker,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_wl.enable_payments.multiple.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_wl.enable_payments.multiple.description),
-  ).toBeInTheDocument();
-});
-
-test.skip('should render correct message for AF = whitelist and IAF = whitelist when only one payment enable step pending', async () => {
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowWW,
-    ...DataPieces.OnboardingMileStoneBizPicker,
-    ...DataPieces.contactDetails,
-    ...DataPieces.regBusinessOverview,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_wl.enable_payments.single.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_wl.enable_payments.single.description),
-  ).toBeInTheDocument();
-});
-
-test('should render correct message for AF = whitelist and IAF = whitelist when multiple enable-settlement steps pending (live transaction done)', async () => {
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowWW,
-    ...DataPieces.contactDetails,
-    ...DataPieces.regBusinessOverview,
-    ...DataPieces.businessDetails,
-    ...DataPieces.OnboardingMileStoneL1,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(
-      Messages.REMAINING_STEPS.af_wl.iaf_wl.enable_settlements.live_transaction_done.multiple.title,
-    ),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(
-      Messages.REMAINING_STEPS.af_wl.iaf_wl.enable_settlements.live_transaction_done.multiple
-        .description,
-    ),
-  ).toBeInTheDocument();
-});
-
-test('should render correct message for AF = whitelist and IAF = whitelist when only one enable-settlement step pending (live transaction done)', async () => {
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowWW,
-    ...DataPieces.contactDetails,
-    ...DataPieces.regBusinessOverview,
-    ...DataPieces.businessDetails,
-    ...DataPieces.bankAndCompanyDetails,
-    ...DataPieces.OnboardingMileStoneL1,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(
-      Messages.REMAINING_STEPS.af_wl.iaf_wl.enable_settlements.live_transaction_done.single.title,
-    ),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(
-      Messages.REMAINING_STEPS.af_wl.iaf_wl.enable_settlements.live_transaction_done.single
-        .description,
-    ),
-  ).toBeInTheDocument();
-});
-
-test('should render correct message for AF = whitelist and IAF = whitelist when multiple enable-settlement steps pending (live transaction not done)', async () => {
-  PaymentsDB.update({ items: [] });
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowWW,
-    ...DataPieces.contactDetails,
-    ...DataPieces.regBusinessOverview,
-    ...DataPieces.OnboardingMileStoneL1,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(
-      Messages.REMAINING_STEPS.af_wl.iaf_wl.enable_settlements.live_transaction_not_done.multiple
-        .title,
-    ),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(
-      Messages.REMAINING_STEPS.af_wl.iaf_wl.enable_settlements.live_transaction_not_done.multiple
-        .description,
-    ),
-  ).toBeInTheDocument();
-});
-
-test('should render correct message for AF = whitelist and IAF = whitelist when only one enable-settlement step pending (live transaction not done)', async () => {
-  PaymentsDB.update({ items: [] });
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowWW,
-    ...DataPieces.contactDetails,
-    ...DataPieces.regBusinessOverview,
-    ...DataPieces.businessDetails,
-    ...DataPieces.bankAndCompanyDetails,
-    ...DataPieces.OnboardingMileStoneL1,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(
-      Messages.REMAINING_STEPS.af_wl.iaf_wl.enable_settlements.live_transaction_not_done.single
-        .title,
-    ),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(
-      Messages.REMAINING_STEPS.af_wl.iaf_wl.enable_settlements.live_transaction_not_done.single
-        .description,
-    ),
-  ).toBeInTheDocument();
-});
-
-test('should render correct message for AF = whitelist and IAF = greylist when multiple payment enable steps pending', async () => {
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowWG,
-    ...DataPieces.OnboardingMileStoneBizPicker,
-    business_type: 1,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_gl.enable_payments.multiple.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_gl.enable_payments.multiple.description),
-  ).toBeInTheDocument();
-});
-
-test.skip('should render correct message for AF = whitelist and IAF = greylist when only one payment enable step pending', async () => {
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowWG,
-    ...DataPieces.contactDetails,
-    ...DataPieces.regBusinessOverview,
-    ...DataPieces.OnboardingMileStoneBizPicker,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_gl.enable_payments.single.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_gl.enable_payments.single.description),
-  ).toBeInTheDocument();
-});
-
-test('should render correct message for AF = whitelist and IAF = greylist when multiple enable-settlement steps pending', async () => {
-  PaymentsDB.update({ items: [] });
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowWG,
-    ...DataPieces.contactDetails,
-    ...DataPieces.regBusinessOverview,
-    ...DataPieces.businessDetails,
-    ...DataPieces.OnboardingMileStoneL1,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_gl.enable_settlements.multiple.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_gl.enable_settlements.multiple.description),
-  ).toBeInTheDocument();
-});
-
-test('should render correct message for AF = whitelist and IAF = greylist when only one enable-settlement step pending', async () => {
-  PaymentsDB.update({ items: [] });
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowWG,
-    ...DataPieces.contactDetails,
-    ...DataPieces.regBusinessOverview,
-    ...DataPieces.businessDetails,
-    ...DataPieces.bankAndCompanyDetails,
-    ...DataPieces.OnboardingMileStoneL1,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_gl.enable_settlements.single.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_gl.enable_settlements.single.description),
-  ).toBeInTheDocument();
-});
-
-test('should render correct message for unregistered when multiple payment enable steps pending', async () => {
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowUnreg,
-    ...DataPieces.OnboardingMileStoneBizPicker,
-    business_type: '11',
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.unregistered.enable_payments.multiple.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.unregistered.enable_payments.multiple.description),
-  ).toBeInTheDocument();
-});
-
-test.skip('should render correct message for unregistered when only one payment enable step pending', async () => {
-  ActivationDB.update({
-    ...DataPieces.ActivationFlowUnreg,
-    ...DataPieces.contactDetails,
-    ...DataPieces.unregBusinessOverview,
-    ...DataPieces.OnboardingMileStoneBizPicker,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.unregistered.enable_payments.single.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.unregistered.enable_payments.single.description),
-  ).toBeInTheDocument();
-});
-
-test('should render correct message for unregistered when multiple settlement enable step pending', async () => {
+test('should render correct message of dedupe for L1', async () => {
   ActivationDB.update({
     ...DataPieces.ActivationFlowUnreg,
     ...DataPieces.contactDetails,
     ...DataPieces.unregBusinessOverview,
     ...DataPieces.businessDetails,
     ...DataPieces.OnboardingMileStoneL1,
+    dedupe: {
+      isUnderReview: false,
+      isMatch: true,
+    },
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.unregistered.enable_settlements.multiple.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.unregistered.enable_settlements.multiple.description),
-  ).toBeInTheDocument();
+  expect(screen.getByText(Messages.DEDUPE.title)).toBeInTheDocument();
+  expect(screen.getByText(Messages.DEDUPE.description)).toBeInTheDocument();
 });
 
-test('should render correct message for unregistered when only one settlement enable step pending', async () => {
+test('should render correct message of dedupe for L2', async () => {
   ActivationDB.update({
     ...DataPieces.ActivationFlowUnreg,
-    ...DataPieces.contactDetails,
-    ...DataPieces.unregBusinessOverview,
-    ...DataPieces.businessDetails,
-    ...DataPieces.bankAndCompanyDetails,
-    ...DataPieces.OnboardingMileStoneL1,
+    ...DataPieces.regBusinessOverview,
+    activation_form_milestone: 'L2',
+    dedupe: {
+      isUnderReview: false,
+      isMatch: true,
+    },
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.unregistered.enable_settlements.single.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.REMAINING_STEPS.unregistered.enable_settlements.single.description),
-  ).toBeInTheDocument();
+  expect(screen.getByText(Messages.DEDUPE.title)).toBeInTheDocument();
+  expect(screen.getByText(Messages.DEDUPE.description)).toBeInTheDocument();
+});
+
+test('should render correct message if L1 is not submitted', async () => {
+  ActivationDB.update({
+    ...DataPieces.ActivationFlowWW,
+    ...DataPieces.regBusinessOverview,
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.getByText(Messages.ACTIVATION_PROGRESS.title)).toBeInTheDocument();
+  expect(screen.getByText(Messages.ACTIVATION_PROGRESS.description)).toBeInTheDocument();
+});
+
+test('should render correct message if activation_status = rejected', async () => {
+  ActivationDB.update({
+    ...DataPieces.ActivationFlowWW,
+    ...DataPieces.regBusinessOverview,
+    ...DataPieces.OnboardingMileStoneL2,
+    activation_status: 'rejected',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.getByText(Messages.ACTIVATION_STATUS_REJECTED.title)).toBeInTheDocument();
+  expect(screen.getByText(Messages.ACTIVATION_STATUS_REJECTED.description)).toBeInTheDocument();
+});
+
+test('should render correct message if flow is greylist', async () => {
+  ActivationDB.update({
+    ...DataPieces.ActivationFlowWW,
+    ...DataPieces.regBusinessOverview,
+    ...DataPieces.OnboardingMileStoneL1,
+    dedupe: {
+      isUnderReview: true,
+      isMatch: true,
+    },
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.getByText(Messages.GREYLIST_STEP.title)).toBeInTheDocument();
+  expect(screen.getByText(Messages.GREYLIST_STEP.description)).toBeInTheDocument();
 });

@@ -60,14 +60,11 @@ export const getMerchantFlow = (business_type: string, activation_flow: string):
   return activation_flow || 'greylist';
 };
 
-export const isL1Submitted = (onboarding_milestone: string | null): boolean => {
-  if (!onboarding_milestone) {
+export const isL1Submitted = (activation_form_milestone: string | null): boolean => {
+  if (!activation_form_milestone) {
     return false;
   }
-  if (onboarding_milestone === 'activation_flow') {
-    return false;
-  }
-  if (onboarding_milestone === 'L1' || onboarding_milestone === 'L2') {
+  if (activation_form_milestone === 'L1' || activation_form_milestone === 'L2') {
     return true;
   }
   return false;
@@ -292,11 +289,12 @@ export function getDetailsForIFSC(ifscCode) {
   });
 }
 
-export function getPoiVerificationStatus(context) {
+export function getPoiVerificationStatus(context): boolean {
   return (
     context &&
     isUnregisteredBusiness(context.business_overview.business_type.value) &&
     (context.poi_verification_status === 'incorrect_details' ||
+      context.poi_verification_status === 'failed' ||
       context.poi_verification_status === 'not_matched')
   );
 }
@@ -368,8 +366,23 @@ export function getDocumentTitle(context) {
   }
 }
 
-export const checkIfDedupe = (data) => {
-  return data && !!data.locked && !data.activated && data.merchant.hold_funds;
+export const checkIfDedupe = (data: any) => {
+  if (data.isInstantActivationEnabled) {
+    if (data && data.dedupe) {
+      const { isUnderReview, isMatch } = data.dedupe;
+      if (isUnderReview && isMatch) {
+        return 'partial_match';
+      } else if (isMatch && !isUnderReview) {
+        return 'blocked';
+      }
+    }
+    return 'passed';
+  } else {
+    if (!!data?.locked && data?.activation_status === 'under_review' && data?.isDedupe) {
+      return 'blocked';
+    }
+    return 'passed';
+  }
 };
 
 export const convertUnixToDate = ({ unixTimeStamp }) => {
@@ -379,4 +392,20 @@ export const convertUnixToDate = ({ unixTimeStamp }) => {
     year: 'numeric',
   });
   return date;
+};
+
+export const setLocalStorage = (key: string, value: string | any): void => {
+  if (typeof value === 'string') {
+    localStorage.setItem(key, value);
+  }
+  localStorage.setItem(key, JSON.stringify(value));
+};
+
+export const getFormatedCurrency = (amount = 0, currency = 'INR') => {
+  amount = amount / 100;
+  return amount.toLocaleString('en-IN', {
+    maximumFractionDigits: 2,
+    style: 'currency',
+    currency,
+  });
 };

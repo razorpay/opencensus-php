@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useQuery, useQueryCache, useMutation } from 'react-query';
 import { fetch } from 'v2/services/rest/rest-fetch';
 import { useSnackbar } from 'v2/components/SnackBar/SnackbarContext';
+import { useApp } from 'v2/context/App';
 import { useActivationFormState, isTabComplete } from '../context/store';
 import activationFormatter from '../services/formatters/activation';
 import {
@@ -17,10 +18,7 @@ export const fetchActivationData = async () => {
 };
 
 export const postActivation = (data) =>
-  fetch<any>({ url: 'merchant/activation', method: 'POST', data });
-
-export const instantActivation = (data) =>
-  fetch<any>({ url: 'merchant/instant_activation', method: 'POST', data });
+  fetch<any>({ url: 'merchant/activation', method: 'POST', data, mode: 'live' });
 
 export const getRequestData = (prevDetails, updatedDetails) => {
   const filteredFields = Object.keys(updatedDetails).filter(
@@ -42,30 +40,25 @@ export const saveFile = ({ formData, progressTracker }) =>
   fetch<any>({
     url: 'merchant/documents/upload',
     method: 'POST',
+    mode: 'live',
     data: formData,
     onUploadProgress: progressTracker,
   });
 
 export const deleteFile = (curDoc) =>
-  fetch<any>({ url: `merchant/documents/doc_${curDoc.id}`, method: 'DELETE' });
+  fetch<any>({ url: `merchant/documents/doc_${curDoc.id}`, method: 'DELETE', mode: 'live' });
 
 export default function useActivation() {
   const snackbar = useSnackbar();
+  const { experiments } = useApp();
   const { status, data } = useQuery('activation', fetchActivationData, {
+    refetchOnMount: 'always',
     staleTime: Infinity,
     onError: (err: any) => snackbar.error(err.response.errors[0]),
   });
 
   const queryCache = useQueryCache();
   const [postData] = useMutation(postActivation, {
-    onSuccess: (result) => {
-      const formattedData = activationFormatter(result);
-      queryCache.setQueryData('activation', formattedData);
-    },
-    onError: (err: any) => snackbar.error(err.response.errors[0]),
-  });
-
-  const [instantPostData] = useMutation(instantActivation, {
     onSuccess: (result) => {
       const formattedData = activationFormatter(result);
       queryCache.setQueryData('activation', formattedData);
@@ -118,7 +111,10 @@ export default function useActivation() {
 
       const isContactDetailsTabComplete = isTabComplete(data, 'contact_details');
       const isBusinessOverviewTabComplete = isTabComplete(data, 'business_overview');
-      const isBusinessDetailsTabComplete = isTabComplete(data, 'business_details');
+      const isBusinessDetailsTabComplete = isTabComplete(
+        { ...data, isInstantActivationEnabled: experiments.isInstantActivationEnabled },
+        'business_details',
+      );
       const isBankAndCompanyDetailsTabComplete = isTabComplete(data, 'bank_and_company_details');
       const isDocumentsUploadTabComplete = isDocumentTabComplete({
         ...data,
@@ -169,5 +165,5 @@ export default function useActivation() {
     setHasGSTIN,
   ]);
 
-  return { status, data, postData, documentUpload, documentDelete, instantPostData };
+  return { status, data, postData, documentUpload, documentDelete };
 }

@@ -123,10 +123,11 @@ interface BusinessDetailsProps {
 
 const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
   const { data, postData } = useActivation();
-  const { user } = useApp();
+  const { user, experiments } = useApp();
   const snackbar = useSnackbar();
   const [pinCode, setPinCodeValue] = useState('');
   const [isRegisteredPin, setIsRegisteredPin] = useState(true);
+  const [addressFormikValue, setAddressFormikValue] = useState({});
 
   const { business_type: businessType } = data;
   const businessDetails = data.business_details;
@@ -162,6 +163,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
         business_operation_state: context.state_code || '',
       };
     }
+    setAddressFormikValue(reqData);
     postData(reqData);
   };
 
@@ -192,7 +194,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
     data.poi_verification_status === 'not_matched' ||
     data.poi_verification_status === 'failed';
 
-  const shouldShowPoiError = !data.submitted && hasPoiStatus && !user.canSkipPoiValidation;
+  const shouldShowPoiError = !data.submitted && hasPoiStatus && !experiments.canSkipPoiValidation;
   useEffect(() => {
     if (hasPoiStatus) {
       analyticsTrack({
@@ -220,6 +222,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
           ..._reqData,
           [operationAddressKey]: {
             value: updatedDetails[key].value,
+            error: updatedDetails[key].error,
           },
         };
       } else {
@@ -227,6 +230,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
           ..._reqData,
           [operationAddressKey]: {
             value: businessDetails[key].value,
+            error: businessDetails[key].error,
           },
         };
       }
@@ -253,6 +257,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
         business_details: { ...businessDetails, ...updatedDetails },
         hasSameAdress,
         hasGSTIN,
+        isInstantActivationEnabled: experiments.isInstantActivationEnabled,
       },
       'business_details',
     );
@@ -295,6 +300,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
         business_operation_state: businessDetails.business_operation_state.value || '',
         business_operation_city: businessDetails.business_operation_city.value || '',
         business_operation_pin: businessDetails.business_operation_pin.value,
+        ...addressFormikValue,
       }}
       validationSchema={businessDetailsSchema({ hasGSTIN, businessOverviewDetails })}
       enableReinitialize
@@ -607,7 +613,10 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
             </FormSection>
           ) : null}
 
-          {!isUnregisteredBusiness(businessOverviewDetails.business_type.value) ? (
+          {isVisible('gstin', {
+            ...data,
+            isInstantActivationEnabled: experiments.isInstantActivationEnabled,
+          }) ? (
             <FormSection title="Company Details" last disabled={isFormLocked}>
               <Field last>
                 <TextInput

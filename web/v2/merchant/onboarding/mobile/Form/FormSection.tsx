@@ -15,6 +15,7 @@ interface FormSectionProps {
   subtitle?: string;
   last?: boolean;
   hasError?: boolean;
+  visible?: boolean;
   disabled?: boolean;
 }
 
@@ -24,23 +25,29 @@ const FormSection: React.FC<FormSectionProps> = ({
   children,
   hasError = false,
   last = false,
+  visible = true,
   disabled = false,
-}) => (
-  <Card padding={[2]} margin={last ? 0 : [0, 0, 2, 0]}>
-    <Space margin={[0, 0, 3, 0]}>
-      <View>
-        <Text size="xsmall" weight="bold">
-          {title}
-        </Text>
-        {subtitle ? (
-          <Text size="xxsmall" color={hasError ? 'negative.900' : 'shade.950'}>
-            {subtitle}
+}) => {
+  if (!visible) {
+    return null;
+  }
+  return (
+    <Card padding={[2]} margin={last ? 0 : [0, 0, 2, 0]}>
+      <Space margin={[0, 0, 3, 0]}>
+        <View>
+          <Text size="xsmall" weight="bold">
+            {title}
           </Text>
-        ) : null}
-      </View>
-    </Space>
-    <StyledView disabled={disabled}>{children}</StyledView>
-  </Card>
-);
+          {subtitle ? (
+            <Text size="xxsmall" color={hasError ? 'negative.900' : 'shade.950'}>
+              {subtitle}
+            </Text>
+          ) : null}
+        </View>
+      </Space>
+      <StyledView disabled={disabled}>{children}</StyledView>
+    </Card>
+  );
+};
 
 export default FormSection;

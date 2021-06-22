@@ -9,6 +9,8 @@ import Link from '@commander/shield/src/shared/Link';
 import SaveAndExitModal from '../../SaveAndExitModal';
 import HeaderBackground from './images/header_background.svg';
 import useActivation from '../../hooks/useActivation';
+import { checkIfDedupe } from '../../services/utils';
+import { useApp } from 'v2/context/App';
 
 const StyledActivationProgressHeader = styled(View)`
   box-shadow: 0px 4px 5px rgba(11, 112, 231, 0.05);
@@ -21,6 +23,12 @@ const ActivationProgressHeader: React.FC<RouteComponentProps & { progress: numbe
 }) => {
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
   const { data } = useActivation();
+  const { experiments } = useApp();
+  const isDedupe =
+    checkIfDedupe({
+      ...data,
+      isInstantActivationEnabled: experiments.isInstantActivationEnabled,
+    }) === 'blocked';
 
   return (
     <>
@@ -29,7 +37,7 @@ const ActivationProgressHeader: React.FC<RouteComponentProps & { progress: numbe
           <StyledActivationProgressHeader>
             <View>
               <Text size="large" weight="bold">
-                Account Details
+                Account Activation
               </Text>
               <Text size="xsmall" weight="bold" color="positive.960">
                 {progress}% complete
@@ -38,7 +46,9 @@ const ActivationProgressHeader: React.FC<RouteComponentProps & { progress: numbe
             <Space padding={[0.5, 0]}>
               <Link
                 onClick={() =>
-                  !data.submitted ? setIsSaveAndExitModalOpen(true) : history.push('/dashboard')
+                  !data.submitted && !isDedupe && data.poi_verification_status !== 'initiated'
+                    ? setIsSaveAndExitModalOpen(true)
+                    : history.push('/dashboard')
                 }
                 size="xsmall"
                 weight="bold"

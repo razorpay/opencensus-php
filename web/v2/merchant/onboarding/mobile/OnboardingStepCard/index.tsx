@@ -1,84 +1,129 @@
 import React from 'react';
+import styled from 'styled-components';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Link from '@commander/shield/src/shared/Link';
 import Button from '@razorpay/blade-old/src/atoms/Button';
+import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import Card from '../../../../components/Card';
 import { StepList } from '../Step';
 import { StepPropsT } from '../Step/Step';
-import { useActivationFormState } from 'v2/merchant/onboarding/mobile/context/store';
+import ErrorIcon from '../Step/Icons/error.svg';
+import { useApp } from 'v2/context/App';
 
 interface OnboardingStepCardPropsT {
   steps: StepPropsT[];
   title: string;
   subtitle?: string;
   info?: string;
+  errorInfo?: string;
   showCTA?: boolean;
   showSettlement?: boolean;
-  greyListFlowCanSubmit?: boolean;
-  isCTADisabled?: boolean;
-  activationFlow?: string;
-  whiteListFlowCanSubmit?: boolean;
-  CTAText?: '';
+  canSubmitL2Form?: boolean;
+  sucessInfo?: string;
+  activationStatus?: string;
+  goToNcFlow?: () => void;
+  canSubmitL1Form?: boolean;
+  CTAText?: string;
   onCTAClick?: () => void;
+  milestone?: string;
 }
 
 const OnboardingStepCard: React.FC<OnboardingStepCardPropsT> = ({
   title,
   subtitle,
   info,
+  errorInfo,
   steps,
   showCTA = false,
-  isCTADisabled = false,
+  activationStatus,
   showSettlement = false,
-  greyListFlowCanSubmit = false,
-  whiteListFlowCanSubmit = false,
-  CTAText = 'Submit and Verify',
-  activationFlow = '',
+  canSubmitL2Form = false,
+  canSubmitL1Form = false,
+  CTAText = 'Submit KYC',
+  goToNcFlow,
+  sucessInfo,
   onCTAClick = () => {},
+  milestone,
 }) => {
-  const _subtitle = info || subtitle;
+  const _subtitle = info || errorInfo || sucessInfo;
+  const { experiments } = useApp();
 
-  const isContactDetailsCompleted = useActivationFormState(
-    (state) => state.isContactDetailsCompleted,
-  );
-  const isBusinessOverviewCompleted = useActivationFormState(
-    (state) => state.isBusinessOverviewCompleted,
-  );
-  const isBusinessDetailsCompleted = useActivationFormState(
-    (state) => state.isBusinessDetailsCompleted,
-  );
-  const isBankAndCompanyDetailsCompleted = useActivationFormState(
-    (state) => state.isBankAndCompanyDetailsCompleted,
-  );
-  const isDocumentsUploadCompleted = useActivationFormState(
-    (state) => state.isDocumentsUploadCompleted,
-  );
+  const InfoScreen = styled(View)`
+    background: ${({ color }) => color};
+    border-radius: 4px;
+  `;
 
-  const isAllTabCompleted =
-    isContactDetailsCompleted &&
-    isBusinessOverviewCompleted &&
-    isBusinessDetailsCompleted &&
-    isBankAndCompanyDetailsCompleted &&
-    isDocumentsUploadCompleted;
-
-  const canShowTermsAndCondition =
-    activationFlow === 'greylist' ? greyListFlowCanSubmit : whiteListFlowCanSubmit;
+  const ErrorImg = styled.img`
+    height: 20px;
+  `;
+  const InfoText = styled(Text)`
+    @media (max-width: 440px) {
+      max-width: 240px;
+    }
+  `;
+  const margin = _subtitle ? [1.5, 0, 0] : [0.5, 0, 0];
 
   return (
     <Card padding={[2]}>
       <Text size="medium" weight="bold" color="shade.970">
         {title}
       </Text>
-      {_subtitle ? (
-        <Space margin={[0.5, 0, 0, 0]}>
-          <Text size="xsmall" color={info ? 'neutral.960' : 'shade.950'}>
-            {_subtitle}
+      <Space margin={margin}>
+        {_subtitle ? (
+          <Space padding={[1.5]}>
+            <InfoScreen color={info ? '#cd82141a' : errorInfo ? '#d12d2d1a' : '#1f890e1a'}>
+              <Flex justifyContent="space-between">
+                <View>
+                  <InfoText
+                    size="xsmall"
+                    color={info ? 'neutral.900' : errorInfo ? 'negative.900' : 'positive.900'}
+                    _lineHeight="medium"
+                  >
+                    {_subtitle}
+                  </InfoText>
+
+                  <Flex alignSelf="center">
+                    <Space margin={[0, 2, 0, 0]}>
+                      {info || sucessInfo ? (
+                        <View>
+                          <Icon
+                            name={info ? 'clock' : 'paymentCapture'}
+                            size="medium"
+                            fill={info ? 'neutral.900' : 'positive.900'}
+                          />
+                        </View>
+                      ) : (
+                        <ErrorImg src={ErrorIcon} alt="error" />
+                      )}
+                    </Space>
+                  </Flex>
+                </View>
+              </Flex>
+              {activationStatus === 'needs_clarification' && (
+                <Space margin={[1, 0, 0]}>
+                  <View>
+                    <Button
+                      size="small"
+                      onClick={goToNcFlow}
+                      children="Clarify Details"
+                      icon="chevronRight"
+                      iconAlign="right"
+                      block
+                    />
+                  </View>
+                </Space>
+              )}
+            </InfoScreen>
+          </Space>
+        ) : (
+          <Text size="xsmall" color="shade.950">
+            {subtitle}
           </Text>
-        </Space>
-      ) : null}
+        )}
+      </Space>
       <Space margin={[2.5, 0, 2.5, 0]}>
         <View>
           <StepList steps={steps} />
@@ -88,8 +133,11 @@ const OnboardingStepCard: React.FC<OnboardingStepCardPropsT> = ({
         <Button
           size="large"
           disabled={
-            !isAllTabCompleted ||
-            (activationFlow === 'greylist' ? !greyListFlowCanSubmit : !whiteListFlowCanSubmit)
+            !milestone
+              ? canSubmitL1Form
+              : milestone === 'L1' || !experiments.isInstantActivationEnabled
+              ? canSubmitL2Form
+              : true
           }
           onClick={onCTAClick}
           block
@@ -97,23 +145,19 @@ const OnboardingStepCard: React.FC<OnboardingStepCardPropsT> = ({
           {CTAText}
         </Button>
       ) : null}
-      {canShowTermsAndCondition && showCTA && !isCTADisabled ? (
-        <Space margin={[1.5, 0, 0, 0]}>
-          <Text size="xsmall" align="center">
-            By submitting these details you agree to our
-            <Link href="https://razorpay.com/terms/" target="_blank" size="xsmall">
-              terms and conditions
-            </Link>
-          </Text>
-        </Space>
-      ) : null}
       {showSettlement && (
         <Space margin={[2, 0, 0, 0]}>
           <Flex justifyContent="center">
             <View>
               <Link href="https://razorpay.com/docs/payment-gateway/settlements/" target="_blank">
-                <Button variant="tertiary" size="small" align="center">
-                  What are settlements
+                <Button
+                  size="small"
+                  variant="tertiary"
+                  align="center"
+                  icon="helpCircle"
+                  iconAlign="right"
+                >
+                  What Are Settlements
                 </Button>
               </Link>
             </View>

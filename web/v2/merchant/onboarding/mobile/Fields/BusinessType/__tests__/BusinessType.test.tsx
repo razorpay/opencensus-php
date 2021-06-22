@@ -17,14 +17,14 @@ const App: React.FC<AppProps> = ({ onboardingMilestone, value = '11' }) => {
 afterEach(() => {
   cleanup();
 });
-test.skip('should render not registered only when not registered is selected previously and when L1 is not submitted', () => {
-  render(<App onboardingMilestone="activation_flow" />, {});
+test('should render not registered only when not registered is selected previously and when L1 is not submitted', () => {
+  render(<App onboardingMilestone="L1" />, {});
   const businessTypeLabel = screen.getByTestId('ds-text');
   fireEvent.click(businessTypeLabel);
   expect(screen.queryByText('Partnership')).not.toBeInTheDocument();
 });
 
-test.skip('should render only Not registered option when L1 is submitted and Not registered had been selected', () => {
+test('should render only Not registered option when L1 is submitted and Not registered had been selected', () => {
   render(<App onboardingMilestone="L1" />, {});
   const businessTypeLabel = screen.getByTestId('ds-text');
   fireEvent.click(businessTypeLabel);

@@ -68,3 +68,9 @@ export const INTERNATIONAL_REQUEST = {
     description: 'Your request for international payments was rejected.',
   },
 };
+
+export const PAYMENT_ESCALATION = {
+  breach:
+    'You have reached the payments limit and your payments have been paused. Please complete your KYC to extend the limit.',
+  not_breach: 'You can accept payment upto ₹15000 INR. To extend the limit complete KYC',
+};

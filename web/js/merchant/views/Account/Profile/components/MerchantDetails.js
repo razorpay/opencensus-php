@@ -78,7 +78,11 @@ const MerchantDetails = ({
 }) => {
   let activationName = 'KYC';
   let trackerName = 'kyc.form_fill';
-  if (!user.showInstantActivation || !user.instantActivation.isL1Submitted) {
+  if (
+    !user.showInstantActivation ||
+    !user.instantActivation.isL1Submitted ||
+    user.showActivationMobileForm
+  ) {
     activationName = 'Activation';
     trackerName = 'act.form_fill';
   }
@@ -226,7 +230,7 @@ const MerchantDetails = ({
           value={() => (
             <span>
               <Link
-                to={'/activation'}
+                to={user.showActivationMobileForm ? '/onboarding/steps' : '/activation'}
                 onClick={() => {
                   tracking.trackEvent(
                     window.rzpQ.onbr().initiated(trackerName, {
@@ -244,7 +248,12 @@ const MerchantDetails = ({
                 }}
               >
                 {do {
-                  if (user.activated || user.locked || user.submitted) {
+                  if (
+                    user.activated ||
+                    user.locked ||
+                    user.submitted ||
+                    user.showActivationMobileForm
+                  ) {
                     ('View');
                   } else if (user.activation_progress == 100 && !user.submitted) {
                     ('Submit');
