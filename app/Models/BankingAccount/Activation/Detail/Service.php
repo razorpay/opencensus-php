@@ -136,9 +136,15 @@ class Service extends Base\Service
             // Adding Sales POC to admin_audit_map table
             $this->addSalesPOCToBankingAccountIfApplicable($bankingAccount, $input);
 
+            $isPanEdit = $this->checkIfPanEdit($activationDetail, $input);
+
+            $isMerchantPocNameEdit = $this->checkIfMerchantPocNameEdit($activationDetail, $input);
+
+            $isBusinessNameEdit = $this->checkIfBusinessNameEdit($activationDetail, $input);
+
             $activationDetail = $this->core->update($activationDetail, $input);
 
-            $this->initiatePanVerification($activationDetail, $input);
+            $this->initiatePanVerification($activationDetail, $isBusinessNameEdit, $isMerchantPocNameEdit, $isPanEdit);
 
             $this->checkAndPushEventForRmAssigned($bankingAccount, $input);
 
@@ -236,15 +242,14 @@ class Service extends Base\Service
         }
     }
 
-    private function initiatePanVerification(Entity $activationDetail, array $input)
+    private function initiatePanVerification(Entity $activationDetail,bool $isBusinessNameEdit, bool $isMerchantPocNameEdit, bool $isPanEdit)
     {
         $businessType = $activationDetail->getBusinessCategory();
 
         if ($businessType === Validator::SOLE_PROPRIETORSHIP)
         {
             // Either Business Pan or Merchant Poc Name or both are updated
-            if ((isset($input[Entity::MERCHANT_POC_NAME]) === true and is_null($activationDetail->getBusinessPan()) === false) or
-                (isset($input[Entity::BUSINESS_PAN]) === true and is_null($activationDetail->getMerchantPocName()) === false))
+            if (($isPanEdit and is_null($activationDetail->getMerchantPocName()) === false) or ($isMerchantPocNameEdit and is_null($activationDetail->getBusinessPan()) === false))
             {
                 $activationDetail->setPanVerificationStatus(BvsValidationConstants::PENDING);
 
@@ -257,8 +262,7 @@ class Service extends Base\Service
         }
         else
         {
-            if ((isset($input[Entity::BUSINESS_PAN]) === true and is_null($activationDetail->getBusinessName()) === false) or
-                (isset($input[Entity::BUSINESS_NAME]) === true and is_null($activationDetail->getBusinessPan()) === false))
+            if (($isPanEdit and is_null($activationDetail->getBusinessName()) === false) or ($isBusinessNameEdit and is_null($activationDetail->getBusinessPan()) === false))
             {
                 $activationDetail->setPanVerificationStatus(BvsValidationConstants::PENDING);
 
@@ -270,5 +274,35 @@ class Service extends Base\Service
 
             }
         }
+    }
+
+    private function checkIfPanEdit(Entity $activationDetail, array $input): bool
+    {
+        if (isset($input[Entity::BUSINESS_PAN]) === false)
+        {
+            return false;
+        }
+
+        return ($input[Entity::BUSINESS_PAN] !== $activationDetail->getBusinessPan());
+    }
+
+    private function checkIfMerchantPocNameEdit(Entity $activationDetail, array $input): bool
+    {
+        if (isset($input[Entity::MERCHANT_POC_NAME]) === false)
+        {
+            return false;
+        }
+
+        return ($input[Entity::MERCHANT_POC_NAME] !== $activationDetail->getMerchantPocName());
+    }
+
+    private function checkIfBusinessNameEdit(Entity $activationDetail, array $input): bool
+    {
+        if (isset($input[Entity::BUSINESS_NAME]) === false)
+        {
+            return false;
+        }
+
+        return ($input[Entity::BUSINESS_NAME] !== $activationDetail->getBusinessName());
     }
 }

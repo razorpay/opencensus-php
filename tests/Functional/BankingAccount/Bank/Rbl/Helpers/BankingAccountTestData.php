@@ -2260,6 +2260,54 @@ return [
         ],
     ],
 
+    'testUpdateActivationDetailForNeostoneFlow' => [
+        'request'  => [
+            'content' => [
+                'merchant_poc_phone_number' => '1234554321',
+                'merchant_poc_name' => 'Sample Name',
+                'expected_monthly_gmv' => '10000',
+                'account_type' => 'zero_balance',
+                'is_documents_walkthrough_complete' => true,
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'rm_name' => 'Test RM',
+                'rm_phone_number' => '9234567890'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_phone_number' => '1234554321',
+                'expected_monthly_gmv' => '10000',
+                'account_type' => 'zero_balance',
+                "is_documents_walkthrough_complete" => '1',
+            ],
+        ],
+    ],
+
+    'testUpdateActivationDetailForNeostoneFlowIfNameUpdated' => [
+        'request'  => [
+            'content' => [
+                'merchant_poc_phone_number' => '1234554321',
+                'merchant_poc_name' => 'Sample',
+                'expected_monthly_gmv' => '10000',
+                'account_type' => 'zero_balance',
+                'is_documents_walkthrough_complete' => true,
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'rm_name' => 'Test RM',
+                'rm_phone_number' => '9234567890'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_poc_name' => 'Sample',
+                'merchant_poc_phone_number' => '1234554321',
+                'expected_monthly_gmv' => '10000',
+                'account_type' => 'zero_balance',
+                "is_documents_walkthrough_complete" => '1',
+            ],
+        ],
+    ],
+
     'testUpdateActivationDetailWithRmNameAsVague' => [
         'request'  => [
             'url'     => '/banking_accounts/activation/{id}/details',

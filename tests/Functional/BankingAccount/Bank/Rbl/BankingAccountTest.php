@@ -3850,6 +3850,82 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testUpdateActivationDetailForNeostoneFlow()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $activationDetail = ['activation_detail' => [
+            ActivationDetail\Entity::MERCHANT_POC_NAME => 'Sample Name',
+            ActivationDetail\Entity::BUSINESS_CATEGORY => 'sole_proprietorship',
+            ActivationDetail\Entity::SALES_TEAM        => 'self_serve',
+            ActivationDetail\Entity::BUSINESS_PAN      => 'RZPA34243L']
+        ];
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($activationDetail);
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        if(str_contains($bankingAccount['id'], Entity::getIdPrefix()) === false)
+        {
+            $bankingAccountId = $bankingAccount->getPublicId();
+        }
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details',
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+        $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $bankingAccountId, 'owner_type' => 'banking_account'], 'live');
+
+        $this->assertNull($bvsValidation);
+    }
+
+    public function testUpdateActivationDetailForNeostoneFlowIfNameUpdated()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $activationDetail = ['activation_detail' => [
+            ActivationDetail\Entity::MERCHANT_POC_NAME => 'Sample Name',
+            ActivationDetail\Entity::BUSINESS_CATEGORY => 'sole_proprietorship',
+            ActivationDetail\Entity::SALES_TEAM        => 'self_serve',
+            ActivationDetail\Entity::BUSINESS_PAN      => 'RZPA34243L']
+        ];
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($activationDetail);
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        if(str_contains($bankingAccount['id'], Entity::getIdPrefix()) === false)
+        {
+            $bankingAccountId = $bankingAccount->getPublicId();
+        }
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details',
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testUpdateActivationDetailWithRmNameAsVague(RZP\Models\BankingAccount\Entity $bankingAccount = null)
     {
         $bankingAccount = $this->testCreateActivationDetail(null, $bankingAccount);
