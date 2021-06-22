@@ -4,11 +4,12 @@
 namespace RZP\Models\Merchant\Detail\DeDupe;
 
 use RZP\Models\Merchant\Detail;
+use RZP\Models\User\Entity as UserEntity;
 
 class Constants
 {
     const ACTION    = 'action';
-
+    const CLIENT_IP = 'client_ip';
     const DEACTIVATE            = 'deactivate';
     const UNREG_DEACTIVATE      = 'unreg_deactivate';
 
@@ -96,6 +97,18 @@ class Constants
                 self::AUTHORITIES_LIST,
             ],
             'config_key' => 'billing_name'
+        ],
+        self::CLIENT_IP                 => [
+            'lists'      => [
+                self::BLACKLIST,
+            ],
+            'config_key' => self::CLIENT_IP,
+        ],
+        UserEntity::CLIENT_ID           => [
+            'lists'      => [
+                self::BLACKLIST,
+            ],
+            'config_key' => "client_id",
         ],
     ];
 
@@ -233,5 +246,25 @@ class Constants
                 ]
             ],
         ],
+        [
+            'keysToCheck' => [
+                self::CLIENT_IP => [
+                    'list' => self::BLACKLIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
+                UserEntity::CLIENT_ID => [
+                    'list' => self::BLACKLIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
     ];
+
+    const MERCHANT_RISK_CONFIG_NOT_IN_MERCHANT_DETAILS_ENTITY = [self::CLIENT_IP, UserEntity::CLIENT_ID];
 }

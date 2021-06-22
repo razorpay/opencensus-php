@@ -201,6 +201,9 @@ final class RazorxTreatment
     // experiment to enable dedupe functionality
     const DEDUPE_FUNCTIONALITY = 'DEDUPE_FUNCTIONALITY';
 
+    // experiment to enable ipAddress-clientId dedupe functionality
+    const DEDUPE_FUNCTIONALITY_FOR_CLIENT_IP_ID = 'DEDUPE_FUNCTIONALITY_FOR_CLIENT_IP_ID';
+
     // experiment to add merchant TnC urls for their website
     const MERCHANT_TNC = 'merchant_tnc';
 

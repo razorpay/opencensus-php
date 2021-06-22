@@ -160,6 +160,50 @@ class DedupeTest extends OAuthTestCase
         }
     }
 
+    public function testGetFieldValueForIpAddress()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $merchant = $merchantDetail->merchant;
+
+        $this->mockRazorx();
+
+        $mocks = $this->createAndFetchMocks(true);
+        $dedupeCore = $mocks['dedupeCoreMock'];
+
+        $request = Mockery::mock('Illuminate\Http\Request')->makePartial();
+        
+        $request->shouldReceive('getClientIp')->withAnyArgs()->andReturn("127.0.0.0");
+
+        $this->app->instance('request', $request);
+
+        $value = $dedupeCore->getFieldValue("client_ip",$merchant);
+
+        $this->assertEquals("127.0.0.0", $value);
+
+    }
+
+    public function testGetFieldValueForClientId()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $merchant = $merchantDetail->merchant;
+
+        $this->mockRazorx();
+
+        $mocks = $this->createAndFetchMocks(true);
+        $dedupeCore = $mocks['dedupeCoreMock'];
+
+        $request = Mockery::mock('Illuminate\Http\Request')->makePartial();
+
+        $request->shouldReceive('cookie')->withAnyArgs()->andReturn("iamClient_id");
+
+        $this->app->instance('request', $request);
+
+        $value = $dedupeCore->getFieldValue("clientId",$merchant);
+
+        $this->assertEquals("iamClient_id", $value);
+
+    }
+
     public function testL2FormSubmitWithDedupeFalse()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');

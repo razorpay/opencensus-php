@@ -10,6 +10,8 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant;
+use \RZP\Models\User\Entity as UserEntity;
+use RZP\Models\User\Service as UserService;
 use RZP\Services\MerchantRiskClient;
 
 class Core extends Base\Core
@@ -28,13 +30,12 @@ class Core extends Base\Core
         $this->merchantRiskClient = $merchantRiskClient;
     }
 
-    private function isDedupeExperimentEnabled(string $merchantId): bool
+    private function isDedupeExperimentEnabled(string $merchantId, string $experiment): bool
     {
         $mode = $this->mode ?? Mode::LIVE;
 
         $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            RazorxTreatment::DEDUPE_FUNCTIONALITY, $mode);
+            $merchantId, $experiment, $mode);
 
         return ($variant === 'on');
     }
@@ -58,7 +59,7 @@ class Core extends Base\Core
             return false;
         }
 
-        if ($this->isDedupeExperimentEnabled($merchant->getId()) === false)
+        if($this->isDedupeExperimentEnabled($merchant->getId(), RazorxTreatment::DEDUPE_FUNCTIONALITY) === false)
         {
             return false;
         }
@@ -127,15 +128,21 @@ class Core extends Base\Core
         {
             foreach ($value['lists'] as $list)
             {
-                if ($merchant->merchantDetail->getAttribute($key) != null)
+
+                $field = [
+                    'field'      => $key,
+                    'list'       => $list,
+                    'config_key' => $value['config_key']
+                ];
+
+                $field['value'] = $this->getFieldValue($key, $merchant);
+
+                if ($field['value'] != null)
                 {
-                    $fields[] = [
-                        'field'     => $key,
-                        'value'     => $merchant->merchantDetail->getAttribute($key),
-                        'list'      => $list,
-                        'config_key'=> $value['config_key']
-                    ];
+                    $fields[] = $field;
                 }
+
+
             }
         }
 
@@ -248,5 +255,35 @@ class Core extends Base\Core
         }
 
         return Constants::DEDUPE_TAG;
+    }
+
+    public function getFieldValue(string $key, $merchant)
+    {
+        $value = null;
+
+        if ($merchant->merchantDetail->getAttribute($key) != null)
+        {
+            $value = $merchant->merchantDetail->getAttribute($key);
+        }
+        else
+        {
+            if (in_array($key, Constants::MERCHANT_RISK_CONFIG_NOT_IN_MERCHANT_DETAILS_ENTITY) === true)
+            {
+                if ($this->isDedupeExperimentEnabled($merchant->getId(), RazorxTreatment::DEDUPE_FUNCTIONALITY_FOR_CLIENT_IP_ID) === true)
+                {
+
+                    if ($key === UserEntity::CLIENT_ID)
+                    {
+                        $value = (new UserService)->fetchVisitorIdFromCookie();
+                    }
+                    if ($key === Constants::CLIENT_IP)
+                    {
+                        $value = $this->app['request']->getClientIp();
+                    }
+                }
+            }
+        }
+
+        return $value;
     }
 }
