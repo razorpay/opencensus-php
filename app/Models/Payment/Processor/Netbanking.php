@@ -394,6 +394,7 @@ class Netbanking
                 IFSC::UTIB,
                 self::LAVB_R,
                 self::BKID_C,
+                self::PUNB_R,
             ]
         ],
         Gateway::EBS => [
