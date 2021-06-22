@@ -10,7 +10,6 @@ import {
   BIZ_CAT_SUB_CAT_OPTIONAL_ADDITIONAL_DOCS,
   BUSINESS_PROOF_TYPE_DOCS,
 } from './Constants';
-import { E_SIGN_AADHAR } from './ActivationFormMap';
 
 const PRIVATE_LIMITED = 4,
   PUBLIC_LIMITED = 5,
@@ -28,6 +27,8 @@ const PRIVATE_LIMITED = 4,
     2: true,
   },
   BusinessTypes = [PRIVATE_LIMITED, PUBLIC_LIMITED, LLP, PARTNERSHIP];
+
+const E_SIGN_AADHAR = [PROPRIETORSHIP, PARTNERSHIP, NOT_REGISTERED];
 
 function differentAddress(activation) {
   return activation.state.same_address === '0';
