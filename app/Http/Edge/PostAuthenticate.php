@@ -93,13 +93,14 @@ final class PostAuthenticate
         ensureSameOrOverride($passport->authenticated, $authenticated, 'authenticated', $errors);
         ensureSameOrOverride($passport->mode, $this->ba->getMode(), 'mode', $errors);
 
-        // For $passport->merchant existence.
-        $merchantExists = ($this->ba->getMerchantId() !== null);
-        ensureSameExistenceOrOverride($passport->merchant, $merchantExists, 'merchant', $errors, new Passport\Merchant);
-        if ($merchantExists === true)
+        // For $passport->consumer existence.
+        $consumerExists = ($this->ba->getMerchantId() !== null);
+        ensureSameExistenceOrOverride($passport->consumer, $consumerExists, 'consumer', $errors, new Passport\ConsumerClaims);
+        if ($consumerExists === true)
         {
-            // For $passport->merchant's scalar attributes.
-            ensureSameOrOverride($passport->merchant->id, $this->ba->getMerchantId(), 'merchant.id', $errors);
+            // For $passport->consumer's scalar attributes.
+            ensureSameOrOverride($passport->consumer->id, $this->ba->getMerchantId(), 'consumer.id', $errors);
+            ensureSameOrOverride($passport->consumer->type, 'merchant', 'consumer.type', $errors);
         }
 
         // If $passport was created fresh i.e. not from edge then of course there would be errors(i.e mismatch) :)
