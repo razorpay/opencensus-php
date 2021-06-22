@@ -518,6 +518,29 @@ class UserTest extends TestCase
         $this->assertEmpty($user['password']);
     }
 
+    public function testOauthLoginSessionInvalidate()
+    {
+        $this->fixtures->create('user', ['id' => 'FL0nl7kME8j3Dd', 'email' => 'hello123@gmail.com', 'password' => 'hello123', 'confirm_token' => 'confirm_token']);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(true, $response['invalidate_sessions']);
+    }
+
+    public function testOauthLoginSessionNotInvalidate()
+    {
+        $this->fixtures->create('user', ['id' => 'FL0nl7kME8j3Dd', 'email' => 'hello123@gmail.com', 'password' => 'hello123']);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        // for confirmed user invalidate_sessions will be set to false;
+        $this->assertEquals(false, $response['invalidate_sessions']);
+    }
+
     public function testOauthLoginInvalidateContactDetails()
     {
         $user = $this->fixtures->create('user', ['id'             => 'FL0nl7kME8j3Dd',

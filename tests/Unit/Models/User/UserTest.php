@@ -13,6 +13,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use Tests\Unit\TestCase;
 use RZP\Models\User\Core;
 use RZP\Models\User\Entity;
+use RZP\Models\User\Constants;
 use RZP\Models\User\Validator as Validator;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -708,7 +709,7 @@ class UserTest extends TestCase
 
         $response = $this->userService->oAuthLogin($content['userData']);
 
-        $this->assertEquals([], $response);
+        $this->assertEquals([Constants::INVALIDATE_SESSIONS => false], $response);
     }
 
     public function testVerifyUserThroughEmail()

@@ -498,11 +498,17 @@ class Core extends Base\Core
 
         $this->saveOauthProvider($user, $input[Entity::OAUTH_PROVIDER]);
 
+        $response = [];
+
+        $response[Constants::INVALIDATE_SESSIONS] = false;
+
         // For this User signs up via email/password and drops off in the middle
         // comes back and logs in via Google OAUth
         // We will reset and invalidate user's password for security reasons.
         if ($user->getConfirmedAttribute() === false)
         {
+            $response[Constants::INVALIDATE_SESSIONS] = true;
+
             $this->confirm($user);
 
             $this->trace->info(TraceCode::USER_CONFIRM_INVALIDATE_INFO, ['user_id' => $user->getId()]);
@@ -520,7 +526,9 @@ class Core extends Base\Core
         (new Core)->trackOnboardingEvent($user->getEmail(),
                                          EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
 
-        return $this->get($user);
+        $response = array_merge($response, $this->get($user));
+
+        return $response;
     }
 
     public function verifyUserSecondFactorAuth(Entity $user, array $input): array

@@ -52,8 +52,9 @@ class Constants
     const X_ANDROID     = 'x_android';
     const X_IOS         = 'x_ios';
 
-    const EMAIL_VERIFIED = 'email_verified';
-    const ID_TOKEN       = 'id_token';
+    const EMAIL_VERIFIED        = 'email_verified';
+    const ID_TOKEN              = 'id_token';
+    const INVALIDATE_SESSIONS   = 'invalidate_sessions';
 
     const OAUTH_MERCHANT_OAUTH_CLIENT_ID            = 'oauth.merchant_oauth_client_id';
     const OAUTH_MERCHANT_OAUTH_CLIENT_ID_EPOS       = 'oauth.merchant_oauth_client_id_epos';
