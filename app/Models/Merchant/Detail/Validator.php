@@ -215,7 +215,7 @@ class Validator extends Base\Validator
         Entity::INTERNAL_NOTES                           => 'sometimes|string',
         Entity::INTERNATIONAL_ACTIVATION_FLOW            => 'sometimes|custom',
         Entity::CUSTOM_FIELDS                            => 'filled|array',
-        Entity::CLIENT_APPLICATIONS                      => 'filled|string',
+        Entity::CLIENT_APPLICATIONS                      => 'filled|array',
         Entity::LIVE_TRANSACTION_DONE                    => 'filled|numeric|in:0,1,2',
         Entity::KYC_CLARIFICATION_REASONS                => 'sometimes|array|custom',
         Entity::KYC_ADDITIONAL_DETAILS                   => 'sometimes|array|custom',

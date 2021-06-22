@@ -490,6 +490,23 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
     }
 
+    public function testMerchantDetailsFetchAccountService()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['business_category' => 'financial_services']);
+        $merchant       = $merchantDetail->merchant;
+
+        $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'merchant_id' => $merchant->getId()]);
+        $this->fixtures->create('merchant_email', ['merchant_id' => $merchant->getId()]);
+        $this->fixtures->create('merchant_document', ['merchant_id' => $merchant->getId()]);
+        $this->fixtures->create('merchant_document', ['merchant_id' => $merchant->getId(), 'entity_type' => 'stakeholder', 'document_type' => 'aadhar_front']);
+
+        // test fetch account details by account service
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/account_service/accounts/'. $merchant->getId();
+        $this->ba->accountServiceAuth();
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testMerchantDetailsPatchShouldUpdateMethodsBasedOnCategory()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');

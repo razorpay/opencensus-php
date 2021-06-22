@@ -174,8 +174,6 @@ class Response extends Core
 
         $clientApplications = $accountDetails->getClientApplications();
 
-        $clientApplications = json_decode($clientApplications, true);
-
         if (isset($clientApplications[Constants::ANDROID]) === true)
         {
             $data[Constants::APPS][Constants::ANDROID] = $clientApplications[Constants::ANDROID];

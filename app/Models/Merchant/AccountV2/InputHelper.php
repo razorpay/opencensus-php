@@ -202,19 +202,19 @@ class InputHelper
         {
             $android = $input[Constants::APPS][Constants::ANDROID];
 
-            $clientApplications[Detail\Entity::CLIENT_APPLICATIONS][Constants::ANDROID] = $android;
+            $clientApplications[Constants::ANDROID] = $android;
         }
 
         if (isset($input[Constants::APPS][Constants::IOS]) === true)
         {
             $ios = $input[Constants::APPS][Constants::IOS];
 
-            $clientApplications[Detail\Entity::CLIENT_APPLICATIONS][Constants::IOS] = $ios;
+            $clientApplications[Constants::IOS] = $ios;
         }
 
-        if (isset($clientApplications[Detail\Entity::CLIENT_APPLICATIONS]) === true)
+        if (empty($clientApplications) === false)
         {
-            $detailInput[Detail\Entity::CLIENT_APPLICATIONS] = json_encode($clientApplications[Detail\Entity::CLIENT_APPLICATIONS], true);
+            $detailInput[Detail\Entity::CLIENT_APPLICATIONS] = $clientApplications;
         }
 
         return $detailInput;

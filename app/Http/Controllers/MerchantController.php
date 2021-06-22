@@ -39,6 +39,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getMerchantDetailsForAccountService(string $accountId)
+    {
+        $data = $this->service()->getMerchantDetailsForAccountService($accountId);
+
+        return ApiResponse::json($data);
+    }
+
     public function postCreateSubMerchant()
     {
         $input = Request::all();

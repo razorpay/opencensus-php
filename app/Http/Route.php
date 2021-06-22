@@ -1797,6 +1797,8 @@ class Route
         'stakeholder_fetch_v2'                     => ['GET',     'accounts/{id}/stakeholders/{stakeholderId}',      'StakeholderController@fetch'                                       ],
         'stakeholder_fetch_all_v2'                 => ['GET',     'accounts/{id}/stakeholders',                      'StakeholderController@fetchAll'                                    ],
 
+        'account_service_details_fetch'            => ['GET',     'account_service/accounts/{accountId}',            'MerchantController@getMerchantDetailsForAccountService'            ],
+
         'account_create_v2'                        => ['post',     'accounts',                                       'AccountControllerV2@createAccount'                                 ],
         'account_fetch_v2'                         => ['get',      'accounts/{id}',                                  'AccountControllerV2@fetchAccount'                                  ],
         'account_edit_v2'                          => ['patch',    'accounts/{id}',                                  'AccountControllerV2@editAccount'                                   ],
@@ -3192,6 +3194,9 @@ class Route
         'low_balance_config_alert_cron',
         'merchant_notification_config_alert_cron',
         'refund_scrooge_fetch_fee',
+
+        // account service routes
+        'account_service_details_fetch',
 
         // Razorpay Capital
         // Financial Data Service
@@ -9456,6 +9461,10 @@ class Route
 
         'bvs' => [
             'fund_account_validate',
+        ],
+
+        'account_service' => [
+            'account_service_details_fetch',
         ],
 
         'downtime_service' => [

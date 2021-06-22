@@ -199,6 +199,13 @@ class Authorization
         $this->proxy = false;
     }
 
+    public function accountServiceAuth($user = 'rzp_test')
+    {
+        $this->appAuth($user, \Config::get('applications.account_service')['secret']);
+
+        $this->proxy = false;
+    }
+
     public function payoutLinksAppAuth($mode = 'test')
     {
         $this->appAuth('rzp_' . $mode, \Config::get('applications.payout_links')['secret']);

@@ -352,6 +352,44 @@ return [
         ],
     ],
 
+    'testMerchantDetailsFetchAccountService' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/account_service/accounts/{accountId}',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'merchant' => [
+                    'org_id' => '100000razorpay',
+                ],
+                'merchant_details' => [
+                    'business_category' => 'financial_services',
+                ],
+                'stakeholders' => [
+                    [
+                        'name' => 'stakeholder name',
+                    ]
+                ],
+                'merchant_emails' => [
+                    [
+                        'type' => 'refund',
+                    ]
+                ],
+                'merchant_documents' => [
+                    [
+                        'document_type' => 'address_proof_url',
+                    ]
+                ],
+                'stakeholder_documents' => [
+                    [
+                        'document_type' => 'aadhar_front',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
 
     'testMerchantDetailsPatch' => [
         'request'  => [

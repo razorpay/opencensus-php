@@ -1265,6 +1265,23 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this->getAttribute(self::CLIENT_APPLICATIONS);
     }
 
+    protected function getClientApplicationsAttribute($clientApplications): array
+    {
+        $clientApplications = json_decode($clientApplications, true);
+
+        if (empty($clientApplications) === true)
+        {
+            return [];
+        }
+
+        return $clientApplications;
+    }
+
+    protected function setClientApplicationsAttribute(array $clientApplications)
+    {
+        $this->attributes[self::CLIENT_APPLICATIONS] = json_encode($clientApplications);
+    }
+
     protected function setCustomFieldsAttribute(array $customFields)
     {
         $this->attributes[self::CUSTOM_FIELDS] = json_encode($customFields);

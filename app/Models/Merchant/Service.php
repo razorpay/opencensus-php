@@ -25,6 +25,7 @@ use RZP\Models\Contact;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Address;
 use RZP\Models\Pricing;
 use RZP\Models\Customer;
 use RZP\Models\Terminal;
@@ -5833,6 +5834,59 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    public function getMerchantDetailsForAccountService(string $accountId): array
+    {
+        $data = [];
+        $merchant = $this->repo->merchant->findOrFailPublic($accountId);
+        $merchantDetails = $this->repo->merchant_detail->findOrFailPublic($accountId);
+        $stakeholders = $this->repo->stakeholder->findManyByMerchantIds([$accountId]);
+        $documents = $this->repo->merchant_document->findManyByMerchantIds([$accountId]);
+        $merchantEmails = $this->repo->merchant_email->getEmailByMerchantId($accountId);
+
+        $merchantDocs = new Base\PublicCollection;
+        $stakeholderDocs = new Base\PublicCollection;
+        foreach ($documents as $document)
+        {
+            if ($document->getEntityType() === EntityConstants::STAKEHOLDER)
+            {
+                $stakeholderDocs->add($document);
+            }
+            else
+            {
+                $docType = $document->getDocumentType();
+                $proofType = Document\Type::DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING[$docType];
+
+                if (Document\Type::PROOF_TYPE_ENTITY_MAPPING[$proofType] === EntityConstants::STAKEHOLDER)
+                {
+                    $stakeholderDocs->add($document);
+                }
+                else
+                {
+                    $merchantDocs->add($document);
+                }
+            }
+        }
+
+        $data['merchant'] = $merchant->toArray();
+        $data['merchant_details'] = $merchantDetails->toArray();
+        $data['stakeholders'] = $stakeholders->toArray();
+
+        foreach ($stakeholders as $index => $stakeholder)
+        {
+            $address = $this->repo->address->fetchPrimaryAddressOfEntityOfType($stakeholder, Address\Type::RESIDENTIAL);
+            if (empty($address) === false)
+            {
+                $data['stakeholders'][$index]['addresses']['residential'] = $address->toArray();
+            }
+        }
+
+        $data['stakeholder_documents'] = $stakeholderDocs->toArray();
+        $data['merchant_documents'] = $merchantDocs->toArray();
+        $data['merchant_emails'] = $merchantEmails->toArray();
+
+        return $data;
     }
 
     /**
