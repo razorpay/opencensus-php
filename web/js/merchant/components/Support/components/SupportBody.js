@@ -291,7 +291,9 @@ class SupportBody extends Component {
           <ShowWhen
             myRole="owner admin"
             additionalCondition={(user) =>
-              user.isScheduleCallbackEnabled && scheduleCallbackReason !== 'NOT AVAILABLE'
+              user.isScheduleCallbackEnabled &&
+              scheduleCallbackReason !== 'NOT_FETCHED_YET' &&
+              scheduleCallConfig.reason !== 'NOT_APPLICABLE'
             }
           >
             <li

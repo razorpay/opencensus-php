@@ -30,7 +30,7 @@ export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
 
 const DEFAULT_CALL_BACK_SCHEDULE_RESPONSE = {
   is_eligible: false,
-  reason: 'NOT AVAILABLE',
+  reason: 'NOT_FETCHED_YET',
 };
 
 export const fetchConfigAjax = () => {
