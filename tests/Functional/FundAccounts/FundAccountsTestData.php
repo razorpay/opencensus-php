@@ -120,6 +120,35 @@ return [
         ],
     ],
 
+    'testCreateFundAccountBankAccountThreeCharName' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Ann',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Ann',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
     'testCreateFundAccountBankAccountWithEmptyArray' => [
         'request'  => [
             'content' => [
@@ -152,7 +181,7 @@ return [
                 'contact_id'   => 'cont_1000000contact',
                 'bank_account'      => [
                     'ifsc'           => 'SBIN0007105',
-                    'name'           => 'Ami',
+                    'name'           => 'JsJVgnkqpMrNVab9NAZsvd5yDPsZoyO2uZ86b9F65yo84HI3PX0KfcCxss2heTOKtyta6BMJoDuioskMLkck2I3NP1EGIqOzWxABUXPz2ObPECgKj2i5VTgeHZI37',
                     'account_number' => '111000111'
                 ],
             ],
@@ -163,7 +192,7 @@ return [
             'content'   => [
                 'error' => [
                     'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   =>  'The name must be between 4 and 120 characters.',
+                    'description'   =>  'The name must be between 3 and 120 characters.',
                 ],
             ],
             'status_code'   => 400,
@@ -3018,7 +3047,7 @@ return [
                 'contact_id'   => 'cont_1000000contact',
                 'bank_account'      => [
                     'ifsc'           => 'SBIN0007105',
-                    'name'           => 'Ami',
+                    'name'           => 'JsJVgnkqpMrNVab9NAZsvd5yDPsZoyO2uZ86b9F65yo84HI3PX0KfcCxss2heTOKtyta6BMJoDuioskMLkck2I3NP1EGIqOzWxABUXPz2ObPECgKj2i5VTgeHZI37',
                     'account_number' => '111000111'
                 ],
             ],
@@ -3029,7 +3058,7 @@ return [
             'content'   => [
                 'error' => [
                     'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   =>  'The name must be between 4 and 120 characters.',
+                    'description'   =>  'The name must be between 3 and 120 characters.',
                     'reason'        => 'input_validation_failed',
                     'source'        => 'business',
                     'step'          => 'NA',
@@ -3051,7 +3080,7 @@ return [
                 'contact_id'   => 'cont_1000000contact',
                 'bank_account'      => [
                     'ifsc'           => 'SBIN0007105',
-                    'name'           => 'Ami',
+                    'name'           => 'JsJVgnkqpMrNVab9NAZsvd5yDPsZoyO2uZ86b9F65yo84HI3PX0KfcCxss2heTOKtyta6BMJoDuioskMLkck2I3NP1EGIqOzWxABUXPz2ObPECgKj2i5VTgeHZI37',
                     'account_number' => '111000111'
                 ],
             ],
@@ -3062,7 +3091,7 @@ return [
             'content'   => [
                 'error' => [
                     'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   =>  'The name must be between 4 and 120 characters.',
+                    'description'   =>  'The name must be between 3 and 120 characters.',
                     'reason'        => 'input_validation_failed',
                     'source'        => 'business',
                     'step'          => 'NA',

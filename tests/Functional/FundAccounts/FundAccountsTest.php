@@ -96,6 +96,44 @@ class FundAccountsTest extends TestCase
         Queue::assertPushed(CreateAccount::class);
     }
 
+    public function testCreateFundAccountBankAccountThreeCharName()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->mockRazorxTreatment();
+
+        $response = $this->startTest();
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => 'SBIN0007105',
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Ann',
+            'merchant_id'      => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|SBIN0007105|Ann';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
     public function testCreateFundAccountBankAccountWithEmptyArray()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
