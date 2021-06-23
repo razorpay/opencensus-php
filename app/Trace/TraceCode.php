@@ -2887,6 +2887,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OTP_VERIFICATION_FAILED_VENDOR_PAYOUT                 = 'OTP_VERIFICATION_FAILED_VENDOR_PAYOUT';
 
     const QUEUED_PAYOUT_CREATED                                 = 'QUEUED_PAYOUT_CREATED';
+    const ON_HOLD_PAYOUT_CREATED                                = 'ON_HOLD_PAYOUT_CREATED';
+    const PAYOUT_SENT_TO_DETECT_BENE_UPTIME                     = 'PAYOUT_SENT_TO_DETECT_BENE_UPTIME';
+    const ON_HOLD_PAYOUT_CHECK_FAILED                           = 'ON_HOLD_PAYOUT_CHECK_FAILED';
     const PENDING_PAYOUT_CREATED                                = 'PENDING_PAYOUT_CREATED';
     const PAYOUT_REVERSAL_INITIATED                             = 'PAYOUT_REVERSAL_INITIATED';
     const PAYOUT_REVERSAL_CREATED                               = 'PAYOUT_REVERSAL_CREATED';

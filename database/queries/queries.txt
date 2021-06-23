@@ -6279,5 +6279,8 @@ ALTER TABLE credit_transaction MODIFY COLUMN credits_used BIGINT;
 ALTER TABLE payouts
     ADD COLUMN queued_reason varchar(255) DEFAULT NULL;
 
+ALTER TABLE payouts
+    ADD COLUMN on_hold_at bigint unsigned DEFAULT NULL;
+
 ALTER TABLE merchant_details
     ADD COLUMN activation_form_milestone varchar(30) DEFAULT NULL;

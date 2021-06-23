@@ -28,6 +28,7 @@ class Status
     const BATCH_SUBMITTED                    = 'batch_submitted';
     const SCHEDULED                          = 'scheduled';
     const CREATE_REQUEST_SUBMITTED           = 'create_request_submitted';
+    const ON_HOLD                            = 'on_hold';
 
     /**
      * Used only to expose publicly.
@@ -60,6 +61,7 @@ class Status
         self::FAILED                       => self::FAILED,
         self::BATCH_SUBMITTED              => self::PROCESSING,
         self::CREATE_REQUEST_SUBMITTED     => self::PROCESSING,
+        self::ON_HOLD                      => self::QUEUED,
     ];
 
     /**
@@ -102,6 +104,7 @@ class Status
             self::BATCH_SUBMITTED,
             self::SCHEDULED,
             self::CREATE_REQUEST_SUBMITTED,
+            self::ON_HOLD,
         ],
         self::QUEUED => [
             self::CREATED,
@@ -114,6 +117,13 @@ class Status
             self::SCHEDULED,
             self::BATCH_SUBMITTED,
             self::CREATE_REQUEST_SUBMITTED,
+            self::ON_HOLD,
+        ],
+        self::ON_HOLD => [
+            self::QUEUED,
+            self::FAILED,
+            self::CANCELLED,
+            self::CREATED,
         ],
         self::CREATED => [
             self::INITIATED,
@@ -139,18 +149,21 @@ class Status
         self::BATCH_SUBMITTED => [
             self::CREATED,
             self::FAILED,
+            self::ON_HOLD
         ],
         self::SCHEDULED => [
             self::CREATED,
             self::CANCELLED,
             self::FAILED,
             self::BATCH_SUBMITTED,
+            self::ON_HOLD
         ],
         self::CREATE_REQUEST_SUBMITTED => [
             self::CREATED,
             self::FAILED,
             self::INITIATED,
             self::QUEUED,
+            self::ON_HOLD,
         ],
     ];
 
@@ -172,6 +185,7 @@ class Status
         self::BATCH_SUBMITTED,
         self::CREATE_REQUEST_SUBMITTED,
         self::INITIATED,
+        self::ON_HOLD,
     ];
 
     /**
@@ -195,6 +209,7 @@ class Status
         self::BATCH_SUBMITTED,
         self::FAILED,
         self::SCHEDULED,
+        self::ON_HOLD,
         self::REJECTED,
         self::CREATE_REQUEST_SUBMITTED,
     ];

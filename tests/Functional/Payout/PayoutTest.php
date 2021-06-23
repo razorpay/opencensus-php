@@ -12303,6 +12303,7 @@ class PayoutTest extends OAuthTestCase
 
             return true;
         });
+
     }
 
     // This test should fail because payout amount can't be greater than MAX_PAYOUT_LIMIT
@@ -12334,13 +12335,77 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testOnHoldPayoutForFeatureEnabledMerchantAndBeneDown()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
+
+        $benebankConfig =
+            [
+                "BENEFICIARY"=> [
+                    "SBIN" => [
+                        "status" => "started",
+                    ],
+                    "RZPB" => [
+                        "status" => "started",
+                    ],
+                    "default"=> "started",
+                ]
+            ];
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT =>$benebankConfig]);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('on_hold', $payout['status']);
+        $this->assertEquals('beneficiary_bank_down', $payout['queued_reason']);
+    }
+
+    public function testCreatePayoutWhenOnHoldFeatureEnabledAndBeneUp()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
+
+        $benebankConfig =
+            [
+                "BENEFICIARY"=> [
+                    "SBIN" => [
+                        "status" => "started",
+                    ],
+                    "RZPB" => [
+                        "status" => "resolved",
+                    ],
+                ]
+            ];
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT =>$benebankConfig]);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotEquals('on_hold', $payout['status']);
+        $this->assertNull($payout['queued_reason']);
+    }
+
     public function testBeneBankDowntimeConfigSetup()
     {
         $this->ba->privateAuth();
 
         $benebankConfig =
             [
-
+                "BENEFICIARY" => [
+                    "SBIN" => [
+                        "status" => "started",
+                    ],
+                    'HDFC' => [
+                        'status' => "started"
+                    ],
+                    "default" => "started"
+                ]
             ];
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
@@ -12387,3 +12452,4 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotContains('HDFC',$eventConfigFromFTS['BENEFICIARY'],true);
     }
 }
+

@@ -36,6 +36,16 @@ class Base extends FundAccountPayout\Base
 
             $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
 
+            if ($payout->getStatus() !== Status::QUEUED)
+            {
+                $this->holdPayoutIfApplicableAndBeneBankDown($payout);
+
+                if ($payout->isStatusOnHold() === true)
+                {
+                    return $payout;
+                }
+            }
+
             // We are overriding only for live mode for now. To check for test mode later.
             if (($payout->getChannel() === Channel::YESBANK) and
                 ($this->isLiveMode() === true))

@@ -114,6 +114,7 @@ class Entity extends Base\PublicEntity
     const CANCELLATION_USER_ID                  = 'cancellation_user_id';
     const CANCELLATION_USER                     = 'cancellation_user';
     const QUEUED_REASON                         = 'queued_reason';
+    const ON_HOLD_AT                            = 'on_hold_at';
 
     // status code send from bank side
     const STATUS_CODE            = 'status_code';
@@ -377,6 +378,7 @@ class Entity extends Base\PublicEntity
         self::ORIGIN,
         self::CREATE_REQUEST_SUBMITTED_AT,
         self::IS_PAYOUT_SERVICE,
+        self::ON_HOLD_AT,
     ];
 
     protected $visible = [
@@ -442,6 +444,7 @@ class Entity extends Base\PublicEntity
         self::REGISTERED_NAME,
         self::CANCELLATION_USER_ID,
         self::CANCELLATION_USER,
+        self::ON_HOLD_AT,
     ];
 
     protected $public = [
@@ -490,6 +493,7 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::CANCELLATION_USER_ID,
         self::CANCELLATION_USER,
+        self::ON_HOLD_AT,
     ];
 
     protected $webhook = [
@@ -556,6 +560,7 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::CANCELLATION_USER_ID,
         self::CANCELLATION_USER,
+        self::ON_HOLD_AT,
     ];
 
     protected $defaults = [
@@ -611,6 +616,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_AT,
         self::SCHEDULED_ON,
         self::CREATE_REQUEST_SUBMITTED_AT,
+        self::ON_HOLD_AT,
     ];
 
     protected $appends = [
@@ -950,6 +956,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CREATE_REQUEST_SUBMITTED_AT);
     }
 
+    public function getOnHoldAt()
+    {
+        return $this->getAttribute(self::ON_HOLD_AT);
+    }
+
     public function getScheduledAt()
     {
         return $this->getAttribute(self::SCHEDULED_AT);
@@ -978,6 +989,11 @@ class Entity extends Base\PublicEntity
     public function isStatusReversed()
     {
         return ($this->getStatus() === Status::REVERSED);
+    }
+
+    public function isStatusOnHold()
+    {
+        return ($this->getStatus() === Status::ON_HOLD);
     }
 
     /**
@@ -1355,6 +1371,11 @@ class Entity extends Base\PublicEntity
     public function setCreateRequestSubmittedAt($date)
     {
         $this->setAttribute(self::CREATE_REQUEST_SUBMITTED_AT, $date);
+    }
+
+    public function setOnHoldAt($date)
+    {
+        $this->setAttribute(self::ON_HOLD_AT, $date);
     }
 
     public function setPendingAt($date)
@@ -1945,6 +1966,22 @@ class Entity extends Base\PublicEntity
         if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
         {
             unset($attributes[self::QUEUED_AT]);
+        }
+    }
+
+    public function setPublicOnHoldAtAttribute(array & $attributes)
+    {
+        //
+        // We are currently exposing this timestamp only for dashboard.
+        // Going forward, we will have a proper auditing stuff for
+        // payouts, which will be exposed via API as well.
+        //
+
+        // TODO: Move to serializer
+
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::ON_HOLD_AT]);
         }
     }
 

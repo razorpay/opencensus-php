@@ -12783,6 +12783,41 @@ return [
             ],
         ],
     ],
+    'testOnHoldPayoutForFeatureEnabledMerchantAndBeneDown' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'queued',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
 
     'testFiringOfWebhooksAndEmailOnPayoutReversalWithoutUtr' => [
         'request'   => [
@@ -12873,7 +12908,6 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_AMAZONPAY_PAYOUT_NOT_ALLOWED_ON_DIRECT_ACCOUNT,
         ],
     ],
-
     'testCreatePayoutGreaterThanMaxAmount' => [
         'request'  => [
             'method'  => 'POST',
@@ -13004,7 +13038,6 @@ return [
                     "status"=> "started",
                     "updated_at"=> 1621202497
                 ]
-
             ],
         ],
         'response' => [
@@ -13035,7 +13068,6 @@ return [
                     "status"=> "resolved",
                     "updated_at"=> 1621202497
                 ]
-
             ],
         ],
         'response' => [
@@ -13043,6 +13075,5 @@ return [
                 'message' => 'FTS channel notification processed successfully',
             ],
         ],
-    ],
+     ],
     ];
-

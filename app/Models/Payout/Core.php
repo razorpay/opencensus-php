@@ -84,6 +84,10 @@ class Core extends Base\Core
 
     const FAILURE_STATUSES_FOR_PAYOUT_TO_AMEX = [Attempt\Status::FAILED, Attempt\Status::REVERSED];
 
+    const DEFAULT_BENE_BANK_STATUS = 'resolved';
+
+    const BENE_BANK_DOWNTIME_STARTED = 'started';
+
     const BENEFICIARY = 'BENEFICIARY';
 
     /**
@@ -3302,6 +3306,26 @@ class Core extends Base\Core
 
         // webhook fired via payout service
         $this->reversePayoutService($payout, $ftaFailureReason, $ftaBankStatusCode, $reversal);
+    }
+
+    public function checkIfBeneBankIsDown(Entity $payout)
+    {
+        $beneIfsc = substr($payout->fundAccount->account->getIfscCode(), 0, 4);
+
+        $beneBankStatus = self::DEFAULT_BENE_BANK_STATUS;
+
+        $eventConfigFromFTS = (new Admin\Service)->getConfigKey([
+            'key' => Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT
+        ]);
+
+        if (in_array($beneIfsc, array_keys($eventConfigFromFTS['BENEFICIARY']), true) === true) {
+            $beneBankStatus = $eventConfigFromFTS['BENEFICIARY'][$beneIfsc]['status'];
+        }
+
+        if ($beneBankStatus === self::BENE_BANK_DOWNTIME_STARTED) {
+            return true;
+        }
+        return false;
     }
 
     public function processEventNotificationFromFts(array $input)

@@ -2,14 +2,20 @@
 
 namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
+use RZP\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
+use Razorpay\Trace\Logger;
+use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Purpose;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Payout\QueuedReasons;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Transaction\CreditType;
+use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Merchant\Balance\FreePayout;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\Processor\DownstreamProcessor\Base as DSBase;
 
 class Base extends DSBase
@@ -97,5 +103,85 @@ class Base extends DSBase
 
             $payout->setFeeType(CreditType::REWARD_FEE);
         }
+    }
+
+    protected function holdPayoutIfApplicableAndBeneBankDown(Entity $payout)
+    {
+        $onHold = $this->checkIfPayoutToBeKeptOnHold($payout);
+
+        if($onHold === true)
+        {
+            $payout -> setStatus(Status::ON_HOLD);
+
+            $payout->setQueuedReason(QueuedReasons::BENE_BANK_DOWN);
+
+            $this->repo->saveOrFail($payout);
+        }
+    }
+
+    //checks payout to be kept on_hold if the feature is enabled and bene bank is down
+    protected function checkIfPayoutToBeKeptOnHold(Entity $payout): bool
+    {
+        try
+        {
+            if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_ON_HOLD) === true)
+            {
+                $isBeneBankDown = (new PayoutCore)->checkIfBeneBankIsDown($payout);
+
+                if($isBeneBankDown === true)
+                {
+                    $toHoldPayout = $this->generateRandomNumberAndCheckIfPayoutToHold();
+
+                    if ($toHoldPayout === true)
+                    {
+                        $this->trace->info(TraceCode::ON_HOLD_PAYOUT_CREATED,
+                            [
+                                'payout_id'         => $payout->getId(),
+                                'ifsc'              => $payout->fundAccount->account->getIfscCode(),
+                            ]);
+
+                        return true;
+                    }
+                    else
+                    {
+                        $this->trace->info(TraceCode::PAYOUT_SENT_TO_DETECT_BENE_UPTIME,
+                            [
+                                'ifsc'               => $payout->fundAccount->account->getIfscCode(),
+                                'is_bene_bank_down'  => $isBeneBankDown,
+                                'payout_id'         => $payout->getId(),
+                            ]);
+                    }
+                }
+            }
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::ON_HOLD_PAYOUT_CHECK_FAILED,
+                [
+                    'message'      => $e->getMessage(),
+                    'payout_id'    => $payout->getId(),
+                ]);
+        }
+        return false;
+    }
+
+    protected function generateRandomNumberAndCheckIfPayoutToHold(): bool
+    {
+        if($this->app->environment(Constants\Environment::TESTING))
+        {
+            return true;
+        }
+
+        $random = mt_rand(0, 100);
+
+        if ($random <= 10)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

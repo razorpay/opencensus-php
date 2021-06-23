@@ -692,7 +692,13 @@ class Constants
     const ALLOW_VA_TO_VA_PAYOUTS        = 'allow_va_to_va_payouts';
 
     /**
-     *  Merchant feature used to control visibility of dcc markup on frontend
+     * Used to manage on_hold feature in case of bene/NPCI downtime for payout requests
+     * If this flag is enabled the payout will be queued for a certian sla or until the uptime is detected
+     */
+    const PAYOUTS_ON_HOLD = 'payouts_on_hold';
+
+    /**
+    * Merchant feature used to control visibility of dcc markup on frontend
      */
     const PAYMENT_SHOW_DCC_MARKUP   =   'payment_show_dcc_markup';
 
@@ -1011,6 +1017,7 @@ class Constants
         self::PAYOUT_SERVICE_ENABLED          => true,
         self::COVID_19_RELIEF                 => true,
         self::BENE_NAME_IN_PAYOUT             => true,
+        self::PAYOUTS_ON_HOLD                 => true,
         self::PL_BLOCK_CUSTOMER_PREFILL       => true,
         self::ALLOW_VA_TO_VA_PAYOUTS          => true,
         self::PAYMENT_SHOW_DCC_MARKUP         => true,
