@@ -55,7 +55,7 @@ class DowntimeSlackNotification
                 [
                     'channel' => 'C01B1J4N1E1',
                     'emitTransitions' => true,
-                    "allowedTypes" => ['PLATFORM', 'PLTF', 'MERCHANT']
+                    "allowedTypes" => ['PLATFORM', 'PLTF']
                 ],
                 [
                     'channel' => 'CQHNFF004',
@@ -209,10 +209,9 @@ class DowntimeSlackNotification
 
     private function formMesssage($downtimeState, $downtime, $eTime)
     {
-        $severity = $downtime['severity'];
-        $eventTime = $downtime['eventTime'];
-
-        $startTime  = $this->formatEpoc($eTime);
+        $severity   = $downtime['severity'];
+        $eventTime  = $downtime['eventTime'];
+        $startTime  = $this->formatEpoc($eventTime);
 
         $additionalDetails = "";
 
@@ -221,8 +220,10 @@ class DowntimeSlackNotification
             $additionalDetails = $this->getMerchantDetails($downtime);
         }
 
-        if($this->isResolve($downtimeState)){
+        if($this->isResolve($downtimeState) === true)
+        {
             $severity = 'RESOLVED';
+            $startTime  = $this->formatEpoc($eTime);
             $additionalDetails = $additionalDetails."\n".$this->getResolutionDetails($eventTime, $eTime);
         }
 
