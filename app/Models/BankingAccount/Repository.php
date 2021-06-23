@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Models\Base\PublicCollection;
@@ -483,5 +484,50 @@ class Repository extends Base\Repository
             ->where(Entity::ACCOUNT_TYPE, $accountType)
             ->where(Entity::STATUS, Status::ACTIVATED)
             ->first();
+    }
+
+    public function fetchMerchantsWithCaRblAccount(
+        int $limit,
+        int $skip,
+        string $channel,
+        string $accountType,
+        array $merchantIds = [],
+        array $merchantIdsExcluded = []): array
+    {
+        $channelColumn = $this->dbColumn(Entity::CHANNEL);
+        $accountTypeColumn = $this->dbColumn(Entity::ACCOUNT_TYPE);
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+
+        $merchantActivatedColumn = $this->repo->merchant->dbColumn(Merchant\Entity::ACTIVATED);
+        $merchantIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $bankingAccountMerchantIdColumn = $this->repo->banking_account->dbColumn(Entity::MERCHANT_ID);
+
+        $query =  $this->newQuery()
+            ->join(Table::MERCHANT, $bankingAccountMerchantIdColumn, '=', $merchantIdColumn)
+            ->where($channelColumn, '=', $channel)
+            ->where($accountTypeColumn, '=', $accountType)
+            ->where($statusColumn, '=', Status::ACTIVATED)
+            ->where($merchantActivatedColumn, '=', 0)
+            ->where(function ($query)
+            {
+                $query->whereNotIn(Merchant\Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
+                    ->orWhereNull(Merchant\Entity::PARENT_ID);
+            })
+            ->take($limit)
+            ->skip($skip);
+
+        if (empty($merchantIds) === false)
+        {
+            $query = $query->whereIn($merchantIdColumn, $merchantIds);
+        }
+
+        if (empty($merchantIdsExcluded) === false)
+        {
+            $query = $query->whereNotIn($merchantIdColumn, $merchantIdsExcluded);
+        }
+
+        return $query->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
     }
 }

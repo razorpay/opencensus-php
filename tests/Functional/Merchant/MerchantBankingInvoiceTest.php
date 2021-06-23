@@ -218,6 +218,68 @@ class MerchantBankingInvoiceTest extends TestCase
         return [$x['id'], $z['id']];
     }
 
+    protected function createDataForBankingInvoiceEntityCreateForGivenMonthYearForRblCaActivatedAndNonKyc()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'activated'    => 0,
+            'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+            'invoice_code' => 'hello1234567',
+        ]);
+
+        $x = $this->fixtures->create('balance',
+            [
+                'merchant_id'    => '10000000000000',
+                'type'           => 'banking',
+                'balance'        => 100000,
+                'account_number' => '2224440041626905',
+                'channel'        => 'rbl',
+                'account_type'   => 'direct',
+            ]);
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'                   => '10000000000000',
+                'gstin'                         => '29kjsngjk213922',
+                'business_registered_pin'       => '123456',
+                'business_registered_address'   => 'abc street',
+                'business_registered_city'      => 'abcdef',
+                'business_name'                 => 'abcd'
+            ]);
+
+        $this->fixtures->create(
+            'banking_account',
+            [
+                'merchant_id'    => '10000000000000',
+                'channel'        => 'rbl',
+                'account_type'   => 'current',
+                'status'         => 'activated',
+            ]);
+
+        $this->fixtures->edit('merchant', 10000000000000, ['business_banking' => 1]);
+
+        $y = $this->fixtures->create(
+            'payout',
+            [
+                'channel'           =>      'icici',
+                'amount'            =>      1000,
+                'balance_id'        =>      $x['id'],
+                'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+            ]);
+
+        $y = $this->fixtures->create(
+            'payout',
+            [
+                'channel'           =>      'icici',
+                'amount'            =>      1000,
+                'balance_id'        =>      $x['id'],
+                'fee_type'          =>      'free_credits',
+                'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+            ]);
+
+        return $x['id'];
+    }
+
     protected function setupBankingInvoice()
     {
         $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
@@ -1923,6 +1985,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
     public function testBankingInvoiceDownloadFromMerchantDashboardForCARbl()
     {
+        //skipped because changes not added for May 2021 month
         $this->markTestSkipped("test not needed");
         $oldDateTime = Carbon::create(2021, 6, 21, 12, 23, 41, Timezone::IST);
 
@@ -1956,6 +2019,29 @@ class MerchantBankingInvoiceTest extends TestCase
         $this->assertEquals($expectedResponse['error_message'], $content['error_message']);
 
         Carbon::setTestNow();
+    }
+
+    public function testMerchantInvoiceGenerationWhenNonKycAndRblCaActive(){
+        $oldDateTime = Carbon::create(2021, 5, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYearForRblCaActivatedAndNonKyc();
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+        $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $entities = $entities['items'];
+
+        $this->assertEquals(10000000000000, $entities[0]['merchant_id']);
     }
 
     public function testBankingInvoiceDownloadFromAdminDashboard()

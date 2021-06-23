@@ -26,6 +26,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Jobs\EInvoice\XEInvoice;
 use RZP\Models\Merchant\Invoice\EInvoice;
 use RZP\Models\Report\Types\InvoiceReport;
+use RZP\Models\BankingAccount\AccountType;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Jobs\EInvoice\PgEInvoice as PgEInvoiceJob;
@@ -434,17 +435,54 @@ class Core extends Base\Core
             foreach ($merchantIdsToEnqueue as $merchantId)
             {
                 MerchantInvoiceJob::dispatch(
-                                            $merchantId,
-                                            $month,
-                                            $year,
-                                            $mode)
-                                            // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
-                                            ->delay($i++ % 901);
+                    $merchantId,
+                    $month,
+                    $year,
+                    $mode)
+                    // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
+                    ->delay($i++ % 901);
             }
         } while($batch === $count);
 
         $this->trace->info(
             TraceCode::MERCHANT_INVOICE_DISPATCH_COUNT,
+            [
+                'count' => $skip,
+            ]);
+
+
+        $skip = 0;
+        $i = 0;
+
+        do{
+            $merchantIdsWithCaRblActivated = $this->repo
+                ->banking_account
+                ->fetchMerchantsWithCaRblAccount(
+                    $batch,
+                    $skip,
+                    \RZP\Models\BankingAccount\Channel::RBL,
+                    AccountType::CURRENT,
+                    $merchantIds,
+                    $merchantIdsExcluded);
+
+            $count = count($merchantIdsWithCaRblActivated);
+
+            $skip += $count;
+
+            foreach($merchantIdsWithCaRblActivated as $merchantId){
+                MerchantInvoiceJob::dispatch(
+                    $merchantId,
+                    $month,
+                    $year,
+                    $mode)
+                    // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
+                    ->delay($i++ % 901);
+            }
+
+        }while($batch === $count);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_NOT_ACTIVATED_DISPATCH_COUNT,
             [
                 'count' => $skip,
             ]);

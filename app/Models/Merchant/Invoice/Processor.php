@@ -745,7 +745,7 @@ class Processor extends Base\Core
 
         foreach ($balances as $balance)
         {
-            if ($balance->isTypePrimary() === true)
+            if (($balance->isTypePrimary() === true) and ($this->merchant->isActivated() === true))
             {
                 // [
                 //    'card_lte_2k'             => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
