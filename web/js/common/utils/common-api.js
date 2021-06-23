@@ -15,6 +15,14 @@ export const sendDataToSalesForce = (data, user, mode = 'live') => {
       Campaign_ID: 'LOC-Cross-sell-V1',
       product_name: 'LOC',
     },
+    'capital-whats-new': {
+      merchant_id: user.current,
+      name: user.name,
+      email: user.contact_email,
+      contact_mobile: user.contact_mobile,
+      Campaign_ID: 'capital-whats-new',
+      product_name: 'CARDS',
+    },
   };
 
   if (typeof data === 'string') payload.event_properties = eventPropertiesMap[data] || {};

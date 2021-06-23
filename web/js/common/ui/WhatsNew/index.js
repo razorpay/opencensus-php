@@ -181,8 +181,21 @@ export default class WhatsNew extends Component {
     });
   };
 
-  createSalesforceOpportunity = (url) => {
-    sendDataToSalesForce('LOC-Cross-sell-V1', this.props.user);
+  createSalesforceOpportunity = (id, url) => {
+    let event = '';
+
+    switch (id) {
+      case 'cash-advance-cta-1': {
+        event = 'LOC-Cross-sell-V1';
+        break;
+      }
+      case 'whats-new-JUN21-RXCC-GROWTH-cta1': {
+        event = 'capital-whats-new';
+        break;
+      }
+    }
+
+    sendDataToSalesForce(event, this.props.user);
 
     this.props.history.push(url);
   };
@@ -203,7 +216,8 @@ export default class WhatsNew extends Component {
         this.props.showAcceptPaymentsModal();
         break;
       case 'cash-advance-cta-1':
-        this.createSalesforceOpportunity(url);
+      case 'whats-new-JUN21-RXCC-GROWTH-cta1':
+        this.createSalesforceOpportunity(id, url);
         break;
     }
   };
@@ -419,6 +433,7 @@ export default class WhatsNew extends Component {
       'whats-new-may21-reten2-dashboard',
       'whats-new-may21-remar2-dashboard',
       'June21-QR-GTM',
+      'whats-new-JUN21-RXCC-GROWTH',
     ];
 
     let cardsList = window.notifications.map((card, idx) => (
