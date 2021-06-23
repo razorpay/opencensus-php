@@ -3272,7 +3272,7 @@ class Gateway
         return (in_array($gateway, $gateways, true));
     }
 
-    public static function gatewaysAlwaysRoutedThroughNbplusService($gateway, $bankCode, $payment = null)
+    public static function gatewaysAlwaysRoutedThroughNbplusService($gateway, $bankCode, $payment = null): bool
     {
         $gateways = [
             self::NETBANKING_SVC,
@@ -3297,6 +3297,8 @@ class Gateway
             self::NETBANKING_INDUSIND,
             self::NETBANKING_RBL,
             self::NETBANKING_CBI,
+            self::NETBANKING_CSB,
+            self::NETBANKING_KVB,
         ];
 
         $isRouted = in_array($gateway, $gateways, true);

@@ -6,6 +6,7 @@ use View;
 use Request;
 use Redirect;
 use ApiResponse;
+
 use RZP\Exception;
 use RZP\Models\Admin;
 use RZP\Models\QrCode;
@@ -1457,7 +1458,11 @@ class GatewayController extends Controller
 
         $this->app['rzp.mode'] = $mode;
 
-        if (Gateway::isNbPlusServiceGateway($gatewayName) === true)
+        if (Gateway::gatewaysAlwaysRoutedThroughNbplusService($gatewayName, null) === true)
+        {
+            $variant = 'nbplusps';
+        }
+        else if (Gateway::isNbPlusServiceGateway($gatewayName) === true)
         {
             // method is added as a part of feature flag because emandate and netbanking have same gateways.
             $featureFlag = $method . '_' . Payment\Processor\Processor::NB_PLUS_PAYMENTS_PREFIX;
@@ -1470,33 +1475,32 @@ class GatewayController extends Controller
             $featureFlag .= '_' . $gatewayName;
 
             $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag, $mode);
+        }
 
-            if (strtolower($variant) === 'nbplusps')
+        if (strtolower($variant) === 'nbplusps')
+        {
+            $inputData['gateway_data'] = $input;
+
+            try
             {
-                $inputData['gateway_data'] = $input;
+                return $this->app['nbplus.payments']->action($method, $gatewayName, Nbplus\Action::PREPROCESS_CALLBACK, $inputData);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_ERROR,
+                    [
+                        'message'   => 'Unable to make request to nbplus service',
+                        'gateway'   => $gatewayName,
+                        'exception' => $e->getMessage(),
+                        'action'    => NbPlus\Action::PREPROCESS_CALLBACK,
+                    ]);
 
-                try
-                {
-                    return $this->app['nbplus.payments']->action($method, $gatewayName, Nbplus\Action::PREPROCESS_CALLBACK, $inputData);
-                }
-                catch (\Exception $e)
-                {
-                    $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_ERROR,
-                        [
-                            'message'   => 'Unable to make request to nbplus service',
-                            'gateway'   => $gatewayName,
-                            'exception' => $e->getMessage(),
-                            'action'    => NbPlus\Action::PREPROCESS_CALLBACK,
-                        ]);
-
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                        null,
-                        [
-                            'input' => $input
-                        ]
-                    );
-                }
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    null,
+                    [
+                        'input' => $input
+                    ]);
             }
         }
 

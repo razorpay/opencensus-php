@@ -31,6 +31,8 @@ class NetbankingKvbGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->fixtures->create('terminal:shared_netbanking_kvb_terminal');
+
+        $this->markTestSkipped('this flow is depricated and is moved to nbplus service');
     }
 
     public function testPayment()
