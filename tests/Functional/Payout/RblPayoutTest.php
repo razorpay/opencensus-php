@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
 use RZP\Models\Card\Type;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
@@ -16,8 +17,10 @@ use RZP\Models\Card\Network;
 use RZP\Services\Mock\Mozart;
 use RZP\Models\BankingAccount;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\Merchant\Balance\FreePayout;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Jobs\RblBankingAccountGatewayBalanceUpdate;
@@ -724,5 +727,192 @@ class RblPayoutTest extends TestCase
         ]);
 
         $this->startTest();
+    }
+
+    public function testCreateRblPayoutToUpiWithoutFeatureEnabled()
+    {
+        $this->liveSetUpForRbl();
+
+        $this->fixtures->on('live')->create(
+            'vpa',
+            [
+                'id' => '10000000000vpa',
+                'entity_type' => 'contact',
+                'entity_id' => '1000001contact',
+                'username' => 'test',
+                'handle' => 'rzp',
+                'merchant_id' => '10000000000000',
+            ]
+        );
+
+        $this->fixtures->on('live')->create(
+            'fund_account',
+            [
+                'id'           => '100000000002fa',
+                'account_type' => 'vpa',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_id'   => '10000000000vpa',
+                'active'       => 1,
+            ]);
+
+        $counter = $this->getDbLastEntity('counter', 'live');
+
+        $this->fixtures->on('live')->edit('counter', $counter->getId(), [
+            'free_payouts_consumed' => 0,
+        ]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testCreateRblPayoutToUpiWithFeatureEnabledAndFreePayoutsAvailable()
+    {
+        $this->liveSetUpForRbl();
+
+        $this->fixtures->on('live')->merchant->addFeatures([Features::RBL_CA_UPI]);
+
+        $this->fixtures->on('live')->create(
+            'vpa',
+            [
+                'id' => '10000000000vpa',
+                'entity_type' => 'contact',
+                'entity_id' => '1000001contact',
+                'username' => 'test',
+                'handle' => 'rzp',
+                'merchant_id' => '10000000000000',
+            ]
+        );
+
+        $this->fixtures->on('live')->create(
+            'fund_account',
+            [
+                'id'           => '100000000002fa',
+                'account_type' => 'vpa',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_id'   => '10000000000vpa',
+                'active'       => 1,
+            ]);
+
+        $counter = $this->getDbLastEntity('counter', 'live');
+
+        $this->fixtures->on('live')->edit('counter', $counter->getId(), [
+            'free_payouts_consumed' => 0,
+        ]);
+
+        // Reloading from DB as an updated happened above
+        $freePayoutsConsumedBefore = $this->getDbLastEntity('counter', 'live')->getFreePayoutsConsumed();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $freePayoutsConsumedAfter = $this->getDbLastEntity('counter', 'live')->getFreePayoutsConsumed();
+
+        $this->assertEquals($freePayoutsConsumedBefore + 1, $freePayoutsConsumedAfter);
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $expectedStatus = (env('FTS_MOCK') === true) ? 'created' : 'initiated';
+
+        $this->assertEquals('rbl', $payout->getChannel());
+        $this->assertEquals($expectedStatus, $payout->getStatus());
+        $this->assertEquals('UPI', $payout->getMode());
+        $this->assertEquals('free_payout', $payout->getFeeType());
+    }
+
+    public function testCreateRblPayoutToUpiWithFeatureEnabledAndFreePayoutsUnavailable()
+    {
+        $this->liveSetUpForRbl();
+
+        $this->fixtures->on('live')->merchant->addFeatures([Features::RBL_CA_UPI]);
+
+        $this->fixtures->on('live')->create(
+            'vpa',
+            [
+                'id' => '10000000000vpa',
+                'entity_type' => 'contact',
+                'entity_id' => '1000001contact',
+                'username' => 'test',
+                'handle' => 'rzp',
+                'merchant_id' => '10000000000000',
+            ]
+        );
+
+        $this->fixtures->on('live')->create(
+            'fund_account',
+            [
+                'id'           => '100000000002fa',
+                'account_type' => 'vpa',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_id'   => '10000000000vpa',
+                'active'       => 1,
+            ]);
+
+        $counter = $this->getDbLastEntity('counter', 'live');
+
+        $freePayoutsConsumedBefore = $counter->getFreePayoutsConsumed();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $freePayoutsConsumedAfter = $this->getDbLastEntity('counter', 'live')->getFreePayoutsConsumed();
+
+        $this->assertEquals($freePayoutsConsumedBefore, $freePayoutsConsumedAfter);
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $expectedStatus = (env('FTS_MOCK') === true) ? 'created' : 'initiated';
+
+        $this->assertEquals('rbl', $payout->getChannel());
+        $this->assertEquals($expectedStatus, $payout->getStatus());
+        $this->assertEquals('UPI', $payout->getMode());
+        // The next assertion is to make sure that the fee type free_payout is NOT picked up
+        $this->assertNull($payout->getFeeType());
+    }
+
+    public function testCreateRblPayoutToCardViaUpi()
+    {
+        $this->liveSetUpForRbl();
+
+        $this->fixtures->on('live')->merchant->addFeatures([Features::RBL_CA_UPI, Features::S2S, Features::PAYOUT_TO_CARDS]);
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        // The card number is a sample Amex card number, as only Amex card supports payout via UPI
+        $cardFundAccountCreateRequest = [
+            'url'     => '/fund_accounts',
+            'method'  => 'POST',
+            'content' => [
+                'contact_id'   => 'cont_1000001contact',
+                'account_type' => 'card',
+                'card'         => [
+                    'number' => '378282246310005',
+                    'name'   => 'Tester Test',
+                ],
+            ],
+        ];
+
+        $cardFundAccountCreateResponse = $this->makeRequestAndGetContent($cardFundAccountCreateRequest);
+        $fundAccountId = $cardFundAccountCreateResponse['id'];
+
+        $testData                                          = &$this->testData[__FUNCTION__];
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $expectedStatus = (env('FTS_MOCK') === true) ? 'created' : 'initiated';
+
+        $this->assertEquals('rbl', $payout->getChannel());
+        $this->assertEquals($expectedStatus, $payout->getStatus());
+        $this->assertEquals('UPI', $payout->getMode());
     }
 }

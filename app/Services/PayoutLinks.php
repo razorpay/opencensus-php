@@ -22,6 +22,7 @@ use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Batch\Core as BatchCore;
 use RZP\Models\User\Entity as UserEntity;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -760,7 +761,7 @@ class PayoutLinks
 
         if ($bankingAccount->getChannel() === Channel::RBL)
         {
-            $channelSupportsUpi = false;
+            $channelSupportsUpi = $merchant->isFeatureEnabled(Features::RBL_CA_UPI);
         }
 
         $amountLessThanLac = $payoutLinkInfo['amount'] <= Validator::MAX_UPI_AMOUNT ? true : false;

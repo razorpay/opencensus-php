@@ -458,6 +458,9 @@ class PayoutLinkMicroserviceTest extends TestCase
         $merchant = new Merchant\Entity();
         $merchant["billing_label"] = "abc";
 
+        // Adding this because checking if a feature is enabled for a merchant requires the merchant ID.
+        $merchant["id"] = "12345678901234";
+
         $mode["AMAZONPAY"] = 0;
         $mode["UPI"] = 1;
         $response = $this->mockSettingsResponse($mode, 10000);

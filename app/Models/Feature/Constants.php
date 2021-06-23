@@ -663,6 +663,11 @@ class Constants
     const PAYOUT_PROCESS_ASYNC = 'payout_process_async';
 
     /**
+     * Used to control if a merchant can create UPI payouts on RBL CA.
+     */
+    const RBL_CA_UPI = 'rbl_ca_upi';
+
+    /**
      * Used to enable new FAV forward flow, where FTA is deprecated.
      */
     const FAV_FTA_DPRCN_FWD = 'fav_fta_dprcn_fwd';
@@ -1014,6 +1019,7 @@ class Constants
         self::ORG_SUB_MERCHANT_CREATE         => true,
         self::PAYOUT_PROCESS_ASYNC_LP         => true,
         self::PAYOUT_PROCESS_ASYNC            => true,
+        self::RBL_CA_UPI                      => true,
         self::FAV_FTA_DPRCN_FWD               => true,
         self::FAV_FTA_DPRCN_BCK               => true,
         self::PAYOUT_SERVICE_ENABLED          => true,
@@ -1506,6 +1512,11 @@ class Constants
         self::DISABLE_X_AMAZONPAY => [
             'feature'       => self::DISABLE_X_AMAZONPAY,
             'display_name'  => 'Disable amazonpay payouts for the merchant',
+            'documentation' => '',
+        ],
+        self::RBL_CA_UPI => [
+            'feature'       => self::RBL_CA_UPI,
+            'display_name'  => 'Enable UPI mode for merchants on RBL CA',
             'documentation' => '',
         ],
     ];

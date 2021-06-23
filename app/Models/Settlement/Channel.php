@@ -348,6 +348,9 @@ class Channel
                 ]
             ],
             self::RBL       => [
+                Constants\Entity::VPA           =>  [
+                    Mode::UPI,
+                ],
                 Constants\Entity::BANK_ACCOUNT  =>  [
                     Mode::RTGS,
                     Mode::IMPS,
@@ -357,6 +360,7 @@ class Channel
                 Constants\Entity::CARD          =>  [
                     Mode::IMPS,
                     Mode::NEFT,
+                    Mode::UPI,
                 ],
                 Constants\Entity::WALLET_ACCOUNT  =>  [
                     Mode::FTS_WALLET_TRANSFERS_MODE,

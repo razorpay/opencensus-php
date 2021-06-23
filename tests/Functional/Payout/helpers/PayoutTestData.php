@@ -5033,6 +5033,127 @@ return [
         ],
     ],
 
+    'testCreateRblPayoutToUpiWithoutFeatureEnabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 200,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'narration'             => 'Batman',
+                'mode'                  => 'UPI',
+                'fund_account_id'       => 'fa_100000000002fa',
+                'notes'                 => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'RBL does not support UPI payouts to VPA',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
+        ],
+    ],
+
+    'testCreateRblPayoutToUpiWithFeatureEnabledAndFreePayoutsAvailable' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 200,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'narration'             => 'Batman',
+                'mode'                  => 'UPI',
+                'fund_account_id'       => 'fa_100000000002fa',
+                'notes'                 => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 200,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000002fa',
+                'mode'            => 'UPI',
+                'purpose'         => 'refund',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateRblPayoutToUpiWithFeatureEnabledAndFreePayoutsUnavailable' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 200,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'narration'             => 'Batman',
+                'mode'                  => 'UPI',
+                'fund_account_id'       => 'fa_100000000002fa',
+                'notes'                 => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 200,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000002fa',
+                'mode'            => 'UPI',
+                'purpose'         => 'refund',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateRblPayoutToCardViaUpi' => [
+        'request'  => [
+            'url'     => '/payouts',
+            'method'  => 'POST',
+            'content' => [
+                'fund_account_id' => 'RandomFundAccId',
+                'mode'            => 'UPI',
+                'purpose'         => 'refund',
+                'account_number'  => '2224440041626905',
+                'amount'          => 10000,
+                'currency'        => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'   => 'payout',
+                'amount'   => 10000,
+                'currency' => 'INR',
+                'purpose'  => 'refund',
+                'mode'     => 'UPI',
+            ],
+        ],
+    ],
+
     'testCreateMerchantPayoutOnDemandWithFtsRampFailure' => [
         'request' => [
             'method'  => 'POST',

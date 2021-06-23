@@ -186,6 +186,9 @@ class Mode
             ],
             AccountType::DIRECT => [
                 Settlement\Channel::RBL   => [
+                    Constants\Entity::VPA          => [
+                       self::UPI,
+                    ],
                     Constants\Entity::BANK_ACCOUNT => [
                         self::RTGS,
                         self::IMPS,
@@ -195,6 +198,7 @@ class Mode
                     Constants\Entity::CARD         => [
                         self::IMPS,
                         self::NEFT,
+                        self::UPI,
                     ]
                 ],
                 Settlement\Channel::ICICI => [

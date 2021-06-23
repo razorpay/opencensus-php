@@ -23,7 +23,9 @@ use RZP\Models\FundTransfer\Mode;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Payout\Mode as PayoutMode;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Attempt\Constants;
+use RZP\Models\Feature\Repository as FeatureRepo;
 use RZP\Models\PayoutSource\Entity as PayoutSource;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
@@ -1010,6 +1012,15 @@ class Validator extends Base\Validator
                 }
             }
 
+        if (($channel === Settlement\Channel::RBL) and
+            ($mode === PayoutMode::UPI))
+        {
+            if($this->isUpiModeEnabledOnRblDirectAccountForMerchantId($merchantId) === false)
+            {
+                return false;
+            }
+        }
+
         return PayoutMode::validateChannelAndModeForPayouts($channel, $destinationType, $mode, $accountType);
     }
 
@@ -1076,5 +1087,11 @@ class Validator extends Base\Validator
                 ]
             );
         }
+    }
+
+    public function isUpiModeEnabledOnRblDirectAccountForMerchantId(string $merchantId)
+    {
+        $featureList = (new FeatureRepo())->findMerchantWithFeatures($merchantId, [Features::RBL_CA_UPI]);
+        return (count($featureList) !== 0);
     }
 }
