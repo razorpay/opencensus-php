@@ -77,6 +77,11 @@ final class RequestContext
      */
     protected $authFlowType;
 
+    /**
+     * @var string
+     */
+    protected $keySource;
+
     //
     // In one request some (and not all) of below identifiers are set. Further
     // in throttle core logic we construct throttle key using the one available.
@@ -206,6 +211,11 @@ final class RequestContext
         return $this->auth;
     }
 
+    public function getKeySource()
+    {
+        return $this->keySource;
+    }
+
     public function getKeyWithoutPrefix()
     {
         return $this->keyWithoutPrefix;
@@ -308,6 +318,21 @@ final class RequestContext
     public function isKeyOAuthPublicToken(): bool
     {
         return ((strlen($this->key) === OAuth::PUBLIC_TOKEN_LENGTH) and (substr($this->key, 8, 7) === '_oauth_'));
+    }
+
+    protected function setKeySource()
+    {
+        if (!empty($this->request->query('key_id')) === true)
+        {
+            $this->keySource = BasicAuth::QUERY_PARAM;
+        }
+        else if (!empty($this->request->input('key_id')) === true)
+        {
+            $this->keySource = BasicAuth::BODY_PARAM;
+        }
+        else if (!empty($this->request->getUser()) === true) {
+            $this->keySource = BasicAuth::AUTH_HEADER;
+        }
     }
 
     public function isDashboardGuest(): bool
@@ -466,11 +491,13 @@ final class RequestContext
         // For callback routes, attempt getting key from route parameter first.
         if ($isPublicCallbackRoute === true)
         {
+            $this->keySource = BasicAuth::ROUTE_PARAM;
             $key = $this->request->route()->parameter('key_id');
         }
         // Else check key_id first, else fallback to auth user.
         if (empty($key) === true)
         {
+            $this->setKeySource();
             $key = $this->request->input('key_id') ?? $this->request->getUser();
         }
 
@@ -537,6 +564,13 @@ final class RequestContext
 
     protected function setAdditionalVarsForDirectAuth()
     {
+        $key = $this->request->input(BasicAuth::KEY_ID);
+
+        if (empty($key) === false)
+        {
+            $this->authFlowType = BasicAuth::PUBLIC;
+        }
+
         return in_array($this->route, Route::$direct, true);
     }
 

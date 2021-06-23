@@ -2465,6 +2465,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OAUTH_TOKEN_INVALID                                   = 'OAUTH_TOKEN_INVALID';
     const APP_MERCHANT_ACCESS_MAP                               = 'APP_MERCHANT_ACCESS_MAP';
     const APP_MERCHANT_ACCESS_MAP_DELETE                        = 'APP_MERCHANT_ACCESS_MAP_DELETE';
+    const OAUTH_TOKEN_WITH_PARTNER_ACCOUNT                      = 'OAUTH_TOKEN_WITH_PARTNER_ACCOUNT';
 
     const RAZORX_REQUEST                                        = 'RAZORX_REQUEST';
     const RAZORX_REQUEST_FAILED                                 = 'RAZORX_REQUEST_FAILED';

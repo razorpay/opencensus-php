@@ -90,6 +90,12 @@ class BasicAuth
     // Used in requestContext for request metrics
     const OAUTH                 = 'oauth';
     const PARTNER               = 'partner';
+    const PUBLIC           = 'public';
+
+    const ROUTE_PARAM           = 'route_param';
+    const QUERY_PARAM           = 'query_param';
+    const BODY_PARAM            = 'body_param';
+    const AUTH_HEADER           = 'auth_header';
 
     // Public key used in public auth, and callback route param can be one of these forms.
     const PARTNER_KEY_REGEX = '/^(rzp_(test|live)_partner_([a-zA-Z0-9]{14}))[-~](acc_[a-zA-Z0-9]{14})$/';

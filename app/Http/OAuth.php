@@ -97,6 +97,8 @@ class OAuth
 
         if ($validCallbackKey === true)
         {
+            $this->trace->info(TraceCode::OAUTH_TOKEN_WITH_PARTNER_ACCOUNT, ['key' => $key]);
+
             $key       = $matches[1];
             $accountId = $matches[3];
 

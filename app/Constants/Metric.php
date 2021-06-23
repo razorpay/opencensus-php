@@ -48,6 +48,7 @@ class Metric
     const LABEL_RZP_PRODUCT                     = 'rzp_product';
     const LABEL_RZP_INTERNAL_APP_NAME           = 'rzp_internal_app_name';
     const LABEL_RZP_AUTH_FLOW_TYPE              = 'rzp_auth_flow_type';
+    const LABEL_RZP_KEY_SOURCE                  = 'rzp_key_source';
     const LABEL_ASYNC_JOB_CONNECTION            = 'async_job_connection';
     const LABEL_ASYNC_JOB_QUEUE                 = 'async_job_queue';
     const LABEL_ASYNC_JOB_NAME                  = 'async_job_name';
