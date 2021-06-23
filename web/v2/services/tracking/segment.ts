@@ -35,6 +35,7 @@ const getCommonProperties = ({ screen, properties, user }) => {
     activation_status: user.activated,
     is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
     is_esign_aadhar_enabled: user.isEsignAadharEnabled,
+    is_instant_activation_enabled: user.isInstantActivationEnabled,
     new_onboarding_flow: 'yes',
     mode: 'live',
     rzp_mode: getMode(user.id) || '',

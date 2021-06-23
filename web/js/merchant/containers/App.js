@@ -87,6 +87,7 @@ import { fetchInstantSettlements } from 'merchant/reducers/collection';
         activation_status: user.activated,
         is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
         is_esign_aadhar_enabled: user.isEsignAadharEnabled,
+        is_instant_activation_enabled: user.isInstantActivationEnabled,
       };
     }
     if (query.merchant) {
@@ -517,7 +518,7 @@ export default class App extends Component {
               this.fireMTUFunnelEvents(user);
             }
           })
-          .catch((err) => {});
+          .catch((err) => { });
         break;
       case 2:
         this.fireMTUAudienceEvents(user);

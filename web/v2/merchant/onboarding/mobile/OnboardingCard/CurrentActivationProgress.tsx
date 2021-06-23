@@ -27,6 +27,9 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; esc
       actionName: 'form fill',
       screen: 'home page',
       eventAction: 'initiated',
+      properties: {
+        milestone: `${isL1Submitted(data.activation_form_milestone) ? 'L2' : 'L1'} Start`,
+      },
       activationType: isL1Submitted(data.activation_form_milestone) ? 'kyc' : 'act',
       user,
     });

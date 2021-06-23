@@ -64,6 +64,7 @@ export const kycModalContent = (args = {}) => {
                 properties: {
                   clickSource: 'form submission popup',
                   ...getCommonSegmentProperties(),
+                  milestone: 'L2 Start',
                 },
               });
               args.onClose();
