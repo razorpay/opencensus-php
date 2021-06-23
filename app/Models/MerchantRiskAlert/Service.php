@@ -758,4 +758,9 @@ class Service extends Base\Service
 
         return $fdTicketId;
     }
+
+    public function identifyBlacklistCountryAlerts(array $input)
+    {
+        return $this->app['merchant_risk_alerts']->identifyBlacklistCountryAlerts($input);
+    }
 }

@@ -28,6 +28,10 @@ class MerchantRiskAlertClient
 
     const CREATE_MERCHANT_ALERT_URL = '/twirp/rzp.merchant_risk_alerts.alert.v1.AlertService/Create';
 
+    const IDENTIFY_BLACKLIST_COUNTRY_ALERTS = '/twirp/rzp.merchant_risk_alerts.blacklist_ip.v1.BlacklistIpService/IdentifyAndPublishAlerts';
+
+    const IDENTIFY_BLACKLIST_COUNTRY_ALERTS_REQUEST_TIMEOUT = 180000;
+
     /**
      * @var Requests_Session
      */
@@ -51,7 +55,7 @@ class MerchantRiskAlertClient
         $this->auth = app('basicauth');
     }
 
-    public function init()
+    public function init(int $timeoutMs = null)
     {
         $config = config('services.merchant_risk_alerts');
 
@@ -72,7 +76,9 @@ class MerchantRiskAlertClient
         $hooks->addCurlProperties($options);
 
         // Sets request timeout in milliseconds via curl options.
-        $this->setRequestTimeoutOpts($options, self::REQUEST_TIMEOUT, self::REQUEST_CONNECT_TIMEOUT);
+        $requestTimeout = $timeoutMs ?? self::REQUEST_TIMEOUT;
+
+        $this->setRequestTimeoutOpts($options, $requestTimeout, self::REQUEST_CONNECT_TIMEOUT);
 
         // Instantiate a request instance.
         $this->request = new Requests_Session(
@@ -182,6 +188,31 @@ class MerchantRiskAlertClient
             );
 
             $requestPayload['data'] = $data;
+        }
+    }
+
+    public function identifyBlacklistCountryAlerts(array $requestPayload)
+    {
+        $this->init(self::IDENTIFY_BLACKLIST_COUNTRY_ALERTS_REQUEST_TIMEOUT);
+
+        try {
+            $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
+                'payload'   => $requestPayload,
+                'service'   => 'merchant_risk_alerts',
+                'path'      => self::IDENTIFY_BLACKLIST_COUNTRY_ALERTS,
+            ]);
+
+            return $this->requestAndGetParsedBody(self::IDENTIFY_BLACKLIST_COUNTRY_ALERTS, $requestPayload);
+        }
+        catch (\Throwable $e) {
+            $this->trace->traceException($e, Trace::CRITICAL,
+                TraceCode::DOWNSTREAM_SERVICE_REQUEST_FAILED,
+                [
+                    'payload'   => $requestPayload,
+                    'service'   => 'merchant_risk_alerts',
+                    'path'      => self::IDENTIFY_BLACKLIST_COUNTRY_ALERTS,
+                ]
+            );
         }
     }
 

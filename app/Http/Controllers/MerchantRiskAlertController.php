@@ -42,4 +42,13 @@ class MerchantRiskAlertController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function identifyBlacklistCountryAlerts()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->identifyBlacklistCountryAlerts($input);
+
+        return ApiResponse::json($response);
+    }
 }

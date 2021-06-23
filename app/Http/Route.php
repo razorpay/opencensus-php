@@ -2470,6 +2470,11 @@ class Route
             'merchant_risk_alerts/merchant/{mid}/dispute_details',
             'MerchantRiskAlertController@getMerchantDisputeDetails'
         ],
+        'merchant_risk_identify_blacklist_country_alerts' => [
+            'post',
+            'merchant_risk_alerts/blacklist_country/identify',
+            'MerchantRiskAlertController@identifyBlacklistCountryAlerts'
+        ],
 
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.
@@ -3388,7 +3393,10 @@ class Route
         'payout_links_batch_process',
 
         //merchant action cron sends the notifications to the merchants which are suspended and tagged
-        'merchant_action_notification_cron'
+        'merchant_action_notification_cron',
+
+        // merchant risk alert crons
+        'merchant_risk_identify_blacklist_country_alerts',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -9086,6 +9094,7 @@ class Route
             'payment_analytics_partition_cron',
             'banking_account_service_cron_routes',
             'merchant_action_notification_cron',
+            'merchant_risk_identify_blacklist_country_alerts',
         ],
 
         'subscriptions' => [
