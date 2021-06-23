@@ -45,6 +45,7 @@ use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Models\PayoutMeta\Core as PayoutMetaCore;
+use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
 use RZP\Models\FundTransfer\Metric as FundTransferMetric;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
@@ -1180,6 +1181,9 @@ class Base extends BaseCore
             (boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true))
         {
             $payout->setQueueFlag(true);
+
+            (new PayoutsDetailsCore())->create(true, $payout);
+
         }
 
         (new Payout\Purpose)->setPurposeAndTypeForPayout($payout, $payout->getPurpose(), $this->isInternal);

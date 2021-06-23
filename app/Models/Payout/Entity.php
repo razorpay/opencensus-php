@@ -39,8 +39,9 @@ use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Exception\UserWorkflowNotApplicableException;
 use RZP\Models\PayoutMeta\Entity as PayoutMetaEntity;
-use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use Razorpay\OAuth\Application\Repository as AppRepo;
+use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
+use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
 
 
 /**
@@ -721,6 +722,11 @@ class Entity extends Base\PublicEntity
     public function payoutMeta()
     {
         return $this->hasOne(PayoutMetaEntity::class);
+    }
+
+    public function payoutsDetails()
+    {
+        return $this->hasOne(PayoutsDetailsEntity::class);
     }
 
     // ============================= END RELATIONS =============================

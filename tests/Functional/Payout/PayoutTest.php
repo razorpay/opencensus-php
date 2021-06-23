@@ -1289,6 +1289,11 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
+        $payoutDetails=$this->getDbLastEntity('payouts_details');
+
+        $this->assertNotNull($payoutDetails);
+        $this->assertEquals(true, $payoutDetails->getQueueIfLowBalanceFlag());
+
         $summary = $this->makePayoutSummaryRequest();
 
         $bankingAccountId = $bankingAccount->getPublicId();

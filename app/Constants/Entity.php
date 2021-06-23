@@ -463,6 +463,8 @@ class Entity
 
     const PAYOUTS_META                  = Table::PAYOUTS_META;
 
+    const PAYOUTS_DETAILS = 'payouts_details';
+
     //merchant on-boarding
     const MERCHANT_DETAIL   = 'merchant_detail';
     const MERCHANT_DOCUMENT = 'merchant_document';
@@ -722,6 +724,8 @@ class Entity
         self::CARD_MANDATE_NOTIFICATION => \RZP\Models\CardMandate\CardMandateNotification::class,
 
         self::BANKING_ACCOUNT_STATEMENT_DETAILS => \RZP\Models\BankingAccountStatement\Details::class,
+
+        self::PAYOUTS_DETAILS => \RZP\Models\PayoutsDetails::class,
 
         self::SUBSCRIPTION_OFFERS_MASTER  => \RZP\Models\Offer\SubscriptionOffer::class,
 
