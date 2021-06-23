@@ -46,7 +46,7 @@ jobs:
           sentry-cli releases files ${{ github.event.deployment.ref }} \
             upload-sourcemaps ./public/dist \
             --log-level=info \
-            --url-prefix=~/dashboard/dist/
+            --url-prefix=~/dashboard/dist/ \
             --ignore js/pokedex js/razorx js/merchantTnc js/newAuth
 
           # Commit Integration
