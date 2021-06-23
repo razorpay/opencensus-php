@@ -25,6 +25,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Admin\Permission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountService;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Application\ApplicationMerchantMaps;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
@@ -501,6 +502,26 @@ class Service extends Base\Service
     public function getPurposes(): array
     {
         return (new Purpose)->getAll($this->merchant);
+    }
+
+    public function getPurposesInternal($merchantId): array
+    {
+        /** @var Merchant\Entity $merchant */
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $allCustomPurposes = (new Purpose)->getCustom($merchant);
+
+        $purposes = new PublicCollection;
+
+        foreach ($allCustomPurposes as $purpose => $type)
+        {
+            $purposes->push([
+                                Entity::PURPOSE      => $purpose,
+                                Entity::PURPOSE_TYPE => $type,
+                            ]);
+        }
+
+        return $purposes->toArrayWithItems();
     }
 
     public function validatePurpose(array $input): array

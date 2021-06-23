@@ -4,6 +4,7 @@ namespace RZP\Models\Payout\Processor;
 
 use RZP\Exception;
 use RZP\Error\Error;
+use RZP\Constants\Mode;
 use Razorpay\Trace\Logger as Trace;
 
 use App;
@@ -1991,43 +1992,40 @@ class Base extends BaseCore
     /**
      * Check if we need to call payout microservice for payout creation
      *
-     * @param array $input
      * @return bool
      */
-    protected function isPayoutServiceIfApplicable(array $input) : bool
+    protected function isPayoutServiceIfApplicable() : bool
     {
-        $this->isPayoutServiceEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED);
-
-        if ($this->isPayoutServiceEnabled === true)
+        if ($this->mode == Mode::LIVE)
         {
-            // workflow payout skip
-            if ($this->isWorkflowEnabled === true)
+            $this->isPayoutServiceEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED);
+
+            if ($this->isPayoutServiceEnabled === true)
             {
-                return false;
+                // workflow payout skip
+                if ($this->isWorkflowEnabled === true)
+                {
+                    return false;
+                }
+
+                // batch payout check
+                if (empty($this->batchId) === false)
+                {
+                    return false;
+                }
+
+                $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
+
+                $applicationId = $this->app['basicauth']->getOAuthApplicationId();
+
+                if (empty($partnerMerchantId) === false and
+                    empty($applicationId) === false)
+                {
+                    return false;
+                }
+
+                return true;
             }
-
-            // batch payout check
-            if (empty($this->batchId) === false)
-            {
-                return false;
-            }
-
-            if (empty($sourceDetails) === false)
-            {
-                return false;
-            }
-
-            $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
-
-            $applicationId = $this->app['basicauth']->getOAuthApplicationId();
-
-            if (empty($partnerMerchantId) === false and
-                empty($applicationId) === false)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         return false;
@@ -2047,7 +2045,7 @@ class Base extends BaseCore
      */
     protected function createPayoutViaMicroservice(array $input)
     {
-        if ($this->isPayoutServiceIfApplicable($input) === true)
+        if ($this->isPayoutServiceIfApplicable() === true)
         {
             $input[Balance\Entity::ACCOUNT_NUMBER] = $this->balance->getAccountNumber();
 

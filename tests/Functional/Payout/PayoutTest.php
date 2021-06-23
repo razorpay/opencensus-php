@@ -4396,6 +4396,18 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testGetAllCustomPayoutPurposesInternalRoute()
+    {
+        $this->testAddCustomPayoutPurpose();
+
+        $this->ba->appAuth();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/payouts/purposes/10000000000000';
+
+        $this->startTest();
+    }
+
     public function testAddCustomPayoutPurposeWithWrongPurposeType()
     {
         $this->startTest();

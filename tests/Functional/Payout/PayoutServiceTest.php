@@ -7,6 +7,7 @@ use Requests_Response;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
+use RZP\Models\Pricing\Fee;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -31,11 +32,11 @@ class PayoutServiceTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->privateAuth();
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
-        $this->fixtures->create('contact', ['id' => '1000001contact', 'active' => 1]);
+        $this->fixtures->on('live')->create('contact', ['id' => '1000001contact', 'active' => 1]);
 
-        $this->fixtures->create(
+        $this->fixtures->on('live')->create(
             'fund_account',
             [
                 'id'           => '100000000000fa',
@@ -45,9 +46,14 @@ class PayoutServiceTest extends TestCase
                 'account_id'   => '1000000lcustba'
             ]);
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
 
-        $this->setUpMerchantForBusinessBanking(false, 10000000);
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+
+        // Merchant needs to be activated to make live requests
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $this->setUpMerchantForBusinessBankingLive(false, 10000000);
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
     }
@@ -167,19 +173,19 @@ class PayoutServiceTest extends TestCase
     // Check payout Create Entry func on processor base
     public function testCreatePayoutEntry($mode = 'IMPS')
     {
-        $this->ba->appAuth();
+        $this->ba->appAuthLive();
 
         $balance = $this->getDbEntities('balance',
             [
                 'account_number'   => '2224440041626905',
-            ])->first();
+            ], 'live')->first();
 
         $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
         $this->testData[__FUNCTION__]['request']['content']['mode'] = $mode;
 
         $this->startTest();
 
-        $payout = $this->getLastEntity('payout', true);
+        $payout = $this->getLastEntity('payout', true,'live');
 
         $this->assertEquals($payout['id'], 'pout_Gg7sgBZgvYjlSB');
     }
@@ -189,11 +195,11 @@ class PayoutServiceTest extends TestCase
     {
         $this->testCreatePayoutEntry($mode);
 
-        $this->ba->appAuth();
+        $this->ba->appAuthLive();
 
         $response = $this->startTest();
 
-        $txn = $this->getLastEntity('transaction', true);
+        $txn = $this->getLastEntity('transaction', true, 'live');
 
         $this->assertEquals("txn_" . $response['transaction_id'], $txn['id']);
     }
@@ -203,7 +209,7 @@ class PayoutServiceTest extends TestCase
     {
         $this->testCreatePayoutServiceTransaction($mode);
 
-        $this->ba->appAuth();
+        $this->ba->appAuthLive();
 
         $this->startTest();
     }
@@ -214,13 +220,13 @@ class PayoutServiceTest extends TestCase
 
         $this->testCreatePayoutServiceFtaCreation();
 
-        $this->ba->privateAuth();
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest();
 
-        $payout = $this->getLastEntity('payout', true);
+        $payout = $this->getLastEntity('payout', true, 'live');
 
-        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true, 'live');
 
         // On private auth, payout.user_id should be null
         $this->assertNull($payout['user_id']);
@@ -229,17 +235,17 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($payout['id'], $payoutAttempt['source']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
-        $this->assertEquals($payout['channel'], 'yesbank');
+        $this->assertEquals($payout['channel'], 'icici');
 
         // Verify transaction entity
-        $txn = $this->getLastEntity('transaction', true);
+        $txn = $this->getLastEntity('transaction', true, 'live');
         $txnId = str_after($txn['id'], 'txn_');
 
         $this->assertEquals($payout['transaction_id'], $txn['id']);
         $this->assertNotNull($txn['balance_id']);
         $this->assertNotNull($txn['posted_at']);
 
-        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
 
         $expectedBreakup = [
             'name'            => "payout",
@@ -258,7 +264,7 @@ class PayoutServiceTest extends TestCase
     {
         $this->mockPayoutServiceCreate(true);
 
-        $this->ba->privateAuth();
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest();
     }
@@ -267,7 +273,7 @@ class PayoutServiceTest extends TestCase
     {
         $this->testCreatePayout();
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity('payout', 'live');
 
         $this->testData[__FUNCTION__]['request']['content'] = [
             'id'         => 'Gg7sgBZgvYjlSk',
@@ -278,7 +284,7 @@ class PayoutServiceTest extends TestCase
             'channel'    => $payout['channel'],
         ];
 
-        $this->ba->appAuth();
+        $this->ba->appAuthLive();
 
         $response = $this->startTest();
 
@@ -289,7 +295,7 @@ class PayoutServiceTest extends TestCase
     {
         $this->testCreatePayout();
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity('payout', 'live');
 
         $testData = $this->testData['testCreateReversalEntry'];
 
@@ -302,13 +308,13 @@ class PayoutServiceTest extends TestCase
             'channel'    => $payout['channel'],
         ];
 
-        $this->ba->appAuth();
+        $this->ba->appAuthLive();
 
         $response1 = $this->startTest($testData);
 
         $this->assertNotEmpty($response1['transaction_id']);
 
-        $this->ba->appAuth();
+        $this->ba->appAuthLive();
 
         $response2 = $this->startTest($testData);
 
@@ -319,7 +325,7 @@ class PayoutServiceTest extends TestCase
     {
         $this->testCreatePayout();
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity('payout', 'live');
 
         $this->testData[__FUNCTION__]['request']['content']['source_id'] = $payout->getId();
 
@@ -327,7 +333,7 @@ class PayoutServiceTest extends TestCase
 
         $this->mockPayoutServiceStatus('processed');
 
-        $this->ba->appAuth();
+        $this->ba->appAuthLive();
 
         $this->startTest();
 
@@ -338,7 +344,7 @@ class PayoutServiceTest extends TestCase
             [
                 'source_id'   => $payout->getId(),
                 'source_type' => 'payout',
-            ])->first();
+            ], 'live')->first();
 
         // Assert that fta status didn't update
         $this->assertEquals('processed', $ftaForPayout->getStatus());
@@ -352,7 +358,7 @@ class PayoutServiceTest extends TestCase
     {
         $this->testCreatePayout();
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity('payout', 'live');
 
         $this->testData[__FUNCTION__]['request']['content']['source_id'] = $payout->getId();
 
@@ -360,7 +366,7 @@ class PayoutServiceTest extends TestCase
 
         $this->mockPayoutServiceStatus('failed');
 
-        $this->ba->appAuth();
+        $this->ba->appAuthLive();
 
         $this->startTest();
 
@@ -371,7 +377,7 @@ class PayoutServiceTest extends TestCase
             [
                 'source_id'   => $payout->getId(),
                 'source_type' => 'payout',
-            ])->first();
+            ], 'live')->first();
 
         // Assert that fta status didn't update
         $this->assertEquals('failed', $ftaForPayout->getStatus());
@@ -385,13 +391,13 @@ class PayoutServiceTest extends TestCase
     {
         $this->testCreatePayout();
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity('payout', 'live');
 
         $this->testData[__FUNCTION__]['request']['content']['source_id'] = $payout->getId();
 
         $this->mockPayoutServiceDetails(true);
 
-        $this->ba->appAuth();
+        $this->ba->appAuthLive();
 
         $this->startTest();
 
@@ -402,7 +408,7 @@ class PayoutServiceTest extends TestCase
             [
                 'source_id'   => $payout->getId(),
                 'source_type' => 'payout',
-            ])->first();
+            ], 'live')->first();
 
         // Assert that fta status didn't update
         $this->assertEquals('processed', $ftaForPayout->getStatus());
@@ -416,7 +422,7 @@ class PayoutServiceTest extends TestCase
     {
         $this->testCreatePayout();
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity('payout', 'live');
 
         $this->testData[__FUNCTION__]['request']['content']['source_id'] = $payout->getId();
 
@@ -424,7 +430,7 @@ class PayoutServiceTest extends TestCase
 
         $this->mockPayoutServiceStatus('processed', true);
 
-        $this->ba->appAuth();
+        $this->ba->appAuthLive();
 
         $this->startTest();
 
@@ -435,7 +441,7 @@ class PayoutServiceTest extends TestCase
             [
                 'source_id'   => $payout->getId(),
                 'source_type' => 'payout',
-            ])->first();
+            ], 'live')->first();
 
         // Assert that fta status didn't update
         $this->assertEquals('processed', $ftaForPayout->getStatus());
@@ -447,6 +453,8 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutForCard(): array
     {
+        $this->markTestSkipped('For card in payout');
+
         $this->fixtures->edit(
             'fund_account',
             '100000000000fa',

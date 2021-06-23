@@ -231,6 +231,13 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getPurposesInternal(string $merchantId)
+    {
+        $data = $this->service()->getPurposesInternal($merchantId);
+
+        return ApiResponse::json($data);
+    }
+
     public function validatePurpose()
     {
         $input = Request::all();

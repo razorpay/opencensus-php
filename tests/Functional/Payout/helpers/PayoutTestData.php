@@ -5477,6 +5477,27 @@ return [
         ],
     ],
 
+    'testGetAllCustomPayoutPurposesInternalRoute' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payouts/purposes/{merchant_id}',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        'purpose'       => 'Give Mehul A Bonus',
+                        'purpose_type'  => 'settlement',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testAddCustomPayoutPurpose' => [
         'request' => [
             'method'  => 'POST',

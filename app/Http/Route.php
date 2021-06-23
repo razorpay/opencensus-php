@@ -1217,6 +1217,7 @@ class Route
         'payout_fetch_multiple_internal'           => ['get',      'payouts_internal',                               'PayoutController@getPayouts'                                       ],
         'payout_retry'                             => ['post',     'payouts/{id}/retry',                             'PayoutController@postPayoutRetry'                                  ],
         'payout_purpose_get'                       => ['get',      'payouts/purposes',                               'PayoutController@getPurposes'                                      ],
+        'payout_purpose_get_internal'              => ['get',      'payouts/purposes/{merchant_id}',                 'PayoutController@getPurposesInternal'                                      ],
         'payout_purpose_validate_internal'         => ['post',     'payouts/purpose/validate',                       'PayoutController@validatePurpose'                                  ],
         'payout_purpose_post'                      => ['post',     'payouts/purposes',                               'PayoutController@postPurpose'                                      ],
         'payout_fetch_reversals'                   => ['get',      'payouts/{id}/reversals',                         'PayoutController@getPayoutReversal'                                ],
@@ -3373,6 +3374,7 @@ class Route
         'banking_account_fetch_by_account_number',
         'create_FTA_payout_service',
         'create_ledger_payout_service',
+        'payout_purpose_get_internal',
 
         // payment analytics cron creates a new partition and drops oldest partition, runs daily
         'payment_analytics_partition_cron',
@@ -9518,6 +9520,7 @@ class Route
             'create_FTA_payout_service',
             'create_ledger_payout_service',
             'internal_merchant_fetch',
+            'payout_purpose_get_internal',
         ],
 
         'ledger' => [
