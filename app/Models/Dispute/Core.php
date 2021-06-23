@@ -30,8 +30,8 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
-    // 24 hours = 24*60*60
-    const REFUND_PROCESS_REDIS_TTL         = 86400;
+    // 72 hours = 72*60*60
+    const REFUND_PROCESS_REDIS_TTL         = 259200;
     const REFUND_PROCESS_REDIS_KEY         = 'dispute_refund_process_%s';
 
     const DEBIT_ADJUSTMENT_DESCRIPTION  = 'Debit disputed amount V2';
