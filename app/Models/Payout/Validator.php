@@ -656,6 +656,24 @@ class Validator extends Base\Validator
         $this->validateIsFundAccountPayout($payout);
     }
 
+    public function validateOnHoldPayoutProcessing()
+    {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        // Already processed by another queue job due to overlap of cron runs.
+        if ($payout->isStatusOnHold() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_ON_HOLD,
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                    'status'    => $payout->getStatus(),
+                ]);
+        }
+    }
+
     /**
      * @param Entity $payout
      *

@@ -375,6 +375,126 @@ class Base extends BaseCore
         return $payout;
     }
 
+    public function processOnHoldPayout(Payout\Entity $payout): Payout\Entity
+    {
+        $payout = $this->incrementCounterAndSetExpectedFeeTypeForFundAccountPayouts($payout);
+
+        $feeType = $payout->getExpectedFeeType();
+
+        try
+        {
+            $payout = $this->repo->transaction(
+                function () use ($payout)
+                {
+                    $this->fundTransferDestination = $payout->fundAccount->account;
+
+                    $payoutType = $this->getPayoutType();
+
+                    $downstreamProcessor = new DownstreamProcessor($payoutType,
+                        $payout,
+                        $this->mode,
+                        $this->fundTransferDestination);
+
+                    $payoutQueueFlagDetails = $payout->payoutsDetails;
+
+                    //this case is specifically for queued after on_hold state,
+                    // context of queue_if_low_balance is stored in payouts_details table
+                    // and the behaviour on insufficient funds is driven by this
+                    if ($payoutQueueFlagDetails != null and
+                        $payoutQueueFlagDetails->getQueueIfLowBalanceFlag() === true)
+                    {
+                        $payout->setQueueFlag(true);
+                    }
+                    try
+                    {
+                        $downstreamProcessor->process();
+                    }
+                    catch (\Exception $ex)
+                    {
+                        $insufficientFundsErrorCode = ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING;
+
+                        // If the error is due to insufficient balance, we shall mark the payout as failed.
+                        // Earlier, payout creation itself would have failed. Now we are saving the payout regardless,
+                        // Here we will check if queue_if_low_balance flag is true we will mark payout as queued else
+                        //we will mark it failed.
+                        if ($ex->getError()->getInternalErrorCode() === $insufficientFundsErrorCode)
+                        {
+                            $payout->setStatus(Status::FAILED);
+
+                            $payout->setFailureReason('Insufficient balance to process payout');
+
+                            $payout->setStatusCode($insufficientFundsErrorCode);
+
+                            $this->repo->saveOrFail($payout);
+
+                            $this->trace->info(
+                                TraceCode::ON_HOLD_PAYOUT_FAILED,
+                                [
+                                    'payout_id' => $payout->getId(),
+                                    'transaction_id' => $payout->getTransactionId(),
+                                    'payout_status' => $payout->getStatus(),
+                                ]);
+
+                            return $payout;
+                        }
+                        else
+                        {
+                            throw $ex;
+                        }
+                    }
+
+                    if($payout->getStatus() === Status::QUEUED)
+                    {
+                        $this->repo->saveOrFail($payout);
+
+                        return $payout;
+                    }
+
+                    $payout->setStatus(Payout\Status::CREATED);
+
+                    $this->repo->saveOrFail($payout);
+
+                    $this->trace->info(
+                        TraceCode::ON_HOLD_PAYOUT_CREATED,
+                        [
+                            'payout_id' => $payout->getId(),
+                            'transaction_id' => $payout->getTransactionId(),
+                            'payout_status' => $payout->getStatus(),
+                        ]);
+
+                    return $payout;
+                });
+        }
+        catch (\Throwable $throwable)
+        {
+            $balanceId = $payout->getBalanceId();
+
+            (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
+
+            throw $throwable;
+        }
+
+        // We only have to send mail/webhook if the payout fails.
+        // We have already sent the initiated mail/webhook when we marked the payout as batch_submitted
+        if ($payout->getStatus() === Status::FAILED)
+        {
+            $this->app->events->dispatch('api.payout.failed', [$payout]);
+        }
+
+        // This needs to be done only for fund_account type and not for others.
+        // We need to figure out at this stage what type of payout are we processing in batch_submitted.
+        // Since, currently, we only do fund_account, we are not handling it. Once we start
+        // processing queued payouts for other types also, this needs to be changed.
+
+        if (($payout->isStatusBeforeCreate() === false) and
+            ($payout->getBalanceAccountType() === AccountType::SHARED))
+        {
+            (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+        }
+
+        return $payout;
+    }
+
     public function processBatchSubmittedPayout(Payout\Entity $payout): Payout\Entity
     {
         $payout = $this->incrementCounterAndSetExpectedFeeTypeForFundAccountPayouts($payout);

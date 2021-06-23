@@ -5886,6 +5886,39 @@ return [
         ],
     ],
 
+    'testOnHoldPayoutCreateAndAutoCancel' => [
+        'request'  => [
+            'method'    => 'POST',
+            'url'       => '/payouts/onhold/process',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testOnHoldPayoutCreateAndProcess' => [
+        'request'  => [
+            'method'    => 'POST',
+            'url'       => '/payouts/onhold/process',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testOnHoldPayoutsProcessing' => [
+        'request'  => [
+            'method'    => 'POST',
+            'url'       => '/payouts/onhold/process',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testCreatingPendingPayoutsForRblWithUnsupportedModeChannelDestinationTypeCombo' => [
         'request' => [
             'url'     => '/payouts',

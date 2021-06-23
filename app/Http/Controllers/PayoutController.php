@@ -426,4 +426,14 @@ class PayoutController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function processDispatchForOnHoldPayouts()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processDispatchForOnHoldPayouts($input);
+
+        return ApiResponse::json($data);
+    }
+
 }

@@ -31,6 +31,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Payout\Status;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Jobs\OnHoldPayoutsProcess;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Jobs\PayoutSourceUpdaterJob;
@@ -12340,6 +12341,114 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testOnHoldPayoutCreateAndAutoCancel()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout1 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout2 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout3 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->assertEquals($payout1['status'], Payout\Status::ON_HOLD);
+        $this->assertEquals($payout2['status'], Payout\Status::ON_HOLD);
+        $this->assertEquals($payout3['status'], Payout\Status::ON_HOLD);
+
+        $this->fixtures->edit('payout', $payout1['id'], ['on_hold_at' => strtotime(('-2000 seconds'), time())]);
+
+        $this->fixtures->edit('payout', $payout2['id'], ['on_hold_at' => strtotime(('-2000 seconds'), time())]);
+
+        $benebankConfig =
+            [
+                "BENEFICIARY" =>
+                    [
+                        "SBIN" => [
+                            "status" => "started",
+                        ],
+                        "RZPB" => [
+                            "status" => "started",
+                        ],
+                        'HDFC' => [
+                            'status' => "started"
+                        ],
+                    ]
+            ];
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
+        $this->assertEquals($payout1['status'], Payout\Status::FAILED);
+        $this->assertEquals($payout1['failure_reason'], 'beneficiary_bank_down');
+
+
+        $payout2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
+        $this->assertEquals($payout2['status'], Payout\Status::FAILED);
+        $this->assertEquals($payout1['failure_reason'], 'beneficiary_bank_down');
+
+        $payout3 = $this->getDbEntityById('payout', $payout3['id'])->toArray();
+        $this->assertEquals($payout3['status'], Payout\Status::ON_HOLD);
+
+    }
+
+    public function testOnHoldPayoutCreateAndProcess()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout1 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout2 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout3 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->assertEquals($payout1['status'], Payout\Status::ON_HOLD);
+        $this->assertEquals($payout2['status'], Payout\Status::ON_HOLD);
+        $this->assertEquals($payout3['status'], Payout\Status::ON_HOLD);
+
+        $benebankConfig =
+            [
+                "BENEFICIARY" =>
+                    [
+                        "SBIN" => [
+                            "status" => "started",
+                        ],
+                        'HDFC' => [
+                            'status' => "started"
+                        ],
+                    ]
+            ];
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
+        $this->assertEquals($payout1['status'], Payout\Status::CREATED);
+
+
+        $payout3 = $this->getDbEntityById('payout', $payout3['id'])->toArray();
+        $this->assertEquals($payout3['status'], Payout\Status::CREATED);
+
+        $payout2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
+        $this->assertEquals($payout2['status'], Payout\Status::CREATED);
+    }
+
     public function testOnHoldPayoutForFeatureEnabledMerchantAndBeneDown()
     {
         $this->ba->privateAuth();
@@ -12348,18 +12457,18 @@ class PayoutTest extends OAuthTestCase
 
         $benebankConfig =
             [
-                "BENEFICIARY"=> [
+                "BENEFICIARY" => [
                     "SBIN" => [
                         "status" => "started",
                     ],
                     "RZPB" => [
                         "status" => "started",
                     ],
-                    "default"=> "started",
+                    "default" => "started",
                 ]
             ];
 
-        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT =>$benebankConfig]);
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
 
         $this->startTest();
 
@@ -12377,7 +12486,7 @@ class PayoutTest extends OAuthTestCase
 
         $benebankConfig =
             [
-                "BENEFICIARY"=> [
+                "BENEFICIARY" => [
                     "SBIN" => [
                         "status" => "started",
                     ],
@@ -12386,7 +12495,7 @@ class PayoutTest extends OAuthTestCase
                     ],
                 ]
             ];
-        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT =>$benebankConfig]);
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
 
         $this->testCreatePayout();
 
@@ -12396,6 +12505,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertNull($payout['queued_reason']);
     }
 
+    //test set redis config for bene bank downtime and uptime from fts webhook received
     public function testBeneBankDowntimeConfigSetup()
     {
         $this->ba->privateAuth();
@@ -12412,7 +12522,6 @@ class PayoutTest extends OAuthTestCase
                     "default" => "started"
                 ]
             ];
-
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
 
         $this->ba->ftsAuth("live");
@@ -12433,17 +12542,17 @@ class PayoutTest extends OAuthTestCase
 
         $benebankConfig =
             [
-                "BENEFICIARY" => [
-                    "SBIN" => [
-                        "status" => "started",
-                    ],
-                    'HDFC' => [
-                        'status' => "started"
-                    ],
-                    "default" => "resolved"
-                ]
+                "BENEFICIARY" =>
+                    [
+                        "SBIN" => [
+                            "status" => "started",
+                        ],
+                        'HDFC' => [
+                            'status' => "started"
+                        ],
+                        "default" => "resolved"
+                    ]
             ];
-
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
 
         $this->ba->ftsAuth("live");
@@ -12454,7 +12563,7 @@ class PayoutTest extends OAuthTestCase
             'key' => Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT
         ]);
 
-        $this->assertNotContains('HDFC',$eventConfigFromFTS['BENEFICIARY'],true);
+        $this->assertNotContains('HDFC', $eventConfigFromFTS['BENEFICIARY'], true);
     }
 }
 

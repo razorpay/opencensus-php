@@ -9,6 +9,7 @@ use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Card;
+use RZP\Models\Admin;
 use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
@@ -53,6 +54,8 @@ class Service extends Base\Service
     protected $appframeworkCore;
 
     protected const IS_VALID_PURPOSE = "is_valid_purpose";
+
+    protected const ON_HOLD_FETCH_LIMIT = 5000;
 
     public function __construct()
     {
@@ -1714,5 +1717,68 @@ class Service extends Base\Service
             });
 
         return $payout;
+    }
+
+    public function processDispatchForOnHoldPayouts()
+    {
+        $eventNotificationConfig = (new Admin\Service)->getConfigKey([
+            'key' => Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT
+        ]);
+
+        $beneBankDownList = array_keys($eventNotificationConfig['BENEFICIARY']);
+
+        $this->trace->info
+        (
+            TraceCode::BENE_BANK_DOWN_LIST_FOR_ON_HOLD_PAYOUT,
+            [
+                'bene_banks_down' => $beneBankDownList,
+            ]
+        );
+
+        $payoutIdsToProcess = $this->repo->payout->getOnHoldPayoutsWithBeneBankUp($beneBankDownList);
+
+        $merchantIdsForAutoCancel = $this->repo->payout->getMerchantIdsWithAtleastOneOnHoldPayout();
+
+        $payoutIdsToFail = [];
+
+        if ($merchantIdsForAutoCancel != null and count($merchantIdsForAutoCancel) > 0)
+        {
+            $fetchLimitCount = floor(self::ON_HOLD_FETCH_LIMIT / count($merchantIdsForAutoCancel));
+
+            foreach ($merchantIdsForAutoCancel as $merchantId)
+            {
+                $slaValue = $this->core->getMerchantSlaForOnHoldPayouts($merchantId);
+
+                $payoutIdsToFailForMerchant = $this->repo->payout->getOnHoldPayoutsForMerchantIdForOnHoldAtGreaterThanSla($merchantId, $slaValue, $fetchLimitCount);
+
+                $payoutIdsToFail = array_merge($payoutIdsToFail, $payoutIdsToFailForMerchant);
+            }
+        }
+
+        $this->trace->info
+        (
+            TraceCode::PAYOUT_ON_HOLD_PROCESSING_COMPLETED,
+            [
+                'payout_ids_to_process' => $payoutIdsToProcess,
+                'payout_ids_to_auto_cancel' => $payoutIdsToFail,
+            ]
+        );
+
+        $payoutIdsToProcess = array_unique(array_merge($payoutIdsToProcess, $payoutIdsToFail));
+
+        $this->core->dispatchOnHoldPayouts($payoutIdsToProcess);
+
+        $response =
+            [
+                'onhold_payout_ids_to_process' => $payoutIdsToProcess,
+            ];
+
+        $this->trace->info
+        (
+            TraceCode::PAYOUT_ON_HOLD_PROCESSING_COMPLETED,
+            $response
+        );
+
+        return $response;
     }
 }

@@ -42,6 +42,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Models\Currency\Currency;
+use RZP\Jobs\OnHoldPayoutsProcess;
 use RZP\Jobs\QueuedPayoutsInitiate;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Payout\Notifications;
@@ -83,6 +84,8 @@ class Core extends Base\Core
     const PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT = 3600;
 
     const FAILURE_STATUSES_FOR_PAYOUT_TO_AMEX = [Attempt\Status::FAILED, Attempt\Status::REVERSED];
+
+    const DEFAULT_SLA_FOR_ON_HOLD_PAYOUTS_IN_MINS = 30;
 
     const DEFAULT_BENE_BANK_STATUS = 'resolved';
 
@@ -1459,6 +1462,130 @@ class Core extends Base\Core
                     TraceCode::PAYOUT_QUEUED_INITIATE_DISPATCH_FAILED,
                     $data);
             }
+        }
+    }
+    //returns the sla for on hold payouts if present specific for a merchant else default sla
+    public function getMerchantSlaForOnHoldPayouts(string $merchantId)
+    {
+        $merchantSlaConfigList = (new Admin\Service)->getConfigKey([
+            'key' => Admin\ConfigKey::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA
+        ]);
+
+        if (in_array($merchantId, array_keys($merchantSlaConfigList), true) === true)
+        {
+            $slaValue = $merchantSlaConfigList[$merchantId];
+        }
+        else
+        {
+            $slaValue = (new Admin\Service)->getConfigKey([
+                'key' => Admin\ConfigKey::RX_ON_HOLD_PAYOUTS_DEFAULT_SLA
+            ]);
+
+            if (empty($slaValue) === true)
+            {
+                $slaValue = self::DEFAULT_SLA_FOR_ON_HOLD_PAYOUTS_IN_MINS;
+            }
+        }
+        return $slaValue;
+    }
+
+    public function processOnHoldPayouts(string $payoutId)
+    {
+        try
+        {
+            return $this->mutex->acquireAndRelease(
+                $payoutId,
+                function () use ($payoutId)
+                {
+                    $payout = $this->repo->payout->findOrFail($payoutId);
+
+                    $payout->getValidator()->validateOnHoldPayoutProcessing();
+
+                    $isBeneDown = $this->checkIfBeneBankIsDown($payout);
+
+                    if ($isBeneDown === false)
+                    {
+                        $payout = $this->getProcessor('fund_account_payout')
+                                       ->setMerchant($payout->merchant)
+                                       ->processOnHoldPayout($payout);
+
+                        $this->processLedgerPayout($payout);
+
+                        return $payout;
+                    }
+                    else
+                    {
+                        $isSlaBreached = $this->checkIfMerchantSlaBreachedForOnHoldPayout($payout);
+
+                        if ($isSlaBreached === true)
+                        {
+                            $payout->setStatus(Status::FAILED);
+
+                            //Failure reason is marked as BENE_BANK_DOWN since the sla is breached and the bank is still down.
+                            $payout->setFailureReason(QueuedReasons::BENE_BANK_DOWN);
+
+                            $payout->setStatusCode("BBANK_OFFLINE");
+
+                            $this->repo->payout->saveOrFail($payout);
+                        }
+                    }
+                },
+                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::ON_HOLD_PAYOUT_PROCESSING_JOB_FAILED,
+                [
+                    'payout_id' => $payoutId,
+                ]);
+        }
+    }
+
+    protected function checkIfMerchantSlaBreachedForOnHoldPayout(Entity $payout)
+    {
+        $slaValue = $this->getMerchantSlaForOnHoldPayouts($payout->getMerchantId());
+
+        $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if($payout->getQueuedAt() <= (strtotime(('-' . ($slaValue * 60) . ' seconds'), $currentTimeStamp)))
+        {
+             return true;
+        }
+        return false;
+    }
+
+    public function dispatchOnHoldPayouts(array $payoutIdList)
+    {
+        try
+        {
+            foreach ($payoutIdList as $payoutId)
+            {
+                $traceInfo = [
+                    'payout_id' => $payoutId,
+                ];
+
+                $this->trace->info(TraceCode::ON_HOLD_PAYOUT_PROCESSING_JOB, $traceInfo);
+
+                OnHoldPayoutsProcess::dispatch($this->mode, $payoutId);
+
+                $this->trace->info(TraceCode::ON_HOLD_PAYOUT_PROCESSING_DISPATCH_COMPLETE, $traceInfo);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            // If the dispatch fails due to any reason, cron will
+            // pick up these again and attempt to dispatch.
+            $data = $traceInfo + ['message' => $e->getMessage()];
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::ON_HOLD_PAYOUT_PROCESSING_DISPATCH_FAILED,
+                $data);
         }
     }
 
@@ -3318,13 +3445,15 @@ class Core extends Base\Core
             'key' => Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT
         ]);
 
-        if (in_array($beneIfsc, array_keys($eventConfigFromFTS['BENEFICIARY']), true) === true) {
-            $beneBankStatus = $eventConfigFromFTS['BENEFICIARY'][$beneIfsc]['status'];
+        if (in_array($beneIfsc, array_keys($eventConfigFromFTS[self::BENEFICIARY]), true) === true) {
+            $beneBankStatus = $eventConfigFromFTS[self::BENEFICIARY][$beneIfsc]['status'];
         }
 
-        if ($beneBankStatus === self::BENE_BANK_DOWNTIME_STARTED) {
+        if ($beneBankStatus === self::BENE_BANK_DOWNTIME_STARTED)
+        {
             return true;
         }
+
         return false;
     }
 

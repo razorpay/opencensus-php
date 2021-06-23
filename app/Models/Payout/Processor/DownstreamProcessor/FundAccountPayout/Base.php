@@ -105,18 +105,25 @@ class Base extends DSBase
         }
     }
 
+
     protected function holdPayoutIfApplicableAndBeneBankDown(Entity $payout)
     {
-        $onHold = $this->checkIfPayoutToBeKeptOnHold($payout);
-
-        if($onHold === true)
+        if ($payout->getStatus() !== Status::QUEUED and
+            $payout->getStatus() !== Status::ON_HOLD)
         {
-            $payout -> setStatus(Status::ON_HOLD);
+            $onHold = $this->checkIfPayoutToBeKeptOnHold($payout);
 
-            $payout->setQueuedReason(QueuedReasons::BENE_BANK_DOWN);
+            if ($onHold === true)
+            {
+                $payout->setStatus(Status::ON_HOLD);
 
-            $this->repo->saveOrFail($payout);
+                $payout->setQueuedReason(QueuedReasons::BENE_BANK_DOWN);
+
+                return true;
+            }
         }
+
+        return false;
     }
 
     //checks payout to be kept on_hold if the feature is enabled and bene bank is down

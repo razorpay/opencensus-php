@@ -31,6 +31,8 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Workflow\Action\Checker;
+use RZP\Models\FundAccount\Entity as FundAccountEntity;
+use RZP\Models\BankAccount\Entity as BankAccountEntity;
 
 class Repository extends Base\Repository
 {
@@ -341,6 +343,79 @@ class Repository extends Base\Repository
                     ->distinct()
                     ->get()
                     ->pluck(Entity::BALANCE_ID)
+                    ->toArray();
+    }
+
+    public function getOnHoldPayoutsWithBeneBankUp(array $beneBanksDownList = [])
+    {
+        $payoutStatus = $this->dbColumn(Entity::STATUS);
+
+        $payoutIdColumn = $this->dbColumn(Entity::ID);
+
+        $fundAccountId = $this->repo->fund_account->dbColumn(FundAccountEntity::ID);
+
+        $fundAccountIdInPayout = $this->dbColumn(Entity::FUND_ACCOUNT_ID);
+
+        $bankAccountIdInFundAccount = $this->repo->fund_account->dbColumn(FundAccountEntity::ACCOUNT_ID);
+
+        $bankAccountId = $this->repo->bank_account->dbColumn(BankAccountEntity::ID);
+
+        $bankAccountIfscColumn = $this->repo->bank_account->dbColumn(BankAccountEntity::IFSC_CODE);
+
+        $query= $this->newQueryWithConnection($this->getSlaveConnection())
+                     ->leftJoin(Table::FUND_ACCOUNT, $fundAccountIdInPayout, '=', $fundAccountId)
+                     ->leftJoin(Table::BANK_ACCOUNT, $bankAccountIdInFundAccount, '=', $bankAccountId)
+                     ->select($payoutIdColumn)
+                     ->where($payoutStatus, '=', Status::ON_HOLD);
+
+            if (empty($beneBanksDownList) === false)
+            {
+                $beneBanksDown = implode('\',\'',$beneBanksDownList);
+
+                $query->whereRaw('SUBSTRING('. $bankAccountIfscColumn . ',1,4) not in (\''. $beneBanksDown . '\')');
+            }
+
+        return $query->limit(self::QUEUED_PAYOUTS_FETCH_LIMIT)
+                     ->get()
+                     ->pluck(Entity::ID)
+                     ->toArray();
+    }
+
+    public function getMerchantIdsWithAtleastOneOnHoldPayout()
+    {
+        $onholdAtColumn = $this->dbColumn(Entity::ON_HOLD_AT);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->select($merchantIdColumn)
+                    ->where($statusColumn, '=', Status::ON_HOLD)
+                    ->whereNotNull($onholdAtColumn)
+                    ->distinct()
+                    ->limit(self::QUEUED_PAYOUTS_FETCH_LIMIT)
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
+
+    public function getOnHoldPayoutsForMerchantIdForOnHoldAtGreaterThanSla(string $merchantId, int $sla, int $fetchLimit)
+    {
+        $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $onHoldAtColumn = $this->dbColumn(Entity::ON_HOLD_AT);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+        $payoutIdColumn = $this->dbColumn(Entity::ID);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->select($payoutIdColumn)
+                    ->where($statusColumn, '=', Status::ON_HOLD)
+                    ->whereNotNull($onHoldAtColumn)
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->where($onHoldAtColumn, "<=", strtotime(('-' . ($sla * 60) . ' seconds'), $currentTimeStamp))
+                    ->limit($fetchLimit)
+                    ->get()
+                    ->pluck(Entity::ID)
                     ->toArray();
     }
 
