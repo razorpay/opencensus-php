@@ -146,6 +146,7 @@ class Name
     const VIEW_ACTIONS                        = 'view_actions';
     const VIEW_MERCHANT_STATS                 = 'view_merchant_stats';
     const VIEW_ALL_ENTITY                     = 'view_all_entity';
+    const EXTERNAL_ADMIN_VIEW_ALL_ENTITY      = 'external_admin_view_all_entity';
     const VIEW_ALL_ORG                        = 'view_all_org';
     const VIEW_ORG                            = 'view_org';
     const CREATE_ORG                          = 'create_org';

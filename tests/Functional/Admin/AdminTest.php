@@ -13,6 +13,7 @@ use RZP\Models\Base\EsDao;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Base\UniqueIdEntity;
 use Illuminate\Support\Facades\Crypt;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Admin\Account as AdminMail;
@@ -1341,6 +1342,188 @@ class AdminTest extends TestCase
         $this->assertArrayKeysExist($result['entities']['p2p_concern'], ['device_id', 'transaction_id', 'status']);
     }
 
+    protected function setupAdminForExternalAdminEntityFetchTest()
+    {
+        $this->addPermissionToBaAdmin('external_admin_view_all_entity');
+    }
+
+    protected function setUpFixturesForExternalAdminEntityFetchTest()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $paymentId = $payment['id'];
+
+        $upiId = $this->fixtures->create('upi', [
+            'payment_id'    => $paymentId,
+        ])['id'];
+
+        $payment = $this->fixtures->create('payment:captured');
+
+        $refundId = $this->fixtures->create('refund:from_payment', ['payment' => $payment])['id'];
+
+        $disputeId = $this->fixtures->create('dispute')['id'];
+
+        DB::connection('test')->table('billdesk')->insert([
+            'id'            => 1,
+            'payment_id'    => $paymentId,
+            'action'        => 'dummy',
+            'MerchantId'    => '10000000000000',
+            'CustomerId'    => 'customerId',
+            'TxnAmount'     => 123,
+            'CurrencyType'  => 'INR',
+            'created_at'    => time(),
+            'updated_at'    => time(),
+        ]);
+
+        $billdeskId = Db::connection('test')->table('billdesk')->first()->id;
+
+        DB::connection('test')->table('netbanking')->insert([
+            'payment_id'        => $paymentId,
+            'action'            => 'dummy',
+            'amount'            => 123,
+            'bank'              => 'SBIN',
+            'caps_payment_id'   => $paymentId,
+            'created_at'        => time(),
+            'updated_at'        => time(),
+        ]);
+
+        $netbankingId = Db::connection('test')->table('netbanking')->first()->id;
+
+        DB::connection('test')->table('bank_transfers')->insert([
+           'id'             => UniqueIdEntity::generateUniqueId(),
+           'merchant_id'    => '10000000000000',
+           'payee_account'  => '123',
+           'payee_ifsc'     => 'SBIN00001',
+           'gateway'        => 'bt_icic',
+           'amount'         => 123,
+           'mode'           => 0,
+           'utr'            => '123',
+           'time'           => time(),
+           'created_at'     => time(),
+           'updated_at'     => time(),
+        ]);
+
+        $bankTransferId = Db::connection('test')->table('bank_transfers')->first()->id;
+
+
+        DB::connection('test')->table('atom')->insert([
+            'id'            => 1,
+            'payment_id'    => $paymentId,
+            'amount'        => 123,
+            'created_at'    => time(),
+            'updated_at'    => time(),
+        ]);
+
+        $atomId = Db::connection('test')->table('atom')->first()->id;
+
+        $balanceId = $this->getLastEntity('balance', true)['id'];
+
+        $creditsId = $this->fixtures->create('credits')->getId();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000',]);
+
+        return [
+            'payment'           => $paymentId,
+            'upi'               => $upiId,
+            'refund'            => $refundId,
+            'dispute'           => $disputeId,
+            'merchant'          => '10000000000000',
+            'billdesk'          => $billdeskId,
+            'netbanking'        => $netbankingId,
+            'atom'              => $atomId,
+            'bank_transfer'     => $bankTransferId,
+            'balance'           => $balanceId,
+            'merchant_detail'   => '10000000000000',
+            'credits'           => $creditsId,
+        ];
+    }
+
+    public function testExternalAdminGetEntities()
+    {
+        $this->setupAdminForExternalAdminEntityFetchTest();
+
+        $expectedEntities = $this->getAllowedEntityTypeForExternalAdminEntityFetch();
+
+        $actualEntities = $this->startTest()['entities'];
+
+        $this->assertEquals($expectedEntities, array_keys($actualEntities));
+    }
+
+    public function testExternalAdminFetchAllowedEntityById()
+    {
+        $entityTypeIdMap = $this->setUpFixturesForExternalAdminEntityFetchTest();
+
+        $this->setupAdminForExternalAdminEntityFetchTest();
+
+        foreach ($this->getAllowedEntityTypeForExternalAdminEntityFetch() as $entityType)
+        {
+            $this->testData[__FUNCTION__]['request']['url'] = "/external_admin/{$entityType}/{$entityTypeIdMap[$entityType]}";
+
+            $actualAttributes = array_values(array_keys($this->startTest()));
+
+            $this->validateAttributesForExternalAdminEntityFetch($entityType, $actualAttributes);
+        }
+    }
+
+    public function testExternalAdminFetchBlockedEntityByIdShouldFail()
+    {
+        $terminalId = $this->fixtures->create('terminal')['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $terminalId;
+
+        $this->setupAdminForExternalAdminEntityFetchTest();
+
+        $this->startTest();
+    }
+
+    public function testExternalAdminFetchEntityMultipleDisallowedParamsShouldFail()
+    {
+        $this->setupAdminForExternalAdminEntityFetchTest();
+
+        $this->startTest();
+    }
+
+    public function testExternalAdminFetchEntityMultipleBlockedEntityShouldFail()
+    {
+        $this->setupAdminForExternalAdminEntityFetchTest();
+
+        $this->startTest();
+    }
+
+    public function testExternalAdminFetchEntityMultiple()
+    {
+        $this->setUpFixturesForExternalAdminEntityFetchTest();
+
+        $this->setupAdminForExternalAdminEntityFetchTest();
+
+        foreach ($this->getAllowedEntityTypeForExternalAdminEntityFetch() as $entityType)
+        {
+            $this->testData[__FUNCTION__]['request']['url'] = "/external_admin/{$entityType}";
+
+            $items = $this->startTest()['items'];
+
+            $this->assertNotEmpty($items);
+
+            foreach ($items as $actualAttributes)
+            {
+                $actualAttributes = array_values(array_keys($actualAttributes));
+
+                $this->validateAttributesForExternalAdminEntityFetch($entityType, $actualAttributes);
+            }
+        }
+    }
+
+    public function testExternalAdminFetchEntityMultipleLimitedCount()
+    {
+        for ($i = 0; $i < 6; $i++)
+        {
+            $this->fixtures->create('payment');
+        }
+
+        $this->setupAdminForExternalAdminEntityFetchTest();
+
+    }
+
     protected function setupWorkflowForCreateAdmin(): void
     {
         $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
@@ -1393,5 +1576,160 @@ class AdminTest extends TestCase
 
         return $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
             substr($workflowAction['id'], 9))[0]['_source'];
+    }
+
+    protected function validateAttributesForExternalAdminEntityFetch(string $entityType, array $actualAttributes)
+    {
+        $expectedAttributes = [
+            'payment'         => [
+                'id',
+                'merchant_id',
+                'amount',
+                'base_amount',
+                'method',
+                'status',
+                'authorized_at',
+                'captured_at',
+                'gateway',
+                'gateway_captured',
+                'late_authorized',
+                'created_at',
+                'updated_at',
+            ],
+            'refund'          => [
+                'id',
+                'payment_id',
+                'merchant_id',
+                'amount',
+                'base_amount',
+                'status',
+                'gateway',
+                'gateway_refunded',
+                'speed_requested',
+                'speed_processed',
+                'last_attempted_at',
+                'processed_at',
+                'reference1',
+                'created_at',
+                'updated_at',
+            ],
+            'upi'             => [
+                'id',
+                'gateway',
+                'amount',
+                'created_at',
+                'updated_at',
+            ],
+            'dispute'         => [
+                'id',
+                'merchant_id',
+                'payment_id',
+                'amount',
+                'base_amount',
+                'gateway_dispute_id',
+                'status',
+                'created_at',
+                'updated_at',
+            ],
+            'merchant'        => [
+                'id',
+                'name',
+                'live',
+                'hold_funds',
+                'website',
+                'billing_label',
+                'transaction_report_email',
+                'fee_credits_threshold',
+                'auto_refund_delay',
+            ],
+            'billdesk'        => [
+                'id',
+                'payment_id',
+                'MerchantID',
+                'CustomerID',
+                'TxnAmount',
+                'CurrencyType',
+                'created_at',
+                'updated_at',
+            ],
+            'netbanking'      => [
+                'payment_id',
+                'amount',
+                'bank',
+                'status',
+                'refund_id',
+                'created_at',
+                'updated_at',
+            ],
+            'atom'            => [
+                'id',
+                'payment_id',
+                'refund_id',
+                'amount',
+                'status',
+                'method',
+                'created_at',
+                'updated_at',
+            ],
+            'bank_transfer'   => [
+                'id',
+                'payment_id',
+                'merchant_id',
+                'amount',
+                'created_at',
+                'updated_at',
+            ],
+            'merchant_detail' => [
+                'merchant_id',
+                'activation_progress',
+                'activation_status',
+            ],
+            'balance'         => [
+                'id',
+                'merchant_id',
+                'type',
+                'currency',
+                'name',
+                'balance',
+                'locked_balance',
+                'credits',
+                'fee_credits',
+                'updated_at',
+            ],
+            'credits'         => [
+                'id',
+                'campaign',
+                'merchant_id',
+                'value',
+                'type',
+                'used',
+                'expired_at',
+                'balance_id',
+
+            ],
+        ];
+
+        $this->assertEquals($expectedAttributes[$entityType], $actualAttributes);
+    }
+
+
+    protected function getAllowedEntityTypeForExternalAdminEntityFetch(): array
+    {
+        $entities = [
+            'upi',
+            'atom',
+            'refund',
+            'balance',
+            'credits',
+            'dispute',
+            'merchant',
+            'billdesk',
+            'netbanking',
+            'merchant_detail',
+            'bank_transfer',
+            'payment',
+        ];
+
+        return $entities;
     }
 }

@@ -675,6 +675,11 @@ return [
                 'description' => 'view scrooge refunds dashboard',
                 'assignable'  => true,
             ],
+            Permission::EXTERNAL_ADMIN_VIEW_ALL_ENTITY => [
+                'description'  => 'View all entities but with restriction on entity type on attributes.
+                                   To be assigned to external admin-roles only',
+                'assignable'   => true,
+            ],
         ],
 
         // UAM

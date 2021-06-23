@@ -5,6 +5,7 @@ namespace RZP\Models\Admin;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Constants\AdminFetch;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\Admin\Entity;
 
@@ -267,4 +268,99 @@ class Validator extends Base\Validator
         'payload.entities'   => 'required|array',
         'version'            => 'required|string|in:v1,v2',
     ];
+
+    protected static $externalAdminFetchMultiplePaymentRules = [
+        'count'           => 'required|integer|max:5',
+        'order_id'        => 'sometimes',
+        'subscription_id' => 'sometimes',
+        'wallet'          => 'sometimes',
+        'status'          => 'sometimes',
+        'refund_status'   => 'sometimes',
+        'notes'           => 'sometimes',
+        'method'          => 'sometimes',
+        'gateway'         => 'sometimes',
+        'amount'          => 'sometimes',
+    ];
+
+    protected static $externalAdminFetchMultipleUpiRules = [
+        'count'                 => 'required|integer|max:5',
+        'id'                    => 'sometimes',
+        'gateway_payment_id'    => 'sometimes',
+        'npci_reference_id'     => 'sometimes',
+        'refund_id'             => 'sometimes',
+        'merchant_reference'    => 'sometimes',
+    ];
+
+    protected static $externalAdminFetchMultipleAtomRules = [
+        'count'                 => 'required|integer|max:5',
+        'id'                    => 'sometimes',
+    ];
+
+    protected static $externalAdminFetchMultipleRefundRules = [
+        'count'                 => 'required|integer|max:5',
+        'id'                    => 'sometimes',
+        'payment_id'            => 'sometimes',
+        'transaction_id'        => 'sometimes',
+        'amount'                => 'sometimes',
+    ];
+
+    protected static $externalAdminFetchMultipleDisputeRules = [
+        'count'                 => 'required|integer|max:5',
+        'id'                    => 'sometimes',
+        'payment_id'            => 'sometimes',
+        'amount'                => 'sometimes',
+    ];
+
+    protected static $externalAdminFetchMultipleMerchantRules = [
+        'count'                 => 'required|integer|max:5',
+        'id'                    => 'sometimes',
+    ];
+
+    protected static $externalAdminFetchMultipleBilldeskRules = [
+        'count'                 => 'required|integer|max:5',
+        'id'                    => 'sometimes',
+        'TxnReferenceNo'        => 'sometimes',
+        'status'                => 'sometimes',
+        'BankReferenceNo'       => 'sometimes',
+    ];
+
+    protected static $externalAdminFetchMultipleNetbankingRules = [
+        'count'                 => 'required|integer|max:5',
+        'id'                    => 'sometimes',
+        'bank_payment_id'       => 'sometimes',
+        'caps_payment_id'       => 'sometimes',
+        'int_payment_id'        => 'sometimes',
+    ];
+
+    protected static $externalAdminFetchMultipleBankTransferRules = [
+        'count'                 => 'required|integer|max:5',
+        'id'                    => 'sometimes',
+    ];
+
+    protected static $externalAdminFetchMultipleMerchantDetailRules = [
+        'count'                 => 'required|integer|max:5',
+        'id'                    => 'sometimes',
+    ];
+
+    protected static $externalAdminFetchMultipleBalanceRules = [
+        'count'                 => 'required|integer|max:5',
+        'id'                    => 'sometimes',
+        'merchant_id'           => 'sometimes',
+    ];
+
+    protected static $externalAdminFetchMultipleCreditsRules = [
+        'count'                 => 'required|integer|max:5',
+        'id'                    => 'sometimes',
+        'merchant_id'           => 'sometimes',
+        'type'                  => 'sometimes',
+    ];
+
+
+    public function validateEntityTypeForExternalAdmin(string $entity)
+    {
+        if (in_array($entity, array_keys(AdminFetch::$externalAdminEntityAllowedAttributesMap)) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+    }
 }

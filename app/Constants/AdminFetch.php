@@ -6,15 +6,22 @@ use RZP\Base\Fetch;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
 use RZP\Models\External;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Emi\Type;
+use RZP\Trace\TraceCode;
+use RZP\Gateway\Billdesk;
 use RZP\Models\FeeRecovery;
 use RZP\Models\FundTransfer;
 use RZP\Models\BankingAccount;
 use RZP\Models\Partner\Config;
+use RZP\Models\Admin\Validator;
 use RZP\Models\NodalBeneficiary;
+use RZP\Gateway\Upi\Base as Upi;
 use RZP\Models\Partner\Activation;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Partner\Commission;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\MerchantUser;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\Merchant\Invoice\EInvoice;
@@ -43,9 +50,188 @@ class AdminFetch
         Entity::PAYMENT,
     ];
 
+    const EXTERNAL_ADMIN_FETCH_MULTIPLE_ENTITIES_MAX_COUNT = 5;
+
+    public static $externalAdminEntityAllowedAttributesMap = [
+        Entity::PAYMENT => [
+            Payment\Entity::ID,
+            Payment\Entity::MERCHANT_ID,
+            Payment\Entity::AMOUNT,
+            Payment\Entity::BASE_AMOUNT,
+            Payment\Entity::METHOD,
+            Payment\Entity::STATUS,
+            Payment\Entity::CREATED_AT,
+            Payment\Entity::UPDATED_AT,
+            Payment\Entity::REFUNDS,
+            Payment\Entity::GATEWAY,
+            Payment\Entity::GATEWAY_CAPTURED,
+            Payment\Entity::CAPTURED_AT,
+            Payment\Entity::AUTHORIZED_AT,
+            Payment\Entity::LATE_AUTHORIZED,
+        ],
+        Entity::REFUND  => [
+            Payment\Refund\Entity::ID,
+            Payment\Refund\Entity::PAYMENT_ID,
+            Payment\Refund\Entity::MERCHANT_ID,
+            Payment\Refund\Entity::AMOUNT,
+            Payment\Refund\Entity::BASE_AMOUNT,
+            Payment\Refund\Entity::GATEWAY,
+            Payment\Refund\Entity::REFERENCE1,
+            Payment\Refund\Entity::LAST_ATTEMPTED_AT,
+            Payment\Refund\Entity::PROCESSED_AT,
+            Payment\Refund\Entity::CREATED_AT,
+            Payment\Refund\Entity::UPDATED_AT,
+            Payment\Refund\Entity::STATUS,
+            Payment\Refund\Entity::SPEED_PROCESSED,
+            Payment\Refund\Entity::SPEED_REQUESTED,
+            Payment\Refund\Entity::GATEWAY_REFUNDED,
+        ],
+        Entity::UPI     => [
+            Upi\Entity::ID,
+            Upi\Entity::MERCHANT_ID,
+            Upi\Entity::AMOUNT,
+            Upi\Entity::CREATED_AT,
+            Upi\Entity::UPDATED_AT,
+            Upi\Entity::GATEWAY,
+        ],
+        Entity::DISPUTE => [
+            Dispute\Entity::ID,
+            Dispute\Entity::PAYMENT_ID,
+            Dispute\Entity::MERCHANT_ID,
+            Dispute\Entity::AMOUNT,
+            Dispute\Entity::BASE_AMOUNT,
+            Dispute\Entity::GATEWAY_DISPUTE_ID,
+            Dispute\Entity::STATUS,
+            Dispute\Entity::CREATED_AT,
+            Dispute\Entity::UPDATED_AT,
+        ],
+        Entity::NETBANKING => [
+            \RZP\Gateway\Netbanking\Base\Entity::PAYMENT_ID,
+            \RZP\Gateway\Netbanking\Base\Entity::AMOUNT,
+            \RZP\Gateway\Netbanking\Base\Entity::BANK,
+            \RZP\Gateway\Netbanking\Base\Entity::STATUS,
+            \RZP\Gateway\Netbanking\Base\Entity::CREATED_AT,
+            \RZP\Gateway\Netbanking\Base\Entity::UPDATED_AT,
+            \RZP\Gateway\Netbanking\Base\Entity::REFUND_ID,
+        ],
+        Entity::BANK_TRANSFER => [
+            \RZP\Models\BankTransfer\Entity::ID,
+            \RZP\Models\BankTransfer\Entity::PAYMENT_ID,
+            \RZP\Models\BankTransfer\Entity::MERCHANT_ID,
+            \RZP\Models\BankTransfer\Entity::AMOUNT,
+            \RZP\Models\BankTransfer\Entity::CREATED_AT,
+            \RZP\Models\BankTransfer\Entity::UPDATED_AT,
+        ],
+        Entity::BILLDESK => [
+            Billdesk\Entity::ID,
+            Billdesk\Entity::PAYMENT_ID,
+            'MerchantID',
+            'CustomerID',
+            'TxnAmount',
+            'CurrencyType',
+            Billdesk\Entity::CREATED_AT,
+            Billdesk\Entity::UPDATED_AT,
+        ],
+        Entity::MERCHANT => [
+            Merchant\Entity::ID,
+            Merchant\Entity::NAME,
+            Merchant\Entity::WEBSITE,
+            Merchant\Entity::BILLING_LABEL,
+            Merchant\Entity::LIVE,
+            Merchant\Entity::HOLD_FUNDS,
+            Merchant\Entity::AUTO_REFUND_DELAY,
+            Merchant\Entity::BALANCE,
+            Merchant\Entity::FEE_CREDITS_THRESHOLD,
+            Merchant\Entity::ACCOUNT_STATUS,
+            Merchant\Entity::TRANSACTION_REPORT_EMAIL,
+        ],
+        Entity::ATOM => [
+            \RZP\Gateway\Atom\Entity::ID,
+            \RZP\Gateway\Atom\Entity::PAYMENT_ID,
+            \RZP\Gateway\Atom\Entity::REFUND_ID,
+            \RZP\Gateway\Atom\Entity::AMOUNT,
+            \RZP\Gateway\Atom\Entity::STATUS,
+            \RZP\Gateway\Atom\Entity::METHOD,
+            \RZP\Gateway\Atom\Entity::CREATED_AT,
+            \RZP\Gateway\Atom\Entity::UPDATED_AT,
+        ],
+        Entity::MERCHANT_DETAIL => [
+            Merchant\Detail\Entity::MERCHANT_ID,
+            Merchant\Detail\Entity::ACTIVATION_PROGRESS,
+            Merchant\Detail\Entity::ACTIVATION_STATUS,
+        ],
+        Entity::BALANCE => [
+             Merchant\Balance\Entity::ID,
+             Merchant\Balance\Entity::MERCHANT_ID,
+             Merchant\Balance\Entity::TYPE,
+             Merchant\Balance\Entity::CURRENCY,
+             Merchant\Balance\Entity::NAME,
+             Merchant\Balance\Entity::BALANCE,
+             Merchant\Balance\Entity::LOCKED_BALANCE,
+             Merchant\Balance\Entity::ON_HOLD,
+             Merchant\Balance\Entity::AMOUNT_CREDITS,
+             Merchant\Balance\Entity::FEE_CREDITS,
+             Merchant\Balance\Entity::REWARD_FEE_CREDITS,
+             Merchant\Balance\Entity::CREATED_AT,
+             Merchant\Balance\Entity::UPDATED_AT,
+        ],
+        Entity::CREDITS => [
+            Merchant\Credits\Entity::ID,
+            Merchant\Credits\Entity::CAMPAIGN,
+            Merchant\Credits\Entity::MERCHANT_ID,
+            Merchant\Credits\Entity::VALUE,
+            Merchant\Credits\Entity::TYPE,
+            Merchant\Credits\Entity::EXPIRED_AT,
+            Merchant\Credits\Entity::USED,
+            Merchant\Credits\Entity::BALANCE_ID,
+        ],
+    ];
+
     public static function fields()
     {
         return Fetch::getCommonFields();
+    }
+
+    public static function filterEntitiesForExternalAdmin($entities)
+    {
+        $result = [];
+
+        foreach ($entities as $entityType => $searchFilters)
+        {
+            if (in_array($entityType, array_keys(self::$externalAdminEntityAllowedAttributesMap), true) === false)
+            {
+                continue;
+            }
+
+            $result[$entityType] = self::filterSearchFiltersForExternalAdmin($entityType, $searchFilters);
+        }
+
+        return $result;
+    }
+
+    public static function filterAttributesForExternalAdminFetchEntityById(string $entityType, array $entity)
+    {
+        $allowedAttributes = self::$externalAdminEntityAllowedAttributesMap[$entityType];
+
+        return array_filter($entity, function ($attribute) use ($entity, $allowedAttributes)
+        {
+            if (in_array($attribute, $allowedAttributes, true) === true)
+            {
+                return true;
+            }
+
+            return false;
+
+        }, ARRAY_FILTER_USE_KEY);
+    }
+
+    public static function filterAttributesForExternalAdminFetchMultiple($entityType, $response)
+    {
+        $response[PublicCollection::ITEMS] = array_map(function ($entity) use ($entityType) {
+            return self::filterAttributesForExternalAdminFetchEntityById($entityType, $entity);
+        }, $response[PublicCollection::ITEMS] ?? []);
+
+        return $response;
     }
 
     public static function externalEntities()
@@ -1229,6 +1415,10 @@ class AdminFetch
                     Fetch::LABEL     => 'Type',
                     Fetch::TYPE      => Fetch::TYPE_STRING
                 ],
+            ],
+
+            Entity::MERCHANT_DETAIL => [
+
             ],
 
             Entity::BANK_ACCOUNT => [
@@ -3595,6 +3785,27 @@ class AdminFetch
         }
 
         return $entities;
+    }
+
+    protected static function filterSearchFiltersForExternalAdmin($entityType, $searchFilters)
+    {
+        $entityTypeStudlyCase = studly_case(title_case($entityType));
+
+        $allowedFilters = Validator::getValidationRules("externalAdminFetchMultiple{$entityTypeStudlyCase}Rules");
+
+        $result = [];
+
+        foreach ($searchFilters as $filter => $description)
+        {
+            if (array_has($allowedFilters, $filter, true) === false)
+            {
+                continue;
+            }
+
+            $result[$filter] = $description;
+        }
+
+        return $result;
     }
 
 }

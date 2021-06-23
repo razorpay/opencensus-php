@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Redis;
 
 use RZP\Jobs;
 use RZP\Exception;
+use RZP\Base\Fetch;
 use RZP\Jobs\EsSync;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
@@ -35,7 +36,7 @@ use RZP\Models\{Admin\Permission\Name, Base, Base\EsRepository, Batch, Admin\Org
 
 class Service extends Base\Service
 {
-    public function getAllEntities($input)
+    public function getAllEntities($input, $isExternalAdmin = false)
     {
         $fields = AdminFetch::fields();
 
@@ -58,6 +59,11 @@ class Service extends Base\Service
         }
 
         $mergedEntities = array_merge($allEntities, $entities, $externalEntities);
+
+        if ($isExternalAdmin === true)
+        {
+            $mergedEntities = AdminFetch::filterEntitiesForExternalAdmin($mergedEntities);
+        }
 
         return [
             'version'   => 1,
@@ -92,14 +98,20 @@ class Service extends Base\Service
         return $entities;
     }
 
-    public function fetchEntityById(string $entity, string $id, array $input = []): array
+    public function fetchEntityById(string $entity, string $id, array $input = [], $isExternalAdmin = false): array
     {
+        $entityType = $entity;
 
         $data = ["function" => "fetchEntityById", "entity" => $entity];
 
         $this->app['trace']->info(TraceCode::FETCH_ENTITY_BY_ID, $data);
 
         $this->validateEntityTypeForRestrictedOrg($entity);
+
+        if ($isExternalAdmin === true)
+        {
+            (new Validator)->validateEntityTypeForExternalAdmin($entityType);
+        }
 
         $retEntity = $this->handleExternalEntity($entity, $input, $id);
 
@@ -110,7 +122,14 @@ class Service extends Base\Service
 
         $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::REPLICA);
 
-        return $entity->toArrayAdmin();
+        $response = $entity->toArrayAdmin();
+
+        if ($isExternalAdmin === true)
+        {
+            $response = AdminFetch::filterAttributesForExternalAdminFetchEntityById($entityType, $response);
+        }
+
+        return $response;
     }
 
     /**
@@ -254,8 +273,10 @@ class Service extends Base\Service
         return $currentAdmins;
     }
 
-    public function fetchMultipleEntities($entity, $input)
+    public function fetchMultipleEntities($entity, $input, $isExternalAdmin = false)
     {
+        $entityType = $entity;
+
         $data = ["function" => "fetchMultipleEntities", "entity" => $entity, "input" => $input];
 
         $this->app['trace']->info(TraceCode::FETCH_MULTIPLE_ENTITIES, $data);
@@ -263,6 +284,13 @@ class Service extends Base\Service
         $this->traceActiveDbConnections();
 
         $this->validateEntityTypeForRestrictedOrg($entity);
+
+        if ($isExternalAdmin === true)
+        {
+            $input = $this->preProcessInputForExternalAdminFetchMultipleEntities($input);
+
+            $this->validateInputForExternalAdminFetchMultipleEntities($entityType, $input);
+        }
 
         $entities = $this->handleExternalEntity($entity, $input);
 
@@ -277,7 +305,14 @@ class Service extends Base\Service
 
         $this->traceActiveDbConnections();
 
-        return $entities->toArrayAdmin();
+        $response = $entities->toArrayAdmin();
+
+        if ($isExternalAdmin === true)
+        {
+            $response = AdminFetch::filterAttributesForExternalAdminFetchMultiple($entityType, $response);
+        }
+
+        return $response;
     }
 
     protected function validateEntityTypeForRestrictedOrg(string $entity)
@@ -1184,6 +1219,27 @@ class Service extends Base\Service
                     ]);
             }
         }
+
+    }
+
+    protected function preProcessInputForExternalAdminFetchMultipleEntities($input)
+    {
+        $input[Fetch::COUNT] = $input[Fetch::COUNT] ?? AdminFetch::EXTERNAL_ADMIN_FETCH_MULTIPLE_ENTITIES_MAX_COUNT;
+
+        $input[Fetch::COUNT] = min($input[Fetch::COUNT], AdminFetch::EXTERNAL_ADMIN_FETCH_MULTIPLE_ENTITIES_MAX_COUNT);
+
+        unset($input[Fetch::SKIP]);
+
+        return $input;
+    }
+
+    protected function validateInputForExternalAdminFetchMultipleEntities($entityType, $input)
+    {
+        $validator = new Validator;
+
+        $validator->validateEntityTypeForExternalAdmin($entityType);
+
+        $validator->validateInput('external_admin_fetch_multiple_' . $entityType, $input);
 
     }
 }

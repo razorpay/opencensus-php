@@ -3,7 +3,6 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
-use RZP\Exception\BadRequestException;
 
 return [
 
@@ -1269,5 +1268,114 @@ return [
                 'entities' => []
             ]
         ]
+    ],
+
+    'testExternalAdminGetEntities' => [
+        'request'  => [
+            'url'    => '/external_admin/entities/all',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entities' => [
+
+                ],
+            ],
+        ],
+    ],
+
+    'testExternalAdminFetchAllowedEntityById' => [
+        'request'  => [
+            'url'    => '/external_admin/',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testExternalAdminFetchBlockedEntityByIdShouldFail' => [
+        'request'   => [
+            'url'    => '/external_admin/terminal/',
+            'method' => 'get',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testExternalAdminFetchEntityMultipleDisallowedParamsShouldFail' => [
+        'request'   => [
+            'url'    => '/external_admin/payment?last4=1234',
+            'method' => 'get',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
+    'testExternalAdminFetchEntityMultipleBlockedEntityShouldFail' => [
+        'request'   => [
+            'url'    => '/external_admin/terminal/',
+            'method' => 'get',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testExternalAdminFetchEntityMultiple' => [
+        'request'  => [
+            'url'    => '/external_admin/payment?status=created',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testExternalAdminFetchEntityMultipleLimitedCount' => [
+        'request'  => [
+            'url'    => '/external_admin/payment?count=20',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'count' => 5,
+            ],
+        ],
     ],
 ];

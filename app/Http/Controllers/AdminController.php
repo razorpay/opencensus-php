@@ -28,11 +28,29 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getEntitiesForExternalAdmin()
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Service)->getAllEntities($input, true);
+
+        return ApiResponse::json($data);
+    }
+
     public function getEntityMultiple($type)
     {
         $input = Request::all();
 
         $data = $this->service()->fetchMultipleEntities($type, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getEntityMultipleForExternalAdmin($type)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchMultipleEntities($type, $input, true);
 
         return ApiResponse::json($data);
     }
@@ -87,6 +105,15 @@ class AdminController extends Controller
         $input = Request::all();
 
         $data = $this->service()->fetchEntityById($type, $id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getEntityByIdForExternalAdmin($type, $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchEntityById($type, $id, $input, true);
 
         return ApiResponse::json($data);
     }
