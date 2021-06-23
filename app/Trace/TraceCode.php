@@ -1652,6 +1652,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DASHBOARD_INTEGRATION_ERROR                           = 'DASHBOARD_INTEGRATION_ERROR';
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED                = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
 
+    // New Basic auth flow for app auth using passport
+    const APP_AUTHENTICATION_FROM_JWT_PASSED                    = 'APP_AUTHENTICATION_FROM_JWT_PASSED';
+    const NO_PASSPORT_FOUND                                     = 'NO_PASSPORT_FOUND';
+    const APP_NAME_NOT_SET                                      = 'APP_NAME_NOT_SET';
+    const APP_IDENTIFICATION_FAILED                             = 'APP_IDENTIFICATION_FAILED';
+    const APP_AUTHENTICATION_FAILED                             = 'APP_AUTHENTICATION_FAILED';
+    const INVALID_APP_PASSPORT_CLAIMS                           = 'INVALID_APP_PASSPORT_CLAIMS';
+    const INVALID_APP_CONFIG                                    = 'INVALID_APP_CONFIG';
+
     const NODAL_INTEGRATION_ERROR                               = 'NODAL_INTEGRATION_ERROR';
     const REPORTING_SERVICE_API_REQUEST                         = 'REPORTING_SERVICE_API_REQUEST';
     const REPORTING_SERVICE_API_RESPONSE                        = 'REPORTING_SERVICE_API_RESPONSE';
@@ -4732,7 +4741,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_VERIFICATION_PAYMENT_CAPTURED                         = 'PAYMENT_VERIFICATION_PAYMENT_CAPTURED';
     const PAYMENT_VERIFICATION_INITIATED                                = 'PAYMENT_VERIFY_EVENT_DATA';
     const PAYMENT_NOT_FOUND_FOR_VERIFY                                  = 'PAYMENT_NOT_FOUND_FOR_VERIFY';
-    
+
     const DOWNTIME_NOTIFICATION_MERCHANT_KEY_MISSING                    = 'DOWNTIME_NOTIFICATION_MERCHANT_KEY_MISSING';
 
 

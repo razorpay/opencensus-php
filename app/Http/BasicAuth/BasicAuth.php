@@ -13,6 +13,7 @@ use Lcobucci\JWT\Signer as JWTSigner;
 use Razorpay\OAuth\OAuthServer;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
+use RZP\Http\RequestContextV2;
 use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Models\Admin;
@@ -264,10 +265,19 @@ class BasicAuth
     protected $request;
 
     /**
+     * @deprecated
      * Array of configurations of internal applications
+     * Used by the old app auth flow to authenticate
      * @var array
      */
     protected $internalAppConfigs;
+
+    /**
+     * Array of configurations of internal applications
+     * Used by the new BasicAuth app authentication.
+     * @var array
+     */
+    protected $internalBasicAuthAppConfigs;
 
     /**
      * Trace instance used for tracing
@@ -408,28 +418,36 @@ class BasicAuth
      */
     protected $passport = [];
 
+    /**
+     * Used to access passport related information stored during PreAuthenticate.
+     * @var RequestContextV2
+     */
+    protected $reqCtx;
+
     public function __construct($app)
     {
         $this->app = $app;
+        $this->reqCtx = $app['request.ctx.v2'];
     }
 
     public function init()
     {
         $app = $this->app;
 
-        $this->request            = $app['request'];
-        $this->internalAppConfigs = $app['config']->get('applications');
-        $this->cloud              = $app['config']->get('app.cloud');
-        $this->router             = $app['router'];
-        $this->trace              = $this->app['trace'];
-        $this->repo               = $this->app['repo'];
-        $this->route              = $this->app['api.route'];
-        $this->merchant           = null;
-        $this->device             = null;
-        $this->isAdmin            = false;
-        $this->appAuth            = false;
-        $this->proxy              = false;
-        $this->passport           = [];
+        $this->request                     = $app['request'];
+        $this->internalAppConfigs          = $app['config']->get('applications');
+        $this->internalBasicAuthAppConfigs = $app['config']->get('applications_v2');
+        $this->cloud                       = $app['config']->get('app.cloud');
+        $this->router                      = $app['router'];
+        $this->trace                       = $this->app['trace'];
+        $this->repo                        = $this->app['repo'];
+        $this->route                       = $this->app['api.route'];
+        $this->merchant                    = null;
+        $this->device                      = null;
+        $this->isAdmin                     = false;
+        $this->appAuth                     = false;
+        $this->proxy                       = false;
+        $this->passport                    = [];
     }
 
     public function setCredentials()
@@ -891,6 +909,10 @@ class BasicAuth
 
         $this->setAppAuth(true);
 
+        // Requires the presence of Authorization header
+        // Fails if both key and secret are null
+        // verifies and sets key id, secret, public key and mode
+        // Optionally if account header present, adds account id suffix to public key
         $res = $this->setCredentials();
 
         if ($res !== null)
@@ -898,18 +920,10 @@ class BasicAuth
             return $res;
         }
 
-        // Check key is blank and it's an internal app
+        // Check key is blank and it's an internal app (via old key-auth flow)
         if (($this->isKeyBlank()) and ($this->verifyInternalApp()))
         {
-            $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_APPLICATION , $this->internalApp, true, ['name' => $this->internalApp]);
-
-            // Trace to identify the routes incorrectly called
-            // TODO: remove it after fixing it
-            if ($this->authCreds->creds['key_id'] !== '')
-            {
-                $this->trace->info(
-                TraceCode::BAD_REQUEST_ROUTE_INCORRECT_AUTH, ['route_name' => $this->route->getCurrentRouteName()]);
-            }
+            $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_APPLICATION, $this->internalApp, true, ['name' => $this->internalApp]);
 
             // It's an internal auth. We check whether dashboard
             // merchant header is set. In that case, it's coming
@@ -928,6 +942,20 @@ class BasicAuth
             $this->setDashboardHeaders();
 
             return $this->checkAndSetAccountScope();
+        }
+        // If key is not blank and this is not proxy auth
+        // check for new basic auth flow for app auth (using passport)
+        elseif ($this->isValidPassportForAppAuth() and
+                !$this->isKeyBlank() and !$this->isProxyAuth())
+        {
+            // setting internal app using applications_v2 config and passport
+            $appConfig = $this->internalBasicAuthAppConfigs[$this->reqCtx->passport->consumer->id];
+            $this->internalApp = $appConfig['name'];
+
+            $this->trace->info(
+                TraceCode::APP_AUTHENTICATION_FROM_JWT_PASSED, ['app'   => $this->getInternalApp()]);
+            $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_APPLICATION, $this->internalApp,
+                true, ['name' => $this->internalApp]);
         }
 
         // Say invalid route for whenever
@@ -1267,6 +1295,60 @@ class BasicAuth
     }
 
     /**
+     * validates if the passport is correct for app auth use case
+     * @return bool
+     */
+    protected function isValidPassportForAppAuth()
+    {
+        $passport = $this->reqCtx->passport;
+
+        // No passport attached to request
+        if (!$this->reqCtx->hasPassportJwt) {
+            $this->trace->error(TraceCode::NO_PASSPORT_FOUND);
+            return false;
+        }
+
+        // If identification failed, request should be rejected from Edge
+        if (!$passport->identified) {
+            $this->trace->error(TraceCode::APP_IDENTIFICATION_FAILED);
+            return false;
+        }
+
+        // Invalid consumerClaims
+        if (!$passport->consumer or !$passport->consumer->id) {
+            $this->trace->error(TraceCode::INVALID_APP_PASSPORT_CLAIMS);
+            return false;
+        }
+
+        $appId = $passport->consumer->id;
+        // Invalid consumer type
+        if ($passport->consumer->type !== self::PASSPORT_CONSUMER_TYPE_APPLICATION) {
+            $this->trace->error(TraceCode::INVALID_APP_PASSPORT_CLAIMS,
+                [
+                    'consumer_type' => $passport->consumer->type,
+                    'app_id' => $appId
+                ]);
+            return false;
+        }
+
+        $config = $this->internalBasicAuthAppConfigs[$appId];
+        // No app config present for the given application_id
+        if (!is_array($config) or !is_string($config['name']) or empty($config['name'])) {
+            $this->trace->error(TraceCode::INVALID_APP_CONFIG, ['app_id' => $appId]);
+            return false;
+        }
+
+        // If authentication failed, request should be rejected from Edge
+        if (!$passport->authenticated) {
+            $this->trace->error(TraceCode::APP_AUTHENTICATION_FAILED, ['app' => $config['name']]);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @depracated Uses old key-auth flow
      * Verify the request is made by an app (internal/external)
      * @return boolean
      */

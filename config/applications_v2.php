@@ -1,5 +1,7 @@
 <?php
 
+use RZP\Models\VirtualAccount;
+
 return [
     env('APP_V2_ID_VENDOR_PAYMENTS')            => [
         "name"        => "vendor_payments",
@@ -317,7 +319,7 @@ return [
         ]
     ],
     env('APP_V2_ID_KOTAK')                      => [
-        "name"        => "kotak",
+        "name"        =>  VirtualAccount\Provider::KOTAK,
         "credentials" => [
             [
                 "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_KOTAK'),
@@ -338,7 +340,7 @@ return [
         ]
     ],
     env('APP_V2_ID_YESBANK')                    => [
-        "name"        => "yesbank",
+        "name"        =>  VirtualAccount\Provider::YESBANK,
         "credentials" => [
             [
                 "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_YESBANK'),
@@ -359,7 +361,7 @@ return [
         ]
     ],
     env('APP_V2_ID_ICICI')                      => [
-        "name"        => "icici",
+        "name"        =>  VirtualAccount\Provider::ICICI,
         "credentials" => [
             [
                 "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_ICICI'),
@@ -380,7 +382,7 @@ return [
         ]
     ],
     env('APP_V2_ID_HDFC_ECMS')                  => [
-        "name"        => "hdfc_ecms",
+        "name"        =>  VirtualAccount\Provider::HDFC_ECMS,
         "credentials" => [
             [
                 "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_HDFC_ECMS'),
@@ -401,7 +403,7 @@ return [
         ]
     ],
     env('APP_V2_ID_RBL')                        => [
-        "name"        => "rbl",
+        "name"        =>  VirtualAccount\Provider::RBL,
         "credentials" => [
             [
                 "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_RBL'),

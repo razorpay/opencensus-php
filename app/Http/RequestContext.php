@@ -14,6 +14,7 @@ use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\BasicAuth\AuthCreds;
 use RZP\Exception\BadRequestException;
+use RZP\Trace\TraceCode;
 
 /**
  * @deprecated ...in favor of RequestContextV2, would take around one year time though.
@@ -41,6 +42,12 @@ final class RequestContext
      * @var RepositoryManager
      */
     protected $repo;
+
+    /**
+     * Trace instance used for tracing
+     * @var \Razorpay\Trace\Logger
+     */
+    protected $trace;
 
     /**
      * @var string
@@ -71,6 +78,11 @@ final class RequestContext
      * @var array
      */
     protected $applications;
+
+    /**
+     * @var array
+     */
+    protected $baApplications;
 
     /**
      * @var string
@@ -167,6 +179,7 @@ final class RequestContext
 
         if ($env === 'testing' or $this->initialized === false)
         {
+            $this->trace = $this->app['trace'];
             $this->initInstanceVars();
             $this->setAuthVars();
             $this->initialized = true;
@@ -379,6 +392,7 @@ final class RequestContext
         $this->repo               = $this->app['repo'];
         $this->isRunningUnitTests = $this->app->runningUnitTests();
         $this->applications       = $this->app['config']->get('applications');
+        $this->baApplications     = $this->app['config']->get('applications_v2');
         $this->route              = null;
         $this->key                = null;
         $this->secret             = null;
@@ -589,6 +603,11 @@ final class RequestContext
         {
             $this->setInternalAppNameByAuth();
 
+            if (empty($this->internalAppName)) {
+                $this->setInternalAppNameByPassport();
+            }
+
+            $this->trace->error(TraceCode::APP_NAME_NOT_SET);
             return true;
         }
         else if (in_array($this->route, Route::$admin, true) === true)
@@ -636,6 +655,32 @@ final class RequestContext
         }
 
         return false;
+    }
+
+    /**
+     * Sets internal app name using passport
+     * Executes only if old flow wasn't able to set app name
+     */
+    protected function setInternalAppNameByPassport()
+    {
+        $hasPassportJwt = $this->app['request.ctx.v2']->hasPassportJwt;
+        $passport = $this->app['request.ctx.v2']->passport;
+
+        if (!$hasPassportJwt or !$passport->consumer or !$passport->consumer->id
+            or $passport->consumer->type !== BasicAuth::PASSPORT_CONSUMER_TYPE_APPLICATION)
+        {
+            return;
+        }
+
+        $appId = $passport->consumer->id;
+        $config = $this->baApplications[$appId];
+
+        // No app config present for the given application_id
+        if (!is_array($config) or !is_string($config->name) or empty($config->name)) {
+            return;
+        }
+
+        $this->internalAppName = $config->name;
     }
 
     /**
