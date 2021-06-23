@@ -163,7 +163,7 @@ class Repository extends Base\Repository
 
         $db = DB::connection($connection)->getDatabaseName();
 
-        $partitions = DB::select(DB::RAW("select partition_name from information_schema.partitions where table_schema='$db' and table_name='$this->entity' and partition_ordinal_position=1"));
+        $partitions = DB::select(DB::RAW("select partition_name as partition_name from information_schema.partitions where table_schema='$db' and table_name='$this->entity' and partition_ordinal_position=1"));
 
         // This will never happen though, we will always have one partition with ordinal position 1 as we are dropping only after creating new partition
         if (count($partitions) !== 1)
@@ -179,7 +179,7 @@ class Repository extends Base\Repository
             TraceCode::PAYMENT_ANALYTICS_PARTITON_TO_DROP,
             ['partition_being_dropped' => $partitions]);
 
-        return $partitions[0]->PARTITION_NAME;
+        return $partitions[0]->partition_name;
     }
 
     protected function getConnectionForPartitionQuery()
