@@ -493,6 +493,7 @@ class Core extends Base\Core
     {
         $category  = $merchant->getCategory();
         $category2 = $merchant->getCategory2();
+        $orgId     = $merchant->getOrgId();
 
         $this->trace->info(
             TraceCode::MERCHANT_METHODS_RESET_BASED_ON_CATEGORY_REQUEST,
@@ -505,7 +506,7 @@ class Core extends Base\Core
 
         $methods = $merchant->methods;
 
-        $defaultMethods = DefaultMethodsForCategory::getDefaultMethodsFromMerchantCategories($category, $category2);
+        $defaultMethods = DefaultMethodsForCategory::getDefaultMethodsFromMerchantCategories($category, $category2, $orgId);
 
         $merchantDetails = (new Merchant\Detail\Core())->getMerchantDetails($merchant);
         // disable phone for business type unregistered and others.

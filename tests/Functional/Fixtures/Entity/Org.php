@@ -18,6 +18,7 @@ class Org extends Base
     const HDFC_ORG                  = '6dLbNSpv5XbCOG';
     const RZP_ORG                   = '100000razorpay';
     const RZP_ORG_SIGNED            = 'org_100000razorpay';
+    const AXIS_ORG_ID               = 'CLTnQqDj9Si8bx';
     const DEFAULT_GRP               = '1RazorpayGrpId';
     const DEFAULT_GRP_SIGNED        = 'grp_1RazorpayGrpId';
     const ADMIN_ROLE                = 'RzpAdminRoleId';
