@@ -133,9 +133,13 @@ export default class InstantActivationAnnouncements extends Component {
                   settlements will only be enabled after your KYC details are reviewed and approved.{' '}
                 </div>
                 <div className="big-circle-seprator" />
-                <Link to="/activation" onClick={() => showProductsModal()}>
-                  Accept Payments
-                </Link>
+                <button
+                className="btn-link cursor-pointer"
+                style={{ padding: '0' }}
+                onClick={() => this.props.showProductsModal()}
+              >
+                Accept Payments
+              </button>
               </div>
             );
           }
