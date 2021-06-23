@@ -32,6 +32,7 @@ import QuickGuide, {
 } from 'merchant/views/Subscriptions/QuickGuide';
 import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
 import SubscriptionOffersLaunchBanner from 'merchant/components/Announcements/SubscriptionOffers';
+import EmandateBanner from 'merchant/components/Announcements/EmandateSubscription';
 import CardPaymentsBlockedBanner from './components/CardPaymentsBlocked/Banner';
 
 @connect(
@@ -143,7 +144,7 @@ export default class SubscriptionsController extends React.Component {
     return (
       <div class={classList('Subscriptions-Container')}>
         {!this.props.user.isChargeAtWillEnabled && <SubscriptionOffersLaunchBanner />}
-
+        {user.isEmandateOnSubscriptionEnabled && <EmandateBanner />}
         {user.isCardRecurringPaymentsBlocked && (
           <CardPaymentsBlockedBanner isCAW={user.isChargeAtWillEnabled} />
         )}
