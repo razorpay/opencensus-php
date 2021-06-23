@@ -4778,6 +4778,42 @@ class Core extends Base\Core
         }
     }
 
+    public function getMerchantRiskData(string $merchantId): array
+    {
+        $query = sprintf(Constants::MERCHANT_RISK_SCORE_DATA_DRUID_QUERY, $merchantId);
+
+        list($error, $res) = $this->app['druid.service']->getDataFromDruid(['query' => $query]);
+
+        if (empty($error) === false)
+        {
+            $this->trace->info(TraceCode::GET_MERCHANT_RISK_DATA_DRUID_ERROR, ['error' => $error]);
+            return ['error' => $error, 'status' => 503];
+        }
+
+        if (is_null($res) === true || count($res) === 0)
+        {
+            return ['status' => 404];
+        }
+
+        $druidResult = $res[0];
+
+        $returnArray = ['status' => 200];
+        foreach (Constants::MERCHANT_RISK_SCORE_DRUID_KEY_MAPPING as $druidKey => $returnKey)
+        {
+            $returnVal = $druidResult[$druidKey];
+
+            if (empty($returnVal) === false &&
+                in_array($returnKey, Constants::MERCHANT_RISK_SCORE_DATA_MONEY_FIELDS))
+            {
+                $returnVal = '₹' . number_format($returnVal);
+            }
+
+            array_set($returnArray, $returnKey, $returnVal);
+        }
+
+        return $returnArray;
+    }
+
     public function getLastMonthGMV(string $merchantId): int
     {
         $lastMonthGMV = $this->app['cache']->get(self::LAST_MONTH_GMV."_".$merchantId);

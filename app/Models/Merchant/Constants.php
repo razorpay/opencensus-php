@@ -381,6 +381,49 @@ final class Constants
         ],
     ];
 
+    const MERCHANT_RISK_SCORE_DATA_DRUID_QUERY  = 'SELECT * FROM druid.risk_scoring_fact WHERE merchants_id = \'%s\'';
+    const MERCHANT_RISK_SCORE_DRUID_KEY_MAPPING = [
+        'Transacting_Dedupe_Merchant_Risk_Scoring_Transacting_Dedupe_Merchant_Risk_Score' => 'transaction_dedupe_merchant_risk_score',
+        'Global_Merchant_Risk_Scoring_Global_Merchant_Risk_Score'                         => 'global_merchant_risk_score',
+        'merchant_vintage_merchant_vintage'                                               => 'merchant_vintage',
+        'Payment_Details_first_transaction_date'                                          => 'first_transaction_date_attempted',
+        'Payment_Details_last_transaction_date'                                           => 'last_transaction_date_attempted',
+        'Payment_Details_lifetime_captured_payments'                                      => 'number_of_transactions_captured.0.lifetime',
+        'Payment_Details_past_one_month_captured_payments'                                => 'number_of_transactions_captured.1.1_month',
+        'Payment_Details_lifetime_captured_gmv'                                           => 'total_GMV_captured.0.lifetime',
+        'Payment_Details_past_one_month_captured_gmv'                                     => 'total_GMV_captured.1.1_month',
+        'Payment_Details_lifetime_success_rate'                                           => 'success_rate_(%).0.lifetime',
+        'Payment_Details_past_one_month_success_rate'                                     => 'success_rate_(%).1.1_month',
+        'Domestic_cts_overall_lifetime_cts'                                               => 'domestic_merchant_chargeback_to_sale_ratio_(%).0.lifetime',
+        'Domestic_cts_3months_last_3_months_cts'                                          => 'domestic_merchant_chargeback_to_sale_ratio_(%).1.3_months',
+        'Domestic_FTS_lifetime_domestic_FTS'                                              => 'domestic_merchant_fraud_to_sale_ratio_(%).0.lifetime',
+        'Domestic_FTS_past_3_month_domestic_FTS'                                          => 'domestic_merchant_fraud_to_sale_ratio_(%).1.3_months',
+        'Dispute_ltd_lifetime_disputes'                                                   => 'total_dispute_count.0.lifetime',
+        'Dispute_1month_past_1_month_disputes'                                            => 'total_dispute_count.1.1_month',
+        'International_Payment_Details_lifetime_captured_payments'                        => 'international_details.number_of_transactions_captured.0.lifetime',
+        'International_Payment_Details_past_one_month_captured_payments'                  => 'international_details.number_of_transactions_captured.1.1_month',
+        'International_Payment_Details_lifetime_captured_gmv'                             => 'international_details.total_GMV_captured.0.lifetime',
+        'International_Payment_Details_past_one_month_captured_gmv'                       => 'international_details.total_GMV_captured.1.1_month',
+        'International_OAR_Order_Approval_rate'                                           => 'international_details.international_order_approval_rate_(%)',
+        'International_Payment_Details_lifetime_success_rate'                             => 'international_details.success_rate_(%).0.lifetime',
+        'International_Payment_Details_past_one_month_success_rate'                       => 'international_details.success_rate_(%).1.1_month',
+        'International_cts_overall_lifetime_cts'                                          => 'international_details.merchant_CTS_(%).0.lifetime',
+        'International_cts_3months_last_3_months_cts'                                     => 'international_details.merchant_CTS_(%).1.3_months',
+        'International_FTS_lifetime_international_FTS'                                    => 'international_details.merchant_FTS_(%).0.lifetime',
+        'International_FTS_past_3_month_international_FTS'                                => 'international_details.merchant_FTS_(%).1.3_months',
+        'PL_PP_Dedupe_pl_pp_deduped'                                                      => 'risk_alerts.PL_PP_dedupe',
+        'Customer_Flagging_customer_flagged'                                              => 'risk_alerts.customer_flagging',
+        'Blacklist_IP_blacklist_ip_entities'                                              => 'risk_alerts.blacklisted_ip_alerts',
+        'workflows_data_FOH_workflows'                                                    => 'risk_workflow_count.FOH',
+        'workflows_data_Suspend_workflows'                                                => 'risk_workflow_count.suspend',
+        'workflows_data_Disable_live_workflows'                                           => 'risk_workflow_count.disable_live'
+    ];
+    const MERCHANT_RISK_SCORE_DATA_MONEY_FIELDS = [
+        'total_GMV_captured.0.lifetime',
+        'total_GMV_captured.1.1_month',
+        'international_details.total_GMV_captured.0.lifetime',
+        'international_details.total_GMV_captured.1.1_month',
+    ];
 
     // merchant risk actions communication
     const SMS_TEMPLATE           = 'sms_template';

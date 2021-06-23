@@ -2156,6 +2156,17 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getMerchantRiskData(string $id)
+    {
+        $response = $this->service()->getMerchantRiskData($id);
+
+        $statusCode = $response['status'];
+
+        unset($response['status']);
+
+        return ApiResponse::json($response, $statusCode);
+    }
+
     public function websiteCheckerPeriodicCron()
     {
         $input = Request::all();

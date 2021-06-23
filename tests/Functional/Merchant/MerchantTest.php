@@ -10383,6 +10383,83 @@ class MerchantTest extends TestCase
         $this->app->instance('merchantRiskClient', $merchantRiskClientMock);
     }
 
+    public function testGetRiskData()
+    {
+        $druidService = $this->getMockBuilder(MockDruidService::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods([ 'getDataFromDruid'])
+            ->getMock();
+
+        $this->app->instance('druid.service', $druidService);
+
+        $dataFromDruid = $this->testData[__FUNCTION__]['druid_response'];
+
+        $druidService->method( 'getDataFromDruid')
+            ->willReturn([null, [$dataFromDruid]]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::GET_MERCHANT_RISK_DATA]);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetRiskDataNotFoundCase()
+    {
+        $druidService = $this->getMockBuilder(MockDruidService::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods([ 'getDataFromDruid'])
+            ->getMock();
+
+        $this->app->instance('druid.service', $druidService);
+
+        $druidService->method( 'getDataFromDruid')
+            ->willReturn([null, []]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::GET_MERCHANT_RISK_DATA]);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetRiskDataDruidFailedCase()
+    {
+        $druidService = $this->getMockBuilder(MockDruidService::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods([ 'getDataFromDruid'])
+            ->getMock();
+
+        $this->app->instance('druid.service', $druidService);
+
+        $druidService->method( 'getDataFromDruid')
+            ->willReturn(["dummy druid error", null]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::GET_MERCHANT_RISK_DATA]);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testFireHubspotEventFromDashboard()
     {
         $this->ba->proxyAuth();

@@ -6218,6 +6218,11 @@ class Service extends Base\Service
         return Constants::TICKET_CREATION_POPUP_DATA_FOR_ACTIVATION_STATUS[MerchantStatus::REJECTED][Constants::DEFAULT];
     }
 
+    public function getMerchantRiskData(string $merchantId): array
+    {
+        return $this->core()->getMerchantRiskData($merchantId);
+    }
+
     public function fireHubspotEventFromDashboard(array $input): array
     {
         $merchantEmail = array_pull($input, 'merchant_email');

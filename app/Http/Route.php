@@ -2514,6 +2514,8 @@ class Route
         'update_ledger_account_detail'            => ['post',      'ledger_service/update_account_detail',                  'LedgerController@updateAccountDetail'],
         'request_governor'                        => ['post',      'ledger_service/request_governor',                       'LedgerController@requestGovernor'],
 
+        'merchant_risk_data'                      => ['get',       'merchants/{id}/risk/data',                              'MerchantController@getMerchantRiskData'],
+
         // Recon service proxy route
         'recon_service_request_proxy'             => ['any',        'recon/service/common/{path?}',                         'ReconServiceController@handleAny'                             ],
         'recon_service_file_upload_proxy'          => ['post',       'recon/service/upload_file',                             'ReconServiceController@uploadFile'                            ],
@@ -4826,6 +4828,8 @@ class Route
         'activate_ledger_account',
         'update_ledger_account_detail',
         'request_governor',
+
+        'merchant_risk_data',
     ];
 
     public static $routePermission = [
@@ -5750,6 +5754,8 @@ class Route
         'activate_ledger_account'                         => Permission::LEDGER_SERVICE_ACTIONS,
         'update_ledger_account_detail'                    => Permission::LEDGER_SERVICE_ACTIONS,
         'request_governor'                                => Permission::LEDGER_SERVICE_ACTIONS,
+
+        'merchant_risk_data'                              => Permission::GET_MERCHANT_RISK_DATA
     ];
 
     public static $bankingRoutePermissions = [
@@ -8798,6 +8804,8 @@ class Route
             'activate_ledger_account',
             'update_account_detail',
             'request_governor',
+
+            'merchant_risk_data',
         ],
 
         //

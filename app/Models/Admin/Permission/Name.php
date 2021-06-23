@@ -659,6 +659,8 @@ class Name
     // Settlement Service permissions
     const SETTLEMENT_SERVICE_MERCHANT_CONFIG_EDIT = 'settlement_service_merchant_config_edit';
 
+    const GET_MERCHANT_RISK_DATA = 'get_merchant_risk_data';
+
     // Recon service permission
     const RECON_OPERATION                              = 'recon_operation';
 
