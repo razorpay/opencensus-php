@@ -23,6 +23,8 @@ class NetbankingRblCombinedFileTest extends TestCase
 
         $this->testDataFilePath = __DIR__ . '/helpers/NebtankingRblCombinedFileTestData.php';
 
+        $this->markTestSkipped('this flow is depricated and is moved to nbplus service');
+
         parent::setUp();
 
         $this->fixtures->create('terminal:shared_netbanking_rbl_terminal');

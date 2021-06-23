@@ -875,7 +875,7 @@ class MerchantInvoiceTest extends TestCase
             $this->createValidationWithFundAccountEntity();
 
             // NB payment
-            $this->fixtures->create('terminal:shared_netbanking_indusind_terminal');
+            $this->fixtures->create('terminal:shared_netbanking_pnb_terminal');
         }
 
         // Card payment less than 2k
@@ -900,7 +900,7 @@ class MerchantInvoiceTest extends TestCase
             'captured_at' => Carbon::now(Timezone::IST)->timestamp + 5,
         ]);
 
-        $p3 = $this->getDefaultNetbankingPaymentArray('INDB');
+        $p3 = $this->getDefaultNetbankingPaymentArray('PUNB_R');
 
         $p3['amount'] = 40000;
 

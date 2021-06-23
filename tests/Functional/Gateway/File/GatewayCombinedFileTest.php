@@ -179,6 +179,8 @@ class GatewayCombinedFileTest extends TestCase
 
     public function testGenerateCombinedFileWithFileGenerationError()
     {
+        $this->markTestSkipped('this flow is depricated and is moved to nbplus service');
+
         $this->fixtures->create('terminal:shared_netbanking_rbl_terminal');
 
         Mail::fake();
@@ -251,6 +253,8 @@ class GatewayCombinedFileTest extends TestCase
 
     public function testGenerateCombinedFileWithReplicationLagError()
     {
+        $this->markTestSkipped('this flow is depricated and is moved to nbplus service');
+
         $connector = $this->mockSqlConnectorWithReplicaLag(400000);
 
         $this->app->instance('db.connector.mysql', $connector);
