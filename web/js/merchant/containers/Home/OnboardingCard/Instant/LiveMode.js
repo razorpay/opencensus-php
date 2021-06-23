@@ -71,7 +71,7 @@ export default class LiveMode extends Component {
               >
                 settlements
               </a>
-              will be enabled after successfull KYC review
+              will be enabled after successful KYC review
             </div>
           );
 

@@ -224,7 +224,7 @@ export default class ActivationCard extends Component {
             >
               Settlements
             </a>{' '}
-            will be enabled after successfull KYC review
+            will be enabled after successful KYC review
           </div>
         );
 
@@ -244,7 +244,7 @@ export default class ActivationCard extends Component {
             >
               Settlements
             </a>{' '}
-            in your account after successfull KYC review
+            in your account after successful KYC review
           </div>
         );
 
@@ -264,7 +264,7 @@ export default class ActivationCard extends Component {
             >
               Settlements
             </a>{' '}
-            in your account after successfull KYC review
+            in your account after successful KYC review
           </div>
         );
 
@@ -284,7 +284,7 @@ export default class ActivationCard extends Component {
             >
               Settlements
             </a>{' '}
-            in your account after successfull KYC review
+            in your account after successful KYC review
           </div>
         );
 
@@ -346,7 +346,7 @@ export default class ActivationCard extends Component {
               >
                 settlements
               </a>{' '}
-              in your account post successfull KYC review
+              in your account post successful KYC review
             </div>
           );
         } else {
@@ -446,7 +446,7 @@ export default class ActivationCard extends Component {
             >
               settlements
             </a>{' '}
-            will be enabled after successfull KYC review
+            will be enabled after successful KYC review
           </div>
         );
         break;

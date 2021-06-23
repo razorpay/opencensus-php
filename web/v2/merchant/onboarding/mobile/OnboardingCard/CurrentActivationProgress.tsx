@@ -48,7 +48,7 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; esc
 
   if (
     dedupeStatus === 'blocked' &&
-    isL1Submitted(data.activation_form_milestone) &&
+    (isL1Submitted(data.activation_form_milestone) || data.submitted) &&
     !data.activated &&
     data.activation_status !== 'rejected'
   ) {
