@@ -123,6 +123,30 @@ export const nitroCampaignId = () => {
       version: 'project-nitro-bangalore-v1',
       version_description: 'Nitro for bangalore',
     },
+    HPc6GXsuboNXiS: {
+      version: 'project-nitro-delhi-v1',
+      version_description: 'Nitro for delhi',
+    },
+    HPc7OB0N3kh5BR: {
+      version: 'project-nitro-mumbai-v1',
+      version_description: 'Nitro for mumbai',
+    },
+    HPc8DrLeWZc76W: {
+      version: 'project-nitro-pune-v1',
+      version_description: 'Nitro for pune',
+    },
+    HPc9cMyPKKeAAX: {
+      version: 'project-nitro-gurgaon-v1',
+      version_description: 'Nitro for gurgaon',
+    },
+    HPcAKrn53GP41d: {
+      version: 'project-nitro-nagpur-v1',
+      version_description: 'Nitro for nagpur',
+    },
+    HPcBJQw2E0BzpZ: {
+      version: 'project-nitro-kolhapur-v1',
+      version_description: 'Nitro for kolhapur',
+    },
   };
 
   const getExpStatus = (name) => {

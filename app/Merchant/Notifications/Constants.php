@@ -1064,6 +1064,49 @@ class Constants
                 ],
                 'experiments'         => ['nitro_midmarket_mumbai_v1'],
             ],
+            [
+                'data'  => [
+                    'version'     =>  'project-nitro-delhi-v1',
+                    "version_description" => 'Nitro for delhi',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_DELHI_V1_SPLITZ'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'project-nitro-mumbai-v1',
+                    "version_description" => 'Nitro for mumbai',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_MUMBAI_V1_SPLITZ'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'project-nitro-pune-v1',
+                    "version_description" => 'Nitro for pune',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_PUNE_V1_SPLITZ'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'project-nitro-gurgaon-v1',
+                    "version_description" => 'Nitro for gurgaon',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_GURGAON_V1_SPLITZ'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'project-nitro-nagpur-v1',
+                    "version_description" => 'Nitro for nagpur',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_NAGPUR_V1_SPLITZ'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'project-nitro-kolhapur-v1',
+                    "version_description" => 'Nitro for kolhapur',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_KOLHAPUR_V1_SPLITZ'],
+            ],
+            
         ],
         'whats-new-april21-m2mrewards-gtm'=> [
             [
@@ -1172,6 +1215,12 @@ class Constants
         'ANNOUNCEMENT_NITRO_VADODARA_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_AHMEDABAD_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_BANGALORE_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_DELHI_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_MUMBAI_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_PUNE_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_GURGAON_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_NAGPUR_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_KOLHAPUR_V1_SPLITZ',
     ];
 
     public static function getNotifications(): array

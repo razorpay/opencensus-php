@@ -31,6 +31,12 @@ export default {
     'HExehMbAqYqlWF', // Vadodara Nitro
     'HExiHP6GBUEVcu', // Ahmedabad Nitro
     'HExnzHcFfimA6u', // Bangalore Nitro
+    'HPc6GXsuboNXiS', // Delhi Nitro
+    'HPc7OB0N3kh5BR', // Mumbai Nitro
+    'HPc8DrLeWZc76W', // Pune Nitro
+    'HPc9cMyPKKeAAX', // Gurgaon Nitro
+    'HPcAKrn53GP41d', // Nagpur Nitro
+    'HPcBJQw2E0BzpZ', // Kolhapur Nitro
   ],
   announcement_text_experiment: [
     // beta experiment ids
