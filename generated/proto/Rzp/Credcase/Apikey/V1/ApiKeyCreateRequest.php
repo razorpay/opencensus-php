@@ -22,9 +22,21 @@ class ApiKeyCreateRequest extends \Google\Protobuf\Internal\Message
      */
     protected $mode = 0;
     /**
-     * Generated from protobuf field <code>.rzp.credcase.common.external_entity.v1.ExternalEntity external_entity = 3;</code>
+     * Generated from protobuf field <code>string owner_id = 3;</code>
      */
-    protected $external_entity = null;
+    protected $owner_id = '';
+    /**
+     * Generated from protobuf field <code>string owner_type = 4;</code>
+     */
+    protected $owner_type = '';
+    /**
+     * Generated from protobuf field <code>repeated string role_ids = 5;</code>
+     */
+    private $role_ids;
+    /**
+     * Generated from protobuf field <code>repeated string role_names = 6;</code>
+     */
+    private $role_names;
 
     /**
      * Constructor.
@@ -34,7 +46,10 @@ class ApiKeyCreateRequest extends \Google\Protobuf\Internal\Message
      *
      *     @type string $domain
      *     @type int $mode
-     *     @type \Rzp\Credcase\Common\External_entity\V1\ExternalEntity $external_entity
+     *     @type string $owner_id
+     *     @type string $owner_type
+     *     @type string[]|\Google\Protobuf\Internal\RepeatedField $role_ids
+     *     @type string[]|\Google\Protobuf\Internal\RepeatedField $role_names
      * }
      */
     public function __construct($data = NULL) {
@@ -87,23 +102,89 @@ class ApiKeyCreateRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.rzp.credcase.common.external_entity.v1.ExternalEntity external_entity = 3;</code>
-     * @return \Rzp\Credcase\Common\External_entity\V1\ExternalEntity
+     * Generated from protobuf field <code>string owner_id = 3;</code>
+     * @return string
      */
-    public function getExternalEntity()
+    public function getOwnerId()
     {
-        return $this->external_entity;
+        return $this->owner_id;
     }
 
     /**
-     * Generated from protobuf field <code>.rzp.credcase.common.external_entity.v1.ExternalEntity external_entity = 3;</code>
-     * @param \Rzp\Credcase\Common\External_entity\V1\ExternalEntity $var
+     * Generated from protobuf field <code>string owner_id = 3;</code>
+     * @param string $var
      * @return $this
      */
-    public function setExternalEntity($var)
+    public function setOwnerId($var)
     {
-        GPBUtil::checkMessage($var, \Rzp\Credcase\Common\External_entity\V1\ExternalEntity::class);
-        $this->external_entity = $var;
+        GPBUtil::checkString($var, True);
+        $this->owner_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string owner_type = 4;</code>
+     * @return string
+     */
+    public function getOwnerType()
+    {
+        return $this->owner_type;
+    }
+
+    /**
+     * Generated from protobuf field <code>string owner_type = 4;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setOwnerType($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->owner_type = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>repeated string role_ids = 5;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
+     */
+    public function getRoleIds()
+    {
+        return $this->role_ids;
+    }
+
+    /**
+     * Generated from protobuf field <code>repeated string role_ids = 5;</code>
+     * @param string[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
+     */
+    public function setRoleIds($var)
+    {
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->role_ids = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>repeated string role_names = 6;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
+     */
+    public function getRoleNames()
+    {
+        return $this->role_names;
+    }
+
+    /**
+     * Generated from protobuf field <code>repeated string role_names = 6;</code>
+     * @param string[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
+     */
+    public function setRoleNames($var)
+    {
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->role_names = $arr;
 
         return $this;
     }

@@ -11,7 +11,7 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Generated from protobuf message <code>rzp.credcase.migrate.v1.ExpireApiKeyRequest</code>
  */
-class ExpireApiKeyRequest extends \Google\Protobuf\Internal\Message implements \JsonSerializable
+class ExpireApiKeyRequest extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>string id = 1;</code>
@@ -21,6 +21,10 @@ class ExpireApiKeyRequest extends \Google\Protobuf\Internal\Message implements \
      * Generated from protobuf field <code>int32 expired_at = 3;</code>
      */
     protected $expired_at = 0;
+    /**
+     * Generated from protobuf field <code>string domain = 4;</code>
+     */
+    protected $domain = '';
 
     /**
      * Constructor.
@@ -30,6 +34,7 @@ class ExpireApiKeyRequest extends \Google\Protobuf\Internal\Message implements \
      *
      *     @type string $id
      *     @type int $expired_at
+     *     @type string $domain
      * }
      */
     public function __construct($data = NULL) {
@@ -81,9 +86,27 @@ class ExpireApiKeyRequest extends \Google\Protobuf\Internal\Message implements \
         return $this;
     }
 
-    public function jsonSerialize()
+    /**
+     * Generated from protobuf field <code>string domain = 4;</code>
+     * @return string
+     */
+    public function getDomain()
     {
-        return get_object_vars($this);
+        return $this->domain;
     }
+
+    /**
+     * Generated from protobuf field <code>string domain = 4;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setDomain($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->domain = $var;
+
+        return $this;
+    }
+
 }
 

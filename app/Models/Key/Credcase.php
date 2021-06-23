@@ -6,9 +6,6 @@ use Crypt;
 use Request;
 use Razorpay\Trace\Logger;
 use Rzp\Common\Mode\V1\Mode;
-use Rzp\Credcase\Migrate\V1\ExpireApiKeyRequest;
-use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
-use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
 
 use RZP\Trace\TraceCode;
 
@@ -73,35 +70,45 @@ class Credcase
         }
 
         $this->trace->info(TraceCode::CREDCASE_OUTBOX_REQUEST_ROTATE, ['old_key_id' => $oldKey->getId(), 'new_key_id' => $newKey->getId(), 'mode' => $mode]);
-
-        $expireApiKeyRequest = new ExpireApiKeyRequest;
-        $expireApiKeyRequest->setId($oldKey->getId());
-        $expireApiKeyRequest->setExpiredAt($oldKey->getExpiredAt());
-
-        $migrateApiKeyRequest = newMigrateApiKeyRequest($newKey, $mode);
-
-        $req = new RotateApiKeyRequest;
-        $req->setExpireKey($expireApiKeyRequest);
-        $req->setCreateKey($migrateApiKeyRequest);
+        $req = array(
+            "expire_key" => newExpireApiKeyRequest($oldKey),
+            "create_key" => newMigrateApiKeyRequest($newKey, $mode),
+        );
 
         $this->outbox->send(OutboxHandler::ROTATE, $req);
     }
 }
 
 /**
- * @param  Entity $key
- * @param  string $mode
- * @return MigrateApiKeyRequest
+ * @param Entity $key
+ * @param string $mode
+ *
+ * @return array
  */
-function newMigrateApiKeyRequest(Entity $key, string $mode): MigrateApiKeyRequest
+function newMigrateApiKeyRequest(Entity $key, string $mode)
 {
-    $req = new MigrateApiKeyRequest;
-    $req->setId($key->getId());
-    $req->setSecret(Crypt::decrypt($key->getSecret()));
-    $req->setMode(constant(Mode::class.'::'.$mode));
-    $req->setMerchantId($key->getMerchantId());
-    $req->setCreatedAt($key->getCreatedAt());
-    $req->setExpiredAt($key->getExpiredAt() ?: 0);
+    $req                      = array();
+    $req[Entity::ID]          = $key->getId();
+    $req[Entity::SECRET]      = Crypt::decrypt($key->getSecret());
+    $req["mode"]              = constant(Mode::class . '::' . $mode);
+    $req[Entity::MERCHANT_ID] = $key->getMerchantId();
+    $req[Entity::CREATED_AT]  = $key->getCreatedAt();
+    if (!empty($key->getExpiredAt())) {
+        $req[Entity::EXPIRED_AT] = $key->getExpiredAt();
+    }
 
     return $req;
+}
+
+/**
+ * @param Entity $oldKey
+ *
+ * @return array
+ */
+function newExpireApiKeyRequest(Entity $oldKey)
+{
+    return array(
+        Entity::ID         => $oldKey->getId(),
+        Entity::EXPIRED_AT => $oldKey->getExpiredAt(),
+    );
 }

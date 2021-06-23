@@ -30,23 +30,27 @@ class ApiKeyResponse extends \Google\Protobuf\Internal\Message
      */
     protected $mode = 0;
     /**
-     * Generated from protobuf field <code>.rzp.credcase.common.external_entity.v1.ExternalEntity external_entity = 6;</code>
+     * Generated from protobuf field <code>string owner_id = 6;</code>
      */
-    protected $external_entity = null;
+    protected $owner_id = '';
     /**
-     * Generated from protobuf field <code>int32 created_at = 7;</code>
+     * Generated from protobuf field <code>string owner_type = 7;</code>
+     */
+    protected $owner_type = '';
+    /**
+     * Generated from protobuf field <code>int32 created_at = 8;</code>
      */
     protected $created_at = 0;
     /**
-     * Generated from protobuf field <code>int32 updated_at = 8;</code>
+     * Generated from protobuf field <code>int32 updated_at = 9;</code>
      */
     protected $updated_at = 0;
     /**
-     * Generated from protobuf field <code>int32 expired_at = 9;</code>
+     * Generated from protobuf field <code>int32 expired_at = 10;</code>
      */
     protected $expired_at = 0;
     /**
-     * Generated from protobuf field <code>int32 deleted_at = 10;</code>
+     * Generated from protobuf field <code>int32 deleted_at = 11;</code>
      */
     protected $deleted_at = 0;
 
@@ -60,7 +64,8 @@ class ApiKeyResponse extends \Google\Protobuf\Internal\Message
      *     @type string $entity
      *     @type string $domain
      *     @type int $mode
-     *     @type \Rzp\Credcase\Common\External_entity\V1\ExternalEntity $external_entity
+     *     @type string $owner_id
+     *     @type string $owner_type
      *     @type int $created_at
      *     @type int $updated_at
      *     @type int $expired_at
@@ -161,29 +166,51 @@ class ApiKeyResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.rzp.credcase.common.external_entity.v1.ExternalEntity external_entity = 6;</code>
-     * @return \Rzp\Credcase\Common\External_entity\V1\ExternalEntity
+     * Generated from protobuf field <code>string owner_id = 6;</code>
+     * @return string
      */
-    public function getExternalEntity()
+    public function getOwnerId()
     {
-        return $this->external_entity;
+        return $this->owner_id;
     }
 
     /**
-     * Generated from protobuf field <code>.rzp.credcase.common.external_entity.v1.ExternalEntity external_entity = 6;</code>
-     * @param \Rzp\Credcase\Common\External_entity\V1\ExternalEntity $var
+     * Generated from protobuf field <code>string owner_id = 6;</code>
+     * @param string $var
      * @return $this
      */
-    public function setExternalEntity($var)
+    public function setOwnerId($var)
     {
-        GPBUtil::checkMessage($var, \Rzp\Credcase\Common\External_entity\V1\ExternalEntity::class);
-        $this->external_entity = $var;
+        GPBUtil::checkString($var, True);
+        $this->owner_id = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>int32 created_at = 7;</code>
+     * Generated from protobuf field <code>string owner_type = 7;</code>
+     * @return string
+     */
+    public function getOwnerType()
+    {
+        return $this->owner_type;
+    }
+
+    /**
+     * Generated from protobuf field <code>string owner_type = 7;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setOwnerType($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->owner_type = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>int32 created_at = 8;</code>
      * @return int
      */
     public function getCreatedAt()
@@ -192,7 +219,7 @@ class ApiKeyResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>int32 created_at = 7;</code>
+     * Generated from protobuf field <code>int32 created_at = 8;</code>
      * @param int $var
      * @return $this
      */
@@ -205,7 +232,7 @@ class ApiKeyResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>int32 updated_at = 8;</code>
+     * Generated from protobuf field <code>int32 updated_at = 9;</code>
      * @return int
      */
     public function getUpdatedAt()
@@ -214,7 +241,7 @@ class ApiKeyResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>int32 updated_at = 8;</code>
+     * Generated from protobuf field <code>int32 updated_at = 9;</code>
      * @param int $var
      * @return $this
      */
@@ -227,7 +254,7 @@ class ApiKeyResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>int32 expired_at = 9;</code>
+     * Generated from protobuf field <code>int32 expired_at = 10;</code>
      * @return int
      */
     public function getExpiredAt()
@@ -236,7 +263,7 @@ class ApiKeyResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>int32 expired_at = 9;</code>
+     * Generated from protobuf field <code>int32 expired_at = 10;</code>
      * @param int $var
      * @return $this
      */
@@ -249,7 +276,7 @@ class ApiKeyResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>int32 deleted_at = 10;</code>
+     * Generated from protobuf field <code>int32 deleted_at = 11;</code>
      * @return int
      */
     public function getDeletedAt()
@@ -258,7 +285,7 @@ class ApiKeyResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>int32 deleted_at = 10;</code>
+     * Generated from protobuf field <code>int32 deleted_at = 11;</code>
      * @param int $var
      * @return $this
      */

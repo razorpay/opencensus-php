@@ -39,11 +39,21 @@ class ApiKeyRotateResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.rzp.credcase.apikey.v1.ApiKeyResponse old_key = 2;</code>
-     * @return \Rzp\Credcase\Apikey\V1\ApiKeyResponse
+     * @return \Rzp\Credcase\Apikey\V1\ApiKeyResponse|null
      */
     public function getOldKey()
     {
         return $this->old_key;
+    }
+
+    public function hasOldKey()
+    {
+        return isset($this->old_key);
+    }
+
+    public function clearOldKey()
+    {
+        unset($this->old_key);
     }
 
     /**
@@ -61,11 +71,21 @@ class ApiKeyRotateResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.rzp.credcase.apikey.v1.ApiKeyCreateResponse new_key = 3;</code>
-     * @return \Rzp\Credcase\Apikey\V1\ApiKeyCreateResponse
+     * @return \Rzp\Credcase\Apikey\V1\ApiKeyCreateResponse|null
      */
     public function getNewKey()
     {
         return $this->new_key;
+    }
+
+    public function hasNewKey()
+    {
+        return isset($this->new_key);
+    }
+
+    public function clearNewKey()
+    {
+        unset($this->new_key);
     }
 
     /**

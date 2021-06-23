@@ -11,7 +11,7 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Generated from protobuf message <code>rzp.credcase.migrate.v1.RotateApiKeyRequest</code>
  */
-class RotateApiKeyRequest extends \Google\Protobuf\Internal\Message implements \JsonSerializable
+class RotateApiKeyRequest extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>.rzp.credcase.migrate.v1.ExpireApiKeyRequest expire_key = 1;</code>
@@ -39,11 +39,21 @@ class RotateApiKeyRequest extends \Google\Protobuf\Internal\Message implements \
 
     /**
      * Generated from protobuf field <code>.rzp.credcase.migrate.v1.ExpireApiKeyRequest expire_key = 1;</code>
-     * @return \Rzp\Credcase\Migrate\V1\ExpireApiKeyRequest
+     * @return \Rzp\Credcase\Migrate\V1\ExpireApiKeyRequest|null
      */
     public function getExpireKey()
     {
         return $this->expire_key;
+    }
+
+    public function hasExpireKey()
+    {
+        return isset($this->expire_key);
+    }
+
+    public function clearExpireKey()
+    {
+        unset($this->expire_key);
     }
 
     /**
@@ -61,11 +71,21 @@ class RotateApiKeyRequest extends \Google\Protobuf\Internal\Message implements \
 
     /**
      * Generated from protobuf field <code>.rzp.credcase.migrate.v1.MigrateApiKeyRequest create_key = 2;</code>
-     * @return \Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest
+     * @return \Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest|null
      */
     public function getCreateKey()
     {
         return $this->create_key;
+    }
+
+    public function hasCreateKey()
+    {
+        return isset($this->create_key);
+    }
+
+    public function clearCreateKey()
+    {
+        unset($this->create_key);
     }
 
     /**
@@ -81,9 +101,5 @@ class RotateApiKeyRequest extends \Google\Protobuf\Internal\Message implements \
         return $this;
     }
 
-    public function jsonSerialize()
-    {
-        return get_object_vars($this);
-    }
 }
 

@@ -38,9 +38,13 @@ class IdentifierListRequest extends \Google\Protobuf\Internal\Message
      */
     protected $mode = 0;
     /**
-     * Generated from protobuf field <code>.rzp.credcase.common.external_entity.v1.ExternalEntity external_entity = 14;</code>
+     * Generated from protobuf field <code>string owner_id = 14;</code>
      */
-    protected $external_entity = null;
+    protected $owner_id = '';
+    /**
+     * Generated from protobuf field <code>string owner_type = 15;</code>
+     */
+    protected $owner_type = '';
 
     /**
      * Constructor.
@@ -55,7 +59,8 @@ class IdentifierListRequest extends \Google\Protobuf\Internal\Message
      *           extra
      *     @type string $domain
      *     @type int $mode
-     *     @type \Rzp\Credcase\Common\External_entity\V1\ExternalEntity $external_entity
+     *     @type string $owner_id
+     *     @type string $owner_type
      * }
      */
     public function __construct($data = NULL) {
@@ -182,23 +187,45 @@ class IdentifierListRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.rzp.credcase.common.external_entity.v1.ExternalEntity external_entity = 14;</code>
-     * @return \Rzp\Credcase\Common\External_entity\V1\ExternalEntity
+     * Generated from protobuf field <code>string owner_id = 14;</code>
+     * @return string
      */
-    public function getExternalEntity()
+    public function getOwnerId()
     {
-        return $this->external_entity;
+        return $this->owner_id;
     }
 
     /**
-     * Generated from protobuf field <code>.rzp.credcase.common.external_entity.v1.ExternalEntity external_entity = 14;</code>
-     * @param \Rzp\Credcase\Common\External_entity\V1\ExternalEntity $var
+     * Generated from protobuf field <code>string owner_id = 14;</code>
+     * @param string $var
      * @return $this
      */
-    public function setExternalEntity($var)
+    public function setOwnerId($var)
     {
-        GPBUtil::checkMessage($var, \Rzp\Credcase\Common\External_entity\V1\ExternalEntity::class);
-        $this->external_entity = $var;
+        GPBUtil::checkString($var, True);
+        $this->owner_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string owner_type = 15;</code>
+     * @return string
+     */
+    public function getOwnerType()
+    {
+        return $this->owner_type;
+    }
+
+    /**
+     * Generated from protobuf field <code>string owner_type = 15;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setOwnerType($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->owner_type = $var;
 
         return $this;
     }

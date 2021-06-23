@@ -15,41 +15,49 @@ class MigrateApi
           return;
         }
         \GPBMetadata\Common\Mode\V1\Mode::initOnce();
-        $pool->internalAddGeneratedFile(hex2bin(
-            "0acf070a2563726564636173652f6d6967726174652f76312f6d69677261" .
-            "74655f6170692e70726f746f1217727a702e63726564636173652e6d6967" .
-            "726174652e76312297010a144d6967726174654170694b65795265717565" .
-            "7374120a0a026964180120012809120e0a06736563726574180220012809" .
-            "12260a046d6f646518032001280e32182e727a702e636f6d6d6f6e2e6d6f" .
-            "64652e76312e4d6f646512130a0b6d65726368616e745f69641804200128" .
-            "0912120a0a637265617465645f617418052001280512120a0a6578706972" .
-            "65645f617418062001280522170a154d6967726174654170694b65795265" .
-            "73706f6e736522350a134578706972654170694b65795265717565737412" .
-            "0a0a02696418012001280912120a0a657870697265645f61741803200128" .
-            "0522160a144578706972654170694b6579526573706f6e7365229a010a13" .
-            "526f746174654170694b65795265717565737412400a0a6578706972655f" .
-            "6b657918012001280b322c2e727a702e63726564636173652e6d69677261" .
-            "74652e76312e4578706972654170694b65795265717565737412410a0a63" .
-            "72656174655f6b657918022001280b322d2e727a702e6372656463617365" .
-            "2e6d6967726174652e76312e4d6967726174654170694b65795265717565" .
-            "737422160a14526f746174654170694b6579526573706f6e736532d6020a" .
-            "0a4d696772617465415049126e0a0d4d6967726174654170694b6579122d" .
-            "2e727a702e63726564636173652e6d6967726174652e76312e4d69677261" .
-            "74654170694b6579526571756573741a2e2e727a702e6372656463617365" .
-            "2e6d6967726174652e76312e4d6967726174654170694b6579526573706f" .
-            "6e7365126b0a0c4578706972654170694b6579122c2e727a702e63726564" .
-            "636173652e6d6967726174652e76312e4578706972654170694b65795265" .
-            "71756573741a2d2e727a702e63726564636173652e6d6967726174652e76" .
-            "312e4578706972654170694b6579526573706f6e7365126b0a0c526f7461" .
-            "74654170694b6579122c2e727a702e63726564636173652e6d6967726174" .
-            "652e76312e526f746174654170694b6579526571756573741a2d2e727a70" .
-            "2e63726564636173652e6d6967726174652e76312e526f74617465417069" .
-            "4b6579526573706f6e736542750a1b636f6d2e727a702e63726564636173" .
-            "652e6d6967726174652e7631420f4d69677261746541706950726f746f50" .
-            "015a096d6967726174657631a2020352434daa0217527a702e4372656463" .
-            "6173652e4d6967726174652e5631ca0217527a705c43726564636173655c" .
-            "4d6967726174655c5631620670726f746f33"
-        ), true);
+        $pool->internalAddGeneratedFile(
+            '
+»
+%credcase/migrate/v1/migrate_api.protorzp.credcase.migrate.v1"ó
+MigrateApiKeyRequest
+
+id (	
+secret (	&
+mode (2.rzp.common.mode.v1.Mode
+merchant_id (	
+
+created_at (
+
+expired_at (
+role_ids (	
+domain (	
+
+owner_type	 (	
+owner_id
+ (	
+
+role_names (	"
+MigrateApiKeyResponse"E
+ExpireApiKeyRequest
+
+id (	
+
+expired_at (
+domain (	"
+ExpireApiKeyResponse"š
+RotateApiKeyRequest@
+
+expire_key (2,.rzp.credcase.migrate.v1.ExpireApiKeyRequestA
+
+create_key (2-.rzp.credcase.migrate.v1.MigrateApiKeyRequest"
+RotateApiKeyResponse2Ö
+
+MigrateAPIn
+MigrateApiKey-.rzp.credcase.migrate.v1.MigrateApiKeyRequest..rzp.credcase.migrate.v1.MigrateApiKeyResponsek
+ExpireApiKey,.rzp.credcase.migrate.v1.ExpireApiKeyRequest-.rzp.credcase.migrate.v1.ExpireApiKeyResponsek
+RotateApiKey,.rzp.credcase.migrate.v1.RotateApiKeyRequest-.rzp.credcase.migrate.v1.RotateApiKeyResponseBu
+com.rzp.credcase.migrate.v1BMigrateApiProtoPZ	migratev1¢RCMªRzp.Credcase.Migrate.V1ÊRzp\\Credcase\\Migrate\\V1bproto3'
+        , true);
 
         static::$is_initialized = true;
     }

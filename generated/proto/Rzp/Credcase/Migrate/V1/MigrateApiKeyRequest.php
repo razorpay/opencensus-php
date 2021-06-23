@@ -11,7 +11,7 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Generated from protobuf message <code>rzp.credcase.migrate.v1.MigrateApiKeyRequest</code>
  */
-class MigrateApiKeyRequest extends \Google\Protobuf\Internal\Message implements \JsonSerializable
+class MigrateApiKeyRequest extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>string id = 1;</code>
@@ -26,6 +26,8 @@ class MigrateApiKeyRequest extends \Google\Protobuf\Internal\Message implements 
      */
     protected $mode = 0;
     /**
+     *deprecated
+     *
      * Generated from protobuf field <code>string merchant_id = 4;</code>
      */
     protected $merchant_id = '';
@@ -37,6 +39,26 @@ class MigrateApiKeyRequest extends \Google\Protobuf\Internal\Message implements 
      * Generated from protobuf field <code>int32 expired_at = 6;</code>
      */
     protected $expired_at = 0;
+    /**
+     * Generated from protobuf field <code>repeated string role_ids = 7;</code>
+     */
+    private $role_ids;
+    /**
+     * Generated from protobuf field <code>string domain = 8;</code>
+     */
+    protected $domain = '';
+    /**
+     * Generated from protobuf field <code>string owner_type = 9;</code>
+     */
+    protected $owner_type = '';
+    /**
+     * Generated from protobuf field <code>string owner_id = 10;</code>
+     */
+    protected $owner_id = '';
+    /**
+     * Generated from protobuf field <code>repeated string role_names = 11;</code>
+     */
+    private $role_names;
 
     /**
      * Constructor.
@@ -48,8 +70,14 @@ class MigrateApiKeyRequest extends \Google\Protobuf\Internal\Message implements 
      *     @type string $secret
      *     @type int $mode
      *     @type string $merchant_id
+     *          deprecated
      *     @type int $created_at
      *     @type int $expired_at
+     *     @type string[]|\Google\Protobuf\Internal\RepeatedField $role_ids
+     *     @type string $domain
+     *     @type string $owner_type
+     *     @type string $owner_id
+     *     @type string[]|\Google\Protobuf\Internal\RepeatedField $role_names
      * }
      */
     public function __construct($data = NULL) {
@@ -124,6 +152,8 @@ class MigrateApiKeyRequest extends \Google\Protobuf\Internal\Message implements 
     }
 
     /**
+     *deprecated
+     *
      * Generated from protobuf field <code>string merchant_id = 4;</code>
      * @return string
      */
@@ -133,6 +163,8 @@ class MigrateApiKeyRequest extends \Google\Protobuf\Internal\Message implements 
     }
 
     /**
+     *deprecated
+     *
      * Generated from protobuf field <code>string merchant_id = 4;</code>
      * @param string $var
      * @return $this
@@ -189,9 +221,115 @@ class MigrateApiKeyRequest extends \Google\Protobuf\Internal\Message implements 
         return $this;
     }
 
-    public function jsonSerialize()
+    /**
+     * Generated from protobuf field <code>repeated string role_ids = 7;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
+     */
+    public function getRoleIds()
     {
-        return get_object_vars($this);
+        return $this->role_ids;
     }
+
+    /**
+     * Generated from protobuf field <code>repeated string role_ids = 7;</code>
+     * @param string[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
+     */
+    public function setRoleIds($var)
+    {
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->role_ids = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string domain = 8;</code>
+     * @return string
+     */
+    public function getDomain()
+    {
+        return $this->domain;
+    }
+
+    /**
+     * Generated from protobuf field <code>string domain = 8;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setDomain($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->domain = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string owner_type = 9;</code>
+     * @return string
+     */
+    public function getOwnerType()
+    {
+        return $this->owner_type;
+    }
+
+    /**
+     * Generated from protobuf field <code>string owner_type = 9;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setOwnerType($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->owner_type = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string owner_id = 10;</code>
+     * @return string
+     */
+    public function getOwnerId()
+    {
+        return $this->owner_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string owner_id = 10;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setOwnerId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->owner_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>repeated string role_names = 11;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
+     */
+    public function getRoleNames()
+    {
+        return $this->role_names;
+    }
+
+    /**
+     * Generated from protobuf field <code>repeated string role_names = 11;</code>
+     * @param string[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
+     */
+    public function setRoleNames($var)
+    {
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->role_names = $arr;
+
+        return $this;
+    }
+
 }
 
