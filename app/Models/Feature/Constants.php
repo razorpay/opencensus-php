@@ -166,6 +166,7 @@ class Constants
     const COVID                           = 'covid';
     const SR_SENSITIVE                    = 'sr_sensitive';
     const RAAS                            = 'raas';
+    const SKIP_NOTES_MERGING              = 'skip_notes_merging';
 
     const PAYMENT_STATUS_AGGREGATE        = 'payment_status_aggregate';
     const VISA_SAFE_CLICK                 = 'vsc_authorization';
@@ -928,6 +929,7 @@ class Constants
         self::COVID                           => true,
         self::SR_SENSITIVE                    => true,
         self::RAAS                            => true,
+        self::SKIP_NOTES_MERGING              => true,
         self::PAYMENTLINKS_V2                 => true,
         self::RECURRING_DEBIT_UMRN            => true,
         self::NACH_FORM_DIRECT_DOWNLOAD       => true,
@@ -1357,6 +1359,11 @@ class Constants
         self::RAAS => [
             'feature'       => self::RAAS,
             'display_name'  => 'Optimizer',
+            'documentation' => '',
+        ],
+        self::SKIP_NOTES_MERGING => [
+            'feature'       => self::SKIP_NOTES_MERGING,
+            'display_name'  => 'Skip notes merging',
             'documentation' => '',
         ],
         self::RX_SHOW_PAYOUT_SOURCE => [

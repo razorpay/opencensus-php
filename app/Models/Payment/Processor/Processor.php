@@ -1615,7 +1615,7 @@ class Processor
         }
 
         $cpsEnabledMethods = [
-            Payment\Method::CARD, Payment\Method::NETBANKING, Payment\Method::EMI, 
+            Payment\Method::CARD, Payment\Method::NETBANKING, Payment\Method::EMI,
             Payment\Method::EMANDATE, Payment\Method::CARDLESS_EMI, Payment\Method::UPI
         ];
 
@@ -1692,7 +1692,7 @@ class Processor
         if ($payment->getMethod() !== Payment\Method::UPI)
         {
             return false;
-        }        
+        }
 
         // Check if the Upi Payment Service is enabled in config
         if ($this->isUpiPaymentServiceEnabled() === false)
@@ -1701,7 +1701,7 @@ class Processor
         }
 
         // Service does not support Bharat QR and UPI QR.
-        if (($payment->isBharatQr() === true) or 
+        if (($payment->isBharatQr() === true) or
             ($payment->isUpiQr() === true))
         {
             return;
@@ -1862,8 +1862,8 @@ class Processor
             case 'upips':
 
                 $payment->enableUpiPaymentService();
-    
-                break;    
+
+                break;
             default:
                 $payment->disableCpsRoute();
         }
@@ -3037,14 +3037,14 @@ class Processor
     {
         /**
          * We check if the current request is to be routed through UPI payments service,
-         * We set `cps_route` as 4 for gateways to be processed through service. The 
+         * We set `cps_route` as 4 for gateways to be processed through service. The
          * flag is set based on config.
         */
         $cpsRoute = $input[E::PAYMENT][Payment\Entity::CPS_ROUTE]?? null;
 
         return ($cpsRoute === Payment\Entity::UPI_PAYMENT_SERVICE);
     }
-    
+
     protected function persistCardDetails($gatewayName, $action, &$input)
     {
         $action = snake_case($action);
@@ -3457,21 +3457,28 @@ class Processor
 
         $orderNotes = $this->order->getNotes()->toArray();
 
-        $paymentNotes = $payment->getNotes()->toArray();
+        $merchant = $payment->merchant;
 
-        $notes = $orderNotes + $paymentNotes;
+        if ($merchant->isFeatureEnabled(Feature::SKIP_NOTES_MERGING) === false)
+        {
+            $paymentNotes = $payment->getNotes()->toArray();
 
-        // copying order notes in payment notes for all payments
-        $payment->setNotes($notes);
+            $notes = $orderNotes + $paymentNotes;
 
-        $this->trace->info(
-            TraceCode::SMART_ROUTING_NOTES_PROCESSING,
-            [
-                'notes'               => $notes,
-                'payment'             => $payment,
-                'order_notes'         => $orderNotes,
-                'payments_notes'      => $paymentNotes,
-            ]);
+            // copying order notes in payment notes for all payments
+            $payment->setNotes($notes);
+
+            $this->trace->info(
+                TraceCode::SMART_ROUTING_NOTES_PROCESSING,
+                [
+                    'payment'               => $payment,
+                    'merchant'              => $merchant,
+                    'final_notes_array'     => $notes,
+                    'order_notes_array'     => $orderNotes,
+                    'payments_notes_array'  => $paymentNotes,
+                ]);
+
+        }
 
         $payment->setIntegrationMetadataUsingNotes($orderNotes);
     }

@@ -4538,4 +4538,30 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($payment['notes'][1234],'op2');
 
     }
+
+    public function testOrderNotesSkippedInPaymentNotes()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->fixtures->merchant->addFeatures(['skip_notes_merging']);
+
+        $order = $this->createOrder(['notes' => ['optimizer_identifier_1' => 'op1', 1234 => 'op2']]);
+
+        $payment['amount'] = 50000;
+
+        $payment['order_id'] = $order['id'];
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->doAuthPayment($payment);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals($order['notes']['optimizer_identifier_1'],'op1');
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+
+        //checking payment notes does not contain optimizer_identifier_1
+        $this->assertNotContains('optimizer_identifier_1', $payment['notes']);
+    }
 }
