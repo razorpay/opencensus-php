@@ -2,8 +2,9 @@
 if (typeof Sentry !== 'undefined') {
   Sentry.onLoad(function () {
     Sentry.init({
-      environment: 'prod',
+      environment: window.APP_ENV,
       release: __VERSION__,
+      dsn: window.SENTRY_DSN,
     });
   });
 }

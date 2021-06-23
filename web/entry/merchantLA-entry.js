@@ -4,9 +4,9 @@ function MerchantLAEntry() {
     if (typeof Sentry !== 'undefined') {
       Sentry.onLoad(() => {
         Sentry.init({
+          release: __VERSION__,
           dsn: window.SENTRY_DSN,
           integrations: [new Sentry.Integrations.BrowserTracing()],
-          tracesSampleRate: 1.0,
           environment: window.APP_ENV,
           beforeSend: (event, hint) => {
             if (

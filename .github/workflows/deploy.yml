@@ -38,7 +38,27 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_IO_AUTH_TOKEN }}
           SENTRY_ORG: rzp
           SENTRY_PROJECT: dashboard
-        run: sentry-cli releases files ${{ github.event.deployment.id }} upload-sourcemaps ./public/dist --log-level=info
+        run: |
+          # Create a new release
+          sentry-cli releases new ${{ github.event.deployment.ref }}
+
+          # Upload sourcemaps
+          sentry-cli releases files ${{ github.event.deployment.ref }} \
+            upload-sourcemaps ./public/dist \
+            --log-level=info \
+            --url-prefix=~/dashboard/dist/
+            --ignore js/pokedex js/razorx js/merchantTnc js/newAuth
+
+          # Commit Integration
+          sentry-cli releases set-commits ${{ github.event.deployment.ref }} \
+            --commit "razorpay/dashboard@${{ github.event.deployment.ref }}"
+
+          # Finalize the release
+          sentry-cli releases finalize ${{ github.event.deployment.ref }}
+
+          # Associate deploy with release
+          sentry-cli releases deploys ${{ github.event.deployment.ref }} \
+            new -e ${{ github.event.deployment.environment }}
 
       - name: Remove Sourcemap Files
         if: ${{ github.event.deployment.environment == 'prod' }}
