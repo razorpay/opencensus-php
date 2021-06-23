@@ -329,7 +329,14 @@
         // Events on signup and signin are required to be sent to Website project(Segment).
         // isAuthPage is set to true only by signup/signin/forgot password/2FA pages. (excludes all /app pages).
         // if isAuthPage is true, send to website project or else dashboard project.
-        analytics.load(window.WEBSITE_SEGMENT_API_KEY);
+
+        //when X loads the dashboard for activation in an iframe, we pass merchant=x in queryParams
+        //if current URL matches X params, send events to x-website project(Segment)
+        if(window.location.href.includes('merchant=x')) {
+            analytics.load(window.X_WEBSITE_SEGMENT_API_KEY);
+        } else {
+            analytics.load(window.WEBSITE_SEGMENT_API_KEY);
+        }
         analytics.page();
         }}();
     }

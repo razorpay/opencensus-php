@@ -3,6 +3,7 @@
     window.LUMBERJACK_API_URL = "{{ env('LUMBERJACK_API_URL') }}";
     window.SEGMENT_API_KEY = "{{ env('SEGMENT_API_KEY') }}";
     window.WEBSITE_SEGMENT_API_KEY = "{{ env('WEBSITE_SEGMENT_API_KEY') }}";
+    window.X_WEBSITE_SEGMENT_API_KEY = "{{ env('X_WEBSITE_SEGMENT_API_KEY') }}";
     window.SHIELD_STAGE = "{{ env('SHIELD_STAGE') }}";
     window.cdnDashboardUrl = "{{ config('app.cdn_dashboard_url') }}";
     window.OAUTH_CLIENT_ID = "{{ env('MERCHANT_OAUTH_CLIENT_ID') }}";
