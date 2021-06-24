@@ -145,7 +145,7 @@ class Core extends Base\Core
         }
         else
         {
-            $localFilePath = $this->generator->generateQrCodeImage($qrCode);
+            $localFilePath = $this->generator->generateBharatQrCodeImage($qrCode);
         }
 
         $ext = Constants::QR_CODE_EXTENSION;

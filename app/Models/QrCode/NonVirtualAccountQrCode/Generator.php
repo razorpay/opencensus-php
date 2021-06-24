@@ -258,6 +258,51 @@ class Generator extends QrCode\Generator
         return $localFilePath;
     }
 
+    public function generateBharatQrCodeImage($qrCode)
+    {
+        $renderer = new Renderer\Image\Png;
+
+        $renderer->setMargin(Constants::MARGIN);
+
+        $renderer->setHeight(Constants::QR_CODE_HEIGHT);
+
+        $renderer->setWidth(Constants::QR_CODE_WIDTH);
+
+        $writer = new Writer($renderer);
+
+        $localFilePath = $this->getLocalSaveDir() . '/' . $qrCode->getId() . '.' . Constants::QR_CODE_EXTENSION;
+
+        $qrCodeString = $writer->writeString($qrCode->getQrString());
+
+        $logoImage = imagecreatefromjpeg(public_path() . '/img/qr.jpg');
+
+        $qrCodeImage = imagecreatefromstring($qrCodeString);
+
+        if ($qrCode->getId() !== NonVAQrEntity::SHARED_ID)
+        {
+            $color = imagecolorallocate($logoImage, 4, 9, 63);
+
+            $ypos = Constants::QR_V2_BHARAT_QR_NAME_YPOS;
+
+            $this->alignCentre($qrCodeImage, $this->merchant->getName(), $color, 'Mulish-ExtraBold.ttf', $ypos, 10, 30);
+
+            $this->alignCentre($qrCodeImage, $qrCode->getDescription(), $color, 'Mulish-SemiBold.ttf', $ypos, 8, 50);
+        }
+        imagecopymerge($logoImage, $qrCodeImage,
+                       Constants::QR_DEST_X, Constants::QR_DEST_Y,
+                       Constants::SORCE_X, Constants::SORCE_Y,
+                       Constants::QR_CODE_WIDTH, Constants::QR_CODE_HEIGHT,
+                       Constants::OPACITY);
+
+        imagejpeg($logoImage, $localFilePath);
+
+        imagedestroy($logoImage);
+
+        imagedestroy($qrCodeImage);
+
+        return $localFilePath;
+    }
+
     private function imagecopymerge_alpha($dst_im, $src_im, $dst_x, $dst_y, $src_x, $src_y, $src_w, $src_h, $pct)
     {
         $cut = imagecreatetruecolor($src_w, $src_h);

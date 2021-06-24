@@ -22,7 +22,7 @@ use RZP\Models\BharatQr\Constants as BQRConstants;
 class Generator extends Base\Core
 {
 
-    public function generateQrCodeImage($qrCode)
+    public function generateBharatQrCodeImage($qrCode)
     {
         $renderer = new Renderer\Image\Png;
 

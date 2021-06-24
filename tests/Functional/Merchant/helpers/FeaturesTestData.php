@@ -671,6 +671,11 @@ return [
                         'display_name' => 'QR codes'
                     ],
                     [
+                        'feature'      => 'bharat_qr',
+                        'value'        => false,
+                        'display_name' => 'Bharat QR'
+                    ],
+                    [
                         'feature'      => 'upi_transfer_tr',
                         'value'        => false,
                         'display_name' => 'UPI transfer tr webhook'

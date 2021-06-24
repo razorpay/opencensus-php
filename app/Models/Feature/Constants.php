@@ -1110,6 +1110,11 @@ class Constants
             'display_name'  => 'QR codes',
             'documentation' => 'qr-codes',
         ],
+        self::BHARAT_QR => [
+            'feature'       => self::BHARAT_QR,
+            'display_name'  => 'Bharat QR',
+            'documentation' => 'qr-codes-bqr',
+        ],
         self::UPI_TRANSFER_TR => [
             'feature'       => self::UPI_TRANSFER_TR,
             'display_name'  => 'UPI transfer tr webhook',

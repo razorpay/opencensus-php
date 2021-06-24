@@ -12,14 +12,14 @@ class Constants
     // TODO: Find out what should
     // be the best size
     const QR_CODE_WIDTH         = 220;
-    const QR_CODE_HEIGHT        = 300;
+    const QR_CODE_HEIGHT        = 320;
     const UPI_QR_CODE_WIDTH     = 240;
     const UPI_QR_CODE_HEIGHT    = 240;
 
     const UPI_QR_DEST_X         = 100;
     const UPI_QR_DEST_Y         = 180;
     const QR_DEST_X             = 30;
-    const QR_DEST_Y             = 200;
+    const QR_DEST_Y             = 180;
     const SORCE_X               = 0;
     const SORCE_Y               = 0;
     const MARGIN                = 0;
@@ -49,7 +49,8 @@ class Constants
     const QR_V2_UPI_QR_DEST_X      = 146;
     const QR_V2_UPI_QR_DEST_Y      = 658;
 
-    const QR_V2_UPI_QR_NAME_YPOS = 1350;
+    const QR_V2_UPI_QR_NAME_YPOS     = 1350;
+    const QR_V2_BHARAT_QR_NAME_YPOS  = 280;
 
     const QR_CODE_V2_TR_SUFFIX = 'qrv2';
 
