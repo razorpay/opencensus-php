@@ -4224,6 +4224,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SELF_SERVE_CRON                       = 'SELF_SERVE_CRON';
     const SELF_SERVE_CRON_FAILURE               = 'SELF_SERVE_CRON_FAILURE';
     const SELF_SERVE_ESCALATION_FAILURE         = 'SELF_SERVE_ESCALATION_FAILURE';
+    const SELF_SERVE_ESCALATION_SUCCESS         = 'SELF_SERVE_ESCALATION_SUCCESS';
 
     //Merchant Onboarding Escalations
     const ESCALATION_CRON_TRACE                 = 'ESCALATION_CRON_TRACE';

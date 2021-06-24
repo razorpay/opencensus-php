@@ -978,7 +978,8 @@ class Core extends Base\Core
 
         $eventAttributes = [
             'dedupe'                 => true,
-            DeDupe\Constants::ACTION => $action
+            DeDupe\Constants::ACTION => $action,
+            Detail\Entity::ACTIVATION_FORM_MILESTONE => $merchantDetails->getActivationFormMilestone()
         ];
 
         $this->app['diag']->trackOnboardingEvent(EventCode::MERCHANT_DEDUPE, $merchant, null, $eventAttributes);

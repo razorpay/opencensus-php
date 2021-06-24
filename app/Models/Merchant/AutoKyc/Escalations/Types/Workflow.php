@@ -4,16 +4,15 @@
 namespace RZP\Models\Merchant\AutoKyc\Escalations\Types;
 
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Workflow\Action\MakerType;
+use RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Models\Merchant\AutoKyc\Escalations\Constants;
 use RZP\Models\Merchant\AutoKyc\Escalations\Entity;
-use RZP\Models\Merchant\Detail\BusinessType;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
-use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
-use RZP\Models\Merchant\Detail\Status;
-use RZP\Models\Merchant\Escalations as NewEscalations;
-use RZP\Models\Workflow\Action\MakerType;
+use RZP\Models\Workflow\Action\Entity as WfActionEntity;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 
 class Workflow extends BaseEscalationType
 {
@@ -21,23 +20,47 @@ class Workflow extends BaseEscalationType
     {
         foreach ($merchants as $merchant)
         {
-            $entity = $this->triggerWorkflow($merchant);
+            try
+            {
+                $entity = $this->triggerWorkflow($merchant);
+                $workflowId = null;
 
-            $escalation = (new Entity)->build([
-                Entity::MERCHANT_ID         => $merchant->getId(),
-                Entity::ESCALATION_TYPE     => $type,
-                Entity::ESCALATION_METHOD   => Constants::WORKFLOW,
-                Entity::ESCALATION_LEVEL    => $level,
-                Entity::WORKFLOW_ID         => $entity['entity_id']
-            ]);
-            $this->repo->merchant_auto_kyc_escalations->saveOrFail($escalation);
+                if(empty($entity) === false)
+                {
+                    $workflowId = $entity['id'];
+                    WfActionEntity::verifyIdAndSilentlyStripSign($workflowId);
+                }
+
+                $escalation = (new Entity)->build([
+                    Entity::MERCHANT_ID         => $merchant->getId(),
+                    Entity::ESCALATION_TYPE     => $type,
+                    Entity::ESCALATION_METHOD   => Constants::WORKFLOW,
+                    Entity::ESCALATION_LEVEL    => $level,
+                    Entity::WORKFLOW_ID         => $workflowId
+                ]);
+                $this->repo->merchant_auto_kyc_escalations->saveOrFail($escalation);
+
+                $this->app['trace']->info(TraceCode::SELF_SERVE_ESCALATION_SUCCESS, [
+                    'type'          => $type,
+                    'level'         => $level,
+                    'merchant_id'   => $merchant->getId()
+                ]);
+            }
+            catch (\Exception $e)
+            {
+                $this->app['trace']->info(TraceCode::SELF_SERVE_ESCALATION_FAILURE, [
+                    'type'          => $type,
+                    'level'         => $level,
+                    'reason'        => 'something went wrong while handling escalation',
+                    'trace'         => $e->getMessage(),
+                    'merchant_id'   => $merchant->getId()
+                ]);
+            }
         }
     }
 
     private function triggerWorkflow($merchant)
     {
-        $input = [DetailEntity::ACTIVATION_STATUS => Status::ACTIVATED];
-
         $permissionName = Permission\Name::AUTO_KYC_SOFT_LIMIT_BREACH;
 
         $tags = [];
@@ -60,6 +83,16 @@ class Workflow extends BaseEscalationType
             $tags[] = '15k_transacted_before_l2';
         }
 
+        $actions = (new ActionCore)->fetchOpenActionOnEntityOperationWithPermissionList(
+            $merchant->getId(), 'merchant_detail', [$permissionName]);
+        $actions = $actions->toArray();
+
+        if(empty($actions) === false)
+        {
+            // If a workflow is already created, then do not create the same workflow;
+            return $actions[0];
+        }
+
         // The reason routeName and Controller is set here because
         // the workflow being triggered is associated with the different route.
         $this->app['workflow']
@@ -71,10 +104,13 @@ class Workflow extends BaseEscalationType
             ->setMakerFromAuth(false)
             ->setTags($tags)
             ->setRouteParams([DetailEntity::ID => $merchant->getId()])
-            ->setInput($input);
+            ->setInput([])
+            ->setEntity($merchant->merchantDetail->getEntity())
+            ->setOriginal([])
+            ->setDirty($merchant->merchantDetail);
         try
         {
-            (new DetailCore)->updateActivationStatus($merchant, $input, $merchant);
+            $this->app['workflow']->handle();
         }
         catch(Exception\EarlyWorkflowResponse $e)
         {
