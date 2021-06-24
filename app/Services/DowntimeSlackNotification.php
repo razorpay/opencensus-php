@@ -29,7 +29,7 @@ class DowntimeSlackNotification
 
     private $MERCHANT_DETAILS_TEMPLATE = 'Merchant Name: $merchantName'."\n".'Merchant Id : $merchantId';
 
-    private $RESOLUTION_TEMPLATE = 'End Time: $endTime'."\n".'Duration : $duration';
+    private $RESOLUTION_TEMPLATE = 'End Time: $endTime'."\n".'Duration : $duration minutes';
 
     public function __construct($app)
     {
@@ -311,7 +311,7 @@ class DowntimeSlackNotification
 
         if(isset($downtime['sr']) === true)
         {
-            $heading = $heading. " SR : ".$downtime['sr'];
+            $heading = $heading. " SR : ".$downtime['sr']."%";
         }
 
         return $heading;
