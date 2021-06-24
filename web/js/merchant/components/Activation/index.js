@@ -1235,7 +1235,7 @@ export default class ActivationWizard extends React.Component {
   };
 
   getSingleSubcategory = (fieldValue) => {
-    const subcategories = this.props.categories[fieldValue].subcategories;
+    const subcategories = this.props.categories[fieldValue]?.subcategories;
     if (!subcategories) {
       return null;
     }

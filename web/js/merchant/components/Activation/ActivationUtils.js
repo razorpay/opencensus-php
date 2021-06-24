@@ -156,7 +156,7 @@ function hasSelectedBlacklistedCategory(activation) {
   const categories = props.categories;
   if (isPresent(categories)) {
     const selectedCategory = state.dirty.business_category || props.data.business_category;
-    const subcategories = selectedCategory && categories[selectedCategory]['subcategories'];
+    const subcategories = selectedCategory && categories[selectedCategory]?.subcategories;
     if (isPresent(subcategories)) {
       const selectedSubcategory =
         state.dirty.business_subcategory || props.data.business_subcategory;
@@ -289,7 +289,7 @@ function showSubcategory(activation) {
 
   if (businessCategory) {
     showSubcategory = businessCategory !== 'others';
-    let subcategories = props.categories[businessCategory].subcategories;
+    let subcategories = props.categories[businessCategory]?.subcategories;
     if (Object.keys(subcategories).length === 1 && !nc_flow) {
       showSubcategory = false;
     }
