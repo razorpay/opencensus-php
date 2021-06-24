@@ -163,7 +163,7 @@ class Validator extends \RZP\Base\Validator
     {
         if (in_array(strtolower($emailType), self::VALID_EMAIL_TYPES, true) === false)
         {
-            throw new Exception\BadRequestValidationFailureException('email type is not mentioned or is incorret');
+            throw new Exception\BadRequestValidationFailureException('email type is not mentioned or is incorrect');
         }
 
         $fn = 'validate' . studly_case($emailType) . 'EmailData';
@@ -215,6 +215,29 @@ class Validator extends \RZP\Base\Validator
         $subMerchant = (new Merchant\Repository())->findOrFailPublic($accountId);
 
         $this->validatePartnerSubMerchantMapping($partner, $subMerchant);
+    }
+
+    /**
+     * This method validates if webhook events are present in input and if input is empty
+     *
+     * @param array|null $input
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateOnboardingWkInput(array $input)
+    {
+        if (empty($input))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "input cannot be empty"
+            );
+        }
+        else if (((isset($input[Service::EVENTS]) === false) || sizeof($input[Service::EVENTS]) === 0))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "no webhook events provided in the input"
+            );
+        }
     }
 
     /**

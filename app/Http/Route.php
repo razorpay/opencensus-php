@@ -10178,7 +10178,12 @@ class Route
         'get_stakeholder_documents_v2',
         'product_config_fetch_v2',
         'product_config_update_v2',
-        'product_config_create_v2'
+        'product_config_create_v2',
+        'onboarding_webhook_create',
+        'onboarding_webhook_fetch',
+        'onboarding_webhook_fetch_all',
+        'onboarding_webhook_update',
+        'onboarding_webhook_delete',
     ];
 
     // Routes for header X_DASHBOARD_USER_2FA_VERIFIED should be true

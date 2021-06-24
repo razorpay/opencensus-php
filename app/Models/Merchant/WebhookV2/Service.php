@@ -278,9 +278,18 @@ class Service extends Base\Service
         $this->traceOperationExit('delete', ['webhook_id' => $webhookId ?? '', AccountEntity::MERCHANT_ID => $merchantId]);
     }
 
+    /**
+     ** @param array|null $input
+     * @param string $accountId
+     *
+     * @return array
+     * @throws Exception\BadRequestException|Exception\BadRequestValidationFailureException
+     */
     public function createOnboardingWk(array $input, string $accountId)
     {
         $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
+
+        $this->validator->validateOnboardingWkInput($input);
 
         $this->convertEventsToAssocArray($input);
 
@@ -295,6 +304,13 @@ class Service extends Base\Service
         return $publicResponse;
     }
 
+    /**
+     * @param string $webhookId
+     * @param string $accountId
+     *
+     * @return array
+     * @throws Exception\BadRequestException|Exception\BadRequestValidationFailureException
+     */
     public function fetchOnboardingWk(string $webhookId, string $accountId)
     {
         $timeStarted = microtime(true);
@@ -315,6 +331,13 @@ class Service extends Base\Service
 
     }
 
+    /**
+     * @param array|null $input
+     * @param string $accountId
+     *
+     * @return array
+     * @throws Exception\BadRequestException|Exception\BadRequestValidationFailureException
+     */
     public function listOnboardingWk(array $input, string $accountId)
     {
         $timeStarted = microtime(true);
@@ -337,9 +360,19 @@ class Service extends Base\Service
         return $res;
     }
 
+    /**
+     * @param string $webhookId
+     * @param array|null $input
+     * @param string $accountId
+     *
+     * @return array
+     * @throws Exception\BadRequestException|Exception\BadRequestValidationFailureException
+     */
     public function updateOnboardingWk(string $webhookId, array $input, string $accountId)
     {
         $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
+
+        $this->validator->validateOnboardingWkInput($input);
 
         $this->convertEventsToAssocArray($input);
 
@@ -354,6 +387,13 @@ class Service extends Base\Service
         return $publicResponse;
     }
 
+    /**
+     * @param string $webhookId
+     * @param string $accountId
+     *
+     * @return void
+     * @throws Exception\BadRequestException
+     */
     public function deleteOnboardingWk(string $webhookId, string $accountId)
     {
         $this->validator->validateOnboardingWkAction($accountId, $this->merchant);

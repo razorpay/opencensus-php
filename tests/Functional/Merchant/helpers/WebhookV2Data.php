@@ -1310,4 +1310,26 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_MERCHANT_MAPPING_NOT_FOUND,
         ],
     ],
+
+    'testInvalidOnboardingWebhookInput' => [
+        'request' => [
+            'url' => '/accounts/{account_id}/webhooks',
+            'method' => 'POST',
+            'content' => array_merge($sampleApiWebhookRequestForOnboarding, ['owner_id' => 'submerchantXXX', 'events' => []]),
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "no webhook events provided in the input",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
+

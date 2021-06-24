@@ -481,7 +481,7 @@ class WebhookV2Test extends TestCase
         $this->ba->privateAuth($key);
 
         $testData = $this->testData['testCreateOnboardingWebhook'];
-        $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() .'/webhooks';
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/webhooks';
 
         $this->expectStorkServiceRequestForAction('createWebhookForOnboarding');
 
@@ -495,7 +495,7 @@ class WebhookV2Test extends TestCase
         $this->assertTrue($metricCaptured);
 
         $testData = $this->testData['testGetOnboardingWebhook'];
-        $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() . '/webhooks/' . $response['id'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/webhooks/' . $response['id'];
 
         $this->expectStorkServiceRequestForAction('getWebhookForOnboarding');
 
@@ -507,7 +507,7 @@ class WebhookV2Test extends TestCase
         $this->assertTrue($metricCaptured);
 
         $testData = $this->testData['testListOnboardingWebhook'];
-        $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() . '/webhooks?skip=0&count=25';
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/webhooks?skip=0&count=25';
 
         $this->expectStorkServiceRequestForAction('listWebhookForOnboarding');
 
@@ -533,7 +533,7 @@ class WebhookV2Test extends TestCase
         $this->ba->privateAuth($key);
 
         $testData = $this->testData['testCreateOnboardingWebhook'];
-        $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() .'/webhooks';
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/webhooks';
 
         $this->expectStorkServiceRequestForAction('createWebhookForOnboarding');
 
@@ -546,7 +546,7 @@ class WebhookV2Test extends TestCase
         $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_WEBHOOK_UPDATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
 
         $testData = $this->testData['testUpdateOnboardingWebhook'];
-        $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() . '/webhooks/' . $response['id'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/webhooks/' . $response['id'];
 
         $this->expectStorkServiceRequestForAction('updateWebhookForOnboarding');
 
@@ -569,7 +569,7 @@ class WebhookV2Test extends TestCase
         $this->ba->privateAuth($key);
 
         $testData = $this->testData['testCreateOnboardingWebhook'];
-        $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() .'/webhooks';
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/webhooks';
 
         $this->expectStorkServiceRequestForAction('createWebhookForOnboarding');
 
@@ -582,7 +582,7 @@ class WebhookV2Test extends TestCase
         $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_WEBHOOK_DELETE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
 
         $testData = $this->testData['testDeleteOnboardingWebhook'];
-        $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() . '/webhooks/' . $response['id'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/webhooks/' . $response['id'];
 
         $this->expectStorkServiceRequestForAction('deleteWebhookForOnboarding');
 
@@ -608,9 +608,36 @@ class WebhookV2Test extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/accounts/acc_'. $subMerchantId .'/webhooks';
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchantId .'/webhooks';
 
         // create a webhook for a sub-merchant unmapped to the partner
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testInvalidOnboardingWebhookInput()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+        $this->fixtures->merchant->activate($partner->getId());
+
+        $metricsMock = $this->createMetricsMock();
+        $this->createConfigForPartnerApp($app->getId());
+        list($subMerchant) = $this->createSubMerchant($partner, $app);
+
+        $key = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
+        $key = 'rzp_live_' . $key->getKey();
+
+        $this->ba->privateAuth($key);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/webhooks';
+
+        // create a webhook with empty events array
+        $this->runRequestResponseFlow($testData);
+
+        $testData['request']['content'] = [];
+        $testData['response']['content']['error']['description'] = "input cannot be empty";
+
+        // create a webhook with empty input
         $this->runRequestResponseFlow($testData);
     }
 
