@@ -292,8 +292,10 @@ class SupportBody extends Component {
             myRole="owner admin"
             additionalCondition={(user) =>
               user.isScheduleCallbackEnabled &&
-              scheduleCallbackReason !== 'NOT_FETCHED_YET' &&
-              scheduleCallConfig.reason !== 'NOT_APPLICABLE'
+              !(
+                scheduleCallbackReason === 'NOT_FETCHED_YET' ||
+                (scheduleCallbackReason === 'NOT_APPLICABLE' && !scheduleCallConfig.is_eligible)
+              )
             }
           >
             <li
