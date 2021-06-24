@@ -20,10 +20,10 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
 {
     const FILE_TYPE         = FileStore\Type::CITI_NACH_EARLY_DEBIT;
     const SUMMARY_FILE_TYPE = FileStore\Type::CITI_NACH_EARLY_DEBIT_SUMMARY;
-    const FILE_NAME         = 'citi/nach/ACH-DR-CITI-CITI999999-{$date}-MUT00010{$serial}-INP';
+    const FILE_NAME         = 'citi/nach/RAZORP_COLLECT_ACH-DR-CITI-CITI999999-{$date}-MUT00010{$serial}-INP';
 
     protected $userName    = 'CTRAZORMFS';
-    protected $productType = '10 ';
+    protected $productType = 'MUT';
 
     public function __construct()
     {
@@ -92,7 +92,7 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
         return $tokens;
     }
 
-    protected function getFileToWriteNameWithoutExt(array $data)
+    protected function getFileToWriteNameWithoutExt(array $data): string
     {
         $date = $this->getDate();
 

@@ -237,7 +237,7 @@ class NachCitiGatewayTest extends NachGatewayTest
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'txt',
-            'name'        => 'citi/nach/ACH-DR-CITI-CITI999999-12022020-MUT000100-INP_test',
+            'name'        => 'citi/nach/RAZORP_COLLECT_ACH-DR-CITI-CITI999999-12022020-MUT000100-INP_test',
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContentSummary, $summary);
@@ -263,7 +263,7 @@ class NachCitiGatewayTest extends NachGatewayTest
             'Sponsor Bank IFSC / MICR / IIN' => 'CITI000PIGW',
             'User Number' => 'NACH00000000013149',
             'Transaction Reference' => 'TESTMERCHA' . $response['razorpay_payment_id'],
-            'Product Type' => '10',
+            'Product Type' => 'MUT',
             'UMRN' => 'UTIB6000000005844847'
         ];
 

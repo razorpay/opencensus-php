@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Nach\Debit;
 
 use Mail;
 use Carbon\Carbon;
+
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -175,7 +176,7 @@ class PaperNachCiti extends Debit\Base
         }
     }
 
-    protected function formatDataForFile($tokens)
+    protected function formatDataForFile($tokens): array
     {
         $rows = [] ;
 
@@ -290,7 +291,7 @@ class PaperNachCiti extends Debit\Base
         Mail::queue($mailable);
     }
 
-    protected function getFileToWriteNameWithoutExt(array $data)
+    protected function getFileToWriteNameWithoutExt(array $data): string
     {
         $date = $this->getDate();
 
@@ -316,7 +317,7 @@ class PaperNachCiti extends Debit\Base
         return $fileName;
     }
 
-    protected function getFileHeader(string $key, array $fileData)
+    protected function getFileHeader(string $key, array $fileData): array
     {
         $rows = [];
 
