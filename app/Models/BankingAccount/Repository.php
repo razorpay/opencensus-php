@@ -9,8 +9,8 @@ use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
+use RZP\Models\BankingAccount\State as BankingAccountState;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
-use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {
@@ -467,6 +467,42 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function getCAArchivedCohortList(int $startTime, int $endTime)
+    {
+        $bankingAccountStateStatusColumn                    = $this->repo->banking_account_state->dbColumn(BankingAccountState\Entity::STATUS);
+        $bankingAccountStateCreatedAtColumn                 = $this->repo->banking_account_state->dbColumn(BankingAccountState\Entity::CREATED_AT);
+        $bankingAccountStateBankingAccountIdColumn          = $this->repo->banking_account_state->dbColumn(BankingAccountState\Entity::BANKING_ACCOUNT_ID);
+        $activationStatus                                   = $this->dbColumn(Entity::STATUS);
+        $accountTypeColumn                                  = $this->dbColumn(Entity::ACCOUNT_TYPE);
+        $idColumn                                           = $this->dbColumn(Entity::ID);
+
+        $selectAttr                 = [
+            $this->dbColumn(Entity::MERCHANT_ID),
+        ];
+
+        return $this->newQuery()
+            ->select($selectAttr)
+            ->join(Table::BANKING_ACCOUNT_STATE, $idColumn, '=', $bankingAccountStateBankingAccountIdColumn)
+            ->where($accountTypeColumn, '=', AccountType::CURRENT)
+            ->where($activationStatus, '=', Status::ARCHIVED)
+            ->where($bankingAccountStateStatusColumn, '=', Status::ARCHIVED)
+            ->whereBetween($bankingAccountStateCreatedAtColumn, [$startTime, $endTime])
+            ->groupBy(Entity::MERCHANT_ID)
+            ->get();
+    }
+
+    public function getStatusWithMerchantId(string $merchantId)
+    {
+        $activationStatus      = $this->dbColumn(Entity::STATUS);
+        $merchantIdColumn      = $this->dbColumn(Entity::MERCHANT_ID);
+
+        return $this->newQuery()
+                    ->select([$activationStatus])
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->get()
+                    ->pluck(Entity::STATUS);
+    }
+
     public function getBankingAccountWithBalanceViaAccountNumberAndMerchantId($accountNumber, $merchantId)
     {
         return $this->newQuery()
@@ -486,6 +522,30 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function getMerchantPocAndBeneficiaryEmail(string $merchantId)
+    {
+        $activationDetailsTableBankingAccountId = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::BANKING_ACCOUNT_ID);
+
+        $bankingAccountTableId = $this->dbColumn(Entity::ID);
+        $bankingAccountTableMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $selectAtr = [
+            $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::MERCHANT_POC_EMAIL),
+            $this->dbColumn(Entity::BENEFICIARY_EMAIL)
+        ];
+
+        $query = $this->newQuery()
+            ->select($selectAtr)
+            ->join(Table::BANKING_ACCOUNT_ACTIVATION_DETAIL, $bankingAccountTableId, '=', $activationDetailsTableBankingAccountId)
+            ->where($bankingAccountTableMerchantId, '=', $merchantId)
+            ->get();
+
+        return [
+            ActivationDetail\Entity::MERCHANT_POC_EMAIL => $query->pluck(ActivationDetail\Entity::MERCHANT_POC_EMAIL)->first(),
+            Entity::BENEFICIARY_EMAIL                   => $query->pluck(Entity::BENEFICIARY_EMAIL)->first()
+        ];
+    }
+  
     public function fetchMerchantsWithCaRblAccount(
         int $limit,
         int $skip,

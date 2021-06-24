@@ -20,11 +20,13 @@ class NpsClient extends Base\Service
 
         $startTimeStamp = Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
 
-        $cohorts = $this->repo->banking_account->getCAOnboardCohortList($startTimeStamp, $currentTimeStamp);
+        $cohortActivatedCA = $this->repo->banking_account->getCAOnboardCohortList($startTimeStamp, $currentTimeStamp)->toArray();
+
+        $cohortArchivedCA = $this->repo->banking_account->getCAArchivedCohortList($startTimeStamp, $currentTimeStamp)->toArray();
+
+        $cohorts = array_merge($cohortActivatedCA, $cohortArchivedCA);
 
         $this->trace->info(TraceCode::COHORT_ONBOARD_COUNT, ['Count' => count($cohorts)]);
-
-        $cohorts = $cohorts->toArray();
 
         return $cohorts;
     }

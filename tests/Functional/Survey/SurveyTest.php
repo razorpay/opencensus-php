@@ -727,7 +727,7 @@ class SurveyTest extends TestCase
             'pincode'               => '1',
             'bank_reference_number' => '',
             'account_ifsc'          => 'RATN0000156',
-            'balance_id'            => $balance['id'],
+            'balance_id'            => $balance['id']
         ]);
 
         $survey = $this->fixtures->on('live')->create('survey', [
@@ -741,7 +741,82 @@ class SurveyTest extends TestCase
         $this->ba->cronAuth('live');
 
         $this->startTest();
+    }
 
+    public function testSurveyOnCAOnboardedBeneficiaryEmail()
+    {
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        $bankingAccount = $this->fixtures->on('live')->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'yesbank',
+            'status'                => 'activated',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => $balance['id'],
+            'beneficiary_email'     => 'beneficiary@test.com'
+        ]);
+
+        $bankingAccountActivationDetails = $this->fixtures->on('live')->create('banking_account_activation_detail',[
+            'banking_account_id' => $bankingAccount['id'],
+            'merchant_poc_email'       => '']);
+
+        $survey = $this->fixtures->on('live')->create('survey', [
+            'id' => 'GLuIMZYR32kZiB',
+            'description' => 'RazorpayX survey',
+            'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
+            'survey_ttl' => 30,
+            'type'  => 'nps_csat',
+        ]);
+
+        $this->ba->cronAuth('live');
+
+        $this->startTest();
+
+        $surveyTrackerEntity = $this->getDbEntity('survey_tracker',['survey_id' => 'GLuIMZYR32kZiB'] , 'live' );
+
+        $this->assertEquals('beneficiary@test.com', $surveyTrackerEntity['survey_email']);
+    }
+
+    public function testSurveyOnCAOnboardingMerchantPocAndBeneficiary()
+    {
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        $bankingAccount = $this->fixtures->on('live')->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'yesbank',
+            'status'                => 'activated',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => $balance['id'],
+            'beneficiary_email'     => 'test1@razorpay.com'
+        ]);
+
+        $bankingAccountActivationDetails = $this->fixtures->on('live')->create('banking_account_activation_detail',[
+            'banking_account_id' => $bankingAccount['id'],
+            'merchant_poc_email'       => 'merchant.poc@gmail.com, test1@razorpay.com & test2@razorpay.com']);
+
+        $survey = $this->fixtures->on('live')->create('survey', [
+            'id' => 'GLuIMZYR32kZiB',
+            'description' => 'RazorpayX survey',
+            'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
+            'survey_ttl' => 30,
+            'type'  => 'nps_csat',
+        ]);
+
+        $this->ba->cronAuth('live');
+
+        $this->startTest();
+
+        $surveyTrackerEntity = $this->getDbEntity('survey_tracker',['survey_id' => $survey['id']] , 'live' );
+
+        $this->assertEquals('merchant.poc@gmail.com', $surveyTrackerEntity['survey_email']);
     }
 
     public function testSurveyOnCAWithAcrossSurveyCheckFailing()
@@ -1108,5 +1183,52 @@ class SurveyTest extends TestCase
         $this->assertEquals($tracker2['id'], $surveyTrackerEntity2['id']);
 
         $this->assertEquals($tracker3['id'], $surveyTrackerEntity3['id']);
+    }
+
+    public function testSurveyOnAccountArchived()
+    {
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        $bankingAccount = $this->fixtures->on('live')->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'yesbank',
+            'status'                => 'archived',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => $balance['id'],
+            'beneficiary_email'     => 'beneficiary@test.com'
+        ]);
+
+        $bankingAccountActivationDetails = $this->fixtures->on('live')->create('banking_account_activation_detail',[
+            'banking_account_id' => $bankingAccount['id'],
+            'merchant_poc_email'       => '']);
+
+        $statusCreatedAt = Carbon::now(Timezone::IST)->subHours(1)->getTimestamp();
+
+        $this->fixtures->on('live')->create('banking_account_state', [
+            'merchant_id'           => '10000000000000',
+            'banking_account_id'    => $bankingAccount['id'],
+            'status'                => 'archived',
+            'created_at'            => $statusCreatedAt
+        ]);
+
+        $survey = $this->fixtures->on('live')->create('survey', [
+            'id' => 'GLuIMZYR32kZiB',
+            'description' => 'RazorpayX survey',
+            'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
+            'survey_ttl' => 30,
+            'type'  => 'nps_csat',
+        ]);
+
+        $this->ba->cronAuth('live');
+
+        $this->startTest();
+
+        $surveyTrackerEntity = $this->getDbEntity('survey_tracker',['survey_id' => 'GLuIMZYR32kZiB'] , 'live' );
+
+        $this->assertEquals('beneficiary@test.com', $surveyTrackerEntity['survey_email']);
     }
 }

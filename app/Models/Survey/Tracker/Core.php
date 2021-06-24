@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Jobs\CohortDispatch;
+use RZP\Models\BankingAccount;
 use RZP\Services\HubspotClient;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
@@ -19,6 +20,7 @@ use RZP\Models\Survey\Entity as SurveyEntity;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Survey\Response\Entity as SurveyResponseEntity;
 use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
+use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 
 class Core extends Base\Core
 {
@@ -78,14 +80,63 @@ class Core extends Base\Core
 
         $merchantUsers = $this->getSurveyClient($type)->fetchMerchantUsers([$merchantId]);
 
+        $input = [];
+
+        if($survey[SurveyEntity::TYPE] === Entity::NPS_CSAT)
+        {
+           $input[Entity::ACCOUNT_STATUS] = $this->repo->banking_account->getStatusWithMerchantId($merchantId)->first();
+        }
+
         foreach ($merchantUsers as $merchantUser)
         {
             $user = $this->repo->user->findOrFailPublic($merchantUser[MerchantUserEntity::USER_ID]);
 
-            $this->dispatchForSurvey($user, $merchantId, $survey);
+            $input[Entity::USER_ID]      = $user[UserEntity::ID];
+            $input[Entity::MID]          = $merchantId;
+            $input[Entity::SURVEY_EMAIL] = $user[UserEntity::EMAIL];
+            $input[Entity::CONTACT_TYPE] = Entity::USER;
+
+            $this->dispatchForSurvey($input, $survey);
+        }
+
+        if($survey[SurveyEntity::TYPE] === Entity::NPS_CSAT)
+        {
+            $this->sendSurveyToMerchantPocAndBeneficiaryEmail($input, $survey);
         }
 
         return $merchantUsers->toArray();
+    }
+
+    public function sendSurveyToMerchantPocAndBeneficiaryEmail($input, SurveyEntity $survey)
+    {
+        $merchantId = $input[Entity::MID];
+
+        $emails = $this->repo->banking_account->getMerchantPocAndBeneficiaryEmail($merchantId);
+        $merchantPocEmail = $emails[ActivationDetail\Entity::MERCHANT_POC_EMAIL];
+        $beneficiaryEmail = $emails[BankingAccount\Entity::BENEFICIARY_EMAIL];
+
+        if(empty($merchantPocEmail) === false)
+        {
+            $merchantPocEmails = preg_split('/,|&| /',$merchantPocEmail,-1, PREG_SPLIT_NO_EMPTY );
+
+            foreach ($merchantPocEmails as $index => $email)
+            {
+                $input[Entity::USER_ID] = Entity::DUMMY_UID_FOR_MERCHANT_POC_MAILS.'_'.$index;
+                $input[Entity::SURVEY_EMAIL] = $email;
+                $input[Entity::CONTACT_TYPE] = Entity::MERCHANT_POC;
+
+                $this->dispatchForSurvey($input, $survey);
+            }
+        }
+
+        if(empty($beneficiaryEmail) === false)
+        {
+            $input[Entity::USER_ID] = Entity::DUMMY_UID_FOR_BENEFICIARY_MAILS;
+            $input[Entity::SURVEY_EMAIL] = $beneficiaryEmail;
+            $input[Entity::CONTACT_TYPE] = Entity::BENEFICIARY;
+
+            $this->dispatchForSurvey($input, $survey);
+        }
     }
 
     public function dispatchForSurveyWithUserId(string $userId, string $merchantId, string $surveyId)
@@ -94,29 +145,38 @@ class Core extends Base\Core
 
         $user = $this->repo->user->findOrFailPublic($userId);
 
-        $this->dispatchForSurvey($user, $merchantId, $survey);
+        $input = [
+            Entity::USER_ID => $user[UserEntity::ID],
+            Entity::MID     => $merchantId,
+            Entity::SURVEY_EMAIL => $user[UserEntity::EMAIL],
+            Entity::CONTACT_TYPE => Entity::USER
+        ];
+
+        $this->dispatchForSurvey($input, $survey);
     }
 
-    public function dispatchForSurvey(UserEntity $user, string $merchantId, SurveyEntity $survey)
+    public function dispatchForSurvey($input, SurveyEntity $survey)
     {
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
 
-        $userEmail = $user[UserEntity::EMAIL];
+        $email = $input[Entity::SURVEY_EMAIL];
+        $merchantId =$input[Entity::MID];
+        $uid = $input[Entity::USER_ID];
 
-        if((new PrecedenceMapper())->higherPrecedenceSurveyAlreadySent($userEmail, $survey[\RZP\Models\Survey\Entity::TYPE], $survey[\RZP\Models\Survey\Entity::SURVEY_TTL]))
+        if((new PrecedenceMapper())->higherPrecedenceSurveyAlreadySent($email, $survey[SurveyEntity::TYPE], $survey[\RZP\Models\Survey\Entity::SURVEY_TTL]))
         {
-            $this->trace->info(TraceCode::COHORT_EMAIL_ALREADY_SENT_FOR_HIGHER_PRECEDENCE_SURVEY, ['merchant_id' => $merchantId, 'user_id' => $user[UserEntity::ID], 'user_email' => $userEmail, 'survey_type' => $survey[\RZP\Models\Survey\Entity::TYPE]]);
+            $this->trace->info(TraceCode::COHORT_EMAIL_ALREADY_SENT_FOR_HIGHER_PRECEDENCE_SURVEY, ['merchant_id' => $merchantId, 'user_id' => $uid, 'contact_email' => $email, 'survey_type' => $survey[SurveyEntity::TYPE]]);
 
             return;
         }
         else
         {
-            $this->trace->info(TraceCode::COHORT_EMAIL_GETTING_SENT, ['merchant_id' => $merchantId, 'user_id' => $user[UserEntity::ID], 'user_email' => $userEmail, 'survey_type' => $survey[\RZP\Models\Survey\Entity::TYPE]]);
+            $this->trace->info(TraceCode::COHORT_EMAIL_GETTING_SENT, ['merchant_id' => $merchantId, 'user_id' => $uid, 'contact_email' => $email, 'survey_type' => $survey[SurveyEntity::TYPE]]);
         }
 
         $surveyTrackerEntityInput = [
             Entity::SURVEY_ID       => $survey[Entity::ID],
-            Entity::SURVEY_EMAIL    => $user[UserEntity::EMAIL],
+            Entity::SURVEY_EMAIL    => $email,
             Entity::ATTEMPTS        => 1,
             Entity::SURVEY_SENT_AT  => $currentTimeStamp
         ];
@@ -125,17 +185,19 @@ class Core extends Base\Core
 
         $this->repo->saveorFail($surveyTrackerEntity);
 
-        $this->trace->info(TraceCode::COHORT_EMAIL_TO_HUBSPOT, [Entity::X_UID => $user[UserEntity::ID]]);
-
         $hubspotInput = [
-            Entity::SURVEY_EMAIL        => $user[UserEntity::EMAIL],
+            Entity::SURVEY_EMAIL        => $email,
             Entity::SURVEY_TYPE         => $survey[SurveyEntity::TYPE],
             Entity::MID                 => $merchantId,
-            Entity::USER_ID             => $user[UserEntity::ID],
+            Entity::USER_ID             => $uid,
             Entity::SURVEY_ID           => $survey[Entity::ID],
             SurveyEntity::SURVEY_URL    => $survey[SurveyEntity::SURVEY_URL],
-            Entity::ID                  => $surveyTrackerEntity->getId()
+            Entity::ID                  => $surveyTrackerEntity->getId(),
+            Entity::CONTACT_TYPE        => $input[Entity::CONTACT_TYPE],
+            Entity::ACCOUNT_STATUS      => $input[Entity::ACCOUNT_STATUS] ?? null
         ];
+
+        $this->trace->info(TraceCode::COHORT_EMAIL_TO_HUBSPOT, $hubspotInput);
 
         $this->sendToHubspot($hubspotInput);
     }
@@ -158,7 +220,9 @@ class Core extends Base\Core
             Entity::MID                         => $hubspotInput[Entity::MID],
             Entity::X_UID                       => $hubspotInput[Entity::USER_ID],
             SurveyEntity::SURVEY_URL            => $hubspotInput[SurveyEntity::SURVEY_URL],
-            SurveyResponseEntity::TRACKER_ID    => $hubspotInput[Entity::ID]
+            SurveyResponseEntity::TRACKER_ID    => $hubspotInput[Entity::ID],
+            Entity::X_CONTACT_TYPE              => $hubspotInput[Entity::CONTACT_TYPE],
+            Entity::X_CA_ACCOUNT_STATUS         => $hubspotInput[Entity::ACCOUNT_STATUS]
         ]);
     }
 

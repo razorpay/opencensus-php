@@ -3,10 +3,10 @@
 namespace RZP\Models\Survey\Tracker;
 
 use Carbon\Carbon;
-use RZP\Constants\Table;
-use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Survey;
+use RZP\Constants\Table;
+use RZP\Constants\Timezone;
 
 class Repository extends Base\Repository
 {

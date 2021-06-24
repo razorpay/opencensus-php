@@ -618,6 +618,51 @@ return [
         ],
     ],
 
+    'testSurveyOnCAOnboardedBeneficiaryEmail' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/survey/scheduled/process',
+            'content' => [
+                'survey_type' => 'nps_csat',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'dispatched_cohort_count' => 1,
+            ],
+        ],
+    ],
+
+    'testSurveyOnAccountArchived' =>  [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/survey/scheduled/process',
+            'content' => [
+                'survey_type' => 'nps_csat',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'dispatched_cohort_count' => 1,
+            ],
+        ],
+    ],
+
+    'testSurveyOnCAOnboardingMerchantPocAndBeneficiary' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/survey/scheduled/process',
+            'content' => [
+                'survey_type' => 'nps_csat',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'dispatched_cohort_count' => 1,
+            ],
+        ],
+    ],
+
     'testSurveyOnCAWithAcrossSurveyCheckFailing' => [
         'request'  => [
             'method'  => 'POST',

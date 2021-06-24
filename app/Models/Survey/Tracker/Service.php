@@ -40,9 +40,10 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_SURVEY_TYPE,
-                null,
-                null,
-                PublicErrorDescription::BAD_REQUEST_INVALID_SURVEY_TYPE);
+            null,
+                [
+                    Entity::SURVEY_TYPE => $surveyType
+                ]);
         }
 
         $cohorts = $input[Entity::COHORT_LIST] ?? [];

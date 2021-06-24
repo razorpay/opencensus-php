@@ -35,6 +35,17 @@ class Entity extends Base\PublicEntity
     const BASE_MODEL_DIR         = 'RZP\Models';
     const USER_ID                = 'user_id';
     const SURVEY_URL             = 'survey_url';
+    const CONTACT_TYPE           = 'contact_type';
+    const X_CONTACT_TYPE         = 'x_contact_type';
+    const USER                   = 'user';
+    const MERCHANT_POC           = 'merchant_poc';
+    const BENEFICIARY            = 'beneficiary';
+    const ACCOUNT_STATUS         = 'account_status';
+    const X_CA_ACCOUNT_STATUS    = 'x_ca_account_status';
+
+
+    const DUMMY_UID_FOR_MERCHANT_POC_MAILS = 'merc_poc_id';
+    const DUMMY_UID_FOR_BENEFICIARY_MAILS  = 'beneficiary_id';
 
     protected $fillable = [
         self::ID,

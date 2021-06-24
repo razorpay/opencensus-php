@@ -76,8 +76,7 @@ class Service extends Base\Service
                 null,
                 [
                     Entity::TYPE  => $type,
-                ],
-                PublicErrorDescription::BAD_REQUEST_ERROR_DUPLICATE_SURVEY_TYPE);
+                ]);
         }
     }
 }

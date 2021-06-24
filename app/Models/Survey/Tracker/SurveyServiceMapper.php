@@ -26,8 +26,7 @@ class SurveyServiceMapper
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_SURVEY_TYPE,
                 null,
-                null,
-                PublicErrorDescription::BAD_REQUEST_INVALID_SURVEY_TYPE);
+                null);
         }
 
         return SurveyServiceMapper::$surveyClientMap[$type];

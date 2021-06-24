@@ -1764,5 +1764,19 @@ final class FactoryData
             'value'                  => 'xyz',
             'entity_id'              => 'GAX5zcOdI0Y664',
         ]);
+
+        $factory(\RZP\Models\BankingAccount\Activation\Detail\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'banking_account_id' => '01234567890123',
+            'created_at'         => $faker->timestamp,
+            'updated_at'         => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\BankingAccount\State\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'banking_account_id' => '01234567890123',
+            'merchant_id'        => '10000000000000',
+            'created_at'         => $faker->timestamp,
+        ]);
     }
 }
