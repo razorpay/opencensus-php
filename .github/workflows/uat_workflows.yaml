@@ -2,7 +2,7 @@ name: UAT Workflow
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: '0 1 * * *'
 
 jobs:
   pull_request:
@@ -29,7 +29,7 @@ jobs:
           notification_title: '{workflow} has {status_message}'
           message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>'
           notify_when: 'failure'
-          mention_groups: 'S020YELT9Q8'
+          mention_groups: 'S025UM0NJ8N'
           mention_groups_when: 'failure'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
