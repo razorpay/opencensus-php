@@ -2451,12 +2451,9 @@ trait Refund
             $extraData['payment_gateway_amount'] = $payment->getDiscountedAmountIfApplicable();
         }
 
+        // Speed decisioned is being sent as speed_requested.
+        // Once switchover happens on scrooge, we will send right value in speed requested
         $refundData[RefundEntity::SPEED_REQUESTED] = $refundData[RefundEntity::SPEED_DECISIONED];
-
-        //
-        // Speed decisioned is being sent as speed_requested - no need to be sent again
-        //
-        unset($refundData[RefundEntity::SPEED_DECISIONED]);
 
         // Flag for skipping verify call on scrooge when retrying refund
         $refundData[RefundConstants::SKIP_REFUND_VERIFY] = $input[RefundConstants::SKIP_REFUND_VERIFY] ?? false;
