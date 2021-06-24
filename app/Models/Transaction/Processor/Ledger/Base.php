@@ -30,6 +30,9 @@ class Base extends Core
     const TRANSACTOR_TYPE       = 'transactor_type';
     const TRANSACTION_CONFIG_ID = 'transaction_config_id';
     const ENTITY                = 'entity';
+    const IDEMPOTENCY_KEY       = 'idempotency_key';
+
+    const UUID_FORMAT = '%04x%04x-%04x-%04x-%04x-%04x%04x%04x';
 
     const TIME_TAKEN = 'time_taken';
 

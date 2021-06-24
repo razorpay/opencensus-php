@@ -52,6 +52,7 @@ class FundLoading extends Base
             $payload = [
                 self::TRANSACTOR            => self::X,
                 self::MODE                  => $mode,
+                self::IDEMPOTENCY_KEY       => gen_uuid(self::UUID_FORMAT),
                 self::MERCHANT_ID           => $entity->getMerchantId(),
                 self::CURRENCY              => $entity->getTransactionCurrency(),
                 self::AMOUNT                => (string) $entity->getAmount(),

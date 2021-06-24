@@ -25,6 +25,9 @@ class Core extends Base\Core
     const ENTITIES              = 'entities';
     const FTS_FUND_ACCOUNT_ID   = 'fts_fund_account_id';
 
+    const IDEMPOTENCY_KEY = 'idempotency_key';
+    const UUID_FORMAT     = '%04x%04x-%04x-%04x-%04x-%04x%04x%04x';
+
     const X = 'X';
 
     const SHARED = 'shared';
@@ -50,6 +53,7 @@ class Core extends Base\Core
         $payload = [
             self::TRANSACTOR        => self::X,
             self::MODE              => $mode,
+            self::IDEMPOTENCY_KEY   => gen_uuid(self::UUID_FORMAT),
             self::MERCHANT_ID       => $merchant->getId(),
             self::EVENT             => [
                 self::EVENT_NAME            => $event,
