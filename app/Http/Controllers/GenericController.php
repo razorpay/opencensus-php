@@ -104,10 +104,10 @@ class GenericController extends Controller
             }
         }
 
-        if(array_key_exists($path,self::PATH_VS_COOKIE) === true)
+        /*if(array_key_exists($path,self::PATH_VS_COOKIE) === true)
         {
             $request->addCookiesForPath(self::PATH_VS_COOKIE[$path]);
-        }
+        }*/
 
         list($error, $data, $httpCode) = $request->send($path, $method);
 
