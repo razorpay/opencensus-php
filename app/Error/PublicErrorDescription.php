@@ -617,6 +617,10 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_RECEIPT_REQUIRED                                    = 'The receipt field is required.';
     const BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE                                  = 'Receipt should be unique.';
 
+    // Sub Virtual Account
+    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_EXISTS                        = 'Sub Virtual Account already exists';
+    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_CREATE_ADMIN_AUTH_ONLY                = 'Sub Virtual Accounts can only be created via admin auth';
+
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                   = 'Customer already exists for the merchant';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                 = 'Customer contact number is not set';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                              = 'Card already exists for the customer';

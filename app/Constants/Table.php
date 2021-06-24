@@ -49,6 +49,7 @@ class Table
     const PAYOUT_LINK                  = 'payout_links';
     const PAYOUT_SOURCE                = 'payout_sources';
     const FEE_RECOVERY                 = 'fee_recovery';
+    const SUB_VIRTUAL_ACCOUNT          = 'sub_virtual_accounts';
     const LEGAL_ENTITY                 = 'legal_entity';
     const FUND_ACCOUNT                 = 'fund_accounts';
     const PAYMENT_LINK                 = 'payment_links';

@@ -88,6 +88,7 @@ class Entity
     const PAYOUT_SOURCE              = 'payout_source';
     const SETTINGS                   = 'settings';
     const FEE_RECOVERY               = 'fee_recovery';
+    const SUB_VIRTUAL_ACCOUNT        = 'sub_virtual_account';
     const LEGAL_ENTITY               = 'legal_entity';
     const PAYMENT_LINK               = 'payment_link';
     const PAYMENT_PAGE               = 'payment_page';
@@ -714,6 +715,7 @@ class Entity
         self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
         self::BANKING_ACCOUNT_DETAIL    => \RZP\Models\BankingAccount\Detail::class,
         self::FEE_RECOVERY              => \RZP\Models\FeeRecovery::class,
+        self::SUB_VIRTUAL_ACCOUNT       => \RZP\Models\SubVirtualAccount::class,
         self::OFFLINE_DEVICE            => \RZP\Models\Offline\Device::class,
         self::PAYMENT_META              => \RZP\Models\Payment\PaymentMeta::class,
         self::UPI_METADATA              => \RZP\Models\Payment\UpiMetadata::class,

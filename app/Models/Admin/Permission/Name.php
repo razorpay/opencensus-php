@@ -328,6 +328,9 @@ class Name
     const CAPITAL_DEVELOPER                   = 'capital_developer';
     const RETRY_REFUNDS_WITH_APPENDED_ID      = 'retry_refunds_with_appended_id';
 
+    // Sub VA constants
+    const SUB_VIRTUAL_ACCOUNT                   = 'sub_virtual_account';
+
     // Permission to create auto-kyc soft limit breached workflow
     const AUTO_KYC_SOFT_LIMIT_BREACH          = 'auto_kyc_soft_limit_breach';
     const AUTO_KYC_SOFT_LIMIT_BREACH_UNREGISTERED = 'auto_kyc_soft_limit_breach_unregistered';

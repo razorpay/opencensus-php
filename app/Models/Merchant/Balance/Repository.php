@@ -299,6 +299,18 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
+    public function getBalanceByTypeAccountNumberAndAccountTypeOrFail(
+        string $accountNumber,
+        string $type,
+        string $accountType): Entity
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::TYPE, $type)
+                    ->where(Entity::ACCOUNT_TYPE, $accountType)
+                    ->firstOrFailPublic();
+    }
+
     public function getBalanceByAccountNumberAndMerchantIDOrFail(string $accountNumber, $merchantId): Entity
     {
         return $this->newQuery()

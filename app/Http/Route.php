@@ -2516,6 +2516,9 @@ class Route
 
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
 
+        // Sub Virtual Account Routes
+        'sub_virtual_account_create'              => ['post',     'admin/sub_virtual_accounts',                             'SubVirtualAccountController@create'                           ],
+
         // Ledger Routes
         'create_ledger_account'                   => ['post',      'ledger_service/create_account',                         'LedgerController@createAccount'],
         'create_ledger_accounts_in_bulk'          => ['post',      'ledger_service/create_accounts_in_bulk',                'LedgerController@createAccountsInBulk'],
@@ -4356,6 +4359,9 @@ class Route
         'setl_ledger_inconsistency_debug_admin',
         'setl_service_migration_admin',
 
+        // Sub VA Routes
+        'sub_virtual_account_create',
+
         // Shield Routes
         'shield_rules_get_multiple',
         'shield_rules_get',
@@ -5135,6 +5141,7 @@ class Route
         'feature_onboarding_fetch_all_responses'   => Permission::FEATURE_ONBOARDING_FETCH_ALL_RESPONSES,
         'geoip_update'                             => Permission::UPDATE_GEO_IP,
 
+        'sub_virtual_account_create'               => Permission::SUB_VIRTUAL_ACCOUNT,
         'batch_process_by_id'                      => Permission::RETRY_BATCH,
         'merchant_get_tags'                        => Permission::VIEW_MERCHANT_TAGS,
         'merchant_tags_bulk'                       => Permission::MANAGE_BULK_MERCHANT_TAGGING,
@@ -8587,6 +8594,7 @@ class Route
             'subscription_view_test',
             'subscription_view_test_post',
             'subscriptions_overview',
+            'sub_virtual_account_create',
             'survey_create',
             'survey_edit',
             'sync_pg_router_order_bulk',

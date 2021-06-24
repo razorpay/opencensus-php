@@ -142,6 +142,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Product\Request\Repository            $merchant_product_request;
  * @property Models\Settlement\Repository                          $settlement
  * @property Gateway\Enach\Base\Repository                         $enach
+ * @property Models\SubVirtualAccount\Repository                   $sub_virtual_account
  * @property Models\Settlement\Transfer\Repository                 $settlement_transfer;
  */
 
