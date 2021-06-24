@@ -6,7 +6,6 @@ function MerchantLAEntry() {
         Sentry.init({
           release: __VERSION__,
           dsn: window.SENTRY_DSN,
-          integrations: [new Sentry.Integrations.BrowserTracing()],
           environment: window.APP_ENV,
           beforeSend: (event, hint) => {
             if (
