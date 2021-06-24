@@ -12,14 +12,11 @@ import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnoun
 import OpfinAnnouncement10L from '../NotificationsDropdown/components/OpfinAnnouncement10L';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { openSlider } from 'merchant_common/reducers/slider';
+import Slider from 'common/ui/Slider';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { sendDataToSalesForce } from 'common/utils/common-api';
-import './WhatsNew.styl';
-import {
-  getNotificationsReadData,
-  getNotificationTrackingProperties,
-  getExperimentVersion,
-} from './common';
+import './Old.styl';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -37,11 +34,13 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
     openModal,
     closeModal,
     showAcceptPaymentsModal,
+    openSlider,
   },
 )
 @RTracking(() => window.rzpQ.component('WhatsNew'))
-export default class WhatsNew extends Component {
+export default class WhatsNewOld extends Component {
   state = {
+    isOpenSlider1: false,
     showTooltip: false,
   };
   id = this.props.user.current;
@@ -65,8 +64,6 @@ export default class WhatsNew extends Component {
   componentDidMount() {
     this.setUnreadMsgs();
 
-    this.setTooltipVisibility();
-
     // add jquery for hubspot
     const scriptJQ = document.createElement('script');
     scriptJQ.src = 'https://code.jquery.com/jquery-3.5.1.min.js';
@@ -81,15 +78,78 @@ export default class WhatsNew extends Component {
     this.props.tracking.trackEvent(
       window.rzpQ &&
         window.rzpQ.merchantActions().success('merchant_dashboard.display_notification', {
-          experimentVersion: getExperimentVersion(this.props.user),
-          lazy: true,
+          experimentVersion: this.getExperimentVersion(),
+          whats_new: this.whatsNew,
         }),
     );
+
+    document.addEventListener('click', this.handleDocumentClick, true);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('click', this.handleDocumentClick, true);
+  }
+
+  getExperimentVersion() {
+    const { user } = this.props;
+
+    if (user.isAnnouncementTextEnabled) return 2.1;
+    if (user.isWhatsNewTextEnabled) return 2.2;
+
+    return 2.3;
+  }
+
+  getNotificationTrackingProperties(notification) {
+    return {
+      id: notification.id,
+      version: notification.version,
+      campaign: notification.campaign,
+      version_description: notification.version_description,
+      target_product_feature: notification.target_product_feature,
+      target_metric: notification.target_metric,
+    };
   }
 
   setUnreadMsgs() {
-    const { totalUnread, ID, readID, unreadID } = getNotificationsReadData(this.id);
-    this.setState({ totalUnread, ID, unreadID, readID }, () => this.onShow());
+    const lastReadTS = this.state.lastReadTS;
+    const { notifications } = this.state;
+    const ID = [],
+      readID = [],
+      unreadID = [];
+
+    let totalUnread = 0;
+    for (let i = 0; i < notifications.length; i++) {
+      const notifStartTS = notifications[i].start_ts;
+      const notifEndTS = notifications[i].end_ts;
+      const notifID = notifications[i].id;
+
+      this.whatsNew =
+        (notifID && notifID.length >= 9 && notifID.substring(0, 9) === 'whats-new') ||
+        this.whatsNew;
+
+      if (notifID) ID.push(this.getNotificationTrackingProperties(notifications[i]));
+      if (lastReadTS < notifStartTS && moment().unix() < notifEndTS) {
+        totalUnread++;
+
+        if (notifID) unreadID.push(this.getNotificationTrackingProperties(notifications[i]));
+      } else if (notifID) readID.push(this.getNotificationTrackingProperties(notifications[i]));
+    }
+
+    trackLoad(totalUnread);
+    this.setState({ totalUnread, ID, unreadID, readID });
+
+    if (totalUnread && window.rzpQ && window.rzpQ.merchantActions) {
+      const tracking = this.props.tracking;
+      tracking.trackEvent(
+        window.rzpQ.merchantActions().success('display.notification.bubble', {
+          ID,
+          readID,
+          unreadID,
+          experimentVersion: this.getExperimentVersion(),
+          ...(this.whatsNew && { whats_new: true }),
+        }),
+      );
+    }
   }
 
   showOpfinAnnouncementV2 = (id) => {
@@ -121,21 +181,8 @@ export default class WhatsNew extends Component {
     });
   };
 
-  createSalesforceOpportunity = (id, url) => {
-    let event = '';
-
-    switch (id) {
-      case 'cash-advance-cta-1': {
-        event = 'LOC-Cross-sell-V1';
-        break;
-      }
-      case 'whats-new-JUN21-RXCC-GROWTH-cta1': {
-        event = 'capital-whats-new';
-        break;
-      }
-    }
-
-    sendDataToSalesForce(event, this.props.user);
+  createSalesforceOpportunity = (url) => {
+    sendDataToSalesForce('LOC-Cross-sell-V1', this.props.user);
 
     this.props.history.push(url);
   };
@@ -156,8 +203,7 @@ export default class WhatsNew extends Component {
         this.props.showAcceptPaymentsModal();
         break;
       case 'cash-advance-cta-1':
-      case 'whats-new-JUN21-RXCC-GROWTH-cta1':
-        this.createSalesforceOpportunity(id, url);
+        this.createSalesforceOpportunity(url);
         break;
     }
   };
@@ -184,11 +230,22 @@ export default class WhatsNew extends Component {
       window.rzpQ.merchantActions().success('dashboard.notification_section.read', {
         unreadID: this.state.unreadID,
         count_unread_IDs: this.state.unreadID.length,
-        lazy: true,
+        ...(this.whatsNew && { whats_new: true }),
       }),
     );
 
-    const { ID, readID, unreadID } = getNotificationsReadData(this.id);
+    const ID = [],
+      readID = [],
+      unreadID = [];
+
+    this.state.notifications.forEach((notification) => {
+      const notifID = notification.id;
+
+      if (notifID) {
+        ID.push(this.getNotificationTrackingProperties(notification));
+        readID.push(this.getNotificationTrackingProperties(notification));
+      }
+    });
 
     trackExpand(this.state.totalUnread);
 
@@ -199,8 +256,8 @@ export default class WhatsNew extends Component {
         ID,
         readID,
         unreadID,
-        experimentVersion: getExperimentVersion(this.props.user),
-        lazy: true,
+        experimentVersion: this.getExperimentVersion(),
+        ...(this.whatsNew && { whats_new: true }),
       }),
     );
 
@@ -221,6 +278,7 @@ export default class WhatsNew extends Component {
 
   trackEvents = (value, url, type, id, notification) => {
     const tracking = this.props.tracking;
+    const whatsNew = id && id.length >= 9 && id.substring(0, 9) === 'whats-new';
 
     const eventName =
       type === 'button'
@@ -230,11 +288,30 @@ export default class WhatsNew extends Component {
       window.rzpQ.merchantActions().initiated(eventName, {
         CTAValue: value,
         url: url,
-        ...getNotificationTrackingProperties(notification),
+        ...this.getNotificationTrackingProperties(notification),
         id: id,
-        lazy: true,
+        ...(whatsNew && { whats_new: true }),
       }),
     );
+  };
+
+  handleDocumentClick = (event) => {
+    const target = event.target;
+    const sliderContent = document.querySelector('.content-wrapper.whats-new-old');
+    const sliderToggle = document.querySelector('.whats-new-slide-toggle');
+    const whatsNewTooltip = document.querySelector('.whats-new__tooltip');
+    const announcementDetails = document.querySelector(
+      '.panel.panel-default.SliderPanel.announcement-details__container',
+    );
+    if (
+      (sliderContent && sliderContent.contains(target)) ||
+      (sliderToggle && sliderToggle.contains(target)) ||
+      (whatsNewTooltip && whatsNewTooltip.contains(target)) ||
+      (announcementDetails && announcementDetails.contains(target))
+    ) {
+      return;
+    }
+    this.hideSlider();
   };
 
   closeTooltip = () => {
@@ -253,16 +330,60 @@ export default class WhatsNew extends Component {
       this.props.tracking.trackEvent(
         window.rzpQ.merchantActions().success('dashboard.notification_section.tool_tip.display', {
           tooltip_display_count: tooltipViewCount + 1,
-          lazy: true,
+          ...(this.whatsNew && { whats_new: true }),
         }),
       );
-
-      setTimeout(() => this.showTooltip(), 500); // for the tooltip animation
+      this.showTooltip();
+    } else {
+      this.closeTooltip();
     }
   };
 
+  hideSlider = () => {
+    this.closeTooltip();
+    this.setState({ isOpenSlider1: false });
+    this.setLastReadTS();
+  };
+
+  showSlider = () => {
+    this.props.openSlider();
+    this.setTooltipVisibility();
+    this.setState({ isOpenSlider1: true });
+    this.onShow();
+  };
+
+  handleSliderToggleClick = () => {
+    const { isOpenSlider1 } = this.state;
+    if (isOpenSlider1) this.hideSlider();
+    else this.showSlider();
+  };
+
+  getAnnouncementCta = () => {
+    const { user, showMobileNav } = this.props;
+    const { totalUnread } = this.state;
+    const hasUnread = !!totalUnread;
+
+    if ((user.isAnnouncementTextEnabled || user.isWhatsNewTextEnabled) && !showMobileNav) {
+      return (
+        <>
+          <span onClick={this.handleSliderToggleClick} class={classList(hasUnread && 'highlight')}>
+            {user.isAnnouncementTextEnabled ? 'Announcements' : "What's New"}
+          </span>
+          {hasUnread && <span class="bubble">{totalUnread}</span>}
+        </>
+      );
+    }
+
+    return (
+      <>
+        <i className="i i-horn" onClick={this.handleSliderToggleClick}></i>
+        {hasUnread && <span class="new-bubble">{totalUnread}</span>}
+      </>
+    );
+  };
+
   render() {
-    const { lastReadTS, showTooltip } = this.state;
+    const { lastReadTS, isOpenSlider1, showTooltip } = this.state;
     const { user, history } = this.props;
 
     const eventTrackingRequired = [
@@ -297,8 +418,6 @@ export default class WhatsNew extends Component {
       'whats-new-may21-remar1-dashboard',
       'whats-new-may21-reten2-dashboard',
       'whats-new-may21-remar2-dashboard',
-      'June21-QR-GTM',
-      'whats-new-JUN21-RXCC-GROWTH',
     ];
 
     let cardsList = window.notifications.map((card, idx) => (
@@ -318,8 +437,14 @@ export default class WhatsNew extends Component {
     ));
 
     return (
-      <div className="whats-new">
-        <div className={classList('whats-new__tooltip', showTooltip && 'whats-new__tooltip--show')}>
+      <main className={classList('whats-new-old', isOpenSlider1 && 'whats-new--active')}>
+        <div className="whats-new-slide-toggle">{this.getAnnouncementCta()}</div>
+        <div
+          className={classList(
+            'whats-new__tooltip',
+            isOpenSlider1 && showTooltip && 'whats-new__tooltip--show',
+          )}
+        >
           <div className="whats-new__content">
             <div className="whats-new__heading">
               <span>🔥 What’s New?</span>
@@ -330,34 +455,38 @@ export default class WhatsNew extends Component {
             </div>
           </div>
         </div>
-        <ErrorBoundary resetOnProps>
-          <div class="content-wrapper content-sm txn-details whats-new">
-            <div class="panel panel-default SliderPanel">
-              <div class="panel-heading">
-                <div class="heading-content">
-                  <div class="title">
-                    <b>Announcements</b>
-                  </div>
-                </div>
-              </div>
-              <div class="SliderPanel__Body">
-                <div class="panel-body">
-                  <div class="whats-new-content">
-                    {cardsList.length ? (
-                      cardsList
-                    ) : (
-                      <div class="Notifications-content-empty">
-                        <img src="/img/notifications/no-notification.png" width="72px" />
-                        <div class="title">No announcements right now</div>
+        {isOpenSlider1 ? (
+          <Slider closeButtonClass="announcement-title">
+            <ErrorBoundary resetOnProps>
+              <div class="content-wrapper content-sm txn-details whats-new-old">
+                <div class="panel panel-default SliderPanel">
+                  <div class="panel-heading">
+                    <div class="heading-content">
+                      <div class="title">
+                        <b>Announcements</b>
                       </div>
-                    )}
+                    </div>
+                  </div>
+                  <div class="SliderPanel__Body">
+                    <div class="panel-body">
+                      <div class="whats-new-content">
+                        {cardsList.length ? (
+                          cardsList
+                        ) : (
+                          <div class="Notifications-content-empty">
+                            <img src="/img/notifications/no-notification.png" width="72px" />
+                            <div class="title">No announcements right now</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </ErrorBoundary>
-      </div>
+            </ErrorBoundary>
+          </Slider>
+        ) : null}
+      </main>
     );
   }
 }
@@ -385,21 +514,24 @@ const NotificationCard = ({
   ...notification
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
+  const [isLoading, setIsLoading] = useState(true);
 
   const onYouTubePlayer = () => {
     const onPlayerStateChange = (event) => {
+      const whatsNew = id && id.length >= 9 && id.substring(0, 9) === 'whats-new';
+
       if (event.data == YT.PlayerState.PLAYING) {
         tracking.trackEvent(
           window.rzpQ.merchantActions().success('dashboard.notification_section.card.display', {
             card_id: id,
             video_url,
-            lazy: true,
+            ...(whatsNew && { whats_new: true }),
           }),
         );
       }
     };
 
-    new window.YT.Player(`player-${id}`, {
+    let player = new window.YT.Player(`player-${id}`, {
       videoId: video_url.split('/').slice(-1)[0],
       events: {
         onStateChange: onPlayerStateChange,
@@ -442,7 +574,7 @@ const NotificationCard = ({
     // distinguish between links and buttons that open modals
     if (btn.id === 'announcement-details-l2') {
       e.preventDefault();
-      history.push(btn.url, { lazy: true });
+      history.push(btn.url);
     } else if (btn.id) {
       e.preventDefault();
       onCTAClick({ id: btn.id, url: btn.url });

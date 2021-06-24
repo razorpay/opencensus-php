@@ -389,6 +389,10 @@ export default class User {
     );
   }
 
+  get isWhatsNewLazyEnabled() {
+    return getSplitzExperimentVariant('whats_new_lazy_experiment')?.variables?.result === 'on';
+  }
+
   get isChargeAtWillEnabled() {
     return this.findTag('Charge_at_will');
   }
@@ -570,7 +574,9 @@ export default class User {
   }
 
   get isFirstUsageMerchantsExperimentEnabled() {
-    return getSplitzExperimentVariant('first_usage_merchants_experiment')?.variables?.result === 'on';
+    return (
+      getSplitzExperimentVariant('first_usage_merchants_experiment')?.variables?.result === 'on'
+    );
   }
 
   get isWhatsNewSectionEnabled() {

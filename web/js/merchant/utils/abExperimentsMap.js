@@ -54,8 +54,13 @@ export default {
   first_usage_merchants_experiment: [
     // beta experiment ids
     'HPfpmgQiXlqfr8',
-    
     // prod experiment ids
     'HPcWQJN0hMXgzK',
+  ],
+  whats_new_lazy_experiment: [
+    // beta experiment ids
+    'HPhSWihQaCQ2wJ',
+    // prod experiment ids
+    'HPzUY3GY4C2d22',
   ],
 };

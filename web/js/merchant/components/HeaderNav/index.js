@@ -4,7 +4,8 @@ import { Link, withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
 import NotificationsDropdown from 'common/ui/NotificationsDropdown';
-import WhatsNew from 'common/ui/WhatsNew';
+import WhatsNew from 'common/ui/WhatsNew/Old';
+import NotificationIcon from 'common/ui/WhatsNew/Icon';
 import { toggleMobileMenu } from 'merchant/reducers/app';
 
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -148,7 +149,19 @@ export default class HeaderNav extends Component {
                 }
               >
                 <li id="whats-new-section">
-                  <WhatsNew analytics={analytics} showMobileNav={showMobileNav} {...commonProps} />
+                  {user.isWhatsNewLazyEnabled ? (
+                    <NotificationIcon
+                      analytics={analytics}
+                      showMobileNav={showMobileNav}
+                      {...commonProps}
+                    />
+                  ) : (
+                    <WhatsNew
+                      analytics={analytics}
+                      showMobileNav={showMobileNav}
+                      {...commonProps}
+                    />
+                  )}
                 </li>
               </ShowWhen>
               <ShowWhen
@@ -167,7 +180,19 @@ export default class HeaderNav extends Component {
                 }
               >
                 <li id="whats-new-section">
-                  <WhatsNew analytics={analytics} showMobileNav={showMobileNav} {...commonProps} />
+                  {user.isWhatsNewLazyEnabled ? (
+                    <NotificationIcon
+                      analytics={analytics}
+                      showMobileNav={showMobileNav}
+                      {...commonProps}
+                    />
+                  ) : (
+                    <WhatsNew
+                      analytics={analytics}
+                      showMobileNav={showMobileNav}
+                      {...commonProps}
+                    />
+                  )}
                 </li>
               </ShowWhen>
               <li id="profile-dropdown">

@@ -46,6 +46,7 @@ export default class AnnouncementDetails extends React.Component {
       version_description: notification.version_description,
       target_product_feature: notification.target_product_feature,
       target_metric: notification.target_metric,
+      lazy: this.props.location?.state?.lazy || false,
     };
   }
 
