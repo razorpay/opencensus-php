@@ -58,7 +58,7 @@ class Service extends Base\Service
         $payoutData = $input['payload']['payout']['entity'];
 
         $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PAYOUT_WEBHOOK_UPDATE, [
-            'settlement_ondemand_payout_id'   => $payoutData['reference_id'],
+            'payout_response'                  => $payoutData,
             'event'                            => $input['event'],
         ]);
 
