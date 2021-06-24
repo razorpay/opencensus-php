@@ -51,8 +51,6 @@ class Core extends Base\Core
     // July 1st, 2016 00:00:00 IST
     const JULY_FIRST_EPOCH = '1467311400';
 
-    const CREDIT_LOCK_BEFORE_BALANCE = 'credit_lock_before_balance';
-
     protected $merchantBalance = null;
 
     protected $nodalBalance = null;
@@ -1550,19 +1548,17 @@ class Core extends Base\Core
 
         $startTime = microtime(true);
 
-        $result = $this->app->razorx->getTreatment($merchant->getId(), self::CREDIT_LOCK_BEFORE_BALANCE, $this->mode ?? Mode::LIVE);
+        $creditLockBeforeBalanceFeature = $merchant->isFeatureEnabled(Feature\Constants::LEDGER_CREDIT_LOCK);
 
         $this->trace->info(
-            TraceCode::PAYMENT_TRANSFER_CREDIT_LOCK_RAZORX,
+            TraceCode::PAYMENT_TRANSFER_CREDIT_LOCK_FEATURE,
             [
-                'razorx_result'=> $result,
-                'mode' => $this->mode,
-                'merchant_id' => $merchant->getId(),
-            ]);
+                'merchant_id'    => $merchant->getId(),
+                'feature_value'  => $creditLockBeforeBalanceFeature
+            ]
+        );
 
-        $creditLockBeforeBalance = ($result === 'on');
-
-        if ($creditLockBeforeBalance === true)
+        if ($creditLockBeforeBalanceFeature === true)
         {
             list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchant);
         }
@@ -1578,7 +1574,7 @@ class Core extends Base\Core
                 'time_taken'    => (microtime(true) - $startTime) * 1000
             ]);
 
-        if ($creditLockBeforeBalance === false)
+        if ($creditLockBeforeBalanceFeature === false)
         {
             list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchant);
         }

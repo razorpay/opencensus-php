@@ -708,6 +708,8 @@ class Constants
      */
     const PAYMENT_SHOW_DCC_MARKUP   =   'payment_show_dcc_markup';
 
+    const LEDGER_CREDIT_LOCK        = 'ledger_credit_lock';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1031,6 +1033,7 @@ class Constants
         self::PAYMENT_SHOW_DCC_MARKUP         => true,
         self::EXPOSE_SETTLED_BY               => true,
         self::PAYPAL_CC                       => true,
+        self::LEDGER_CREDIT_LOCK              => true,
     ];
 
     // Entity type constants
