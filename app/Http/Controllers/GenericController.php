@@ -39,7 +39,7 @@ class GenericController extends Controller
     ];
 
     const PATH_VS_COOKIE = [
-        'merchant/activation' => ['client_id']
+        'merchant/activation' => ['clientId']
     ];
 
     const USERS_RESET_PASSWORD_PATH  = 'users/reset-password-token';

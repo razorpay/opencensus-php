@@ -585,10 +585,10 @@ class ApiRequestAny
     {
         foreach ($cookiesToAdd as $cookieName)
         {
-            if ($cookieName === 'client_id' and
-                empty($_COOKIE['client_id']) === false) {
+            if ($cookieName === 'clientId' and
+                empty($_COOKIE['clientId']) === false) {
 
-                $cookie = $_COOKIE['client_id'];
+                $cookie = $_COOKIE['clientId'];
 
                 $cookie = str_replace('+', '%2B', $cookie);
 
