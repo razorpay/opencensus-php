@@ -662,21 +662,19 @@ class FundAccountValidationTest extends TestCase
             ]
         ];
 
-        $this->makeRequestAndGetContent($request);
+        $response = $this->makeRequestAndGetContent($request);
 
-        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->triggerFlowToUpdateFavWithNewState($response['id'], 'COMPLETED');
 
-        $this->triggerFlowToUpdateFavWithNewState($fav['id'], 'COMPLETED');
-        // Reloading FAV to account for changes after call to processFavToTerminalState()
-        $fav = $this->getLastEntity('fund_account_validation', true);
+        $fav = $this->getDbLastEntity('fund_account_validation');
 
         $this->assertEquals(1, $fav['attempts']);
         $this->assertEquals('completed', $fav['status']);
-        $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertEquals('active', $fav['account_status']);
 
-        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
         $this->assertEquals('penny_testing', $fta['purpose']);
-        $this->assertEquals($fav['id'], $fta['source']);
+        $this->assertEquals($fav['id'], $fta['source_id']);
         $this->assertNotNull($fav['utr']);
     }
 
