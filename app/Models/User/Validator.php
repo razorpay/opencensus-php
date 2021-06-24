@@ -26,8 +26,9 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class Validator extends Base\Validator
 {
-    const DISABLE_CAPTCHA_SECRET = 'DISABLE_THE_CAPTCHA_YOU_SHALL';
-    const CAPTCHA_MODE_HEADER    = 'X-RECAPTCHA-MODE';
+    const DISABLE_CAPTCHA_SECRET                 = 'DISABLE_THE_CAPTCHA_YOU_SHALL';
+    const CAPTCHA_MODE_HEADER                    = 'X-RECAPTCHA-MODE';
+    const MAX_ALLOWED_CAPTCHA_REQUEST_ATTEMPTS   =  3;
 
     protected static $createRules = [
         Entity::ID                              => 'sometimes|max:14',
@@ -453,7 +454,7 @@ class Validator extends Base\Validator
 
             $url = 'https://www.google.com/recaptcha/api/siteverify?'. $captchaQuery;
 
-            $response = \Requests::get($url);
+            $response = $this->getCaptchaVerificationResponse($url);
 
             $output = json_decode($response->body);
 
@@ -507,6 +508,50 @@ class Validator extends Base\Validator
         }
 
         $app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CAPTCHA_VERIFICATION_SUCCESS, null, null, $emailData);
+    }
+
+    protected function getCaptchaVerificationResponse(string $url, int $maxAllowedAttempts = self::MAX_ALLOWED_CAPTCHA_REQUEST_ATTEMPTS)
+    {
+        $app = App::getFacadeRoot();
+
+        $currentAttempt = 1;
+
+        while ($currentAttempt <= $maxAllowedAttempts)
+        {
+            try
+            {
+                $response = $this->makeRequestAndGetCaptchaVerificationResponse($url);
+
+                if ($currentAttempt > 1)
+                {
+                    $app['trace']->info(TraceCode::CAPTCHA_RETRY_LOGIC_SUCCESS, ['attempt' => $currentAttempt]);
+                }
+
+                return $response;
+            }
+            catch (\Requests_Exception $e)
+            {
+                $app['trace']->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::CAPTCHA_VERIFICATION_CALL_FAILED,
+                    ['attempt' => $currentAttempt]);
+
+                if ($currentAttempt == $maxAllowedAttempts)
+                {
+                    throw $e;
+                }
+            }
+
+            $currentAttempt++;
+        }
+    }
+
+    protected function makeRequestAndGetCaptchaVerificationResponse(string $url)
+    {
+        $response = \Requests::get($url);
+
+        return $response;
     }
 
     protected function validateAction(string $attribute, string $action)

@@ -5,20 +5,20 @@ namespace Tests\Unit\Models\User;
 use Mockery;
 use Carbon\Carbon;
 use Illuminate\Hashing\BcryptHasher;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Mail as Mail;
 
-use RZP\Exception\LogicException;
-use Illuminate\Support\Facades\Redis;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use Tests\Unit\TestCase;
 use RZP\Models\User\Core;
 use RZP\Models\User\Entity;
 use RZP\Models\User\Constants;
-use RZP\Models\User\Validator as Validator;
-use RZP\Models\User\Service as UserService;
-use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Exception\LogicException;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Models\User\Service as UserService;
+use RZP\Models\User\Validator as Validator;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class UserTest extends TestCase
@@ -1705,7 +1705,7 @@ class UserTest extends TestCase
         $this->repoMock->shouldReceive('driver')->with('user')->andReturn($this->userRepoMock);
 
         $this->userRepoMock->shouldReceive('findOrFailPublic')->andReturn(((new Core())->create($content['userData'])));
-        
+
         $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
 
         $this->merchantEntityMock->shouldReceive('getEmail')->andReturn('dummy@example.com');
@@ -2383,6 +2383,75 @@ class UserTest extends TestCase
         $r = $this->getReflectionObj('RZP\Models\User\Validator', 'validatePassword');
 
         $r->invoke(null, [Entity::PASSWORD => '12345']);
+    }
+
+    public function testValidateCaptchaWithAllFailures()
+    {
+        $this->expectException(\Requests_Exception::class);
+
+        $validatorMock = $this->getMockBuilder(Validator::class)
+            ->setMethods(['makeRequestAndGetCaptchaVerificationResponse'])
+            ->getMock();
+
+        $validatorMock->method('makeRequestAndGetCaptchaVerificationResponse')
+            ->will($this->onConsecutiveCalls($this->throwException(new \Requests_Exception('Error while verifying captcha', 'operation timed out')),
+                                             $this->throwException(new \Requests_Exception('Error while verifying captcha', 'operation timed out')),
+                                             $this->throwException(new \Requests_Exception('Error while verifying captcha', 'operation timed out'))));
+
+        $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
+
+        $method = $validatorMockReflectionObj->getMethod('getCaptchaVerificationResponse');
+
+        $method->setAccessible(true);
+
+        $method->invoke($validatorMock, "url");
+    }
+
+    public function testValidateCaptchaWithTwoFailuresOneSuccess()
+    {
+        $successResponse = ["success => true"];
+
+        $validatorMock = $this->getMockBuilder(Validator::class)
+            ->setMethods(['makeRequestAndGetCaptchaVerificationResponse'])
+            ->getMock();
+
+        $validatorMock->method('makeRequestAndGetCaptchaVerificationResponse')
+            ->will($this->onConsecutiveCalls($this->throwException(new \Requests_Exception('Error while verifying captcha', 'operation timed out')),
+                                             $this->throwException(new \Requests_Exception('Error while verifying captcha', 'operation timed out')),
+                                             $successResponse));
+
+        $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
+
+        $method = $validatorMockReflectionObj->getMethod('getCaptchaVerificationResponse');
+
+        $method->setAccessible(true);
+
+        $response = $method->invoke($validatorMock, "url");
+
+        $this->assertEquals($successResponse, $response);
+    }
+
+    public function testValidateCaptchaWithOneFailuresOneSuccess()
+    {
+        $successResponse = ["success => true"];
+
+        $validatorMock = $this->getMockBuilder(Validator::class)
+            ->setMethods(['makeRequestAndGetCaptchaVerificationResponse'])
+            ->getMock();
+
+        $validatorMock->method('makeRequestAndGetCaptchaVerificationResponse')
+            ->will($this->onConsecutiveCalls($this->throwException(new \Requests_Exception('Error while verifying captcha', 'operation timed out')),
+                                             $successResponse));
+
+        $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
+
+        $method = $validatorMockReflectionObj->getMethod('getCaptchaVerificationResponse');
+
+        $method->setAccessible(true);
+
+        $response = $method->invoke($validatorMock, "url");
+
+        $this->assertEquals($successResponse, $response);
     }
 
     public function testValidateMerchantUserRelation()

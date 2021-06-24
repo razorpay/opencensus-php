@@ -2203,6 +2203,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_LOGIN_CAPTCHA_DISABLED                           = 'USER_LOGIN_CAPTCHA_DISABLED';
     const USER_LOGIN_INCORRECT_PASSWORD_EXHAUSTED               = 'USER_LOGIN_INCORRECT_PASSWORD_EXHAUSTED';
     const USER_INCORRECT_PASSWORD_REDIS_ERROR                   = 'USER_INCORRECT_PASSWORD_REDIS_ERROR';
+    const CAPTCHA_VERIFICATION_CALL_FAILED                      = 'CAPTCHA_VERIFICATION_CALL_FAILED';
+    const CAPTCHA_RETRY_LOGIC_SUCCESS                           = 'CAPTCHA_RETRY_LOGIC_SUCCESS';
 
     //Trace codes for users 2fa factory
     const SEND_2FA_OTP_SMS_FOR_ACTION                           = 'SEND_2FA_OTP_SMS_FOR_ACTION';
