@@ -770,7 +770,7 @@ class Error extends Support\Fluent
 
         if ($this->shouldModifyForNewBankingErrorCode() === true)
         {
-            $error[self::STEP]   = 'NA';
+            $error[self::STEP]   = null;
 
             $this->trace->info(TraceCode::NEW_BANKING_ERROR_RESPONSE_DATA,
                 [
@@ -780,9 +780,9 @@ class Error extends Support\Fluent
         }
         else if ($this->product === Product::BANKING)
         {
-            $error[self::STEP]   = 'NA';
-            $error[self::REASON] = 'NA';
-            $error[self::SOURCE] = 'NA';
+            $error[self::STEP]   = null;
+            $error[self::REASON] = null;
+            $error[self::SOURCE] = null;
         }
 
         $data = $this->getAttribute(self::DATA);

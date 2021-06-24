@@ -11052,7 +11052,7 @@ return [
                     'description' => 'The id provided does not exist',
                     'reason'      => 'input_validation_failed',
                     'source'      => 'business',
-                    'step'        => 'NA',
+                    'step'        => null,
                     'metadata'    => []
                 ],
             ],
@@ -11088,7 +11088,7 @@ return [
                     'description' => 'The id provided does not exist',
                     'reason'      => 'input_validation_failed',
                     'source'      => 'business',
-                    'step'        => 'NA',
+                    'step'        => null,
                     'metadata'    => []
                 ],
             ],
@@ -11125,7 +11125,7 @@ return [
                     'description' => 'Your account does not have enough balance to carry out the payout operation.',
                     'reason'      => 'insufficient_funds',
                     'source'      => 'business',
-                    'step'        => 'NA',
+                    'step'        => null,
                     'metadata'    => []
                 ],
             ],
@@ -11162,7 +11162,7 @@ return [
                     'description' => 'Your account does not have enough balance to carry out the payout operation.',
                     'reason'      => 'insufficient_funds',
                     'source'      => 'business',
-                    'step'        => 'NA',
+                    'step'        => null,
                     'metadata'    => []
                 ],
             ],
@@ -11195,7 +11195,7 @@ return [
                     'description' => 'Workflow edit on the same payout rule is active',
                     'reason'      => 'server_error',
                     'source'      => 'internal',
-                    'step'        => 'NA',
+                    'step'        => null,
                     'metadata'    => []
                 ],
             ],

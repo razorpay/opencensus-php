@@ -2999,7 +2999,7 @@ return [
                     'description'   => 'The bank account field is required.',
                     'reason'        => 'input_validation_failed',
                     'source'        => 'business',
-                    'step'          => 'NA',
+                    'step'          => null,
                     'metadata'      => []
                 ],
             ],
@@ -3028,7 +3028,7 @@ return [
                     'description'   => 'The bank account field is required.',
                     'reason'        => 'input_validation_failed',
                     'source'        => 'business',
-                    'step'          => 'NA',
+                    'step'          => null,
                     'metadata'      => []
                 ],
             ],
@@ -3061,7 +3061,7 @@ return [
                     'description'   =>  'The name must be between 3 and 120 characters.',
                     'reason'        => 'input_validation_failed',
                     'source'        => 'business',
-                    'step'          => 'NA',
+                    'step'          => null,
                     'metadata'      => []
                 ],
             ],
@@ -3094,7 +3094,7 @@ return [
                     'description'   =>  'The name must be between 3 and 120 characters.',
                     'reason'        => 'input_validation_failed',
                     'source'        => 'business',
-                    'step'          => 'NA',
+                    'step'          => null,
                     'metadata'      => []
                 ],
             ],

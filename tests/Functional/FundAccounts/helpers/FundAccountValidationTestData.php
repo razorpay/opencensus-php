@@ -1155,7 +1155,7 @@ return [
                     'description' => 'The fees calculated for fund account validation is greater than available fee credits or balance.',
                     'reason'      => 'insufficient_funds',
                     'source'      => 'business',
-                    'step'        => 'NA',
+                    'step'        => null,
                     'metadata'    => []
                 ],
             ],
@@ -1193,7 +1193,7 @@ return [
                     'description' => 'The fees calculated for fund account validation is greater than available fee credits or balance.',
                     'reason'      => 'insufficient_funds',
                     'source'      => 'business',
-                    'step'        => 'NA',
+                    'step'        => null,
                     'metadata'    => []
                 ],
             ],
