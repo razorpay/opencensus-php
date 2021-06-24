@@ -61,7 +61,7 @@ export default (props) => {
 
   const allowUpdateSubscription =
     ['authenticated', 'active'].includes(subscription.status) &&
-    subscription.payment_method !== 'upi';
+    (subscription.payment_method !== 'upi' && subscription.payment_method !== 'emandate');
 
   const hideCancelUpdate = ['cancelled', 'completed', 'expired'].includes(subscription.status);
 
