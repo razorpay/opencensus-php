@@ -113,6 +113,71 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($bankingAccount['id'], $bankingAccountTwo['id']);
     }
 
+    public function testCreateBankingAccountForNonRzpOrgMerchant()
+    {
+        $testData = $this->testData['testCreateBankingAccount'];
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->detach('10000000000000');
+
+        $admin->setAllowAllMerchants();
+
+        $admin->saveOrFail();
+
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => $org['id']]);
+
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateBankingAccountAdminForNonRzpOrgMerchant()
+    {
+        $testData = $this->testData['testCreateBankingAccountAdmin'];
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->detach('10000000000000');
+
+        $admin->setAllowAllMerchants();
+
+        $admin->saveOrFail();
+
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => $org['id']]);
+
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateBankingAccountForNonRzpOrgMerchantFromDashboard()
+    {
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->detach('10000000000000');
+
+        $admin->setAllowAllMerchants();
+
+        $admin->saveOrFail();
+
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => $org['id']]);
+
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateBankingAccountWithUnserviceablePincode()
     {
         $this->startTest();

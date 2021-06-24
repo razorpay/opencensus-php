@@ -64,6 +64,8 @@ class Service extends Base\Service
                 'input' => $input,
             ]);
 
+        $this->validateOrgForBankingAccount($input[Entity::CHANNEL]);
+
         (new Validator)->setStrictFalse()->validateInput(Validator::PRE_PROCESS, $input);
 
         // Pulling the activation details out as they are stored as part of
@@ -91,6 +93,8 @@ class Service extends Base\Service
             [
                 'input' => $input,
             ]);
+
+        $this->validateOrgForBankingAccount($input[Entity::CHANNEL]);
 
         (new Validator)->setStrictFalse()->validateInput(Validator::PRE_PROCESS_DASHBOARD, $input);
 
@@ -1018,5 +1022,23 @@ class Service extends Base\Service
         $payload = ['ca_started_application' => 'TRUE'];
 
         $this->app->hubspot->trackHubspotEvent($merchantEmail, $payload);
+    }
+
+    /**
+     * @param $channel
+     * @throws BadRequestException
+     */
+    private function validateOrgForBankingAccount(string $channel)
+    {
+        if ($this->merchant->getOrgId() !== '100000razorpay') {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCESS_DENIED_CA_ONBOARDING_CANNOT_INITIATED_FOR_NON_RZP_ORG_MERCHANTS,
+                Entity::MERCHANT_ID,
+                [
+                    'merchant_id' => $this->merchant->getPublicId(),
+                    'channel' => $channel
+                ],
+                'Current account on-boarding cannot be initiated for the Non Razorpay org merchants.');
+        }
     }
 }
