@@ -38,9 +38,7 @@ class Events
 
     const WHATSAPP_TEMPLATES = [
         self::NEEDS_CLARIFICATION              => 'Hi {merchantName}, we need more clarifications on your KYC, please visit your dashboard and make the necessary changes at {dashboardUrl}',
-        self::UNREGISTERED_PAYMENTS_ENABLED    => 'Congratulations {merchantName}, your PAN is verified successfully. You can now start accepting payments by visiting your Razorpay Dashboard at {dashboardUrl}',
         self::UNREGISTERED_SETTLEMENTS_ENABLED => 'Congratulations {merchantName}, your KYC is approved and settlements have been enabled for your Razorpay account. Visit your dashboard to accept payments {dashboardUrl}',
-        self::REGISTERED_PAYMENTS_ENABLED      => 'Congratulations {merchantName}, you can now start accepting payments by visiting your Razorpay Dashboard at {dashboardUrl}',
         self::REGISTERED_SETTLEMENTS_ENABLED   => 'Congratulations {merchantName}, your account is activated, you can now accept payments and get funds settled to your bank account. Visit your dashboard to accept payments {dashboardUrl}',
         self::PENNY_TESTING_FAILURE            => "Hi {merchantName}, we couldn't verify your Bank Account, kindly visit your Dashboard and upload scanned copy of cheque/bank statement at {dashboardUrl}",
         self::ACTIVATED_MCC_PENDING            => "Dear Customer, Congratulations! You can now start accepting payments and the payments will be settled in your bank account as per your settlement schedule. Please note that as part of the routine compliance checks mandated by our banking partners, we will review your business model, website details and reach out for further clarifications. You can now visit your dashboard to accept payments at {dashboardUrl}."
@@ -48,8 +46,10 @@ class Events
 
     // blade templates
     const WHATSAPP_TEMPLATES_NEW = [
-        self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION => 'whatsapp.merchant.onboarding.payments_limit_breach',
+        self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION     => 'whatsapp.merchant.onboarding.payments_limit_breach',
         self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED   => 'whatsapp.merchant.onboarding.payments_breach_blocked',
+        self::UNREGISTERED_PAYMENTS_ENABLED                 => 'whatsapp.merchant.onboarding.payments_enabled',
+        self::REGISTERED_PAYMENTS_ENABLED                   => 'whatsapp.merchant.onboarding.payments_enabled',
     ];
 
     const EMAIL_TEMPLATES = [
