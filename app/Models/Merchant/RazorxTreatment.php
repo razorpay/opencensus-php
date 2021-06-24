@@ -273,6 +273,8 @@ final class RazorxTreatment
 
     const  PAYMENT_LINK_END_STATE_VIEW_CHANGE = 'payment_link_end_state_view_change';
 
+    const NON_TPV_REFUNDS_VIA_X = 'non_tpv_refunds_via_x';
+
     /**
      * Experiment to indicate if a payment should go via capture queue for Master Card Network
      */

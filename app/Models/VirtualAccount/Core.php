@@ -111,6 +111,16 @@ class Core extends Base\Core
     }
 
     /**
+     * We use this to get the common Virtual Account for all RazorpayX failed fund loading attempts.
+     */
+    public function fetchSharedBankingVirtualAccount()
+    {
+        $virtualAccountId = Entity::SHARED_ID_BANKING;
+
+        return $this->repo->virtual_account->find($virtualAccountId);
+    }
+
+    /**
      * Creates a virtual account with bank account type receiver
      * on business banking type balance of given merchant.
      *

@@ -6,13 +6,16 @@ use App;
 use Exception;
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Admin;
 use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Models\BankTransfer;
 use RZP\Models\VirtualAccount;
 use RZP\Exception\LogicException;
+use RZP\Models\FundAccount\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
@@ -351,12 +354,22 @@ abstract class Processor extends Base\Core
 
             $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_PAYMENT_REROUTED_TO_SHARED, $data);
 
-            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+            if ($entity->getEntityName() === Constants\Entity::BANK_TRANSFER)
+            {
+                return $this->createOrFetchSharedVirtualAccountBasedOnBalanceType($entity);
+            }
 
-            return false;
+            return $this->createOrFetchSharedVirtualAccount();
         }
 
         return true;
+    }
+
+    private function createOrFetchSharedVirtualAccount()
+    {
+        $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+
+        return false;
     }
 
     protected function useSharedVirtualAccount(Base\PublicEntity $entity): bool
@@ -597,5 +610,53 @@ abstract class Processor extends Base\Core
 
             throw $ex;
         }
+    }
+
+    protected function createOrFetchSharedVirtualAccountBasedOnBalanceType($entity)
+    {
+        $payeeAccount = $entity->getPayeeAccount();
+
+        $isBanking = $this->getTransferTypeBasedOnPayeeAccount($payeeAccount);
+
+        if ($isBanking === true)
+        {
+            // Have kept the redis call inside the banking part only to avoid unnecessary failures in PG flow
+            // due to redis connection issues happening for this config key.
+            $refundViaX = (new Admin\Service)->getConfigKey(
+                ['key' => Admin\ConfigKey::RX_FUND_LOADING_REFUNDS_VIA_X]
+            );
+
+            if ($refundViaX === true)
+            {
+                $this->virtualAccount = (new VirtualAccount\Core)->fetchSharedBankingVirtualAccount();
+
+                $this->trace->info(
+                    TraceCode::RX_FUND_LOADING_FOR_ACCOUNT_NOT_FOUND_TRIGGERED_TO_COMMON_MERCHANT,
+                    [
+                        'payee_account'      => $payeeAccount,
+                        'virtual_account_id' => $this->virtualAccount->getId(),
+                        'merchant_id'        => $this->virtualAccount->getMerchantId(),
+                    ]
+                );
+
+                return true;
+            }
+        }
+
+        return $this->createOrFetchSharedVirtualAccount();
+    }
+
+    protected function getTransferTypeBasedOnPayeeAccount(string $payeeAccount)
+    {
+        $firstFourDigitsOfAccountNumber = substr($payeeAccount, 0, 4);
+        $firstSixDigitsOfAccountNumber = substr($payeeAccount, 0, 6);
+
+        if ((in_array($firstFourDigitsOfAccountNumber, BankTransfer\Processor::PAYEE_ACCOUNT_PREFIXES_FOR_X) === true) or
+            (in_array($firstSixDigitsOfAccountNumber, BankTransfer\Processor::PAYEE_ACCOUNT_PREFIXES_FOR_X) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

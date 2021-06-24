@@ -15,6 +15,7 @@ use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
@@ -27,6 +28,8 @@ use RZP\Exception\LogicException;
 use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
@@ -53,6 +56,16 @@ class Processor extends VirtualAccount\Processor
     const IFSC_CODE = 'ifsc_code';
 
     const BANK_TRANSFER_ID = 'bank_transfer_id';
+
+    /**
+     * We use the below set of prefixes to decide if the bank transfer belongs to RazorpayX or not.
+     */
+    const PAYEE_ACCOUNT_PREFIXES_FOR_X = [
+        '3434',
+        '5656',
+        '787878',
+        '456456',
+    ];
 
     /**
      * Check if the UTR received has ever been encountered before for the same
@@ -344,6 +357,22 @@ class Processor extends VirtualAccount\Processor
                     'error'                => $ex->getMessage(),
                     self::BANK_TRANSFER_ID => $bankTransfer->getId(),
                 ]);
+        }
+
+        try
+        {
+            // If the fund loading has happened to the common merchant account, we need to refund the money
+            // back by creating a payout to the payer account.
+            if ($bankTransfer->virtualAccount->getId() === VirtualAccount\Entity::SHARED_ID_BANKING)
+            {
+                (new PayoutsClient)->refundFundLoadingViaPayout($bankTransfer);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::RX_FUND_LOADING_REFUND_PAYOUT_CREATION_FAILED);
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FUND_LOADING_REFUND_PAYOUT_CREATION_FAILED);
         }
     }
 
@@ -712,6 +741,14 @@ class Processor extends VirtualAccount\Processor
             // This provides a granular approach to disable tpv for some specific merchants.
             $disableTpvFeature = $this->merchant->isFeatureEnabled(Feature\Constants::DISABLE_TPV_FLOW);
 
+            // We also disable the TPV, if the transfer is for the RazorpayX common merchant.
+            if ($bankTransfer->getVirtualAccountId() === VirtualAccount\Entity::SHARED_ID_BANKING)
+            {
+                $disableTpvFeature = true;
+
+                $bankTransfer->setExpected(false);
+            }
+
             $balanceId = $this->virtualAccount->getBalanceId();
 
             $this->trace->info(TraceCode::FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED,
@@ -770,7 +807,32 @@ class Processor extends VirtualAccount\Processor
 
                     $this->setParamsToEnsurePaymentIsNotCaptured($bankTransfer);
 
-                    $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+                    $nonTpvRefundsViaX = $this->app['razorx']->getTreatment($actualMerchantId,
+                                                                            RazorxTreatment::NON_TPV_REFUNDS_VIA_X,
+                                                                            $this->mode,
+                                                                            3);
+
+                    $this->trace->info(
+                        TraceCode::RAZORX_RESPONSE_FOR_NON_TPV_REFUND_VIA_X,
+                        [
+                            'razorx_response_for_non_tpv_refunds_via_x' => $nonTpvRefundsViaX,
+                            'actual_merchant_id'                        => $actualMerchantId
+                        ]
+                    );
+
+                    // If the refund is supposed to happen via RX entities, then we simply take that as a
+                    // successful fund load on a RX common merchant and later create a payout from there.
+                    // The SharedBankingVirtualAccount belongs to that common merchant.
+                    if ($nonTpvRefundsViaX === "on")
+                    {
+                        $this->virtualAccount = (new VirtualAccount\Core)->fetchSharedBankingVirtualAccount();
+
+                        $bankTransfer->setExpected(false);
+                    }
+                    else
+                    {
+                        $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+                    }
 
                     $this->merchant = $this->virtualAccount->merchant;
 

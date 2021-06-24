@@ -247,6 +247,8 @@ class ConfigKey
     const MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1
         = self::PREFIX . 'max_activation_progress_for_popup_range1';
 
+    const RX_FUND_LOADING_REFUNDS_VIA_X = self::PREFIX . 'rx_fund_loading_refunds_via_x';
+
     const ASYNC_ESCALATION_HANDLING_ENABLED = self::PREFIX . 'async_escalation_handling_enabled';
 
     const PUBLIC_KEYS = [
@@ -354,6 +356,7 @@ class ConfigKey
         self::REARCH_CARD_PAYMENTS,
         self::MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION,
         self::MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1,
+        self::RX_FUND_LOADING_REFUNDS_VIA_X,
         self::PAYMENT_SHOW_DCC_MARKUP,
     ];
 

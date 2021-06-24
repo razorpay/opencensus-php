@@ -1734,6 +1734,7 @@ class ErrorCode
     const BAD_REQUEST_TPV_BALANCE_TYPE_DIRECT_NOT_SUPPORTED                         = 'BAD_REQUEST_TPV_BALANCE_TYPE_DIRECT_NOT_SUPPORTED';
     const BAD_REQUEST_TPV_PRIMARY_BALANCE_NOT_SUPPORTED                             = 'BAD_REQUEST_TPV_PRIMARY_BALANCE_NOT_SUPPORTED';
     const BAD_REQUEST_TPV_ERROR                                                     = 'BAD_REQUEST_TPV_ERROR';
+    const BAD_REQUEST_FUND_LOADING_REFUND_PAYOUT_CREATION_FAILED                    = 'BAD_REQUEST_FUND_LOADING_REFUND_PAYOUT_CREATION_FAILED';
 
     // Scrooge error codes
     const GATEWAY_VERIFY_REFUND_ABSENT                                              = 'GATEWAY_VERIFY_REFUND_ABSENT';

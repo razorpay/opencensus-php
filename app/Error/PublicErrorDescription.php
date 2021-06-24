@@ -1394,6 +1394,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_TPV_ERROR                                                     = 'Error in processing the tpv request';
 
+    const BAD_REQUEST_FUND_LOADING_REFUND_PAYOUT_CREATION_FAILED                    = 'Error in creating refund payout for failed fund loading attempt';
+
     // Templating Service
     const BAD_REQUEST_ERROR_IN_TEMPLATING_RESPONSE                                  = 'Received an Error Response from templating service';
 

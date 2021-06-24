@@ -12,11 +12,13 @@ use RZP\Models\Feature;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
+use RZP\Models\Admin\Service;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Refund;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Status;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
@@ -25,6 +27,7 @@ use RZP\Mail\Transaction\BankTransfer;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\BankTransfer\Entity as E;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Mail\Merchant\RazorpayX\FundLoadingFailed;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
@@ -3639,8 +3642,9 @@ class BankTransferTest extends TestCase
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
-            $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            $countOfBankTransfersBeforeFundLoading,
+            $countOfPayoutsBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         $utr = strtoupper(random_alphanum_string(22));
 
@@ -3654,6 +3658,12 @@ class BankTransferTest extends TestCase
 
         $request['content']['transaction_id'] = $utr;
 
+        $merchantBankingBalance = $this->getDbEntity('balance',
+            [
+                'merchant_id'   => '10000000000000',
+                'type'          => 'banking'
+            ], 'live');
+
         $this->ba->batchAppAuth();
 
         $response = $this->startTest();
@@ -3662,17 +3672,19 @@ class BankTransferTest extends TestCase
 
         list($countOfPaymentsAfterFundLoading,
             $countOfTransactionsAfterFundLoading,
-            $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            $countOfBankTransfersAfterFundLoading,
+            $countOfPayoutsAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         // Assert that exactly one of these entities was created during fund loading request.
         $this->assertEquals($countOfPaymentsBeforeFundLoading + 1, $countOfPaymentsAfterFundLoading);
         $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
         $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+        $this->assertEquals($countOfPayoutsBeforeFundLoading, $countOfPayoutsAfterFundLoading);
 
         $payment = $this->getDbLastEntity('payment', 'live');
 
-        $transaction = $this->getDbLastEntity('transaction', 'live');
+        $creditTransaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
 
@@ -3685,13 +3697,13 @@ class BankTransferTest extends TestCase
         // Assertions on payment entity created
         $this->assertEquals('authorized', $payment->getStatus());
         $this->assertEquals($sharedVirtualAccount->getMerchantId(), $payment->getMerchantId());
-        $this->assertEquals($transaction->getId(), $payment->getTransactionId());
+        $this->assertEquals($creditTransaction->getId(), $payment->getTransactionId());
         $this->assertEquals($expectedAmount, $payment->getAmount());
         $this->assertNotNull($payment->getRefundAt());
 
         // Assertions on transaction entity created
-        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $transaction->getMerchantId());
-        $this->assertEquals($expectedAmount, $transaction->getAmount());
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $creditTransaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $creditTransaction->getAmount());
 
         // Assertions on payer bank account for bank transfer
         $this->assertNotNull($bankTransfer->getPayerBankAccountId());
@@ -3729,10 +3741,10 @@ class BankTransferTest extends TestCase
             $this->assertEquals('₹ 50000', $viewData['amount']);
             $this->assertEquals('YESB0000022', $viewData['payer_ifsc']);
             $this->assertEquals('XXXXXXXXXXXXXXX6789', $viewData['payer_account_number']);
-            $this->assertEquals('XXXXXXXXXXXX6905', $viewData['payee_account_number']);
+            $this->assertEquals('XXXXXXXXXXXX3333', $viewData['payee_account_number']);
             $this->assertEquals(FundLoadingFailed::URL, $viewData['url']);
 
-            $mailSubject = 'Fund loading of ₹ 50000 to your RazorpayX account number XXXXXXXXXXXX6905 has been rejected';
+            $mailSubject = 'Fund loading of ₹ 50000 to your RazorpayX account number XXXXXXXXXXXX3333 has been rejected';
 
             $this->assertEquals($mailSubject, $mail->subject);
 
@@ -3740,6 +3752,16 @@ class BankTransferTest extends TestCase
 
             return true;
         });
+
+        $updatedMerchantBankingBalance = $this->getDbEntity('balance',
+            [
+                'merchant_id'   => '10000000000000',
+                'type'          => 'banking'
+            ], 'live');
+
+        // Assertions on balance.
+        // The balance should not change since TPV failed
+        $this->assertEquals($merchantBankingBalance['balance'], $updatedMerchantBankingBalance['balance']);
     }
 
     public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButApprovedActiveTpvAccountFound()
@@ -3757,8 +3779,9 @@ class BankTransferTest extends TestCase
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
-            $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            $countOfBankTransfersBeforeFundLoading,
+            $countOfPayoutsBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         $utr = strtoupper(random_alphanum_string(22));
 
@@ -3774,6 +3797,12 @@ class BankTransferTest extends TestCase
 
         $request['content']['transaction_id'] = $utr;
 
+        $merchantBankingBalance = $this->getDbEntity('balance',
+            [
+                'merchant_id'   => '10000000000000',
+                'type'          => 'banking'
+            ], 'live');
+
         $this->ba->batchAppAuth();
 
         $response = $this->startTest();
@@ -3782,8 +3811,9 @@ class BankTransferTest extends TestCase
 
         list($countOfPaymentsAfterFundLoading,
             $countOfTransactionsAfterFundLoading,
-            $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            $countOfBankTransfersAfterFundLoading,
+            $countOfPayoutsAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         // Assert that no new payment was created.
         $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
@@ -3791,8 +3821,9 @@ class BankTransferTest extends TestCase
         // Assert that exactly one of these entities was created during fund loading request.
         $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
         $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+        $this->assertEquals($countOfPayoutsBeforeFundLoading, $countOfPayoutsAfterFundLoading);
 
-        $transaction = $this->getDbLastEntity('transaction', 'live');
+        $creditTransaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
 
@@ -3801,10 +3832,13 @@ class BankTransferTest extends TestCase
         $merchantId = $this->bankingBalance->getMerchantId();
 
         // Assertions on transaction entity created
-        $this->assertEquals($merchantId, $transaction->getMerchantId());
-        $this->assertEquals($expectedAmount, $transaction->getAmount());
-        $this->assertEquals('bank_transfer', $transaction->getType());
-        $this->assertEquals($bankTransfer->getId(), $transaction->getEntityId());
+        $this->assertEquals($merchantId, $creditTransaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $creditTransaction->getAmount());
+        $this->assertEquals('bank_transfer', $creditTransaction->getType());
+        $this->assertEquals($bankTransfer->getId(), $creditTransaction->getEntityId());
+        $this->assertEquals($expectedAmount, $creditTransaction->getAmount());
+        $this->assertEquals($expectedAmount, $creditTransaction->getCredit());
+        $this->assertEquals(0, $creditTransaction->getDebit());
 
         // Assertions on bank transfer entity created (Internal linking)
         $this->assertEquals($merchantId, $bankTransfer->getMerchantId());
@@ -3832,6 +3866,17 @@ class BankTransferTest extends TestCase
         $this->assertEquals($utr, $bankTransfer->getUtr());
 
         Mail::assertNotQueued(FundLoadingFailed::class);
+
+        $updatedMerchantBankingBalance = $this->getDbEntity('balance',
+            [
+                'merchant_id'   => '10000000000000',
+                'type'          => 'banking'
+            ], 'live');
+
+        // Assertions on balance.
+        // The balance should not change since TPV failed
+        $this->assertEquals($merchantBankingBalance['balance'] + $bankTransfer['amount'],
+                            $updatedMerchantBankingBalance['balance']);
     }
 
     public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButPendingTpvAccountFound()
@@ -3848,8 +3893,9 @@ class BankTransferTest extends TestCase
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
-            $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            $countOfBankTransfersBeforeFundLoading,
+            $countOfPayoutsBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         $utr = strtoupper(random_alphanum_string(22));
 
@@ -3865,6 +3911,13 @@ class BankTransferTest extends TestCase
 
         $request['content']['transaction_id'] = $utr;
 
+        $merchantBankingBalance = $this->getDbEntity('balance',
+            [
+                'merchant_id'   => '10000000000000',
+                'type'          => 'banking'
+            ], 'live');
+
+
         $this->ba->batchAppAuth();
 
         $response = $this->startTest();
@@ -3873,17 +3926,19 @@ class BankTransferTest extends TestCase
 
         list($countOfPaymentsAfterFundLoading,
             $countOfTransactionsAfterFundLoading,
-            $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            $countOfBankTransfersAfterFundLoading,
+            $countOfPayoutsAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         // Assert that exactly one of these entities was created during fund loading request.
         $this->assertEquals($countOfPaymentsBeforeFundLoading + 1, $countOfPaymentsAfterFundLoading);
         $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
         $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+        $this->assertEquals($countOfPayoutsBeforeFundLoading, $countOfPayoutsAfterFundLoading);
 
         $payment = $this->getDbLastEntity('payment', 'live');
 
-        $transaction = $this->getDbLastEntity('transaction', 'live');
+        $creditTransaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
 
@@ -3896,13 +3951,13 @@ class BankTransferTest extends TestCase
         // Assertions on payment entity created
         $this->assertEquals('authorized', $payment->getStatus());
         $this->assertEquals($sharedVirtualAccount->getMerchantId(), $payment->getMerchantId());
-        $this->assertEquals($transaction->getId(), $payment->getTransactionId());
+        $this->assertEquals($creditTransaction->getId(), $payment->getTransactionId());
         $this->assertEquals($expectedAmount, $payment->getAmount());
         $this->assertNotNull($payment->getRefundAt());
 
         // Assertions on transaction entity created
-        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $transaction->getMerchantId());
-        $this->assertEquals($expectedAmount, $transaction->getAmount());
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $creditTransaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $creditTransaction->getAmount());
 
         // Assertions on bank transfer entity created (Internal linking)
         $this->assertEquals($sharedVirtualAccount->getMerchantId(), $bankTransfer->getMerchantId());
@@ -3940,10 +3995,10 @@ class BankTransferTest extends TestCase
             $this->assertEquals('₹ 50000', $viewData['amount']);
             $this->assertEquals('YESB0000022', $viewData['payer_ifsc']);
             $this->assertEquals('XXXXXXXXXXXXXXX6789', $viewData['payer_account_number']);
-            $this->assertEquals('XXXXXXXXXXXX6905', $viewData['payee_account_number']);
+            $this->assertEquals('XXXXXXXXXXXX3333', $viewData['payee_account_number']);
             $this->assertEquals(FundLoadingFailed::URL, $viewData['url']);
 
-            $mailSubject = 'Fund loading of ₹ 50000 to your RazorpayX account number XXXXXXXXXXXX6905 has been rejected';
+            $mailSubject = 'Fund loading of ₹ 50000 to your RazorpayX account number XXXXXXXXXXXX3333 has been rejected';
 
             $this->assertEquals($mailSubject, $mail->subject);
 
@@ -3951,6 +4006,16 @@ class BankTransferTest extends TestCase
 
             return true;
         });
+
+        $updatedMerchantBankingBalance = $this->getDbEntity('balance',
+            [
+                'merchant_id'   => '10000000000000',
+                'type'          => 'banking'
+            ], 'live');
+
+        // Assertions on balance.
+        // The balance should not change since TPV failed
+        $this->assertEquals($merchantBankingBalance['balance'], $updatedMerchantBankingBalance['balance']);
     }
 
     public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButInActiveTpvAccountFound()
@@ -3968,8 +4033,9 @@ class BankTransferTest extends TestCase
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
-            $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            $countOfBankTransfersBeforeFundLoading,
+            $countOfPayoutsBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         $utr = strtoupper(random_alphanum_string(22));
 
@@ -3985,6 +4051,12 @@ class BankTransferTest extends TestCase
 
         $request['content']['transaction_id'] = $utr;
 
+        $merchantBankingBalance = $this->getDbEntity('balance',
+            [
+                'merchant_id'   => '10000000000000',
+                'type'          => 'banking'
+            ], 'live');
+
         $this->ba->batchAppAuth();
 
         $response = $this->startTest();
@@ -3993,17 +4065,19 @@ class BankTransferTest extends TestCase
 
         list($countOfPaymentsAfterFundLoading,
             $countOfTransactionsAfterFundLoading,
-            $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            $countOfBankTransfersAfterFundLoading,
+            $countOfPayoutsAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         // Assert that exactly one of these entities was created during fund loading request.
         $this->assertEquals($countOfPaymentsBeforeFundLoading + 1, $countOfPaymentsAfterFundLoading);
         $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
         $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+        $this->assertEquals($countOfPayoutsBeforeFundLoading, $countOfPayoutsAfterFundLoading);
 
         $payment = $this->getDbLastEntity('payment', 'live');
 
-        $transaction = $this->getDbLastEntity('transaction', 'live');
+        $creditTransaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
 
@@ -4016,13 +4090,13 @@ class BankTransferTest extends TestCase
         // Assertions on payment entity created
         $this->assertEquals('authorized', $payment->getStatus());
         $this->assertEquals($sharedVirtualAccount->getMerchantId(), $payment->getMerchantId());
-        $this->assertEquals($transaction->getId(), $payment->getTransactionId());
+        $this->assertEquals($creditTransaction->getId(), $payment->getTransactionId());
         $this->assertEquals($expectedAmount, $payment->getAmount());
         $this->assertNotNull($payment->getRefundAt());
 
         // Assertions on transaction entity created
-        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $transaction->getMerchantId());
-        $this->assertEquals($expectedAmount, $transaction->getAmount());
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $creditTransaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $creditTransaction->getAmount());
 
         // Assertions on bank transfer entity created (Internal linking)
         $this->assertEquals($sharedVirtualAccount->getMerchantId(), $bankTransfer->getMerchantId());
@@ -4060,10 +4134,10 @@ class BankTransferTest extends TestCase
             $this->assertEquals('₹ 50000', $viewData['amount']);
             $this->assertEquals('YESB0000022', $viewData['payer_ifsc']);
             $this->assertEquals('XXXXXXXXXXXXXXX6789', $viewData['payer_account_number']);
-            $this->assertEquals('XXXXXXXXXXXX6905', $viewData['payee_account_number']);
+            $this->assertEquals('XXXXXXXXXXXX3333', $viewData['payee_account_number']);
             $this->assertEquals(FundLoadingFailed::URL, $viewData['url']);
 
-            $mailSubject = 'Fund loading of ₹ 50000 to your RazorpayX account number XXXXXXXXXXXX6905 has been rejected';
+            $mailSubject = 'Fund loading of ₹ 50000 to your RazorpayX account number XXXXXXXXXXXX3333 has been rejected';
 
             $this->assertEquals($mailSubject, $mail->subject);
 
@@ -4071,6 +4145,16 @@ class BankTransferTest extends TestCase
 
             return true;
         });
+
+        $updatedMerchantBankingBalance = $this->getDbEntity('balance',
+            [
+                'merchant_id'   => '10000000000000',
+                'type'          => 'banking'
+            ], 'live');
+
+        // Assertions on balance.
+        // The balance should not change since TPV failed
+        $this->assertEquals($merchantBankingBalance['balance'], $updatedMerchantBankingBalance['balance']);
     }
 
     // Using feature flag to disable tpv flow for a specific merchant. This can be used to disable tpv flow for a
@@ -4090,7 +4174,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         $utr = strtoupper(random_alphanum_string(22));
 
@@ -4115,7 +4199,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsAfterFundLoading,
             $countOfTransactionsAfterFundLoading,
             $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         // Assert that no new payment was created.
         $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
@@ -4178,7 +4262,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         $utr = strtoupper(random_alphanum_string(22));
 
@@ -4211,7 +4295,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsAfterFundLoading,
             $countOfTransactionsAfterFundLoading,
             $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         // Assert that no new payment was created.
         $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
@@ -4280,7 +4364,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         $utr = strtoupper(random_alphanum_string(22));
 
@@ -4313,7 +4397,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsAfterFundLoading,
             $countOfTransactionsAfterFundLoading,
             $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         // Assert that no new payment was created.
         $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
@@ -4382,7 +4466,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         $utr = strtoupper(random_alphanum_string(22));
 
@@ -4415,7 +4499,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsAfterFundLoading,
             $countOfTransactionsAfterFundLoading,
             $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         // Assert that no new payment was created.
         $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
@@ -4486,7 +4570,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         $utr = strtoupper(random_alphanum_string(22));
 
@@ -4517,7 +4601,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsAfterFundLoading,
             $countOfTransactionsAfterFundLoading,
             $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         // Assert that no new payment was created.
         $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
@@ -4583,7 +4667,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         $utr = strtoupper(random_alphanum_string(22));
 
@@ -4622,7 +4706,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsAfterFundLoading,
             $countOfTransactionsAfterFundLoading,
             $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         // Assert that no new payment was created.
         $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
@@ -4687,7 +4771,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         $utr = strtoupper(random_alphanum_string(22));
 
@@ -4716,7 +4800,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsAfterFundLoading,
             $countOfTransactionsAfterFundLoading,
             $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         // Assert that exactly one of these entities was created during fund loading request.
         $this->assertEquals($countOfPaymentsBeforeFundLoading + 1, $countOfPaymentsAfterFundLoading);
@@ -4797,7 +4881,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         $utr = strtoupper(random_alphanum_string(22));
 
@@ -4830,7 +4914,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsAfterFundLoading,
             $countOfTransactionsAfterFundLoading,
             $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         // Assert that no new payment was created.
         $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
@@ -4903,7 +4987,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         $utr = strtoupper(random_alphanum_string(22));
 
@@ -4938,7 +5022,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsAfterFundLoading,
             $countOfTransactionsAfterFundLoading,
             $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         // Assert that no new payment was created.
         $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
@@ -5009,7 +5093,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         $utr = strtoupper(random_alphanum_string(22));
 
@@ -5036,7 +5120,7 @@ class BankTransferTest extends TestCase
         list($countOfPaymentsAfterFundLoading,
             $countOfTransactionsAfterFundLoading,
             $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
 
         // Assert that no new payment was created.
         $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
@@ -5126,11 +5210,14 @@ class BankTransferTest extends TestCase
 
         $this->setUpMerchantForBusinessBankingLive(true);
 
+        $this->setUpCommonMerchantForBusinessBankingLive(true);
+
         $this->fixtures->on('live')->edit(
             'bank_account',
             $this->bankAccount->getId(),
             [
-                'ifsc_code' => 'ICIC0000104',
+                'ifsc_code'         => 'ICIC0000104',
+                'account_number'    => '3434111122223333'
             ]
         );
 
@@ -5166,7 +5253,7 @@ class BankTransferTest extends TestCase
         $this->bankAccount = $this->bankAccount->reload();
     }
 
-    protected function listCountOfPaymentTransactionAndBankTransferEntities(string $mode = 'test')
+    protected function listCountOfPaymentTransactionPayoutAndBankTransferEntities(string $mode = 'test')
     {
         $countOfPayments = count($this->getDbEntities('payment', [], $mode));
 
@@ -5174,7 +5261,9 @@ class BankTransferTest extends TestCase
 
         $countOfBankTransfers = count($this->getDbEntities('bank_transfer', [], $mode));
 
-        return [$countOfPayments, $countOfTransactions, $countOfBankTransfers];
+        $countOfPayouts = count($this->getDbEntities('payout', [], $mode));
+
+        return [$countOfPayments, $countOfTransactions, $countOfBankTransfers, $countOfPayouts];
     }
 
     /*
@@ -5264,5 +5353,903 @@ class BankTransferTest extends TestCase
         ];
 
         $this->setupGlobalWhitelistPayerAccounts($whitelistedAccounts);
+    }
+
+    /**
+     * We are trying to load funds to some random account number which does not exist in our system.
+     * This will fail and get refunded back via payment to a common merchant and refund
+     */
+    public function testBankTransferIciciIMPSForRazorpayXWherePayeeAccountNumberDoesNotExist()
+    {
+        Mail::fake();
+
+        $this->setupForIciciXFundLoading();
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+            [
+                'balance_id' => $this->bankingBalance->getId(),
+                'status'     => 'approved',
+                'is_active'  => 0,
+            ]);
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        // Appending 1 at the end so that we get a non existent account number
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber() . '1';
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfPaymentsBeforeFundLoading + 1, $countOfPaymentsAfterFundLoading);
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+
+        $payment = $this->getDbLastEntity('payment', 'live');
+
+        $transaction = $this->getDbLastEntity('transaction', 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $sharedVirtualAccount = $this->getDbEntity('virtual_account',
+            ['id' => VirtualAccount\Entity::SHARED_ID],
+            'live');
+
+        // Assertions on payment entity created
+        $this->assertEquals('authorized', $payment->getStatus());
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $payment->getMerchantId());
+        $this->assertEquals($transaction->getId(), $payment->getTransactionId());
+        $this->assertEquals($expectedAmount, $payment->getAmount());
+        $this->assertNotNull($payment->getRefundAt());
+
+        // Assertions on transaction entity created
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $transaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $transaction->getAmount());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $bankTransfer->getMerchantId());
+        $this->assertEquals($sharedVirtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+        $this->assertEquals($payment->getId(), $bankTransfer->getPaymentId());
+        $this->assertEquals(false, $bankTransfer->isExpected());
+        $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND', $bankTransfer->getUnexpectedReason());
+
+        // Assertions on payer bank account for bank transfer
+        $this->assertNotNull($bankTransfer->getPayerBankAccountId());
+
+        $payerBankAccount = $bankTransfer->payerBankAccount;
+
+        $this->assertEquals($request['content']['payer_account'], $payerBankAccount->getAccountNumber());
+        $this->assertEquals($request['content']['payer_ifsc'], $payerBankAccount->getIfscCode());
+        $this->assertEquals($request['content']['payer_name'], $payerBankAccount->getBeneficiaryName());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since approved and active TPV account was not found, we shall send the Fund Loading failed email
+        Mail::assertNotQueued(FundLoadingFailed::class);
+    }
+
+    /**
+     * We are trying to load funds to some random account number which does not exist in our system.
+     * This will fail and get refunded back via fund loading to common merchant and a payout from that merchant.
+     */
+    public function testBankTransferIciciIMPSForRazorpayXWherePayeeAccountNumberDoesNotExistAndRefundsViaX()
+    {
+        Mail::fake();
+
+        $this->setupForIciciXFundLoading();
+
+        // This makes sure that the refunds for failed fund loadings on X happen via X
+        (new Service)->setConfigKeys([ConfigKey::RX_FUND_LOADING_REFUNDS_VIA_X => true]);
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+                                            [
+                                                'balance_id' => $this->bankingBalance->getId(),
+                                                'status'     => 'approved',
+                                                'is_active'  => 0,
+                                            ]);
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading,
+            $countOfPayoutsBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        // Appending 1 at the end so that we get a non existent account number
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber() . '1';
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $commonMerchantBankingBalance = $this->getDbEntity('balance',
+                                                           [
+                                                               'merchant_id' => '100000Razorpay',
+                                                               'type'        => 'banking'
+                                                           ], 'live');
+
+        // Making pricing zero for this specific payout amount, mode etc. so that
+        $this->fixtures->on('live')->edit('pricing', 'Bbg7e4oKCgaubd',
+                                          [
+                                              'fixed_rate' => 0
+                                          ]);
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading,
+            $countOfPayoutsAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        // Assert that no payments were created during this request
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfPayoutsBeforeFundLoading + 1, $countOfPayoutsAfterFundLoading);
+
+        // Assert that two transactions were created. One for Bank transfer and one for payout.
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 2, $countOfTransactionsAfterFundLoading);
+
+        $creditTransaction = $this->getDbEntity('transaction',
+                                                [
+                                                    'balance_id' => $commonMerchantBankingBalance->getId(),
+                                                    'type'       => 'bank_transfer'
+                                                ], 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $sharedVirtualAccount = $this->getDbEntity('virtual_account',
+                                                   ['id' => VirtualAccount\Entity::SHARED_ID_BANKING],
+                                                   'live');
+
+        // Assertions on credit transaction entity created
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $creditTransaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $creditTransaction->getAmount());
+        $this->assertEquals($expectedAmount, $creditTransaction->getCredit());
+        $this->assertEquals(0, $creditTransaction->getDebit());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $bankTransfer->getMerchantId());
+        $this->assertEquals($sharedVirtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+        $this->assertEquals(null, $bankTransfer->getPaymentId());
+
+        $this->assertEquals(false, $bankTransfer->isExpected());
+        $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND',
+                            $bankTransfer->getUnexpectedReason());
+
+        // Assertions on payer bank account for bank transfer
+        $this->assertNotNull($bankTransfer->getPayerBankAccountId());
+
+        $payerBankAccount = $bankTransfer->payerBankAccount;
+
+        $this->assertEquals($request['content']['payer_account'], $payerBankAccount->getAccountNumber());
+        $this->assertEquals($request['content']['payer_ifsc'], $payerBankAccount->getIfscCode());
+        $this->assertEquals($request['content']['payer_name'], $payerBankAccount->getBeneficiaryName());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since approved and active TPV account was not found, we shall send the Fund Loading failed email
+        Mail::assertNotQueued(FundLoadingFailed::class);
+
+        //
+        // Assertions for the Payout created during refund flow
+        //
+        $refundPayout = $this->getDbLastEntity('payout', 'live');
+
+        $debitTransaction = $this->getDbEntity('transaction',
+                                               [
+                                                   'balance_id' => $commonMerchantBankingBalance->getId(),
+                                                   'type'       => 'payout'
+                                               ], 'live');
+
+        $payoutSource = $this->getDbLastEntity('payout_source', 'live');
+
+        $updatedCommonMerchantBankingBalance = $this->getDbEntity('balance',
+                                                                  [
+                                                                      'merchant_id' => '100000Razorpay',
+                                                                      'type'        => 'banking'
+                                                                  ], 'live');
+
+        // Assertions on payout created
+        $this->assertEquals($bankTransfer->getMerchantId(), $refundPayout->getMerchantId());
+        $this->assertEquals($bankTransfer->getAmount(), $refundPayout->getAmount());
+        $this->assertEquals($bankTransfer->getPayerAccount(),
+                            $refundPayout->fundAccount->account->getAccountNumber());
+        $this->assertEquals($bankTransfer->getUtr(), $refundPayout->getReferenceId());
+
+        // Assertions on payout sources entity
+        $this->assertEquals($bankTransfer->getPublicId(), $payoutSource['source_id']);
+        $this->assertEquals('bank_transfer', $payoutSource['source_type']);
+        $this->assertEquals($refundPayout->getId(), $payoutSource['payout_id']);
+
+        // Assertions on the debit transaction entity
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $debitTransaction->getMerchantId());
+        $this->assertEquals($refundPayout->getAmount() + $refundPayout->getFees(), $debitTransaction->getAmount());
+        $this->assertEquals(0, $debitTransaction->getCredit());
+        $this->assertEquals($refundPayout->getAmount() + $refundPayout->getFees(), $debitTransaction->getDebit());
+
+        // Assertions on balance.
+        // The balance should not change because we'll have a credit and a debit of the exact same amount
+        $this->assertEquals($commonMerchantBankingBalance['balance'], $updatedCommonMerchantBankingBalance['balance']);
+    }
+
+    /**
+     * We are trying to load funds to some existing account number which does not have any TPV.
+     * This will fail and get refunded back via fund loading to common merchant and a payout from that merchant.
+     */
+    public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFoundAndRefundsViaX()
+    {
+        Mail::fake();
+
+        $this->setupForIciciXFundLoading();
+
+        $this->enableRazorXTreatmentForNonTpvRefundsViaX();
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading,
+            $countOfPayoutsBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $commonMerchantBankingBalance = $this->getDbEntity('balance',
+                                                           [
+                                                               'merchant_id' => '100000Razorpay',
+                                                               'type'        => 'banking'
+                                                           ], 'live');
+
+        // Making pricing zero for this specific payout amount, mode etc. so that
+        $this->fixtures->on('live')->edit('pricing', 'Bbg7e4oKCgaubd',
+                                          [
+                                              'fixed_rate' => 0
+                                          ]);
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading,
+            $countOfPayoutsAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        // Assert that no payments were created during this request
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfPayoutsBeforeFundLoading + 1, $countOfPayoutsAfterFundLoading);
+
+        // Assert that two transactions were created. One for Bank transfer and one for payout.
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 2, $countOfTransactionsAfterFundLoading);
+
+        $creditTransaction = $this->getDbEntity('transaction',
+                                                [
+                                                    'balance_id' => $commonMerchantBankingBalance->getId(),
+                                                    'type'       => 'bank_transfer'
+                                                ], 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $sharedVirtualAccount = $this->getDbEntity('virtual_account',
+                                                   ['id' => VirtualAccount\Entity::SHARED_ID_BANKING],
+                                                   'live');
+
+        // Assertions on credit transaction entity created
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $creditTransaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $creditTransaction->getAmount());
+        $this->assertEquals($expectedAmount, $creditTransaction->getCredit());
+        $this->assertEquals(0, $creditTransaction->getDebit());
+
+        // Assertions on payer bank account for bank transfer
+        $this->assertNotNull($bankTransfer->getPayerBankAccountId());
+
+        $payerBankAccount = $bankTransfer->payerBankAccount;
+
+        $this->assertEquals($request['content']['payer_account'], $payerBankAccount->getAccountNumber());
+        $this->assertEquals($request['content']['payer_ifsc'], $payerBankAccount->getIfscCode());
+        $this->assertEquals($request['content']['payer_name'], $payerBankAccount->getBeneficiaryName());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $bankTransfer->getMerchantId());
+        $this->assertEquals($sharedVirtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+        $this->assertEquals(null, $bankTransfer->getPaymentId());
+        $this->assertEquals(false, $bankTransfer->isExpected());
+        $this->assertEquals('TPV_NOT_FOUND_FOR_BANKING_ACCOUNT_FUND_LOADING',
+                            $bankTransfer->getUnexpectedReason());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since TPV account was not found, we shall send the Fund Loading failed email
+        Mail::assertQueued(FundLoadingFailed::class, function($mail) {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('₹ 50000', $viewData['amount']);
+            $this->assertEquals('YESB0000022', $viewData['payer_ifsc']);
+            $this->assertEquals('XXXXXXXXXXXXXXX6789', $viewData['payer_account_number']);
+            $this->assertEquals('XXXXXXXXXXXX3333', $viewData['payee_account_number']);
+            $this->assertEquals(FundLoadingFailed::URL, $viewData['url']);
+
+            $mailSubject = 'Fund loading of ₹ 50000 to your RazorpayX account number XXXXXXXXXXXX3333 has been rejected';
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('emails.merchant.razorpayx.fund_loading_failed', $mail->view);
+
+            return true;
+        });
+
+        //
+        // Assertions for the Payout created during refund flow
+        //
+        $refundPayout = $this->getDbLastEntity('payout', 'live');
+
+        $debitTransaction = $this->getDbEntity('transaction',
+                                               [
+                                                   'balance_id' => $commonMerchantBankingBalance->getId(),
+                                                   'type'       => 'payout'
+                                               ], 'live');
+
+        $payoutSource = $this->getDbLastEntity('payout_source', 'live');
+
+        $updatedCommonMerchantBankingBalance = $this->getDbEntity('balance',
+                                                                  [
+                                                                      'merchant_id' => '100000Razorpay',
+                                                                      'type'        => 'banking'
+                                                                  ], 'live');
+
+        // Assertions on payout created
+        $this->assertEquals($bankTransfer->getMerchantId(), $refundPayout->getMerchantId());
+        $this->assertEquals($bankTransfer->getAmount(), $refundPayout->getAmount());
+        $this->assertEquals($bankTransfer->getPayerAccount(),
+                            $refundPayout->fundAccount->account->getAccountNumber());
+        $this->assertEquals($bankTransfer->getUtr(), $refundPayout->getReferenceId());
+
+        // Assertions on payout sources entity
+        $this->assertEquals($bankTransfer->getPublicId(), $payoutSource['source_id']);
+        $this->assertEquals('bank_transfer', $payoutSource['source_type']);
+        $this->assertEquals($refundPayout->getId(), $payoutSource['payout_id']);
+
+        // Assertions on the debit transaction entity
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $debitTransaction->getMerchantId());
+        $this->assertEquals($refundPayout->getAmount() + $refundPayout->getFees(), $debitTransaction->getAmount());
+        $this->assertEquals(0, $debitTransaction->getCredit());
+        $this->assertEquals($refundPayout->getAmount() + $refundPayout->getFees(), $debitTransaction->getDebit());
+
+        // Assertions on balance.
+        // The balance should not change because we'll have a credit and a debit of the exact same amount
+        $this->assertEquals($commonMerchantBankingBalance['balance'], $updatedCommonMerchantBankingBalance['balance']);
+    }
+
+    /**
+     * We are trying to load funds to some existing account number which has a TPV but in pending state.
+     * This will fail and get refunded back via fund loading to common merchant and a payout from that merchant.
+     */
+    public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButPendingTpvAccountFoundAndRefundsViaX()
+    {
+        Mail::fake();
+
+        $this->setupForIciciXFundLoading();
+
+        $this->enableRazorXTreatmentForNonTpvRefundsViaX();
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+                                            [
+                                                'balance_id' => $this->bankingBalance->getId(),
+                                                'status'     => 'pending',
+                                            ]);
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading,
+            $countOfPayoutsBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFoundAndRefundsViaX'];
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $commonMerchantBankingBalance = $this->getDbEntity('balance',
+                                                           [
+                                                               'merchant_id' => '100000Razorpay',
+                                                               'type'        => 'banking'
+                                                           ], 'live');
+
+        // Making pricing zero for this specific payout amount, mode etc. so that
+        $this->fixtures->on('live')->edit('pricing', 'Bbg7e4oKCgaubd',
+                                          [
+                                              'fixed_rate' => 0
+                                          ]);
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading,
+            $countOfPayoutsAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        // Assert that no payments were created during this request
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfPayoutsBeforeFundLoading + 1, $countOfPayoutsAfterFundLoading);
+
+        // Assert that two transactions were created. One for Bank transfer and one for payout.
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 2, $countOfTransactionsAfterFundLoading);
+
+        $creditTransaction = $this->getDbEntity('transaction',
+                                                [
+                                                    'balance_id' => $commonMerchantBankingBalance->getId(),
+                                                    'type'       => 'bank_transfer'
+                                                ], 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $sharedVirtualAccount = $this->getDbEntity('virtual_account',
+                                                   ['id' => VirtualAccount\Entity::SHARED_ID_BANKING],
+                                                   'live');
+
+        // Assertions on credit transaction entity created
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $creditTransaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $creditTransaction->getAmount());
+        $this->assertEquals($expectedAmount, $creditTransaction->getCredit());
+        $this->assertEquals(0, $creditTransaction->getDebit());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $bankTransfer->getMerchantId());
+        $this->assertEquals($sharedVirtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+        $this->assertEquals(null, $bankTransfer->getPaymentId());
+        $this->assertEquals(false, $bankTransfer->isExpected());
+        $this->assertEquals('TPV_NOT_FOUND_FOR_BANKING_ACCOUNT_FUND_LOADING',
+                            $bankTransfer->getUnexpectedReason());
+
+        // Assertions on payer bank account for bank transfer
+        $this->assertNotNull($bankTransfer->getPayerBankAccountId());
+
+        $payerBankAccount = $bankTransfer->payerBankAccount;
+
+        $this->assertEquals($request['content']['payer_account'], $payerBankAccount->getAccountNumber());
+        $this->assertEquals($request['content']['payer_ifsc'], $payerBankAccount->getIfscCode());
+        $this->assertEquals($request['content']['payer_name'], $payerBankAccount->getBeneficiaryName());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since approved and active TPV account was not found, we shall send the Fund Loading failed email
+        Mail::assertQueued(FundLoadingFailed::class, function($mail) {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('₹ 50000', $viewData['amount']);
+            $this->assertEquals('YESB0000022', $viewData['payer_ifsc']);
+            $this->assertEquals('XXXXXXXXXXXXXXX6789', $viewData['payer_account_number']);
+            $this->assertEquals('XXXXXXXXXXXX3333', $viewData['payee_account_number']);
+            $this->assertEquals(FundLoadingFailed::URL, $viewData['url']);
+
+            $mailSubject = 'Fund loading of ₹ 50000 to your RazorpayX account number XXXXXXXXXXXX3333 has been rejected';
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('emails.merchant.razorpayx.fund_loading_failed', $mail->view);
+
+            return true;
+        });
+
+        //
+        // Assertions for the Payout created during refund flow
+        //
+        $refundPayout = $this->getDbLastEntity('payout', 'live');
+
+        $debitTransaction = $this->getDbEntity('transaction',
+                                               [
+                                                   'balance_id' => $commonMerchantBankingBalance->getId(),
+                                                   'type'       => 'payout'
+                                               ], 'live');
+
+        $payoutSource = $this->getDbLastEntity('payout_source', 'live');
+
+        $updatedCommonMerchantBankingBalance = $this->getDbEntity('balance',
+                                                                  [
+                                                                      'merchant_id' => '100000Razorpay',
+                                                                      'type'        => 'banking'
+                                                                  ], 'live');
+
+        // Assertions on payout created
+        $this->assertEquals($bankTransfer->getMerchantId(), $refundPayout->getMerchantId());
+        $this->assertEquals($bankTransfer->getAmount(), $refundPayout->getAmount());
+        $this->assertEquals($bankTransfer->getPayerAccount(),
+                            $refundPayout->fundAccount->account->getAccountNumber());
+        $this->assertEquals($bankTransfer->getUtr(), $refundPayout->getReferenceId());
+
+        // Assertions on payout sources entity
+        $this->assertEquals($bankTransfer->getPublicId(), $payoutSource['source_id']);
+        $this->assertEquals('bank_transfer', $payoutSource['source_type']);
+        $this->assertEquals($refundPayout->getId(), $payoutSource['payout_id']);
+
+        // Assertions on the debit transaction entity
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $debitTransaction->getMerchantId());
+        $this->assertEquals($refundPayout->getAmount() + $refundPayout->getFees(), $debitTransaction->getAmount());
+        $this->assertEquals(0, $debitTransaction->getCredit());
+        $this->assertEquals($refundPayout->getAmount() + $refundPayout->getFees(), $debitTransaction->getDebit());
+
+        // Assertions on balance.
+        // The balance should not change because we'll have a credit and a debit of the exact same amount
+        $this->assertEquals($commonMerchantBankingBalance['balance'], $updatedCommonMerchantBankingBalance['balance']);
+    }
+
+    /**
+     * We are trying to load funds to some existing account number which has a TPV but it is inactive.
+     * This will fail and get refunded back via fund loading to common merchant and a payout from that merchant.
+     */
+    public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButInActiveTpvAccountFoundAndRefundsViaX()
+    {
+        Mail::fake();
+
+        $this->setupForIciciXFundLoading();
+
+        $this->enableRazorXTreatmentForNonTpvRefundsViaX();
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+                                            [
+                                                'balance_id' => $this->bankingBalance->getId(),
+                                                'status'     => 'approved',
+                                                'is_active'  => 0,
+                                            ]);
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading,
+            $countOfPayoutsBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFoundAndRefundsViaX'];
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $commonMerchantBankingBalance = $this->getDbEntity('balance',
+                                                           [
+                                                               'merchant_id' => '100000Razorpay',
+                                                               'type'        => 'banking'
+                                                           ], 'live');
+
+        // Making pricing zero for this specific payout amount, mode etc. so that
+        $this->fixtures->on('live')->edit('pricing', 'Bbg7e4oKCgaubd',
+                                          [
+                                              'fixed_rate' => 0
+                                          ]);
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading,
+            $countOfPayoutsAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        // Assert that no payments were created during this request
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfPayoutsBeforeFundLoading + 1, $countOfPayoutsAfterFundLoading);
+
+        // Assert that two transactions were created. One for Bank transfer and one for payout.
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 2, $countOfTransactionsAfterFundLoading);
+
+        $creditTransaction = $this->getDbEntity('transaction',
+                                                [
+                                                    'balance_id' => $commonMerchantBankingBalance->getId(),
+                                                    'type'       => 'bank_transfer'
+                                                ], 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $sharedVirtualAccount = $this->getDbEntity('virtual_account',
+                                                   ['id' => VirtualAccount\Entity::SHARED_ID_BANKING],
+                                                   'live');
+
+        // Assertions on transaction entity created
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $creditTransaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $creditTransaction->getAmount());
+        $this->assertEquals($expectedAmount, $creditTransaction->getCredit());
+        $this->assertEquals(0, $creditTransaction->getDebit());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $bankTransfer->getMerchantId());
+        $this->assertEquals($sharedVirtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+        $this->assertEquals(null, $bankTransfer->getPaymentId());
+        $this->assertEquals(false, $bankTransfer->isExpected());
+        $this->assertEquals('TPV_NOT_FOUND_FOR_BANKING_ACCOUNT_FUND_LOADING',
+                            $bankTransfer->getUnexpectedReason());
+
+        // Assertions on payer bank account for bank transfer
+        $this->assertNotNull($bankTransfer->getPayerBankAccountId());
+
+        $payerBankAccount = $bankTransfer->payerBankAccount;
+
+        $this->assertEquals($request['content']['payer_account'], $payerBankAccount->getAccountNumber());
+        $this->assertEquals($request['content']['payer_ifsc'], $payerBankAccount->getIfscCode());
+        $this->assertEquals($request['content']['payer_name'], $payerBankAccount->getBeneficiaryName());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since approved and active TPV account was not found, we shall send the Fund Loading failed email
+        Mail::assertQueued(FundLoadingFailed::class, function($mail) {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('₹ 50000', $viewData['amount']);
+            $this->assertEquals('YESB0000022', $viewData['payer_ifsc']);
+            $this->assertEquals('XXXXXXXXXXXXXXX6789', $viewData['payer_account_number']);
+            $this->assertEquals('XXXXXXXXXXXX3333', $viewData['payee_account_number']);
+            $this->assertEquals(FundLoadingFailed::URL, $viewData['url']);
+
+            $mailSubject = 'Fund loading of ₹ 50000 to your RazorpayX account number XXXXXXXXXXXX3333 has been rejected';
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('emails.merchant.razorpayx.fund_loading_failed', $mail->view);
+
+            return true;
+        });
+
+        //
+        // Assertions for the Payout created during refund flow
+        //
+        $refundPayout = $this->getDbLastEntity('payout', 'live');
+
+        $debitTransaction = $this->getDbEntity('transaction',
+                                               [
+                                                   'balance_id' => $commonMerchantBankingBalance->getId(),
+                                                   'type'       => 'payout'
+                                               ], 'live');
+
+        $payoutSource = $this->getDbLastEntity('payout_source', 'live');
+
+        $updatedCommonMerchantBankingBalance = $this->getDbEntity('balance',
+                                                                  [
+                                                                      'merchant_id' => '100000Razorpay',
+                                                                      'type'        => 'banking'
+                                                                  ], 'live');
+
+        // Assertions on payout created
+        $this->assertEquals($bankTransfer->getMerchantId(), $refundPayout->getMerchantId());
+        $this->assertEquals($bankTransfer->getAmount(), $refundPayout->getAmount());
+        $this->assertEquals($bankTransfer->getPayerAccount(),
+                            $refundPayout->fundAccount->account->getAccountNumber());
+        $this->assertEquals($bankTransfer->getUtr(), $refundPayout->getReferenceId());
+
+        // Assertions on payout sources entity
+        $this->assertEquals($bankTransfer->getPublicId(), $payoutSource['source_id']);
+        $this->assertEquals('bank_transfer', $payoutSource['source_type']);
+        $this->assertEquals($refundPayout->getId(), $payoutSource['payout_id']);
+
+        // Assertions on the debit transaction entity
+        $this->assertEquals($sharedVirtualAccount->getMerchantId(), $debitTransaction->getMerchantId());
+        $this->assertEquals($refundPayout->getAmount() + $refundPayout->getFees(), $debitTransaction->getAmount());
+        $this->assertEquals(0, $debitTransaction->getCredit());
+        $this->assertEquals($refundPayout->getAmount() + $refundPayout->getFees(), $debitTransaction->getDebit());
+
+        // Assertions on balance.
+        // The balance should not change because we'll have a credit and a debit of the exact same amount
+        $this->assertEquals($commonMerchantBankingBalance['balance'], $updatedCommonMerchantBankingBalance['balance']);
+    }
+
+    protected function setUpCommonMerchantForBusinessBankingLive(
+        bool $skipFeatureAddition = false,
+        int $balance = 0,
+        string $balanceType = AccountType::SHARED,
+        $channel = Channel::YESBANK)
+    {
+        // Activate merchant with business_banking flag set to true.
+        $this->fixtures->on('live')->merchant->edit('100000Razorpay', ['business_banking' => 1]);
+        $this->fixtures->on('live')->merchant->activate();
+
+        // Creates banking balance
+        $bankingBalance = $this->fixtures->on('live')->merchant->createBalanceOfBankingType(
+            $balance, '100000Razorpay', $balanceType, $channel);
+
+        // Creates virtual account, its bank account receiver on new banking balance.
+        // `HMqUENxwwwQ11a` is the virtual account id on production. Using the same here.
+        $virtualAccount = $this->fixtures->on('live')->create('virtual_account', [
+            'id'          => 'HMqUENxwwwQ11a',
+            'merchant_id' => '100000Razorpay'
+        ]);
+        $bankAccount    = $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'id'             => '1000001lcustba',
+                'type'           => 'virtual_account',
+                'entity_id'      => $virtualAccount->getId(),
+                'account_number' => '5656111122223333',
+                'ifsc_code'      => 'ICIC0000104',
+            ]);
+
+        $virtualAccount->bankAccount()->associate($bankAccount);
+        $virtualAccount->balance()->associate($bankingBalance);
+        $virtualAccount->save();
+
+        $bankingAccount = $this->fixtures->on('live')->create(
+            'banking_account',
+            [
+                'id'             => '1000001lcustba',
+                'account_type'   => $balanceType,
+                'merchant_id'    => '100000Razorpay',
+                'account_number' => '5656111122223333',
+                'account_ifsc'   => 'ICIC0000104',
+                'status'         => 'activated'
+            ]);
+
+        $bankingAccount->balance()->associate($bankingBalance);
+        $bankingAccount->save();
+
+        $defaultFreePayoutsCount = $this->getDefaultFreePayoutsCount($bankingBalance);
+
+        $this->fixtures->on('live')->create('counter', [
+            'account_type'          => $balanceType,
+            'balance_id'            => $bankingBalance->getId(),
+            'free_payouts_consumed' => $defaultFreePayoutsCount,
+        ]);
+
+        // Updates banking balance's account number after bank account creation.
+        $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
+        $bankingBalance->save();
+
+        // Enables required features on merchant
+        if ($skipFeatureAddition === false)
+        {
+            $this->fixtures->on('live')->merchant->addFeatures(['virtual_accounts', 'payout']);
+        }
+
+        $this->setupRedisConfigKeysForTerminalSelection();
+    }
+
+    protected function enableRazorXTreatmentForNonTpvRefundsViaX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function($mid, $feature, $mode) {
+                                  if ($feature === 'non_tpv_refunds_via_x')
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'control';
+                              }));
     }
 }
