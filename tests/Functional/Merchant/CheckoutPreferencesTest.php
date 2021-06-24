@@ -679,13 +679,17 @@ class CheckoutPreferencesTest extends TestCase
 
     public function testGetCheckoutPreferencesForDebitEmiProviders()
     {
-        $this->fixtures->merchant->enableEmi();
+        $this->fixtures->merchant->enableEmiDebit();
 
         $this->fixtures->merchant->enableDebitEmiProviders();
 
         $response = $this->getPreferences();
 
         $this->assertArraySelectiveEquals(['HDFC' => 1], $response['methods']['debit_emi_providers']);
+
+        $this->assertTrue($response['methods']['emi_types']['debit']);
+
+        $this->assertFalse($response['methods']['emi_types']['credit']);
     }
 
     public function testGetCheckoutPreferencesForDebitEmiWithExistingCreditEmi()

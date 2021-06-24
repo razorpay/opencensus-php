@@ -57,6 +57,7 @@ class Entity extends Base\PublicEntity
     const HDFC_DEBIT_EMI    = 'hdfc_debit_emi';
 
     const DEBIT_EMI_PROVIDERS = 'debit_emi_providers';
+    const EMI_TYPES           = 'emi_types';
 
     const METHODS           = 'methods';
 
@@ -987,6 +988,13 @@ class Entity extends Base\PublicEntity
         $emi = $this->attributes[self::EMI];
 
         return EmiType::getEnabledTypes($emi);
+    }
+
+    public function getEmiTypes()
+    {
+        $emi = $this->attributes[self::EMI];
+
+        return EmiType::getEmiTypes($emi);
     }
 
     protected function getWalletAttribute()

@@ -56,6 +56,20 @@ class EmiType
         return $types;
     }
 
+    public static function getEmiTypes($hex)
+    {
+        $emiTypes = [];
+
+        $types = self::getEnabledTypes($hex);
+
+        foreach (self::$types as $type)
+        {
+            $emiTypes[$type] = in_array($type, $types);
+        }
+
+        return $emiTypes;
+    }
+
     /**
      * Takes the hex value and merges it
      * with the hex value of the events passed.
