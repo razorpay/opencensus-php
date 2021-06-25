@@ -2262,6 +2262,7 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testCompanyPanVerificationBusinessNameUpdateSuccess()
     {
+        $this->markTestSkipped("Skipping becoz company pan verification is moved to BVS");
         $test = 'testCompanyPanVerificationBusinessNameUpdate';
 
         $data = [
@@ -2276,6 +2277,7 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testCompanyPanVerificationBusinessNameUpdateFailed()
     {
+        $this->markTestSkipped("Skipping becoz company pan verification is moved to BVS");
         $test = 'testCompanyPanVerificationBusinessNameUpdate';
 
         $data = [
@@ -2290,6 +2292,7 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testCompanyPanVerificationCompanyPanUpdateSuccess()
     {
+        $this->markTestSkipped("Skipping becoz company pan verification is moved to BVS");
         $test = 'testCompanyPanVerificationCompanyPanUpdate';
 
         $data = [
@@ -2304,6 +2307,7 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testCompanyPanVerificationCompanyPanUpdateFailed()
     {
+        $this->markTestSkipped("Skipping becoz company pan verification is moved to BVS");
         $test = 'testCompanyPanVerificationCompanyPanUpdate';
 
         $data = [
@@ -2347,6 +2351,7 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testPromoterPanVerificationPromoterPanNameUpdateSuccess()
     {
+        $this->markTestSkipped("Skipping becoz personal pan verification is moved to BVS");
         $test = 'testPromoterPanVerificationPromoterPanNameUpdate';
 
         $data = [
@@ -2361,6 +2366,7 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testPromoterPanVerificationPromoterPanNameUpdateFailed()
     {
+        $this->markTestSkipped("Skipping becoz personal pan verification is moved to BVS");
         $test = 'testPromoterPanVerificationPromoterPanNameUpdate';
 
         $data = [
@@ -2375,6 +2381,7 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testPromoterPanVerificationPromoterPanUpdateSuccess()
     {
+        $this->markTestSkipped("Skipping becoz personal pan verification is moved to BVS");
         $test = 'testPromoterPanVerificationPromoterPanUpdate';
 
         $data = [
@@ -2388,6 +2395,7 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testPromoterPanVerificationPromoterPanUpdateFailed()
     {
+        $this->markTestSkipped("Skipping becoz personal pan verification is moved to BVS");
         $test = 'testPromoterPanVerificationPromoterPanUpdate';
 
         $data = [

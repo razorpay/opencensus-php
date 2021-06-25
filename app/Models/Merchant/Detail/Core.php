@@ -1101,51 +1101,8 @@ class Core extends Base\Core
             return;
         }
 
-        $shouldVerifyPersonalPanFromBVS = (new Merchant\Core)->isRazorxExperimentEnable(
-            $merchant->getId(),
-            RazorxTreatment::BVS_PERSONAL_PAN_VALIDATION);
-
-        if ($shouldVerifyPersonalPanFromBVS === true)
-        {
-            $this->updateDocumentVerificationStatus(
-                $merchant, Constant::PERSONAL_PAN, BvsValidationConstants::IDENTIFIER);
-        }
-        else
-        {
-            $this->verifyPersonalPanFromKyc($merchantDetails, $input);
-        }
-        $response = null;
-    }
-
-    protected function verifyPersonalPanFromKyc(Entity $merchantDetails, array $input)
-    {
-        $verificationStatus = POIStatus::FAILED;
-
-        try
-        {
-            $input = [
-                DEConstants::PAN_NUMBER        => $merchantDetails->getPromoterPan(),
-                DEConstants::PROMOTER_PAN_NAME => $merchantDetails->getPromoterPanName()
-            ];
-
-            $verificationStatus = (new AutoKyc\Core())->verifyPOI($merchantDetails, $input);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e,
-                null,
-                TraceCode::MERCHANT_POI_VERIFICATION_FAILED);
-
-        }
-
-        $merchantDetails->setPoiVerificationStatus($verificationStatus);
-
-        (new Stakeholder\Core)->createOrFetchStakeholder($merchantDetails);
-        $merchantDetails->stakeholder->setPoiStatus($verificationStatus);
-
-        $dimension = $this->fetchPoiMetricDimensions($merchantDetails);
-
-        $this->trace->count(DetailMetric::POI_VERIFICATION_STATUS_TOTAL, $dimension);
+        $this->updateDocumentVerificationStatus(
+            $merchant, Constant::PERSONAL_PAN, BvsValidationConstants::IDENTIFIER);
     }
 
     /**
@@ -1185,18 +1142,7 @@ class Core extends Base\Core
             return;
         }
 
-        $shouldVerifyCompanyPanFromBVS = (new Merchant\Core)->isRazorxExperimentEnable(
-            $merchant->getId(),
-            RazorxTreatment::BVS_COMPANY_PAN_VALIDATION);
-
-        if ($shouldVerifyCompanyPanFromBVS === true)
-        {
-            $this->updateDocumentVerificationStatus($merchant, Constant::BUSINESS_PAN);
-        }
-        else
-        {
-            $this->verifyCompanyPanFromKyc($merchantDetails, $input);
-        }
+        $this->updateDocumentVerificationStatus($merchant, Constant::BUSINESS_PAN);
     }
 
     /**
@@ -3340,18 +3286,7 @@ class Core extends Base\Core
             $merchantDetails,
             FormSubmissionValidStatusesMap::DOCUMENT_LIST_L2);
 
-        if($merchantDetails->isUnregisteredBusiness() === true)
-        {
-            $bvsPersonalPanValidationEnabled = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                RazorxTreatment::BVS_PERSONAL_PAN_VALIDATION);
-
-            // If unregistered business, do not allow form submission if bvs is not enabled and poi verification fails
-            if($bvsPersonalPanValidationEnabled === false and $isValidDocumentsStatus === false)
-            {
-                return false;
-            }
-        }
-        else if($isValidDocumentsStatus === false)
+        if($merchantDetails->isUnregisteredBusiness() === false and $isValidDocumentsStatus === false)
         {
             return false;
         }
@@ -4358,41 +4293,6 @@ class Core extends Base\Core
                 $input[$field] = $stateCode;
             }
         }
-    }
-
-    /**
-     * @param Entity $merchantDetails
-     * @param array  $input
-     */
-    protected function verifyCompanyPanFromKyc(Entity $merchantDetails, array $input): void
-    {
-        $response = null;
-
-        $verificationStatus = CompanyPanStatus::FAILED;
-
-        try
-        {
-            $input = [
-                DEConstants::COMPANY_PAN      => $merchantDetails->getPan(),
-                DEConstants::COMPANY_PAN_NAME => $merchantDetails->getBusinessName(),
-            ];
-
-            $verificationStatus = (new AutoKyc\Core())->verifyCompanyPan($merchantDetails, $input);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e,
-                                         null,
-                                         TraceCode::MERCHANT_COMPANY_PAN_VERIFICATION_FAILED);
-
-        }
-
-        $merchantDetails->setCompanyPanVerificationStatus($verificationStatus);
-
-        $dimension = $this->fetchBusinessPanMetricDimensions($merchantDetails);
-
-        $this->trace->count(DetailMetric::COMPANY_PAN_VERIFICATION_STATUS_TOTAL, $dimension);
-
     }
 
     public function setMerchantRiskClient($mrclient)

@@ -71,18 +71,4 @@ class PoiVerificationTest extends TestCase
         $this->assertEquals($bvsValidation->getArtefactType(), Bvs\Constant::PERSONAL_PAN);
         $this->assertEquals($bvsValidation->getValidationStatus(), "captured");
     }
-
-    public function testPoiVerificationViaKycServiceIfExpIsDisabled()
-    {
-        [$detailCore] = $this->createAndFetchMocks(false);
-        [$merchantDetail] = $this->createAndFetchFixtures();
-
-        $this->app->instance("rzp.mode", Mode::LIVE);
-        $detailCore->saveMerchantDetails(["submit"=>"1"], $merchantDetail->merchant);
-
-        $bvsValidation = $this->getDbLastEntity("bvs_validation");
-
-        // assert that bvs validation is not present since verification is happening via kyc service
-        $this->assertEmpty($bvsValidation);
-    }
 }

@@ -1068,6 +1068,7 @@ class ActivationTest extends OAuthTestCase
 
     public function testIAForUnregisteredBusinessFeatureEnabled()
     {
+        $this->markTestSkipped("instant activation for Un-reg will happen in async since since pan verification is done via BVS now");
         $merchantId = '1cXSLlUU8V9sXl';
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
@@ -1100,6 +1101,7 @@ class ActivationTest extends OAuthTestCase
 
     public function testIAForUnregisteredBusinessFromKycService()
     {
+        $this->markTestSkipped("pan verification is done via BVS now");
         $merchantId = '1cXSLlUU8V9sXl';
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
@@ -1131,21 +1133,25 @@ class ActivationTest extends OAuthTestCase
 
     public function testIAForRegisteredBusinessFeatureEnabledNameMisMatch()
     {
+        self::markTestSkipped("personal pan verification is done via BVS now");
         $this->instantActivationForRegistered(__FUNCTION__, MerchantDetailsConstant::SUCCESS);
     }
 
     public function testIAForRegisteredBusinessFeatureEnabledIncorrectDetails()
     {
+        self::markTestSkipped("personal pan verification is done via BVS now");
         $this->instantActivationForRegistered(__FUNCTION__, MerchantDetailsConstant::INCORRECT_DETAILS);
     }
 
     public function testIAForRegisteredBusinessFeatureEnabledTimeout()
     {
+        self::markTestSkipped("personal pan verification is done via BVS now");
         $this->instantActivationForRegistered(__FUNCTION__, MerchantDetailsConstant::FAILURE);
     }
 
     public function testIAForRegisteredBusinessSuccessCase()
     {
+        self::markTestSkipped("personal pan verification is done via BVS now");
         $this->instantActivationForRegistered(__FUNCTION__, MerchantDetailsConstant::SUCCESS);
     }
 
