@@ -346,10 +346,13 @@ class Core extends Base\Core
 
         $this->notifyOpsAboutProActivation($bankingAccount);
 
-        $this->notifyMerchantAboutUpdatedStatus($bankingAccount);
+        if ($validatorOP !== 'create_dashboard')
+        {
+            $this->notifyMerchantAboutUpdatedStatus($bankingAccount);
 
-        $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
-        $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
+            $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
+            $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
+        }
 
 
         return $bankingAccount;

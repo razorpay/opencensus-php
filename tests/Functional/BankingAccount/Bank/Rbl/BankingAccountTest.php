@@ -32,6 +32,7 @@ use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Models\BankingAccount\Gateway\Rbl\Processor as RblProcessor;
+use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
 
 class BankingAccountTest extends TestCase
 {
@@ -267,6 +268,8 @@ class BankingAccountTest extends TestCase
         $this->assertNotNull($activationDetailEntity);
 
         Mail::assertQueued(XProActivation::class);
+
+        Mail::assertNotQueued(StatusUpdateMailerFactory::class);
 
         return $bankingAccount;
     }
