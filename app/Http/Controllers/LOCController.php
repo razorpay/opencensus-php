@@ -52,6 +52,7 @@ class LOCController extends Controller
     const CREATE_MERCHANT_DETAILS                = 'CREATE_MERCHANT_DETAILS';
     const GET_MERCHANT_DETAILS                   = 'GET_MERCHANT_DETAILS';
     const UPDATE_MERCHANT_DETAILS                = 'UPDATE_MERCHANT_DETAILS';
+    const GET_ONHOLD_STATUS_REASONS              = 'GET_ONHOLD_STATUS_REASONS';
 
     const ROUTES_URL_MAP = [
         self::SEED_DATA_REGEX                        => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/SeedData',
@@ -80,6 +81,7 @@ class LOCController extends Controller
         self::CREATE_MERCHANT_DETAILS                => 'twirp/rzp.capital.loc.migration.v1.MerchantDetailsAPI/CreateMerchantDetails',
         self::GET_MERCHANT_DETAILS                   => 'twirp/rzp.capital.loc.migration.v1.MerchantDetailsAPI/GetMerchantDetails',
         self::UPDATE_MERCHANT_DETAILS                => 'twirp/rzp.capital.loc.migration.v1.MerchantDetailsAPI/UpdateMerchantDetails',
+        self::GET_ONHOLD_STATUS_REASONS              => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/GetOnholdStatusReasons',
     ];
 
     const CRON_URL_MAP = [
@@ -103,6 +105,7 @@ class LOCController extends Controller
 
     const ROUTE_PERMISSION_MAP = [
         self::SEED_DATA_REGEX                        => Name::LOC,
+        self::GET_ONHOLD_STATUS_REASONS              => Name::LOC_CONFIG_VIEW,
         self::CREATE_MERCHANT_DETAILS                => Name::LOC_CONFIG_EDIT,
         self::GET_MERCHANT_DETAILS                   => Name::LOC_CONFIG_EDIT,
         self::UPDATE_MERCHANT_DETAILS                => Name::LOC_CONFIG_EDIT,
