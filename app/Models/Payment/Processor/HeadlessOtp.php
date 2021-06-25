@@ -395,8 +395,7 @@ trait HeadlessOtp
 
     protected function disableIinFlowIfApplicable($payment, $code)
     {
-        if (($this->mode === Mode::TEST) and
-            ($this->app->environment(Environment::PRODUCTION) === true))
+        if ((($this->mode === Mode::TEST) and ($this->app->environment(Environment::PRODUCTION) === true))  or  (app()->isEnvironmentQA() === true))
         {
             return;
         }
