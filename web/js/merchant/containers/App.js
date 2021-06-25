@@ -183,7 +183,7 @@ export default class App extends Component {
             kycStatus,
             merchantId: user.current,
             businessCategory: user.businessCategory,
-            phone: user.contact_mobile,
+            phone: '+91'+user.contact_mobile,
             ...dataFromAPI,
           });
 
