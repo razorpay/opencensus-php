@@ -9,7 +9,7 @@ export function trackLJ(event, options) {
 export function trackSegment({ event, screen, actionName, options = {} }) {
   if (!event) return;
   // console.log({
-  //   objectName: event.replaceAll('_', '.'),
+  //   objectName: event.replace(/_/g, '.'),
   //   actionName: 'clicked',
   //   screen: screen,
   //   properties: {
@@ -19,7 +19,7 @@ export function trackSegment({ event, screen, actionName, options = {} }) {
   // });
 
   analyticsTrack({
-    objectName: event.replaceAll('_', '.'),
+    objectName: event.replace(/_/g, '.'),
     actionName: 'clicked',
     screen: screen,
     properties: {
