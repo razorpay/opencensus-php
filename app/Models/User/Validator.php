@@ -31,6 +31,8 @@ class Validator extends Base\Validator
     const MAX_ALLOWED_CAPTCHA_REQUEST_ATTEMPTS   =  3;
 
     protected static $createRules = [
+        Entity::CAPTCHA                         => 'required_without_all:captcha_disable',
+        Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
         Entity::ID                              => 'sometimes|max:14',
         Entity::NAME                            => 'sometimes|string|max:200',
         Entity::EMAIL                           => 'required|email|unique:users,email',
@@ -39,8 +41,6 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE                  => 'sometimes|nullable|max:15|contact_syntax',
         Entity::REMEMBER_TOKEN                  => 'sometimes',
         Entity::CONFIRM_TOKEN                   => 'sometimes',
-        Entity::CAPTCHA                         => 'required_without_all:captcha_disable',
-        Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
         Entity::SETTINGS                        => 'nullable|associative_array',
         Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
         Entity::APP                             => 'sometimes|string',
