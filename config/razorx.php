@@ -16,12 +16,6 @@ return [
             Constants::TIMESTAMP_THRESHOLD   => 1601562600, // "1 Oct 2020, 20:00:00 IST"
             Constants::DEFAULT_RESULT        => ['result' => 'off']
         ],
-        // Experiment 1 - which cross-sells CAs on PG sign up  and KYC
-        'rx_ca_experiment__1' => [
-            Constants::REQUEST_ORIGIN        => 'primary',
-            Constants::TIMESTAMP_THRESHOLD   => 1604500200, // "4 Nov , 2020 20:00:00 IST"
-            Constants::DEFAULT_RESULT        => ['result' => 'off']
-        ],
         // App framework - which redesigns Home screen and adds App store on RX dashboard
         'rx_home_v2' => [
             Constants::REQUEST_ORIGIN        => 'banking',
