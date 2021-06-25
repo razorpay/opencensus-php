@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { withRouter } from 'react-router-dom';
-import { connect } from 'react-redux';
 import { compose } from 'redux';
 import RTracking from 'react-tracking';
 import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { formatNumberWithCommas } from 'common/utils/numerals';
 import { paiseToRupees } from 'common/utils/rzp-utils';
+import Time from 'common/ui/Time';
 
 const PaymentProgressBar = ({ user, mode, history, limitBreach }) => {
   const [paymentProgress, setPaymentProgress] = useState(0);
+  const [lastUpdatedTime , setLastUpdateTime] = useState(0);
   const [content, setContent] = useState(null);
   const [button, setButton] = useState();
 
   useEffect(() => {
-    if (limitBreach?.amount && limitBreach?.amount < limitBreach?.limit) {
+    if (user.activation_form_milestone === 'L1') {
       merchantFetch({
         url: 'merchant/analytics',
         method: 'post',
@@ -41,10 +42,9 @@ const PaymentProgressBar = ({ user, mode, history, limitBreach }) => {
         },
       }).then((PaymentProgressData) => {
         if (PaymentProgressData?.data?.transactionVolume) {
-          const payment = PaymentProgressData?.data?.transactionVolume?.result?.value;
-          setPaymentProgress({
-            paymentProgress: paiseToRupees(payment),
-          });
+          const payment = PaymentProgressData?.data?.transactionVolume?.result[0].value;
+          setPaymentProgress(paiseToRupees(payment));
+          setLastUpdateTime(PaymentProgressData?.data?.transactionVolume?.last_updated_at)
         }
       });
     }
@@ -80,22 +80,33 @@ const PaymentProgressBar = ({ user, mode, history, limitBreach }) => {
     setButton(activationFlowButton);
   }, []);
 
-  const limitBreachHappened =
-    !!limitBreach && limitBreach.type === 'payment_breach'
-      ? (limitBreach.amount * 100) / limitBreach.limit >= 100
-      : false;
+  const isLatestTransaction = limitBreach?.amount > paymentProgress
 
   return (
     <>
-      {content && (user.activated || limitBreach?.amount) ? (
+      {content && user.activated ? (
+        <>
         <div className="PaymentProgressBar-onboarding">
           <div className="info">{content}</div>
           <ProgressBarInfo
-            credits={limitBreach?.limit || '15000'} // hardcoding to 15k untill BE gives the value
-            accepted={limitBreachHappened ? limitBreach?.amount : paymentProgress}
+            credits={limitBreach?.limit || '15000'}
+            accepted={ isLatestTransaction ? limitBreach?.amount : paymentProgress}
           />
           {button ? button : null}
         </div>
+        
+          { limitBreach.escaltionsLastUpdatedAt || lastUpdatedTime ? (
+            <div>
+              <small>
+              <i className="i i-info-circle" />&nbsp;
+              <span>
+               Payment volume last updated {' '}<Time value={isLatestTransaction ? limitBreach.escaltionsLastUpdatedAt : lastUpdatedTime} relative />
+              </span>
+              </small>
+            </div>
+          ): null}
+      
+        </>
       ) : null}
     </>
   );
@@ -145,8 +156,5 @@ const ProgressBar = ({ width, percent, backgroundColor, ProgressColor }) => {
 
 export default compose(
   withRouter,
-  connect((state) => ({
-    limitBreach: state.home.limitBreach,
-  })),
   RTracking(() => window.rzpQ.component('PaymentProgressBar')),
 )(PaymentProgressBar);

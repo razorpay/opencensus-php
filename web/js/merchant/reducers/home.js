@@ -86,6 +86,7 @@ let initialState = {
     amount: null,
     type: null,
     limit: null,
+    escaltionsLastUpdatedAt: null,
   },
 };
 
@@ -483,6 +484,7 @@ export default function (state = initialState, action) {
           amount: paiseToRupees(action.payload.data.amount),
           type: action.payload.data.type,
           limit: paiseToRupees(action.payload.data.limit.payment),
+          escaltionsLastUpdatedAt: action.payload.data.updated_at,
         },
       });
 

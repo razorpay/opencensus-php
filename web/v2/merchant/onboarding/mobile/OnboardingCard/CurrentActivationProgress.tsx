@@ -248,11 +248,7 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; esc
         description = Messages.ACTIVATION_STATUS_REJECTED.description;
         title = Messages.ACTIVATION_STATUS_REJECTED.title;
       }
-      return (
-        <>
-          <Info title={title} description={description} titleColor="negative.900" hasError />
-        </>
-      );
+      return <Info title={title} description={description} titleColor="negative.900" hasError />;
     }
 
     if (data.activation_status === 'activated') {
