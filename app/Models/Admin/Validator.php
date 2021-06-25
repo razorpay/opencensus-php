@@ -267,7 +267,7 @@ class Validator extends Base\Validator
         'namespace'          => 'required|string',
         'payload'            => 'required|array',
         'payload.entities'   => 'required|array',
-        'version'            => 'required|string|in:v1,v2',
+        'version'            => 'required|string|in:v1,v2,v3',
     ];
 
     protected static $externalAdminFetchMultiplePaymentRules = [
