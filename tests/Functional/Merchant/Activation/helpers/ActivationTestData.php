@@ -3106,22 +3106,14 @@ return [
                 ],
                 'bank_account_number'  => [
                     'reasons' => [
-                        'unable_to_validate_acc_number' => [
-                            'description' => 'We\'re unable to validate the account number from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.',
+                        'bank_account_change_request_for_unregistered' => [
+                            'description' => 'Entered bank details are incorrect, please share signatory personal account details',
                         ],
-                    ],
-                ],
-                'bank_account_name'    => [
-                    'reasons' => [
-                        'unable_to_validate_beneficiary_name' => [
-                            'description' => 'We\'re unable to validate the beneficiary name from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.',
+                        'bank_account_change_request_for_pvt_public_llp' => [
+                            'description' => 'Entered bank details are incorrect, please share company bank account details.',
                         ],
-                    ],
-                ],
-                'bank_branch_ifsc'     => [
-                    'reasons' => [
-                        'unable_to_validate_ifsc' => [
-                            'description' => 'We\'re unable to validate the IFSC from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.',
+                        'bank_account_change_request_for_prop_ngo_trust' => [
+                            'description' => 'Entered bank details are incorrect, please share company bank account details or authorised signatory details.',
                         ],
                     ],
                 ],

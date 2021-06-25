@@ -45,7 +45,7 @@ class Factory
                 return $this->getNeedsClarificationReasonComposerForV2($needsClarificationMetaData);
 
             case NeedsClarificationMetaData::VERSION_V1:
-                return $this->getNeedsClarificationReasonComposerForV1();
+                return $this->getNeedsClarificationReasonComposerForV1($needsClarificationMetaData);
 
             default :
                 throw new LogicException(null, ErrorCode::INVALID_NEEDS_CLARIFICATION_VERSION, [
@@ -99,10 +99,11 @@ class Factory
     }
 
     /**
+     * @param array $needsClarificationMetaData
      * @return ClarificationReasonComposerInterface
      */
-    protected function getNeedsClarificationReasonComposerForV1(): ClarificationReasonComposerInterface
+    protected function getNeedsClarificationReasonComposerForV1(array $needsClarificationMetaData): ClarificationReasonComposerInterface
     {
-        return new BankAccountClarificationComposer($this->merchantDetails);
+        return new BankAccountClarificationComposer($this->merchantDetails,$needsClarificationMetaData);
     }
 }

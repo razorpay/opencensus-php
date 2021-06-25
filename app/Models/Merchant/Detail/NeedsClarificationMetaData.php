@@ -36,9 +36,9 @@ class NeedsClarificationMetaData
         Entity::PROMOTER_PAN                    => [ReasonList::UPDATE_DIRECTOR_PAN,
                                                     ReasonList::UPDATE_PROPRIETOR_PAN,],
         Entity::COMPANY_PAN_NAME                => [ReasonList::UPDATE_DIRECTOR_PAN],
-        Entity::BANK_ACCOUNT_NUMBER             => [ReasonList::UNABLE_TO_VALIDATE_ACC_NUMBER],
-        Entity::BANK_ACCOUNT_NAME               => [ReasonList::UNABLE_TO_VALIDATE_BENEFICIARY_NAME],
-        Entity::BANK_BRANCH_IFSC                => [ReasonList::UNABLE_TO_VALIDATE_IFSC],
+        Entity::BANK_ACCOUNT_NUMBER             => [ReasonList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PROP_NGO_TRUST,
+                                                    ReasonList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_UNREGISTERED,
+                                                    ReasonList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PVT_PUBLIC_LLP],
         Entity::BUSINESS_PROOF_URL              => [ReasonList::SUBMIT_INCORPORATION_CERTIFICATE,
                                                     ReasonList::SUBMIT_COMPLETE_PARTNERSHIP_DEED,
                                                     ReasonList::SUBMIT_GSTIN_MSME_SHOPS_ESTAB_CERTIFICATE,
@@ -83,11 +83,26 @@ class NeedsClarificationMetaData
                                                     ReasonList::PROVIDE_AUTHORIZED_SIGNATORY_SIGNED_AND_SEALED_DOCUMENT]
     ];
 
+    const BUSINESS_TYPE_REASON_CODE_MAPPING=[
+        BusinessType::PROPRIETORSHIP            => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PROP_NGO_TRUST,
+        BusinessType::PARTNERSHIP               => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PVT_PUBLIC_LLP,
+        BusinessType::PRIVATE_LIMITED           => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PVT_PUBLIC_LLP,
+        BusinessType::PUBLIC_LIMITED            => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PVT_PUBLIC_LLP,
+        BusinessType::LLP                       => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PVT_PUBLIC_LLP,
+        BusinessType::TRUST                     => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PROP_NGO_TRUST,
+        BusinessType::SOCIETY                   => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PROP_NGO_TRUST,
+        BusinessType::NGO                       => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PROP_NGO_TRUST,
+        BusinessType::INDIVIDUAL                => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_UNREGISTERED,
+        BusinessType::NOT_YET_REGISTERED        => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_UNREGISTERED,
+        BusinessType::EDUCATIONAL_INSTITUTES    => NeedsClarificationReasonsList::UNABLE_TO_VALIDATE_ACC_NUMBER,
+        BusinessType::OTHER                     => NeedsClarificationReasonsList::UNABLE_TO_VALIDATE_ACC_NUMBER,
+    ];
     /**
      * Version :
      *  V1 : If Verification is done by any system other than bvs
      *  V2 : If verification is done by bvs
      */
+
     const SYSTEM_BASED_NEEDS_CLARIFICATION_METADATA = [
         Constants::GSTIN_IDENTIFER     => [
             self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V2,
@@ -127,6 +142,26 @@ class NeedsClarificationMetaData
             self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::BANK_ACCOUNT,
             Constants::FIELD_NAME                          => DocumentType::CANCELLED_CHEQUE,
             Constants::FIELD_TYPE                          => Constants::DOCUMENT,
+            Constants::ADDITIONAL_DETAILS => [
+                Constants::FIELDS => [
+                    [
+                        Constants::FIELD_NAME                          => DocumentType::CANCELLED_CHEQUE,
+                        Constants::FIELD_TYPE                          => Constants::DOCUMENT,
+                    ],
+                    [
+                        Constants::FIELD_NAME                          => Entity::BANK_ACCOUNT_NAME,
+                        Constants::FIELD_TYPE                          => Constants::TEXT,
+                    ],
+                    [
+                        Constants::FIELD_NAME                          => Entity::BANK_ACCOUNT_NUMBER,
+                        Constants::FIELD_TYPE                          => Constants::TEXT,
+                    ],
+                    [
+                        Constants::FIELD_NAME                          => Entity::BANK_BRANCH_IFSC,
+                        Constants::FIELD_TYPE                          => Constants::TEXT,
+                    ],
+                ],
+            ],
         ],
         Constants::SHOP_ESTABLISHMENT_IDENTIFIER => [
             self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V2,

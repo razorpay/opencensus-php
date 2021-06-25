@@ -4,47 +4,50 @@ namespace RZP\Models\Merchant\Detail;
 
 class NeedsClarificationReasonsList
 {
-    const PROVIDE_POC                               = 'provide_poc';
-    const INVALID_CONTACT_NUMBER                    = 'invalid_contact_number';
-    const IS_COMPANY_REG                            = 'is_company_reg';
-    const SERVICES_OFFERED                          = 'services_offered';
-    const WEBSITE_NOT_LIVE                          = 'website_not_live';
-    const UPDATE_DIRECTOR_PAN                       = 'update_director_pan';
-    const UNABLE_TO_VALIDATE_ACC_NUMBER             = 'unable_to_validate_acc_number';
-    const UNABLE_TO_VALIDATE_BENEFICIARY_NAME       = 'unable_to_validate_beneficiary_name';
-    const UNABLE_TO_VALIDATE_IFSC                   = 'unable_to_validate_ifsc';
-    const SUBMIT_INCORPORATION_CERTIFICATE          = 'submit_incorporation_certificate';
-    const SUBMIT_COMPLETE_PARTNERSHIP_DEED          = 'submit_complete_partnership_deed';
-    const SUBMIT_GSTIN_MSME_SHOPS_ESTAB_CERTIFICATE = 'submit_gstin_msme_shops_estab_certificate';
-    const SUBMIT_COMPLETE_TRUST_DEED                = 'submit_complete_trust_deed';
-    const SUBMIT_SOCIETY_REG_CERTIFICATE            = 'submit_society_reg_certificate';
-    const BUSINESS_PROOF_OUTDATED                   = 'business_proof_outdated';
-    const ILLEGIBLE_DOC                             = 'illegible_doc';
-    const SUBMIT_REG_BUSINESS_PAN_CARD              = 'submit_reg_business_pan_card';
-    const SUBMIT_COMPLETE_DIRECTOR_ADDRESS_PROOF    = 'submit_complete_director_address_proof';
-    const SUBMIT_COMPLETE_AADHAAR                   = 'submit_complete_aadhaar';
-    const SUBMIT_COMPLETE_PASSPORT                  = 'submit_complete_passport';
-    const SUBMIT_COMPLETE_ELECTION_CARD             = 'submit_complete_election_card';
-    const ADDRESS_PROOF_OUTDATED                    = 'address_proof_outdated';
-    const UPDATE_PROPRIETOR_PAN                     = 'update_proprietor_pan';
-    const SUBMIT_COMPANY_PAN                        = 'submit_company_pan';
-    const SUBMIT_PROPRIETOR_PAN                     = 'submit_proprietor_pan';
-    const RESUBMIT_CANCELLED_CHEQUE                 = 'resubmit_cancelled_cheque';
-    const SUBMIT_DRIVING_LICENSE                    = 'submit_driving_license';
-    const INVALID_GSTIN_NUMBER                      = 'invalid_gstin_number';
-    const INVALID_CIN_NUMBER                        = 'invalid_cin_number';
-    const INVALID_LLPIN_NUMBER                      = 'invalid_llpin_number';
-    const INVALID_SHOP_ESTABLISHMENT_NUMBER         = 'invalid_shop_establishment_number';
-    const SHOP_ESTABLISHMENT_DATA_UNAVAILABLE       = 'shop_establishment_data_unavailable';
-    const GSTIN_DATA_UNAVAILABLE                    = 'gstin_data_unavailable';
-    const CIN_DATA_UNAVAILABLE                      = 'cin_data_unavailable';
-    const LLPIN_DATA_UNAVAILABLE                    = 'llpin_data_unavailable';
+    const PROVIDE_POC                                       = 'provide_poc';
+    const INVALID_CONTACT_NUMBER                            = 'invalid_contact_number';
+    const IS_COMPANY_REG                                    = 'is_company_reg';
+    const SERVICES_OFFERED                                  = 'services_offered';
+    const WEBSITE_NOT_LIVE                                  = 'website_not_live';
+    const UPDATE_DIRECTOR_PAN                               = 'update_director_pan';
+    const UNABLE_TO_VALIDATE_ACC_NUMBER                     = 'unable_to_validate_acc_number';
+    const BANK_ACCOUNT_CHANGE_REQUEST_FOR_PROP_NGO_TRUST    = 'bank_account_change_request_for_prop_ngo_trust';
+    const BANK_ACCOUNT_CHANGE_REQUEST_FOR_UNREGISTERED      = 'bank_account_change_request_for_unregistered';
+    const BANK_ACCOUNT_CHANGE_REQUEST_FOR_PVT_PUBLIC_LLP    = 'bank_account_change_request_for_pvt_public_llp';
+    const UNABLE_TO_VALIDATE_BENEFICIARY_NAME               = 'unable_to_validate_beneficiary_name';
+    const UNABLE_TO_VALIDATE_IFSC                           = 'unable_to_validate_ifsc';
+    const SUBMIT_INCORPORATION_CERTIFICATE                  = 'submit_incorporation_certificate';
+    const SUBMIT_COMPLETE_PARTNERSHIP_DEED                  = 'submit_complete_partnership_deed';
+    const SUBMIT_GSTIN_MSME_SHOPS_ESTAB_CERTIFICATE         = 'submit_gstin_msme_shops_estab_certificate';
+    const SUBMIT_COMPLETE_TRUST_DEED                        = 'submit_complete_trust_deed';
+    const SUBMIT_SOCIETY_REG_CERTIFICATE                    = 'submit_society_reg_certificate';
+    const BUSINESS_PROOF_OUTDATED                           = 'business_proof_outdated';
+    const ILLEGIBLE_DOC                                     = 'illegible_doc';
+    const SUBMIT_REG_BUSINESS_PAN_CARD                      = 'submit_reg_business_pan_card';
+    const SUBMIT_COMPLETE_DIRECTOR_ADDRESS_PROOF            = 'submit_complete_director_address_proof';
+    const SUBMIT_COMPLETE_AADHAAR                           = 'submit_complete_aadhaar';
+    const SUBMIT_COMPLETE_PASSPORT                          = 'submit_complete_passport';
+    const SUBMIT_COMPLETE_ELECTION_CARD                     = 'submit_complete_election_card';
+    const ADDRESS_PROOF_OUTDATED                            = 'address_proof_outdated';
+    const UPDATE_PROPRIETOR_PAN                             = 'update_proprietor_pan';
+    const SUBMIT_COMPANY_PAN                                = 'submit_company_pan';
+    const SUBMIT_PROPRIETOR_PAN                             = 'submit_proprietor_pan';
+    const RESUBMIT_CANCELLED_CHEQUE                         = 'resubmit_cancelled_cheque';
+    const SUBMIT_DRIVING_LICENSE                            = 'submit_driving_license';
+    const INVALID_GSTIN_NUMBER                              = 'invalid_gstin_number';
+    const INVALID_CIN_NUMBER                                = 'invalid_cin_number';
+    const INVALID_LLPIN_NUMBER                              = 'invalid_llpin_number';
+    const INVALID_SHOP_ESTABLISHMENT_NUMBER                 = 'invalid_shop_establishment_number';
+    const SHOP_ESTABLISHMENT_DATA_UNAVAILABLE               = 'shop_establishment_data_unavailable';
+    const GSTIN_DATA_UNAVAILABLE                            = 'gstin_data_unavailable';
+    const CIN_DATA_UNAVAILABLE                              = 'cin_data_unavailable';
+    const LLPIN_DATA_UNAVAILABLE                            = 'llpin_data_unavailable';
 
     //Not Used please use these fields if required in future.
-    const SHOP_ESTABLISHMENT_DATA_NOT_MATCHED       = 'shop_establishment_data_not_matched';
-    const GSTIN_DATA_NOT_MATCHED                    = 'gstin_not_matched';
-    const CIN_DATA_NOT_MATCHED                      = 'cin_data_not_matched';
-    const LLPIN_DATA_NOT_MATCHED                    = 'llpin_data_not_matched';
+    const SHOP_ESTABLISHMENT_DATA_NOT_MATCHED               = 'shop_establishment_data_not_matched';
+    const GSTIN_DATA_NOT_MATCHED                            = 'gstin_not_matched';
+    const CIN_DATA_NOT_MATCHED                              = 'cin_data_not_matched';
+    const LLPIN_DATA_NOT_MATCHED                            = 'llpin_data_not_matched';
 
     //SignatoryName & CompanyName Not Matched.
     const SIGNATORY_NAME_NOT_MATCHED                = 'signatory_name_not_matched';
@@ -56,6 +59,12 @@ class NeedsClarificationReasonsList
 
 
     const REASON_DETAILS = [
+        self::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PROP_NGO_TRUST                                      => [
+            NeedsClarificationMetaData::DESCRIPTION => 'Entered bank details are incorrect, please share company bank account details or authorised signatory details.',],
+        self::BANK_ACCOUNT_CHANGE_REQUEST_FOR_UNREGISTERED                                      => [
+            NeedsClarificationMetaData::DESCRIPTION => 'Entered bank details are incorrect, please share signatory personal account details',],
+        self::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PVT_PUBLIC_LLP                                      => [
+            NeedsClarificationMetaData::DESCRIPTION => 'Entered bank details are incorrect, please share company bank account details.',],
         self::INVALID_CIN_NUMBER                                      => [
             NeedsClarificationMetaData::DESCRIPTION => 'The CIN number you have entered is invalid, please enter valid details.',],
         self::INVALID_SHOP_ESTABLISHMENT_NUMBER                       => [

@@ -1347,6 +1347,7 @@ class Core extends Base\Core
 
         $existingKycClarifications = $merchantDetails->getKycClarificationReasons() ?? [];
         $existingReasons           = $existingKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
+        $existingAdditionalDetails = $existingKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
 
         $newKycClarifications      = $input[Entity::KYC_CLARIFICATION_REASONS] ?? [];
         $newAdditionalDetails      = $newKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
@@ -1363,52 +1364,43 @@ class Core extends Base\Core
         $ncCount = $this->getStatusChangeCount($statusChangeLogs, Status::UNDER_REVIEW);
 
         $clarificationReasons = $this->getClarificationReasons($existingReasons, $newReasons, $ncCount, $source);
+        $additionalDetails = $this->getClarificationReasons($existingAdditionalDetails, $newAdditionalDetails, $ncCount, $source);
 
         return [
             Entity::CLARIFICATION_REASONS   =>  $clarificationReasons,
-            Entity::ADDITIONAL_DETAILS      =>  $newAdditionalDetails,
+            Entity::ADDITIONAL_DETAILS      =>  $additionalDetails,
             Merchant\Constants::NC_COUNT    =>  $ncCount
         ];
     }
 
     protected function getClarificationReasons($existingReasons, $newReasons, $ncCount, $source = null)
     {
-        if (empty($newReasons) === false)
-        {
-            //
-            // new reason is not null then reassign existing reason as we are appending new reasons in existing
-            //
-            $existingReasons = $existingReasons ?? [];
+        //
+        // new reason is not null then reassign existing reason as we are appending new reasons in existing
+        //
+        $existingReasons = $existingReasons ?? [];
 
-            foreach ($existingReasons as $key => $values)
-            {
-                foreach ($values as &$val)
-                {
-                    if (isset($val[Merchant\Constants::NC_COUNT]) and $val[Merchant\Constants::NC_COUNT] !== $ncCount)
-                    {
-                        $val[Merchant\Constants::IS_CURRENT] = false;
-                    }
+        foreach ($existingReasons as $key => $values) {
+            foreach ($values as &$val) {
+                if (isset($val[Merchant\Constants::NC_COUNT]) and $val[Merchant\Constants::NC_COUNT] !== $ncCount) {
+                    $val[Merchant\Constants::IS_CURRENT] = false;
                 }
-
-                $existingReasons[$key] = $values;
             }
 
-            foreach ($newReasons as $key => $values)
-            {
-                foreach ($values as &$val)
-                {
+            $existingReasons[$key] = $values;
+        }
+        if (empty($newReasons) === false) {
+            foreach ($newReasons as $key => $values) {
+                foreach ($values as &$val) {
                     $val[Merchant\Constants::REASON_FROM] = $this->getSender($source);
-                    $val[Entity::CREATED_AT]              = Carbon::now(Timezone::IST)->getTimestamp();
-                    $val[Merchant\Constants::NC_COUNT]    = $ncCount;
-                    $val[Merchant\Constants::IS_CURRENT]  = true;
+                    $val[Entity::CREATED_AT] = Carbon::now(Timezone::IST)->getTimestamp();
+                    $val[Merchant\Constants::NC_COUNT] = $ncCount;
+                    $val[Merchant\Constants::IS_CURRENT] = true;
                 }
 
-                if (isset($existingReasons[$key]) === true)
-                {
+                if (isset($existingReasons[$key]) === true) {
                     array_push($existingReasons[$key], ...$values);
-                }
-                else
-                {
+                } else {
                     $existingReasons[$key] = $values;
                 }
             }
@@ -2603,34 +2595,78 @@ class Core extends Base\Core
      */
     protected function attemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant)
     {
-        if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false)
+        if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false) {
+            return;
+        }
+        //
+        // if bank detail is same as previously saved then skip penny testing and send to manual queue .
+        //
+
+        if($merchantDetails->getBankDetailsVerificationStatus() === 'verified')
         {
             return;
         }
 
-        //
-        // if bank detail is already attempted then skip penny testing and send to manual queue .
-        //
-        if ($merchantDetails->getBankDetailsVerificationStatus() !== null)
-        {
-            return;
-        }
+        $kycClarifications = $merchantDetails->getKycClarificationReasons() ?? [];
+        if(empty($kycClarifications)===false) {
+            $ncCount = $kycClarifications[Constants::NC_COUNT];
+            $additionalDetails = $kycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
+            $clarificationReasons = $kycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
+            $bank_account_name = "";
+            $bank_account_number = "";
+            $bank_branch_ifsc = "";
+            if (empty($clarificationReasons) === false) {
+                foreach ($clarificationReasons as $key => $values) {
+                    foreach ($values as $val) {
+                        if ($val[Merchant\Constants::NC_COUNT] === $ncCount) {
+                            if ($key == Entity::BANK_ACCOUNT_NAME) $bank_account_name = $val[Constants::FIELD_VALUE];
+                            if ($key == Entity::BANK_ACCOUNT_NUMBER) $bank_account_number = $val[Constants::FIELD_VALUE];
+                            if ($key == Entity::BANK_BRANCH_IFSC) $bank_branch_ifsc = $val[Constants::FIELD_VALUE];
+                        }
+                    }
+                }
+            }
+            $allowValidation=false;
+            if (empty($additionalDetails) === false) {
+                foreach ($additionalDetails as $key => $values) {
+                    foreach ($values as $val) {
+                        //for backward compatibility allow bank account validation
+                        if (isset($val[Merchant\Constants::NC_COUNT])==false) {
+                            $allowValidation=true; break;
+                        }
+                        if($val[Merchant\Constants::NC_COUNT] === $ncCount) {
+                            if ($key == Entity::BANK_ACCOUNT_NAME) $bank_account_name = $val[Constants::FIELD_VALUE];
+                            if ($key == Entity::BANK_ACCOUNT_NUMBER) $bank_account_number = $val[Constants::FIELD_VALUE];
+                            if ($key == Entity::BANK_BRANCH_IFSC) $bank_branch_ifsc = $val[Constants::FIELD_VALUE];
+                        }
+                    }
+                }
+            }
 
+            if(empty($bank_account_number) === true or $allowValidation=== true)
+            {
+                return; // since clarifications were not asked for bank account
+            }
+
+            if ($merchantDetails->getBankBranchIfsc() == $bank_branch_ifsc and
+                $merchantDetails->getBankAccountNumber() == $bank_account_number and
+                $merchantDetails->getBankAccountName() == $bank_account_name)
+            {
+                return;
+            }
+        }
         // no penny testing for linked accounts
-        if ($merchant->isLinkedAccount() === true)
-        {
+        if ($merchant->isLinkedAccount() === true) {
             return;
         }
 
-        if ($this->shouldSkipBankAccountRegistration() == true)
-        {
+        if ($this->shouldSkipBankAccountRegistration() == true) {
             return;
         }
 
         $verifyBankDetailsThoughBvs = $this->updateDocumentVerificationStatus($merchant, Entity::BANK_ACCOUNT_NUMBER);
 
-        if ($verifyBankDetailsThoughBvs === true)
-        {
+        if ($verifyBankDetailsThoughBvs === true) {
             return;
         }
 

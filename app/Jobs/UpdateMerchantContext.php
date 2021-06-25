@@ -91,7 +91,17 @@ class UpdateMerchantContext extends Job
 
         $canUpdateMerchantContext = $this->updateContextRequirements
             ->canUpdateMerchantContext($merchantDetail);
-
+        $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_INITIATED,[
+            "Method"=>"updateMerchantContext",
+            "CAN_UPDATE_MERCHANT_CONTEXT"=>$canUpdateMerchantContext,
+            "POA_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::POA_VERIFICATION_STATUS),
+            "COMPANY_PAN_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::COMPANY_PAN_VERIFICATION_STATUS),
+            "BANK_DETAILS_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::BANK_DETAILS_VERIFICATION_STATUS),
+            "POI_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::POI_VERIFICATION_STATUS),
+            "CIN_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::CIN_VERIFICATION_STATUS),
+            "GSTIN_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::GSTIN_VERIFICATION_STATUS),
+            "SHOP_ESTABLISHMENT_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS)
+        ]);
         if ($canUpdateMerchantContext === true)
         {
             $detailCore = new DetailCore();
