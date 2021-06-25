@@ -2,10 +2,13 @@
 
 namespace RZP\Models\Transfer;
 
+use Illuminate\Support\Facades\App;
+use RZP\Constants;
+use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Adjustment;
+use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use Illuminate\Support\Facades\App;
-use RZP\Listeners\ApiEventSubscriber;
 
 abstract class AbstractTransfer
 {
@@ -156,21 +159,13 @@ abstract class AbstractTransfer
         {
             $transfer = $this->repo->transaction(function () use ($payment, $transfer)
             {
+                $transfer = $this->updateTransferAmount($transfer, $payment);
+
                 $oldTransfer = clone $transfer;
 
                 $transfer = (new Core())->createTransactionForTransfer($oldTransfer);
 
-                $to = $this->repo
-                           ->account
-                           ->findByIdAndMerchant($transfer->getToId(), $this->merchant);
-
-                $input = $this->getTransferData($transfer);
-
-                $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $payment);
-
-                $transferPayment->transfer()->associate($transfer);
-
-                $this->repo->saveOrFail($transferPayment);
+                $this->createTransferredEntity($transfer, $payment);
 
                 $transfer->setProcessed();
 
@@ -195,6 +190,89 @@ abstract class AbstractTransfer
 
             throw  $ex;
         }
+    }
+
+    protected function updateTransferAmount($transfer, $payment) {
+        if ($transfer->isBalanceTransfer() === true)
+        {
+            $transfer->setAmount($payment->getAmount() - $payment->getFee());
+
+            $transfer->saveOrFail();
+        }
+        return $transfer;
+    }
+
+    protected function createTransferredEntity($transfer, $payment)
+    {
+        if ($transfer->isBalanceTransfer() === true)
+        {
+            $type = $transfer->getNotes()[Merchant\Credits\Entity::TYPE];
+
+            if($type === Merchant\BALANCE\Type::RESERVE_BALANCE)
+            {
+                $this->createTransferredBalance($transfer);
+            }
+            else
+            {
+                $this->createTransferredCredits($transfer, $type);
+            }
+        }
+        else
+        {
+            $this->createTransferredPayment($transfer, $payment);
+        }
+    }
+
+    protected function createTransferredPayment($transfer, $payment)
+    {
+        $to = $this->repo->account->findByIdAndMerchant($transfer->getToId(), $this->merchant);
+
+        $input = $this->getTransferData($transfer);
+
+        $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $payment);
+
+        $transferPayment->transfer()->associate($transfer);
+
+        $this->repo->saveOrFail($transferPayment);
+    }
+
+    protected function createTransferredCredits($transfer, $type)
+    {
+        $transferType = NULL;
+        if ($type === Merchant\BALANCE\Type::FEE_CREDIT)
+        {
+            $transferType = Merchant\Credits\Type::FEE;
+        }
+        else if ($type === Merchant\BALANCE\Type::REFUND_CREDIT)
+        {
+            $transferType = Merchant\Credits\Type::REFUND;
+            if ($this->merchant->refund_source !== CONSTANTS\Entity::CREDITS)
+            {
+                $merchant_core = new Merchant\Core();
+                $merchant_core->edit($this->merchant, ['refund_source' => 'credits']);
+            }
+        }
+        $input =
+            [
+                Merchant\Credits\Entity::VALUE    => $transfer->amount,
+                Merchant\Credits\Entity::TYPE     => $transferType,
+                Merchant\Credits\Entity::CAMPAIGN => $transfer->notes['description'],
+            ];
+
+        (new Merchant\Credits\Core)->create($this->merchant, $input);
+    }
+
+    protected function createTransferredBalance($transfer)
+    {
+        $input =
+            [
+                'amount'      => $transfer->amount,
+                'type'        => Merchant\BALANCE\TYPE::RESERVE_PRIMARY,
+                'currency'    => $transfer->getCurrency(),
+                'description' => $transfer->notes['description']
+            ];
+
+        (new Adjustment\Core)->createAdjustment($input, $this->merchant);
     }
 
     private function getTransferData(Entity $transfer)

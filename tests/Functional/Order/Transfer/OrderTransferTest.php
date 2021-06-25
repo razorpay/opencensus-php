@@ -41,6 +41,167 @@ class OrderTransferTest extends TestCase
         return $order;
     }
 
+    public function testCreateOrderTransfersForCredits() {
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international'    => 0]);
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                   => '10000000000000',
+            'international_activation_flow' => 0,
+            'business_category'             => 'education',
+            'business_subcategory'          => 'college']);
+
+        $order = $this->startTest();
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals($order['id'], 'order_' . $transfer['source_id']);
+        $this->assertEquals($transfer['status'], 'created');
+        $this->assertEquals($transfer['amount'], $order['amount']);
+
+        // Order transfers are automatically processed post payment capture
+        $payment = $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getDbEntityById('transfer', $transfer['id']);
+        $this->assertEquals($transfer['status'], 'processed');
+        $this->assertEquals($transfer['amount'], $payment['amount'] - $payment['fee']);
+
+        $payment_transaction = $this->getDbEntity('transaction', ['entity_id' => substr($payment['id'], 4)]);
+        $this->assertEquals($payment['amount'], $payment_transaction['amount']);
+
+        $transfer_transaction = $this->getDbEntity('transaction', ['entity_id' => $transfer['id']]);
+        $this->assertEquals($payment_transaction['credit'], $transfer_transaction['amount']);
+
+        $credits = $this->getDbLastEntity('credits');
+        $this->assertEquals($credits['value'], $transfer['amount']);
+        $this->assertEquals($credits['type'], 'refund');
+
+        // Merchant's refund credit balance is incremented by the transfer amount
+        $balance = $this->getDbEntityById('balance', '10000000000000');
+        $this->assertEquals($balance['refund_credits'], $transfer['amount']);
+    }
+
+    public function testCreateOrderTransfersForReserveBalance() {
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international'    => 0]);
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                   => '10000000000000',
+            'international_activation_flow' => 0,
+            'business_category'             => 'education',
+            'business_subcategory'          => 'college']);
+
+        $order = $this->startTest();
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals($order['id'], 'order_' . $transfer['source_id']);
+        $this->assertEquals($transfer['status'], 'created');
+        $this->assertEquals($transfer['amount'], $order['amount']);
+
+        // Order transfers are automatically processed post payment capture
+        $payment = $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getDbEntityById('transfer', $transfer['id']);
+        $this->assertEquals($transfer['status'], 'processed');
+        $this->assertEquals($transfer['amount'], $payment['amount'] - $payment['fee']);
+
+        $payment_transaction = $this->getDbEntity('transaction', ['entity_id' => substr($payment['id'], 4)]);
+        $this->assertEquals($payment['amount'], $payment_transaction['amount']);
+
+        $transfer_transaction = $this->getDbEntity('transaction', ['entity_id' => $transfer['id']]);
+        $this->assertEquals($payment_transaction['credit'], $transfer_transaction['amount']);
+
+        $adjustment = $this->getDbLastEntity('adjustment');
+
+        $transfer_adjustment = $this->getDbEntity('transaction', ['entity_id' => $adjustment['id']]);
+        $this->assertEquals($adjustment['amount'], $transfer_adjustment['amount']);
+
+        // Merchant's refund credit balance is incremented by the transfer amount
+        $balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'reserve_primary']);
+        $this->assertEquals($balance['balance'], $transfer['amount']);
+    }
+
+    public function testCreateOrderTransfersForFeeCreditWhenAmountCreditExists() {
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international'    => 0]);
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                   => '10000000000000',
+            'international_activation_flow' => 0,
+            'business_category'             => 'education',
+            'business_subcategory'          => 'college']);
+
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+        ]);
+
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+
+        $order = $this->startTest();
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals($order['id'], 'order_' . $transfer['source_id']);
+        $this->assertEquals($transfer['status'], 'created');
+        $this->assertEquals($transfer['amount'], $order['amount']);
+
+        // Order transfers are automatically processed post payment capture
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getDbEntityById('transfer', $transfer['id']);
+        $this->assertEquals($transfer['status'], 'failed');
+    }
+
+    public function testCreateOrderTransfersForInvalidAccount()
+    {
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international'    => 0]);
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                   => '10000000000000',
+            'international_activation_flow' => 0,
+            'business_category'             => 'education',
+            'business_subcategory'          => 'college']);
+
+        $request = $this->testData['testCreateOrderTransfersForCredits']['request'];
+        $request['content']['transfers'][0]['account'] = 'acc_10000000000001';
+
+        $this->makeRequestAndCatchException(
+            function() use ($request) {
+                $response = $this->makeRequestAndGetContent($request);
+                $this->assertEquals($response['error']['internal_error_code'],
+                    'BAD_REQUEST_ACCOUNT_ID_INVALID_FOR_BALANCE_TRANSFER');
+            },
+            BadRequestException::class,
+            'Something went wrong, please try again after sometime.'
+        );
+    }
+
+    public function testCreateOrderTransfersForInvalidAmount()
+    {
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international'    => 0]);
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                   => '10000000000000',
+            'international_activation_flow' => 0,
+            'business_category'             => 'education',
+            'business_subcategory'          => 'college']);
+
+        $request = $this->testData['testCreateOrderTransfersForCredits']['request'];
+        $request['content']['transfers'][0]['amount'] = 500;
+
+        $this->makeRequestAndCatchException(
+            function() use ($request) {
+                $response = $this->makeRequestAndGetContent($request);
+                $this->assertEquals($response['error']['internal_error_code'],
+                    'BAD_REQUEST_INVALID_TRANSFER_AMOUNT_FOR_BALANCE_TRANSFER');
+            },
+            BadRequestException::class,
+            'Something went wrong, please try again after sometime.'
+        );
+    }
+
     public function testCreateOrderTransfersUsingAccountCode()
     {
         $this->fixtures->merchant->addFeatures('route_code_support');

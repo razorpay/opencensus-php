@@ -3660,6 +3660,7 @@ class Route
         'oauth_application_fetch',
         'oauth_application_delete',
         'oauth_application_update',
+        'order_create',
         'otp_create',
         'user_otp_verify',
         'merchant_analytics',

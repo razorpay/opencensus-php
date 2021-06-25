@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
@@ -171,12 +172,27 @@ class Core extends Base\Core
                 $input[ToType::ACCOUNT] = Merchant\Account\Entity::getSignedId($accountId);
             }
 
-            $to = $this->repo
-                       ->account
-                       ->findByPublicIdAndMerchant($input[ToType::ACCOUNT], $this->merchant);
+            if (isset($input[ToType::BALANCE]) === true)
+            {
+                $description = 'Transfer for ' . $input[ToType::BALANCE];
+                if (isset($order->getNotes()['description']) === true) {
+                     $description = $order->getNotes()['description'];
+                }
+                $input[Entity::NOTES]['description'] = $description;
+                $input[Entity::NOTES]['type'] = $input[ToType::BALANCE];
+                $to = $this->repo
+                    ->balance
+                    ->getMerchantBalance($this->merchant);
+            }
+            else if (isset($input[ToType::ACCOUNT]) === true) {
 
-            // extracts linked account notes and validates.
-            $this->getLinkedAccountNotes($input);
+                $to = $this->repo
+                    ->account
+                    ->findByPublicIdAndMerchant($input[ToType::ACCOUNT], $this->merchant);
+
+                // extracts linked account notes and validates.
+                $this->getLinkedAccountNotes($input);
+            }
 
             $transfer = $this->buildTransferEntity($order, $to, $input, $this->merchant);
 
@@ -551,10 +567,20 @@ class Core extends Base\Core
         }
     }
 
+    public function checkBalanceTransfer(array $transfers)
+    {
+        foreach($transfers as $transfer)
+        {
+            if (isset($transfer[Transfer\ToType::BALANCE]) === true)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function validateTransfersInput(int $orderAmount, array $transfers)
     {
-
-        $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $this->merchant);
 
         $this->validateMerchantForTransfer($this->merchant);
 
@@ -564,13 +590,22 @@ class Core extends Base\Core
 
         $validator->validateTransferForOrder($transfers, $orderAmount);
 
-        foreach ($transfers as $transfer)
+        if ($this->checkBalanceTransfer($transfers) === true)
         {
-            $to = $this->repo
-                       ->account
-                       ->findByPublicIdAndMerchant($transfer[ToType::ACCOUNT], $this->merchant);
+            $validator->validateBalanceTransferChecks($transfers, $this->merchant->getId(), $orderAmount);
+        }
+        else
+        {
+            $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $this->merchant);
 
-            $this->merchant->getValidator()->validateMerchantForMarketplaceTransfer($to, $this->mode);
+            foreach ($transfers as $transfer)
+            {
+                $to = $this->repo
+                    ->account
+                    ->findByPublicIdAndMerchant($transfer[ToType::ACCOUNT], $this->merchant);
+
+                $this->merchant->getValidator()->validateMerchantForMarketplaceTransfer($to, $this->mode);
+            }
         }
     }
 

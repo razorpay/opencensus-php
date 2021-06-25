@@ -47,6 +47,120 @@ return [
         ],
     ],
 
+    'testCreateOrderTransfersForCredits' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/orders',
+            'content' => [
+                'amount' => 50000,
+                'currency' => 'INR',
+                'notes' => [
+                    "description" => "adding refund credits",
+                ],
+                'transfers' => [
+                    [
+                        'account' => 'acc_10000000000000',
+                        'balance' => 'refund_credit',
+                        'amount' => 50000,
+                        'currency' => 'INR'
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount' => 50000,
+                'currency' => 'INR',
+                'transfers' => [
+                    [
+                        'recipient' => '10000000000000',
+                        'currency' => 'INR',
+                        'amount' => 50000,
+                        'notes' => [
+                            'type' => 'refund_credit'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateOrderTransfersForReserveBalance' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/orders',
+            'content' => [
+                'amount' => 50000,
+                'currency' => 'INR',
+                'notes' => [
+                    "description" => "adding reserve balance",
+                ],
+                'transfers' => [
+                    [
+                        'account' => 'acc_10000000000000',
+                        'balance' => 'reserve_balance',
+                        'amount' => 50000,
+                        'currency' => 'INR'
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount' => 50000,
+                'currency' => 'INR',
+                'transfers' => [
+                    [
+                        'recipient' => '10000000000000',
+                        'currency' => 'INR',
+                        'amount' => 50000,
+                        'notes' => [
+                            'type' => 'reserve_balance'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateOrderTransfersForFeeCreditWhenAmountCreditExists' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/orders',
+            'content' => [
+                'amount' => 50000,
+                'currency' => 'INR',
+                'notes' => [
+                    "description" => "adding fee credits",
+                ],
+                'transfers' => [
+                    [
+                        'account' => 'acc_10000000000000',
+                        'balance' => 'fee_credit',
+                        'amount' => 50000,
+                        'currency' => 'INR'
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount' => 50000,
+                'currency' => 'INR',
+                'transfers' => [
+                    [
+                        'recipient' => '10000000000000',
+                        'currency' => 'INR',
+                        'amount' => 50000,
+                        'notes' => [
+                            'type' => 'fee_credit'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCreateOrderTransfersUsingAccountCode' => [
         'request' => [
             'url' => '/orders',

@@ -17,6 +17,10 @@ class Type
     const AMOUNT_CREDITS    = 'amount_credits';
     const RESERVE_PRIMARY   = 'reserve_primary';
 
+    const FEE_CREDIT        = 'fee_credit';
+    const REFUND_CREDIT     = 'refund_credit';
+    const RESERVE_BALANCE   = 'reserve_balance';
+
     /**
      * Banking balance.
      */

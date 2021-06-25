@@ -453,6 +453,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACCOUNT_CODE, $accountCode);
     }
 
+    public function setAmount(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
     // -------------------- End Setters ---------------------------
 
     /**
@@ -473,6 +478,11 @@ class Entity extends Base\PublicEntity
     public function isOrderTransfer(): bool
     {
         return ($this->getSourceType() === E::ORDER);
+    }
+
+    public function isBalanceTransfer(): bool
+    {
+        return ($this->getToType() === ToType::BALANCE);
     }
 
     public function isCreated(): bool

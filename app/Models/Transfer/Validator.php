@@ -18,6 +18,7 @@ class Validator extends Base\Validator
         ToType::ACCOUNT              => 'sometimes|string|size:18',
         ToType::CUSTOMER             => 'sometimes|string|size:19',
         Entity::ACCOUNT_CODE         => 'sometimes|custom',
+        ToType::BALANCE              => 'string|in:fee_credit,refund_credit,reserve_balance|custom',
         Entity::AMOUNT               => 'required|integer|min:100',
         Entity::CURRENCY             => 'required|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
@@ -44,6 +45,25 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         'hold_parameters'
     ];
+
+    protected function validateBalance(string $key, string $value, array $data) {
+
+        // Only on type of recipient is allowed, confirm that others aren't there
+        foreach (ToType::$allowedTypes as $type)
+        {
+            // Skip the one in the request
+            if ($key === $type)
+            {
+                continue;
+            }
+
+            if (isset($data[$type]) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The '.$key.' field is required when '.$type.' is not present.');
+            }
+        }
+    }
 
     public static function validateStatus($status)
     {
@@ -323,6 +343,25 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TRANSFER_AMOUNT_GREATER_THAN_ORDER_AMOUNT);
+        }
+    }
+
+    public function validateBalanceTransferChecks(array $transfers, string $merchantId, int $orderAmount)
+    {
+        if (sizeof($transfers) > 1)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_NODES_MORE_THAN_ONE_FOR_BALANCE_TRANSFER);
+        }
+        if ($transfers[0]['account'] != 'acc_' . $merchantId)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCOUNT_ID_INVALID_FOR_BALANCE_TRANSFER);
+        }
+        if ($transfers[0]['amount'] != $orderAmount)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_TRANSFER_AMOUNT_FOR_BALANCE_TRANSFER);
         }
     }
 

@@ -8,9 +8,11 @@ class ToType
 {
     const CUSTOMER      = 'customer';
     const ACCOUNT       = 'account';
+    const BALANCE       = 'balance';
 
     public static $allowedTypes = [
         self::CUSTOMER,
+        self::BALANCE,
         self::ACCOUNT
     ];
 

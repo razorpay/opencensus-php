@@ -744,7 +744,14 @@ class Core extends Base\Core
 
         $txn->setAmount($amount);
 
-        list($debit, $fee, $tax, $feesSplit) = $this->calculateTransferFees($txn);
+        if($transfer->isBalanceTransfer() === true)
+        {
+            list($debit, $fee, $tax, $feesSplit) = [$transfer->getAmount(), 0, 0, new PublicCollection()];
+        }
+        else
+        {
+            list($debit, $fee, $tax, $feesSplit) = $this->calculateTransferFees($txn);
+        }
 
         $txn->setCredit(0);
         $txn->setDebit($debit);
