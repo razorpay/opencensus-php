@@ -15,7 +15,10 @@ export const getNeedsClarificationTabsData = (allFieldsMap, activationDetails) =
     if (!hasLLPINActive && f.label === 'LLPIN') {
       return;
     }
-    allFieldsHash[f.name || f._name] = f;
+    const name = (f.name || f._name);
+    if(name) {
+      allFieldsHash[name] = f;
+    }
   };
   const addToKYCTab = (field) => {
     if (!kycFieldsMap[field]) {
@@ -41,12 +44,14 @@ export const getNeedsClarificationTabsData = (allFieldsMap, activationDetails) =
     if (!allFieldsHash[field] || Boolean(forceMap)) {
       field = generateNewField(field, clarificationDetails[origKey], forceMap);
     }
+
     if (allFieldsHash[field]) {
       if (latestNc) {
         clarificationDetails[origKey].map((key) => {
+          const { from, nc_count } = key;
           if (
-            ((key.from === 'admin' || key.from === 'system') && key.nc_count === latestNc) ||
-            forceMap
+            ((from === 'admin' || from === 'system') && nc_count === latestNc) ||
+            (forceMap && !nc_count)
           ) {
             if (key.reason_type === 'predefined') {
               try {
@@ -134,8 +139,11 @@ export const getNeedsClarificationTabsData = (allFieldsMap, activationDetails) =
     if (Boolean(mappedFields[key]) || (Boolean(forceMap) && allFieldsHash[mappedFields[key]])) {
       return mappedFields[key];
     }
+
+    return key;
     //Implement functionality for custom fields here
     //Push the field to allFieldsHash & return the name of field
+    //Return key if not in mappedFields
   };
 
   try {
@@ -172,6 +180,18 @@ export const getNeedsClarificationTabsData = (allFieldsMap, activationDetails) =
     return kycTabContent;
   } catch (error) {
     console.log(error);
+  }
+};
+
+const predefinedBankReasons = {
+  bank_account_change_request_for_prop_ngo_trust: {
+      "description": "Entered bank details are incorrect, please share company bank account details or authorised signatory details."
+  },
+  bank_account_change_request_for_unregistered: {
+      "description": "Entered bank details are incorrect, please share signatory personal account details"
+  },
+  bank_account_change_request_for_pvt_public_llp: {
+      "description": "Entered bank details are incorrect, please share company bank account details."
   }
 };
 
@@ -252,6 +272,7 @@ const predefinedReasons = {
   },
   bank_account_number: {
     reasons: {
+      ...predefinedBankReasons,
       unable_to_validate_acc_number: {
         description:
           "We're unable to validate the account number from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
@@ -260,6 +281,7 @@ const predefinedReasons = {
   },
   bank_account_name: {
     reasons: {
+      ...predefinedBankReasons,
       unable_to_validate_beneficiary_name: {
         description:
           "We're unable to validate the beneficiary name from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
@@ -268,6 +290,7 @@ const predefinedReasons = {
   },
   bank_branch_ifsc: {
     reasons: {
+      ...predefinedBankReasons,
       unable_to_validate_ifsc: {
         description:
           "We're unable to validate the IFSC from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
