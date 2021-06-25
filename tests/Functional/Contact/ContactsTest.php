@@ -250,6 +250,10 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateContactWithEnDash()
+    {
+        $this->startTest();
+    }
 
     public function testCreateContactLiveModeNonKycActivatedNonCaActivated()
     {
