@@ -178,6 +178,16 @@ class Processor
     const CARD_PAYMENTS_AUTHORIZE_ALL_TERMINALS = 'card_payments_authorize_all_terminals';
 
     /**
+     * Those error codes for which the payment can fallback to 3ds flow if the merchant gets
+     * a failure on otp generate flow during with the json v2 payment create request
+     */
+    const AUTHORIZE_JSON_V2_3DS_FALLBACK_ERRORS = [
+        ErrorCode::GATEWAY_ERROR_OTPELF_FAILURE,
+        ErrorCode::GATEWAY_ERROR_IVR_UNAVAILABLE,
+        ErrorCode::GATEWAY_ERROR_IVR_AUTHENTICATION_NOT_AVAILABLE,
+    ];
+
+    /**
      * Card payment service feature flag
      */
     const CARD_PAYMENT_SERVICE_VARIANT_PREFIX          = 'cardps';

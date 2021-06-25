@@ -8290,7 +8290,7 @@ trait Authorize
         if (($merchant->isFeatureEnabled(Feature\Constants::JSON_V2) === true) and
             ($payment->isFailed() === true))
         {
-            if ($payment->getInternalErrorCode() === ErrorCode::GATEWAY_ERROR_OTPELF_FAILURE)
+            if (in_array($payment->getInternalErrorCode(), self::AUTHORIZE_JSON_V2_3DS_FALLBACK_ERRORS) === true)
             {
                 $payment->setStatus(Status::CREATED);
 
