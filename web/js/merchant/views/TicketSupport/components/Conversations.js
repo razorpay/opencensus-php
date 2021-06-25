@@ -31,6 +31,7 @@ import { PRERECORDED_RESPONSES } from './data';
     return {
       ...state.session,
       ...state.config.config,
+      scheduleCallConfig: state.config.scheduleCallConfig,
       user: state.session.user,
     };
   },
@@ -110,9 +111,8 @@ export default class Conversations extends React.Component {
         this.track('conversation loading failed', 'Conversation | Status: Failed');
         this.props.showNotification({
           type: 'error',
-          message: `Failed to load conversation, please try later! Status CODE: ${
-            e.code || 'UNKNOWN'
-          }`,
+          message: `Failed to load conversation, please try later! Status CODE: ${e.code || 'UNKNOWN'
+            }`,
         });
       });
   }
@@ -196,7 +196,7 @@ export default class Conversations extends React.Component {
     Object.keys(this.state.conversations.data).forEach((k) => {
       total_conversations.push(...this.state.conversations.data[k]);
     });
-
+    let scheduleCallbackReason = this.props.scheduleCallConfig.reason;
     total_conversations = total_conversations.filter(this.shouldBeVisible);
     let message;
     let MESSAGE = getResponseArrivalType(this.state.ticket);
@@ -338,9 +338,8 @@ export default class Conversations extends React.Component {
 
                           <span>
                             <button
-                              className={`btn btn-outline grievance-related-btn ${
-                                is_escalated ? 'btn-warning' : ''
-                              } ${!can_be_escalated ? 'disabled-style' : ''}`}
+                              className={`btn btn-outline grievance-related-btn ${is_escalated ? 'btn-warning' : ''
+                                } ${!can_be_escalated ? 'disabled-style' : ''}`}
                               onClick={() => {
                                 if (can_be_escalated) {
                                   this.openGrievanceFlow(this.state.ticket);
@@ -358,14 +357,14 @@ export default class Conversations extends React.Component {
                                       ? `You can expect reply before: ${responseFormatTime}`
                                       : `We will resolve this query over call`
                                     : is_escalated
-                                    ? `You can expect reply before: ${responseFormatTime}`
-                                    : `You can expect reply within 8 working hours.`}
+                                      ? `You can expect reply before: ${responseFormatTime}`
+                                      : `You can expect reply within 8 working hours.`}
                                 </PopoverBody>
                               </Popover>
                             ) : null}
                           </span>
                           {!has_callback ? (
-                            <button
+                            this.props.scheduleCallConfig.is_eligible ? <button
                               onClick={() => {
                                 window.rzpTicketSystem &&
                                   window.rzpTicketSystem.openModal(`#schedule-call`, {
@@ -377,7 +376,7 @@ export default class Conversations extends React.Component {
                             >
                               {' '}
                               <i className="i i-call-new"></i> Request a call
-                            </button>
+                            </button> : null
                           ) : (
                             <button className="btn btn-outline requested">
                               {' '}
