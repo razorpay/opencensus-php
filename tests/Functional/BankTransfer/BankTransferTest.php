@@ -6178,9 +6178,9 @@ class BankTransferTest extends TestCase
             $balance, '100000Razorpay', $balanceType, $channel);
 
         // Creates virtual account, its bank account receiver on new banking balance.
-        // `HMqUENxwwwQ11a` is the virtual account id on production. Using the same here.
+        // `HMwb1lgZD9N5Gm` is the virtual account id on production. Using the same here.
         $virtualAccount = $this->fixtures->on('live')->create('virtual_account', [
-            'id'          => 'HMqUENxwwwQ11a',
+            'id'          => 'HMwb1lgZD9N5Gm',
             'merchant_id' => '100000Razorpay'
         ]);
         $bankAccount    = $this->fixtures->on('live')->create(

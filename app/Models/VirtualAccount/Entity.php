@@ -69,7 +69,7 @@ class Entity extends Base\PublicEntity
 
     // Used for creating shared virtual account
     const SHARED_ID            = 'ShrdVirtualAcc';
-    const SHARED_ID_BANKING    = 'HMqUENxwwwQ11a';
+    const SHARED_ID_BANKING    = 'HMwb1lgZD9N5Gm';
 
     const SOURCE               = 'source';
 
