@@ -306,6 +306,8 @@ class Service extends Base\Service
 
         $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null;
 
+        $rowIdempotentId = $this->app['request']->header(RequestHeader::X_Batch_Row_Id) ?? null;
+
         if ($batchId !== null)
         {
             $this->trace->info(TraceCode::AUTH_LINK_BATCH_INPUT,
@@ -313,10 +315,11 @@ class Service extends Base\Service
                     'token_id' => $id,
                     'input'    => $input,
                     'batch_id' => $batchId,
+                    'row_id'   => $rowIdempotentId,
                 ]);
         }
 
-        $response =  $this->core->chargeToken($id, $input, $this->merchant, $batchId);
+        $response =  $this->core->chargeToken($id, $input, $this->merchant, $batchId, $rowIdempotentId);
 
         if($this->auth->getInternalApp() === "batch")
         {
@@ -937,6 +940,11 @@ class Service extends Base\Service
     protected function setOrderId(& $response)
     {
         $paymentId = $response['razorpay_payment_id'];
+
+        if (empty($paymentId) === true)
+        {
+            return;
+        }
 
         $paymentId = Payment\Entity::stripDefaultSign($paymentId);
 

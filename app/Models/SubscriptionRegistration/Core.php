@@ -33,6 +33,8 @@ use RZP\Models\Customer\GatewayToken\Core as GatewayToken;
 
 class Core extends Base\Core
 {
+    const TOKEN_CHARGE_IDEMPOTENCY_CACHE_KEY = 'subr_charge_token_batch_row_';
+
     public function create(array $input, Merchant\Entity $merchant, Customer\Entity $customer): Entity
     {
         $this->trace->info(
@@ -560,9 +562,16 @@ class Core extends Base\Core
         $this->repo->saveOrFail($subr);
     }
 
-    public function chargeToken(string $id, array $input, Merchant\Entity $merchant, String $batchId = null)
+    public function chargeToken(string $id, array $input, Merchant\Entity $merchant, String $batchId = null, string $idemPotentKey = null)
     {
         $token = null;
+
+        $idemPotentResponse = $this->checkAndProcessForIdempotencyKeyForTokenCharge($idemPotentKey);
+
+        if ($idemPotentResponse !== null)
+        {
+            return $idemPotentResponse;
+        }
 
         if ($merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true)
         {
@@ -608,6 +617,11 @@ class Core extends Base\Core
 
         $order = $orderCore->create($orderInput, $this->merchant);
 
+        if (empty($idemPotentKey) === false)
+        {
+            $this->app['cache']->set($cacheKey = self::TOKEN_CHARGE_IDEMPOTENCY_CACHE_KEY.$idemPotentKey, $order->getId(), 600);
+        }
+
         $paymentInput = [
             Payment\Entity::TOKEN       => $token->getPublicId(),
             Payment\Entity::AMOUNT      => $input[Order\Entity::AMOUNT],
@@ -644,6 +658,63 @@ class Core extends Base\Core
         }
 
         return $paymentData;
+    }
+
+    protected function checkAndProcessForIdempotencyKeyForTokenCharge($idemPotentKey)
+    {
+        if (empty($idemPotentKey) === true)
+        {
+            return null;
+        }
+
+        $cacheKey = self::TOKEN_CHARGE_IDEMPOTENCY_CACHE_KEY.$idemPotentKey;
+
+        $cacheOrderId = $this->app['cache']->get($cacheKey);
+
+        if ($cacheOrderId !== null)
+        {
+            $cachedOrder = $this->repo->order->findByIdAndMerchant($cacheOrderId, $this->merchant);
+
+            if ($cachedOrder === null)
+            {
+                return null;
+            }
+
+            $payments = $cachedOrder->payments;
+
+            if ($payments->count() > 1)
+            {
+                // There should only be a single payment for this recurring token charge order.
+                // If there are multiple payments, might need to investigate.
+                // returning order id
+                return [
+                    'order_id'            => $cachedOrder->getPublicId(),
+                    'razorpay_payment_id' => '',
+                ];
+            }
+
+            if ($payments->count() === 0)
+            {
+                // the transaction might be still going on. we will just return order id in these cases.
+                // Merchant can get the payment data from reports section.
+                return [
+                    'order_id'            => $cachedOrder->getPublicId(),
+                    'razorpay_payment_id' => '',
+                ];
+            }
+
+            // One payment has been made and we are able to fetch it. we will return it for now.
+            // payment id's existence does not mean the payment is successful.
+            // failed payments etc will be found when merchant downloads the report.
+
+            $existingPayment = $payments->get(0);
+
+            return [
+                'razorpay_payment_id' => $existingPayment->getPublicId()
+            ];
+        }
+
+        return null;
     }
 
     public function getUploadedFileUrlByPaymentForNachMethod(Payment\Entity $payment)

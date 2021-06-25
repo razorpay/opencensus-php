@@ -60,6 +60,8 @@ class RequestHeader
 
     const X_Batch_Id                    = 'x-batch-id';
 
+    const X_Batch_Row_Id                = 'x-batch-row-id';
+
     const X_SLACK_REQUEST_TIMESTAMP     = 'X-Slack-Request-Timestamp';
     const X_SLACK_SIGNATURE             = 'X-Slack-Signature';
 

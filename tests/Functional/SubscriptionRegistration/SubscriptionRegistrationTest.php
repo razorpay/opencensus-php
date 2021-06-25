@@ -351,6 +351,108 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals($payment->getAmount(), 3000);
     }
 
+    public function testDuplicateChargeEmandateTokenWithIdempotencyKey()
+    {
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB', 0);
+
+        $this->doAuthPayment($payment);
+
+        $this->ba->batchAuth();
+
+        $token = $this->getDbLastEntity('token');
+
+        $chargeContent = ['amount' => 3000, 'receipt' => '1234', 'description' => 'abc'];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/subscription_registration/tokens/'.$token->getPublicId().'/charge',
+            'content' => $chargeContent,
+            'server'  => ['HTTP_x-batch-row-id' => 'idemptent_1234', 'x-batch-id' => 'batchId1234567']
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $paymentOne = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($paymentOne->getPublicId(), $content['razorpay_payment_id']);
+
+        $this->assertEquals('order_'.$paymentOne->getApiOrderId(), $content['order_id']);
+
+        $this->assertEquals($paymentOne->getAmount(), 3000);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/subscription_registration/tokens/'.$token->getPublicId().'/charge',
+            'content' => $chargeContent,
+            'server'  => ['HTTP_x-batch-row-id' => 'idemptent_1234']
+        ];
+
+        $content2 = $this->makeRequestAndGetContent($request);
+
+        $paymentTwo = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($paymentTwo->getPublicId(), $content2['razorpay_payment_id']);
+
+        $this->assertEquals('order_'.$paymentTwo->getApiOrderId(), $content2['order_id']);
+
+        $this->assertEquals($paymentTwo->getAmount(), 3000);
+
+        $this->assertEquals($paymentTwo->getPublicId(), $paymentOne->getPublicId());
+
+        $this->assertEquals($content['order_id'], $content2['order_id']);
+
+        $this->assertEquals($content['razorpay_payment_id'], $content2['razorpay_payment_id']);
+    }
+
+    public function testChargeEmandateTokenWithDifferentIdempotencyKey()
+    {
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB', 0);
+
+        $payment['recurring_token']['max_amount'] = 6000;
+
+        $this->doAuthPayment($payment);
+
+        $this->ba->proxyAuth();
+
+        $token = $this->getDbLastEntity('token');
+
+        $chargeContentOne = ['amount' => 3000, 'receipt' => '1234', 'description' => 'abc'];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/subscription_registration/tokens/'.$token->getPublicId().'/charge',
+            'content' => $chargeContentOne,
+            'server'  => ['HTTP_x-batch-row-id' => 'idemptent_1234']
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $paymentOne = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($paymentOne->getPublicId(), $content['razorpay_payment_id']);
+
+        $this->assertEquals($paymentOne->getAmount(), 3000);
+
+        $chargeContentTwo = ['amount' => 4000, 'receipt' => '1234', 'description' => 'abc'];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/subscription_registration/tokens/'.$token->getPublicId().'/charge',
+            'content' => $chargeContentTwo,
+            'server'  => ['HTTP_x-batch-row-id' => 'idemptent_1235']
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $paymentTwo = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($paymentTwo->getPublicId(), $content['razorpay_payment_id']);
+
+        $this->assertEquals($paymentTwo->getAmount(), 4000);
+
+        $this->assertNotEquals($paymentTwo->getPublicId(), $paymentOne->getPublicId());
+    }
+
     public function testAutoChargeEmandateToken()
     {
         $beforeMidDay = Carbon::now(Timezone::IST)->midDay()->subHour(1)->getTimestamp();
