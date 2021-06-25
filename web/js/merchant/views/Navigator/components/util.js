@@ -106,79 +106,77 @@ export const operators = [
   },
 ];
 
-const customIdentifierParameter = getExpStatus('optimizer_custom_identifier')
-  ? [
-      {
-        name: 'Custom Identifier 1',
-        value: '$payment.optimizer_identifier_1',
-        description: 'Custom Identifier',
-        id: 10,
-        values: [],
-        operators: {
-          '==': {
-            number: false,
-            type: 'input',
-          },
-          '!=': {
-            number: false,
-            type: 'input',
-          },
-          in: {
-            number: false,
-            type: 'input',
-            multiple: true,
-          },
-        },
-        type: 'string',
+const customIdentifierParameter = [
+  {
+    name: 'Custom Identifier 1',
+    value: '$payment.optimizer_identifier_1',
+    description: 'Custom Identifier',
+    id: 10,
+    values: [],
+    operators: {
+      '==': {
+        number: false,
+        type: 'input',
       },
-      {
-        name: 'Custom Identifier 2',
-        value: '$payment.optimizer_identifier_2',
-        description: 'Custom Identifier',
-        id: 11,
-        values: [],
-        operators: {
-          '==': {
-            number: false,
-            type: 'input',
-          },
-          '!=': {
-            number: false,
-            type: 'input',
-          },
-          in: {
-            number: false,
-            type: 'input',
-            multiple: true,
-          },
-        },
-        type: 'string',
+      '!=': {
+        number: false,
+        type: 'input',
       },
-      {
-        name: 'Custom Identifier 3',
-        value: '$payment.optimizer_identifier_3',
-        description: 'Custom Identifier',
-        id: 12,
-        values: [],
-        operators: {
-          '==': {
-            number: false,
-            type: 'input',
-          },
-          '!=': {
-            number: false,
-            type: 'input',
-          },
-          in: {
-            number: false,
-            type: 'input',
-            multiple: true,
-          },
-        },
-        type: 'string',
+      in: {
+        number: false,
+        type: 'input',
+        multiple: true,
       },
-    ]
-  : [];
+    },
+    type: 'string',
+  },
+  {
+    name: 'Custom Identifier 2',
+    value: '$payment.optimizer_identifier_2',
+    description: 'Custom Identifier',
+    id: 11,
+    values: [],
+    operators: {
+      '==': {
+        number: false,
+        type: 'input',
+      },
+      '!=': {
+        number: false,
+        type: 'input',
+      },
+      in: {
+        number: false,
+        type: 'input',
+        multiple: true,
+      },
+    },
+    type: 'string',
+  },
+  {
+    name: 'Custom Identifier 3',
+    value: '$payment.optimizer_identifier_3',
+    description: 'Custom Identifier',
+    id: 12,
+    values: [],
+    operators: {
+      '==': {
+        number: false,
+        type: 'input',
+      },
+      '!=': {
+        number: false,
+        type: 'input',
+      },
+      in: {
+        number: false,
+        type: 'input',
+        multiple: true,
+      },
+    },
+    type: 'string',
+  },
+];
 
 export const parameters = [
   {
