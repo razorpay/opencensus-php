@@ -2189,9 +2189,14 @@ class Processor
             });
     }
 
+    /**
+     * @throws Exception\BadRequestException
+     */
     public function cancelEmandatePayment(Payment\Entity $payment)
     {
-        if ($payment->getMethod() != Payment\Method::EMANDATE)
+        $method = $payment->getMethod();
+
+        if (in_array($method, [Payment\Method::EMANDATE, Payment\Method::NACH]) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED, null,
                 [
