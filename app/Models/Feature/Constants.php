@@ -708,6 +708,11 @@ class Constants
      */
     const PAYMENT_SHOW_DCC_MARKUP   =   'payment_show_dcc_markup';
 
+    /**
+     * Feature flag for partner to skip onboarding notifications sent to submerchant
+     */
+    const SKIP_SUBM_ONBOARDING_COMM = 'skip_subm_onboarding_comm';
+
     const LEDGER_CREDIT_LOCK        = 'ledger_credit_lock';
 
     public static $recurringFeatures = [
@@ -1033,6 +1038,7 @@ class Constants
         self::PAYMENT_SHOW_DCC_MARKUP         => true,
         self::EXPOSE_SETTLED_BY               => true,
         self::PAYPAL_CC                       => true,
+        self::SKIP_SUBM_ONBOARDING_COMM       => true,
         self::LEDGER_CREDIT_LOCK              => true,
     ];
 

@@ -6,10 +6,11 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant\Core as MerchantCore;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Partner\Core as PartnerCore;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Mail\Merchant\HardLimitLevelThreeEmail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
@@ -305,6 +306,13 @@ class Core extends Base\Core
 
     private function sendMailToInformHardLimitReached(MerchantEntity $merchant)
     {
+        $notificationBlocked = (new PartnerCore())->isSubMerchantNotificationBlocked($merchant->getId());
+
+        if ($notificationBlocked === true)
+        {
+            return;
+        }
+
         $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
         $data = [

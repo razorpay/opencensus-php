@@ -2287,6 +2287,15 @@ return [
         'status_code' => 200,
     ],
 
+    'testHardLimitEmailNotSent' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchants/auto-kyc-cron/escalations',
+        ],
+
+        'status_code' => 200,
+    ],
+
     'testKycSubmissionForInstantlyActivatedMerchantForCustomOrg' => [
         'request'     => [
             'method'  => 'POST',

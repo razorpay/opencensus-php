@@ -7,6 +7,7 @@ use RZP\Notifications\Channel;
 use RZP\Models\Merchant\Entity;
 use RZP\Notifications\BaseHandler;
 use RZP\Models\Merchant\Detail\Status;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Detail\BusinessType;
 
 class Handler extends BaseHandler
@@ -42,7 +43,9 @@ class Handler extends BaseHandler
     {
         $event = $this->getEventForActivationStatus($this->activationStatus, $this->merchant);
 
-        if(empty($event) === false)
+        $notificationBlocked =  (new PartnerCore())->isSubMerchantNotificationBlocked($this->merchant->id);
+
+        if(empty($event) === false and $notificationBlocked === false)
         {
             $this->sendForEvent($event);
         }

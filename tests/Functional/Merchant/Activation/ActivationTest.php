@@ -32,6 +32,7 @@ use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -3591,6 +3592,66 @@ class ActivationTest extends OAuthTestCase
 
             return true;
         });
+    }
+
+    public function testHardLimitEmailNotSent()
+    {
+        Mail::fake();
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $data = [
+            'activation_status'     => 'activated_mcc_pending'
+        ];
+
+        $this->fixtures->on('live')->edit('merchant_detail', $merchantId, $data);
+        $this->fixtures->on('test')->edit('merchant_detail', $merchantId, $data);
+
+        $createdAt = Carbon::now()->subDays(5)->getTimestamp();
+
+        $this->fixtures->on('live')->create('merchant_auto_kyc_escalations', [
+            'merchant_id'       =>  $merchantId,
+            'escalation_level'  =>  3,
+            'escalation_type'   =>  'hard_limit',
+            'created_at'     => $createdAt,
+        ]);
+
+        $this->ba->cronAuth('live');
+
+        $testData = [
+            'url'     => '/merchants/auto-kyc-cron/escalations',
+            'method'  => 'post',
+            'content' => [
+
+            ],
+        ];
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'    => self::RZP_ORG,
+            'hostname'  => 'dashboard.razorpay.com'
+        ]);
+
+
+        $this->fixtures->create('merchant', [
+            'id'     => '10000000000040',
+            'email'  => 'test@razorpay.com',
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '1cXSLlUU8V9sXl']);
+
+        $this->fixtures->create('feature', [
+            'name'          => FeatureConstants::SKIP_SUBM_ONBOARDING_COMM,
+            'entity_id'     => '10000000000000',
+            'entity_type'   => 'merchant',
+        ]);
+
+        $this->makeRequestAndGetContent($testData);
+
+        Mail::assertNotQueued(\RZP\Mail\Merchant\HardLimitLevelThreeEmail::class);
     }
 
     public function testKycSubmissionForInstantlyActivatedMerchantWithL2Milestone()

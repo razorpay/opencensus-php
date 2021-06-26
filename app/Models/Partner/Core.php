@@ -41,7 +41,7 @@ class Core extends Detail\Core
         parent::__construct();
 
         $this->appRepo = new OAuth\Application\Repository;
-        
+
         $this->activationCore = new Activation\Core;
     }
 
@@ -189,6 +189,25 @@ class Core extends Detail\Core
         //
         return (($merchant->isFeatureEnabled((FeatureConstant::BLOCK_ONBOARDING_SMS) === true)
             or ($partner->isFeatureEnabled(FeatureConstant::BLOCK_ONBOARDING_SMS) === true)));
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return bool
+     */
+    public function isSubMerchantNotificationBlocked(string $merchantId): bool
+    {
+        $partners = (new Merchant\Core())->fetchAffiliatedPartners($merchantId);
+
+        $partner = $partners->first();
+
+        if ($partner === null)
+        {
+            return false;
+        }
+
+        return ($partner->isFeatureEnabled(FeatureConstant::SKIP_SUBM_ONBOARDING_COMM) === true);
     }
 
     public function createPartnerActivationForPartners(array $input)

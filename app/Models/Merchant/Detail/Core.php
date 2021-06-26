@@ -48,6 +48,7 @@ use RZP\Models\Merchant\Stakeholder;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
@@ -1946,6 +1947,13 @@ class Core extends Base\Core
      */
     public function sendNeedsClarificationEmail(Merchant\Entity $merchant)
     {
+        $notificationBlocked = (new PartnerCore())->isSubMerchantNotificationBlocked($merchant->getId());
+
+        if ($notificationBlocked === true)
+        {
+            return;
+        }
+
         $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
         $merchantDetail = $merchant->merchantDetail;
@@ -3713,8 +3721,13 @@ class Core extends Base\Core
      */
     public function sendOnboardingJourneySms(Entity $merchantDetail, string $template)
     {
-        if ($merchantDetail->merchant->isRazorpayOrgId() === false or
-            (new \RZP\Models\Partner\Core())->isSmsBlockedSubmerchant($merchantDetail->merchant) === true)
+        $partnerCore = (new PartnerCore());
+
+        $notificationBlocked = $partnerCore->isSubMerchantNotificationBlocked($merchantDetail->getMerchantId());
+
+        $smsBlocked = $partnerCore->isSmsBlockedSubmerchant($merchantDetail->merchant);
+
+        if (($merchantDetail->merchant->isRazorpayOrgId() === false) or ($smsBlocked === true) or ($notificationBlocked == true))
         {
             return;
         }
