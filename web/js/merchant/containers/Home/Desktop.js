@@ -316,9 +316,8 @@ class AnalyticsDesktop extends Component {
       <div className="home-analytics-desktop">
         <div
           ref={(node) => onExtraContentMount(node)}
-          className={`extra-content${showOnboardingBanner ? ' has-ob-banner' : ''}${
-            !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
-          }`}
+          className={`extra-content${showOnboardingBanner ? ' has-ob-banner' : ''}${!showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
+            }`}
         >
           <FamPay user={user} />
 
@@ -399,7 +398,7 @@ class AnalyticsDesktop extends Component {
               your GST details.{' '}
               <Link
                 class="Button--secondary Button scheduled-btn-act btn-border"
-                onClick={() => {}}
+                onClick={() => { }}
                 to="/profile#gst"
                 style={{ display: 'inline-block', marginTop: '4px' }}
               >
@@ -431,6 +430,12 @@ class AnalyticsDesktop extends Component {
               </Link>
             </AnnouncementBanner>
           )}
+
+          {/* temporary outage banner */}
+          <AnnouncementBanner title="Important" theme="danger">
+            Sorry! We are experiencing technical difficulties on our Dashboard, our team is working hard to get this resolved as soon as possible.
+          </AnnouncementBanner>
+
           {handleNegativeBalanceLimit(merchantBalanceConfigs, current_balance.data.balance) && (
             <AnnouncementBanner title="On Hold!" theme="danger" canBeClosed={true}>
               Your current balance had reached the maximum negative limit. Transactions will start
@@ -512,9 +517,8 @@ class AnalyticsDesktop extends Component {
             />
           </div>
           <div
-            className={`pull-right ${
-              this.props.user.isOndemandSettlementEnabled ? 'ondemand-enabled' : ''
-            }`}
+            className={`pull-right ${this.props.user.isOndemandSettlementEnabled ? 'ondemand-enabled' : ''
+              }`}
           >
             <Group>
               {this.props.user.isOrgAllowedFunctionality('current_balance') && (
@@ -595,7 +599,7 @@ class AnalyticsDesktop extends Component {
               )}
               <GroupItem>
                 {this.props.user.isOndemandSettlementEnabled &&
-                this.props.user.isAllowedView('early_settlement') ? (
+                  this.props.user.isAllowedView('early_settlement') ? (
                   <div>
                     <SettleNowButton
                       disabled={checkIfSettlementDisabled}
@@ -685,9 +689,8 @@ class AnalyticsDesktop extends Component {
 
           <div className="row">
             <div
-              className={`col-md-12 traffic-activity-row clearfix${
-                showGroupingByPtfm ? '' : ' traffic-hidden'
-              }`}
+              className={`col-md-12 traffic-activity-row clearfix${showGroupingByPtfm ? '' : ' traffic-hidden'
+                }`}
             >
               {showGroupingByPtfm && (
                 <div className="traffic-container">
