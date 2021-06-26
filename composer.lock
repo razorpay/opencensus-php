@@ -4,8 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-  
-    "content-hash": "2ff281fb646ce88ffe9e8a7f4c9ae668",
+    "content-hash": "b75d5e60ee9c84d90565b2881b91a6db",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5394,17 +5393,23 @@
         },
         {
             "name": "opencensus/opencensus",
-            "version": "v0.7.6.5",
+            "version": "v0.7.6.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/opencensus-php.git",
-                "reference": "ec7720277233fe927919a426b1839cd7d07a7035"
+                "reference": "41020846144f8f5e8433e86c7b07c76489a6daf9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/ec7720277233fe927919a426b1839cd7d07a7035",
-                "reference": "ec7720277233fe927919a426b1839cd7d07a7035",
+                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/41020846144f8f5e8433e86c7b07c76489a6daf9",
+                "reference": "41020846144f8f5e8433e86c7b07c76489a6daf9",
                 "shasum": ""
+            },
+            "archive": {
+                "exclude": [
+                    "ext/",
+                    "scripts/"
+                ]
             },
             "require": {
                 "cache/adapter-common": "^1.0",
@@ -5439,12 +5444,6 @@
                     "OpenCensus\\": "src/"
                 }
             },
-            "archive": {
-                "exclude": [
-                    "ext/",
-                    "scripts/"
-                ]
-            },
             "scripts": {
                 "tests": [
                     "scripts/run_local_tests.sh"
@@ -5464,7 +5463,11 @@
                 }
             ],
             "description": "OpenCensus Trace Client for PHP",
-            "time": "2021-06-15T11:32:06+00:00"
+            "support": {
+                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.6.6",
+                "issues": "https://github.com/razorpay/opencensus-php/issues"
+            },
+            "time": "2021-06-18T12:53:18+00:00"
         },
         {
             "name": "opencensus/opencensus-exporter-jaeger",
@@ -5512,6 +5515,9 @@
                 }
             ],
             "description": "OpenCensus Jaeger Exporter for PHP",
+            "support": {
+                "source": "https://github.com/razorpay/opencensus-php-exporter-jaeger/tree/v0.1.2-alpha"
+            },
             "time": "2021-02-11T09:41:39+00:00"
         },
         {
@@ -7445,6 +7451,10 @@
                 "rate-limiting",
                 "redis"
             ],
+            "support": {
+                "source": "https://github.com/razorpay/hodor/tree/master",
+                "issues": "https://github.com/razorpay/hodor/issues"
+            },
             "time": "2020-03-06T15:01:24+00:00"
         },
         {
@@ -7576,6 +7586,10 @@
                 }
             },
             "description": "Agent or backend agnostic php interface for collecting application metrics",
+            "support": {
+                "source": "https://github.com/razorpay/metrics-php/tree/2.2.0",
+                "issues": "https://github.com/razorpay/metrics-php/issues"
+            },
             "time": "2020-09-25T07:20:43+00:00"
         },
         {
@@ -7625,6 +7639,10 @@
                 "razorpay",
                 "service"
             ],
+            "support": {
+                "source": "https://github.com/razorpay/oauth/tree/1.1.0",
+                "issues": "https://github.com/razorpay/oauth/issues"
+            },
             "time": "2021-04-13T15:31:06+00:00"
         },
         {
@@ -7663,6 +7681,10 @@
                 }
             ],
             "description": "PHP SDK for sending outbox jobs.",
+            "support": {
+                "source": "https://github.com/razorpay/outbox-php/tree/0.1.3",
+                "issues": "https://github.com/razorpay/outbox-php/issues"
+            },
             "time": "2021-06-14T08:25:49+00:00"
         },
         {
@@ -7820,6 +7842,10 @@
                 "laravel",
                 "slack"
             ],
+            "support": {
+                "source": "https://github.com/razorpay/slack-laravel/tree/3.0.0",
+                "issues": "https://github.com/razorpay/slack-laravel/issues"
+            },
             "time": "2021-03-31T08:54:44+00:00"
         },
         {
@@ -7867,6 +7893,10 @@
                 "razorpay",
                 "spine"
             ],
+            "support": {
+                "source": "https://github.com/razorpay/spine/tree/1.0.1",
+                "issues": "https://github.com/razorpay/spine/issues"
+            },
             "time": "2021-04-01T12:23:39+00:00"
         },
         {
@@ -7940,6 +7970,10 @@
                 "monolog",
                 "trace"
             ],
+            "support": {
+                "source": "https://github.com/razorpay/trace/tree/3.0.1",
+                "issues": "https://github.com/razorpay/trace/issues"
+            },
             "time": "2021-04-05T12:14:01+00:00"
         },
         {
@@ -7997,6 +8031,11 @@
                 "reference": "bcefdc6b5c2e970d8a0095448f6b1d8674609bfb",
                 "shasum": ""
             },
+            "archive": {
+                "exclude": [
+                    "/xsd/"
+                ]
+            },
             "require": {
                 "goetas-webservices/xsd2php-runtime": "^0.2.2"
             },
@@ -8010,17 +8049,16 @@
                     "Razorpay\\UPI\\": "src"
                 }
             },
-            "archive": {
-                "exclude": [
-                    "/xsd/"
-                ]
-            },
             "authors": [
                 {
                     "name": "Abhay Rana",
                     "email": "me@captnemo.in"
                 }
             ],
+            "support": {
+                "source": "https://github.com/razorpay/upi-clients/tree/master",
+                "issues": "https://github.com/razorpay/upi-clients/issues"
+            },
             "time": "2017-08-10T18:30:30+00:00"
         },
         {
