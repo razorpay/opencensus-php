@@ -191,7 +191,7 @@ class Generator extends QrCode\Generator
 
     private function generateVpaSettingValue(Terminal\Entity $terminal)
     {
-        $merchantIdentifier = str_replace(' ', '', $this->merchant->getBillingLabel());
+        $merchantIdentifier = preg_replace('/[^A-Za-z0-9]/', '', $this->merchant->getBillingLabel());
 
         $merchantIdentifier = self::QR . substr($merchantIdentifier, 0, self::BILLING_LABEL_LENGTH);
 

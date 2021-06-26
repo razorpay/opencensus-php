@@ -29,6 +29,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
+        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'more-megastore-account']);
+
         $this->fixtures->merchant->activate();
 
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
@@ -120,8 +122,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $qrCodeEntity = $this->getLastEntity('qr_code', true);
 
         $this->assertNotNull($qrCodeEntity['short_url']);
-        $tr = 'RZP'.substr($response['id'], 3, 14);
+        $tr = 'RZP' . substr($response['id'], 3, 14) . 'qrv2';
         $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
+        $this->assertStringContainsString('qrmoremegast', $qrCodeEntity['qr_string']);
+        $this->assertStringContainsString('@icici', $qrCodeEntity['qr_string']);
     }
 
     public function testProcessIciciQrPayment()
@@ -392,7 +396,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
     public function testFetchPaymentsForQrCode()
     {
         $this->markTestSkipped();
-        
+
         $qrCode = $this->createQrCode();
 
         $qrCodeId = $qrCode['id'];
