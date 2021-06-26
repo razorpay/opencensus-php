@@ -38,8 +38,8 @@ class Nsdl extends Base
 
             $formattedData[] = [
                 RefundFields::TRANSACTION_DATE         => $transactionDate,
-                RefundFields::CHANNELID                => 'rsyQJRpUHuZOyjSXDSvK',
-                RefundFields::PARTNERID                => 'BRO1582091292566',
+                RefundFields::CHANNELID                => 'iSBjlAJqAdqdPdncFqGV',
+                RefundFields::PARTNERID                => 'Et3lZ2p9bx',
                 RefundFields::PGTXNID                  =>  $row['payment']['id'],
                 RefundFields::REFUNDAMOUNT             => $this->formatAmount($row['refund']['amount']),
                 RefundFields::REFUNDTXNDATE            => $refundDate,
