@@ -354,6 +354,54 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         assert($verify['payment']['verified'] === 1);
     }
 
+    public function testPaymentVerifyWithoutUMRN()
+    {
+        $payment = $this->getEmandatePaymentArray('SBIN', 'netbanking', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '1111111111111',
+            'ifsc'           => 'sbin0000123',
+            'name'           => 'Test account',
+            'account_type'   => 'savings',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockFailedCallbackResponse();
+
+        $testData = $this->testData['testPaymentErrorResponse'];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['tranStatus'][0]['MndtId'] = '';
+            }
+        });
+
+        $paymentEntity = $this->getDbLastPayment();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($paymentEntity) {
+            $this->verifyPayment($paymentEntity->getPublicId());
+        });
+
+        $paymentEntity = $this->getDbLastPayment();
+
+        $this->assertTrue($paymentEntity->isFailed());
+
+        $this->assertNull($paymentEntity->getGlobalOrLocalTokenEntity()->getGatewayToken());
+
+        $this->assertNull($paymentEntity->getGlobalOrLocalTokenEntity()->getRecurringStatus());
+    }
+
     public function testPaymentFailedVerifySuccess()
     {
         $this->createPaymentFailed();

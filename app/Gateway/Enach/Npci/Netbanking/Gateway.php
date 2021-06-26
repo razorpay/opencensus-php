@@ -5,6 +5,7 @@ namespace RZP\Gateway\Enach\Npci\Netbanking;
 use View;
 use Crypt;
 use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
@@ -796,6 +797,9 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
+    /**
+     * @throws Exception\GatewayErrorException
+     */
     protected function checkGatewaySuccess($verify)
     {
         $verify->gatewaySuccess = false;
@@ -805,6 +809,18 @@ class Gateway extends Base\Gateway
         if ((isset($content[ResponseXmlTags::REJECTION_CODE]) === true) and
             ($content[ResponseXmlTags::REJECTION_CODE] === RegistrationStatus::VERIFY_SUCCESS))
         {
+            if (empty($content[ResponseXmlTags::MANDATE_ID]) === true)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                    null,
+                    null,
+                    [
+                        'reason' => 'success response should have gateway token present, but is empty'
+                    ]
+                );
+            }
+
             $verify->gatewaySuccess = true;
         }
     }
@@ -812,8 +828,6 @@ class Gateway extends Base\Gateway
     protected function saveVerifyResponse(Verify $verify)
     {
         $gatewayPayment = $verify->payment;
-
-        $verify->verifyResponseContent;
 
         $attributes = $this->getVerifyAttributesToSave($verify);
 
@@ -824,7 +838,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getVerifyAttributesToSave(Verify $verify)
+    protected function getVerifyAttributesToSave(Verify $verify): array
     {
         $content = $verify->verifyResponseContent;
 
