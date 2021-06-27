@@ -295,6 +295,8 @@ class Validator extends Base\Validator
     protected static $externalAdminFetchMultipleAtomRules = [
         'count'                 => 'required|integer|max:5',
         'id'                    => 'sometimes',
+        'bank_payment_id'       => 'sometimes',
+        'gateway_payment_id'    => 'sometimes',
     ];
 
     protected static $externalAdminFetchMultipleRefundRules = [
@@ -336,6 +338,8 @@ class Validator extends Base\Validator
     protected static $externalAdminFetchMultipleBankTransferRules = [
         'count'                 => 'required|integer|max:5',
         'id'                    => 'sometimes',
+        'utr'                   => 'sometimes',
+        'payment_id'            => 'sometimes',
     ];
 
     protected static $externalAdminFetchMultipleMerchantDetailRules = [

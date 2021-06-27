@@ -118,9 +118,11 @@ class AdminFetch
             \RZP\Models\BankTransfer\Entity::ID,
             \RZP\Models\BankTransfer\Entity::PAYMENT_ID,
             \RZP\Models\BankTransfer\Entity::MERCHANT_ID,
+            \RZP\Models\BankTransfer\Entity::UTR,
             \RZP\Models\BankTransfer\Entity::AMOUNT,
             \RZP\Models\BankTransfer\Entity::CREATED_AT,
             \RZP\Models\BankTransfer\Entity::UPDATED_AT,
+
         ],
         Entity::BILLDESK => [
             Billdesk\Entity::ID,
@@ -149,6 +151,8 @@ class AdminFetch
             \RZP\Gateway\Atom\Entity::ID,
             \RZP\Gateway\Atom\Entity::PAYMENT_ID,
             \RZP\Gateway\Atom\Entity::REFUND_ID,
+            \RZP\Gateway\Atom\Entity::BANK_PAYMENT_ID,
+            \RZP\Gateway\Atom\Entity::GATEWAY_PAYMENT_ID,
             \RZP\Gateway\Atom\Entity::AMOUNT,
             \RZP\Gateway\Atom\Entity::STATUS,
             \RZP\Gateway\Atom\Entity::METHOD,
@@ -177,7 +181,6 @@ class AdminFetch
         ],
         Entity::CREDITS => [
             Merchant\Credits\Entity::ID,
-            Merchant\Credits\Entity::CAMPAIGN,
             Merchant\Credits\Entity::MERCHANT_ID,
             Merchant\Credits\Entity::VALUE,
             Merchant\Credits\Entity::TYPE,
