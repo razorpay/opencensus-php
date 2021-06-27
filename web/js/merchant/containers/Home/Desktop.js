@@ -431,11 +431,6 @@ class AnalyticsDesktop extends Component {
             </AnnouncementBanner>
           )}
 
-          {/* temporary outage banner */}
-          <AnnouncementBanner title="Important" theme="danger">
-            Sorry! We are experiencing technical difficulties on our Dashboard, our team is working hard to get this resolved as soon as possible.
-          </AnnouncementBanner>
-
           {handleNegativeBalanceLimit(merchantBalanceConfigs, current_balance.data.balance) && (
             <AnnouncementBanner title="On Hold!" theme="danger" canBeClosed={true}>
               Your current balance had reached the maximum negative limit. Transactions will start

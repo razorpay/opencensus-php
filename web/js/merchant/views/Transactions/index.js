@@ -118,13 +118,6 @@ export default class TransactionsContainer extends Component {
               />
             </AnnouncementBanner>
           </ShowWhen>
-
-          {/* temporary outage banner */}
-          <AnnouncementBanner title="Important" theme="danger">
-            Sorry! We are experiencing technical difficulties on our Dashboard, our team is working hard to get this resolved as soon as possible.
-            Please note that only visibility of  the payments on the dashboard is affected, payments acceptance is not.
-          </AnnouncementBanner>
-
         </div>
         <tabbed-container>
           <header id="transactions-header">
