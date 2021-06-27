@@ -2,13 +2,17 @@
 
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
+use Razorpay\Trace\Logger;
 use RZP\Models\QrCode;
+use RZP\Models\QrCode\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity;
+use RZP\Models\Merchant\Account;
 
 class Service extends QrCode\Service
 {
@@ -28,6 +32,8 @@ class Service extends QrCode\Service
 
             throw $ex;
         }
+
+        $this->handleReminderForQrCode($qrCode);
 
         $this->trace->info(TraceCode::QR_CODE_CREATED, $qrCode->toArrayPublic());
 
@@ -105,5 +111,51 @@ class Service extends QrCode\Service
                 'event'  => $event
             ]);
         }
+    }
+
+    public function handleReminderForQrCode($qrCode)
+    {
+        if (empty($qrCode->getCloseBy()))
+        {
+            return;
+        }
+
+        try
+        {
+            $request = [
+                'entity_id'     => $qrCode->getId(),
+                'namespace'     => Constants::REMINDER_NAMESPACE,
+                'entity_type'   => Constants::REMINDER_ENTITY_NAME,
+                'reminder_data' => [ENTITY::CLOSE_BY => $qrCode->getCloseBy()],
+                'callback_url'  => $this->getCallbackUrlForReminder($qrCode),
+            ];
+
+            $merchantId = Account::SHARED_ACCOUNT;
+
+            $response = $this->app['reminders']->createReminder($request, $merchantId);
+
+            $this->trace->info(TraceCode::QR_CODE_REMINDER_RESPONSE, $response);
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::QR_CODE_REMINDER_CREATION_FAILED, $request);
+        }
+    }
+
+    public function getCallbackUrlForReminder($qrCode)
+    {
+        $baseUrl     = Constants::REMINDER_BASE_URL;
+
+        $mode        = $this->mode;
+
+        $entity      = Constants::REMINDER_ENTITY_NAME;
+
+        $namespace   = Constants::REMINDER_NAMESPACE;
+
+        $qrCodeId    = $qrCode->getPublicId();
+
+        $callbackURL = sprintf('%s/%s/%s/%s/%s', $baseUrl, $mode, $entity, $namespace, $qrCodeId);
+
+        return $callbackURL;
     }
 }

@@ -44,6 +44,12 @@ return [
         ],
     ],
 
+    'testReminderCallback' => [
+        'base_url'        => '/reminders/send/test/qr_code/qr_code/',
+        'expected_status' => 'closed'
+    ],
+    
+    
     'testFetchPaymentsrQrCode' => [
         'entity' => 'collection',
         'count'  => 1,

@@ -31,6 +31,7 @@ abstract class ReminderProcessor
     const UPI_AUTO_RECURRING        = 'upi_auto_recurring';
     const CARD_AUTO_RECURRING       = 'card_auto_recurring';
     const SETTLEMENTS               = 'settlements';
+    const QR_CODE                   = 'qr_code';
 
     const REMINDERS_API_NAMESPACE_PROCESSORS = [
         self::PAYMENT_LINK              => 'InvoiceReminderProcessor',
@@ -39,6 +40,7 @@ abstract class ReminderProcessor
         self::UPI_AUTO_RECURRING        => 'UpiAutoRecurringReminderProcessor',
         self::CARD_AUTO_RECURRING       => 'CardAutoRecurringReminderProcessor',
         self::SETTLEMENTS               => 'SettlementReminderProcessor',
+        self::QR_CODE                   => 'QrCodeReminderProcessor'
     ];
 
     public function __construct()

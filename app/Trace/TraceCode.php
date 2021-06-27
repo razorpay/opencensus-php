@@ -2550,7 +2550,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_CODE_UPI_QR_TERMINAL_NOT_FOUND_FOR_MERCHANT        = 'QR_CODE_UPI_QR_TERMINAL_NOT_FOUND_FOR_MERCHANT';
     const QR_CODE_V2_PAYMENT_SUCCESSFUL                         = 'QR_CODE_V2_PAYMENT_SUCCESSFUL';
     const QR_CODE_PAYMENT_FAILED                                = 'QR_CODE_PAYMENT_FAILED';
-
+    const QR_CODE_REMINDER_CREATION_FAILED                      = 'QR_CODE_REMINDER_CREATION_FAILED';
+    const QR_CODE_CLOSE_BY_REMINDER_REQUEST_FAILED              = 'QR_CODE_CLOSE_BY_REMINDER_REQUEST_FAILED';
+    const QR_CODE_REMINDER_RESPONSE                             = 'QR_CODE_REMINDER_RESPONSE';
+    const QR_CODE_CLOSE_REQUEST_REMINDER                        = 'QR_CODE_CLOSE_REQUEST_REMINDER';
     const GENERATE_BHARAT_QR_CODE                               = 'GENERATE_BHARAT_QR_CODE';
     const GENERATE_UPI_QR_CODE                                  = 'GENERATE_UPI_QR_CODE';
     const BHARAT_QR_CARD_IDENTIFIERS                            = 'BHARAT_QR_CARD_IDENTIFIERS';

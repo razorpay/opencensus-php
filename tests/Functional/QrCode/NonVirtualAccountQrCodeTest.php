@@ -2,6 +2,7 @@
 
 namespace Functional\QrCode;
 
+use Carbon\Carbon;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Upi\Icici\Fields;
@@ -378,6 +379,39 @@ class NonVirtualAccountQrCodeTest extends TestCase
         return (array) simplexml_load_string(trim($response));
     }
 
+    public function testReminderCallback()
+    {
+        $input = $this -> getDefaultQrCodeRequestArray();
+
+        $input['close_by'] = Carbon::now()->getTimestamp() + 1000;
+
+        $qrCode = $this->createQrCode($input);
+
+        $qrCodeId = $qrCode['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $callback_url = $testData['base_url'].$qrCodeId;
+
+        $request = [
+            'method'  => 'POST',
+
+            'url'     => $callback_url
+        ];
+
+        $this->ba->reminderAppAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response['success']);
+
+        $qrCodeEntity= $this->getDbLastEntity('qr_code');
+
+        $this->assertEquals($testData['expected_status'],$qrCodeEntity->getStatus());
+        
+    }
+
+
     public function testFetchQrCodePayments()
     {
         $qrCode = $this->createQrCode();
@@ -430,5 +464,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $response = $this->parseResponseXml($xmlResponse);
 
         $this->assertEquals('OK', $response[0]);
+
     }
 }

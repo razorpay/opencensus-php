@@ -278,4 +278,9 @@ class Entity extends QrCode\Entity
                (($this->getAttribute(self::CLOSE_BY) !== null) and
                 (Carbon::now()->getTimestamp() >= $this->getAttribute(self::CLOSE_BY)));
     }
+
+    public function getCloseBy()
+    {
+        return ($this->getAttribute(self::CLOSE_BY));
+    }
 }

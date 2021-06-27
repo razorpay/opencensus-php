@@ -55,4 +55,8 @@ class Constants
     const QR_CODE_V2_TR_SUFFIX = 'qrv2';
 
     const DUMMY_QR_CODE_VPA = 'qrrazorpay@dummy';
+
+    const REMINDER_BASE_URL     = 'reminders/send';
+    const REMINDER_NAMESPACE    = 'qr_code';
+    const REMINDER_ENTITY_NAME  = 'qr_code';
 }
