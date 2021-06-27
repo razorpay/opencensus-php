@@ -221,6 +221,14 @@ class Validator extends Base\Validator
         'merchant_id'  => 'required|alpha_num|size:14'
     ];
 
+    protected static $tallyAuthOtpMailRules = [
+        'client_id'    => 'required|alpha_num|size:14',
+        'user_id'      => 'required|alpha_num|size:14',
+        'merchant_id'  => 'required|alpha_num|size:14',
+        'otp'          => 'required',
+        'email'        => 'required|email'
+    ];
+
     protected static $merchantMailRules = [
         'type'           => 'required|string',
         'data'           => 'required|array'

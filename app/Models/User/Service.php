@@ -1284,6 +1284,15 @@ class Service extends Base\Service
         return (new Core())->getDetails($input);
     }
 
+    public function getDetailsUnified(array $input)
+    {
+        (new Validator)->validateInput('get_details', $input);
+
+        $response = $this->core->getDetailsUnified($input);
+
+        return $response;
+    }
+
     public function removeIncorrectPasswordCount(array $input)
     {
         (new Validator)->validateInput('reset_incorrect_password_count', $input);

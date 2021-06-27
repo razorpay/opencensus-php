@@ -2994,6 +2994,41 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testUserDetailsUnified()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $user->merchants()->first();
+
+        // check the data for default test merchant
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'GET',
+                'url'       => '/users_unified?email='.$user['email'],
+            ],
+            'response' => [
+                'content' => [
+                    'id'                      => $user->getId(),
+                    'name'                    => $user->getName(),
+                    'email'                   => $user->getEmail(),
+                    'merchants' => [
+                        [
+                            'id'                => $merchant->getId(),
+                            'role'              => 'owner',
+                        ],
+                    ],
+                ],
+            ]
+        ];
+
+        $authServiceConfig = \Config::get('applications.auth_service');
+        $pwd = $authServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $this->startTest();
+    }
+
     public function testGetUserEntity()
     {
         $user = $this->fixtures->create('user', [

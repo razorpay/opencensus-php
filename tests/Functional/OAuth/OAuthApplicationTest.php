@@ -184,6 +184,17 @@ class OAuthApplicationTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateApplicationTypeFail()
+    {
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $requestParams['name'] = 'apptestnew';
+
+        $requestParams['type'] = 'tally';
+
+        $this->startTest();
+    }
+
     public function testDeleteApplication()
     {
         $requestParams = $this->getDefaultParamsForAuthServiceRequest();

@@ -44,7 +44,7 @@
         "bacon/bacon-qr-code": "1.0.3",
         "watson/rememberable": "^3",
         "razorpay/hodor": "dev-master",
-        "razorpay/oauth": "^1.1.0",
+        "razorpay/oauth": "2.1.0",
         "fideloper/proxy": "^4.0",
         "nojacko/email-validator": "^1.1",
         "symfony/dom-crawler": "^4.0",

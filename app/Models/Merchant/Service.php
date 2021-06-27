@@ -106,6 +106,7 @@ class Service extends Base\Service
 
     const COUPON_RESPONSE               = 'apply_coupon';
     const OAUTH_MAIL                    = 'oauth_mail';
+    const TALLY_AUTH_OTP_MAIL           = 'tally_auth_otp_mail';
     const MERCHANT_MAIL                 = 'merchant_mail';
     const SUPPORT_DETAILS               = 'support_details';
     const ES_ON_DEMAND_ANNOUNCEMENT_TAG = 'es-on-demand.announcement-early-settlement';
@@ -3673,6 +3674,7 @@ class Service extends Base\Service
     /**
      * Sends a mail to the merchant when an action is taken
      * on oauth access to his account
+     * In case of tally auth application, sends an otp via mail
      *
      * @param array $input
      * @param string $type
@@ -3680,7 +3682,29 @@ class Service extends Base\Service
      * @return array
      * @throws Exception\BadRequestException
      */
-    public function sendOAuthMail(array $input, string $type): array
+    public function sendOAuthNotification(array $input, string $type): array
+    {
+        if($type === 'tally_auth_otp')
+        {
+            return $this->sendTallyAuthOTPMail($input, $type);
+        }
+        else
+        {
+            return $this->sendOAuthMail($input, $type);
+        }
+    }
+
+    /**
+     * Sends a mail to the merchant when an action is taken
+     * on oauth access to his account
+     *
+     * @param array $input
+     * @param string $type
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    protected function sendOAuthMail(array $input, string $type): array
     {
         $this->trace->info(
             TraceCode::SEND_OAUTH_MAIL_REQUEST,
@@ -3745,6 +3769,58 @@ class Service extends Base\Service
         ];
 
         Mail::queue((new $mailer($data)));
+    }
+
+    /**
+     * Sends an OTP via mail to the merchant
+     * on tally auth integration request to his account
+     *
+     * @param array $input
+     * @param string $type
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    protected function sendTallyAuthOTPMail(array $input, string $type): array
+    {
+        (new Validator)->validateInput(self::TALLY_AUTH_OTP_MAIL, $input);
+
+        $this->trace->info(
+            TraceCode::SEND_TALLY_AUTH_OTP_MAIL_REQUEST,
+            [
+                'type'          => $type,
+                'merchant_id'   => $input[Entity::MERCHANT_ID],
+                'user_id'       => $input[User\Entity::USER_ID],
+                'client_id'     => $input[OAuthToken\Entity::CLIENT_ID]
+            ]);
+
+        $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+
+        $user     = $this->repo->user->findOrFail($input[User\Entity::USER_ID]);
+
+        $client   = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
+
+        $mailer   = $this->getOAuthMailerClassByType($type);
+
+        $data = [
+            'merchant'    => [
+                'name' => $merchant['name'],
+                'id'   => $merchant['id']
+            ],
+            'application' => [
+                'name'     => $client->application['name'],
+                'logo_url' => $client->application['logo_url']
+            ],
+            'user'        => [
+                'name'  => $user['name']
+            ],
+            'otp'         => $input['otp'],
+            'email'       => $input['email']
+        ];
+
+        Mail::queue((new $mailer($data)));
+
+        return ['success' => true];
     }
 
     /**

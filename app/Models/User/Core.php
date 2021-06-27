@@ -2084,6 +2084,28 @@ class Core extends Base\Core
         ];
     }
 
+    public function getDetailsUnified(array $input): array
+    {
+        $user = $this->repo
+                     ->user
+                     ->getUserFromEmailOrFail($input['email']);
+
+        $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
+
+        $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
+
+        $merchantDetails = $this->getUnifiedMerchants($merchants);
+
+        $response = [
+            'id'                      => $user->getId(),
+            'name'                    => $user->getName(),
+            'email'                   => $user->getEmail(),
+            'merchants'               => $merchantDetails,
+        ];
+
+        return $response;
+    }
+
     /**
      * it'll collect all the primary accounts (pg accounts) associated with the user
      * along with their business details

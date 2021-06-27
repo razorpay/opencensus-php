@@ -138,6 +138,41 @@ return [
         ],
     ],
 
+    'testUpdateApplicationTypeFail' => [
+        'request'  => [
+            'url'     => '/oauth/applications/8ckeirnw84ifke',
+            'method'  => 'POST',
+            'content' => [
+                'name' => 'apptestnew',
+                "type" => "tally",
+                "merchant_id" => "10000000000000",
+                "client_details" => [
+                    [
+                        "id"    => "HQunkUT2hOwf18",
+                        "type"  => "tally"
+                    ],
+                    [
+                        "id"=> "HQunkqAstmVqhk",
+                        "type"=> "tally"
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_APPLICATION_TYPE_UPDATE_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_APPLICATION_TYPE_UPDATE_NOT_SUPPORTED
+        ],
+    ],
+
     'testDeleteApplication' => [
         'request'  => [
             'url'     => '/oauth/applications/8ckeirnw84ifke',

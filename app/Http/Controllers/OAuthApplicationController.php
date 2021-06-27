@@ -195,12 +195,58 @@ class OAuthApplicationController extends Controller
 
         $merchant = $this->auth->getMerchant();
 
+        // application type can only be updated via admin api
+        if($this->hasTypeInApplicationUpdateParams($input))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_APPLICATION_TYPE_UPDATE_NOT_SUPPORTED);
+        }
+
         // TODO: Enable below check once all oauth tags are migrated to pure-platform partners
         //$this->merchantValidator->validateIsPurePlatformPartner($merchant);
 
         $data = $this->authservice->updateApplication($id, $input, $merchant->getId());
 
         return ApiResponse::json($data);
+    }
+
+    public function updateAdmin(string $id)
+    {
+        $input = Request::all();
+
+        (new JitValidator)->rules([
+            'merchant_id'       => 'required|alpha_num|size:14',
+            'type'              => 'required|string|in:partner,public,tally',
+            'client_details'    => 'required|array'
+            ])
+            ->input($input)
+            ->validate();
+
+        $merchantId = $input["merchant_id"];
+
+        $data = $this->authservice->updateApplication($id, $input, $merchantId);
+
+        return ApiResponse::json($data);
+    }
+
+    private function hasTypeInApplicationUpdateParams(array $input)
+    {
+        if (isset($input[Application\Entity::TYPE]))
+        {
+            return true;
+        }
+
+        if (isset($input[Application\Entity::CLIENT_DETAILS]))
+        {
+            foreach ($input[Application\Entity::CLIENT_DETAILS] as $client)
+            {
+                if (isset($client[Client\Entity::TYPE]))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

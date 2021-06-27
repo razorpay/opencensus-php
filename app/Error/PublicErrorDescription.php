@@ -936,6 +936,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_APPLICATION_ID                                    = 'Invalid application id';
     const BAD_REQUEST_MISSING_APPLICATION_ID                                    = 'Application id is required';
     const BAD_REQUEST_INVALID_APPLICATION_TYPE                                  = 'Invalid application type';
+    const BAD_REQUEST_APPLICATION_TYPE_UPDATE_NOT_SUPPORTED                     = 'Application type cannot be updated';
     const BAD_REQUEST_PARTNER_CONTEXT_NOT_SET                                   = 'Partner context must be set';
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                   = 'Merchant is not a partner';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';

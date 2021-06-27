@@ -1037,6 +1037,25 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
+    public function testOAuthApplicationUpdateServiceMethod()
+    {
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'manage_bulk_feature_mapping'
+        ]);
+
+        $this->ba->adminAuth('test', $token);
+
+        $authServiceMock = Mockery::mock('RZP\Services\AuthService');
+
+        $authServiceMock->shouldReceive('updateApplication')->andReturn([]);
+
+        $this->app->instance('authservice', $authServiceMock);
+
+        $this->startTest();
+
+        $authServiceMock->shouldHaveReceived('updateApplication');
+    }
+
     public function testConfigKeysSetWithSpecificKeyPermissions()
     {
         $token = $this->createAdminWithRedisConfigPermissions([

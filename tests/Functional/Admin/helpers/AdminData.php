@@ -1168,6 +1168,33 @@ return [
         ],
     ],
 
+    'testOAuthApplicationUpdateServiceMethod'                             => [
+         'request'  => [
+            'url'     => '/admin-oauth/applications/8ckeirnw84ifke',
+            'method'  => 'POST',
+             'server'  => [
+                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
+             ],
+            'content' => [
+                "type" => "tally",
+                "merchant_id" => "10000000000000",
+                "client_details" => [
+                    [
+                        "id"    => "HQunkUT2hOwf18",
+                        "type"  => "tally"
+                    ],
+                    [
+                        "id"=> "HQunkqAstmVqhk",
+                        "type"=> "tally"
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testPayoutLinkAdminRouteHitsServiceMethod'                           => [
         'request'  => [
             'method'  => 'POST',

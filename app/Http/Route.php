@@ -1435,6 +1435,7 @@ class Route
         'user_opt_in_status_whatsapp'              => ['get',      'users/whatsapp/opt_in_status',                   'UserController@optInStatusForWhatsapp'                             ],
         'user_opt_out_whatsapp'                    => ['post',     'users/whatsapp/opt_out',                         'UserController@optOutForWhatsapp'                                  ],
         'user_details'                             => ['get',      'users',                                          'UserController@getUserDetails'                                     ],
+        'user_details_unified'                     => ['get',      'users_unified',                                  'UserController@getUserDetailsUnified'                                     ],
         'user_delete_incorrect_password_count'     => ['post',     'users/incorrect_password_count',                 'UserController@removeIncorrectPasswordCount'                       ],
 
         // mobile setup for 2fa
@@ -1692,6 +1693,7 @@ class Route
         'oauth_application_delete'                 => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
         'oauth_merchant_notify'                    => ['post',     'oauth/notify/{type}',                            'MerchantController@sendOAuthNotification'                          ],
         'oauth_application_update'                 => ['post',     'oauth/applications/{id}',                        'OAuthApplicationController@update'                                 ],
+        'oauth_application_update_admin'           => ['post',     'admin-oauth/applications/{id}',                  'OAuthApplicationController@updateAdmin'                                 ],
         'oauth_sync_merchant_map'                  => ['post',     'oauth/update_merchant_map',                      'MerchantController@updateMerchantAccessMapFromTokens'              ],
 
         'merchant_analytics'                       => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
@@ -3320,6 +3322,8 @@ class Route
         'order_fetch_by_id_internal',
         'order_fetch_by_id_internal_admin',
         'user_details',
+        'user_details_unified',
+
         'reward_expire_cron',
         'gateway_downtime_for_payment',
         'partner_config_bulk_upsert',
@@ -4363,6 +4367,9 @@ class Route
         // Sub VA Routes
         'sub_virtual_account_create',
 
+        // oauth routes
+        'oauth_application_update_admin',
+
         // Shield Routes
         'shield_rules_get_multiple',
         'shield_rules_get',
@@ -5392,6 +5399,7 @@ class Route
         'merchant_sync_stakeholder'                => Permission::ADMIN_MANAGE_PARTNERS,
         'oauth_application_create_clients'         => Permission::ADMIN_MANAGE_PARTNERS,
         'oauth_application_delete_client'          => Permission::ADMIN_MANAGE_PARTNERS,
+        'oauth_application_update_admin'           => Permission::MANAGE_BULK_FEATURE_MAPPING,
         'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'terminal_get_banks'                       => Permission::VIEW_TERMINAL,
         'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
@@ -8837,6 +8845,7 @@ class Route
             'request_governor',
 
             'merchant_risk_data',
+            'oauth_application_update_admin',
         ],
 
         //
@@ -9329,6 +9338,7 @@ class Route
             'merchant_delete_app_access_mapping',
             'merchant_get_org_details',
             'merchant_banking_accounts_webhook',
+            'user_details_unified',
         ],
 
         'reporting' => [
