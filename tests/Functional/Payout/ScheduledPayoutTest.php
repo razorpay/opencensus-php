@@ -1340,4 +1340,80 @@ class ScheduledPayoutTest extends TestCase
 
         $this->testCreateScheduledPayout();
     }
+
+    public function testScheduledToOnHoldAndProcessing()
+    {
+        $this->fixtures->create('feature', [
+            'name' => Feature\Constants::PAYOUTS_ON_HOLD,
+            'entity_id' => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
+        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
+
+        $this->createPayoutWithOtpWithWorkflow(
+            [
+                'scheduled_at' => $scheduledAtTime
+            ],
+            'rzp_test_10000000000000');
+
+        $scheduledPayout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(Status::SCHEDULED, $scheduledPayout['status']);
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id'   => $balanceId,
+            ])->first();
+
+        // Assert that zero free payout has been consumed when payout is in scheduled state
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+        $this->fixtures->edit('balance', $this->bankingBalance['id'], ['balance' => 100000000]);
+
+        // Setting this to 1 second after the start of the time slot
+        Carbon::setTestNow(Carbon::createFromTimestamp($scheduledAtStartOfHour + 1, Timezone::IST));
+
+        $benebankConfig =
+            [
+                "BENEFICIARY" => [
+                    "SBIN" => [
+                        "status" => "started",
+                    ],
+                    "RZPB" => [
+                        "status" => "started",
+                    ],
+                    "default" => "started",
+                ]
+            ];
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        $this->ba->cronAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testScheduledPayoutProcessing'];
+
+        $this->startTest();
+
+        $updatedScheduledPayout = $this->getDbEntityById('payout', $scheduledPayout['id'])->toArray();
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id'   => $balanceId,
+            ])->first();
+
+        // Assert that zero free payout has been consumed when payout moved from scheduled to on_hold
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+        // Assert that the scheduled payout has now gone to the on_hold state
+        $this->assertEquals(Status::ON_HOLD, $updatedScheduledPayout['status']);
+        $this->assertNotNull( $updatedScheduledPayout['on_hold_at']);
+    }
 }

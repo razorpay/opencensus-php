@@ -443,7 +443,7 @@ class Base extends BaseCore
                         }
                     }
 
-                    if($payout->getStatus() === Status::QUEUED)
+                    if($payout->isStatusQueued() === true)
                     {
                         $this->repo->saveOrFail($payout);
 
@@ -455,11 +455,11 @@ class Base extends BaseCore
                     $this->repo->saveOrFail($payout);
 
                     $this->trace->info(
-                        TraceCode::ON_HOLD_PAYOUT_CREATED,
+                        TraceCode::ON_HOLD_PAYOUT_MOVED_TO_CREATED_STATE,
                         [
-                            'payout_id' => $payout->getId(),
+                            'payout_id'      => $payout->getId(),
                             'transaction_id' => $payout->getTransactionId(),
-                            'payout_status' => $payout->getStatus(),
+                            'payout_status'  => $payout->getStatus(),
                         ]);
 
                     return $payout;
@@ -552,6 +552,16 @@ class Base extends BaseCore
                         {
                             throw $ex;
                         }
+                    }
+                    /* Downstream processor can set the status to on_hold in some cases (bene_bank_down)
+                       If set, we want the payout to remain in on_hold so it can be processed separately.
+                       Hence, payout status is set to created only if it's not already queued.
+                    */
+                    if($payout->isStatusOnHold() === true)
+                    {
+                        $this->repo->saveOrFail($payout);
+
+                        return $payout;
                     }
 
                     $payout->setStatus(Payout\Status::CREATED);
@@ -788,6 +798,12 @@ class Base extends BaseCore
                         }
                     }
 
+                    if ($payout->isStatusOnHold() === true)
+                    {
+                        $this->repo->saveOrFail($payout);
+
+                        return $payout;
+                    }
                     $payout->setStatus(Payout\Status::CREATED);
 
                     $this->repo->saveOrFail($payout);
@@ -885,12 +901,13 @@ class Base extends BaseCore
 
                     $downstreamProcessor->process();
 
-                    //
-                    // Downstream processor can set the status to queued in some cases (low balance)
-                    // If set, we want the payout to remain in queued so it can be processed separately.
-                    // Hence, payout status is set to created only if it's not already queued.
-                    //
-                    if ($payout->isStatusQueued() === false)
+                    /*
+                     Downstream processor can set the status to queued/on_hold in some cases (low balance,bene_bank_down)
+                     If set, we want the payout to remain in queued/on_hold so it can be processed separately.
+                     Hence, payout status is set to created only if it's not already queued.
+                    */
+                    if (($payout->isStatusQueued() === false) and
+                        ($payout->isStatusOnHold() === false))
                     {
                         $payout->setStatus(Payout\Status::CREATED);
                     }

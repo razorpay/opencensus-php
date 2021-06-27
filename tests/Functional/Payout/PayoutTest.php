@@ -7779,6 +7779,7 @@ class PayoutTest extends OAuthTestCase
             ]);
 
         $this->ba->privateAuth();
+
         $this->startTest();
 
         $payout = $this->getDbLastEntity('payout');
@@ -12345,17 +12346,48 @@ class PayoutTest extends OAuthTestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
 
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
         $this->createOnHoldPayoutWhenBeneBankIsDown();
 
         $payout1 = $this->getDbLastEntity('payout')->toArray();
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id'   => $balanceId,
+            ])->first();
+
+        // Assert that zero free payout has been consumed when payout is in on_hold
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
 
         $this->createOnHoldPayoutWhenBeneBankIsDown();
 
         $payout2 = $this->getDbLastEntity('payout')->toArray();
 
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id'   => $balanceId,
+            ])->first();
+
+        // Assert that zero free payout has been consumed when payout is in on_hold
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
         $this->createOnHoldPayoutWhenBeneBankIsDown();
 
         $payout3 = $this->getDbLastEntity('payout')->toArray();
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id'   => $balanceId,
+            ])->first();
+
+        // Assert that zero free payout has been consumed when payout is in on_hold
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
 
         $this->assertEquals($payout1['status'], Payout\Status::ON_HOLD);
         $this->assertEquals($payout2['status'], Payout\Status::ON_HOLD);
@@ -12386,6 +12418,15 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id'   => $balanceId,
+            ])->first();
+
+        // Assert that zero free payout has been consumed when payout moved from on_hold to failed because of sla breach
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
         $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
         $this->assertEquals($payout1['status'], Payout\Status::FAILED);
         $this->assertEquals($payout1['failure_reason'], 'beneficiary_bank_down');
@@ -12397,24 +12438,54 @@ class PayoutTest extends OAuthTestCase
 
         $payout3 = $this->getDbEntityById('payout', $payout3['id'])->toArray();
         $this->assertEquals($payout3['status'], Payout\Status::ON_HOLD);
-
     }
 
     public function testOnHoldPayoutCreateAndProcess()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
 
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
         $this->createOnHoldPayoutWhenBeneBankIsDown();
 
         $payout1 = $this->getDbLastEntity('payout')->toArray();
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id' => $balanceId,
+            ])->first();
+
+        // Assert that zero free payout has been consumed when payout is on_hold
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
 
         $this->createOnHoldPayoutWhenBeneBankIsDown();
 
         $payout2 = $this->getDbLastEntity('payout')->toArray();
 
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id' => $balanceId,
+            ])->first();
+
+        // Assert that zero free payout has been consumed when payout is on_hold
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
         $this->createOnHoldPayoutWhenBeneBankIsDown();
 
         $payout3 = $this->getDbLastEntity('payout')->toArray();
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id' => $balanceId,
+            ])->first();
+
+        // Assert that zero free payout has been consumed when payout is on_hold
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
 
         $this->assertEquals($payout1['status'], Payout\Status::ON_HOLD);
         $this->assertEquals($payout2['status'], Payout\Status::ON_HOLD);
@@ -12437,6 +12508,15 @@ class PayoutTest extends OAuthTestCase
         $this->ba->cronAuth();
 
         $this->startTest();
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id' => $balanceId,
+            ])->first();
+
+        // Assert that 3 free payouts have been consumed when 3 payouts moved from on_hold to created
+        $this->assertEquals(3, $counter->getFreePayoutsConsumed());
 
         $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
         $this->assertEquals($payout1['status'], Payout\Status::CREATED);
@@ -12565,5 +12645,187 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNotContains('HDFC', $eventConfigFromFTS['BENEFICIARY'], true);
     }
-}
 
+    public function testCreateRequestSubmittedToOnHoldAndProcessing()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $this->testCreatePayoutForRequestSubmitted(true);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNull($payout->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id'   => $balanceId,
+            ])->first();
+
+        // Assert that zero free payout has been consumed when payout is in create_request_submitted state
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
+
+        $benebankConfig =
+            [
+                "BENEFICIARY"=> [
+                    "SBIN" => [
+                        "status" => "started",
+                    ],
+                    "RZPB" => [
+                        "status" => "started",
+                    ],
+                ]
+            ];
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT =>$benebankConfig]);
+
+        PayoutPostCreateProcessLowPriority::dispatch('test', $payout->getId(), 'false');
+
+        $payout->reload();
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id'   => $balanceId,
+            ])->first();
+
+        // Assert that zero free payout has been consumed when payout moved from create_request_submitted to on_hold
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+        $publicResponse = $payout->toArrayPublic();
+
+        $this->assertEquals('on_hold', $payout['internal_status']);
+        $this->assertEquals('queued', $publicResponse['status']);
+        $this->assertNotNull($payout['on_hold_at']);
+    }
+
+    public function testBatchSubmittedToOnHoldAndProcessing()
+    {
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUTS_ON_HOLD,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->testBulkPayoutWithThrottling();
+
+        $benebankConfig =
+            [
+                "BENEFICIARY" => [
+                    "SBIN" => [
+                        "status" => "started",
+                    ],
+                    "HDFC" => [
+                        "status" => "started",
+                    ],
+                ]
+            ];
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        $this->ba->cronAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testProcessBulkPayoutDelayedInitiation'];
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+
+        // Assertions for first payout (NEFT)
+        $this->assertEquals(Payout\Mode::NEFT, $payouts[0]['mode']);
+        $this->assertEquals(Payout\Status::ON_HOLD, $payouts[0]['status']);
+
+        // Assertion for second payout (RTGS)
+        $this->assertEquals(Payout\Mode::RTGS, $payouts[1]['mode']);
+        $this->assertEquals(Payout\Status::ON_HOLD, $payouts[1]['status']);
+
+        $batchProcessingPayouts = $this->getDbEntities('payout', ['status' => Payout\Status::BATCH_SUBMITTED]);
+
+        // Assert that no payouts remain in batch_processing state
+        $this->assertEquals(0, $batchProcessingPayouts->count());
+    }
+
+    public function testPendingToOnHoldAndProcessing()
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::PAYOUTS_ON_HOLD,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->liveSetUp();
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId, null, 'live');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $benebankConfig =
+            [
+                "BENEFICIARY" => [
+                    "RZPB" => [
+                        "status" => "started",
+                    ],
+                    "HDFC" => [
+                        "status" => "started",
+                    ],
+                    "YESB" => [
+                        "status" => "started",
+                    ]
+                ]
+            ];
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $firstApprovalResponse = $this->startTest();
+
+        // Validating first approval response
+        $firstActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(2, $firstApprovalResponse['workflow_history']['current_level']);
+        $this->assertEquals('pending', $firstApprovalResponse['status']);
+        $this->assertEquals(true, $firstActionChecker['approved']);
+
+        $this->app['config']->set('database.default', 'live');
+
+        // Make Request to Approve pending payout for second level from Finance L3 role
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL3RoleUser->getId());
+        $secondApprovalResponse = $this->startTest();
+
+        // Validating second approval response
+        $secondActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(2, $secondApprovalResponse['workflow_history']['current_level']);
+        $this->assertEquals('queued', $secondApprovalResponse['status']);
+        $this->assertEquals(true, $secondActionChecker['approved']);
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id'   => $balanceId,
+            ],
+            'live')->first();
+
+        // Assert that the free payout was consumed.
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $publicResponse = $payout->toArrayPublic();
+
+        $this->assertEquals('on_hold', $payout['internal_status']);
+        $this->assertEquals('queued', $publicResponse['status']);
+        $this->assertNotNull($payout['on_hold_at']);
+    }
+}

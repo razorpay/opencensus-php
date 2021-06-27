@@ -3445,8 +3445,12 @@ class Core extends Base\Core
             'key' => Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT
         ]);
 
-        if (in_array($beneIfsc, array_keys($eventConfigFromFTS[self::BENEFICIARY]), true) === true) {
-            $beneBankStatus = $eventConfigFromFTS[self::BENEFICIARY][$beneIfsc]['status'];
+        if(isset($eventConfigFromFTS[self::BENEFICIARY]) === true)
+        {
+            if (in_array($beneIfsc, array_keys($eventConfigFromFTS[self::BENEFICIARY]), true) === true)
+            {
+                $beneBankStatus = $eventConfigFromFTS[self::BENEFICIARY][$beneIfsc]['status'];
+            }
         }
 
         if ($beneBankStatus === self::BENE_BANK_DOWNTIME_STARTED)
@@ -3476,8 +3480,9 @@ class Core extends Base\Core
                 $this->trace->info(
                     TraceCode::BENE_BANK_EVENT_NOTIFICATION_RECEIVED,
                     [
-                        'bank' => $beneBankIfsc,
-                        'status' => $status,
+                        'bank'        => $beneBankIfsc,
+                        'status'      => $status,
+                        'downtime_id' => $input['payload']['id'],
                     ]);
 
                 if ($status === 'resolved')
@@ -3493,7 +3498,7 @@ class Core extends Base\Core
                 }
 
                 $this->trace->info(
-                    TraceCode::BENE_BANK_EVENT_NOTIFICATION_RECEIVED,
+                    TraceCode::BENE_BANK_EVENT_NOTIFICATION_CONFIG_UPDATE_SUCCESS,
                     [
                         'bene_bank_redis_config' => $eventConfigFromFTS,
                     ]);

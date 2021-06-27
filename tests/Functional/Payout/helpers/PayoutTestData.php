@@ -1958,6 +1958,20 @@ return [
         ],
     ],
 
+    'testPendingToOnHoldAndProcessing' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/approve',
+            'content' => [
+                'token'   => 'BUIj3m2Nx2VvVj',
+                'otp'     => '0007',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testApprovePayoutWithInvalidOtp' => [
         'request'  => [
             'method'  => 'POST',
@@ -8085,7 +8099,6 @@ return [
         ],
     ],
 
-
     'testScheduledPayoutProcessingWithNewCreditsFlow' => [
         'request'  => [
             'method'  => 'POST',
@@ -13230,4 +13243,5 @@ return [
             ],
         ],
      ],
+
     ];

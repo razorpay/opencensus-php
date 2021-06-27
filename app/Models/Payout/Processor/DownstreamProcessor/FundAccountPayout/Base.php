@@ -16,6 +16,7 @@ use RZP\Models\Transaction\CreditType;
 use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Feature\Constants as Features;
+use \RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Payout\Processor\DownstreamProcessor\Base as DSBase;
 
 class Base extends DSBase
@@ -105,11 +106,15 @@ class Base extends DSBase
         }
     }
 
-
     protected function holdPayoutIfApplicableAndBeneBankDown(Entity $payout)
     {
-        if ($payout->getStatus() !== Status::QUEUED and
-            $payout->getStatus() !== Status::ON_HOLD)
+        if ($payout->fundAccount->getAccountType() !== FundAccountEntity::BANK_ACCOUNT)
+        {
+            return false;
+        }
+
+        if (($payout->isStatusOnHold() === false) and
+            ($payout->isStatusQueued() === false))
         {
             $onHold = $this->checkIfPayoutToBeKeptOnHold($payout);
 
@@ -131,7 +136,7 @@ class Base extends DSBase
     {
         try
         {
-            if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_ON_HOLD) === true)
+            if ($payout->merchant->isFeatureEnabled(Features::PAYOUTS_ON_HOLD) === true)
             {
                 $isBeneBankDown = (new PayoutCore)->checkIfBeneBankIsDown($payout);
 
@@ -141,20 +146,22 @@ class Base extends DSBase
 
                     if ($toHoldPayout === true)
                     {
-                        $this->trace->info(TraceCode::ON_HOLD_PAYOUT_CREATED,
+                        $this->trace->info(
+                            TraceCode::ON_HOLD_PAYOUT_CREATED,
                             [
-                                'payout_id'         => $payout->getId(),
-                                'ifsc'              => $payout->fundAccount->account->getIfscCode(),
+                                'payout_id' => $payout->getId(),
+                                'ifsc'      => $payout->fundAccount->account->getIfscCode(),
                             ]);
 
                         return true;
                     }
                     else
                     {
-                        $this->trace->info(TraceCode::PAYOUT_SENT_TO_DETECT_BENE_UPTIME,
+                        $this->trace->info(
+                            TraceCode::PAYOUT_SENT_TO_DETECT_BENE_UPTIME,
                             [
-                                'ifsc'               => $payout->fundAccount->account->getIfscCode(),
-                                'is_bene_bank_down'  => $isBeneBankDown,
+                                'ifsc'              => $payout->fundAccount->account->getIfscCode(),
+                                'is_bene_bank_down' => $isBeneBankDown,
                                 'payout_id'         => $payout->getId(),
                             ]);
                     }
@@ -168,16 +175,17 @@ class Base extends DSBase
                 Logger::ERROR,
                 TraceCode::ON_HOLD_PAYOUT_CHECK_FAILED,
                 [
-                    'message'      => $e->getMessage(),
-                    'payout_id'    => $payout->getId(),
+                    'message'   => $e->getMessage(),
+                    'payout_id' => $payout->getId(),
                 ]);
         }
+
         return false;
     }
 
     protected function generateRandomNumberAndCheckIfPayoutToHold(): bool
     {
-        if($this->app->environment(Constants\Environment::TESTING))
+        if ($this->app->environment(Constants\Environment::TESTING))
         {
             return true;
         }
