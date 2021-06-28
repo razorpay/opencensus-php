@@ -130,6 +130,9 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::CRED)
                   ->default(0);
 
+            $table->tinyInteger(Terminal::APP)
+                  ->default(0);
+
             $table->integer(Terminal::EMI_DURATION)
                   ->nullable();
 
@@ -177,6 +180,9 @@ class CreateTerminals extends Migration
 
             $table->json(Terminal::ENABLED_BANKS)
                   ->nullable();
+
+            $table->json(Terminal::ENABLED_APPS)
+                ->nullable();
 
             $table->string(Terminal::ACCOUNT_NUMBER, 50)
                   ->nullable();

@@ -1243,6 +1243,30 @@ return [
         ],
     ],
 
+
+    'testCreateTwidTerminal' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/terminals',
+            'content' => [
+                'gateway'                  => 'twid',
+                'gateway_merchant_id'      => '12344',
+                'gateway_secure_secret'    => 'gateway_secure_secret',
+                'gateway_secure_secret2'   => 'gateway_secure_secret2',
+                'app'                      =>  1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'      => '12344',
+                'enabled_apps'             => [
+                    'twid'
+                ],
+                'app'                       => true,
+            ]
+        ],
+    ],
+
     'testCreatePaytmCardTerminal' => [
         'request' => [
             'content' => [

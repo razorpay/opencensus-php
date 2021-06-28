@@ -625,6 +625,27 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateTwidTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals(true, $terminal['app']);
+
+        $this->assertEquals('twid', $terminal['enabled_apps'][0]);
+
+        $data = ['gateway_merchant_id' => 'new_mid','app'=> 1];
+
+        $content = $this->editTerminal($terminal['id'], $data);
+
+        $this->assertEquals('new_mid', $content['gateway_merchant_id']);
+    }
+
     public function testCreateDirectSettlemtTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';

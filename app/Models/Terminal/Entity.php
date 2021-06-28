@@ -21,6 +21,7 @@ use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Emi\Subvention as EmiSubvention;
+use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Terminal\Status;
 
 class Entity extends Base\PublicEntity
@@ -86,11 +87,13 @@ class Entity extends Base\PublicEntity
     const SYNC_STATUS                   = 'sync_status';
     const MPAN                          = 'mpan';
     const CRED                          = 'cred';
+    const APP                           = 'app';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
     const BANKING_TYPES                 = 'banking_types';
     const ENABLED_BANKS                 = 'enabled_banks';
+    const ENABLED_APPS                  = 'enabled_apps';
     // used for direct settlements.
     const ACCOUNT_NUMBER                = 'account_number';
     const IFSC_CODE                     = 'ifsc_code';
@@ -183,6 +186,7 @@ class Entity extends Base\PublicEntity
         self::VPA,
         self::ENABLED,
         self::ENABLED_BANKS,
+        self::ENABLED_APPS,
         self::ACCOUNT_NUMBER,
         self::IFSC_CODE,
         self::CARDLESS_EMI,
@@ -193,6 +197,7 @@ class Entity extends Base\PublicEntity
         self::SYNC_STATUS,
         self::ACCOUNT_TYPE,
         self::CRED,
+        self::APP,
     ];
 
     protected $public = [
@@ -253,6 +258,7 @@ class Entity extends Base\PublicEntity
         self::ENABLED,
         self::SUB_MERCHANTS,
         self::ENABLED_BANKS,
+        self::ENABLED_APPS,
         self::ACCOUNT_NUMBER,
         self::IFSC_CODE,
         self::VIRTUAL_UPI_ROOT,
@@ -260,6 +266,7 @@ class Entity extends Base\PublicEntity
         self::VIRTUAL_UPI_HANDLE,
         self::CARDLESS_EMI,
         self::CRED,
+        self::APP,
         self::PAYLATER,
         self::MPAN,
         self::ACCOUNT_TYPE,
@@ -282,6 +289,7 @@ class Entity extends Base\PublicEntity
     protected static $generators = [
         'method',
         self::ENABLED_BANKS,
+        self::ENABLED_APPS,
     ];
 
     protected static $modifiers = [
@@ -324,6 +332,7 @@ class Entity extends Base\PublicEntity
         self::EMI_SUBVENTION             => null,
         self::CARDLESS_EMI               => 0,
         self::CRED                       => 0,
+        self::APP                        => 0,
         self::PAYLATER                   => 0,
         self::STATUS                     => Status::ACTIVATED,
         self::NOTES                      => null,
@@ -356,8 +365,10 @@ class Entity extends Base\PublicEntity
         self::EXPECTED                  => 'boolean',
         self::USED                      => 'boolean',
         self::ENABLED_BANKS             => 'array',
+        self::ENABLED_APPS              => 'array',
         self::CARDLESS_EMI              => 'boolean',
         self::CRED                      => 'boolean',
+        self::APP                       => 'boolean',
         self::PAYLATER                  => 'boolean',
         self::DIRECT                    => 'boolean',
     ];
@@ -574,6 +585,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENABLED_BANKS);
     }
 
+    public function getEnabledApps()
+    {
+        return $this->getAttribute(self::ENABLED_APPS);
+    }
+
     // ---------------------- END GETTERS ----------------------
 
     public function isEnabled()
@@ -644,6 +660,11 @@ class Entity extends Base\PublicEntity
     public function isCredEnabled()
     {
         return $this->getAttribute(self::CRED);
+    }
+
+    public function isAppEnabled()
+    {
+        return $this->getAttribute(self::APP);
     }
 
     public function isPayLaterEnabled()
@@ -762,6 +783,11 @@ class Entity extends Base\PublicEntity
     public function setEnabledBanks(array $banksToEnable)
     {
         $this->setAttribute(self::ENABLED_BANKS, $banksToEnable);
+    }
+
+    public function setEnabledApps(array $appsToEnable)
+    {
+        $this->setAttribute(self::ENABLED_APPS, $appsToEnable);
     }
 
     public function setCapability($capability)
@@ -1284,6 +1310,27 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::ENABLED_BANKS, $enabledBanks);
+    }
+
+    protected function generateEnabledApps(array $input)
+    {
+        $app = intval($input[self::APP] ?? 0);
+
+        $gateway = $input[self::GATEWAY];
+
+        $enabledApps = null;
+
+        if (($app !== 1) or (in_array($gateway, Gateway::$methodMap[Method::APP], true) === false))
+        {
+            return;
+        }
+
+        if ($app === 1)
+        {
+            $enabledApps = AppMethod::getSupportedAppsForGateway($gateway);
+        }
+
+        $this->setEnabledApps($enabledApps);
     }
 
     public function edit(array $input = [], $operation = 'edit')

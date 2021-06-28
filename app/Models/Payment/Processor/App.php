@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Processor;
 class App
 {
     const CRED   = 'cred';
+    const TWID   = 'twid';
 
     /**
      * all apps are disabled by default
@@ -22,6 +23,15 @@ class App
 
      public static $apps = [
         self::CRED,
+    ];
+
+    public static $supportedApps = [
+        self::CRED  =>  [
+            self::CRED
+        ],
+        self::TWID  =>  [
+            self::TWID
+        ],
     ];
 
 
@@ -96,5 +106,10 @@ class App
         {
             return self::$fullName[$app];
         }
+    }
+
+    public static function getSupportedAppsForGateway($gateway)
+    {
+        return self::$supportedApps[$gateway];
     }
 }

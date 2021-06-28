@@ -105,6 +105,15 @@ class TransactionFilter extends Terminal\Filter
                     return $terminal->isCredEnabled();
                 }
 
+                if($terminal->isAppEnabled())
+                {
+                    $app = $payment->getWallet();
+
+                    $enabledApps = (array) $terminal->getEnabledApps();
+
+                    return (in_array(strtolower($app), $enabledApps, true));
+                }
+
                 return false;
 
             default:

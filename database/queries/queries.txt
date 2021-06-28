@@ -6287,3 +6287,9 @@ ALTER TABLE merchant_details
 
 ALTER TABLE merchant_rewards
     ADD COLUMN deactivated_at INTEGER DEFAULT NULL;
+
+ALTER TABLE terminals
+    ADD COLUMN enabled_apps json DEFAULT NULL;
+
+ALTER TABLE terminals
+    ADD COLUMN app TINYINT(1) NOT NULL DEFAULT 0;

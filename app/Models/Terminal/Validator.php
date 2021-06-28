@@ -72,6 +72,7 @@ class Validator extends Base\Validator
         Entity::VIRTUAL_UPI_MERCHANT_PREFIX => 'sometimes_if:type.upi_transfer,1|string',
         Entity::ACCOUNT_TYPE                => 'sometimes|string',
         Entity::CRED                        => 'sometimes|string',
+        Entity::APP                         => 'sometimes|string',
     ];
 
     protected static $mpansBeforeTokenizationRules = [
@@ -136,6 +137,7 @@ class Validator extends Base\Validator
         Payment\Gateway::BT_HDFC_ECMS,
         Payment\Gateway::WORLDLINE,
         Payment\Gateway::CRED,
+        Payment\Gateway::TWID,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::PAYU,
         Payment\Gateway::NACH_ICICI,
@@ -1721,6 +1723,25 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET       => 'required',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $twidTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:twid',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::APP                         => 'required|boolean|in:1',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET       => 'required',
+        Entity::GATEWAY_SECURE_SECRET2      => 'required',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $twidEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::APP                         => 'required|boolean|in:1',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2      => 'sometimes|string',
         Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 

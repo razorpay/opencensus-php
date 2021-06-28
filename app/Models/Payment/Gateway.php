@@ -129,6 +129,7 @@ class Gateway
     const GETSIMPL           = 'getsimpl';
     const PAYLATER_ICICI     = 'paylater_icici';
     const CRED               = 'cred';
+    const TWID               = 'twid';
 
     const ACQUIRER_HDFC         = 'hdfc';
     const ACQUIRER_ICIC         = 'icic';
@@ -1290,6 +1291,7 @@ class Gateway
 
         Method::APP => [
             self::CRED,
+            self::TWID,
         ],
     ];
 
