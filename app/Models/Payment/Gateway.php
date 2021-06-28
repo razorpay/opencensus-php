@@ -410,6 +410,7 @@ class Gateway
         self::NETBANKING_AUSF,
         self::NETBANKING_DLB,
         self::NETBANKING_NSDL,
+        self::TWID,
     ];
 
     /**
@@ -458,6 +459,7 @@ class Gateway
         Payment\Gateway::CRED,
         Payment\Gateway::UPI_YESBANK,
         Payment\Gateway::NETBANKING_DLB,
+        Payment\Gateway::TWID,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -1066,6 +1068,7 @@ class Gateway
         Payment\Gateway::NETBANKING_NSDL,
         Payment\Gateway::BAJAJFINSERV,
         Payment\Gateway::FULCRUM,
+        Payment\Gateway::TWID,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [

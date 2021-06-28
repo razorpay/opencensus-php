@@ -15,6 +15,7 @@ class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
 {
     use NetbankingReconTrait;
     use CardlessEmiReconTrait;
+    use AppReconTrait;
     //
     // These are the attributes required from the netbanking entity on nbplus service
     //
@@ -62,6 +63,8 @@ class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
                 case Payment\Method::CARDLESS_EMI;
                     $this->nbPlusPaymentServiceCardlessEmiDispatch($rowDetails);
                     break;
+                case Payment\Method::APP:
+                    $this->nbPlusPaymentServiceAppMethodDispatch($rowDetails);
             }
         }
     }

@@ -134,6 +134,7 @@ class Base extends Core
     const UPI_AIRTEL             = 'UpiAirtel';
     const CRED                   = 'Cred';
     const WALNUT369              = 'Walnut369';
+    const TWID                   = 'Twid';
 
     const BT_RBL                 = 'BtRbl';
 
@@ -227,6 +228,7 @@ class Base extends Core
         self::UPI_AIRTEL             => [],
         self::UPI_YESBANK            => [],
         self::CRED                   => [],
+        self::TWID                   => [],
         self::VIRTUAL_ACC_ICICI      => [],
         self::NETBANKING_DLB         => ['alerts@dhanbank.co.in'],
 
@@ -351,6 +353,7 @@ class Base extends Core
         Gateway::BAJAJFINSERV           => self::BAJAJFINSERV,
         Gateway::HDFC_DEBIT_EMI         => self::HDFC_DEBIT_EMI,
         Gateway::WORLDLINE              => self::VAS_AXIS,
+        Gateway::TWID                   => self::TWID,
     ];
 
     // Gateways for which halt gateway mismatch recon flow is ready

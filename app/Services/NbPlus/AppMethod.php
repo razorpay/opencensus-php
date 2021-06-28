@@ -14,6 +14,12 @@ use RZP\Models\Base\PublicEntity;
 
 class AppMethod extends Service
 {
+
+    // gateway entity attributes
+    const GATEWAY_REFERENCE_NUMBER       = 'gateway_reference_number';
+    const PROVIDER_REFERENCE_NUMBER      = 'provider_transaction_number';
+    const GATEWAY_STATUS                 = 'gateway_status';
+
     public function action(string $method, string $gateway, string $action, array $input)
     {
         $this->action = $action;
