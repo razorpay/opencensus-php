@@ -8991,4 +8991,43 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(3, count($externalEntities));
     }
 
+    public function testTransactionStatementFetchMultiple()
+    {
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'url'     => '/transactions',
+            'method'  => 'get',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(2, $response['count']);
+
+        $keys = [
+            ExternalEntity::ID,
+            ExternalEntity::UTR,
+            ExternalEntity::AMOUNT,
+            ExternalEntity::ENTITY
+        ];
+
+        $this->assertEquals('external', $response['items'][0]['source']['entity']);
+        $this->assertArrayKeysExist($response['items'][0]['source'], $keys);
+        $this->assertEquals('external', $response['items'][1]['source']['entity']);
+        $this->assertArrayKeysExist($response['items'][1]['source'], $keys);
+    }
+
 }
