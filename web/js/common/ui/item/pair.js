@@ -108,6 +108,13 @@ export const submerchantId = { title: 'Account ID', value: id.submerchantId };
 export const earningId = { title: 'Earning ID', value: id.commission };
 export const subventionId = { title: 'Subvention Id', value: id.commission };
 
+export const creditsDescription = { title: 'Description', value: (item) => item.campaign };
+export const creditID = { title: 'Credit Id', value: (item) => item.id };
+export const credits = {
+  title: 'Amount',
+  value: getAmount('value'),
+};
+
 export const mapValues = (values) => (title) => {
   return { title, value: (item) => values[item.id] };
 };

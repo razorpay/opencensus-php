@@ -1,77 +1,206 @@
 .credits
-  background-color: transparent !important
+  background-color transparent !important
+
   .credit-details, .coupon-details
-    border: none
-    margin: 16px 0
-    box-shadow: 0 4px 6px 0 rgba(112,112,112,0.1)
+    border none
+    margin 16px 0
+    box-shadow 0 4px 6px 0 rgba(112,112,112,0.1)
+
     .big-font
-      font-size: 16px
+      font-size 16px
 
     .puck
       &::after
         content: ' '
-        width: 16px
-        height: 2px
+        width 16px
+        height 2px
         background-color: $sidebar-bg-color
-        display: block
-        margin-top: 10px
+        display block
+        margin-top 10px
 
     button.toggle-history
-      text-decoration: none
+      text-decoration none
       i
-        vertical-align: sub
+        vertical-align sub
+
     .collapsible
       .table-responsive
-        width: 100%
-        margin-top: 20px
+        width 100%
+        margin-top 20px
 
         table.history
-          margin-bottom: unset
+          margin-bottom unset
 
   .coupon-details
-    margin-bottom: 0
+    margin 0px
+
     .panel-body
-      padding-bottom: 0
+      padding-bottom 0
+
     .collapsible-container
-      margin-top: 20px
-      padding-top: 20px
-      border-top: 2px dashed #eee
+      margin-top 20px
+      padding-top 20px
+      border-top 2px dashed #eee
+
     .container
-      width: 100%
-      box-shadow: 0 3px 6px 0 rgba(48,52,62,0.1)
-      margin: 16px 0
-      background: url(assets/coupons/card-bg.svg) no-repeat
-      background-size: auto 100%
-      padding: 10px
-      padding-left: 60px 
+      width 100%
+      box-shadow 0 3px 6px 0 rgba(48,52,62,0.1)
+      margin 16px 0
+      background url(assets/coupons/card-bg.svg) no-repeat
+      background-size auto 100%
+      padding 10px
+      padding-left 60px
+
       &.disabled
-        filter: grayscale(80%);
-        opacity: 0.5;
+        filter grayscale(80%)
+        opacity 0.5
+
       .row
-        padding: 4px 0
+        padding 4px 0
+
     .history
-      margin: 0 -15px
-      padding: 0 15px 60px
-      background: url(assets/coupons/bg.svg) no-repeat
-      background-position: 100% 100%      
-    .list-group 
-      margin-bottom: 0
+      padding 0 15px 60px
+      background url(assets/coupons/bg.svg) no-repeat
+      background-position 100% 100%
+
+    .list-group
+      margin-bottom 0
+
     .progress-bar
-      background-color: #528FF0
-      width: 0
-      max-width: 200px
-      height: 4px
-      position: absolute
-      z-index: 1
+      background-color #528FF0
+      width 0
+      max-width 200px
+      height 4px
+      position absolute
+      z-index 1
       border-radius: 4px
+
     .progress-bar-overlay
-      width: 200px
-      height: 4px
-      border-radius: 4px
-      background-color: #eee
-      position: absolute
+      width 200px
+      height 4px
+      border-radius 4px
+      background-color #eee
+      position absolute
+
+.manage-alert-modal-container
+  background white
+
+  table
+    margin-bottom 30px
+
+  .alerts-table
+    margin 20px 23px 30px 23px
+
+    .alert-row
+      td:not(nth-child(1))
+        padding-bottom 10px
+
+    tbody tr
+      td:nth-child(1)
+        padding-left 30px
+        width 25%
+
+    thead tr
+      th:nth-child(1)
+        padding-left 30px
+
+    td
+      vertical-align unset
+
+    .Input
+      margin 0px
+      width 85%
+
+    .Input-error
+      width 105%
+
+    input
+      border-style none
+      border 1px solid #D1DADD
+      border-radius 2px
+      height 33px
+      width 80%
+
+    input:disabled,
+    input[disabled]
+      color #162F56
 
 
+  .description
+    padding 6px 0px 6px 23px
+    color rgba(22, 47, 86, 0.54)
 
+    strong
+      color #5d666d
 
-        
+  .footer
+    background-color rgba(82, 143, 240, 0.1)
+    display flex
+    padding 15px 0px
+    flex-direction row
+    justify-content flex-end
+    margin 0px -23px
+
+    button
+      margin-right 25px
+
+.manage-alerts-row, .balances-note-row
+  display flex
+  justify-content space-between
+  color #5D666D
+  cursor pointer
+
+  i
+    padding 0px 5px
+
+  a
+    font-weight bold
+
+.credit-table-container
+  background-color #FFFFFF
+  cursor default
+
+  &__body
+    padding 15px
+    padding-bottom 0px
+
+  &__content
+    padding 25px
+
+    .data-table
+      max-height 320px
+      overflow-y auto
+
+      table
+        border  none
+        color rgba(22, 47, 86, 0.54)
+        font-size  14px
+        line-height 20px
+        margin-bottom 0px
+
+        thead
+          tr
+          th
+            background-color #D8D8D8
+            color #58666E
+
+        tbody
+          td
+            border none
+
+          tr:nth-child(odd)
+            background-color #f9f9f9
+
+  &__footer
+    background rgba(82, 143, 240, 0.1)
+    padding  0px
+    height 60px
+    display flex
+    justify-content flex-end
+    align-items center
+
+    button
+      width 83px
+      height 36px
+      border-radius 2px
+      margin 0px 30px

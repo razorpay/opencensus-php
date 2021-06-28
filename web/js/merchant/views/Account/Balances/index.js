@@ -8,13 +8,21 @@ import {
   storeTicketDetails,
   getTicketStatus,
 } from 'merchant/reducers/profile';
-import { rupeesToPaise, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import AddFundsForm from 'merchant/views/Account/Balances/AddFundsForm';
+import AddFundsForm from 'common/ui/AddFundsForm';
 import Amount from 'common/ui/Amount';
-import { merchantFetch } from 'merchant/utils/ajax';
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 import { analyticsTrack } from 'common/utils/analytics';
+import {
+  CLICK_ADD_FUNDS_ON_CURRENT_BALANCE,
+  CLICK_ADD_FUNDS_ON_RESERVE_BALANCE,
+  CURRENT_BALANCE_SUCCESS,
+  CURRENT_BALANCE_FAILURE,
+  RESERVE_BALANCE_SUCCESS,
+  RESERVE_BALANCE_FAILURE,
+  OPEN_DOCUMENTATION,
+} from './ga';
 import { CreateTicketEmitter } from '../../TicketSupport/utils';
 
 @connect(
@@ -42,7 +50,6 @@ export default class AddFundsContainer extends Component {
       hasKeys: false,
       ticketGenerated: false,
     };
-    this.handleTicketCreation = this.handleTicketCreation.bind(this);
   }
 
   componentDidMount() {
@@ -62,15 +69,7 @@ export default class AddFundsContainer extends Component {
     loadCheckout(window.api_host);
   }
 
-  fetchOrderId = (data) => {
-    return merchantFetch({
-      url: `orders`,
-      method: 'post',
-      data,
-    });
-  };
-
-  addFunds(transaction) {
+  addFunds = (transaction, type) => {
     this.setState({
       isSaving: true,
     });
@@ -85,13 +84,22 @@ export default class AddFundsContainer extends Component {
         this.setState({
           isSaving: false,
         });
-        this.props.fetchCurrentBalance();
+        if (type === 'reserve') {
+          this.props.fetchReserveBalance();
+        }
+        if (type === 'current') {
+          this.props.fetchCurrentBalance();
+        }
         this.props.showNotification({
           type: 'success',
-          message: 'Funds added successfully',
+          message: `${(type = 'reserve' ? 'Reserve balance' : 'Funds')} added successfully`,
         });
+        type === 'current' && analyticsTrack(CURRENT_BALANCE_SUCCESS);
+        type === 'reserve' && analyticsTrack(RESERVE_BALANCE_SUCCESS);
       })
       .catch((error) => {
+        type === 'current' && analyticsTrack(CURRENT_BALANCE_FAILURE);
+        type === 'reserve' && analyticsTrack(RESERVE_BALANCE_FAILURE);
         this.setState({
           isSaving: false,
           status: {
@@ -100,94 +108,41 @@ export default class AddFundsContainer extends Component {
           },
         });
       });
-  }
-
-  openCheckout = async (fieldProps) => {
-    let user = this.props.user;
-    let amountInPaise = rupeesToPaise(fieldProps.amountInINR);
-
-    try {
-      var {
-        data: { id },
-      } = await this.fetchOrderId({
-        amount: amountInPaise,
-        currency: 'INR',
-        payment_capture: 1,
-      });
-    } catch (e) {
-      this.setState({
-        status: {
-          type: 'error',
-          message: `An error occured - ${e.message}`,
-        },
-      });
-      return;
-    }
-
-    let options = {
-      order_id: id,
-      amount: amountInPaise,
-      description: fieldProps.description,
-      amountInINR: fieldProps.amountInINR,
-      prefill: {
-        name: user.name,
-        email: user.email,
-        contact: user.contact_mobile,
-      },
-      notes: {
-        dashboard: true,
-      },
-      handler: function (transaction = {}) {
-        analyticsTrack({
-          objectName: 'add funds',
-          actionName: 'result',
-          screen: 'my account',
-          properties: {
-            status: 'success',
-            location: 'balances',
-            ...getCommonAnalyticsProperties(window.rzp_user),
-          },
-        });
-        this.addFunds({
-          amount: amountInPaise,
-          razorpay_payment_id: transaction.razorpay_payment_id,
-        });
-      }.bind(this),
-    };
-
-    return new Promise((resolve, reject) => {
-      try {
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-        resolve();
-      } catch (e) {
-        reject(`An error occured - ${e.message}`);
-      }
-    }).catch((error) => {
-      this.setState({
-        status: {
-          type: 'error',
-          message: error,
-        },
-      });
-    });
   };
 
-  handlAddFunds = () => {
+  analyticsHandler = () => {
     analyticsTrack({
       objectName: 'add funds',
-      actionName: 'clicked',
+      actionName: 'result',
       screen: 'my account',
       properties: {
+        status: 'success',
         location: 'balances',
-        currentBalance: this.props.account_balance.data.balance,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+  };
+
+  statusHandler = (data) => {
+    this.setState({ status: data });
+  };
+
+  handlAddFunds = (type) => {
     this.props.openModal({
       size: 'small',
-      component: <AddFundsForm openCheckout={this.openCheckout} />,
+      component: (
+        <AddFundsForm
+          type={type}
+          addHandler={this.addFunds}
+          statusHandler={this.statusHandler}
+          analyticsHandler={this.analyticsHandler}
+          user={this.props.user}
+        />
+      ),
     });
+    type === 'current'
+      ? analyticsTrack(CLICK_ADD_FUNDS_ON_CURRENT_BALANCE)
+      : analyticsTrack(CLICK_ADD_FUNDS_ON_RESERVE_BALANCE);
   };
 
   getReserveBalanceAmount = (items) => {
@@ -224,7 +179,7 @@ export default class AddFundsContainer extends Component {
     }
   };
 
-  handleTicketCreation(response) {
+  handleTicketCreation = (response) => {
     const payload = {
       ticketNo: response.ticketNo,
       description: 'Please activate reserve balance and share VA details',
@@ -233,7 +188,7 @@ export default class AddFundsContainer extends Component {
     this.setState({
       ticketGenerated: true,
     });
-  }
+  };
 
   cra;
 
@@ -276,6 +231,21 @@ export default class AddFundsContainer extends Component {
         {Object.keys(this.state.status).length > 0 && (
           <Alert type={this.state.status.type} message={this.state.status.message} />
         )}
+        <div class="balances-note-row">
+          <span>Note: Standard TDR charges applies on adding funds</span>
+          <span class="text-primary">
+            <a
+              href="https://razorpay.com/docs/payment-gateway/dashboard-guide/balances/"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => {
+                analyticsTrack(OPEN_DOCUMENTATION);
+              }}
+            >
+              Learn more about Balances
+            </a>
+          </span>
+        </div>
         <div class="balances-container">
           <div class="bal-cont-header">
             <div class="balances-lhs-container">
@@ -283,7 +253,7 @@ export default class AddFundsContainer extends Component {
                 <p>Current Balance</p>
               </div>
               <div class="balance-amount-container">
-                {current_balance < 0 && <p style={{ paddingRight: '5px', color: '#C42A2A' }}>-</p>}
+                {current_balance < 0 && <p class="negative-marker">-</p>}
                 <Amount
                   value={Math.abs(current_balance)}
                   currency={'INR'}
@@ -293,7 +263,7 @@ export default class AddFundsContainer extends Component {
             </div>
             <div class="balances-add-funds">
               {!user.isOrgAxis && (
-                <button class="btn btn-outline" onClick={this.handlAddFunds}>
+                <button class="btn btn-outline" onClick={() => this.handlAddFunds('current')}>
                   Add Funds
                 </button>
               )}
@@ -308,27 +278,21 @@ export default class AddFundsContainer extends Component {
             </p>
           </div>
         </div>
-
-        <p style={{ paddingTop: '25px', paddingLeft: '2px' }}>
-          Note: Standard TDR charges applies on adding funds.
-        </p>
-
-        <div
-          style={{
-            marginTop: '25px',
-          }}
-          class="balances-container"
-        >
+        <div class="balances-container">
           <div class="bal-cont-header">
             <div class="balances-lhs-container">
               <div class="balance-type-container">
                 <p>Reserve Balance</p>
               </div>
               <div class="balance-amount-container">
-                <Amount value={Math.abs(this.getReserveBalanceAmount(items))} currency={'INR'} />
+                <Amount
+                  value={Math.abs(this.getReserveBalanceAmount(items))}
+                  // value={Math.abs(reserve_balance)}
+                  currency={'INR'}
+                />
               </div>
             </div>
-            {!user.isOrgAxis && (
+            {!user.isOrgAxis && !user.isSelfServeCreditsEnabled && (
               <div class="balances-add-funds">
                 {this.state.ticketGenerated ||
                 this.props.ticket_status.data.ticket_status === 'Processing' ? (
@@ -342,24 +306,25 @@ export default class AddFundsContainer extends Component {
                 )}
               </div>
             )}
+            {!user.isOrgAxis && user.isSelfServeCreditsEnabled && (
+              <div class="balances-add-funds">
+                <button class="btn btn-outline" onClick={() => this.handlAddFunds('reserve')}>
+                  Add Funds
+                </button>
+              </div>
+            )}
           </div>
-
           <div class="bal-cont-footer">
             <p>
-              Add funds to your reserved balance to increase the negative balance limit(
-              <a
-                href="https://razorpay.com/docs/payment-gateway/balances/dashboard/"
-                target="_blank"
-              >
-                Learn More
-              </a>
-              ). Withdraw reserved balance? <a onClick={this.handleContactUs}>Contact Us</a>
+              Add funds to your reserve balance to increase the negative balance limit. Thinking of
+              withdrawing your reserve balance? <a onClick={this.handleContactUs}>Contact Us</a>
             </p>
           </div>
         </div>
 
         {this.state.ticketGenerated ||
-        this.props.ticket_status.data.ticket_status === 'Processing' ? (
+        (this.props.ticket_status.data.ticket_status === 'Processing' &&
+          !user.isSelfServeCreditsEnabled) ? (
           <div class="processing-note">
             <p>
               Your request is being processed. Please check your registered email for an update.

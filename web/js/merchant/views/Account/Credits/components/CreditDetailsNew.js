@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Amount from 'common/ui/Amount';
@@ -6,16 +6,13 @@ import { analyticsTrack } from 'common/utils/analytics';
 
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-export default class CreditDetails extends Component {
-  state = {
-    showCollapsible: false,
-  };
+function CreditDetails(props) {
+  const [showCollapsible, setshowCollapsible] = useState(false);
 
-  toggleCollapsible = () => {
-    const showCollapsible = this.state.showCollapsible;
+  const toggleCollapsible = () => {
     if (!showCollapsible) {
       analyticsTrack({
-        objectName: this.props.toggleText,
+        objectName: props.toggleText,
         actionName: 'viewed',
         screen: 'my account',
         properties: {
@@ -24,29 +21,22 @@ export default class CreditDetails extends Component {
         },
       });
     }
-
-    this.setState(
-      {
-        showCollapsible: !showCollapsible,
-      },
-      () => {
-        this.props.trackToggleHistory(this.props.title)(!showCollapsible);
-      },
-    );
+    setshowCollapsible(!showCollapsible);
+    props.trackToggleHistory(props.title)(!showCollapsible);
   };
 
-  getRemainingPercentage = ({ used, value }) => {
+  const getRemainingPercentage = ({ used, value }) => {
     return Math.round((100 * used) / value);
   };
 
-  pruneAmountCredits = (items = []) => {
-    let expiredCampaigns = [],
-      prunedItems = [];
+  const pruneAmountCredits = (items = []) => {
+    const expiredCampaigns = [];
+    let prunedItems = [];
 
     // remove expired credits
     prunedItems = items.filter((item) => {
       if (item.campaign.indexOf('Expired') > -1) {
-        let campaignName = item.campaign.replace('Expired', '');
+        const campaignName = item.campaign.replace('Expired', '');
 
         expiredCampaigns.push(campaignName);
         return false;
@@ -61,7 +51,7 @@ export default class CreditDetails extends Component {
     // add expired property if all credits used
     prunedItems = prunedItems.map((item) => {
       if (expiredCampaigns.indexOf(item.campaign) > -1 || item.used === item.value) {
-        item['expired'] = true;
+        item.expired = true;
       }
 
       return item;
@@ -69,103 +59,99 @@ export default class CreditDetails extends Component {
     return prunedItems;
   };
 
-  render() {
-    const { title, totalCredits, description, toggleText, onManageAlert } = this.props;
-    const { showCollapsible } = this.state;
+  const { title, description, toggleText } = props;
+  const creditItems = pruneAmountCredits(props.creditItems);
 
-    const creditItems = this.pruneAmountCredits(this.props.creditItems);
-
-    return (
-      <div class="panel panel-default coupon-details">
-        <div class="panel-body">
-          {onManageAlert && (
-            <button class="btn btn-default pull-right" onClick={onManageAlert}>
-              Manage Alerts
-            </button>
-          )}
-
-          <strong class="big-font">{title}</strong>
-
-          <p class="puck">{description}</p>
-
-          <small>Total: </small>
-          <strong class="big-font">
-            <Amount value={totalCredits} currency={'INR'} />
-          </strong>
-          <div class="collapsible-container">
-            {!!creditItems.length && (
-              <button class="btn-link toggle-history" onClick={this.toggleCollapsible}>
-                <i class={`m-r i-chevron-${!!showCollapsible ? 'up' : 'down'}`} />
-                {`${toggleText} (${creditItems.length})`}
-              </button>
-            )}
-            {showCollapsible && (
-              <div class="collapsible">
-                <div class="history">
-                  {!!creditItems.length &&
-                    creditItems.map((cItem) => (
-                      <div
-                        class={classList('container', cItem.expired && 'disabled')}
-                        key={cItem.id}
-                      >
-                        <div class="col-md-6 col-sm-6 col-lg-6 col-xs-12">
-                          <div class="row">
-                            {cItem.used === cItem.value ? (
-                              <>
-                                <strong>
-                                  <Amount value={cItem.value} currency={'INR'} />
-                                </strong>{' '}
-                                All credits used
-                              </>
-                            ) : (
-                              <>
-                                <strong>
-                                  <Amount value={cItem.value - cItem.used} currency={'INR'} />
-                                </strong>{' '}
-                                of <Amount value={cItem.value} currency={'INR'} /> is still unused
-                              </>
-                            )}
-                          </div>
-                          <div class="row">
-                            {`${this.getRemainingPercentage(cItem)}% consumed`}
-                            <br />
-                            <span
-                              class="progress-bar"
-                              style={{
-                                width: `${this.getRemainingPercentage(cItem) * 2}px`,
-                              }}
-                            />
-                            <span class="progress-bar-overlay" />
-                          </div>
-                        </div>
-                        <div class="col-md-6 col-sm-6 col-lg-6 col-xs-12">
-                          <div class="row">
-                            {cItem.expired_at ? (
-                              <>
-                                Valid till{' '}
-                                <strong>
-                                  {moment(cItem.expired_at, 'X').format('DD MMM YYYY')}
-                                </strong>
-                              </>
-                            ) : (
-                              'Unlimited Validity'
-                            )}
-                          </div>
-                          <div class="row">
-                            <strong>{cItem.campaign}</strong> coupon applied
-                            <Link to={`/credits/${cItem.id}`} class="m-l">
-                              View Details
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
+  return (
+    <div class="balances-container">
+      <div class="bal-cont-header">
+        <div class="balances-lhs-container">
+          <div class="balance-type-container">
+            <p>{title}</p>
+          </div>
+          <div class="balance-amount-container">
+            <Amount value={creditItems} currency="INR" />
           </div>
         </div>
       </div>
-    );
-  }
+
+      <div class="bal-cont-footer">
+        <p>{description}</p>
+      </div>
+
+      <div class="coupon-details">
+        <div>
+          <button
+            class="btn-link toggle-history"
+            style={!showCollapsible ? { marginBottom: '9px' } : {}}
+            onClick={toggleCollapsible}
+          >
+            <i class={`m-r i-chevron-${!!showCollapsible ? 'up' : 'down'}`} />
+            {`${toggleText} (${creditItems.length})`}
+          </button>
+
+          {showCollapsible && (
+            <div class="collapsible">
+              <div class="history">
+                {creditItems.map((cItem) => (
+                  <div class={classList('container', cItem.expired && 'disabled')} key={cItem.id}>
+                    <div class="col-md-6 col-sm-6 col-lg-6 col-xs-12">
+                      <div class="row">
+                        {cItem.used === cItem.value ? (
+                          <>
+                            <strong>
+                              <Amount value={cItem.value} currency="INR" />
+                            </strong>{' '}
+                            All credits used
+                          </>
+                        ) : (
+                          <>
+                            <strong>
+                              <Amount value={cItem.value - cItem.used} currency="INR" />
+                            </strong>{' '}
+                            of <Amount value={cItem.value} currency="INR" /> is still unused
+                          </>
+                        )}
+                      </div>
+                      <div class="row">
+                        {`${getRemainingPercentage(cItem)}% consumed`}
+                        <br />
+                        <span
+                          class="progress-bar"
+                          style={{
+                            width: `${getRemainingPercentage(cItem) * 2}px`,
+                          }}
+                        />
+                        <span class="progress-bar-overlay" />
+                      </div>
+                    </div>
+                    <div class="col-md-6 col-sm-6 col-lg-6 col-xs-12">
+                      <div class="row">
+                        {cItem.expired_at ? (
+                          <>
+                            Valid till{' '}
+                            <strong>{moment(cItem.expired_at, 'X').format('DD MMM YYYY')}</strong>
+                          </>
+                        ) : (
+                          'Unlimited Validity'
+                        )}
+                      </div>
+                      <div class="row">
+                        <strong>{cItem.campaign}</strong> coupon applied
+                        <Link to={`/credits/${cItem.id}`} class="m-l">
+                          View Details
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
+
+export default CreditDetails;

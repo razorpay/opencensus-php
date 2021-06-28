@@ -11,6 +11,7 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { openCheckout } from 'merchant/utils/checkout-utility';
 
 @connect(null, { closeModal })
 @reduxForm({
@@ -18,26 +19,60 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 })
 export default class AddFundsForm extends Component {
   addFunds = (fieldProps) => {
+    const { closeModal, type, user, statusHandler, addHandler, analyticsHandler } = this.props;
+    const typeValue = type.charAt(0).toUpperCase() + type.slice(1);
+
     analyticsTrack({
-      objectName: 'add funds popup',
-      actionName: 'clicked',
-      screen: 'my account',
+      screen:
+        type === ('reserve' || 'current')
+          ? 'Dashboard - My Account (Balance)'
+          : 'Dashboard - My Account (Credits)',
+      objectName: type === ('reserve' || 'current') ? 'Add funds' : `Add ${typeValue} credits`,
+      actionName: this.getAction(type),
       properties: {
-        action: 'Add Funds',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    this.props.closeModal();
-    this.props.openCheckout(fieldProps);
+    closeModal();
+    openCheckout(fieldProps, type, user, addHandler, analyticsHandler, statusHandler);
+  };
+
+  getAction = (type) => {
+    switch (type) {
+      case 'current':
+        return 'Current Balance Popup - Add Funds';
+      case 'reserve':
+        return 'Reserve Balance Popup - Add Funds';
+      case 'fee':
+        return 'Fee Credits Pop up - Add Funds';
+      case 'refund':
+        return 'Refund Credits Pop up - Add Funds';
+    }
+  };
+
+  formTitle = (type) => {
+    switch (type) {
+      case 'fee':
+        return 'Add Fee Credits';
+      case 'refund':
+        return 'Add Refund Credits';
+      case 'reserve':
+        return 'Add Reserve Balance';
+      case 'current':
+        return 'Add Funds';
+    }
   };
 
   render() {
-    const { handleSubmit } = this.props;
+    const { handleSubmit, type } = this.props;
+    const title = this.formTitle(type);
+    const typesArray = ['fee', 'refund'];
+    let text = typesArray.includes(type) ? 'Add Credits' : 'Add Funds';
 
     return (
       <form onSubmit={handleSubmit(this.addFunds)}>
         <ModalHeader
-          title="Add Funds"
+          title={title}
           onCloseClick={() => {
             analyticsTrack({
               objectName: 'add funds popup',
@@ -73,11 +108,16 @@ export default class AddFundsForm extends Component {
               validate={required()}
             />
           </div>
+          {typesArray.includes(type) && (
+            <div>
+              <p>Note: Standard TDR charges applies on adding credits</p>
+            </div>
+          )}
           <div class="Modal__actions">
             <AsyncButton
               type="submit"
               class="btn btn-primary btn-block"
-              text="Add Funds"
+              text={text}
               pendingText="Adding..."
               onClick={handleSubmit(this.addFunds)}
             />

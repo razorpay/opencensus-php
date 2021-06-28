@@ -1,69 +1,79 @@
-.balances-container{
-    min-height: 200px;
-    background-color : white;
-    display: flex;
-    flex-direction: column;
-}
+.balances-container
+  background-color  white
+  display flex
+  flex-direction column
+  box-shadow 1px 2px 4px 1px #e2e2e2
+  margin 25px 0px
 
-.bal-cont-header{
-    display: flex; 
-    flex: 0.7 1 0%;
-    flex-direction:  row;
-}
+  &:first-child
+    margin-top 15px
 
-.bal-cont-footer{
-    display: flex;
-    flex: 0.3 1 0%;
-    color: #5D666D;
-    justify-content:  center;
-    align-items: center;
-    text-align: left;
-    font-size: 15px;
-    opacity: .7;
-    padding-left: 20px;
-}
+  .bal-cont-header
+    display flex
+    flex 0.7 1 0%
+    flex-direction  row
+    padding 20px 0px
 
-.balance-type-container{
-    display: flex;
-    flex: 0.5 1 0%;
-    justify-content: flex-start;
-    align-items: flex-end;
-    padding-left: 20px;
-    color: #58666E;
-    font-size: 16px;
-    font-weight: bold;
-}
+  .bal-cont-footer
+    display flex
+    flex 0.3 1 0%
+    color #5D666D
+    align-items center
+    text-align left
+    font-size 15px
+    opacity .7
+    padding 0px 0px 15px 20px
 
-.balance-amount-container{
-    display: flex;
-    flex: 0.5 1 0%;
-    justify-content: flex-start;
-    align-items: baseline;
-    padding-left: 20px;
-    color: #0D2366;
-    font-size: 24px;
-}
+  .balance-type-container
+    display flex
+    flex 0.5 1 0%
+    justify-content flex-start
+    align-items flex-end
+    padding-left 20px
+    color #58666E
+    font-size 16px
+    font-weight bold
 
-.processing-note{
-    min-height: 30px;
-    background: #FBF8E3;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    padding-left: 10px;
-}
+  .balance-amount-container
+    display flex
+    flex 0.5 1 0%
+    justify-content flex-start
+    align-items baseline
+    padding 5px 0px 0px 20px
+    color #0D2366
+    font-size 24px
 
-.balances-lhs-container{
-    display: flex;
-    flex: 0.5 1 0%;
-    flex-direction: column;
-}
+    .negative-marker
+      padding-right 5px
+      color #C42A2A
 
-.balances-add-funds{
-    display: flex;
-    flex: 0.5 1 0%;
-    justify-content: flex-end;
-    align-items: center;
-    padding-right: 15px;
-}
+  .processing-note
+    min-height 30px
+    background #FBF8E3
+    display flex
+    flex-direction column
+    justify-content center
+    align-items flex-start
+    padding-left 10px
+
+
+  .balances-lhs-container
+    display flex
+    flex 0.5 1 0%
+    flex-direction column
+
+  .balances-add-funds
+    display flex
+    flex 0.5 1 0%
+    justify-content flex-end
+    align-items center
+    padding-right 15px
+
+    .btn
+      font-weight bold
+
+      &:hover, &:focus
+        color #528ff0
+
+  .view-history
+    padding 0px 0px 13px 13px

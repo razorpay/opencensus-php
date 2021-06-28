@@ -19,14 +19,11 @@ export default ({
       rowItems.push(
         <EntityItemRow key={cur}>
           {columns.map((column, index) => (
-            <td
-              class={column.columnClass ? column.columnClass : ''}
-              key={index}
-            >
+            <td class={column.columnClass ? column.columnClass : ''} key={index}>
               <PlaceholderLoader />
             </td>
           ))}
-        </EntityItemRow>
+        </EntityItemRow>,
       );
     }
   } else if (rows.length) {
@@ -40,14 +37,11 @@ export default ({
       rowItems.push(
         <EntityItemRow key={`${item.id}_${index}`} id={item.id}>
           {columns.map((column, index) => (
-            <td
-              class={column.columnClass ? column.columnClass : ''}
-              key={index}
-            >
+            <td class={column.columnClass ? column.columnClass : ''} key={index}>
               {column.value(item)}
             </td>
           ))}
-        </EntityItemRow>
+        </EntityItemRow>,
       );
     });
   }

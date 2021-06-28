@@ -1,20 +1,20 @@
-import { Fragment, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Spinner from 'common/ui/Spinner';
 import HeaderAction from 'common/ui/HeaderAction';
-
 import { groupBy, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CreditDetails from './CreditDetails';
 import CreditDetailsNew from './CreditDetailsNew';
 import DocsLink from 'merchant/components/DocsLink';
 import { analyticsTrack } from 'common/utils/analytics';
+import ManageCreditAlerts from './ManageCreditAlerts';
+import { CLICK_ON_MANAGE_ALERTS } from '../ga';
+import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
+import Alert from 'common/ui/Forms/Alert';
 
-export default (props) => {
-  let { creditsData, balanceData, loading, currentUser, showDocumentation = true } = props;
-
-  if (!currentUser) {
-    error = 'Your user account is not associated at present with any active merchant account.';
-  }
+function CreditsList(props) {
+  const { creditsData, balanceData, loading, showDocumentation = true } = props;
   const creditItems = groupBy(creditsData.items, 'type');
+  const [status, setStatus] = useState({});
   useEffect(() => {
     analyticsTrack({
       objectName: 'credits',
@@ -26,13 +26,25 @@ export default (props) => {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+
+    loadCheckout(window.api_host);
   }, []);
+
+  const handleManageAlert = () => {
+    props.openModal({
+      size: 'large',
+      component: <ManageCreditAlerts />,
+    });
+
+    analyticsTrack(CLICK_ON_MANAGE_ALERTS);
+  };
+
   return (
     <div class="credits content-wrapper content-sm">
       {showDocumentation && (
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <DocsLink url="https://razorpay.com/docs/payment-gateway/dashboard-guide/my-account/#credits" />
+            <DocsLink url="https://razorpay.com/docs/payment-gateway/dashboard-guide/credits/" />
           </div>
         </HeaderAction>
       )}
@@ -42,51 +54,51 @@ export default (props) => {
         </div>
       ) : (
         <div class="list-group details-row-container">
-          {!(creditsData && creditsData.items.length) ? (
-            <h3 class="empty-table text-center">No Credits</h3>
-          ) : (
-            <Fragment>
-              {(!!balanceData.credits || !!creditItems.amount) && (
-                <CreditDetailsNew
-                  totalCredits={balanceData.credits}
-                  title="Amount Credits"
-                  description={
-                    <>
-                      Transactions made upto the credit amount in your account will be free of
-                      charge. The credits are not valid for credit card transactions if your
-                      business type is <strong>not registered.</strong>
-                    </>
-                  }
-                  creditItems={creditItems.amount}
-                  toggleText={'Past Coupons'}
-                  trackToggleHistory={props.trackToggleHistory}
-                />
-              )}
+          {Object.keys(status).length > 0 && <Alert type={status.type} message={status.message} />}
 
-              {(!!balanceData.fee_credits || !!creditItems.fee) && (
-                <CreditDetails
-                  totalCredits={balanceData.fee_credits}
-                  title="Fee Credits"
-                  description="Get your amounts settled in full. Fees charged from credits."
-                  creditItems={creditItems.fee}
-                  onManageAlert={props.onManageAlert}
-                  trackToggleHistory={props.trackToggleHistory}
-                />
-              )}
-
-              {(!!balanceData.refund_credits || !!creditItems.refund) && (
-                <CreditDetails
-                  totalCredits={balanceData.refund_credits}
-                  title="Refund Credits"
-                  description="Do not want to refund from your settled amounts? Use refund credits."
-                  creditItems={creditItems.refund}
-                  trackToggleHistory={props.trackToggleHistory}
-                />
-              )}
-            </Fragment>
+          {props.user.isAllowedEdit('credits') && (
+            <div class="manage-alerts-row">
+              <span>Note: Standard TDR charges applies on adding funds</span>
+              <span style={{ color: '#528ff0' }} onClick={handleManageAlert}>
+                Manage Alerts
+                <i class="i i-bell-outline" />
+              </span>
+            </div>
           )}
+
+          <CreditDetailsNew
+            totalCredits={balanceData.credits}
+            title="Amount Credits"
+            description="Transactions worth amount credits will be free of any transaction fee."
+            creditItems={creditItems.amount}
+            toggleText="Past Coupons"
+            trackToggleHistory={props.trackToggleHistory}
+          />
+
+          <CreditDetails
+            totalCredits={balanceData.fee_credits}
+            title="Fee Credits"
+            description="Get your transactions settled in full. Transaction charges will be deducted from fee credits."
+            creditItems={creditItems.fee || []}
+            onManageAlert={props.onManageAlert}
+            trackToggleHistory={props.trackToggleHistory}
+            type="fee"
+            setStatus={setStatus}
+          />
+
+          <CreditDetails
+            totalCredits={balanceData.refund_credits}
+            title="Refund Credits"
+            description="Do not want to refund from your settled amounts? Use refund credits."
+            creditItems={creditItems.refund || []}
+            trackToggleHistory={props.trackToggleHistory}
+            type="refund"
+            setStatus={setStatus}
+          />
         </div>
       )}
     </div>
   );
-};
+}
+
+export default CreditsList;
