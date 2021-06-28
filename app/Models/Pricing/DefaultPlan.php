@@ -297,6 +297,21 @@ class DefaultPlan
                 'created_at'     => time(),
                 'updated_at'     => time()
             ],
+
+            [
+                'id'             => '1GuENK6Xk6a8T3',
+                'plan_id'        => '1AXludj60w4pSp',
+                'plan_name'      => 'Full Price',
+                'feature'        => 'payment',
+                'payment_method' => 'app',
+                'payment_network'=> 'twid',
+                'percent_rate'   => '1500',
+                'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
         ];
     }
 

@@ -15,14 +15,17 @@ class App
 
     public static $fullName = [
         self::CRED    => 'Cred',
+        self::TWID    => 'Twid',
     ];
 
     public static $appMap = [
         self::CRED  => 1,
+        self::TWID  => 2,
     ];
 
      public static $apps = [
         self::CRED,
+        self::TWID,
     ];
 
     public static $supportedApps = [

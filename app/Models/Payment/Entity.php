@@ -1766,6 +1766,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                     $acquirerData['amount'] = ($this->getAmount() - $discount) / 100;
                 }
 
+                if ($this->isAppTwid())
+                {
+                    $acquirerData['transaction_id'] = $this->getAttribute(self::REFERENCE1);
+                }
+
                 break;
         }
 
@@ -2097,6 +2102,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isWallet()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);
+    }
+
+    public function isAppTwid()
+    {
+        return  (($this->getAttribute(self::METHOD) === Payment\Method::APP) and
+            ($this->getAttribute(self::WALLET) === AppMethod::TWID));
     }
 
     public function isAppCred()

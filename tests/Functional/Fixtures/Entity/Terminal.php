@@ -920,6 +920,27 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createTwidTerminal(array $attributes = [])
+    {
+        $termId = Shared::TWID_TERMINAL;
+
+        $attributes = [
+            'id'                     => $termId,
+            'merchant_id'            => '10000000000000',
+            'gateway'                => 'twid',
+            'card'                   => 0,
+            'netbanking'             => 0,
+            'app'                    => 1,
+            'gateway_merchant_id'    => 'twid_merchant',
+            'gateway_secure_secret'  => 'twid_secret',
+            'gateway_secure_secret2' => 'twid_secret2',
+            'mode'                   => 3,
+            'enabled_apps'           => ['twid'],
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createCardlessEmiFlexMoneyTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::CARDLESS_EMI_FLEXMONEY_TERMINAL;

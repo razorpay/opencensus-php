@@ -1626,11 +1626,13 @@ class Processor
 
         $cpsEnabledMethods = [
             Payment\Method::CARD, Payment\Method::NETBANKING, Payment\Method::EMI,
-            Payment\Method::EMANDATE, Payment\Method::CARDLESS_EMI, Payment\Method::UPI
+            Payment\Method::EMANDATE, Payment\Method::CARDLESS_EMI, Payment\Method::UPI,
+            Payment\Method::APP
         ];
 
         if ((in_array($method, $cpsEnabledMethods, true) === false) or
-            ($payment->isGooglePayCard() === true))
+            ($payment->isGooglePayCard() === true) or
+            ($payment->isAppCred() === true))
         {
             $payment->disableCpsRoute();
 

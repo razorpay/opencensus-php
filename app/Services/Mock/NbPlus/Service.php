@@ -25,6 +25,9 @@ class Service extends NbPlusService
             case Payment\Method::CARDLESS_EMI:
                 $class = new CardlessEmi();
                 break;
+            case Payment\Method::APP;
+                $class = new AppMethod();
+                break;
             default:
                 throw new Exception\LogicException('Should not have reached here');
         }

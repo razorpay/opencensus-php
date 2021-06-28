@@ -1289,6 +1289,7 @@ class DatabaseSeeder extends Seeder
         $this->createPayuTerminal();
         $this->createCashfreeTerminal();
         $this->createNetbankingDcbTerminal();
+        $this->createTwidTerminal();
         $this->createCcavenueTerminal();
     }
 
@@ -1966,6 +1967,27 @@ class DatabaseSeeder extends Seeder
                 'recurring'           => 0,
                 'created_at'          => time(),
                 'updated_at'          => time(),
+            )
+        );
+    }
+
+    protected function createTwidTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                     => Terminal\Shared::TWID_TERMINAL,
+                'merchant_id'            => Account::TEST_ACCOUNT,
+                'gateway'                => Gateway::TWID,
+                'card'                   => '0',
+                'netbanking'             => '0',
+                'app'                    => '1',
+                'enabled_apps'           => '["twid"]',
+                'gateway_merchant_id'    => 'gateway_merchant_id',
+                'gateway_secure_secret'  => Crypt::encrypt('gateway_secure_secret'),
+                'gateway_secure_secret2' => Crypt::encrypt('gateway_secure_secret2'),
+                'recurring'              => 0,
+                'created_at'             => time(),
+                'updated_at'             => time(),
             )
         );
     }

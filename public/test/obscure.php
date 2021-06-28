@@ -78,6 +78,7 @@ function disableEmptyInputs(form) {
         <td>
             <select name="method">
                 <option value="netbanking">Net Banking</option>
+                <option value="app">App</option>
                 <option value="card" selected>Card</option>
                 <option value="wallet">Wallet</option>
                 <option value="emi">Emi</option>
@@ -253,6 +254,7 @@ function disableEmptyInputs(form) {
                 <option value="idfb">IDFC First Bank</option>
                 <option value="hcin">Home Credit</option>
                 <option value="fdrl">Federal Bank</option>
+                <option value="twid">Twid</option>
                 <option value="bajajfinserv">Bajaj Finserv</option>
                 <option value="walnut369">Walnut369</option>
             </select>

@@ -140,6 +140,7 @@ class Shared
     const WORLDLINE_TERMINAL                 = '1000WldlineTml';
     const UPI_JUSPAY_TERMINAL                = '100UpiJsPayTml';
     const CRED_TERMINAL                      = '100DiCreDTrmnl';
+    const TWID_TERMINAL                      = '100ApTwiDTrmnl';
     const NETBANKING_FSB_TERMINAL            = '1000NbFsbTrmnl';
     const CARDLESS_EMI_FLEXMONEY_MULTILENDER_TERMINAL    = '20CrdlsEmiMlTl';
     const CARDLESS_EMI_FLEXMONEY_EMPTY_ENABLED_BANKS     = '20CrdlsEmiEmTl';

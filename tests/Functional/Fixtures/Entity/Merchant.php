@@ -663,6 +663,16 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['cred' => true]);
     }
 
+    public function disableTwid($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['twid' => false]);
+    }
+
+    public function enableTwid($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['twid' => true]);
+    }
+
     public function disableCred($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['cred' => false]);

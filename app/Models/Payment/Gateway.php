@@ -3309,6 +3309,7 @@ class Gateway
             self::NETBANKING_CBI,
             self::NETBANKING_CSB,
             self::NETBANKING_KVB,
+            self::TWID,
         ];
 
         $isRouted = in_array($gateway, $gateways, true);
@@ -3405,6 +3406,7 @@ class Gateway
             self::NETBANKING_DLB,
             self::NETBANKING_SBI,
             self::NETBANKING_NSDL,
+            self::TWID,
         ];
 
         $acquirerGateways = [

@@ -1821,6 +1821,19 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultAppPayment($provider)
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'app';
+        $payment['amount'] = 100000;
+        $payment['contact'] = '+91'. $payment['contact'];
+        $payment['provider'] = $provider;
+
+        unset($payment['card'], $payment['bank']);
+
+        return $payment;
+    }
+
     protected function getDefaultPayLaterPaymentArray($provider)
     {
         $payment = $this->getDefaultPaymentArray();
