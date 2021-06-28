@@ -36,7 +36,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|min:4|max:30|custom',
-        Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
+        Entity::SUPPORT_CONTACT => 'nullable|contact_syntax',
         Entity::SUPPORT_EMAIL   => 'nullable|email',
         Entity::TERMS           => 'nullable|string|min:5|max:2048',
         Entity::SETTINGS        => 'nullable|array',

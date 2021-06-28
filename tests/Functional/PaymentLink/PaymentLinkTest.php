@@ -1223,6 +1223,30 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * @group support_contact_validation
+     */
+    public function testCreatePaymentLinkWithAlphabetSupportNumber()
+    {
+        $this->startTest();
+    }
+
+    /**
+     * @group support_contact_validation
+     */
+    public function testCreatePaymentLinkWithSupportNumberLessDigits()
+    {
+        $this->startTest();
+    }
+
+    /**
+     * @group support_contact_validation
+     */
+    public function testCreatePaymentLinkWithSupportNumberLargeDigits()
+    {
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity
