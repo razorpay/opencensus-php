@@ -2832,6 +2832,20 @@ class MerchantTest extends TestCase
     {
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
 
+        $this->runBankAccountUpdateRequestTestInAdminProxyAuthAndAssert($merchantId);
+    }
+
+    public function testUpdateBankAccountViaPennyTestingInAdminProxyAuthFundsOnHoldPass()
+    {
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $this->fixtures->merchant->edit($merchantId, ['hold_funds' => 1]);
+
+        $this->runBankAccountUpdateRequestTestInAdminProxyAuthAndAssert($merchantId);
+    }
+
+    protected function runBankAccountUpdateRequestTestInAdminProxyAuthAndAssert($merchantId)
+    {
         $beforeCount = $this->getBankAccountsCount($merchantId);
 
         $admin = $this->ba->getAdmin();

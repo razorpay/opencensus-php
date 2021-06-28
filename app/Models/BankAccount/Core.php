@@ -577,8 +577,15 @@ class Core extends Base\Core
 
     public function bankAccountUpdate(MerchantEntity $merchant, array $input)
     {
-        // if funds are on hold, this will throw an exception -> doesnt allow bank account update if funds are on hold
-        $this->validateMerchantFundsAreNotOnHold($merchant);
+        $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_FUNDS_ON_HOLD, [
+            Merchant\Entity::HOLD_FUNDS => $merchant->getHoldFunds()
+        ]);
+
+        // if funds are on hold and request is coming from merchant, this will throw an exception -> doesnt allow bank account update if funds are on hold
+        if ($this->app['basicauth']->isAdminAuth() === false)
+        {
+            $this->validateMerchantFundsAreNotOnHold($merchant);
+        }
 
         $this->validateBankAccountUpdatePennyTestingNotInProgress($merchant);
 
