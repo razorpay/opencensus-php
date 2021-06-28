@@ -490,8 +490,8 @@ class ViewDataSerializerHosted extends Base\Core
             Entity::SHIPPING_ADDRESS_TEXT => optional($this->invoice->customerShippingAddress)->formatAsText(),
         ];
 
-        // Unsets Customer details if invoice is in expired status
-        if ($this->invoice->isExpired() === true)
+        // Unsets Customer details if invoice is in expired or paid status
+        if ($this->invoice->isExpired() === true or $this->invoice->isPaid() === true)
         {
             $serialized[Entity::CUSTOMER_DETAILS] = '';
         }

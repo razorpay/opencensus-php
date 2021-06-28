@@ -93,6 +93,7 @@ return [
             'is_paid'               => true,
             'amount_paid_formatted' => '1,000.00',
             'amount_due_formatted'  => '0.00',
+            'customer_details'      => '',
             'payments'              => [
                 [
                     'amount'               => 1000000,
