@@ -944,7 +944,7 @@ class Core extends Base\Core
                     }
                     catch (\Throwable $e)
                     {
-                        $redis->delete($key);
+                        $redis->del($key);
 
                         $this->trace->traceException($e, Trace::ERROR, TraceCode::DISPUTE_REFUND_PAYMENT_PROCESS_REFUND_AMOUNTS, [
                             'payment_id' => $paymentId,
