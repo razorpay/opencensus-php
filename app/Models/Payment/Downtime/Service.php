@@ -20,7 +20,7 @@ class Service extends Base\Service
 {
     const RAZORX_DOWNTIME_V2 = "downtime_v2_webhook";
 
-    const DOWNTIME_WEBHOOK_TIMEOUT = 5000;
+    const DOWNTIME_WEBHOOK_TIMEOUT = 15000;
 
     protected function getRepository()
     {

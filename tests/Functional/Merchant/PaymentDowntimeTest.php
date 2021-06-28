@@ -1871,7 +1871,7 @@ class PaymentDowntimeTest extends TestCase
         $this->storkMock
             ->shouldReceive('request')
             ->once()
-            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/List', Mockery::subset($expectedReqArgs), 5000)
+            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/List', Mockery::subset($expectedReqArgs), 15000)
             ->andReturn($mockedRes);
     }
 }
