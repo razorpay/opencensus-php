@@ -70,7 +70,7 @@ function CreditDetails(props) {
             <p>{title}</p>
           </div>
           <div class="balance-amount-container">
-            <Amount value={creditItems} currency="INR" />
+            <Amount value={creditItems.length > 0 ? creditItems[0].value : 0} currency="INR" />
           </div>
         </div>
       </div>
