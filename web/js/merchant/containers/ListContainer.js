@@ -2,6 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { getURLQueryParams } from 'common/utils/rzp-utils';
 import { trimDeep } from 'common/utils/validators';
+import moment from 'moment';
 
 export default class ListContainer extends Component {
   static SKIP = 0;
@@ -74,6 +75,12 @@ export default class ListContainer extends Component {
   fetchAll = (params = {}) => {
     params = { ...this.getDefaultPageParams(), ...params };
     params = this.removeBlacklistedParams(params);
+
+    // HOTFIX: temporary, default to 7 days for loading payments if there is no from and to in the URL
+    if (this.props.location.pathname === '/payments' && !params?.from && !params?.to) {
+      params.from = moment().add(-7, 'd').startOf('day').unix();
+      params.to = moment().endOf('day').unix();
+    }
 
     this.setState(params);
 

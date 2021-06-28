@@ -24,6 +24,8 @@ const shouldDisplayCompact = (windowWidth) => {
   return windowWidth < 480;
 };
 
+const DEFAULT_PARAMS = { count: 5 };
+
 const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
   const tabMeta = tabsMeta[tabName];
 
@@ -110,20 +112,37 @@ export default class RecentActivity extends Component {
   }
 
   fetchData(params) {
-    this.props.fetchPayments(params).then((data) => {
-      return this.props.onFetchPayments && this.props.onFetchPayments(data && data.data);
-    });
+    this.fetchPayments(params, this.props);
     this.props.fetchRefunds(params);
     this.props.fetchSettlements(params);
   }
 
+  fetchPayments(params, nextProps) {
+    let payload = Object.assign({}, params);
+
+    if (nextProps.startDate && nextProps.endDate) {
+      payload.from = nextProps.startDate.unix();
+      payload.to = nextProps.endDate.unix();
+    }
+
+    this.props.fetchPayments(payload).then((data) => {
+      return this.props.onFetchPayments && this.props.onFetchPayments(data && data.data);
+    });
+  }
+
   componentWillMount() {
-    this.fetchData({ count: 5 });
+    this.fetchData(DEFAULT_PARAMS);
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.windowWidth !== nextProps.windowWidth) {
       this.handleResize(nextProps);
+    }
+
+    // On date range change, fetch payments for the given range
+    if (this.props.startDate?.unix() !== nextProps.startDate?.unix() ||
+          this.props.endDate?.unix() !== nextProps.endDate?.unix()) {
+      this.fetchPayments(DEFAULT_PARAMS, nextProps);
     }
   }
 

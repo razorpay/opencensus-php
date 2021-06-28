@@ -706,6 +706,8 @@ class AnalyticsDesktop extends Component {
                   <p className="content-title section-title">{recentActivityTitle}</p>
                   <div className="content">
                     <RecentActivity
+                      startDate={startDate}
+                      endDate={endDate}
                       sectionTitle={recentActivityTitle}
                       onFetchPayments={onFetchPayments}
                       user={this.props.user}
