@@ -13,6 +13,7 @@ class Entity extends Base\PublicEntity
     const REWARD_ID           = 'reward_id';
     const ACTIVATED_AT        = 'activated_at';
     const ACCEPTED_AT         = 'accepted_at';
+    const DEACTIVATED_AT      = 'deactivated_at';
 
     //status constants
     const AVAILABLE           = 'available';
@@ -26,7 +27,8 @@ class Entity extends Base\PublicEntity
         self::REWARD_ID,
         self::STATUS,
         self::ACTIVATED_AT,
-        self::ACCEPTED_AT
+        self::ACCEPTED_AT,
+        self::DEACTIVATED_AT
     ];
 
     protected $entity         = 'merchant_reward';
@@ -39,6 +41,7 @@ class Entity extends Base\PublicEntity
         self::ACCEPTED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::DEACTIVATED_AT
     ];
 
     public function setMerchantId($merchantId)
@@ -54,6 +57,11 @@ class Entity extends Base\PublicEntity
     public function setActivatedAt($activatedAt)
     {
         $this->setAttribute(self::ACTIVATED_AT, $activatedAt);
+    }
+
+    public function setDeactivatedAt($deactivatedAt)
+    {
+        $this->setAttribute(self::DEACTIVATED_AT, $deactivatedAt);
     }
 
     public function setAcceptedAt($acceptedAt)
@@ -79,6 +87,11 @@ class Entity extends Base\PublicEntity
     public function getActivatedAt()
     {
         return $this->getAttribute(self::ACTIVATED_AT);
+    }
+
+    public function getDeactivatedAt()
+    {
+        return $this->getAttribute(self::DEACTIVATED_AT);
     }
 
     public function getAcceptedAt()

@@ -40,6 +40,9 @@ class CreateMerchantRewards extends Migration
             $table->index(MerchantReward::STATUS);
 
             $table->index(MerchantReward::ACCEPTED_AT);
+
+            $table->integer(MerchantReward::DEACTIVATED_AT)
+                 ->nullable();
         });
     }
 

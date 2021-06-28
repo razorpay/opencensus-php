@@ -6284,3 +6284,6 @@ ALTER TABLE payouts
 
 ALTER TABLE merchant_details
     ADD COLUMN activation_form_milestone varchar(30) DEFAULT NULL;
+
+ALTER TABLE merchant_rewards
+    ADD COLUMN deactivated_at INTEGER DEFAULT NULL;

@@ -238,6 +238,8 @@ class Core extends Base\Core
 
             $columnsToUpdate[Entity::UPDATED_AT] = $now;
 
+            $columnsToUpdate[Entity::DEACTIVATED_AT] = $now;
+
             $this->repo->merchant_reward->update($merchantReward, $columnsToUpdate);
 
             if ($status === Entity::LIVE)
