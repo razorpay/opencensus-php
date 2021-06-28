@@ -3,6 +3,7 @@
 namespace RZP\Http\Middleware;
 
 use Closure;
+use RZP\Trace\TraceCode;
 use Illuminate\Foundation\Application;
 use RZP\Models\P2p\Base\Libraries\Context;
 
@@ -43,6 +44,13 @@ class P2p
         $this->context->loadWithRequest($request);
 
         $response = $next($request);
+
+        $executionTime = microtime(true) - LARAVEL_START;
+
+        $this->app['trace']->info(TraceCode::P2P_RESPONSE, [
+            'type'                  => 'response_time',
+            'time_taken_in_seconds' => $executionTime,
+        ]);
 
         $response->header('X-Razorpay-Request-Id', $this->context->getRequestId(), true);
 
