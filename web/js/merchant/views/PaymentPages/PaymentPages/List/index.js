@@ -11,6 +11,8 @@ import Spinner from 'common/ui/Spinner';
 import { withRouter } from 'react-router-dom';
 import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
+
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import EmptyList from 'merchant/components/EmptyList';
@@ -223,6 +225,8 @@ export default class PaymentPagesContainer extends ListContainer {
     );
 
     this.trackPaymentPage('pp.create.click_create');
+
+    triggerHotjarRecording('PP_Creation');
   };
 
   onClickPaginate = (params, type) => {
