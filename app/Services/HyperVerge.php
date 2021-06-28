@@ -134,6 +134,7 @@ class HyperVerge
             TraceCode::PAPER_MANDATE_CREATE_FORM_REQUEST_TO_HYPERVERGE,
             [
                 'paper_mandate_id' => $paperMandate->getPublicId(),
+                'input'            => $input
             ]);
 
         $headers = $this->getHeaders($paperMandate);
