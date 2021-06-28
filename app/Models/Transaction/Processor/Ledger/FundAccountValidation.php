@@ -18,7 +18,9 @@ class FundAccountValidation extends Base
     const FAV_FAILED    = "fav_failed";
     const FAV_REVERSED  = "fav_reversed";
 
-    public function pushTransactionToLedger(Entity $entity, string $mode, string $transactorType, int $transactorDate)
+    public function pushTransactionToLedger(Entity $entity,
+                                            string $transactorType,
+                                            int $transactorDate)
     {
         $startTime = millitime();
 
@@ -62,7 +64,7 @@ class FundAccountValidation extends Base
 
             $payload = [
                 self::TRANSACTOR          => self::X,
-                self::MODE                => $mode,
+                self::MODE                => $this->mode,
                 self::IDEMPOTENCY_KEY     => gen_uuid(self::UUID_FORMAT),
                 self::MERCHANT_ID         => $entity->getMerchantId(),
                 self::CURRENCY            => $entity->getCurrency(),

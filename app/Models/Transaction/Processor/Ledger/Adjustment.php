@@ -2,22 +2,21 @@
 
 namespace RZP\Models\Transaction\Processor\Ledger;
 
+use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Trace\TraceCode;
-use RZP\Models\BankTransfer\Entity;
-use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
+use RZP\Models\Adjustment\Entity;
 use RZP\Models\Transaction\Entity as TransactionEntity;
+use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
-class FundLoading extends Base
+class Adjustment extends Base
 {
     // Events
-    const FUND_LOADING_PROCESSED = "fund_loading_processed";
+    const POSITIVE_ADJUSTMENT_PROCESSED = 'positive_adjustment_processed';
+    const NEGATIVE_ADJUSTMENT_PROCESSED = 'negative_adjustment_processed';
 
     public function pushTransactionToLedger(Entity $entity,
-                                            string $transactorType,
-                                            string $terminalId,
-                                            $terminalAccountType)
+                                            string $transactorType)
     {
         $startTime = millitime();
 
@@ -44,22 +43,18 @@ class FundLoading extends Base
                 self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($entity->getTransactionId())
             ];
 
-            $terminalAccountType = $terminalAccountType ?? self::DEFAULT_TERMINAL_ACCOUNT_TYPE;
-
             $payload = [
                 self::TRANSACTOR            => self::X,
                 self::MODE                  => $this->mode,
                 self::IDEMPOTENCY_KEY       => gen_uuid(self::UUID_FORMAT),
                 self::MERCHANT_ID           => $entity->getMerchantId(),
-                self::CURRENCY              => $entity->getTransactionCurrency(),
-                self::AMOUNT                => (string) $entity->getAmount(),
-                self::BASE_AMOUNT           => (string) $entity->getAmount(),
-                self::COMMISSION            => (string) $entity->getTransactionFee(),
-                self::TAX                   => (string) $entity->getTransactionTax(),
-                self::NOTES                 => json_encode($notes),
-                self::TERMINAL_ID           => $terminalId,
-                self::TERMINAL_ACCOUNT_TYPE => $terminalAccountType,
+                self::CURRENCY              => $entity->getCurrency(),
+                self::AMOUNT                => (string) abs($entity->getAmount()),
+                self::BASE_AMOUNT           => (string) abs($entity->getAmount()),
+                self::COMMISSION            => (string) $entity->transaction->getFee(),
+                self::TAX                   => (string) $entity->transaction->getTax(),
                 self::TRANSACTOR_ID         => $entity->getPublicId(),
+                self::NOTES                 => json_encode($notes),
                 self::TRANSACTOR_TYPE       => $transactorType,
                 self::TRANSACTION_DATE      => $entity->getCreatedAt(),
             ];

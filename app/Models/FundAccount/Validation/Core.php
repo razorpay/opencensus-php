@@ -545,9 +545,10 @@ class Core extends Base\Core
         {
             $status = $fundAccountValidation->getStatus();
         }
+
         $event = Status::getLedgerEventFromFavStatus($status);
 
-        (new Ledger\FundAccountValidation)->pushTransactionToLedger($fundAccountValidation, $this->mode, $event, $transactorDate);
+        (new Ledger\FundAccountValidation)->pushTransactionToLedger($fundAccountValidation, $event, $transactorDate);
     }
 
     /**

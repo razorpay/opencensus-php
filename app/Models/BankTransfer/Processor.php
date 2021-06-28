@@ -966,7 +966,6 @@ class Processor extends VirtualAccount\Processor
         }
 
         (new LedgerFundLoading)->pushTransactionToLedger($bankTransfer,
-                                                         $this->mode,
                                                          LedgerFundLoading::FUND_LOADING_PROCESSED,
                                                          $terminalId,
                                                          $terminalAccountType);

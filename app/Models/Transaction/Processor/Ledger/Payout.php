@@ -19,16 +19,13 @@ class Payout extends Base
     const PAYOUT_REVERSED  = "payout_reversed";
 
     public function pushTransactionToLedger(Entity $entity,
-                                            string $mode,
                                             string $transactorType,
                                             Reversal\Entity $reversal = null)
     {
-
         $startTime = millitime();
 
         try
         {
-
             /**
              * Check whether the event is default or not. Default event is set when there
              * is no event registered at ledger for that payout status.
@@ -79,7 +76,7 @@ class Payout extends Base
 
             $payload = [
                 self::TRANSACTOR          => self::X,
-                self::MODE                => $mode,
+                self::MODE                => $this->mode,
                 self::IDEMPOTENCY_KEY     => gen_uuid(self::UUID_FORMAT),
                 self::MERCHANT_ID         => $entity->getMerchantId(),
                 self::CURRENCY            => $entity->getCurrency(),

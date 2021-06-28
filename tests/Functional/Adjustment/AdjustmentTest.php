@@ -468,6 +468,8 @@ class AdjustmentTest extends TestCase
 
     public function testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalance()
     {
+        $this->mockLedgerSns(1, 'positive_adjustment_processed');
+
         Mail::fake();
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -572,6 +574,8 @@ class AdjustmentTest extends TestCase
 
     public function testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalance()
     {
+        $this->mockLedgerSns(1, 'negative_adjustment_processed');
+
         Mail::fake();
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)

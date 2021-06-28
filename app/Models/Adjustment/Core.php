@@ -14,6 +14,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
 use RZP\Models\Settlement\Channel as BankingChannel;
 
@@ -132,6 +133,8 @@ class Core extends Base\Core
 
                     (new Merchant\Invoice\Core)->createAdjustmentInvoiceEntity($adj, $merchantInvoiceInput);
 
+                    $this->processLedgerAdjustment($adjustment);
+
                     return $adjustment;
                 }
             );
@@ -141,6 +144,8 @@ class Core extends Base\Core
         {
             (new Balance\NegativeReserveBalanceMailers())->sendReserveBalanceActivatedMail($merchant, $balance);
         }
+
+        $this->processLedgerAdjustment($adjustment);
 
         return $adjustment;
     }
@@ -437,5 +442,34 @@ class Core extends Base\Core
         $newId = substr_replace($oldId, ++$last, -1, 1);
 
         return $newId;
+    }
+
+    protected function processLedgerAdjustment(Entity $adjustment)
+    {
+        // In case env variable ledger.enabled is false or it's live mode, return.
+        // We shall also skip the ledger creation
+        // Currently onboarding for test mode only.
+        if (($this->app['config']->get('applications.ledger.enabled') === false) or
+            ($adjustment->balance->isTypeBanking() === false) or
+            ($this->isLiveMode()))
+        {
+            return;
+        }
+
+        $event = self::getLedgerEventBasedOnAdjustment($adjustment);
+
+        (new Ledger\Adjustment)->pushTransactionToLedger($adjustment, $event);
+    }
+
+    protected function getLedgerEventBasedOnAdjustment(Entity $adjustment)
+    {
+        if ($adjustment->getAmount() >= 0)
+        {
+            return Ledger\Adjustment::POSITIVE_ADJUSTMENT_PROCESSED;
+        }
+        else
+        {
+            return Ledger\Adjustment::NEGATIVE_ADJUSTMENT_PROCESSED;
+        }
     }
 }

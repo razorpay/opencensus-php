@@ -1706,7 +1706,7 @@ class Core extends Base\Core
 
         $event = Status::getLedgerEventFromPayoutStatus($payout->getStatus());
 
-        (new Transaction\Processor\Ledger\Payout)->pushTransactionToLedger($payout, $this->mode, $event, $reversal);
+        (new Transaction\Processor\Ledger\Payout)->pushTransactionToLedger($payout, $event, $reversal);
     }
 
     /**

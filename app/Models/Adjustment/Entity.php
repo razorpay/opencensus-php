@@ -119,6 +119,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
     public function hasTransaction()
     {
         return ($this->isAttributeNotNull(self::TRANSACTION_ID));
