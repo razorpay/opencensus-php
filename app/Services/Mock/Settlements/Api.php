@@ -98,4 +98,38 @@ class Api extends BaseSettlementsApi
             ],
         ];
     }
+
+    public function ledgerCronActiveMtuCheck(array $input, $mode = null) : array
+    {
+        return [
+            'present'               => true,
+            'active_discrepancy'    => true,
+            'baseline_discrepancy'  => 10,
+        ];
+    }
+
+    public function ledgeCronActiveMtuAdd(array $input, $mode = null) : array
+    {
+        return ['id' => 'testMTU1234567'];
+    }
+
+    public function ledgeCronResultAdd(array $input, $mode = null) : array
+    {
+        return ['id' => 'testCronResult'];
+    }
+
+    public function ledgeCronExecutionAdd(array $input, $mode = null) : array
+    {
+        return ['id' => 'testCronExec12'];
+    }
+
+    public function ledgeCronExecutionUpdate(array $input, $mode = null) : array
+    {
+        return [];
+    }
+
+    public function ledgerReconActiveMtuUpdate(array $input, $mode = null) : array
+    {
+        return [];
+    }
 }

@@ -171,10 +171,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $settlementLedgerInconsistencyDebugRules = [
-        'merchant_ids'   => 'sometimes|array',
-        'merchant_ids.*' => 'required|string|size:14',
-        'from'           => 'sometimes|epoch',
-        'to'             => 'required_with:from|epoch',
+        'merchant_ids'      => 'sometimes|array',
+        'merchant_ids.*'    => 'required|string|size:14',
+        'fetch_active_mtu'  => 'sometimes|bool',
+        'set_baseline_zero' => 'required_with:fetch_active_mtu|bool',
+        'from'              => 'sometimes|epoch',
+        'to'                => 'required_with:from|epoch',
     ];
 
     protected function validateBalanceType($attribute, $value)

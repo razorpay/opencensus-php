@@ -1301,7 +1301,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             $implementation = ($mock === true) ? Mock\Settlements\Api::class : Settlements\Api::class;
 
-            return new Settlements\Api($app);
+            return new $implementation($app);
         });
     }
 

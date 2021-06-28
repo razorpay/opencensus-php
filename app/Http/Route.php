@@ -605,6 +605,7 @@ class Route
         'fb_setl_fetch_transactions'               => ['get',      'fb/settlements/{id}/transactions',               'SettlementController@getSettlementTransactionsWithSettlementId'    ],
         'setl_fetch_source_details'                => ['post',     'settlements/{id}/transaction_source_details',    'SettlementController@getSettlementTransactionsSourceDetails'       ],
         'setl_ledger_inconsistency_debug_admin'    => ['post',     'settlements/ledger_inconsistency/debug',         'SettlementController@settlementsLedgerInconsistencyDebug'          ],
+        'setl_ledger_inconsistency_debug_cron'     => ['post',     'settlements/ledger_inconsistency/debug/cron',    'SettlementController@settlementsLedgerInconsistencyDebug'          ],
 
         // following routes currently not being used need to deprecate all these routes
 //        'setl_edit'                                => ['put',      'settlements/{id}',                               'SettlementController@putEditSettlement'                            ],
@@ -3108,6 +3109,7 @@ class Route
         'scorecard',
         'banking_scorecard',
         'setl_initiate',
+        'setl_ledger_inconsistency_debug_cron',
         'setl_bucket_backfill',
         'setl_bucket_delete',
         'setl_reconcile_pull',
@@ -8965,6 +8967,7 @@ class Route
             'setcronjob_webhook',
             // The rest are crons
             'entity_tax_update',
+            'setl_ledger_inconsistency_debug_cron',
             'setl_initiate',
             'setl_bucket_backfill',
             'setl_bucket_delete',

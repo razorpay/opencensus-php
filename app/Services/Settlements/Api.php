@@ -91,4 +91,82 @@ class Api extends Base
 
         return $this->makeRequest(self::BANK_ACCOUNT_CREATE, $req, self::SERVICE_API, $mode);
     }
+
+    /**
+     * ledgerCronActiveMtuCheck used to check if merchant is already added as ledger cron active mtu
+     * @param array $input
+     * @param null $mode
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function ledgerCronActiveMtuCheck(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::LEDGER_RECON_ACTIVE_MTU_CHECK, $input, self::SERVICE_API, $mode);
+    }
+
+    /**
+     * ledgeCronActiveMtuAdd used to add merchant to ledger cron active mtu
+     * @param array $input
+     * @param null $mode
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function ledgeCronActiveMtuAdd(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::LEDGER_RECON_ACTIVE_MTU_ADD, $input, self::SERVICE_API, $mode);
+    }
+
+    /**
+     * ledgeCronResultAdd used to add merchant discrepancy to ledger cron results
+     * @param array $input
+     * @param null $mode
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function ledgeCronResultAdd(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::LEDGER_CRON_RESULT_ADD, $input, self::SERVICE_API, $mode);
+    }
+
+    /**
+     * ledgeCronExecutionAdd used to add a new cron execution
+     * @param array $input
+     * @param null $mode
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function ledgeCronExecutionAdd(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::LEDGER_CRON_EXECUTION_ADD, $input, self::SERVICE_API, $mode);
+    }
+
+    /**
+     * ledgeCronExecutionUpdate used to update a cron execution
+     * @param array $input
+     * @param null $mode
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function ledgeCronExecutionUpdate(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::LEDGER_CRON_EXECUTION_UPDATE, $input, self::SERVICE_API, $mode);
+    }
+
+    /**
+     * ledgerReconActiveMtuUpdate used to update mtu details
+     * @param array $input
+     * @param null $mode
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function ledgerReconActiveMtuUpdate(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::LEDGER_RECON_ACTIVE_MTU_UPDATE, $input, self::SERVICE_API, $mode);
+    }
 }

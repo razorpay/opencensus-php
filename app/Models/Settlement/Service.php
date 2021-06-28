@@ -29,6 +29,11 @@ use RZP\Models\Report\Types\SettlementReconReport;
 
 class Service extends Base\Service
 {
+    const LEDGER_RECON_STATE_PROCESSING     = 'processing';
+    const LEDGER_RECON_STATE_PROCESSED      = 'processed';
+    const LEDGER_RECON_TRIGGERED_SYSTEM     = 'system';
+    const LEDGER_RECON_TRIGGERED_MANUAL     = 'manual';
+
     public function createSettlementEntry($input)
     {
         // since in new service all these details are in capital letters thus to accommodate that added these
@@ -1231,20 +1236,48 @@ class Service extends Base\Service
             $to   = $input ['to'];
         }
 
+        $merchantIds = [];
+
         if(empty($input['merchant_ids']) === false)
         {
             $merchantIds = $input['merchant_ids'];
+
+            $cronId = $this->addLedgerCronExecution(self::LEDGER_RECON_TRIGGERED_MANUAL, count($merchantIds));
+
+            $this->dispatchForLedgerDiscrepancyCheck($merchantIds, $cronId);
         }
-        else
+        else if((isset($input['fetch_active_mtu']) === true) and ($input['fetch_active_mtu'] === true))
         {
            $merchantIds = $this->repo
                                ->transaction
                                ->fetchTransactingMerchantBetweenTimeStamps($from, $to);
-        }
 
-        foreach ($merchantIds as $merchantId)
+            $cronId = $this->addLedgerCronExecution(self::LEDGER_RECON_TRIGGERED_SYSTEM, count($merchantIds));
+
+            $setBaselineZero = false;
+
+            if((isset($input['set_baseline_zero']) === true) and ($input['set_baseline_zero'] === true))
+            {
+                $setBaselineZero = true;
+            }
+
+            $this->dispatchForLedgerDiscrepancyCheck($merchantIds, $cronId, $setBaselineZero);
+
+            if(count($merchantIds) === 0)
+            {
+                $this->ledgerCronExecutionUpdate($cronId, self::LEDGER_RECON_STATE_PROCESSED, 0);
+            }
+        }
+        else if((isset($input['fetch_active_mtu']) === true) and ($input['fetch_active_mtu'] === false))
         {
-            LedgerRecon::dispatch($this->mode, $merchantId);
+            $cronId = $this->addLedgerCronExecution(self::LEDGER_RECON_TRIGGERED_SYSTEM);
+
+            $merchantIds = $this->fetchAndDispatchLedgerCronActiveMTUs($cronId);
+
+            if(count($merchantIds) === 0)
+            {
+                $this->ledgerCronExecutionUpdate($cronId, self::LEDGER_RECON_STATE_PROCESSED, 0);
+            }
         }
 
         $this->trace->info(
@@ -1258,5 +1291,105 @@ class Service extends Base\Service
             'enqueued_mid_count' => count($merchantIds),
             'time_taken'         => get_diff_in_millisecond($startTime)
         ];
+    }
+
+    protected function addLedgerCronExecution($triggeredBy, $merchantCount = null) : string
+    {
+        $cronExecutionInput = [
+            'status'    => self::LEDGER_RECON_STATE_PROCESSING,
+            'triggered_by'  => $triggeredBy,
+        ];
+
+        if(isset($merchantCount) === true)
+        {
+            $cronExecutionInput['merchant_count'] = $merchantCount;
+        }
+
+        $response = app('settlements_api')->ledgeCronExecutionAdd($cronExecutionInput, $this->mode);
+
+        $this->trace->info(
+            TraceCode::LEDGER_CRON_EXECUTION_ADD,
+            [
+                'input' =>    $cronExecutionInput,
+                'response'  => $response,
+            ]);
+
+        return $response['id'];
+    }
+
+    protected function dispatchForLedgerDiscrepancyCheck(array $merchantIds, string $cronId, bool $setBaseLineZero = false)
+    {
+        foreach ($merchantIds as $merchantId)
+        {
+            LedgerRecon::dispatch($this->mode, $merchantId, $cronId, null, $setBaseLineZero);
+        }
+    }
+
+    protected function fetchAndDispatchLedgerCronActiveMTUs($cronId) : array
+    {
+        $merchantIds = [];
+
+        $skip = 0;
+        $limit = 100;
+
+        $input = [
+            'entity_name'   => 'ledger_recon_mtu',
+            'filter'        => [
+                'active_discrepancy' => true,
+            ],
+        ];
+
+        do
+        {
+            $input['pagination']['limit'] = $limit;
+
+            $input['pagination']['skip'] = $skip;
+
+            $result = app('settlements_dashboard')->fetchMultiple($input);
+
+            $ledgerReconMTUs = $result['entities']['ledger_recon_mtus'];
+
+            $count = count($ledgerReconMTUs);
+
+            $skip += $count;
+
+            foreach ($ledgerReconMTUs as $ledgerReconMTU)
+            {
+                $merchantId = $ledgerReconMTU['merchant_id'];
+
+                $merchantIds[] = $merchantId;
+
+                LedgerRecon::dispatch($this->mode, $merchantId, $cronId, (int) $ledgerReconMTU['baseline_discrepancy']);
+            }
+
+        } while($limit === $count);
+
+        $this->ledgerCronExecutionUpdate($cronId, null, count($merchantIds));
+
+        return $merchantIds;
+    }
+
+    protected function ledgerCronExecutionUpdate($cronId, $status = null, $merchantCount = null)
+    {
+        if((empty($status) === true) and (empty($merchantCount) === true))
+        {
+            return;
+        }
+
+        $cronExecutionUpdateInput = [
+            "cron_id"   => $cronId
+        ];
+
+        if(empty($status) === false)
+        {
+            $cronExecutionUpdateInput['status'] = $status;
+        }
+
+        if(empty($merchantCount) === false)
+        {
+            $cronExecutionUpdateInput['merchant_count'] = $merchantCount;
+        }
+
+        app('settlements_api')->ledgeCronExecutionUpdate($cronExecutionUpdateInput);
     }
 }

@@ -16,13 +16,20 @@ class Base
 
     //******************* common endpoints for dashboard/api/reminder are listed here ************************//
 
-    const TRANSACTION_HOLD           = '/twirp/rzp.settlements.transaction.v1.TransactionService/Hold';
-    const TRANSACTION_RELEASE        = '/twirp/rzp.settlements.transaction.v1.TransactionService/Release';
+    const TRANSACTION_HOLD                  = '/twirp/rzp.settlements.transaction.v1.TransactionService/Hold';
+    const TRANSACTION_RELEASE               = '/twirp/rzp.settlements.transaction.v1.TransactionService/Release';
 
-    const MERCHANT_CONFIG_CREATE     = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Create';
-    const MERCHANT_CONFIG_UPDATE     = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Update';
+    const MERCHANT_CONFIG_CREATE            = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Create';
+    const MERCHANT_CONFIG_UPDATE            = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Update';
 
-    const BANK_ACCOUNT_CREATE        = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Create';
+    const BANK_ACCOUNT_CREATE               = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Create';
+
+    const LEDGER_RECON_ACTIVE_MTU_CHECK     = '/twirp/rzp.settlements.ledger_recon_mtu.v1.LedgerReconMtuService/CheckActiveMtu';
+    const LEDGER_RECON_ACTIVE_MTU_ADD       = '/twirp/rzp.settlements.ledger_recon_mtu.v1.LedgerReconMtuService/Create';
+    const LEDGER_RECON_ACTIVE_MTU_UPDATE    = '/twirp/rzp.settlements.ledger_recon_mtu.v1.LedgerReconMtuService/Update';
+    const LEDGER_CRON_RESULT_ADD            = '/twirp/rzp.settlements.ledger_cron_result.v1.LedgerCronResultService/Create';
+    const LEDGER_CRON_EXECUTION_ADD         = '/twirp/rzp.settlements.ledger_cron_execution.v1.LedgerCronExecutionService/Create';
+    const LEDGER_CRON_EXECUTION_UPDATE      = '/twirp/rzp.settlements.ledger_cron_execution.v1.LedgerCronExecutionService/Update';
 
 
     protected $trace;

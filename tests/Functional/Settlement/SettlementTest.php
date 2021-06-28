@@ -2598,4 +2598,36 @@ class SettlementTest extends TestCase
 
         $this->assertEquals(0, $response['failed_count']);
     }
+
+    public function testLedgerReconCron()
+    {
+        $this->ba->cronAuth();
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
+        $capturedAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 10;
+
+        $this->fixtures->times(2)->create(
+            'payment:captured',
+            [
+                'captured_at' => $capturedAt,
+                'method'      => 'card',
+                'merchant_id' => '10000000000000',
+                'amount'      => 200,
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
+            ]
+        );
+
+        $request = [
+            'url'     => '/settlements/ledger_inconsistency/debug/cron',
+            'method'  => 'POST',
+            'content' => [
+                "merchant_ids" => ["10000000000000"],
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $response['enqueued_mid_count']);
+    }
 }
