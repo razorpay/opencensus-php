@@ -133,7 +133,7 @@ class Service extends Base\Service
 
     protected function getFdInstanceWhileCreatingTickets($input)
     {
-        $result = $this->app->razorx->getTreatment($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]
+        $result = $this->app->razorx->getTreatment($this->app['request']->getTaskId()
             , Constants::RAZORX_FLAG_FRESHDESK_CUSTOMER_TICKET_CREATION_SERVER_PICK, Mode::LIVE);
 
         if ($result === "on")
@@ -1334,7 +1334,7 @@ class Service extends Base\Service
             return $fdInstance;
         }
 
-        $variant = $this->app['razorx']->getTreatment($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY],
+        $variant = $this->app['razorx']->getTreatment($this->app['basicauth']->getMerchantId(),
             Constants::RAZORX_FLAG_SHOULD_MIGRATE_FRESHDESK_IND_MERCHANT,
             $app['rzp.mode'] ?? Mode::LIVE);
 
