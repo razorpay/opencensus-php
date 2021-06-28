@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Settlement\Ondemand\Transfer;
 
+use Config;
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -11,6 +13,7 @@ use RZP\Models\Settlement\Ondemand;
 use RZP\Models\Settlement\Ondemand\Bulk;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\Settlement\Ondemand\Attempt;
+use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer as BulkJob;
 
 class Core extends Base\Core
@@ -120,7 +123,7 @@ class Core extends Base\Core
         return $splitAmount;
     }
 
-    public function updateStatusAfterPayoutRequest($payoutStatus, $settlementOndemandTransfer, $payoutId)
+    public function updateStatusAttemptsAndPayoutId($payoutStatus, $settlementOndemandTransfer, $payoutId)
     {
         $settlementOndemandTransfer->setPayoutId($payoutId);
 
@@ -128,46 +131,39 @@ class Core extends Base\Core
 
         $settlementOndemandTransfer->setAttempts($presentAttempts + 1);
 
-        if((($payoutStatus === Status::REVERSED) and
-            ((new Attempt\Core)->canRetry($presentAttempts + 1, $settlementOndemandTransfer) === false)))
-        {
-            $this->setReversed($settlementOndemandTransfer);
-        }
+        $this->updateStatusAndRetryIfRequired($payoutStatus, $settlementOndemandTransfer);
+    }
 
-        else if ($payoutStatus === Status::PROCESSED)
+    public function updateStatusAndRetryIfRequired($payoutStatus, $settlementOndemandTransfer)
+    {
+        switch ($payoutStatus)
         {
-            $this->setProcessed($settlementOndemandTransfer);
-        }
-        else
-        {
-            $settlementOndemandTransfer->setStatus(Status::PROCESSING);
-
-            $this->repo->saveOrFail($settlementOndemandTransfer);
+            case Status::REVERSED:
+                $this->handleReversedAndRetryIfRequired($settlementOndemandTransfer);
+                break;
+            case Status::PROCESSED:
+                $this->setProcessed($settlementOndemandTransfer);
+                break;
+            case Status::PROCESSING:
+                $this->setProcessing($settlementOndemandTransfer);
+                break;
+            default:
+                throw new Exception\InvalidArgumentException(
+                    'not a valid ondemand_transfer status');
         }
     }
 
-    public function updateStatusAfterWebhookResponse($payoutStatus, $settlementOndemandTransfer)
+    public function handleReversedAndRetryIfRequired($settlementOndemandTransfer)
     {
-        if ($payoutStatus === Status::PROCESSED)
+        if ($settlementOndemandTransfer->canRetry())
         {
-           $this->setProcessed($settlementOndemandTransfer);
-        }
-        else if ((($payoutStatus === Status::REVERSED) and
-                 ((new Attempt\Core)->canRetry($settlementOndemandTransfer->getAttempts(),
-                                               $settlementOndemandTransfer) === false)))
-        {
-            $this->setReversed($settlementOndemandTransfer);
-        }
-        else
-        {
-            $settlementOndemandTransfer->setStatus(Status::PROCESSING);
+            $this->setProcessing($settlementOndemandTransfer);
 
-            $this->repo->saveOrFail($settlementOndemandTransfer);
-        }
-    }
+            $this->retry($settlementOndemandTransfer);
 
-    public function setReversed($settlementOndemandTransfer)
-    {
+            return;
+        }
+
         $settlementOndemandTransfer->setStatus(Status::REVERSED);
 
         $settlementOndemandTransfer->setReversedAt(Carbon::now(Timezone::IST)->getTimestamp());
@@ -182,6 +178,13 @@ class Core extends Base\Core
         $settlementOndemandTransfer->setStatus(Status::PROCESSED);
 
         $settlementOndemandTransfer->setProcessedAt(Carbon::now(Timezone::IST)->getTimestamp());
+
+        $this->repo->saveOrFail($settlementOndemandTransfer);
+    }
+
+    public function setProcessing($settlementOndemandTransfer)
+    {
+        $settlementOndemandTransfer->setStatus(Status::PROCESSING);
 
         $this->repo->saveOrFail($settlementOndemandTransfer);
     }
@@ -214,5 +217,17 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($settlementOndemandTransfer);
             });
         }
+    }
+
+    public function retry($settlementOndemandTransfer)
+    {
+        $settlementOndemandAttempt = (new Attempt\Core)->createAttempt($settlementOndemandTransfer);
+
+        CreateSettlementOndemandBulkTransfer::dispatch(
+            $this->mode,
+            $settlementOndemandAttempt->getId(),
+            $settlementOndemandTransfer,
+            Config::get('applications.razorpayx_client.live.ondemand_x_merchant.id'));
+
     }
 }

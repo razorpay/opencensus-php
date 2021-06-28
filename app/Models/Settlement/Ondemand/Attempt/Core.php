@@ -14,7 +14,6 @@ use RZP\Models\Settlement\Ondemand;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\Settlement\Ondemand\Transfer;
-use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
 
 class Core extends Base\Core
 {
@@ -105,7 +104,7 @@ class Core extends Base\Core
                 $settlementOndemandTransfer = $settlementOndemandAttempt->settlementOndemandTransfer;
 
                 (new Transfer\Core)
-                    ->updateStatusAfterPayoutRequest($payoutStatus, $settlementOndemandTransfer, $payoutId);
+                    ->updateStatusAttemptsAndPayoutId($payoutStatus, $settlementOndemandTransfer, $payoutId);
 
             });
         }
@@ -155,17 +154,6 @@ class Core extends Base\Core
                         Status::REVERSED,
                         $settlementOndemandAttempt);
 
-                    if($this->canRetry($attempts, $settlementOndemandTransfer) === true)
-                    {
-                        $settlementOndemandAttemptNew = $this->createAttempt($settlementOndemandTransfer);
-
-                        CreateSettlementOndemandBulkTransfer::dispatch(
-                            $this->mode,
-                            $settlementOndemandAttemptNew->getId(),
-                            $settlementOndemandTransfer,
-                            Config::get('applications.razorpayx_client.live.ondemand_x_merchant.id'));
-                    }
-
                     $response = ['response' => 'status updated'];
                 }
 
@@ -191,12 +179,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($settlementOndemandAttempt);
 
         (new Transfer\Core)
-            ->updateStatusAfterWebhookResponse($payoutStatus, $settlementOndemandAttempt->settlementOndemandTransfer);
-    }
-
-    public function canRetry($attempts, $settlementOndemandTransfer): bool
-    {
-        return (($attempts < CreateSettlementOndemandBulkTransfer::PAYOUT_REVERSAL_RETRY_LIMIT) and
-               ($settlementOndemandTransfer->getCreatedAt() >= Carbon::now()->subDays(2)->getTimestamp()));
+            ->updateStatusAndRetryIfRequired($payoutStatus, $settlementOndemandAttempt->settlementOndemandTransfer);
     }
 }

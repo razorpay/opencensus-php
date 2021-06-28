@@ -403,7 +403,7 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertArraySelectiveEquals([
             'amount'       => 859232,
-            'status'       => 'processing',
+            'status'       => 'reversed',
         ], $settlementOndemandTransfer);
 
         $settlementOndemandBulks = $this->getEntities(
@@ -422,19 +422,18 @@ class SettlementOndemandTest extends TestCase
 
         $settlementOndemandAttempts = $this->getEntities(
             EntityConstants::SETTLEMENT_ONDEMAND_ATTEMPT,
-            ['count' => 2],
+            ['count' => 10],
             true,
             'live');
 
-        $this->assertArraySelectiveEquals([
-            'settlement_ondemand_transfer_id'       => $settlementOndemandTransfer['id'],
-            'status'                                => 'created',
-        ], $settlementOndemandAttempts['items'][0]);
+        for ($i =0; $i <10;$i++)
+        {
+            $this->assertArraySelectiveEquals([
+                'settlement_ondemand_transfer_id'       => $settlementOndemandTransfer['id'],
+                'status'                                => 'reversed',
+            ], $settlementOndemandAttempts['items'][$i]);
+        }
 
-        $this->assertArraySelectiveEquals([
-            'settlement_ondemand_transfer_id'       => $settlementOndemandTransfer['id'],
-            'status'                                => 'reversed',
-        ], $settlementOndemandAttempts['items'][1]);
     }
 
     public function testProcessXSettlementBulkTransferWithProcessedWebhook()

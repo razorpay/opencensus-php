@@ -10,7 +10,7 @@ class Service extends Base\Service
         return $this->core()->makeBulkPayoutRequest($settlementOndemandAttemptId, $currency, $settlementOndemandTransfer);
     }
 
-    public function  updateStatusAfterPayoutRequest($payoutStatus, $payoutId, $settlementOndemandAttempt, $response, $failureReason)
+    public function updateStatusAfterPayoutRequest($payoutStatus, $payoutId, $settlementOndemandAttempt, $response, $failureReason)
     {
         return $this->core()->updateStatusAfterPayoutRequest($payoutStatus, $payoutId, $settlementOndemandAttempt, $response, $failureReason);
     }

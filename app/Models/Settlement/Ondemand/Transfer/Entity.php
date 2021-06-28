@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Settlement\Ondemand\Transfer;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
@@ -27,6 +28,8 @@ class Entity extends Base\PublicEntity
     const CREATED_AT             = 'created_at';
     const UPDATED_AT             = 'updated_at';
     const DELETED_AT             = 'deleted_at';
+
+    const PAYOUT_REVERSAL_RETRY_LIMIT = 10;
 
     protected $fillable = [
         self::ATTEMPTS,
@@ -100,6 +103,12 @@ class Entity extends Base\PublicEntity
     public function setPayoutId($id)
     {
         $this->setAttribute(self::PAYOUT_ID, $id);
+    }
+
+    public function canRetry() : bool
+    {
+        return (($this->getAttempts() < self::PAYOUT_REVERSAL_RETRY_LIMIT) and
+                ($this->getCreatedAt() >= Carbon::now()->subDays(2)->getTimestamp()));
     }
 
 }

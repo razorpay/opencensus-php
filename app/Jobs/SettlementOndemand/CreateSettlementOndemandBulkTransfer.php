@@ -97,21 +97,6 @@ class CreateSettlementOndemandBulkTransfer extends Job
                         $this->settlementOndemandAttempt,
                         $e->getData()['response'],
                         $e->getData()['response']['failure_reason']);
-
-                if ((new Attempt\Core)->canRetry($this->settlementOndemandTransfer->getAttempts(),
-                    $this->settlementOndemandTransfer))
-                {
-                    $this->settlementOndemandAttempt = (new Attempt\Core)
-                                                            ->createAttempt($this->settlementOndemandTransfer);
-
-                    $this->settlementOndemandAttemptId = $this->settlementOndemandAttempt->getId();
-
-                    $this->release(10 * $this->attempts() + random_int(0, 10));
-                }
-                else
-                {
-                    $this->delete();
-                }
             }
             else
             {
