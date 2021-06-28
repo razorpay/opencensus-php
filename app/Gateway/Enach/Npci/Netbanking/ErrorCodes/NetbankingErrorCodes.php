@@ -202,6 +202,7 @@ class NetbankingErrorCodes
     const AP21 = 'AP21';
     const AP22 = 'AP22';
     const AP23 = 'AP23';
+    const AP24 = 'AP24';
     const AP25 = 'AP25';
     const AP26 = 'AP26';
     const AP27 = 'AP27';
@@ -212,6 +213,7 @@ class NetbankingErrorCodes
     const AP33 = 'AP33';
     const AP34 = 'AP34';
     const AP35 = 'AP35';
+    const AP36 = 'AP36';
     const AP37 = 'AP37';
     const AP39 = 'AP39';
     const AP40 = 'AP40';
@@ -417,6 +419,7 @@ class NetbankingErrorCodes
         self::AP21 => 'Payment stopped by attachment order',
         self::AP22 => 'Payment stopped by court order',
         self::AP23 => 'Rejected as per customer confirmation',
+        self::AP24 => 'Account not in regular Status',
         self::AP25 => 'Withdrawal stopped owing to insolvency of account',
         self::AP26 => 'Withdrawal stopped owing to lunacy of account hold',
         self::AP27 => 'Invalid frequency',
@@ -427,6 +430,7 @@ class NetbankingErrorCodes
         self::AP33 => 'User rejected the transaction on pre-Login page',
         self::AP34 => 'Account Number not registered with net banking facility',
         self::AP35 => 'Debit card validation failed due to_Invalid card number',
+        self::AP36 => 'Debit card validation failed due to_Invalid expiry date',
         self::AP37 => 'Debit Card validation failed due to_Invalid PIN',
         self::AP39 => 'OTP Invalid',
         self::AP40 => 'Maximum tries exceeded for OTP',
@@ -573,9 +577,10 @@ class NetbankingErrorCodes
         self::AP18 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
         self::AP19 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
         self::AP20 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
-        self::AP21 => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+        self::AP21 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION,
         self::AP22 => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         self::AP23 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION,
+        self::AP24 => ErrorCode::BAD_REQUEST_ACCOUNT_BLOCKED,
         self::AP25 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
         self::AP26 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
         self::AP27 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
@@ -586,6 +591,7 @@ class NetbankingErrorCodes
         self::AP33 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION,
         self::AP34 => ErrorCode::BAD_REQUEST_NETBANKING_USER_NOT_REGISTERED,
         self::AP35 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,
+        self::AP36 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
         self::AP37 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_PIN,
         self::AP39 => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         self::AP40 => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
