@@ -110,8 +110,11 @@ class CreditScoreBreakdown extends Component {
     const { report, score, ntc_score } = creditScoreBreakdown.data.bureau_report;
 
     const { configuration, product } = loanApplicationDetails.meta;
+    const isNTCScoreValid = ntc_score !== null && ntc_score !== undefined;
+    const hasReportData = report && Object.keys(report).length;
+    const showNTCScreen = isNTCScoreValid && !hasReportData;
 
-    if (!!ntc_score && !score) {
+    if (showNTCScreen || !score) {
       return (
         <div class="pending-note-wrapper">
           <Note
