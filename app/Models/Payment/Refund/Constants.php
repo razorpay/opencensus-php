@@ -176,6 +176,9 @@ class Constants
     const ERROR    = 'error';
     const FTA_DATA = 'fta_data';
 
+    // sets type of refund. Auto/manual/Merchant Initiated etc..
+    const REFUND_TYPE = 'refund_type';
+
     // Dynamic error messages for refund creation blocking
     // type 0 for neither instant nor gateway refund supported
     // type 1 for only instant refund supported

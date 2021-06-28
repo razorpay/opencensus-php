@@ -341,27 +341,18 @@ class Entity extends Base\PublicEntity
 
         $app = \App::getFacadeRoot();
 
-        $app['trace']->info(TraceCode::REFUND_AUTHORIZE_BULK,
+        $customBrandingMerchant = (new Merchant\Core())->isOrgCustomBranding($this->merchant);
+
+        $app['trace']->info(TraceCode::MERCHANT_FEATURE_NOT_EXIST,
             [
-                'public refund entity with expand' => 'called toArrayPublicWithExpand',
+                'merchant has custom branding' => $customBrandingMerchant,
             ]);
 
-        if ((new Merchant\Core())->isOrgCustomBranding($this->merchant) === true)
+        if ($customBrandingMerchant === true)
         {
-            $app['trace']->info(TraceCode::MERCHANT_FEATURE_NOT_EXIST,
-                [
-                    'merchant has custom branding' => true,
-                ]);
-
             $response[self::PROCESSED_AT] = $this->getProcessedAt();
-            $response['refund_type'] = (new Core)->getRefundType($this->getId(), $this->merchant, $this->getBatchId(), $this->isScrooge());
-        }
-        else
-        {
-            $app['trace']->info(TraceCode::MERCHANT_FEATURE_NOT_EXIST,
-                [
-                    'merchant has custom branding' => false,
-                ]);
+
+            $response[RefundConstants::REFUND_TYPE] = (new Core)->getRefundType($this->getId(), $this->merchant, $this->getBatchId(), $this->isScrooge());
         }
 
         return $this->getPublicStatus($response, $data);
