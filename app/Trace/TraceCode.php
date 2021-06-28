@@ -2391,8 +2391,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RZP_FEES_CONTACT_FUND_ACCOUNT_DOES_NOT_EXIST          = 'RZP_FEES_CONTACT_FUND_ACCOUNT_DOES_NOT_EXIST';
 
     // Trace codes for Sub virtual account CRUD
-    const SUB_VIRTUAL_ACCOUNT_CREATE_REQUEST                    = 'SUB_VIRTUAL_ACCOUNT_CREATE_REQUEST';
     const SUB_VIRTUAL_ACCOUNT_CREATED                           = 'SUB_VIRTUAL_ACCOUNT_CREATED';
+    const SUB_VIRTUAL_ACCOUNT_CREATE_REQUEST                    = 'SUB_VIRTUAL_ACCOUNT_CREATE_REQUEST';
+    const SUB_VIRTUAL_ACCOUNT_ENABLE_DISABLE_REQUEST            = 'SUB_VIRTUAL_ACCOUNT_ENABLE_DISABLE_REQUEST';
 
     //trace codes for merchant document CRUD
     const DOCUMENT_CREATE_REQUEST                               = 'DOCUMENT_CREATE_REQUEST';

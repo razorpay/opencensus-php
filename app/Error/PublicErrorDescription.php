@@ -619,7 +619,8 @@ class PublicErrorDescription
 
     // Sub Virtual Account
     const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_EXISTS                        = 'Sub Virtual Account already exists';
-    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_CREATE_ADMIN_AUTH_ONLY                = 'Sub Virtual Accounts can only be created via admin auth';
+    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_ENABLED                       = 'Sub Virtual Account already enabled';
+    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_DISABLED                      = 'Sub Virtual Account already disabled';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                   = 'Customer already exists for the merchant';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                 = 'Customer contact number is not set';

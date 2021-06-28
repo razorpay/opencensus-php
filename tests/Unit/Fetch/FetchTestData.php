@@ -676,4 +676,6 @@ return [
     E::REQUEST_LOG => [],
 
     E::MERCHANT_E_INVOICE => [],
+
+    E::SUB_VIRTUAL_ACCOUNT => [],
 ];

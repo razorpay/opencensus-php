@@ -93,7 +93,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SUB_ACCOUNT_NUMBER);
     }
 
+    public function getActive()
+    {
+        return $this->getAttribute(self::ACTIVE);
+    }
+
     // ------------- End Getters -------------
+
+    // --------------- Setters ---------------
+
+    public function setActive(bool $active)
+    {
+        return $this->setAttribute(self::ACTIVE, $active);
+    }
+
+    // ------------- End Setters -------------
 
     // -------------- Relations --------------
 
@@ -113,4 +127,13 @@ class Entity extends Base\PublicEntity
     }
 
     // ------------ End Relations ------------
+
+    // --------------- Helpers ---------------
+
+    public function isActive(): bool
+    {
+        return ($this->getActive() === true);
+    }
+
+    // ------------- End Helpers -------------
 }

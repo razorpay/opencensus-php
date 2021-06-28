@@ -2,6 +2,7 @@
 
 namespace RZP\Models\SubVirtualAccount;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -57,6 +58,44 @@ class Core extends Base\Core
             [
                 Entity::ID => $subVirtualAccount->getId(),
             ]);
+
+        return $subVirtualAccount;
+    }
+
+    public function fetchMultiple(array $input)
+    {
+        $this->repo->sub_virtual_account->setMerchantIdRequiredForMultipleFetch(false);
+
+        return $this->repo->sub_virtual_account->fetch($input);
+    }
+
+    public function enableOrDisable(string $id, array $input)
+    {
+        /** @var  $subVirtualAccount Entity */
+        $subVirtualAccount = $this->repo->sub_virtual_account->findByPublicId($id);
+
+        if ($input[Entity::ACTIVE] === $subVirtualAccount->getActive())
+        {
+            if ($subVirtualAccount->getActive() === true)
+            {
+                $errorCode = ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_ENABLED;
+            }
+            else
+            {
+                $errorCode = ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_DISABLED;
+            }
+            throw new Exception\BadRequestException(
+                $errorCode,
+                null,
+                [
+                    Entity::ID  => $subVirtualAccount->getId()
+                ]
+            );
+        }
+
+        $subVirtualAccount->setActive($input[Entity::ACTIVE]);
+
+        $this->repo->saveOrFail($subVirtualAccount);
 
         return $subVirtualAccount;
     }

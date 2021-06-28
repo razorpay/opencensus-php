@@ -7,10 +7,12 @@ use Hash;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class SubVirtualAccountsTest extends TestCase
 {
     use DbEntityFetchTrait;
+    use TestsBusinessBanking;
     use RequestResponseFlowTrait;
 
     protected function setUp(): void
@@ -18,13 +20,15 @@ class SubVirtualAccountsTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/SubVirtualAccountsTestData.php';
 
         parent::setUp();
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
     }
 
     public function testCreateSubVirtualAccount()
     {
         $this->ba->adminAuth();
 
-        $this->fixtureSetUp();
+        $this->fixtureSetUpForSubVirtualAccount();
 
         $this->startTest();
     }
@@ -38,20 +42,20 @@ class SubVirtualAccountsTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateSubVirtualAccountWhereSubAccountNumberMissingInDB()
-    {
-        $this->ba->adminAuth();
-
-        $this->fixtureSetUp('2323230041626905', null);
-
-        $this->startTest();
-    }
-
     public function testCreateSubVirtualAccountWhereMasterAccountNumberMissingInDB()
     {
         $this->ba->adminAuth();
 
-        $this->fixtureSetUp(null);
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->startTest();
+    }
+
+    public function testCreateSubVirtualAccountWhereSubAccountNumberMissingInDB()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtureSetUpForSubVirtualAccount();
 
         $this->startTest();
     }
@@ -60,7 +64,7 @@ class SubVirtualAccountsTest extends TestCase
     {
         $this->ba->adminAuth();
 
-        $this->fixtureSetUp('2323230041626905', '2323230041626906', 'banking', 'direct');
+        $this->fixtureSetUpForSubVirtualAccount( '2323230041626906', 'banking', 'direct');
 
         $this->startTest();
     }
@@ -69,29 +73,66 @@ class SubVirtualAccountsTest extends TestCase
     {
         $this->ba->adminAuth();
 
-        $this->fixtureSetUp('2323230041626905', '2323230041626906', 'primary');
+        $this->fixtureSetUpForSubVirtualAccount( '2323230041626906', 'primary');
 
         $this->startTest();
     }
 
-    protected function fixtureSetUp(
-        $masterAccountNumber = '2323230041626905',
+    public function testFetchSubVirtualAccountsForAdmin()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRY', 'active' => false]);
+
+        $this->startTest();
+    }
+
+    public function testFetchSubVirtualAccountsForProxy()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRY', 'active' => false]);
+
+        $this->startTest();
+    }
+
+    public function testDisableSubVirtualAccount()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ', 'active' => true]);
+
+        $this->startTest();
+    }
+
+    public function testEnableSubVirtualAccount()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ', 'active' => false]);
+
+        $this->startTest();
+    }
+
+    public function testEnableSubVirtualAccountWithInvalidId()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->startTest();
+    }
+
+    protected function fixtureSetUpForSubVirtualAccount(
         $subAccountNumber = '2323230041626906',
         $type = 'banking',
         $accountType = 'shared')
     {
-        $this->fixtures->on('test')->create('merchant', ['id' => '100abc000abc00', 'email' => 'mahbubani.amit@gmail.com']);
-
         $this->fixtures->on('test')->create('merchant', ['id' => '100abc000abc01', 'email' => 'mahbubani.amit@gmail.com']);
-
-        $this->fixtures->on('test')->create('balance',
-            [
-                'type'           => $type,
-                'account_type'   => $accountType,
-                'account_number' => $masterAccountNumber,
-                'merchant_id'    => '100abc000abc00',
-                'balance'        => 30000
-            ]);
 
         $this->fixtures->on('test')->create('balance',
             [

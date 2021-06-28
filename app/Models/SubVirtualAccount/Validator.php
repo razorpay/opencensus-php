@@ -16,4 +16,8 @@ class Validator extends Base\Validator
         Entity::MASTER_ACCOUNT_NUMBER  => 'required|string|between:5,35',
         Entity::SUB_ACCOUNT_NUMBER     => 'required|string|between:5,35',
     ];
+
+    protected static $enableOrDisableRules = [
+        Entity::ACTIVE  =>  'required|boolean',
+    ];
 }

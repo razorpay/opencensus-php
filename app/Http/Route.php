@@ -2519,7 +2519,10 @@ class Route
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
 
         // Sub Virtual Account Routes
+        'sub_virtual_account_list'                => ['get',      'sub_virtual_accounts',                                   'SubVirtualAccountController@list'                             ],
         'sub_virtual_account_create'              => ['post',     'admin/sub_virtual_accounts',                             'SubVirtualAccountController@create'                           ],
+        'sub_virtual_account_list_admin'          => ['get',      'admin/sub_virtual_accounts/merchant/{id}',               'SubVirtualAccountController@listAdmin'                        ],
+        'sub_virtual_account_enable_disable'      => ['post',     'admin/sub_virtual_accounts/{id}',                        'SubVirtualAccountController@enableOrDisable'                  ],
 
         // Ledger Routes
         'create_ledger_account'                   => ['post',      'ledger_service/create_account',                         'LedgerController@createAccount'],
@@ -4019,6 +4022,8 @@ class Route
         //Partner Activation routes
         'partner_activation_details',
         'partner_activation_save',
+
+        'sub_virtual_account_list',
     ];
 
     //
@@ -4366,6 +4371,8 @@ class Route
 
         // Sub VA Routes
         'sub_virtual_account_create',
+        'sub_virtual_account_list_admin',
+        'sub_virtual_account_enable_disable',
 
         // oauth routes
         'oauth_application_update_admin',
@@ -5150,6 +5157,8 @@ class Route
         'geoip_update'                             => Permission::UPDATE_GEO_IP,
 
         'sub_virtual_account_create'               => Permission::SUB_VIRTUAL_ACCOUNT,
+        'sub_virtual_account_list_admin'           => Permission::SUB_VIRTUAL_ACCOUNT,
+        'sub_virtual_account_enable_disable'       => Permission::SUB_VIRTUAL_ACCOUNT,
         'batch_process_by_id'                      => Permission::RETRY_BATCH,
         'merchant_get_tags'                        => Permission::VIEW_MERCHANT_TAGS,
         'merchant_tags_bulk'                       => Permission::MANAGE_BULK_MERCHANT_TAGGING,
@@ -7053,6 +7062,7 @@ class Route
             'subscription_view_test',
             'subscription_view_test_post',
             'subscriptions_overview',
+            'sub_virtual_account_list',
             'tax_create',
             'tax_delete',
             'tax_get',
@@ -8604,6 +8614,8 @@ class Route
             'subscription_view_test_post',
             'subscriptions_overview',
             'sub_virtual_account_create',
+            'sub_virtual_account_list_admin',
+            'sub_virtual_account_enable_disable',
             'survey_create',
             'survey_edit',
             'sync_pg_router_order_bulk',

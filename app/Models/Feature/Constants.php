@@ -646,6 +646,8 @@ class Constants
     // Used to disable tpv flow for merchants for business banking (Razorpay X) fund loading.
     const DISABLE_TPV_FLOW = 'disable_tpv_flow';
 
+    const SUB_VIRTUAL_ACCOUNT = 'sub_virtual_account';
+
     // Used to enable alternate failure reason in payout for status code.
     const ALTERNATE_PAYOUT_FR = 'alternate_payout_fr';
 
@@ -1013,6 +1015,7 @@ class Constants
         self::EARLY_MANDATE_PRESENTMENT       => true,
         self::CRED_MERCHANT_CONSENT           => true,
         self::DISABLE_TPV_FLOW                => true,
+        self::SUB_VIRTUAL_ACCOUNT             => true,
         self::CAW_IGNORE_CUSTOMER_CHECK       => true,
         self::CAW_UPI                         => true,
         self::SUBSCRIPTION_UPI                => true,
@@ -1511,6 +1514,11 @@ class Constants
         self::DISABLE_TPV_FLOW => [
             'feature'       => self::DISABLE_TPV_FLOW,
             'display_name'  => 'Disable tpv flow for the merchant',
+            'documentation' => '',
+        ],
+        self::SUB_VIRTUAL_ACCOUNT => [
+            'feature'       => self::SUB_VIRTUAL_ACCOUNT,
+            'display_name'  => 'Enable Sub Virtual Account',
             'documentation' => '',
         ],
         self::COVID_19_RELIEF => [

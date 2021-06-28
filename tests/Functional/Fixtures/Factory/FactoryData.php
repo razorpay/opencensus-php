@@ -1273,6 +1273,20 @@ final class FactoryData
             ]
         );
 
+        $factory(\RZP\Models\SubVirtualAccount\Entity::class, [
+                'id'                    => $faker->uniqueid,
+                'active'                => true,
+                'name'                  => $faker->word,
+                'master_merchant_id'    => '10000000000000',
+                'sub_merchant_id'       => '10000000000001',
+                'master_account_number' => '2224440041626905',
+                'sub_account_number'    => '2323230041626906',
+                'master_balance_id'     => 'xbalance000000',
+                'created_at'            => $faker->timestamp,
+                'updated_at'            => $faker->timestamp,
+            ]
+        );
+
         $factory(\RZP\Models\FundAccount\Entity::class, [
             'id'          => $faker->uniqueid,
             'active'      => 1,
