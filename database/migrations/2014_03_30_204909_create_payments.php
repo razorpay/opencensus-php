@@ -329,7 +329,7 @@ class CreatePayments extends Migration
             $table->index(Payment::CAPTURED_AT);
             $table->index(Payment::MERCHANT_ID);
             $table->index(Payment::VERIFY_AT);
-            $table->index([Payment::MERCHANT_ID, Payment::CREATED_AT]);
+            $table->index([Payment::MERCHANT_ID, Payment::CREATED_AT], "payments_merchant_id_id_index");
             $table->index([Payment::MERCHANT_ID, Payment::STATUS, Payment::CREATED_AT]);
             $table->index([Payment::MERCHANT_ID, Payment::CAPTURED_AT]);
             $table->index([Payment::VERIFY_AT, Payment::GATEWAY]);

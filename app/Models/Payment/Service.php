@@ -1484,7 +1484,7 @@ class Service extends Base\Service
 
         $this->modifyInputForVATransaction($input);
 
-        $payments = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE);
+        $payments = $this->repo->payment->fetchPaymentWithForceIndex($input, $merchantId);
 
         return $payments->toArrayPublic();
     }

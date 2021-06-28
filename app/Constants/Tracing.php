@@ -149,7 +149,9 @@ class Tracing
 
             // payout API routes
             'payout_create',
-            'payout_create_with_otp'
+            'payout_create_with_otp',
+
+            'payment_fetch_multiple',
     ]);
     }
 

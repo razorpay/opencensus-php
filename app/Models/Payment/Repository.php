@@ -3,9 +3,15 @@
 namespace RZP\Models\Payment;
 
 use DB;
+use App;
 use Carbon\Carbon;
+use RZP\Constants\Es;
+use RZP\Base\Common;
+use Database\Connection;
 
 use RZP\Base\ConnectionType;
+use RZP\Constants\Environment;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -298,6 +304,186 @@ class Repository extends Base\Repository
                     ->select($paymentData)
                     ->get();
     }
+
+
+    /**
+     *  refer: https://razorpay.slack.com/archives/CQ932EVNH/p1624709316068200
+     */
+    public function fetchPaymentWithForceIndex(array $params, string $merchantId = null)
+    {
+        // Process params (sanitization, validation, modification, etc.)
+        $this->processFetchParams($params);
+
+        $expands = $this->getExpandsForQueryFromInput($params);
+
+        $connection = $this->getSlaveConnection();
+
+        if (!is_null($merchantId) &&
+            count(array_diff(array_keys($params), ["skip", "count", "from", "to"])) === 0)
+        {
+            $app = App::getFacadeRoot();
+
+            $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(), 'payment_fetch_tidb_or_replica', $app['basicauth']->getMode() ?? Mode::LIVE);
+
+            $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_TIDB_EXPERIMENT_VARIANT, [
+                'variant' => $variant,
+            ]);
+
+            if (($variant === 'on') or
+                (app()->isEnvironmentProduction() === false))
+            {
+                $connection = $this->getDataWarehouseConnection();
+
+                $query = $this->newQueryWithConnection($connection);
+
+                $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_CONNECTION_TYPE,
+                    [
+                        'connection' => $connection,
+                    ]
+                );
+            }
+            else
+            {
+                try
+                {
+                    $paymentIds = (new EsRepository('payment'))->buildQueryAndSearch($params, $merchantId);
+
+                    $paymentIdsFiltered = array_map(
+                        function ($res) {
+                            return $res[ES::_SOURCE] ?? [Common::ID => $res[ES::_ID]];
+                            },
+                        $paymentIds[ES::HITS][ES::HITS]);
+
+                    if (count($paymentIdsFiltered) > 0)
+                    {
+                        $connection = $this->getSlaveConnection();
+
+                        $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_CONNECTION_TYPE,
+                            [
+                                'connection' => $connection,
+                                'elastic_fetch' => true,
+                            ]
+                        );
+
+                        return $this->newQueryWithConnection($connection)
+                            ->whereIn(Entity::ID, $paymentIdsFiltered)
+                            ->where(Entity::MERCHANT_ID, $merchantId)
+                            ->with($expands)
+                            ->orderBy(Entity::CREATED_AT, 'desc')
+                            ->get();
+                    }
+
+                    $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_CONNECTION_TYPE,
+                        [
+                            'connection' => $connection,
+                            'elastic_fetch' => true,
+                            'elastic_results' => 0,
+                        ]
+                    );
+
+                    return (new Base\PublicCollection());
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->error(TraceCode::PAYMENT_FETCH_MULTIPLE_ES_FAILURE, [
+                        'error' => $e->getMessage(),
+                        'code' => $e->getCode(),
+                    ]);
+
+                    $connection = $this->getPaymentFetchReplicaConnection();
+
+                    $query = $this->newQueryWithConnection($connection);
+
+                    $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_CONNECTION_TYPE,
+                        [
+                            'connection' => $connection,
+                        ]
+                    );
+                }
+            }
+        }
+        else
+        {
+            $connection = $this->getSlaveConnection();
+
+            $query = $this->newQueryWithConnection($connection);
+
+            $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_CONNECTION_TYPE,
+                [
+                    'connection' => $connection,
+                ]
+            );
+        }
+
+        $query = $query->with($expands);
+
+        $this->addCommonQueryParamMerchantId($query, $merchantId);
+
+        $this->setEsRepoIfExist();
+
+        // Splits the params into mysqlParams and esParams. Check methods doc on
+        // how that happens.
+        list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
+
+        // If we find that there are es params then we do es search.
+        // Currently (as commented in getMysqlAndEsParams method) we raise bad
+        // request error if we get mix of MySQL and es params. Later we might support
+        // such thing.
+        if (count($esParams) > 0)
+        {
+            return $this->runEsFetch($esParams, $merchantId, $expands);
+        }
+
+        // If above doesn't happen we build query for mysql fetch and return the
+        // result.
+        $query = $this->buildFetchQuery($query, $mysqlParams);
+
+        //
+        // For now, we want to expose this only for proxy auth.
+        // We would want to expose this to private auth as well
+        // in the future, but need a little bit though around
+        // how we want to expose it. Pagination has lot of standards
+        // generally and we might want to follow those when
+        // exposing on private auth. SDKs _might_ have to fixed too.
+        //
+        if ($this->auth->isProxyAuth() === true)
+        {
+            return $this->getPaginated($query, $params);
+        }
+        try
+        {
+            $startTimeMs = round(microtime(true) * 1000);
+
+            $entities = $query->get();
+
+            $endTimeMs = round(microtime(true) * 1000);
+
+            $queryDuration = $endTimeMs - $startTimeMs;
+
+            $this->trace->info(TraceCode::DATA_WAREHOUSE_PAYMENT_FETCH_DURATION,
+                [
+                'connection' => $connection,
+                'query_ctx' => is_null($merchantId) ? 'admin' : 'merchant',
+                'duration_ms' => $queryDuration,
+                'query' => $query->toSql(),
+                'sql_error_code' => ($queryDuration > 3000) ? 1 : 0,
+                ]
+            );
+
+            return $entities;
+        }
+        catch (\Exception $e)
+        {
+                $this->trace->error(TraceCode::DATA_WAREHOUSE_PAYMENT_FETCH_ERROR, [
+                    'connection' => $connection,
+                    'query_ctx' => is_null($merchantId) ? 'admin' : 'merchant',
+                    'query' => $query->toSql(),
+                    'sql_error_code' => 2,
+                ]);
+
+                throw $e;
+            }
+        }
 
     public function fetchEmiPaymentsWithRelationsBetween($from, $to, $bank, $relations)
     {

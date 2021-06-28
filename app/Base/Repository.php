@@ -1117,6 +1117,20 @@ class Repository extends \Razorpay\Spine\Repository
         return $connection;
     }
 
+    public function getPaymentFetchReplicaConnection(string $mode = null)
+    {
+        if (in_array($this->app['env'], ['testing', 'dev'], true) === true)
+        {
+            return Config::get('database.default');
+        }
+
+        $mode = $mode ?? $this->app['rzp.mode'];
+
+        $connection = ($mode === Mode::TEST) ? Connection::REPORTING_REPLICA_TEST : Connection::PAYMENT_FETCH_REPLICA_LIVE;
+
+        return $connection;
+    }
+
     public function getUniqueMerchantIdsWhereBalanceIdIsNull(int $limit): array
     {
         assertTrue(

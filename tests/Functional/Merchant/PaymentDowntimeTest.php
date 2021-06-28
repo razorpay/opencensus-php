@@ -715,7 +715,8 @@ class PaymentDowntimeTest extends TestCase
         $this->assertNotNull($downtime['end']);
     }
 
-    public function testWebhookForPaymentDowntimeStartedEvent()
+    public function
+    testWebhookForPaymentDowntimeStartedEvent()
     {
         Carbon::setTestNow(Carbon::create(2019, 14, 01, null, null, null));
 
