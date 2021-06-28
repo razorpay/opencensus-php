@@ -313,8 +313,6 @@ class Stork
      */
     public function processEvent(Event\Entity $event)
     {
-        $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST, $event->toArrayPublic());
-
         $merchant = $event->merchant;
 
         $payload = json_encode($event->toArrayPublic());
@@ -336,6 +334,11 @@ class Stork
                 'payload'    => $payload,
             ],
         ];
+
+        $eventTrace = $processEventReq;
+        unset($eventTrace['event']['payload']);
+        $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST, $eventTrace);
+
         $this->service->request(
             '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent',
             $processEventReq,
