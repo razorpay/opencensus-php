@@ -4784,6 +4784,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_NOT_FOUND_FOR_VERIFY                                  = 'PAYMENT_NOT_FOUND_FOR_VERIFY';
 
     const DOWNTIME_NOTIFICATION_MERCHANT_KEY_MISSING                    = 'DOWNTIME_NOTIFICATION_MERCHANT_KEY_MISSING';
+    const SKIP_MERCHANT_DOWNTIME_COMMUNICATION                          = 'SKIP_MERCHANT_DOWNTIME_COMMUNICATION';
 
 
     protected static $messages = [

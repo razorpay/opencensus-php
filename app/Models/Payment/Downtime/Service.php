@@ -123,6 +123,7 @@ class Service extends Base\Service
     {
         try
         {
+            $merchantIds = [];
             // @see getMerchantsSubscribingToWebhookEvent method.
             if($downtime->getMerchantId() === null)
             {
@@ -271,11 +272,18 @@ class Service extends Base\Service
 
     public function emailDowntime(string $status, Entity $downtime, $lastSeverity=null)
     {
+
+        if($downtime->getMerchantId() !== null)
+        {
+            $this->trace.info(TraceCode::SKIP_MERCHANT_DOWNTIME_COMMUNICATION, ['merchantId' => $downtime->getMerchantId()]);
+            return;
+        }
+
         $downtimeArray = $downtime->toArray();
 
         $recipientEmail = null;
 
-        if( $downtime->getMerchantId() !== null)
+        if($downtime->getMerchantId() !== null)
         {
             $variant = $this->app->razorx->getTreatment($downtime->getMerchantId(), self::RAZORX_DOWNTIME_V2, $this->mode);
 
