@@ -4,7 +4,6 @@ import { bindActionCreators } from 'redux';
 import { fetchCreditBalance } from 'merchant/reducers/credits';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import CreditsDetails from 'merchant/views/Account/Credits/components';
-import gaTrack from './ga';
 
 function CreditsListContainer(props) {
   useEffect(() => {

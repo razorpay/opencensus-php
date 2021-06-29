@@ -22,7 +22,6 @@ function CreditDetails(props) {
       });
     }
     setshowCollapsible(!showCollapsible);
-    props.trackToggleHistory(props.title)(!showCollapsible);
   };
 
   const getRemainingPercentage = ({ used, value }) => {
