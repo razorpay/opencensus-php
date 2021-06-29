@@ -49,6 +49,7 @@ class Base extends BaseProcessor
         Constants::KOTAK_CORP,
         Constants::DLB,
         Constants::NSDL,
+        Constants::INDUSIND,
     ];
 
     public function fetchEntities(): PublicCollection

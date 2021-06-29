@@ -1,5 +1,5 @@
 <?php
-namespace RZP\Tests\Functional\Gateway\File;
+namespace RZP\Tests\Functional\Gateway\Netbanking\Indusind;
 
 use Mail;
 use Excel;
@@ -8,7 +8,6 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Gateway\DailyFile;
-use RZP\Models\Transaction\Statement\Entity;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
@@ -46,19 +45,23 @@ class NbplusNetbankingIndusindCombinedFileTest extends NbPlusPaymentServiceNetba
 
         $this->doAuthCaptureAndRefundPayment($this->payment);
 
-        $refundEntity1 = $this->getDbLastEntity('refund');
-
         $paymentEntity1 = $this->getDbLastPayment();
 
-        $transaction1 = $this->getDbLastEntityToArray('transaction');
+        $this->fixtures->edit('transaction', $paymentEntity1->transaction->getId(), [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $refundEntity1 = $this->getDbLastRefund();
 
         $this->doAuthCaptureAndRefundPayment($this->payment, 500);
 
-        $refundEntity2 = $this->getDbLastEntity('refund');
-
         $paymentEntity2 = $this->getDbLastPayment();
 
-        $transaction2 = $this->getDbLastEntityToArray('transaction');
+        $this->fixtures->edit('transaction', $paymentEntity2->transaction->getId(), [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $refundEntity2 = $this->getDbLastRefund();
 
         $this->assertEquals('refunded', $paymentEntity1['status']);
         $this->assertEquals('captured', $paymentEntity2['status']);
@@ -76,11 +79,8 @@ class NbplusNetbankingIndusindCombinedFileTest extends NbPlusPaymentServiceNetba
         $content = $this->startTest();
         $content = $content['items'][0];
 
-        $tran1 = $this->getDbEntityById('transaction', $transaction1['id']);
-        $tran2 = $this->getDbEntityById('transaction', $transaction2['id']);
-
-        $this->assertNotNull($tran1[Entity::RECONCILED_AT]);
-        $this->assertNotNull($tran2[Entity::RECONCILED_AT]);
+        $this->assertTrue($refundEntity1->transaction->isReconciled());
+        $this->assertTrue($refundEntity2->transaction->isReconciled());
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull($content[File\Entity::SENT_AT]);
         $this->assertNull($content[File\Entity::FAILED_AT]);
@@ -132,13 +132,6 @@ class NbplusNetbankingIndusindCombinedFileTest extends NbPlusPaymentServiceNetba
                 $paymentEntity2);
 
             $this->assertCount(2, $mail->attachments);
-
-            //
-            // Marking netbanking transaction as reconciled after sending in bank file
-            //
-            $refundTransaction = $this->getLastEntity('transaction', true);
-
-            $this->assertNotNull($refundTransaction['reconciled_at']);
 
             return true;
         });
