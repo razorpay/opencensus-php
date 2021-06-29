@@ -183,7 +183,7 @@ export default class App extends Component {
             kycStatus,
             merchantId: user.current,
             businessCategory: user.businessCategory,
-            phone: '+91'+user.contact_mobile,
+            phone: '+91' + user.contact_mobile,
             ...dataFromAPI,
           });
 
@@ -324,6 +324,9 @@ export default class App extends Component {
       const merchantsSettlementStatus = JSON.parse(
         LocalStorageService.getItem('merchantsSettlementStatus'),
       );
+
+      const esOndemandSettlementDisabled = (user.features || []).indexOf('es_on_demand') === -1;
+      if (esOndemandSettlementDisabled) return;
 
       if (!merchantsSettlementStatus) this.getSettlementDetails(user.current);
       else {
@@ -519,7 +522,7 @@ export default class App extends Component {
               this.fireMTUFunnelEvents(user);
             }
           })
-          .catch((err) => { });
+          .catch((err) => {});
         break;
       case 2:
         this.fireMTUAudienceEvents(user);
