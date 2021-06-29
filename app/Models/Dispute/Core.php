@@ -1199,6 +1199,11 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_DISPUTE_RISK_ASSESSMENT_OPERATION_IN_PROGRESS);
     }
 
+    public function getDisputeDocumentTypesMetadata()
+    {
+        return Document\Types::getTypesMetadata();
+    }
+
     private function doRiskAnalysisAndNotifyRas()
     {
         $yesterdayTimestamp = Carbon::yesterday(Timezone::IST)->getTimestamp();

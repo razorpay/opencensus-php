@@ -1646,6 +1646,7 @@ class Route
         'dispute_initiate_risk_assessment'         => ['post',     'disputes/merchant_risk/initiate',              'DisputeController@initiateRiskAssessment'                          ],
         'fd_customer_dispute'                      => ['post',     'fd/disputes',                                    'FreshdeskTicketController@postCustomerDispute'                     ],
         'dispute_reason_fetch_internal'            => ['get',      'dispute_reasons_internal/{disputeReasonId}',     'DisputeController@getReasonInternal'                               ],
+        'get_dispute_document_types_metadata'      => ['get',      'disputes/documents/types',                       'DisputeController@getDisputeDocumentTypesMetadataDescription'      ],
 
         // This is a different route from /payouts since we need a different auth (internal) for this
         // Hence, created two different routes - one for customer and another for merchant.
@@ -2858,6 +2859,7 @@ class Route
         'beta_account_post_bank_account',
         'beta_account_fetch_setl_destinations',
         'dispute_fetch',
+        'get_dispute_document_types_metadata',
         'account_features_add',
         'account_features_get',
         'payment_acknowledge',
@@ -9739,6 +9741,7 @@ class Route
         'order_create_admin'                   => [Feature::ALLOW_FORCE_TERMINAL_ID],
         'merchant_gstin_self_serve_status'     => [Feature::GSTIN_SELF_SERVE],
         'merchant_gstin_self_serve_update'     => [Feature::GSTIN_SELF_SERVE],
+        'get_dispute_document_types_metadata'  => [Feature::DISPUTE_PRESENTMENT],
     ];
 
     /**

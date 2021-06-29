@@ -819,4 +819,9 @@ class Service extends Base\Service
     {
         return $this->core()->initiateRiskAssessment();
     }
+
+    public function getDisputeDocumentTypesMetadata()
+    {
+        return $this->core()->getDisputeDocumentTypesMetadata();
+    }
 }

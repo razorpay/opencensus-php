@@ -127,4 +127,11 @@ class DisputeController extends Controller
     {
         return $this->service()->initiateRiskAssessment();
     }
+
+    public function getDisputeDocumentTypesMetadataDescription()
+    {
+        $response =  $this->service()->getDisputeDocumentTypesMetadata();
+
+        return ApiResponse::json($response);
+    }
 }

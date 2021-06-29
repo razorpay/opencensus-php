@@ -717,6 +717,11 @@ class Constants
 
     const LEDGER_CREDIT_LOCK        = 'ledger_credit_lock';
 
+    /**
+     * Dispute presentment needs to be enabled on the merchant via private auth
+     */
+    const DISPUTE_PRESENTMENT = 'dispute_presentment';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1043,6 +1048,7 @@ class Constants
         self::PAYPAL_CC                       => true,
         self::SKIP_SUBM_ONBOARDING_COMM       => true,
         self::LEDGER_CREDIT_LOCK              => true,
+        self::DISPUTE_PRESENTMENT             => true,
     ];
 
     // Entity type constants
