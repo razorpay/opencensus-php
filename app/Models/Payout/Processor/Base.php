@@ -2155,6 +2155,22 @@ class Base extends BaseCore
                     return false;
                 }
 
+                $isOnHoldPayoutEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUTS_ON_HOLD);
+
+                // skip payout creation via payout service if on hold payouts feature is enabled
+                if ($isOnHoldPayoutEnabled === true)
+                {
+                    return false;
+                }
+
+                $isNewBankingErrorEnabled = $this->merchant->isFeatureEnabled(Features::NEW_BANKING_ERROR);
+
+                // skip payout creation via payout service if new banking error feature is enabled
+                if ($isNewBankingErrorEnabled === true)
+                {
+                    return false;
+                }
+
                 $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
 
                 $applicationId = $this->app['basicauth']->getOAuthApplicationId();

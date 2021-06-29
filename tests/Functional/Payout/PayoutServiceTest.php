@@ -522,6 +522,110 @@ class PayoutServiceTest extends TestCase
         return $payout;
     }
 
+    // Since PAYOUTS_ON_HOLD feature is enabled for the merchant, the payout won't go via payouts service and would
+    // directly go to processing state.
+    public function testCreatePayoutForOnHoldPayout()
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::PAYOUTS_ON_HOLD,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        // Payout should not have gone via payouts service
+        $this->assertEquals(false, $payout->getIsPayoutService());
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true, 'live');
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout->getPublicId(), $payoutAttempt['source']);
+        $this->assertEquals($payout->getMerchantId(), $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'icici');
+
+        // Verify transaction entity
+        $txn = $this->getDbLastEntity('transaction',  'live');
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertNotNull($txn['posted_at']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7cl6t6I3XA5",
+            'percentage'      => null,
+            'amount'          => 500,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+    }
+
+    // Since NEW_BANKING_ERROR feature is enabled for the merchant, the payout won't go via payouts service and would
+    // directly go to processing state.
+    public function testCreatePayoutForNewBankingErrorPayout()
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::NEW_BANKING_ERROR,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayoutForOnHoldPayout'];
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        // Payout should not have gone via payouts service
+        $this->assertEquals(false, $payout->getIsPayoutService());
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true, 'live');
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout->getPublicId(), $payoutAttempt['source']);
+        $this->assertEquals($payout->getMerchantId(), $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'icici');
+
+        // Verify transaction entity
+        $txn = $this->getDbLastEntity('transaction',  'live');
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertNotNull($txn['posted_at']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7cl6t6I3XA5",
+            'percentage'      => null,
+            'amount'          => 500,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+    }
+
     // Assert that the array keys match selectively, we don't compare for values only the keys
     public function assertArrayKeySelectiveEquals(array $expected, array $actual)
     {
