@@ -462,7 +462,7 @@ export default class ActivationWizard extends React.Component {
     if (firstInValid === null) {
       firstInValid = FORM_TABS.length - 1; // In case all are filled then set last tab(which is actually filled)
 
-      if ((!isFormSubmitted && isL1Completed(this)) || this.isLinkedAccountForm) {
+      if (!isFormSubmitted && isL1Completed(this)) {
         this.state.showSubmitLayer = true;
       }
     }
@@ -1721,7 +1721,7 @@ export default class ActivationWizard extends React.Component {
     const moreTabs = [];
 
     if (
-      this.isLinkedAccountForm ||
+      (this.isLinkedAccountForm && !isFormSubmitted) ||
       (this.props.user.instantActivation.isL1Submitted &&
         !isFormSubmitted &&
         isDedupe(this.props.user) !== 'blocked' &&
@@ -1938,7 +1938,7 @@ export default class ActivationWizard extends React.Component {
         {/* Submit form overlay view, Lock check not necessary here. Just ensured, 'Submit Form' checkbox must be disabled if locked */}
         {!isFormSubmitted &&
           this.state.showSubmitLayer &&
-          isDedupe(this.props.user) !== 'blocked' &&
+          (this.isLinkedAccountForm || isDedupe(this.props.user) !== 'blocked') &&
           userCanSubmitForm && (
             <main className={classList('overlay-container', isFormLocked && 'main--full')}>
               <SubmitFormLayer
