@@ -135,8 +135,21 @@ class Processor extends VirtualAccount\Processor
 
         $deadlockRetryAttempts = 2;
 
-        $this->repo->transaction(function() use ($bankTransfer)
+        /**
+         * assigning to a temporary variable and then cloning it in the transaction. In case the transaction fails the
+         * attribute 'exists' of the bank transfer entity doesn't reset, in saveOrFail the exists flag is checked and based
+         * on this flag it identifies whether an insert query or an update query has to be performed. In case of retries,
+         * since in last attempt while performing saveOrFail this flag was set but not committed to Db due to some failure
+         * in the transaction. In retry, since this flag was already set saveOrFail didn't attempt to perform the insert query.
+         * Hence cloning it.
+         * slack thread for reference: https://razorpay.slack.com/archives/C013868TRK4/p1624456352459200?thread_ts=1623937828.416500&cid=C013868TRK4
+         */
+        $tempBankTransfer = $bankTransfer;
+
+        $bankTransfer = $this->repo->transaction(function() use ($tempBankTransfer)
         {
+            $bankTransfer = clone $tempBankTransfer;
+
             // Bank transfer's relation association
             $bankTransfer->merchant()->associate($this->merchant);
 
@@ -175,6 +188,9 @@ class Processor extends VirtualAccount\Processor
                         null,
                         compact('balanceType'));
             }
+
+            return $bankTransfer;
+
         }, $deadlockRetryAttempts);
 
         // Currently dispatches transaction.created only for bank transfer on banking balance.
