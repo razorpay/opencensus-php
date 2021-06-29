@@ -503,7 +503,16 @@ class Service
 
         if ($response->status_code !== StatusCode::SUCCESS)
         {
-            $description = array_pull($responseBody, 'msg', $responseBody);
+            $description = "";
+
+            if ($responseBody !== null)
+            {
+                $description = array_pull($responseBody, 'msg', $responseBody);
+            }
+            else
+            {
+                $description = "received empty response";
+            }
 
             throw new BadRequestException(ErrorCode::BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED,
                                           null,
