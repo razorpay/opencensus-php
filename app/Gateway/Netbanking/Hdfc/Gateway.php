@@ -603,8 +603,8 @@ class Gateway extends Base\Gateway
 
         if (strpos($body, $msg) !== false)
         {
-            throw new Exception\GatewayTimeoutException(
-                'Hdfc netbanking gateway could not be reached');
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED);
         }
 
         return $response;
