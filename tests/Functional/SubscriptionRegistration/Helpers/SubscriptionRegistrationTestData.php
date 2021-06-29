@@ -699,7 +699,7 @@ return [
                 'description'               => 'test description',
                 'subscription_registration' => [
                     'method'     => 'upi',
-                    'max_amount' => 600000,
+                    'max_amount' => 21000000,
                     'frequency'  => 'yearly'
                 ],
             ],
@@ -708,7 +708,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Max amount for UPI recurring payment cannot be greater than Rs. 5000.00'
+                    'description' => 'Max amount for UPI recurring payment cannot be greater than Rs. 200000.00'
                 ],
             ],
             'status_code' => 400,

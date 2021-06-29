@@ -69,13 +69,13 @@ return [
     'testCreateOrderWithMaxAmountGreaterThanMaxLimit' => [
         'request' => [
             'content' => [
-                'amount'          => 50000,
+                'amount'          => 200,
                 'currency'        => 'INR',
                 'method'          => 'upi',
                 'customer_id'     => 'cust_100000customer',
                 'payment_capture' => 1,
                 'token'           => [
-                    'max_amount'      => 510000,
+                    'max_amount'      => 210000000,
                     'frequency'       => 'monthly',
                     'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
                     'expire_at'       => Carbon::now()->addDay(60)->getTimestamp(),
@@ -88,7 +88,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Max amount for UPI recurring payment cannot be greater than Rs. 5000.00',
+                    'description' => 'Max amount for UPI recurring payment cannot be greater than Rs. 200000.00',
                     'field' => 'max_amount'
                 ],
             ],
@@ -341,13 +341,13 @@ return [
     'testCreateOrderAmountGreaterThanMaxAmount' => [
         'request' => [
             'content' => [
-                'amount'          => 500000,
+                'amount'          => 21000000,
                 'currency'        => 'INR',
                 'method'          => 'upi',
                 'customer_id'     => 'cust_100000customer',
                 'payment_capture' => 1,
                 'token'           => [
-                    'max_amount'      => 200000,
+                    'max_amount'      => 20000000,
                     'frequency'       => 'monthly',
                     'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
                     'expire_at'       => Carbon::now()->addDay(60)->getTimestamp(),

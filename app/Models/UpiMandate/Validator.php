@@ -9,7 +9,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    const MAX_AMOUNT_LIMIT = 500000;
+    const MAX_AMOUNT_LIMIT = 20000000;
 
     const MIN_AMOUNT_LIMIT = 100;
 
@@ -78,7 +78,7 @@ class Validator extends Base\Validator
         if ($amount > self::MAX_AMOUNT_LIMIT)
         {
             throw new BadRequestValidationFailureException(
-                'Max amount for UPI recurring payment cannot be greater than Rs. 5000.00',
+                'Max amount for UPI recurring payment cannot be greater than Rs. 200000.00',
                 Entity::MAX_AMOUNT
             );
         }
