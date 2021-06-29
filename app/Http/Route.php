@@ -679,6 +679,7 @@ class Route
         'setl_replay_status_update'                => ['post',     'settlements/status_update/replay',               'SettlementController@replaySettlementsStatusUpdate'                ],
         'setl_migrate_payout'                      => ['post',     'settlements/migration/migrate_to_payout',        'SettlementController@migrateToPayout'                              ],
         'setl_transfer_status_update'              => ['post',     'settlements/transfer_status_update' ,            'SettlementController@transferStatusUpdate'                         ],
+        'setl_entity_download_file'                => ['post',     'settlements/entities/get_file',                  'SettlementController@getSettlementServiceEntityFile'               ],
 
         'adj_fetch_by_id'                          => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                       => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
@@ -4777,6 +4778,7 @@ class Route
         'setl_replay_status_update',
         'setl_migrate_payout',
         'setl_transfer_status_update',
+        'setl_entity_download_file',
 
         'get_irctc_settlement_file_admin',
         'update_late_auth_config_admin_bulk',
@@ -5043,6 +5045,7 @@ class Route
         'admin_fetch_terminal_multiple'            => Permission::VIEW_TERMINAL,
         'setl_admin_fetch'                         => Permission::VIEW_ALL_ENTITY,
         'setl_admin_fetch_multiple'                => Permission::VIEW_ALL_ENTITY,
+        'setl_entity_download_file'                => Permission::VIEW_ALL_ENTITY,
         'setl_schedule_get'                        => Permission::VIEW_ALL_ENTITY,
         'setl_schedule_get_ids'                    => Permission::VIEW_ALL_ENTITY,
         'admin_fetch_report_types'                 => Permission::VIEW_OPERATIONS_REPORT,
@@ -8474,6 +8477,7 @@ class Route
             'set_redis_keys',
             'setl_admin_fetch',
             'setl_admin_fetch_multiple',
+            'setl_entity_download_file',
             'setl_amount',
             'setl_bank_account_create',
             'setl_bank_account_delete',

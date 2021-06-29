@@ -11,6 +11,8 @@ class Dashboard extends Base
 
     const FETCH_URI                    = '/twirp/rzp.settlements.dashboard.v1.DashboardService/Fetch';
     const FETCH_MULTIPLE_URI           = '/twirp/rzp.settlements.dashboard.v1.DashboardService/FetchMultiple';
+    const FETCH_ENTITY_FILE            = '/twirp/rzp.settlements.dashboard.v1.DashboardService/DownloadEntities';
+
     const SCHEDULE_CREATE_URI          = '/twirp/rzp.settlements.schedule.v1.ScheduleService/Create';
     const SCHEDULE_GET_URI             = '/twirp/rzp.settlements.schedule.v1.ScheduleService/Get';
     const SCHEDULE_RENAME_URI          = '/twirp/rzp.settlements.schedule.v1.ScheduleService/Rename';
@@ -411,5 +413,12 @@ class Dashboard extends Base
     public function replaySettlementsStatusUpdate(array $input) : array
     {
         return $this->makeRequest(self::REPLAY_SETTLEMENTS_STATUS_UPDATE, $input, self::SERVICE_DASHBOARD);
+    }
+
+    public function getSettlementServiceEntityFile(array $input) : array
+    {
+        $input['include_deleted'] = (isset($input['include_deleted']) === true) ? ($input['include_deleted'] == '1') : false;
+
+        return $this->makeRequest(self::FETCH_ENTITY_FILE, $input, self::SERVICE_DASHBOARD);
     }
 }

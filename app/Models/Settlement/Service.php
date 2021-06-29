@@ -1084,6 +1084,11 @@ class Service extends Base\Service
         return app('settlements_dashboard')->getChannelState();
     }
 
+    public function getSettlementServiceEntityFile($input) : array
+    {
+        return app('settlements_dashboard')->getSettlementServiceEntityFile($input);
+    }
+
     public function migrateConfigurations(array $input)
     {
         if(isset($input['migrate_bank_account']) === true)
