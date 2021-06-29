@@ -311,6 +311,8 @@ class Repository extends Base\Repository
      */
     public function fetchPaymentWithForceIndex(array $params, string $merchantId = null)
     {
+        $startTimeMsForTrace = round(microtime(true) * 1000);
+
         // Process params (sanitization, validation, modification, etc.)
         $this->processFetchParams($params);
 
@@ -335,12 +337,6 @@ class Repository extends Base\Repository
                 $connection = $this->getDataWarehouseConnection();
 
                 $query = $this->newQueryWithConnection($connection);
-
-                $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_CONNECTION_TYPE,
-                    [
-                        'connection' => $connection,
-                    ]
-                );
             }
             else
             {
@@ -358,28 +354,19 @@ class Repository extends Base\Repository
                     {
                         $connection = $this->getSlaveConnection();
 
-                        $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_CONNECTION_TYPE,
-                            [
-                                'connection' => $connection,
-                                'elastic_fetch' => true,
-                            ]
-                        );
-
-                        return $this->newQueryWithConnection($connection)
+                        $result = $this->newQueryWithConnection($connection)
                             ->whereIn(Entity::ID, $paymentIdsFiltered)
                             ->where(Entity::MERCHANT_ID, $merchantId)
                             ->with($expands)
                             ->orderBy(Entity::CREATED_AT, 'desc')
                             ->get();
+
+                        $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, $connection, true);
+
+                        return $result;
                     }
 
-                    $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_CONNECTION_TYPE,
-                        [
-                            'connection' => $connection,
-                            'elastic_fetch' => true,
-                            'elastic_results' => 0,
-                        ]
-                    );
+                    $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, $connection, true);
 
                     return (new Base\PublicCollection());
                 }
@@ -393,12 +380,6 @@ class Repository extends Base\Repository
                     $connection = $this->getPaymentFetchReplicaConnection();
 
                     $query = $this->newQueryWithConnection($connection);
-
-                    $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_CONNECTION_TYPE,
-                        [
-                            'connection' => $connection,
-                        ]
-                    );
                 }
             }
         }
@@ -407,12 +388,6 @@ class Repository extends Base\Repository
             $connection = $this->getSlaveConnection();
 
             $query = $this->newQueryWithConnection($connection);
-
-            $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_CONNECTION_TYPE,
-                [
-                    'connection' => $connection,
-                ]
-            );
         }
 
         $query = $query->with($expands);
@@ -448,7 +423,11 @@ class Repository extends Base\Repository
         //
         if ($this->auth->isProxyAuth() === true)
         {
-            return $this->getPaginated($query, $params);
+            $result = $this->getPaginated($query, $params);
+
+            $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, $connection);
+
+            return $result;
         }
         try
         {
@@ -469,6 +448,8 @@ class Repository extends Base\Repository
                 'sql_error_code' => ($queryDuration > 3000) ? 1 : 0,
                 ]
             );
+
+            $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, $connection);
 
             return $entities;
         }
@@ -2682,5 +2663,18 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::ID, $ids)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
+    }
+
+    protected function traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMs, $connectionForTrace, $didUseElasticSearch = false)
+    {
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::TRACE_BEFORE_RETURN_FROM_FETCH_PAYMENTS_WITH_INDEX, [
+            'duration'          => $queryDuration,
+            'connection'        => $connectionForTrace,
+            'did_use_elastic'   => $didUseElasticSearch,
+        ]);
     }
 }
