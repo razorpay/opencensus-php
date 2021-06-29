@@ -5,10 +5,8 @@ namespace RZP\Services;
 use Requests;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Models\FileStore;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
-use Symfony\Component\HttpFoundation\File\File;
 
 class ReconService
 {
@@ -23,6 +21,10 @@ class ReconService
     const FILE_TYPE_ID = 'file_type_id';
 
     const FILE = 'file';
+
+    const ART_UFH_FILE_TYPE = 'art_input';
+
+    const ADMIN_DASHBOARD_UPLOAD = 'admin_dashboard/upload';
 
 
     public function __construct($app)
@@ -43,6 +45,8 @@ class ReconService
 
         $this->secret = $this->config['secret'];
 
+        $this->ufh = (new UfhService($app));
+
     }
 
     public function sendAnyRequest($url, $method, $data)
@@ -60,21 +64,26 @@ class ReconService
 
         $file = $input[self::FILE];
 
-        $prefix = $merchant_id . '/' . $workspace_id . '/' . $file_type_id;
+        $fileName = $file->getClientOriginalName();
 
-        $localSaveDir = $this->getLocalSaveDir($prefix);
+        $storageFileName = self::ADMIN_DASHBOARD_UPLOAD . '/' . $merchant_id . '/' . $workspace_id . '/' . $file_type_id . '/' . $fileName;
 
-        $ufh = $this->saveInputFile($file, $localSaveDir);
+       $input['file_path'] = $this->uploadFileToUfh($file, $storageFileName, self::ART_UFH_FILE_TYPE);
 
-        $filepath = $ufh->getFullFilePath();
+       unset($input[self::FILE]);
 
-        $signed_url = $ufh->getSignedUrl();
+        return $this->sendRequest('uploads', 'POST', $input);
+    }
 
-        $input['file_path'] = $filepath;
+    protected function uploadFileToUfh($file, $storageFileName, $type)
+    {
+        $response = $this->ufh->uploadFileAndGetUrl($file, $storageFileName, $type, null);
 
-        $input['signed_url'] = $signed_url;
+        $this->trace->info(
+            TraceCode::UFH_FILE_UPLOAD, $response
+        );
 
-        return $this->sendRequest('upload_file', 'post', $input);
+        return $response['relative_location'];
     }
 
     protected function sendRequest($url, $method, $data = null)
@@ -153,41 +162,6 @@ class ReconService
         if ($method === 'GET') return $data;
 
         return json_encode($data, JSON_FORCE_OBJECT);
-    }
-
-    protected function saveInputFile(File $inputFile, $localSaveDir)
-    {
-        $filename = $inputFile->getClientOriginalName();
-
-        $movedFile = $inputFile->move($localSaveDir, $filename);
-
-        $ufh = $this->saveFile($movedFile->getPathname(), 'recon_input');
-
-        return $ufh;
-    }
-
-    protected function getLocalSaveDir($prefix='') : string
-    {
-        return storage_path('files/filestore') . '/' . $prefix;
-    }
-
-    protected function saveFile(string $filePath, string $type): FileStore\Creator
-    {
-        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-
-        $name = pathinfo($filePath, PATHINFO_FILENAME);
-
-        $ufh = new FileStore\Creator;
-
-        $ufh->addBucketConfigForBatchService('recon_data_lake_bucket');
-
-        $ufh->localFilePath($filePath)
-            ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][0])
-            ->extension($ext)
-            ->name($name)
-            ->type($type);
-
-        return $ufh->save();
     }
 
 }
