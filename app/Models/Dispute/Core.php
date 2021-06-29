@@ -988,6 +988,20 @@ class Core extends Base\Core
                 'payment_id' => $paymentId,
             ]);
 
+            if ($totalRefundAmount > $payment->getAmount())
+            {
+                $this->trace->info(TraceCode::DISPUTE_REFUND_PAYMENT_PROCESS_REFUND_AMOUNT_EXCEED, [
+                    'payment_id'                 => $paymentId,
+                    'current_amount_refunded'    => 0,
+                    'total_refund_exceed_amount' => $totalRefundAmount,
+                    'total_refund_amount'        => $payment->getAmount(),
+                ]);
+
+                $totalRefundAmount = $payment->getAmount();
+
+                $totalRefundBaseAmount = $payment->getBaseAmount();
+            }
+
             $this->refundPayment($payment, $totalRefundAmount, $totalRefundBaseAmount);
         }
         else
