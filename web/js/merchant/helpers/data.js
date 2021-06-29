@@ -133,7 +133,7 @@ export const RZPFeatures = {
   QR_CODES: 'qr_codes',
 };
 
-export const UPI_AVL_LIMIT = 500000;
+export const UPI_AVL_LIMIT = 20000000;
 
 /* New Onboarding form which includes intent fields */
 export const INTENT_CREDIT_AMOUNT_OPTIONS = [

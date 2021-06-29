@@ -143,12 +143,12 @@ export default class SubscriptionsSettings extends React.Component {
                       description={
                         <>
                           Accept UPI payments on subscriptions when recurring charge is less than{' '}
-                          <b>₹ 5000</b>. Only supports Indian currency.
+                          <b>₹ 200000</b>. Only supports Indian currency.
                         </>
                       }
                       info={
                         <>
-                          UPI only supports recurring payments upto <Amount value={500000} />.
+                          UPI only supports recurring payments upto <Amount value={20000000} />.
                           Subscription of higher values will not have UPI as a payment method during
                           checkout.
                         </>
