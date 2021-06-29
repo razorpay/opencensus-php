@@ -521,6 +521,13 @@ class ViewDataSerializerHosted extends Base\Core
             $serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_CONTACT] = '';
         }
 
+        // Unsets Customer_id for all the status if FF 'skip_customer_id_checkout' is true
+        $skipCustomerIdCheckout = $this->merchant->isFeatureEnabled(Feature\Constants::SKIP_CUSTOMER_ID_CHECKOUT);
+        if ($skipCustomerIdCheckout === true)
+        {
+            $serialized[Entity::CUSTOMER_DETAILS][Entity::ID] = '';
+        }
+
         //
         // Additionally, if it's non-invoice and description is blank we fill it with first line item's description
         // else name. This is because for non-invoice, description should have been mandatory but for legacy reasons,

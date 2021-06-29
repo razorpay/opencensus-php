@@ -715,6 +715,11 @@ class Constants
      */
     const SKIP_SUBM_ONBOARDING_COMM = 'skip_subm_onboarding_comm';
 
+    /**
+     * Feature flag to skip sending customer_id to the checkout
+     */
+    const SKIP_CUSTOMER_ID_CHECKOUT = 'skip_customer_id_checkout';
+
     const LEDGER_CREDIT_LOCK        = 'ledger_credit_lock';
 
     /**
@@ -1048,6 +1053,7 @@ class Constants
         self::PAYPAL_CC                       => true,
         self::SKIP_SUBM_ONBOARDING_COMM       => true,
         self::LEDGER_CREDIT_LOCK              => true,
+        self::SKIP_CUSTOMER_ID_CHECKOUT       => true,
         self::DISPUTE_PRESENTMENT             => true,
     ];
 
@@ -1545,6 +1551,11 @@ class Constants
         self::RBL_CA_UPI => [
             'feature'       => self::RBL_CA_UPI,
             'display_name'  => 'Enable UPI mode for merchants on RBL CA',
+            'documentation' => '',
+        ],
+        self::SKIP_CUSTOMER_ID_CHECKOUT => [
+            'feature'       => self::SKIP_CUSTOMER_ID_CHECKOUT,
+            'display_name'  => 'Skip sending customer_id to checkout',
             'documentation' => '',
         ],
     ];
