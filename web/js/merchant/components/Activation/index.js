@@ -462,7 +462,7 @@ export default class ActivationWizard extends React.Component {
     if (firstInValid === null) {
       firstInValid = FORM_TABS.length - 1; // In case all are filled then set last tab(which is actually filled)
 
-      if (!isFormSubmitted && isL1Completed(this)) {
+      if ((!isFormSubmitted && isL1Completed(this)) || isLinkedAccountForm) {
         this.state.showSubmitLayer = true;
       }
     }
@@ -1071,7 +1071,8 @@ export default class ActivationWizard extends React.Component {
   submitForm = async () => {
     const businessCategories = await this.props.fetchBusinessCategory();
 
-    const data = !this.props.data.activation_form_milestone ? this.formData : {};
+    const data =
+      !this.props.data.activation_form_milestone && !this.isLinkedAccountForm ? this.formData : {};
 
     return this.props.submitForm({ data }).then((data) => {
       if (data.errors) {
@@ -1661,6 +1662,14 @@ export default class ActivationWizard extends React.Component {
     }
 
     if (
+      isLinkedAccountForm &&
+      isLastTab 
+    ) {
+      footerButtons.push(FOOTER_BUTTONS.SUBMIT_KYC_FORM);
+    }
+
+    if (
+      !isLinkedAccountForm &&
       isLastTab &&
       !isFormSubmitted &&
       user.instantActivation.isL1Submitted &&
@@ -1712,10 +1721,11 @@ export default class ActivationWizard extends React.Component {
     const moreTabs = [];
 
     if (
-      this.props.user.instantActivation.isL1Submitted &&
-      !isFormSubmitted &&
-      isDedupe(this.props.user) !== 'blocked' &&
-      userCanSubmitForm
+      this.isLinkedAccountForm ||
+      (this.props.user.instantActivation.isL1Submitted &&
+        !isFormSubmitted &&
+        isDedupe(this.props.user) !== 'blocked' &&
+        userCanSubmitForm)
     ) {
       moreTabs.push(
         <li

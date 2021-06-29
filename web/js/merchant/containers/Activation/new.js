@@ -218,7 +218,8 @@ export default class ActivationContainer extends React.Component {
         method: 'post',
         mode: 'live',
         data: {
-          activation_form_milestone: this.props.user.instantActivation.isL1Submitted ? 'L2' : 'L1',
+          activation_form_milestone:
+            this.props.user.instantActivation.isL1Submitted || this.props.accountId ? 'L2' : 'L1',
           ...data,
         },
         accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
