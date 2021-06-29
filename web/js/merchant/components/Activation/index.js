@@ -462,7 +462,7 @@ export default class ActivationWizard extends React.Component {
     if (firstInValid === null) {
       firstInValid = FORM_TABS.length - 1; // In case all are filled then set last tab(which is actually filled)
 
-      if ((!isFormSubmitted && isL1Completed(this)) || isLinkedAccountForm) {
+      if ((!isFormSubmitted && isL1Completed(this)) || this.isLinkedAccountForm) {
         this.state.showSubmitLayer = true;
       }
     }
@@ -1663,7 +1663,7 @@ export default class ActivationWizard extends React.Component {
 
     if (
       isLinkedAccountForm &&
-      isLastTab 
+      isLastTab
     ) {
       footerButtons.push(FOOTER_BUTTONS.SUBMIT_KYC_FORM);
     }
@@ -1700,7 +1700,7 @@ export default class ActivationWizard extends React.Component {
     let content, documentContent; // Document content will always be shown so that upload progress is maintained in DOM
 
     if (activeTab !== DOCUMENT_UPLOAD_STEP) {
-      content = FORM_TABS_CONTENT[activeTab].map((field, i) => {
+      content = FORM_TABS_CONTENT[activeTab] && FORM_TABS_CONTENT[activeTab].map((field, i) => {
         if (Array.isArray(field)) {
           return <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>;
         }
