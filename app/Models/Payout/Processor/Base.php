@@ -1990,9 +1990,12 @@ class Base extends BaseCore
                    /** @var Entity $payout */
                    $payout = $this->repo->payout->findOrFail($payoutId);
 
+                   $fta = $this->repo->fund_transfer_attempt->getAttemptBySourceId($payoutId, Entity::PAYOUT);
+
                    $status = $payout->getStatus();
 
                    if (($status === Status::CREATED) and
+                       (is_null($fta) === true) and
                        (is_null($payout->getTransactionId()) === false))
                    {
                        $payoutType = $this->getPayoutType();
