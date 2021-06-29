@@ -1366,12 +1366,29 @@ class Route
         'payout_links_settings_post'               => ['post',      'payout-links/{merchantId}/settings',             'PayoutLinkController@updateSettings'                               ],
         'payout_links_settings_get'                => ['get',       'payout-links/{merchantId}/settings',             'PayoutLinkController@getSettings'                                  ],
         'payout_links_send_email'                  => ['post',      'payout-links/send-email',                        'PayoutLinkController@sendEmailInternal'                                 ],
+        'payout_links_send_demo_email'             => ['post',      'payout-links/demo/send-email',                   'PayoutLinkController@sendDemoEmailInternal'                        ],
         'payout_links_merchant_settings_get'       => ['get',       'payout-links/merchant/dashboardsettings',        'PayoutLinkController@getSettings'                                  ],
         'payout_links_merchant_settings_post'      => ['post',      'payout-links/merchant/dashboardsettings',        'PayoutLinkController@updateSettings'                               ],
         'payout_links_merchant_on_boarding_status' => ['get',       'payout-links/_meta/onboarding',                  'PayoutLinkController@onBoardingStatus'                             ],
         'payout_links_merchant_summary'            => ['get',       'payout-links/_meta/summary',                     'PayoutLinkController@summary'                                      ],
         'payout_links_resend_notification'         => ['post',      'payout-links/{id}/resend',                       'PayoutLinkController@resendNotification'                           ],
         'payout_links_batch_summary'               => ['get',       'payout-links/batch/summary/{id}',                'PayoutLinkController@getBatchSummary'                              ],
+
+        'payout_links_create_demo'                 => ['post',      'demo/payout-links',                              'PayoutLinkController@createDemo'                                   ],
+        'payout_links_create_demo_cors'            => ['options',   'demo/payout-links',                              'PayoutLinkController@allowCorsFE'                                  ],
+        'payout_links_generate_end_user_otp_demo'  => ['post',      'demo/payout-links/{x_entity_id}'
+                                                                     . '/generate-customer-otp',                      'PayoutLinkController@generateAndSendCustomerOtpDemo'               ],
+        'payout_links_generate_end_user_otp_demo'
+                                          .'_cors' => ['options',   'demo/payout-links/{x_entity_id}'
+                                                                     . '/generate-customer-otp',                      'PayoutLinkController@allowCors'                                    ],
+        'payout_links_verify_customer_otp_demo'    => ['post',      'demo/payout-links/{x_entity_id}'
+                                                                     . '/verify-customer-otp',                        'PayoutLinkController@verifyCustomerOtpDemo'                        ],
+        'payout_links_verify_customer_otp_demo'
+                                          .'_cors' => ['options',   'demo/payout-links/{x_entity_id}'
+                                                                     . '/verify-customer-otp',                         'PayoutLinkController@allowCors'                                   ],
+        'payout_links_customer_hosted_page_demo'   => ['get',       'demo/payout-links/{x_entity_id}/view',            'PayoutLinkController@viewDemoHostedPage'                          ],
+        'payout_links_initiate_demo'               => ['post',      'demo/payout-links/{x_entity_id}/initiate',        'PayoutLinkController@initiateDemo'                                ],
+        'payout_links_initiate_demo_cors'          => ['options',   'demo/payout-links/{x_entity_id}/initiate',        'PayoutLinkController@allowCors'                                   ],
         'payout_cancel'                            => ['post',      'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
         'payout_cancel_internal'                   => ['post',      'payouts_internal/{id}/cancel',                   'PayoutController@cancelPayout'                                     ],
         'payout_update_status'                     => ['patch',    'payouts/{id}/status',                            'PayoutController@updateTestPayoutStatus'                           ],
@@ -3212,6 +3229,7 @@ class Route
         'payout_create_internal',
         'payout_fetch_multiple_internal',
         'payout_links_send_email',
+        'payout_links_send_demo_email',
         'payout_purpose_validate_internal',
         'commissions_invoice_generate',
         'banking_account_gateway_balance_fetch',
@@ -6220,6 +6238,17 @@ class Route
 
         // Leegality Webhook LOC
         'leegality_webhook_loc',
+
+        // Payout Links Widget App
+        'payout_links_create_demo',
+        'payout_links_create_demo_cors',
+        'payout_links_customer_hosted_page_demo',
+        'payout_links_generate_end_user_otp_demo',
+        'payout_links_generate_end_user_otp_demo_cors',
+        'payout_links_verify_customer_otp_demo',
+        'payout_links_verify_customer_otp_demo_cors',
+        'payout_links_initiate_demo',
+        'payout_links_initiate_demo_cors',
     ];
 
     /**
@@ -8934,6 +8963,7 @@ class Route
             'payout_fetch_multiple_internal',
             'merchant_fetch_internal',
             'payout_links_send_email',
+            'payout_links_send_demo_email',
             'user_fetch',
             'payout_purpose_validate_internal',
             'banking_accounts_list_internal',

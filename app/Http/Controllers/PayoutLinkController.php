@@ -301,4 +301,81 @@ class PayoutLinkController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function sendDemoEmailInternal()
+    {
+        $response = $this->app['payout-links']->sendDemoEmailInternal($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createDemo()
+    {
+        $response = $this->app['payout-links']->createDemoPayoutLink($this->input);
+
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeadersFE($response);
+
+        return $response;
+    }
+
+    public function viewDemoHostedPage($payoutLinkId)
+    {
+        $response = $this->app['payout-links']->getDemoHostedPageData($payoutLinkId);
+
+        return $response;
+    }
+
+    public function generateAndSendCustomerOtpDemo(string $payoutLinkId)
+    {
+        $response = $this->app['payout-links']->generateAndSendCustomerOtpDemo($payoutLinkId, $this->input);
+
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
+    public function verifyCustomerOtpDemo(string $payoutLinkId)
+    {
+
+        $response = $this->app['payout-links']->verifyCustomerOtpDemo($payoutLinkId, $this->input);
+
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
+    public function initiateDemo(string $payoutLinkId)
+    {
+        $response = $this->app['payout-links']->initiateDemo($payoutLinkId, $this->input);
+
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
+    public function allowCorsFE()
+    {
+        $response = ApiResponse::json([]);
+
+        $this->addCorsHeadersFE($response);
+
+        return $response;
+    }
+
+    private function addCorsHeadersFE(& $response)
+    {
+        $response->headers->set('Access-Control-Allow-Origin', $this->config['applications.payout_links.app_demo_payout_link_fe_endpoint']);
+
+        $response->headers->set('Access-Control-Allow-Credentials' , 'true');
+
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+    }
 }

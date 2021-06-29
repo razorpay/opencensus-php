@@ -3,7 +3,10 @@
 namespace RZP\Services;
 
 use Config;
-
+use Illuminate\Support\Facades\Mail;
+use RZP\Mail\PayoutLink\CustomerDemoOtpInternal;
+use RZP\Mail\PayoutLink\SendDemoLinkInternal;
+use View;
 use Requests;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -53,19 +56,24 @@ class PayoutLinks
     const SHOPIFY_UNINSTALL_PATH                   = 'twirp/payoutlinks.Payoutlinks/UninstallShopifyApp';
     const SHOPIFY_GET_ORDER_DETAILS_PATH           = 'twirp/payoutlinks.Payoutlinks/GetShopifyOrderDetails';
     const CREATE_PAYOUT_LINK_PATH                  = 'twirp/payoutlinks.Payoutlinks/CreatePayoutLink';
+    const CREATE_DEMO_PAYOUT_LINK_PATH             = 'twirp/payoutlinks.Payoutlinks/CreateDemoPayoutLink';
     const CANCEL_PAYOUT_LINK_PATH                  = 'twirp/payoutlinks.Payoutlinks/CancelPayoutLink';
     const FETCH_PAYOUT_LINK_PATH                   = 'twirp/payoutlinks.Payoutlinks/FetchPayoutLink';
     const FETCH_PAYOUT_LINK_MULTIPLE_PATH          = 'twirp/payoutlinks.Payoutlinks/FetchMultiplePayoutLinks';
     const GET_SETTINGS_PAYOUT_LINK_PATH            = 'twirp/payoutlinks.Payoutlinks/GetSettings';
     const UPDATE_SETTINGS_PAYOUT_LINK_PATH         = 'twirp/payoutlinks.Payoutlinks/UpdateSettings';
     const PAYOUT_LINK_GENERATE_OTP_PATH            = 'twirp/payoutlinks.Payoutlinks/GenerateOTP';
+    const PAYOUT_LINK_GENERATE_OTP_DEMO_PATH       = 'twirp/payoutlinks.Payoutlinks/GenerateDemoOTP';
     const RESEND_BULK_NOTIFICATION_PATH            = 'twirp/payoutlinks.Payoutlinks/ResendBulkNotification';
     const GET_INTEGRATION_DETAILS_PATH             = 'twirp/payoutlinks.Payoutlinks/GetIntegrationDetails';
     const PAYOUT_LINK_GET_FUND_ACCOUNTS_BY_CONTACT = 'twirp/payoutlinks.Payoutlinks/GetFundAccountsByContact';
     const PAYOUT_LINK_VERIFY_OTP_PATH              = 'twirp/payoutlinks.Payoutlinks/VerifyOTP';
+    const PAYOUT_LINK_VERIFY_OTP_DEMO_PATH         = 'twirp/payoutlinks.Payoutlinks/VerifyDemoOTP';
     const PAYOUT_STATUS_UPDATE                     = 'twirp/payoutlinks.Payoutlinks/UpdatePayoutLinkStatus';
     const INITIATE_PAYOUT_LINK_PATH                = 'twirp/payoutlinks.Payoutlinks/InitiatePayoutLink';
+    const INITIATE_DEMO_PAYOUT_LINK_PATH           = 'twirp/payoutlinks.Payoutlinks/InitiateDemoPayoutLink';
     const GET_HOSTED_PAGE_DATA                     = 'twirp/payoutlinks.Payoutlinks/GetHostedPageData';
+    const GET_DEMO_HOSTED_PAGE_DATA                = 'twirp/payoutlinks.Payoutlinks/GetDemoHostedPage';
     const RESEND_NOTIFICATION                      = 'twirp/payoutlinks.Payoutlinks/ResendNotification';
     const ON_BOARDING_STATUS                       = 'twirp/payoutlinks.Payoutlinks/OnboardingStatus';
     const CREATE_BATCH                             = 'twirp/payoutlinks.Payoutlinks/CreateBatchPayoutLinks';
@@ -1179,6 +1187,176 @@ class PayoutLinks
                 self::TEST_MODE_ERROR_MESSAGE
             );
         }
+    }
+
+    public function sendDemoEmailInternal($input)
+    {
+        if (key_exists('email_type', $input) === true)
+        {
+            $emailType = array_pull($input, 'email_type');
+            if($emailType === 'otp')
+            {
+                $response = $this->sendDemoOtpEmailInternal($input);
+                return $response;
+            }
+            else if($emailType === 'link')
+            {
+                $response = $this->sendDemoPayoutLinkEmailInternal($input);
+                return $response;
+            }
+            else
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_EMAIL_TYPE,
+                    null,
+                    []
+                );
+            }
+        }
+        else
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_EMAIL_TYPE,
+                null,
+                []
+            );
+        }
+    }
+
+    public function sendDemoOtpEmailInternal($input)
+    {
+        (new Validator())->validateInput(Validator::SEND_DEMO_OTP_EMAIL_INTERNAL_RULE, $input);
+
+        $customerOtpEmail = new CustomerDemoOtpInternal(
+            $input["merchantinfo"],
+            $input[Entity::OTP],
+            $input[Entity::TO_EMAIL],
+            $input[Entity::PURPOSE]
+        );
+
+        Mail::queue($customerOtpEmail);
+
+        return [Entity::SUCCESS => Entity::OK];
+    }
+
+    public function sendDemoPayoutLinkEmailInternal($input)
+    {
+        (new Validator())->validateInput(Validator::SEND_DEMO_LINK_EMAIL_INTERNAL_RULE, $input);
+
+        $sendLinkEmail = new SendDemoLinkInternal(
+            $input['payoutlinkresponse'],
+            $input['merchantinfo'],
+            $input[Entity::TO_EMAIL]
+        );
+
+        Mail::queue($sendLinkEmail);
+
+        return [Entity::SUCCESS => Entity::OK];
+    }
+
+    public function createDemoPayoutLink(array $input): array
+    {
+
+        $this->trace->info(TraceCode::PAYOUT_LINK_CREATE_REQUEST,
+            $input);
+
+        $demoplValidator = new Validator();
+
+        $demoplValidator->setStrictFalse();
+
+        $demoplValidator->validateInput(Validator::CREATE_DEMO_PAYOUT_LINK, $input);
+
+        $url = sprintf('%s/%s', $this->baseUrl, self::CREATE_DEMO_PAYOUT_LINK_PATH);
+
+        $response = $this->makeRequest($url, $input);
+
+        return $response;
+    }
+
+    public function getDemoHostedPageData(string $payoutLinkId)
+    {
+        $url = sprintf('%s/%s', $this->baseUrl, self::GET_DEMO_HOSTED_PAGE_DATA);
+
+        $request = [
+            self::PAYOUT_LINK_ID => $payoutLinkId
+        ];
+
+        $response = $this->makeRequest($url, $request);
+
+        $payoutUtr = null;
+
+        $payoutMode = null;
+
+        $payoutLinkInfo = $response['payout_link_response'];
+
+        $merchant_info = $response['merchant_info'];
+
+        $settings = $response['settings'];
+
+        $isProduction = $this->getEnvironment() === Environment::PRODUCTION;
+
+        $data = [
+            'api_host'                    => $this->config['url.api.production'],
+            'payout_link_id'              => $payoutLinkInfo['id'],
+            'payout_link_status'          => $payoutLinkInfo['status'],
+            'amount'                      => $payoutLinkInfo['amount'],
+            'currency'                    => $payoutLinkInfo['currency'],
+            'description'                 => $payoutLinkInfo['description'],
+            'user_name'                   => $payoutLinkInfo['contact_name'] ?? null,
+            'user_email'                  => mask_email($payoutLinkInfo['contact_email'] ?? null),
+            'user_phone'                  => mask_phone($payoutLinkInfo['contact_phone_number'] ?? null),
+            'receipt'                     => $payoutLinkInfo['receipt'] ?? null,
+            'merchant_logo_url'           => $merchant_info['brand_logo'],
+            'primary_color'               => $merchant_info['brand_color'],
+            'merchant_name'               => $merchant_info['billing_label'],
+            'allow_upi'                   => true,
+            'allow_amazon_pay'            => true,
+            'banking_url'                 => $this->config['applications.banking_service_url'],
+            'is_production'               => $isProduction,
+            'fund_account_details'        => json_encode(null),
+            'purpose'                     => $payoutLinkInfo['purpose'] ?? null,
+            'payout_utr'                  => null,
+            'payout_mode'                 => null,
+            'payout_links_custom_message' => $settings[Entity::CUSTOM_MESSAGE] ?? null,
+            'support_contact'             => $settings[Entity::SUPPORT_CONTACT] ?? null,
+            'support_email'               => $settings[Entity::SUPPORT_EMAIL] ?? null,
+            'support_url'                 => $settings[Entity::SUPPORT_URL] ?? null
+        ];
+
+        return View::make('payout_link.customer_hosted', $data);
+    }
+
+    public function generateAndSendCustomerOtpDemo(string $payoutLinkId, array $input): array
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_CUSTOMER_OTP_GENERATE_DEMO,
+            $input);
+
+        $url = $this->getConstructedUrl(self::PAYOUT_LINK_GENERATE_OTP_DEMO_PATH);
+
+        $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
+
+        return $this->makeRequest($url, $input);
+    }
+
+    public function verifyCustomerOtpDemo(string $payoutLinkId, array $input): array
+    {
+        $url = $this->getConstructedUrl(self::PAYOUT_LINK_VERIFY_OTP_DEMO_PATH);
+
+        $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
+
+        return $this->makeRequest($url, $input);
+    }
+
+    public function initiateDemo(string $payoutLinkId, array $input): array
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_INITIATE_REQUEST_DEMO,
+            $input);
+
+        $url = sprintf('%s/%s', $this->baseUrl, self::INITIATE_DEMO_PAYOUT_LINK_PATH);
+
+        $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
+
+        return $this->makeRequest($url, $input);
     }
 
 }

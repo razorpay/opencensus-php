@@ -2443,4 +2443,133 @@ class PayoutLinkTest extends TestCase
 
         return $plMock;
     }
+
+    public function testCreateDemoPayoutLink()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('createDemoPayoutLink')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'method' => 'POST',
+            'url'    => '/demo/payout-links',
+            'content' => []
+        ];
+
+        $response = $this->sendRequest($request);
+
+        // redirection request
+        $this->assertResponseOk($response);
+    }
+
+    public function testGetDemoHostedPageData()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('getDemoHostedPageData')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/demo/payout-links/poutlk_HQ9ddkWljqA2Q8/view',
+        ];
+
+        $response = $this->sendRequest($request);
+
+        // redirection request
+        $this->assertResponseOk($response);
+    }
+
+    public function testGenerateDemoOTP()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('generateAndSendCustomerOtpDemo')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'method' => 'POST',
+            'url'    => '/demo/payout-links/poutlk_HQ9ddkWljqA2Q8/generate-customer-otp',
+        ];
+
+        $response = $this->sendRequest($request);
+
+        // redirection request
+        $this->assertResponseOk($response);
+    }
+
+    public function testVerifyDemoOTP()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('verifyCustomerOtpDemo')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'method' => 'POST',
+            'url'    => '/demo/payout-links/poutlk_HQ9ddkWljqA2Q8/verify-customer-otp',
+        ];
+
+        $response = $this->sendRequest($request);
+
+        // redirection request
+        $this->assertResponseOk($response);
+    }
+
+    public function testInitiateDemoPayoutLink()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('initiateDemo')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'method' => 'POST',
+            'url'    => '/demo/payout-links/poutlk_HQ9ddkWljqA2Q8/initiate',
+        ];
+
+        $response = $this->sendRequest($request);
+
+        // redirection request
+        $this->assertResponseOk($response);
+    }
+
+    public function testDemoEmailInternal()
+    {
+        Mail::fake();
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('sendDemoEmailInternal')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->payoutLinksAppAuth();
+
+        $request = [
+            'method' => 'POST',
+            'url'    => '/payout-links/demo/send-email',
+        ];
+
+        $response = $this->sendRequest($request);
+
+        // redirection request
+        $this->assertResponseOk($response);
+    }
 }

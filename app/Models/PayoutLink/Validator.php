@@ -2,10 +2,13 @@
 
 namespace RZP\Models\PayoutLink;
 
+use Requests;
+use App;
 use RZP\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payout\Mode;
 use RZP\Exception\BadRequestException;
+
 
 class Validator extends Base\Validator
 {
@@ -22,6 +25,8 @@ class Validator extends Base\Validator
     const SETTINGS_RULE                    = 'settings';
     const SEND_OTP_EMAIL_INTERNAL_RULE     = 'send_otp_email_internal';
     const SEND_LINK_EMAIL_INTERNAL_RULE    = 'send_link_email_internal';
+    const SEND_DEMO_OTP_EMAIL_INTERNAL_RULE   = 'send_demo_otp_email_internal';
+    const SEND_DEMO_LINK_EMAIL_INTERNAL_RULE  = 'send_demo_link_email_internal';
     const SEND_SUCCESS_EMAIL_INTERNAL_RULE    = 'send_success_email_internal';
     const SEND_FAILURE_EMAIL_INTERNAL_RULE    = 'send_failure_email_internal';
     const MAX_IMPS_AMOUNT                  = 20000000;
@@ -30,6 +35,8 @@ class Validator extends Base\Validator
     const RESEND_NOTIFICATION_PARAMS       = 'resend_notification_params';
     const NOTIFICATION_SETTINGS            = 'notification_settings';
     const BATCH_CREATE                     = 'batch_create';
+    const CREATE_DEMO_PAYOUT_LINK            = 'create_demo_payout_link';
+    const GOOGLE_CAPTCHA_VERIFICATION_ENDPOINT = 'https://www.google.com/recaptcha/api/siteverify';
 
     protected static $batchCreateRules = [
         'type'      => 'required|string',
@@ -49,10 +56,23 @@ class Validator extends Base\Validator
         Entity::TO_EMAIL    => 'required|email',
     ];
 
+    protected static $sendDemoOtpEmailInternalRules = [
+        'merchantinfo'      => 'required|array',
+        Entity::PURPOSE     => 'required|filled|string|max:30|alpha_dash_space',
+        Entity::OTP         => 'required|string|min:4|max:6',
+        Entity::TO_EMAIL    => 'required|email',
+    ];
+
     protected static $sendLinkEmailInternalRules = [
         Entity::MERCHANT_ID => 'required|string',
         Entity::TO_EMAIL    => 'required|email',
         'payoutlinkresponse'=> 'required|array',
+    ];
+
+    protected static $sendDemoLinkEmailInternalRules = [
+        Entity::TO_EMAIL    => 'required|email',
+        'payoutlinkresponse'=> 'required|array',
+        'merchantinfo'      => 'required|array',
     ];
 
     protected static $sendSuccessEmailInternalRules = [
@@ -61,6 +81,7 @@ class Validator extends Base\Validator
         'payoutlinkresponse'=> 'required|array',
         'settings'          => 'required|array',
     ];
+
 
     protected static $sendFailureEmailInternalRules = [
         Entity::MERCHANT_ID => 'required|string',
@@ -135,6 +156,10 @@ class Validator extends Base\Validator
 
     protected static $resendNotificationValidators = [
         self::RESEND_NOTIFICATION_PARAMS
+    ];
+
+    protected static $createDemoPayoutLinkRules = [
+        'g-recaptcha-response' => 'required|custom'
     ];
 
     protected function validateResendNotificationParams(array $input)
@@ -276,5 +301,45 @@ class Validator extends Base\Validator
                                           null,
                                           $input);
         }
+    }
+
+    protected function validateGRecaptchaResponse($captchaKey, $captchaResponse)
+    {
+        /**
+         * you have to call the g-api and check if this works or not...
+         *
+         */
+
+        $app = App::getFacadeRoot();
+
+        if ($app->environment('production') === false)
+        {
+            return;
+        }
+
+        $captchaSecret = config('app.signup.nocaptcha_secret');
+
+        $input = [
+            'secret'   => $captchaSecret,
+            'response' => $captchaResponse,
+        ];
+
+        $url = self::GOOGLE_CAPTCHA_VERIFICATION_ENDPOINT;
+
+        $response = Requests::request($url, null, $input, Requests::GET, null);
+
+        $output = json_decode($response->body);
+
+        if ($output->success !== true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_CAPTCHA_FAILED,
+                null,
+                [
+                    'output_from_google'        => (array)$output
+                ]
+            );
+        }
+
     }
 }

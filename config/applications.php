@@ -765,7 +765,8 @@ return [
     'payout_links' => [
         'url'                    => env('APP_PAYOUT_LINKS_URL', 'http://localhost:8000'),
         'secret'                 => env('APP_PAYOUT_LINKS_INTERNAL_SECRET'),
-        'micro_service_endpoint' => env('PAYOUT_LINKS_MICRO_SERVICE_URL', 'http://localhost:8000')
+        'micro_service_endpoint' => env('PAYOUT_LINKS_MICRO_SERVICE_URL', 'http://localhost:8000'),
+        'app_demo_payout_link_fe_endpoint' => env('APP_DEMO_PAYOUT_LINK_FE_ENDPOINT', '')
     ],
 
     'vajra' => [
