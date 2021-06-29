@@ -262,12 +262,12 @@ class Core extends Base\Core
     public function createTpvFromXDashboard(array $input)
     {
         //create fav request
-        $fav = $this->initiatePennyTesting($input);
+        /*$fav = $this->initiatePennyTesting($input);
 
         if($fav !== null)
         {
             $input[Entity::FUND_ACCOUNT_VALIDATION_ID] = $fav->getId();
-        }
+        }*/
 
         //populate fields required for creating a tpv and status will be pending since ops has to validate.
         $input[Entity::MERCHANT_ID] = $this->merchant->getId();

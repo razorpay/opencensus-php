@@ -493,7 +493,7 @@ class BankingAccountTpvTest extends TestCase
 
         $this->assertEquals($response[Entity::CREATED_BY], $merchant['name']);
 
-        $this->assertFalse(isset($response[Entity::FUND_ACCOUNT_VALIDATION_ID]));
+        //$this->assertFalse(isset($response[Entity::FUND_ACCOUNT_VALIDATION_ID]));
 
         $tpv = $this->getDbEntity('banking_account_tpv',
                                   [
@@ -504,14 +504,14 @@ class BankingAccountTpvTest extends TestCase
 
         $this->assertNotNull($tpv);
 
-        $fav = $this->getDbEntity('fund_account_validation',
+        /*$fav = $this->getDbEntity('fund_account_validation',
                                   [
                                       'id' => $tpv->fund_account_validation_id,
                                   ]);
 
         $this->assertNotNull($fav);
 
-        $this->assertEquals('100000Razorpay', $fav->getMerchantId());
+        $this->assertEquals('100000Razorpay', $fav->getMerchantId());*/
     }
 
     public function testCreateTpvFromXDashboardWitInvalidMerchantBalanceId()
@@ -565,12 +565,12 @@ class BankingAccountTpvTest extends TestCase
 
         $this->assertNotNull($tpv);
 
-        $fav = $this->getDbEntity('fund_account_validation',
+        /*$fav = $this->getDbEntity('fund_account_validation',
                                   [
                                       'merchant_id' => '100000Razorpay',
                                   ]);
 
-        $this->assertNotNull($fav);
+        $this->assertNotNull($fav);*/
     }
 
     // Test creation of tpv with prepended zeros from admin create route
@@ -652,12 +652,12 @@ class BankingAccountTpvTest extends TestCase
 
         $this->assertNotNull($tpv);
 
-        $fav = $this->getDbEntity('fund_account_validation',
+        /*$fav = $this->getDbEntity('fund_account_validation',
                                   [
                                       'merchant_id' => '100000Razorpay',
                                   ]);
 
-        $this->assertNotNull($fav);
+        $this->assertNotNull($fav);*/
 
         // Assert that we don't get this key in the response (we don't want to show it to merchants/ops)
         $this->assertArrayNotHasKey('trimmed_payer_account_number', $response);
