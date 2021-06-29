@@ -7,10 +7,9 @@ import { sendDataToSalesForce } from 'common/utils/common-api';
 
 let bannerText;
 
+const cardId = 'june_mtu_saver_campaign';
 const cta2Text = 'T&C Apply';
-const cta2Link = getCustomURL(
-  'https://lp.razorpay.com/links/boost-june-21',
-);
+const cta2Link = getCustomURL('https://lp.razorpay.com/links/boost-june-21');
 
 function _track(source, user) {
   const mode = getMode();
@@ -21,6 +20,7 @@ function _track(source, user) {
         mode,
         banner_text: bannerText,
         source,
+        card_id: cardId,
       }),
     );
   }
@@ -33,6 +33,7 @@ function _track(source, user) {
         cta_value: cta2Text,
         link_url: cta2Link,
         source,
+        card_id: cardId,
       }),
     );
   }
@@ -48,20 +49,17 @@ export default React.memo(({ productName }) => {
 
   const track = _track(productName, user);
 
-  track.onViewBanner();
-
   let productText = '';
-  if (productName === 'payment-pages')
-    productText = 'without a website using Payment Pages';
-  else if (productName === 'payment-links')
-    productText = 'instantly with Payment Links';
+  if (productName === 'payment-pages') productText = 'without a website using Payment Pages';
+  else if (productName === 'payment-links') productText = 'instantly with Payment Links';
   else if (productName === 'payment-buttons')
     productText = 'with the click of a button through Payment Buttons';
 
   bannerText = `Start accepting payments ${productText} & win free* credits worth ₹50,000!`;
 
-  if (user.isFirstUsageMerchantsExperimentEnabled)
-    return null;
+  track.onViewBanner();
+
+  if (user.isFirstUsageMerchantsExperimentEnabled) return null;
 
   return (
     <AnnouncementBanner
@@ -69,7 +67,7 @@ export default React.memo(({ productName }) => {
       canBeClosed={true}
       theme="warning"
       bannerKey={`mtu-saver-launch-${user.current}`}
-      className='mtu-saver-banner'
+      className="mtu-saver-banner"
     >
       <span class="display-inline">{bannerText}</span> •
       <a class="btn btn-link" href={cta2Link} target="_blank" onClick={track.onClickCTA2}>

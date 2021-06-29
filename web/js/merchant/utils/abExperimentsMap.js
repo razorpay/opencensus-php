@@ -61,6 +61,6 @@ export default {
     // beta experiment ids
     'HPhSWihQaCQ2wJ',
     // prod experiment ids
-    'HPzUY3GY4C2d22',
+    'HQqeKAnGRYPO4S',
   ],
 };
