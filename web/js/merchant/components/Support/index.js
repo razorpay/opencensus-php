@@ -2,6 +2,8 @@ import { connect } from 'react-redux';
 import { Component } from 'react';
 import { trackSupportButton } from './ga';
 import { withRouter } from 'react-router-dom';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import {
   checkCallEligibility,
@@ -50,7 +52,19 @@ export default class Support extends Component {
   componentDidMount() {
     this.props.checkCallEligibility();
     if (this.props.user.isScheduleCallbackEnabled) {
-      this.props.checkScheduleCallConfig();
+      this.props.checkScheduleCallConfig().then(response => {
+        if (response.is_eligible) {
+          analyticsTrack({
+            objectName: 'request a call',
+            actionName: 'viewed',
+            screen: 'home page',
+            properties: {
+              message: response.reason,
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+        }
+      });
     }
     this.bindEvents();
     merchantFetch({

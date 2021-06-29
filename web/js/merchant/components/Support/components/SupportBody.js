@@ -253,9 +253,8 @@ class SupportBody extends Component {
             additionalCondition={(user) => !user.isNewGrievanceFlowEnabled}
           >
             <li
-              class={`support-item p-all ticket ${
-                !this.props.supportFlags.loaded ? 'disabled' : ''
-              }`}
+              class={`support-item p-all ticket ${!this.props.supportFlags.loaded ? 'disabled' : ''
+                }`}
               onClick={() => {
                 analyticsTrack({
                   objectName: 'help and support',
@@ -279,9 +278,8 @@ class SupportBody extends Component {
             additionalCondition={(user) => user.isNewGrievanceFlowEnabled}
           >
             <li
-              class={`support-item p-all ticket ${
-                !this.props.supportFlags.loaded ? 'disabled' : ''
-              }`}
+              class={`support-item p-all ticket ${!this.props.supportFlags.loaded ? 'disabled' : ''
+                }`}
               onClick={() => handleClick('tickets')}
             >
               Have a query?
@@ -299,10 +297,19 @@ class SupportBody extends Component {
             }
           >
             <li
-              class={`support-item p-all callback ${
-                !scheduleCallConfig.is_eligible ? 'disabled' : ''
-              }`}
-              onClick={() => handleClick('schedule-call')}
+              class={`support-item p-all callback ${!scheduleCallConfig.is_eligible ? 'disabled' : ''
+                }`}
+              onClick={() => {
+                analyticsTrack({
+                  objectName: 'request a call',
+                  actionName: 'clicked',
+                  screen: 'home page',
+                  properties: {
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+                handleClick('schedule-call');
+              }}
             >
               <span>Request a call</span>
               <small class="help-block">{scheduleCallbackReason}</small>
@@ -333,9 +340,8 @@ class SupportBody extends Component {
               window.rzp_user.activation_status,
             ) > -1 && this.props.supportFlags.show_chat ? (
               <li
-                class={`support-item p-all chat ${
-                  !this.props.supportFlags.show_chat && notifyCount < 1 ? 'disabled' : ''
-                }`}
+                class={`support-item p-all chat ${!this.props.supportFlags.show_chat && notifyCount < 1 ? 'disabled' : ''
+                  }`}
                 onClick={() => {
                   analyticsTrack({
                     objectName: 'help and support',
