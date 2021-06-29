@@ -170,6 +170,14 @@ class Processor
     const CACHE_KEY = 'fallback_%s_card_details';
 
     /**
+     * Delayed adding to capture queue, assuming most
+     * of the merchant captures will be initiated and processed within 15 mins post authorization.
+     * Initiating capture via queue after 15mins so that it doesn't interfere with merchant capture.
+     */
+
+    const CAPTURE_QUEUE_DELAY = 900; // In seconds
+
+    /**
      * Core payment service feature flag
      */
     const CPS_FEATURE_FLAG_PREFIX               = 'cps_gateway_routing';
@@ -2467,13 +2475,34 @@ class Processor
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)
     {
+        $gatewayCaptureStartTime = microtime(true);
+
         $this->payment = $payment;
 
-        $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+        $this->mutex->acquireAndRelease(
+            $this->payment->getId(),
+            function() use ($data, $gatewayCaptureStartTime)
+            {
+                $this->trace->info(TraceCode::CAPTURE_QUEUE_PAYMENT_ID_MUTEX_TIME_TAKEN,
+                    [
+                        'mutex_time_taken' => (microtime(true) - $gatewayCaptureStartTime) * 1000
+                    ]
+                );
 
-        $payment->setGatewayCaptured(true);
+                $this->repo->reload($this->payment);
 
-        $this->repo->saveOrFail($payment);
+                // return if payment is already gateway captured
+                if($this->payment->isGatewayCaptured() === true)
+                {
+                    return;
+                }
+
+                $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+
+                $this->payment->setGatewayCaptured(true);
+
+                $this->repo->saveOrFail($this->payment);
+            }, 20);
     }
 
     protected function tracePaymentInfo($traceCode, $level = Trace::INFO)

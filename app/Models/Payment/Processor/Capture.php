@@ -699,7 +699,8 @@ trait Capture
         // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
         // previous capture request.
         //
-        CaptureJob::dispatch($data);
+        CaptureJob::dispatch($data)->delay(self::CAPTURE_QUEUE_DELAY);
+        //CaptureJob::dispatch($data);
     }
 
     /**
