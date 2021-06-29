@@ -2088,7 +2088,6 @@ class Base extends BaseCore
                         Entity::STATUS          => $payout->getStatus(),
                         Entity::ERROR           => $payout->getFailureReason(),
                         Entity::FEE_TYPE        => $payout->getFeeType(),
-                        Entity::PURPOSE_TYPE    => $payout->getPurposeType(),
                         Entity::PRICING_RULE_ID => $payout->getPricingRuleId()
                     ];
 
