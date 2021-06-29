@@ -219,7 +219,8 @@ export default class ActivationContainer extends React.Component {
         mode: 'live',
         data: {
           activation_form_milestone:
-            this.props.user.instantActivation.isL1Submitted || this.props.accountId ? 'L2' : 'L1',
+            this.props.user.instantActivation.isL1Submitted || this.props.accountId ||
+              this.props.user.activation_form_milestone === 'L2' ? 'L2' : 'L1',
           ...data,
         },
         accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
@@ -553,7 +554,7 @@ export default class ActivationContainer extends React.Component {
         ...data,
         business_category: data.business_category || (data.business_model ? 'others' : null),
       };
-      
+
       content = (
         <ActivationWizard
           accountId={this.props.accountId}
