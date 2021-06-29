@@ -13,6 +13,7 @@ use RZP\Models\PayoutSource;
 class PayoutsClient extends Core
 {
     const BANK_TRANSFER_TO_PAYOUT_MODE_MAPPING = [
+        Mode::UPI  => Payout\Mode::NEFT,
         Mode::IMPS => Payout\Mode::NEFT,
         Mode::FT   => Payout\Mode::NEFT,
         Mode::IFT  => Payout\Mode::NEFT,
