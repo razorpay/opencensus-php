@@ -480,6 +480,18 @@ final class Constants
         ],
     ];
 
+    const CA_STATUS_MAP = [
+        'created'       => 'Request received',
+        'picked'        => 'Process started',
+        'initiated'     => 'BANK KYC in progress',
+        'cancelled'     => 'Request Cancelled',
+        'unserviceable' => 'Unserviceable',
+        'rejected'      => 'Request Rejected',
+        'activated'     => 'Active',
+        'archived'      => 'On hold',
+        'processed'     => 'Activation In Progress'
+    ];
+
 }
 
 

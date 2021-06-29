@@ -4733,17 +4733,27 @@ class Core extends Base\Core
         $bankingAccounts = $this->repo->banking_account->fetchMerchantBankingAccounts($merchantId);
 
         $va = current(array_filter($bankingAccounts, function($account) {
-            return $account[\RZP\Models\BankingAccount\Entity::ACCOUNT_TYPE] === 'nodal';
+            return $account[BankingAccount\Entity::ACCOUNT_TYPE] === 'nodal';
         }));
 
         $ca = current(array_filter($bankingAccounts, function ($account) {
-            return $account[\RZP\Models\BankingAccount\Entity::ACCOUNT_TYPE] === 'current';
+            return $account[BankingAccount\Entity::ACCOUNT_TYPE] === 'current';
         }));
 
-        $va_status = $va[\RZP\Models\BankingAccount\Entity::STATUS];
-        $ca_status = $ca[\RZP\Models\BankingAccount\Entity::STATUS];;
+        $va_status = $va[BankingAccount\Entity::STATUS];
+        $ca_status = $this->transformCaStatus($ca[BankingAccount\Entity::STATUS]);
 
         return array($va_status, $ca_status);
+    }
+
+    private function transformCaStatus($status)
+    {
+        if($status != null && array_key_exists($status, Constants::CA_STATUS_MAP))
+        {
+            return Constants::CA_STATUS_MAP[$status];
+        }
+
+        return $status;
     }
 
     public function isCurrentAccountActivated(Entity $merchant): bool

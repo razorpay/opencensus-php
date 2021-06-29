@@ -1577,7 +1577,7 @@ return [
                         'dashboard_access' => false,
                         'banking_account' => [
                             'va_status' => null,
-                            'ca_status' =>  'created',
+                            'ca_status' =>  'Request received',
                         ]
                     ]
                 ],
