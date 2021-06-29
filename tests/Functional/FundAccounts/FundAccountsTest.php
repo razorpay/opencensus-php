@@ -1674,4 +1674,289 @@ class FundAccountsTest extends TestCase
 
          $this->assertEquals($fundAccountsBeforeDuplicateCreateRequest, $fundAccountsAfterDuplicateCreateRequest);
      }
+
+    // 'merchant_disabled' field should be sent in the response for Fund Account GET requests
+    // received from dashboard.
+    // This test case checks the case where it should be set to true for amazonpay FA (merchant disabled on amazonpay)
+    // and false for FA of type bank_account
+    public function testFetchFundAccountsDashboardRequestMerchantDisabledForAmazonPay()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $fundAccountRequest1 = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ]
+        ];
+
+        $fundAccountRequest2 = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                'account_type' => 'wallet',
+                'contact_id'   => 'cont_1000000contact',
+                'wallet'       => [
+                    'phone'         => '+918124632237',
+                    'provider'      => 'amazonpay',
+                    'email'         => 'test@gmail.com',
+                ],
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($fundAccountRequest1);
+
+        $fundAccount1 = $this->getDbLastEntity('fund_account');
+
+        $this->makeRequestAndGetContent($fundAccountRequest2);
+
+        $fundAccount2 = $this->getDbLastEntity('fund_account');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/fund_accounts?contact_id=cont_1000000contact';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        // Disabling amazonpay for the merchant
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::DISABLE_X_AMAZONPAY,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $response = $this->startTest();
+
+        // Assert that there are 2 fund accounts for this contact.
+        $this->assertEquals(2, count($response['items']));
+
+        // Assert that the response has only those FA that we created above.
+        $this->assertTrue(empty(array_diff(['fa_' . $fundAccount1->getId(), 'fa_' . $fundAccount2->getId()],
+            [$response['items'][0]['id'], $response['items'][1]['id']])));
+
+        // Assert if merchant_disabled is set to true for wallet account
+        $this->assertEquals("wallet", $response['items'][0]['account_type']);
+        $this->assertEquals(true, $response['items'][0]['merchant_disabled']);
+
+        // Assert if merchant_disabled is set to false for bank account
+        $this->assertEquals("bank_account", $response['items'][1]['account_type']);
+        $this->assertEquals(false, $response['items'][1]['merchant_disabled']);
+    }
+
+    // 'merchant_disabled' field should be sent in the response for Fund Account GET requests
+    // received from dashboard.
+    // This test case checks the case where it should be set to false for amazonpay FA (merchant enabled on amazonpay)
+    // and false for FA of type bank_account too
+    public function testFetchFundAccountsDashboardRequestMerchantEnabledForAmazonPay()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $fundAccountRequest1 = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ]
+        ];
+
+        $fundAccountRequest2 = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                'account_type' => 'wallet',
+                'contact_id'   => 'cont_1000000contact',
+                'wallet'       => [
+                    'phone'         => '+918124632237',
+                    'provider'      => 'amazonpay',
+                    'email'         => 'test@gmail.com',
+                ],
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($fundAccountRequest1);
+
+        $fundAccount1 = $this->getDbLastEntity('fund_account');
+
+        $this->makeRequestAndGetContent($fundAccountRequest2);
+
+        $fundAccount2 = $this->getDbLastEntity('fund_account');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/fund_accounts?contact_id=cont_1000000contact';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        // Assert that there are 2 fund accounts for this contact.
+        $this->assertEquals(2, count($response['items']));
+
+        // Assert that the response has only those FA that we created above.
+        $this->assertTrue(empty(array_diff(['fa_' . $fundAccount1->getId(), 'fa_' . $fundAccount2->getId()],
+            [$response['items'][0]['id'], $response['items'][1]['id']])));
+
+        // Assert if merchant_disabled is set to false for wallet account
+        $this->assertEquals("wallet", $response['items'][0]['account_type']);
+        $this->assertEquals(false, $response['items'][0]['merchant_disabled']);
+
+        // Assert if merchant_disabled is set to false for bank account
+        $this->assertEquals("bank_account", $response['items'][1]['account_type']);
+        $this->assertEquals(false, $response['items'][1]['merchant_disabled']);
+    }
+
+    // fund account GET responses for api requests should not contain
+    // 'merchant_disabled' field
+    public function testFetchFundAccountsApiRequestNoMerchantDisabledField()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $fundAccountRequest1 = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ]
+        ];
+
+        $fundAccountRequest2 = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                'account_type' => 'wallet',
+                'contact_id'   => 'cont_1000000contact',
+                'wallet'       => [
+                    'phone'         => '+918124632237',
+                    'provider'      => 'amazonpay',
+                    'email'         => 'test@gmail.com',
+                ],
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($fundAccountRequest1);
+
+        $fundAccount1 = $this->getDbLastEntity('fund_account');
+
+        $this->makeRequestAndGetContent($fundAccountRequest2);
+
+        $fundAccount2 = $this->getDbLastEntity('fund_account');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/fund_accounts?contact_id=cont_1000000contact';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        // Assert that there are 2 fund accounts for this contact.
+        $this->assertEquals(2, count($response['items']));
+
+        // Assert that the response has only those FA that we created above.
+        $this->assertTrue(empty(array_diff(['fa_' . $fundAccount1->getId(), 'fa_' . $fundAccount2->getId()],
+            [$response['items'][0]['id'], $response['items'][1]['id']])));
+
+        // Assert if merchant_disabled is not set for wallet account
+        $this->assertEquals("wallet", $response['items'][0]['account_type']);
+        $this->assertArrayNotHasKey('merchant_disabled', $response['items'][0]);
+
+        // Assert if merchant_disabled is not set for bank account
+        $this->assertEquals("bank_account", $response['items'][1]['account_type']);
+        $this->assertArrayNotHasKey('merchant_disabled', $response['items'][1]);
+    }
+
+    // Tests the case where wallet fund account create request is received from
+    // dashboard. The response should have 'merchant_disabled' field set to false
+    // as merchant should be enabled to create fund account
+    public function testCreateFundAccountWalletDashboardRequestMerchantDisabledField()
+    {
+        Queue::fake();
+
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $response = $this->startTest();
+
+        // Assert that response has merchant_disabled field and set
+        // to false (as FA creation is only possible when merchant is enabled)
+        $this->assertArrayHasKey('merchant_disabled', $response);
+        $this->assertEquals(false, $response['merchant_disabled']);
+    }
+
+    // Tests the case where bank account create request is received from
+    // dashboard. The response should have 'merchant_disabled' field set to false as
+    // merchant should be enabled to create fund account
+    public function testCreateFundAccountBankAccountDashboardRequestMerchantDisabledField()
+    {
+        Queue::fake();
+
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $response = $this->startTest();
+
+        // Assert that response has merchant_disabled field and set
+        // to false (as FA creation is only possible when merchant is enabled)
+        $this->assertArrayHasKey('merchant_disabled', $response);
+        $this->assertEquals(false, $response['merchant_disabled']);
+    }
+
+    // Tests the case where wallet fund account create request is received from
+    // api. The response shouldn't have merchant_disabled field
+    public function testCreateFundAccountWalletApiRequestNoMerchantDisabledField()
+    {
+        Queue::fake();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $response = $this->startTest();
+
+        // Assert that merchant_disabled field is not set in the response
+        $this->assertArrayNotHasKey('merchant_disabled', $response);
+    }
+
+    // Tests the case where bank account create request is received from
+    // api. The response shouldn't have merchant_disabled field
+    public function testCreateFundAccountBankAccountApiRequestNoMerchantDisabledField()
+    {
+        Queue::fake();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $response = $this->startTest();
+
+        // Assert that merchant_disabled field is not set in the response
+        $this->assertArrayNotHasKey('merchant_disabled', $response);
+    }
 }

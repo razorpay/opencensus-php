@@ -499,7 +499,7 @@ return [
                 'contact_id'    => 'cont_1000000contact',
                 'wallet'  => [
                     'provider' => 'amazonpay',
-                    'phone'    => null,
+                    'phone'    => '+919999999999',
                     'email'    => 'test@gmail.com',
                     'name'     => 'test',
                 ],
@@ -3426,6 +3426,237 @@ return [
                 ],
             ],
             'status_code' => 200
+        ],
+    ],
+
+    'testFetchFundAccountsDashboardRequestMerchantDisabledForAmazonPay' => [
+        'request'  => [
+            'url'    => '/fund_accounts',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'entity'            => 'fund_account',
+                        'active'            => true,
+                        'account_type'      => 'wallet',
+                        'merchant_disabled' => true,
+                        'wallet'            => [
+                            'provider' => 'amazonpay',
+                            'phone'    => '+918124632237',
+                            'email'    => 'test@gmail.com',
+                        ],
+                    ],
+                    [
+                        'entity'            => 'fund_account',
+                        'active'            => true,
+                        'account_type'      => 'bank_account',
+                        'merchant_disabled' => false,
+                        'bank_account'      => [
+                            'ifsc'           => 'SBIN0007105',
+                            'name'           => 'Amit M',
+                            'account_number' => '111000111',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchFundAccountsDashboardRequestMerchantEnabledForAmazonPay' => [
+        'request'  => [
+            'url'    => '/fund_accounts',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'entity'            => 'fund_account',
+                        'active'            => true,
+                        'account_type'      => 'wallet',
+                        'merchant_disabled' => false,
+                        'wallet'            => [
+                            'provider' => 'amazonpay',
+                            'phone'    => '+918124632237',
+                            'email'    => 'test@gmail.com',
+                        ],
+                    ],
+                    [
+                        'entity'            => 'fund_account',
+                        'active'            => true,
+                        'account_type'      => 'bank_account',
+                        'merchant_disabled' => false,
+                        'bank_account'      => [
+                            'ifsc'           => 'SBIN0007105',
+                            'name'           => 'Amit M',
+                            'account_number' => '111000111',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchFundAccountsApiRequestNoMerchantDisabledField' => [
+        'request'  => [
+            'url'    => '/fund_accounts',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'entity'            => 'fund_account',
+                        'active'            => true,
+                        'account_type'      => 'wallet',
+                        'wallet'            => [
+                            'provider' => 'amazonpay',
+                            'phone'    => '+918124632237',
+                            'email'    => 'test@gmail.com',
+                        ],
+                    ],
+                    [
+                        'entity'            => 'fund_account',
+                        'active'            => true,
+                        'account_type'      => 'bank_account',
+                        'bank_account'      => [
+                            'ifsc'           => 'SBIN0007105',
+                            'name'           => 'Amit M',
+                            'account_number' => '111000111',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateFundAccountWalletDashboardRequestMerchantDisabledField' => [
+        'request'  => [
+            'content' => [
+                'account_type'  => 'wallet',
+                'contact_id'    => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '+918124632237',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'            => 'fund_account',
+                'account_type'      => 'wallet',
+                'contact_id'        => 'cont_1000000contact',
+                'merchant_disabled' => false,
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '+918124632237',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateFundAccountBankAccountDashboardRequestMerchantDisabledField' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'            => 'fund_account',
+                'account_type'      => 'bank_account',
+                'contact_id'        => 'cont_1000000contact',
+                'merchant_disabled' => false,
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateFundAccountWalletApiRequestNoMerchantDisabledField' => [
+        'request'  => [
+            'content' => [
+                'account_type'  => 'wallet',
+                'contact_id'    => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '+918124632237',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'            => 'fund_account',
+                'account_type'      => 'wallet',
+                'contact_id'        => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '+918124632237',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateFundAccountBankAccountApiRequestNoMerchantDisabledField' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'            => 'fund_account',
+                'account_type'      => 'bank_account',
+                'contact_id'        => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 201
         ],
     ],
 ];

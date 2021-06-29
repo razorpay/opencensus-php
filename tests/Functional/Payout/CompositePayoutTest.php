@@ -766,4 +766,32 @@ class CompositePayoutTest extends TestCase
         $this->assertEquals($response['fund_account_id'], $response['fund_account']['id']);
         $this->assertEquals($response['fund_account']['contact_id'], $response['fund_account']['contact']['id']);
     }
+
+    // Fund accounts received in composite wallet payout response shouldn't have
+    // merchant_disabled field
+    public function testCreateCompositePayoutForWalletApiRequestNoMerchantDisabledField()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        // Assert that the response doesn't have 'merchant_disabled' field
+        $this->assertArrayNotHasKey('merchant_disabled', $response['fund_account']);
+    }
+
+    // Fund accounts received in composite wallet payout response shouldn't have
+    // merchant_disabled field
+    public function testCreateCompositePayoutForBankAccountApiRequestNoMerchantDisabledField()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        // Assert that the response doesn't have 'merchant_disabled' field
+        $this->assertArrayNotHasKey('merchant_disabled', $response['fund_account']);
+    }
 }

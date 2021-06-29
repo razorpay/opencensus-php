@@ -110,7 +110,7 @@ class BatchHelper
     {
         switch ($payoutMode)
         {
-            case PayoutMode::AMAZONPAY:
+            case WalletAccount\Provider::AMAZONPAY_PROVIDER:
                 return PayoutMode::AMAZONPAY;
 
             default:

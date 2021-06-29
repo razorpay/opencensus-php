@@ -936,22 +936,23 @@ class Core extends Base\Core
 
     public function constructWalletAccountFundAccountRequest(array $input)
     {
-        $isMerchantDisabledForAmazonPay = (new WalletAccount\Service)->isWalletAccountAmazonPayFeatureDisabled();
+        (new WalletAccountValidator)->setStrictFalse()
+                        ->validateInput(WalletAccountValidator::BEFORE_CREATE_FUND_ACCOUNT_WALLET_ACCOUNT, $input[Entity::WALLET]);
 
-        if ($isMerchantDisabledForAmazonPay === false)
+        $inputWalletProvider = $input[Entity::WALLET][WalletAccount\Entity::PROVIDER];
+        $isMerchantDisabledForWalletProvider = $this->checkMerchantDisabledForWalletProvider($inputWalletProvider);
+
+        if ($isMerchantDisabledForWalletProvider === false)
         {
-                $input[Entity::ACCOUNT_TYPE] = Entity::WALLET_ACCOUNT;
+            $input[Entity::ACCOUNT_TYPE] = Entity::WALLET_ACCOUNT;
 
-                $input[Entity::WALLET_ACCOUNT] = array_pull($input, Entity::WALLET);
+            $input[Entity::WALLET_ACCOUNT] = array_pull($input, Entity::WALLET);
 
-                (new WalletAccountValidator)->setStrictFalse()
-                                ->validateInput(WalletAccountValidator::BEFORE_CREATE_FUND_ACCOUNT_WALLET_ACCOUNT, $input[Entity::WALLET_ACCOUNT]);
+            $input[Entity::WALLET_ACCOUNT][WalletAccount\Entity::PHONE] = $this->reformatPhoneNo($input[Entity::WALLET_ACCOUNT][WalletAccount\Entity::PHONE]);
 
-                $input[Entity::WALLET_ACCOUNT][WalletAccount\Entity::PHONE] = $this->reformatPhoneNo($input[Entity::WALLET_ACCOUNT][WalletAccount\Entity::PHONE]);
+            unset($input[Entity::WALLET]);
 
-                unset($input[Entity::WALLET]);
-
-                return $input;
+            return $input;
         }
         else
         {
@@ -961,21 +962,6 @@ class Core extends Base\Core
                 'input' => $input,
             ]);
         }
-    }
-
-    public function isMerchantEnabledForAmazonPay(Merchant\Entity $merchant)
-    {
-        $variant = $this->app['razorx']->getTreatment($merchant->getId(),
-            Merchant\RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT,
-            Mode::LIVE
-        );
-
-        if($variant === 'on')
-        {
-            return true;
-        }
-
-        return false;
     }
 
     public function reformatPhoneNo(string $phone)
@@ -988,5 +974,21 @@ class Core extends Base\Core
             $number      = $phoneNumber->getNationalNumber();
 
         return $code . strval($number);
+    }
+
+    public function checkMerchantDisabledForWalletProvider(string $walletProvider) : bool
+    {
+        switch ($walletProvider)
+        {
+            case WalletAccount\Provider::AMAZONPAY_PROVIDER:
+                if ((new WalletAccount\Service)->isWalletAccountAmazonPayFeatureDisabled() === true)
+                {
+                    return true;
+                }
+                return false;
+
+            default:
+                return false;
+        }
     }
 }

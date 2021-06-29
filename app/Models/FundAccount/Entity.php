@@ -58,6 +58,13 @@ class Entity extends Base\PublicEntity
     // when account type is wallet
     const WALLET        = 'wallet';
 
+    // merchant_disabled flag is publicly exposed only for merchant dashboard
+    // requests to indicate the merchant status on FE by providing info if
+    // merchant has been blocked for the product associated with the fund account
+    const MERCHANT_DISABLED = 'merchant_disabled';
+
+    const PROVIDER = 'provider';
+
     const WALLET_ACCOUNT = 'wallet_account';
 
     const IDEMPOTENCY_KEY = 'idempotency_key';
@@ -102,6 +109,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER,
         self::ACCOUNT_TYPE,
         self::DETAILS,
+        self::MERCHANT_DISABLED,
         self::BANK_ACCOUNT,
         self::CARD,
         self::BATCH_ID,
@@ -123,6 +131,7 @@ class Entity extends Base\PublicEntity
         self::DETAILS,
         self::WALLET,
         self::ACCOUNT_TYPE,
+        self::MERCHANT_DISABLED,
     ];
 
     protected $publicAuth = [
@@ -353,7 +362,7 @@ class Entity extends Base\PublicEntity
     {
         if (array_get($array, self::ACCOUNT_TYPE) === self::WALLET_ACCOUNT)
         {
-            $array[self::ACCOUNT_TYPE] = self::WALLET;  
+            $array[self::ACCOUNT_TYPE] = self::WALLET;
         }
     }
 
@@ -362,6 +371,35 @@ class Entity extends Base\PublicEntity
         $batchId = $this->getAttribute(self::BATCH_ID);
 
         $attributes[self::BATCH_ID] = Batch\Entity::getSignedIdOrNull($batchId);
+    }
+
+    public function setPublicMerchantDisabledAttribute(array & $attributes)
+    {
+        $accountType = array_get($attributes, self::ACCOUNT_TYPE);
+
+        // 'merchant_disabled' field is sent in the response
+        // only for dashboard requests
+        if (app('basicauth')->isProxyAuth() === true)
+        {
+            switch ($accountType)
+            {
+                case self::WALLET_ACCOUNT:
+                    // fallthrough to 'wallet' for handling cases where account_type
+                    // is either 'wallet' or 'wallet_account' depending on the order of
+                    // execution of setPublic functions
+                case self::WALLET:
+                    $accountAttributes = $this->getAccountDetails(self::WALLET_ACCOUNT);
+                    $isMerchantDisabled = (new Core)->checkMerchantDisabledForWalletProvider($accountAttributes[self::PROVIDER]);
+
+                    $attributes[self::MERCHANT_DISABLED] = $isMerchantDisabled;
+                    break;
+
+                default:
+                    // Currently setting it to false for fund_accounts of type
+                    // bank_account, vpa and card
+                    $attributes[self::MERCHANT_DISABLED] = false;
+            }
+        }
     }
 
     public function setBatchId(string $batchId)
