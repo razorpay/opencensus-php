@@ -264,12 +264,6 @@ export default class OndemandModal extends Component {
           this.props.fetchOndemandRestrictions();
         })
         .catch((response) => {
-          if (response.errors) {
-            onDemandModalTrackEvents.trackSettleNowAmountError(
-              this.props.fromWhere,
-              response.errors[0],
-            );
-          }
           this.setState({
             errors: response.errors,
             validAmount: false,
@@ -436,10 +430,6 @@ export default class OndemandModal extends Component {
   validateAmount = (val) => {
     if (isInteger(val) && val > 0) {
       if (val <= 1) {
-        onDemandModalTrackEvents.trackSettleNowAmountError(
-          this.props.fromWhere,
-          'Minimum Amount should be greater than Rs. 1.00',
-        );
         this.setState({
           errors: [
             <>

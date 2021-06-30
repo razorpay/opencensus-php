@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import Amount from 'common/ui/Amount';
 import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
-import { trackOnDemandPayoutDetailsBreakup } from '../../trackEvents';
 
 const processSummaryList = (instantSettlement) => {
   const reversedTxnCount = instantSettlement.ondemand_payouts.items.reduce((count, item) => {
@@ -71,10 +70,6 @@ SummaryListItem.propTypes = {
 
 const BreakupList = ({ instantSettlement }) => {
   const items = processSummaryList(instantSettlement);
-
-  useEffect(() => {
-    trackOnDemandPayoutDetailsBreakup(instantSettlement);
-  }, []);
 
   return (
     <div className="table-responsive">

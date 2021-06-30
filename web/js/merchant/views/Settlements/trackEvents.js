@@ -1,7 +1,7 @@
 import moment from 'moment';
-import analyticsService from 'common/utils/analyticsService';
 import { getFixedINRAmount } from 'common/utils/rzp-utils';
 import store from '../../../merchant/store';
+import { analyticsTrack } from '../../../common/utils/analytics';
 
 const dateFormat = 'DD MMM YYYY, hh:mm:ss a';
 
@@ -10,20 +10,23 @@ const trackEvent = (obj) => {
     session: { user },
   } = store.getState();
 
-  analyticsService.track({
-    ...obj,
-    properties: {
-      ...obj.properties,
-      flags: {
+  try {
+    analyticsTrack({
+      ...obj,
+      properties: {
+        ...obj.properties,
         es_on_demand: user.isFeatureEnabled('es_on_demand'),
         es_on_demand_restricted: user.isFeatureEnabled('es_on_demand_restricted'),
         es_automatic: user.isFeatureEnabled('es_automatic'),
       },
-    },
-  });
+      toLumberjack: true,
+    });
+  } catch (e) {
+    // handle error
+  }
 };
 
-const trackEnableNowEvent = (fromWhere, actionName, behaviour) => {
+const trackEnableNowEvent = ({ fromWhere, objectName, actionName, behaviour }) => {
   let screen, location;
 
   switch (fromWhere) {
@@ -47,7 +50,7 @@ const trackEnableNowEvent = (fromWhere, actionName, behaviour) => {
   }
 
   trackEvent({
-    objectName: 'ScheduledES',
+    objectName,
     actionName,
     screen,
     properties: {
@@ -57,7 +60,7 @@ const trackEnableNowEvent = (fromWhere, actionName, behaviour) => {
   });
 };
 
-const trackSettleNowEvent = (fromWhere, actionName, stage, additionalProperties) => {
+const trackSettleNowEvent = ({ fromWhere, objectName, actionName, additionalProperties }) => {
   let screen, properties;
 
   switch (fromWhere) {
@@ -77,8 +80,8 @@ const trackSettleNowEvent = (fromWhere, actionName, stage, additionalProperties)
     }
 
     case 'Empty State': {
+      actionName = 'Settle Now Empty State';
       screen = 'Ondemand Settlements Tab';
-      stage = null;
       properties = {
         location: 'Empty State',
       };
@@ -90,93 +93,149 @@ const trackSettleNowEvent = (fromWhere, actionName, stage, additionalProperties)
   }
 
   trackEvent({
-    objectName: 'OndemandES',
+    objectName,
     actionName,
     screen,
     properties: {
-      stage,
       ...additionalProperties,
       ...properties,
     },
   });
 };
 
-const trackOnDemandEsEvent = (actionName, additionalProperties) => {
-  trackEvent({
-    objectName: 'OndemandES',
-    actionName,
-    screen: 'Ondemand Settlements Tab',
-    properties: {
-      ...additionalProperties,
-    },
-  });
-};
-
-const trackPayoutDetailsEvent = (actionName, additionalProperties) => {
-  trackEvent({
-    objectName: 'OndemandES>2L',
-    actionName,
-    screen: 'Payout Details',
-    properties: {
-      ...additionalProperties,
-    },
-  });
-};
-
-export const trackEnableNow = (fromWhere) => trackEnableNowEvent(fromWhere, 'ClickedEnableNow');
+export const trackEnableNow = (fromWhere) =>
+  trackEnableNowEvent({ fromWhere, objectName: 'Scheduled ES Enable Now', actionName: 'Clicked' });
 
 export const trackConfirmEnableNow = (fromWhere) =>
-  trackEnableNowEvent(fromWhere, 'ClickedEnableES', 'Confirm Enable ES');
-
-export const trackEnableNowClose = (fromWhere) =>
-  trackEnableNowEvent(fromWhere, 'ClickedClose', 'Cancel Enable ES modal');
-
-export const trackSettleNowClicked = (fromWhere) =>
-  trackSettleNowEvent(fromWhere, 'ClickedSettleNow', 'Settlement Initiated');
-
-export const trackSettleNowInfoHover = (fromWhere) =>
-  trackSettleNowEvent(fromWhere, 'Hovered', 'Seen tooltip');
-
-export const trackSettleAmountUpdated = (fromWhere) =>
-  trackSettleNowEvent(fromWhere, 'UpdatedAmount', 'Update Prefilled Amount');
-
-export const trackSettleNowAmountError = (fromWhere, error) =>
-  trackSettleNowEvent(fromWhere, 'SeenAmountError', 'Amount error', {
-    error,
+  trackEnableNowEvent({
+    fromWhere,
+    objectName: 'Scheduled ES Enable Modal Confirm',
+    actionName: 'Clicked',
+    behaviour: 'Confirm Enable ES',
   });
 
-export const trackSettleNowShowBreakup = (fromWhere, clickedConfirm) => {
-  const stage = clickedConfirm ? 'After Confirm' : 'Before Confirm';
-  trackSettleNowEvent(fromWhere, 'ClickedShowbreakup', stage);
-};
+export const trackEnableNowClose = (fromWhere) =>
+  trackEnableNowEvent({
+    fromWhere,
+    objectName: 'Scheduled ES Enable Modal Close',
+    actionName: 'Clicked',
+    behaviour: 'Cancel Enable ES modal',
+  });
+
+export const trackSettleNowClicked = (fromWhere) =>
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'Settle Now',
+    actionName: 'Clicked',
+    additionalProperties: { stage: 'Settlement Initiated' },
+  });
+
+export const trackSettleNowInfoHover = (fromWhere) =>
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'ES Restricted Info icon',
+    actionName: 'Hovered',
+    additionalProperties: { stage: 'Seen tooltip' },
+  });
+
+export const trackSettleAmountUpdated = (fromWhere) =>
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'Settlement Amount',
+    actionName: 'Updated',
+    additionalProperties: {
+      stage: 'Update Prefilled Amount',
+    },
+  });
+
+export const trackSettleNowShowBreakup = (fromWhere, clickedConfirm) =>
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'Show breakup',
+    actionName: 'Clicked',
+    additionalProperties: {
+      stage: clickedConfirm ? 'After Confirm' : 'Before Confirm',
+    },
+  });
 
 export const trackSettleNowCloseClick = (fromWhere) =>
-  trackSettleNowEvent(fromWhere, 'ClickedClose', 'Before Confirm');
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'Settle Now Modal Close',
+    actionName: 'Clicked',
+    additionalProperties: {
+      stage: 'Before Confirm',
+    },
+  });
 
 export const trackSettleNowCloseReason = (fromWhere, desc) =>
-  trackSettleNowEvent(fromWhere, 'SelectReason', `Cancel Reason | ${desc}`);
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'Reason for Close',
+    actionName: 'Selected',
+    additionalProperties: {
+      stage: `Cancel Reason | ${desc}`,
+    },
+  });
 
 export const trackSettleNowConfirmClose = (fromWhere) =>
-  trackSettleNowEvent(fromWhere, 'ClickedConfirmClose', 'Exits Settlement | Churn');
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'Settle Now Confirm Close',
+    actionName: 'Clicked',
+    additionalProperties: {
+      stage: 'Exits Settlement | Churn',
+    },
+  });
 
 export const trackSettleNowFirstConfirm = (fromWhere) =>
-  trackSettleNowEvent(fromWhere, 'ClickedFirstConfirm', 'First Confirm');
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'Settle Now First Confirm',
+    actionName: 'Clicked',
+    additionalProperties: {
+      stage: 'First Confirm',
+    },
+  });
 
 export const trackSettleNowSecondConfirm = (fromWhere) =>
-  trackSettleNowEvent(fromWhere, 'ClickedSecondConfirm', 'Second Confirm');
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'Settle Now Second Confirm',
+    actionName: 'Clicked',
+    additionalProperties: {
+      stage: 'Second Confirm',
+    },
+  });
 
 export const trackSettleNowCancelConfirm = (fromWhere) =>
-  trackSettleNowEvent(fromWhere, 'ClickedCancelConfirm', 'Cancel | Back to Settlement Initiated');
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: "Settle Now No Don't",
+    actionName: 'Clicked',
+    additionalProperties: {
+      stage: 'Cancel | Back to Settlement Initiated',
+    },
+  });
 
-export const trackOnDemandTabClick = () => trackOnDemandEsEvent('TabClicked');
+export const trackOnDemandTabClick = () =>
+  trackEvent({
+    objectName: 'Ondemand Settlement Tab',
+    actionName: 'Clicked',
+    screen: 'Ondemand Settlements Tab',
+  });
 
 export const trackOnDemandSearchClick = (search) => {
   const { id, status, count } = search;
-  trackOnDemandEsEvent('ClickedSearch', {
-    search: {
-      'Settlement ID': id,
-      status,
-      'Count Field': count,
+
+  trackEvent({
+    objectName: 'Ondemand ES Search',
+    actionName: 'Clicked',
+    screen: 'Ondemand Settlements Tab',
+    properties: {
+      search_settlement_id: id,
+      search_status: status,
+      search_count_field: count,
     },
   });
 };
@@ -192,23 +251,37 @@ export const trackOnDemandIdDetails = (settlement) => {
     tax,
     ondemand_payouts: { items },
   } = settlement;
-  trackOnDemandEsEvent('ClickedLineDetails', {
-    'Settlement Line Details': {
-      'Ondemand Settlement ID': id,
-      'Requested Amount': getFixedINRAmount(amount_requested),
-      'Settled Amount': getFixedINRAmount(amount_settled),
-      'Created At': moment.unix(created_at).format(dateFormat),
-      'Settlement Status': status,
-      'Ondemand Fee': getFixedINRAmount(fees - tax),
+
+  trackEvent({
+    objectName: 'Ondemand Line Details',
+    actionName: 'Fetched',
+    screen: 'Ondemand Settlements Tab',
+    properties: {
+      ondemand_settlement_id: id,
+      requested_amount: getFixedINRAmount(amount_requested),
+      settled_amount: getFixedINRAmount(amount_settled),
+      created_at: moment.unix(created_at).format(dateFormat),
+      settlement_status: status,
+      ondemand_fee: getFixedINRAmount(fees - tax),
       Tax: getFixedINRAmount(tax),
       UTR: items[0].utr,
     },
   });
 };
 
-export const trackOnDemandHoverInfo = () => trackOnDemandEsEvent('Total Hovered');
+export const trackOnDemandHoverInfo = () =>
+  trackEvent({
+    objectName: 'Ondemand Total Settled Amount',
+    actionName: 'Hovered',
+    screen: 'Ondemand Settlements Tab',
+  });
 
-export const trackOnDemandViewMoreClick = () => trackOnDemandEsEvent('ViewMoreClicked');
+export const trackOnDemandViewMoreClick = () =>
+  trackEvent({
+    objectName: 'Ondemand View More Details',
+    actionName: 'Clicked',
+    screen: 'Ondemand Settlements Tab',
+  });
 
 export const trackOnDemandPayoutIdClick = (details) => {
   const {
@@ -222,16 +295,19 @@ export const trackOnDemandPayoutIdClick = (details) => {
     },
   } = details;
 
-  trackPayoutDetailsEvent('UTRClicked', {
-    'UTR Line Details': {
-      'Ondemand Settlement ID': id,
-      'Requested Amount': getFixedINRAmount(amount_requested),
-      'Settled Amount': getFixedINRAmount(amount_settled),
-      'Created At': moment.unix(created_at).format(dateFormat),
-      'Settlement Status': settlement_status,
+  trackEvent({
+    objectName: 'Ondemand UTR Line item',
+    actionName: 'Clicked',
+    screen: 'Payout Details',
+    properties: {
+      ondemand_settlement_id: id,
+      requested_amount: getFixedINRAmount(amount_requested),
+      settled_amount: getFixedINRAmount(amount_settled),
+      created_at: moment.unix(created_at).format(dateFormat),
+      settlement_status,
       UTR: utr,
-      'Payout Amount': getFixedINRAmount(payout_amount),
-      'Payout Status': payout_status,
+      payout_amount: getFixedINRAmount(payout_amount),
+      payout_status,
     },
   });
 };
@@ -245,60 +321,38 @@ export const trackOnDemandPayoutDetailsFetched = (settlement) => {
     status: settlement_status,
   } = settlement;
 
-  trackPayoutDetailsEvent('DetailsPage', {
-    'UTR Payout Details': {
-      'Ondemand Settlement ID': id,
-      'Requested Amount': getFixedINRAmount(amount_requested),
-      'Settled Amount': getFixedINRAmount(amount_settled),
-      'Created At': moment.unix(created_at).format(dateFormat),
-      'Settlement Status': settlement_status,
+  trackEvent({
+    objectName: 'Ondemand UTR Page',
+    actionName: 'Visited',
+    screen: 'Payout Details',
+    properties: {
+      ondemand_settlement_id: id,
+      requested_amount: getFixedINRAmount(amount_requested),
+      settled_amount: getFixedINRAmount(amount_settled),
+      created_at: moment.unix(created_at).format(dateFormat),
+      settlement_status,
     },
   });
 };
 
-export const trackOnDemandPayoutDeductionsHover = () => trackPayoutDetailsEvent('Hovered');
-
-export const trackOnDemandPayoutSearch = (values) => {
-  trackPayoutDetailsEvent('ClickedSearch', {
-    values,
+export const trackOnDemandPayoutDeductionsHover = () =>
+  trackEvent({
+    objectName: 'Ondemand Deductions info icon',
+    actionName: 'Hovered',
+    screen: 'Payout Details',
   });
-};
 
-export const trackOnDemandPayoutDetailsBreakup = (settlement) => {
-  const {
-    id,
-    amount_settled,
-    amount_pending,
-    amount_reversed,
-    tax,
-    fees,
-    ondemand_payouts: { items = [], count: total_count = 0 },
-  } = settlement;
-
-  const reversedTxnCount = items.reduce((count, item) => {
-    return item.status.toLowerCase() === 'reversed' ? count + 1 : count;
-  }, 0);
-
-  const processedTxnCount = items.reduce((count, item) => {
-    return item.status.toLowerCase() === 'processed' ? count + 1 : count;
-  }, 0);
-
-  const pendingTxnCount = total_count - reversedTxnCount - processedTxnCount;
-
-  trackPayoutDetailsEvent('PayoutDetails', {
-    'Payout Details': {
-      'Ondemand Settlement Id': id,
-      'Settled Amount | Count': `${getFixedINRAmount(amount_settled)} | ${processedTxnCount}`,
-      'Pending Amount | Count': `${getFixedINRAmount(amount_pending)} | ${pendingTxnCount}`,
-      'Reversed Amount | Count': `${getFixedINRAmount(amount_reversed)} | ${reversedTxnCount}`,
-      'Ondemand Fee': `${getFixedINRAmount(fees - tax)}`,
-      Tax: getFixedINRAmount(tax),
+export const trackOnDemandPayoutSearch = (values) =>
+  trackEvent({
+    objectName: 'Ondemand UTR Search',
+    actionName: 'Clicked',
+    screen: 'Payout Details',
+    properties: {
+      values,
     },
   });
-};
 
 export const onDemandModalTrackEvents = {
-  trackSettleNowAmountError,
   trackSettleAmountUpdated,
   trackSettleNowInfoHover,
   trackSettleNowShowBreakup,
