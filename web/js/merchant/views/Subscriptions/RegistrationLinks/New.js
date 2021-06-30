@@ -514,7 +514,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
           const fields = this.state.formFields;
           const maxAmount = rupeesToPaise(fields.mandateMaxAmount);
           const amount = rupeesToPaise(fields.amount);
-          if (maxAmount > 500000 || maxAmount < amount) {
+          if (maxAmount > 20000000 || maxAmount < amount) {
             return false;
           }
         }

@@ -11,7 +11,7 @@ export default function UPI(props) {
         disableCurrencySelect
         amount={props.amount}
         onBlurElement={props.onBlurElement}
-        placeholder="Max 5000"
+        placeholder="Max 200000"
         amountValidator={props.amountValidator}
       />
 
