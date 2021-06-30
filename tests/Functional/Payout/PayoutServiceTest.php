@@ -8,6 +8,7 @@ use Requests_Response;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\Payout\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -16,6 +17,7 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Services\PayoutService\Status as PayoutServiceStatus;
+use RZP\Services\PayoutService\Cancel as PayoutServiceCancel;
 use RZP\Services\PayoutService\Details as PayoutServiceDetails;
 
 class PayoutServiceTest extends TestCase
@@ -119,6 +121,20 @@ class PayoutServiceTest extends TestCase
 
         $this->app->payout_service_detail->method('sendRequest')
             ->willReturn($this->createResponseForPayoutServiceMock($fail));
+    }
+
+    public function mockPayoutServiceCancel($fail = false)
+    {
+        $payoutServiceCancelMock = $this->getMockBuilder(PayoutServiceCancel::class)
+                                         ->setConstructorArgs([$this->app])
+                                         ->setMethods(['sendRequest'])
+                                         ->getMock();
+
+        $this->app->instance(PayoutServiceCancel::PAYOUT_SERVICE_CANCEL, $payoutServiceCancelMock);
+
+        $this->app->payout_service_cancel->method('sendRequest')
+                                         ->willReturn($this->createResponseForPayoutServiceMock($fail,
+                                                                                                Status::CANCELLED));
     }
 
     public function createResponseForPayoutServiceMock($fail, $status = 'created')
@@ -644,4 +660,60 @@ class PayoutServiceTest extends TestCase
         }
     }
 
+    public function testServiceCancelQueuedPayoutProxyAuth()
+    {
+        $this->mockPayoutServiceCancel();
+
+        $this->testCreatePayout();
+
+        $queuedPayout = $this->getDbLastEntity('payout', 'live');
+
+        $queuedPayout->SetStatus(Status::QUEUED);
+
+        $cancellationUser = $this->getDbEntityById('user', 'MerchantUser01', 'live')->toArrayPublic();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
+
+        $testData['response']['content']['cancellation_user_id'] = 'MerchantUser01';
+        $testData['response']['content']['cancellation_user'] = $cancellationUser;
+
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+
+        $cancelledPayout = $this->getDbLastEntity('payout', 'live');
+
+        // Assert that payout got cancelled
+        $this->assertEquals(Status::CANCELLED, $cancelledPayout['status']);
+        $this->assertEquals($this->bankingBalance['id'], $cancelledPayout['balance_id']);
+
+        // Assert that payout has the correct cancellation user id as well.
+        $this->assertEquals('MerchantUser01', $cancelledPayout['cancellation_user_id']);
+    }
+
+    public function testServiceCancelQueuedPayoutPrivateAuth()
+    {
+        $this->mockPayoutServiceCancel();
+
+        $this->testCreatePayout();
+
+        $queuedPayout = $this->getDbLastEntity('payout', 'live');
+
+        $queuedPayout->SetStatus(Status::QUEUED);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $cancelledPayout = $this->getDbLastEntity('payout', 'live');
+
+        // Assert that payout got cancelled
+        $this->assertEquals(Status::CANCELLED, $cancelledPayout['status']);
+        $this->assertEquals($this->bankingBalance['id'], $cancelledPayout['balance_id']);
+        $this->assertEquals($testData['request']['content']['remarks'], $cancelledPayout['remarks']);
+    }
 }

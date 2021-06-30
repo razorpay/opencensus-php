@@ -756,10 +756,17 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput(Validator::CANCEL_PAYOUT, $input);
 
-        $remarks = $input[Entity::REMARKS] ?? null;
-
         /** @var Entity $payout */
         $payout = $this->repo->payout->findByPublicIdAndMerchant($payoutId, $this->merchant);
+
+        if ($payout->getIsPayoutService() === true) {
+
+            $payout = $this->core->cancelPayoutViaPayoutService($input, $payout);
+
+            return $payout->toArrayPublic();
+        }
+
+        $remarks = $input[Entity::REMARKS] ?? null;
 
         $payout = $this->core->cancelPayout($payout, $remarks);
 

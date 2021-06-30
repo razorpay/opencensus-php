@@ -285,6 +285,49 @@ return [
         ],
     ],
 
+    'testServiceCancelQueuedPayoutProxyAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'test Merchant Fund Transfer',
+                'purpose'         => 'refund',
+                'status'          => 'cancelled',
+                'mode'            => 'IMPS',
+                'tax'             => 90,
+                'fees'            => 590,
+            ],
+        ],
+    ],
+
+    'testServiceCancelQueuedPayoutPrivateAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'content' => [
+                'remarks' => 'test remark'
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'test Merchant Fund Transfer',
+                'purpose'         => 'refund',
+                'status'          => 'cancelled',
+                'mode'            => 'IMPS',
+                'tax'             => 90,
+                'fees'            => 590,
+            ],
+        ],
+    ],
+
     'testCreatePayoutForOnHoldPayout' => [
         'request'  => [
             'method'  => 'POST',

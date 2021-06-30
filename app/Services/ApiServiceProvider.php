@@ -500,6 +500,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutServiceDetail();
 
+        $this->registerPayoutServiceCancel();
+
         $this->registerPayoutServiceCreate();
 
         $this->registerFTSChannelNotification();
@@ -1231,6 +1233,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\Details::PAYOUT_SERVICE_DETAIL, function($app)
         {
             return new PayoutService\Details($app);
+        });
+    }
+
+    protected function registerPayoutServiceCancel()
+    {
+        $this->app->singleton(PayoutService\Cancel::PAYOUT_SERVICE_CANCEL, function($app)
+        {
+            return new PayoutService\Cancel($app);
         });
     }
 
