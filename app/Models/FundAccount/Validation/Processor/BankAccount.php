@@ -72,7 +72,7 @@ class BankAccount extends Base
 
             $ifscCode = $this->account->getIfscCode();
 
-            $isDifferentIfsc = false;
+            $isDifferentBankIfsc = false;
 
             //if with the same account number and different ifscs an fav is attempted
             //adding a filter for ifsc on top of existing account number check to decide whether to pick from cache or hit fresh
@@ -81,9 +81,13 @@ class BankAccount extends Base
             {
                 $resultIfsc = $result->getAttribute(Constants::IFSC_CODE);
 
-                $isDifferentIfsc = ($resultIfsc != $ifscCode);
+                $resultIfscBank = strtoupper(substr($resultIfsc,0,4));
 
-                if ($isDifferentIfsc === true)
+                $ifscCodeBank = strtoupper(substr($ifscCode,0,4));
+
+                $isDifferentBankIfsc = ($resultIfscBank !== $ifscCodeBank);
+
+                if ($isDifferentBankIfsc === true)
                 {
                     //logging in case of an instance when same account number and diff ifsc
                     $this->trace->info(
@@ -106,7 +110,7 @@ class BankAccount extends Base
 
             if (($retryRequired === false) and
                 (($result != null) and
-                ($isDifferentIfsc === false)) and
+                ($isDifferentBankIfsc === false)) and
                 ($result->getAccountStatus() === AccountStatus::ACTIVE))
             {
 
