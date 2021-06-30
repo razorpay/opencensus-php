@@ -168,7 +168,7 @@ export default class RewardsOnBoarding extends React.Component {
           {(sliderProps) => (
             <Landing
               {...sliderProps}
-              className="with-callout"
+              className={!isFeatureEnabled ? 'with-callout' : ''}
               feature={RZPFeatures.REWARDS}
               title="Checkout Rewards"
               imageUrl="https://cdn.razorpay.com/static/assets/rewards/rewards_checkout_demo.gif"
