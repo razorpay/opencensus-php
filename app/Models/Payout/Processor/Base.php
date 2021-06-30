@@ -2138,7 +2138,7 @@ class Base extends BaseCore
      *
      * @return bool
      */
-    protected function isPayoutServiceIfApplicable() : bool
+    protected function isPayoutServiceIfApplicable(array $input) : bool
     {
         if ($this->mode == Mode::LIVE)
         {
@@ -2174,6 +2174,21 @@ class Base extends BaseCore
                     return false;
                 }
 
+                // skip payout creation via payout service if queue_if_low_balance flag is true
+                if (empty($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === false)
+                {
+                    if (boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true)
+                    {
+                        return false;
+                    }
+                }
+
+                // skip payout creation via payout service if scheduled_at value is set
+                if (empty($input[Payout\Entity::SCHEDULED_AT]) === false)
+                {
+                    return false;
+                }
+
                 $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
 
                 $applicationId = $this->app['basicauth']->getOAuthApplicationId();
@@ -2205,7 +2220,7 @@ class Base extends BaseCore
      */
     protected function createPayoutViaMicroservice(array $input)
     {
-        if ($this->isPayoutServiceIfApplicable() === true)
+        if ($this->isPayoutServiceIfApplicable($input) === true)
         {
             $input[Balance\Entity::ACCOUNT_NUMBER] = $this->balance->getAccountNumber();
 

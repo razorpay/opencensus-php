@@ -3,11 +3,13 @@
 namespace Functional\Payout;
 
 use Mockery;
+use Carbon\Carbon;
 use Requests_Response;
 
-use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
 use RZP\Models\Pricing\Fee;
+use RZP\Constants\Timezone;
 use RZP\Models\Payout\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -640,6 +642,68 @@ class PayoutServiceTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+    }
+
+    // Since payout has queue_if_low_balance flag set to true, it won't go via payouts service
+    public function testCreateQueuedPayoutViaPayoutService()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->fixtures->on('live')->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 100
+            ]
+        );
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        // Payout should not have gone via payouts service
+        $this->assertEquals(false, $payout->getIsPayoutService());
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Payout should be in queued state
+        $this->assertEquals('queued', $payout->getStatus());
+    }
+
+    // Since payout has scheduled_at value set, it won't go via payouts service
+    public function testCreateScheduledPayoutViaPayoutService()
+    {
+        // Timestamp of 9 AM, 2 months from current time
+        $scheduledAtTime        = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
+        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()
+                                        ->getTimestamp();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['otp']   = '0007';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+
+        $testData['request']['content']['scheduled_at']  = $scheduledAtTime;
+        $testData['response']['content']['scheduled_at'] = $scheduledAtStartOfHour;
+
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        // Payout should not have gone via payouts service
+        $this->assertEquals(false, $payout->getIsPayoutService());
+
+        // On private auth, payout.user_id should be null
+        $this->assertEquals('MerchantUser01', $payout['user_id']);
+
+        // Payout should be in queued state
+        $this->assertEquals('scheduled', $payout->getStatus());
     }
 
     // Assert that the array keys match selectively, we don't compare for values only the keys

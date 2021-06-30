@@ -357,4 +357,65 @@ return [
             ],
         ],
     ],
+
+    'testCreateQueuedPayoutViaPayoutService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 500,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'NEFT',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          =>  500,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'status'          => 'queued',
+                'mode'            => 'NEFT',
+                'tax'             => 0,
+                'fees'            => 0,
+            ],
+        ],
+    ],
+
+    'testCreateScheduledPayoutViaPayoutService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 500,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'NEFT',
+                'fund_account_id' => 'fa_100000000000fa',
+                'scheduled_at'    => 123
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          =>  500,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'status'          => 'scheduled',
+                'mode'            => 'NEFT',
+                'tax'             => 0,
+                'fees'            => 0,
+                'scheduled_at'    => 123,
+            ],
+        ],
+    ],
 ];
