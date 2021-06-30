@@ -30,11 +30,11 @@ export default class OnBoardingLanding extends React.PureComponent {
   };
 
   render() {
-    const { title, desc, pros, imageUrl } = this.props;
+    const { title, desc, pros, imageUrl, callout, className="" } = this.props;
 
     return (
       <div
-        class="OnBoarding--Slide OnBoarding--ImageSlide OnBoarding--Landing"
+        class={`OnBoarding--Slide OnBoarding--ImageSlide OnBoarding--Landing ${className}`}
         key="LandingSlide"
       >
         <div class="Landing--Image">
@@ -52,13 +52,15 @@ export default class OnBoardingLanding extends React.PureComponent {
 
           {pros && <DataList horizontalDivider>{pros}</DataList>}
 
+          <div class="callout">{callout}</div>
+
           <div class="Button-Container">
             <Button
               class="Forward-Button"
               iconAfter="arrow-forward"
               onClick={this.handleNexButton}
             >
-              Next
+              Read More
             </Button>
           </div>
         </div>

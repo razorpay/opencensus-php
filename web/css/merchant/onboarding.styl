@@ -223,8 +223,62 @@
       &:first-child
         padding-left: 0
 
+.OnBoarding--ImageSlide.with-callout
+  .Product--Details
+    margin-top: 80px
+
+    .Details-desc
+      margin-bottom: 36px
+
+// This to override the slider height because "join the waitlist" callout
+// is added, which takes up space. This callout will be temporary so
+// explicitly doing it here. To be removed later.
+.OnBoarding.OnBoarding--Rewards.Checkout-Rewards-Callout {
+  .Slider {
+    max-height: 580px;
+    min-height: 580px;
+
+    @media(max-width: 1280px) {
+      max-height: 620px;
+      min-height: 620px;
+    }
+
+    @media(max-width: 1224px) {
+      max-height: 680px;
+      min-height: 680px;
+    } 
+
+    @media(max-width: 1024px) {
+      max-height: 540px;
+      min-height: 540px;
+    } 
+  }
+}
+
 .OnBoarding--Features
   padding: 64px
+
+  .Button-Container
+    .joined-button.Button
+      background-color: #15B11B
+      color: #fff
+      font-weight: bold
+      font-size: 16px
+      line-height: 20px
+      margin-top: 14px
+      padding: 9px 20px
+      cursor: default
+      border-radius: 4px
+      .i.i-tick
+        font-size: 11px
+        vertical-align: middle
+        margin-left: 8px
+    .joined-button.Button
+      &:hover
+        background-color: #15B11B
+      &:active
+        background-color: #15B11B
+        color: #fff
 
   @media(max-width: 1024px)
     padding: 24px 24px 75px 24px
@@ -383,9 +437,10 @@
 
     img
       right: unset;
-      min-width: 320px;
+      min-width: 238px;
       top: 160px;
-      width: 320px;
+      width: 238px;
+      border-radius: 34px;
       box-shadow: 2px 2px 11px 0px rgba(0,0,0,0.11);
 
 .OnBoarding.OnBoarding--Rewards.Checkout-Rewards-Disabled
