@@ -134,6 +134,8 @@ class GraphRequestAny
 
         $productType = Request::header('X-Product-Type');
 
+        $devServeHeader = Request::header('rzpctx-dev-serve-user');
+
         $defaultHeaders =  [
             'X-Dashboard'                           => 'true',
             'X-Org-Hostname'                        => $domain,
@@ -148,6 +150,7 @@ class GraphRequestAny
             'apollographql-client-name'             => $apolloClientName,
             'apollographql-client-version'          => $apolloClientVersion,
             'X-App-Mode'                            => $appMode,
+            'rzpctx-dev-serve-user'                 => $devServeHeader,
         ];
 
         $this->headers = array_merge($defaultHeaders, $this->headers);
