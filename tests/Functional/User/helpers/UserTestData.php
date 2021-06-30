@@ -105,6 +105,31 @@ return [
         ]
     ],
 
+    'testPreSignupSourceInfoStoredAfterRegistrationForBankingWithExtraQuotesInCookie' => [
+        'request' => [
+            'url' => '/users/register',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                'id'                    => '100002Razorpay',
+                'name'                  => 'nial',
+                'email'                 => 'nial@example.com',
+                'password'              => 'blahblah123',
+                'password_confirmation' => 'blahblah123',
+                'contact_mobile'        => '9999999999',
+                'confirm_token'         => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'nial@example.com',
+            ]
+        ]
+    ],
+
 
     'testRegister'  => [
         'request'  => [

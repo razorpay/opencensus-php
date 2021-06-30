@@ -860,7 +860,10 @@ class Service extends Base\Service
     {
         if (empty(\Cookie::get('rzp_utm')) === false)
         {
-            $utmParams = json_decode(\Cookie::get('rzp_utm'), true);
+            // For some reason, the cookie has extra double quotes at the
+            // beginning and end, so trimming that. If not removed, json_decode fails.
+            $cookieValue = trim(\Cookie::get('rzp_utm'), '"');
+            $utmParams = json_decode($cookieValue, true);
             $data[Constants::CTA]       = $utmParams[Constants::CTA] ?? '';
             $data[Constants::WEBSITE]   = $utmParams[Constants::WEBSITE] ?? '';
             $data[Constants::FC_SOURCE] = $utmParams[Constants::FC_SOURCE] ?? '';

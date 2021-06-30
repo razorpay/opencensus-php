@@ -183,6 +183,34 @@ class UserTest extends TestCase
         );
     }
 
+    public function testPreSignupSourceInfoStoredAfterRegistrationForBankingWithExtraQuotesInCookie()
+    {
+        $testDataToReplace = [
+            'request' => [
+                'cookies' => [
+                    'rzp_utm' => '"' . json_encode([
+                        'final_page' => 'razorpay.com/x/current-accounts/'
+                    ]) . '"'
+                ]
+            ]
+        ];
+
+        $this->ba->dashboardGuestAppAuth();
+        $this->startTest($testDataToReplace);
+
+        $merchantAttribute = $this->getDbEntity('merchant_attribute');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'product' => 'banking',
+                'group'   => 'x_signup',
+                'type'    => 'ca_page_visited',
+                'value'   => '1'
+            ],
+            $merchantAttribute->toArrayPublic()
+        );
+    }
+
     public function testRegisterWithOtp()
     {
         Mail::fake();
