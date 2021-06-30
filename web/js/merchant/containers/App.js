@@ -2,7 +2,7 @@ import { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import moment from 'moment';
-import { makePopup } from '@typeform/embed';
+import { createSidetab } from '@typeform/embed';
 
 import Loader from 'common/ui/Loader';
 
@@ -299,23 +299,32 @@ export default class App extends Component {
     window.addEventListener('resize', this.handleResize);
     const user = window.rzp_user;
     if (user) {
-      const GoLiveNPSEnableTypeForm = makePopup(
-        `https://razorpay.typeform.com/to/bvDyrP0s?mid=${user.current}&source=dashboard&email=${user.email}`, // go live survey
+      const hidden={
+        mid: `${user.id}`,
+        source: 'dashboard',
+        email: `${user.email}`
+      }
+      const GoLiveNPSEnableTypeForm = createSidetab(
+        'hRkxaGU1', // go live survey
         {
-          mode: 'popup',
+          width: 500,
+          buttonText:"Feedback",
           hideHeaders: true,
           hideFooters: true,
+          hidden,
           onSubmit: this.closeGoLiveSurvey,
         },
       );
       this.state.GoLiveNPSEnableTypeForm = GoLiveNPSEnableTypeForm; // saving reference typeform
 
-      const NonGoLiveNPSEnableTypeForm = makePopup(
-        `https://razorpay.typeform.com/to/AKZu6lJQ?mid=${user.current}&source=dashboard&email=${user.email}`, // non go live survey
+      const NonGoLiveNPSEnableTypeForm = createSidetab(
+        'rDnJV4D0', // non go live survey
         {
-          mode: 'popup',
+          width: 500,
+          buttonText:"Feedback",
           hideHeaders: true,
           hideFooters: true,
+          hidden,
           onSubmit: this.closeNonGoLiveSurvey,
         },
       );
@@ -371,7 +380,7 @@ export default class App extends Component {
         this.state.GoLiveNPSEnableTypeForm
       ) {
         const takeGoLiveNPSSurvey = this.dateIsInRange(user.created_at, [
-          ['2021-05-01', '2021-05-31'],
+          ['2021-06-01', '2021-06-30'],
         ]);
         this.setState({ goLiveNPSSurveyPopup: takeGoLiveNPSSurvey });
       }
@@ -389,9 +398,9 @@ export default class App extends Component {
         this.state.NonGoLiveNPSEnableTypeForm
       ) {
         const takeNonGoLiveNPSSurvey = this.dateIsInRange(user.created_at, [
-          ['2021-02-01', '2021-02-28'],
-          ['2020-11-01', '2020-11-30'],
-          ['2020-05-01', '2020-05-31'],
+          ['2021-03-01', '2021-03-31'],
+          ['2020-12-01', '2020-12-30'],
+          ['2020-06-01', '2020-06-30'],
         ]);
         this.setState({ nonGoLiveNPSSurveyPopup: takeNonGoLiveNPSSurvey });
       }
@@ -438,12 +447,12 @@ export default class App extends Component {
 
   closeGoLiveSurvey = () => {
     this.setState({ goLiveNPSSurveyPopup: false });
-    this.state.GoLiveNPSEnableTypeForm.close();
+    this.state.GoLiveNPSEnableTypeForm.unmount();
   };
 
   closeNonGoLiveSurvey = () => {
     this.setState({ nonGoLiveNPSSurveyPopup: false });
-    this.state.NonGoLiveNPSEnableTypeForm.close();
+    this.state.NonGoLiveNPSEnableTypeForm.unmount();
   };
 
   fetchSupportedCurrencies() {
@@ -713,6 +722,8 @@ export default class App extends Component {
 
   getSurveyForm = () => {
     const { goLiveNPSSurveyPopup, nonGoLiveNPSSurveyPopup } = this.state;
+    if(!goLiveNPSSurveyPopup)this.state.GoLiveNPSEnableTypeForm.unmount();
+    if(!nonGoLiveNPSSurveyPopup)this.state.NonGoLiveNPSEnableTypeForm.unmount();
     return (
       <>
         {goLiveNPSSurveyPopup &&
