@@ -335,7 +335,7 @@ class Service extends Base\Service
 
         $freshdeskTicketResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
 
-        $this->validateTicketCreateResponse($freshdeskTicketResponse);
+        $this->validateTicketResponse($freshdeskTicketResponse);
 
         $freshdeskTicketResponse[Entity::ID] = "".$freshdeskTicketResponse[Entity::ID];
 
@@ -362,7 +362,7 @@ class Service extends Base\Service
 
         $ticketCreateResponse[Constants::FD_INSTANCE] = $fdInstance;
 
-        $this->validateTicketCreateResponse($ticketCreateResponse);
+        $this->validateTicketResponse($ticketCreateResponse);
 
         $ticketDetails = [
             Constants::FD_INSTANCE   => $fdInstance,
@@ -547,7 +547,7 @@ class Service extends Base\Service
         return FreshdeskWebhookProcessor\Base::getProcessor($event)->process($input);
     }
 
-    protected function validateTicketCreateResponse($response)
+    protected function validateTicketResponse($response, string $errorCode= ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_CREATION_FAILED)
     {
         if (isset($response['id']) === true)
         {
@@ -556,11 +556,10 @@ class Service extends Base\Service
 
         if (isset($response['errors']))
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_CREATION_FAILED, null, $response['errors']);
+            throw new BadRequestException($errorCode, null, $response['errors']);
         }
 
         throw new Exception\ServerErrorException(null, ErrorCode::SERVER_ERROR_FRESHDESK_INTEGRATION_ERROR, $response);
-
     }
 
     protected function validateGrievanceResponse($response)
@@ -1177,7 +1176,11 @@ class Service extends Base\Service
 
         $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
 
-        return $this->app['freshdesk_client']->updateTicketV2($ticket->getTicketId(), $content, $url);
+        $response = $this->app['freshdesk_client']->updateTicketV2($ticket->getTicketId(), $content, $url);
+
+        $this->validateTicketResponse($response, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED);
+
+        return $response;
     }
 
     public function resolveAndAddAutomatedResolvedTagToTicket($fdInstance , $ticketId) : array

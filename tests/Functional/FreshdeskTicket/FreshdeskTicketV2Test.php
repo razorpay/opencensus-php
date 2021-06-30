@@ -1059,7 +1059,7 @@ Team Razorpay',
         $this->startTest();
     }
 
-    public function testUpdateFreshdeskTicketInternal()
+    public function testUpdateFreshdeskTicketInternalSuccess()
     {
         $this->ba->careAppAuth();
 
@@ -1068,8 +1068,30 @@ Team Razorpay',
             'key1' => 'value1',
         ],
         [
-            'key2' => 'value2',
+            'id' => 'value2',
         ]);
+
+        $this->startTest();
+    }
+
+    public function testUpdateFreshdeskTicketInternalFailed()
+    {
+        $this->ba->careAppAuth();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/12', 'put',
+                                                    [
+                                                        'key1' => 'value1',
+                                                    ],
+                                                    [
+                                                        'description'   => 'Validation failed',
+                                                        'errors'        => [
+                                                            [
+                                                                'field'     => 'custom_fields.cf_requester_category',
+                                                                'values'    => 'Merchant,Customer,Service request,Prospect,Other,Partner',
+                                                                'code'      => 'invalid value',
+                                                            ]
+                                                        ]
+                                                    ]);
 
         $this->startTest();
     }

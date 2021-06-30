@@ -714,7 +714,7 @@ return [
         ],
     ],
 
-    'testUpdateFreshdeskTicketInternal' => [
+    'testUpdateFreshdeskTicketInternalSuccess' => [
         'request'  => [
             'method'  => 'PATCH',
             'url'     => '/internal/freshdesk/ticket/razorpayid0012',
@@ -725,8 +725,32 @@ return [
         ],
         'response' => [
             'content' => [
-                'key2' => 'value2',
+                'id' => 'value2'
             ],
+        ],
+    ],
+
+    'testUpdateFreshdeskTicketInternalFailed' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/internal/freshdesk/ticket/razorpayid0012',
+            'content' => [
+                'account_id' => '10000000000000',
+                'key1'       => 'value1',
+            ],
+        ],
+        'response' => [
+            'content'       => [
+                'error' => [
+                    'description' => 'Failed to update freshdesk ticket',
+                    'code'        => 'BAD_REQUEST_ERROR',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => 'BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED',
         ],
     ],
 
