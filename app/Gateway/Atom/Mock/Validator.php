@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         AuthRequestFields::SIGNATURE                  => 'required',
         AuthRequestFields::RETURN_URL                 => 'required|url',
         AuthRequestFields::BANK_ID                    => 'required|integer',
+        AuthRequestFields::UDF9                       => 'required|string',
     );
 
     protected static $refundRules = array(

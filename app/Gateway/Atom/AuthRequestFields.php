@@ -19,4 +19,5 @@ class AuthRequestFields
     const SIGNATURE                  = 'signature';
     // bank_id is not a field in integration doc but keeping it based on sample request provided
     const BANK_ID                    = 'bankid';
+    const UDF9                       = 'udf9';
 }

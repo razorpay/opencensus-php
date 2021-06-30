@@ -14,7 +14,7 @@ class Bank
     protected static $map = [
         IFSC::ABNA         => 1050,     // Royal Bank Of Scotland
         IFSC::ALLA         => 1026,     // Allahabad Bank -> changed to Indian Bank
-        IFSC::ANDB         => 1058,     // Andhra bank
+        IFSC::ANDB         => 1016,     // Andhra bank
         IFSC::BKID         => 1012,     // Bank of India Retail
         IFSC::CBIN         => 1028,     // Central Bank of India
         IFSC::CIUB         => 1020,     // City Union Bank
@@ -52,10 +52,12 @@ class Bank
         IFSC::TMBL         => 1044,     // Tamilnadu Mercantile Bank
         IFSC::UBIN         => 1016,     // Union Bank
         IFSC::UCBA         => 1057,     // UCO Bank
-        IFSC::UTBI         => 1041,     // United Bank of India
+        IFSC::UTBI         => 1049,     // United Bank of India
         IFSC::UTIB         => 1003,     // Axis Bank
         IFSC::VIJB         => 1039,     // Vijaya Bank
         IFSC::YESB         => 1005,
+        IFSC::HDFC         => 1006,
+        IFSC::ICIC         => 1002,
         Netbanking::BKID_C => 1012,     // Bank of India Corporate
         Netbanking::LAVB_R => 1009,     // Lakshmi Vilas Bank
         Netbanking::PUNB_R => 1049,     // Punjab National Bank[Retail]

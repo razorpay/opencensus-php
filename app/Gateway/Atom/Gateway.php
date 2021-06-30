@@ -785,6 +785,8 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
+        $udf9 = $input['merchant']->getFilteredDba() . "|" . $input['merchant']->getCategory();
+
         $content = [
             AuthRequestFields::LOGIN                      => $this->getMerchantId(),
             AuthRequestFields::PASSWORD                   => $this->getSecureSecret(),
@@ -799,6 +801,7 @@ class Gateway extends Base\Gateway
             AuthRequestFields::CUSTOMER_ACCOUNT           => Constants::CUST_ACC_NO,
             AuthRequestFields::RETURN_URL                 => $input['callbackUrl'],
             AuthRequestFields::BANK_ID                    => $this->getBankId($payment['bank']),
+            AuthRequestFields::UDF9                       => $udf9,
         ];
 
         $this->checkTpv($input, $content);

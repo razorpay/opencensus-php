@@ -2097,7 +2097,6 @@ class Gateway
         Gateway::NETBANKING_KVB,
         Gateway::NETBANKING_CANARA,
         Gateway::ESIGNER_LEGALDESK,
-        Gateway::ATOM,
         Gateway::NETBANKING_KOTAK,
     ];
 
