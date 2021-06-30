@@ -87,9 +87,12 @@ class NbplusAppMethodTwidReconciliationTest extends NbPlusPaymentServiceAppsTest
         $data[1] = $this->testData['testTwidSuccessRecon'];
 
         $data[0]['Merchant Transaction Id'] = $payment['id'];
-        $data[1]['Merchant Transaction Id'] = $refund['id'];
-        $data[1]['Bill Value'] = '-' . $data[1]['Bill Value'];
-        $data[1]['Status'] = 'Refund';
+        $data[1]['Merchant Transaction Id'] = $payment['id'];
+        $data[1]['Bill Value']              = '-' . $data[1]['Bill Value'];
+        $data[1]['Status']                  = 'Refund';
+        $data[1]['Twid Refund Id']          = 'RFR-49138';
+        $data[1]['Merchant Refund Id']      = $refund['id'];
+        $data[1]['Refund Date']             = '2021-06-29 17:54:20';
 
         $file = $this->generateReconFile($data);
 
@@ -255,7 +258,7 @@ class NbplusAppMethodTwidReconciliationTest extends NbPlusPaymentServiceAppsTest
 
     protected function generateReconFile($data)
     {
-        $fileData = 'Sr. No.,Transaction ID,Merchant Transaction ID,Date,Brand,Bill Value,Commission,GST on Commission,Total Commission,Total Payable,Status';
+        $fileData = 'S.No.,"Transaction ID","Merchant Transaction ID",Date,Brand,"Bill Value",Commission,"GST on Commission","Total Commission","Total Payable",Status,"Twid Refund Id","Merchant Refund Id","Refund Date"';
 
         foreach ($data as $val)
         {

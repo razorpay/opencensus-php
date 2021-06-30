@@ -18,6 +18,9 @@ class Reconciliate extends Base\Reconciliate
     const TOTAL_COMMISSION           = 'Total Commission';
     const TOTAL_PAYABLE              = 'Total Payable';
     const STATUS                     = 'Status';
+    const TWID_REFUND_ID             = 'Twid Refund Id';
+    const MERCHANT_REFUND_ID         = 'Merchant Refund Id';
+    const REFUND_DATE                = 'Refund Date';
 
 
     public function getFileType(string $mimeType): string

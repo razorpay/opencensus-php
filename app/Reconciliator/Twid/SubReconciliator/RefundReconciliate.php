@@ -11,6 +11,6 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
     protected function getRefundId(array $row)
     {
-        return $row[Reconciliate::MERCHANT_TRANSACTION_ID] ?? null;
+        return $row[Reconciliate::MERCHANT_REFUND_ID] ?? null;
     }
 }
