@@ -5,7 +5,7 @@ import Space from '@razorpay/blade-old/src/atoms/Space';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Text from '@razorpay/blade-old/src/atoms/Text';
-import Link from '@commander/shield/src/shared/Link';
+import Link from '@razorpay/commander-shield/src/shared/Link';
 import SaveAndExitModal from '../../SaveAndExitModal';
 import HeaderBackground from './images/header_background.svg';
 import useActivation from '../../hooks/useActivation';

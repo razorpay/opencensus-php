@@ -24,7 +24,7 @@ exports[`Storyshots ErrorBoundary With SDK 1`] = `
         >
           Our team has been notified, but
           <a
-            class="Textweb__Text-sc-1qrdpx3-0 Link__StyledText-sc-3nmidz-0 cARiWA"
+            class="Textweb__Text-sc-1qrdpx3-0 Link__StyledText-sc-1xorytr-0 biuqFk"
             color="shade.980"
             data-testid="ds-text"
             target="_self"

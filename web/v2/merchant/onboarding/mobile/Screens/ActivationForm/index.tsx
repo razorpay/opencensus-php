@@ -6,7 +6,7 @@ import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import Button from '@razorpay/blade-old/src/atoms/Button';
-import Link from '@commander/shield/src/shared/Link';
+import Link from '@razorpay/commander-shield/src/shared/Link';
 import { FullPageLoader } from 'v2/components/Loader';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import {

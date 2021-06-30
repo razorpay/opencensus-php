@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { withRouter, RouteComponentProps, Link as Redirect } from 'react-router-dom';
 import { isUnregisteredBusiness, checkIfDedupe, isL1Submitted } from '../services/utils';
-import Link from '@commander/shield/src/shared/Link';
+import Link from '@razorpay/commander-shield/src/shared/Link';
 import { getMode, switchMode } from 'v2/services/mode';
 import Info from './Info';
 import Buttons from './Buttons';

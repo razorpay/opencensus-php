@@ -4,7 +4,7 @@ import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
-import Link from '@commander/shield/src/shared/Link';
+import Link from '@razorpay/commander-shield/src/shared/Link';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import Card from 'v2/components/Card';
 import Illustration from './Illustration.svg';

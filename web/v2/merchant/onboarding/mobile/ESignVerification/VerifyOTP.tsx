@@ -7,7 +7,7 @@ import Space from '@razorpay/blade-old/src/atoms/Space';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
-import Link from '@commander/shield/src/shared/Link';
+import Link from '@razorpay/commander-shield/src/shared/Link';
 import { useMutation } from 'react-query';
 import { fetch } from 'v2/services/rest/rest-fetch';
 import useActivation from '../hooks/useActivation';

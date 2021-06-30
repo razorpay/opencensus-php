@@ -123,6 +123,7 @@
               </div>
             </div>
             <div class="coupon-msg" ng-class="{'success' : coupon.status === 'success', 'failure' : coupon.status === 'failure'}" ng-bind-html="coupon.msg" ng-show="['success', 'failure'].indexOf(coupon.status) > -1"></div>
+            <div class="coupon-disclaimer" ng-show="signup.merchantData.business_type == 11 && coupon.status === 'success'">*This offer is not applicable for credit card transactions</div>
           </div>
 
           <div class="signup-nav">

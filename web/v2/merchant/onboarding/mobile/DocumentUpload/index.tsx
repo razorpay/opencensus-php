@@ -8,7 +8,7 @@ import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
-import Link from '@commander/shield/src/shared/Link';
+import Link from '@razorpay/commander-shield/src/shared/Link';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import { Select, Option } from 'v2/components/Select';
 import { FileUpload } from 'v2/components/FileUpload';
