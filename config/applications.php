@@ -1014,6 +1014,8 @@ return [
         // Key and secret through which api will call ledger
         'ledger_key'        => env('LEDGER_KEY'),
         'ledger_secret'     => env('LEDGER_SECRET'),
+        // ledger will call api using this secret
+        'secret'            => env('LEDGER_API_SECRET'),
     ],
 
     'banking_account_service' => [

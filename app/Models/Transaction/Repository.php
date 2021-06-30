@@ -2358,6 +2358,27 @@ class Repository extends Base\Repository
             ->keyBy(Transaction\Entity::ID);
     }
 
+    /**
+     * It fetches the transactions for ledger service to compare shadow data
+     *
+     * @param array $merchantIds
+     * @param $from
+     * @param $to
+     * @param int $count
+     * @param int $skip
+     * @return mixed
+     */
+    public function fetchTransactionForLedgerRecon(array $merchantIds, $from, $to, int $count = 1000, int $skip = 0)
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+            ->betweenTime($from, $to)
+            ->take($count)
+            ->skip($skip)
+            ->latest()
+            ->get();
+    }
+
     public function fetchTransactingMerchantBetweenTimeStamps($from, $to)
     {
         $startTime = microtime(true);

@@ -425,4 +425,32 @@ class Service extends Base\Service
 
         return $txn->toArrayPublic();
     }
+
+    public function fetchMultiple(array $input)
+    {
+        $this->trace->info(
+            TraceCode::LEDGER_TRANSACTIONS_FETCH_REQUEST,
+            [
+                count($input[Entity::MERCHANT_ID]),
+                $input['from'],
+                $input['to'],
+                $input['count'],
+                $input['skip']
+            ]);
+
+        $txn = $this->repo->transaction->fetchTransactionForLedgerRecon(
+            $input[Entity::MERCHANT_ID],
+            $input['from'],
+            $input['to'],
+            $input['count'],
+            $input['skip']
+        );
+
+        // This is because $txn->toArrayPublic() is unsetting the required fields from response
+        $resp[Entity::ENTITY] = 'collection';
+        $resp['count'] = count($txn);
+        $resp['items'] = $txn->toArray();
+
+        return $resp;
+    }
 }

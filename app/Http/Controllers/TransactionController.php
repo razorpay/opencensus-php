@@ -97,4 +97,13 @@ class TransactionController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function list()
+    {
+        $input = Request::all();
+
+        $entities = $this->service()->fetchMultiple($input);
+
+        return ApiResponse::json($entities);
+    }
 }

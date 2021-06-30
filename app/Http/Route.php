@@ -2018,6 +2018,8 @@ class Route
         'capital_transaction_create'               => ['post',     'capital_balances/transaction',                   'TransactionController@createCapitalTransaction'                    ],
         'capital_multiple_transaction_create'      => ['post',     'capital_balances/multi_transactions',            'TransactionController@createMultipleCapitalTransactions'           ],
 
+        'ledger_fetch_multiple_transactions'        => ['post',     'ledger/transactions',                            'TransactionController@list'                                        ],
+
         // TODO:remove after migration,
         // Temporary route to fix settled_at in case of fund account validation
         'transaction_settled_data_fix'             => ['post',     'transactions/{entity}/settled/fix',              'TransactionController@fixSettled'                                  ],
@@ -3424,6 +3426,9 @@ class Route
         // payment analytics cron creates a new partition and drops oldest partition, runs daily
         'payment_analytics_partition_cron',
         'payout_links_batch_process',
+
+        // ledger route
+        'ledger_fetch_multiple_transactions',
 
         //merchant action cron sends the notifications to the merchants which are suspended and tagged
         'merchant_action_notification_cron',
@@ -9631,6 +9636,7 @@ class Route
             'create_ledger_accounts_in_bulk',
             'update_account_detail',
             'request_governor',
+            'ledger_fetch_multiple_transactions',
         ]
     ];
 
