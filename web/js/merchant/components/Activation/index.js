@@ -81,6 +81,7 @@ import {
   getDefaultBusinessProofDoc,
   isDedupe,
   isSourceRX,
+  getBankTabHeader,
 } from './ActivationUtils';
 
 import { fireL1FormSuccessEvents } from 'merchant/containers/Activation/ActivationFormMarketingEvents';
@@ -1681,6 +1682,18 @@ export default class ActivationWizard extends React.Component {
     return footerButtons;
   }
 
+  get bankTabHeader() {
+    const { title, subtitle } = getBankTabHeader(
+      Number(this.state.dirty.business_type || this.props.data.business_type)
+    )
+    return subtitle ? (
+      <>
+        {title}
+        <div className="onboarding-tab-subtitle">{subtitle}</div>
+      </>
+    ) : tabHeader;
+  }
+
   render() {
     const isFormLocked = this.isFormLocked;
     const isFormActivated = !!this.props.data.activated;
@@ -1795,9 +1808,11 @@ export default class ActivationWizard extends React.Component {
             </span>
 
             <span className="device--desktop">
-              {FORM_TABS[activeTab]}
+              {
+                FORM_TABS[activeTab] === bankAccountTabName ? this.bankTabHeader : FORM_TABS[activeTab]
+              }
               {FORM_TABS[activeTab] === 'Documents Verification' && (
-                <div className="file-limit-label">
+                <div className="onboarding-tab-subtitle">
                   {this.isUnregBiz
                     ? ''
                     : 'You can upload JPG/PNG of max. size 4MB or PDF of max. size 2 MB'}

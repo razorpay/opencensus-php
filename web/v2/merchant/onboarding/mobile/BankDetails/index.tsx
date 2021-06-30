@@ -5,7 +5,7 @@ import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
-import { getDetailsForIFSC } from '../services/utils';
+import { getDetailsForIFSC, getBankTabHeader } from '../services/utils';
 import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
 
@@ -69,6 +69,8 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
     fetchDefaultIfscInfo();
   }, []);
 
+  const { title, subtitle } = getBankTabHeader(Number(data.business_type));
+
   return (
     <Formik
       initialValues={{
@@ -101,11 +103,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
             handleBlur(e, formikProps);
           }}
         >
-          <FormSection
-            title="Bank Details"
-            subtitle="We will be depositing a small amount in this account to verify your bank details"
-            disabled={isFormLocked}
-          >
+          <FormSection title={title} subtitle={subtitle} disabled={isFormLocked}>
             <Field>
               <TextInput
                 width="auto"

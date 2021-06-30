@@ -11,6 +11,13 @@ import {
   ADDITIONAL_DOCS_REQUIRED_REG_BIZ,
   ADDRESS_PROOF_TYPES,
   BANK_PROOF_TYPE_DOC,
+  LLP,
+  NGO,
+  PARTNERSHIP,
+  PRIVATE,
+  PUBLIC,
+  SOCIETY,
+  TRUST,
 } from '../Constants/OnboardingConstants';
 
 export const getLabel = (field, data) => {
@@ -408,4 +415,20 @@ export const getFormatedCurrency = (amount = 0, currency = 'INR') => {
     style: 'currency',
     currency,
   });
+};
+
+export const getBankTabHeader = (businessType) => {
+  let title = 'Bank Details';
+  let subtitle = 'We will be depositing a small amount in this account to verify your bank details';
+  if ([PRIVATE, PUBLIC, LLP, PARTNERSHIP, NGO, TRUST, SOCIETY].includes(businessType)) {
+    title = 'Company Bank Account';
+    subtitle = `Enter Bank Account details of your company's bank account. Your KYC will be rejected if you enter personal bank account details.`;
+  } else if (businessType === PROPRIETORSHIP) {
+    title = 'Company or Authorised Signatory Bank Account';
+    subtitle = 'Enter Bank Account details of your company or authorised signatory.';
+  } else if (UNREGISTERED_TYPES[businessType]) {
+    title = 'Personal Bank account';
+    subtitle = 'Enter your personal bank account details.';
+  }
+  return { title, subtitle };
 };

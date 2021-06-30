@@ -30,6 +30,8 @@ const PRIVATE_LIMITED = 4,
 
 const E_SIGN_AADHAR = [PROPRIETORSHIP, PARTNERSHIP, NOT_REGISTERED];
 
+const bankAccountTabName = 'Bank Account';
+
 function differentAddress(activation) {
   return activation.state.same_address === '0';
 }
@@ -485,6 +487,22 @@ function getActivationState(activationData = {}, isUnregisteredBusiness) {
   return activationState;
 }
 
+const getBankTabHeader = (businessType) => {
+  let title = bankAccountTabName;
+  let subtitle = '';
+  if ([PRIVATE_LIMITED, PUBLIC_LIMITED, LLP, PARTNERSHIP, NGO, TRUST, SOCIETY].includes(businessType)) {
+    title = 'Company Bank Account';
+    subtitle = `Enter Bank Account details of your company's bank account. Your KYC will be rejected if you enter personal bank account details.`;
+  } else if (businessType === PROPRIETORSHIP) {
+    title = 'Company or Authorised Signatory Bank Account';
+    subtitle = 'Enter Bank Account details of your company or authorised signatory.';
+  } else if (UNREGISTERED_TYPES[businessType]) {
+    title = 'Personal Bank account';
+    subtitle = 'Enter your personal bank account details.';
+  }
+  return { title, subtitle };
+}
+
 export {
   differentAddress,
   isUnregisteredBusiness,
@@ -524,4 +542,5 @@ export {
   showAadharDoc,
   getActivationState,
   isDedupeOldFunc,
+  getBankTabHeader,
 };
