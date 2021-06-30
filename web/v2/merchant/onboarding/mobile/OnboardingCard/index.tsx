@@ -68,7 +68,7 @@ const OnboardingCard: React.FC = () => {
         setIsModalOpen(true);
         setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, dedupe: true });
       }
-      if (activationData.activation_form_milestone === 'L1') {
+      if (activationData.activation_form_milestone === 'L1' && !isDedupe) {
         if (isUnreg && isPoifailed && !canShowModals?.poi_failed) {
           setModalType('payment_disable');
           setIsModalOpen(true);
@@ -84,7 +84,7 @@ const OnboardingCard: React.FC = () => {
           setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, poi_verified: true });
         }
       }
-      if (activationData.submitted) {
+      if (activationData.submitted && !isDedupe) {
         if (activationData.isHardLimitReached && !canShowModals?.settlement_onhold) {
           setModalType('settelment_onhold');
           setIsModalOpen(true);

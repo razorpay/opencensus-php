@@ -413,7 +413,7 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; esc
     );
   }
 
-  if (!isL1Submitted(data.activation_form_milestone)) {
+  if (!isL1Submitted(data.activation_form_milestone) || !isInstantActivationEnabled) {
     return (
       <>
         <Info
