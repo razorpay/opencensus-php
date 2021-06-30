@@ -264,4 +264,20 @@ return [
             ],
         ],
     ],
+
+    'testPinCodeServiceabilityForIcici' => [
+        'request'  => [
+            'url'     => '/bas/banking_application/check_pin_code_serviceability',
+            'method'  => 'GET',
+            'content' => [
+                'pincode' => '345231',
+                'business_type' => 'PRIVATE_LIMITED',
+                'application_type' => 'ICICI_ONBOARDING_APPLICATION',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

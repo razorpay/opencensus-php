@@ -50,4 +50,6 @@ class Constants
     const ADDRESS_PROOF                 = 'addressProof';
 
     const PERSONS_DOCUMENT_MAPPING      = 'persons_document_mapping';
+
+    const BAS_PIN_CODE_SERVICEABILITY   = 'is_serviceable';
 }

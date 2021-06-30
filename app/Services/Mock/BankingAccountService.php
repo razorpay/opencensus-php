@@ -129,6 +129,15 @@ class BankingAccountService
             ];
         }
 
+        else if($path === 'is_serviceable' and $method === 'GET')
+        {
+            $result = [
+                'data' => [
+                    'serviceable' => true,
+                ]
+            ];
+        }
+
         return $result;
     }
 

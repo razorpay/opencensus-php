@@ -329,4 +329,11 @@ class Service extends Base\Service
         return $input;
     }
 
+    public function checkPinCodeServiceability($input)
+    {
+        $basPinCodeServiceabilityPath = Constants::BAS_PIN_CODE_SERVICEABILITY;
+
+        return $this->bankingAccountService->sendRequestAndProcessResponse($basPinCodeServiceabilityPath, 'GET', $input);
+    }
+
 }

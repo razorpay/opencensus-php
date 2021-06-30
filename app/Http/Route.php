@@ -1792,8 +1792,10 @@ class Route
         'batch_service_route'                      => ['any',      'service/batch/{path?}',                          'BatchController@sendRequest'                                       ],
 
         //all requests get forwarded to banking account service
-        'banking_account_service_routes'           => ['any',      'merchant/banking_application/business/{path?}',      'BasController@forwardRequest'                                  ],
-        'banking_account_service_cron_routes'      => ['any',      'bas/banking_application/cron/{path?}',               'BasController@forwardCronRequest'                              ],
+        'banking_account_service_routes'                        => ['any',      'merchant/banking_application/business/{path?}',         'BasController@forwardRequest'                  ],
+        'banking_account_service_cron_routes'                   => ['any',      'bas/banking_application/cron/{path?}',                  'BasController@forwardCronRequest'              ],
+
+        'banking_account_service_pincode_serviceability_check'   => ['get',     'bas/banking_application/check_pin_code_serviceability', 'BasController@checkPinCodeServiceability'      ],
 
         //creates balance and banking_account_statement_details
         'bas_banking_accounts_create'              => ['post',     'bas/merchant/{id}/banking_accounts',             'BasController@createCurrentAccountBankingDependencies'             ],
@@ -4046,6 +4048,7 @@ class Route
 
         //Banking account service
         'banking_account_service_routes',
+        'banking_account_service_pincode_serviceability_check',
 
         //Partner Activation routes
         'partner_activation_details',
@@ -6084,7 +6087,8 @@ class Route
         'update_survey_tracker'                        => '*',
 
         //Banking account service
-        'banking_account_service_routes'              => '*',
+        'banking_account_service_routes'                        => '*',
+        'banking_account_service_pincode_serviceability_check'  => '*',
 
         // Payout Links - Shopify Integration
         'payout_links_integrate_app'                   => '*',
@@ -7259,6 +7263,7 @@ class Route
             'wfs_config_get',
             'workflow_payout_amount_rules',
             'banking_account_service_routes',
+            'banking_account_service_pincode_serviceability_check',
         ],
 
         'admin_dashboard' => [

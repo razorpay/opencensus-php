@@ -340,4 +340,13 @@ class BankingAccountServiceTest extends TestCase
 
         $this->assertEquals($merchant->getName(), $response['name']);
     }
+
+    public function testPinCodeServiceabilityForIcici()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(true, $response['data']['serviceable']);
+    }
 }
