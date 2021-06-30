@@ -498,13 +498,13 @@ class ViewDataSerializerHosted extends Base\Core
 
         // Unsets Customer details like name, email and contact for all the status and if pl_block_customer_prefill is true
         $plBlockCustomerPrefill = $this->merchant->isFeatureEnabled(Feature\Constants::PL_BLOCK_CUSTOMER_PREFILL);
-        if ($plBlockCustomerPrefill === true)
+        if ($plBlockCustomerPrefill === true and !empty($serialized[Entity::CUSTOMER_DETAILS]))
         {
 
             // make is_contact_or_email_present is true
             // so that it can be used to pass customer_id to checkout
-            if ($serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_CONTACT] !== null or
-                $serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_EMAIL] !== null)
+            if (isset($serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_CONTACT]) === true or
+                isset($serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_EMAIL]) === true)
             {
                 $serialized[Entity::CUSTOMER_DETAILS][Entity::IS_CONTACT_OR_EMAIL_PRESENT] = true;
             }
