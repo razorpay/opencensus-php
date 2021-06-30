@@ -56,7 +56,7 @@ class Create extends Base
     {
         $fundAccountId = PublicEntity::stripDefaultSign($input[Payout\Entity::FUND_ACCOUNT_ID]);
 
-        return [
+        $requestBody = [
             Payout\Entity::PURPOSE               => $input[Payout\Entity::PURPOSE],
             Payout\Entity::AMOUNT                => (int) $input[Payout\Entity::AMOUNT],
             Payout\Entity::CURRENCY              => $input[Payout\Entity::CURRENCY],
@@ -67,7 +67,15 @@ class Create extends Base
             Payout\Entity::NARRATION             => $input[Payout\Entity::NARRATION] ?? null,
             Payout\Entity::FUND_ACCOUNT_ID       => $fundAccountId,
             Payout\Entity::MERCHANT_ID           => $merchantId,
-            Payout\Entity::FEE_TYPE              => $input[Payout\Entity::FEE_TYPE] ?? null
+            Payout\Entity::FEE_TYPE              => $input[Payout\Entity::FEE_TYPE] ?? null,
+            Payout\Entity::NOTES                 => $input[Payout\Entity::NOTES] ?? [],
         ];
+
+        if (isset($input[Payout\Entity::SCHEDULED_AT]) === true)
+        {
+            $requestBody[Payout\Entity::SCHEDULED_AT] = $input[Payout\Entity::SCHEDULED_AT];
+        }
+
+        return $requestBody;
     }
 }

@@ -1899,6 +1899,7 @@ class Base extends BaseCore
                     Payout\Entity::MODE            => $params[Payout\Entity::MODE] ?? null,
                     Payout\Entity::REFERENCE_ID    => $params[Payout\Entity::REFERENCE_ID] ?? null,
                     Payout\Entity::NARRATION       => $params[Payout\Entity::NARRATION] ?? null,
+                    Payout\Entity::NOTES           => $params[Payout\Entity::NOTES] ?? [],
                 ];
 
                 if (isset($params[Payout\Entity::SCHEDULED_AT]) === true)

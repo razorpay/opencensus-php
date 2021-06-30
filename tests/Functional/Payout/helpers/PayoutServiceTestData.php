@@ -24,7 +24,8 @@ return [
                 "reference_id"         => null,
                 "narration"            => "test Merchant Fund Transfer",
                 "fee_type"             => "",
-                "queue_if_low_balance" => false
+                "queue_if_low_balance" => false,
+                "notes"                => []
             ],
         ],
         'response' => [
