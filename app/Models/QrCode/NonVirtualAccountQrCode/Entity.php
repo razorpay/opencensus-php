@@ -100,6 +100,7 @@ class Entity extends QrCode\Entity
     protected $casts = [
         self::AMOUNT       => 'int',
         self::FIXED_AMOUNT => 'bool',
+        self::CLOSE_BY     => 'int',
     ];
 
     protected $publicSetters = [
