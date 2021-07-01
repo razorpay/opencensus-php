@@ -1540,6 +1540,10 @@ class Core extends Base\Core
         }
     }
 
+    /*
+     *  We faced the deadlocks issue due order of DB locks
+     *  Always take the lock on credits and then in merchant balance
+     */
     protected function calculateTransferFees(Entity $transaction)
     {
         $merchant = $transaction->merchant;
@@ -1555,21 +1559,10 @@ class Core extends Base\Core
 
         $startTime = microtime(true);
 
-        $creditLockBeforeBalanceFeature = $merchant->isFeatureEnabled(Feature\Constants::LEDGER_CREDIT_LOCK);
+        // taking lock on credits
+        list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchant);
 
-        $this->trace->info(
-            TraceCode::PAYMENT_TRANSFER_CREDIT_LOCK_FEATURE,
-            [
-                'merchant_id'    => $merchant->getId(),
-                'feature_value'  => $creditLockBeforeBalanceFeature
-            ]
-        );
-
-        if ($creditLockBeforeBalanceFeature === true)
-        {
-            list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchant);
-        }
-
+        // taking lock on merchant balance
         $this->getBalanceLockForUpdate($merchant->getId());
 
         $this->trace->info(
@@ -1580,11 +1573,6 @@ class Core extends Base\Core
                 'method_name'       => "calculateTransferFees",
                 'time_taken'    => (microtime(true) - $startTime) * 1000
             ]);
-
-        if ($creditLockBeforeBalanceFeature === false)
-        {
-            list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchant);
-        }
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transaction);
 

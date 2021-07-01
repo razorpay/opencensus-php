@@ -720,8 +720,6 @@ class Constants
      */
     const SKIP_CUSTOMER_ID_CHECKOUT = 'skip_customer_id_checkout';
 
-    const LEDGER_CREDIT_LOCK        = 'ledger_credit_lock';
-
     /**
      * Dispute presentment needs to be enabled on the merchant via private auth
      */
@@ -1052,7 +1050,6 @@ class Constants
         self::EXPOSE_SETTLED_BY               => true,
         self::PAYPAL_CC                       => true,
         self::SKIP_SUBM_ONBOARDING_COMM       => true,
-        self::LEDGER_CREDIT_LOCK              => true,
         self::SKIP_CUSTOMER_ID_CHECKOUT       => true,
         self::DISPUTE_PRESENTMENT             => true,
     ];
