@@ -422,7 +422,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->processPaymentForQr($qrCodeId);
 
-        $expectedResponse = $this->testData['testFetchPaymentsrQrCode'];
+        $expectedResponse = $this->testData['testFetchPaymentsForQrCode'];
 
         $this->assertArraySelectiveEquals($expectedResponse, $this->fetchQrPayment());
     }
@@ -439,7 +439,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->processPaymentForQr($qrCodeId);
 
-        $expectedResponse = $this->testData['testFetchPaymentsrQrCode'];
+        $expectedResponse = $this->testData['testFetchPaymentsForQrCode'];
 
         $this->assertArraySelectiveEquals($expectedResponse, $this->fetchQrPayment($qrCode['id']));
     }
@@ -465,5 +465,24 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->assertEquals('OK', $response[0]);
 
+    }
+
+    public function testFetchQrCodeByCustomerId()
+    {
+        $this->createQrCode(['customer_id' => 'cust_100000customer', 'type'  => 'upi_qr']);
+
+        $expectedResponse = $this->testData['testFetchQrCodeByCustomerId'];
+
+        $this->assertArraySelectiveEquals($expectedResponse,
+                                          $this->fetchQrCode(null, ['customer_id' => 'cust_100000customer']));
+    }
+
+    public function testFetchQrCodeById()
+    {
+        $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer', 'type'  => 'upi_qr']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $this->fetchQrCode($qrCode['id']));
     }
 }

@@ -34,4 +34,9 @@ class EsRepository extends Base\EsRepository
     {
         $this->addMatchPhrasePrefix($query, self::CUSTOMER_EMAIL, $value);
     }
+    
+    public function buildQueryForCustomerId(array &$query, $value)
+    {
+        $this->addTermFilter($query, Entity::CUSTOMER_ID, $value);
+    }
 }

@@ -25,6 +25,28 @@ return [
         ],
     ],
 
+    'testFetchQrCodeByCustomerId' => [
+        'entity' => 'collection',
+        'count'  => 1,
+        'items'  => [
+            [
+                'name'         => 'Test QR Code',
+                'description'  => 'QR code for tests',
+                'type'         => 'upi_qr',
+                'fixed_amount' => false,
+                'customer_id'  => 'cust_100000customer'
+            ]
+        ]
+    ],
+
+    'testFetchQrCodeById' => [
+        'name'         => 'Test QR Code',
+        'description'  => 'QR code for tests',
+        'type'         => 'upi_qr',
+        'fixed_amount' => false,
+        'customer_id'  => 'cust_100000customer'
+    ],
+
     'testProcessIciciQrPayment' => [
         'url'     => '/payment/callback/bharatqr/upi_icici',
         'method'  => 'post',
@@ -48,9 +70,9 @@ return [
         'base_url'        => '/reminders/send/test/qr_code/qr_code/',
         'expected_status' => 'closed'
     ],
-    
-    
-    'testFetchPaymentsrQrCode' => [
+
+
+    'testFetchPaymentsForQrCode' => [
         'entity' => 'collection',
         'count'  => 1,
         'items'  => [
