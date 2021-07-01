@@ -129,4 +129,5 @@ class CoreTest extends TestCase
             $merchant->getAttribute(MerchantEntity::HOLD_FUNDS_REASON)
         );
     }
+    
 }

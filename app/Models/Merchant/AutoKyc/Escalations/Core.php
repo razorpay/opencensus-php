@@ -213,6 +213,12 @@ class Core extends Base\Core
         // finally raise escalations for each type
         foreach ($escalationLevelMap as $level => $merchants)
         {
+            $this->trace->info(TraceCode::SELF_SERVE_ESCALATION_ATTEMPT, [
+                'type'         => 'escalation '.$type,
+                'level'        => $level,
+                'merchants'    => array_map(function($merchant) {return $merchant->getId();}, $merchants)
+            ]);
+
             (new Handler)->handleEscalations($merchants, $type, $level);
 
             if ($type === Constants::HARD_LIMIT and $level === 4)

@@ -12,6 +12,7 @@ use RZP\Models\Merchant\AutoKyc\Escalations\Entity;
 use RZP\Models\Merchant\AutoKyc\Escalations\Utils;
 use RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Models\Admin\Permission;
+use RZP\Trace\TraceCode;
 
 
 class Email extends BaseEscalationType
@@ -31,6 +32,12 @@ class Email extends BaseEscalationType
                 Entity::ESCALATION_LEVEL    => $level
             ]);
             $this->repo->merchant_auto_kyc_escalations->saveOrFail($escalation);
+
+            $this->app['trace']->info(TraceCode::SELF_SERVE_ESCALATION_SUCCESS, [
+                'type'          => $type,
+                'level'         => $level,
+                'merchant_id'   => $merchant->getId()
+            ]);
         }
     }
 

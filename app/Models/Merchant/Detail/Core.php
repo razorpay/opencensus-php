@@ -1738,9 +1738,10 @@ class Core extends Base\Core
                             $currentActivationStatus,
                             $input[Entity::ACTIVATION_STATUS]);
 
-        $this->trace->info(
-            TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS,
-            ['input' => $input]);
+        $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS, [
+            'input'         => $input,
+            'merchant_id'   => $merchant->getId()
+        ]);
 
         $rejectionReasons = [];
 
