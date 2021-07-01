@@ -209,6 +209,7 @@ class Validator extends Base\Validator
                                  . 'verify_contact,'
                                  . 'verify_email,'
                                  . 'create_payout,'
+                                 . 'sub_virtual_account_transfer,'
                                  . 'create_payout_link,'
                                  . 'create_payout_batch,'
                                  . 'approve_payout,'
@@ -219,8 +220,10 @@ class Validator extends Base\Validator
         Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.
-        'amount'                  => 'required_if:action,create_payout,approve_payout,create_payout_link|integer|min:100',
+        'amount'                  => 'required_if:action,create_payout,sub_virtual_account_transfer,approve_payout,create_payout_link|integer|min:100',
         'account_number'          => 'required_if:action,create_payout,create_payout_batch,approve_payout,approve_payout_bulk,create_payout_link,create_bulk_payout_link|alpha_num|between:5,22',
+        'master_account_number'   => 'required_if:action,sub_virtual_account_transfer|alpha_num|between:5,22',
+        'sub_account_number'      => 'required_if:action,sub_virtual_account_transfer|alpha_num|between:5,22',
         'fund_account_id'         => 'required_if:action,create_payout|public_id|size:17',
         'purpose'                 => 'required_if:action,create_payout,create_payout_link|string|max:30|alpha_dash_space',
         'payout_id'               => 'required_if:action,approve_payout|public_id|size:19',

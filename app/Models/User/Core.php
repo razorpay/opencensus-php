@@ -1606,6 +1606,13 @@ class Core extends Base\Core
                 'account_type'        => $fa->getAccountTypeAsText(),
             ];
         }
+        else if ($action === 'sub_virtual_account_transfer')
+        {
+            $payload += [
+                'amount'         => amount_format_IN($input['amount']),
+                'account_number' => mask_except_last4($input['master_account_number']),
+            ];
+        }
         else if ($action === 'create_payout_batch')
         {
             //HACK : TODO Remove this after migrating all to create_payout_batch with total_payout_amount

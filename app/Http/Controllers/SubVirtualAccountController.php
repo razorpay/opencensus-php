@@ -33,4 +33,13 @@ class SubVirtualAccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function transferWithOtp()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->transferWithOtp($input);
+
+        return ApiResponse::json($response);
+    }
 }

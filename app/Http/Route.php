@@ -2547,6 +2547,7 @@ class Route
         'sub_virtual_account_create'              => ['post',     'admin/sub_virtual_accounts',                             'SubVirtualAccountController@create'                           ],
         'sub_virtual_account_list_admin'          => ['get',      'admin/sub_virtual_accounts/merchant/{id}',               'SubVirtualAccountController@listAdmin'                        ],
         'sub_virtual_account_enable_disable'      => ['post',     'admin/sub_virtual_accounts/{id}',                        'SubVirtualAccountController@enableOrDisable'                  ],
+        'sub_virtual_account_transfer_with_otp'   => ['post',     'sub_virtual_account_transfer_with_otp',                  'SubVirtualAccountController@transferWithOtp'                  ],
 
         // Ledger Routes
         'create_ledger_account'                   => ['post',      'ledger_service/create_account',                         'LedgerController@createAccount'],
@@ -4054,7 +4055,9 @@ class Route
         'partner_activation_details',
         'partner_activation_save',
 
+        // Sub Virtual Account routes
         'sub_virtual_account_list',
+        'sub_virtual_account_transfer_with_otp',
     ];
 
     //
@@ -5189,9 +5192,10 @@ class Route
         'feature_onboarding_fetch_all_responses'   => Permission::FEATURE_ONBOARDING_FETCH_ALL_RESPONSES,
         'geoip_update'                             => Permission::UPDATE_GEO_IP,
 
-        'sub_virtual_account_create'               => Permission::SUB_VIRTUAL_ACCOUNT,
-        'sub_virtual_account_list_admin'           => Permission::SUB_VIRTUAL_ACCOUNT,
-        'sub_virtual_account_enable_disable'       => Permission::SUB_VIRTUAL_ACCOUNT,
+        'sub_virtual_account_create'               => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
+        'sub_virtual_account_list_admin'           => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
+        'sub_virtual_account_enable_disable'       => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
+
         'batch_process_by_id'                      => Permission::RETRY_BATCH,
         'merchant_get_tags'                        => Permission::VIEW_MERCHANT_TAGS,
         'merchant_tags_bulk'                       => Permission::MANAGE_BULK_MERCHANT_TAGGING,
@@ -6094,6 +6098,10 @@ class Route
         'payout_links_integrate_app'                   => '*',
         'payout_links_fetch_shopify_order'             => Permission::CREATE_PAYOUT_LINKS,
         'payout_links_integration_details'             => '*',
+
+        // Sub VA Routes
+        'sub_virtual_account_list'                     => Permission::MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT,
+        'sub_virtual_account_transfer_with_otp'        => Permission::MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER,
     ];
 
     public static $direct = [
@@ -7108,6 +7116,7 @@ class Route
             'subscription_view_test_post',
             'subscriptions_overview',
             'sub_virtual_account_list',
+            'sub_virtual_account_transfer_with_otp',
             'tax_create',
             'tax_delete',
             'tax_get',
@@ -10240,6 +10249,8 @@ class Route
         'merchant_fetch_tpvs',
         'merchant_tpv_create',
         'admin_merchants_tpvs_create',
+
+        'sub_virtual_account_transfer_with_otp',
     ];
 
     public static $routesWithV2Prefix = [

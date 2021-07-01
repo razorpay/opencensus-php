@@ -125,6 +125,8 @@ class UserRolePermissionsMap
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
 
+                 Permission::MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT,
+                 Permission::MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER,
              ],
 
              BankingRole::ADMIN => [
@@ -218,7 +220,10 @@ class UserRolePermissionsMap
                  Permission::VIEW_TAX_PAYMENTS,
                  Permission::MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES,
                  Permission::UPDATE_MERCHANT_PREFERENCE,
-                 Permission::VIEW_MERCHANT_PREFERENCE
+                 Permission::VIEW_MERCHANT_PREFERENCE,
+
+                 Permission::MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT,
+                 Permission::MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER,
              ],
 
              BankingRole::FINANCE_L1 => [

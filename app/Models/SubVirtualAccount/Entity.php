@@ -20,6 +20,15 @@ class Entity extends Base\PublicEntity
     const SUB_MERCHANT_ID           = 'sub_merchant_id';
     const ACTIVE                    = 'active';
 
+    const DESCRIPTION               = 'description';
+    const AMOUNT                    = 'amount';
+    const CURRENCY                  = 'currency';
+
+    const INPUT                     = 'input';
+    const MASTER_ADJUSTMENT_ID      = 'master_adjustment_id';
+    const SUB_ADJUSTMENT_ID         = 'sub_adjustment_id';
+    const MASTER_ADJUSTMENT_ENTITY  = 'master_adjustment_entity';
+
     protected $generateIdOnCreate   = true;
 
     protected $entity               = 'sub_virtual_account';
@@ -96,6 +105,11 @@ class Entity extends Base\PublicEntity
     public function getActive()
     {
         return $this->getAttribute(self::ACTIVE);
+    }
+
+    public function getMasterBalanceId()
+    {
+        return $this->getAttribute(self::MASTER_BALANCE_ID);
     }
 
     // ------------- End Getters -------------

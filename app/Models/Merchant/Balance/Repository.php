@@ -36,7 +36,7 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function getBankingBalanceWithMerchantAndAccountNumberOrFail($merchantId, $accountNumber)
+    public function getBankingBalanceWithMerchantIdAndAccountNumberOrFail($merchantId, $accountNumber)
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)

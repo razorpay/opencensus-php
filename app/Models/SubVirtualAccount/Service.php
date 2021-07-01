@@ -2,9 +2,13 @@
 
 namespace RZP\Models\SubVirtualAccount;
 
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Models\Adjustment\Entity as AdjustmentEntity;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 /**
  * Class Service
@@ -95,5 +99,59 @@ class Service extends Base\Service
         $response = $this->core->enableOrDisable($id, $input);
 
         return $response->toArrayPublic();
+    }
+
+    public function transferWithOtp(array $input)
+    {
+        (new Validator)->validateInput('sub_virtual_account_transfer_with_otp', $input);
+
+        $transferInput = $this->verifyOtpForTransfer($input);
+
+        return $this->transfer($transferInput);
+    }
+
+    protected function transfer(array $input)
+    {
+        $this->trace->info(TraceCode::SUB_VIRTUAL_ACCOUNT_TRANSFER_REQUEST, ['input' => $input]);
+
+        $validator = new Validator;
+
+        $validator->validateInput('sub_virtual_account_transfer', $input);
+
+        $masterMerchantId = $this->merchant->getId();
+
+        $subVirtualAccount = $this->repo->sub_virtual_account->getSubVirtualAccountWithMasterMerchantIdAndAccountNumbers($input, $masterMerchantId);
+
+        $validator->validateSubVirtualAccount($subVirtualAccount, $input);
+
+        $validator->validateMasterMerchant($this->merchant);
+
+        /** @var  $subMerhcantEntity  MerchantEntity*/
+        $subMerhcantEntity = $this->repo->merchant->findOrFail($subVirtualAccount->getSubMerchantId());
+
+        $validator->validateSubMerchant($subMerhcantEntity);
+
+        /** @var  $masterAdjEntity AdjustmentEntity*/
+        $masterAdjEntity = $this->core->transfer($input, $this->merchant, $subMerhcantEntity);
+
+        $this->trace->info(
+            TraceCode::SUB_VIRTUAL_ACCOUNT_TRANSFER_RESPONSE,
+            [
+                Entity::MASTER_ADJUSTMENT_ENTITY => $masterAdjEntity->toArrayPublic(),
+            ]);
+
+        return $masterAdjEntity->toArrayPublic();
+    }
+
+    private function verifyOtpForTransfer(array $input)
+    {
+        $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+
+        (new User\Core)->verifyOtp($input + ['action' => 'sub_virtual_account_transfer'],
+            $this->merchant,
+            $this->user,
+            $this->mode === Constants\Mode::TEST);
+
+        return array_except($input, ['otp', 'token']);
     }
 }

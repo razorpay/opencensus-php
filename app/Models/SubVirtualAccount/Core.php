@@ -6,9 +6,12 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Adjustment;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
 /**
  * Class Core
@@ -98,5 +101,62 @@ class Core extends Base\Core
         $this->repo->saveOrFail($subVirtualAccount);
 
         return $subVirtualAccount;
+    }
+
+    public function transfer(array $input, MerchantEntity $masterMerchant, MerchantEntity $subMerchant)
+    {
+        $masterBalance = $this->repo->balance->getBankingBalanceWithMerchantIdAndAccountNumberOrFail($masterMerchant->getId(), $input[Entity::MASTER_ACCOUNT_NUMBER]);
+
+        $amount = $input[Entity::AMOUNT];
+
+        if ($masterBalance->getBalance() < $amount) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_TRANSFER_NOT_ENOUGH_BANKING_BALANCE,
+                null,
+                [
+                    Entity::MASTER_MERCHANT_ID => $this->merchant->getId(),
+                ]
+            );
+        }
+
+        $masterDescription = 'Internal Fund Transfer to ' . $input[Entity::SUB_ACCOUNT_NUMBER];
+
+        $subDescription = 'Internal Fund Transfer from ' . $input[Entity::MASTER_ACCOUNT_NUMBER];
+
+        $masterAdjInput = [
+            Entity::AMOUNT => -$amount,
+            Entity::DESCRIPTION => $masterDescription,
+            BalanceEntity::TYPE => Type::BANKING,
+            Entity::CURRENCY => $input[Entity::CURRENCY] ?? 'INR',
+        ];
+
+        $subAdjInput = [
+            Entity::AMOUNT => $amount,
+            Entity::DESCRIPTION => $subDescription,
+            BalanceEntity::TYPE => Type::BANKING,
+            Entity::CURRENCY => $input[Entity::CURRENCY] ?? 'INR',
+        ];
+
+        $masterAdjEntity = $this->repo->transaction(function() use (
+            $masterAdjInput,
+            $masterMerchant,
+            $subAdjInput,
+            $subMerchant
+        ) {
+            $masterAdjEntity = (new Adjustment\Core())->createAdjustment($masterAdjInput, $masterMerchant);
+
+            $subAdjEntity = (new Adjustment\Core())->createAdjustment($subAdjInput, $subMerchant);
+
+            $this->trace->info(
+                TraceCode::SUB_VIRTUAL_ACCOUNT_TRANSFER_ADJUSTMENT_RESPONSE,
+                [
+                    Entity::MASTER_ADJUSTMENT_ID => $masterAdjEntity->getId(),
+                    Entity::SUB_ADJUSTMENT_ID    => $subAdjEntity->getId(),
+                ]);
+
+            return $masterAdjEntity;
+        });
+
+        return $masterAdjEntity;
     }
 }

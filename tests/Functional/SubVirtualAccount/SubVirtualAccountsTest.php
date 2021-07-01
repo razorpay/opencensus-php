@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\SubVirtualAccount;
 use Hash;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -22,6 +23,8 @@ class SubVirtualAccountsTest extends TestCase
         parent::setUp();
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->merchant->addFeatures([Features::SUB_VIRTUAL_ACCOUNT]);
     }
 
     public function testCreateSubVirtualAccount()
@@ -132,7 +135,7 @@ class SubVirtualAccountsTest extends TestCase
         $type = 'banking',
         $accountType = 'shared')
     {
-        $this->fixtures->on('test')->create('merchant', ['id' => '100abc000abc01', 'email' => 'mahbubani.amit@gmail.com']);
+        $this->fixtures->on('test')->create('merchant', ['id' => '100abc000abc01', 'business_banking' => 1, 'live' => 1]);
 
         $this->fixtures->on('test')->create('balance',
             [
@@ -142,5 +145,147 @@ class SubVirtualAccountsTest extends TestCase
                 'merchant_id'    => '100abc000abc01',
                 'balance'        => 0
             ]);
+    }
+
+    public function testSubVirtualAccountTransferWithOtp()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->startTest();
+    }
+
+    public function testSubVirtualAccountTransferWithInvalidOtp()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->startTest();
+    }
+
+    public function testSubVirtualAccountTransferWithSubMerchantBusinessBankingNotEnabled()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->fixtures->edit('merchant', '100abc000abc01', ['business_banking' => 0]);
+
+        $this->startTest();
+    }
+
+    public function testSubVirtualAccountTransferWithInactiveSubVirtualAccount()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ', 'active' => false]);
+
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->startTest();
+    }
+
+    public function testSubVirtualAccountTransferWithMasterFundsOnHold()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['hold_funds' => 1]);
+
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->startTest();
+    }
+
+    public function testSubVirtualAccountTransferWithInvalidMasterAccountNumber()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->startTest();
+    }
+
+    public function testSubVirtualAccountTransferWithInvalidSubAccountNumber()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->startTest();
+    }
+
+    public function testSubVirtualAccountTransferWithInsufficientBalance()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->startTest();
+    }
+
+    public function testSubVirtualAccountTransferWithExceedingMaxAmountOfTransfer()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->startTest();
+    }
+
+    public function testSubVirtualAccountTransferWithMasterMerchantNotLive()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['live' => 0]);
+
+        $this->startTest();
+    }
+
+    public function testSubVirtualAccountTransferWithSubMerchantNotLive()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->fixtures->edit('merchant', '100abc000abc01', ['live' => 0]);
+
+        $this->startTest();
+    }
+
+    public function testSubVirtualAccountTransferWithFeatureNotAssigned()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->fixtures->merchant->removeFeatures([Features::SUB_VIRTUAL_ACCOUNT]);
+
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->startTest();
     }
 }

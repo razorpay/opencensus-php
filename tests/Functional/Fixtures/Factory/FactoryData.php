@@ -1278,7 +1278,7 @@ final class FactoryData
                 'active'                => true,
                 'name'                  => $faker->word,
                 'master_merchant_id'    => '10000000000000',
-                'sub_merchant_id'       => '10000000000001',
+                'sub_merchant_id'       => '100abc000abc01',
                 'master_account_number' => '2224440041626905',
                 'sub_account_number'    => '2323230041626906',
                 'master_balance_id'     => 'xbalance000000',

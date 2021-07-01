@@ -329,7 +329,9 @@ class Name
     const RETRY_REFUNDS_WITH_APPENDED_ID      = 'retry_refunds_with_appended_id';
 
     // Sub VA constants
-    const SUB_VIRTUAL_ACCOUNT                   = 'sub_virtual_account';
+    const ADMIN_SUB_VIRTUAL_ACCOUNT             = 'admin_sub_virtual_account';
+    const MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT    = 'merchant_fetch_sub_virtual_account';
+    const MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER = 'merchant_sub_virtual_account_transfer';
 
     // Permission to create auto-kyc soft limit breached workflow
     const AUTO_KYC_SOFT_LIMIT_BREACH          = 'auto_kyc_soft_limit_breach';

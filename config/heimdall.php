@@ -1242,7 +1242,7 @@ return [
             Permission::UPDATE_BULK_PAYOUT_AMOUNT_TYPE => [
                 'assignable' => true,
             ],
-            Permission::SUB_VIRTUAL_ACCOUNT => [
+            Permission::ADMIN_SUB_VIRTUAL_ACCOUNT => [
                 'assignable' => true,
             ],
             Permission::MANUALLY_LINK_RBL_ACCOUNT_STATEMENT => [

@@ -25,5 +25,21 @@ class Repository extends Base\Repository
                     ->where(Entity::SUB_ACCOUNT_NUMBER, $input[Entity::SUB_ACCOUNT_NUMBER])
                     ->first();
     }
+
+    /**
+     * Get Sub Virtual Account if exists with similar details
+     * using master merchant id, master account number and
+     * sub account number.
+     * @param  array           $input
+     * @return Entity|null
+     */
+    public function getSubVirtualAccountWithMasterMerchantIdAndAccountNumbers(array $input, $masterMerchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MASTER_MERCHANT_ID, $masterMerchantId)
+                    ->where(Entity::MASTER_ACCOUNT_NUMBER, $input[Entity::MASTER_ACCOUNT_NUMBER])
+                    ->where(Entity::SUB_ACCOUNT_NUMBER, $input[Entity::SUB_ACCOUNT_NUMBER])
+                    ->first();
+    }
 }
 

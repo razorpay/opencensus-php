@@ -619,8 +619,16 @@ class PublicErrorDescription
 
     // Sub Virtual Account
     const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_EXISTS                        = 'Sub Virtual Account already exists.';
+    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_DOES_NOT_EXIST                        = 'Sub Virtual Account does not exist with provided details.';
+    const BAD_REQUEST_SUB_MERCHANT_NOT_LIVE_ACTION_DENIED                       = 'Fund movement has been put on hold because either the sub-account is not live yet or has been temporarily blocked. Please reach out to our support team for further assistance.';
     const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_ENABLED                       = 'Sub Virtual Account already enabled.';
     const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_DISABLED                      = 'Sub Virtual Account already disabled.';
+    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_TRANSFER_DISABLED                     = 'Transfer is not allowed since Sub Virtual Account is not active. Please contact support for any further assistance.';
+    const BAD_REQUEST_MASTER_MERCHANT_NOT_LIVE_ACTION_DENIED                    = 'Fund movement has been put on hold because either the master account is not live yet or has been temporarily blocked. Please reach out to our support team for further assistance.';
+    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED                   = 'Sub Virtual Account Feature is not enabled. Please reach out to our support team for further assistance.';
+    const BAD_REQUEST_BUSINESS_BANKING_NOT_ENABLED_FOR_SUB_MERCHANT             = 'Business Banking is not enabled for sub-account. Please reach out to our support team for further assistance.';
+    const BAD_REQUEST_BUSINESS_BANKING_NOT_ENABLED_FOR_MASTER_MERCHANT          = 'Business Banking is not enabled for master account. Please reach out to our support team for further assistance.';
+    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_TRANSFER_NOT_ENOUGH_BANKING_BALANCE   = 'Fund movement can\'t be performed due to insufficient balance. Please add more funds before proceeding.';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                   = 'Customer already exists for the merchant';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                 = 'Customer contact number is not set';
