@@ -6,6 +6,7 @@ import Button from 'common/new-ui/Button';
 import Amount from 'common/ui/Amount';
 import { CASH_ADVANCE_SECTIONS, REPAYMENT_VIEWS } from '../constants';
 import moment from 'moment';
+import { trackRepayNow, trackViewRepayments } from '../TrackEvents/trackEvents';
 
 const Loader = () => {
   return (
@@ -15,8 +16,16 @@ const Loader = () => {
   );
 };
 
-const Summary = ({ setView, nextRepayableAmount, totalOwedAmount, loading, nextRepaymentDate }) => {
+const Summary = ({
+  setView,
+  nextRepayableAmount,
+  totalOwedAmount,
+  loading,
+  nextRepaymentDate,
+  location: { pathname = '' },
+}) => {
   const handleRepayNowClick = () => {
+    trackRepayNow(pathname);
     setView(REPAYMENT_VIEWS.REPAY_METHOD);
   };
 
@@ -48,6 +57,7 @@ const Summary = ({ setView, nextRepayableAmount, totalOwedAmount, loading, nextR
             <Link
               to={`/capital/cash-advance/${CASH_ADVANCE_SECTIONS.REPAYMENTS_SCHEDULE}`}
               class="btn btn-outline"
+              onClick={() => trackViewRepayments(pathname)}
             >
               View Repayments
             </Link>

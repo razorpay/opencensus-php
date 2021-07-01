@@ -1,12 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { withRouter } from 'react-router-dom';
 import Amount from 'common/ui/Amount';
 import { REPAYMENT_VIEWS, REPAYMENT_USER_METHODS_TYPE } from '../constants';
+import { trackRepaymentSuccess } from '../TrackEvents/trackEvents';
 
-const RepaySuccess = ({ setView, resultAmounts }) => {
+const RepaySuccess = ({ setView, resultAmounts, location: { pathname = '' } }) => {
   const handleDoneClick = () => {
     setView(REPAYMENT_VIEWS.SUMMARY);
   };
   const userRepayMethodText = REPAYMENT_USER_METHODS_TYPE[resultAmounts.userRepayMethod] || '';
+
+  useEffect(() => {
+    if (resultAmounts.repayAmount > 0) {
+      trackRepaymentSuccess(pathname, resultAmounts);
+    }
+  }, [pathname, resultAmounts]);
+
   return (
     <div className="success">
       <div className="flex">
@@ -96,4 +105,4 @@ const RepaySuccess = ({ setView, resultAmounts }) => {
   );
 };
 
-export default RepaySuccess;
+export default withRouter(RepaySuccess);

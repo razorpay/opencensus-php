@@ -1,4 +1,5 @@
 import React from 'react';
+import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import Amount from 'common/ui/Amount';
@@ -15,6 +16,14 @@ import {
   PAYMENT_MODES,
 } from '../constants';
 import { getPrincipalAmount, getInterestAmount } from './utils';
+import {
+  trackChangeAmount,
+  trackCheckoutFlowCancel,
+  trackCheckoutFlowSuccess,
+  trackRepayCancel,
+  trackRepayConfirm,
+  trackSettlementAmountUpdated,
+} from '../TrackEvents/trackEvents';
 
 function updateRepaymentData(data, onResolve, onReject) {
   const repayment = new Repayments();
@@ -39,6 +48,7 @@ const RepayMethod = ({
   totalPrincipalAmount,
   totalInterestAmount,
   repayType,
+  location: { pathname = '' },
 }) => {
   const isNextRepayableRepayType = repayType === REPAY_AMOUNT_TYPES.NEXT_REPAYABLE;
   const isTotalOwedRepayType = repayType === REPAY_AMOUNT_TYPES.TOTAL_OWED;
@@ -62,6 +72,19 @@ const RepayMethod = ({
       bankBalance.active &&
       bankBalance.amount
     );
+
+    trackRepayConfirm(pathname, {
+      repayAmount,
+      nextRepayInterestAmount,
+      nextRepayPrincipalAmount,
+      totalPrincipalAmount,
+      totalInterestAmount,
+      repayType,
+      isSettlementActiveAndHasBalance,
+      isBankBalanceActiveAndHasBalance,
+      settlementBalance,
+      bankBalance,
+    });
 
     if (isSettlementActiveAndHasBalance) {
       requests.push(() =>
@@ -133,9 +156,15 @@ const RepayMethod = ({
       return new Promise((resolve, reject) => {
         const razorpayInstance = new Razorpay({
           order_id,
-          handler: (response) => updateRepaymentData(response, resolve, reject),
+          handler: (response) => {
+            trackCheckoutFlowSuccess(pathname);
+            updateRepaymentData(response, resolve, reject);
+          },
           modal: {
-            ondismiss: reject,
+            ondismiss: () => {
+              trackCheckoutFlowCancel(pathname, repayAmount);
+              reject();
+            },
           },
         });
         razorpayInstance.open();
@@ -144,10 +173,33 @@ const RepayMethod = ({
   };
 
   const handleCancelClick = () => {
+    const isSettlementActiveAndHasBalance = !!(
+      settlementBalance &&
+      settlementBalance.active &&
+      settlementBalance.amount
+    );
+    const isBankBalanceActiveAndHasBalance = !!(
+      bankBalance &&
+      bankBalance.active &&
+      bankBalance.amount
+    );
+    trackRepayCancel(pathname, {
+      repayAmount,
+      nextRepayInterestAmount,
+      nextRepayPrincipalAmount,
+      totalPrincipalAmount,
+      totalInterestAmount,
+      repayType,
+      isSettlementActiveAndHasBalance,
+      isBankBalanceActiveAndHasBalance,
+      settlementBalance,
+      bankBalance,
+    });
     setView(REPAYMENT_VIEWS.SUMMARY);
   };
 
   const handleChangeAmountClick = () => {
+    trackChangeAmount();
     setView(REPAYMENT_VIEWS.REPAY_AMOUNT);
   };
 
@@ -186,27 +238,35 @@ const RepayMethod = ({
 
   const handleCustomAmountChange = (event) => {
     let error = '';
+    let errorStr;
     const value = parseInt(event.target.value);
 
     if (value < 10 || event.target.value === '') {
+      errorStr = `Min. amount can be selected ₹ 10`;
       error = (
         <p>
           Min. amount can be selected <Amount value={1000} currency="INR" />
         </p>
       );
     } else if (value > repayAmount) {
+      errorStr = `Max. amount can be selected ₹ ${(repayAmount / 100).toFixed(2)}`;
       error = (
         <p>
           Max. amount can be selected <Amount value={repayAmount} currency="INR" />
         </p>
       );
     } else if (value > balance) {
+      errorStr = `Max. Available Balance is ₹ ${(balance / 100).toFixed(2)}`;
       error = (
         <p>
           Max. Available Balance is <Amount value={balance} currency="INR" />
         </p>
       );
     }
+    trackSettlementAmountUpdated(pathname, {
+      error: errorStr,
+      amount: event.target.value,
+    });
     setSettlementBalance({ ...settlementBalance, customAmount: event.target.value, error });
   };
 
@@ -368,15 +428,17 @@ const RepayMethod = ({
   );
 };
 
-export default connect((state, ownProps) => {
-  const {
-    session: {
-      user: { current: merchantId },
-    },
-  } = state;
+export default withRouter(
+  connect((state, ownProps) => {
+    const {
+      session: {
+        user: { current: merchantId },
+      },
+    } = state;
 
-  return {
-    merchantId,
-    ...ownProps,
-  };
-})(RepayMethod);
+    return {
+      merchantId,
+      ...ownProps,
+    };
+  })(RepayMethod),
+);

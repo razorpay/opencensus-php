@@ -45,6 +45,17 @@ import Spinner from 'common/ui/Spinner';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import GromorAgreementModal from 'merchant/views/Capital/components/Modals/GromorAgreementModal';
 import { checkifDateExpired } from 'merchant/views/Capital/utils';
+import {
+  trackHideBreakup,
+  trackRepayDateClicked,
+  trackRepayDateUpdated,
+  trackShowBreakup,
+  trackWithdrawAmountUpdated,
+  trackWithdrawNow,
+  trackWithdrawNowCancel,
+  trackWithdrawNowConfirm,
+  trackWithdrawStatus,
+} from './TrackEvents/trackEvents';
 
 function updateRepaymentData(data, onResolve, onReject) {
   const repayment = new Repayments();
@@ -300,6 +311,7 @@ export default class AmountWithdraw extends React.Component {
   };
 
   handleWithdrawalAmountChange = (e) => {
+    trackWithdrawAmountUpdated(e.currentTarget.value);
     e.persist();
 
     const amount = parseInt(e.currentTarget.value + '00');
@@ -338,6 +350,7 @@ export default class AmountWithdraw extends React.Component {
   };
 
   handleDueDateChange = (date) => {
+    trackRepayDateUpdated(moment(date).format('DD-MM-YYYY'));
     this.setState({
       selectedDueDate: date,
     });
@@ -411,6 +424,12 @@ export default class AmountWithdraw extends React.Component {
   };
 
   confirmWithdraw = () => {
+    const { withdrawalAmount, selectedDueDate } = this.state;
+    trackWithdrawNow({
+      amount: withdrawalAmount,
+      date: moment(selectedDueDate).format('DD-MM-YYYY'),
+    });
+
     this.gaEventDispatcher({
       eventAction: 'Dashboard CA - Withdraw',
       eventLabel: 'Withdraw | Withdraw Now',
@@ -518,6 +537,11 @@ export default class AmountWithdraw extends React.Component {
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
     const { withdrawalAmount, selectedDueDate } = this.state;
 
+    trackWithdrawNowConfirm({
+      amount: withdrawalAmount,
+      date: moment(selectedDueDate).format('DD-MM-YYYY'),
+    });
+
     const payload = {
       withdrawal: {
         withdrawal_config_id: withdrawalConfigurationDetails.id,
@@ -544,6 +568,12 @@ export default class AmountWithdraw extends React.Component {
         response.data.withdrawal.status !== STATUSES.REJECTED &&
         response.data.withdrawal.status !== STATUSES.FAILED
       ) {
+        const { withdrawalAmount, selectedDueDate } = this.state;
+        trackWithdrawStatus({
+          amount: withdrawalAmount,
+          date: moment(selectedDueDate).format('DD-MM-YYYY'),
+          status: 'success',
+        });
         this.setState({
           currentView: VIEWS.WITHDRAW_SUCCESS,
           showRepaymentDetailsBreakup: false,
@@ -560,6 +590,12 @@ export default class AmountWithdraw extends React.Component {
           eventAction: 'Withdraw | Success',
         });
       } else {
+        const { withdrawalAmount, selectedDueDate } = this.state;
+        trackWithdrawStatus({
+          amount: withdrawalAmount,
+          date: moment(selectedDueDate).format('DD-MM-YYYY'),
+          status: 'fail',
+        });
         this.setState({
           currentView: VIEWS.WITHDRAW_FAIL,
           showRepaymentDetailsBreakup: false,
@@ -569,6 +605,12 @@ export default class AmountWithdraw extends React.Component {
         });
       }
     } catch (e) {
+      const { withdrawalAmount, selectedDueDate } = this.state;
+      trackWithdrawStatus({
+        amount: withdrawalAmount,
+        date: moment(selectedDueDate).format('DD-MM-YYYY'),
+        status: 'fail',
+      });
       this.setState({
         currentView: VIEWS.WITHDRAW_FAIL,
         showRepaymentDetailsBreakup: false,
@@ -594,6 +636,12 @@ export default class AmountWithdraw extends React.Component {
   };
 
   cancelWithdraw = () => {
+    const { withdrawalAmount, selectedDueDate } = this.state;
+    trackWithdrawNowCancel({
+      amount: withdrawalAmount,
+      date: moment(selectedDueDate).format('DD-MM-YYYY'),
+    });
+
     this.props.openModal({
       component: (
         <CancelWithdrawalReasons
@@ -615,8 +663,13 @@ export default class AmountWithdraw extends React.Component {
   };
 
   toggleBreakup = () => {
+    const { showRepaymentDetailsBreakup } = this.state;
+    if (showRepaymentDetailsBreakup) {
+      trackHideBreakup();
+    } else trackShowBreakup(this.getRepayableAmount());
+
     this.gaEventDispatcher({
-      eventAction: this.state.showRepaymentDetailsBreakup
+      eventAction: showRepaymentDetailsBreakup
         ? 'Withdraw | Hide Breakup'
         : 'Withdraw | Show Breakup',
     });
@@ -1215,6 +1268,7 @@ export default class AmountWithdraw extends React.Component {
           }
           defaultValue={dateToShow}
           onChange={this.handleDueDateChange}
+          onClick={() => trackRepayDateClicked(dateToShow)}
           addonAfter={<i className="i i-date-range" />}
           placement="topLeft"
           allowToday={false}

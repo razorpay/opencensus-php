@@ -1,15 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { withRouter } from 'react-router-dom';
 import Amount from 'common/ui/Amount';
 import { REPAYMENT_VIEWS } from '../constants';
 import Button from 'common/new-ui/Button';
+import {
+  trackRepaymentClose,
+  trackRepaymentFailure,
+  trackRepaymentRetry,
+} from '../TrackEvents/trackEvents';
 
-const RepayFailure = ({ setView, resultAmounts }) => {
+const RepayFailure = ({ setView, resultAmounts, location: { pathname } }) => {
   const handleCloseClick = () => {
+    trackRepaymentClose(pathname, 'button', resultAmounts);
     setView(REPAYMENT_VIEWS.SUMMARY);
   };
   const handleRetryRepaymentClick = () => {
+    trackRepaymentRetry(pathname, resultAmounts);
     setView(REPAYMENT_VIEWS.REPAY_METHOD);
   };
+  useEffect(() => {
+    if (resultAmounts.repayAmount > 0) {
+      trackRepaymentFailure(pathname, resultAmounts);
+    }
+  }, [resultAmounts]);
   return (
     <div className="failure">
       <div style={{ alignItems: 'center' }} className="flex">
@@ -57,4 +70,4 @@ const RepayFailure = ({ setView, resultAmounts }) => {
   );
 };
 
-export default RepayFailure;
+export default withRouter(RepayFailure);

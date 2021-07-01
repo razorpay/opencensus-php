@@ -1,10 +1,14 @@
 import React from 'react';
+import { withRouter } from 'react-router-dom';
 import RepaySuccess from './RepaySuccess';
 import RepayFailure from './RepayFailure';
 import { REPAYMENT_VIEWS } from '../constants';
+import { trackRepaymentClose } from '../TrackEvents/trackEvents';
 
-const Result = ({ setView, view, resultAmounts }) => {
+const Result = ({ setView, view, resultAmounts, location: { pathname } }) => {
   const handleCrossClick = () => {
+    if (view !== REPAYMENT_VIEWS.RESULT_SUCCESS)
+      trackRepaymentClose(pathname, 'icon', resultAmounts);
     setView(REPAYMENT_VIEWS.SUMMARY);
   };
   return (
@@ -21,4 +25,4 @@ const Result = ({ setView, view, resultAmounts }) => {
   );
 };
 
-export default Result;
+export default withRouter(Result);
