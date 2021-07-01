@@ -823,7 +823,7 @@ class Service extends Base\Service
 
             $response['org_custom_code'] =  $this->merchant->org->getCustomCode();
 
-            $response['brand_color'] = $merchant->getBrandColorOrOrgPreference();
+            $response['brand_color'] = $this->merchant->getBrandColorOrOrgPreference();
 
             $supportDetails = $this->repo->merchant_email->getEmailByType(Merchant\Email\Type::SUPPORT, $merchant->getId());
 

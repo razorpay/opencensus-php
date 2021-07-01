@@ -1768,6 +1768,11 @@ class Entity extends Base\PublicEntity
             return $brandColour;
         }
 
+        if ($this->org === null)
+        {
+            return self::DEFAULT_MERCHANT_BRAND_COLOR;
+        }
+
         $orgMerchantStyles = $this->org->getMerchantStyles();
 
         if (($this->isRazorpayOrgId() === true) ||
