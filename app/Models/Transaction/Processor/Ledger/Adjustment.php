@@ -20,7 +20,8 @@ class Adjustment extends Base
     {
         $startTime = millitime();
 
-        try {
+        try
+        {
             /**
              * Check whether the event is default or not. Default event is set when there
              * is no event registered at ledger for that fund loading status.
@@ -44,19 +45,19 @@ class Adjustment extends Base
             ];
 
             $payload = [
-                self::TRANSACTOR            => self::X,
-                self::MODE                  => $this->mode,
-                self::IDEMPOTENCY_KEY       => gen_uuid(self::UUID_FORMAT),
-                self::MERCHANT_ID           => $entity->getMerchantId(),
-                self::CURRENCY              => $entity->getCurrency(),
-                self::AMOUNT                => (string) abs($entity->getAmount()),
-                self::BASE_AMOUNT           => (string) abs($entity->getAmount()),
-                self::COMMISSION            => (string) $entity->transaction->getFee(),
-                self::TAX                   => (string) $entity->transaction->getTax(),
-                self::TRANSACTOR_ID         => $entity->getPublicId(),
-                self::NOTES                 => json_encode($notes),
-                self::TRANSACTOR_TYPE       => $transactorType,
-                self::TRANSACTION_DATE      => $entity->getCreatedAt(),
+                self::TRANSACTOR       => self::X,
+                self::MODE             => $this->mode,
+                self::IDEMPOTENCY_KEY  => gen_uuid(self::UUID_FORMAT),
+                self::MERCHANT_ID      => $entity->getMerchantId(),
+                self::CURRENCY         => $entity->getCurrency(),
+                self::AMOUNT           => (string) abs($entity->getAmount()),
+                self::BASE_AMOUNT      => (string) abs($entity->getAmount()),
+                self::COMMISSION       => (string) $entity->transaction->getFee(),
+                self::TAX              => (string) $entity->transaction->getTax(),
+                self::TRANSACTOR_ID    => $entity->getPublicId(),
+                self::NOTES            => json_encode($notes),
+                self::TRANSACTOR_TYPE  => $transactorType,
+                self::TRANSACTION_DATE => $entity->getCreatedAt(),
             ];
 
             $this->pushToLedgerSns($payload);
@@ -68,8 +69,8 @@ class Adjustment extends Base
                 Trace::ERROR,
                 TraceCode::LEDGER_JOURNAL_FUND_LOADING_PAYLOAD_ERROR,
                 [
-                    self::TRANSACTOR_ID    => $entity->getPublicId(),
-                    self::TRANSACTOR_TYPE  => $transactorType,
+                    self::TRANSACTOR_ID   => $entity->getPublicId(),
+                    self::TRANSACTOR_TYPE => $transactorType,
                 ]);
         }
         finally

@@ -46,6 +46,7 @@ class Payout extends Base
             $transactorId = $entity->getPublicId();
             $transactionId = $entity->getTransactionId();
             $transactorDate = null;
+            $optionalPayload = [];
 
             switch ($transactorType)
             {
@@ -55,6 +56,11 @@ class Payout extends Base
 
                 case self::PAYOUT_PROCESSED:
                     $transactorDate = $entity->getProcessedAt();
+
+                    $optionalPayload = [
+                        self::FTS_FUND_ACCOUNT_ID => self::DEFAULT_FTS_FUND_ACCOUNT_ID,
+                        self::FTS_ACCOUNT_TYPE    => self::DEFAULT_FTS_FUND_ACCOUNT_TYPE,
+                    ];
                     break;
 
                 case self::PAYOUT_REVERSED:
@@ -63,6 +69,11 @@ class Payout extends Base
                         $transactorId = $reversal->getPublicId();
                         $transactionId = $reversal->getTransactionId();
                     }
+
+                    $optionalPayload = [
+                        self::FTS_FUND_ACCOUNT_ID => self::DEFAULT_FTS_FUND_ACCOUNT_ID,
+                        self::FTS_ACCOUNT_TYPE    => self::DEFAULT_FTS_FUND_ACCOUNT_TYPE,
+                    ];
                     break;
 
                 default:
@@ -85,12 +96,12 @@ class Payout extends Base
                 self::COMMISSION          => (string) $entity->getFee(),
                 self::TAX                 => (string) $entity->getTax(),
                 self::NOTES               => json_encode($notes),
-                self::FTS_FUND_ACCOUNT_ID => self::DEFAULT_FTS_FUND_ACCOUNT_ID,
-                self::FTS_ACCOUNT_TYPE    => self::DEFAULT_FTS_FUND_ACCOUNT_TYPE,
                 self::TRANSACTOR_ID       => $transactorId,
                 self::TRANSACTOR_TYPE     => $transactorType,
                 self::TRANSACTION_DATE    => $transactorDate,
             ];
+
+            $payload = array_merge($payload, $optionalPayload);
 
             $this->pushToLedgerSns($payload);
         }

@@ -77,6 +77,7 @@ class Base extends Core
 
     /***
      * @param string $event
+     *
      * @return bool
      */
     protected function isDefaultEvent(string $event)

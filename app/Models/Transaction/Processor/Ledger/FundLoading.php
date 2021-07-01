@@ -21,7 +21,8 @@ class FundLoading extends Base
     {
         $startTime = millitime();
 
-        try {
+        try
+        {
             /**
              * Check whether the event is default or not. Default event is set when there
              * is no event registered at ledger for that fund loading status.
@@ -73,8 +74,8 @@ class FundLoading extends Base
                 Trace::ERROR,
                 TraceCode::LEDGER_JOURNAL_FUND_LOADING_PAYLOAD_ERROR,
                 [
-                    self::TRANSACTOR_ID    => $entity->getPublicId(),
-                    self::TRANSACTOR_TYPE  => $transactorType,
+                    self::TRANSACTOR_ID   => $entity->getPublicId(),
+                    self::TRANSACTOR_TYPE => $transactorType,
                 ]);
         }
         finally

@@ -24,7 +24,8 @@ class FundAccountValidation extends Base
     {
         $startTime = millitime();
 
-        try {
+        try
+        {
 
             /**
              * Check whether the event is default or not. Default event is set when there
@@ -48,7 +49,10 @@ class FundAccountValidation extends Base
                 self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($entity->getTransactionId())
             ];
 
-            switch ($transactorType) {
+            $optionalPayload = [];
+
+            switch ($transactorType)
+            {
                 case self::FAV_INITIATED:
                     $transactorDate = $entity->getCreatedAt();
                     break;
@@ -56,6 +60,10 @@ class FundAccountValidation extends Base
                 case self::FAV_FAILED:
                 case self::FAV_REVERSED:
                 case self::FAV_PROCESSED:
+                    $optionalPayload = [
+                        self::FTS_FUND_ACCOUNT_ID => self::DEFAULT_FTS_FUND_ACCOUNT_ID,
+                        self::FTS_ACCOUNT_TYPE    => self::DEFAULT_FTS_FUND_ACCOUNT_TYPE,
+                    ];
                     break;
 
                 default:
@@ -63,22 +71,22 @@ class FundAccountValidation extends Base
             }
 
             $payload = [
-                self::TRANSACTOR          => self::X,
-                self::MODE                => $this->mode,
-                self::IDEMPOTENCY_KEY     => gen_uuid(self::UUID_FORMAT),
-                self::MERCHANT_ID         => $entity->getMerchantId(),
-                self::CURRENCY            => $entity->getCurrency(),
-                self::AMOUNT              => (string) $entity->getAmount(),
-                self::BASE_AMOUNT         => (string) $entity->getBaseAmount(),
-                self::COMMISSION          => (string) $entity->getFee(),
-                self::TAX                 => (string) $entity->getTax(),
-                self::NOTES               => json_encode($notes),
-                self::FTS_FUND_ACCOUNT_ID => self::DEFAULT_FTS_FUND_ACCOUNT_ID,
-                self::FTS_ACCOUNT_TYPE    => self::DEFAULT_FTS_FUND_ACCOUNT_TYPE,
-                self::TRANSACTOR_ID       => $entity->getPublicId(),
-                self::TRANSACTOR_TYPE     => $transactorType,
-                self::TRANSACTION_DATE    => $transactorDate,
+                self::TRANSACTOR       => self::X,
+                self::MODE             => $this->mode,
+                self::IDEMPOTENCY_KEY  => gen_uuid(self::UUID_FORMAT),
+                self::MERCHANT_ID      => $entity->getMerchantId(),
+                self::CURRENCY         => $entity->getCurrency(),
+                self::AMOUNT           => (string) $entity->getAmount(),
+                self::BASE_AMOUNT      => (string) $entity->getBaseAmount(),
+                self::COMMISSION       => (string) $entity->getFee(),
+                self::TAX              => (string) $entity->getTax(),
+                self::NOTES            => json_encode($notes),
+                self::TRANSACTOR_ID    => $entity->getPublicId(),
+                self::TRANSACTOR_TYPE  => $transactorType,
+                self::TRANSACTION_DATE => $transactorDate,
             ];
+
+            $payload = array_merge($payload, $optionalPayload);
 
             $this->pushToLedgerSns($payload);
         }
