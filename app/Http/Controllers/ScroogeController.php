@@ -29,6 +29,13 @@ class ScroogeController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
+    public function reverseFailedRefunds()
+    {
+        $response = $this->app['scrooge']->reverseFailedRefunds($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
     public function bulkReference1Update()
     {
         $response = $this->app['scrooge']->bulkUpdateRefundReference1($this->input);

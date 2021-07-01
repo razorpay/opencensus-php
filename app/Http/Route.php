@@ -1625,6 +1625,7 @@ class Route
         'scrooge_refunds_download_gateway_file'      => ['post',     'scrooge/refunds/download-gateway-file',               'ScroogeController@downloadGatewayRefundsFile'               ],
         'scrooge_refunds_download_gateway_report'    => ['post',     'scrooge/refunds/download-gateway-report',             'ScroogeController@downloadGatewayReportsFile'               ],
         'scrooge_processed_refunds_state_change'     => ['post',     'scrooge/refunds/processed-refunds-state-change',      'ScroogeController@bulkStatusUpdate'                         ],
+        'scrooge_refunds_to_failed_state'            => ['post',     'scrooge/refunds/reverse_failed',                      'ScroogeController@reverseFailedRefunds'                     ],
 
         // Scrooge retry routes
         'scrooge_refunds_retry_with_verify'           => ['post',     'scrooge/refunds/retry/with_verify',                  'ScroogeController@retryRefundsWithVerify'                   ],
@@ -4464,6 +4465,7 @@ class Route
         'scrooge_refunds_update_multiple',
         'scrooge_refunds_bulk_reference1_update',
         'scrooge_processed_refunds_state_change',
+        'scrooge_refunds_to_failed_state',
         'scrooge_refunds_enqueue',
         'scrooge_refunds_get_multiple',
         'scrooge_refunds_download',
@@ -5314,6 +5316,7 @@ class Route
         'scrooge_refunds_update_multiple'          => Permission::EDIT_REFUND,
         'scrooge_refunds_bulk_reference1_update'   => Permission::UPDATE_SCROOGE_REFUND_REFERENCE1,
         'scrooge_processed_refunds_state_change'   => Permission::UPDATE_PROCESSED_REFUNDS_STATUS,
+        'scrooge_refunds_to_failed_state'          => Permission::REVERSE_FAILED_REFUNDS,
         'scrooge_refunds_enqueue'                  => Permission::EDIT_REFUND,
         'scrooge_refunds_get_multiple'             => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_download'                 => Permission::VIEW_SCROOGE_REFUNDS,
@@ -8497,6 +8500,7 @@ class Route
             'scrooge_fetch_instant_refund_mode_config',
             'scrooge_fetch_merchant_mode_configs',
             'scrooge_processed_refunds_state_change',
+            'scrooge_refunds_to_failed_state',
             'scrooge_refresh_fta_modes_cache',
             'scrooge_refund_create',
             'scrooge_refund_create_bulk',

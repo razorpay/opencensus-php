@@ -351,6 +351,10 @@ return [
                 'description' => 'update_processed_refunds_status_permission',
                 'assignable'  => true,
             ],
+            Permission::REVERSE_FAILED_REFUNDS    => [
+                'description' => 'reverse_failed_refunds_permission',
+                'assignable'  => true,
+            ],
             Permission::EDIT_INSTANT_REFUNDS_MODE_CONFIG    => [
                 'description' => 'edit_instant_refunds_mode_config_permission',
                 'assignable'  => true,

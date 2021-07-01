@@ -42,6 +42,7 @@ class Scrooge
         'retry'                                => 'retry',
         'get_reports'                          => 'reports',
         'bulk_status_update'                   => 'bulk-status-update',
+        'reverse_failed_refunds'               => 'reverse_failed_refunds',
         'bulk_recon'                           => 'bulk-reconcile',
         'bulk_reference1_update'               => 'bulk-reference1-update',
         'get_refunds'                          => 'refunds',
@@ -186,6 +187,17 @@ class Scrooge
     public function bulkUpdateRefundStatus(array $input,  bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_status_update'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param array $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     */
+    public function reverseFailedRefunds(array $input,  bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['reverse_failed_refunds'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 

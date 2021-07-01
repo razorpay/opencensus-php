@@ -279,6 +279,7 @@ class Name
     const UPDATE_REFUND_REFERENCE1            = 'update_refund_reference1';
     const UPDATE_SCROOGE_REFUND_REFERENCE1    = 'update_scrooge_refund_reference1';
     const UPDATE_PROCESSED_REFUNDS_STATUS     = 'update_processed_refunds_status';
+    const REVERSE_FAILED_REFUNDS              = 'reverse_failed_refunds';
     const REFRESH_SCROOGE_FTA_MODES_CACHE     = 'refresh_scrooge_fta_modes_cache';
     const BULK_RETRY_REFUNDS_VIA_FTA          = 'bulk_retry_refunds_via_fta';
     const EDIT_INSTANT_REFUNDS_MODE_CONFIG    = 'edit_instant_refunds_mode_config';

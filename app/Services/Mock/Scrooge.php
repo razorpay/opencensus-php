@@ -112,6 +112,19 @@ class Scrooge extends BaseScrooge
         }', true);
     }
 
+    public function reverseFailedRefunds(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        return json_decode('{
+           "success_count": 1,
+           "failure_count": 1,
+           "errors": [{
+              "refund_id": "ab123412341234",
+              "code": "INVALID_STATE",
+              "description": "State transition invalid"
+           }]
+        }', true);
+    }
+
     public function bulkUpdateRefundReference1(array $input, bool $throwExceptionOnFailure = false): array
     {
         return json_decode('{
