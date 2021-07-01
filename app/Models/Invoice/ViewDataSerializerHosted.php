@@ -523,9 +523,12 @@ class ViewDataSerializerHosted extends Base\Core
 
         // Unsets Customer_id for all the status if FF 'skip_customer_id_checkout' is true
         $skipCustomerIdCheckout = $this->merchant->isFeatureEnabled(Feature\Constants::SKIP_CUSTOMER_ID_CHECKOUT);
-        if ($skipCustomerIdCheckout === true)
+        if ($skipCustomerIdCheckout === true and !empty($serialized[Entity::CUSTOMER_DETAILS]))
         {
-            $serialized[Entity::CUSTOMER_DETAILS][Entity::ID] = '';
+            if (isset($serialized[Entity::CUSTOMER_DETAILS][Entity::ID]) === true)
+            {
+                $serialized[Entity::CUSTOMER_DETAILS][Entity::ID] = '';
+            }
         }
 
         //
