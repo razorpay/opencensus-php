@@ -35,7 +35,7 @@ class Validator extends Base\Validator
         Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
         Entity::ID                              => 'sometimes|max:14',
         Entity::NAME                            => 'sometimes|string|max:200',
-        Entity::EMAIL                           => 'required|email|unique:users,email',
+        Entity::EMAIL                           => 'required|email',
         Entity::PASSWORD                        => 'required|between:8,50|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION           => 'required|between:8,50',
         Entity::CONTACT_MOBILE                  => 'sometimes|nullable|max:15|contact_syntax',
@@ -198,6 +198,10 @@ class Validator extends Base\Validator
         Entity::ACTION  => 'required|string|filled|in:lock,unlock,un_verify',
     ];
 
+    protected static $createEmailUniqueRules = [
+        Entity::EMAIL => 'required|email|unique:users,email',
+    ];
+
     protected static $createOtpRules = [
         // When medium is not sent OTP is sent to both mediums.
         Entity::MEDIUM        => 'sometimes|filled|in:sms,email',
@@ -262,7 +266,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
-        'captcha'
+        'captcha',
+        'email_unique'
     ];
 
     protected static $loginValidators = [
@@ -400,6 +405,13 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateEmailUnique(array $input)
+    {
+        $inputEmail = ['email' => $input[Entity::EMAIL]];
+
+        $this->validateInput('createEmailUnique', $inputEmail);
+    }
+
     /**
      * Google captcha validation.
      *
@@ -435,7 +447,7 @@ class Validator extends Base\Validator
 
         $emailData['email'] = $input[Entity::EMAIL];
 
-        if( (in_array($app->environment(), Constants::WHITELIST_ENVIRONMENT_CAPTCHA_VALIDATION, true) === true) and
+        if ((in_array($app->environment(), Constants::WHITELIST_ENVIRONMENT_CAPTCHA_VALIDATION, true) === true) and
             (in_array($emailData['email'], Constants::WHITELIST_CAPTCHA_EMAILS, true) === false))
         {
             $captchaResponse = $input[Entity::CAPTCHA] ?? null;
@@ -457,6 +469,8 @@ class Validator extends Base\Validator
             $response = $this->getCaptchaVerificationResponse($url);
 
             $output = json_decode($response->body);
+
+            $app['trace']->info(TraceCode::CAPTCHA_ENABLED, [$captchaResponse,  $emailData]);
 
             if($output->success !== true)
             {
@@ -738,13 +752,12 @@ class Validator extends Base\Validator
             return config('app.signup.invisible_captcha_secret');
         }
 
-        if($captchaMode === 'v3')
+        if ($captchaMode === 'v3')
         {
             return config('app.signup.v3_captcha_secret');
         }
 
         return config('app.signup.nocaptcha_secret');
-
     }
 
     protected static function validatePassword($input)

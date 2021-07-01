@@ -104,6 +104,15 @@ class UserTest extends TestCase
         $this->assertNotNull($row);
     }
 
+    public function testRegisterWithDuplicateEmail()
+    {
+        $user = $this->fixtures->create('user', ['email' => 'hello123@c.com', 'password' => 'hello123']);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
     public function testRegisterWithOauthPayload()
     {
         $this->ba->dashboardGuestAppAuth();
