@@ -289,6 +289,12 @@ class Shield
         {
             $payloadDetails[ShieldConstants::PACKAGE_NAME] = $packageName;
         }
+
+        $virtualDeviceId = $paymentAnalytics->getVirtualDeviceId();
+        if (empty($virtualDeviceId) === false)
+        {
+            $payloadDetails[ShieldConstants::VIRTUAL_DEVICE_ID] = $virtualDeviceId;
+        }
     }
 
     protected function populateWhiteListedDomains(Merchant\Entity $merchant, array & $payloadDetails)

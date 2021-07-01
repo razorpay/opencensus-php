@@ -85,6 +85,7 @@ final class Shield
     const PACKAGE_NAME                 = 'package_name';
     const TOKEN_ID                     = 'token_id';
     const TOKEN_MAX_AMOUNT             = 'token_max_amount';
+    const VIRTUAL_DEVICE_ID            = 'virtual_device_id';
 
     const IS_PARTNER_INITIATED_PAYMENT = 'is_partner_initiated_payment';
     const EARLY_SETTLEMENT_ENABLED     = 'early_settlement_enabled';

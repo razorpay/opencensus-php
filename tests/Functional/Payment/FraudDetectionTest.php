@@ -928,4 +928,73 @@ class FraudDetectionTest extends TestCase
 
         $this->assertEquals($payment['id'], $riskEntity['payment_id']);
     }
+
+    protected function runFraudDetectionTestWithVirtualDeviceId($value)
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '341111111111111';
+
+        $payment['card']['cvv'] = '1234';
+
+        $payment['_'] = ['device_id' => $value];
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->mockRazorx();
+
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient');
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing(function ($payload) use ($value) {
+                $action = 'block';
+
+                if ((empty($value) === true) and
+                    (isset($payload['input']['virtual_device_id']) === false))
+                {
+                    $action = 'allow';
+                }
+
+                if ((empty($value) === false) and
+                    (isset($payload['input']['virtual_device_id']) === true) and
+                    ($payload['input']['virtual_device_id'] === $value))
+                {
+                    $action = 'allow';
+                }
+
+                return [
+                    "action" => $action,
+                    "max_rule_weight" => 0,
+                    "maxmind_score" => null,
+                    "triggered_rule_weight" => 0,
+                ];
+            });
+
+        $this->app->instance('shield', $shieldClient);
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+    }
+
+    public function testFraudDetectionVirtualDeviceIdWithNonEmptyValue()
+    {
+        $deviceId = '1.4fdd46b919c4fda5d0cbc4559f01effc678c57d2.1601468626490.93465236';
+
+        $this->runFraudDetectionTestWithVirtualDeviceId($deviceId);
+    }
+
+    public function testFraudDetectionVirtualDeviceIdWithNullValue()
+    {
+        $this->runFraudDetectionTestWithVirtualDeviceId(null);
+    }
+
+    public function testFraudDetectionVirtualDeviceIdWithEmptyValue()
+    {
+        $this->runFraudDetectionTestWithVirtualDeviceId('');
+    }
 }
