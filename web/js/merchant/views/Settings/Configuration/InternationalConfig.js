@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import { makePopup } from '@typeform/embed';
+import { createPopup } from '@typeform/embed';
 
 import User from 'merchant/models/User';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
@@ -55,15 +55,12 @@ function withInternationalConfig(WrappedComponent) {
 
     initializeTypeForm = () => {
       const currentMID = this.props.user.current;
-      const IntlEnableTypeForm = makePopup(
-        `https://razorpay.typeform.com/to/jJCZoO?mid=${currentMID}`,
-        {
-          mode: 'popup',
-          hideHeaders: true,
-          hideFooters: true,
-          onSubmit: this.handleTypeFormSubmitted,
-        },
-      );
+      const IntlEnableTypeForm = createPopup('jJCZoO', {
+        hideHeaders: true,
+        hideFooters: true,
+        hidden: { mid: currentMID },
+        onSubmit: this.handleTypeFormSubmitted,
+      });
       this.IntlEnableTypeForm = IntlEnableTypeForm; // saving reference typeform
     };
 
