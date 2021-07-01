@@ -98,6 +98,9 @@ class Service extends Base\Service
             case PaymentLink\Entity::getSign():
                 return (new PaymentLink\Core)->getGrievanceEntityDetails($id);
 
+            case Payment\Entity::getSign():
+                return (new Payment\Core)->getGrievanceEntityDetails($id);
+
             default:
                 throw new Exception\BadRequestValidationFailureException(
                     'Invalid Entity.');

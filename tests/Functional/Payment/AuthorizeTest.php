@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 use Mail;
 use Cache;
 use Redis;
+use RZP\Mail\Payment\CustomerFailed;
 use RZP\Models;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
@@ -95,6 +96,152 @@ class AuthorizeTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testAuthorisedMailWithMerchantSupportEmail()
+    {
+        Mail::fake();
+
+        $support = $this->fixtures->create('merchant_email', ['type' => 'support']);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($paymentArray);
+
+        Mail::assertQueued(AuthorizedMail::class, function ($mail)
+        {
+            $this->assertEquals($mail->view, 'emails.mjml.customer.payment');
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
+            $this->assertNotEquals('no-reply@razorpay.com', $mail->replyTo[0]['address']);
+
+            return true;
+        });
+
+    }
+
+    public function testAuthorisedMailWithoutMerchantSupportEmail()
+    {
+        Mail::fake();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($paymentArray);
+
+        Mail::assertQueued(AuthorizedMail::class, function ($mail)
+        {
+            $this->assertEquals($mail->view, 'emails.mjml.customer.payment');
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
+            $this->assertEquals('no-reply@razorpay.com', $mail->replyTo[0]['address']);
+
+            return true;
+        });
+
+    }
+
+    protected function failAuthorizePayment(array $replace = array())
+    {
+        $server = $this->mockServer()
+            ->shouldReceive('content')
+            ->andReturnUsing(function (& $content) use ($replace)
+            {
+                foreach ($replace as $key => $value)
+                {
+                    $content[$key] = $value;
+                }
+
+                $content['vpc_TxnResponseCode'] = '5';
+            })->mock();
+
+        $this->setMockServer($server);
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $content = $this->doAuthPayment();
+        });
+    }
+
+    public function testFailedMailWithMerchantSupportEmail()
+    {
+        Mail::fake();
+
+        $support = $this->fixtures->create('merchant_email', ['type' => 'support']);
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_axis_terminal');
+
+        $this->fixtures->create('terminal:shared_migs_recurring_terminals');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'axis_migs';
+
+        $this->failAuthorizePayment();
+
+        Mail::assertQueued(CustomerFailed::class, function ($mail)
+        {
+            $this->assertEquals($mail->view, 'emails.mjml.customer.failure');
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
+            $this->assertNotEquals('no-reply@razorpay.com', $mail->replyTo[0]['address']);
+
+            return true;
+        });
+
+    }
+
+    public function testFailedMailWithoutMerchantSupportEmail()
+    {
+        Mail::fake();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_axis_terminal');
+
+        $this->fixtures->create('terminal:shared_migs_recurring_terminals');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'axis_migs';
+
+        $this->failAuthorizePayment();
+
+        Mail::assertQueued(CustomerFailed::class, function ($mail)
+        {
+            $this->assertEquals($mail->view, 'emails.mjml.customer.failure');
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
+            $this->assertEquals('no-reply@razorpay.com', $mail->replyTo[0]['address']);
+
+            return true;
+        });
+
     }
 
     public function testMagicKeyFalseMerchantDisabled()

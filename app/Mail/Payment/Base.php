@@ -206,4 +206,31 @@ class Base extends Mailable
 
         return $email;
     }
+
+    public function getSupportEmailInReplyTo(bool $isMerchantEmail = false):string
+    {
+        $merchantId = $this->data['merchant']['id'];
+
+        // Zebpay
+        if ($merchantId === '8iMbVsEnv1HCo0')
+        {
+            return 'support@zebpay.com';
+        }
+        // Koinex
+        else if ($merchantId === '8Gx5vN29m83OUY')
+        {
+            return 'team@koinex.in';
+        }
+
+        else if($isMerchantEmail === false and
+            isset($this->data['merchant']['support_details']) and
+            isset($this->data['merchant']['support_details']['email']))
+        {
+            return $this->data['merchant']['support_details']['email'];
+        }
+
+        return Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+
+    }
+
 }

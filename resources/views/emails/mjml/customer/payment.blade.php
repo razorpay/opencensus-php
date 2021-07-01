@@ -692,6 +692,47 @@
 
     </div>
 
+    <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+              <div class="mj-column-per-100 outlook-group-fix"
+                style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                  <tbody>
+                    <tr>
+                      <td style="vertical-align:top;padding:0px;">
+
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+
+                          <tr>
+                            <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+
+                              <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+                                <div style="text-align: center; font-size: 14px; line-height: 18px; color: #9B9B9B; margin-top: 10px; margin-bottom: 10px;">
+                                  Please report this payment if you find it to be suspicious or fraudulent
+                                  <a href="{{ $merchant['report_url'] }}" style="color: #528FF0; text-decoration: none; margin-left: 6px;">
+                                    <img src="https://cdn.razorpay.com/static/assets/email/flag.png" width="15px" alt="report flag" style="vertical-align: text-top;" />
+                                    Report Payment
+                                  </a>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     @if ($custom_branding)
       <table class="row footer" style="border-spacing: 0; border-collapse: collapse; vertical-align: top; text-align: left; padding: 0px; width: 100%; position: relative;">
         <tr style="padding: 0; vertical-align: top; text-align: left;">

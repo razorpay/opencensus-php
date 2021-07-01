@@ -35,7 +35,7 @@ class Authorized extends Base
 
     protected function addReplyTo()
     {
-        $email = $this->getCustomCustomerReplyToEmail();
+        $email = $this->getSupportEmailInReplyTo();
 
         $this->replyTo($email);
 
@@ -55,26 +55,6 @@ class Authorized extends Base
     protected function getSenderHeader(): string
     {
         return Constants::HEADERS[Constants::NOREPLY];
-    }
-
-    protected function getCustomCustomerReplyToEmail(): string
-    {
-        $merchantId = $this->data['merchant']['id'];
-
-        $email = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
-
-        // Zebpay
-        if ($merchantId === '8iMbVsEnv1HCo0')
-        {
-            $email = 'support@zebpay.com';
-        }
-        // Koinex
-        else if ($merchantId === '8Gx5vN29m83OUY')
-        {
-            $email = 'team@koinex.in';
-        }
-
-        return $email;
     }
 
     protected function shouldSendEmailViaStork(): bool
@@ -121,6 +101,7 @@ class Authorized extends Base
                     'billing_label'            => $data['merchant']['billing_label'],
                     'brand_color'              => $data['merchant']['brand_color'],
                     'brand_contrast_color'     => $data['merchant']['contrast_color'],
+                    'report_url'               => $data['merchant']['report_url'],
                 ],
 
                 // hardcoding this as of now, will remove this as soon as way

@@ -3,6 +3,7 @@
 namespace RZP\Mail\Payment;
 
 use RZP\Constants\MailTags;
+use RZP\Mail\Base\Constants;
 
 class CustomerFailed extends Base
 {
@@ -40,4 +41,14 @@ class CustomerFailed extends Base
     {
         return true;
     }
+
+    protected function addReplyTo()
+    {
+        $email = $this->getSupportEmailInReplyTo();
+
+        $this->replyTo($email);
+
+        return $this;
+    }
+
 }

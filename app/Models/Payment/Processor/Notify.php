@@ -535,6 +535,7 @@ class Notify
                 'brand_logo'                => $this->merchant->getFullLogoUrlWithSize(),
                 'name'                      => $this->merchant->getName(),
                 'eligible_for_covid_relief' => $this->merchant->isFeatureEnabled(Feature\Constants::COVID_19_RELIEF),
+                'report_url'                => 'https://razorpay.com/support/payments/report-merchant/?e=' . base64_encode($this->payment->getPublicId()) . '&s=' . base64_encode('txn_confirm_mail') . '&m=' . base64_encode($this->payment->getEmail()),
             ],
             'payment'   => [
                 'id'                   => $this->payment->getId(),

@@ -14,6 +14,7 @@ use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\TerminalProcessor;
+use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
@@ -247,5 +248,26 @@ class Core extends Base\Core
         }
 
         return $isPushedToKafka;
+    }
+
+    public function getGrievanceEntityDetails(string $id)
+    {
+
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $payment = $this->repo->payment->findOrFail($id);
+
+        $merchant = $payment->merchant;
+
+        $amount = $payment->getAmountComponents($payment->isDCC());
+
+        return [
+            'entity'         => 'payment',
+            'entity_id'      => $payment->getPublicId(),
+            'merchant_id'    => $payment->merchant->getId(),
+            'merchant_label' => $merchant->getBillingLabel(),
+            'merchant_logo'  => $merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
+            'subject'        => 'Payment Successful of '.$amount[0].$amount[1].'.'.$amount[2],
+        ];
     }
 }

@@ -33,7 +33,7 @@ class Validator extends Base\Validator
         'comments'   => 'sometimes|string|max:2048',
         'entity_id'  => 'required|public_id',
         'captcha_id' => 'required|string',
-        'source'     => 'required|in:customer_email,hosted',
+        'source'     => 'required|in:customer_email,hosted,txn_confirm_mail',
     ];
 
     protected function validateFraudType(string $attribute, string $value)
