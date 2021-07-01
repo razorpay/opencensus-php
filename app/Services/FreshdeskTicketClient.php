@@ -42,6 +42,7 @@ class FreshdeskTicketClient
         Constants::URL2        => 'token2',
         Constants::URLX        => 'tokenx',
         Constants::URLCAP      => 'tokencap',
+        Constants::URLIND      => 'tokenind',
     ];
 
     public function __construct(Application $app)
