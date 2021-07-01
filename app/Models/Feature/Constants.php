@@ -711,11 +711,6 @@ class Constants
     const PAYMENT_SHOW_DCC_MARKUP   =   'payment_show_dcc_markup';
 
     /**
-     * Show old error desc to merchant based on feature value
-     */
-    const SHOW_OLD_ERROR_DESC = 'show_old_error_desc';
-
-    /**
      * Feature flag for partner to skip onboarding notifications sent to submerchant
      */
     const SKIP_SUBM_ONBOARDING_COMM = 'skip_subm_onboarding_comm';
@@ -1054,7 +1049,6 @@ class Constants
         self::PAYMENT_SHOW_DCC_MARKUP         => true,
         self::EXPOSE_SETTLED_BY               => true,
         self::PAYPAL_CC                       => true,
-        self::SHOW_OLD_ERROR_DESC             => true,
         self::SKIP_SUBM_ONBOARDING_COMM       => true,
         self::SKIP_CUSTOMER_ID_CHECKOUT       => true,
         self::DISPUTE_PRESENTMENT             => true,

@@ -382,11 +382,14 @@ class Error extends Support\Fluent
 
         if ($readDescFromCodeMapping === false)
         {
-            if((isset($errorCodeJson['old_error_description']) === true) and
-               ($this->merchant->isFeatureEnabled(Features::SHOW_OLD_ERROR_DESC) === true))
-            {
-                $errorCodeJson['error_description'] = $errorCodeJson['old_error_description'];
-            }
+            $this->trace->info(TraceCode::ERROR_CENTRAL_REPO_DESCRIPTION_DOES_NOT_MATCH,
+                [
+                    'method' => $method,
+                    'internal_error_code' => $code,
+                    'central_repo_desc' => $errorCodeJson['error_description'],
+                    'original_desc'     => $this->getDescription(),
+                ]
+            );
 
             $this->setDesc($errorCodeJson['error_description']);
 
