@@ -53,15 +53,6 @@ class NavFragment extends Component {
         <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled } >
           <OffersForYou/>
         </ShowWhen>
-        <ShowWhen
-          additionalCondition={(user) =>
-            !!showGSTModal && user.isAllowedView('profile_gst') && !user.isUnregisteredBusiness
-          }
-        >
-          <li>
-            <a onClick={showGSTModal}>GST Details</a>
-          </li>
-        </ShowWhen>
         <li>
           <ModesDropdown
             mode={mode}
@@ -87,38 +78,6 @@ class NavFragment extends Component {
             <SwitchMerchant user={user} onSwitchMerchant={onSwitchMerchant} />
           </li>
         ) : null}
-        <ShowWhen additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}>
-          <li>
-            <a
-              target="_blank"
-              href="https://razorpay.com/docs?utm-source=dashboard-navbar"
-              onClick={() => {
-                analyticsTrack({
-                  objectName: 'top nav',
-                  actionName: 'clicked',
-                  screen: 'home page',
-                  properties: {
-                    itemName: 'documentation',
-                    location: 'top navigation',
-                    ...getCommonAnalyticsProperties(window.rzp_user),
-                  },
-                });
-                analyticsTrack({
-                  objectName: 'documentation',
-                  actionName: 'clicked',
-                  screen: 'home page',
-                  location: 'top navigation',
-                });
-                window.rzpAnalytics({
-                  eventCategory: 'Dashboard - Header',
-                  eventAction: 'Go To - Documentation',
-                });
-              }}
-            >
-              <span>Documentation</span>
-            </a>
-          </li>
-        </ShowWhen>
       </React.Fragment>
     );
   }
