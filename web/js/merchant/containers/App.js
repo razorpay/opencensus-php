@@ -722,8 +722,10 @@ export default class App extends Component {
 
   getSurveyForm = () => {
     const { goLiveNPSSurveyPopup, nonGoLiveNPSSurveyPopup } = this.state;
-    if(!goLiveNPSSurveyPopup)this.state.GoLiveNPSEnableTypeForm.unmount();
-    if(!nonGoLiveNPSSurveyPopup)this.state.NonGoLiveNPSEnableTypeForm.unmount();
+    if (!goLiveNPSSurveyPopup && this.state.GoLiveNPSEnableTypeForm)
+      this.state.GoLiveNPSEnableTypeForm.unmount();
+    if (!nonGoLiveNPSSurveyPopup && this.state.NonGoLiveNPSEnableTypeForm)
+      this.state.NonGoLiveNPSEnableTypeForm.unmount();
     return (
       <>
         {goLiveNPSSurveyPopup &&
