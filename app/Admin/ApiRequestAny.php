@@ -539,7 +539,10 @@ class ApiRequestAny
 
             $cookie = str_replace('+', '%2B', $cookie);
 
-            $this->options['headers']['Cookie'] = 'rzp_utm=' . $cookie;
+            if(isset($this->options['cookies']['rzp_utm']) === false)
+            {
+                $this->options['cookies']['rzp_utm'] = $cookie;
+            }
         }
 
         // Forward razorx cookies cause this will be available only in testing mode.
@@ -547,7 +550,10 @@ class ApiRequestAny
         {
             $cookie = $_COOKIE['razorx'];
 
-            $this->options['headers']['Cookie'] = 'razorx=' . $cookie;
+            if(isset($this->options['cookies']['razorx']) === false)
+            {
+                $this->options['cookies']['razorx'] = $cookie;
+            }
         }
     }
 
