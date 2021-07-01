@@ -1759,6 +1759,35 @@ class Entity extends Base\PublicEntity
         return '#' . $storedBrandColor;
     }
 
+    public function getBrandColorOrOrgPreference()
+    {
+        $brandColour = $this->getBrandColor();
+
+        if (empty($brandColour) === false)
+        {
+            return $brandColour;
+        }
+
+        $orgMerchantStyles = $this->org->getMerchantStyles();
+
+        if (($this->isRazorpayOrgId() === true) ||
+            ($this->shouldShowCustomOrgBranding() === false) ||
+            (empty($orgMerchantStyles) === true))
+        {
+            return self::DEFAULT_MERCHANT_BRAND_COLOR;
+        }
+
+        $orgMerchantStyles = json_decode($orgMerchantStyles, true);
+
+        if (($orgMerchantStyles !== null) &&
+            (array_key_exists('checkout_theme_color', $orgMerchantStyles) === true))
+        {
+            return $orgMerchantStyles['checkout_theme_color'];
+        }
+
+        return self::DEFAULT_MERCHANT_BRAND_COLOR;
+    }
+
     public function getLogoUrl()
     {
         return $this->getAttribute(self::LOGO_URL);

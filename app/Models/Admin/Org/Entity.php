@@ -407,7 +407,7 @@ class Entity extends Base\Entity
         return $this->attributes[self::BACKGROUND_IMAGE_URL];
     }
 
-    public function getMerchantStyles() : array
+    public function getMerchantStyles()
     {
         return $this->attributes[self::MERCHANT_STYLES];
     }

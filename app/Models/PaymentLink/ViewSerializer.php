@@ -139,7 +139,7 @@ class ViewSerializer extends Base\Core
             'id'               => $this->merchant->getId(),
             'name'             => $this->merchant->getBillingLabel(),
             'image'            => $this->merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
-            'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrDefault()),
+            'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrOrgPreference()),
             'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
             'branding_variant' => $brandingVariant,
             'asterix_variant'  => $asterixVariant,

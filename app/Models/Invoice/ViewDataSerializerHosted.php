@@ -409,7 +409,7 @@ class ViewDataSerializerHosted extends Base\Core
             $color = get_rgb_value($partner->getBrandColorOrDefault());
         }
 
-        return $color ?: get_rgb_value($this->merchant->getBrandColorOrDefault());
+        return $color ?: get_rgb_value($this->merchant->getBrandColorOrOrgPreference());
     }
 
     protected function getMerchantBrandTextColor(Merchant\Entity $partner = null): string

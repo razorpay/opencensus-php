@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\PaymentLink;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Item;
 use RZP\Models\Order;
 use RZP\Models\PaymentLink\Entity;
@@ -1221,6 +1223,65 @@ class PaymentLinkTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
+    }
+
+    public function testBrandColorInPaymentPageHosted()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $this->ba->publicAuth();
+
+        $response = $this->call('GET', "/v1/payment_pages/pl_".self::TEST_PL_ID."/view");
+
+        $response->assertStatus(200);
+
+        $this->assertStringContainsString('rgb(35,113,236)', $response->getContent());
+    }
+
+    public function testBrandColourInPaymentPageHostedForCustomColor()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['brand_color' => '000000']);
+
+        $this->createPaymentLinkWithMultipleItem();
+
+        $this->ba->publicAuth();
+
+        $response = $this->call('GET', "/v1/payment_pages/pl_".self::TEST_PL_ID."/view");
+
+        $response->assertStatus(200);
+
+        $this->assertStringContainsString('rgb(0,0,0)', $response->getContent());
+    }
+
+    public function testBrandColorInPaymentPageHostedForCustomBrandingOrg()
+    {
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => $org->getId()]);
+
+        $this->fixtures->edit('org', $org->getId(), ['merchant_styles' => ["checkout_theme_color" => "#97144D"]]);
+
+        $this->createPaymentLinkWithMultipleItem();
+
+        $this->ba->publicAuth();
+
+        $response = $this->call('GET', "/v1/payment_pages/pl_" . self::TEST_PL_ID . "/view");
+
+        $response->assertStatus(200);
+
+        $this->assertStringContainsString('rgb(35,113,236)', $response->getContent());
+
+        $this->fixtures->create('feature', [
+            'entity_id' => $org->getId(),
+            'entity_type' => 'org',
+            'name' => 'org_custom_branding',
+        ]);
+
+        $response = $this->call('GET', "/v1/payment_pages/pl_" . self::TEST_PL_ID . "/view");
+
+        $response->assertStatus(200);
+
+        $this->assertStringContainsString('rgb(151,20,77)', $response->getContent());
     }
 
     /**
