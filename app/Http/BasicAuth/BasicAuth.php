@@ -13,6 +13,7 @@ use Lcobucci\JWT\Signer as JWTSigner;
 use Razorpay\OAuth\OAuthServer;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
+use RZP\Http\Edge\Metric;
 use RZP\Http\RequestContextV2;
 use RZP\Http\Route;
 use RZP\Models\Key;
@@ -941,7 +942,14 @@ class BasicAuth
 
             $this->setDashboardHeaders();
 
-            return $this->checkAndSetAccountScope();
+            $res = $this->checkAndSetAccountScope();
+
+            $this->trace->count(Metric::APP_AUTH_SUCCESS_TOTAL, [
+                "flow" => "key_auth",
+                "app"  => $this->getInternalApp()
+            ]);
+
+            return $res;
         }
         // If key is not blank and this is not proxy auth
         // check for new basic auth flow for app auth (using passport)
@@ -954,8 +962,14 @@ class BasicAuth
 
             $this->trace->info(
                 TraceCode::APP_AUTHENTICATION_FROM_JWT_PASSED, ['app'   => $this->getInternalApp()]);
-            $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_APPLICATION, $this->internalApp,
-                true, ['name' => $this->internalApp]);
+
+            $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_APPLICATION, $this->getInternalApp(),
+                true, ['name' => $this->getInternalApp()]);
+
+            $this->trace->count(Metric::APP_AUTH_SUCCESS_TOTAL, [
+                "flow" => "basic_auth",
+                "app"  => $this->getInternalApp()
+            ]);
         }
 
         // Say invalid route for whenever
