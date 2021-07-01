@@ -23,8 +23,8 @@ class GatewayFile extends Job
     protected $gatewayFile;
 
     // time (in seconds) after which the job is killed.
-    // increasing the timeout to 2hrs as gateway file are having large data to process.
-    public $timeout = 7200;
+    // increasing the timeout to 3hrs as gateway file are having large data to process.
+    public $timeout = 10800;
 
     public function __construct(string $gatewayFileId, string $mode)
     {
