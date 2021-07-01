@@ -1253,9 +1253,7 @@ class Service extends Base\Service
         }
         else if((isset($input['fetch_active_mtu']) === true) and ($input['fetch_active_mtu'] === true))
         {
-           $merchantIds = $this->repo
-                               ->transaction
-                               ->fetchTransactingMerchantBetweenTimeStamps($from, $to);
+            $merchantIds = $this->repo->balance->getMerchantsWithBalanceUpdatedInTimeRange($from, $to);
 
             $cronId = $this->addLedgerCronExecution(self::LEDGER_RECON_TRIGGERED_SYSTEM, count($merchantIds));
 

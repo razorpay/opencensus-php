@@ -2378,26 +2378,4 @@ class Repository extends Base\Repository
             ->latest()
             ->get();
     }
-
-    public function fetchTransactingMerchantBetweenTimeStamps($from, $to)
-    {
-        $startTime = microtime(true);
-
-        $result =  $this->newQueryWithConnection($this->getReportingReplicaConnection())
-                        ->select(Entity::MERCHANT_ID)
-                        ->where(Entity::CREATED_AT, '>', $from)
-                        ->where(Entity::CREATED_AT, '<=', $to)
-                        ->distinct()
-                        ->pluck(Entity::MERCHANT_ID)
-                        ->toArray();
-
-        $this->trace->info(
-            TraceCode::SETTLEMENT_DEBUGGING_FRAMEWORK_MERCHANT_FETCH_TIME_TAKEN,
-            [
-               'time_taken' => get_diff_in_millisecond($startTime),
-               'count'      => count($result),
-            ]);
-
-        return $result;
-    }
 }

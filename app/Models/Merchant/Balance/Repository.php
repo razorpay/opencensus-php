@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 
@@ -415,5 +416,28 @@ class Repository extends Base\Repository
                     ->where(Entity::ACCOUNT_TYPE, $accountType)
                     ->merchantIdAndType($merchantId, Type::BANKING)
                     ->first();
+    }
+
+    public function getMerchantsWithBalanceUpdatedInTimeRange($from, $to)
+    {
+        $startTime = microtime(true);
+
+        $result =  $this->newQueryWithConnection($this->getReportingReplicaConnection())
+            ->select(Entity::MERCHANT_ID)
+            ->where(Entity::TYPE, '=', Type::PRIMARY)
+            ->where(Entity::UPDATED_AT, '>', $from)
+            ->where(Entity::UPDATED_AT, '<=', $to)
+            ->groupBy(Entity::MERCHANT_ID)
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DEBUGGING_FRAMEWORK_MERCHANT_FETCH_TIME_TAKEN,
+            [
+                'time_taken' => get_diff_in_millisecond($startTime),
+                'count'      => count($result),
+            ]);
+
+        return $result;
     }
 }
