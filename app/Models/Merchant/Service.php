@@ -77,7 +77,7 @@ use RZP\Models\Merchant\AutoKyc\Escalations;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
-use RZP\Constants\{Mode, Entity as CE, Product};
+use RZP\Constants\{Environment, Mode, Entity as CE, Product};
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
@@ -3804,6 +3804,16 @@ class Service extends Base\Service
 
         $mailer   = $this->getOAuthMailerClassByType($type);
 
+        $logoUrl = null;
+
+        if (empty($client->application['logo_url']) === false)
+        {
+            $cdnName = $this->app->environment() === Environment::PRODUCTION ? 'cdn' : 'betacdn';
+
+            // Constructing the cdn url for logo. We save multiple sizes of logo, using large here by adding the `_large` after the id.
+            $logoUrl = 'https://' . $cdnName . '.razorpay.com' . preg_replace('/\.([^\.]+$)/', '_large.$1', $client->application['logo_url']);
+        }
+
         $data = [
             'merchant'    => [
                 'name' => $merchant['name'],
@@ -3811,7 +3821,7 @@ class Service extends Base\Service
             ],
             'application' => [
                 'name'     => $client->application['name'],
-                'logo_url' => $client->application['logo_url']
+                'logo_url' => $logoUrl
             ],
             'user'        => [
                 'name'  => $user['name']

@@ -11,6 +11,7 @@ use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\OAuth\AppAuthorized as OAuthAppAuthorizedMail;
+use RZP\Mail\OAuth\TallyAuthOtp as TallyAuthOtpMail;
 use RZP\Mail\OAuth\CompetitorAppAuthorized as OAuthCompetitorAuthorizedMail;
 
 class OAuthMailTest extends OAuthTestCase
@@ -60,6 +61,52 @@ class OAuthMailTest extends OAuthTestCase
             $this->assertEquals($user->getPublicId(), $mail->viewData['user']['id']);
 
             $this->assertEquals($application->id, $mail->viewData['application']['id']);
+
+            return true;
+        });
+    }
+
+    public function testOAuthTallyOTPMail()
+    {
+        Mail::fake();
+
+        $appData = [
+            Application\Entity::ID          => '10000000000App',
+            Application\Entity::NAME        => 'Test App',
+            Application\Entity::LOGO_URL    => '/logos/10000000000App.png'
+        ];
+
+        $application = $this->createOAuthApplication($appData);
+
+        $clients = $application->clients()->get()->all();
+
+        $user = $this->getDbLastEntity('user', 'test');
+
+        $merchant = $this->getDbLastEntity('merchant', 'test');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['client_id'] = $clients[0]->id;
+
+        $testData['request']['content']['user_id'] = $user->id;
+
+        $testData['request']['content']['merchant_id'] = $merchant->id;
+
+        $testData['request']['content']['otp'] = '0007';
+
+        $testData['request']['content']['email'] = $user->email;
+
+        $this->startTest();
+
+        Mail::assertQueued(TallyAuthOtpMail::class, function ($mail) use ($user, $application)
+        {
+            $this->assertEquals($user['name'], $mail->viewData['user']['name']);
+
+            $this->assertEquals($application->name, $mail->viewData['application']['name']);
+
+            $this->assertEquals('0007', $mail->viewData['otp']);
+
+            $this->assertEquals('https://betacdn.razorpay.com/logos/' . $application->id . '_large.png', $mail->viewData['application']['logo_url']);
 
             return true;
         });
