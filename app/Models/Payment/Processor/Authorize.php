@@ -1467,6 +1467,13 @@ trait Authorize
 
     private function validateContactAndProviderFromToken(Payment\Entity $payment, $input)
     {
+        $terminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+
+        if(($terminals[0]['gateway'] === Payment\Gateway::SHARP and $input['provider'] === PayLater::GETSIMPL))
+        {
+            $input['ott'] = Constants::GETSIMPLTOKEN;
+        }
+
         if ($this->shouldSkipContactAndProviderValidation($input) === true)
         {
             return;

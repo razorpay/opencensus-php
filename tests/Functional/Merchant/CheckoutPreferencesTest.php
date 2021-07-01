@@ -525,6 +525,21 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertEquals($response['methods']['cardless_emi']['hcin'],true);
     }
 
+    public function testGetCheckoutPreferencesForPaylaterTestMode()
+    {
+        $this->fixtures->merchant->enablePayLater('10000000000000');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals($response['methods']['paylater']['epaylater'],true);
+
+        $this->assertEquals($response['methods']['paylater']['getsimpl'],true);
+
+        $this->assertEquals($response['methods']['paylater']['icic'],true);
+
+        $this->assertEquals($response['methods']['paylater']['hdfc'],true);
+    }
+
     public function testGetCheckoutPreferencesForDisabledUpi()
     {
         $this->fixtures->merchant->disableUpi('10000000000000');

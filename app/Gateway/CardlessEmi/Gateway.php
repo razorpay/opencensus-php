@@ -1452,6 +1452,23 @@ class Gateway extends Base\Gateway
 
         $this->provider = $input['provider'];
 
+        if($input['method'] === Payment\Gateway::PAYLATER)
+        {
+            unset($content['emi_plans']);
+
+            if (in_array($input['provider'], PayLater::getPaylaterDirectAquirers()) === false)
+            {
+                $this->provider = PayLater::getProviderForBank($input['provider']);
+            }
+
+            if (in_array(strtolower($this->provider), Payment\Gateway::$redirectFlowProvider) === true)
+            {
+                $this->provider = strtoupper($this->provider);
+
+                $this->addCacheData($input, $content);
+            }
+        }
+
         if($input['method'] === Payment\Gateway::CARDLESS_EMI)
         {
             if(in_array($input['provider'], CardlessEmi::getCardlessEmiDirectAquirers()) === false)

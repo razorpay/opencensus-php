@@ -21,6 +21,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Partner\Config as PartnerConfig;
@@ -948,6 +949,22 @@ class Core extends Base\Core
                 if (CardlessEmi::isMultilenderProvider($providerName))
                 {
                     $enabledBanks = array_unique(array_merge($enabledBanks, CardlessEmi::getSupportedBanksForMultilenderProvider($providerName)));
+                }
+                else
+                {
+                    array_push($enabledBanks, $providerName);
+                }
+            }
+        }
+
+        if ($method === Payment\Method::PAYLATER)
+        {
+            $providers =  PayLater::getPaylaterDirectAquirers();
+            foreach ($providers as $providerName)
+            {
+                if (PayLater::isMultilenderProvider($providerName))
+                {
+                    $enabledBanks = array_unique(array_merge($enabledBanks, PayLater::getSupportedBanksForMultilenderProvider($providerName)));
                 }
                 else
                 {

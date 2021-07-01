@@ -50,6 +50,20 @@ class Gateway extends Base\Gateway
             }
         }
 
+        if($input['payment']['method'] === Payment\Gateway::PAYLATER)
+        {
+            $provider = $input['payment']['wallet'];
+
+            if(in_array($provider, PayLater::getPaylaterDirectAquirers()) === false)
+            {
+                $provider = strtolower(PayLater::getProviderForBank($provider));
+            }
+            if((in_array($provider, Payment\Gateway::$redirectFlowProvider) === false) and $provider !== PayLater::GETSIMPL)
+            {
+                return;
+            }
+        }
+
         $this->failIfRequired($input);
 
         if ($this->isSecondRecurringPaymentRequest($input))
@@ -523,7 +537,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->getCallbackResponseData($input, $acquirerData);
 
-        if(($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARDLESS_EMI))
+        if(($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARDLESS_EMI) || $input['payment'][Payment\Entity::METHOD] === Payment\Method::PAYLATER)
         {
             $response[Payment\Entity::TWO_FACTOR_AUTH] = null;
         }

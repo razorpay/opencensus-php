@@ -4866,6 +4866,10 @@ class Processor
 
     protected function preProcesspaylaterResponseHandler($response, $payment, $input, $merchant, $terminal)
     {
+        if($terminal['gateway'] === Payment\Gateway::SHARP)
+        {
+            return;
+        }
         switch ($terminal['gateway_acquirer'])
         {
             case Payment\Gateway::GETSIMPL:

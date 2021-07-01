@@ -380,6 +380,33 @@ return [
         'otp_attempts'      => null
     ],
 
+    'testPaylaterPayment' => [
+        'merchant_id'       => '10000000000000',
+        'amount'            => 50000,
+        'method'            => 'paylater',
+        'status'            => 'authorized',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'card_id'           => null,
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+917602579721',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'sharp',
+        'terminal_id'       => '1000SharpTrmnl',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+        'otp_attempts'      => null,
+        'wallet'            => 'icic'
+    ],
+
     'testCardlessEmiPaymentSubProvider'  => [
         'merchant_id'       => '10000000000000',
         'amount'            => 50000,
@@ -406,5 +433,33 @@ return [
         'verified'          => null,
         'entity'            => 'payment',
         'otp_attempts'      => null
+    ],
+
+    'testPaylaterPaymentSubProvider'  => [
+        'merchant_id'       => '10000000000000',
+        'amount'            => 50000,
+        'method'            => 'paylater',
+        'status'            => 'authorized',
+        'two_factor_auth'   => null,
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'bank'              => null,
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'sharp',
+        'terminal_id'       => '1000SharpTrmnl',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+        'otp_attempts'      => null,
+        'wallet'            => 'hdfc'
     ],
 ];

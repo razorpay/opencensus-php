@@ -47,6 +47,11 @@ class Gateway extends Base\Gateway
 
     public function checkAccount(array $input)
     {
+        if($this->terminal['gateway'] === Payment\Gateway::SHARP)
+        {
+            return;
+        }
+
         $this->action($input, Action::CHECKACCOUNT);
 
         $provider = strtoupper($input['provider']);

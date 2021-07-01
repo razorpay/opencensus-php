@@ -70,6 +70,23 @@ class SharpGatewayTest extends TestCase
         $this->assertTestResponse($payment);
     }
 
+    public function testPaylaterPayment()
+    {
+        $this->fixtures->merchant->enablePayLater('10000000000000');
+
+        $payment = $this->getDefaultPayLaterPaymentArray('icic');
+
+        $payment['contact'] = '7602579721';
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($response['razorpay_payment_id']);
+
+        $this->assertTestResponse($payment);
+    }
+
     public function testCardlessEmiPaymentSubProvider()
     {
         $this->fixtures->merchant->enableCardlessEmi('10000000000000');
@@ -81,6 +98,21 @@ class SharpGatewayTest extends TestCase
         unset($payment['emi_duration']);
 
         $payment['contact'] = '+91' . $payment['contact'];
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+    }
+
+    public function testPaylaterPaymentSubProvider()
+    {
+        $this->fixtures->merchant->enablePayLater('10000000000000');
+
+        $this->provider = 'hdfc';
+
+        $payment = $this->getDefaultPayLaterPaymentArray($this->provider);
 
         $response = $this->doAuthPayment($payment);
 
