@@ -1473,7 +1473,9 @@ export default class ActivationWizard extends React.Component {
       dirty.business_name !== data.business_name &&
       !isPresent(this.props.data.business_dba)
     ) {
-      document.querySelector(`.form-container [name=business_dba]`).value = fieldValue;
+      if (document.querySelector(`.form-container [name=business_dba]`)) {
+        document.querySelector(`.form-container [name=business_dba]`).value = fieldValue;
+      }
       sideEffectFieldsToUpdate.business_dba = fieldValue;
     }
 
