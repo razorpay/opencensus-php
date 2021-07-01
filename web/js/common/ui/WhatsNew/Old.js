@@ -413,6 +413,7 @@ export default class WhatsNewOld extends Component {
       'trusted-badge-enabled',
       'whats-new-april21-m2mrewards-gtm',
       'whats-new-MAY21-CA-GROWTH',
+      'JUL21-TPL-GTM',
       'whats-new-may21-reten1-dashboard',
       'whats-new-may21-remar2a-dashboard',
       'whats-new-may21-remar1-dashboard',

@@ -976,6 +976,24 @@ class Constants
             ]
         ],
         [
+            'id'          => 'JUL21-TPL-GTM',
+            'title'       => 'TDS Payment tool is now LIVE !',
+            'description' => 'Make TDS payments in 30 seconds completely free on our new ICICI powered TDS Payment tool.',
+            'start_ts'    => 1625015311,
+            'end_ts'      => 1633112999,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/merchant-dash/rzp-logo.png',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Try Now',
+                    'url'   => 'https://razorpay.com/x/tds-online-payment/?ref=db_notif',
+                ],
+            ],
+            'filters'     => [
+                'splitz_experiments' => ['TDS_TOOL_CAMPAIGN'],
+            ]
+        ],
+        [
             'id'          => 'whats-new-JUN21-RXCC-GROWTH',
             'title'       => 'Qualified for Corporate Cards!',
             'description' => 'Make recurring and international spends with exclusive access to a credit card for your business.',

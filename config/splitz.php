@@ -44,5 +44,8 @@ return [
         //MTU Saver campaign
         'ANNOUNCEMENT_MTU_SAVER_V1_SPLITZ' => env('ANNOUNCEMENT_MTU_SAVER_V1_SPLITZ', ''),
         'WHATSNEW_LAZY_EXPERIMENT_SPLITZ' => env('WHATSNEW_LAZY_EXPERIMENT_SPLITZ', ''),
+        
+        //TDS Tool Campaign
+        'TDS_TOOL_CAMPAIGN' => env('TDS_TOOL_CAMPAIGN', ''),
     ]
 ];
