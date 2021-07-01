@@ -21,6 +21,15 @@
     color: #0b5;
 } */
 
+.coupon-disclaimer {
+    font-size: 12px;
+    line-height: 16px;
+    color: rgba(22, 47, 86, 0.38);
+    border: 1px solid #C9D5D8;
+    padding: 13px 22px 13px 12px;
+    border-width: 0px 1px 1px 1px;
+}
+
 .signup-details-button {
     /* margin-top: 61px; */
 }
