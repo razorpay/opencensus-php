@@ -4389,6 +4389,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FRAUD_NOTIFICATION_SMS_SENDING   = 'FRAUD_NOTIFICATION_SMS_SENDING';
     const FRAUD_NOTIFICATION_FAILED        = 'FRAUD_NOTIFICATION_FAILED';
 
+    // Ops fraud notification traces
+    const FRAUD_NOTIFICATION_TO_OPS_FAILED    = 'FRAUD_NOTIFICATION_TO_OPS_FAILED';
+    const FRAUD_NOTIFICATION_TO_OPS_SKIPPED   = 'FRAUD_NOTIFICATION_TO_OPS_SKIPPED';
+    const FRAUD_NOTIFICATION_TO_OPS_INITIATED = 'FRAUD_NOTIFICATION_TO_OPS_INITIATED';
+
     //                                ==========
 
     // Update free_payouts_count attribute logs

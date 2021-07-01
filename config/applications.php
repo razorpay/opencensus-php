@@ -612,6 +612,10 @@ return [
             'username' => 'api',
             'password' => env('SHIELD_SECRET'),
         ],
+        'slack' => [
+            'cc_user_ids'         => env('SHIELD_SLACK_CC_USER_IDS'),
+            'eligible_rule_codes' => env('SHIELD_SLACK_NOTIFICATION_RULE_CODES'),
+        ],
     ],
 
     'razorx' => [

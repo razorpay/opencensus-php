@@ -99,6 +99,8 @@ final class Shield
     const PRODUCT_PAYMENT_SMART_COLLECT = 'payment_smart_collect';
     const TRIGGERED_RULES               = 'triggered_rules';
     const RULE_ID                       = 'rule_id';
+    const RULE_CODE                     = 'rule_code';
+    const RULE_DESCRIPTION              = 'rule_description';
 
     // Response constants
     const ACTION_KEY              = 'action';

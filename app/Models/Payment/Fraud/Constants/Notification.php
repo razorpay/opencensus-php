@@ -8,6 +8,7 @@ class Notification
 {
     const EMAIL              = 'email';
     const SMS                = 'sms';
+    const SLACK              = 'slack';
     const HANDLER            = 'handler';
     const TEMPLATE           = 'template';
     const SETTINGS           = 'settings';

@@ -856,4 +856,76 @@ class FraudDetectionTest extends TestCase
 
         $this->runEarlySettlementFlagPassedToShieldTest(false);
     }
+
+    public function testFraudDetectedNotificationToOps()
+    {
+        $this->mockRazorx();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'    => '10000000000000',
+        ]);
+
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient')->makePartial();
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing(function ($payload) {
+                return [
+                        "action"                => 'block',
+                        "max_rule_weight"       => 0,
+                        "maxmind_score"         => null,
+                        "triggered_rule_weight" => 0,
+                        "triggered_rules"       => [
+                            "block"   => [
+                                [
+                                    "id"               => '123',
+                                    "rule_id"          => 'rule_1234',
+                                    "rule_code"        => 'power_bank_rules',
+                                    "rule_description" => 'test_description',
+                                ],
+                            ],
+                        ],
+                    ];
+                });
+
+        $this->app->instance('shield', $shieldClient);
+
+        $slackMessage = "*POWER_BANK_RULES (Rules) Triggered*\n\n*MID*: `<https://dashboard.razorpay.com/admin#/app/merchants/10000000000000/detail | 10000000000000>` flagged\n\n*Shield Id*: `<https://dashboard.razorpay.com/admin/entity/shield.rules/live/123 | 123>`\n*Shield Description*: test_description\n\ncc: <@S02726CADJL>";
+
+        $slackPayload = [
+            $slackMessage,
+            [],
+            [
+                'channel'  => \Config::get('slack.channels.risk'),
+                'username' => 'Transaction Risk',
+                'color'    => 'danger',
+            ]
+        ];
+
+        $slackClient = Mockery::mock();
+
+        $slackClient->shouldReceive('queue');
+
+        $this->app->instance('slack', $slackClient);
+
+        \Config::set('applications.shield.slack.cc_user_ids', 'S02726CADJL');
+
+        \Config::set('applications.shield.slack.eligible_rule_codes', 'power_bank_rules');
+
+        $testPayment = $this->getDefaultPaymentArray();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($testPayment)
+        {
+            $this->doAuthPayment($testPayment);
+        });
+
+        $slackClient->shouldHaveReceived('queue')->withArgs($slackPayload);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+    }
 }
