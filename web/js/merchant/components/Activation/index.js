@@ -1107,6 +1107,22 @@ export default class ActivationWizard extends React.Component {
             ].activation_flow;
         }
 
+        if(data.data.sumitted){
+          window.criteo_q = window.criteo_q || []; 
+          var deviceType = /iPad/.test(navigator.userAgent) ? "t" : /Mobile|iP(hone|od)| Android|BlackBerry|IEMobile|Silk/.test(navigator.userAgent) ? "m" : "d"; 
+          window.criteo_q.push( 
+          { event: "setAccount", account: 85314}, 
+          { event: "setEmail", email: this.props.data.contact_email }, 
+          { event: "setZipcode", zipcode: "" }, 
+          { event: "setSiteType", type: deviceType}, 
+          { event: "trackTransaction", id: '', extra_data: "KYC", 
+          item: ['www.criteo.com', 
+          { id: "456", price: 1, quantity: 1 } 
+            //add a line for each additional line in the basket  
+          ]} 
+          ); 
+        }
+
         if (isUnregisteredBusiness) {
           invokeGtag(GTAG_KEYS.kycSubmitSuccessUnReg);
         } else if (activationFlow === 'whitelist') {
