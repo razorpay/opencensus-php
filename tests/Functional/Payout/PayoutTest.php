@@ -8,6 +8,7 @@ use Hash;
 use Queue;
 use Redis;
 use Config;
+use Mockery;
 use Requests_Response;
 
 use Carbon\Carbon;
@@ -30,6 +31,8 @@ use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
 use RZP\Models\Payout\Status;
 use RZP\Services\RazorXClient;
+use RZP\Services\FTS\FundTransfer;
+use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\OnHoldPayoutsProcess;
 use RZP\Tests\Traits\TestsMetrics;
@@ -54,6 +57,7 @@ use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
+use RZP\Jobs\FTS\FundTransfer as FtsFundTransferJob;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -179,6 +183,27 @@ class PayoutTest extends OAuthTestCase
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
 
         return $payout;
+    }
+
+    public function testCreatePayoutWithSyncFtsTransferCall()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_SYNC_FTS_TRANSFER]);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive([
+                                 'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+                             ]);
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertNotNull($payout['transferred_at']);
     }
 
     public function testCreatePayoutOnLiveMode(): array

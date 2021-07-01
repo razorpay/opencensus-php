@@ -2,12 +2,12 @@
 
 namespace RZP\Models\Payout\Processor;
 
+use App;
 use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Constants\Mode;
 use Razorpay\Trace\Logger as Trace;
 
-use App;
 use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Models\Batch;
@@ -41,8 +41,10 @@ use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\FundTransfer\Attempt\Initiator;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Models\PayoutMeta\Core as PayoutMetaCore;
 use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
@@ -264,6 +266,17 @@ class Base extends BaseCore
                 return $payout;
             }
 
+            // After the current transaction closes, a sync call to FTS is made for payouts with this flag set.
+            // Currently we make sync calls for specific flow only i.e. create fund account payout.
+            if (($payout->hasFundAccount() === true) and
+                ($payout->hasCustomer() === false) and
+                ($payout->isBalanceTypeBanking() === true) and
+                ($payout->merchant->isFeatureEnabled(Feature::PAYOUT_SYNC_FTS_TRANSFER) === true))
+            {
+                // By setting this flag we can skip sending the request to queue and making a sync call.
+                $payout->setSyncFtsFundTransferFlag(true);
+            }
+
             $payoutType = $this->getPayoutType();
 
             $downstreamProcessor = new DownstreamProcessor($payoutType,
@@ -295,9 +308,80 @@ class Base extends BaseCore
             return $payout;
         });
 
+        if ($payout->makeSyncFtsFundTransfer() === true)
+        {
+            $isFts = false;
+
+            $fta = $payout->fundTransferAttempts->first();
+
+            // fta can be null in some cases like queued payout of CA, on hold payouts.
+            if ($fta !== null)
+            {
+                $isFts = $fta->getIsFts();
+            }
+
+            if ($isFts === true)
+            {
+                $this->syncFTSFundTransfer($payout);
+            }
+        }
+
         $this->fireEventForPayoutStatus($payout);
 
         return $payout;
+    }
+
+    public function syncFTSFundTransfer(Entity $payout)
+    {
+        $fta = $payout->fundTransferAttempts->first();
+
+        try
+        {
+            $this->trace->info(TraceCode::SYNC_FTS_FUND_TRANSFER_INIT,
+                               [
+                                   'payout_id' => $payout->getId(),
+                                   'fta_id'    => $fta->getId(),
+                               ]);
+
+            $transferService = App::getFacadeRoot()['fts_fund_transfer'];
+
+            $transferService->initialize($fta->getId());
+
+            list($initiateTransfers, $reason) = $transferService->shouldAllowTransfersViaFts();
+
+            if ($initiateTransfers === false)
+            {
+                $addedInitiateAt = $transferService->addInitiateAtIfRequired();
+
+                if ($addedInitiateAt === false) {
+
+                    $data = [
+                        'fta_id' => $fta->getId(),
+                        'reason' => $reason,
+                    ];
+
+                    $this->trace->info(TraceCode::FTS_FUND_TRANSFER_NOT_ALLOWED, $data);
+
+                    throw new Exception\LogicException('fts fund transfer not allowed', null, $data);
+                }
+            }
+
+            $ftsResponse = $transferService->requestFundTransfer();
+
+            $this->trace->info(
+                TraceCode::SYNC_FTS_FUND_TRANSFER_COMPLETE,
+                $ftsResponse);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::SYNC_FTA_DISPATCH_FOR_MERCHANT_FAILED);
+
+            // If any exception is raised while making sync call, we push the fta to queue as fall back.
+            (new Initiator)->sendFTSFundTransferRequest($fta);
+        }
     }
 
     public function processQueuedPayout(Payout\Entity $payout): Payout\Entity

@@ -3190,6 +3190,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_DOWNTIME_NOTIFY_WEBHOOK_INIT                      = 'FTS_DOWNTIME_NOTIFY_WEBHOOK_INIT';
     const FTS_DOWNTIME_NOTIFY_WEBHOOK_FAILURE                   = 'FTS_DOWNTIME_NOTIFY_WEBHOOK_FAILURE';
     const FTS_DOWNTIME_NOTIFY_WEBHOOK_COMPLETE                  = 'FTS_DOWNTIME_NOTIFY_WEBHOOK_COMPLETE';
+    const SYNC_FTS_FUND_TRANSFER_INIT                           = 'SYNC_FTS_FUND_TRANSFER_INIT';
+    const SYNC_FTS_FUND_TRANSFER_COMPLETE                       = 'SYNC_FTS_FUND_TRANSFER_COMPLETE';
+    const SYNC_FTA_DISPATCH_FOR_MERCHANT_FAILED                 = 'SYNC_FTA_DISPATCH_FOR_MERCHANT_FAILED';
 
     // Origin trace codes
     const ORIGIN_CREATED                                        = 'ORIGIN_CREATED';

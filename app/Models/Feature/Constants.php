@@ -710,6 +710,7 @@ class Constants
      */
     const PAYMENT_SHOW_DCC_MARKUP   =   'payment_show_dcc_markup';
 
+    const PAYOUT_SYNC_FTS_TRANSFER = 'payout_sync_fts_transfer';
     /**
      * Feature flag for partner to skip onboarding notifications sent to submerchant
      */
@@ -1049,6 +1050,7 @@ class Constants
         self::PAYMENT_SHOW_DCC_MARKUP         => true,
         self::EXPOSE_SETTLED_BY               => true,
         self::PAYPAL_CC                       => true,
+        self::PAYOUT_SYNC_FTS_TRANSFER        => true,
         self::SKIP_SUBM_ONBOARDING_COMM       => true,
         self::SKIP_CUSTOMER_ID_CHECKOUT       => true,
         self::DISPUTE_PRESENTMENT             => true,

@@ -283,6 +283,9 @@ class Entity extends Base\PublicEntity
 
     protected $queueFlag = false;
 
+    // This flag will be used to decide if FTS fund transfer has to be async call.
+    protected $syncFtsFundTransfer = false;
+
     protected $composite = false;
 
     /*
@@ -852,6 +855,11 @@ class Entity extends Base\PublicEntity
         return ($this->shouldValidateAndUpdateBalancesFlag === true);
     }
 
+    public function makeSyncFtsFundTransfer(): bool
+    {
+        return ($this->syncFtsFundTransfer === true);
+    }
+
     /**
      * FeeCalculator calls `$entity->getFee()` for all the pricing entity
      *
@@ -1222,6 +1230,11 @@ class Entity extends Base\PublicEntity
     public function setQueueFlag($flag)
     {
         $this->queueFlag = $flag;
+    }
+
+    public function setSyncFtsFundTransferFlag($flag)
+    {
+        $this->syncFtsFundTransfer = $flag;
     }
 
     public function setPayoutLinkId($payoutlinkid)

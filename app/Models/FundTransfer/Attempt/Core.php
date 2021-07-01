@@ -67,16 +67,29 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
+        $this->sendFundTransferRequest($fundTransferAttempt, $instantDispatch);
+
+        return $fundTransferAttempt;
+    }
+
+    protected function sendFundTransferRequest(Entity $fundTransferAttempt, $instantDispatch = false)
+    {
         if ($fundTransferAttempt->getIsFTS() === true)
         {
+            // For payouts a sync call for FTS fund transfer will be made after the current transaction closes.
+            // Hence skipping sending to queue here.
+            if (($fundTransferAttempt->getSourceType() === Type::PAYOUT) and
+                ($fundTransferAttempt->source->makeSyncFtsFundTransfer() === true))
+            {
+                return;
+            }
+
             (new Initiator)->sendFTSFundTransferRequest($fundTransferAttempt);
         }
         else if ($instantDispatch === true)
         {
             $this->dispatchForTransfer($fundTransferAttempt);
         }
-
-        return $fundTransferAttempt;
     }
 
     public function createWithCard(
@@ -97,14 +110,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
-        if ($fundTransferAttempt->getIsFTS() === true)
-        {
-            (new Initiator)->sendFTSFundTransferRequest($fundTransferAttempt);
-        }
-        else if ($instantDispatch === true)
-        {
-            $this->dispatchForTransfer($fundTransferAttempt);
-        }
+        $this->sendFundTransferRequest($fundTransferAttempt, $instantDispatch);
 
         return $fundTransferAttempt;
     }
@@ -175,14 +181,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
-        if ($fundTransferAttempt->getIsFTS() === true)
-        {
-            (new Initiator)->sendFTSFundTransferRequest($fundTransferAttempt);
-        }
-        else if ($instantDispatch === true)
-        {
-            $this->dispatchForTransfer($fundTransferAttempt);
-        }
+        $this->sendFundTransferRequest($fundTransferAttempt, $instantDispatch);
 
         return $fundTransferAttempt;
     }
@@ -208,14 +207,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
-        if ($fundTransferAttempt->getIsFTS() === true)
-        {
-            (new Initiator)->sendFTSFundTransferRequest($fundTransferAttempt);
-        }
-        else if ($instantDispatch === true)
-        {
-            $this->dispatchForTransfer($fundTransferAttempt);
-        }
+        $this->sendFundTransferRequest($fundTransferAttempt, $instantDispatch);
 
         return $fundTransferAttempt;
     }
