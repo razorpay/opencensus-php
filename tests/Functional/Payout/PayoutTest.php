@@ -9330,6 +9330,42 @@ class PayoutTest extends OAuthTestCase
         $this->assertArraySelectiveEquals($sourceDetails, $response);
     }
 
+    public function testIdempotencyInCaseOfCompositePayoutCreatedBySettlementsWithDifferentRequestContents()
+    {
+        $balance = $this->bankingBalance;
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '20000']);
+
+        $this->ba->settlementsAuth();
+
+        $this->testSourceCreationInCaseOfCompositePayoutCreatedBySettlements();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $testData = & $this->testData[__FUNCTION__];
+        // This changes the request body
+        $testData['request']['content']['contact']['name'] = 'Test test';
+
+        $this->startTest();
+    }
+
+    public function testIdempotencyInCaseOfCompositePayoutCreatedBySettlementsWithSameRequestContents()
+    {
+        $balance = $this->bankingBalance;
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '20000']);
+
+        $this->ba->settlementsAuth();
+
+        $this->testSourceCreationInCaseOfCompositePayoutCreatedBySettlements();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $response = $this->startTest();
+
+        $this->assertEquals($payout->getPublicId(), $response['id']);
+    }
+
     /**
      * Keeping this test here because although we are testing for fund account dedup, it's happening via
      * composite API which requires certain setups which already exist in payoutTest

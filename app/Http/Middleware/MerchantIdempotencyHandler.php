@@ -87,7 +87,8 @@ class MerchantIdempotencyHandler
         //
         if (($this->basicauth->isStrictPrivateAuth() === false) and
             ($this->basicauth->isVendorPaymentApp() === false) and
-            ($this->basicauth->isPayoutLinkApp() === false))
+            ($this->basicauth->isPayoutLinkApp() === false) and
+            ($this->basicauth->isSettlementsApp() === false))
         {
             return $next($request);
         }
