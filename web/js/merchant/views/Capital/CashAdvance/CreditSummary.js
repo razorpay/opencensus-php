@@ -20,6 +20,7 @@ export default function CreditSummary({
   user,
   history,
   haveWithdrawals,
+  isWithdrawalDisabled,
 }) {
   if (loading) return <Loader />;
 
@@ -39,8 +40,9 @@ export default function CreditSummary({
               <Popover align="top" theme="dark" parentQuerySelector=".withdrawals__top-summary">
                 <PopoverBody>
                   <div className="text-left">
-                    Your withdrawals are temporarily blocked due to missed repayments. Please repay
-                    to continue withdrawing from your credit line.
+                    {isWithdrawalDisabled
+                      ? 'Your Cash Advance has been disabled due to perceived risk of decrease in payments volume. Your line will be enabled once your payments volume increase'
+                      : ' Your withdrawals are temporarily blocked due to missed repayments. Please repay to continue withdrawing from your credit line.'}
                   </div>
                 </PopoverBody>
               </Popover>

@@ -173,14 +173,19 @@ export default class AmountWithdraw extends React.Component {
   }
 
   componentDidMount() {
-    const { fetchSeedData } = this.props;
+    const {
+      fetchSeedData,
+      withdrawalConfigurationDetails: { data: { status, comments: { reason = '' } = {} } } = {},
+    } = this.props;
     const withdrawalInstance = new Withdrawal();
     const repaymentInstance = new Repayments();
 
     // fetchSeedData();
     this.prefillData();
+    const isApplicationAtHold =
+      status === 'ONHOLD' && reason !== 'cld_risk_policy' && reason !== 'end_of_credit_line_tenure';
 
-    if (this.props.withdrawalConfigurationDetails.data.status.toLowerCase() === 'onhold') {
+    if (isApplicationAtHold) {
       const currentDate = new Date();
       const startOfDay = new Date(
         currentDate.getFullYear(),
@@ -754,12 +759,17 @@ export default class AmountWithdraw extends React.Component {
         loading: withdrawConfigLoading,
       },
     } = this.props;
-
     if (!withdrawalConfigurationDetails || withdrawConfigLoading || seedData.loading) return null;
 
-    const canWithdraw = this.canWithdraw();
+    const { comments: { reason = '' } = {}, status } = withdrawalConfigurationDetails;
+
+    const isWithdrawalDisabled =
+      status === 'ONHOLD' &&
+      (reason === 'cld_risk_policy' || reason === 'end_of_credit_line_tenure');
+    const canWithdraw = this.canWithdraw() && !isWithdrawalDisabled;
     const { withdrawalErrorConfig = {} } = this.state;
-    const showReasonCTA = !canWithdraw && withdrawalErrorConfig.showReasonCTA;
+    const showReasonCTA =
+      !canWithdraw && withdrawalErrorConfig.showReasonCTA && !isWithdrawalDisabled;
 
     return (
       <React.Fragment>
@@ -772,11 +782,21 @@ export default class AmountWithdraw extends React.Component {
             >
               Withdraw Now
             </AsyncBtn.Primary>
+
             {showReasonCTA ? (
               <AsyncBtn.Transparent className="btn btn-link" onClick={this.openWithdrawErrorModal}>
                 View Reason
               </AsyncBtn.Transparent>
             ) : null}
+
+            {isWithdrawalDisabled && (
+              <Popover align="top" parentQuerySelector=".withdrawals__top-summary" theme="dark">
+                <PopoverBody>
+                  Your Cash Advance has been disabled due to perceived risk of decrease in payments
+                  volume. Your line will be enabled once your payments volume increase
+                </PopoverBody>
+              </Popover>
+            )}
           </React.Fragment>
         ) : (
           <div className="flex">
@@ -943,20 +963,25 @@ export default class AmountWithdraw extends React.Component {
     } = this.state;
     const {
       user,
-      withdrawalConfigurationDetails: { data: { automated_loc } } = {
+      withdrawalConfigurationDetails: {
+        data: { automated_loc, status, comments: { reason = '' } = {} },
+      } = {
         data: {
           automated_loc: false,
         },
       },
       merchantGromorEsignDetails: { loading, data: { due_at = '' } = {} } = {},
     } = this.props;
+
+    const isApplicationAtHold =
+      status === 'ONHOLD' && reason !== 'cld_risk_policy' && reason !== 'end_of_credit_line_tenure';
+
     const hasDueDateAndWithdrawnAmount = selectedDueDate && withdrawalAmount;
     const { principle = 0, interest = 0 } = hasDueDateAndWithdrawnAmount
       ? this.getRepayableAmount()
       : {};
     const repayableAmount = getFormattedAmountNew((principle + interest) * 100, true);
     const showFirstWithdrawalOffer = this.getFirstWithdrawalOffer();
-    const withdrawalConfigStatus = this.props.withdrawalConfigurationDetails.data.status;
     const withdrawalInputHasError = withdraw_errors.length > 0;
     const isDateExpired = checkifDateExpired(new Date(due_at));
     const isGromorAgreementLoading = loading;
@@ -967,6 +992,7 @@ export default class AmountWithdraw extends React.Component {
             .partner_id
         : '';
     const isAggrementSigned = isDateExpired && locEsignEnabled && partner_id !== 'GROMOR';
+
     return (
       <div className="withdrawals__action-container card flex">
         {showFirstWithdrawalOffer ? (
@@ -1003,7 +1029,7 @@ export default class AmountWithdraw extends React.Component {
             </div>
           ) : isAggrementSigned ? (
             this.withdrawableSectionPostGromorAgreementDate()
-          ) : withdrawalConfigStatus && withdrawalConfigStatus.toLowerCase() === 'onhold' ? (
+          ) : isApplicationAtHold ? (
             isRepaymentLoading === 'LOADING' ? (
               <div class="page-spinner-container" style={{ height: '100%' }}>
                 <Spinner />
@@ -1444,13 +1470,22 @@ export default class AmountWithdraw extends React.Component {
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
     const withdrawConfigLoading = this.props.withdrawalConfigurationDetails.loading;
 
-    const { seedData, user, history, haveWithdrawals = false } = this.props;
+    const {
+      seedData,
+      user,
+      history,
+      haveWithdrawals = false,
+      withdrawalConfigurationDetails: { data: { status, comments: { reason = '' } = {} } } = {},
+    } = this.props;
+    const isWithdrawalDisabled =
+      status === 'ONHOLD' &&
+      (reason === 'cld_risk_policy' || reason === 'end_of_credit_line_tenure');
 
     switch (currentView) {
       case VIEWS.WITHDRAW:
       case VIEWS.WITHDRAW_FAIL:
         if (!withdrawalConfigurationDetails || withdrawConfigLoading || seedData.loading)
-          return <CreditSummary loading={true} />;
+          return <CreditSummary loading={true} isWithdrawalDisabled={isWithdrawalDisabled} />;
         else {
           return (
             <CreditSummary
@@ -1460,6 +1495,7 @@ export default class AmountWithdraw extends React.Component {
               user={user}
               history={history}
               haveWithdrawals={haveWithdrawals}
+              isWithdrawalDisabled={isWithdrawalDisabled}
             />
           );
         }
