@@ -18,7 +18,12 @@ module.exports = ({ config, project }) => {
     [project]: `./js/${project}/index.js`,
   };
 
-  config.devtool = 'hidden-source-map';
+  if (isProd) {
+    config.devtool = 'hidden-source-map';
+  } else {
+    config.devtool = 'source-map';
+  }
+
   config.output = {
     path: path.resolve(__dirname, `../public/dist`),
     publicPath: `/dist/`,

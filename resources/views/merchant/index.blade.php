@@ -134,7 +134,10 @@ _dcs.account = '9421167';
     window.session_id = "{!! $session_id !!}";
   </script>
 
-  @include('partials/sentry')
+
+  @if(env('APP_ENV') === 'production')
+    @include('partials/sentry')
+  @endif
 
   <script src="https://www.recaptcha.net/recaptcha/api.js?render=explicit"></script>
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
@@ -152,7 +155,9 @@ _dcs.account = '9421167';
   @if ($newAuthFlow === true)
     <script src="{{$cdnDashboardUrl}}/dist/newAuth-entry.js"></script>
   @else
-    @include('partials/sentry')
+    @if(env('APP_ENV') === 'production')
+        @include('partials/sentry')
+    @endif
     <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
   @endif
 
