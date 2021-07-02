@@ -2242,18 +2242,12 @@ class Base extends BaseCore
                     return false;
                 }
 
-                $isOnHoldPayoutEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUTS_ON_HOLD);
-
-                // skip payout creation via payout service if on hold payouts feature is enabled
-                if ($isOnHoldPayoutEnabled === true)
-                {
-                    return false;
-                }
-
-                $isNewBankingErrorEnabled = $this->merchant->isFeatureEnabled(Features::NEW_BANKING_ERROR);
-
-                // skip payout creation via payout service if new banking error feature is enabled
-                if ($isNewBankingErrorEnabled === true)
+                // skip payout creation via payout service
+                // 1. if on hold payouts feature is enabled
+                // 2. if new banking error feature is enabled
+                if ($this->merchant->isAtLeastOneFeatureEnabled([
+                    Features::PAYOUTS_ON_HOLD,
+                    Features::NEW_BANKING_ERROR]) === true)
                 {
                     return false;
                 }
@@ -2265,12 +2259,6 @@ class Base extends BaseCore
                     {
                         return false;
                     }
-                }
-
-                // skip payout creation via payout service if scheduled_at value is set
-                if (empty($input[Payout\Entity::SCHEDULED_AT]) === false)
-                {
-                    return false;
                 }
 
                 $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();

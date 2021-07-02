@@ -1232,6 +1232,7 @@ class Route
         'payouts_process_on_hold'                  => ['post',     'payouts/onhold/process',                         'PayoutController@processDispatchForOnHoldPayouts'                  ],
         'payouts_process_batch'                    => ['post',     'payouts/batch/process',                          'PayoutController@processInitiateForBatchSubmittedPayouts'          ],
         'payouts_process_scheduled'                => ['post',     'payouts/scheduled/process',                      'PayoutController@processInitiateForScheduledPayouts'               ],
+
         'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
         'payouts_scheduled_time_slots'             => ['get',      'payouts/schedule/timeslots',                     'PayoutController@getScheduleSlotsForPayouts'                       ],
@@ -2543,6 +2544,7 @@ class Route
         'create_FTA_payout_service'               => ['post',     'payouts_service/create_fta/{payout_id}',                 'PayoutController@createFTAForPayoutService'                   ],
         'create_ledger_payout_service'            => ['post',     'payouts_service/create_ledger',                          'PayoutController@createPayoutServiceTransaction'              ],
         'create_reversal_entry'                   => ['post',     'payouts_service/reversal/create',                        'ReversalController@createReversalEntryForPayoutService'       ],
+        'payout_service_process_scheduled_payout' => ['post',     'payouts_service/scheduled/process',                      'PayoutController@processSchedulePayoutOnPayoutService'        ],
 
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
 
@@ -3194,6 +3196,7 @@ class Route
         'payouts_process_on_hold',
         'payouts_process_batch',
         'payouts_process_scheduled',
+        'payout_service_process_scheduled_payout',
         'migration_multi_va_on_x',
         'update_fts_fund_transfer',
         'setl_initiate_adhoc',
@@ -9120,6 +9123,7 @@ class Route
             'payouts_process_on_hold',
             'payouts_process_batch',
             'payouts_process_scheduled',
+            'payout_service_process_scheduled_payout',
             'migration_multi_va_on_x',
             'payments_downtime_trigger_cron',
             'payment_card_vault_migrate',
@@ -10110,6 +10114,7 @@ class Route
         'payouts_process_on_hold',
         'payouts_process_batch',
         'payouts_process_scheduled',
+        'payout_service_process_scheduled_payout',
         'payouts_summary',
         'payouts_workflow_summary',
 

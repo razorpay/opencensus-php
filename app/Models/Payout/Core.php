@@ -104,6 +104,8 @@ class Core extends Base\Core
 
     protected $payoutCancelServiceClient;
 
+    protected $payoutScheduledServiceClient;
+
     /** @var Workflow\Service\Client  */
     protected $workflowService;
 
@@ -118,6 +120,8 @@ class Core extends Base\Core
         $this->payoutDetailsServiceClient = $this->app[PayoutService\Details::PAYOUT_SERVICE_DETAIL];
 
         $this->payoutCancelServiceClient = $this->app[PayoutService\Cancel::PAYOUT_SERVICE_CANCEL];
+
+        $this->payoutScheduledServiceClient = $this->app[PayoutService\Schedule::PAYOUT_SERVICE_SCHEDULE];
 
         $this->workflowService = new Workflow\Service\Client;
     }
@@ -967,9 +971,10 @@ class Core extends Base\Core
             $dispatchedData = $this->dispatchAllScheduledPayouts($payouts);
 
             $traceData[$balanceId] = [
-                'total_payout_count'        => count($payouts),
-                'dispatched_payout_count'   => $dispatchedData['dispatched_payout_count'],
-                'dispatched_payout_amount'  => ($dispatchedData['dispatched_payout_amount']),
+                'total_payout_count'                    => count($payouts),
+                'dispatched_payout_count'               => $dispatchedData['dispatched_payout_count'],
+                'dispatched_payout_amount'              => ($dispatchedData['dispatched_payout_amount']),
+                'no_dispatch_for_payout_service_count'  => $dispatchedData['no_dispatch_for_payout_service_count']
             ];
         }
 
@@ -1382,18 +1387,27 @@ class Core extends Base\Core
     {
         $dispatchedCount = 0;
         $dispatchedAmount = 0;
+        $noDispatchPayoutServiceCount = 0;
 
         foreach ($scheduledPayouts as $scheduledPayout)
         {
-            $this->dispatchScheduledPayout($scheduledPayout);
+            if ($scheduledPayout->getIsPayoutService() === false)
+            {
+                $this->dispatchScheduledPayout($scheduledPayout);
 
-            $dispatchedCount += 1;
-            $dispatchedAmount += $scheduledPayout->getAmount();
+                $dispatchedCount += 1;
+                $dispatchedAmount += $scheduledPayout->getAmount();
+            }
+            else
+            {
+                $noDispatchPayoutServiceCount += 1;
+            }
         }
 
         return [
-            'dispatched_payout_amount' => $dispatchedAmount,
-            'dispatched_payout_count'  => $dispatchedCount,
+            'dispatched_payout_amount'              => $dispatchedAmount,
+            'dispatched_payout_count'               => $dispatchedCount,
+            'no_dispatch_for_payout_service_count'  => $noDispatchPayoutServiceCount
         ];
     }
 
@@ -3492,5 +3506,10 @@ class Core extends Base\Core
 
             (new SlackNotification)->send($operation, $input, null, 1, 'x-payouts-core-alerts');
         }
+    }
+
+    public function initiateScheduledPayoutsViaPayoutService($input)
+    {
+        return $this->payoutScheduledServiceClient->processSchedulePayoutViaMicroservice($input);
     }
 }

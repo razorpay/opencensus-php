@@ -436,4 +436,13 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function processSchedulePayoutOnPayoutService()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processSchedulePayoutOnPayoutService($input);
+
+        return ApiResponse::json($data);
+    }
+
 }

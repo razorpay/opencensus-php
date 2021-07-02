@@ -1788,4 +1788,11 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function processSchedulePayoutOnPayoutService($input)
+    {
+        (new Validator)->validateInput(Validator::PROCESS_SCHEDULED_PAYOUTS, $input);
+
+        return $this->core->initiateScheduledPayoutsViaPayoutService($input);
+    }
 }

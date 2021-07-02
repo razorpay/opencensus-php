@@ -673,39 +673,6 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals('queued', $payout->getStatus());
     }
 
-    // Since payout has scheduled_at value set, it won't go via payouts service
-    public function testCreateScheduledPayoutViaPayoutService()
-    {
-        // Timestamp of 9 AM, 2 months from current time
-        $scheduledAtTime        = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
-        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()
-                                        ->getTimestamp();
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['url']              = '/payouts_with_otp';
-        $testData['request']['content']['otp']   = '0007';
-        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
-
-        $testData['request']['content']['scheduled_at']  = $scheduledAtTime;
-        $testData['response']['content']['scheduled_at'] = $scheduledAtStartOfHour;
-
-        $this->ba->proxyAuthLive();
-
-        $this->startTest();
-
-        $payout = $this->getDbLastEntity('payout', 'live');
-
-        // Payout should not have gone via payouts service
-        $this->assertEquals(false, $payout->getIsPayoutService());
-
-        // On private auth, payout.user_id should be null
-        $this->assertEquals('MerchantUser01', $payout['user_id']);
-
-        // Payout should be in queued state
-        $this->assertEquals('scheduled', $payout->getStatus());
-    }
-
     // Assert that the array keys match selectively, we don't compare for values only the keys
     public function assertArrayKeySelectiveEquals(array $expected, array $actual)
     {
