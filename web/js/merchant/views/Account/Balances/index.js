@@ -123,8 +123,11 @@ export default class AddFundsContainer extends Component {
     });
   };
 
-  statusHandler = (data) => {
-    this.setState({ status: data });
+  statusHandler = ({ errors }) => {
+    this.props.showNotification({
+      type: 'error',
+      message: `${errors}`,
+    });
   };
 
   handlAddFunds = (type) => {
@@ -190,8 +193,6 @@ export default class AddFundsContainer extends Component {
     });
   };
 
-  cra;
-
   handleContactUs = () => {
     analyticsTrack({
       objectName: 'contact us',
@@ -228,9 +229,6 @@ export default class AddFundsContainer extends Component {
 
     return (
       <div class="content-wrapper content-sm" style={{ backgroundColor: '#f9fafb' }}>
-        {Object.keys(this.state.status).length > 0 && (
-          <Alert type={this.state.status.type} message={this.state.status.message} />
-        )}
         <div class="balances-note-row">
           <span>Note: Standard TDR charges applies on adding funds</span>
           <span class="text-primary">

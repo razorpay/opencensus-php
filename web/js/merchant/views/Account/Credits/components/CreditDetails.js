@@ -16,6 +16,7 @@ import AddFundsForm from 'common/ui/AddFundsForm';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchCreditBalance } from 'merchantLA/reducers/credits';
 import { analyticsTrack } from 'common/utils/analytics';
+import { bindActionCreators } from 'redux';
 
 function CreditDetails({
   title,
@@ -43,6 +44,14 @@ function CreditDetails({
           type: 'success',
           message: 'Credits added successfully',
         });
+
+        setTimeout(() => {
+          showNotification({
+            type: 'success',
+            message: 'Credits might take sometime to reflect. Please check in few minutes.',
+          });
+        }, 2000);
+
         type === 'fee' && analyticsTrack(FEE_CREDITS_ADDED);
         type === 'refund' && analyticsTrack(REFUND_CREDITS_ADDED);
       })
@@ -56,6 +65,13 @@ function CreditDetails({
       });
   };
 
+  const statusHandler = ({ errors }) => {
+    showNotification({
+      type: 'error',
+      message: `${errors}`,
+    });
+  };
+
   const addCreditsHandler = () => {
     const analyticsData =
       title === 'Fee Credits' ? CLICK_ADD_FEE_CREDITS : CLICK_ADD_REFUND_CREDITS;
@@ -63,7 +79,12 @@ function CreditDetails({
     openModal({
       size: 'small',
       component: (
-        <AddFundsForm type={type} addHandler={addCredits} user={user} statusHandler={setStatus} />
+        <AddFundsForm
+          type={type}
+          addHandler={addCredits}
+          user={user}
+          statusHandler={statusHandler}
+        />
       ),
     });
   };
@@ -117,6 +138,8 @@ const mapStateToProps = (state) => ({
   ...state.session,
 });
 
-export default connect(mapStateToProps, { openModal, showNotification, fetchCreditBalance })(
-  CreditDetails,
-);
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ openModal, showNotification, fetchCreditBalance }, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(CreditDetails);

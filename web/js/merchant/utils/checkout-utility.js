@@ -59,10 +59,7 @@ const openCheckout = async (
   try {
     response = await fetchOrderId(orderObject);
   } catch (e) {
-    statusHandler({
-      type: 'error',
-      message: `An error occured - ${e.message}`,
-    });
+    statusHandler(e);
     return;
   }
 

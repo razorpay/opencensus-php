@@ -54,8 +54,6 @@ function CreditsList(props) {
         </div>
       ) : (
         <div class="list-group details-row-container">
-          {Object.keys(status).length > 0 && <Alert type={status.type} message={status.message} />}
-
           {props.user.isAllowedEdit('credits') && (
             <div class="manage-alerts-row">
               <span>Note: Standard TDR charges applies on adding funds</span>
