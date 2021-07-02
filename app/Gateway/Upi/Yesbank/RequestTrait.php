@@ -30,7 +30,8 @@ trait RequestTrait
         $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
 
         $options = [
-            'hooks' => $hooks
+            'hooks'           => $hooks,
+            'connect_timeout' => 10
         ];
 
         return $options;
