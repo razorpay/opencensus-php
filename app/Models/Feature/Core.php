@@ -181,7 +181,8 @@ class Core extends Base\Core
         $merchant = $this->repo->merchant->findOrFailPublic($entityId);
 
         if (($feature->isProductFeature() === true) and
-            (($shouldSync === true) or ($isLiveMode === true)))
+            (($shouldSync === true) or ($isLiveMode === true)) and
+            (in_array($feature->getName(), Constants::$skipFeaturesEnableMail, true) === false))
         {
             $visibleFeatures = Constants::$visibleFeaturesMap;
             $featureName     = $feature->getName();
@@ -786,7 +787,8 @@ class Core extends Base\Core
     {
         $merchantId = $feature->getEntityId();
 
-        if ($this->shouldNotifyViaEmail($merchant, $feature, $shouldSync, $isLiveMode) === false)
+        if (($this->shouldNotifyViaEmail($merchant, $feature, $shouldSync, $isLiveMode) === false) or
+            (in_array($feature->getName(), Constants::$skipFeaturesEnableMail, true) === true))
         {
             $this->trace->info(
                 TraceCode::FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED,

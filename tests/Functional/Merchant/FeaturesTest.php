@@ -599,6 +599,22 @@ class FeaturesTest extends OAuthTestCase
         Mail::assertNotQueued(FeatureEnabledEmail::class);
     }
 
+    public function testSkipFeatureEnableNotification()
+    {
+        Mail::fake();
+
+        $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
+
+        $this->addFeatures(
+            Mode::LIVE,
+            true,
+            ['subscriptions'],
+            'merchant',
+            self::ONBOARDING_MERCHANT_ID);
+
+        Mail::assertNotQueued(FeatureEnabledEmail::class);
+    }
+
     public function testProductFeatureEnabledEmailNotifyCustomBrandingOrg()
     {
         Mail::fake();
@@ -614,7 +630,7 @@ class FeaturesTest extends OAuthTestCase
             'merchant',
             self::ONBOARDING_MERCHANT_ID);
 
-        Mail::assertQueued(FeatureEnabledEmail::class, function ($mail) use ($org)
+        Mail::assertNotQueued(FeatureEnabledEmail::class, function ($mail) use ($org)
         {
             $this->assertCustomBrandingMailViewData($org, $mail->viewData);
 

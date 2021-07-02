@@ -1560,6 +1560,15 @@ class Constants
     ];
 
     /**
+     * Disable feature enable mail notification.
+     *
+     * @var array
+     */
+    public static $skipFeaturesEnableMail = [
+        self::SUBSCRIPTIONS,
+    ];
+
+    /**
      * Features that are dependant on other features.
      * Dependency is checked when the merchant makes the request to update the features.
      *
