@@ -199,6 +199,9 @@
           <file>./tests/Functional/Order/Transfer/OrderTransferTest.php</file>
           <file>./tests/Functional/Merchant/AccountTest.php</file>
       </testsuite>
+      <testsuite name="Payment Page Test Suite">
+          <directory>./tests/Functional/PaymentLink</directory>
+      </testsuite>
   </testsuites>
   <listeners>
     <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener">
