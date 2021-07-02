@@ -1578,7 +1578,8 @@ class Service extends Base\Service
             'enable_may_dashboard_notification_retention_4',
             'enable_my_dashboard_notification_remarketing',
             'enable_my_dashboard_notification_remarketing_1',
-            'instant-activations-functionality'
+            'instant-activations-functionality',
+            'rx_taxpayments_tin_change'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
