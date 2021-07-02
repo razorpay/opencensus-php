@@ -47,5 +47,7 @@ return [
         
         //TDS Tool Campaign
         'TDS_TOOL_CAMPAIGN' => env('TDS_TOOL_CAMPAIGN', ''),
+
+        'SSL_UPDATE_ANNOUNCEMENT_SPLITZ' => env('SSL_UPDATE_ANNOUNCEMENT_SPLITZ', ''),
     ]
 ];

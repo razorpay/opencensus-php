@@ -300,6 +300,7 @@ export default class WhatsNew extends Component {
       'June21-QR-GTM',
       'JUL21-TPL-GTM',
       'whats-new-JUN21-RXCC-GROWTH',
+      'july-ssl-certificate-update',
     ];
 
     let cardsList = window.notifications.map((card, idx) => (

@@ -459,9 +459,7 @@ function getActivationState(activationData = {}, isUnregisteredBusiness) {
           ? 'under_review_without_tnc_partial'
           : 'under_review_with_tnc_partial';
       } else if (activationStatusChangeLogs.includes('needs_clarification')) {
-        activationState = tncRequired
-          ? 'under_review_without_tnc'
-          : 'under_review_with_tnc';
+        activationState = tncRequired ? 'under_review_without_tnc' : 'under_review_with_tnc';
       } else if (dedupeStatus === 'passed') {
         activationState = tncRequired
           ? 'under_review_without_tnc_passed'
@@ -490,7 +488,9 @@ function getActivationState(activationData = {}, isUnregisteredBusiness) {
 const getBankTabHeader = (businessType) => {
   let title = bankAccountTabName;
   let subtitle = '';
-  if ([PRIVATE_LIMITED, PUBLIC_LIMITED, LLP, PARTNERSHIP, NGO, TRUST, SOCIETY].includes(businessType)) {
+  if (
+    [PRIVATE_LIMITED, PUBLIC_LIMITED, LLP, PARTNERSHIP, NGO, TRUST, SOCIETY].includes(businessType)
+  ) {
     title = 'Company Bank Account';
     subtitle = `Enter Bank Account details of your company's bank account. Your KYC will be rejected if you enter personal bank account details.`;
   } else if (businessType === PROPRIETORSHIP) {
@@ -501,7 +501,7 @@ const getBankTabHeader = (businessType) => {
     subtitle = 'Enter your personal bank account details.';
   }
   return { title, subtitle };
-}
+};
 
 export {
   differentAddress,

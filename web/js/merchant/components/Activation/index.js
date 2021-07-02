@@ -147,7 +147,7 @@ export default class ActivationWizard extends React.Component {
     tabs: [],
     same_address:
       this.props.data &&
-        this.props.data.business_operation_pin == this.props.data.business_registered_pin
+      this.props.data.business_operation_pin == this.props.data.business_registered_pin
         ? '1'
         : '0', // '1' => checkbox ticked
     has_url: this.props.data && this.props.data.business_website === '' ? '0' : '1', // '0' => 0th radio button, value exists
@@ -255,7 +255,10 @@ export default class ActivationWizard extends React.Component {
 
       if (
         this.props.user.isInstantActivationEnabled &&
-        (!userCanSubmitForm || !isL1Completed(this) || (isDedupe(this.props.user) === 'blocked' && this.props.data.activation_form_milestone === 'L1'))
+        (!userCanSubmitForm ||
+          !isL1Completed(this) ||
+          (isDedupe(this.props.user) === 'blocked' &&
+            this.props.data.activation_form_milestone === 'L1'))
       ) {
         //Code needs some refactoring
         FORM_TABS = FORM_TABS.slice(0, BANK_ACCOUNT_TAB);
@@ -512,7 +515,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!isL1Completed(this)) {
-      callBack = () => { };
+      callBack = () => {};
     }
 
     this.goto(null, callBack);
@@ -539,7 +542,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!isL1Completed(this)) {
-      callBack = () => { };
+      callBack = () => {};
     }
 
     this.goto(this.state.activeTab + 1, callBack);
@@ -559,7 +562,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!isL1Completed(this)) {
-      callBack = () => { };
+      callBack = () => {};
     }
 
     this.goto(this.state.activeTab - 1, callBack);
@@ -589,7 +592,7 @@ export default class ActivationWizard extends React.Component {
       };
 
     if (!isL1Completed(this)) {
-      callBack = () => { };
+      callBack = () => {};
     }
 
     this.goto(tabId, callBack);
@@ -608,7 +611,7 @@ export default class ActivationWizard extends React.Component {
           }),
         ),
       );
-    } catch (err) { }
+    } catch (err) {}
   };
 
   goto = async (newActiveTab, cb) => {
@@ -870,7 +873,7 @@ export default class ActivationWizard extends React.Component {
 
         return Boolean(
           state.dirty[field] ||
-          (this.state.commentlist.hasOwnProperty(field) && this.state.commentlist[field] !== ''),
+            (this.state.commentlist.hasOwnProperty(field) && this.state.commentlist[field] !== ''),
         );
       });
 
@@ -1002,7 +1005,7 @@ export default class ActivationWizard extends React.Component {
           ),
         );
       tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
-    } catch (e) { }
+    } catch (e) {}
   };
 
   isValidL1Field = (field_name) => {
@@ -1107,20 +1110,29 @@ export default class ActivationWizard extends React.Component {
             ].activation_flow;
         }
 
-        if(data.data.sumitted){
-          window.criteo_q = window.criteo_q || []; 
-          var deviceType = /iPad/.test(navigator.userAgent) ? "t" : /Mobile|iP(hone|od)| Android|BlackBerry|IEMobile|Silk/.test(navigator.userAgent) ? "m" : "d"; 
-          window.criteo_q.push( 
-          { event: "setAccount", account: 85314}, 
-          { event: "setEmail", email: this.props.data.contact_email }, 
-          { event: "setZipcode", zipcode: "" }, 
-          { event: "setSiteType", type: deviceType}, 
-          { event: "trackTransaction", id: '', extra_data: "KYC", 
-          item: ['www.criteo.com', 
-          { id: "456", price: 1, quantity: 1 } 
-            //add a line for each additional line in the basket  
-          ]} 
-          ); 
+        if (data.data.sumitted) {
+          window.criteo_q = window.criteo_q || [];
+          var deviceType = /iPad/.test(navigator.userAgent)
+            ? 't'
+            : /Mobile|iP(hone|od)| Android|BlackBerry|IEMobile|Silk/.test(navigator.userAgent)
+            ? 'm'
+            : 'd';
+          window.criteo_q.push(
+            { event: 'setAccount', account: 85314 },
+            { event: 'setEmail', email: this.props.data.contact_email },
+            { event: 'setZipcode', zipcode: '' },
+            { event: 'setSiteType', type: deviceType },
+            {
+              event: 'trackTransaction',
+              id: '',
+              extra_data: 'KYC',
+              item: [
+                'www.criteo.com',
+                { id: '456', price: 1, quantity: 1 },
+                //add a line for each additional line in the basket
+              ],
+            },
+          );
         }
 
         if (isUnregisteredBusiness) {
@@ -1680,10 +1692,7 @@ export default class ActivationWizard extends React.Component {
       footerButtons.push(FOOTER_BUTTONS.SUBMIT_L1_FORM);
     }
 
-    if (
-      isLinkedAccountForm &&
-      isLastTab
-    ) {
+    if (isLinkedAccountForm && isLastTab) {
       footerButtons.push(FOOTER_BUTTONS.SUBMIT_KYC_FORM);
     }
 
@@ -1702,14 +1711,16 @@ export default class ActivationWizard extends React.Component {
 
   get bankTabHeader() {
     const { title, subtitle } = getBankTabHeader(
-      Number(this.state.dirty.business_type || this.props.data.business_type)
-    )
+      Number(this.state.dirty.business_type || this.props.data.business_type),
+    );
     return subtitle ? (
       <>
         {title}
         <div className="onboarding-tab-subtitle">{subtitle}</div>
       </>
-    ) : tabHeader;
+    ) : (
+      tabHeader
+    );
   }
 
   render() {
@@ -1731,13 +1742,15 @@ export default class ActivationWizard extends React.Component {
     let content, documentContent; // Document content will always be shown so that upload progress is maintained in DOM
 
     if (activeTab !== DOCUMENT_UPLOAD_STEP) {
-      content = FORM_TABS_CONTENT[activeTab] && FORM_TABS_CONTENT[activeTab].map((field, i) => {
-        if (Array.isArray(field)) {
-          return <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>;
-        }
+      content =
+        FORM_TABS_CONTENT[activeTab] &&
+        FORM_TABS_CONTENT[activeTab].map((field, i) => {
+          if (Array.isArray(field)) {
+            return <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>;
+          }
 
-        return ActivationField.call(this, field);
-      });
+          return ActivationField.call(this, field);
+        });
     }
 
     documentContent =
@@ -1826,9 +1839,9 @@ export default class ActivationWizard extends React.Component {
             </span>
 
             <span className="device--desktop">
-              {
-                FORM_TABS[activeTab] === bankAccountTabName ? this.bankTabHeader : FORM_TABS[activeTab]
-              }
+              {FORM_TABS[activeTab] === bankAccountTabName
+                ? this.bankTabHeader
+                : FORM_TABS[activeTab]}
               {FORM_TABS[activeTab] === 'Documents Verification' && (
                 <div className="onboarding-tab-subtitle">
                   {this.isUnregBiz
@@ -1853,81 +1866,81 @@ export default class ActivationWizard extends React.Component {
           {/* Alerts: for MAIN activation form */}
           {do {
             const showFormDisabledAlert =
-          !this.isLinkedAccountForm && (isFormLocked || isFormSubmitted); // '|| isFormActivated' is redundant check. Always covered by isFormSubmitted;
+              !this.isLinkedAccountForm && (isFormLocked || isFormSubmitted); // '|| isFormActivated' is redundant check. Always covered by isFormSubmitted;
 
-          const {data} = this.props;
-          let Component = Alert.Info;
-          let icon, msg;
+            const { data } = this.props;
+            let Component = Alert.Info;
+            let icon, msg;
 
-          let secondaryMsg = 'For any clarifications, you can';
-          const ticketLink = <Link to="#ticket">write to support</Link>;
-          if (showFormDisabledAlert && !this.isOnKYCTab()) {
+            let secondaryMsg = 'For any clarifications, you can';
+            const ticketLink = <Link to="#ticket">write to support</Link>;
+            if (showFormDisabledAlert && !this.isOnKYCTab()) {
               if (isFormActivated && data.activation_status === 'activated') {
-            // **1. Alert: Account Activated
+                // **1. Alert: Account Activated
 
-            icon = 'i-done-all';
-          msg = 'Your account is activated.';
-          secondaryMsg = (
-          <React.Fragment>For any changes, please {ticketLink}.</React.Fragment>
-          );
+                icon = 'i-done-all';
+                msg = 'Your account is activated.';
+                secondaryMsg = (
+                  <React.Fragment>For any changes, please {ticketLink}.</React.Fragment>
+                );
               } else if (this.isNeedsClarificationMode()) {
-            // **2. Alert: Need clarification
-            icon = 'i-warning';
-          Component = Alert.Warning;
-          msg = `There are issues with your activation form. Please check your mail and respond at the earliest.`;
-          secondaryMsg = '';
+                // **2. Alert: Need clarification
+                icon = 'i-warning';
+                Component = Alert.Warning;
+                msg = `There are issues with your activation form. Please check your mail and respond at the earliest.`;
+                secondaryMsg = '';
               } else if (data.activation_status === 'rejected') {
-            // **3. Alert: Form Rejected
+                // **3. Alert: Form Rejected
 
-            icon = 'i-close';
-          Component = Alert.Error;
-          msg =
-          'Your activation form has been rejected by our partner banks. Hence, we would not be able support your business at this moment.';
-          secondaryMsg = 'We have sent you an email with the details.';
+                icon = 'i-close';
+                Component = Alert.Error;
+                msg =
+                  'Your activation form has been rejected by our partner banks. Hence, we would not be able support your business at this moment.';
+                secondaryMsg = 'We have sent you an email with the details.';
               } else if (
-          !!this.props.user.locked &&
-          !this.props.user.isActivated &&
-          this.props.user.merchant.hold_funds
-          ) {
-            icon = 'i-warning';
-          Component = Alert.Warning;
-          msg = (
-          <React.Fragment>
-            We need more information regarding your submitted details. Please{' '}
-            <SupportButton
-              type="anchor"
-              buttonLabel="Contact Support"
-              category="merchant"
-              openSection="account-activation"
-            />{' '}
-            to complete your activation.
-          </React.Fragment>
-          );
-          secondaryMsg = '';
+                !!this.props.user.locked &&
+                !this.props.user.isActivated &&
+                this.props.user.merchant.hold_funds
+              ) {
+                icon = 'i-warning';
+                Component = Alert.Warning;
+                msg = (
+                  <React.Fragment>
+                    We need more information regarding your submitted details. Please{' '}
+                    <SupportButton
+                      type="anchor"
+                      buttonLabel="Contact Support"
+                      category="merchant"
+                      openSection="account-activation"
+                    />{' '}
+                    to complete your activation.
+                  </React.Fragment>
+                );
+                secondaryMsg = '';
               } else if (isFormLocked && isFormSubmitted) {
-            // **4. Alert: Form is Locked (for reasons other than above)
-            // 'locked' status has more priority than 'submitted'
-            // If admins locked form before submiddion, then this alert is not shown
+                // **4. Alert: Form is Locked (for reasons other than above)
+                // 'locked' status has more priority than 'submitted'
+                // If admins locked form before submiddion, then this alert is not shown
 
-            icon = 'i-outline-lock';
-          msg =
-          'Your activation form is under review. We will let you know once your account gets activated.';
-          secondaryMsg = '';
+                icon = 'i-outline-lock';
+                msg =
+                  'Your activation form is under review. We will let you know once your account gets activated.';
+                secondaryMsg = '';
               } else if (isFormSubmitted) {
-            // **5. Alert: Form is Submitted
+                // **5. Alert: Form is Submitted
 
-            icon = 'i-check';
-          msg = 'Our team will review the form and submitted documents.';
-          secondaryMsg = 'We will reach out on your contact email for all updates.';
+                icon = 'i-check';
+                msg = 'Our team will review the form and submitted documents.';
+                secondaryMsg = 'We will reach out on your contact email for all updates.';
               }
 
-          {
-            msg && (
-              <Component iconBefore={icon}>
-                {msg}
-                <div className="side-description">{secondaryMsg}</div>
-              </Component>
-            );
+              {
+                msg && (
+                  <Component iconBefore={icon}>
+                    {msg}
+                    <div className="side-description">{secondaryMsg}</div>
+                  </Component>
+                );
               }
             }
           }}
@@ -2253,8 +2266,8 @@ function ActivationField(field) {
           activation_status === 'needs_clarification'
             ? false
             : typeof required === 'function'
-              ? required(this)
-              : required
+            ? required(this)
+            : required
         }
         {...rest}
       />

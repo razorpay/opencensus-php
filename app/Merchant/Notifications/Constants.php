@@ -1030,6 +1030,24 @@ class Constants
                 ],
             ],
         ],
+        [
+            'id'          => 'july-ssl-certificate-update',
+            'title'       => 'SSL Certificate Update for Razorpay API',
+            'description' => 'We’re updating the SSL certificate for api.razorpay.com on 15th July, 2021. To understand if this update affects you, click on the link below.',
+            'start_ts'    => 1625097600,
+            'end_ts'      => 1633046400,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/alert.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Learn more',
+                    'url'   => 'https://lp.razorpay.com/links/update-tls-ssl-certificate-2021',
+                ]
+            ],
+            'filters'     => [
+                'splitz_experiments' => ['SSL_UPDATE_ANNOUNCEMENT_SPLITZ'],
+            ]
+        ],
     ];
 
     //insert data in data field, that is dynamically loaded based on the sub-campaign

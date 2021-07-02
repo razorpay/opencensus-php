@@ -299,16 +299,16 @@ export default class App extends Component {
     window.addEventListener('resize', this.handleResize);
     const user = window.rzp_user;
     if (user) {
-      const hidden={
+      const hidden = {
         mid: `${user.id}`,
         source: 'dashboard',
-        email: `${user.email}`
-      }
+        email: `${user.email}`,
+      };
       const GoLiveNPSEnableTypeForm = createSidetab(
         'hRkxaGU1', // go live survey
         {
           width: 500,
-          buttonText:"Feedback",
+          buttonText: 'Feedback',
           hideHeaders: true,
           hideFooters: true,
           hidden,
@@ -321,7 +321,7 @@ export default class App extends Component {
         'rDnJV4D0', // non go live survey
         {
           width: 500,
-          buttonText:"Feedback",
+          buttonText: 'Feedback',
           hideHeaders: true,
           hideFooters: true,
           hidden,
