@@ -19,6 +19,9 @@ class Service extends Base\Service{
 
             //path: datalakesegments/update/GMV_GT_THAN_1LAKH/mids.csv
             $filePath = $input['path'];
+            if(strpos($filePath,"/_temporary")){
+                return [];
+            }
 
             $segmentName = $this->getSegmentFromPath($filePath);
 
