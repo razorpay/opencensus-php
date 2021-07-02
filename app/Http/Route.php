@@ -1301,6 +1301,8 @@ class Route
         'tax_payments_add_penalty_cron'            => ['post',    'tax-payments/addPenalty',                         'TaxPaymentController@addPenalty'                                   ],
         'tax_payments_mail_cron'                   => ['post',    'tax-payments/mailCron',                           'TaxPaymentController@mailCron'                                     ],
         'tax_payments_monthly_summary'             => ['get',     'tax-payments/_meta/summary',                      'TaxPaymentController@monthlySummary'                               ],
+        'tax_payments_invalid_tan_status'          => ['get',     'tax-payments/_meta/invalid_tan_status',           'TaxPaymentController@getInvalidTanStatus'                          ],
+        'tax_payments_downtime_schedule'           => ['get',     'tax-payments/_meta/downtime_schedule',            'TaxPaymentController@getDowntimeSchedule'                          ],
         'tax_payments_admin_auth_api'              => ['post',    'tax-payments/admin',                              'TaxPaymentController@adminActions'                                 ],
         'tax_payments_payout_cron'                 => ['post',    'tax-payments/initiateMonthlyPayouts',             'TaxPaymentController@initiateMonthlyPayouts'                       ],
         'tax_payments_payout_cancel_cron'          => ['post',    'tax-payments/cancelQueuedPayouts',                'TaxPaymentController@cancelQueuedPayouts'                          ],
@@ -1318,6 +1320,7 @@ class Route
         'tax_payments_update_challan_file_id'      => ['post',    'tax-payments/{id}/edit',                          'TaxPaymentController@updateChallanFileId'                          ],
         'tax_payments_edit'                        => ['patch',   'tax-payments/{id}',                               'TaxPaymentController@edit'                                         ],
         'tax_payments_cancel'                      => ['post',    'tax-payments/{id}/cancel',                        'TaxPaymentController@cancel'                                       ],
+
 
         // Direct Tax Payment
         'direct_tax_payments_tds_category_public'  => ['get',    'tax-payments/direct/tds-categories',               'TaxPaymentController@getTdsCategories'                             ],
@@ -3984,6 +3987,8 @@ class Route
         'tax_payments_monthly_summary',
         'tax_payments_get_by_id',
         'tax_payments_create',
+        'tax_payments_invalid_tan_status',
+        'tax_payments_downtime_schedule',
         'payouts_scheduled_time_slots',
         'proxy_merchant_get_pricing',
         'payment_links_sign_payload',
@@ -6069,6 +6074,8 @@ class Route
         'tax_payments_edit'                            => Permission::CREATE_TAX_PAYMENTS,
         'tax_payments_cancel'                          => Permission::CREATE_TAX_PAYMENTS,
         'tax_payments_create'                          => Permission::CREATE_TAX_PAYMENTS,
+        'tax_payments_invalid_tan_status'              => Permission::CREATE_TAX_PAYMENTS,
+        'tax_payments_downtime_schedule'               => Permission::CREATE_TAX_PAYMENTS,
         'salesforce_event'                             => '*',
         'salesforce_opportunity_details'               => '*',
 
@@ -7144,6 +7151,8 @@ class Route
             'tax_payments_monthly_summary',
             'tax_payments_pay',
             'tax_payments_update_challan_file_id',
+            'tax_payments_invalid_tan_status' ,
+            'tax_payments_downtime_schedule',
             'tax_update',
             'terminal_disable',
             'terminal_enable',
@@ -8704,6 +8713,8 @@ class Route
             'tax_payments_monthly_summary',
             'tax_payments_pay',
             'tax_payments_update_challan_file_id',
+            'tax_payments_invalid_tan_status',
+            'tax_payments_downtime_schedule',
             'tax_update',
             'templating_create_namespace',
             'templating_create_template_config',
@@ -10236,6 +10247,8 @@ class Route
         'tax_payments_update_challan_file_id',
         'tax_payments_edit',
         'tax_payments_cancel',
+        'tax_payments_invalid_tan_status',
+        'tax_payments_downtime_schedule',
 
         // NPS routes
         'survey_create',

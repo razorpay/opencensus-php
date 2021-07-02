@@ -714,4 +714,34 @@ class TaxPaymentsTest extends TestCase
 
         $tpMock->shouldHaveReceived('webHookHandler');
     }
+
+    public function testGetInvalidTanStatus()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('getInvalidTanStatus')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('getInvalidTanStatus');
+    }
+
+    public function testGetDowntimeSchedule()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('getDowntimeSchedule')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('getDowntimeSchedule');
+    }
 }

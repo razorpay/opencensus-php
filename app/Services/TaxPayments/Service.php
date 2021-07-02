@@ -49,6 +49,8 @@ class Service
     const EDIT_MANUAL_TAX_PAYMENT   = 'EditManualTaxPayment';
     const CANCEL_MANUAL_TAX_PAYMENT = 'CancelManualTaxPayment';
     const GET_TDS_CATEGORIES        = 'GetTdsCategories';
+    const GET_INVALID_TAN_STATUS    = 'GetInvalidTanStatus';
+    const GET_DOWNTIME_SCHEDULE     = 'GetDowntimeSchedule';
 
     // general constants
     const DATA             = 'data';
@@ -381,7 +383,6 @@ class Service
         return $this->makeRequest($merchant, $url, $input);
     }
 
-
     public function markAsPaid(MerchantEntity $merchant,
                                array $input,
                                Entity $user = null)
@@ -452,6 +453,20 @@ class Service
         $input['tax_payment_id'] = $taxPaymentId;
 
         return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getInvalidTanStatus(MerchantEntity $merchant)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_INVALID_TAN_STATUS);
+
+        return $this->makeRequest($merchant, $url, ['timestamp' => now()]);
+    }
+
+    public function getDowntimeSchedule()
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_DOWNTIME_SCHEDULE);
+
+        return $this->makeRequest(null, $url, ['time'=> now()]);
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,

@@ -217,4 +217,14 @@ class TaxPaymentController extends Controller
         $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
     }
 
+    public function getInvalidTanStatus()
+    {
+        return $this->service->getInvalidTanStatus($this->ba->getMerchant());
+    }
+
+    public function getDowntimeSchedule()
+    {
+        return $this->service->getDowntimeSchedule();
+    }
+
 }

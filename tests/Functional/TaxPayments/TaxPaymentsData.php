@@ -808,4 +808,22 @@ return [
             'content' => []
         ]
     ],
+    'testGetInvalidTanStatus'                         => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/tax-payments/_meta/invalid_tan_status',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testGetDowntimeSchedule'                        => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/tax-payments/_meta/downtime_schedule',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];
