@@ -239,6 +239,7 @@ class Entity
     const ATOM                   = 'atom';
     const PAYU                   = 'payu';
     const CASHFREE               = 'cashfree';
+    const ZAAKPAY                = 'zaakpay';
     const CCAVENUE               = 'ccavenue';
     const ENACH                  = 'enach';
     const SHARP                  = 'sharp';

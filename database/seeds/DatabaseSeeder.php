@@ -1288,6 +1288,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingFsbTerminal();
         $this->createPayuTerminal();
         $this->createCashfreeTerminal();
+        $this->createZaakpayTerminal();
         $this->createNetbankingDcbTerminal();
         $this->createTwidTerminal();
         $this->createCcavenueTerminal();
@@ -2941,6 +2942,25 @@ class DatabaseSeeder extends Seeder
                 'netbanking' => '1',
                 'gateway_merchant_id' => '323395bf6400747e2f43bbd9a93323',
                 'gateway_secure_secret' => Crypt::encrypt('2d2fe54f576ff428d93019f48695870abebb2327'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
+    protected function createZaakpayTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id' => 'h1t3hfU4c2xyz4',
+                'merchant_id' => Account::TEST_ACCOUNT,
+                'gateway' => Gateway::ZAAKPAY,
+                'card' => '1',
+                'netbanking' => '0',
+                'gateway_merchant_id' => 'test_zaakpay_mid',
+                'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
+                'gateway_secure_secret2' => Crypt::encrypt('test_secure_secret2'),
+                'gateway_access_code' => 'gateway_access_code',
                 'created_at'            => time(),
                 'updated_at'            => time(),
             ]

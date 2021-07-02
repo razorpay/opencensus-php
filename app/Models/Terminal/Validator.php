@@ -142,6 +142,7 @@ class Validator extends Base\Validator
         Payment\Gateway::PAYU,
         Payment\Gateway::NACH_ICICI,
         Payment\Gateway::CASHFREE,
+        Payment\Gateway::ZAAKPAY,
         Payment\Gateway::CCAVENUE,
         Payment\Gateway::FULCRUM,
         Payment\Gateway::NETBANKING_UBI,
@@ -266,6 +267,19 @@ class Validator extends Base\Validator
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed'
     ];
 
+    protected static $zaakpayTerminalRules = [
+        Entity::GATEWAY                                 => 'required|in:zaakpay',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE                     => 'sometimes|string',
+        Entity::TYPE                                    => 'required|array',
+        Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::MODE                                    => 'sometimes|in:2',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed'
+    ];
+
     protected static $ccavenueTerminalRules = [
         Entity::GATEWAY                                 => 'required|in:ccavenue',
         Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
@@ -279,6 +293,7 @@ class Validator extends Base\Validator
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
+
     protected static $hdfcTerminalRules = [
         Entity::GATEWAY                    => 'required|in:hdfc',
         Entity::GATEWAY_MERCHANT_ID        => 'required|integer|digits_between:4,8',
@@ -618,6 +633,14 @@ class Validator extends Base\Validator
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
     ];
 
+    protected static $zaakpayEditTerminalRules = [
+        Entity::MODE                       => 'sometimes|in:2',
+        Entity::CARD                       => 'sometimes|boolean|in:0,1',
+        Entity::ENABLED                    => 'sometimes|in:0,1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
     protected static $ccavenueEditTerminalRules = [
         Entity::MODE                       => 'sometimes|in:2',
         Entity::ENABLED                    => 'sometimes|in:0,1',
@@ -628,7 +651,6 @@ class Validator extends Base\Validator
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
-
 
     protected static $mpgsEditTerminalRules = [
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
@@ -2069,6 +2091,7 @@ class Validator extends Base\Validator
             Gateway::CASHFREE,
             Gateway::CCAVENUE,
             Gateway::PAYTM,
+            Gateway::ZAAKPAY,
         ];
 
         //Migs now supports purchase mode as well

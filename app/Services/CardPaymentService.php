@@ -202,7 +202,8 @@ class CardPaymentService
 
         if ((($gateway === Payment\Gateway::PAYU) or
              ($gateway ===  Payment\Gateway::CASHFREE) or
-             ($gateway ===  Payment\Gateway::CCAVENUE)) and
+             ($gateway ===  Payment\Gateway::CCAVENUE) or
+             ($gateway === Payment\Gateway::ZAAKPAY)) and
              ($action === Action::CALLBACK))
         {
             $dynamicContent = $input['gateway'];

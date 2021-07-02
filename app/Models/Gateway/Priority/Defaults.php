@@ -46,6 +46,7 @@ class Defaults
                 Gateway::SHARP,
                 Gateway::PAYU,
                 Gateway::CASHFREE,
+                Gateway::ZAAKPAY,
                 Gateway::CCAVENUE,
             ]
         ],

@@ -400,6 +400,23 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createZaakpayTerminal()
+    {
+        $attributes = [
+            'merchant_id'            => '10000000000000',
+            'gateway'                => 'zaakpay',
+            'card'                   => 1,
+            'netbanking'             => 0,
+            'gateway_merchant_id'    => 'abcd',
+            'network_category'       => 'ecommerce',
+            'gateway_secure_secret'  => 'secret',
+            'gateway_secure_secret2' => 'secret2',
+            'gateway_access_code'    => 'dummy'
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createBilldeskTerminal(array $attributes = [])
     {
         $defaultValues = [

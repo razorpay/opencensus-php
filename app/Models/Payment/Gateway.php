@@ -26,6 +26,7 @@ class Gateway
     const ATOM                   = 'atom';
     const PAYU                   = 'payu';
     const CASHFREE               = 'cashfree';
+    const ZAAKPAY                = 'zaakpay';
     const CCAVENUE               = 'ccavenue';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
@@ -306,6 +307,7 @@ class Gateway
         self::PAYU                  => self::PAYU,
         self::ATOM                  => self::ATOM,
         self::CASHFREE              => self::CASHFREE,
+        self::ZAAKPAY               => self::ZAAKPAY,
         self::NETBANKING_YESB       => self::YESB,
         self::CCAVENUE              => self::CCAVENUE,
         self::NETBANKING_IDFC       => self::IDFC,
@@ -332,6 +334,7 @@ class Gateway
         self::WALLET_PAYPAL         => self::PAYPAL,
         self::WALLET_PAYZAPP        => self::HDFC,
         self::ENACH_NPCI_NETBANKING => self::NPCI,
+        self::ZAAKPAY               => self::ZAAKPAY,
     ];
 
     /**
@@ -359,6 +362,7 @@ class Gateway
         self::PAYU,
         self::PAYTM,
         self::CCAVENUE,
+        self::ZAAKPAY,
     ];
 
     /**
@@ -1176,6 +1180,7 @@ class Gateway
             self::ISG,
             self::PAYU,
             self::CASHFREE,
+            self::ZAAKPAY,
             self::CCAVENUE,
         ],
 
@@ -1619,6 +1624,14 @@ class Gateway
             Network::DISC,
         ],
         self:: CCAVENUE => [
+            Network::MC,
+            Network::VISA,
+            Network::AMEX,
+            Network::RUPAY,
+            Network::DICL,
+            Network::DISC,
+        ],
+        self:: ZAAKPAY => [
             Network::MC,
             Network::VISA,
             Network::AMEX,
@@ -2446,6 +2459,7 @@ class Gateway
         Gateway::AXIS_MIGS   => Gateway::AXIS_MIGS,
         Gateway::PAYU        => Gateway::PAYU,
         Gateway::CASHFREE    => Gateway::CASHFREE,
+        Gateway::ZAAKPAY     => Gateway::ZAAKPAY,
         Gateway::CCAVENUE    => Gateway::CCAVENUE
     ];
 
@@ -3251,6 +3265,7 @@ class Gateway
             self::FIRST_DATA,
             self::PAYU,
             self::CASHFREE,
+            self::ZAAKPAY,
             self::FULCRUM,
             self::CCAVENUE
         ];
@@ -3286,6 +3301,7 @@ class Gateway
             self::ISG,
             self::PAYU,
             self::CASHFREE,
+            self::ZAAKPAY,
             self::FULCRUM,
             self::CCAVENUE,
         ];
