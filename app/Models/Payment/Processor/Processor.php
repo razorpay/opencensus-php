@@ -4428,6 +4428,10 @@ class Processor
 
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {
+            if ($payment->shouldCreateGatewayEntityForDebit() === true)
+            {
+                return true;
+            }
             //
             // If the payment is a second recurring payment of a file-based emandate bank
             // we do not hit the gateway, we send a debit request asynchronously

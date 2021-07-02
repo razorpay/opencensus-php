@@ -11,6 +11,7 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
+use RZP\Exception\ServerErrorException;
 
 class Repository extends Base\Repository
 {
@@ -442,6 +443,9 @@ class Repository extends Base\Repository
         return (new Entity)->mapIFSC($tokens);
     }
 
+    /**
+     * @throws ServerErrorException
+     */
     public function fetchPendingNachOrMandateDebit($gateways, $from, $to, $acquirer)
     {
         $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);

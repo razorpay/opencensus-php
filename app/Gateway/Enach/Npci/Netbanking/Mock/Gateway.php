@@ -13,6 +13,11 @@ class Gateway extends Netbanking\Gateway
     {
         $request = parent::authorize($input);
 
+        if ($this->isSecondRecurringPaymentRequest($input) === true)
+        {
+            return null;
+        }
+
         $url = $this->route->getUrlWithPublicAuth('mock_emandate_payment', ['authType' => 'netbanking']);
 
         $request['url'] = $url;

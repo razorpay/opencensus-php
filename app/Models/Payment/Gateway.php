@@ -2038,6 +2038,10 @@ class Gateway
         Gateway::NETBANKING_SBI,
     ];
 
+    public static $createGatewayEntityForDebitPaymentDuringPaymentFlow = [
+        Gateway::ENACH_NPCI_NETBANKING,
+    ];
+
     /**
      * List of netbanking gateways that process emandate registration through file send
      *
@@ -2649,6 +2653,11 @@ class Gateway
     public static function isFileBasedEMandateDebitGateway(string $gateway): bool
     {
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
+    }
+
+    public static function shouldCreateEnachGatewayEntity(string $gateway): bool
+    {
+        return (in_array($gateway, self::$createGatewayEntityForDebitPaymentDuringPaymentFlow) === true);
     }
 
     public static function isSupportedEmandateBank($bank): bool

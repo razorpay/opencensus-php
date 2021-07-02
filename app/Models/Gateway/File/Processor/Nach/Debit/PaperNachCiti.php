@@ -233,6 +233,9 @@ class PaperNachCiti extends Debit\Base
         return $rows;
     }
 
+    /**
+     * @throws GatewayErrorException
+     */
     public function sendFile($data)
     {
         $fileInfo = [];
@@ -399,7 +402,6 @@ class PaperNachCiti extends Debit\Base
         $fieldLength = FieldsLength::DESTINATION_BANK_IFSC;
         $ifsc = $this->getPaddedValue($ifsc, $fieldLength, ' ', STR_PAD_RIGHT);
 
-
         $accountNumber = $token->getAccountNumber();
         $fieldLength = FieldsLength::BENEFICIARY_BANK_ACCOUNT_NUMBER;
         $accountNumber = $this->getPaddedValue($accountNumber, $fieldLength, ' ', STR_PAD_RIGHT);
@@ -407,7 +409,6 @@ class PaperNachCiti extends Debit\Base
         $UMRN = $token->getGatewayToken();
         $size = FieldsLength::UMRN;
         $UMRN = $this->getPaddedValue($UMRN, $size, ' ', STR_PAD_RIGHT);
-
 
         $utilityCode  = $token->terminal->getGatewayMerchantId2();
         $size = FieldsLength::USER_NUMBER;
@@ -425,7 +426,6 @@ class PaperNachCiti extends Debit\Base
         $sponserBank = $token->terminal->getGatewayAccessCode();
         $size = FieldsLength::SPONSER_BANK_IFSC;
         $sponserBank = $this->getPaddedValue($sponserBank, $size, ' ', STR_PAD_RIGHT);
-
 
         return [[
             Fields::ACCOUNT_TYPE_VALUE       => $accountTypeValue,
@@ -455,7 +455,7 @@ class PaperNachCiti extends Debit\Base
         $row = [
             Fields::SAVINGS => '10',
             Fields::CURRENT => '11',
-            ];
+        ];
 
         $accountType  = $token->getAccountType() ?? 'savings' ;
 
@@ -478,7 +478,7 @@ class PaperNachCiti extends Debit\Base
         return $prependLine . $txt;
     }
 
-    public function generateText($data, $glue = '|', $ignoreLastNewline = false)
+    public function generateText($data, $glue = '|', $ignoreLastNewline = false): string
     {
         $txt = '';
 
@@ -496,6 +496,9 @@ class PaperNachCiti extends Debit\Base
         return $txt;
     }
 
+    /**
+     * @throws GatewayFileException
+     */
     public function fetchEntities(): PublicCollection
     {
         if (Holidays::isWorkingDay(Carbon::now(Timezone::IST)) === false)
@@ -572,7 +575,7 @@ class PaperNachCiti extends Debit\Base
     }
 
 
-    public function generateData(PublicCollection $tokens)
+    public function generateData(PublicCollection $tokens): PublicCollection
     {
         try
         {

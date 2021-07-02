@@ -43,6 +43,13 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ($this->isSecondRecurringPaymentRequest($input) === true)
+        {
+            $this->authorizeSecondRecurring($input);
+
+            return null;
+        }
+
         $this->setCrypto();
 
         $this->createGatewayPaymentEntity([], null, 'authorize');
@@ -1040,5 +1047,29 @@ class Gateway extends Base\Gateway
         }
 
         return $displayDetails;
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    protected function authorizeSecondRecurring(array $input)
+    {
+        if (empty($input['token']->getGatewayToken()) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_TOKEN_EMPTY,
+                Token\Entity::GATEWAY_TOKEN,
+                [
+                    'payment' => $input['payment'],
+                    'token'   => $input['token']->toArray(),
+                ]);
+        }
+
+        $entity = [
+            Base\Entity::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100,
+            Base\Entity::UMRN   => $input['token']->getGatewayToken(),
+        ];
+
+        $this->createGatewayPaymentEntity($entity, null);
     }
 }

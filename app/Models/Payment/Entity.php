@@ -3036,6 +3036,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return false;
     }
 
+    public function shouldCreateGatewayEntityForDebit(): bool
+    {
+        if (($this->isEmandate() === true) and
+            ($this->isRecurringTypeAuto() === true))
+        {
+            $gateway = $this->getGlobalOrLocalTokenEntity()->terminal->getGateway();
+
+            return Payment\Gateway::shouldCreateEnachGatewayEntity($gateway);
+        }
+
+        return false;
+    }
+
     public function isAsyncEmandatePayment()
     {
         return (($this->isFileBasedEmandateDebitPayment() === true) or

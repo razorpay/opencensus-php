@@ -485,7 +485,7 @@ class CombinedNachIcici extends Debit\Base
         return $date->timestamp;
     }
 
-    protected function formatDataForMail($fileData)
+    protected function formatDataForMail($fileData): array
     {
         $amount = 0;
 
@@ -503,7 +503,7 @@ class CombinedNachIcici extends Debit\Base
         ];
     }
 
-    public function generateData(PublicCollection $tokens)
+    public function generateData(PublicCollection $tokens): PublicCollection
     {
         try
         {

@@ -91,10 +91,10 @@ abstract class Base extends Processor\Base
         return number_format($amount / 100, 2, '.', '');
     }
 
-    protected function formatDataForMail($files)
+    protected function formatDataForMail($files): array
     {
         $mailData = [
-            'files'     => [],
+            'files' => [],
         ];
 
         foreach ($files as $file)

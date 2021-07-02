@@ -457,7 +457,20 @@ class EnachNetbankingNpciGatewayTest extends TestCase
     {
         $response = $this->makeDebitPayment();
 
+        $enach = $this->getLastEntity('enach', true);
+
         $this->fixtures->stripSign($response['razorpay_payment_id']);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'payment_id' => $response['razorpay_payment_id'],
+                'action'     => 'authorize',
+                'bank'       => 'UTIB',
+                'status'     => null,
+                'amount'     => 300000,
+            ],
+            $enach
+        );
 
         $this->ba->adminAuth();
 
@@ -500,18 +513,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContentSummary, $summary);
         $this->assertArraySelectiveEquals($expectedFileContentDebit, $debit);
-
-        $enach = $this->getLastEntity('enach', true);
-
-        $this->assertArraySelectiveEquals(
-            [
-                'payment_id' => $response['razorpay_payment_id'],
-                'action'     => 'authorize',
-                'bank'       => 'UTIB',
-                'status'     => null,
-            ],
-            $enach
-        );
 
         $fileContent = explode("\n", file_get_contents('storage/files/filestore/' . $debit['location']));
 

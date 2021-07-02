@@ -197,9 +197,9 @@ abstract class Base extends Core
         if ($this->gatewayFile->isFileGenerated() === true)
         {
             $file = $this->gatewayFile
-                               ->files()
-                               ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                               ->first();
+                         ->files()
+                         ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
+                         ->first();
 
             return ($file !== null);
         }
@@ -321,6 +321,9 @@ abstract class Base extends Core
         return [$gatewayData, $fetchSuccess];
     }
 
+    /**
+     * @throws Exception\GatewayFileException
+     */
     protected function sendBeamRequest(array $data, array $interval, array $mailInfo, bool $synchronous)
     {
         $beamResponse = $this->app['beam']->beamPush($data, $interval, $mailInfo, $synchronous);

@@ -7,19 +7,15 @@ use Excel;
 use Queue;
 Use Carbon\Carbon;
 
-use RZP\Gateway\Enach\Citi\NachDebitFileHeadings as Headings;
-use RZP\Models\Feature;
-use RZP\Constants\Entity;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
-
+use RZP\Gateway\Enach\Citi\NachDebitFileHeadings as Headings;
 
 class EnachNetbankingCitiGatewayTest extends EnachNetbankingNpciGatewayTest
 {
     protected function setUp(): void
     {
-
         parent::setUp();
 
         $this->sharedCitiTerminal = $this->sharedTerminal;

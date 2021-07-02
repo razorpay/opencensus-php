@@ -175,9 +175,9 @@ class PaymentCreateController extends Controller
     public function getCreatePaymentCheckoutCallback()
     {
         $merchant =  $this->app['basicauth']->getMerchant();
-        
+
         $templateData = (new CheckoutView())->addOrgInformationInResponse($merchant);
-        
+
         $templateData['data']['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
 
         $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,

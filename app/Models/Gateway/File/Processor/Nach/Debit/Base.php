@@ -62,8 +62,8 @@ abstract class Base extends Nach\Base
         return $tokens;
     }
 
-    public function generateData(PublicCollection $tokens)
+    public function generateData(PublicCollection $tokens): PublicCollection
     {
-            return $tokens;
+        return $tokens;
     }
 }
