@@ -52,16 +52,11 @@ export default class DateRangePickerField extends Component {
   };
 
   onFocusChange = focused => {
-    this.setState(
-      {
-        focused: focused,
-      },
-      () => {
-        if (this.props.onFocusChange) {
-          this.props.onFocusChange(focused);
-        }
+    this.setState({ focused }, () => {
+      if (this.props.onFocusChange) {
+        this.props.onFocusChange(focused);
       }
-    );
+    });
   };
 
   componentWillReceiveProps(nextProps) {
@@ -70,12 +65,12 @@ export default class DateRangePickerField extends Component {
 
     if (
       nextProps.startDate &&
-      startDate.toDate() !== nextProps.startDate.toDate()
+      (!startDate || startDate.toDate() !== nextProps.startDate.toDate())
     ) {
       startDate = nextProps.startDate;
     }
 
-    if (nextProps.endDate && endDate.toDate() !== nextProps.endDate.toDate()) {
+    if (nextProps.endDate && (!endDate || endDate.toDate() !== nextProps.endDate.toDate())) {
       endDate = nextProps.endDate;
     }
 

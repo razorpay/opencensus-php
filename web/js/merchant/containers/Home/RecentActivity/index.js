@@ -174,10 +174,15 @@ export default class RecentActivity extends Component {
     let body = null;
 
     if (selectedTabData.loading || selectedTabData.items.length === 0) {
+      let noRecordsFound = `No ${selectedTab} found.`;
+      if (selectedTab === "payments") {
+        noRecordsFound = 'No payments found for the selected duration.';
+      }
+
       body = (
         <tr>
           <td colSpan={numColumns}>
-            <center>{selectedTabData.loading ? 'Please Wait...' : 'No Records found.'}</center>
+            <center>{selectedTabData.loading ? 'Please Wait...' : noRecordsFound}</center>
           </td>
         </tr>
       );

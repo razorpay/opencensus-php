@@ -10,16 +10,22 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import ListContainer from 'merchant/containers/ListContainer';
 
-const EmptyComponent = () => (
+const EmptyRoutesComponent = () => (
   <EmptyList
     description={
       <React.Fragment>
-        <div>There are no payments yet!!</div>
+        <div>No route payments found for the selected duration and criteria!</div>
         <div>Create a linked account first to route payments.</div>
       </React.Fragment>
     }
   />
 );
+
+const EmptyComponent = () => {
+  return (
+    <EmptyList description={<div>No payments found for the selected duration and criteria!</div>} />
+  );
+};
 
 export default class PaymentsListContainer extends ListContainer {
   componentDidMount() {
@@ -134,7 +140,7 @@ export default class PaymentsListContainer extends ListContainer {
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}
-          EmptyComponent={isRoute && EmptyComponent}
+          EmptyComponent={isRoute ? EmptyRoutesComponent : EmptyComponent}
           {...this.props}
         />
       </div>

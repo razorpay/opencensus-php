@@ -22,7 +22,8 @@ class DateRangePicker extends Component {
   constructor(props) {
     super(props);
 
-    let { presets, startDate, endDate = moment() } = props;
+    let { presets } = props;
+    const { startDate, endDate = moment() } = props;
 
     if (!Array.isArray(presets)) {
       presets = defaultPresets;
