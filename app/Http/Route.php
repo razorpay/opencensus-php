@@ -1797,10 +1797,14 @@ class Route
         'batch_service_route'                      => ['any',      'service/batch/{path?}',                          'BatchController@sendRequest'                                       ],
 
         //all requests get forwarded to banking account service
+        'banking_account_service_lms_routes_all'   => ['any',      'bas/lms/{path?}',                                    'BasController@forwardLMSRequest'                               ],
+        'banking_account_service_lms_routes_ops'   => ['any',      'bas/lms_ops/{path?}',                                'BasController@forwardLMSRequest'                               ],
+
         'banking_account_service_routes'                        => ['any',      'merchant/banking_application/business/{path?}',         'BasController@forwardRequest'                  ],
         'banking_account_service_cron_routes'                   => ['any',      'bas/banking_application/cron/{path?}',                  'BasController@forwardCronRequest'              ],
 
         'banking_account_service_pincode_serviceability_check'   => ['get',     'bas/banking_application/check_pin_code_serviceability', 'BasController@checkPinCodeServiceability'      ],
+
 
         //creates balance and banking_account_statement_details
         'bas_banking_accounts_create'              => ['post',     'bas/merchant/{id}/banking_accounts',             'BasController@createCurrentAccountBankingDependencies'             ],
@@ -2701,7 +2705,8 @@ class Route
      * @var array
      */
     public static $skipMerchantAccessCheckOnSpecificAdminAuthRoutes = [
-        'banking_account_create_admin'
+        'banking_account_create_admin',
+        'banking_account_service_lms_routes_all',
     ];
 
     /**
@@ -4571,6 +4576,8 @@ class Route
         'banking_account_bulk_assign_reviewer',
         'banking_account_activation_detail_create',
         'banking_account_activation_detail_update',
+        'banking_account_service_lms_routes_all',
+        'banking_account_service_lms_routes_ops',
 
         'governor_get_client_v1',
         'governor_create_namespace_v1',
@@ -5694,6 +5701,8 @@ class Route
         'user_roles_mapping_bulk'                   => Permission::MAKE_API_CALL,
         'consume_typeform_webhook'                  => Permission::EDIT_MERCHANT_INTERNATIONAL_NEW,
         'banking_account_create_admin'              => Permission::VIEW_ACTIVATION_FORM,
+        'banking_account_service_lms_routes_all'    => Permission::VIEW_ACTIVATION_FORM,
+        'banking_account_service_lms_routes_ops'    => Permission::BANKING_UPDATE_ACCOUNT,
         'delete_payment_config'                     => Permission::DELETE_PAYMENT_CONFIG,
         'fetch_payment_config_admin'                => Permission::FETCH_PAYMENT_CONFIG_ADMIN,
         'create_payment_config_admin'               => Permission::CREATE_PAYMENT_CONFIG,
@@ -7418,6 +7427,8 @@ class Route
             'banking_account_comments_list',
             'banking_account_create',
             'banking_account_create_admin',
+            'banking_account_service_lms_routes_all',
+            'banking_account_service_lms_routes_ops',
             'banking_account_statement_generate',
             'banking_account_statement_process_admin',
             'banking_account_statement_source_update',
@@ -10216,6 +10227,8 @@ class Route
         'banking_account_create_dashboard',
         'banking_account_create',
         'banking_account_create_admin',
+        'banking_account_service_lms_routes_all',
+        'banking_account_service_lms_routes_ops',
         'banking_accounts_get',
         'banking_account_update_dashboard',
         'banking_account_verify_otp',

@@ -63,6 +63,32 @@ return [
         ],
     ],
 
+    'testLmsAll' => [
+        'request'  => [
+            'url'     => '/bas/lms/business/',
+            'method'  => 'POST',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testLmsOps' => [
+        'request'  => [
+            'url'     => '/bas/lms_ops/business/',
+            'method'  => 'POST',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testVendorPaymentCompositeExpands' => [
         'request'  => [
             'method'  => 'GET',

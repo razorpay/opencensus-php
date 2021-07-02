@@ -63,6 +63,15 @@ class BasController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function forwardLMSRequest($path = '')
+    {
+        $input = Request::all();
+
+        $data =  $this->service->forwardLMSRequest($path, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function checkPinCodeServiceability()
     {
         $input = Request::all();

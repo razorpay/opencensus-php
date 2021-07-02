@@ -55,6 +55,8 @@ class Service extends Base\Service
         {
             //pull businessId and validate before forwarding request to banking account service
             $this->core()->isvalidBusinessId($path);
+
+            $path = Constants::BUSINESS_PATH . '/' . $path;
         }
         else
         {
@@ -70,10 +72,11 @@ class Service extends Base\Service
             $merchant = $this->app['basicauth']->getMerchant();
 
             $input[Constants::MERCHANT_ID]  = $merchant->getId();
-            $input[Constants::CONSTITUTION] = $this->getBusinessType($merchant);
-        }
 
-        $path = Constants::BUSINESS_PATH . '/' . $path;
+            $input[Constants::CONSTITUTION] = $this->getBusinessType($merchant);
+
+            $path = Constants::BUSINESS_PATH;
+        }
 
         $method = $this->request->getMethod();
 
@@ -108,7 +111,7 @@ class Service extends Base\Service
         }
 
         if($method === Request::METHOD_POST and
-           $path === Constants::BUSINESS_PATH . '/' and
+           $path === Constants::BUSINESS_PATH and
            isset($response['data']) === true)
         {
             //attaching businessId to the merchant_details entity
@@ -120,9 +123,33 @@ class Service extends Base\Service
 
     public function forwardCronRequest($path, $input)
     {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_CRON_REQUEST,
+            [
+                'input'  => $input,
+                'method' => $this->request->getMethod(),
+                'path'    => $path
+            ]);
+
+        return $this->forwardRequest($path, $input);
+    }
+
+    public function forwardLMSRequest($path, $input)
+    {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_CRON_REQUEST,
+            [
+                'input'  => $input,
+                'method' => $this->request->getMethod(),
+                'path'    => $path
+            ]);
+
+        return $this->forwardRequest($path, $input);
+    }
+
+    protected function forwardRequest($path, $input)
+    {
         if(empty($path) === true)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BAS_CRON_PATH_MISSING);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BAS_PATH_MISSING);
         }
 
         $method = $this->request->getMethod();
@@ -134,13 +161,6 @@ class Service extends Base\Service
         $input = $this->core()->removeRequestParamsFromInput($queryParams, $input);
 
         $uri = $this->core()->attachRequestParamsToPath($queryString, $path);
-
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_CRON_REQUEST,
-                           [
-                               'input'  => $input,
-                               'method' => $method,
-                               'uri'    => $uri
-                           ]);
 
         return $this->bankingAccountService->sendRequestAndProcessResponse($uri, $method, $input);
     }

@@ -199,6 +199,24 @@ class BankingAccountServiceTest extends TestCase
         $this->assertEquals('ACTIVE', $response['data']['status']);
     }
 
+    public function testLmsAll()
+    {
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000000000011', $response['data']['id']);
+    }
+
+    public function testLmsOps()
+    {
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000000000011', $response['data']['id']);
+    }
+
     public function testVendorPaymentCompositeExpands()
     {
         $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);

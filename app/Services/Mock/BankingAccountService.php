@@ -70,7 +70,7 @@ class BankingAccountService
     {
         $result = [];
 
-        if($path === 'business/' and $method === 'POST')
+        if($path === 'business' and $method === 'POST')
         {
             $result = [
                 'data' => [

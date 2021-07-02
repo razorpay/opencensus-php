@@ -1224,6 +1224,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BANKING_ACCOUNT_SERVICE_ERROR                                 = 'Error from banking account service';
 
     const BAD_REQUEST_BAS_CRON_PATH_MISSING                                         = 'Banking account service cron uri is not provided';
+    const BAD_REQUEST_BAS_PATH_MISSING                                              = 'Banking account service uri is not provided';
 
     //Offer
     const OFFER_MAX_CARD_USAGE_LIMIT_EXCEEDED                                       = 'Offer Maximum Card Usage limit exceeded';
