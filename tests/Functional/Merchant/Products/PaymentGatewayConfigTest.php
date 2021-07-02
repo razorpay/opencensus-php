@@ -81,6 +81,25 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
     }
 
+    public function testCreateProductConfigInvalidInput()
+    {
+        Mail::fake();
+
+        $this->setupPrivateAuthForPartner();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateProductConfigInvalidInput'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testFetchDefaultPaymentGatewayConfig()
     {
         Mail::fake();

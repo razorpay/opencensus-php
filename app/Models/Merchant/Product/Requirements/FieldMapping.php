@@ -11,7 +11,7 @@ class FieldMapping
     const FIELD_MAPPING = [
         Entity::MERCHANT    => [
             Detail\Entity::BANK_ACCOUNT_NUMBER            => 'settlements.account_number',
-            Detail\Entity::BANK_ACCOUNT_NAME              => 'settlements.name',
+            Detail\Entity::BANK_ACCOUNT_NAME              => 'settlements.beneficiary_name',
             Detail\Entity::BANK_BRANCH_IFSC               => 'settlements.ifsc_code',
             Detail\Entity::BUSINESS_TYPE                  => 'business_type',
             Detail\Entity::BUSINESS_CATEGORY              => 'profile.category',

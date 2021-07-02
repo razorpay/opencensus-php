@@ -42,7 +42,7 @@ class Validator extends Base\Validator
         Util\Constants::MODE                    => 'required|string|in:automatic,manual',
         Util\Constants::AUTOMATIC_EXPIRY_PERIOD => 'sometimes|integer',
         Util\Constants::MANUAL_EXPIRY_PERIOD    => 'sometimes|integer',
-        Util\Constants::REFUND_SPEED            => 'required|string|in:normal,optimum'
+        Util\Constants::REFUND_SPEED            => 'required|string|in:normal'
     ];
 
     protected static $settlementsRules = [

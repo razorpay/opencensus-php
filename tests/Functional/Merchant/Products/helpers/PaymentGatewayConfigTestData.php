@@ -142,7 +142,7 @@ return [
             'url'     => '/v2/accounts/{accountId}/products',
             'method'  => 'POST',
             'content' => [
-                'name' => 'payment_gateway'
+                'product_name' => 'payment_gateway'
             ],
         ],
         'response' => [
@@ -167,6 +167,30 @@ return [
                 ]
             ],
         ]
+    ],
+
+    'testCreateProductConfigInvalidInput' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products',
+            'method'  => 'POST',
+            'content' => [
+                'product_name' => 'abcd'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The product requested is invalid',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PRODUCT_NAME,
+        ],
+
     ],
 
     'testFetchDefaultPaymentGatewayConfig' => [
@@ -270,7 +294,7 @@ return [
                         'reason_code'     => 'document_missing'
                     ],
                     [
-                        'field_reference' => 'settlements.name',
+                        'field_reference' => 'settlements.beneficiary_name',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
@@ -754,7 +778,7 @@ return [
                         'reason_code'     => 'document_missing'
                     ],
                     [
-                        'field_reference' => 'settlements.name',
+                        'field_reference' => 'settlements.beneficiary_name',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
@@ -1067,7 +1091,7 @@ return [
             'url'     => '/v2/accounts/{accountId}/products',
             'method'  => 'POST',
             'content' => [
-                'name' => 'payment_gateway'
+                'product_name' => 'payment_gateway'
             ],
         ],
         'response' => [

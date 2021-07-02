@@ -59,7 +59,11 @@ class Service extends Base\Service
     {
         $merchant = $this->validateAndSetMerchantContext($merchantId);
 
-        $productName = $payload['name'];
+        $merchantProductInput = $this->getMerchantProductInput($payload);
+
+        (new Validator())->validateInput('create', $merchantProductInput);
+
+        $productName = $merchantProductInput[Entity::PRODUCT_NAME];
 
         $merchantProduct = $this->repo->merchant_product->fetchMerchantProductConfigByProductName($merchantId, $productName);
 
@@ -73,15 +77,17 @@ class Service extends Base\Service
 
         else
         {
-            $payload = $this->getPayload($payload);
+            $payload = $this->getProductConfigPayload($payload, $productName);
 
             $merchantProduct = (new Entity)->generateId();
 
             $response = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantProduct, $payload, $productName) {
 
-                $input = ['merchant_id' => $merchant->getId(), 'product_name' => $productName];
+                $input = ['product_name' => $productName];
 
                 $merchantProduct->setActivationStatus(Status::REQUESTED);
+
+                $merchantProduct->merchant()->associate($merchant);
 
                 $merchantProduct->build($input);
 
@@ -98,12 +104,15 @@ class Service extends Base\Service
         return $response;
     }
 
-    private function getPayload(array $input): array
+    /**
+     * This function would return the input as is if input is not empty. If input is empty, fetches the default configuration for the product specified
+     * @param array  $input
+     * @param string $productName
+     *
+     * @return array
+     */
+    private function getProductConfigPayload(array $input, string $productName): array
     {
-        $productName = $input['name'];
-
-        unset($input['name']);
-
         if( empty($input) === true)
         {
             $input = $this->getDefaultConfiguration($productName);
@@ -124,6 +133,26 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    /**
+     * This function returns the input needed for creation of merchant product entity
+     * @param array $input
+     *
+     * @return array
+     */
+    private function getMerchantProductInput(array & $input): array
+    {
+        $payload = [];
+
+        if(isset($input[Entity::PRODUCT_NAME]) === true)
+        {
+            $payload[Entity::PRODUCT_NAME] = $input[Entity::PRODUCT_NAME];
+
+            unset($input[Entity::PRODUCT_NAME]);
+        }
+
+        return $payload;
     }
 
     private function validateAndSetMerchantContext(string & $merchantId): Merchant\Entity
