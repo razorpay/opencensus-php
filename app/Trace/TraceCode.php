@@ -1651,6 +1651,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AWS_FILE_DOWNLOAD_ERROR                               = 'AWS_FILE_DOWNLOAD_ERROR';
     const AWS_FILE_DELETE_ERROR                                 = 'AWS_FILE_DELETE_ERROR';
     const LOGO_IMAGE_DETAILS                                    = 'LOGO_IMAGE_DETAILS';
+    const FAILED_NOTE_RESPONSE_BODY                             = 'FAILED_NOTE_RESPONSE_BODY';
 
     const DASHBOARD_INTEGRATION_ERROR                           = 'DASHBOARD_INTEGRATION_ERROR';
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED                = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
