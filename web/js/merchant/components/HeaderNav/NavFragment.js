@@ -50,8 +50,8 @@ class NavFragment extends Component {
 
     return (
       <React.Fragment>
-        <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled } >
-          <OffersForYou/>
+        <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
+          <OffersForYou />
         </ShowWhen>
         <li>
           <ModesDropdown

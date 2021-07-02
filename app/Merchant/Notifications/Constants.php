@@ -1048,6 +1048,28 @@ class Constants
                 'splitz_experiments' => ['SSL_UPDATE_ANNOUNCEMENT_SPLITZ'],
             ]
         ],
+        [
+            'id'          => 'JUL21-CC-FEATURELAUNCH',
+            'title'       => 'New on Corporate Cards!',
+            'description' => 'Physical Cards, Rewards & Add-on cards are here now!',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/corporate-cards.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Know more',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/JUL21-CC-FEATURELAUNCH/'
+                ],
+            ],
+            'start_ts'    => 1625184000,
+            'end_ts'      => 1633132800,
+            'filters'     => [
+                'features' => ['capital_cards'],
+            ],
+            'l2_content'  => [
+                'content'     => "<div><div>Your Corporate Card just got better. Your repayments are now faster with no delay in processing and we launched physical and add-on cards for you!</div> <br /><div> <b>Rewards</b><p>You can now access 100+ rewards with RazorpayX Corporate Card. The rewards are attuned to your business growth with names like AWS, Cleartax, Freshworks, Microsoft, Google Ads, Twitter, and many more!</p> <a href='https://lp.razorpay.com/rxcc-rewards' target='_blank'>Check them out</a></div><div class='paragraph'> <b>Add-on cards</b><p>Get add-on cards tailored to different roles of your team members right from your dashboard. Apply easily and quickly from the Card dashboard, empower your team and avoid hassles of reimbursement or approvals for different teams.</p> <a href='https://x.razorpay.com/cards' target='_blank'>Do it now</a></div><div> <b>Physical Cards</b><p> Due to pandemic and lockdown conditions at our manufacturer, your physical cards were delayed. Confirm your physical card delivery address and other details by just filling up the information below. We will prioritize the delivery for the merchants who fill this form</p> <a href='https://razorpay.typeform.com/to/hKPzCtEl' target='_blank'>Fill your details</a></div></div>",
+            ],
+        ]
     ];
 
     //insert data in data field, that is dynamically loaded based on the sub-campaign

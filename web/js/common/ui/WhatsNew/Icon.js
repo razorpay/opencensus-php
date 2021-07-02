@@ -34,7 +34,6 @@ const WhatsNewIcon = ({ user, open, showMobileNav, close, tracking }) => {
     ) {
       return;
     }
-    close();
     setOpen(false);
   };
 

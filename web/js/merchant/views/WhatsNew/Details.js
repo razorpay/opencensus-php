@@ -182,14 +182,16 @@ export default class AnnouncementDetails extends React.Component {
           >
             <div dangerouslySetInnerHTML={{ __html: content }} />
           </div>
-          <div className="announcement-details__footer action-buttons">
-            {this.renderActionButtons(
-              buttons.map((button) => ({
-                ...button,
-                notificationId,
-              })),
-            )}
-          </div>
+          {buttons && (
+            <div className="announcement-details__footer action-buttons">
+              {this.renderActionButtons(
+                buttons.map((button) => ({
+                  ...button,
+                  notificationId,
+                })),
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
