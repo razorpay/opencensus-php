@@ -550,6 +550,108 @@ class FreshdeskTicketV2Test extends TestCase
         $this->assertEquals('rzpcap', $fdInstance);
     }
 
+    public function testCreateTicketRzpCapViaX()
+    {
+        $frDueBy = time() + self::DAY * 2;
+
+        $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST','rzpcap',
+            [
+                'description'=>'ticket description',
+                'subject'=>'[Merchant] Corporate Credit Cards',
+                'custom_fields'=>[
+                    'cf_merchant_id'=>'10000000000000',
+                    'cf_category'=>'RazorpayX',
+                    'cf_requestor_category'=>'Merchant',
+                    'cf_query'=>'Corporate Credit Cards',
+                    'cf_ticket_queue'=>'RazorpayX',
+                    'cf_merchant_id_dashboard'=>'merchant_dashboard_10000000000000'
+                ],
+                'cc_emails'=>[
+                    'a@b.com',
+                    'merchantuser01@razorpay.com',
+                    'merchantuser01@razorpay.com'
+                ],
+                'email'=>'test@razorpay.com',
+                'phone'=>'9876543210',
+                'priority'=>1,
+                'status'=>2
+            ],
+            [
+                'id'            => '99',
+                'description'   => 'ticket description',
+                'fr_due_by'     => $frDueByFreshdeskFormat,
+                'custom_fields' => [
+                    'cf_query'                    =>  'Corporate Credit Cards',
+                ],
+                'priority' =>  1,
+            ]);
+
+        $response = $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $fdInstance = $ticket['ticket_details']['fd_instance'];
+
+        $this->assertNotEquals('razorpayid0012', $ticket['id']);
+
+        $this->assertNotEquals('99', $response['id']);
+
+        $this->assertEquals($ticket['id'], $response['id']);
+
+        $this->assertEquals('rzpcap', $fdInstance);
+    }
+
+    public function testCreateTicketRzpCapViaXForLimit()
+    {
+        $frDueBy = time() + self::DAY * 2;
+
+        $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST','rzpcap',
+            [
+                'subject'=>'[Merchant] Higher Corporate Card Spend Limit',
+                'description'=>'Requested Limit: 50005\\nReason: test for payload',
+                'custom_fields'=>[
+                    'cf_product'=>'Corporate Credit Cards',
+                    'cf_merchant_id_dashboard'=>'merchant_dashboard_10000000000000'
+                ],
+                'cc_emails'=>[
+                    'a@b.com',
+                    'merchantuser01@razorpay.com',
+                    'merchantuser01@razorpay.com'
+                ],
+                'email'=>'test@razorpay.com',
+                'phone'=>'9876543210',
+                'priority'=>1,
+                'status'=>2
+            ],
+            [
+                'id'            => '99',
+                'description'   => 'Requested Limit: ₹50005\nReason: test for payload',
+                'fr_due_by'     => $frDueByFreshdeskFormat,
+                'custom_fields' => [
+                    'cf_product'                    =>  'Corporate Credit Cards',
+                ],
+                'priority' =>  1,
+            ]);
+
+        $response = $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $fdInstance = $ticket['ticket_details']['fd_instance'];
+
+        $this->assertNotEquals('razorpayid0012', $ticket['id']);
+
+        $this->assertNotEquals('99', $response['id']);
+
+        $this->assertEquals($ticket['id'], $response['id']);
+
+        $this->assertEquals('rzpcap', $fdInstance);
+    }
+
     public function testCreateTicketRzpX()
     {
         $frDueBy = time() + self::DAY * 2;

@@ -435,7 +435,48 @@ return [
             ],
         ],
     ],
-
+    'testCreateTicketRzpCapViaX' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard_x/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'    => 'ticket description',
+                'subject'        => '[Merchant] Corporate Credit Cards',
+                'custom_fields'  => [
+                        'cf_merchant_id'        => '10000000000000',
+                        'cf_category'           => 'RazorpayX',
+                        'cf_requestor_category' => 'Merchant',
+                        'cf_query'              => 'Corporate Credit Cards',
+                        'cf_ticket_queue'       => 'RazorpayX',
+                ],
+                'cc_emails' => ['a@b.com','merchantuser01@razorpay.com']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => 'ticket description',
+            ],
+        ],
+    ],
+    'testCreateTicketRzpCapViaXForLimit' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard_x/ticket',
+            'method'  => 'POST',
+            'content' => [
+                    'subject'          => '[Merchant] Higher Corporate Card Spend Limit',
+                    'description'      => 'Requested Limit: 50005\nReason: test for payload',
+                    'custom_fields'    =>[
+                        'cf_product' => 'Corporate Credit Cards'
+                    ],
+                    'cc_emails'        => ['a@b.com','merchantuser01@razorpay.com'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => 'Requested Limit: ₹50005\nReason: test for payload',
+            ],
+        ],
+    ],
     'testCreateTicketRzpX' => [
         'request' => [
             'url'     => '/fd/support_dashboard_x/ticket/',

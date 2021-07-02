@@ -38,7 +38,8 @@ class Service extends Base\Service
     const X_SALESFORCE_EMAIL_ID         = 'X-Salesforce-Email-Id';
 
     const FRESHDESK_INSTANCES = [
-        Type::SUPPORT_DASHBOARD_X => [Constants::RZPX   => Constants::URLX],
+        Type::SUPPORT_DASHBOARD_X => [Constants::RZPX   => Constants::URLX,
+                                      Constants::RZPCAP => Constants::URLCAP],
         Type::SUPPORT_DASHBOARD   => [Constants::RZP    => Constants::URL,
                                       Constants::RZPIND => Constants::URLIND,
                                       Constants::RZPSOL => Constants::URL2,
@@ -47,7 +48,7 @@ class Service extends Base\Service
 
     const FD_INSTANCE_VS_SUBCATEGORIES = [
         Constants::RZPSOL => ['Technical support', 'Integrations'],
-        Constants::RZPCAP => ['Instant Settlements', 'Cash Advance', 'Working Capital Loan'],
+        Constants::RZPCAP => ['Corporate card related','Instant Settlements', 'Cash Advance', 'Working Capital Loan'],
     ];
 
     public function getTicketStatus(array $response)
@@ -799,18 +800,43 @@ class Service extends Base\Service
 
     protected function getFdInstanceFromTypeAndInput($type, array &$input)
     {
-        if($type === Type::SUPPORT_DASHBOARD_X) return Constants::RZPX;
-        return $this->getFdInstance($input);
+        return $this->getFdInstance($type,$input);
     }
 
-    protected function getFdInstance(array &$input): string
+    protected function getFdInstance($type,array &$input): string
     {
         $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
 
+        $subCategoryFound = false;
+
         if (isset($input[Constants::CUSTOM_FIELDS]) === true)
         {
+            if ( isset($input[Constants::CUSTOM_FIELDS][Constants::CF_QUERY]) === true ) {
+                $subQuery = trim($input[Constants::CUSTOM_FIELDS][Constants::CF_QUERY]);
+
+                if ($subQuery === Constants::CAPITAL_QUERY) {
+
+                    $fdInstance = Constants::RZPCAP;
+
+                    return $fdInstance;
+                }
+            }
+            if (isset($input[Constants::CUSTOM_FIELDS][Constants::CF_PRODUCT]) === true )
+            {
+                $subProduct = trim($input[Constants::CUSTOM_FIELDS][Constants::CF_PRODUCT]);
+
+                if ($subProduct === Constants::CAPITAL_QUERY) {
+                    
+                    $fdInstance = Constants::RZPCAP;
+
+                    return $fdInstance;
+                }
+
+            }
+
             if (isset($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]) === true)
             {
+
                 $subCategory = $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY];
 
                 foreach (self::FD_INSTANCE_VS_SUBCATEGORIES as $fdInstanceForSubcategories => $subcategories)
@@ -818,6 +844,7 @@ class Service extends Base\Service
                     if (in_array($subCategory, $subcategories) === true)
                     {
                         $fdInstance = $fdInstanceForSubcategories;
+                        $subCategoryFound = true;
                     }
                 }
 
@@ -827,7 +854,10 @@ class Service extends Base\Service
                 }
             }
         }
-
+        if ($subCategoryFound === false && $type === Type::SUPPORT_DASHBOARD_X)
+        {
+            return Constants::RZPX;
+        }
         $fdInstance = $this->getMigratedFdInstanceIfApplicable($fdInstance, $input);
 
         return $fdInstance;

@@ -30,6 +30,7 @@ class Constants
     const CF_MERCHANT_ID_DASHBOARD  = 'cf_merchant_id_dashboard';
     const CF_TICKET_QUEUE           = 'cf_ticket_queue';
     const CF_PRODUCT                = 'cf_product';
+    const CF_QUERY                  = 'cf_query';
 
     //Flows
     const CUSTOMER = 'Customer';
@@ -48,6 +49,7 @@ class Constants
     const OTP_RECEIVER                = 'receiver';
     const OTP_CUSTOMER_SUPPORT_SOURCE = 'customer_support';
 
+    const CAPITAL_QUERY               = 'Corporate Credit Cards';
     // Results
     const TOTAL   = 'total';
     const RESULTS = 'results';
