@@ -68,8 +68,12 @@ class Create extends Base
             Payout\Entity::FUND_ACCOUNT_ID       => $fundAccountId,
             Payout\Entity::MERCHANT_ID           => $merchantId,
             Payout\Entity::FEE_TYPE              => $input[Payout\Entity::FEE_TYPE] ?? null,
-            Payout\Entity::NOTES                 => $input[Payout\Entity::NOTES] ?? [],
         ];
+
+        if (empty($input[Payout\Entity::NOTES]) === false)
+        {
+            $requestBody[Payout\Entity::NOTES] = $input[Payout\Entity::NOTES];
+        }
 
         if (isset($input[Payout\Entity::SCHEDULED_AT]) === true)
         {
