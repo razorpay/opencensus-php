@@ -101,14 +101,6 @@ export default class extends React.Component {
       trackData.push('slug');
     }
 
-    if (typeof formData.theme !== 'undefined') {
-      if (formData.theme === '0') {
-        trackData.push('theme: dark');
-      } else {
-        trackData.push('theme: light');
-      }
-    }
-
     if (formData.payment_success_message) {
       trackData.push('payment_success_message');
     }

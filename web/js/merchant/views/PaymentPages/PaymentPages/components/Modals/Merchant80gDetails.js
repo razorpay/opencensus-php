@@ -11,6 +11,9 @@ import Button from 'common/new-ui/Button';
 import Spinner from 'common/ui/Spinner';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import {
+  trackClickOnUpdate80G
+} from '../../ga';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -75,6 +78,8 @@ export default class Merchant80gDetails extends React.Component {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+    trackClickOnUpdate80G(this.state.signatoryImageFileUrl ? 'signed' : 'unsigned');
+
     const reqPayload = {
       text_80g_12a: formData.text_80g_12a || '',
       image_url_80g: this.state.signatoryImageFileUrl || '',

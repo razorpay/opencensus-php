@@ -46,6 +46,7 @@ import {
   trackPageSettingsClick,
   trackPageSave,
   trackClickOnCreateEmbedButton,
+  trackClickOnOpenPaymentReceipts
 } from '../ga';
 
 const ERROR = {
@@ -726,6 +727,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+    !this.state.isPageReceiptModalOpened && trackClickOnOpenPaymentReceipts();
+
     this.setState({
       isPageReceiptModalOpened: !this.state.isPageReceiptModalOpened,
     });

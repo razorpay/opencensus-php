@@ -3,6 +3,9 @@ import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import {
+  trackClickOnSavePaymentReceipts,
+} from '../../ga';
 
 import Form from 'common/new-ui/Form';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
@@ -103,6 +106,21 @@ export default class PaymentReceipt extends React.Component {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+
+    //preparing track data for GA
+    const trackData = [];
+    
+    if(formData.enable_custom_serial_number == 0) {
+      trackData.push('Automated');
+    } else {  
+      trackData.push('Manual');
+    }
+
+    if(formData.enable_80g_details) {
+      trackData.push('80G');
+    }
+    trackClickOnSavePaymentReceipts(trackData);
+
     const data = {
       enable_receipt: 1, // Currently, enabling in all cases. Later, can add toggle
       enable_custom_serial_number: formData.enable_custom_serial_number,
