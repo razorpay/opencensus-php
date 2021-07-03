@@ -26,9 +26,13 @@ class Create extends Base
      */
     public function createPayoutViaMicroservice(array $input, string $merchantId)
     {
+        $data = $input;
+
+        unset($data[Payout\Entity::ACCOUNT_NUMBER]);
+
         $this->trace->info(TraceCode::PAYOUT_CREATE_VIA_MICROSERVICE_REQUEST,
             [
-                'input' => $input,
+                'input' => $data,
             ]);
 
         $request = $this->createRequestBody($input, $merchantId);
@@ -69,6 +73,11 @@ class Create extends Base
             Payout\Entity::MERCHANT_ID           => $merchantId,
             Payout\Entity::FEE_TYPE              => $input[Payout\Entity::FEE_TYPE] ?? null,
         ];
+
+        if (empty($input[Payout\Entity::SOURCE_DETAILS]) === false)
+        {
+            $requestBody[Payout\Entity::SOURCE_DETAILS] = $input[Payout\Entity::SOURCE_DETAILS];
+        }
 
         if (empty($input[Payout\Entity::NOTES]) === false)
         {

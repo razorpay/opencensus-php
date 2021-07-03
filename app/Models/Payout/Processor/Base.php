@@ -1986,7 +1986,12 @@ class Base extends BaseCore
                     Payout\Entity::NOTES           => $params[Payout\Entity::NOTES] ?? [],
                 ];
 
-                if (isset($params[Payout\Entity::SCHEDULED_AT]) === true)
+                if (empty($params[Payout\Entity::SOURCE_DETAILS]) === false)
+                {
+                    $input[Payout\Entity::SOURCE_DETAILS] = $params[Payout\Entity::SOURCE_DETAILS];
+                }
+
+                if (empty($params[Payout\Entity::SCHEDULED_AT]) === false)
                 {
                     $input[Payout\Entity::SCHEDULED_AT] = $params[Payout\Entity::SCHEDULED_AT];
                 }
@@ -2011,6 +2016,13 @@ class Base extends BaseCore
 
                     // Save payout Entity to database
                     $this->repo->saveOrFail($payout);
+
+                    $sourceDetails = $payout->getInputSourceDetails();
+
+                    if (empty($sourceDetails) === false)
+                    {
+                        $this->processSourceDetails($sourceDetails, $payout);
+                    }
 
                     $this->trace->info(TraceCode::PAYOUT_CREATED_FOR_MICROSERVICE,
                         [
