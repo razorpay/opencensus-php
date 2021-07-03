@@ -89,6 +89,10 @@ class Core extends Base\Core
             $this->repo
                  ->transaction(function() use ($settlementOndemandAttempt, $payoutStatus, $payoutId, $failureReason)
             {
+                if ($settlementOndemandAttempt->getStatus() === $payoutStatus)
+                {
+                    return;
+                }
 
                 $settlementOndemandAttempt->setStatus($payoutStatus);
 
