@@ -24,10 +24,12 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Merchant\Document\FileHandler;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Settlement\SettlementServiceMigration;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\Merchant\Detail\DeDupe\Core as DedupeCore;
+use RZP\Models\Contact\Validator as fundAccountValidator;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 
 class Core extends Base\Core
@@ -562,6 +564,11 @@ class Core extends Base\Core
                 ]);
 
             return;
+        }
+
+        if( preg_match(fundAccountValidator::NAME_REGEX, $ba->getBeneficiaryName()) == 0 )
+        {
+            throw new Exception\LogicException(SettlementServiceMigration::REGEX_MATCH_FAILURE_FOR_MERCHANT);
         }
 
         app('settlements_api')->migrateBankAccount($ba, $via, $mode);

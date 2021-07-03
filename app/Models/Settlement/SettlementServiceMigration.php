@@ -16,6 +16,8 @@ class SettlementServiceMigration
 
     const NO_SCHEDULE_MAPPING_PRESENT = 'no schedule mapping present';
 
+    const REGEX_MATCH_FAILURE_FOR_MERCHANT = 'regex match failing for merchant bank account name';
+
     const scheduleIdMapping = [
             'live' => [
                 'Exelo4dBIBNb7w' =>	'FaBOwnO4AVhpQP',
