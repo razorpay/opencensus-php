@@ -533,7 +533,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'requirements' => []
+                'requirements'      => [],
+                'activation_status' => 'under_review'
             ]
         ]
     ],

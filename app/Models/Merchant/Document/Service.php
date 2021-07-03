@@ -9,9 +9,12 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Detail\NeedsClarification;
+use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
+
 
 
 class Service extends Base\Service
@@ -148,7 +151,7 @@ class Service extends Base\Service
             $accountV2Core->updateNCFieldsAcknowledgedIfApplicable($ncAcknowledgementPayload, $merchant);
         }
 
-        $accountV2Core->submitDetailsAndActivateIfApplicable($merchant, $merchantDetails);
+        AutoUpdateMerchantProducts::dispatch(Product\Status::DOCUMENT_SOURCE ,$merchant, $merchantDetails);
 
         $documentResponse =  (new DocumentResponse)->documentsResponse($merchant, $entity->getEntity(), $entity->getId());
 

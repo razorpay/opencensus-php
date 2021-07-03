@@ -58,6 +58,7 @@ use RZP\Models\Partner\Activation as PartnerActivation;
  * @property Balance\Entity         $commissionBalance
  * @property PaymentConfig\Entity   $dccPaymentConfig
  * @property PartnerActivation\Entity         $partnerActivation
+ * @property Merchant\Product\Entity  $merchantProducts
  */
 class Entity extends Base\PublicEntity
 {
@@ -1266,6 +1267,11 @@ class Entity extends Base\PublicEntity
     public function merchantDocuments()
     {
         return $this->hasMany('RZP\Models\Merchant\Document\Entity');
+    }
+
+    public function merchantProducts()
+    {
+        return $this->hasMany('RZP\Models\Merchant\Product\Entity');
     }
 
     public function legalEntity()

@@ -12,6 +12,7 @@ use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\Product\Requirements;
+use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 
 class PaymentsGeneralConfig extends Base\Service
 {
@@ -41,9 +42,9 @@ class PaymentsGeneralConfig extends Base\Service
     private $merchantDetailCore;
 
     /**
-     * @var Requirements\BaseProcessor
+     * @var Requirements\BaseService
      */
-    private $requirementProcessor;
+    private $requirementService;
 
 
     public function __construct()
@@ -58,7 +59,7 @@ class PaymentsGeneralConfig extends Base\Service
 
         $this->merchantDetailCore = new Detail\Core();
 
-        $this->requirementProcessor = new Requirements\BaseProcessor();
+        $this->requirementService = new Requirements\BaseService();
 
         parent::__construct();
     }
@@ -103,7 +104,7 @@ class PaymentsGeneralConfig extends Base\Service
 
     public function getRequirements(Merchant\Entity $merchant, Product\Entity $merchantProduct)
     {
-        return $this->requirementProcessor->fetchRequirements($merchant, $merchantProduct);
+        return $this->requirementService->fetchRequirements($merchant, $merchantProduct);
     }
 
     private function getPaymentConfig(Merchant\Entity $merchant): array
@@ -303,6 +304,6 @@ class PaymentsGeneralConfig extends Base\Service
 
         $accountCore->updateNCFieldsAcknowledgedIfApplicable($input, $merchant);
 
-        $accountCore->submitDetailsAndActivateIfApplicable($merchant, $merchantDetails);
+        AutoUpdateMerchantProducts::dispatch(Product\Status::PRODUCT_CONFIG_SOURCE, $merchant, $merchantDetails);
     }
 }

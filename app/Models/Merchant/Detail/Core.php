@@ -1938,7 +1938,7 @@ class Core extends Base\Core
 
         (new Activation\Core())->autoActivatePartnerIfApplicable($merchant, $merchantDetails);
 
-        (new MerchantProduct\Core())->updatePaymentGatewayConfigStatusIfApplicable($merchantDetails);
+        (new MerchantProduct\Core())->syncMerchantStatusToMerchantProducts($merchantDetails);
 
         return $merchantDetails;
     }

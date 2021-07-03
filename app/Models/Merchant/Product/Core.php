@@ -9,6 +9,8 @@ use RZP\Models\Merchant\Detail;
 use RZP\Jobs\MerchantProductsConfig;
 use RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\Product\Config;
+use RZP\Models\Merchant\Product\Requirements;
+use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Merchant\Product\Request\Service as AuditService;
 
 class Core extends Base\Core
@@ -153,35 +155,42 @@ class Core extends Base\Core
     }
 
     /**
-     * This function syncs PG product status with merchant activation status since PG product is tightly bounded with
-     * merchant activation
+     * This function syncs all product status with merchant activation status which are inclined with merchant activation status
      *
      * @param Detail\Entity $merchantDetails
      */
-    public function updatePaymentGatewayConfigStatusIfApplicable(Detail\Entity $merchantDetails)
+    public function syncMerchantStatusToMerchantProducts(Detail\Entity $merchantDetails)
     {
+        $eventService = (new Events\Service());
+
+        $updateProducts = [];
+
         try
         {
-            $paymentGatewayMerchantProduct = $this->repo->merchant_product->fetchMerchantProductConfigByProductName($merchantDetails->getMerchantId(), Name::PAYMENT_GATEWAY);
+            $products = $this->repo->merchant_product->fetchMerchantProductConfigByProductNames($merchantDetails->getMerchantId(), Status::MERCHANT_STATUS_ASSOCIATED_PRODUCTS);
 
-            if (empty($paymentGatewayMerchantProduct) === false)
+            foreach ($products as $product)
             {
                 $this->trace->info(TraceCode::MERCHANT_PRODUCT_STATUS_AUTO_UPDATE, [
                     'merchant_id'         => $merchantDetails->getMerchantId(),
-                    'merchant_product_id' => $paymentGatewayMerchantProduct->getId()
+                    'merchant_product_id' => $product->getId(),
+                    'product_name'        => $product->getProduct(),
                 ]);
 
                 $merchantActivationStatus = $merchantDetails->getActivationStatus();
 
-                $paymentGatewayMerchantProductStatus = Status::PAYMENT_GATEWAY_PRODUCT_STATUS_MAPPING[$merchantActivationStatus] ?? null;
+                $productStatusMapping = Status::PRODUCT_NAME_STATUS_MAPPING[$product->getProduct()];
 
-                $paymentGatewayMerchantProduct->setActivationStatus($paymentGatewayMerchantProductStatus);
+                $productActivationStatus = $productStatusMapping[$merchantActivationStatus] ?? null;
 
-                $this->repo->merchant_product->saveOrFail($paymentGatewayMerchantProduct);
+                $product->setActivationStatus($productActivationStatus);
 
-                (new Events\Service())->notifyProductActivationStatus($paymentGatewayMerchantProduct);
+                $this->repo->merchant_product->saveOrFail($product);
+
+                $eventService->notifyProductActivationStatus($product);
+
+                $updateProducts[$product->getId()] = $product->getProduct();
             }
-
         }
         catch (\Exception $e)
         {
@@ -189,9 +198,115 @@ class Core extends Base\Core
                                          null,
                                          TraceCode::MERCHANT_PRODUCT_STATUS_UPDATE_FAILURE,
                                          [
-                                             'merchant_id' => $merchantDetails->getMerchantId()
+                                             'merchant_id'      => $merchantDetails->getMerchantId(),
+                                             'updated_products' => $updateProducts
                                          ]);
         }
+    }
+
+    /**
+     * Different products have different ways to alter the merchant product status once all the requirements are met.
+     * The underlying entities i.e. merchant, merchant_details, stakeholder, merchant_documents are mostly common for
+     * most of the products. So when any of the entities get updated, we try to calculate requirements and if the
+     * requirements are 0, Further processing will be taken care by respective products
+     *
+     * @param Merchant\Entity $subMerchant
+     * @param Detail\Entity   $merchantDetails
+     *
+     * @throws \RZP\Exception\LogicException
+     */
+    public function updateMerchantProductsIfApplicable(Merchant\Entity $subMerchant, Detail\Entity $merchantDetails)
+    {
+        $merchantProducts = $subMerchant->merchantProducts;
+
+        foreach ($merchantProducts as $merchantProduct)
+        {
+            $productName = $merchantProduct->getProduct();
+
+            $terminalStateReached = $this->isTerminalState($merchantProduct);
+
+            if ($terminalStateReached === false)
+            {
+                $requirementService = Requirements\Factory::getInstance($productName);
+
+                $requirements = $requirementService->getRequirements($subMerchant, $merchantDetails);
+
+                if (count($requirements) === 0)
+                {
+                    $function = 'update' . studly_case($productName) . 'ProductIfApplicable';
+
+                    $this->$function($subMerchant, $merchantDetails, $merchantProduct);
+                }
+            }
+        }
+    }
+
+    /**
+     * Payment gateway product is closely inlined with merchant activation. Hence if all the requirements are met, we
+     * try to submit the L2 form.
+     *
+     * @param Merchant\Entity $merchant
+     * @param Detail\Entity   $merchantDetails
+     * @param Entity          $merchantProduct
+     */
+    private function updatePaymentGatewayProductIfApplicable(Merchant\Entity $merchant, Detail\Entity $merchantDetails, Entity $merchantProduct)
+    {
+        $this->submitMerchantActivation($merchant, $merchantDetails);
+    }
+
+    private function submitMerchantActivation(Merchant\Entity $merchant, Detail\Entity $merchantDetails)
+    {
+        $merchantDetailCore = new Detail\Core;
+
+        $input = [
+            Detail\Entity::SUBMIT => '1',
+        ];
+
+        if (empty($merchantDetails) === true)
+        {
+            return;
+        }
+
+        if ($merchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
+        {
+            // auto submit the activation form if all requirements are met
+            $merchantDetailCore->saveMerchantDetails($input, $merchant);
+        }
+        else
+        {
+            $nonAcknowledgedNCFields = (new NeedsClarification\Core)->getNonAcknowledgedNCFields($merchant, $merchantDetails);
+
+            if ($nonAcknowledgedNCFields[Merchant\Constants::COUNT] === 0)
+            {
+                $merchantDetailCore->saveMerchantDetails($input, $merchant);
+            }
+        }
+    }
+
+    /**
+     * This function would return true/false based on the terminal status of respective merchant product compared with
+     * its current status.
+     *
+     * @param Entity $merchantProduct
+     *
+     * @return bool
+     */
+    private function isTerminalState(Entity $merchantProduct)
+    {
+        $productName = $merchantProduct->getProduct();
+
+        $currentStatus = $merchantProduct->getStatus();
+
+        $terminalStateReached = false;
+
+        switch ($productName)
+        {
+            case Name::PAYMENT_GATEWAY:
+                $terminalStateReached = (in_array($currentStatus, Status::PAYMENT_GATEWAY_TERMINAL_STATUS) === true);
+                break;
+        }
+
+        return $terminalStateReached;
     }
 
     private function audit(array $input, string $merchantProductId, string $status, string $type)

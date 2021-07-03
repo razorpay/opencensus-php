@@ -8,9 +8,11 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\Account\Entity;
 use RZP\Models\Merchant\Account\Constants;
 use RZP\Models\Merchant\Detail\NeedsClarification;
+use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 
 class Core extends Merchant\Core
 {
@@ -87,9 +89,9 @@ class Core extends Merchant\Core
             $subMerchant = $this->fillSubMerchant($accountId, $input);
             $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
 
-            $this->submitDetailsAndActivateIfApplicable($subMerchant, $subMerchantDetails);
-
             $this->upsertMerchantEmails($subMerchant, $input);
+
+            AutoUpdateMerchantProducts::dispatch(Product\Status::ACCOUNT_SOURCE, $subMerchant, $subMerchantDetails);
 
             return $subMerchant;
         });
@@ -206,36 +208,6 @@ class Core extends Merchant\Core
                 $emailCore->upsert($subMerchant, $emailInput);
             }
         }
-    }
-
-    public function submitDetailsAndActivateIfApplicable(Merchant\Entity $subMerchant, Detail\Entity $merchantDetails)
-    {
-        $merchantDetailCore = new Detail\Core;
-
-        $input = [
-            Detail\Entity::SUBMIT => '1',
-        ];
-
-        if(empty($merchantDetails) === true)
-        {
-            return;
-        }
-
-        if($merchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
-        {
-            // auto submit the activation form if all requirements are met
-            $merchantDetailCore->saveMerchantDetails($input, $subMerchant);
-        }
-        else
-        {
-            $nonAcknowledgedNCFields = (new NeedsClarification\Core)->getNonAcknowledgedNCFields($subMerchant, $merchantDetails);
-
-            if($nonAcknowledgedNCFields[Merchant\Constants::COUNT] === 0)
-            {
-                $merchantDetailCore->saveMerchantDetails($input, $subMerchant);
-            }
-        }
-
     }
 
     public function validateAccountSuspension(string $accountId)

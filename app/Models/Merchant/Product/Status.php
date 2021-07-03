@@ -14,8 +14,24 @@ class Status
         MerchantActivationStatus::ACTIVATED_MCC_PENDING => MerchantActivationStatus::ACTIVATED,
     ];
 
+    const PAYMENT_GATEWAY_TERMINAL_STATUS = [MerchantActivationStatus::ACTIVATED, MerchantActivationStatus::REJECTED];
+
+    const MERCHANT_STATUS_ASSOCIATED_PRODUCTS = [
+        Name::PAYMENT_GATEWAY
+    ];
+
+    const PRODUCT_NAME_STATUS_MAPPING = [
+        Name::PAYMENT_GATEWAY => self::PAYMENT_GATEWAY_PRODUCT_STATUS_MAPPING
+    ];
+
     //status
     const REQUESTED           = 'requested';
     const ACTIVATED           = 'activated';
     const NEEDS_CLARIFICATION = 'needs_clarification';
+
+    //Possible status update sources for a merchant_product
+    const DOCUMENT_SOURCE       = 'document';
+    const ACCOUNT_SOURCE        = 'account';
+    const PRODUCT_CONFIG_SOURCE = 'product_config';
+    const STAKEHOLDER_SOURCE    = 'stakeholder';
 }

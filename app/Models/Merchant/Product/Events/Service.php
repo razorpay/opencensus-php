@@ -66,7 +66,7 @@ class Service extends Base\Service
             return $data;
         }
 
-        $ncRequirements = (new Requirements\BaseProcessor())->fetchRequirements($merchant, $merchantProduct);
+        $ncRequirements = (new Requirements\BaseService())->fetchRequirements($merchant, $merchantProduct);
 
         $data[Util\Constants::REQUIREMENTS] = $ncRequirements;
 

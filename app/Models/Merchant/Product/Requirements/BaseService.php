@@ -18,7 +18,7 @@ use RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields as SelectiveRequiredFields;
 
-class BaseProcessor extends Base\Service
+class BaseService extends Base\Service
 {
     /**
      * @var Detail\Core
@@ -175,7 +175,7 @@ class BaseProcessor extends Base\Service
      * @return array
      * @throws \RZP\Exception\LogicException
      */
-    private function getRequirements(Merchant\Entity $merchant, Detail\Entity $merchantDetails): array
+    public function getRequirements(Merchant\Entity $merchant, Detail\Entity $merchantDetails): array
     {
         $requirements = [];
 
@@ -187,8 +187,6 @@ class BaseProcessor extends Base\Service
 
             if ($verificationResponse['can_submit'] === true)
             {
-                (new AccountV2\Core())->submitDetailsAndActivateIfApplicable($merchant, $merchantDetails);
-
                 return [];
             }
             else

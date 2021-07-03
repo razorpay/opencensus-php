@@ -7,8 +7,10 @@ use RZP\Models\Address;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\AccountV2;
 use RZP\Exception\BadRequestException;
+use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 
 
 class Core extends Base\Core
@@ -80,7 +82,7 @@ class Core extends Base\Core
 
                 $accountV2Core->updateNCFieldsAcknowledgedIfApplicable($merchantDetailInput, $merchant);
 
-                $accountV2Core->submitDetailsAndActivateIfApplicable($merchant, $merchantDetails);
+                AutoUpdateMerchantProducts::dispatch(Product\Status::STAKEHOLDER_SOURCE, $merchant, $merchantDetails);
             }
 
 
