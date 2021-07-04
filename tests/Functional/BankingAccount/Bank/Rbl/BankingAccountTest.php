@@ -4488,6 +4488,125 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($expectedFileInput, $fileInput);
     }
 
+    public function testBankingAccountExternalCommentsMISWithAssigneeTeamAsOps()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testBankingAccountExternalCommentsMIS'];
+
+        $this->testData[__FUNCTION__]['request']['content']['assignee_team'] = 'ops';
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $bankingAccountEntity = $this->getDbLastEntity('banking_account');
+
+        $this->prepareActivationDetail([
+            'assignee_team' => 'ops'
+        ]);
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount, [
+            'comment' => 'Sample external comment',
+            'type' => 'external'
+        ]);
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount, [
+            'comment' => 'Sample external comment 2',
+            'type' => 'external'
+        ]);
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount, [
+            'comment' => 'Sample external comment 3',
+            'type' => 'external'
+        ]);
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount, [
+            'comment' => 'Sample internal comment',
+            'type' => 'internal'
+        ]);
+
+        $misProcessor = new MIS\ExternalComments([]);
+
+        $fileInput = $misProcessor->getFileInput();
+
+        $today = '['. epoch_format(time(), 'M d, Y'). ']';
+        $expectedFileInput = [
+            [
+                'RZP Ref No' => '10000',
+                'Comments'   => $today.' Sample external comment
+'.$today. ' Sample external comment 2
+'.$today. ' Sample external comment 3
+',
+                'Customer Name' => $bankingAccountEntity->merchant->name,
+                'Sales POC Name' => $bankingAccountEntity->spocs()->first()->name,
+                'Sales POC Number' => $bankingAccountEntity->bankingAccountActivationDetails[ActivationDetail\Entity::SALES_POC_PHONE_NUMBER]
+            ]
+        ];
+
+        $this->assertEquals($expectedFileInput, $fileInput);
+    }
+
+    public function testBankingAccountExternalCommentsMISWithAssigneeTeamAsSales()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testBankingAccountExternalCommentsMIS'];
+
+        $this->testData[__FUNCTION__]['request']['content']['assignee_team'] = 'sales';
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $bankingAccountEntity = $this->getDbLastEntity('banking_account');
+
+        $this->prepareActivationDetail([
+            'assignee_team' => 'sales'
+        ]);
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount, [
+            'comment' => 'Sample external comment',
+            'type' => 'external'
+        ]);
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount, [
+            'comment' => 'Sample external comment 2',
+            'type' => 'external'
+        ]);
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount, [
+            'comment' => 'Sample external comment 3',
+            'type' => 'external'
+        ]);
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount, [
+            'comment' => 'Sample internal comment',
+            'type' => 'internal'
+        ]);
+
+        $this->testCreateBankingAccountActivationComment($bankingAccount, [
+            'comment' => 'Sample internal comment 2',
+            'type' => 'internal'
+        ]);
+
+        $misProcessor = new MIS\ExternalComments([]);
+
+        $fileInput = $misProcessor->getFileInput();
+
+        $today = '['. epoch_format(time(), 'M d, Y'). ']';
+        $expectedFileInput = [
+            [
+                'RZP Ref No' => '10000',
+                'Comments'   => $today.' Sample external comment
+'.$today. ' Sample external comment 2
+'.$today. ' Sample external comment 3
+',
+                'Customer Name' => $bankingAccountEntity->merchant->name,
+                'Sales POC Name' => $bankingAccountEntity->spocs()->first()->name,
+                'Sales POC Number' => $bankingAccountEntity->bankingAccountActivationDetails[ActivationDetail\Entity::SALES_POC_PHONE_NUMBER]
+            ]
+        ];
+
+        $this->assertEquals($expectedFileInput, $fileInput);
+    }
+
     public function testUpdateAccountOpenDateAndLoginDateViaBatch()
     {
         $this->testCreateBankingAccountWithActivationDetail();

@@ -17,7 +17,7 @@ class Repository extends Base\Repository
         $query->orderBy($this->dbColumn(Entity::ADDED_AT), 'desc');
     }
 
-    public function fetchExternalCommentsAssignedToTeam(string $team = 'bank')
+    public function fetchExternalComments()
     {
         $baActivationDetailsTable = $this->repo->banking_account_activation_detail->getTableName();
 
@@ -29,12 +29,9 @@ class Repository extends Base\Repository
 
         $baActivationDetailsBaId = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::BANKING_ACCOUNT_ID);
 
-        $baActivationDetailsAssigneeTeam = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::ASSIGNEE_TEAM);
-
         return $this->newQuery()
                     ->select($this->getTableName() . '.*')
                     ->join($baActivationDetailsTable, $baCommentsBaId, '=', $baActivationDetailsBaId)
-                    ->where($baActivationDetailsAssigneeTeam, '=', $team)
                     ->where($baCommentsType, '=', 'external')
                     ->orderBy($baCommentsCreatedAt, 'asc')
                     ->get();

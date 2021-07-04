@@ -83,14 +83,14 @@ class ExternalComments extends Base
 
     public function getFileInput()
     {
-        $bankingAccountComments = $this->repo->banking_account_comment->fetchExternalCommentsAssignedToTeam('bank');
+        $bankingAccountComments = $this->repo->banking_account_comment->fetchExternalComments();
 
-        $bankingAccountinfoMap = $this->groupCommentsByBankingAccount($bankingAccountComments);
+        $bankingAccountInfoMap = $this->groupCommentsByBankingAccount($bankingAccountComments);
 
         $fileInput = [];
 
         /** @var BankingAccount\Entity $ba */
-        foreach ($bankingAccountinfoMap as $baId => $baInfo)
+        foreach ($bankingAccountInfoMap as $baId => $baInfo)
         {
             $commentsString = $this->formatCommentsString($baInfo['comments']);
             $bankingAccount = $baInfo['entity'];
