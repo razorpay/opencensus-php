@@ -2115,6 +2115,7 @@ class Gateway
         Gateway::NETBANKING_CANARA,
         Gateway::ESIGNER_LEGALDESK,
         Gateway::NETBANKING_KOTAK,
+        Gateway::NETBANKING_IBK,
     ];
 
     /**
@@ -2201,6 +2202,7 @@ class Gateway
         Netbanking::PUNB_C => Gateway::NETBANKING_PNB,
         Netbanking::KKBK_C => Gateway::NETBANKING_KOTAK,
         Netbanking::ANDB_C => Gateway::NETBANKING_UBI,
+        Netbanking::IDIB_C => Gateway::NETBANKING_IBK,
 
         // retail banks
         IFSC::IDFB         => Gateway::NETBANKING_IDFC,
@@ -3090,7 +3092,7 @@ class Gateway
         return in_array($network, $exclusiveNetworks, true) === true;
     }
 
-    public static function getGatewaysForNetbankingBank($bank, $isTPV = false)
+    public static function getGatewaysForNetbankingBank($bank, $isTPV = false): array
     {
         $gateways = [];
 
@@ -3394,7 +3396,7 @@ class Gateway
         return (in_array($gateway, $gatewayToNbPlusOnMerchantLevel, true));
     }
 
-    public static function isNbPlusServiceGateway($gateway, $payment = null)
+    public static function isNbPlusServiceGateway($gateway, $payment = null): bool
     {
         $gateways = [
             self::ATOM,

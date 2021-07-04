@@ -513,7 +513,7 @@ trait Callback
         $this->processPaymentCallbackException($exception);
     }
 
-    protected function acquireLockAndProcessCallback($payment, $gatewayInput)
+    protected function acquireLockAndProcessCallback(Payment\Entity $payment, $gatewayInput)
     {
         $resource = $this->getCallbackMutexResource($payment);
 

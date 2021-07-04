@@ -4239,7 +4239,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
               ->where(Entity::RECEIVER_TYPE, '=', $entity->getEntity());
     }
 
-    public function isCorporateNetbanking()
+    public function isCorporateNetbanking(): bool
     {
         return (
             ($this->isNetbanking() === true) and

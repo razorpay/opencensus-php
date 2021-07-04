@@ -21,7 +21,7 @@ class Ibk extends Base
     const FILE_TYPE              = FileStore\Type::IBK_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_IBK;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
-    const GATEWAY_CODE           = [IFSC::IDIB, IFSC::ALLA];
+    const GATEWAY_CODE           = [IFSC::IDIB, IFSC::ALLA, Payment\Processor\Netbanking::IDIB_C];
     const BASE_STORAGE_DIRECTORY = 'Ibk/Refund/Netbanking/';
 
     protected function formatDataForFile(array $data)

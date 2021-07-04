@@ -28,6 +28,7 @@ class Netbanking
     const SVCB_C = 'SVCB_C';
     const DLXB_C = 'DLXB_C';
     const KKBK_C = 'KKBK_C';
+    const IDIB_C = 'IDIB_C';
 
     // These are the IFSC's that are to be used for these
     // banks even if we integrate them directly.
@@ -78,6 +79,7 @@ class Netbanking
         self::UTIB_C => 'Axis Bank - Corporate Banking',
         self::YESB_C => 'Yes Bank - Corporate Banking',
         self::KKBK_C => 'Kotak Mahindra Bank - Corporate Banking',
+        self::IDIB_C => 'Indian Bank - Corporate Banking',
         IFSC::ORBC   => 'PNB (Erstwhile-Oriental Bank of Commerce)',
         IFSC::UTBI   => 'PNB (Erstwhile-United Bank of India)',
         IFSC::CORP   => 'Union Bank of India (Erstwhile Corporation Bank)',
@@ -145,6 +147,7 @@ class Netbanking
         self::PUNB_C,
         self::KKBK_C,
         self::ANDB_C,
+        self::IDIB_C,
     ];
 
     protected static $selfTPV = [
@@ -791,6 +794,9 @@ class Netbanking
                 IFSC::IDIB,
                 IFSC::ALLA,
             ],
+            'corp' => [
+                self::IDIB_C,
+            ]
         ],
         Gateway::NETBANKING_IDBI => [
             'retail' => [
@@ -1202,7 +1208,7 @@ class Netbanking
         return in_array($bank, self::getCcavenueSupportedBanks(), true) === true;
     }
 
-    public static function isNetbankingBankDirectlySupported($bank)
+    public static function isNetbankingBankDirectlySupported($bank): bool
     {
         return in_array($bank, self::getDirectlyNetbankingBanks(), true) === true;
     }
@@ -1239,12 +1245,9 @@ class Netbanking
         return in_array($issuer, $gatewayExclusiveBanks, true) === true;
     }
 
-    public static function isCorporateBank($bank)
+    public static function isCorporateBank($bank): bool
     {
-        $billdeskCorp = self::$gatewaySupportedBanks[Gateway::BILLDESK]['corp'] ?? [];
-        $corpExclusiveBank = array_merge(self::$selfCorp, $billdeskCorp);
-
-        return in_array($bank, $corpExclusiveBank, true) === true;
+        return in_array($bank, self::$selfCorp, true) === true;
     }
 
     public static function getSupportedBanksForGateway(

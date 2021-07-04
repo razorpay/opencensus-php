@@ -97,6 +97,11 @@ class Netbanking extends NetbankingBase
     {
         $gateway = $this->gateway;
 
+        if ($gateway === Payment\Gateway::NETBANKING_IBK)
+        {
+            return $this->getcallbackForIbk($input);
+        }
+
         if ((Payment\Gateway::isStaticCallbackGateway($gateway) === true) and (Payment\Gateway::isWebhookEnabledGateway($gateway) === false))
         {
             return $this->staticGatewayAuthorize($input, $gateway);
@@ -193,6 +198,33 @@ class Netbanking extends NetbankingBase
             ],
             'error' => null
         ];
+    }
+
+    protected function getcallbackForIbk($input): array
+    {
+        $bank = $input['input']['payment']['bank'];
+
+        if (in_array($bank, ['ALLA', 'IDIB']) === true)
+        {
+            return [
+                'response' => [
+                    'data' => [
+                        'next' => [
+                            'redirect' => [
+                                'url' => $this->app['api.route']->getPublicCallbackUrlWithHash(
+                                    $input['input']['payment']['public_id'],
+                                    'rzp_test_TheTestAuthKey',
+                                    'payment_callback_post'
+                                ),
+                                'method'  => 'post',
+                                'content' => []
+                            ]
+                        ]
+                    ]
+                ],
+                'error' => null
+            ];
+        }
     }
 
     protected function makeJsonResponse(array $content)
