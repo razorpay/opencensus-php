@@ -157,7 +157,7 @@ class NbplusNetbankingYesbCombinedFileTest extends NbPlusPaymentServiceNetbankin
         $refundFileRow1 = $refundsFileContents[0];
 
         $this->assertCount(6, $refundFileRow1);
-        $this->assertEquals($refundFileRow1['aggregator_code'], $this->terminal->getGatewayMerchantId());
+        $this->assertEquals($refundFileRow1['aggregator_code'], 'RAZORPAY');
         $this->assertEquals($refundFileRow1['transaction_date'], $this->getFormattedDate($fullRefund['created_at']));
         $this->assertEquals($refundFileRow1['merchant_ref_no'], $payment1['id']);
         $this->assertNotNull($refundFileRow1['bank_ref_no']);
@@ -167,7 +167,7 @@ class NbplusNetbankingYesbCombinedFileTest extends NbPlusPaymentServiceNetbankin
         $refundFileRow2 = $refundsFileContents[1];
 
         $this->assertCount(6, $refundFileRow1);
-        $this->assertEquals($refundFileRow2['aggregator_code'], $this->terminal->getGatewayMerchantId());
+        $this->assertEquals($refundFileRow2['aggregator_code'], 'RAZORPAY');
         $this->assertEquals($refundFileRow2['transaction_date'], $this->getFormattedDate($partialRefund['created_at']));
         $this->assertEquals($refundFileRow2['merchant_ref_no'], $payment2['id']);
         $this->assertNotNull($refundFileRow2['bank_ref_no']);
@@ -184,7 +184,7 @@ class NbplusNetbankingYesbCombinedFileTest extends NbPlusPaymentServiceNetbankin
         $claimFileRow1 = $claimFileContents[0];
 
         $this->assertCount(5, $claimFileRow1);
-        $this->assertEquals($claimFileRow1['aggregator_code'], $this->terminal->getGatewayMerchantId());
+        $this->assertEquals($claimFileRow1['aggregator_code'], 'RAZORPAY');
         $this->assertEquals($claimFileRow1['transaction_date'], $this->getFormattedDate($payment1['created_at']));
         $this->assertEquals($claimFileRow1['merchant_ref_no'], $payment1['id']);
         $this->assertNotNull($claimFileRow1['bank_ref_no']);
@@ -193,7 +193,7 @@ class NbplusNetbankingYesbCombinedFileTest extends NbPlusPaymentServiceNetbankin
         $claimFileRow2 = $claimFileContents[1];
 
         $this->assertCount(5, $claimFileRow2);
-        $this->assertEquals($claimFileRow2['aggregator_code'], $this->terminal->getGatewayMerchantId());
+        $this->assertEquals($claimFileRow2['aggregator_code'], 'RAZORPAY');
         $this->assertEquals($claimFileRow2['transaction_date'], $this->getFormattedDate($payment2['created_at']));
         $this->assertEquals($claimFileRow2['merchant_ref_no'], $payment2['id']);
         $this->assertNotNull($claimFileRow2['bank_ref_no']);

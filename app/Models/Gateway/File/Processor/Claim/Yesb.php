@@ -32,7 +32,7 @@ class Yesb extends NetbankingBase
             $date = Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)->format('d/m/Y');
 
             $formattedData[] = [
-                ClaimFields::MERCHANT_CODE      => $row['terminal']['gateway_merchant_id'],
+                ClaimFields::MERCHANT_CODE      => 'RAZORPAY',
                 ClaimFields::TRANSACTION_DATE   => $date,
                 ClaimFields::PAYMENT_ID         => $row['payment']['id'],
                 ClaimFields::BANK_REFERENCE_ID  => $this->fetchBankPaymentId($row),

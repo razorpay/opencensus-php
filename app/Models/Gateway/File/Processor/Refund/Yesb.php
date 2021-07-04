@@ -40,7 +40,7 @@ class Yesb extends Base
             $date = Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)->format('d/m/Y');
 
             $content[] = [
-                RefundFields::MERCHANT_CODE      => $row['terminal']['gateway_merchant_id'],
+                RefundFields::MERCHANT_CODE      => 'RAZORPAY',
                 RefundFields::TRANSACTION_DATE   => $date,
                 RefundFields::PAYMENT_ID         => $row['payment']['id'],
                 RefundFields::BANK_REFERENCE_ID  => $this->fetchBankPaymentId($row),
