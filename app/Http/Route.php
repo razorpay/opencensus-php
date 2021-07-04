@@ -6358,6 +6358,7 @@ class Route
             'accounting_payouts_sync_internal',
             'app_merchant_mapping_create',
             'app_merchant_mapping_update',
+            'merchant_fetch_internal_users',
         ],
 
         'dashboard' => [

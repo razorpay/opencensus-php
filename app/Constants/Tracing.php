@@ -110,6 +110,7 @@ class Tracing
             'vendor_payment_bulk_invoice_download',
             'vendor_payment_update_invoice_file_id',
             'vendor_payment_get_invoice_zip_file',
+            'merchant_fetch_internal_users',
 
             // accounting-payouts API routes
             'accounting_payouts_integration_status',
