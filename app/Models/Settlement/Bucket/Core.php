@@ -270,7 +270,7 @@ class Core extends Base\Core
         }
 
         // Add meta details for refund type txn
-        if ($txn->isTypeRefund() === true)
+        if (($txn->isTypeRefund() === true) || ($txn->isTypeTransfer() === true))
         {
             $meta = $this->getMetaForSource($txn);
         }
@@ -341,14 +341,28 @@ class Core extends Base\Core
                 $international  = $metaSource->isInternational();
                 break;
 
+            case Transaction\Type::TRANSFER:
+                if ($txnSource->getSourceType() === Transaction\Type::PAYMENT)
+                {
+                    $metaSource = $txnSource->source;
+                    $international = $metaSource->isInternational();
+                }
+                else
+                {
+                    return null;
+                }
+                break;
+
             default:
                 $metaSource = $txnSource;
         }
 
         return [
-            'source_type'   => $metaSource->getEntity(),
-            'source_id'     => $metaSource->getId(),
-            'international' => $international
+            'source_type'       => $metaSource->getEntity(),
+            'source_id'         => $metaSource->getId(),
+            'source_method'     => $metaSource->getMethod(),
+            'source_settled'    => $metaSource->transaction->isSettled(),
+            'international'     => $international
         ];
     }
 
