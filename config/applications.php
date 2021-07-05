@@ -670,6 +670,7 @@ return [
         'username' => 'rzp',
         'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
         'timeout'  => env('SUBSCRIPTION_SERVICE_TIMEOUT', 10),
+        'queue_sync'  => env('SUBSCRIPTION_SERVICE_QUEUE_SYNC', false),
     ],
 
     'mandate_hq' => [

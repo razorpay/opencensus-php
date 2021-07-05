@@ -91,7 +91,7 @@ class External extends Base
         $this->trace->info(TraceCode::SUBSCRIPTION_PAYMENT_NOTIFY,
             [
                 'payment'    => $paymentPayload,
-                'queue_mode' => $shouldCallEndpoint
+                'queue_mode' => ($shouldCallEndpoint === false)
             ]);
 
         if ($shouldCallEndpoint === true)
@@ -109,7 +109,7 @@ class External extends Base
      */
     private function shouldCallEndpoint()
     {
-        return (Config::get('queue.default') === 'sync');
+        return ((Config::get('queue.default') === 'sync') or ($this->config['queue_sync'] === true));
     }
 
     /**
@@ -122,14 +122,9 @@ class External extends Base
             'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
         ];
 
-        $input = [
-            'payment_id' => $paymentPayload['id'],
-            'merchant_id' => $paymentPayload['merchant_id'],
-        ];
+        $url = 'subscriptions/sync_payment_process';
 
-        $url = 'subscriptions/' . $paymentPayload['subscription_id'] . '/payment_process';
-
-        return $this->sendRequest($url, Requests::POST, $input, $headers);
+        return $this->sendRequest($url, Requests::POST, $paymentPayload, $headers);
     }
 
     public function fetchMultipleAdminEntity(string $entityName, array $input)
