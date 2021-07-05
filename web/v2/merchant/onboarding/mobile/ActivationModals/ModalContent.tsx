@@ -6,12 +6,13 @@ import Button from '@razorpay/blade-old/src/atoms/Button';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import { analyticsTrack } from 'v2/services/tracking/segment';
 import { useApp } from 'v2/context/App';
-import BannerModal from './Frame.svg';
-import needsClarification from './icons/needsClarification.svg';
-import poiInitiated from './icons/poiInitiated.svg';
-import paymentEnable from './icons/paymentEnable.svg';
-import Illustration3 from './icons/Illustration3.svg';
-import settelmentHold from './icons/settelmentHold.svg';
+import NeedsClarification from './icons/NC.svg';
+import UnderReview from './icons/UnderReview.svg';
+import PaymentEnable from './icons/PaymentActivated.svg';
+import MerchantBlocked from './icons/MerchantBlocked.svg';
+import PaymentLimitRemoved from './icons/LimitRemoved.svg';
+import FillKyc from './icons/FillKyc.svg';
+import PaymentPaused from './icons/PaymentPaused.svg';
 import * as Message from './Constant';
 
 export type ModalTypeT =
@@ -48,6 +49,9 @@ export const getModalContent = (
   let image: ReactNode = <div />;
   let additionalDesc: ReactNode = <span />;
   const statusLog = activationData?.activationStatusChangeLogs || [];
+  const isPartialMatch = dedupeStatus === 'partial_match';
+  const isPaymentLimitRemoved =
+    !statusLog.includes('needs_clarification') && !!activationData?.activated;
 
   const openCustomerSupport = () => {
     analyticsTrack({
@@ -64,7 +68,7 @@ export const getModalContent = (
   switch (modalType) {
     case 'dedupe':
       title = isInstantActivationEnabled ? Message.DEDUPE.title : Message.DEDUPE.old_title;
-      image = <img src={Illustration3} />;
+      image = <img src={MerchantBlocked} />;
       description = !isInstantActivationEnabled
         ? Message.DEDUPE.old_description
         : Message.DEDUPE.description;
@@ -83,10 +87,10 @@ export const getModalContent = (
 
     case 'poi_initiated':
       title = Message.POI_INITIATED.title;
-      image = <img src={poiInitiated} />;
+      image = <img src={UnderReview} />;
       description = Message.POI_INITIATED.description;
       button = (
-        <Button onClick={() => history.push('/')} block>
+        <Button onClick={() => (location.href = '/')} block>
           {Message.POI_INITIATED.buttonText}
         </Button>
       );
@@ -94,7 +98,7 @@ export const getModalContent = (
 
     case 'payment_enable':
       title = Message.PAYMENT_ENABLE.title;
-      image = <img src={paymentEnable} />;
+      image = <img src={PaymentEnable} />;
       description = Message.PAYMENT_ENABLE.description;
       button = (
         <>
@@ -122,7 +126,7 @@ export const getModalContent = (
 
     case 'payment_disable':
       title = Message.PAYMENT_DISABLE.title;
-      image = <img src={Illustration3} />;
+      image = <img src={FillKyc} />;
       description = Message.PAYMENT_DISABLE.description;
       button = (
         <Button
@@ -139,12 +143,22 @@ export const getModalContent = (
 
     case 'under_review':
       title = Message.UNDER_REVIEW.title;
-      image = <img src={BannerModal} />;
+      image = (
+        <img
+          src={
+            isPartialMatch
+              ? PaymentPaused
+              : isPaymentLimitRemoved
+              ? PaymentLimitRemoved
+              : UnderReview
+          }
+        />
+      );
       description = Message.UNDER_REVIEW.description;
-      if (dedupeStatus === 'partial_match') {
+      if (isPartialMatch) {
         title = Message.UNDER_REVIEW.partial_match_title;
         description = Message.UNDER_REVIEW.partial_match_description;
-      } else if (!statusLog.includes('needs_clarification') && !!activationData?.activated) {
+      } else if (isPaymentLimitRemoved) {
         title = Message.UNDER_REVIEW.payment_enable_title;
         description = Message.UNDER_REVIEW.payment_enable_description;
       }
@@ -158,7 +172,7 @@ export const getModalContent = (
     case 'tnc':
       title =
         dedupeStatus === 'partial_match' ? Message.TNC.partial_match_title : Message.TNC.title;
-      image = <img src={BannerModal} />;
+      image = <img src={UnderReview} />;
       description =
         dedupeStatus === 'partial_match'
           ? Message.TNC.partial_match_description
@@ -188,7 +202,7 @@ export const getModalContent = (
 
     case 'settelment_onhold':
       title = 'Settlements on hold';
-      image = <img src={settelmentHold} />;
+      image = <img src={PaymentPaused} />;
       description = (
         <>
           Our compliance team and partner banks carry out routine audits of your KYC documents. We
@@ -208,7 +222,7 @@ export const getModalContent = (
 
     case 'needs_clarification':
       title = Message.NC.title;
-      image = <img src={needsClarification} />;
+      image = <img src={NeedsClarification} />;
       description =
         activationData?.merchant?.hold_funds && statusLog.includes('activated_mcc_pending')
           ? Message.NC.description.onhold_nc
@@ -247,7 +261,7 @@ export const getModalContent = (
 
     case 'rejected':
       title = Message.REJECTED.title;
-      image = <img src={Illustration3} />;
+      image = <img src={MerchantBlocked} />;
       description = Message.REJECTED.description;
       button = (
         <Button onClick={openCustomerSupport} block>

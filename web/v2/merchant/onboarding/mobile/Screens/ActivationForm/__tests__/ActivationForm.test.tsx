@@ -2,15 +2,23 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import ActivationForm from '..';
+import * as ActivationDB from '../../../services/data/ActivationDB';
 import { waitForElementToBeRemoved, screen, render, fireEvent, waitFor } from 'test-utils';
 
 /* eslint-disable func-names */
 window.HTMLElement.prototype.scrollIntoView = function () {};
 
+afterEach(() => {
+  ActivationDB.reset();
+});
+
 const waitForLoaderToFinish = () =>
   waitForElementToBeRemoved(() => [...screen.queryAllByRole('loader')], { timeout: 4000 });
 
 test('ActivationForm Flow', async () => {
+  ActivationDB.update({
+    business_type: '4',
+  });
   jest.setTimeout(30000);
   render(<ActivationForm />, {});
   await waitForLoaderToFinish();
