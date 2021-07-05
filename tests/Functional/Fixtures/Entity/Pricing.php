@@ -475,6 +475,20 @@ class Pricing extends Base
                 'fixed_rate'          => 0,
                 'org_id'              => '100000razorpay',
             ],
+            [
+                'id'                  => '1zE31zbybacap2',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'cardless_emi',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => 'walnut369',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000,
+                'max_fee'             => 5000,
+                'org_id'              => '100000razorpay',
+            ],
         ];
 
         return $rows;

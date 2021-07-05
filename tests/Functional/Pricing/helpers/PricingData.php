@@ -1931,6 +1931,25 @@ return [
         ],
     ],
 
+    'testAddPricingRuleWalnut369' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'cardless_emi',
+                'payment_issuer'      => 'walnut369',
+                'percent_rate'        => 1000,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'cardless_emi',
+                'payment_issuer'      => 'walnut369',
+                'percent_rate'        => 1000,
+            ],
+        ],
+    ],
+
 
     'testUpdatePricingPlanRule' => [
         'request' => [
@@ -2355,7 +2374,7 @@ return [
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 27,
+                        'count' => 28,
                         'rules' => [
                             [],
                         ],
@@ -2503,7 +2522,7 @@ return [
                     [
                         'name'   => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count'  => 27,
+                        'count'  => 28,
                         'rules'  => [
                             [],
                         ],
@@ -2635,7 +2654,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 27,
+                    'rules_count' => 28,
                     'type'        => 'pricing',
                 ],
             ],
@@ -2725,7 +2744,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 27,
+                    'rules_count' => 28,
                     'type'        => 'pricing',
                 ],
             ],
