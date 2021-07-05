@@ -103,10 +103,8 @@ class Core extends Base\Core
      * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function createForPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant)
+    public function createForPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant, bool $asyncTransfer)
     {
-        $transfers = new Base\PublicCollection;
-
         $this->validateMerchantForTransfer($merchant);
 
         $this->addAccountFromAccountCodeIfApplicable($input);
@@ -122,35 +120,32 @@ class Core extends Base\Core
 
         $totalTransferAmount = 0;
 
-        $isasyncTransferEnabled = true;
+        $transfers = new Base\PublicCollection;
 
         foreach ($input as $transfer)
         {
-            $transfer = $this->makeTransfer($transfer, $payment, $merchant,$isasyncTransferEnabled);
+            $transfer = $this->makeTransfer($transfer, $payment, $merchant, $asyncTransfer);
 
             $totalTransferAmount += $transfer['amount'];
 
             $transfers->push($transfer);
         }
 
-        if($isasyncTransferEnabled === false)
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFERS_CREATED,
+            [
+                'transfer_ids' => $transfers->getIds(),
+            ]
+        );
+
+        if ($asyncTransfer === false)
         {
             $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
 
+            // Add trace log here if sync transfer flow is enabled in future.
+
             (new Metric)->pushCreateSuccessMetrics(current($input));
         }
-        else
-        {
-                $this->trace->info(
-                    TraceCode::PAYMENT_TRANSFER_RAZORX_SQS_PUSH,
-                    ['transfer' => $input,
-                        'paymentId' =>$payment->getId(),
-                        'transferId'=>$transfer->getId()
-                    ]);
-
-            TransferProcess::dispatch($this->mode, $payment->getId(), Constant::PAYMENT);
-        }
-
 
         return $transfers;
     }

@@ -39,6 +39,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\EntityOrigin;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Flow;
+use RZP\Jobs\TransferProcess;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Metric;
 use RZP\Models\Payment\Status;
@@ -65,6 +66,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Services\NbPlus as NbPlusPaymentService;
+use RZP\Models\Transfer\Constant as TransferConstant;
 use RZP\Models\UpiMandate\Frequency as UPIMandateFrequency;
 use RZP\Models\UpiMandate\RecurringType as UPIMandateRecurringType;
 
@@ -2177,25 +2179,37 @@ class Processor
             $deadLockRetryAttempts = 2;
         }
 
+        $asyncTransfer = true;
+
         return $this->mutex->acquireAndRelease(
             $payment->getId(),
-            function() use ($payment, $input, $deadLockRetryAttempts)
+            function() use ($payment, $input, $deadLockRetryAttempts, $asyncTransfer)
             {
                 $this->repo->reload($payment);
 
-                return $this->repo->transaction(function() use ($payment, $input)
+                $transfers = $this->repo->transaction(function() use ($payment, $input, $asyncTransfer)
                 {
-                    $transfers = (new TransferCore)->createForPayment(
-                                    $payment,
-                                    $input['transfers'],
-                                    $this->merchant);
+                    return (new TransferCore)->createForPayment(
+                        $payment,
+                        $input['transfers'],
+                        $this->merchant,
+                        $asyncTransfer
+                    );
+                }, $deadLockRetryAttempts);
+
+                if ($asyncTransfer === true)
+                {
+                    TransferProcess::dispatch($this->mode, $payment->getId(), TransferConstant::PAYMENT);
 
                     $this->trace->info(
-                        TraceCode::PAYMENT_TRANSFER_SUCCESS,
-                        ['transfer_ids' => $transfers->getIds()]);
+                        TraceCode::PAYMENT_DISPATCHED_FOR_TRANSFER_PROCESS,
+                        [
+                            'payment_id' => $payment->getId(),
+                        ]
+                    );
+                }
 
-                    return $transfers;
-                }, $deadLockRetryAttempts);
+                return $transfers;
             });
     }
 
