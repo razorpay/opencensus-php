@@ -380,7 +380,7 @@ class Processor
                 (empty($input[Payment\Entity::TOKEN]) === false) or
                 (empty($input[Payment\Entity::SAVE]) === false) or
                 (empty($input[Payment\Entity::OFFER_ID]) === false) or
-                (empty($input['reward_ids']) === false) or
+                ((empty($input['reward_ids']) === false) and ($merchant->getId() !== '2aTeFCKTYWwfrF')) or
                 (empty($input['auth_type']) === false) or
                 ($merchant->isFeeBearerPlatform() === false) or
                 ($merchant->isRazorpayOrgId() === false))
