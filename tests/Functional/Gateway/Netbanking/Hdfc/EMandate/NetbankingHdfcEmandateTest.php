@@ -609,6 +609,9 @@ class NetbankingHdfcEmandateTest extends TestCase
         $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
         $entities[1]['status_in_file'] = 'failure';
 
+        $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
+        $entities[2]['status_in_file'] = 'cancelled';
+
         $file = $this->generateEmandateDebitReconFile($entities);
 
         $this->makeBatchRequest(
@@ -649,6 +652,16 @@ class NetbankingHdfcEmandateTest extends TestCase
         $netbanking = $this->getDbEntityById('netbanking', $entities[1]['netbanking']['id'])->toArray();
 
         $this->assertEquals('failure', $netbanking[Netbanking::STATUS]);
+
+        // for cancelled status
+
+        $payment = $this->getDbEntityById('payment', $entities[2]['payment']['id'])->toArray();
+
+        $this->assertEquals(Payment\Status::FAILED, $payment['status']);
+
+        $netbanking = $this->getDbEntityById('netbanking', $entities[2]['netbanking']['id'])->toArray();
+
+        $this->assertEquals('cancelled', $netbanking[Netbanking::STATUS]);
     }
 
     public function testSecondRecurringPaymentVerify()
