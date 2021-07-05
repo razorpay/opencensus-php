@@ -69,6 +69,7 @@ use RZP\Mail\InstrumentRequest\StatusNotify;
 use RZP\Models\Settlement\SettlementTrait;
 use RZP\Models\Batch\Header as BatchHeader;
 use RZP\Models\Batch\Status as BatchStatus;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Admin\Service as AdminService;
@@ -76,11 +77,8 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\AutoKyc\Escalations;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Payment\Config as PaymentConfig;
-use RZP\Mail\Merchant\CreateSubMerchantPartner;
-use RZP\Constants\{Environment, Mode, Entity as CE, Product};
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Pricing\Feature as PricingFeature;
-use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
@@ -90,14 +88,19 @@ use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\Merchant\Detail\Status as MerchantStatus;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
-use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
+use RZP\Constants\{Environment, Mode, Entity as CE, Product};
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Batch\Helpers\SubMerchant as SubMerchantBatchHelper;
 use RZP\Models\Partner\SubMerchantBatchUtility as SubMerchantBatchUtil;
 use RZP\Models\Merchant\Detail\BusinessType as MerchantDetBusinessType;
 use RZP\Models\Merchant\Balance\BalanceConfig\Service as BalanceConfigService;
+use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerForPG;
+use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForPG;
+use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantPartner as CreateSubMerchantPartnerForX;
+use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForX;
+
 
 class Service extends Base\Service
 {
@@ -608,15 +611,17 @@ class Service extends Base\Service
      * addition. If the sub-merchant email is different then sends an email
      * to the user created with this email with a password reset email.
      *
-     * @param Entity      $subMerchant
-     * @param Entity      $aggregator
-     * @param User\Entity $user
-     * @param bool        $createdNewUser
-     * @param bool        $retry
+     * @param Entity $subMerchant
+     * @param Entity $aggregator
+     * @param string $product
+     * @param User\Entity|null $user
+     * @param bool $createdNewUser
+     * @param bool $retry
      */
     protected function sendSubMerchantCreationMail(
         Entity $subMerchant,
         Entity $aggregator,
+        string $product,
         User\Entity $user = null,
         bool $createdNewUser = false,
         bool $retry = false)
@@ -629,7 +634,7 @@ class Service extends Base\Service
 
         if ($isPartnerFlow === true)
         {
-            $this->sendNewSubMerchantCreationMails($subMerchant, $aggregator, $user, $createdNewUser, $retry);
+            $this->sendNewSubMerchantCreationMails($subMerchant, $aggregator, $product, $user, $createdNewUser, $retry);
         }
         else
         {
@@ -640,15 +645,17 @@ class Service extends Base\Service
     }
 
     /**
-     * @param array       $subMerchant
-     * @param array       $aggregator
-     * @param User\Entity $user
-     * @param bool        $createdNewUser
-     * @param bool        $retry
+     * @param array $subMerchant
+     * @param array $aggregator
+     * @param string $product
+     * @param User\Entity|null $user
+     * @param bool $createdNewUser
+     * @param bool $retry
      */
     protected function sendNewSubMerchantCreationMails(
         array $subMerchant,
         array $aggregator,
+        string $product,
         User\Entity $user = null,
         bool $createdNewUser = false,
         bool $retry = false)
@@ -661,9 +668,18 @@ class Service extends Base\Service
 
         if ($retry === false and $this->app['basicauth']->isBatchApp() === false)
         {
-            $createSubMerchantPartnerMail = new CreateSubMerchantPartner($subMerchant, $aggregator);
+            switch ($product)
+            {
+                case Product::PRIMARY:
+                    $createSubMerchantPartnerMail = new CreateSubMerchantPartnerForPG($subMerchant, $aggregator);
+                    Mail::queue($createSubMerchantPartnerMail);
+                    break;
 
-            Mail::queue($createSubMerchantPartnerMail);
+                case Product::BANKING:
+                    $createSubMerchantPartnerMail = new CreateSubMerchantPartnerForX($subMerchant, $aggregator);
+                    Mail::queue($createSubMerchantPartnerMail);
+                    break;
+            }
         }
 
         if ($subMerchant[Entity::EMAIL] === $aggregator[Entity::EMAIL])
@@ -686,10 +702,18 @@ class Service extends Base\Service
 
         // If user was just created then we need to pass the details to the mailer for sending
         // reset password link.
-        $createSubMerchantAffiliateMail =
-            new CreateSubMerchantAffiliate($subMerchant, $aggregator, $org, $mailUserData);
+        switch ($product)
+        {
+            case Product::PRIMARY:
+                $createSubMerchantAffiliateMail = new CreateSubMerchantAffiliateForPG($subMerchant, $aggregator, $org, $mailUserData);
+                Mail::queue($createSubMerchantAffiliateMail);
+                break;
 
-        Mail::queue($createSubMerchantAffiliateMail);
+            case Product::BANKING:
+                $createSubMerchantAffiliateMail = new CreateSubMerchantAffiliateForX($subMerchant, $aggregator, $org, $mailUserData);
+                Mail::queue($createSubMerchantAffiliateMail);
+                break;
+        }
     }
 
     public function editEmail($id, array $input): array
@@ -4147,7 +4171,7 @@ class Service extends Base\Service
         else if (((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false) and
                  ($merchant->canCommunicateWithSubmerchant() === true))
         {
-            $this->sendSubMerchantCreationMail($subMerchant, $merchant, $newUser, $createdNew);
+            $this->sendSubMerchantCreationMail($subMerchant, $merchant, $product, $newUser, $createdNew);
         }
 
         return $this->getSubMerchantResponseArray($merchant, $subMerchant, $product);
@@ -5294,6 +5318,8 @@ class Service extends Base\Service
 
         $subMerchantUser = $this->repo->user->getUserFromEmail($subMerchant->getEmail());
 
+        $product = $this->auth->getRequestOriginProduct();
+
         $mapping = null;
 
         if (empty($subMerchantUser) === false)
@@ -5313,7 +5339,7 @@ class Service extends Base\Service
         // is false in that case. Here, for resending the mail to the user, we are passing createdNewUser as true always
         // so that user always get a mail.
         //
-        $this->sendSubMerchantCreationMail($subMerchant, $merchant, $subMerchantUser, true, true);
+        $this->sendSubMerchantCreationMail($subMerchant, $merchant, $product, $subMerchantUser, true, true);
 
         return ['success' => true];
     }

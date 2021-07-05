@@ -421,14 +421,73 @@ return [
         ],
     ],
 
+    'testCreateSubMerchantForXByFullyManagedWithEmail' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => 'NewSubmerchant',
+                'name'    => 'Submerchant',
+                'email'   => 'testsub@razorpay.com',
+                'product' => 'banking'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'name'      => 'Submerchant',
+                    'email'     => 'testsub@razorpay.com',
+                    'confirmed' => false,
+                ],
+                'dashboard_access' => true,
+                'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
     'testCreateSubMerchantByFullyManagedWithEmailUserExists' => [
         'request'  => [
             'url'     => '/submerchants',
             'method'  => 'POST',
             'content' => [
-                'id'    => 'NewSubmerchant',
-                'name'  => 'Submerchant',
-                'email' => 'testsub@razorpay.com'
+                'id'      => 'NewSubmerchant',
+                'name'    => 'Submerchant',
+                'email'   => 'testsub@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'email'     => 'testsub@razorpay.com',
+                    'confirmed' => true,
+                ],
+                'dashboard_access' => true,
+                'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
+    'testCreateSubMerchantForXByFullyManagedWithEmailUserExists' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => 'NewSubmerchant',
+                'name'    => 'Submerchant',
+                'email'   => 'testsub@razorpay.com',
+                'product' => 'banking'
             ],
         ],
         'response' => [
@@ -472,6 +531,64 @@ return [
                     'confirmed' => false,
                 ],
                 'dashboard_access' => true,
+                'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
+    'testCreateSubMerchantForXByAggregatorWithEmail' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => 'NewSubmerchant',
+                'name'    => 'Submerchant',
+                'email'   => 'testsub@razorpay.com',
+                'product' => 'banking',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'email'     => 'testsub@razorpay.com',
+                    'confirmed' => false,
+                ],
+                'dashboard_access' => true,
+                'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
+    'testCreateSubMerchantForXByResellerWithEmail' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => 'NewSubmerchant',
+                'name'    => 'Submerchant',
+                'email'   => 'testsub@razorpay.com',
+                'product' => 'banking',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'email'     => 'testsub@razorpay.com',
+                    'confirmed' => false,
+                ],
+                'dashboard_access' => false,
                 'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
             ],
         ],
