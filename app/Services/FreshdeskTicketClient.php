@@ -25,7 +25,6 @@ class FreshdeskTicketClient
     const CREATE_TICKET       = 'tickets';
     const FETCH_TICKET        = 'tickets/%s';
     const FILTER_TICKETS      = 'search/tickets';
-    const FETCH_FAQS          = 'search/solutions';
     const FETCH_CONVERSATIONS = 'tickets/%s/conversations';
     const POST_TICKET_REPLY   = 'tickets/%s/reply';
     const LIST_TICKETS        = 'tickets';
@@ -94,21 +93,6 @@ class FreshdeskTicketClient
         $queryString = http_build_query($queryParams);
 
         $url = $this->getUrl(self::FILTER_TICKETS . '?' . $queryString, $urlKey);
-
-        $auth = $this->getAuth($authKey);
-
-        $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_GET, $url, $auth, []);
-
-        return $response;
-    }
-
-    public function getFaqs(array $queryParams, string $urlKey = 'url') : array
-    {
-        $authKey = $this->getAuthKey($urlKey);
-
-        $queryString = http_build_query($queryParams);
-
-        $url = $this->getUrl(self::FETCH_FAQS . '?' . $queryString, $urlKey);
 
         $auth = $this->getAuth($authKey);
 

@@ -1438,31 +1438,6 @@ class Service extends Base\Service
         return Constants::RZPIND;
     }
 
-    public function getFaqs($input)
-    {
-        (new Validator)->validateInput('get_faqs', $input);
-
-        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][Constants::RZP];
-
-        $response = $this->app['freshdesk_client']->getFaqs($input, $url);
-
-        return $this->rewriteFreshdeskFaqs($response);
-    }
-
-    protected function rewriteFreshdeskFaqs($response)
-    {
-        foreach ($response as $key => $value)
-        {
-            $response[$key] = array_intersect_key($value, array_flip(Constants::ALLOWED_FAQS_KEYS));
-        }
-
-        return [
-            "count"     => count($response),
-            "entity"    => "collection",
-            "items"     => $response
-            ];
-    }
-
     protected function notifyMerchantIfApplicable(Entity $ticketEntity, string $event)
     {
         (new Notifications\Support\Handler([

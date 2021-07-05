@@ -117,31 +117,6 @@ return [
         ],
     ],
 
-    'testFetchFaqsFromFreshdesk' => [
-        'request' => [
-            'url' => '/faqs?term=xyz',
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-                'count' => 2,
-                'entity'=> 'collection',
-                'items' => [
-                    [
-                        "title"             => "I am xyz title1",
-                        "description_text"  => "description text",
-                        "path"              => "42000037481-i-would-like-to-know-more-about-razorpay-"
-                    ],
-                    [
-                        "title"             => "I am xyz title1",
-                        "description_text"  => "description text",
-                        "path"              => "42000037481-i-would-like-to-know-more-about-razorpay-"
-                    ],
-                ],
-            ],
-        ],
-    ],
-
     'testFetchTicketsForMerchantSalesforceWrongAuth' => [
         'request' => [
             'url' => '/fd/support_dashboard/ticket',

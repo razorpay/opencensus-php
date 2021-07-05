@@ -590,7 +590,6 @@ class Name
     const RX_ADMIN_ACTION_PERMISSION          = 'rx_admin_action_permission';
 
     const UPDATE_BULK_PAYOUT_AMOUNT_TYPE      = 'update_bulk_payout_amount_type';
-    const VIEW_FAQS                         = 'view_faqs';
 
     const CREATE_ACCOUNTING_INTEGRATION     = 'create_accounting_integration';
     const DELETE_ACCOUNTING_INTEGRATION     = 'delete_accounting_integration';

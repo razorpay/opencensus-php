@@ -29,7 +29,6 @@ class FreshdeskTicketV2Test extends TestCase
     const RZP_CREATE_TICKET_SALESFORCE    = 'rzp_create_ticket_salesforce';
     const RZP_CREATE_TICKET_INTERNAL_AUTH = 'rzp_create_ticket_internal_auth';
     const RZP_FETCH_TICKET                = 'rzp_fetch_ticket';
-    const RZP_FETCH_FAQS                  = 'rzp_fetch_faqs';
 
     const RZP_GET_TICKET_BY_ID = 'rzp_get_ticket_by_id';
 
@@ -191,16 +190,6 @@ class FreshdeskTicketV2Test extends TestCase
             $expectedRequestResponse['request'], $expectedRequestResponse['response'], 4);
 
         $this->createTicketsToFetch();
-
-        $this->startTest();
-    }
-
-    public function testFetchFaqsFromFreshdesk()
-    {
-        $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_FAQS);
-
-        $this->expectFreshdeskRequestAndRespondWith('search/solutions?term=xyz', 'get',
-                                                    $expectedRequestResponse['request'], $expectedRequestResponse['response'], 1);
 
         $this->startTest();
     }
@@ -1450,26 +1439,6 @@ Team Razorpay',
                     ],
 
                 ]];
-        }
-        else if ($key === self::RZP_FETCH_FAQS)
-        {
-            return [
-                'request'  => [],
-                'response' => [
-                    [
-                        "title"            => "I am xyz title1",
-                        "description_text" => "description text",
-                        "path"             => "42000037481-i-would-like-to-know-more-about-razorpay-",
-                        "id"               => "123",
-                    ],
-                    [
-                        "title"            => "I am xyz title1",
-                        "description_text" => "description text",
-                        "path"             => "42000037481-i-would-like-to-know-more-about-razorpay-",
-                        "id"               => "12356",
-                    ],
-                ]
-            ];
         }
     }
 

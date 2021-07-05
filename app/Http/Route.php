@@ -2336,7 +2336,6 @@ class Route
         'fd_fetch_ticket'                         => ['get',       'fd/{type}/ticket/{id}',                                     'FreshdeskTicketController@getTicket'                          ],
         'fd_post_ticket_reply'                    => ['post',      'fd/{type}/ticket/{id}/reply',                               'FreshdeskTicketController@postTicketReply'                    ],
         'fd_post_ticket_grievance'                => ['post',      'fd/{type}/ticket/{id}/grievance',                           'FreshdeskTicketController@postTicketGrievance'                ],
-        'get_faqs'                                => ['get',       'faqs',                                                      'FreshdeskTicketController@getFaqs'                            ],
 
         'fd_consume_webhook'                      => ['post',      'fd/webhook/{event}',                                        'FreshdeskTicketController@postWebhook'                        ],
 
@@ -3898,7 +3897,6 @@ class Route
         'fd_fetch_ticket',
         'fd_post_ticket_reply',
         'fd_post_ticket_grievance',
-        'get_faqs',
 
         'entity_bulk_update',
         'user_resend_verification_otp',
@@ -6559,7 +6557,6 @@ class Route
             'fd_fetch_tickets',
             'fd_post_ticket_grievance',
             'fd_post_ticket_reply',
-            'get_faqs',
             'fd_reserve_balance_ticket',
             'fd_reserve_balance_ticket_status',
             'feature_dummy',
