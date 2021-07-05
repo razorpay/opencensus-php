@@ -458,6 +458,54 @@ return [
             'content' => []
         ]
     ],
+    'testProcessIncomingMail' => [
+        'request'  => [
+            'method' => 'POST',
+            'url' => '/vendor-payments/mailgun-webhook',
+            'content' => [
+                'sender' => 'abc@abc.com',
+                'recipient' => 'invoices+anything@invoices.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => 'error'
+            ],
+            'status_code' => 406
+        ]
+    ],
+    'testProcessIncomingMailWithoutStatusCode' => [
+        'request'  => [
+            'method' => 'POST',
+            'url' => '/vendor-payments/mailgun-webhook',
+            'content' => [
+                'sender' => 'abc@abc.com',
+                'recipient' => 'invoices+anything@invoices.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => 'error'
+            ],
+            'status_code' => 400
+        ]
+    ],
+    'testProcessIncomingMailSuccess' => [
+        'request'  => [
+            'method' => 'POST',
+            'url' => '/vendor-payments/mailgun-webhook',
+            'content' => [
+                'sender' => 'abc@abc.com',
+                'recipient' => 'invoices+anything@invoices.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'mail' => 'mail_something'
+            ],
+            'status_code' => 200
+        ]
+    ],
     'testGetMerchantEmailAddress' => [
         'request'  => [
             'method' => 'GET',
@@ -470,5 +518,5 @@ return [
         'response' => [
             'content' => []
         ]
-    ],
+    ]
 ];

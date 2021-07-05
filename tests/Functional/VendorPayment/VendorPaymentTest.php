@@ -73,7 +73,11 @@ class VendorPaymentTest extends TestCase
                                     'merchant_id' => '10000000000000'
                                 ]);
 
-        $this->fixtures->create('payout', ['id' => 'DuuYxmO7Yegu3x', 'fund_account_id' => 'D6Z9Jfir2egAUT','pricing_rule_id' => '1nvp2XPMmaRLxb']);
+        $this->fixtures->create('payout', [
+            'id' => 'DuuYxmO7Yegu3x',
+            'fund_account_id' => 'D6Z9Jfir2egAUT',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb'
+        ]);
 
         $this->startTest();
     }
@@ -96,7 +100,6 @@ class VendorPaymentTest extends TestCase
                 'source_id'   => 'Dsp92d4N1Mmm6Q',
                 'merchant_id' => '10000000000000'
             ]);
-
 
         $this->fixtures->create('payout', ['id' => 'DuuYxmO7Yegu3x',
                                          'fund_account_id' => 'D6Z9Jfir2egAUT',
@@ -127,7 +130,9 @@ class VendorPaymentTest extends TestCase
 
         $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
 
-        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
+        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)
+            ->startOfHour()
+            ->getTimestamp();
 
         $testData = $this->testData['testCreateScheduledPayout'];
 
@@ -343,6 +348,61 @@ class VendorPaymentTest extends TestCase
         $vpMock->shouldHaveReceived('getQuickFilterAmounts');
     }
 
+    public function testProcessIncomingMail()
+    {
+        $this->ba->appAuth('rzp_test', 'randommailgunsecret');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('processIncomingMail')->andReturn([
+            'status_code' => 406,
+            'body' => 'error'
+        ]);
+        
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+      
+        $vpMock->shouldHaveReceived('processIncomingMail');
+    }
+
+    public function testProcessIncomingMailWithoutStatusCode()
+    {
+        $this->ba->appAuth('rzp_test', 'randommailgunsecret');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('processIncomingMail')->andReturn([
+            'body' => 'error'
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('processIncomingMail');
+    }
+
+    public function testProcessIncomingMailSuccess()
+    {
+        $this->ba->appAuth('rzp_test', 'randommailgunsecret');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('processIncomingMail')->andReturn([
+            'status_code' => 200,
+            'body' => [
+                'mail' => 'mail_something'
+            ]
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('processIncomingMail');
+    }
+  
     public function testGetMerchantEmailAddress()
     {
         $this->ba->proxyAuth();
@@ -354,7 +414,8 @@ class VendorPaymentTest extends TestCase
         $this->app->instance('vendor-payment', $vpMock);
 
         $this->startTest();
-
+      
         $vpMock->shouldHaveReceived('getMerchantEmailAddress');
+        
     }
 }

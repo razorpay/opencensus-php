@@ -1285,6 +1285,7 @@ class Route
         'vendor_payment_update_invoice_file_id'    => ['post',     'vendor-payments/{id}/update-invoice-file-id',    'VendorPaymentController@updateInvoiceFileId'                       ],
         'vendor_payment_get_invoice_zip_file'      => ['get',      'vendor-payments/invoices/ufh/{id}',              'VendorPaymentController@getInvoicesFromUfh'                        ],
         'vendor_payment_get_quick_filter_amounts'  => ['get',      'vendor-payments/_meta/quick-filter-amounts',     'VendorPaymentController@getQuickFilterAmounts'                     ],
+        'vendor_payment_email_integration_webhook' => ['post',     'vendor-payments/mailgun-webhook',                'VendorPaymentController@processIncomingMail'                       ],
 
         // Accounting Payouts (inside vendor payments)
         'accounting_payouts_integration_status'                 => ['get',     'accounting-payouts/integration/status',          'AccountingPayoutsController@integrationStatus'         ],
@@ -3442,6 +3443,7 @@ class Route
         'payment_analytics_partition_cron',
         'payout_links_batch_process',
 
+        'vendor_payment_email_integration_webhook',
         // ledger route
         'ledger_fetch_multiple_transactions',
 
@@ -9365,6 +9367,7 @@ class Route
             'emandate_debit_reconcile',
             'bank_transfer_process_file',
             'bank_transfer_process_file_rbl',
+            'vendor_payment_email_integration_webhook'
         ],
 
         'raven' => [

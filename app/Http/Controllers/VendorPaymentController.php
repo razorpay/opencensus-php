@@ -229,6 +229,30 @@ class VendorPaymentController extends Controller
         return $this->service->getQuickFilterAmounts($this->ba->getMerchant());
     }
 
+    public function processIncomingMail()
+    {
+        $response = $this->service->processIncomingMail($this->input);
+
+        $code = 400;
+
+        if (isset($response['status_code']))
+        {
+            $code = $response[ 'status_code' ];
+        }
+
+        if ($code != 200)
+        {
+            $responseBody['error'] = $response['body'];
+        }
+        else
+        {
+            $responseBody = $response['body'];
+        }
+
+        $response = ApiResponse::json($responseBody, $code);
+
+        return $response;
+    }
     public function getMerchantEmailAddress()
     {
         return $this->service->getMerchantEmailAddress($this->ba->getMerchant());

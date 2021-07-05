@@ -5,6 +5,7 @@ namespace RZP\Services\VendorPayments;
 use Mail;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Error\Twirp\ErrorCodeMap;
 use RZP\Trace\TraceCode;
 use RZP\Models\User\Entity;
 use RZP\Http\Request\Requests;
@@ -53,6 +54,7 @@ class Service
     const UPDATE_VENDOR               = 'UpdateVendor';
     const GET_VENDOR_BULK             = 'GetVendorBulk';
     const GET_QUICK_FILTER_AMOUNTS    = 'GetQuickFilterAmounts';
+    const RECEIVE_EMAIL               = 'ReceiveVPEmailMessage';
     const GET_MERCHANT_EMAIL_ADDRESS  = 'GetMerchantEmailAddress';
 
     const BASE_PATH                   = 'twirp/vendorpayments.Vendorpayments';
@@ -67,6 +69,17 @@ class Service
     const X_TASK_ID                   = 'X-Task-ID';
     const X_APP_MODE                  = 'X-App-Mode';
 
+    const MESSAGE_ID                  = 'message_id';
+    const RECIPIENT                   = 'recipient';
+    const SENDER                      = 'sender';
+    const SIGNATURE                   = 'signature';
+    const TOKEN                       = 'token';
+    const TIMESTAMP                   = 'timestamp';
+    const FILE                        = 'file';
+    const FILE_TYPE                   = 'type';
+    const FILE_FORMAT                 = 'format';
+    const FILE_SIZE                   = 'size';
+    const ATTACHMENTS                 = 'attachments';
 
     protected $app;
 
@@ -528,6 +541,25 @@ class Service
         return $this->makeRequest($merchant, $url);
     }
 
+    public function processIncomingMail(array $input)
+    {
+        if(empty($_FILES === false))
+        {
+            $input[self::ATTACHMENTS] = array();
+            foreach ($_FILES as $file)
+            {
+                $attachment[self::FILE] = base64_encode(file_get_contents($file['tmp_name']));
+                $attachment[self::FILE_FORMAT] = $file[self::FILE_TYPE];
+                $attachment[self::FILE_SIZE] = $file[self::FILE_SIZE];
+                $attachment[self::NAME] = $file[self::NAME];
+                array_push($input['attachments'], $attachment);
+            }
+        }
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::RECEIVE_EMAIL);
+
+        return $this->makeRequest(null, $url, $input, [], 'POST', Mode::LIVE);
+    }
     public function getMerchantEmailAddress(MerchantEntity $merchant)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_MERCHANT_EMAIL_ADDRESS);
