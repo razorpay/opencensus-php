@@ -15,6 +15,12 @@
     const regex = /#\/access\/signup\?/g;
     if (location.pathname === "/signup" && location.hash.match(regex)) {
         location.href = location.href.replace(regex, "&")
+    } else if (location.pathname === '//signup') {
+        // partner referral shortened url is wrongly translating links by adding extra slash in pathname
+        // Eg: https://rzp.io/i/TSvxo0WXs ==> https://dashboard.razorpay.com//signup?referral_code=bluehosti2lycr
+        // Since already there are huge number of links created and being used we can't just fix the translation from BE
+        // as issue will persist for existing links, hence adding a fallback redirect
+        location.href = location.href.replace('//signup', "/signup");
     }
   </script>
   @if(env('APP_ENV') === 'production')
