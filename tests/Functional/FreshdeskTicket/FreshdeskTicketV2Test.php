@@ -1130,21 +1130,39 @@ Team Razorpay',
 
     public function testReceiveFreshdeskWebhookOnTicketCreated()
     {
-        $this->ba->freshdeskWebhookAuth();
-
-        $this->startTest();
-
-        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
-
-        $this->assertArraySelectiveEquals([
-            'merchant_id'       => '10000000000000',
-            'ticket_id'         => '1234',
-            'type'              => 'support_dashboard',
-            'ticket_details'    => [
-                'fd_instance'       => 'rzp',
-                'fr_due_by'         => '2020-12-08T16:04:20Z',
+        $testCases = [
+            [
+               'ticket_id'     => '1234',
+               'fd_instance'   => 'rzp',
             ],
-        ], $ticket);
+            [
+                'ticket_id'     => '12345',
+                'fd_instance'   => 'rzpind',
+            ],
+        ];
+
+        foreach ($testCases as $testCase)
+        {
+            $this->ba->freshdeskWebhookAuth();
+
+            $this->testData[__FUNCTION__]['request']['content']['ticket_id'] = $testCase['ticket_id'];
+
+            $this->testData[__FUNCTION__]['request']['content']['ticket_details']['fd_instance'] = $testCase['fd_instance'];
+
+            $this->startTest();
+
+            $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+            $this->assertArraySelectiveEquals([
+                                                  'merchant_id'       => '10000000000000',
+                                                  'ticket_id'         => $testCase['ticket_id'],
+                                                  'type'              => 'support_dashboard',
+                                                  'ticket_details'    => [
+                                                      'fd_instance'       => $testCase['fd_instance'],
+                                                      'fr_due_by'         => '2020-12-08T16:04:20Z',
+                                                  ],
+                                              ], $ticket);
+        }
     }
 
     public function testGetFreshdeskTicketCareApp()

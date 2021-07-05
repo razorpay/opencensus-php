@@ -8,6 +8,7 @@ class Instance
 {
     const RZP           = 'rzp';
     const RZPSOL        = 'rzpsol';
+    const RZPIND        = 'rzpind';
 
     public static function isValidFdInstance($fdInstanceString)
     {
