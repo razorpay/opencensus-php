@@ -7,6 +7,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
 import Slider from 'common/ui/Slider';
+import MultiSlider from 'common/ui/MultiSlider';
 import { ModalMask } from 'common/new-ui/Modal';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
@@ -630,6 +631,7 @@ export default class Content extends Component {
             {BaseView}
             {DetailView}
             {ModalFormView}
+            <MultiSlider />
             <Support user={user} />
           </Suspense>
         </ErrorBoundary>

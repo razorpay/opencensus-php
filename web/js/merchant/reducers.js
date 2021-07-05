@@ -2,6 +2,7 @@ import { combineReducers } from 'redux';
 import { reducer as formReducer } from 'redux-form';
 import modalReducer from 'merchant_common/reducers/modals';
 import sliderReducer from 'merchant_common/reducers/slider';
+import multiSliderReducer from 'merchant_common/reducers/multiSlider';
 import notificationsReducer from 'merchant_common/reducers/notifications';
 import twoFactorReducer from 'merchant_common/reducers/twoFactor';
 import sessionReducer from 'merchant/reducers/session';
@@ -100,6 +101,7 @@ import supportDetailReducer from 'merchant/reducers/support_detail';
 export default combineReducers({
   modal: modalReducer,
   slider: sliderReducer,
+  multiSlider: multiSliderReducer,
   notifications: notificationsReducer,
   form: formReducer,
   session: sessionReducer,

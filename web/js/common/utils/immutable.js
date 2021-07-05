@@ -77,11 +77,19 @@ export const merge = (state, obj) => {
   };
 };
 
+export const mergeAll = (...objs) => {
+  const mergedObj = objs.reduce((acc, currObj) => ({
+    ...acc,
+    ...currObj,
+  }));
+  return mergedObj;
+};
+
 export function deepMerge(target, source) {
   let output = Object.assign({}, target);
 
   if (_isObject(target) && _isObject(source)) {
-    Object.keys(source).forEach(key => {
+    Object.keys(source).forEach((key) => {
       if (_isObject(source[key])) {
         if (!(key in target)) {
           Object.assign(output, { [key]: source[key] });
@@ -102,7 +110,10 @@ export const remove = (array, itemToRemove) => {
     return removeItem(array, array.findIndex(itemToRemove));
   }
 
-  return removeItem(array, array.findIndex(ele => ele === itemToRemove));
+  return removeItem(
+    array,
+    array.findIndex((ele) => ele === itemToRemove),
+  );
 };
 
 /**
@@ -110,7 +121,7 @@ export const remove = (array, itemToRemove) => {
  * @param {Object} item
  * @return {Object}
  */
-export const deepCopy = item => {
+export const deepCopy = (item) => {
   if (typeof item !== 'object') {
     return item;
   }
