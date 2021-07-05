@@ -61,6 +61,7 @@ export default class AnnouncementBar extends Component {
                 />
               ),
               size: 'xlarge',
+              className: 'RazorpayXNitroAnnouncement--Modal',
             });
             this.trackEvents(this.props.fromWhere);
           }}

@@ -178,6 +178,7 @@ export default class WhatsNewOld extends Component {
     openModal({
       component: <RazorpayXNitroAnnouncement hideModal={closeModal} fromWhere="whatsnew" />,
       size: 'xlarge',
+      className: 'RazorpayXNitroAnnouncement--Modal',
     });
   };
 

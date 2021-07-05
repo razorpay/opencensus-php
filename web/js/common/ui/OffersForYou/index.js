@@ -28,6 +28,7 @@ const OffersForYou = ({ closeModal, openModal, tracking, user }) => {
     openModal({
       component: <RazorpayXNitroAnnouncement hideModal={closeModal} fromWhere="offers-for-you" />,
       size: 'xlarge',
+      className: 'RazorpayXNitroAnnouncement--Modal',
     });
 
     tracking.trackEvent(

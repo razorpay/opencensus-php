@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import axios from 'axios';
-import { AsyncBtn } from 'common/new-ui/Button';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 import RTracking from 'react-tracking';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { getCookie } from '../../utils/cookies';
@@ -13,24 +13,14 @@ import { caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 import isEmpty from '@universe/utils/isEmpty';
 
-const BENEFITS = {
-  other: [
-    'Make rule based payouts seamlessly',
-    'Transact 24*7 even on bank holidays',
-    'Get a consolidated view of your finances',
-    'Make Payouts via NEFT/IMPS/RTGS',
-    'Process thousands of payouts at once',
-    'Track & automate all your finances',
-  ],
-  nitro_hyderabad_v2: [
-    '500 Free Payouts every months',
-    'Make Payouts via IMPS/NEFT/RTGS/UP',
-    'Make TDS & GST payments with 1 click',
-    'Fully automated vendor payments',
-    'Integrations with Tally & more tools',
-    'Get a consolidated view of your finances',
-  ],
-};
+const BENEFITS = [
+  'Use the dashboard or APIs to make rule based payouts',
+  'Add your entire team with specific access controls',
+  'Get a consolidated view of your finances 24X7',
+  'Track & automate every aspect of your finances',
+  'Process thousands of payouts simultaneously',
+  'Payouts via NEFT/IMPS/RTGS',
+];
 
 export const nitroCampaignId = () => {
   const map = {
@@ -167,16 +157,36 @@ export const nitroCampaignId = () => {
   };
 };
 
-const SubmissionSuccessfull = () => (
-  <div className="success-message">
-    <h3>Congratulations! Your first step to a better Current Account has begun!</h3>
-    <p>You will receive an email shortly that guides you to the next steps.</p>
-    <p>
-      You’ll also receive a call from our banking experts that’ll assist you with any queries you
-      may have about your new Current Account.
-    </p>
-  </div>
-);
+const SubmissionSuccessfull = ({ handleClose }) => {
+  return (
+    <div className='rxca-submit-finish-modal'>
+      <div className='header'>
+        <div className='title'>
+          Congratulations! We're processing your request for a Current Account with RazorpayX.
+        </div>
+        <button type="button" class="close" onClick={handleClose}>
+          <i class="i i-close" />
+        </button>
+      </div>
+      <div className='description'>
+        <p>
+          Our banking experts will be reaching out to you shortly. In the meantime, we highly recommend you keep the required documents for creating a current account handy.
+        </p>
+        <a href='https://razorpay.com/docs/razorpayx/current-account/' target='_blank'>
+          <Button.Primary
+            class="btn btn-primary"
+            type="button"
+          >
+            View Documents Required
+          </Button.Primary>
+        </a>
+      </div>
+      <p className='footer'>
+        Once your new current account gets created you're pricing for Razorpay will automatically be reduced to 1.65% as promised!
+      </p>
+    </div>
+  );
+};
 
 @connect(
   (state) => ({
@@ -306,31 +316,32 @@ class DetailView extends React.Component {
   };
 
   render() {
-    const content = BENEFITS[nitroCampaignId().version] || BENEFITS.other;
-
     return (
       <div className="razorpayx-announcement-details">
         <div className="section">
           <div className="left-section">
+            <img className="rx-logo" src="/dist/css/assets/razorpay-x-logo-white.svg" alt="rx-logo" />
             <h3 className="heading">
-              Get 1.65% pricing when you switch to a RazorpayX Current Account
+              Get <span>1.65% pricing</span> when you switch to a RazorpayX Current Account
             </h3>
             <ul className="list">
-              {content.map((data) => (
+              {BENEFITS.map((data) => (
                 <li key={data}>
-                  <img src="https://razorpay.com/assets/payouts/footer/footer-pointer.png" />
-                  {data}
+                  <img src="/dist/css/assets/rxca-bullet.svg" />
+                  <span>
+                    {data}
+                  </span>
                 </li>
               ))}
             </ul>
             <div className="btn-wrapper">
               <AsyncBtn.Primary type="submit" class="btn btn-primary" onClick={this.save}>
-                Get Offer Now
+                Apply For Current Account
               </AsyncBtn.Primary>
             </div>
           </div>
           <div className="right-section">
-            <img src="https://razorpay.com/assets/x/macbook.svg" alt="macbook-img"></img>
+            <img src="/dist/css/assets/rxca-dashboard-bg.svg" alt="razorpayx-current-account"></img>
           </div>
         </div>
       </div>
@@ -354,24 +365,24 @@ const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking }) => {
     hideModal();
   };
 
-  return (
-    <div ariaHideApp={false} id="hubspot-ca-form-modal">
-      <button type="button" class="close" onClick={handleClose}>
-        <i class="i i-close" />
-      </button>
-      <div className="razorpayx-announcement">
-        <img className="rx-logo" src="https://lp.razorpay.com/hubfs/logo1.png" alt="rx-logo" />
-        {activeView === 'detail-view' && (
+  if (activeView === 'detail-view') {
+    return (
+      <div ariaHideApp={false} id="hubspot-ca-form-modal">
+        <button type="button" class="close" onClick={handleClose}>
+          <i class="i i-close" />
+        </button>
+        <div className="razorpayx-announcement">
           <DetailView
             onOfferAccept={onOfferAccept}
             onSubmissionSuccess={() => setActiveView('submission-success-view')}
             tracking={tracking}
           />
-        )}
-        {activeView === 'submission-success-view' && <SubmissionSuccessfull />}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+  
+  return <SubmissionSuccessfull handleClose={handleClose}/>
 };
 
 export default compose(

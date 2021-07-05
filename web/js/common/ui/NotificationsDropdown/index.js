@@ -222,6 +222,7 @@ export default class NotificationsDropdown extends Component {
     openModal({
       component: <RazorpayXNitroAnnouncement hideModal={closeModal} fromWhere="announcement" />,
       size: 'xlarge',
+      className: 'RazorpayXNitroAnnouncement--Modal',
     });
   };
 

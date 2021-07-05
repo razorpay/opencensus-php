@@ -58,6 +58,7 @@ export default class ScheduledNitroBanner extends Component {
                 />
               ),
               size: 'xlarge',
+              className: 'RazorpayXNitroAnnouncement--Modal',
             });
             this.trackEvents(this.props.fromWhere);
           }}

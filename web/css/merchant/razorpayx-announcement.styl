@@ -8,7 +8,7 @@
       margin-top 40px
 
   .rx-logo
-      width: 300px
+      width: 190px
       padding: 40px 0 0 50px
 
   .row:nth-child(2), .row:nth-child(4)
@@ -26,18 +26,25 @@
   &-details
     .section
       display: flex
-      padding: 40px 0px 50px 50px
+      padding: 28px 0px 50px 50px
       align-items: end
 
       .left-section
-        max-width: 580px
+        width: 48%
+
+        .rx-logo
+          padding: 0
+          width: 140px
 
         .heading
           font-weight: bold
-          font-size: 32px
-          line-height: 60px
-          color: black
-          margin: 0
+          font-size: 24px
+          line-height: 36px
+          color: white
+          margin-top: 43px
+
+          span
+            color: #FFB211
 
         .list
           list-style: none
@@ -47,29 +54,38 @@
           margin: 30px 0 50px
 
           li
+            color: rgba(255, 255, 255, 0.74)
             width: 50%
             margin-bottom: 10px
             margin-bottom: 25px
+            display: flex
+            font-size: 12px
 
             img
               margin-right: 10px
               width: 20px
+              height: 20px
 
         .btn-wrapper
           text-align: left
 
           .btn
-            padding: 10px 40px
+            padding: 10px 24px
             font-weight: 600
+
+            .spin-btn
+              margin: 0
 
 
       .right-section
-        width: calc(100% - 580px)
+        width: 52%
         overflow: hidden
+        margin-left: 48px
+        position: relative
+        margin-right: -43px
 
         img
-          width: 830px;
-          margin-left: -50px;
+          width: 100%
 
   .submitted-message
     padding: 50px
@@ -92,3 +108,52 @@
         padding 5px 40px 0 0
       input[type="checkbox"]
         margin-right 5px
+
+.rxca-submit-finish-modal
+  width: 408px
+  width: 360px
+  padding: 24px
+  background: #242B4D
+
+  .header
+    padding: 20px 89px 24px 48px
+    margin-left: -45px
+    margin-right: -45px
+    background-image: linear-gradient(98.56deg, #6732FF 10.42%, #1E9CDA 134.37%)
+    color: white
+    font-size: 20px
+    line-height: 30px
+    background-image: url('assets/rxca-congrats-header-bg.svg')
+    background-size: cover
+    border-bottom: none
+    border-radius: 4px
+
+    .close
+      position: absolute
+      top: 50px
+      right: 0
+      color: white
+      opacity: 0.8
+
+      &:hover, &:focus
+        opacity: 1
+  
+  .description, .footer
+    font-size: 16px
+    line-height: 24px
+  
+  .description 
+    padding-bottom: 50px
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1)
+    color: rgba(255, 255, 255, 0.8)
+
+    & > *
+      margin-top: 16px
+
+    a
+      .Button
+        margin-top: 16px
+  
+  .footer
+    margin-top: 20px
+    color: rgba(255, 255, 255, 0.54)
