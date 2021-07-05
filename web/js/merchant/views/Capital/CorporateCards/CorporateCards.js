@@ -19,6 +19,7 @@ const CorporateCards = ({ user }) => {
     async function init() {
       if (user.isCardsEnabled) {
         setCTAText('Go to Cards Dashboard');
+        setLink(CARDS_DASHBOARD_LINK)
       } else {
         try {
           const entity = new LoanEntity();
@@ -49,7 +50,7 @@ const CorporateCards = ({ user }) => {
 
           setCTAText(text);
           setLink(link);
-        } catch (err) {}
+        } catch (err) { }
       }
 
       setLoading(false);
