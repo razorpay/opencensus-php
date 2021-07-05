@@ -213,7 +213,7 @@ class Repository extends Base\Repository
         assertTrue($this->isTransactionActive());
 
         $credits = Entity::lockForUpdate()->newQuery()
-                      ->where(Entity::VALUE, '>', 0)
+                      ->where(Entity::VALUE, '>', Entity::USED)
                       ->merchantId($merchantId)
                       ->where(function ($query)
                           {
