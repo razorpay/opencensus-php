@@ -2130,6 +2130,8 @@ function ActivationField(field) {
   }
 
   if (field.name === 'e_aadhar' && rest.customField) {
+    const { isAadharEkycMandatory } = this.props.user;
+    rest.isAadharEkycMandatory = (isAadharEkycMandatory && this.isUnregBiz);
     rest.aadharStatus =
       this.props.data.stakeholder && this.props.data.stakeholder.aadhaar_esign_status;
     rest.isAadharLinked = this.props.data.stakeholder

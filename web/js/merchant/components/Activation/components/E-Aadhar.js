@@ -5,7 +5,14 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import GetOtpScreen from './GetOtpScreen';
 import VerifyOtpScreen from './VerifyOtpScreen';
 
-const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking, activeTab }) => {
+const EAadhar = ({
+  isAadharEkycMandatory,
+  aadharStatus,
+  isAadharLinked,
+  mobileLinkedOnChange,
+  tracking,
+  activeTab,
+}) => {
   const [aadharNumber, setAadharNumber] = useState('');
   const [captcha, setCaptchaValue] = useState('');
   const [error, setError] = useState('');
@@ -91,6 +98,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking,
             onChange={onChangeHandler}
             setAadharNumber={setAadharNumber}
             isStartAgain={isStartAgain}
+            isAadharEkycMandatory={isAadharEkycMandatory}
             {...commonProps}
           />
         );

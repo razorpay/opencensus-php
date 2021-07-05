@@ -15,6 +15,7 @@ import { useApp } from 'v2/context/App';
 import { Divider, StyledView } from './Styled';
 import useActivation from '../hooks/useActivation';
 import ResendIcon from './ResendIcon.svg';
+import { isUnregisteredBusiness } from '../services/utils';
 
 const generateCaptcha = async () => {
   const fetchData = await fetch<any>({
@@ -65,8 +66,9 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
       setCaptcha(response.captcha_image);
     },
   });
-  const { user } = useApp();
-
+  const { user, experiments } = useApp();
+  const shouldHideAadharUploadCheckbox =
+    experiments.isAadharEkycMandatory && isUnregisteredBusiness(data.business_type);
   const [fetchOTP] = useMutation(getOTPAPi, {
     onSuccess: (response) => {
       if (response.is_success) {
@@ -288,16 +290,19 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
                     </Text>
                   </StyledView>
 
-                  <Space margin={[2, 0, 1]}>
-                    <View>
-                      <CheckBox
-                        onChange={mobileNotLinked}
-                        title="My Aadhar is not linked with any mobile number"
-                        checked={!isAadharLinkedToMobile}
-                        disabled={disabled}
-                      />
-                    </View>
-                  </Space>
+                  {!shouldHideAadharUploadCheckbox && (
+                    <Space margin={[2, 0, 1]}>
+                      <View>
+                        <CheckBox
+                          onChange={mobileNotLinked}
+                          title="My Aadhar is not linked with any mobile number"
+                          checked={!isAadharLinkedToMobile}
+                          disabled={disabled}
+                        />
+                      </View>
+                    </Space>
+                  )}
+
                   {!isAadharLinkedToMobile && (
                     <Text size="small" color="mustard.900">
                       You can continue without Aadhar verification via OTP but KYC verification and

@@ -1071,6 +1071,10 @@ export default class User {
     return this.getExpStatus('merchant_tnc');
   }
 
+  get isAadharEkycMandatory() {
+    return this.getExpStatus('mandatory_aadhar_ekyc');
+  }
+
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

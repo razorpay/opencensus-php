@@ -1579,6 +1579,7 @@ class Service extends Base\Service
             'enable_my_dashboard_notification_remarketing',
             'enable_my_dashboard_notification_remarketing_1',
             'instant-activations-functionality',
+            'mandatory_aadhar_ekyc',
             'rx_email_integration_rollout',
             'rx_taxpayments_tin_change'
         ];

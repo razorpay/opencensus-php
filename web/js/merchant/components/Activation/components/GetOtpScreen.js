@@ -21,6 +21,7 @@ const GetOtpScreen = ({
   trackEvent,
   isStartAgain,
   setIsStartAgain,
+  isAadharEkycMandatory,
 }) => {
   const [captchaImg, setCaptchaImg] = useState('');
   const [hasMobileLinked, setHasMobileLinked] = useState(isAadharLinked);
@@ -348,20 +349,22 @@ const GetOtpScreen = ({
         )}
       </div>
 
-      <div style={{ marginTop: '10px' }}>
-        <Input.Check
-          onChange={handleMoblieLinkedOnChange}
-          defaultValue={hasMobileLinked ? '0' : '1'}
-          fieldLabel="My Aadhar is not linked to my number"
-          className="e-aadhar__not-linked-checkbox"
-        />
-        {!hasMobileLinked && (
-          <Description
-            className="Input-content e-aadhar__not-linked-text"
-            text="You can continue without Aadhar verification via OTP but KYC verification and account activation will get delayed by 2 weeks. Usually it takes 3-4 days."
+      {!isAadharEkycMandatory && (
+        <div style={{ marginTop: '10px' }}>
+          <Input.Check
+            onChange={handleMoblieLinkedOnChange}
+            defaultValue={hasMobileLinked ? '0' : '1'}
+            fieldLabel="My Aadhar is not linked to my number"
+            className="e-aadhar__not-linked-checkbox"
           />
-        )}
-      </div>
+          {!hasMobileLinked && (
+            <Description
+              className="Input-content e-aadhar__not-linked-text"
+              text="You can continue without Aadhar verification via OTP but KYC verification and account activation will get delayed by 2 weeks. Usually it takes 3-4 days."
+            />
+          )}
+        </div>
+      )}
     </>
   );
 };
