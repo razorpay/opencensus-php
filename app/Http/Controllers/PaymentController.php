@@ -634,4 +634,11 @@ class PaymentController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function updateReference6($id)
+    {
+        $data = $this->service()->updateReference6($id);
+
+        return ApiResponse::json($data);
+    }
 }

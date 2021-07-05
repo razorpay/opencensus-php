@@ -1490,4 +1490,35 @@ class VerifyTest extends TestCase
 
         $this->assertEquals(true, $response);
     }
+
+    public function testUpdatePaymentReference6ToNull()
+    {
+        $this->ba->appAuth('rzp_test', 'RANDOM_DASH_PASSWORD');
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_failed', ['reference6' => 1]);
+
+        $request = [
+            'url'    => '/payments/'.$payment->id.'/updateReference6',
+            'method' => 'patch',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['reference6_updated']);
+    }
+
+    public function testUpdatePaymentReference6ToNullForWrongId()
+    {
+        $this->ba->appAuth('rzp_test', 'RANDOM_DASH_PASSWORD');
+
+        $request = [
+            'url'    => '/payments/123456789asdfg/updateReference6',
+            'method' => 'patch',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(false, $response['reference6_updated']);
+    }
 }

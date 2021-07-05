@@ -4807,6 +4807,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DOWNTIME_NOTIFICATION_MERCHANT_KEY_MISSING                    = 'DOWNTIME_NOTIFICATION_MERCHANT_KEY_MISSING';
     const SKIP_MERCHANT_DOWNTIME_COMMUNICATION                          = 'SKIP_MERCHANT_DOWNTIME_COMMUNICATION';
 
+    const PAYMENT_REFERENCE6_MARKED_NULL                                = 'PAYMENT_REFERENCE6_MARKED_NULL';
+    const PAYMENT_NOT_FOUND_TO_UPDATE_REFERENCE6                        = 'PAYMENT_NOT_FOUND_TO_UPDATE_REFERENCE6';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

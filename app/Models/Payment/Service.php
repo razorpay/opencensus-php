@@ -3732,4 +3732,55 @@ class Service extends Base\Service
 
         return $data;
     }
+
+    public function updateReference6($id)
+    {
+        $response = [];
+        if (isset($id) === false)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_NOT_FOUND_TO_UPDATE_REFERENCE6,
+                [
+                    'payment_id' => $id
+                ]);
+
+            $response['reference6_updated'] = false;
+
+            return $response;
+        }
+
+        $isReference6Updated = $this->mutex->acquireAndRelease($id,
+            function() use ($id)
+            {
+                $payment = $this->repo->payment->find($id);
+
+                if (isset($payment) === true)
+                {
+                    $payment->setIsPushedToKafka(null);
+
+                    $this->repo->saveOrFail($payment);
+
+                    $this->trace->info(TraceCode::PAYMENT_REFERENCE6_MARKED_NULL,
+                        [
+                            'payment_id' => $id
+                        ]);
+
+                    return true;
+                }
+
+                $this->trace->info(
+                    TraceCode::PAYMENT_NOT_FOUND_TO_UPDATE_REFERENCE6,
+                    [
+                        'payment_id' => $id
+                    ]);
+
+                return false;
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        $response['reference6_updated'] = $isReference6Updated;
+
+        return $response;
+    }
 }

@@ -2571,7 +2571,8 @@ class Route
 
         // Recon service proxy route
         'recon_service_request_proxy'             => ['any',        'recon/service/common/{path?}',                         'ReconServiceController@handleAny'                             ],
-        'recon_service_file_upload_proxy'          => ['post',       'recon/service/upload_file',                             'ReconServiceController@uploadFile'                            ],
+        'recon_service_file_upload_proxy'         => ['post',       'recon/service/upload_file',                            'ReconServiceController@uploadFile'                            ],
+        'payment_update_reference6'               => ['patch',      'payments/{id}/updateReference6',                       'PaymentController@updateReference6'                           ],
     ];
 
     public static $public = [
@@ -3452,6 +3453,7 @@ class Route
 
         // merchant risk alert crons
         'merchant_risk_identify_blacklist_country_alerts',
+        'payment_update_reference6'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -9604,7 +9606,8 @@ class Route
             'internal_merchant_fetch',
             'payment_notify',
             'order_fetch_by_id_internal_admin',
-            'order_fetch_by_id_internal'
+            'order_fetch_by_id_internal',
+            'payment_update_reference6'
         ],
 
         'freshdesk_webhook' => [
