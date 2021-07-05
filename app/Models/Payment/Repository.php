@@ -708,14 +708,21 @@ class Repository extends Base\Repository
     ): Base\PublicCollection
     {
         $refundAt = $this->repo->payment->dbColumn(Payment\Entity::REFUND_AT);
+        $status = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
 
-        $query = $this->newQuery()
-                      ->select($this->dbColumn('*'))
-                      ->where($refundAt, '<=', $timestamp)
-                      ->orderBy($refundAt, 'DESC')
-                      ->limit(1000);
+        $results = $this->repo->useSlave(function () use ($refundAt, $status, $timestamp)
+        {
+            return $this->newQuery()
+                        ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
+                        ->select($this->dbColumn('*'))
+                        ->where($refundAt, '<=', $timestamp)
+                        ->where($status, Payment\Status::AUTHORIZED)
+                        ->orderBy($refundAt, 'DESC')
+                        ->limit(1000)
+                        ->get();
+        });
 
-        return $query->get();
+        return $results;
     }
 
     public function getAuthorizedPaymentsBetweenTimestamps($timeLowerLimit, $timeUpperLimit)

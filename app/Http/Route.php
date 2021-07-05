@@ -10638,11 +10638,9 @@ class Route
      * Route specific config to move the read queries to replica connection.
      */
     public static $forceReplicaRoutes = [
-        'payment_refund_authorized',
         'invoice_view_live',
         'pricing_get_merchant_plans',
         'payment_update_on_hold',
-        'order_refund_multiple_authorized',
         'payment_page_get_details',
         'subscription_registration_list_tokens',
         'contact_list_internal',

@@ -926,24 +926,10 @@ class RefundTest extends TestCase
 
         $payments = $this->fixtures->times(2)->create('payment:authorized');
 
-        // Creating captured payments with refund at set. So it can unset by the cron.
-        // Ideally this should not come. It is just to test that the cron should unset
-        // in case it is not authorized.
-        $capturedPayments = $this->fixtures->times(2)->create(
-            'payment:captured',
-            [
-                'refund_at' => $refundAt
-            ]);
-
-
         $content = $this->refundOldAuthorizedPayments();
 
-        // Assert that the refund_at is null in case the cron picks up these payments.
-        $capturedPayments[0]->refresh();
-        $capturedPayments[1]->refresh();
-        $this->assertNull($capturedPayments[0]->getRefundAt());
-        $this->assertNull($capturedPayments[1]->getRefundAt());
-
+        $this->assertNull($payments[0]->getRefundAt());
+        $this->assertNull($payments[1]->getRefundAt());
         $this->assertArrayHasKey('refunded', $content);
         $this->assertEquals(2, $content['refunded']);
         $this->assertArrayHasKey('authorized', $content);
