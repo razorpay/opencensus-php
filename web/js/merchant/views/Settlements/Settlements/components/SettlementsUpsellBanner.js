@@ -26,16 +26,22 @@ const SettlementsUpsell = ({
 }) => {
   const hasWithdrawalConfig = !!withdrawalConfigurationDetails.data;
   const applicationsAlreadyFetched = applications && applications.data && applications.data.length;
+  const haveProductsData = products && products.data && products.data.length;
+  const isMerchantEligibile = !!(
+    user.isWithdrawFeatureEnabled &&
+    user.isLOSEnabled &&
+    user.isOndemandSettlementEnabled
+  );
 
   const getProductDetails = () => {
-    return products.find((p) => p.name === CAPITAL_PRODUCT_CODES.CASH_ADVANCE);
+    const { data = [] } = products;
+
+    return data.find((p) => p.name === CAPITAL_PRODUCT_CODES.CASH_ADVANCE);
   };
 
   // fetch Applications
   const fetchApplications = async () => {
-    const haveNoProducts = !products || !products.data.length;
-
-    if (haveNoProducts || applicationsAlreadyFetched || applications.errors) return;
+    if (!haveProductsData || applicationsAlreadyFetched || applications.errors) return;
 
     const productDetails = getProductDetails();
 
@@ -57,13 +63,16 @@ const SettlementsUpsell = ({
   };
 
   useEffect(() => {
+    if (!isMerchantEligibile) return;
+
     getProducts();
     fetchApplications();
   }, [products.data]);
 
   // get withdrawal config
   useEffect(() => {
-    if (!hasWithdrawalConfig && !withdrawalConfigurationDetails.errors) {
+    if (!isMerchantEligibile) return;
+    else if (!hasWithdrawalConfig && !withdrawalConfigurationDetails.errors) {
       fetchFunctionalWithdrawalConfigByMerchantID({
         owner_id: user.current,
         owner_type: 'RZP_MERCHANT',
@@ -100,8 +109,6 @@ const SettlementsUpsell = ({
   };
 
   const internalCreditBalance = getInternalCreditBalance();
-  const isMerchantEligibile =
-    user.isWithdrawFeatureEnabled && user.isLOSEnabled && user.isOndemandSettlementEnabled;
   const isLoading =
     applications.loading || products.loading || withdrawalConfigurationDetails.loading;
   const showWithdrawNowBanner =
