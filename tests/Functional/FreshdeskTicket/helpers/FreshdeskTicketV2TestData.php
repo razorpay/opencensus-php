@@ -37,7 +37,7 @@ return [
         ],
     ],
 
-    'testFetchTicketsForMerchant' => [
+    'testFetchTicketsForMerchantFailedForSomeInstance' => [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket',
             'method'  => 'GET',
@@ -47,7 +47,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'total'   => 8,
+                'total'   => 4,
                 'results' => [
                     [
                         'id'    => 'razorpayid0012',
@@ -61,6 +61,23 @@ return [
                     [
                         'id'    => 'razorpayid0034',
                     ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchTicketsForMerchant' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket',
+            'method'  => 'GET',
+            'content' => [ 'cf_requester_category'    => 'Merchant',
+                           'cf_requestor_subcategory' => 'Activation',
+                           'cf_requester_item'        => '']
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 8,
+                'results' => [
                     [
                         'id'    => 'razorpayid0012',
                     ],

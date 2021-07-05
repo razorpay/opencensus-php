@@ -98,7 +98,7 @@ class FreshdeskTicketClient
 
         $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_GET, $url, $auth, []);
 
-        return $response;
+        return $response ?? [];
     }
 
     /**
@@ -436,7 +436,7 @@ class FreshdeskTicketClient
 
         curl_close($curl);
 
-        return $response;
+        return [$response, $curlInfo['http_code']];
     }
 
     protected function makeRequestAndGetFreshdeskResponse(string $method, string $url, string $auth, array $content)
@@ -478,31 +478,32 @@ class FreshdeskTicketClient
             $trace_request
         );
 
+        $statusCode = null;
+        
         if ($contentType === 'multipart/form-data')
         {
-            $responseBody = $this->makeCurlRequest($request);
+            list($responseBody, $statusCode) = $this->makeCurlRequest($request);
         }
         else
         {
-            $response = $this->getResponse($request);
-
-            $responseBody = $response->body;
+            list($responseBody, $statusCode) = $this->getResponseAndStatusCode($request);
         }
 
         $responseBody = json_decode($responseBody, true);
 
         $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_RESPONSE,
-            [
-                'response' => $responseBody['total'] ?? count($responseBody) ?? 0
-            ]
+                           [
+                               'response'       => $responseBody['total'] ?? (isset($responseBody) ? count($responseBody) : 0),
+                               'response_code'  =>  $statusCode
+                           ]
         );
 
         if (isset($responseBody['errors']) === true)
         {
             $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_ERROR_RESPONSE,
-                [
-                    'response' => $responseBody
-                ]
+                               [
+                                   'response' => $responseBody
+                               ]
             );
         }
 
@@ -560,6 +561,17 @@ class FreshdeskTicketClient
             Constants::ROUTE            =>  $route,
             Constants::RESPONSE_CODE    =>  $responseCode,
             ];
+    }
+
+    protected function getResponseAndStatusCode(array $request): array
+    {
+        $response = $this->getResponse($request);
+
+        $responseBody = $response->body;
+
+        $statusCode = $response->status_code;
+
+        return array($responseBody, $statusCode);
     }
 
 }

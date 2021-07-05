@@ -182,6 +182,21 @@ class FreshdeskTicketV2Test extends TestCase
         $this->startTest();
     }
 
+    public function testFetchTicketsForMerchantFailedForSomeInstance()
+    {
+        $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET);
+
+        $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27%22&page=1', 'get',
+                                                    $expectedRequestResponse['request'], $expectedRequestResponse['response'], 2);
+
+        $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27%22&page=1', 'get',
+                                                    $expectedRequestResponse['request'], null, 2);
+
+        $this->createTicketsToFetch();
+
+        $this->startTest();
+    }
+
     public function testFetchTicketsForMerchantWithStatusOnly()
     {
         $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET);
@@ -828,7 +843,7 @@ class FreshdeskTicketV2Test extends TestCase
             ->shouldReceive('makeCurlRequest')
             ->times(1)
             ->andReturnUsing(function () {
-                return json_encode([
+                return [json_encode([
                     'id'            => '99',
                     'description'   => 'ticket description',
                     'fr_due_by'     => '2020-11-30T16:52:00Z',
@@ -838,7 +853,7 @@ class FreshdeskTicketV2Test extends TestCase
                         'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
                     ],
                     'priority' =>  1,
-                ]);
+                ]),200];
             });
 
         $this->startTest();
