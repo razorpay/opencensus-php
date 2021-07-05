@@ -426,6 +426,7 @@ class Name
     const DASHBOARD_PAYOUT_LINKS              = 'dashboard_payout_links';
     const RESEND_PAYOUT_LINKS                 = 'resend_payout_links';
     const CREATE_VENDOR_PAYMENTS              = 'create_vendor_payments';
+    const ENABLE_EMAIL_IMPORT                 = 'enable_email_import';
     const EDIT_VENDOR_PAYMENTS                = 'edit_vendor_payments';
     const CANCEL_VENDOR_PAYMENTS              = 'cancel_vendor_payments';
     const VIEW_VENDOR_PAYMENTS                = 'view_vendor_payments';

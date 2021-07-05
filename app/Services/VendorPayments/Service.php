@@ -53,6 +53,7 @@ class Service
     const UPDATE_VENDOR               = 'UpdateVendor';
     const GET_VENDOR_BULK             = 'GetVendorBulk';
     const GET_QUICK_FILTER_AMOUNTS    = 'GetQuickFilterAmounts';
+    const GET_MERCHANT_EMAIL_ADDRESS  = 'GetMerchantEmailAddress';
 
     const BASE_PATH                   = 'twirp/vendorpayments.Vendorpayments';
 
@@ -523,6 +524,13 @@ class Service
     public function getQuickFilterAmounts(MerchantEntity $merchant)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_QUICK_FILTER_AMOUNTS);
+
+        return $this->makeRequest($merchant, $url);
+    }
+
+    public function getMerchantEmailAddress(MerchantEntity $merchant)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_MERCHANT_EMAIL_ADDRESS);
 
         return $this->makeRequest($merchant, $url);
     }

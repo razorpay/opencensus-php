@@ -94,6 +94,7 @@ class UserRolePermissionsMap
                  Permission::UPDATE_MERCHANT_2FA_SETTING,
                  Permission::VIEW_VENDOR_PAYMENTS,
                  Permission::CREATE_VENDOR_PAYMENTS,
+                 Permission::ENABLE_EMAIL_IMPORT,
                  Permission::EDIT_VENDOR_PAYMENTS,
                  Permission::CANCEL_VENDOR_PAYMENTS,
                  Permission::PROCESS_PAYOUT_SCHEDULED,
@@ -204,6 +205,7 @@ class UserRolePermissionsMap
                  Permission::UPDATE_MERCHANT_BANK_ACCOUNT_STATUS,
                  Permission::VIEW_VENDOR_PAYMENTS,
                  Permission::CREATE_VENDOR_PAYMENTS,
+                 Permission::ENABLE_EMAIL_IMPORT,
                  Permission::EDIT_VENDOR_PAYMENTS,
                  Permission::CANCEL_VENDOR_PAYMENTS,
                  Permission::PROCESS_PAYOUT_SCHEDULED,
@@ -291,6 +293,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_VIRTUAL_ACCOUNT,
                  Permission::VIEW_VENDOR_PAYMENTS,
                  Permission::CREATE_VENDOR_PAYMENTS,
+                 Permission::ENABLE_EMAIL_IMPORT,
                  Permission::EDIT_VENDOR_PAYMENTS,
                  Permission::CANCEL_VENDOR_PAYMENTS,
                  Permission::PROCESS_PAYOUT_SCHEDULED,
@@ -339,6 +342,7 @@ class UserRolePermissionsMap
                   */
                  Permission::VIEW_VENDOR_PAYMENTS,
                  Permission::CREATE_VENDOR_PAYMENTS,
+                 Permission::ENABLE_EMAIL_IMPORT,
                  Permission::EDIT_VENDOR_PAYMENTS,
                  Permission::CANCEL_VENDOR_PAYMENTS,
 

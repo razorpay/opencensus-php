@@ -415,10 +415,10 @@ return [
             'method'  => 'POST',
             'url'     => '/vendor-payments/sendMailGeneric',
             'content' => [
-                "to_emails" => ["wrongmail"],
-                "data" => ["some data"],
-                "subject" => "some subject",
-                "template_name" => "some template",
+                'to_emails' => ['wrongmail'],
+                'data' => ['some data'],
+                'subject' => 'some subject',
+                'template_name' => 'some template',
             ],
         ],
         'response'  => [
@@ -452,6 +452,19 @@ return [
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
             'url'    => '/vendor-payments/_meta/quick-filter-amounts',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testGetMerchantEmailAddress' => [
+        'request'  => [
+            'method' => 'GET',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'    => '/vendor-payments/email-integration/email',
             'content' => [],
         ],
         'response' => [

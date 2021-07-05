@@ -228,4 +228,9 @@ class VendorPaymentController extends Controller
     {
         return $this->service->getQuickFilterAmounts($this->ba->getMerchant());
     }
+
+    public function getMerchantEmailAddress()
+    {
+        return $this->service->getMerchantEmailAddress($this->ba->getMerchant());
+    }
 }

@@ -342,4 +342,19 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('getQuickFilterAmounts');
     }
+
+    public function testGetMerchantEmailAddress()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('getMerchantEmailAddress')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getMerchantEmailAddress');
+    }
 }
