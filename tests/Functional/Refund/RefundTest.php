@@ -1614,9 +1614,20 @@ class RefundTest extends TestCase
         $this->assertArraySelectiveEquals($rfnds, $refunds);
     }
 
-    public function testFetchRefundByIdWithCustomBrandingWithManualRefund()
+    public function testFetchRefundByIdWithExtraAttributesExposedWithManualRefund()
     {
-        $this->createCustomBrandingOrgAndAssignMerchant();
+
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->feature->create([
+            'entity_type'   => 'org',
+            'entity_id'     => $org->getId(),
+            'name'          => 'expose_extra_attributes',
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'org_id'    => $org->getId(),
+        ]);
 
         $payment = $this->fixtures->create('payment:captured');
         $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
@@ -1653,9 +1664,20 @@ class RefundTest extends TestCase
 
     }
 
-    public function testFetchRefundByIdWithCustomBrandingWithAutoRefund()
+    public function testFetchRefundByIdWithExtraAttributesExposedWithAutoRefund()
     {
-        $this->createCustomBrandingOrgAndAssignMerchant();
+
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->feature->create([
+            'entity_type'   => 'org',
+            'entity_id'     => $org->getId(),
+            'name'          => 'expose_extra_attributes',
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'org_id'    => $org->getId(),
+        ]);
 
         $payment = $this->fixtures->create('payment:captured');
         $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
@@ -1692,7 +1714,7 @@ class RefundTest extends TestCase
 
     }
 
-    public function testFetchRefundByIdWithoutCustomBranding()
+    public function testFetchRefundByIdWithoutExtraAttributesExposed()
     {
         $payment = $this->fixtures->create('payment:captured');
         $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);

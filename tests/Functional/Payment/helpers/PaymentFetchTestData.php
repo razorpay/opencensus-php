@@ -328,7 +328,7 @@ return [
         ],
     ],
 
-    'testFindWithExpandsForPrivateAuthForCustomBranding' => [
+    'testFindWithExpandsForPrivateAuthWithExtraAttributesExposed' => [
         'request' => [
             'url'     => '/payments/',
             'method'  => 'get',
@@ -664,7 +664,7 @@ return [
         ],
     ],
 
-    'testProxyAuthPaymentWithCustomBranding' => [
+    'testProxyAuthPaymentWithExtraAttributesExposed' => [
         'request' => [
             'url'     => '/payments/',
             'method'  => 'GET',

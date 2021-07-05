@@ -3593,7 +3593,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data['invoice_id'] = $this->getInvoiceId();
         }
 
-        if ((new Merchant\Core())->isOrgCustomBranding($this->merchant))
+        if ((new Merchant\Core())->exposeExtraAttributes($this->merchant))
         {
             $data[self::AUTHORIZED_AT] = $this->getAuthorizeTimestamp();
             $data[self::AUTO_CAPTURED] = $this->getAutoCaptured();
@@ -4471,7 +4471,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $data = parent::toArrayPublic();
 
-        if ((new Merchant\Core())->isOrgCustomBranding($this->merchant) === true)
+        if ((new Merchant\Core())->exposeExtraAttributes($this->merchant) === true)
         {
             $data[self::AUTHORIZED_AT] = $this->getAuthorizeTimestamp();
             $data[self::AUTO_CAPTURED] = $this->getAutoCaptured();
@@ -4497,7 +4497,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $data = parent::toArrayPublicWithExpand();
 
-        if ((new Merchant\Core())->isOrgCustomBranding($this->merchant) === true)
+        if ((new Merchant\Core())->exposeExtraAttributes($this->merchant) === true)
         {
             $data[self::AUTHORIZED_AT] = $this->getAuthorizeTimestamp();
             $data[self::AUTO_CAPTURED] = $this->getAutoCaptured();

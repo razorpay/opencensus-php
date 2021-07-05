@@ -54,7 +54,7 @@ class EntityReportTest extends TestCase
         assert(count($combinedReport) === 3);
     }
 
-    public function testRefundReportWithCustomBrandingWithManualRefund()
+    public function testRefundReportWithExtraAttributesExposedWithManualRefund()
     {
 
         $scroogeMock = Mockery::mock('RZP\Services\Scrooge');
@@ -75,7 +75,17 @@ class EntityReportTest extends TestCase
 
         $this->app->instance('scrooge', $scroogeMock);
 
-        $this->createCustomBrandingOrgAndAssignMerchant();
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->feature->create([
+            'entity_type'   => 'org',
+            'entity_id'     => $org->getId(),
+            'name'          => 'expose_extra_attributes',
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'org_id'    => $org->getId(),
+        ]);
 
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
@@ -96,7 +106,7 @@ class EntityReportTest extends TestCase
         $this->assertEquals('manual', $refundReport[0]['refund_type']);
     }
 
-    public function testRefundReportWithCustomBrandingWithAutoRefund()
+    public function testRefundReportWithExtraAttributesExposedWithAutoRefund()
     {
         $scroogeMock = Mockery::mock('RZP\Services\Scrooge');
 
@@ -116,7 +126,17 @@ class EntityReportTest extends TestCase
 
         $this->app->instance('scrooge', $scroogeMock);
 
-        $this->createCustomBrandingOrgAndAssignMerchant();
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->feature->create([
+            'entity_type'   => 'org',
+            'entity_id'     => $org->getId(),
+            'name'          => 'expose_extra_attributes',
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'org_id'    => $org->getId(),
+        ]);
 
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
@@ -138,7 +158,7 @@ class EntityReportTest extends TestCase
         $this->assertEquals('auto', $refundReport[0]['refund_type']);
     }
 
-    public function testRefundReportWithoutCustomBranding()
+    public function testRefundReportWithoutExtraAttributesExposed()
     {
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
@@ -157,7 +177,7 @@ class EntityReportTest extends TestCase
         $this->assertArrayNotHasKey('refund_type', $refundReport[0]);
     }
 
-    public function testPaymentReportWithoutCustomBranding()
+    public function testPaymentReportWithoutExtraAttributesExposed()
     {
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();

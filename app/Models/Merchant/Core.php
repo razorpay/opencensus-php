@@ -4595,6 +4595,16 @@ class Core extends Base\Core
         return $this->isOrgFeatureEnabled($merchant, $featureName);
     }
 
+    public function exposeExtraAttributes(Entity $merchant) : bool
+    {
+        if ($merchant->isRazorpayOrgId() === true )
+        {
+            return false;
+        }
+
+        return $this->isOrgFeatureEnabled($merchant, Feature\Constants::EXPOSE_EXTRA_ATTRIBUTES);
+    }
+
     protected function isOrgFeatureEnabled(Entity $merchant, string $featureName)
     {
         $org = $this->repo->org->find($merchant->getOrgId());

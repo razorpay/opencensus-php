@@ -51,6 +51,7 @@ class Constants
     const OLD_CREDITS_FLOW                = 'old_credits_flow';
     const DISABLE_FREE_CREDIT_REG         = 'disable_free_credit_reg';
     const DISABLE_FREE_CREDIT_UNREG       = 'disable_free_credit_unreg';
+    const EXPOSE_EXTRA_ATTRIBUTES         = 'expose_extra_attributes';
     const CHARGE_AT_WILL                  = 'charge_at_will';
     const SETTLEMENT_24X7                 = 'settlement_24x7';
     const EMI_MERCHANT_SUBVENTION         = 'emi_merchant_subvention';
@@ -1009,6 +1010,7 @@ class Constants
         self::PL_BATCH_UPLOAD_FEATURE         => true,
         self::SETTLEMENTS_SMS_STOP            => true,
         self::ORG_CUSTOM_BRANDING             => true,
+        self::EXPOSE_EXTRA_ATTRIBUTES         => true,
         self::DISABLE_FREE_CREDIT_UNREG       => true,
         self::DISABLE_FREE_CREDIT_REG         => true,
         self::LOGOUT_ADMIN_INACTIVITY         => true,
@@ -1424,6 +1426,10 @@ class Constants
         self::ORG_CUSTOM_BRANDING => [
             'feature' => self::ORG_CUSTOM_BRANDING,
             'display_name' => 'Custom Branding feature for an org',
+        ],
+        self::EXPOSE_EXTRA_ATTRIBUTES => [
+            'feature' => self::EXPOSE_EXTRA_ATTRIBUTES,
+            'display_name' => 'Exposing some extra entity attributes for an org',
         ],
         self::DISABLE_FREE_CREDIT_UNREG => [
             'feature' => self::DISABLE_FREE_CREDIT_UNREG,

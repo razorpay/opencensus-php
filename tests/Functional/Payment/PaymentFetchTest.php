@@ -265,11 +265,21 @@ class PaymentFetchTest extends TestCase
         $this->assertArrayNotHasKey('dcc_mark_up_percent', $content);
     }
 
-    public function testFindWithExpandsForPrivateAuthForCustomBranding()
+    public function testFindWithExpandsForPrivateAuthWithExtraAttributesExposed()
     {
         $this->ba->privateAuth();
 
-        $this->createCustomBrandingOrgAndAssignMerchant();
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->feature->create([
+            'entity_type'   => 'org',
+            'entity_id'     => $org->getId(),
+            'name'          => 'expose_extra_attributes',
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'org_id'    => $org->getId(),
+        ]);
 
         $card = $this->fixtures->create('card', ['name' => 'Test Name']);
 
@@ -768,9 +778,19 @@ class PaymentFetchTest extends TestCase
         $this->assertEquals('platform', $response['fee_bearer']);
     }
 
-    public function testProxyAuthPaymentWithCustomBranding()
+    public function testProxyAuthPaymentWithExtraAttributesExposed()
     {
-        $this->createCustomBrandingOrgAndAssignMerchant();
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->feature->create([
+            'entity_type'   => 'org',
+            'entity_id'     => $org->getId(),
+            'name'          => 'expose_extra_attributes',
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'org_id'    => $org->getId(),
+        ]);
 
         $payment = $this->fixtures->create('payment:authorized', []);
 

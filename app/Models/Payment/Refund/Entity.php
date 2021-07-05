@@ -341,14 +341,14 @@ class Entity extends Base\PublicEntity
 
         $app = \App::getFacadeRoot();
 
-        $customBrandingMerchant = (new Merchant\Core())->isOrgCustomBranding($this->merchant);
+        $exposeExtraAttributes = (new Merchant\Core())->exposeExtraAttributes($this->merchant);
 
         $app['trace']->info(TraceCode::MERCHANT_FEATURE_NOT_EXIST,
             [
-                'merchant has custom branding' => $customBrandingMerchant,
+                'merchant has extra attributes exposed' => $exposeExtraAttributes,
             ]);
 
-        if ($customBrandingMerchant === true)
+        if ($exposeExtraAttributes === true)
         {
             $response[self::PROCESSED_AT] = $this->getProcessedAt();
 
@@ -1161,7 +1161,7 @@ class Entity extends Base\PublicEntity
         $data[Payment\Entity::CONTACT] = $this->payment->getContact();
         $data[Payment\Entity::EMAIL]   = $this->payment->getEmail();
 
-        if ((new Merchant\Core())->isOrgCustomBranding($this->merchant) === true)
+        if ((new Merchant\Core())->exposeExtraAttributes($this->merchant) === true)
         {
             $data[self::PROCESSED_AT] = $this->getProcessedAt();
             $data['refund_type'] = (new Core)->getRefundType($this->getId(), $this->merchant, $this->getBatchId(), $this->isScrooge());
