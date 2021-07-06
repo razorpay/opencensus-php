@@ -77,6 +77,7 @@ const SettlementsUpsell = ({
 
   // get withdrawal config
   useEffect(() => {
+    // eslint-disable-next-line
     if (!isMerchantEligibile) return;
     else if (!hasWithdrawalConfig && !withdrawalConfigurationDetails.errors) {
       fetchFunctionalWithdrawalConfigByMerchantID({

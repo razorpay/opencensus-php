@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import Amount from 'common/ui/Amount';
 import TableBody from 'common/ui/TableBody';

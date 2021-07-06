@@ -241,10 +241,6 @@ ${/* .${org} a:not(.btn-primary):not(.NavLink):not(.Button):not(.btn) */ ''},
   color: #fff;
 }
 
-.${org} .base-form-save {
-  background-color: ${it.primary};
-}
-
 // HINT: don't have info on the light primary color value, to make UI good we are adding this
 .${org} .btn-link:hover,
 .${org} .Button--primary--invert:hover,

@@ -1,3 +1,7 @@
+import { connect } from 'react-redux';
+import { LOGOS } from 'merchant_common/helpers/themes';
+
+@connect((state) => ({ user: state.session.user }))
 export default class Svelte extends React.Component {
   shouldComponentUpdate() {
     return false; // No need to re-render again, all 3 React apps are working independently bridged via store
@@ -6,7 +10,7 @@ export default class Svelte extends React.Component {
   initialize = node => {
     if (!node) return;
 
-    const { payment_page_id } = this.props;
+    const { payment_page_id, user } = this.props;
 
     this.templateData = {
       is_test_mode: this.props.isTestMode,
@@ -17,6 +21,12 @@ export default class Svelte extends React.Component {
           : 'Create New Payment Page',
         form_title: 'Payment Details',
         isWYSIWYGMode: true,
+      },
+      org: {
+        branding: {
+          branding_logo: user.isWhiteLabelledOrg ? LOGOS[user.orgCustomCode] : null,
+          show_rzp_logo: !user.isWhiteLabelledOrg,
+        },
       },
       // Other keys are not required by Svelte app in isWYSIWYGMode
     };
@@ -38,6 +48,7 @@ export default class Svelte extends React.Component {
   }
 
   render() {
+    // Setting the root
     return React.createElement('div', {
       ref: this.initialize,
       id: 'wysiwyg-root',
