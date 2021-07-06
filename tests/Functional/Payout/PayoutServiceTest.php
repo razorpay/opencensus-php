@@ -747,4 +747,36 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($this->bankingBalance['id'], $cancelledPayout['balance_id']);
         $this->assertEquals($testData['request']['content']['remarks'], $cancelledPayout['remarks']);
     }
+
+    // Since queued payout has is_payout_service value set to 1, it won't be processed via api
+    public function testProcessQueuedPayoutCreatedPayoutService()
+    {
+        $this->testCreateQueuedPayoutViaPayoutService();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'is_payout_service' => 1
+            ]
+        );
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->fixtures->on('live')->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 100000
+            ]
+        );
+
+        $this->dispatchQueuedPayouts('live');
+
+        $payout->reload();
+
+        $this->assertEquals('queued', $payout->getStatus());
+    }
 }

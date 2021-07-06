@@ -52,14 +52,14 @@ trait PayoutTrait
         return json_decode($response->getContent(), true);
     }
 
-    protected function dispatchQueuedPayouts()
+    protected function dispatchQueuedPayouts($mode = 'test')
     {
         $request = [
             'method'  => 'POST',
             'url'     => '/payouts/queued/process/new',
         ];
 
-        $this->ba->cronAuth();
+        $this->ba->cronAuth($mode);
 
         $response = $this->sendRequest($request);
 

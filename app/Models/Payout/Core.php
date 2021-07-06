@@ -1296,6 +1296,14 @@ class Core extends Base\Core
 
         foreach ($payouts as $key => $payout)
         {
+            // We don't want to process queued payouts that have payout service enabled as those will be processed by
+            // payout service.
+            if ($payout->getIsPayoutService() === true)
+            {
+                unset($payouts[$key]);
+                continue;
+            }
+
             $purpose = $payout->getPurpose();
 
             if ($purpose === Purpose::RZP_FEES)
