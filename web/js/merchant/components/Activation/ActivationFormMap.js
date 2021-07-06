@@ -675,7 +675,7 @@ const bankAccountFields = [
         const isMatching = bankAccountNumber == accountNo;
 
         if (!!bankAccountNumber && (!accountNo || !isMatching)) {
-          document.querySelector('[data-name="account_no"]').focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
+          document.querySelector('[data-name="account_no"]')?.focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
         }
       },
       linkedfields: ['bank_proof', 'bank_proof_doc'],

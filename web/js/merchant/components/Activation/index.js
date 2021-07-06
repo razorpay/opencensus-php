@@ -1108,9 +1108,9 @@ export default class ActivationWizard extends React.Component {
         let activationFlow = '';
         if (businessCategories && businessCategories.data && !businessCategories.data.errors) {
           activationFlow =
-            businessCategories.data[this.props.data.business_category].subcategories[
+            businessCategories.data[this.props.data.business_category]?.subcategories[
               this.props.data.business_subcategory
-            ].activation_flow;
+            ]?.activation_flow;
         }
 
         if (data.data.sumitted) {

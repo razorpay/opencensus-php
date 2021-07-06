@@ -57,6 +57,7 @@ export default class OnboardingCardInstant extends Component {
 
     this.showAcceptPaymentsModal = this.showAcceptPaymentsModal.bind(this);
     this.hideAcceptPaymentsModal = this.hideAcceptPaymentsModal.bind(this);
+    this.onClose = this.onClose.bind(this);
   }
 
   updateCAstatus = (status) => {
