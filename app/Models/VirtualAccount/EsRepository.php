@@ -67,4 +67,9 @@ class EsRepository extends Base\EsRepository
 
         return '*' . $string . '*';
     }
+
+    public function buildQueryForEmail(array &$query, $value)
+    {
+        $this->addMatchPhrasePrefix($query, Customer\Entity::EMAIL, $value);
+    }
 }

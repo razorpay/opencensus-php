@@ -426,6 +426,20 @@ return [
         ],
     ],
 
+    'testFetchVirtualAccountByCustomerEmail' => [
+        'entity' => 'collection',
+        'count'  => 1,
+        'items'  => [
+            [
+                'name'            => 'Test virtual account',
+                'entity'          => 'virtual_account',
+                'status'          => 'active',
+                'description'     => 'VA for tests',
+                'customer_id'     => 'cust_100000customer',
+            ],
+        ],
+    ],
+
     'testFetchPaymentsForVirtualAccount' => [
         'entity' => 'collection',
         'count'  => 1,

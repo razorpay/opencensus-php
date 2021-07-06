@@ -1025,6 +1025,17 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
+    public function testFetchVirtualAccountByCustomerEmail()
+    {
+        $this->createVirtualAccount(['customer_id' => 'cust_100000customer']);
+
+        $response = $this->fetchVirtualAccounts(['email' => 'test@razorpay.com']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
     public function testFetchVirtualAccounts()
     {
         $this->createVirtualAccount(['name' => 'First VA']);
