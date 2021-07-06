@@ -54,6 +54,7 @@ class Validator extends Base\Validator
         'mar',
         'tel',
         'tam',
+        'ben',
     ];
 
     protected static $createRules = [
