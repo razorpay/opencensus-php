@@ -1350,6 +1350,7 @@ app
       }
 
       $scope.goToDashboard = function (data) {
+        updateSpinnerState('show');
         setCookie('midExists', !!data.current);
 
         pushPromMetric({ flow: 'login', label: 'login_success' });
