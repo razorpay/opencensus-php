@@ -3291,7 +3291,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setPublicCardIdAttribute(array & $array)
     {
-        if (isset($array[self::CARD_ID]))
+        if (empty($array[self::CARD_ID]) === false)
         {
             $array[self::CARD_ID] =
                 Card\Entity::getIdPrefix() . $this->getAttribute(self::CARD_ID);
@@ -3300,7 +3300,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setPublicCustomerIdAttribute(array & $array)
     {
-        if (isset($array[self::CUSTOMER_ID]))
+        if (empty($array[self::CUSTOMER_ID]) === false)
         {
             $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
@@ -3314,7 +3314,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setPublicTokenIdAttribute(array & $array)
     {
-        if (isset($array[self::TOKEN_ID]))
+        if (empty($array[self::TOKEN_ID]) === false)
         {
             $tokenId = $this->getAttribute(self::TOKEN_ID);
 

@@ -11,6 +11,8 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Base\Traits\ExternalOwner;
+use RZP\Models\Base\Traits\ExternalEntity;
 use RZP\Models\Merchant\RazorxTreatment;
 
 /**
@@ -19,6 +21,8 @@ use RZP\Models\Merchant\RazorxTreatment;
  */
 class Entity extends Base\PublicEntity
 {
+    use ExternalOwner, ExternalEntity;
+
     const ID                  = 'id';
     const MERCHANT_ID         = 'merchant_id';
     const GLOBAL_CARD_ID      = 'global_card_id';

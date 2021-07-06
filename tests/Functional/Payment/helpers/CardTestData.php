@@ -226,4 +226,20 @@ return [
             ],
         ],
     ],
+
+    'testFetchCardDetailsForRearchPayment' => [
+        'request' => [
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'card',
+                'name'          =>  'test',
+                'network'       =>  'RuPay',
+                'last4'         =>  '1111',
+            ],
+        ],
+    ],
 ];

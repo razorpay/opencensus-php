@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Mockery;
+
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -356,6 +358,46 @@ class CardTest extends TestCase
         $this->fixtures->merchant->addFeatures(['bin_issuer_validator']);
 
         parent::startTest();
+    }
+
+    public function testFetchCardDetailsForRearchPayment()
+    {
+        $this->enablePgRouterConfig();
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure)
+            {
+                return [
+                    'body' => [
+                        'data'=>[
+                            'card' => [
+                                'id'                => 'GrClIcbRtTUxxb',
+                                'merchant_id'       =>  '10000000000000',
+                                'name'              =>  'test',
+                                'network'           =>  'RuPay',
+                                'expiry_month'      =>  '12',
+                                'expiry_year'       =>  '2100',
+                                'iin'               =>  '607384',
+                                'last4'             =>  '1111',
+                                'vault_token'       => 'NjA3Mzg0OTcwMDAwNDk0Nw==',
+                                'vault'             => 'rzpvault',
+                            ],
+                        ]
+                    ]
+                ];
+            });
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = "/admin/card/card_GrClIcbRtTUxxb";
+
+        $card = $this->startTest();
+
+        $this->assertEquals($card['id'], 'card_GrClIcbRtTUxxb');
     }
 
     public function startTest($testDataToReplace = [])

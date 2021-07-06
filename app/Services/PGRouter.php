@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use App;
 use Requests;
+use RZP\Constants\Entity;
 use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Payment;
@@ -49,6 +50,8 @@ class PGRouter
     const PGRouterValidateAndCreatePayment = 'v1/payments/create/ajax';
 
     const PGRouterFetchPayment = 'v1/payments/';
+
+    const PGRouterFetchCard    = 'v1/cards/';
 
     const PGRouterInitiatePayment = 'v1/payments/initiate';
 
@@ -210,9 +213,17 @@ class PGRouter
      *
      * @return array
      */
-    public function fetch(string $id, string $merchantId, array $input)
+    public function fetch(string $entity, string $id, string $merchantId, array $input)
     {
-        $endpoint = 'v1/payments/' . $id;
+        if ($entity === Entity::CARD)
+        {
+            $endpoint = 'v1/cards/' . $id;
+        }
+        else
+        {
+            $endpoint = 'v1/payments/' . $id;
+        }
+
 
         $card = null;
 
@@ -249,6 +260,13 @@ class PGRouter
             }
 
             return $payment;
+        }
+
+        if (empty($response) === false and isset($response['body']['data']['card']))
+        {
+            $card = (new Card\Entity)->forceFill($response['body']['data']['card']);
+
+            return $card;
         }
 
         return null;

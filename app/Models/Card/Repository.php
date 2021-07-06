@@ -5,6 +5,8 @@ namespace RZP\Models\Card;
 use DB;
 
 use RZP\Models\Base;
+use RZP\Models\Base\Traits\ExternalCore;
+use RZP\Models\Base\Traits\ExternalRepo;
 use RZP\Models\Card;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
@@ -13,6 +15,8 @@ use RZP\Models\Merchant\Account;
 
 class Repository extends Base\Repository
 {
+    use ExternalRepo, ExternalCore;
+
     protected $entity = 'card';
 
     protected $appFetchParamRules = [

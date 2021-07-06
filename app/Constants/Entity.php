@@ -1024,10 +1024,12 @@ class Entity
 
     protected static $externalRepoSingleton = [
         self::PAYMENT => 'pg_router',
+        self::CARD    => 'pg_router',
     ];
 
     protected static $externalRepoConfigKey = [
         self::PAYMENT => Models\Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED,
+        self::CARD    => Models\Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED
     ];
 
     protected static $externalServiceClass = [

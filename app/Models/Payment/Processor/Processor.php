@@ -505,6 +505,19 @@ class Processor
             $input[Payment\Entity::ORDER] = $this->order;
         }
 
+        if (empty($input[Payment\Entity::CUSTOMER_ID]) === true)
+        {
+            $this->checkAndFillSavedAppToken($input);
+        }
+
+        list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
+            $input, $this->merchant, false);
+
+        if ($customer != null)
+        {
+            $input[Payment\Entity::CUSTOMER_ID] = $customer->getId();
+        }
+
         $paymentData = $this->app['pg_router']->validateAndCreatePayment($input, true);
 
         $this->logPGRouterRequestTime($input, $startTime);
