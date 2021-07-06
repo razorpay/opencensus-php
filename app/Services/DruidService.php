@@ -78,7 +78,9 @@ class DruidService
         if ($response->status_code !== 200)
         {
             $this->trace->error(TraceCode::DRUID_REQUEST_FAILURE, [
-                'message' => $errorMessage,
+                'data'          => $data,
+                'error_message' => $errorMessage,
+                'response_code' => $response->status_code,
             ]);
         }
 
