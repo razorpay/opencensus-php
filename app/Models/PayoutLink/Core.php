@@ -86,7 +86,6 @@ class Core extends Base\Core
             TraceCode::PAYOUT_LINK_SETTINGS_UPDATE,
             [
                 'merchant_id' => $merchant->getPublicId(),
-                'input'       => $input
             ]
         );
         (new Validator())->validateInput(Validator::SETTINGS_RULE, $input);
@@ -397,9 +396,6 @@ class Core extends Base\Core
         return $this->repo->transaction(
             function () use ($input)
             {
-                $this->trace->info(
-                    TraceCode::PAYOUT_LINK_CREATE_REQUEST,
-                    $input);
 
                 (new Validator())->validateInput(Validator::COMPOSITE_CREATE_RULE, $input);
 
@@ -873,11 +869,6 @@ class Core extends Base\Core
             Entity::SOURCE   => Entity::API_POUT_LNK_SRC
         ];
 
-        $this->trace->info(
-            TraceCode::PAYOUT_LINK_CUSTOMER_OTP_REQUEST,
-            $payload
-        );
-
         $response = $this->raven->generateOtp($payload);
 
         if (key_exists(Entity::OTP, $response) === false)
@@ -891,11 +882,6 @@ class Core extends Base\Core
             );
         }
         $otp = array_pull($response, Entity::OTP);
-
-        $this->trace->info(
-            TraceCode::PAYOUT_LINK_CUSTOMER_OTP_RESPONSE,
-            $response
-        );
 
         return $otp;
     }
@@ -1103,7 +1089,6 @@ class Core extends Base\Core
             TraceCode::PAYOUT_LINK_SETTINGS_UPDATE,
             [
                 'merchant_id' => $merchantId,
-                'message'     => $message
             ]
         );
 

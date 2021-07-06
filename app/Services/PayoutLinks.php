@@ -156,9 +156,6 @@ class PayoutLinks
     {
         $this->rzpModeCheck($merchant->getId());
 
-        $this->trace->info(TraceCode::PAYOUT_LINK_CREATE_REQUEST,
-            $input);
-
         $url = sprintf('%s/%s', $this->baseUrl, self::CREATE_PAYOUT_LINK_PATH);
 
         $sendSms = array_pull($input, self::SEND_SMS, "false");
@@ -346,9 +343,6 @@ class PayoutLinks
 
     public function initiate(MerchantEntity $merchant, array $input, string $payoutLinkId): array
     {
-        $this->trace->info(TraceCode::PAYOUT_LINK_INITIATE_REQUEST,
-            $input);
-
         $url = sprintf('%s/%s', $this->baseUrl, self::INITIATE_PAYOUT_LINK_PATH);
 
         $input[self::MERCHANT_ID] = $merchant->getId();
@@ -360,8 +354,6 @@ class PayoutLinks
 
     public function generateAndSendCustomerOtp(string $payoutLinkId, array $input): array
     {
-        $this->trace->info(TraceCode::PAYOUT_LINK_CUSTOMER_OTP_GENERATE,
-            $input);
 
         $url = $this->getConstructedUrl(self::PAYOUT_LINK_GENERATE_OTP_PATH);
 
@@ -586,7 +578,6 @@ class PayoutLinks
             [
                 self::MERCHANT_ID => $merchantId,
                 self::BATCH_ID => $batchId,
-                'input'          => $input,
                 'temp_user_id'=> $userId,
             ]);
 
@@ -707,7 +698,6 @@ class PayoutLinks
     {
         $this->trace->info(TraceCode::PAYOUT_LINKS_INTEGRATION_DETAILS_REQUEST,
             [
-                'input' => $input,
                 'logged_in_merchant' => $merchant->getId(),
             ]);
 
@@ -931,7 +921,6 @@ class PayoutLinks
         if (strpos($url, "Payoutlinks/VerifyOTP") !== false) {
             $this->trace->info(TraceCode::PAYOUT_LINKS_REQUEST,
                 [
-                    'headers' => $headers,
                     'url' => $url
                 ]);
         } else {
@@ -950,11 +939,6 @@ class PayoutLinks
             $options);
 
         $responseBody = json_decode($response->body, true);
-
-        $this->trace->info(TraceCode::PAYOUT_LINKS_RESPONSE,
-            [
-                'response' => $responseBody
-            ]);
 
         if ($response->status_code !== StatusCode::SUCCESS)
         {
@@ -1183,7 +1167,6 @@ class PayoutLinks
             TraceCode::PAYOUT_LINK_SETTINGS_UPDATE_SLACK_NOTIFICATION,
             [
                 'merchant_id' => $merchantId,
-                'message'     => $message
             ]
         );
 

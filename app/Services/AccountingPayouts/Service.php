@@ -264,7 +264,6 @@ class Service
 
         $this->trace->info(TraceCode::ACCOUNTING_PAYOUTS_REQUEST,
             [
-                'headers' => $headers,
                 'url' => $url,
             ]);
 
@@ -276,11 +275,6 @@ class Service
             $options);
 
         $responseBody = json_decode($response->body, true);
-
-        $this->trace->info(TraceCode::ACCOUNTING_PAYOUTS_RESPONSE,
-            [
-                'response' => $responseBody
-            ]);
 
         if ($response->status_code !== StatusCode::SUCCESS) {
             $description = array_pull($responseBody, 'msg', $responseBody);

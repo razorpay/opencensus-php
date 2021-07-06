@@ -599,7 +599,6 @@ class Service
 
         $this->trace->info(TraceCode::VENDOR_PAYMENT_REQUEST,
             [
-                'headers' => $headers,
                 'url' => $url,
             ]);
 
@@ -611,11 +610,6 @@ class Service
             $options);
 
         $responseBody = json_decode($response->body, true);
-
-        $this->trace->info(TraceCode::VENDOR_PAYMENT_RESPONSE,
-            [
-                'response' => $responseBody
-            ]);
 
         if ($response->status_code !== StatusCode::SUCCESS)
         {

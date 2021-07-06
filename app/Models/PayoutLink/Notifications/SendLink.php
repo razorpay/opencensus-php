@@ -45,7 +45,6 @@ class SendLink extends Base
         $this->trace->info(TraceCode::PAYOUT_LINK_SENDING_LINK_SMS,
                            [
                                'payout_link_id' => $this->payoutLink->getPublicId(),
-                               'payload'        => $payload
                            ]);
 
         try

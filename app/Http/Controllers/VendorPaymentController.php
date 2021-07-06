@@ -66,7 +66,6 @@ class VendorPaymentController extends Controller
             $this->trace->info(TraceCode::OTP_VERIFICATION_FAILED_VENDOR_PAYOUT,
                                [
                                    'user_id' => $userId,
-                                   'token'   => $input['token'],
                                    'action'  => $input['action'],
                                ]);
             $success = false;

@@ -262,30 +262,20 @@ class PayoutLinkController extends Controller
 
     public function shopifyCustomerRedact()
     {
-        $this->trace->info(TraceCode::PAYOUT_LINK_SHOPIFY_CUSTOMER_REDACT,
-            [
-                'input' => $this->input,
-            ]);
-
+        $this->trace->info(TraceCode::PAYOUT_LINK_SHOPIFY_CUSTOMER_REDACT, []);
         return;
     }
 
     public function shopifyShopRedact()
     {
-        $this->trace->info(TraceCode::PAYOUT_LINK_SHOPIFY_SHOP_REDACT,
-            [
-                'input' => $this->input,
-            ]);
+        $this->trace->info(TraceCode::PAYOUT_LINK_SHOPIFY_SHOP_REDACT, []);
 
         return;
     }
 
     public function shopifyCustomerDataRequest()
     {
-        $this->trace->info(TraceCode::PAYOUT_LINK_SHOPIFY_CUSTOMER_DATA_REQUEST,
-            [
-                'input' => $this->input,
-            ]);
+        $this->trace->info(TraceCode::PAYOUT_LINK_SHOPIFY_CUSTOMER_DATA_REQUEST, []);
 
         return;
     }

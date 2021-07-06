@@ -565,9 +565,6 @@ class Service extends Base\Service
     {
         $this->checkIfPLServiceIsDown();
 
-        $this->trace->info(TraceCode::PAYOUT_CUSTOMER_OTP_REQUEST,
-                           $input);
-
         (new Validator())->validateInput(Validator::GENERATE_OTP, $input);
 
         if($this->checkIfMerchantOnAPI() == true)
