@@ -895,13 +895,16 @@ export default class ActivationWizard extends React.Component {
     const isCompanyNameValid = this.isUnregBiz
       ? true
       : !validateCompanyAB(businessName, contactName, showCompanyName);
+    const businessCategory =
+      this.state.dirty.business_category || this.props.data.business_category;
 
     return (
       !hasSelectedBlacklistedCategory(this) &&
       isPromoterPANValid &&
       isCompanyPANValid &&
       isCompanyNameValid &&
-      promoterPANName
+      promoterPANName &&
+      businessCategory
     );
   }
 
