@@ -20,6 +20,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Promotion;
 use RZP\Models\Admin\Org;
+use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Models\Promotion\Event;
 use RZP\Models\Merchant\Account;
@@ -1033,7 +1034,12 @@ class Service extends Base\Service
 
         $referral = (new Referral\Core)->fetchReferralByReferralCode($refCode);
 
-        if (empty($referral) === false)
+        $referralProduct = optional($referral)->getProduct() ?? Product::PRIMARY;
+
+        $requestProduct = $this->auth->getRequestOriginProduct();
+
+        if (empty($referral) === false and
+            ($referralProduct === $requestProduct))
         {
             $partnerId = $referral[Referral\Entity::MERCHANT_ID];
 

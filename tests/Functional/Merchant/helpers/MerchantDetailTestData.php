@@ -1614,6 +1614,44 @@ return [
         ],
     ],
 
+    'testPutPreSignUpDetailsWithBankingReferralCodeInX' => [
+        'request' => [
+            'content' => [
+                'business_type' => '2',
+                'department'    => '7',
+                'referral_code'   => 'teslacomikejzc',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testPutPreSignUpDetailsWithPrimaryReferralCodeInX' => [
+        'request' => [
+            'content' => [
+                'business_type' => '2',
+                'department'    => '7',
+                'referral_code'   => 'teslacomikejzc',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testPutPreSignUpDetailsWithReferralCodeForAggregator' => [
         'request' => [
             'content' => [

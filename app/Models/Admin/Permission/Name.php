@@ -597,6 +597,9 @@ class Name
     const SYNC_ACCOUNTING_INTEGRATION       = 'sync_accounting_integration';
     const WAITLIST_ACCOUNTING_INTEGRATION   = 'waitlist_accounting_integration';
 
+    // Allow coupon validation for X
+    const COUPON_VALIDATE                   = 'coupon_validate';
+
     const ADMIN_FETCH_FUND_ACCOUNT_VALIDATION           = 'admin_fetch_fund_account_validation';
 
     const APP_REGISTRATION                              = 'app_registration';

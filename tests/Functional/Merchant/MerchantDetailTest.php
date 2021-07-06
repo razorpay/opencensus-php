@@ -2021,6 +2021,117 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertSame($app->getId(), $merchantAcessMap['entity_id']);
     }
 
+    public function testPutPreSignUpDetailsWithBankingReferralCodeInX()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
+
+        $appType = \RZP\Models\Merchant\MerchantApplications\Entity::REFERRED;
+
+        $this->fixtures->create('pricing:two_percent_pricing_plan', [
+            'plan_id' => self::DEFAULT_MERCHANT_ID,
+            'type'    => 'pricing',
+        ]);
+
+        $configAttributes = [
+            'default_plan_id' => self::DEFAULT_MERCHANT_ID,
+            'entity_id'       => $app->getId(),
+            'entity_type'     => 'application',
+        ];
+
+        $this->fixtures->create('partner_config', $configAttributes);
+
+        $referrerId = self::DEFAULT_MERCHANT_ID;
+
+        $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $this->fixtures->create('referrals', ["product" => Constants\Product::BANKING]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $referredSubMerchantId,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId);
+
+        $this->startTest();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+            [
+                'merchant_id' => $referredSubMerchantId
+            ], 'test')
+            ->toArray();
+
+        $referredSubMerchant = $this->getDbEntity('merchant', ['id' => $referredSubMerchantId]);
+
+        $merchantApp = $this->getDbEntity('merchant_application', ['application_id' => $app->getId()]);
+
+
+        $mapping = DB::table('merchant_users')->where('merchant_id', '=', self::DEFAULT_SUBMERCHANT_ID)
+            ->where('user_id', '=', $referrerId)
+            ->get();
+
+        $this->assertEmpty($mapping);
+
+        $this->assertEquals($merchantApp->type, $appType);
+
+        $this->assertEquals($referredSubMerchant->tagNames(), array('Ref-' . $referrerId));
+
+        $this->assertEquals($referredSubMerchant->getPricingPlanId(), self::DEFAULT_MERCHANT_ID);
+
+        $this->assertSame($referredSubMerchantId, $merchantAcessMap['merchant_id']);
+
+        $this->assertSame($referrerId, $merchantAcessMap['entity_owner_id']);
+
+        $this->assertSame($app->getId(), $merchantAcessMap['entity_id']);
+    }
+
+    public function testPutPreSignUpDetailsWithPrimaryReferralCodeInX()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
+
+        $this->fixtures->create('pricing:two_percent_pricing_plan', [
+            'plan_id' => self::DEFAULT_MERCHANT_ID,
+            'type'    => 'pricing',
+        ]);
+
+        $configAttributes = [
+            'default_plan_id' => self::DEFAULT_MERCHANT_ID,
+            'entity_id'       => $app->getId(),
+            'entity_type'     => 'application',
+        ];
+
+        $this->fixtures->create('partner_config', $configAttributes);
+
+        $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $this->fixtures->create('referrals', ["product" => Constants\Product::PRIMARY]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $referredSubMerchantId,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId);
+
+        $this->startTest();
+
+        $referredSubMerchant = $this->getDbEntity('merchant', ['id' => $referredSubMerchantId]);
+
+        $this->assertEquals([], $referredSubMerchant->tagNames());
+
+        $this->assertNull($referredSubMerchant->getPricingPlanId());
+    }
+
     public function testPutPreSignUpDetailsWithReferralCodeForAggregator()
     {
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);

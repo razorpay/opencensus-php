@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Product;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Trace\TraceCode;
@@ -150,6 +151,17 @@ class Core extends Base\Core
         $coupon->getValidator()->validateEntityType();
 
         $promotion = $coupon->source;
+
+        //Check coupon belongs to right product
+        $promotionProduct = optional($promotion)->getProduct() ?? Product::PRIMARY;
+
+        $requestProduct = $this->app->basicauth->getRequestOriginProduct();
+
+        if($promotionProduct !== $requestProduct)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE);
+        }
 
         $merchantPromotion = $this->repo
                                   ->merchant_promotion

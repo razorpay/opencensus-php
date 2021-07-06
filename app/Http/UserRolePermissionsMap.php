@@ -128,6 +128,8 @@ class UserRolePermissionsMap
 
                  Permission::MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT,
                  Permission::MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER,
+
+                 Permission::COUPON_VALIDATE,
              ],
 
              BankingRole::ADMIN => [

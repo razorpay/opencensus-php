@@ -5,8 +5,11 @@ namespace RZP\Tests\Functional\Coupon;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Exception;
+use RZP\Constants\Product;
 use RZP\Models\Schedule\Period;
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -473,6 +476,66 @@ class CouponsTest extends TestCase
         $this->assertEquals($response['expire_days'],1);
     }
 
+    public function testValidateBankingCouponInX()
+    {
+        $scheduleAttributes = [
+            'period' => Period::DAILY,
+        ];
+
+        $schedule = $this->fixtures->create('schedule', $scheduleAttributes);
+
+        $promoAttributes = [
+            'schedule_id' => $schedule->getId(),
+            'product'     => Product::BANKING
+        ];
+
+        $this->createCoupon($promoAttributes);
+
+        $content = [
+            'code' => 'RANDOM-123',
+        ];
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $response = $this->checkCouponOnMerchant($content, Product::BANKING);
+
+        $this->assertEquals($response['credit_amount'], 100);
+
+        $this->assertEquals($response['expire_days'],1);
+    }
+
+    public function testValidatePrimaryCouponInX()
+    {
+        $this->expectException(Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_INVALID_COUPON_CODE);
+
+        $scheduleAttributes = [
+            'period' => Period::DAILY,
+        ];
+
+        $schedule = $this->fixtures->create('schedule', $scheduleAttributes);
+
+        $promoAttributes = [
+            'schedule_id' => $schedule->getId(),
+            'product'     => Product::PRIMARY
+        ];
+
+        $this->createCoupon($promoAttributes);
+
+        $content = [
+            'code' => 'RANDOM-123',
+        ];
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->checkCouponOnMerchant($content, Product::BANKING);
+    }
+
     public function testValidateCouponProxyAuthWithMerchantId()
     {
         $scheduleAttributes = [
@@ -573,13 +636,18 @@ class CouponsTest extends TestCase
         return $response;
     }
 
-    public function checkCouponOnMerchant(array $content)
+    public function checkCouponOnMerchant(array $content, string $product = Product::PRIMARY)
     {
         $request = [
             'url'     => '/coupons/validate',
             'method'  => 'post',
             'content' => $content
         ];
+
+        if ($product === Product::BANKING)
+        {
+            $request['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+        }
 
         $response = $this->makeRequestAndGetContent($request);
 
