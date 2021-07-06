@@ -3,10 +3,11 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Stakeholder;
-use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Merchant\Document\Type;
+use RZP\Models\Merchant\Stakeholder;
 
 class PersonalPanOcr extends Base
 {
@@ -45,7 +46,7 @@ class PersonalPanOcr extends Base
         return $payload;
     }
 
-    public function performPostProcessOperation(): void
+    public function performPostProcessOperation(BvsValidation\Entity $entity): void
     {
         $this->merchantDetails->setPersonalPanDocVerificationStatus(BvsValidationConstants::INITIATED);
 

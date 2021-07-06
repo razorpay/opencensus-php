@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\Queue;
 use Functional\Helpers\BvsTrait;
 use Illuminate\Http\UploadedFile;
 use RZP\Jobs\UpdateMerchantContext;
+use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Models\Merchant\BvsValidation\Entity;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -49,9 +51,9 @@ class BvsValidationTest extends TestCase
         $merchantDetailsData['merchant_id'] = $mid;
 
         $this->mockRazorX('testCreateBvsValidationPoi',
-            'bvs_auto_kyc',
-            'on',
-            $mid);
+                          'bvs_auto_kyc',
+                          'on',
+                          $mid);
 
         $bvsValidation = $this->triggerBvsVerification(__FUNCTION__, $merchantDetailsData);
 
@@ -76,14 +78,14 @@ class BvsValidationTest extends TestCase
         ];
 
         $this->mockRazorX('testCreateBvsValidationPoi',
-            'bvs_auto_kyc',
-            'on',
-            '10000000000000');
+                          'bvs_auto_kyc',
+                          'on',
+                          '10000000000000');
 
         $bvsValidation = $this->triggerBvsVerification('testCreateBvsValidationPoi',
-            $merchantDetailsData,
-            true,
-            'failure');
+                                                       $merchantDetailsData,
+                                                       true,
+                                                       'failure');
 
         $this->assertNull($bvsValidation);
     }
@@ -95,17 +97,17 @@ class BvsValidationTest extends TestCase
         ];
 
         $this->mockRazorX('testCreateBvsValidationPoi',
-            'bvs_auto_kyc',
-            'on',
-            '10000000000000');
+                          'bvs_auto_kyc',
+                          'on',
+                          '10000000000000');
 
         $httpClient = $this->app['bvs_http_client'];
 
         $httpClient->addException(new \Exception('Failed to complete request to bvs'));
 
         $bvsValidation = $this->triggerBvsVerification('testCreateBvsValidationPoi',
-            $merchantDetailsData,
-            false);
+                                                       $merchantDetailsData,
+                                                       false);
 
         $this->assertNull($bvsValidation);
     }
@@ -113,6 +115,10 @@ class BvsValidationTest extends TestCase
     public function testCreateBvsValidationPoaAadhaar()
     {
         $this->checkCreateBvsValidationPoa('aadhar_front', 'aadhaar');
+    }
+    public function testCreateBvsValidationAadhaarBack()
+    {
+        $this->checkCreateBvsValidationAadharBack();
     }
 
     public function testCreateBvsValidationPoaVoterId()
@@ -153,11 +159,42 @@ class BvsValidationTest extends TestCase
 
         $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
 
-        $document = $this->getDbEntity('merchant_document', ['merchant_id' => $mid]);
+        $document        = $this->getDbEntity('merchant_document', ['merchant_id' => $mid]);
         $merchantDetails = $this->getDbEntity('merchant_detail', ['merchant_id' => $mid]);
 
         $this->assertNotNull($document->getValidationId());
         $this->assertNull($merchantDetails->getPoaVerificationStatus());
+    }
+    public function checkCreateBvsValidationAadharBack()
+    {
+        $mid = '10000000000000';
+
+        $merchantDetailsData = [
+            'merchant_id'   => $mid,
+            'business_type' => '4',
+        ];
+
+        $test = 'testCreateBvsValidationAadharBack';
+        $this->mockRazorX($test, 'bvs_auto_kyc_ocr', 'on', $mid);
+
+        $this->updateUploadDocumentData($test);
+
+        $request = &$this->testData[$test]['request'];
+
+        $request['content']['document_type'] = sprintf($request['content']['document_type'], Type::AADHAR_BACK);
+
+        $bvsValidation = $this->triggerBvsVerification($test, $merchantDetailsData);
+
+        $expectedValues = [
+            'artefact_type' => Constant::AADHAAR,
+            'owner_id'      => $mid,
+        ];
+
+        $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
+
+        $document        = $this->getDbEntity('merchant_document', ['merchant_id' => $mid]);
+
+        $this->assertNotNull($document->getValidationId());
     }
 
     public function testUpdateBvsValidationStatusPoa()
@@ -172,15 +209,15 @@ class BvsValidationTest extends TestCase
 
         $capturedBvsValidation = $this->fixtures->create('bvs_validation',
                                                          [
-                                                             'owner_id'      => $mid,
-                                                             'artefact_type' => 'aadhaar',
+                                                             'owner_id'        => $mid,
+                                                             'artefact_type'   => Constant::AADHAAR,
                                                              'validation_unit' => 'proof'
                                                          ]);
 
         $this->fixtures->create('merchant_document',
                                 [
                                     'merchant_id'   => $mid,
-                                    'document_type' => 'aadhar_front',
+                                    'document_type' => Type::AADHAR_FRONT,
                                     'validation_id' => $capturedBvsValidation->getValidationId(),
                                 ]);
 
@@ -371,22 +408,22 @@ class BvsValidationTest extends TestCase
     protected function enableRazorXTreatmentForBvsValidation()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function($mid, $feature, $mode) {
-                    if ($feature === RazorxTreatment::SELF_SERVE_AUTO_KYC)
-                    {
-                        return 'on';
-                    }
+                          ->will($this->returnCallback(
+                              function($mid, $feature, $mode) {
+                                  if ($feature === RazorxTreatment::SELF_SERVE_AUTO_KYC)
+                                  {
+                                      return 'on';
+                                  }
 
-                    return 'off';
-                }));
+                                  return 'off';
+                              }));
     }
 
     public function updateBvsValidationStatusAndCheckMerchantDetailsPoa($capturedBvsValidation,
@@ -435,12 +472,10 @@ class BvsValidationTest extends TestCase
 
         $mid = $merchantDetail->getId();
 
-
         $capturedBvsValidation = $this->fixtures->create('bvs_validation', [
             'owner_id'      => $mid,
             'artefact_type' => $artefactType,
         ]);
-
 
         $possibleScenarios = [
             [
@@ -558,7 +593,7 @@ class BvsValidationTest extends TestCase
         string $documentTypeStatusKey,
         string $documentValidationStatus,
         string $validationStatus,
-        string $errorCode = '') :void
+        string $errorCode = ''): void
     {
         $countkey = 'bvs_validation_processing_attempt_count_' . $capturedBvsValidation->getValidationId();
 

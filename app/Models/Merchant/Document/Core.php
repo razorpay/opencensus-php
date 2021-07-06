@@ -2,20 +2,20 @@
 
 namespace RZP\Models\Merchant\Document;
 
-use RZP\Models\Base;
 use RZP\Diag\EventCode;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Trace\TraceCode;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\AutoKyc;
-use RZP\Models\Merchant\Stakeholder;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Base;
 use RZP\Models\FileStore\Entity as FileStoreEntity;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\AutoKyc;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\Stakeholder;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -52,15 +52,15 @@ class Core extends Base\Core
     /**
      * this function creates or edit a new document with params documentType and fileStoreId
      *
-     * @param Merchant\Entity $merchant
+     * @param Merchant\Entity   $merchant
      * @param Base\PublicEntity $entity
-     * @param array $params
-     * @param Entity|null $inputDocument
+     * @param array             $params
+     * @param Entity|null       $inputDocument
      *
      * @return array
      * @throws BadRequestException
      */
-    public function storeInMerchantDocument(Merchant\Entity $merchant, Base\PublicEntity $entity, array $params, Entity $inputDocument = null) : array
+    public function storeInMerchantDocument(Merchant\Entity $merchant, Base\PublicEntity $entity, array $params, Entity $inputDocument = null): array
     {
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $params]);
 
@@ -104,12 +104,13 @@ class Core extends Base\Core
     /**
      * this function store activation file in merchantDocument by new route.
      *
-     * @param Merchant\Entity $merchant
-     * @param array $input
-     * @param bool $validateLock
+     * @param Merchant\Entity        $merchant
+     * @param array                  $input
+     * @param bool                   $validateLock
      *
-     * @param string $rule
+     * @param string                 $rule
      * @param Base\PublicEntity|null $entity
+     *
      * @return array
      * @throws BadRequestException
      * @throws \RZP\Exception\BadRequestValidationFailureException
@@ -289,6 +290,7 @@ class Core extends Base\Core
      */
     public function getPublicFileStoreIdForDocumentType(Merchant\Entity $merchant, string $documentType): ?string
     {
+
         $documents = $merchant->merchantDocuments;
 
         foreach ($documents as $document)
@@ -305,6 +307,7 @@ class Core extends Base\Core
     public function shouldPerfomOcrOnDocumentUpload(
         Entity $document, Merchant\Entity $merchant, Merchant\Detail\Entity $merchantDetails): bool
     {
+
         if (Type::isDocumentTypeToPerformOcr($document->getDocumentType()) === false)
         {
             return false;
@@ -316,10 +319,10 @@ class Core extends Base\Core
             return false;
         }
 
-        if($document->getDocumentType() === Merchant\Document\Type::MSME_CERTIFICATE)
+        if ($document->getDocumentType() === Merchant\Document\Type::MSME_CERTIFICATE)
         {
             $isExperimentEnabled = $this->merchantCore->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                RazorxTreatment::MSME_DOC_VERIFICATION);
+                                                                                 RazorxTreatment::MSME_DOC_VERIFICATION);
 
             return ($isExperimentEnabled === true);
         }
@@ -332,7 +335,8 @@ class Core extends Base\Core
         Entity $document,
         Merchant\Entity $merchant)
     {
-        if($this->shouldPerfomOcrOnDocumentUpload($document, $merchant, $merchantDetails) === false)
+
+        if ($this->shouldPerfomOcrOnDocumentUpload($document, $merchant, $merchantDetails) === false)
         {
             return;
         }
@@ -371,9 +375,9 @@ class Core extends Base\Core
             $eventAttributes = [Constants::DOCUMENT_TYPE => $documentType];
 
             $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_TYPE_SUBMITTED_TOTAL,
-                [
-                    Entity::DOCUMENT_TYPE => $documentType
-                ]);
+                                [
+                                    Entity::DOCUMENT_TYPE => $documentType
+                                ]);
 
             $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
         }
@@ -381,7 +385,8 @@ class Core extends Base\Core
 
     public function performOcrWithBvs(Entity $document, Merchant\Entity $merchant, Detail\Entity $merchantDetails)
     {
-        if(Type::isPoaDocument($document->getDocumentType()) === true)
+
+        if (Type::isPoaDocument($document->getDocumentType()) === true)
         {
             $this->performPoaOcrWithBvs($document, $merchantDetails);
         }
@@ -390,18 +395,19 @@ class Core extends Base\Core
             $factory = new requestDispatcher\Factory();
 
             $requestDispatcher = $factory->getBvsRequestDispatcherForDocument(
-                $document->getDocumentType(), $merchant, $merchantDetails);
+                $document, $merchant, $merchantDetails);
 
             $requestDispatcher->triggerBVSRequest();
         }
     }
 
     /**
-     * @param Entity $document
+     * @param Entity        $document
      * @param Detail\Entity $merchantDetails
      */
     public function performPoaOcrWithBvs(Entity $document, Detail\Entity $merchantDetails)
     {
+
         $artefactDetails = Constant::FIELD_ARTEFACT_DETAILS_MAP[$document->getDocumentType()] ?? [];
 
         $artefactType       = $artefactDetails[Constant::ARTEFACT_TYPE] ?? '';
@@ -423,7 +429,7 @@ class Core extends Base\Core
             $merchantDetails->getId(),
             $payload);
 
-        if(empty($bvsValidation) === false)
+        if (empty($bvsValidation) === false)
         {
             $document->setValidationId($bvsValidation->getValidationId());
 
@@ -443,6 +449,7 @@ class Core extends Base\Core
      * for a merchant, Return all Bvs_validations for all ocr documents
      *
      * @param Merchant\Entity $merchant
+     *
      * @return array
      */
     public function fetchAllOcrDocumentsBvsValidations(Merchant\Entity $merchant): array
@@ -465,6 +472,11 @@ class Core extends Base\Core
         }
 
         return $bvsValidations;
+    }
+
+    public function getDocument(string $merchantId,string $validationId)
+    {
+        return $this->repo->merchant_document->findDocumentsForMerchantIdAndValidationId($merchantId,$validationId);
     }
 
 }

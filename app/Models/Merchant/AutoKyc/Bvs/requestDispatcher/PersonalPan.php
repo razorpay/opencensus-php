@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
 class PersonalPan extends Base
@@ -27,7 +28,7 @@ class PersonalPan extends Base
         return $payload;
     }
 
-    public function performPostProcessOperation(): void
+    public function performPostProcessOperation(BvsValidation\Entity $entity): void
     {
         $this->merchantDetails->setPoiVerificationStatus(BvsValidationConstants::INITIATED);
     }

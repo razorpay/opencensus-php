@@ -8,7 +8,7 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
 
-    protected $entity = 'merchant_document';
+    protected $entity             = 'merchant_document';
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
@@ -23,6 +23,23 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::FILE_STORE_ID, '=', $fileStoreId)
+                    ->first();
+    }
+
+    /**
+     * Returns all non deleted documents for given validationId
+     *
+     * @param string $merchantId
+     * @param string $validationId
+     *
+     * @return mixed
+     */
+    public function findDocumentsForMerchantIdAndValidationId(string $merchantId, string $validationId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::VALIDATION_ID, $validationId)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->first();
     }
 
@@ -42,6 +59,7 @@ class Repository extends Base\Repository
 
     /**
      * Fetch all the documents by entityId and entityType
+     *
      * @param string $entityId
      * @param string $entityType
      *

@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
 use Illuminate\Support\Facades\Bus;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Detail\PennyTesting as DetailsPennyTesting;
@@ -30,27 +31,25 @@ class BankAccount extends Base
         $accountHolderNames = array_values($accountHolderNames);
 
         return [
-            Constant::ARTEFACT_TYPE   => Constant::BANK_ACCOUNT,
-            Constant::CONFIG_NAME     => $this->getConfigName(),
-            Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
-            Constant::DETAILS         => [
-                Constant::ACCOUNT_NUMBER       => $this->merchantDetails->getBankAccountNumber(),
-                Constant::IFSC                 => $this->merchantDetails->getBankBranchIfsc(),
-                Constant::BENEFICIARY_NAME     => $this->merchantDetails->getBankAccountName(),
-                Constant::ACCOUNT_HOLDER_NAMES => $accountHolderNames,
+            Constant::ARTEFACT_TYPE     => Constant::BANK_ACCOUNT,
+            Constant::CONFIG_NAME       => $this->getConfigName(),
+            Constant::VALIDATION_UNIT   => BvsValidationConstants::IDENTIFIER,
+            Constant::DETAILS           => [
+                Constant::ACCOUNT_NUMBER        => $this->merchantDetails->getBankAccountNumber(),
+                Constant::IFSC                  => $this->merchantDetails->getBankBranchIfsc(),
+                Constant::BENEFICIARY_NAME      => $this->merchantDetails->getBankAccountName(),
+                Constant::ACCOUNT_HOLDER_NAMES  => $accountHolderNames,
             ],
         ];
     }
 
     protected function getConfigName()
     {
-        if($this->merchantDetails->isUnregisteredBusiness() === true)
-        {
+        if ($this->merchantDetails->isUnregisteredBusiness() === true) {
             return Constant::BANK_ACCOUNT_WITH_PERSONAL_PAN;
         }
 
-        switch ($this->merchantDetails->getBusinessType())
-        {
+        switch ($this->merchantDetails->getBusinessType()) {
             case BusinessType::PRIVATE_LIMITED:
             case BusinessType::PUBLIC_LIMITED:
             case BusinessType::LLP:
@@ -63,7 +62,7 @@ class BankAccount extends Base
         }
     }
 
-    public function performPostProcessOperation(): void
+    public function performPostProcessOperation(BvsValidation\Entity $bvsValidation): void
     {
         $this->merchantDetails->setBankDetailsVerificationStatus(BvsValidationConstants::INITIATED);
     }

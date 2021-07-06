@@ -8,6 +8,7 @@ use RZP\Models\BankingAccount\Activation\Detail;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
+use RZP\Models\Merchant\BvsValidation;
 class BusinessPanForBankingAccount extends Base
 {
     protected $bankingDetail;
@@ -18,6 +19,7 @@ class BusinessPanForBankingAccount extends Base
 
         $this->bankingDetail = $bankingDetail;
     }
+
     public function canTriggerValidation(): bool
     {
         return $this->bankingDetail->getPanVerificationStatus() === BvsValidationConstants::PENDING;
@@ -26,12 +28,12 @@ class BusinessPanForBankingAccount extends Base
     public function getRequestPayload(): array
     {
         $payload = [
-            Constant::ARTEFACT_TYPE   => Constant::BUSINESS_PAN,
-            Constant::CONFIG_NAME     => Constant::BUSINESS_PAN,
-            Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
+            Constant::ARTEFACT_TYPE           => Constant::BUSINESS_PAN,
+            Constant::CONFIG_NAME             => Constant::BUSINESS_PAN,
+            Constant::VALIDATION_UNIT         => BvsValidationConstants::IDENTIFIER,
             Constant::CUSTOM_CALLBACK_HANDLER => 'updateValidationStatusForBankingAccount',
-            Constant::OWNER_ID => $this->bankingDetail->getBankingAccountId(),
-            Constant::DETAILS         => [
+            Constant::OWNER_ID                => $this->bankingDetail->getBankingAccountId(),
+            Constant::DETAILS                 => [
                 Constant::PAN_NUMBER => $this->bankingDetail->getBusinessPan(),
                 Constant::NAME       => $this->bankingDetail->getBusinessName(),
             ],
@@ -40,7 +42,7 @@ class BusinessPanForBankingAccount extends Base
         return $payload;
     }
 
-    public function performPostProcessOperation(): void
+    public function performPostProcessOperation(BvsValidation\Entity $validation): void
     {
         $this->bankingDetail->setPanVerificationStatus(BvsValidationConstants::INITIATED);
     }

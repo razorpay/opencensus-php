@@ -194,6 +194,7 @@ class Type
      */
     protected static $documentsToPerformOcr = [
         self::AADHAR_FRONT,
+        self::AADHAR_BACK,
         self::PASSPORT_FRONT,
         self::VOTER_ID_FRONT,
         self::MSME_CERTIFICATE,

@@ -2,16 +2,17 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
-use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
+use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
-use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants;
+use RZP\Models\Merchant\BvsValidation\Entity as ValidationEntity;
+use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Merchant\Document\Core as DocumentCore;
+use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Stakeholder\Entity as StakeholderEntity;
-use RZP\Models\Merchant\BvsValidation\Entity as ValidationEntity;
-
 
 class Factory
 {
@@ -24,6 +25,7 @@ class Factory
      * @return StatusUpdater
      * @throws LogicException
      */
+
     public function getInstance(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
     {
         $artefactType = $validation->getArtefactType();
@@ -107,9 +109,9 @@ class Factory
      */
     public function getStatusUpdaterForAadhaar(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
     {
-        $artefactType = $validation->getArtefactType();
         $validationId = $validation->getValidationId();
 
+        $merchant_document = (new DocumentCore())->getDocument($merchant->getMerchantId(), $validationId);
         if ($validation->getValidationUnit() === Constants::IDENTIFIER)
         {
             return new DefaultStatusUpdater(
@@ -118,8 +120,17 @@ class Factory
                 $validation,
                 E::STAKEHOLDER);
         }
-
-        return new POA($merchant, $validation);
+        else
+        {
+            if (isset($merchant_document)===false or Type::isPoaDocument($merchant_document->getDocumentType()) === true)
+            {
+                return new POA($merchant, $validation);
+            }
+            else
+            {
+                return new NullStatusUpdater($merchant, $validation);
+            }
+        }
     }
 
     /**
@@ -139,9 +150,9 @@ class Factory
         }
 
         return new DefaultStatusUpdater(
-        $merchant,
-        Entity::POI_VERIFICATION_STATUS,
-        $validation);
+            $merchant,
+            Entity::POI_VERIFICATION_STATUS,
+            $validation);
     }
 
     public function getStatusUpdaterForBankAccount(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater

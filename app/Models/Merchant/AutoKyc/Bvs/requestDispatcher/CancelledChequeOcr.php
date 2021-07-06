@@ -8,6 +8,7 @@ use RZP\Models\Merchant\Detail\PennyTesting;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
+use RZP\Models\Merchant\BvsValidation;
 class CancelledChequeOcr extends Base
 {
 
@@ -58,7 +59,7 @@ class CancelledChequeOcr extends Base
 
     protected function getConfigName()
     {
-        if($this->merchantDetails->isUnregisteredBusiness())
+        if ($this->merchantDetails->isUnregisteredBusiness())
         {
             return Constant::CANCELLED_CHEQUE_OCR_PERSONAL_PAN;
         }
@@ -76,7 +77,7 @@ class CancelledChequeOcr extends Base
         }
     }
 
-    public function performPostProcessOperation(): void
+    public function performPostProcessOperation(BvsValidation\Entity $validation): void
     {
         $this->merchantDetails->setBankDetailsDocVerificationStatus(BvsValidationConstants::INITIATED);
     }

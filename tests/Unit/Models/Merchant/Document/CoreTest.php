@@ -4,6 +4,7 @@
 namespace Unit\Models\Merchant\Document;
 
 
+use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
@@ -35,7 +36,20 @@ class CoreTest extends TestCase
 
         return $this->fixtures->create('merchant_detail:valid_fields', $merchantAttributes);
     }
+    public function testShouldPerformOcrForAadharBackDocumentTypeAndExperimentIsEnabled()
+    {
 
+        $merchantDetail = $this->getMerchantDetailFixture(11);
+        $document = $this->fixtures->create('merchant_document', [
+            'document_type' => Type::AADHAR_BACK,
+            'file_store_id' => '123123',
+            'merchant_id'   => $merchantDetail->getMerchantId(),
+        ]);
+
+        $documentCore = new DocumentCore();
+        $shouldPerformOCR = $documentCore->shouldPerfomOcrOnDocumentUpload($document, $merchantDetail->merchant, $merchantDetail);
+        $this->assertTrue($shouldPerformOCR);
+    }
     public function testShouldPerformOcrForMsmeDocumentTypeAndExperimentIsEnabled()
     {
         $mocks = $this->createAndFetchMocks(true);

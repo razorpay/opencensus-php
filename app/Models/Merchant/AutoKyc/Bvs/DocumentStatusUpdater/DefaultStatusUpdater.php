@@ -30,14 +30,14 @@ class DefaultStatusUpdater extends BaseStatusUpdater
      * DefaultStatusUpdate constructor.
      *
      * @param MerchantEntity $merchant
-     * @param string $documentTypeStatusKey
-     * @param Entity $consumedValidation
-     * @param string $entity
+     * @param string         $documentTypeStatusKey
+     * @param Entity         $consumedValidation
+     * @param string         $entity
      */
     public function __construct(MerchantEntity $merchant,
                                 string $documentTypeStatusKey,
                                 Entity $consumedValidation,
-                                string $entity=E::MERCHANT_DETAIL)
+                                string $entity = E::MERCHANT_DETAIL)
     {
         parent::__construct($merchant, $consumedValidation);
 
@@ -109,9 +109,8 @@ class DefaultStatusUpdater extends BaseStatusUpdater
                 return;
             }
 
-
             $isExperimentEnabled = (new MerchantCore())->isRazorxExperimentEnable($merchant->getId(),
-                RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
+                                                                                  RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
 
             if ($isExperimentEnabled === false)
             {
@@ -128,11 +127,11 @@ class DefaultStatusUpdater extends BaseStatusUpdater
         catch (\Exception $e)
         {
             $this->trace->traceException($e, null,
-                TraceCode::UPDATE_MERCHANT_CONTEXT_JOB_ERROR,
-                [
-                    'merchant_id' => $this->merchantId,
-                    'method'      => __FUNCTION__
-                ]);
+                                         TraceCode::UPDATE_MERCHANT_CONTEXT_JOB_ERROR,
+                                         [
+                                             'merchant_id' => $this->merchantId,
+                                             'method'      => __FUNCTION__
+                                         ]);
 
         }
     }

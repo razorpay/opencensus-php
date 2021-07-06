@@ -2,11 +2,12 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
+use RZP\Models\BankingAccount\Activation\Detail;
 use RZP\Models\Merchant as Merchant;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
-use RZP\Models\BankingAccount\Activation\Detail;
-use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
 class PersonalPanForBankingAccount extends Base
 {
@@ -18,6 +19,7 @@ class PersonalPanForBankingAccount extends Base
 
         $this->bankingDetail = $bankingDetail;
     }
+
     public function canTriggerValidation(): bool
     {
         return $this->bankingDetail->getPanVerificationStatus() === BvsValidationConstants::PENDING;
@@ -26,12 +28,12 @@ class PersonalPanForBankingAccount extends Base
     public function getRequestPayload(): array
     {
         $payload = [
-            Constant::ARTEFACT_TYPE   => Constant::PERSONAL_PAN,
-            Constant::CONFIG_NAME     => Constant::PERSONAL_PAN,
-            Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
+            Constant::ARTEFACT_TYPE           => Constant::PERSONAL_PAN,
+            Constant::CONFIG_NAME             => Constant::PERSONAL_PAN,
+            Constant::VALIDATION_UNIT         => BvsValidationConstants::IDENTIFIER,
             Constant::CUSTOM_CALLBACK_HANDLER => 'updateValidationStatusForBankingAccount',
-            Constant::OWNER_ID => $this->bankingDetail->getBankingAccountId(),
-            Constant::DETAILS         => [
+            Constant::OWNER_ID                => $this->bankingDetail->getBankingAccountId(),
+            Constant::DETAILS                 => [
                 Constant::PAN_NUMBER => $this->bankingDetail->getBusinessPan(),
                 Constant::NAME       => $this->bankingDetail->getMerchantPocName(),
             ],
@@ -40,7 +42,7 @@ class PersonalPanForBankingAccount extends Base
         return $payload;
     }
 
-    public function performPostProcessOperation(): void
+    public function performPostProcessOperation(BvsValidation\Entity $entity): void
     {
         $this->bankingDetail->setPanVerificationStatus(BvsValidationConstants::INITIATED);
     }

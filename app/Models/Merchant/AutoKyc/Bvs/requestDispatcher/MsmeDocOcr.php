@@ -3,15 +3,22 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Stakeholder;
-use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\BvsValidation;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Merchant\Document\Type;
 
 class MsmeDocOcr extends Base
 {
     protected const MSME_DOC_INDEX = '1';
-
+    protected $document;
+    public function __construct(Merchant\Entity $merchant, DetailEntity $merchantDetails, DocumentEntity $document)
+    {
+        $this->document = $document;
+        parent::__construct($merchant, $merchantDetails);
+    }
     /**
      * @return bool
      */
@@ -31,12 +38,12 @@ class MsmeDocOcr extends Base
             Constant::CONFIG_NAME     => Constant::MSME_OCR,
             Constant::VALIDATION_UNIT => BvsValidationConstants::PROOF,
             Constant::DETAILS         => [
-                Constant::SIGNATORY_NAME       => $this->merchantDetails->getPromoterPanName() ?? '',
-                Constant::TRADE_NAME           => $this->merchantDetails->getBusinessName() ?? ''
+                Constant::SIGNATORY_NAME => $this->merchantDetails->getPromoterPanName() ?? '',
+                Constant::TRADE_NAME     => $this->merchantDetails->getBusinessName() ?? ''
             ],
             Constant::PROOFS          => [
                 self::MSME_DOC_INDEX => [
-                    Constant::UFH_FILE_ID => $this->documentCore->getPublicFileStoreIdForDocumentType($this->merchant, Type::MSME_CERTIFICATE),
+                    Constant::UFH_FILE_ID => $this->document->getPublicFileStoreId(),
                 ],
             ],
         ];
@@ -44,7 +51,7 @@ class MsmeDocOcr extends Base
         return $payload;
     }
 
-    public function performPostProcessOperation(): void
+    public function performPostProcessOperation(BvsValidation\Entity $entity): void
     {
         $this->merchantDetails->setMsmeDocVerificationStatus(BvsValidationConstants::INITIATED);
     }

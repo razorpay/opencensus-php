@@ -6,7 +6,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\AutoKyc;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
-
+use RZP\Models\Merchant\BvsValidation;
 abstract class Base implements RequestDispatcher
 {
     protected $merchantCore;
@@ -16,6 +16,7 @@ abstract class Base implements RequestDispatcher
     protected $merchantDetails;
 
     protected $documentCore;
+
     public function __construct(Merchant\Entity $merchant, DetailEntity $merchantDetails)
     {
         $this->merchantCore = new Merchant\Core();
@@ -41,8 +42,10 @@ abstract class Base implements RequestDispatcher
 
     /**
      * Used this function for doing post process action
+     *
+     * @param BvsValidation\Entity $bvsValidation
      */
-    public function performPostProcessOperation(): void
+    public function performPostProcessOperation(BvsValidation\Entity $bvsValidation): void
     {
 
     }
@@ -73,7 +76,7 @@ abstract class Base implements RequestDispatcher
 
             if ($bvsValidation != null)
             {
-                $this->performPostProcessOperation();
+                $this->performPostProcessOperation($bvsValidation);
             }
         }
     }

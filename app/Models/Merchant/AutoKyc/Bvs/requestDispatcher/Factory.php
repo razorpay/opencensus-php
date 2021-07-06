@@ -7,7 +7,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
-
+use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 class Factory
 {
     public function getBvsRequestDispatcherForArtefact(
@@ -21,18 +21,20 @@ class Factory
 
             default:
 
-                throw new Exception\LogicException('artefact type not supported in this flow: '. $artefact);
+                throw new Exception\LogicException('artefact type not supported in this flow: ' . $artefact);
         }
     }
 
-    public function getBvsRequestDispatcherForDocument($documentType, Merchant\Entity $merchant, Detail\Entity $merchantDetails)
+    public function getBvsRequestDispatcherForDocument(DocumentEntity $document, Merchant\Entity $merchant, Detail\Entity $merchantDetails)
     {
-        switch ($documentType)
+        switch ($document->getDocumentType())
         {
             case Type::MSME_CERTIFICATE:
-                return new MsmeDocOcr($merchant, $merchantDetails);
+                return new MsmeDocOcr($merchant, $merchantDetails, $document);
+            case Type::AADHAR_BACK:
+                return new AadharBackOcr($merchant, $merchantDetails, $document);
             default:
-                throw new Exception\LogicException('document type not supported in this flow: '. $documentType);
+                throw new Exception\LogicException('document type not supported in this flow: ' . $document->getDocumentType());
         }
     }
 

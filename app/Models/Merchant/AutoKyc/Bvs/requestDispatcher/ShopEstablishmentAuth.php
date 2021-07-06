@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
-use RZP\Models\Merchant\Detail\ShopEstablishmentAreaCodeMapping;
+use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Merchant\Detail\ShopEstablishmentAreaCodeMapping;
 
 class ShopEstablishmentAuth extends Base
 {
@@ -41,7 +41,7 @@ class ShopEstablishmentAuth extends Base
         return $payload;
     }
 
-    public function performPostProcessOperation(): void
+    public function performPostProcessOperation(BvsValidation\Entity $entity): void
     {
         $this->merchantDetails->setShopEstbVerificationStatus(BvsValidationConstants::INITIATED);
     }

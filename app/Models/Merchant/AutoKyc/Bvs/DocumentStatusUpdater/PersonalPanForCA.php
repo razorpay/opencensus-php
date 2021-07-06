@@ -19,7 +19,7 @@ class PersonalPanForCA extends BaseStatusUpdater
     public function __construct(MerchantEntity $merchant,
                                 string $documentTypeStatusKey,
                                 BvsValidation\Entity $validation,
-                                string $entity=E::BANKING_ACCOUNT_ACTIVATION_DETAIL)
+                                string $entity = E::BANKING_ACCOUNT_ACTIVATION_DETAIL)
     {
         parent::__construct($merchant, $validation);
 
@@ -97,13 +97,16 @@ class PersonalPanForCA extends BaseStatusUpdater
 
             $this->app->hubspot->trackHubspotEvent($merchantEmail, $payload);
         }
-        else if ($documentValidationStatus === Constants::INCORRECT_DETAILS or $documentValidationStatus === Constants::NOT_MATCHED)
+        else
         {
-            $merchantEmail = $this->merchant->getEmail();
+            if ($documentValidationStatus === Constants::INCORRECT_DETAILS or $documentValidationStatus === Constants::NOT_MATCHED)
+            {
+                $merchantEmail = $this->merchant->getEmail();
 
-            $payload = ['ca_pan_validation_failed' => 'TRUE'];
+                $payload = ['ca_pan_validation_failed' => 'TRUE'];
 
-            $this->app->hubspot->trackHubspotEvent($merchantEmail, $payload);
+                $this->app->hubspot->trackHubspotEvent($merchantEmail, $payload);
+            }
         }
     }
 }

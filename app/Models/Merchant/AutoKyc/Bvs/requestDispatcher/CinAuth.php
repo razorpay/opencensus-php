@@ -6,6 +6,7 @@ use RZP\Models\Merchant\Detail\Core;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
+use RZP\Models\Merchant\BvsValidation;
 class CinAuth extends Base
 {
     public function canTriggerValidation(): bool
@@ -35,7 +36,7 @@ class CinAuth extends Base
         return $payload;
     }
 
-    public function performPostProcessOperation(): void
+    public function performPostProcessOperation(BvsValidation\Entity $validation): void
     {
         $this->merchantDetails->setCinVerificationStatus(BvsValidationConstants::INITIATED);
     }

@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
+use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Models\Merchant\BvsValidation\Constants;
 
 class Constant
 {
@@ -39,34 +39,29 @@ class Constant
 
     const ENRICHMENT_DETAIL_FIELDS = "enrichment_details_fields";
 
-    const BANK_ACCOUNT         = 'bank_account';
-    const ACCOUNT_NUMBER       = 'account_number';
-    const IFSC                 = 'ifsc';
-    const BENEFICIARY_NAME     = 'beneficiary_name';
-    const ACCOUNT_HOLDER_NAMES = 'account_holder_names';
-
+    const BANK_ACCOUNT             = 'bank_account';
+    const ACCOUNT_NUMBER           = 'account_number';
+    const IFSC                     = 'ifsc';
+    const BENEFICIARY_NAME         = 'beneficiary_name';
+    const ACCOUNT_HOLDER_NAMES     = 'account_holder_names';
     const SHOP_REGISTRATION_NUMBER = 'registration_number';
     const SHOP_AREA_CODE           = 'area_code';
     const SHOP_ENTITY_NAME         = 'entity_name';
     const SHOP_OWNER_NAME          = 'owner_name';
 
     // Config names
-    const PERSONAL_PAN_OCR           = 'personal_pan_ocr';
-    const BUSINESS_PAN_OCR           = 'business_pan_ocr';
-
-    const MSME_OCR                   = 'msme_ocr';
-
+    const PERSONAL_PAN_OCR                              = 'personal_pan_ocr';
+    const BUSINESS_PAN_OCR                              = 'business_pan_ocr';
+    const MSME_OCR                                      = 'msme_ocr';
     const CANCELLED_CHEQUE_OCR_PERSONAL_PAN             = 'cancelled_cheque_ocr_personal_pan';
     const CANCELLED_CHEQUE_OCR_BUSINESS_PAN             = 'cancelled_cheque_ocr_business_pan';
     const CANCELLED_CHEQUE_OCR_BUSINESS_OR_PROMOTER_PAN = 'cancelled_cheque_ocr_business_or_promoter_pan';
+    const SHOP_ESTABLISHMENT_AUTH                       = 'shop_establishment_auth';
+    const BANK_ACCOUNT_WITH_PERSONAL_PAN                = "bank_account_with_personal_pan";
+    const BANK_ACCOUNT_WITH_BUSINESS_PAN                = "bank_account_with_business_pan";
+    const BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN    = "bank_account_with_business_or_promoter_pan";
 
-    const SHOP_ESTABLISHMENT_AUTH    = 'shop_establishment_auth';
-
-    const BANK_ACCOUNT_WITH_PERSONAL_PAN             = "bank_account_with_personal_pan";
-    const BANK_ACCOUNT_WITH_BUSINESS_PAN             = "bank_account_with_business_pan";
-    const BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN = "bank_account_with_business_or_promoter_pan";
-
-    const AADHAAR_WITH_PAN           = 'aadhaar_with_pan';
+    const AADHAAR_WITH_PAN = 'aadhaar_with_pan';
     //
     // Response fields
     //
@@ -103,27 +98,28 @@ class Constant
 
 
     // Platform
-    const PG       = 'pg';
+    const PG = 'pg';
 
     // Owner Types
     const BANKING_ACCOUNT = 'banking_account';
-    const MERCHANT = 'merchant';
+    const MERCHANT        = 'merchant';
 
-    const ARTEFACT_TYPE = 'artefact_type';
-
-    const SUCCESS = 'success';
-    const FAILURE = 'failure';
-
-    const RAZORX_EXPERIMENT = 'razorx_experiment';
-
+    const ARTEFACT_TYPE                   = 'artefact_type';
+    const SUCCESS                         = 'success';
+    const FAILURE                         = 'failure';
+    const RAZORX_EXPERIMENT               = 'razorx_experiment';
     const AADHAR_ESIGN_SESSION_KEY_PREFIX = "aadhar_esign_session";
-
-    const CUSTOM_CALLBACK_HANDLER = 'custom_callback_handler';
+    const CUSTOM_CALLBACK_HANDLER         = 'custom_callback_handler';
 
     const FIELD_ARTEFACT_DETAILS_MAP = [
         Type::AADHAR_FRONT                => [
             self::ARTEFACT_TYPE   => self::AADHAAR,
             self::PROOF_INDEX     => '3',
+            self::VALIDATION_UNIT => Constants::PROOF,
+        ],
+        Type::AADHAR_BACK                 => [
+            self::ARTEFACT_TYPE   => self::AADHAAR,
+            self::PROOF_INDEX     => '2',
             self::VALIDATION_UNIT => Constants::PROOF,
         ],
         Type::VOTER_ID_FRONT              => [
@@ -159,19 +155,19 @@ class Constant
             self::ARTEFACT_TYPE   => self::GSTIN,
             self::VALIDATION_UNIT => Constants::IDENTIFIER,
         ],
-        Constant::LLPIN => [
+        Constant::LLPIN                   => [
             self::ARTEFACT_TYPE   => self::LLP_DEED,
             self::VALIDATION_UNIT => Constants::IDENTIFIER,
         ],
-        Constant::CIN => [
+        Constant::CIN                     => [
             self::ARTEFACT_TYPE   => self::CIN,
             self::VALIDATION_UNIT => Constants::IDENTIFIER,
         ],
-        Entity::BANK_ACCOUNT_NUMBER => [
+        Entity::BANK_ACCOUNT_NUMBER       => [
             self::ARTEFACT_TYPE   => self::BANK_ACCOUNT,
             self::VALIDATION_UNIT => Constants::IDENTIFIER,
         ],
-        Constant::BUSINESS_PAN => [
+        Constant::BUSINESS_PAN            => [
             self::ARTEFACT_TYPE   => self::BUSINESS_PAN,
             self::VALIDATION_UNIT => Constants::IDENTIFIER,
         ],

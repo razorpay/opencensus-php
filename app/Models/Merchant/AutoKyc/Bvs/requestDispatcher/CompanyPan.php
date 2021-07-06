@@ -2,9 +2,10 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
-use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Merchant\Detail\BusinessType;
 
 class CompanyPan extends Base
 {
@@ -31,7 +32,7 @@ class CompanyPan extends Base
         return $payload;
     }
 
-    public function performPostProcessOperation(): void
+    public function performPostProcessOperation(BvsValidation\Entity $validation): void
     {
         $this->merchantDetails->setCompanyPanVerificationStatus(BvsValidationConstants::INITIATED);
     }

@@ -31,4 +31,17 @@ return [
             ],
         ],
     ],
+    'testCreateBvsValidationAadharBack' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => '%s',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];
