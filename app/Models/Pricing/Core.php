@@ -124,6 +124,11 @@ class Core extends Base\Core
         return $newRule;
     }
 
+    public function fetchEligiblePlansWithMissingCorporateRule(int $limit ):array
+    {
+        return $this->repo->pricing->fetchEligiblePlanIdsWithMissingCorporateRule($limit);
+    }
+
     public function create(array $input, string $ruleOrgId)
     {
         $validator = new Validator();

@@ -1787,6 +1787,112 @@ class PricingTest extends TestCase
         $this->assertEquals('10000', $paymentObj['fee']);
     }
 
+
+    public function testUpdatePricingSubType()
+    {
+
+        $defaultPricingPlan2 = [
+            'plan_name'                 => 'TestPlan1',
+            'payment_method'            => 'card',
+            'payment_method_type'       => 'credit',
+            'percent_rate'              => 2000,
+            'fixed_rate'                =>  0,
+            'payment_network'           => 'MC',
+            'payment_issuer'            =>  null,
+            'org_id'                    => '10000000000000',
+            'type'                      => 'pricing',
+            'feature'                   => 'payment',
+        ];
+
+        $plan2 = $this->createPricingPlan($defaultPricingPlan2);
+
+        $this->setDefaultMerchantMethods();
+
+        $merchant = $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $plan2['plan_id'], 'activated' => 1]);
+
+        $this->ba->cronAuth();
+       // $testData['request']['content']['plan_ids'] = [$plan['id']];
+
+
+        $this->startTest();
+
+        $rules = $this->getDbEntities('pricing', [
+            'feature'        => 'payment',
+            'product'        => 'primary',
+            'plan_id'        => $plan2['id']
+        ])->toArray();
+
+        // card credit null MC
+        // card credit business MC
+        // card null business null
+
+        // but not // card credit null null
+
+        $this->assertEquals(3, count($rules));
+
+        $corporateRules = 0;
+
+        foreach($rules as $rule)
+        {
+            if($rule['payment_method_subtype'] === 'business')
+            {
+                $corporateRules++;
+            }
+        }
+
+        $this->assertEquals(2, $corporateRules);
+    }
+
+    public function testUpdatePricingSubTypeWithCorporateRuleAlreadyPresent()
+    {
+
+        $defaultPricingPlan2 = [
+            'plan_name'                 => 'TestPlan1',
+            'payment_method'            => 'card',
+            'payment_method_type'       => 'credit',
+            'percent_rate'              => 2000,
+            'fixed_rate'                =>  0,
+            'payment_network'           => 'MC',
+            'payment_issuer'            =>  null,
+            'org_id'                    => '10000000000000',
+            'type'                      => 'pricing',
+            'feature'                   => 'payment',
+            'payment_method_subtype'    => 'business'
+        ];
+
+        $plan2 = $this->createPricingPlan($defaultPricingPlan2);
+
+        $this->setDefaultMerchantMethods();
+
+        $merchant = $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $plan2['plan_id'], 'activated' => 1]);
+
+        $this->ba->cronAuth();
+        // $testData['request']['content']['plan_ids'] = [$plan['id']];
+
+
+        $this->startTest();
+
+        $rules = $this->getDbEntities('pricing', [
+            'feature'        => 'payment',
+            'product'        => 'primary',
+            'plan_id'        => $plan2['id']
+        ])->toArray();
+
+        $this->assertEquals(1, count($rules));
+
+        $corporateRules = 0;
+
+        foreach($rules as $rule)
+        {
+            if($rule['payment_method_subtype'] === 'business')
+            {
+                $corporateRules++;
+            }
+        }
+
+        $this->assertEquals(1, $corporateRules);
+    }
+
     public function testAddPricingPlanRuleForBankingPayoutWithoutAccountType()
     {
         $this->ba->adminAuth();

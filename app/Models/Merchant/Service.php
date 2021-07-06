@@ -3588,6 +3588,170 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function fetchEligiblePricingPlansAndUpdateCorporatePricingRule(int $limit)
+    {
+        $successCount = 0;
+        $failedCount = 0;
+        $total = 0;
+        $failedIds = [];
+        $this->increaseAllowedSystemLimits();
+
+        $planIds = (new Pricing\Core)->fetchEligiblePlansWithMissingCorporateRule($limit);
+
+        $this->trace->info(
+            TraceCode::PRICING_PLAN_IDS_FETCH,
+            [
+                'count'   => count($planIds),
+                'planIds' => $planIds,
+            ]);
+
+        // increase system timeout
+        foreach ($planIds as $planId)
+        {
+            $total++;
+            $this->trace->info(
+                TraceCode::PRICING_UPDATE_START,
+                [
+                    'plan_id' => $planId
+                ]);
+            try
+            {
+                $this->repo->transactionOnLiveAndTest(function() use ($planId)
+                {
+                    $plan = $this->repo->pricing->getPricingPlanById($planId);
+
+                    $data = $plan->toArray();
+
+                    $orgId = $data[0]['org_id'];
+
+                    $rule =  [
+                        'payment_method'            => 'card',
+                        'fixed_rate'                =>  0,
+                        'type'                      => 'pricing',
+                        'feature'                   => 'payment',
+                    ];
+
+                    // for all card rules with type x and subtype null, add a rule with type business
+                    // if network level rule exists, add a network rule with type business as well
+
+                    $rulesWithTypeCreditNull = $this->getCardRuleWithTypeAndSubtype($data,"credit", null);
+                    // if count of rule with type credit and sub type null is zero, copy
+                    if (count($rulesWithTypeCreditNull) !== 0)
+                    {
+                        $this->addRuleForType($plan, $rule, "credit", $orgId, $rulesWithTypeCreditNull);
+                    }
+
+                    $rulesWithTypeDebitNull = $this->getCardRuleWithTypeAndSubtype($data, "debit", null);
+
+                    if (count($rulesWithTypeDebitNull) !== 0)
+                    {
+                        $this->addRuleForType($plan, $rule, "debit", $orgId, $rulesWithTypeDebitNull);
+                    }
+
+                    $rulesWithTypePrepaidNull = $this->getCardRuleWithTypeAndSubtype($data, "prepaid", null);
+
+                    if (count($rulesWithTypePrepaidNull) !== 0)
+                    {
+                        $this->addRuleForType($plan, $rule, "prepaid", $orgId, $rulesWithTypePrepaidNull);
+                    }
+
+                    $rulesWithTypeNullNull = $this->getCardRuleWithTypeAndSubtype($data,null, null);
+
+                    $this->addRuleForType($plan, $rule, null, $orgId, $rulesWithTypeNullNull);
+
+                    $this->trace->info(
+                        TraceCode::PRICING_UPDATE_FINISH,
+                        [
+                            'planId' => $planId
+                        ]);
+                });
+
+                $successCount++;
+            }
+            catch (\Throwable $ex)
+            {
+                $failedIds[] = $planId;
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::PRICING_BULK_UPDATE_EXCEPTION, ['plan_id' => $planId]);
+                $failedCount++;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::PRICING_UPDATE_FINISH_ALL,
+            ["success"=> $successCount, "failed"=> $failedCount,  "total" => $total, "failedIds" => $failedIds]);
+
+        return ["success"=> $successCount, "failed"=> $failedCount,  "total" => $total, "failedIds" => $failedIds];
+    }
+
+    protected function addRuleForType($plan, $newPricingRule, $type, $orgId, array $existingPricingRulesWithTypeNull = [])
+    {
+        $newPricingRule['percent_rate'] = 300;
+
+     //   $rule['international'] = $rule['international'] ? '1' : '0';
+
+        $newPricingRule['payment_method_type'] = $type;
+
+        $newPricingRule['payment_method_subtype'] = 'business';
+
+        $addedRules = 0;
+
+        for($i = 0; $i<count($existingPricingRulesWithTypeNull); $i++)
+        {
+            $paymentNetwork =  $existingPricingRulesWithTypeNull[$i]['payment_network'];
+
+            if($paymentNetwork === null || ($paymentNetwork === 'MC' || $paymentNetwork === 'VISA' || $paymentNetwork === 'RUPAY'))
+            {
+                $newPricingRule['payment_network'] = $paymentNetwork;
+
+                (new Pricing\Core())->addPlanRule($plan, $newPricingRule, $orgId);
+
+                if($paymentNetwork === null)
+                {
+                    $addedRules++;
+                }
+            }
+        }
+
+        if($type === null && $addedRules === 0)
+        {
+            // atleast one card null business null rule is added
+            (new Pricing\Core())->addPlanRule($plan, $newPricingRule, $orgId);
+        }
+    }
+
+    protected function getCardRuleWithTypeAndSubtype(array $rules, $type, $subtype)
+    {
+        $data = [];
+        foreach ($rules as $rule)
+        {
+            if(($rule['product'] !== 'primary') or ($rule['feature'] !== 'payment') or ($rule['type'] !== 'pricing'))
+            {
+                continue;
+            }
+
+            if($rule['payment_method'] !== 'card'){
+                continue;
+            }
+
+            if($rule['international'] !== false){
+                continue;
+            }
+
+            if($rule['payment_method_type'] !== $type){
+                continue;
+            }
+
+            if($rule['payment_method_subtype'] !== $subtype){
+                continue;
+            }
+
+
+            $data[] = $rule;
+        }
+
+        return $data;
+    }
+
     /**
      * returns merchant's submissionDate
      */

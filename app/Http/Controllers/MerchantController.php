@@ -1668,6 +1668,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function bulkUpdatePricingPlanOnEligibilityCron()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchEligiblePricingPlansAndUpdateCorporatePricingRule($input['count']);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Input JSON sample:
      * {

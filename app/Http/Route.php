@@ -360,6 +360,7 @@ class Route
         'merchant_tags_bulk'                       => ['post',     'merchants/tags/bulk',                            'MerchantController@bulkTagMerchants'                               ],
         'merchant_schedule_bulk'                   => ['post',     'merchants/schedules/bulk',                       'MerchantController@bulkAssignSchedule'                             ],
         'merchant_schedule_reset'                  => ['post',     'merchants/schedule/reset',                       'MerchantController@resetSettlementSchedule'                        ],
+        'merchant_bulk_update_pricing_cron'        => ['post',     'merchants/pricing/bulk/update',                  'MerchantController@bulkUpdatePricingPlanOnEligibilityCron' ],
         'merchant_pricing_bulk'                    => ['post',     'merchants/pricing/bulk',                         'MerchantController@bulkAssignPricing'                              ],
         'create_submerchant_user'                  => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
@@ -3036,6 +3037,7 @@ class Route
         'vendor_payment_composite_expands_helper',
         'los_mail',
         'api_entity_fetch',
+        'merchant_bulk_update_pricing_cron',
         'subscription_registration_nach_migration',
         'subscription_fetch_by_id_data_fix',
         'leegality_webhook',
@@ -9048,7 +9050,7 @@ class Route
             // Not actually a cron, but added in this list
             // so the cron app has access to the route.
             'gstin_e_invoice_cron',
-
+            'merchant_bulk_update_pricing_cron',
             // crons for autoKYC'd merchants who have not been verified manually yet
             'merchant_autokyc_soft_limit',
             'merchant_autokyc_hard_limit',

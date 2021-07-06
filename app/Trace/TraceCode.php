@@ -1467,6 +1467,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ACCOUNT_KYC_VERIFIED                         = 'MERCHANT_ACCOUNT_KYC_VERIFIED';
     const MERCHANT_LINKED_ACCOUNT_ACTIVATED                     = 'MERCHANT_LINKED_ACCOUNT_ACTIVATED';
     const LINKED_ACCOUNT_CREATE_REQUEST_VIA_BATCH               = 'LINKED_ACCOUNT_CREATE_REQUEST_VIA_BATCH';
+    const PRICING_BULK_UPDATE_EXCEPTION                         = 'PRICING_BULK_UPDATE_EXCEPTION';
+    const PRICING_PLAN_IDS_FETCH                                = 'PRICING_PLAN_IDS_FETCH';
+    const PRICING_UPDATE_FINISH                                 = 'PRICING_UPDATE_FINISH';
+    const PRICING_UPDATE_FINISH_ALL                             = 'PRICING_UPDATE_FINISH_ALL';
+    const PRICING_UPDATE_FAILED_FOR_DEBIT                       = 'PRICING_UPDATE_FAILED_FOR_DEBIT';
+    const PRICING_UPDATE_FAILED_FOR_CREDIT                      = 'PRICING_UPDATE_FAILED_FOR_CREDIT';
+    const PRICING_UPDATE_ELIGIBILITY_DATA                       = 'PRICING_UPDATE_ELIGIBILITY_DATA';
+    const PRICING_UPDATE_START                                  = 'PRICING_UPDATE_START';
     const LINKED_ACCOUNT_CREATE_VIA_BATCH_SUCCESSFUL            = 'LINKED_ACCOUNT_CREATE_VIA_BATCH_SUCCESSFUL';
     const MERCHANT_TERMINALS                                    = 'MERCHANT_TERMINALS';
     const MERCHANT_CREATE                                       = 'MERCHANT_CREATE';

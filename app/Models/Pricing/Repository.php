@@ -16,6 +16,7 @@ use RZP\Models\Admin\Action;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Trace\TraceCode;
+use Database\Connection as Connection;
 
 class Repository extends Base\Repository
 {
@@ -43,8 +44,8 @@ class Repository extends Base\Repository
 
     protected function newQueryWithOrgIdParam($orgId = null)
     {
-         $query = $this->newQuery();
-         return $this->addQueryParamOrgId($query, $orgId);
+        $query = $this->newQuery();
+        return $this->addQueryParamOrgId($query, $orgId);
     }
 
     protected function addQueryParamOrgId($query, $orgId = null)
@@ -81,7 +82,7 @@ class Repository extends Base\Repository
 
     public function getPricingPlanById($id, $fail = false, $public = false)
     {
-        $pricing = $this->getPlan($id, Pricing\Type::PRICING, $fail, $public);
+        $pricing = $this->getPlan($id, Pricing\Type::PRICING, $fail, $public, null, true);
 
         return $pricing;
     }
@@ -105,9 +106,13 @@ class Repository extends Base\Repository
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    public function getPlan(string $id, string $type = null, bool $fail = false, bool $public = false, string $orgId = null)
+    public function getPlan(string $id, string $type = null, bool $fail = false, bool $public = false, string $orgId = null, bool $skipOrgCheck = false)
     {
-        $query   = $this->newQueryWithOrgIdParam($orgId);
+        $query = $this->newQuery();
+
+        if($skipOrgCheck !== true){
+            $query   = $this->newQueryWithOrgIdParam($orgId);
+        }
 
         $cacheTags = Entity::getCacheTags($this->entity, $id, $type);
 
@@ -228,6 +233,58 @@ class Repository extends Base\Repository
         $pricingPlanId = $merchant->getPricingPlanId();
 
         return $this->getPricingPlanByIdOrFailPublic($pricingPlanId);
+    }
+
+    public function fetchEligiblePlanIdsWithMissingCorporateRule(int $limit)
+    {
+        $slaveConnection = $this->getSlaveConnection();
+
+        $query = (new Merchant\Repository)->newQueryWithConnection($slaveConnection);
+
+        $pricingTable = $this->getTableName();
+
+        $merchantsTable = (new Merchant\Repository)->getTableName();
+
+        $merchantId = (new Merchant\Repository)->dbColumn('id');
+
+        $merchantPricingPlanId = (new Merchant\Repository)->dbColumn('pricing_plan_id');
+
+        $pricingPlanId = $this->dbColumn('plan_id');
+
+        // SELECT COUNT(DISTINCT ms.pricing_plan_id) AS no_plans
+        //FROM realtime_hudi_api.merchants as ms
+        //WHERE ms.activated = 1
+        //AND ms.id NOT in
+        //(	select DISTINCT m.id
+        //	from realtime_hudi_api.merchants as m
+        //	INNER join realtime_hudi_api.pricing as p
+        //	on m.pricing_plan_id = p.plan_id
+        //	where p.payment_method = 'card'
+        //	and p.payment_method_subtype = 'business'
+        //	and p.deleted_at is null
+        //)
+
+        $query2 = $query->select($merchantPricingPlanId)->from($merchantsTable)
+            ->where($merchantsTable . '.activated', '=', 1)->distinct()->whereNotIn(
+                $merchantId,
+                function($query3)
+                use ($merchantId,
+                    $pricingTable, $merchantPricingPlanId, $pricingPlanId, $merchantsTable)
+                {
+                    $query3->select($merchantId)->from($merchantsTable)->distinct()
+                        ->join($pricingTable, $pricingPlanId, '=', $merchantPricingPlanId)
+                        ->where($pricingTable . '.payment_method', '=', "card")
+                        ->where($pricingTable . '.payment_method_subtype', '=', "business")
+                        ->where($pricingTable . '.feature', '=', "payment")
+                        ->where($pricingTable . '.type', '=', "pricing")
+                        ->whereNull($pricingTable . '.deleted_at');
+                })
+            ->whereNotNull($merchantPricingPlanId)
+            ->limit($limit)->pluck($merchantPricingPlanId);
+
+       // sd($query->toSql());
+
+        return $query2->toArray();
     }
 
     public function getPricingPlanByIdOrFailPublic($id)

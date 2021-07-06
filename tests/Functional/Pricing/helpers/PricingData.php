@@ -1370,6 +1370,41 @@ return [
             ],
         ],
     ],
+    'testUpdatePricingSubType' => [
+        'request' => [
+            'url'=> '/merchants/pricing/bulk/update',
+            'content' => [
+                'count'      => 10,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'success'           => 1,
+                'total'      => 1,
+                'failed'        => 0,
+
+            ],
+        ],
+    ],
+
+    'testUpdatePricingSubTypeWithCorporateRuleAlreadyPresent' => [
+        'request' => [
+            'url'=> '/merchants/pricing/bulk/update',
+            'content' => [
+                'count'      => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'success'           => 0,
+                'total'      => 0,
+                'failed'        => 0,
+
+            ],
+        ],
+    ],
 
     'testAddPricingPlanBankTransferRuleWithoutMaxFee' => [
         'request' => [
