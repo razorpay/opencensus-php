@@ -51,6 +51,8 @@ class Cors
                 'Content-Type',
                 'X-Report-Type',
                 'x-recaptcha-mode',
+                // Added this to allow email verification via OTP in X
+                'x-send-email-otp'
             ];
 
             $headers = [
