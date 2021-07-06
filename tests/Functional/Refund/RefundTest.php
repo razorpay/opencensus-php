@@ -5247,7 +5247,7 @@ class RefundTest extends TestCase
         $this->fixtures->pricing->createInstantRefundsDefaultPricingV2Plan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
-        $refundFee = $this->paymentScroogeFetchRefundFee($payment['id'], 3471, 'IMPS');
+        $refundFee = $this->paymentScroogeFetchRefundFee(substr($payment['id'],4), 3471, 'IMPS');
 
         $this->assertEquals(943, $refundFee['fee']);
         $this->assertEquals(144, $refundFee['tax']);

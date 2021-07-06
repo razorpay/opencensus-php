@@ -154,7 +154,12 @@ class Validator extends Base\Validator
     protected static $getFeeRules = [
         'payment_id'    => 'required|public_id',
         'amount'        => 'required|integer|min:0',
-        'mode'          => 'sometimes|filled|string|in:IMPS,UPI,NEFT,RTGS,IFT,CT',          // instant refunds mode
+    ];
+
+    protected static $scroogeFetchFeeRules = [
+        'payment_id'    => 'required|unsigned_id|max:14',
+        'amount'        => 'required|integer|min:0',
+        'mode'          => 'sometimes|filled|string|in:IMPS,UPI,NEFT,RTGS,IFT,CT',  // instant refunds mode
     ];
 
     protected static $setUnprocessedRefundsConfigRules = [

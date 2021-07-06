@@ -780,15 +780,13 @@ class Service extends Base\Service
 
     public function scroogeFetchRefundFee(array $input)
     {
-        (new Validator)->validateInput('get_fee', $input);
+        (new Validator)->validateInput('scrooge_fetch_fee', $input);
 
         $paymentId = $input[Entity::PAYMENT_ID];
 
         unset($input[Entity::PAYMENT_ID]);
 
-        Payment\Entity::verifyIdAndStripSign($paymentId);
-
-        $payment = $this->repo->payment->findOrFailPublic($paymentId);
+        $payment = $this->repo->payment->findOrFail($paymentId);
 
         $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
