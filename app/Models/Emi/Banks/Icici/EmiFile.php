@@ -171,9 +171,13 @@ class EmiFile extends Base\EmiFile
 
     protected function generateEmiFilePassword()
     {
-        $monthYear = Carbon::now(Timezone::IST)->format('mY');
+         if($this->mode == "test")
+         {
+            $monthYear = Carbon::now(Timezone::IST)->format('mY');
+            return "razorpay" . $monthYear;
+         }
 
-        return "razorpay" . $monthYear;
+        return str_random(15);
     }
 
     protected function getFileToWriteName(array $data)
