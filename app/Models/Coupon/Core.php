@@ -7,11 +7,12 @@ use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Constants\Product;
-use RZP\Models\Partner\Constants as PartnerConstants;
-use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Trace\TraceCode;
 use RZP\Models\Promotion;
+use RZP\Constants\Product;
+use RZP\Models\Partner\Metric as PartnerMetric;
+use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core
@@ -265,6 +266,11 @@ class Core extends Base\Core
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
                 $partner, null,
                 $data);
+
+            if ($partner->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
+            {
+                $this->app->hubspot->skipMerchantOnboardingComm($merchant->getEmail());
+            }
 
             $this->app->hubspot->trackSubmerchantSignUp($partner->getEmail());
 

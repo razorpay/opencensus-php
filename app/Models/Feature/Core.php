@@ -22,6 +22,7 @@ use RZP\Mail\Merchant\EsEligible;
 use RZP\Mail\Merchant\FeatureEnabled;
 use RZP\Models\Merchant\SlackActions;
 use RZP\Mail\Loc\CashAdvanceEligible;
+use RZP\Jobs\SkipOnboardingCommFromHubSpot;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -46,9 +47,10 @@ class Core extends Base\Core
      * Create feature
      *
      * @param array $input
-     * @param bool  $shouldSync Should the entity be save on both test and live
+     * @param bool $shouldSync Should the entity be save on both test and live
      *
      * @return Entity
+     * @throws Exception\BadRequestException
      */
     public function create(array $input, bool $shouldSync = false): Entity
     {
@@ -114,6 +116,25 @@ class Core extends Base\Core
             (new Merchant\Service)->addMerchantToOnDemandEnabledMailingList($feature->getEntityId());
 
             (new OndemandFundAccount\Service)->dispatchSettlementOndemandFundAccountCreateJob($feature->getEntityId());
+        }
+
+        if (($feature->getName() === Feature::SKIP_SUBM_ONBOARDING_COMM) && ($feature->getEntityType() === Constants::MERCHANT)
+            && ($this->mode === Mode::LIVE))
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($entityId);
+
+            $appIds = (new Merchant\Core())->getPartnerApplicationIds($merchant);
+
+            $subMerchants = $this->repo->merchant->fetchSubmerchantsByAppIds($appIds);
+
+            $subMerchantEmails = $subMerchants->pluck(Merchant\Entity::EMAIL)->toArray();
+
+            $subMerchantEmailChunks = array_chunk($subMerchantEmails, 500);
+
+            foreach ($subMerchantEmailChunks as $subMerchantEmailChunk)
+            {
+                SkipOnboardingCommFromHubSpot::dispatch($this->mode, $entityId, $subMerchantEmailChunk);
+            }
         }
 
         $this->notifyMerchantOfFeatureActivationIfApplicable($entityType, $entityId, $feature, $shouldSync);

@@ -68,6 +68,7 @@ use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Validator as PartnerValidator;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
@@ -4460,6 +4461,11 @@ class Core extends Base\Core
             $partner, null,
             $data);
 
+        if ($partner->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
+        {
+            $this->app->hubspot->skipMerchantOnboardingComm($submerchant->getEmail());
+        }
+
         $this->app->hubspot->trackSubmerchantSignUp($partner->getEmail());
 
         $dimension = [
@@ -4908,5 +4914,10 @@ class Core extends Base\Core
 
             $merchant->save();
         }
+    }
+
+    public function skipMerchantOnboardingCommFromHubSpot(string $email)
+    {
+        $this->app->hubspot->skipMerchantOnboardingComm($email);
     }
 }

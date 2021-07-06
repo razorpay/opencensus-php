@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use Illuminate\Support\Arr;
 use RZP\Http\RequestHeader;
 use RZP\Jobs\HubspotRequestJob;
+use RZP\Models\Feature\Constants;
 
 class HubspotClient
 {
@@ -196,6 +197,13 @@ class HubspotClient
         ];
 
         $this->dispatchRequestJob($payload);
+    }
+
+    public function skipMerchantOnboardingComm(string $email)
+    {
+        $payloadData[Constants::SKIP_SUBM_ONBOARDING_COMM] = true;
+
+        $this->trackHubspotEvent($email, $payloadData);
     }
 
     public function trackSubmerchantSignUp(string $partnerEmail)

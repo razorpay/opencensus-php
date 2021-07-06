@@ -80,6 +80,7 @@ use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\PayoutLink\Service as PayoutLinkService;
@@ -4327,6 +4328,11 @@ class Service extends Base\Service
             return [$subMerchant, $newUser, $createdNew];
         });
 
+        if ($merchant->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
+        {
+            $this->app->hubspot->skipMerchantOnboardingComm($subMerchant->getEmail());
+        }
+
         // Sends email to marketplace LA dashboard enabled users.
         if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true))
         {
@@ -4526,6 +4532,11 @@ class Service extends Base\Service
         $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
             $partner, null,
             $data);
+
+        if ($partner->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
+        {
+            $this->app->hubspot->skipMerchantOnboardingComm($submerchant->getEmail());
+        }
 
         $this->app->hubspot->trackSubmerchantSignUp($partner->getEmail());
 

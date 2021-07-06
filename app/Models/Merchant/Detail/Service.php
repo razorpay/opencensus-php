@@ -33,6 +33,7 @@ use RZP\Models\Merchant\Referral as Referral;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use \RZP\Models\State\Entity as StateChangeEntity;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Document\FileHandler\Factory;
@@ -1064,6 +1065,11 @@ class Service extends Base\Service
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
                 $partner, null,
                 $data);
+
+            if ($partner->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
+            {
+                $this->app->hubspot->skipMerchantOnboardingComm($subMerchant->getEmail());
+            }
 
             $this->app->hubspot->trackSubmerchantSignUp($partner->getEmail());
 
