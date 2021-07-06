@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import InternationalCards from './InternationalCards';
 import PaypalOnboardingButton from './PaypalOnboarding';
+import { DocLink } from 'merchant/components/DocsLink';
 
 const InternationalPayments = ({ mode, user, config }) => {
   const internationalSection = useRef(null);
@@ -43,14 +44,14 @@ const PaypalWrapper = () => (
   <div class="paypal-auto-onboarding" id="paypal-auto-onboarding">
     <div class="heading">
       <li class="title">PayPal </li>
-      <a
+      <DocLink
         class="highlight know-more-link"
         target="_blank"
         href="https://razorpay.com/docs/payment-methods/paypal"
       >
         Know more
         <i class="i i-external-link" />
-      </a>
+      </DocLink>
 
       <PaypalOnboardingButton />
     </div>

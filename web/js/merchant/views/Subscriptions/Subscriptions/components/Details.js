@@ -13,6 +13,7 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 
 import Button from 'common/new-ui/Button';
+import { DocLink } from 'merchant/components/DocsLink'
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import CopyLink from 'merchant/components/CopyLink';
@@ -246,9 +247,9 @@ export default (props) => {
                         user.isOrgAllowedFunctionality('external_links')
                       }
                     >
-                      <a href="https://razorpay.com/docs/subscriptions" target="_blank">
+                      <DocLink href="https://razorpay.com/docs/subscriptions" target="_blank">
                         View docs >
-                      </a>{' '}
+                      </DocLink>{' '}
                     </ShowWhen>
                   </div>
                 </div>

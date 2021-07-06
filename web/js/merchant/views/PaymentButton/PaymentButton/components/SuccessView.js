@@ -4,6 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
+import { DocLink } from 'merchant/components/DocsLink'
 
 import { setIsPaymentButtonCodeUsed } from '../../utils';
 import track from '../Details/track';
@@ -107,23 +108,23 @@ export default class SuccessModal extends React.Component {
 
               <div class="help-text">
                 Check out our integration guide for{' '}
-                <a
+                <DocLink
                   href="https://razorpay.com/docs/payment-button/supported-platforms/wordpress"
                   target="_blank"
                 >
                   Wordpress <i class="i i-external-link m-l" />
-                </a>
+                </DocLink>
               </div>
 
               <div class="help-text">
                 Integration guide for{' '}
-                <a
+                <DocLink
                   href="https://razorpay.com/docs/payment-button/supported-platforms"
                   target="_blank"
                 >
                   Other Platforms
                   <i class="i i-external-link m-l" />
-                </a>
+                </DocLink>
               </div>
             </div>
           </div>

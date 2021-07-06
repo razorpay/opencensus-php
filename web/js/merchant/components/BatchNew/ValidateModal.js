@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { titleCase } from 'common/utils/rzp-utils';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
+import { DocLink } from 'merchant/components/DocsLink'
 
 const DEFAULT_MAX_FILE_SIZE = 1048576; // 1MB in bytes.
 
@@ -98,9 +99,9 @@ export default class BatchValidateModal extends Component {
                 <ShowWhen
                   additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
                 >
-                  <a class="btn btn-link m-l doc-url" href={docUrl} target="_blank">
+                  <DocLink class="btn btn-link m-l doc-url" href={docUrl} target="_blank">
                     View Documentation <i class="i i-external-link" />
-                  </a>
+                  </DocLink>
                 </ShowWhen>
               </h5>
               <p>Upload a batch file to continue.</p>
@@ -169,7 +170,7 @@ export default class BatchValidateModal extends Component {
                 {' '}
                 <img src="https://cdn.razorpay.com/static/assets/notifs/instant-refunds.svg" />{' '}
                 Retain customers and improve trust by issuing refunds instantly. &nbsp;{' '}
-                <a
+                <DocLink
                   onClick={() => {
                     window.rzpAnalytics({
                       eventCategory: `Batch ${titleCase(this.props.batchType)}`,
@@ -183,7 +184,7 @@ export default class BatchValidateModal extends Component {
                   <strong style={{ color: 'rgb(82, 143, 240)', cursor: 'pointer' }}>
                     Learn more
                   </strong>{' '}
-                </a>
+                </DocLink>
               </p>
             )}
           </React.Fragment>

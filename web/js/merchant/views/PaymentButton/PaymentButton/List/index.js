@@ -12,6 +12,7 @@ import DocsLink from 'merchant/components/DocsLink';
 import ListContainer from 'merchant/containers/ListContainer';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
+import { DocLink } from 'merchant/components/DocsLink'
 
 import ListFilter from './ListFilter';
 import GetCodeModal from '../components/GetCodeModal'; // SuccessModal
@@ -186,9 +187,9 @@ const EmptyComponent = () => (
       <div>Create a Payment Button to get Started</div>
       <br />
       Not sure where to start? See our getting{' '}
-      <a target="_blank" href="https://razorpay.com/docs/payment-button/">
+      <DocLink target="_blank" href="https://razorpay.com/docs/payment-button/">
         started guide <i class="i i-external-link" />
-      </a>
+      </DocLink>
     </div>
   </div>
 );

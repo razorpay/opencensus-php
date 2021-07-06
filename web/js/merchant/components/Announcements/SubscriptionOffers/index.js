@@ -1,5 +1,6 @@
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { getUser } from 'merchant/store';
+import { DocLink } from 'merchant/components/DocsLink';
 
 export default React.memo(({ productName }) => {
   const user = getUser();
@@ -14,9 +15,9 @@ export default React.memo(({ productName }) => {
       <span class="display-inline">
         You can now extend discounts to your customers on subscription plans.
       </span>
-      <a class="btn btn-link" href="https://razorpay.com/docs/subscriptions/offers" target="_blank">
+      <DocLink class="btn btn-link" href="https://razorpay.com/docs/subscriptions/offers" target="_blank">
         Know more
-      </a>
+      </DocLink>
     </AnnouncementBanner>
   );
 });

@@ -43,3 +43,12 @@ export function getCustomURL(url) {
 
   return link;
 }
+
+export const DocLink = (props) => (
+  <a
+    {...props}
+    href={getCustomURL(props.href)}
+  >
+    {props.children}
+  </a>
+);

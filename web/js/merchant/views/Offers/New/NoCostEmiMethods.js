@@ -5,6 +5,7 @@ import { ISSUERS, PAYMENT_NETWORK_MAP } from '../constants';
 import { deepClone } from '../../../../common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
 import Amount from '../../../../common/ui/Amount';
+import { DocLink } from 'merchant/components/DocsLink'
 
 export default class NoCostEmiMethods extends React.Component {
   constructor(props) {
@@ -166,9 +167,9 @@ export default class NoCostEmiMethods extends React.Component {
             <li>
               In No-Cost-EMI, the interest charged by bank is given as a discount to the customer.
               To know more about how this works, click{' '}
-              <a target="_blank" href={'https://razorpay.com/docs/offers/no-cost-emi/'}>
+              <DocLink target="_blank" href="https://razorpay.com/docs/offers/no-cost-emi/">
                 here
-              </a>
+              </DocLink>
               .
             </li>
           </ul>

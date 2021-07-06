@@ -1728,6 +1728,7 @@ export default class InvoicesNewContainer extends Component {
                         name={this.state.merchantAltBillingLabel}
                         gstin={showGstn && merchantGSTIN}
                         cin={showGstn && merchantCIN}
+                        hideRazorpayDetails={user.isWhiteLabelledOrg}
                       />
 
                       <div class="row">

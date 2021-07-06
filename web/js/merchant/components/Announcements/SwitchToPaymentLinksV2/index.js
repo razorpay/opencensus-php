@@ -2,6 +2,7 @@ import { connect } from 'react-redux';
 
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import Button from 'common/new-ui/Button';
+import { getCustomURL } from 'merchant/components/DocsLink';
 import SwitchToPLV2Modal from './components/SwitchToPLV2Modal';
 
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
@@ -12,7 +13,7 @@ const bannerText =
 const cardId = 'Switch to Payment Links V2';
 
 const cta1Text = 'here.';
-const cta1Link = 'https://razorpay.com/docs/payment-links/api/new/';
+const cta1Link = getCustomURL('https://razorpay.com/docs/payment-links/api/new/');
 
 const cta2Text = 'Switch Now';
 

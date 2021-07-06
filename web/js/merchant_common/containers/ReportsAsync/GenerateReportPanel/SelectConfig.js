@@ -3,6 +3,7 @@ import { PowerSelect } from 'react-power-select';
 import { Label } from 'common/new-ui/Input';
 import { pickProps } from 'common/utils/rzp-utils';
 import Banner from 'common/ui/Banner';
+import { DocLink } from 'merchant/components/DocsLink';
 
 export default function SelectConfig({ configs, selectedConfig, ...props }) {
   function onChange({ option }) {
@@ -45,13 +46,13 @@ export default function SelectConfig({ configs, selectedConfig, ...props }) {
                 The December invoice is for the billing cycle starting on Dec 01, 2020 to Dec 30,
                 2020 and is generated on Dec-31, 2020 due to new GST guidelines effective from 1st
                 Jan 2020. The charges for Dec 31, 2020 will be added to the next billing cycle.{' '}
-                <a
+                <DocLink
                   href="https://razorpay.com/docs/announcements/gst-changes/"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   Learn more.
-                </a>
+                </DocLink>
               </span>
             )}
         </div>

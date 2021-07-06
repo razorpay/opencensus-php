@@ -18,6 +18,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import EmptyList from 'merchant/components/EmptyList';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
+import { DocLink } from 'merchant/components/DocsLink'
 
 import List from './List';
 
@@ -316,14 +317,14 @@ export default class PaymentPagesContainer extends ListContainer {
             <ShowWhen
               additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
             >
-              <a
+              <DocLink
                 class="btn btn-link settlement-doc-btn"
                 href="https://razorpay.com/docs/payment-pages/"
                 target="_blank"
               >
                 Documentation&nbsp;
                 <span class="icon i-external-link" />
-              </a>
+              </DocLink>
             </ShowWhen>
 
             {isRoleAllowedEdit && (

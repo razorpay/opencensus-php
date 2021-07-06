@@ -8,6 +8,7 @@ import CustomClipboard from 'common/ui/Clipboard/Custom';
 
 import { fetchPaymentPageEntity as fetchPaymentButtonEntity } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { setIsPaymentButtonCodeUsed } from '../../utils';
+import { DocLink } from 'merchant/components/DocsLink'
 
 @connect((state) => ({
   user: state.session.user,
@@ -87,13 +88,13 @@ export default class GetCodeModal extends React.Component {
       children = (
         <div class="docs-link m-t">
           How to use this code?{' '}
-          <a
+          <DocLink
             target="_black"
             href="https://razorpay.com/docs/payment-button/"
             onClick={this.props.onClickSeeDocumentation}
           >
             See documentation <i class="i i-external-link" />
-          </a>
+          </DocLink>
         </div>
       );
     }

@@ -1,6 +1,7 @@
 import { withRouter, Link } from 'react-router-dom';
 
 import GetCodeModal from './GetCodeModal';
+import { DocLink } from 'merchant/components/DocsLink'
 
 @withRouter
 export default class SuccessModal extends React.Component {
@@ -36,13 +37,13 @@ export default class SuccessModal extends React.Component {
     const docLink = (
       <div class="docs-link m-t">
         How to use this code?{' '}
-        <a
+        <DocLink
           target="_blank"
           href="https://razorpay.com/docs/payment-button/"
           onClick={this.props.onClickSeeDocumentation}
         >
           See our documentation <i class="i i-external-link" />
-        </a>
+        </DocLink>
       </div>
     );
 

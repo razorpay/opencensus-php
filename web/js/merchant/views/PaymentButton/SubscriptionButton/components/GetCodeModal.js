@@ -5,6 +5,7 @@ import Spinner from 'common/ui/Spinner';
 import Input from 'common/new-ui/Input';
 import ModalHeader from 'common/ui/ModalHeader';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
+import { DocLink } from 'merchant/components/DocsLink'
 
 import { fetchPaymentPageEntity as fetchsubscriptionButtonEntity } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { setIsPaymentButtonCodeUsed } from '../../utils';
@@ -87,13 +88,13 @@ export default class GetCodeModal extends React.Component {
       children = (
         <div class="docs-link m-t">
           How to use this code?{' '}
-          <a
+          <DocLink
             target="_black"
             href="https://razorpay.com/docs/payment-button/subscription-buttons/"
             onClick={this.props.onClickSeeDocumentation}
           >
             See documentation <i class="i i-external-link" />
-          </a>
+          </DocLink>
         </div>
       );
     }

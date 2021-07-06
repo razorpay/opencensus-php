@@ -1,5 +1,6 @@
 import ModalHeader from 'common/ui/ModalHeader';
 import Button from 'common/new-ui/Button';
+import { DocLink } from 'merchant/components/DocsLink';
 
 import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -82,10 +83,10 @@ class SwitchToPLV2Modal extends React.Component {
           <br />
           <br />
           To learn more about new service and its features, visit our{' '}
-          <a href={DOCS_LINK} target="_blank" rel="noopener">
+          <DocLink href={DOCS_LINK} target="_blank" rel="noopener">
             documentation page &nbsp;
             <i className="i i-external-link" />
-          </a>
+          </DocLink>
           .
           <br />
           <br />

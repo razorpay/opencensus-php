@@ -20,6 +20,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { batchDownload } from 'merchant/reducers/batches';
 import Popover, { PopoverBody, PopoverTitle } from 'common/ui/Popover';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { DocLink } from 'merchant/components/DocsLink'
 
 const batchStatus = {
   ...status,
@@ -108,10 +109,10 @@ export default class BatchList extends ListContainer {
             }
           >
             {docUrl && (
-              <a class="btn btn-link hidden-xs" href={docUrl} target="_blank">
+              <DocLink class="btn btn-link hidden-xs" href={docUrl} target="_blank">
                 Documentation &nbsp;
                 <i class="i i-external-link" />
-              </a>
+              </DocLink>
             )}
           </ShowWhen>
 

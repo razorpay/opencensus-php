@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { classList } from 'common/utils/rzp-utils';
 import Button from 'common/new-ui/Button';
-
+import { DocLink } from 'merchant/components/DocsLink';
 import useLocalStorageCheck from 'merchant/hooks/localStorageCheck';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import BackgroundImg from './background.svg';
@@ -56,7 +56,7 @@ const CardPaymentsBlockedModal = ({ user }) => {
               ) : (
                 <>To understand business impact for such subscriptions, please refer to</>
               )}{' '}
-              <a
+              <DocLink
                 href={
                   user.isChargeAtWillEnabled
                     ? 'https://razorpay.com/docs/announcements/rbi-card-mandate-guidelines/recurring-payments'
@@ -67,7 +67,7 @@ const CardPaymentsBlockedModal = ({ user }) => {
                 class="doc-link"
               >
                 our documentation here.
-              </a>
+              </DocLink>
             </div>
             <div class="banner">
               {user.isChargeAtWillEnabled ? (

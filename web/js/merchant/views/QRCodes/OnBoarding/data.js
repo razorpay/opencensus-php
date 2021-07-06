@@ -1,4 +1,3 @@
-import { getCustomURL } from 'merchant/components/DocsLink';
 
 // Features
 export const FEATURES_DATA = [
@@ -24,6 +23,6 @@ export const FEATURES_DATA = [
 export const FEATURES_LINKS = [
   {
     label: 'Know more',
-    url: getCustomURL('https://razorpay.com/docs/qr-codes/'),
+    url: 'https://razorpay.com/docs/qr-codes/',
   },
 ];

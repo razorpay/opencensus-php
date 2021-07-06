@@ -4,6 +4,7 @@ import { NavLink } from 'react-router-dom';
 import { Redirect } from 'react-router-dom';
 import HeaderAction from 'common/ui/HeaderAction';
 import { fetchTeamDetails } from 'merchantLA/reducers/team';
+import { DocLink } from 'merchant/components/DocsLink';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import NewInvitation from './NewInvitation';
 import Invitation from './Invitation';
@@ -40,14 +41,14 @@ export default class TeamContainer extends Component {
       <div>
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <a
+            <DocLink
               class="btn btn-link"
               href="https://razorpay.com/docs/team-support/"
               target="_blank"
             >
               Documentation &nbsp;
               <i class="icon icon-external-link" />
-            </a>
+            </DocLink>
           </div>
         </HeaderAction>
         <div class="content-wrapper content-sm">

@@ -17,6 +17,7 @@ import Collapsible from 'merchant/components/Collapsible';
 import ProductCard from 'merchant/components/ProductCard/ProductCard';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCustomURL } from 'merchant/components/DocsLink'
 
 export default class extends React.PureComponent {
   state = {};
@@ -217,7 +218,7 @@ export default class extends React.PureComponent {
             primaryLink={
               user.isAllowedEdit('subscription_buttons') && '/app/subscription_buttons/new'
             }
-            secondaryLink="https://razorpay.com/docs/payment-button/subscription-buttons/"
+            secondaryLink={getCustomURL("https://razorpay.com/docs/payment-button/subscription-buttons/")}
             source="payment-pages"
             trackerFn={window.rzpQ.subscriptionButtons}
           />

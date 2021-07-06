@@ -7,6 +7,7 @@ import HeaderAction from 'common/ui/HeaderAction';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 import { RZPFeatures } from 'merchant/helpers/data';
+import { getCustomURL } from 'merchant/components/DocsLink'
 import {
   getKeysSeparatedByPipe,
   findBy,

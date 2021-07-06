@@ -8,6 +8,7 @@ import { luminateRow } from 'merchant/reducers/app';
 import BatchValidate from './Validate';
 import BatchCreate from './Create';
 import SuccessModal from 'merchant/components/BatchNew/SuccessModal';
+import { getCustomURL } from 'merchant/components/DocsLink'
 
 /**
  * Container:  Switches between validation or creation of batch.
@@ -46,6 +47,7 @@ export default class BatchUpload extends Component {
     this.props.closeModal();
   };
   render() {
+    const docLink = getCustomURL(this.props.docUrl);
     return (
       <div class={`batch-upload-modal ${this.state.currentStatus}`}>
         <ModalHeader
@@ -61,7 +63,7 @@ export default class BatchUpload extends Component {
                   batchType={this.props.batchType}
                   batchTypeText={this.props.batchTypeText}
                   sampleUrl={this.props.sampleUrl}
-                  docUrl={this.props.docUrl}
+                  docUrl={docLink}
                   gaEvents={this.props.gaEvents}
                   validateBatch={this.props.validateBatch}
                   maxRows={this.props.maxRows}
@@ -81,7 +83,7 @@ export default class BatchUpload extends Component {
                   createBatch={this.props.createBatch}
                   trackUploadBatch={this.props.gaEvents.trackUploadBatch}
                   trackSampleInterpretation={this.props.gaEvents.trackSampleInterpretation}
-                  docUrl={this.props.docUrl}
+                  docUrl={docLink}
                   sampleUrl={this.props.sampleUrl}
                   processingOptions={this.props.processingOptions}
                 />

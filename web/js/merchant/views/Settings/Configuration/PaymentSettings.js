@@ -11,6 +11,7 @@ import {
   fetchLateAuthConfig,
   createLateAuthConfig,
 } from 'merchant/reducers/config';
+import { DocLink } from 'merchant/components/DocsLink';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -532,7 +533,7 @@ export default class PaymentSettings extends Component {
           <span class="title">Payment Capture</span>
 
           <span class="toggler-btn">
-            <a
+            <DocLink
               href={getCustomURL(
                 'https://razorpay.com/docs/payment-gateway/payments/capture-settings/',
               )}
@@ -541,7 +542,7 @@ export default class PaymentSettings extends Component {
               onClick={this.onKnowMoreClick}
             >
               Know more <i class="i i-external-link" style={{ marginLeft: '5px' }} />
-            </a>
+            </DocLink>
           </span>
         </div>
 

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import CustomerDetailsPreview from './Types/CustomerDetailsPreview';
 import AmountDetailsPreview from './Types/AmountDetailsPreview';
 import ButtonDetailsPreview from './Types/ButtonDetailsPreview';
-
+import { DocLink } from 'merchant/components/DocsLink';
 import { loadColorJs } from 'common/utils/color';
 import { classList } from 'common/utils/rzp-utils';
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
@@ -89,9 +89,9 @@ export default class Preview extends React.Component {
             </div>
           */}
 
-          <a class="doc-link" target="_blank" href="https://razorpay.com/docs/payment-button/">
+          <DocLink class="doc-link" target="_blank" href="https://razorpay.com/docs/payment-button/">
             Visit our Documentation <i class="i i-external-link" />
-          </a>
+          </DocLink>
         </div>
       </div>
     );

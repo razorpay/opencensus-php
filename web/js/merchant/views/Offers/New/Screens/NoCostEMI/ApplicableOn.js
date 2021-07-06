@@ -4,6 +4,7 @@ import Amount from 'common/ui/Amount';
 
 import { PAYMENT_NETWORK_MAP, ISSUERS } from 'merchant/views/Offers/constants';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
+import { DocLink } from 'merchant/components/DocsLink'
 
 const NetworksAndIssuers = { ...PAYMENT_NETWORK_MAP, ...ISSUERS };
 
@@ -105,13 +106,13 @@ export default class ApplicableOn extends React.Component {
             <li>
               In No-Cost-EMI, the interest charged by bank is given as a discount to the customer.
               To know more about how this works, click{' '}
-              <a
+              <DocLink
                 target="_blank"
                 rel="noopener noreferrer"
                 href="https://razorpay.com/docs/offers/no-cost-emi/"
               >
                 here
-              </a>
+              </DocLink>
               .
             </li>
           </ul>

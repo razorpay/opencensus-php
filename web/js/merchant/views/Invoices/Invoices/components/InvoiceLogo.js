@@ -1,4 +1,4 @@
-export default ({ name, logo, gstin, cin }) => {
+export default function InvoiceLogo({ name, logo, gstin, cin, hideRazorpayDetails }) {
   return (
     <div class="row inv__branding">
       <div class="col-md-8 inv__branding--merchant">
@@ -27,22 +27,24 @@ export default ({ name, logo, gstin, cin }) => {
           </div>
         </div>
       </div>
-      <div class="col-md-4 inv__branding--rzp">
-        <div class="text-right pull-right">
-          <a class="rzp-logo" href="https://razorpay.com/" target="_blank">
-            <img src="https://razorpay.com/images/logo-black.png" alt="." />
-          </a>
-          <div class="rzp-header-branding-label">
-            <div>Invoicing and payments</div>
-            <div>
-              powered by{' '}
-              <a href="https://razorpay.com/" target="_blank">
-                Razorpay
-              </a>
+      {!hideRazorpayDetails && (
+        <div class="col-md-4 inv__branding--rzp">
+          <div class="text-right pull-right">
+            <a class="rzp-logo" href="https://razorpay.com/" target="_blank">
+              <img src="https://razorpay.com/images/logo-black.png" alt="." />
+            </a>
+            <div class="rzp-header-branding-label">
+              <div>Invoicing and payments</div>
+              <div>
+                powered by{' '}
+                <a href="https://razorpay.com/" target="_blank">
+                  Razorpay
+                </a>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
-};
+}

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-
+import { DocLink } from 'merchant/components/DocsLink';
 import { getMode, getUser } from 'merchant/store';
 
 const bannerText =
@@ -54,7 +54,7 @@ export default React.memo(({ productName }) => {
   return (
     <AnnouncementBanner title="Introducing Subscription Button" theme="primary" fullPage>
       <span class="display-inline m-r">{bannerText}</span>
-      <a
+      <DocLink
         class="Button--primary Button Button--narrow m-l"
         href={ctaLink}
         target="_blank"
@@ -63,7 +63,7 @@ export default React.memo(({ productName }) => {
         <b>
           {ctaText} <i class="i i-external-link" />
         </b>
-      </a>{' '}
+      </DocLink>{' '}
     </AnnouncementBanner>
   );
 });

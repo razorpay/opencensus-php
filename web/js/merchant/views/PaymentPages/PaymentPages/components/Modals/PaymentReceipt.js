@@ -13,6 +13,7 @@ import Input, { Label, Description } from 'common/new-ui/Input';
 import { PowerSelect } from 'react-power-select';
 import { openModal } from 'merchant_common/reducers/modals';
 import { classList } from 'common/utils/rzp-utils';
+import { DocLink } from 'merchant/components/DocsLink'
 
 import Merchant80gDetails from './Merchant80gDetails';
 
@@ -109,10 +110,10 @@ export default class PaymentReceipt extends React.Component {
 
     //preparing track data for GA
     const trackData = [];
-    
+
     if(formData.enable_custom_serial_number == 0) {
       trackData.push('Automated');
-    } else {  
+    } else {
       trackData.push('Manual');
     }
 
@@ -240,15 +241,15 @@ export default class PaymentReceipt extends React.Component {
                 />
 
                 <div class="doc-links">
-                  <a
+                  <DocLink
                     href="https://razorpay.com/docs/payment-pages/receipt-80g/#pdf-receipt-to-customers"
                     target="_blank"
                   >
                     View Sample Receipt <i class="i i-external-link" />
-                  </a>
-                  <a href="https://razorpay.com/docs/payment-pages/receipt-80g" target="_blank">
+                  </DocLink>
+                  <DocLink href="https://razorpay.com/docs/payment-pages/receipt-80g" target="_blank">
                     Learn More <i class="i i-external-link" />
-                  </a>
+                  </DocLink>
                 </div>
               </div>
 

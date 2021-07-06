@@ -1,4 +1,5 @@
 import RTracking from 'react-tracking';
+import { getCustomURL } from 'merchant/components/DocsLink';
 
 import Button from 'common/new-ui/Button';
 import FeatureCard from 'merchant/components/Feature';
@@ -84,7 +85,7 @@ class FeatureLink extends React.PureComponent {
 
     this.props.onClick && this.props.onClick();
 
-    window.open(url);
+    window.open(getCustomURL(url));
   };
   render() {
     return (
