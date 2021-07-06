@@ -159,12 +159,31 @@ ${it.brandBg ? `.${org} .brand-logo{background:${it.brandBg};}` : ''}
   border-color: ${it.sidebarLinkActive || it.transparent};
 }
 
+
+.${org} .sidebar .nav .NavLinkGroup--active .Collapsible--title {
+  background-color: transparent
+}
+
+.${org} .sidebar .nav .NavLinkGroup--title, .sidebar .nav .NavLink {
+  color: ${it.textLight} !important
+}
+
+.${org} .sidebar .nav .NavLinkGroup--title:hover, .sidebar .nav .NavLink:hover, .sidebar .nav .NavLinkGroup--title:focus, .sidebar .nav .NavLink:focus,
+.${org} .sidebar .nav .NavLinkGroup--title.active, .sidebar .nav .NavLink.active,
+.${org} .sidebar .nav .NavLinkGroup .Collapsible--title:hover{
+  background-color: ${it.transparent} !important;
+}
+
 ${
   it.sideBarIcon
     ? `
+    .${org} .sidebar .nav .NavLinkGroup--title .i, .sidebar .nav .NavLink .i, .sidebar .nav .NavLinkGroup--title .fa, .sidebar .nav .NavLink .fa {
+      color:${it.sideBarIcon} !important;
+    }
+
     .${org} .sidebar .nav > a:focus,
     .${org} .sidebar .nav > a >i{
-color:${it.sideBarIcon};
+color:${it.sideBarIcon} !important;
 }`
     : ``
 }
@@ -174,7 +193,7 @@ ${
     ? `
     .${org} .sidebar .nav > a:focus,
     .${org}.sidebar .nav > a.active>i{
-color:${it.sideBarIconActive};
+color:${it.sideBarIconActive} !important;
 }`
     : ``
 }
