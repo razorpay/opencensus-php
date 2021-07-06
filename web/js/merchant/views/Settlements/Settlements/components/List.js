@@ -6,6 +6,7 @@ import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+
 const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
   const handleTracking = () => {
     analyticsTrack({
@@ -27,13 +28,13 @@ const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
         </Link>
       </td>
       <td class="text-right">
-        <Amount value={settlement.amount} currency={'INR'} />
+        <Amount value={settlement.amount} currency="INR" />
       </td>
       <td class="text-right">
-        <Amount value={settlement.fees} currency={'INR'} />
+        <Amount value={settlement.fees} currency="INR" />
       </td>
       <td class="text-right">
-        <Amount value={settlement.tax} currency={'INR'} />
+        <Amount value={settlement.tax} currency="INR" />
       </td>
       <td>
         <Time value={settlement.created_at} format="DD MMM YYYY, hh:mm:ss a" />
@@ -51,7 +52,7 @@ const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
 };
 
 export default (props) => {
-  let { settlements, isLoading, showBreakup } = props;
+  const { settlements, isLoading, showBreakup } = props;
 
   return (
     <div class="table-responsive">

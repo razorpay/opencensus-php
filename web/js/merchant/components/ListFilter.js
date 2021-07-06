@@ -4,9 +4,7 @@ import AsyncButton from 'react-async-button';
 import { stringifyQueryParams, getURLQueryParams } from 'common/utils/rzp-utils';
 import { withRouter } from 'react-router-dom';
 
-@reduxForm({})
-@withRouter
-export default class ListFilter extends Component {
+class ListFilter extends Component {
   constructor(props) {
     super(props);
 
@@ -32,11 +30,11 @@ export default class ListFilter extends Component {
   }
 
   initSearchForm(props) {
-    let count = props.count;
+    const count = props.count;
     let params = {};
 
     if (count) {
-      params['count'] = count;
+      params.count = count;
     }
 
     if (props.location.search) {
@@ -82,11 +80,11 @@ export default class ListFilter extends Component {
   };
 
   render() {
-    let { handleSubmit, onSubmit, form } = this.props;
+    const { handleSubmit, form } = this.props;
     const { hasMoreFilters, showAllFilters } = this.state;
 
     const filters = this.props.children;
-    let visibleFilters = showAllFilters ? filters : filters.slice(0, 8);
+    const visibleFilters = showAllFilters ? filters : filters.slice(0, 8);
 
     return (
       <form
@@ -107,7 +105,7 @@ export default class ListFilter extends Component {
               }}
             >
               {showAllFilters ? 'Hide Filters' : 'Show All Filters'}
-              <i class={'m-l i i-chevron-' + (showAllFilters ? 'up' : 'down')} />
+              <i class={`m-l i i-chevron-${showAllFilters ? 'up' : 'down'}`} />
             </button>
           )}
           <button class="btn btn-primary btn-sm">Search</button>
@@ -123,3 +121,5 @@ ListFilter.defaultProps = {
   onSearchAnalytics: () => {},
   onClearAnalytics: () => {},
 };
+
+export default withRouter(reduxForm({})(ListFilter));

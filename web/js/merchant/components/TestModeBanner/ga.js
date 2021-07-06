@@ -5,7 +5,7 @@ export const track = setTrackData({
   eventLabel: 'from Test Mode Banner',
 });
 
-export const trackLinkClick = eventAction =>
+export const trackLinkClick = (eventAction) =>
   track({
     eventAction,
   });

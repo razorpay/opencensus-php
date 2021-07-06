@@ -1,7 +1,8 @@
+/* eslint-disable consistent-return */
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
-import { Link } from 'react-router-dom';
+import { bindActionCreators } from 'redux';
+import { withRouter } from 'react-router-dom';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -12,14 +13,9 @@ import HeaderAction from 'common/ui/HeaderAction';
 import { fetchSettlements as fetchAll } from 'merchant/reducers/collection';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import TestModeBanner from 'merchant/components/TestModeBanner';
-import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
-import {
-  getKeysSeparatedByPipe,
-  handleNegativeBalanceLimit,
-  getFormattedAmountNew,
-} from 'common/utils/rzp-utils';
+import { getKeysSeparatedByPipe, getFormattedAmountNew } from 'common/utils/rzp-utils';
 import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlements/Modal';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import {
@@ -27,15 +23,17 @@ import {
   trackOndemand,
   EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
   EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT,
-  trackAnimatedSettleBtnImpressions,
 } from './ga';
 import {
-  fetchCurrentBalance,
-  fetchSettlementAmount,
-  fetchBalanceConfig,
+  fetchCurrentBalance as fnFetchCurrentBalance,
+  fetchSettlementAmount as fnFetchSettlementAmount,
+  fetchBalanceConfig as fnFetchBalanceConfig,
   fetchOndemandRestrictions,
 } from 'merchant/reducers/home';
-import { fetchSchedule, fetchHolidayList } from 'merchant/reducers/settlements/details';
+import {
+  fetchSchedule as fnFetchSchedule,
+  fetchHolidayList as fnFetchHolidayList,
+} from 'merchant/reducers/settlements/details';
 import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
 import Amount from 'common/ui/Amount';
 import ScheduledBanner from 'merchant/views/Settlements/Settlements/components/ScheduledBanner';
@@ -46,32 +44,7 @@ import SettlementGuideText from 'merchant_common/components/SettlementGuideText'
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 import { handleAnalytics } from './analytics';
 
-@withRouter
-@connect(
-  (state) => ({
-    user: state.session.user,
-    mode: state.session.mode,
-    schedule: state.settlement.schedule,
-    settlement_amount: state.home.settlement_amount,
-    holidayList: state.settlement.holidayList,
-    config: state.config.config,
-    payments: state.payments,
-    ...state.home,
-    ...state.settlements,
-  }),
-  {
-    fetchAll,
-    showNotification,
-    ...ModalActions,
-    fetchCurrentBalance,
-    fetchSchedule,
-    fetchSettlementAmount,
-    fetchHolidayList,
-    fetchBalanceConfig,
-    fetchOndemandRestrictions,
-  },
-)
-export default class SettlementsListContainer extends ListContainer {
+class SettlementsListContainer extends ListContainer {
   state = {
     openAutoModal: false,
   };
@@ -82,6 +55,7 @@ export default class SettlementsListContainer extends ListContainer {
 
   get settleNowRestrictionMsg() {
     if (!this.settlementRestricted) return;
+
     const {
       attempts_left,
       settlable_amount,
@@ -101,7 +75,7 @@ export default class SettlementsListContainer extends ListContainer {
         max_amount_limit,
         true,
       )} for the day.`;
-    } else return;
+    } else return '';
   }
 
   componentWillReceiveProps(nextProps) {
@@ -143,7 +117,6 @@ export default class SettlementsListContainer extends ListContainer {
       fetchBalanceConfig,
       fetchSettlementAmount,
       fetchHolidayList,
-      fetchAll,
       location,
     } = this.props;
 
@@ -229,7 +202,7 @@ export default class SettlementsListContainer extends ListContainer {
       ),
       size: 'large',
     });
-    let properties = {
+    const properties = {
       ...settlement.analyticsPayload(),
     };
     handleAnalytics('break up', 'clicked', properties);
@@ -257,7 +230,6 @@ export default class SettlementsListContainer extends ListContainer {
       checkIfFirstEverSettlement,
       settlementExists,
       esOndemandSettlementEnabled,
-      user,
     } = this.props;
 
     const balance = current_balance.data.balance;
@@ -298,15 +270,15 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   handleSearch = (args) => {
-    let objectName = 'settlements search';
-    let searchProps = {
+    const objectName = 'settlements search';
+    const searchProps = {
       searchTerm: args.id,
       count: args.count,
     };
     handleAnalytics(objectName, 'clicked', searchProps);
     this.search(args)
       .then(({ data }) => {
-        let resultProps = {
+        const resultProps = {
           searchTerm: args.id,
           resultsReturned: true,
           numberofResults: data.items.length,
@@ -315,7 +287,7 @@ export default class SettlementsListContainer extends ListContainer {
         handleAnalytics(objectName, 'result', resultProps);
       })
       .catch((e) => {
-        let failureProps = {
+        const failureProps = {
           searchTerm: args.id,
           resultsReturned: false,
           status: 'failure',
@@ -326,7 +298,7 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   handlePagination = (params, type) => {
-    let properties = {
+    const properties = {
       paginationType: type === 'prev' ? 'previous' : type,
     };
     this.paginate(params, type);
@@ -360,7 +332,6 @@ export default class SettlementsListContainer extends ListContainer {
       this.settlementRestricted &&
       (!attemptsLeft || !settlableAmount || isOndemandRestrictionsLoading);
 
-    const { showInstantActivation, isSubmitted } = user;
     let balance = current_balance.data.balance || 0;
     let currentBalanceClassName = 'amount-current-balance';
 
@@ -450,11 +421,11 @@ export default class SettlementsListContainer extends ListContainer {
                       </strong>
                       {this.props.user.isAutomaticSettlementEnabled && (
                         <i class="i i-early-settlement settle-current-icon">
-                          <Popover align="left" theme="dark">
+                          <PopoverComponent align="left" theme="dark">
                             <PopoverBody>
                               <span>Early Settlment has been enabled with your account.</span>
                             </PopoverBody>
-                          </Popover>
+                          </PopoverComponent>
                         </i>
                       )}
                     </div>
@@ -477,11 +448,11 @@ export default class SettlementsListContainer extends ListContainer {
                           {this.props.settlement_amount.data.reason_for_delay && (
                             <>
                               <i class="i i-info-circle" />
-                              <Popover theme="dark" align="left">
+                              <PopoverComponent theme="dark" align="left">
                                 <PopoverBody>
                                   <div>{this.props.settlement_amount.data.reason_for_delay}</div>
                                 </PopoverBody>
-                              </Popover>
+                              </PopoverComponent>
                             </>
                           )}
                           <span
@@ -524,13 +495,13 @@ export default class SettlementsListContainer extends ListContainer {
                           checkIfFirstEverSettlement={checkIfFirstEverSettlement}
                         />
                         {this.settleNowRestrictionMsg && (
-                          <Popover
+                          <PopoverComponent
                             align="top"
-                            parentQuerySelector={`.settle-btn .settle-now--list`}
+                            parentQuerySelector=".settle-btn .settle-now--list"
                             theme="dark"
                           >
                             <PopoverBody>{this.settleNowRestrictionMsg}</PopoverBody>
-                          </Popover>
+                          </PopoverComponent>
                         )}
                       </div>
                     )}
@@ -544,11 +515,11 @@ export default class SettlementsListContainer extends ListContainer {
                       {no_settlement.reason && (
                         <>
                           <i class="i i-info-circle" />
-                          <Popover theme="dark" align="left">
+                          <PopoverComponent theme="dark" align="left">
                             <PopoverBody>
                               <div>{no_settlement.reason}</div>
                             </PopoverBody>
-                          </Popover>
+                          </PopoverComponent>
                         </>
                       )}
                     </span>
@@ -589,3 +560,36 @@ export default class SettlementsListContainer extends ListContainer {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+    mode: state.session.mode,
+    schedule: state.settlement.schedule,
+    settlement_amount: state.home.settlement_amount,
+    holidayList: state.settlement.holidayList,
+    config: state.config.config,
+    payments: state.payments,
+    ...state.home,
+    ...state.settlements,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      fetchAll,
+      showNotification,
+      ...ModalActions,
+      fetchCurrentBalance: fnFetchCurrentBalance,
+      fetchSchedule: fnFetchSchedule,
+      fetchSettlementAmount: fnFetchSettlementAmount,
+      fetchHolidayList: fnFetchHolidayList,
+      fetchBalanceConfig: fnFetchBalanceConfig,
+      fetchOndemandRestrictions,
+    },
+    dispatch,
+  );
+};
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(SettlementsListContainer));

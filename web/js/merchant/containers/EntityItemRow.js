@@ -1,8 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-@connect(state => state.app)
-export default class EnityItemRow extends Component {
+class EnityItemRow extends Component {
   render() {
     const { id, luminateRowId, activeEntityId, activeSecEntityId } = this.props;
     return (
@@ -16,3 +15,9 @@ export default class EnityItemRow extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return state.app;
+};
+
+export default connect(mapStateToProps, null)(EnityItemRow);

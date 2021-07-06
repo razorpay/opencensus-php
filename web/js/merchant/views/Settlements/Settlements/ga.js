@@ -36,13 +36,13 @@ const ondemandEvents = {
 };
 
 const ondemandTrackers = () => {
-  let trackers = {};
+  const trackers = {};
 
   Object.keys(ondemandEvents).forEach((elem) => {
-    trackers[elem] = function (eventLabel) {
+    trackers[elem] = function fn(eventLabel) {
       track({
         eventAction: ondemandEvents[elem],
-        eventLabel: eventLabel,
+        eventLabel,
       });
     };
   });

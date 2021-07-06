@@ -1,0 +1,5 @@
+{
+  "web/v2/**/*.(js|jsx|ts|tsx)": ["eslint", "stylelint"],
+  "web/js/merchant/views/Settlements/**/*.(js|jsx)": ["eslint", "stylelint"],
+  "*.(js|json|jsx|ts|tsx)": ["prettier --write"]
+}

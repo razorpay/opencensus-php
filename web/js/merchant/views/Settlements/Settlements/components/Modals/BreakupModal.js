@@ -8,36 +8,34 @@ import SettlementBreakupTable from 'merchant/views/Settlements/Settlements/compo
 import { fetchBreakupDetails } from 'merchant/reducers/settlements/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { handleAnalytics } from 'merchant/views/Settlements/Settlements/analytics';
-@connect((state) => state.settlement.breakupDetails, {
-  fetchBreakupDetails,
-  ...ModalActions,
-})
-export default class BreakdownModal extends Component {
+import { bindActionCreators } from 'redux';
+
+class BreakdownModal extends Component {
   componentWillMount() {
     this.props
       .fetchBreakupDetails({
         id: this.props.settlementId,
       })
       .then(() => {
-        let properties = this.props.settlement
+        const properties = this.props.settlement
           ? { ...this.props.settlement.analyticsPayload(), status: 'success' }
           : {};
-        this.props.settlement && handleAnalytics('break up', 'status', properties);
+        if (this.props.settlement) handleAnalytics('break up', 'status', properties);
       })
       .catch((e) => {
-        let properties = this.props.settlement
+        const properties = this.props.settlement
           ? { status: 'failure', failureReason: e.errors[0] }
           : {};
-        this.props.settlement && handleAnalytics('break up', 'status', properties);
+        if (this.props.settlement) handleAnalytics('break up', 'status', properties);
       });
   }
 
   componentDidMount() {
-    this.props.onMount && this.props.onMount(this.props.settlementId);
+    if (this.props.onMount) this.props.onMount(this.props.settlementId);
   }
 
   componentWillUnmount() {
-    this.props.onUnmount && this.props.onUnmount(this.props.settlementId);
+    if (this.props.onUnmount) this.props.onUnmount(this.props.settlementId);
   }
 
   calculateSettledAmount = (items, isNew) => {
@@ -103,3 +101,19 @@ export default class BreakdownModal extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return state.settlement.breakupDetails;
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      fetchBreakupDetails,
+      ...ModalActions,
+    },
+    dispatch,
+  );
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(BreakdownModal);

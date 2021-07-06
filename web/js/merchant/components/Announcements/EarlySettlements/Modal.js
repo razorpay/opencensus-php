@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
@@ -7,18 +8,37 @@ import { Field, reduxForm } from 'redux-form';
 import RadioButton from 'common/ui/Forms/RadioButton';
 import trackESAnnouncements from '../ga';
 import ajax from 'merchant/utils/ajax';
-import LocalStorageService from 'common/utils/localStorage';
+import { setItem } from 'common/utils/localStorage';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { bindActionCreators, compose } from 'redux';
 
-@withRouter
-@connect(state => ({ user: state.session.user }), { ...ModalActions })
-@reduxForm({
-  form: 'es-access',
-  initialValues: {
-    interested_in: '',
-  },
-})
-export default class RequestEarlyAccessForm extends Component {
+const SuccessScreen = (closeScreen) => (
+  <div class="modal-body rzp-early-stl-modal success-modal">
+    <div class="success-banner-cnt">
+      <img class="banner-header" src="/img/early_settlements/es-banner-1-header.png" />
+      <button class="close" onClick={() => closeScreen('Close Buuton')}>
+        <i class="i i-close" />
+      </button>
+
+      <img class="banner" src="/img/early_settlements/es-banner-2.png" />
+      <h3 class="modal-title">Instant Settlements Requested</h3>
+      <div class="help-block">
+        You shall be activated soon for Instant Settlements. A confirmation email will be sent to
+        your registered Email ID.
+      </div>
+
+      <div>
+        <Button.Primary class="close-btn m-t" onClick={() => closeScreen('Got it')}>
+          Got it
+        </Button.Primary>
+      </div>
+
+      <img class="banner-footer" src="/img/early_settlements/es-banner-1-footer.png" />
+    </div>
+  </div>
+);
+
+class RequestEarlyAccessForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -27,7 +47,6 @@ export default class RequestEarlyAccessForm extends Component {
       activeScreenIndex: 0,
       formData: '',
       pricing: 0.2,
-      errors: [],
       modalTitle: '',
       showFeatures: true,
       showOptions: true,
@@ -58,18 +77,16 @@ export default class RequestEarlyAccessForm extends Component {
         method: 'GET',
       },
       {},
-      '/merchant/api'
+      '/merchant/api',
     )
-      .then(response => {
+      .then((response) => {
         if (response) {
           let price, title;
           if (pricingType === 'on-demand') {
-            price =
-              response.data[`${this.props.user.current}_on_demand_es_pricing`];
+            price = response.data[`${this.props.user.current}_on_demand_es_pricing`];
             title = 'On-demand Settlements';
           } else {
-            price =
-              response.data[`${this.props.user.current}_scheduled_es_pricing`];
+            price = response.data[`${this.props.user.current}_scheduled_es_pricing`];
             title = 'Automatic Instant Settlements';
           }
           this.setState({
@@ -80,31 +97,21 @@ export default class RequestEarlyAccessForm extends Component {
           });
         }
       })
-      .catch(response => {
+      .catch(() => {
         this.setState({
           fetching: false,
-          errors: response.errors,
         });
       });
   }
 
   handleAcceptPricing = () => {
-    trackESAnnouncements.trackESPricingAccept(
-      this.props.from,
-      this.state.formData.interested_in
-    );
-    this.postESRequest(
-      'https://hooks.zapier.com/hooks/catch/1088429/lbq8rx/',
-      2
-    );
+    trackESAnnouncements.trackESPricingAccept(this.props.from, this.state.formData.interested_in);
+    this.postESRequest('https://hooks.zapier.com/hooks/catch/1088429/lbq8rx/', 2);
     this.createFreshdeskTicket();
   };
 
   handleCancelPricing = () => {
-    this.postESRequest(
-      'https://hooks.zapier.com/hooks/catch/1088429/qljsgo',
-      0
-    );
+    this.postESRequest('https://hooks.zapier.com/hooks/catch/1088429/qljsgo', 0);
   };
 
   createFreshdeskTicket() {
@@ -113,16 +120,15 @@ export default class RequestEarlyAccessForm extends Component {
     // Sandbox API URL - Bussiness operations group id = 42000097437
     // const apiUrl = 'http://localhost:4000/api/fd/ticket/create';
 
-    let { formData, pricing } = this.state;
-    let item =
-      formData.interested_in === 'automatic' ? 'Automatic' : 'On demand';
+    const { formData, pricing } = this.state;
+    const item = formData.interested_in === 'automatic' ? 'Automatic' : 'On demand';
 
     axios({
       method: 'post',
       baseURL: apiUrl,
       headers: {
         sendImmediately: true,
-        Authorization: 'Basic ' + TSYS_AUTH_TOKEN,
+        Authorization: `Basic ${TSYS_AUTH_TOKEN}`,
         'Content-Type': 'application/json',
       },
       data: {
@@ -145,19 +151,16 @@ export default class RequestEarlyAccessForm extends Component {
           cf_product: 'Early settlement',
         },
       },
-    }).then(response => {
-      if (response.status == 200) {
-        // console.log('success');
-      }
     });
   }
 
   postESRequest(webhookUrl, nextScreen) {
-    let { formData, pricing } = this.state;
+    const { formData, pricing } = this.state;
 
     this.setState({
       saving: true,
     });
+
     axios({
       method: 'post',
       url: webhookUrl,
@@ -169,25 +172,22 @@ export default class RequestEarlyAccessForm extends Component {
         role: this.props.user.role,
         activation_status: '',
         interested_in: formData.interested_in,
-        pricing: pricing,
+        pricing,
       },
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     })
-      .then(response => {
+      .then((response) => {
         if (response.status == 200) {
           this.setState({
             saving: false,
             activeScreenIndex: nextScreen,
           });
           if (nextScreen == 2) {
-            const bannerEvent = new window.CustomEvent(
-              'remove-es-announcement',
-              {
-                bubbles: false,
-              }
-            );
+            const bannerEvent = new window.CustomEvent('remove-es-announcement', {
+              bubbles: false,
+            });
             const buttonEvent = new window.CustomEvent('remove-req-es-button', {
               bubbles: false,
             });
@@ -195,15 +195,15 @@ export default class RequestEarlyAccessForm extends Component {
             window.dispatchEvent(bannerEvent);
             window.dispatchEvent(buttonEvent);
 
-            LocalStorageService.setItem(this.requestKey, 1);
+            setItem(this.requestKey, 1);
             this.props.closeModal();
             this.props.openModal({
-              component: SuccessScreen(this.closeSuccessScreen),
+              component: <SuccessScreen closeScreen={this.closeSuccessScreen} />,
             });
           }
         }
       })
-      .catch(response => {
+      .catch(() => {
         this.setState({
           saving: false,
         });
@@ -225,23 +225,22 @@ export default class RequestEarlyAccessForm extends Component {
     this.handleCancelPricing();
     trackESAnnouncements.trackESPricingModalClose(
       this.props.from,
-      this.state.formData.interested_in
+      this.state.formData.interested_in,
     );
     this.props.closeModal();
   }
 
   handleBack = () => {
     this.handleCancelPricing();
-    trackESAnnouncements.trackESPricingBack(
-      this.props.from,
-      this.state.formData.interested_in
-    );
-    this.setState({
-      activeScreenIndex: Math.max(this.state.activeScreenIndex - 1, 0),
+    trackESAnnouncements.trackESPricingBack(this.props.from, this.state.formData.interested_in);
+    this.setState((prevState) => {
+      return {
+        activeScreenIndex: Math.max(prevState.activeScreenIndex - 1, 0),
+      };
     });
   };
 
-  closeSuccessScreen = buttonText => {
+  closeSuccessScreen = (buttonText) => {
     trackESAnnouncements.trackESSuccessModalClose(this.props.from, buttonText);
     this.props.closeModal();
   };
@@ -262,7 +261,7 @@ export default class RequestEarlyAccessForm extends Component {
     });
   };
 
-  handleChange = e => {
+  handleChange = (e) => {
     this.setState({
       formData: {
         interested_in: e.target.name,
@@ -271,17 +270,17 @@ export default class RequestEarlyAccessForm extends Component {
   };
 
   componentDidMount() {
-    let container = document.getElementById('es-modal-cnt');
-    container.style.height = container.clientHeight + 'px';
+    const container = document.getElementById('es-modal-cnt');
+    container.style.height = `${container.clientHeight}px`;
   }
 
   render() {
-    let { handleSubmit } = this.props;
-    let screens = [],
-      mainScreen;
+    const { handleSubmit } = this.props;
+    const screens = [];
+    let mainScreen = null;
 
     screens.push(
-      <React.Fragment>
+      <>
         <button class="close" onClick={this.closeForm}>
           <i class="i i-close" />
         </button>
@@ -289,8 +288,7 @@ export default class RequestEarlyAccessForm extends Component {
           <h3 class="modal-title">Get Started!</h3>
         </div>
         <div class="help-block">
-          You can choose to get Instant settlements in either of the following
-          ways:
+          You can choose to get Instant settlements in either of the following ways:
         </div>
         <form onSubmit={handleSubmit(this.onSubmit)}>
           <div class="form-group">
@@ -303,9 +301,8 @@ export default class RequestEarlyAccessForm extends Component {
                 <span class="radio-label">
                   <label class="title">Automatic Instant Settlements</label>
                   <div class="description">
-                    Razorpay will automatically settle all your payments at
-                    specific hours during the day, ensuring a consistent working
-                    capital.
+                    Razorpay will automatically settle all your payments at specific hours during
+                    the day, ensuring a consistent working capital.
                   </div>
                 </span>
               )}
@@ -319,8 +316,8 @@ export default class RequestEarlyAccessForm extends Component {
                 <span class="radio-label">
                   <label class="title">On-demand Instant Settlements</label>
                   <div class="description">
-                    Choose when you want your settlements early. All your other
-                    settlements follow your existing settlement schedule.
+                    Choose when you want your settlements early. All your other settlements follow
+                    your existing settlement schedule.
                   </div>
                 </span>
               )}
@@ -338,11 +335,11 @@ export default class RequestEarlyAccessForm extends Component {
             </Button.Primary>
           </div>
         </form>
-      </React.Fragment>
+      </>,
     );
 
     screens.push(
-      <React.Fragment>
+      <>
         <button class="close" onClick={this.closePricing}>
           <i class="i i-close" />
         </button>
@@ -350,33 +347,25 @@ export default class RequestEarlyAccessForm extends Component {
           <h3 class="modal-title">{this.state.modalTitle}</h3>
         </div>
         <div class="help-block">
-          {this.state.formData &&
-          this.state.formData.interested_in == 'on-demand'
+          {this.state.formData && this.state.formData.interested_in == 'on-demand'
             ? 'Choose when you want your settlements early. All your other settlements follow your existing settlement schedule.'
             : 'Razorpay will automatically settle all your payments at specific hours during the day, ensuring a consistent working capital.'}
         </div>
-        <span class="modal-subtitle">
-          Your pricing is {this.state.pricing}%
-        </span>
+        <span class="modal-subtitle">Your pricing is {this.state.pricing}%</span>
         <p>
-          Based on your risk profile which includes refunds, chargebacks,
-          vintage with Razorpay, etc. you will be charged{' '}
-          <strong>{this.state.pricing}%</strong> more for domestic payments
-          settling early. For international payments, it will be{' '}
-          <strong>1%</strong> more.
+          Based on your risk profile which includes refunds, chargebacks, vintage with Razorpay,
+          etc. you will be charged <strong>{this.state.pricing}%</strong> more for domestic payments
+          settling early. For international payments, it will be <strong>1%</strong> more.
         </p>
         <div class="form-action">
           <Button onClick={this.handleBack} disabled={this.state.saving}>
             Back
           </Button>
-          <Button.Primary
-            onClick={this.handleAcceptPricing}
-            disabled={this.state.saving}
-          >
+          <Button.Primary onClick={this.handleAcceptPricing} disabled={this.state.saving}>
             {this.state.saving ? 'Requesting' : 'Confirm Request'}
           </Button.Primary>
         </div>
-      </React.Fragment>
+      </>,
     );
 
     mainScreen = (
@@ -389,18 +378,18 @@ export default class RequestEarlyAccessForm extends Component {
             <h3 class="modal-title">Instant Settlements</h3>
           </div>
           <div class="help-block">
-            Razorpay is working with <strong>top financing institutions</strong>{' '}
-            to help you realise your settlements within a few working hours. No
-            more shortfalls in working capital.
+            Razorpay is working with <strong>top financing institutions</strong> to help you realise
+            your settlements within a few working hours. No more shortfalls in working capital.
             <ShowWhen
-              additionalCondition={user =>
-                user.isOrgAllowedFunctionality('external_links')
-              }
+              additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
             >
               <p class="m-t">
-                <a target="_blank" href="https://razorpay.com/knowledgebase/">
-                  Know more about Instant Settlements{' '}
-                  <i class="i i-external-link" />
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="https://razorpay.com/knowledgebase/"
+                >
+                  Know more about Instant Settlements <i class="i i-external-link" />
                 </a>
               </p>
             </ShowWhen>
@@ -412,9 +401,7 @@ export default class RequestEarlyAccessForm extends Component {
               </div>
               <div class="feature-content">
                 <span class="feature-title">Better Budgeting</span>
-                <div class="feature-text">
-                  Predict monthly budget, expenses and investment
-                </div>
+                <div class="feature-text">Predict monthly budget, expenses and investment</div>
               </div>
             </div>
             <div class="feature-item">
@@ -423,9 +410,7 @@ export default class RequestEarlyAccessForm extends Component {
               </div>
               <div class="feature-content">
                 <span class="feature-title">Zero Backlogs</span>
-                <div class="feature-text">
-                  Avoid backlog in your payment reconciliation
-                </div>
+                <div class="feature-text">Avoid backlog in your payment reconciliation</div>
               </div>
             </div>
             <div class="feature-item">
@@ -434,9 +419,7 @@ export default class RequestEarlyAccessForm extends Component {
               </div>
               <div class="feature-content">
                 <span class="feature-title">Easy Financing</span>
-                <div class="feature-text">
-                  Avoid costly short-term financing
-                </div>
+                <div class="feature-text">Avoid costly short-term financing</div>
               </div>
             </div>
             <div class="feature-item">
@@ -445,9 +428,7 @@ export default class RequestEarlyAccessForm extends Component {
               </div>
               <div class="feature-content">
                 <span class="feature-title">Manage Settlements</span>
-                <div class="feature-text">
-                  Efficiently manage your vendor settlements
-                </div>
+                <div class="feature-text">Efficiently manage your vendor settlements</div>
               </div>
             </div>
           </div>
@@ -465,37 +446,23 @@ export default class RequestEarlyAccessForm extends Component {
   }
 }
 
-const SuccessScreen = closeScreen => (
-  <div class="modal-body rzp-early-stl-modal success-modal">
-    <div class="success-banner-cnt">
-      <img
-        class="banner-header"
-        src="/img/early_settlements/es-banner-1-header.png"
-      />
-      <button class="close" onClick={() => closeScreen('Close Buuton')}>
-        <i class="i i-close" />
-      </button>
+const mapStateToProps = (state) => {
+  return { user: state.session.user };
+};
 
-      <img class="banner" src="/img/early_settlements/es-banner-2.png" />
-      <h3 class="modal-title">Instant Settlements Requested</h3>
-      <div class="help-block">
-        You shall be activated soon for Instant Settlements. A confirmation
-        email will be sent to your registered Email ID.
-      </div>
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ ...ModalActions }, dispatch);
+};
 
-      <div>
-        <Button.Primary
-          class="close-btn m-t"
-          onClick={() => closeScreen('Got it')}
-        >
-          Got it
-        </Button.Primary>
-      </div>
-
-      <img
-        class="banner-footer"
-        src="/img/early_settlements/es-banner-1-footer.png"
-      />
-    </div>
-  </div>
+const enhancedComponent = compose(
+  withRouter,
+  reduxForm({
+    form: 'es-access',
+    initialValues: {
+      interested_in: '',
+    },
+  }),
+  connect(mapStateToProps, mapDispatchToProps),
 );
+
+export default enhancedComponent(RequestEarlyAccessForm);

@@ -2,25 +2,24 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
-import LocalStorageService from 'common/utils/localStorage';
+import { setItem } from 'common/utils/localStorage';
 import Banner from 'common/ui/Banner';
 import { trackLinkClick } from './ga';
 import RTracking from 'react-tracking';
 
-@connect(state => state.session)
 @RTracking(() => window.rzpQ.component('TestModeBanner'))
-export default class TestModeBanner extends Component {
+class TestModeBanner extends Component {
   switchToLiveMode = () => {
     const { user } = this.props;
 
     trackLinkClick('Swith - Mode');
 
-    LocalStorageService.setItem(`rzp_mode--${user.current}`, 'live');
+    setItem(`rzp_mode--${user.current}`, 'live');
     window.location.reload();
   };
 
   render() {
-    let { user, mode, tracking } = this.props;
+    const { user, mode, tracking } = this.props;
 
     if (mode === 'live') {
       return null;
@@ -32,23 +31,19 @@ export default class TestModeBanner extends Component {
           You are in <b>Test Mode</b>, so only test data is shown.{' '}
           {user.isActivated ? (
             <span>
-              Switch to <a onClick={this.switchToLiveMode}>Live mode</a> to see
-              real transaction data.
+              Switch to <a onClick={this.switchToLiveMode}>Live mode</a> to see real transaction
+              data.
             </span>
           ) : null}
           {!user.isActivated && (
-            <ShowWhen
-              additionalCondition={user => user.isAllowedEdit('activation')}
-            >
+            <ShowWhen additionalCondition={(user) => user.isAllowedEdit('activation')}>
               <span>
                 {' '}
                 <Link
                   to="/activation"
                   onClick={() => {
                     trackLinkClick('Go To - Activation Form');
-                    tracking.trackEvent(
-                      window.rzpQ.onbr().initiated('kyc.form_fill')
-                    );
+                    tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.form_fill'));
                   }}
                 >
                   Activate your account
@@ -62,3 +57,9 @@ export default class TestModeBanner extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return state.session;
+};
+
+export default connect(mapStateToProps, null)(TestModeBanner);

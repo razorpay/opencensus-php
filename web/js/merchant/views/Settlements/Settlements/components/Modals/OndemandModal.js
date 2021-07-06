@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import ModalHeader from 'common/ui/ModalHeader';
-import { closeModal } from 'merchant_common/reducers/modals';
+import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { isInteger } from 'common/utils/validators';
 import ajax from 'merchant/utils/ajax';
@@ -23,24 +23,17 @@ import {
 } from '../../ga';
 import { fetchCurrentBalance, fetchOndemandRestrictions } from 'merchant/reducers/home';
 import Input from 'common/new-ui/Input';
-import Alert from 'common/ui/Forms/Alert';
-import { AmountTooltip } from 'common/ui/Amount';
-import Amount from 'common/ui/Amount';
+import Amount, { AmountTooltip } from 'common/ui/Amount';
 import debounce from 'common/utils/debounce';
 import PropTypes from 'prop-types';
-import Popover, { PopoverBody } from 'common/ui/Popover';
 import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components/Modals/ModalCloseReasons';
 import SettlementsUpsellBanner from 'merchant/views/Settlements/Settlements/components/SettlementsUpsellBanner';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
-import LocalStorageService from 'common/utils/localStorage';
+import { setItem, getItem } from 'common/utils/localStorage';
 import { onDemandModalTrackEvents } from '../../../trackEvents';
+import { bindActionCreators } from 'redux';
 
-@connect((state) => ({ user: state.session.user }), {
-  closeModal,
-  fetchCurrentBalance,
-  fetchOndemandRestrictions,
-})
-export default class OndemandModal extends Component {
+class OndemandModal extends Component {
   constructor(props) {
     super(props);
 
@@ -48,7 +41,7 @@ export default class OndemandModal extends Component {
       isSaving: false,
       isSaved: false,
       amount: props.currentBalance
-        ? parseInt(props.settlableAmount / 100) || parseInt(props.currentBalance / 100)
+        ? parseInt(props.settlableAmount / 100, 10) || parseInt(props.currentBalance / 100, 10)
         : 0,
       validAmount: true,
       closeClicked: false,
@@ -58,9 +51,7 @@ export default class OndemandModal extends Component {
       isLoadingBreakup: false,
       hasChangedAmount: false,
       clickedConfirm: false,
-      closeReason: '',
       needFetch: true,
-      taxPercent: 0,
       instantFeePercent: 0,
       tax: 0,
       instantFee: 0,
@@ -85,14 +76,14 @@ export default class OndemandModal extends Component {
       <div class="m-b">
         The settlement amount is:{` `}
         <span class="bold-amount">
-          <Amount value={amount * 100} currency={'INR'} parentQuerySelector={'.modal-body'} />
+          <Amount value={amount * 100} currency="INR" parentQuerySelector=".modal-body" />
         </span>
       </div>
     );
   };
 
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = this.props.eventCategory;
+    eventObject.eventCategory = this.props.eventCategory;
     window.rzpAnalytics(eventObject);
   };
 
@@ -161,7 +152,7 @@ export default class OndemandModal extends Component {
         <div class={isSaved ? 'dropdown-1' : 'dropdown'}>
           {isSaved ? (
             <div class="currency-big-1">
-              <Amount value={amount * 100} currency="INR" parentQuerySelector={'.breakup'} />
+              <Amount value={amount * 100} currency="INR" parentQuerySelector=".breakup" />
             </div>
           ) : (
             <span>
@@ -194,11 +185,7 @@ export default class OndemandModal extends Component {
           <div class="p-b-5">
             <p>Total Amount</p>
             <span class="float-right currency">
-              <Amount
-                value={amount * 100}
-                currency={'INR'}
-                parentQuerySelector=".onmdemand-modal"
-              />
+              <Amount value={amount * 100} currency="INR" parentQuerySelector=".onmdemand-modal" />
             </span>
           </div>
           <div class="p-b-5">
@@ -223,7 +210,7 @@ export default class OndemandModal extends Component {
           <span class="float-right currency">
             <Amount
               value={amount * 100 - instantFee - tax}
-              currency={'INR'}
+              currency="INR"
               parentQuerySelector=".onmdemand-modal"
             />
           </span>
@@ -232,13 +219,14 @@ export default class OndemandModal extends Component {
     );
   };
 
+  // eslint-disable-next-line consistent-return
   updateFee = () => {
     const { validAmount, amount } = this.state;
     this.setState({
       isLoadingBreakup: true,
     });
 
-    let payload = {
+    const payload = {
       amount: amount * 100,
       currency: 'INR',
     };
@@ -257,7 +245,6 @@ export default class OndemandModal extends Component {
             isLoadingBreakup: false,
             tax: response.data.items[1].amount,
             instantFeePercent: response.data.items[0].pricing_rule.percent_rate,
-            taxPercent: response.data.items[1].percentage,
             instantFee: response.data.items[0].amount,
           });
           this.props.fetchCurrentBalance();
@@ -306,9 +293,9 @@ export default class OndemandModal extends Component {
   };
 
   showInputTooltip = () => {
-    if (!LocalStorageService.getItem('es-ondemand-input-tooltip')) {
+    if (!getItem('es-ondemand-input-tooltip')) {
       this.inputTooltipRef.classList.add('input-tooltip-custom');
-      LocalStorageService.setItem('es-ondemand-input-tooltip', true);
+      setItem('es-ondemand-input-tooltip', true);
     }
   };
 
@@ -323,6 +310,7 @@ export default class OndemandModal extends Component {
     }
   };
 
+  // eslint-disable-next-line consistent-return
   fetchBreakup = () => {
     const { clickedConfirm } = this.state;
     trackEsShowBreakup(!clickedConfirm);
@@ -335,7 +323,7 @@ export default class OndemandModal extends Component {
     }
 
     if (this.state.needFetch) {
-      let payload = {
+      const payload = {
         amount: this.state.amount * 100,
         currency: 'INR',
       };
@@ -369,7 +357,7 @@ export default class OndemandModal extends Component {
           });
       }
     } else {
-      var st = this.state.breakupShow;
+      const st = this.state.breakupShow;
       this.setState({
         breakupShow: !st,
       });
@@ -377,7 +365,7 @@ export default class OndemandModal extends Component {
   };
 
   onSubmit = () => {
-    let payload = {
+    const payload = {
       amount: this.state.amount * 100,
       currency: 'INR',
     };
@@ -395,14 +383,15 @@ export default class OndemandModal extends Component {
       {},
       '/merchant/api',
     )
-      .then((response) => {
+      .then(() => {
         this.setState({
           isSaving: false,
           isSaved: true,
         });
         this.props.fetchCurrentBalance();
         this.props.fetchOndemandRestrictions();
-        this.props.checkIfFirstEverSettlement &&
+
+        if (this.props.checkIfFirstEverSettlement)
           this.props.checkIfFirstEverSettlement('settlementDone');
       })
       .catch((response) => {
@@ -427,6 +416,7 @@ export default class OndemandModal extends Component {
     this.updateFeeDebounced();
   };
 
+  // eslint-disable-next-line consistent-return
   validateAmount = (val) => {
     if (isInteger(val) && val > 0) {
       if (val <= 1) {
@@ -496,6 +486,7 @@ export default class OndemandModal extends Component {
   };
 
   handleCloseModal = (eventType) => {
+    // eslint-disable-next-line default-case
     switch (eventType) {
       case 'Close Modal Screen 1':
         trackEsModalCloseIcon();
@@ -510,6 +501,7 @@ export default class OndemandModal extends Component {
         trackOndemand.trackSuccessCloseModal(this.props.fromWhere);
         break;
     }
+
     if (!this.state.clickedConfirm) {
       if (this.state.hasChangedAmount) trackEsAmountUpdated();
       this.gaEventDispatcher({
@@ -526,6 +518,7 @@ export default class OndemandModal extends Component {
         } -close`,
       });
     }
+
     if (this.state.isSaved) {
       this.props.closeModal();
     } else {
@@ -561,7 +554,12 @@ export default class OndemandModal extends Component {
           <p>
             Settle to your bank account instantly 24x7, <strong>even on Holidays!&nbsp;</strong>
             Upcoming Settlements follow the existing schedule.
-            <a class="btn-link" target="_blank" href="http://razorpay.com/settlement">
+            <a
+              class="btn-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="http://razorpay.com/settlement"
+            >
               {` `}Learn more
             </a>
           </p>
@@ -629,7 +627,7 @@ export default class OndemandModal extends Component {
   };
 
   renderPostTransaction = () => {
-    const { eventCategory, closeModal } = this.props;
+    const { closeModal } = this.props;
     const { hideCloseButton } = this.state;
 
     return (
@@ -668,22 +666,20 @@ export default class OndemandModal extends Component {
     const { closeClicked, isSaved } = this.state;
     return (
       <div class="container-ondemand-modal">
-        <React.Fragment>
-          {!closeClicked ? (
-            isSaved ? (
-              this.renderPostTransaction()
-            ) : (
-              this.renderPreTransaction()
-            )
+        {!closeClicked ? (
+          isSaved ? (
+            this.renderPostTransaction()
           ) : (
-            <ModalCloseReasons
-              goBackToInitialModalView={goBackToInitialModalView}
-              closeOrigin="OnDemand"
-              eventCategory={this.props.eventCategory}
-              fromWhere={this.props.fromWhere}
-            />
-          )}
-        </React.Fragment>
+            this.renderPreTransaction()
+          )
+        ) : (
+          <ModalCloseReasons
+            goBackToInitialModalView={goBackToInitialModalView}
+            closeOrigin="OnDemand"
+            eventCategory={this.props.eventCategory}
+            fromWhere={this.props.fromWhere}
+          />
+        )}
       </div>
     );
   }
@@ -692,3 +688,22 @@ export default class OndemandModal extends Component {
 OndemandModal.defaultProps = {
   eventCategory: EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT,
 };
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      closeModal: fnCloseModal,
+      fetchCurrentBalance,
+      fetchOndemandRestrictions,
+    },
+    dispatch,
+  );
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(OndemandModal);

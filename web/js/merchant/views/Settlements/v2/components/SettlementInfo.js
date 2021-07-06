@@ -7,9 +7,8 @@ import Time from 'common/ui/Time';
 import * as SettlementActions from 'merchant/reducers/settlements/details';
 import Spinner from 'common/ui/Spinner';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { handleAnalytics, propertiesPayload } from '../../Settlements/analytics';
+
 const SettlementInfo = (props) => {
   useEffect(() => {
     settlementInfo();

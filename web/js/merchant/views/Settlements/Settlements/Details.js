@@ -5,8 +5,9 @@ import * as SettlementActions from 'merchant/reducers/settlements/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 import SettlementBreakupModal from 'merchant/views/Settlements/Settlements/components/Modals/BreakupModal';
-@connect((state) => state.settlement, { ...SettlementActions, ...ModalActions })
-export default class SettlementDetailsContainer extends Component {
+import { bindActionCreators } from 'redux';
+
+class SettlementDetailsContainer extends Component {
   componentWillMount() {
     this.props.fetchItem(this.props.id);
   }
@@ -30,29 +31,31 @@ export default class SettlementDetailsContainer extends Component {
   };
 
   componentDidMount() {
-    const { closeUrl, id } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
-    eventCategory &&
+    const { closeUrl, id } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
+
+    if (eventCategory)
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory,
         eventAction: 'Open Details - Settlements',
         eventLabel: `settlement_id=${id}`,
       });
   }
 
   componentWillUnmount() {
-    const { closeUrl, id } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
-    eventCategory &&
+    const { closeUrl, id } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
+
+    if (eventCategory)
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory,
         eventAction: 'Close Details - Settlements',
         eventLabel: `settlement_id=${id}`,
       });
   }
 
   render() {
-    let { loading, error, settlement, breakupDetails } = this.props;
+    const { loading, error, settlement, breakupDetails } = this.props;
     let statusMsg = {};
 
     if (error) {
@@ -73,3 +76,13 @@ export default class SettlementDetailsContainer extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return state.settlement;
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ ...SettlementActions, ...ModalActions }, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SettlementDetailsContainer);

@@ -16,6 +16,13 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
   const [settlementExists, setSettlementExists] = useState(true);
   const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
 
+  const checkIfFirstEverSettlement = (callbackSettlementStatus) => {
+    const settlementStatus = getSettlementStatus(user.current, callbackSettlementStatus);
+    const isDisabled =
+      settlementStatus === 'disableAnimation' || settlementStatus === 'disableAnimationOnReload';
+    setSettlementExists(isDisabled || settlementStatus);
+  };
+
   const onInstantSettlementsClick = () => {
     checkIfFirstEverSettlement();
     trackOnDemandTabClick();
@@ -25,13 +32,6 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
   useEffect(() => {
     checkIfFirstEverSettlement();
   }, []);
-
-  const checkIfFirstEverSettlement = (callbackSettlementStatus) => {
-    const settlementStatus = getSettlementStatus(user.current, callbackSettlementStatus);
-    const isDisabled =
-      settlementStatus === 'disableAnimation' || settlementStatus === 'disableAnimationOnReload';
-    setSettlementExists(isDisabled || settlementStatus);
-  };
 
   return (
     <>

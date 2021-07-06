@@ -1,26 +1,13 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import track from 'react-tracking';
 import RazorpayXNitroAnnouncement, {
   nitroCampaignId,
 } from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { bindActionCreators, compose } from 'redux';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-  }),
-  {
-    openModal,
-    closeModal,
-  },
-)
-@RTracking(() => window.rzpQ.component('ScheduledNitroBanner'))
-export default class AnnouncementBar extends Component {
-  constructor(props) {
-    super(props);
-  }
-
+class AnnouncementBar extends Component {
   componentDidMount() {
     const tracking = this.props.tracking;
     tracking.trackEvent(
@@ -72,3 +59,20 @@ export default class AnnouncementBar extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ openModal, closeModal }, dispatch);
+};
+
+const enhanced = compose(
+  track(() => window.rzpQ.component('ScheduledNitroBanner')),
+  connect(mapStateToProps, mapDispatchToProps),
+);
+
+export default enhanced(AnnouncementBar);

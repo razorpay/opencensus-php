@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useState } from 'react';
 import Button from 'common/new-ui/Button';
-import LocalStorageService from 'common/utils/localStorage';
+import { getItem } from 'common/utils/localStorage';
 import SettleNowLottie from 'merchant/helpers/lottieConfigs/SettleNow.json';
 import SettleNowLottieHover from 'merchant/helpers/lottieConfigs/SettleNowHover.json';
 import { trackAnimatedSettleBtnImpressions } from 'merchant/views/Settlements/Settlements/ga';
@@ -42,8 +42,7 @@ const SettleNowButton = ({
 
   const handleSettleNowClick = (e) => {
     trackSettleNowClicked(fromWhere);
-    const merchantsSettlementStatus =
-      JSON.parse(LocalStorageService.getItem('merchantsSettlementStatus')) || {};
+    const merchantsSettlementStatus = JSON.parse(getItem('merchantsSettlementStatus')) || {};
     const isAnimationDisabled =
       merchantsSettlementStatus[merchantId] !== true &&
       merchantsSettlementStatus[merchantId] !== 'disableAnimation';

@@ -10,7 +10,7 @@ import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import BreakupList from 'merchant/views/Settlements/InstantSettlements/PayoutDetails/BreakupList';
 import DetailsListContainer from 'merchant/views/Settlements/InstantSettlements/PayoutDetails/DetailsListContainer';
 import SettlementGuideText from 'merchant_common/components/SettlementGuideText';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import * as InstantSettlementActions from 'merchant/reducers/instantSettlements/details';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
@@ -34,12 +34,13 @@ const InstantSettlementPayoutDetails = ({
   }, [match.params.id]);
 
   useEffect(() => {
+    let timer = null;
     if (!loading && !loadingTotalSettledAmount && instantSettlement.amount_settled === 0) {
-      const timer = setInterval(() => {
+      timer = setInterval(() => {
         fetchTotalSettlementAmount(instantSettlement.id);
       }, 1000);
-      return () => clearInterval(timer);
     }
+    return () => clearInterval(timer);
   });
 
   useEffect(() => {
@@ -91,12 +92,12 @@ const InstantSettlementPayoutDetails = ({
                   className="i i-info-outline total-settlement-info-icon ml-8"
                   onMouseEnter={() => trackIS.hoverLoadingTotalSettledAmountIconPayoutDetails()}
                 >
-                  <Popover align="bottom" theme="dark">
+                  <PopoverComponent align="bottom" theme="dark">
                     <PopoverBody>
                       We are fetching Total Settled Amount, and it seems that some of the
                       settlements are taking longer than expected.
                     </PopoverBody>
-                  </Popover>
+                  </PopoverComponent>
                 </i>
               </>
             ) : (
@@ -116,7 +117,7 @@ const InstantSettlementPayoutDetails = ({
                   trackOnDemandPayoutDeductionsHover();
                 }}
               >
-                <Popover align="bottom" theme="dark">
+                <PopoverComponent align="bottom" theme="dark">
                   <PopoverBody>
                     <>
                       <div className="instant-settlement-payout-detail--deductions-row">
@@ -142,7 +143,7 @@ const InstantSettlementPayoutDetails = ({
                       </div>
                     </>
                   </PopoverBody>
-                </Popover>
+                </PopoverComponent>
               </i>{' '}
               <Amount currency="INR" value={instantSettlement.fees} />
             </div>

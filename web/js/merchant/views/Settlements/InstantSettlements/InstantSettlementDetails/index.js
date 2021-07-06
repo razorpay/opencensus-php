@@ -3,11 +3,9 @@ import { connect } from 'react-redux';
 import Details from 'merchant/views/Settlements/InstantSettlements/InstantSettlementDetails/Details';
 import * as InstantSettlementActions from 'merchant/reducers/instantSettlements/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
-import SettlementBreakupModal from 'merchant/views/Settlements/Settlements/components/Modals/BreakupModal';
+import { bindActionCreators } from 'redux';
 
-@connect((state) => state.instantSettlement, { ...InstantSettlementActions, ...ModalActions })
-export default class InstantSettlementDetails extends Component {
+class InstantSettlementDetails extends Component {
   componentWillMount() {
     this.props.fetchItem(this.props.id);
   }
@@ -19,7 +17,13 @@ export default class InstantSettlementDetails extends Component {
   }
 
   render() {
-    let { loading, error, instantSettlement, closeModal, fetchTotalSettlementAmount } = this.props;
+    const {
+      loading,
+      error,
+      instantSettlement,
+      closeModal,
+      fetchTotalSettlementAmount,
+    } = this.props;
     let statusMsg = {};
 
     if (error) {
@@ -40,3 +44,11 @@ export default class InstantSettlementDetails extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => state.instantSettlement;
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ ...InstantSettlementActions, ...ModalActions }, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(InstantSettlementDetails);

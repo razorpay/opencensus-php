@@ -3,28 +3,17 @@ import { withRouter } from 'react-router-dom';
 import ModalHeader from 'common/ui/ModalHeader';
 import ajax from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
-import { closeModal } from 'merchant_common/reducers/modals';
+import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { updateFeatures } from 'merchant/reducers/config';
-import User, { setFeatures } from 'merchant/models/User';
+import User from 'merchant/models/User';
 import * as SessionActions from 'merchant/reducers/session';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components/Modals/ModalCloseReasons';
 import { CreateTicketEmitter } from '../../../../TicketSupport/utils';
 import { trackConfirmEnableNow, trackEnableNowClose } from '../../../trackEvents';
+import { bindActionCreators } from 'redux';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    features: state.config.features,
-  }),
-  {
-    closeModal,
-    updateFeatures,
-    ...SessionActions,
-    showNotification,
-  },
-)
 class ScheduledModal extends Component {
   constructor(props) {
     super(props);
@@ -131,7 +120,7 @@ class ScheduledModal extends Component {
       '/merchant/api',
     )
       .then(() => {
-        let updatedUser = new User(this.props.user);
+        const updatedUser = new User(this.props.user);
         updatedUser
           .fetch()
           .then((res) => {
@@ -176,7 +165,7 @@ class ScheduledModal extends Component {
   };
 
   fireGAEvent = (eventPayload) => {
-    eventPayload['eventCategory'] = this.props.eventCategory;
+    eventPayload.eventCategory = this.props.eventCategory;
     window.rzpAnalytics(eventPayload);
   };
 
@@ -187,6 +176,7 @@ class ScheduledModal extends Component {
           <a
             class="btn-link"
             target="_blank"
+            rel="noopener noreferrer"
             href="https://razorpay.com/capital/#faqs"
             onClick={() => {
               this.fireGAEvent({
@@ -198,7 +188,7 @@ class ScheduledModal extends Component {
             Check FAQs
           </a>
         </div>
-        <div class="border"></div>
+        <div class="border" />
         <div>
           <a class="btn-link" onClick={this.openSupport}>
             Contact Support
@@ -221,7 +211,8 @@ class ScheduledModal extends Component {
         <div class="modal-body">
           <div class="overflow-box">
             <div class="post-schedule-header">
-              <i class="i i-early-settlement scheduled-enable"></i>Scheduled Settlements
+              <i class="i i-early-settlement scheduled-enable" />
+              Scheduled Settlements
             </div>
             <div class="post-schedule-description">
               Congratulations, Your Early Settlement feature has now been enabled, Never Fall short
@@ -262,7 +253,12 @@ class ScheduledModal extends Component {
           <div>
             Early settlements will automatically settle the amount to your account in few hours from
             the time of transaction, everyday.
-            <a class="btn-link" target="_blank" href="http://razorpay.com/settlement">
+            <a
+              class="btn-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="http://razorpay.com/settlement"
+            >
               {` `}Learn more
             </a>
           </div>
@@ -273,7 +269,7 @@ class ScheduledModal extends Component {
                 <div>
                   <div class="schedule-desc-list-container">
                     <div>
-                      <i class="i i-early-settlement scheduled-enable"></i>
+                      <i class="i i-early-settlement scheduled-enable" />
                     </div>
                     <div>
                       Everyday at <b>9AM</b> and <b>5PM</b> all your payments get settled
@@ -283,7 +279,7 @@ class ScheduledModal extends Component {
                 {!isLoading && (
                   <div class="schedule-desc-list-container fee-container">
                     <div>
-                      <i class="i i-early-settlement scheduled-enable"></i>
+                      <i class="i i-early-settlement scheduled-enable" />
                     </div>
                     {feeBearer === 'platform' ? (
                       <div>
@@ -299,7 +295,7 @@ class ScheduledModal extends Component {
                 )}
               </div>
               <div class="schedule-img-container">
-                <img src={'/dist/css/assets/settlements-blue-box.png'} />
+                <img src="/dist/css/assets/settlements-blue-box.png" />
               </div>
               <div>
                 <AsyncBtn.Primary
@@ -341,4 +337,18 @@ class ScheduledModal extends Component {
   }
 }
 
-export default withRouter(ScheduledModal);
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+    features: state.config.features,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    { closeModal: fnCloseModal, updateFeatures, ...SessionActions, showNotification },
+    dispatch,
+  );
+};
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ScheduledModal));

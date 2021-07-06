@@ -18,10 +18,10 @@ jobs:
       - name: Cache multiple paths
         uses: actions/cache@v2
         with:
-            path: |
-              ~/cache
-              !~/cache/exclude
-            key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+          path: |
+            ~/cache
+            !~/cache/exclude
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
 
       - name: Install Dependencies
         run: |
@@ -34,10 +34,9 @@ jobs:
       - name: Validate
         # Automatically installs npm ci in web too
         run: |
-          npx eslint web/v2 --ext .js,.jsx,.ts,.tsx
-          npx stylelint web/v2/**/*.{js,jsx,ts,tsx}
+          npm run lint
+          npm run style-lint
           cd web && npx tsc
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-

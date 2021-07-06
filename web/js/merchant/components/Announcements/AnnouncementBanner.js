@@ -4,13 +4,7 @@ import AnnouncementBanner from 'common/ui/AnnouncementBanner';
 import { getItem, setItem } from 'common/utils/localStorage';
 import { classList } from 'common/utils/rzp-utils';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-  }),
-  null,
-)
-export default class AnnouncementBannerComponent extends Component {
+class AnnouncementBannerComponent extends Component {
   constructor(props) {
     super(props);
 
@@ -69,3 +63,11 @@ export default class AnnouncementBannerComponent extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+  };
+};
+
+export default connect(mapStateToProps, null)(AnnouncementBannerComponent);

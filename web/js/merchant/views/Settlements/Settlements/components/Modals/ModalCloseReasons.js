@@ -1,17 +1,15 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import ModalHeader from 'common/ui/ModalHeader';
-import { closeModal } from 'merchant_common/reducers/modals';
+import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 import Button from 'common/new-ui/Button';
 import { CLOSE_OPTIONS } from 'merchant/views/Settlements/Settlements/data';
 import Input from 'common/new-ui/Input';
 import { trackEsChurnReason, trackEsModalCloseAction } from '../../ga';
 import { trackSettleNowCloseReason, trackSettleNowConfirmClose } from '../../../trackEvents';
+import { bindActionCreators } from 'redux';
 
-@connect((state) => ({ user: state.session.user }), {
-  closeModal,
-})
-export default class ModalCloseReasons extends Component {
+class ModalCloseReasons extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -71,13 +69,13 @@ export default class ModalCloseReasons extends Component {
         <div class="modal-body">
           {CLOSE_OPTIONS.map((choice) => {
             return (
-              <div key={'parent-choice-' + choice.value} class="es-close-choices">
-                <label key={'lab-' + choice.value}>
+              <div key={`parent-choice-${choice.value}`} class="es-close-choices">
+                <label key={`lab-${choice.value}`}>
                   <input
                     type="radio"
                     name="close-reason"
                     value={choice.value}
-                    key={'inp-choice' + choice.value}
+                    key={`inp-choice ${choice.value}`}
                     onChange={this.handleReasonChange}
                   />
                   {choice.label}
@@ -113,3 +111,15 @@ export default class ModalCloseReasons extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ closeModal: fnCloseModal }, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ModalCloseReasons);

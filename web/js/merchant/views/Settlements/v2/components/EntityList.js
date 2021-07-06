@@ -63,36 +63,36 @@ const ListItem = ({ item, source }) => {
     const properties = propertiesPayload('payment', item);
     handleAnalytics(objectName, actionName, properties, screen);
   };
-  const highlightLink = (item, key, idx) => {
+
+  const highlightLink = (rowItem, key, idx) => {
     if (source === 'payment' || source === 'refund' || source === 'dispute') {
       return (
         <td key={idx}>
           <Link
             onClick={() => {
-              if (source === 'payment') {
-                return analyticsHandler();
-              }
+              if (source === 'payment') return analyticsHandler();
+              return true;
             }}
-            to={`/${source}s/${item[key]}`}
+            to={`/${source}s/${rowItem[key]}`}
           >
-            {item.id}
+            {rowItem.id}
           </Link>
         </td>
       );
     } else if (source === 'transfer' || source === 'reversal') {
       return (
         <td key={idx}>
-          <Link to={`/route/${source}s/${item[key]}`}>{item.id}</Link>
+          <Link to={`/route/${source}s/${rowItem[key]}`}>{rowItem.id}</Link>
         </td>
       );
     } else if (source === 'payment_domestic' || source === 'payment_international') {
       return (
         <td key={idx}>
-          <Link to={`/payments/${item[key]}`}>{item.id}</Link>
+          <Link to={`/payments/${rowItem[key]}`}>{rowItem.id}</Link>
         </td>
       );
     } else {
-      return <td key={idx}>{item.id}</td>;
+      return <td key={idx}>{rowItem.id}</td>;
     }
   };
 

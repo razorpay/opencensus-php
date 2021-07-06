@@ -11,7 +11,7 @@ import Button from 'common/new-ui/Button';
 import List from 'merchant/views/Settlements/InstantSettlements/InstantSettlementDetails/List';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import {
   trackOnDemandHoverInfo,
   trackOnDemandIdDetails,
@@ -35,12 +35,13 @@ const Details = ({
   }
 
   useEffect(() => {
+    let timer = null;
     if (!isLoading && !loadingTotalSettledAmount && settlement.amount_settled === 0) {
-      const timer = setInterval(() => {
+      timer = setInterval(() => {
         fetchTotalSettlementAmount(settlement.id);
       }, 1000);
-      return () => clearInterval(timer);
     }
+    return () => clearInterval(timer);
   });
 
   useEffect(() => {
@@ -87,12 +88,12 @@ const Details = ({
                       trackOnDemandHoverInfo();
                     }}
                   >
-                    <Popover align="bottom" theme="dark">
+                    <PopoverComponent align="bottom" theme="dark">
                       <PopoverBody>
                         We are fetching Total Settled Amount, and it seems that some of the
                         settlements are taking longer than expected.
                       </PopoverBody>
-                    </Popover>
+                    </PopoverComponent>
                   </i>
                 </>
               ) : (

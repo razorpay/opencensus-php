@@ -1,28 +1,16 @@
-import { Link } from 'react-router-dom';
-import { Fragment } from 'react';
+import { Fragment, Component } from 'react';
 import Time from 'common/ui/Time';
-import { PaymentStatusLabel, SettlementStatusLabel } from 'merchant/components/StatusLabel';
+import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import SettlementOverview from 'merchant/views/Transactions/Payments/components/SettlementOverview';
 import { openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
-import SettlementDetail from '../Settlements/components/SettlementDetail';
+import { bindActionCreators } from 'redux';
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      settlement_amount: state.home.settlement_amount,
-    };
-  },
-  {
-    openModal,
-  },
-)
-export default class SettlementInfo extends React.Component {
+class SettlementInfo extends Component {
   render() {
     const data = this.props.data;
-    let status;
+    let status, jsx;
     if (data.transaction && data.transaction.settlement) {
       status = data.transaction.settlement.status;
     }
@@ -30,7 +18,6 @@ export default class SettlementInfo extends React.Component {
       status = 'on_hold';
     }
 
-    let jsx;
     if (data.transaction.settlement) {
       jsx = (
         <div class="settlement-detail-toggle">
@@ -48,41 +35,39 @@ export default class SettlementInfo extends React.Component {
                 <SettlementOverview payment={data} />
               </ContentToggler>
             </Fragment>
-          ) : //   <a
-          //     class="nav-link"
-          //     onClick={() => {
-          //       this.props.openModal({
-          //         size: 'medium',
-          //         component: (
-          //           <SettlementDetail user={this.props.user} settlementAmount={this.props.settlement_amount.data} />
-          //         ),
-          //       });
-          //     }}
-          //   >
-          //     View Details
-          // </a>
-          null}
+          ) : null}
         </div>
       );
+    } else if (data.transaction.settled_at) {
+      jsx = (
+        <Fragment>
+          {!(data.transaction && data.transaction.settlement) ? (
+            <Fragment>
+              <SettlementStatusLabel status="scheduled" /> <br />
+            </Fragment>
+          ) : null}
+          <span class="link">
+            To be settled on <Time value={data.transaction.settled_at} format="DD MMM YYYY" />
+          </span>
+        </Fragment>
+      );
     } else {
-      if (data.transaction.settled_at) {
-        jsx = (
-          <Fragment>
-            {!(data.transaction && data.transaction.settlement) ? (
-              <Fragment>
-                <SettlementStatusLabel status={'scheduled'} /> <br />
-              </Fragment>
-            ) : null}
-            <span class="link">
-              To be settled on <Time value={data.transaction.settled_at} format="DD MMM YYYY" />
-            </span>
-          </Fragment>
-        );
-      } else {
-        jsx = '--';
-      }
+      jsx = '--';
     }
 
     return jsx;
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+    settlement_amount: state.home.settlement_amount,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ openModal }, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SettlementInfo);

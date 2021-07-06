@@ -2,17 +2,16 @@ import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
-import ListGroupToggler from 'common/ui/Toggler/ListGroupToggler';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
-import SettlementBreakupTable from 'merchant/views/Settlements/Settlements/components/BreakupTable';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AnnouncementBar from 'merchant/components/AnnouncementBar';
 import ShowWhen from 'merchant/components/ShowWhen';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { analyticsTrack } from 'common/utils/analytics';
 
 export default (props) => {
-  let { settlement, breakupDetails, isLoading, statusMsg } = props;
+  const { settlement, isLoading, statusMsg } = props;
+
   useEffect(() => {
     analyticsTrack({
       objectName: 'settlement details',
@@ -21,6 +20,7 @@ export default (props) => {
       properties: settlement.analyticsPayload(),
     });
   }, []);
+
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -38,7 +38,7 @@ export default (props) => {
               <Alert type={statusMsg.type} message={statusMsg.message} />
               <EntityDetailRow
                 label="Amount"
-                value={() => <Amount value={settlement.amount} currency={'INR'} />}
+                value={() => <Amount value={settlement.amount} currency="INR" />}
               />
 
               <EntityDetailRow
@@ -55,14 +55,14 @@ export default (props) => {
 
               <EntityDetailRow
                 label="Fees"
-                value={() => <Amount value={settlement.fees} currency={'INR'} />}
+                value={() => <Amount value={settlement.fees} currency="INR" />}
               />
 
               <EntityDetailRow label="UTR" value={settlement.utr} />
 
               <EntityDetailRow
                 label="Tax"
-                value={() => <Amount value={settlement.tax} currency={'INR'} />}
+                value={() => <Amount value={settlement.tax} currency="INR" />}
               />
 
               <EntityDetailRow

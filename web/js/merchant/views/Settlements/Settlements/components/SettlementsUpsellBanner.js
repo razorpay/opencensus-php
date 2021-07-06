@@ -3,12 +3,14 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
-
 import Button from 'common/new-ui/Button';
 import Amount from 'common/ui/Amount';
 import LoaderDots from 'common/ui/LoaderDots';
-import { fetchProducts, getApplications } from 'merchant/reducers/capital';
-import { fetchFunctionalWithdrawalConfigByMerchantID } from 'merchant/reducers/capital/withdrawals';
+import {
+  fetchProducts as fnFetchProducts,
+  getApplications as fnGetApplications,
+} from 'merchant/reducers/capital';
+import { fetchFunctionalWithdrawalConfigByMerchantID as fnFetchFunctionalWithdrawalConfigByMerchantID } from 'merchant/reducers/capital/withdrawals';
 import track from 'common/utils/googleAnalytics';
 import { CAPITAL_PRODUCT_CODES } from 'merchant/views/Capital/Loans/constants';
 
@@ -51,14 +53,18 @@ const SettlementsUpsell = ({
         owner_id: user.current,
         product_id: productDetails.id,
       });
-    } catch (e) {}
+    } catch (e) {
+      // empty catch
+    }
   };
 
   // fetch Products
+  // eslint-disable-next-line require-await
   const getProducts = async () => {
     const productsAlreadyFetched = products && products.data && products.data.length;
 
     if (productsAlreadyFetched || products.errors) return;
+    // eslint-disable-next-line consistent-return
     return fetchProducts();
   };
 
@@ -171,6 +177,7 @@ SettlementsUpsell.propTypes = {
   fetchFunctionalWithdrawalConfigByMerchantID: PropTypes.func,
   closeModal: PropTypes.func,
   history: PropTypes.object,
+  // eslint-disable-next-line react/no-unused-prop-types
   eventCategory: PropTypes.string,
   applications: PropTypes.shape({
     loading: PropTypes.bool,
@@ -237,10 +244,10 @@ const mapStateToProps = (state, ownProps) => {
 };
 
 const mapDispatchToProps = (dispatch) => ({
-  fetchProducts: bindActionCreators(fetchProducts, dispatch),
-  getApplications: bindActionCreators(getApplications, dispatch),
+  fetchProducts: bindActionCreators(fnFetchProducts, dispatch),
+  getApplications: bindActionCreators(fnGetApplications, dispatch),
   fetchFunctionalWithdrawalConfigByMerchantID: bindActionCreators(
-    fetchFunctionalWithdrawalConfigByMerchantID,
+    fnFetchFunctionalWithdrawalConfigByMerchantID,
     dispatch,
   ),
 });

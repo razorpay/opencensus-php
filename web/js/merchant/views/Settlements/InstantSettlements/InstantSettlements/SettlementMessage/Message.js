@@ -54,7 +54,6 @@ Message.propTypes = {
   image: PropTypes.string,
   openModal: PropTypes.func,
   showEnableNowButton: PropTypes.bool,
-  settlementRestricted: PropTypes.number,
 };
 
 export default Message;

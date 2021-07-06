@@ -5,20 +5,9 @@ import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Mo
 import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { trackEnableNow } from '../../trackEvents';
+import { bindActionCreators } from 'redux';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-  }),
-  {
-    ...ModalActions,
-  },
-)
 class ScheduledBanner extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   get settlementRestricted() {
     return this.props.user.isFeatureEnabled('es_on_demand_restricted');
   }
@@ -72,4 +61,14 @@ class ScheduledBanner extends Component {
   }
 }
 
-export default withRouter(ScheduledBanner);
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ ...ModalActions }, dispatch);
+};
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ScheduledBanner));

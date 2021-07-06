@@ -1,6 +1,7 @@
+/* eslint-disable consistent-return */
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter, Redirect } from 'react-router';
+import { withRouter, Redirect } from 'react-router-dom';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchCurrentBalance, fetchOndemandRestrictions } from 'merchant/reducers/home';
 import { fetchHolidayList } from 'merchant/reducers/settlements/details';
@@ -25,24 +26,8 @@ import trackIS, {
 } from 'merchant/views/Settlements/InstantSettlements/ga';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { trackOnDemandSearchClick } from '../../trackEvents';
+import { bindActionCreators } from 'redux';
 
-@withRouter
-@connect(
-  (state) => ({
-    user: state.session.user,
-    holidayList: state.settlement.holidayList,
-    ...state.home,
-    ...state.instantSettlements,
-  }),
-  {
-    fetchAll,
-    showNotification,
-    ...ModalActions,
-    fetchCurrentBalance,
-    fetchHolidayList,
-    fetchOndemandRestrictions,
-  },
-)
 class InstantSettlements extends ListContainer {
   state = {
     count: 25,
@@ -73,7 +58,7 @@ class InstantSettlements extends ListContainer {
         max_amount_limit,
         true,
       )} for the day.`;
-    } else return;
+    } else return '';
   }
 
   componentDidMount() {
@@ -105,7 +90,6 @@ class InstantSettlements extends ListContainer {
       checkIfFirstEverSettlement,
       settlementExists,
       esOndemandSettlementEnabled,
-      user,
     } = this.props;
 
     const balance = current_balance.data.balance || 0;
@@ -280,4 +264,27 @@ class InstantSettlements extends ListContainer {
   }
 }
 
-export default InstantSettlements;
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+    holidayList: state.settlement.holidayList,
+    ...state.home,
+    ...state.instantSettlements,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      fetchAll,
+      showNotification,
+      ...ModalActions,
+      fetchCurrentBalance,
+      fetchHolidayList,
+      fetchOndemandRestrictions,
+    },
+    dispatch,
+  );
+};
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(InstantSettlements));

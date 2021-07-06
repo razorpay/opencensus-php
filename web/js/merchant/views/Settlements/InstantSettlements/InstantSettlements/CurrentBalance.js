@@ -1,7 +1,7 @@
 import React from 'react';
 import Amount from 'common/ui/Amount';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import Time from 'common/ui/Time';
 import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
 import PropTypes from 'prop-types';
@@ -55,13 +55,13 @@ const CurrentBalance = ({
           />
 
           {settleNowRestrictionMsg && (
-            <Popover
+            <PopoverComponent
               align="top"
-              parentQuerySelector={`.current-balance--settle-btn .settle-now`}
+              parentQuerySelector=".current-balance--settle-btn .settle-now"
               theme="dark"
             >
               <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
-            </Popover>
+            </PopoverComponent>
           )}
         </div>
       </div>

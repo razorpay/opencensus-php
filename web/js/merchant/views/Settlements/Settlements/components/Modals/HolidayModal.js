@@ -4,19 +4,16 @@ import ModalHeader from 'common/ui/ModalHeader';
 import HolidaysTable from 'merchant/views/Settlements/Settlements/components/HolidayTable';
 import { fetchBreakupDetails } from 'merchant/reducers/settlements/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
+import { bindActionCreators } from 'redux';
 
-@connect((state) => state.settlement, {
-  fetchBreakupDetails,
-  ...ModalActions,
-})
-export default class HolidayModal extends Component {
+class HolidayModal extends Component {
   render() {
     const date = new Date();
     const year = date.getUTCFullYear().toString();
     return (
       <div>
         <ModalHeader
-          title={`Holidays List`}
+          title="Holidays List"
           onCloseClick={() => {
             this.props.closeModal();
             window.rzpAnalytics({
@@ -31,3 +28,11 @@ export default class HolidayModal extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => state.settlement;
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ fetchBreakupDetails, ...ModalActions }, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(HolidayModal);

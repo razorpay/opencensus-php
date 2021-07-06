@@ -1,5 +1,5 @@
 import React from 'react';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
 
 const TotalAmount = ({ type, value, infoText, infoComp, isNew }) => {
@@ -12,9 +12,9 @@ const TotalAmount = ({ type, value, infoText, infoComp, isNew }) => {
         <Amount value={value} currency="INR" />
       )}
       <i class="i i-info-circle">
-        <Popover align="left" theme="dark">
+        <PopoverComponent align="left" theme="dark">
           <PopoverBody>{infoComp ? <span>{infoComp}</span> : <span>{infoText}</span>}</PopoverBody>
-        </Popover>
+        </PopoverComponent>
       </i>
     </span>
   );
