@@ -918,19 +918,10 @@ class PayoutLinks
             'timeout' => 25,
         ];
 
-        if (strpos($url, "Payoutlinks/VerifyOTP") !== false) {
-            $this->trace->info(TraceCode::PAYOUT_LINKS_REQUEST,
-                [
-                    'url' => $url
-                ]);
-        } else {
-            $this->trace->info(TraceCode::PAYOUT_LINKS_REQUEST,
-                [
-                    'headers' => $headers,
-                    'url' => $url,
-                    'data' => $data,
-                ]);
-        }
+        $this->trace->info(TraceCode::PAYOUT_LINKS_REQUEST,
+            [
+                'url' => $url
+            ]);
 
         $response = Requests::$method(
             $url,
@@ -939,6 +930,13 @@ class PayoutLinks
             $options);
 
         $responseBody = json_decode($response->body, true);
+
+        $this->trace->info(TraceCode::PAYOUT_LINKS_RESPONSE,
+            [
+                'url' => $url,
+                'status_code' => $response->status_code
+            ]);
+
 
         if ($response->status_code !== StatusCode::SUCCESS)
         {
@@ -1270,10 +1268,6 @@ class PayoutLinks
 
     public function createDemoPayoutLink(array $input): array
     {
-
-        $this->trace->info(TraceCode::PAYOUT_LINK_CREATE_REQUEST,
-            $input);
-
         $demoplValidator = new Validator();
 
         $demoplValidator->setStrictFalse();
@@ -1342,9 +1336,6 @@ class PayoutLinks
 
     public function generateAndSendCustomerOtpDemo(string $payoutLinkId, array $input): array
     {
-        $this->trace->info(TraceCode::PAYOUT_LINK_CUSTOMER_OTP_GENERATE_DEMO,
-            $input);
-
         $url = $this->getConstructedUrl(self::PAYOUT_LINK_GENERATE_OTP_DEMO_PATH);
 
         $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
@@ -1363,9 +1354,6 @@ class PayoutLinks
 
     public function initiateDemo(string $payoutLinkId, array $input): array
     {
-        $this->trace->info(TraceCode::PAYOUT_LINK_INITIATE_REQUEST_DEMO,
-            $input);
-
         $url = sprintf('%s/%s', $this->baseUrl, self::INITIATE_DEMO_PAYOUT_LINK_PATH);
 
         $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
