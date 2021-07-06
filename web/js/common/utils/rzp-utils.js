@@ -35,8 +35,12 @@ export function humanize(sentence) {
 }
 
 export function getCommonAnalyticsProperties(user) {
-  const mode = localStorage.getItem(`rzp_mode--${user.id}`);
+  if (!user) {
+    // skip properties if sesion is expired/user details are not availble
+    return {};
+  }
 
+  const mode = localStorage.getItem(`rzp_mode--${user.id}`);
   return {
     userId: user.user.id,
     mode,
