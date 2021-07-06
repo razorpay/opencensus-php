@@ -7,6 +7,7 @@ use RZP\Models\Pricing\Fee;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Status;
@@ -66,6 +67,15 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
         $this->runEntityAssertions($response);
+    }
+
+    public function testCreateQrCodeInvalidCustomer()
+    {
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage('The id provided does not exist');
+
+        $this->createQrCode(['customer_id' => 'cust_110000customer']);
     }
 
     public function testCreateUpiQrCode()
@@ -408,7 +418,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $qrCodeEntity= $this->getDbLastEntity('qr_code');
 
         $this->assertEquals($testData['expected_status'],$qrCodeEntity->getStatus());
-        
+
     }
 
 
