@@ -171,11 +171,6 @@
             maskedPhone: '{{ $user_phone }}',
             maskedEmail: '{{ $user_email }}',
         },
-        supportDetails:{
-            supportEmail: '{{$support_email}}',
-            supportPhone: '{{$support_contact}}',
-            supportWebsite: '{{$support_url}}',
-        },
         description: `{{ $description }}`,
         receipt: `{{ $receipt }}`,
         apiHost: '{{ $api_host }}' + '/v1/',

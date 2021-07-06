@@ -28,6 +28,8 @@ use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
+use RZP\Models\BankAccount\Entity as BankAccountEntity;
+use RZP\Models\WalletAccount\Entity as WalletAccountEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -408,7 +410,7 @@ class PayoutLinks
             {
                 $payouts = $payoutLinkInfo['payouts']['items'];
 
-                $payoutUtr = $payouts[0]['utr'];
+                $payoutUtr = mask_by_percentage($payouts[0]['utr']);
 
                 $payoutMode = $payouts[0]['mode'];
             }
@@ -450,9 +452,6 @@ class PayoutLinks
             'payout_utr'                  => $payoutUtr,
             'payout_mode'                 => $payoutMode,
             'payout_links_custom_message' => $settings[Entity::CUSTOM_MESSAGE] ?? null,
-            'support_contact'             => $settings[Entity::SUPPORT_CONTACT] ?? null,
-            'support_email'               => $settings[Entity::SUPPORT_EMAIL] ?? null,
-            'support_url'                 => $settings[Entity::SUPPORT_URL] ?? null
         ];
 
         return $data;
@@ -836,8 +835,6 @@ class PayoutLinks
      */
     protected function getMaskedFundAccountDetails(FundAccountEntity $fundAccount = null)
     {
-        $percentageToMask = '0.7';
-
         if ($fundAccount === null)
         {
             return null;
@@ -850,29 +847,63 @@ class PayoutLinks
         switch ($type)
         {
             case Type::VPA:
-                $address = $details[Type::VPA][VpaEntity::USERNAME];
+                $username = $details[Type::VPA][VpaEntity::USERNAME];
 
                 $handle = $details[Type::VPA][VpaEntity::HANDLE];
 
-                $addressLen = strlen($address);
+                $maskedUsername = mask_by_percentage($username);
 
-                $handleLen = strlen($handle);
+                $maskedHandle = mask_by_percentage($handle);
 
-                $lengthOfHandleToMask = ceil($handleLen * $percentageToMask);
-
-                $lengthOfAddressToMask = ceil($addressLen * $percentageToMask);
-
-                $maskedAddress = substr($address, 0, $addressLen - $lengthOfAddressToMask) .
-                    str_repeat('*', $lengthOfAddressToMask);
-
-                $maskedHandle = substr($handle, 0, $handleLen - $lengthOfHandleToMask) .
-                    str_repeat('*', $lengthOfHandleToMask);
-
-                $details[Type::VPA][VpaEntity::ADDRESS] = sprintf('%s@%s', $maskedAddress, $maskedHandle);
+                $details[Type::VPA][VpaEntity::ADDRESS] = sprintf('%s@%s', $maskedUsername, $maskedHandle);
 
                 $details[Type::VPA][VpaEntity::HANDLE] = $maskedHandle;
 
-                $details[Type::VPA][VpaEntity::USERNAME] = $maskedAddress;
+                $details[Type::VPA][VpaEntity::USERNAME] = $maskedUsername;
+
+                break;
+
+            case Type::BANK_ACCOUNT:
+                $ifsc = $details[Type::BANK_ACCOUNT][BankAccountEntity::IFSC];
+
+                $accountNumber = $details[Type::BANK_ACCOUNT][BankAccountEntity::ACCOUNT_NUMBER];
+
+                $name = $details[Type::BANK_ACCOUNT][BankAccountEntity::NAME];
+
+                $maskedIfsc = mask_by_percentage($ifsc);
+
+                $maskedAccountNumber = mask_by_percentage($accountNumber);
+
+                $maskedName = mask_by_percentage($name);
+
+                $details[Type::BANK_ACCOUNT][BankAccountEntity::IFSC] = $maskedIfsc;
+
+                $details[Type::BANK_ACCOUNT][BankAccountEntity::ACCOUNT_NUMBER] = $maskedAccountNumber;
+
+                $details[Type::BANK_ACCOUNT][BankAccountEntity::NAME] = $maskedName;
+
+                break;
+
+            case Type::WALLET_ACCOUNT:
+                $phone = $details[Type::WALLET][WalletAccountEntity::PHONE];
+
+                $email = $details[Type::WALLET][WalletAccountEntity::EMAIL];
+
+                $name = $details[Type::WALLET][WalletAccountEntity::NAME];
+
+                $maskedPhone = mask_phone($phone);
+
+                $maskedEmail = mask_email($email);
+
+                $maskedName = mask_by_percentage($name);
+
+                $details[Type::WALLET][WalletAccountEntity::PHONE] = $maskedPhone;
+
+                $details[Type::WALLET][WalletAccountEntity::EMAIL] = $maskedEmail;
+
+                $details[Type::WALLET][WalletAccountEntity::NAME] = $maskedName;
+
+                break;
         }
 
         return $details;

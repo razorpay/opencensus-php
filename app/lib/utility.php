@@ -1107,3 +1107,21 @@ if (!function_exists('get_Protobuf_Struct'))
         return $struct;
     }
 }
+
+if (! function_exists('mask_by_percentage'))
+{
+    function mask_by_percentage(string $data = null, float $percentageToMask = 0.7): string
+    {
+        if (empty($data) === true)
+        {
+            return $data;
+        }
+
+        $dataLen = strlen($data);
+
+        $lengthOfDataToMask = ceil($dataLen * $percentageToMask);
+
+        return substr($data, 0, $dataLen - $lengthOfDataToMask) .
+            str_repeat('*', $lengthOfDataToMask);
+    }
+}

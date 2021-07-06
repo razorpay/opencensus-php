@@ -564,6 +564,151 @@ class PayoutLinkMicroserviceTest extends TestCase
         $this->assertEquals([], $output['items']);
     }
 
+    public function testMaskedGetHostedPageDataForVPA()
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $vpaDetails = $this->fixtures->create('vpa', [
+            'username' => 'testing',
+            'handle'   => 'handle',
+        ]);
+        $this->fixtures->create('fund_account', [
+            'id'          => '100000000009fa',
+            'source_type' => 'contact',
+            'source_id'   => '1001contact',
+            'merchant_id' => $newMerchant->getId(),
+            'account_type'=> 'vpa',
+            'account_id'  => $vpaDetails->getId(),
+        ]);
+
+        $response = $this->mockGetHostedResponseForProcessedPL('100000000009fa');
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($response);
+        $mock->method('allowUpi')->willReturn(false);
+        $mock->method('allowAmazonPay')->willReturn(false);
+        $mock->method('getEnvironment')->willReturn(Environment::TESTING);
+
+
+        $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
+        $faDetailsInResponse = json_decode($data['fund_account_details']);
+        $this->assertEquals('123*********', $data['payout_utr'], "Payout UTR not masked");
+        $this->assertEquals('te*****', $faDetailsInResponse->vpa->username, "VPA Username not masked");
+        $this->assertEquals('h*****', $faDetailsInResponse->vpa->handle, "VPA Handle not masked");
+        $this->assertEquals('te*****@h*****', $faDetailsInResponse->vpa->address, "VPA Address not masked");
+    }
+
+    public function testMaskedGetHostedPageDataForBankAccount()
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $baDetails = $this->fixtures->create('bank_account', [
+            'ifsc_code' => 'IFSC12345',
+            'account_number'   => '89898989898989',
+            'beneficiary_name' => 'testing',
+        ]);
+        $this->fixtures->create('fund_account', [
+            'id'          => '100000000010fa',
+            'source_type' => 'contact',
+            'source_id'   => '1001contact',
+            'merchant_id' => $newMerchant->getId(),
+            'account_type'=> 'bank_account',
+            'account_id'  => $baDetails->getId(),
+        ]);
+
+        $response = $this->mockGetHostedResponseForProcessedPL('100000000010fa');
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($response);
+        $mock->method('allowUpi')->willReturn(false);
+        $mock->method('allowAmazonPay')->willReturn(false);
+        $mock->method('getEnvironment')->willReturn(Environment::TESTING);
+
+
+        $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
+        $faDetailsInResponse = json_decode($data['fund_account_details']);
+        $this->assertEquals('123*********', $data['payout_utr'], "Payout UTR not masked");
+        $this->assertEquals('te*****', $faDetailsInResponse->bank_account->name, "Name not masked");
+        $this->assertEquals('IF*******', $faDetailsInResponse->bank_account->ifsc, "IFSC Code not masked");
+        $this->assertEquals('8989**********', $faDetailsInResponse->bank_account->account_number, "Account Number not masked");
+    }
+
+    public function testMaskedGetHostedPageDataForWalletAccount()
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $walletDetails = $this->fixtures->create('wallet_account', [
+            'phone' => '9040434917',
+            'email' => 'testing@gmail.com',
+            'name'  => 'testing',
+        ]);
+        $this->fixtures->create('fund_account', [
+            'id'          => '100000000011fa',
+            'source_type' => 'contact',
+            'source_id'   => '1001contact',
+            'merchant_id' => $newMerchant->getId(),
+            'account_type'=> 'wallet_account',
+            'account_id'  => $walletDetails->getId(),
+        ]);
+
+        $response = $this->mockGetHostedResponseForProcessedPL('100000000011fa');
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($response);
+        $mock->method('allowUpi')->willReturn(false);
+        $mock->method('allowAmazonPay')->willReturn(false);
+        $mock->method('getEnvironment')->willReturn(Environment::TESTING);
+
+
+        $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
+        $faDetailsInResponse = json_decode($data['fund_account_details']);
+        $this->assertEquals('123*********', $data['payout_utr'], "Payout UTR not masked");
+        $this->assertEquals('te*****', $faDetailsInResponse->wallet->name, "Name not masked");
+        $this->assertEquals('90******17', $faDetailsInResponse->wallet->phone, "Phone not masked");
+        $this->assertEquals('te*****@g***l.com', $faDetailsInResponse->wallet->email, "Email not masked");
+    }
+
+    private function mockGetHostedResponseForProcessedPL(string $faId)
+    {
+        $mode['AMAZONPAY'] = 1;
+        $mode['UPI'] = 1;
+        $payoutCollection = [
+            'entity' => 'collection',
+            'count' => 1,
+            'items' => [
+                [
+                    'id' => 'pout_some-id',
+                    'utr' => '123456789987',
+                    'mode' => 'UPI',
+                ]
+            ],
+        ];
+        $response['settings'] = ['mode' => $mode];
+        $response['payout_link_response']['amount'] = 1000;
+        $response['payout_link_response']['id'] = 'poutlk_123456';
+        $response['payout_link_response']['status'] = 'processed';
+        $response['payout_link_response']['fund_account_id'] = 'fa_'.$faId;
+        $response['payout_link_response']['currency'] = 'INR';
+        $response['payout_link_response']['description'] = 'testing';
+        $response['payout_link_response']['contact']['name'] = 'test';
+        $response['payout_link_response']['contact']['email'] = 'test@gmail.com';
+        $response['payout_link_response']['contact']['contact'] = '+919090990909';
+        $response['payout_link_response']['payouts'] = $payoutCollection;
+        return $response;
+    }
+
 
     private function mockSettingsResponse(array $mode, int $amount)
     {
