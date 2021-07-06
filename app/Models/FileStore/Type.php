@@ -205,6 +205,7 @@ class Type
     const SCBL_EMI_FILE                     = 'scbl_emi_file';
     const YES_EMI_FILE_SFTP                 = 'yes_emi_file_sftp';
     const YES_EMI_FILE_MAIL                 = 'yes_emi_file_mail';
+    const ICICI_EMI_REFUND_FILE             = 'icici_emi_refund_file';
     const ICICI_EMI_FILE_SFTP               = 'icici_emi_file_sftp';
     const ICICI_EMI_FILE_MAIL               = 'icici_emi_file_mail';
     const SBI_EMI_FILE                      = 'sbi_emi_file';
@@ -337,6 +338,7 @@ class Type
             self::YES_EMI_FILE_SFTP,
             self::ICICI_EMI_FILE_MAIL,
             self::ICICI_EMI_FILE_SFTP,
+            self::ICICI_EMI_REFUND_FILE,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_FAILED_REFUND,
@@ -420,6 +422,7 @@ class Type
         self::YES_EMI_FILE_SFTP,
         self::ICICI_EMI_FILE_MAIL,
         self::ICICI_EMI_FILE_SFTP,
+        self::ICICI_EMI_REFUND_FILE,
         self::KOTAK_NETBANKING_CLAIM,
         self::CSB_NETBANKING_REFUND,
         self::KOTAK_NETBANKING_REFUND,
@@ -583,6 +586,7 @@ class Type
             self::SBI_EMI_FILE,
             self::SCBL_EMI_FILE,
             self::ICICI_EMI_FILE_SFTP,
+            self::ICICI_EMI_REFUND_FILE,
             self::KOTAK_EMI_FILE,
             self::YES_EMI_FILE_SFTP,
             self::RBL_EMI_FILE,

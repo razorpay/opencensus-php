@@ -10,6 +10,8 @@ use RZP\Http\Route;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+
+use RZP\Models\Payment\Status;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
@@ -74,6 +76,45 @@ class Repository extends Base\Repository
         {
             throw new Exception\ExtraFieldsException('expand=reversal');
         }
+    }
+
+    public function fetchEmiRefundsWithCardTerminalsBetween($from, $to, $bank)
+    {
+        $tRepo = $this->repo->terminal;
+
+        $paymentRepo = $this->repo->payment;
+
+        $tTableName = $tRepo->getTableName();
+
+        $pTableName = $paymentRepo->getTableName();
+
+        $terminalEmi = $tRepo->dbColumn(Terminal\Entity::EMI);
+
+        $paymentId = $paymentRepo->dbColumn(Payment\Entity::ID);
+
+        $paymentTerminalId = $paymentRepo->dbColumn(Payment\Entity::TERMINAL_ID);
+
+        $refundData = $this->dbColumn('*');
+
+        $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
+
+        $paymentStatus = $paymentRepo->dbColumn(Payment\Entity::STATUS);
+
+        $paymentBank = $paymentRepo->dbColumn(Payment\Entity::BANK);
+        $paymentMethod = $paymentRepo->dbColumn(Payment\Entity::METHOD);
+        $refundCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+
+        return $this->newQuery()
+            ->join($pTableName, $paymentId, '=', Refund\Entity::PAYMENT_ID)
+            ->join($tTableName, $paymentTerminalId, '=', $terminalId)
+            ->whereBetween($refundCreatedAt, [$from, $to])
+            ->where($paymentStatus, '=', Payment\Status::REFUNDED)
+            ->where($paymentBank, '=', $bank)
+            ->where($paymentMethod, '=', Payment\Method::EMI)
+            ->where($terminalEmi, '=', false)
+            ->with('payment', 'payment.card.globalCard', 'payment.emiPlan', 'payment.merchant')
+            ->select($refundData)
+            ->get();
     }
 
     protected function addQueryParamInitiatorId($query, $params)

@@ -9,6 +9,7 @@ use RZP\Models\Payment\Gateway;
 class Constants extends Base\Constants
 {
     const RECIPIENT_EMAILS_MAP = [
+        Gateway::ICICI_EMI              => ["icicicards.emi@razorpay.com","settlements@razorpay.com"],
         Gateway::NETBANKING_HDFC        => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
         Gateway::NETBANKING_ICICI       => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
         Gateway::NETBANKING_IBK         => ['refunds@razorpay.com', 'settlements@razorpay.com'],
@@ -29,6 +30,7 @@ class Constants extends Base\Constants
     ];
 
     const HEADER_MAP = [
+        Gateway::ICICI_EMI              => 'Icici Emi Refunds File',
         Gateway::NETBANKING_HDFC        => 'Hdfc Netbanking refunds',
         Gateway::NETBANKING_CORPORATION => 'Corporation Netbanking refunds',
         Gateway::NETBANKING_ICICI       => 'Icici Netbanking refunds',
@@ -50,6 +52,7 @@ class Constants extends Base\Constants
     ];
 
     const SUBJECT_MAP = [
+        Gateway::ICICI_EMI              => 'Icici Emi refund file for ',
         Gateway::NETBANKING_CORPORATION => 'Corporation Netbanking refunds file for ',
         Gateway::NETBANKING_ALLAHABAD   => 'Allahabad Netbanking refunds file for ',
         Gateway::NETBANKING_HDFC        => 'HDFC Netbanking refunds file for ',
@@ -71,6 +74,7 @@ class Constants extends Base\Constants
     ];
 
     const MAILTAG_MAP = [
+        Gateway::ICICI_EMI              => MailTags::ICICI_EMI_REFUNDS_MAIL,
         Gateway::NETBANKING_CORPORATION => MailTags::CORPORATION_NETBANKING_REFUNDS_MAIL,
         Gateway::NETBANKING_ALLAHABAD   => MailTags::ALLAHABAD_NETBANKING_REFUNDS_MAIL,
         Gateway::NETBANKING_HDFC        => MailTags::HDFC_NETBANKING_REFUNDS_MAIL,
@@ -89,6 +93,7 @@ class Constants extends Base\Constants
     ];
 
     const BODY_MAP = [
+        Gateway::ICICI_EMI              => 'Please find the file details below',
         Gateway::NETBANKING_CORPORATION => 'Please find attached refunds information for Corporation Netbanking',
         Gateway::NETBANKING_ALLAHABAD   => 'Please find attached refunds information for Allahabad Netbanking',
       // @codingStandardsIgnoreLine
@@ -107,6 +112,7 @@ class Constants extends Base\Constants
     ];
 
     const MAIL_TEMPLATE_MAP = [
+        Gateway::ICICI_EMI              => 'emails.message',
         Gateway::NETBANKING_HDFC        => 'emails.message',
         Gateway::NETBANKING_IDFC        => 'emails.message',
         Gateway::NETBANKING_BOB         => 'emails.message',

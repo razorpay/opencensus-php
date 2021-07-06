@@ -103,7 +103,7 @@ add_cron "*/15 * * * *"     "refund_failed_retry"            POST "$BASE_URL/ref
 add_cron "*/15 * * * *"     "virtual_account_refund_excess"  POST "$BASE_URL/virtual_accounts/refund/excess"             ""                              $LIVE_AUTH
 
 # Gateway File
-add_cron "15 3 * * *"       "gateway_file_refunds_prod"           POST "$BASE_URL/gateway/files"              "type=refund&targets[]=hdfc&targets[]=icici&targets[]=paylater_icici"                                                            $LIVE_AUTH
+add_cron "15 3 * * *"       "gateway_file_refunds_prod"           POST "$BASE_URL/gateway/files"              "type=refund&targets[]=hdfc&targets[]=icici&targets[]=paylater_icici&targets[]=icici_emi"                                                            $LIVE_AUTH
 add_cron "25 3 * * *"       "gateway_file_emi_prod"               POST "$BASE_URL/gateway/files"              "type=emi&targets[]=indusind&targets[]=kotak&targets[]=axis&targets[]=rbl&targets[]=scbl"               $LIVE_AUTH
 add_cron "00 1 * * *"       "gateway_file_sbi_emi_prod"           POST "$BASE_URL/gateway/files"              "type=emi&targets[]=sbi"                                                                                $LIVE_AUTH
 add_cron "30 3 * * *"       "gateway_file_axis_corp_prod"         POST "$BASE_URL/gateway/files"              "type=combined&targets[]=axis&sub_type=corporate"                                                       $LIVE_AUTH

@@ -7,8 +7,12 @@ use Queue;
 use Excel;
 use Mockery;
 use Carbon\Carbon;
+
+use RZP\Jobs\BeamJob;
+use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
+use RZP\Mail\Emi as EmiMail;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\GatewayFile as GatewayFileJob;
@@ -29,6 +33,76 @@ class GatewayRefundFileTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/GatewayRefundFileTestData.php';
 
         parent::setUp();
+    }
+
+    private function makeEmiPaymentOnCard($card, $emiDuration)
+    {
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['amount'] = 500000;
+        $payment['method'] = 'emi';
+        $payment['emi_duration'] = $emiDuration;
+        $payment['card']['number'] = $card;
+        $payment['currency'] = 'INR';
+
+        return $this->doAuthAndCapturePayment($payment);
+    }
+
+    public function testProcessRefundFileIciciEmi()
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->edit('iin', '411146', [
+            'issuer' => 'ICIC'
+        ]);
+
+        $this->ba->publicAuth();
+
+        $payment = $this->makeEmiPaymentOnCard('4111460212312338', 9);
+
+        $this->refundPayment($payment['id']);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => FileStore\Type::ICICI_EMI_REFUND_FILE,
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        $this->fixtures->merchant->disableEmi();
+
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('beam_test', BeamJob::class);
+
+        Mail::assertQueued(RefundFileMail::class);
     }
 
     public function testProcessRefundFile()

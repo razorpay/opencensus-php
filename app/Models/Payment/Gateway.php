@@ -37,6 +37,7 @@ class Gateway
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
     const ICICI                  = 'icici';
+    const ICICI_EMI               = 'icici_emi';
     const KOTAK                  = 'kotak';
     const YESB                   = 'yesb';
     const RBL                    = 'rbl';

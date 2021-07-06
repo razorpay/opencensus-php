@@ -4,7 +4,6 @@ namespace RZP\Models\Emi\Banks\Icici;
 
 use Carbon\Carbon;
 use Mail;
-use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Models\Emi;
 use RZP\Models\Emi\Banks\Base;

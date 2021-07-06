@@ -136,6 +136,7 @@ class MailTags
     const WEBHOOK                          = 'webhook';
 
     const EMI_FILE                         = 'emi_file';
+    const ICICI_EMI_REFUNDS_MAIL           = 'icici_emi_refunds_mail';
 
     const SCORECARD                        = 'scorecard';
     const BANKING_SCORECARD                = 'banking_scorecard';

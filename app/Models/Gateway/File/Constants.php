@@ -59,6 +59,7 @@ class Constants
     const KOTAK_CORP       = 'kotak_corp';
     const DLB              = 'dlb';
     const NSDL             = 'nsdl';
+    const ICICI_EMI        = 'icici_emi';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
     const ENACH_NB_ICICI        = 'enach_nb_icici';  // deprecated
@@ -91,6 +92,7 @@ class Constants
             self::ISG,
             self::HDFC_EMANDATE,
             self::UPI_SBI,
+            self::ICICI_EMI,
         ],
         Type::CLAIM => [
         ],
@@ -211,6 +213,7 @@ class Constants
             self::UPI_SBI       => ['refunds@razorpay.com'],
             self::CBI           => ['cbi.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
             self::AUBL          => ['ausf-netbanking-refunds@razorpay.com'],
+            self::ICICI_EMI     => ['icicicards.emi@razorpay.com'],
         ],
 
         Type::COMBINED => [
