@@ -18,7 +18,7 @@ use RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields as SelectiveRequiredFields;
 
-class BaseService extends Base\Service
+class PaymentProductsBaseService extends Base\Service
 {
     /**
      * @var Detail\Core

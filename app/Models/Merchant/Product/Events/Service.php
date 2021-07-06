@@ -31,7 +31,8 @@ class Service extends Base\Service
         switch ($productName)
         {
             case Name::PAYMENT_GATEWAY:
-                $data = $this->getPaymentGatewayEventData($merchantProductEntity);
+            case Name::PAYMENT_LINKS:
+                $data = $this->getPaymentProductsEventData($merchantProductEntity);
                 $this->dispatchProductStatusEvent($merchantProductEntity, $data);
                 break;
 
@@ -48,12 +49,12 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::MERCHANT_PRODUCT_STATUS_WEBHOOK_EVENT_PAYLOAD, $eventPayload);
 
-        $event = 'api.product.' . $merchantProduct->getProduct() . $merchantProduct->getStatus();
+        $event = 'api.product.' . $merchantProduct->getProduct() . '.' . $merchantProduct->getStatus();
 
         $this->app['events']->dispatch($event, $eventPayload);
     }
 
-    private function getPaymentGatewayEventData(Entity $merchantProduct): array
+    private function getPaymentProductsEventData(Entity $merchantProduct): array
     {
         $data = [];
 
@@ -66,7 +67,9 @@ class Service extends Base\Service
             return $data;
         }
 
-        $ncRequirements = (new Requirements\BaseService())->fetchRequirements($merchant, $merchantProduct);
+        $requirementService = Requirements\Factory::getInstance($merchantProduct->getProduct());
+
+        $ncRequirements = $requirementService->fetchRequirements($merchant, $merchantProduct);
 
         $data[Util\Constants::REQUIREMENTS] = $ncRequirements;
 

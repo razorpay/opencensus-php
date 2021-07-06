@@ -12,6 +12,7 @@ class ProductRequestHandler
         switch ($productName)
         {
             case Name::PAYMENT_GATEWAY:
+            case Name::PAYMENT_LINKS:
                 (new Config\Validator)->validateInput('pg', $request);
                 $request = PaymentGatewayRequestHandler::handleRequest($request);
                 break;

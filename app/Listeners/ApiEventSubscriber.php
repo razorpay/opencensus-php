@@ -228,6 +228,34 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onProductPaymentLinksActivated($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onProductPaymentLinksNeedsClarification($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onProductPaymentLinksUnderReview($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onProductPaymentLinksRejected($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onAccountUnsuspended($merchant)
     {
         $this->dispatchEventToPlService($merchant);

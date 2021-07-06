@@ -12,9 +12,11 @@ class Factory
         switch ($productName)
         {
             case Name::PAYMENT_GATEWAY:
-                return new BaseService();
+                return new PaymentGatewayRequirementService();
+            case Name::PAYMENT_LINKS:
+                return new PaymentLinksRequirementService();
             default:
-                throw new Exception\LogicException('invalid product name for fetching requirements: '. $productName);
+                throw new Exception\LogicException('invalid product name for fetching requirement service: '. $productName);
         }
     }
 }

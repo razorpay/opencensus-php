@@ -41,11 +41,6 @@ class PaymentsGeneralConfig extends Base\Service
      */
     private $merchantDetailCore;
 
-    /**
-     * @var Requirements\BaseService
-     */
-    private $requirementService;
-
 
     public function __construct()
     {
@@ -58,8 +53,6 @@ class PaymentsGeneralConfig extends Base\Service
         $this->settlementService = new Settlement\Service();
 
         $this->merchantDetailCore = new Detail\Core();
-
-        $this->requirementService = new Requirements\BaseService();
 
         parent::__construct();
     }
@@ -100,11 +93,6 @@ class PaymentsGeneralConfig extends Base\Service
 
         return $response;
 
-    }
-
-    public function getRequirements(Merchant\Entity $merchant, Product\Entity $merchantProduct)
-    {
-        return $this->requirementService->fetchRequirements($merchant, $merchantProduct);
     }
 
     private function getPaymentConfig(Merchant\Entity $merchant): array

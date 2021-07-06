@@ -128,6 +128,7 @@ class Service extends Base\Service
         switch ($productName)
         {
             case Name::PAYMENT_GATEWAY:
+            case Name::PAYMENT_LINKS:
                 $data = Config\Defaults::PAYMENT_GATEWAY;
                 break;
         }

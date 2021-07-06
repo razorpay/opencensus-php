@@ -43,7 +43,7 @@ class Core extends Base\Core
         switch ($productName)
         {
             case Name::PAYMENT_GATEWAY :
-
+            case Name::PAYMENT_LINKS:
                 $response = $this->createPaymentGatewayConfig($merchant, $merchantProduct, $input);
                 break;
         }
@@ -60,6 +60,7 @@ class Core extends Base\Core
         switch ($productName)
         {
             case Name::PAYMENT_GATEWAY :
+            case Name::PAYMENT_LINKS:
                 $response = $this->getPaymentGatewayConfig($merchant, $merchantProduct);
                 break;
         }
@@ -73,7 +74,9 @@ class Core extends Base\Core
 
         $response = array_merge($response, $this->paymentsGeneralConfig->getConfig($merchant));
 
-        $response[Util\Constants::REQUIREMENTS] = $this->paymentsGeneralConfig->getRequirements($merchant, $merchantProduct);
+        $requirementService = Requirements\Factory::getInstance($merchantProduct->getProduct());
+
+        $response[Util\Constants::REQUIREMENTS] = $requirementService->fetchRequirements($merchant, $merchantProduct);
 
         $response[Util\Constants::PAYMENT_METHODS] = $this->paymentMethods->get($merchant);
 
@@ -86,16 +89,31 @@ class Core extends Base\Core
 
         $response = array_merge($response, $this->paymentsGeneralConfig->createConfig($merchant, $input));
 
-        $response[Util\Constants::REQUIREMENTS] = $this->paymentsGeneralConfig->getRequirements($merchant, $merchantProduct);
+        $merchantDetails = $merchant->merchantDetail;
 
-        $this->audit($input, $merchantProduct->getId(),Util\Constants::COMPLETED, Util\Constants::GENERAL);
+        $merchantStatus = $merchantDetails->getActivationStatus();
 
-        if (count($response[Util\Constants::REQUIREMENTS]) > 0)
+        if (in_array($merchantStatus, Status::PAYMENT_GATEWAY_TERMINAL_STATUS) === true)
         {
-            $merchantProduct->setActivationStatus(Status::NEEDS_CLARIFICATION);
+            $response[Util\Constants::REQUIREMENTS] = [];
 
-            $this->repo->merchant_product->saveOrFail($merchantProduct);
+            $merchantProduct->setActivationStatus(Status::PAYMENT_GATEWAY_PRODUCT_STATUS_MAPPING[$merchantStatus]);
         }
+        else
+        {
+            $requirementService = Requirements\Factory::getInstance($merchantProduct->getProduct());
+
+            $response[Util\Constants::REQUIREMENTS] = $requirementService->fetchRequirements($merchant, $merchantProduct);
+
+            if (count($response[Util\Constants::REQUIREMENTS]) > 0)
+            {
+                $merchantProduct->setActivationStatus(Status::NEEDS_CLARIFICATION);
+            }
+        }
+
+        $this->repo->merchant_product->saveOrFail($merchantProduct);
+
+        $this->audit($input, $merchantProduct->getId(), Util\Constants::COMPLETED, Util\Constants::GENERAL);
 
         return $response;
     }
@@ -123,6 +141,7 @@ class Core extends Base\Core
         switch ($productName)
         {
             case Name::PAYMENT_GATEWAY :
+            case Name::PAYMENT_LINKS:
                 $response = $this->updatePaymentGatewayConfig($merchant, $merchantProduct, $input);
                 break;
         }
@@ -149,7 +168,9 @@ class Core extends Base\Core
 
         $this->audit($input, $merchantProduct->getId(), Util\Constants::COMPLETED, Util\Constants::GENERAL);
 
-        $response[Util\Constants::REQUIREMENTS] = $this->paymentsGeneralConfig->getRequirements($merchant, $merchantProduct);
+        $requirementService = Requirements\Factory::getInstance($merchantProduct->getProduct());
+
+        $response[Util\Constants::REQUIREMENTS] = $requirementService->fetchRequirements($merchant, $merchantProduct);
 
         return $response;
     }
@@ -254,6 +275,19 @@ class Core extends Base\Core
         $this->submitMerchantActivation($merchant, $merchantDetails);
     }
 
+    /**
+     * payment_links product is closely inlined with merchant activation. Hence if all the requirements are met, we
+     * try to submit the L2 form.
+     *
+     * @param Merchant\Entity $merchant
+     * @param Detail\Entity   $merchantDetails
+     * @param Entity          $merchantProduct
+     */
+    private function updatePaymentLinksProductIfApplicable(Merchant\Entity $merchant, Detail\Entity $merchantDetails, Entity $merchantProduct)
+    {
+        $this->submitMerchantActivation($merchant, $merchantDetails);
+    }
+
     private function submitMerchantActivation(Merchant\Entity $merchant, Detail\Entity $merchantDetails)
     {
         $merchantDetailCore = new Detail\Core;
@@ -262,7 +296,12 @@ class Core extends Base\Core
             Detail\Entity::SUBMIT => '1',
         ];
 
-        if (empty($merchantDetails) === true)
+        // Two payment merchant products(payment_gateway, payment_links) can be requested parallely.
+        // So form submission needs to be done only once to avoid form lock validation exception
+        // For example upon 0 requirements (would be same for payment_links, payment_gateway product)
+        // 1. payment_gateway - submitted the form
+        // 2. payment_links - skip form submission
+        if (empty($merchantDetails) === true || $merchantDetails->isLocked() === true)
         {
             return;
         }
