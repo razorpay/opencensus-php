@@ -34,9 +34,11 @@ final class PostAuthenticate
      * This dependency ideally does not belong here and exists here for
      * making assertions during ramp up phase.
      *
-     * @var BasicAuth
+     * @var BasicAuth\BasicAuth
      */
     protected $ba;
+
+    const CONSUMER_TYPE_MERCHANT = "merchant";
 
     /**
      * @return void
@@ -93,15 +95,9 @@ final class PostAuthenticate
         ensureSameOrOverride($passport->authenticated, $authenticated, 'authenticated', $errors);
         ensureSameOrOverride($passport->mode, $this->ba->getMode(), 'mode', $errors);
 
-        // For $passport->consumer existence.
-        $consumerExists = ($this->ba->getMerchantId() !== null);
-        ensureSameExistenceOrOverride($passport->consumer, $consumerExists, 'consumer', $errors, new Passport\ConsumerClaims);
-        if ($consumerExists === true)
-        {
-            // For $passport->consumer's scalar attributes.
-            ensureSameOrOverride($passport->consumer->id, $this->ba->getMerchantId(), 'consumer.id', $errors);
-            ensureSameOrOverride($passport->consumer->type, 'merchant', 'consumer.type', $errors);
-        }
+        $this->ensureRequestContextPassportForDirectAuth($passport, $errors);
+        $this->ensureRequestContextPassportForPrivateAuth($passport, $errors);
+        $this->ensureRequestContextPassportForOAuth($passport, $errors);
 
         // If $passport was created fresh i.e. not from edge then of course there would be errors(i.e mismatch) :)
         if ($fromEdge and $errors)
@@ -109,10 +105,7 @@ final class PostAuthenticate
             $this->reqCtx->passportAttrsMismatch = true;
 
             // It reports mismatches only for scenarios which are expected to be handled at edge presently.
-            $shouldReport = (($this->reqCtx->authFlowType == BasicAuth\BasicAuth::KEY)
-                && ($this->reqCtx->authType == BasicAuth\Type::PRIVATE_AUTH)
-                && ($this->reqCtx->proxy == false));
-
+            $shouldReport = $this->isPrivateAuth() or $this->isOAuth();
             if ($shouldReport === true)
             {
                 $this->trace->count(Metric::PASSPORT_ATTRS_MISMATCH_TOTAL, $this->ba->getRequestMetricDimensions());
@@ -124,9 +117,69 @@ final class PostAuthenticate
                     'errors' => $errors,
                     'passport' => $dimensions,
                     'trace_id' => $this->reqCtx->edgeTraceId,
-                ]);
+                ] + $this->ba->getRequestMetricDimensions());
             }
         }
+    }
+
+    private function ensureRequestContextPassportForPrivateAuth(Passport\Passport $passport, array &$errors)
+    {
+        if (!$this->isPrivateAuth()) {
+            return;
+        }
+        // For $passport->consumer existence.
+        $consumerExists = ($this->ba->getMerchantId() !== null);
+        ensureSameExistenceOrOverride($passport->consumer, $consumerExists, 'consumer', $errors, new Passport\ConsumerClaims);
+        if ($consumerExists === true) {
+            // For $passport->consumer's scalar attributes.
+            ensureSameOrOverride($passport->consumer->id, $this->ba->getMerchantId(), 'consumer.id', $errors);
+            ensureSameOrOverride($passport->consumer->type, self::CONSUMER_TYPE_MERCHANT, 'consumer.type', $errors);
+        }
+    }
+
+    private function ensureRequestContextPassportForOAuth(Passport\Passport $passport, array &$errors)
+    {
+        if (!$this->isOAuth()) {
+            return;
+        }
+
+        $isConsumerExpected = true;
+        ensureSameExistenceOrOverride($passport->consumer, $isConsumerExpected, 'consumer', $errors, new Passport\ConsumerClaims);
+        ensureSameOrOverride($passport->consumer->id, $this->ba->getPartnerMerchantId(), 'consumer.id', $errors);
+        ensureSameOrOverride($passport->consumer->type, self::CONSUMER_TYPE_MERCHANT, 'consumer.type', $errors);
+
+        $isOAuthExpected = true;
+        ensureSameExistenceOrOverride($passport->oauth, $isOAuthExpected, 'oauth', $errors, new Passport\OAuthClaims);
+        ensureSameOrOverride($passport->oauth->ownerId, $this->ba->getMerchantId(), 'oauth.owner_id', $errors);
+        ensureSameOrOverride($passport->oauth->ownerType, self::CONSUMER_TYPE_MERCHANT, 'oauth.owner_type', $errors);
+        ensureSameOrOverride($passport->oauth->clientId, $this->ba->getOAuthClientId(), 'oauth.client_id', $errors);
+        ensureSameOrOverride($passport->oauth->appId, $this->ba->getOAuthApplicationId(), 'oauth.app_id', $errors);
+    }
+
+    private function ensureRequestContextPassportForDirectAuth(Passport\Passport $passport, array &$errors)
+    {
+        if (!$this->isDirectAuth()) {
+            return;
+        }
+        $isConsumerExpected = false;
+        ensureSameExistenceOrOverride($passport->consumer, $isConsumerExpected, 'consumer', $errors, new Passport\ConsumerClaims);
+    }
+
+    private function isPrivateAuth()
+    {
+        return $this->reqCtx->authType == BasicAuth\Type::PRIVATE_AUTH
+            and $this->reqCtx->authFlowType == BasicAuth\BasicAuth::KEY
+            and $this->reqCtx->proxy == false;
+    }
+
+    private function isOAuth()
+    {
+        return $this->reqCtx->authFlowType == BasicAuth\BasicAuth::OAUTH;
+    }
+
+    private function isDirectAuth()
+    {
+        return $this->reqCtx->authType == BasicAuth\Type::DIRECT_AUTH;
     }
 
     /**

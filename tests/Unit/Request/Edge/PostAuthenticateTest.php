@@ -45,7 +45,7 @@ class PostAuthenticateTest extends TestCase
         // Sets up basic auth expectations.
         $ba = $this->mockBasicAuth();
         $ba->expects($this->atLeastOnce())->method('getMode')->willReturn($expectedMode);
-        $ba->expects($this->atLeastOnce())->method('getMerchantId')->willReturn($expectedMerchantId);
+        $ba->expects($this->any())->method('getMerchantId')->willReturn($expectedMerchantId);
         $ba->expects($this->atLeastOnce())->method('getAuthType')->willReturn($expectedAuth);
         $ba->expects($this->atLeastOnce())->method('isProxyAuth')->willReturn($expectedProxy);
 
@@ -111,10 +111,77 @@ class PostAuthenticateTest extends TestCase
     {
         $mock = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getMode', 'getMerchantId', 'getAuthType', 'isProxyAuth'])
+            ->setMethods(['getMode', 'getMerchantId', 'getAuthType', 'isProxyAuth', 'getPartnerMerchantId', 'getOAuthClientId', 'getOAuthApplicationId'])
             ->getMock();
         $this->app->instance('basicauth', $mock);
 
         return $mock;
+    }
+
+    /**
+     * @dataProvider getOAuthCases
+     *
+     * @param Passport\Passport $passport
+     * @param                   $expectedMode
+     * @param                   $expectedOAuthClientId
+     * @param                   $expectedOAuthApplicationId
+     * @param                   $expectedPartnerMerchantId
+     * @param                   $expectedMerchantId
+     * @param                   $expectedMismatch
+     */
+    public function testBearerAuth(Passport\Passport $passport,
+                                   $expectedMode,
+                                   $expectedOAuthClientId,
+                                   $expectedOAuthApplicationId,
+                                   $expectedPartnerMerchantId,
+                                   $expectedMerchantId,
+                                   $expectedMismatch)
+    {
+        $request = $this->mockPrivateRouteWithOAuthBearerToken();
+        app('request.ctx')->init();
+        $reqCtx           = app('request.ctx.v2');
+
+        $ba = $this->mockBasicAuth();
+        $ba->expects($this->atLeastOnce())->method('getMode')->willReturn($expectedMode);
+        $ba->expects($this->atLeastOnce())->method('getOAuthClientId')->willReturn($expectedOAuthClientId);
+        $ba->expects($this->atLeastOnce())->method('getOAuthApplicationId')->willReturn($expectedOAuthApplicationId);
+        $ba->expects($this->atLeastOnce())->method('getPartnerMerchantId')->willReturn($expectedPartnerMerchantId);
+        $ba->expects($this->atLeastOnce())->method('getMerchantId')->willReturn($expectedMerchantId);
+
+
+        $reqCtx->passport = $passport;
+
+        (new PostAuthenticate)->handle(true, $request);
+        $this->assertSame($passport->mode, $expectedMode);
+        $this->assertSame($reqCtx->passportAttrsMismatch, $expectedMismatch);
+    }
+
+    public function getOAuthCases()
+    {
+        $passport                 = new Passport\Passport;
+        $passport->identified     = true;
+        $passport->authenticated  = true;
+        $passport->mode           = "live";
+        $passport->consumer       = new Passport\ConsumerClaims;
+        $passport->consumer->id   = "partner_id";
+        $passport->consumer->type = "merchant";
+
+        $passport->oauth            = new Passport\OAuthClaims;
+        $passport->oauth->ownerId   = "merchant_id";
+        $passport->oauth->ownerType = "merchant";
+        $passport->oauth->clientId  = "client_id";
+        $passport->oauth->appId     = "app_id";
+        return [
+            // Case 1 - Successful case.
+            [$passport, $passport->mode, $passport->oauth->clientId, $passport->oauth->appId, $passport->consumer->id, $passport->oauth->ownerId, false],
+            // Case 2 - Mismatch client_id
+            [$passport, $passport->mode, 'i_client_id', $passport->oauth->appId, $passport->consumer->id, $passport->oauth->ownerId, true],
+            // Case 3 - Mismatch app_id
+            [$passport, $passport->mode, $passport->oauth->clientId, 'i_app_id', $passport->consumer->id, $passport->oauth->ownerId, true],
+            // Case 4 - Mismatch partner_id
+            [$passport, $passport->mode, $passport->oauth->clientId, $passport->oauth->appId, 'i_partner_id', $passport->oauth->ownerId, true],
+            // Case 5 - Mismatch merchant_id
+            [$passport, $passport->mode, $passport->oauth->clientId, $passport->oauth->appId, $passport->consumer->id, 'i_merchant_id', true],
+        ];
     }
 }
