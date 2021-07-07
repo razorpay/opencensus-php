@@ -11,8 +11,8 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class UpiPaymentServiceTest extends TestCase {
-    
+class UpiPaymentServiceTest extends TestCase
+{
     use PaymentTrait;
     use DbEntityFetchTrait;
 
@@ -33,42 +33,55 @@ class UpiPaymentServiceTest extends TestCase {
         $this->terminal = $this->fixtures->create('terminal:shared_upi_airtel_terminal');
 
         $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
-        
+
         $this->fixtures->merchant->activate();
 
         $this->payment = $this->getDefaultUpiPaymentArray();
     }
 
-    public function testPaymentCreateSuccess(){
-        
+    public function testPaymentCreateSuccess()
+    {
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
         $this->assertEquals('async', $response['type']);
 
         $payment = $this->getDbLastPayment();
 
-        $this->assertArraySubset([
+        $this->assertArraySubset(
+            [
             Entity::STATUS          => 'created',
             Entity::GATEWAY         => 'upi_airtel',
             Entity::TERMINAL_ID     => $this->terminal->getId(),
             Entity::REFUND_AT       => null,
             Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
-        ], $payment->toArray());
+            ], $payment->toArray()
+        );
 
         $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
 
         $this->assertNull($upiEntity);
     }
 
-    public function testPaymentFailureMockDisabled()
+    public function testInvalidAction()
     {
         $this->app['config']->set(['applications.upi_payment_service.mock' => false]);
 
+        $this->testPaymentCreateSuccess();
+
+        $this->gateway = 'mozart';
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->getDbLastPayment();
+
+        $payment = $this->getDbLastPayment();
+
         $this->makeRequestAndCatchException(
-            function() {
-                $this->testPaymentCreateSuccess();
+            function () use ($payment) {
+                $this->verifyPayment($payment->getPublicId());
             },
             Exception\LogicException::class,
-            'Action is not implemented for UPI payment service');
+            'No supported actions found for UPS'
+        );
     }
 }

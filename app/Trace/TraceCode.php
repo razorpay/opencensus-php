@@ -3331,6 +3331,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NBPLUS_PAYMENT_SERVICE_RESPONSE                       = 'NBPLUS_PAYMENT_SERVICE_RESPONSE';
     const NBPLUS_PAYMENT_SERVICE_ERROR                          = 'NBPLUS_PAYMENT_SERVICE_ERROR';
 
+    // UPI Payment Service Trace codes
+    const UPI_PAYMENT_SERVICE_REQUEST                           = 'UPI_PAYMENT_SERVICE_REQUEST';           
 
     // Batch Micro Service
     const GET_BATCHES_BATCH_SERVICE                             = 'GET_BATCHES_BATCH_SERVICE';

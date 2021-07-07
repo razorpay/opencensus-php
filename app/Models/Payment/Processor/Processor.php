@@ -2983,7 +2983,7 @@ class Processor
                     case Payment\Entity::NB_PLUS_SERVICE:
                         return $this->callNbPlusServiceAction($this->payment, $gateway, $action, $gatewayData);
                     case Payment\Entity::UPI_PAYMENT_SERVICE:
-                        return $this->callUpiPaymentServiceAction($gateway, $action, $gatewayData);
+                        return $this->callUpiPaymentServiceAction($this->payment, $gateway, $action, $gatewayData);
                 }
             }
 

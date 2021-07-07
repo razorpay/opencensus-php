@@ -276,10 +276,31 @@ trait UpiTrait
         return $tracable;
     }
 
-        /******************************** Upi Payment Service ******************************************/
+    /******************************** Upi Payment Service ******************************************/
 
-        public function callUpiPaymentServiceAction(string $gateway,string $action,array $gatewayData)
+    /**
+     * Prepares the gatewayinput for Upi Service and calls action method of Upi service class
+     *
+     * @param Payment\Entity $payment
+     * @param string $gateway
+     * @param string $action
+     * @param array $gatewayData
+     * @return void
+     */
+    public function callUpiPaymentServiceAction(Payment\Entity $payment,
+                                                string $gateway,
+                                                string $action,
+                                                array $gatewayData)
+    {
+        $metadata = $payment->getUpiMetadata()->toArray();
+
+        // TODO : revisit in case of actions other than authorize.
+        if (isset($gatewayData['upi']) === true)
         {
-            return $this->app['upi.payments']->action($gateway, $action, $gatewayData);
+            // TODO : Revist the merging logic in future
+            $gatewayData['upi'] = array_merge($metadata, $gatewayData['upi']);
         }
+
+        return $this->app['upi.payments']->action($gateway, $action, $gatewayData);
+    }
 }

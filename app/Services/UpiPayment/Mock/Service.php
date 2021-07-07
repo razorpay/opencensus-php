@@ -2,6 +2,9 @@
 
 namespace RZP\Services\UpiPayment\Mock;
 
+use RZP\Exception;
+use RZP\Services\UpiPayment\Action;
+use RZP\Services\UpiPayment\Request;
 use RZP\Services\UpiPayment\Service as UpiPaymentService;
 
 /**
@@ -9,19 +12,13 @@ use RZP\Services\UpiPayment\Service as UpiPaymentService;
  */
 class Service extends UpiPaymentService
 {
-
     /**
-     * Action returns the mock response to a payment request.
+     * Action handles mocks all the action based payment requests
      *
-     * @param string $gateway
-     * @param string $action
-     * @param array $input
-     * @return array
+     * @param array $request
      */
-    public function action(string $gateway, string $action, array $input): array
+    public function action(string $gateway, string $action, array $input) : array
     {
-        $data = ['vpa' => 'razorpay@airtel'];
-
-        return ['data' => $data];
+        return ['data' => ['vpa' => 'razorpay@airtel']];
     }
 }
