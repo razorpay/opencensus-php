@@ -603,6 +603,10 @@ export default class User {
     return this.isFeatureEnabled('ES_AUTOMATIC');
   }
 
+  get isSettlementsRestricted() {
+    return this.isFeatureEnabled('es_on_demand_restricted');
+  }
+
   get isCreditPullEnabled() {
     return this.isFeatureEnabled('show_credit_score');
   }
@@ -1074,7 +1078,6 @@ export default class User {
   get isAadharEkycMandatory() {
     return this.getExpStatus('mandatory_aadhar_ekyc');
   }
-
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

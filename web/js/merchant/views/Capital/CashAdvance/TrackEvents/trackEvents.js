@@ -1,6 +1,6 @@
 import { getFixedINRAmount } from 'common/utils/rzp-utils';
 import store from '../../../../store';
-import { analyticsTrack } from 'common/utils/analytics';
+import analyticsService from '@razorpay/commander-services/analytics';
 
 const trackEvent = (obj) => {
   const {
@@ -8,14 +8,13 @@ const trackEvent = (obj) => {
   } = store.getState();
 
   try {
-    analyticsTrack({
+    analyticsService.track({
       ...obj,
       properties: {
         ...obj.properties,
-        loc_flag: user.isFeatureEnabled('loc'),
-        withdraw_flag: user.isFeatureEnabled('withdraw_loc'),
+        loc_flag: user.isLOCEnabled,
+        withdraw_flag: user.isWithdrawFeatureEnabled,
       },
-      toLumberjack: true,
     });
   } catch (e) {
     // handle error
