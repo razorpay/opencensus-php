@@ -1173,11 +1173,23 @@ class Gateway extends Base\Gateway
             Entity::VPA             => Fields::PAYER_VA,
         ]);
 
+        if ($decoded != null)
+        {
+            $maskedDecoded = $this->maskUpiDataForTracing($decoded, [
+                Entity::VPA => Fields::PAYER_VA,
+            ]);
+
+            $maskedBody = json_encode($maskedDecoded);
+        }
+
+        $traceHeaders = $this->app['request']->header();
+        unset($traceHeaders['authorization'], $traceHeaders['x-passport-jwt-v1']);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
-                'body'      => $body,
-                'headers'   => $this->app['request']->header(),
+                'body'      => ($decoded != null) ? $maskedBody : $body,
+                'headers'   => $traceHeaders,
                 'gateway'   => $this->gateway,
                 'data'      => $traceResponse
             ]);
@@ -1189,7 +1201,6 @@ class Gateway extends Base\Gateway
 
         return $response;
     }
-
 
     public function postProcessServerCallback($input, $exception = null)
     {
