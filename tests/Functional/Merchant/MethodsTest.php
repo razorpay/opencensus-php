@@ -425,7 +425,7 @@ class MethodsTest extends TestCase
             'method'  => 'PUT',
             'url'     => '/merchants/10000000000000/methods',
             'content' => [
-                'amex' => 1,
+                'amex' => 0,
                 'card_networks' => [
                     'dicl' => 0,
                     'jcb'  => 0,
@@ -447,7 +447,8 @@ class MethodsTest extends TestCase
 
         $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
 
-        $this->assertTrue($merchantMethods->isCardNetworkEnabled(Network::AMEX));
+        // Skipping this, since we're not allowing enablement of AMEX
+        // $this->assertTrue($merchantMethods->isCardNetworkEnabled(Network::AMEX));
 
         $this->assertFalse($merchantMethods->isCardNetworkEnabled(Network::JCB));
 

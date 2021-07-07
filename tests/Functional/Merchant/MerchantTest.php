@@ -4800,6 +4800,25 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEnableAmex()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->disableAmex();
+
+        $this->startTest();
+
+        $methods = $this->getDbEntities('methods', ['merchant_id' => '10000000000000'])->toArray();
+
+        $this->assertEquals(false, $methods[0][Merchant\Methods\Entity::AMEX]);
+    }
+
     public function testPutPaytmCardNetworkAndEMIMethodWithUpdateObserverData()
     {
         $this->app->razorx->method('getTreatment')

@@ -20,7 +20,7 @@ class Validator extends Base\Validator
         Entity::ENABLED_BANKS      => 'sometimes|array',
         Entity::DISABLED_BANKS     => 'sometimes|array',
         Entity::NETBANKING         => 'sometimes|boolean',
-        Entity::AMEX               => 'sometimes|boolean',
+        Entity::AMEX               => 'sometimes|boolean|not_in:1',
         Entity::PAYTM              => 'sometimes|boolean',
         Entity::PAYZAPP            => 'sometimes|boolean',
         Entity::PAYUMONEY          => 'sometimes|boolean',
