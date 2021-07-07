@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Link, withRouter } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
 import NotificationsDropdown from 'common/ui/NotificationsDropdown';
@@ -30,7 +30,7 @@ function toggleDropdown() {
 @connect(
   (state) => ({
     activePageName: state.app.activePageName,
-    user: state.session.user,
+    user: state.session.user
   }),
   { toggleMobileMenu },
 )
@@ -145,7 +145,8 @@ export default class HeaderNav extends Component {
               <ShowWhen
                 additionalCondition={(user) =>
                   user.isOrgAllowedFunctionality('external_links') &&
-                  (user.isAnnouncementTextEnabled || user.isWhatsNewTextEnabled)
+                  (user.isAnnouncementTextEnabled || user.isWhatsNewTextEnabled) &&
+                  !user.isOrgAxis
                 }
               >
                 <li id="whats-new-section">
@@ -165,7 +166,9 @@ export default class HeaderNav extends Component {
                 </li>
               </ShowWhen>
               <ShowWhen
-                additionalCondition={(user) => user.isAppSwitcherEnabled && user.isAccepted}
+                additionalCondition={(user) =>
+                  user.isAppSwitcherEnabled && user.isAccepted && !user.isOrgAxis
+                }
               >
                 <li id="app-switcher">
                   <AppSwitcher analytics={analytics} {...commonProps} />
