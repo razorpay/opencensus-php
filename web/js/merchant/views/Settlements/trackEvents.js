@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { getFixedINRAmount } from 'common/utils/rzp-utils';
 import store from '../../../merchant/store';
-import analyticsService from '@razorpay/commander-services/analytics';
+import { analyticsTrack } from '../../../common/utils/analytics';
 
 const dateFormat = 'DD MMM YYYY, hh:mm:ss a';
 
@@ -11,14 +11,15 @@ const trackEvent = (obj) => {
   } = store.getState();
 
   try {
-    analyticsService.track({
+    analyticsTrack({
       ...obj,
       properties: {
         ...obj.properties,
-        es_on_demand: user.isOndemandSettlementEnabled,
-        es_on_demand_restricted: user.isSettlementsRestricted,
-        es_automatic: user.isAutomaticSettlementEnabled,
+        es_on_demand: user.isFeatureEnabled('es_on_demand'),
+        es_on_demand_restricted: user.isFeatureEnabled('es_on_demand_restricted'),
+        es_automatic: user.isFeatureEnabled('es_automatic'),
       },
+      toLumberjack: true,
     });
   } catch (e) {
     // handle error
