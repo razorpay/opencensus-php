@@ -123,7 +123,8 @@ class RequestHandler
             'name' => $rootSpanName,
             'attributes' => $rootSpanAttrs,
             'kind' => Span::KIND_SERVER,
-            'sameProcessAsParentSpan' => false
+            'sameProcessAsParentSpan' => false,
+            'parentSpanId' => $spanContext->fromHeader() ? $spanContext->spanId() : null
         ];
         $this->rootSpan = $this->tracer->startSpan($spanOptions);
         $this->scope = $this->tracer->withSpan($this->rootSpan);
