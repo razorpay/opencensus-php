@@ -422,6 +422,7 @@ export default class WhatsNewOld extends Component {
       'whats-new-may21-remar2-dashboard',
       'july-ssl-certificate-update',
       'JUL21-CC-FEATURELAUNCH',
+      'JUN21-SELFSERVE-CR&BL',
     ];
 
     let cardsList = window.notifications.map((card, idx) => (

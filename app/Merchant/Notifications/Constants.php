@@ -1049,6 +1049,29 @@ class Constants
             ]
         ],
         [
+            'id'          => 'JUN21-SELFSERVE-CR&BL',
+            'title'       => 'Goodbye Support Requests',
+            'description' => 'Add credits & balances to your account on your own without raising a support ticket.',
+            'start_ts'    => 1625547545,
+            'end_ts'      => 1633046400,
+            'icon'        => 'https://betacdn.np.razorpay.in/static/assets/notifs/save-rupee.svg', // Update before deploying
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Learn How',
+                    'url'   => 'https://razorpay.com/docs/payment-gateway/dashboard-guide/credits/',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Try Now',
+                    'url'   => '/credits',
+                ],
+            ],
+            'filters'     => [
+                'splitz_experiments' => ['SELF_SERVE_ANNOUNCEMENT_SPLITZ'],
+            ]
+        ],
+        [
             'id'          => 'JUL21-CC-FEATURELAUNCH',
             'title'       => 'New on Corporate Cards!',
             'description' => 'Physical Cards, Rewards & Add-on cards are here now!',

@@ -303,6 +303,7 @@ export default class WhatsNew extends Component {
       'whats-new-JUN21-RXCC-GROWTH',
       'july-ssl-certificate-update',
       'JUL21-CC-FEATURELAUNCH',
+      'JUN21-SELFSERVE-CR&BL',
     ];
 
     let cardsList = window.notifications.map((card, idx) => (
