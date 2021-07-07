@@ -179,7 +179,7 @@ export default class HeaderNav extends Component {
                   user.isOrgAllowedFunctionality('external_links') &&
                   user.isWhatsNewSectionEnabled &&
                   !user.isAnnouncementTextEnabled &&
-                  !user.isWhatsNewTextEnabled
+                  !user.isWhatsNewTextEnabled && !user.isOrgAxis
                 }
               >
                 <li id="whats-new-section">
