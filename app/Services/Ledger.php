@@ -39,12 +39,17 @@ class Ledger
 
     const GovernorURL = '/twirp/rzp.ledger.governor.v1.GovernorAPI';
 
+    const DashboardURL = '/twirp/rzp.ledger.dashboard.v1.DashboardAPI';
+
     const URLS = [
         'create'        => 'Create',
         'createInBulk'  => 'CreateInBulk',
         'activate'      => 'Activate',
         'update'        => 'Update',
         'request'       => 'Request',
+        'fetch'         => 'Fetch',
+        'fetchMultiple' => 'FetchMultiple',
+        'fetchFilter'   => 'FetchFilter',
     ];
 
     // Headers
@@ -156,6 +161,45 @@ class Ledger
     public function requestGovernor($input, bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::GovernorURL . '/' . self::URLS['request'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetch($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetch'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchMultiple($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchMultiple'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchFilter($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchFilter'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 

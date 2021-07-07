@@ -175,4 +175,163 @@ class Ledger extends BaseLedger
             'body' => $response
         ];
     }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function fetch($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response =  [
+            "entity" => [
+                "AccountDetail" => [
+                    "account_category"  => "asset",
+                    "account_id"        => "GZu5smDfbM0xhV",
+                    "account_name"      => "test name 3",
+                    "business_category" => "nominal",
+                    "created_at"        => 1612967233,
+                    "currency"          => "INR",
+                    "deleted_at"        => [
+                        "Int64" => 0,
+                        "Valid" => false
+                    ],
+                    "description"       => "sample description",
+                    "entities"          => [
+                        "product" => ["card"]
+                    ],
+                    "id"                => "GZu5smNQhUwQoA",
+                    "merchant_id"       => "sampleMerchant",
+                    "parent_account_id" => "Parent00000001",
+                    "updated_at"        => 1612967233
+                ]
+            ],
+            "balance"           => 0,
+            "created_at"        => 1612967233,
+            "deleted_at"        => [
+                "Int64" => 0,
+                "Valid" => false
+            ],
+            "id"                => "GZu5smDfbM0xhV",
+            "merchant_id"       => "sampleMerchant",
+            "min_balance"       => null,
+            "negative_balance"  => null,
+            "state"             => "",
+            "state_change_logs" => null,
+            "status"            => "IN_REVIEW",
+            "updated_at"        => 1612967233
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function fetchMultiple($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response =  [
+            "entities" => [
+                "accounts" => [
+                    [
+                        "AccountDetail" => [
+                            "account_category"  => "asset",
+                            "account_id"        => "GZu5smDfbM0xhV",
+                            "account_name"      => "test name 3",
+                            "business_category" => "nominal",
+                            "created_at"        => 1612967233,
+                            "currency"          => "INR",
+                            "deleted_at"        => [
+                                "Int64" => 0,
+                                "Valid" => false
+                            ],
+                            "description"       => "sample description",
+                            "entities"          => [
+                                "product" => ["card"]
+                            ],
+                            "id"                => "GZu5smNQhUwQoA",
+                            "merchant_id"       => "sampleMerchant",
+                            "parent_account_id" => "Parent00000001",
+                            "updated_at"        => 1612967233
+                        ],
+                        "balance"           => 0,
+                        "created_at"        => 1612967233,
+                        "deleted_at"        => [
+                            "Int64" => 0,
+                            "Valid" => false
+                        ],
+                        "id"                => "GZu5smDfbM0xhV",
+                        "merchant_id"       => "sampleMerchant",
+                        "min_balance"       => null,
+                        "negative_balance"  => null,
+                        "state"             => "",
+                        "state_change_logs" => null,
+                        "status"            => "IN_REVIEW",
+                        "updated_at"        => 1612967233
+                    ],
+                ]
+            ]
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    public function fetchFilter($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response = [
+            "status" => [
+                "LIVE",
+                "IN_REVIEW",
+                "ARCHIVED",
+                "SUSPENDED"
+            ],
+            "account_category" => [
+                "asset",
+                "liability",
+                "revenue",
+                "equity",
+                "gain",
+                "loss",
+                "expense"
+            ],
+            "business_category" => [
+                "real",
+                "nominal",
+                "personal"
+            ],
+            "transactor_types" => [
+                "fund_loading_processed",
+                "fund_loading_expired",
+                "payout_initiated",
+                "payout_processed",
+                "payout_failed",
+                "payout_reversed",
+                "fav_initiated",
+                "fav_processed",
+                "fav_reversed",
+                "fav_failed",
+                "positive_adjustment_processed",
+                "negative_adjustment_processed"
+            ],
+            "currency" => [
+                "INR"
+            ],
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
 }

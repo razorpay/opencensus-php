@@ -42,4 +42,25 @@ class LedgerController extends Controller
 
         return ApiResponse::json($response['body'], $response['code']);
     }
+
+    public function fetch()
+    {
+        $response = $this->app['ledger']->fetch($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function fetchMultiple()
+    {
+        $response = $this->app['ledger']->fetchMultiple($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function fetchFilter()
+    {
+        $response = $this->app['ledger']->fetchFilter($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
 }

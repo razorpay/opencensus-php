@@ -665,6 +665,7 @@ class Name
 
     // Ledger service permissions
     const LEDGER_SERVICE_ACTIONS                       = 'ledger_service_actions';
+    const LEDGER_VIEW_DASHBOARD                        = 'ledger_view_dashboard';
 
     // Settlement Service permissions
     const SETTLEMENT_SERVICE_MERCHANT_CONFIG_EDIT = 'settlement_service_merchant_config_edit';

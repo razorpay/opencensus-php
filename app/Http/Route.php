@@ -2570,6 +2570,9 @@ class Route
         'activate_ledger_account'                 => ['post',      'ledger_service/activate_account',                       'LedgerController@activateAccount'],
         'update_ledger_account_detail'            => ['post',      'ledger_service/update_account_detail',                  'LedgerController@updateAccountDetail'],
         'request_governor'                        => ['post',      'ledger_service/request_governor',                       'LedgerController@requestGovernor'],
+        'fetch_ledger'                            => ['post',      'ledger_service/fetch',                                  'LedgerController@fetch'],
+        'fetch_multiple_ledger'                   => ['post',      'ledger_service/fetch_multiple',                         'LedgerController@fetchMultiple'],
+        'fetch_filter_ledger'                     => ['post',      'ledger_service/fetch_filter',                           'LedgerController@fetchFilter'],
 
         'merchant_risk_data'                      => ['get',       'merchants/{id}/risk/data',                              'MerchantController@getMerchantRiskData'],
 
@@ -4929,6 +4932,9 @@ class Route
         'activate_ledger_account',
         'update_ledger_account_detail',
         'request_governor',
+        'fetch_ledger',
+        'fetch_multiple_ledger',
+        'fetch_filter_ledger',
 
         'merchant_risk_data',
     ];
@@ -5867,6 +5873,9 @@ class Route
         'activate_ledger_account'                         => Permission::LEDGER_SERVICE_ACTIONS,
         'update_ledger_account_detail'                    => Permission::LEDGER_SERVICE_ACTIONS,
         'request_governor'                                => Permission::LEDGER_SERVICE_ACTIONS,
+        'fetch_ledger'                                    => Permission::LEDGER_VIEW_DASHBOARD,
+        'fetch_multiple_ledger'                           => Permission::LEDGER_VIEW_DASHBOARD,
+        'fetch_filter_ledger'                             => Permission::LEDGER_VIEW_DASHBOARD,
 
         'merchant_risk_data'                              => Permission::GET_MERCHANT_RISK_DATA
     ];
@@ -8963,6 +8972,9 @@ class Route
             'activate_ledger_account',
             'update_account_detail',
             'request_governor',
+            'fetch_ledger',
+            'fetch_multiple_ledger',
+            'fetch_filter_ledger',
 
             'merchant_risk_data',
             'oauth_application_update_admin',
@@ -9705,6 +9717,9 @@ class Route
             'create_ledger_accounts_in_bulk',
             'update_account_detail',
             'request_governor',
+            'fetch_ledger',
+            'fetch_multiple_ledger',
+            'fetch_filter_ledger',
             'ledger_fetch_multiple_transactions',
         ]
     ];
