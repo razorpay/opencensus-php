@@ -88,6 +88,7 @@ class AdminFetch
         ],
         Entity::UPI     => [
             Upi\Entity::ID,
+            Upi\Entity::PAYMENT_ID,
             Upi\Entity::MERCHANT_ID,
             Upi\Entity::AMOUNT,
             Upi\Entity::CREATED_AT,

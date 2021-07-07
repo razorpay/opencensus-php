@@ -1635,6 +1635,7 @@ class AdminTest extends TestCase
             'upi'             => [
                 'id',
                 'gateway',
+                'payment_id',
                 'amount',
                 'created_at',
                 'updated_at',
