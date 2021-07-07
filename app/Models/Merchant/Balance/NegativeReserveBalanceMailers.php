@@ -139,7 +139,7 @@ class NegativeReserveBalanceMailers extends Base\Core
 
         $this->trace->info(TraceCode::NEGATIVE_BALANCE_THRESHOLD_ALERT, $data);
 
-        $dimensions = (new Metric)->getBalanceNegativeThresholdBreachedDimensions($merchant, $balance, $threshold,
+        $dimensions = (new Metric)->getBalanceNegativeThresholdBreachedDimensions($merchant->getId(), $balance, $threshold,
             $txnType);
 
         $this->trace->count(Metric::BALANCE_NEGATIVE_THRESHOLD, $dimensions);
