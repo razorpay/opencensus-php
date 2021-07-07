@@ -16,4 +16,20 @@ return [
             'content' => []
         ],
     ],
+
+    'callScroogeFetchEntitiesV2' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/scrooge/entities_fetch',
+            'content' => [
+                'payment_ids' => [
+                    'dummy1',
+                    'dummy2',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
 ];

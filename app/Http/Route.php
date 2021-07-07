@@ -231,6 +231,7 @@ class Route
         'scrooge_refund_verify_bulk'               => ['post',     'refunds/scrooge_verify/bulk',                    'RefundController@scroogeRefundVerifyBulk'                          ],
         'api_refunds_retry_without_verify'         => ['post',     'refunds/scrooge_retry_without_verify',           'RefundController@postRetryScroogeRefundsWithoutVerify'             ],
         'scrooge_entities'                         => ['post',     'scrooge/entities',                               'RefundController@scroogeFetchEntities'                             ],
+        'scrooge_entities_fetch'                   => ['post',     'scrooge/entities_fetch',                         'RefundController@scroogeFetchEntitiesV2'                           ],
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'refund_create_batch_service'              => ['post',     'refunds/batch_service',                          'RefundController@postCreateBatchRefund'                            ],
 
@@ -3152,6 +3153,7 @@ class Route
         'reminder_send',
         'p2p_reminder_send',
         'scrooge_entities',
+        'scrooge_entities_fetch',
         'fund_transfer_attempt_modes',
         'schedule_migration',
         'schedule_process_tasks',
@@ -9415,6 +9417,7 @@ class Route
             'scrooge_verify_refund_call',
             'refund_fetch_status',
             'scrooge_entities',
+            'scrooge_entities_fetch',
             'fund_transfer_attempt_modes',
             'scrooge_refund_reference1_bulk_update',
             'refund_scrooge_fetch_fee',

@@ -920,6 +920,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BULK_REFUND_VERIFY_REQUEST                            = 'BULK_REFUND_VERIFY_REQUEST';
     const SCROOGE_FETCH_ENTITIES                                = 'SCROOGE_FETCH_ENTITIES';
+    const SCROOGE_FETCH_ENTITIES_V2_REQUEST                     = 'SCROOGE_FETCH_ENTITIES_V2_REQUEST';
+    const SCROOGE_FETCH_ENTITIES_V2_SUMMARY                     = 'SCROOGE_FETCH_ENTITIES_V2_SUMMARY';
+
 
     const SETTLEMENT_MERCHANT_ON_HOLD                           = 'SETTLEMENT_MERCHANT_ON_HOLD';
     const SETTLEMENT_MERCHANT_SKIPPED                           = 'SETTLEMENT_MERCHANT_SKIPPED';

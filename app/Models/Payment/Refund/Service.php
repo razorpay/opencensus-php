@@ -17,7 +17,9 @@ use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
+use RZP\Models\BankTransfer;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Card\IIN\IIN;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Refund;
@@ -31,6 +33,7 @@ use RZP\Models\FundTransfer\Attempt as FTA;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payment\Service as PaymentService;
+use RZP\Models\FundTransfer\Mode as TransferMode;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Payment\Refund\Core as RefundCore;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
@@ -708,6 +711,323 @@ class Service extends Base\Service
         return $responseArray;
     }
 
+/*
+  Sample request body:
+ {
+	"entities": [
+		"iin",
+		"payment",
+		"upi_metadata"
+	],
+	"extra_data": [
+		"is_fta_only_refund",
+		"merchant_features"
+        "card_has_supported_issuer",
+        "payer_bank_account",
+        "count_of_open_non_fraud_disputes",
+        "ifsc_code",
+        "is_iin_prepaid"
+	],
+	"payment_ids": ["HSmPekI1ye7RL5"]
+ }
+
+ Sample response:
+ {
+	"HSmPekI1ye7RL5": {
+		"entities": {
+			"payment": {
+				"data": {
+					"id": "HSmPekI1ye7RL5",
+					"merchant_id": "10000000000000",
+					 .
+					 .
+					 .
+				},
+				"error": null
+			},
+			"iin": {
+				"data": {
+					"iin": "401200",
+					 .
+					 .
+					 .
+				},
+				"error": null
+			},
+			"upi_metadata": {
+				"data": null,
+				"error": "NO_DATA_FOUND"
+			}
+		},
+		"extra_data": {
+			"is_fta_only_refund": {
+				"data": true,
+				"error": null
+			},
+			"merchant_features": {
+				"data": ["charge_at_will", "subscriptions", "payout"],
+				"error": null
+			},
+			"card_has_supported_issuer": {
+				"data": true,
+				"error": null
+			},
+			"payer_bank_account": {
+				"data": {
+                        .
+                        .
+                        },
+				"error": null
+			},
+			"count_of_open_non_fraud_disputes": {
+				"data": 1,
+				"error": null
+			},
+			"ifsc_code": {
+			    "data": 'HDFC0000011',
+				"error": null
+			},
+			"is_iin_prepaid": {
+				"data": true,
+				"error": null
+			},
+		}
+	}
+ }
+*/
+    public function scroogeFetchEntitiesV2($input)
+    {
+        (new Validator)->validateInput('fetch_entities_v2', $input);
+
+        $responseArray = [];
+
+        $skippedPayments = [];
+
+        $this->trace->info(TraceCode::SCROOGE_FETCH_ENTITIES_V2_REQUEST,
+            [
+                RefundConstants::PAYMENT_IDS => $input[RefundConstants::PAYMENT_IDS]
+            ]);
+
+        foreach ($input[RefundConstants::PAYMENT_IDS] as $id)
+        {
+            $paymentError = NULL;
+
+            try
+            {
+                $payment = $this->repo->payment->findWithRelations($id);
+
+                if (empty($payment) === true)
+                {
+                    $paymentError = RefundConstants::PAYMENT_NOT_FOUND;
+                }
+
+                $response = [];
+
+                if ((isset($input[RefundConstants::ENTITIES]) === true) &&
+                    (in_array(Constants\Entity::PAYMENT, $input[RefundConstants::ENTITIES]) === true))
+                {
+                    $data = NULL;
+
+                    if (empty($paymentError) === true)
+                    {
+                        $data = $payment->toArrayGateway();
+
+                        $data[RefundConstants::AMOUNT_UNREFUNDED]=$payment->getAmountUnrefunded();
+
+                        $data[RefundConstants::BASE_AMOUNT_UNREFUNDED]=$payment->getBaseAmountUnrefunded();
+
+                        $data[RefundConstants::CURRENCY_CONVERSION_RATE] = $payment->getCurrencyConversionRate();
+
+                        $data[RefundConstants::IS_UPI_OTM] = $payment->IsUpiOtm();
+                    }
+
+                    $response[RefundConstants::ENTITIES][Constants\Entity::PAYMENT][RefundConstants::DATA] = $data;
+
+                    $response[RefundConstants::ENTITIES][Constants\Entity::PAYMENT][RefundConstants::ERROR] = $paymentError;
+
+                    $key = array_search(Constants\Entity::PAYMENT, $input[RefundConstants::ENTITIES]);
+
+                    unset($input[RefundConstants::ENTITIES][$key]);
+                }
+
+                if (isset($input[RefundConstants::ENTITIES]) === true)
+                {
+                    foreach ($input[RefundConstants::ENTITIES] as $key)
+                    {
+                        $data = null;
+
+                        $error = $paymentError;
+
+                        if (empty($paymentError) === true)
+                        {
+                            if ($key === Constants\Entity::UPI_METADATA)
+                            {
+                                try
+                                {
+                                    $upiMetadataEntity = $this->repo->upi_metadata->fetchByPaymentId($payment->getId());
+
+                                    if (empty($upiMetadataEntity) === false)
+                                    {
+                                        $data = $upiMetadataEntity->toArray();
+                                    }
+                                    else
+                                    {
+                                        $error = RefundConstants::NO_DATA_FOUND;
+                                    }
+                                }
+                                catch (\Exception $ex)
+                                {
+                                    $error = RefundConstants::FETCH_ENTITIES_ERROR;
+                                }
+                            }
+
+                            else if (strpos($key, RefundConstants::GATEWAY_ENTITY) === 0)
+                            {
+                                $gatewayEntitySplitString = explode (".", $key);
+
+                                if (isset($gatewayEntitySplitString[1]) === true)
+                                {
+                                    $entity = $gatewayEntitySplitString[1];
+
+                                    $action = (isset($gatewayEntitySplitString[2]) === true) ? $gatewayEntitySplitString[2] : null;
+
+                                    if (method_exists($this->repo->$entity, 'findByPaymentIdAndActionorFail') === true) {
+                                        try {
+                                            $data = $this->repo
+                                                ->$entity
+                                                ->findByPaymentIdAndActionorFail($id, $action)
+                                                ->toArray();
+
+                                            if (($entity === RefundConstants::MOZART) and
+                                                (isset($data['raw']) === true)) {
+                                                $data = json_decode($data['raw'], true);
+                                            }
+                                        }
+                                        catch (\Exception $ex)
+                                        {
+                                            // Sometimes we try to fetch some entries generically and that may not applicable for a particular refund
+                                            // In such cases we do not want this exception to fail returning other necessary data
+                                            // Hence catching and silently ignoring. Logging is also redundant here as this noice is expected
+                                            $error = RefundConstants::FETCH_ENTITIES_ERROR;
+                                        }
+                                    }
+                                }
+                            }
+                            else if ($key !== Constants\Entity::PAYMENT)
+                            {
+                                if ($key === Constants\Entity::IIN)
+                                {
+                                    $entity = (empty($payment->card) === false) ? $payment->card->iinRelation : null;
+                                }
+                                else
+                                {
+                                    $entity = $payment->$key;
+                                }
+
+                                if (empty($entity) === false)
+                                {
+                                    $data = $entity->toArray();
+                                }
+                                else
+                                {
+                                    $error = RefundConstants::NO_DATA_FOUND;
+                                }
+                            }
+                        }
+
+                        $response[RefundConstants::ENTITIES][$key][RefundConstants::DATA] = $data;
+                        $response[RefundConstants::ENTITIES][$key][RefundConstants::ERROR] = $error;
+                    }
+                }
+
+                if (isset($input[RefundConstants::EXTRA_DATA]) === true)
+                {
+                    $res = [];
+
+                    foreach ($input[RefundConstants::EXTRA_DATA] as $paramKey)
+                    {
+                        $data = null;
+                        $error = null;
+
+                        if (empty($paymentError) === true)
+                        {
+                            $func = 'getPaymentExtraData' . studly_case($paramKey);
+
+                            try
+                            {
+                                $data = (method_exists($this, $func)) ? $this->$func($payment) : null;
+                                $error = empty($data) ? RefundConstants::NO_DATA_FOUND : null;
+                            }
+                            catch(\Exception $ex)
+                            {
+                                $error = RefundConstants::FETCH_ENTITIES_ERROR;
+                            }
+
+                        }
+                        else
+                        {
+                            $data = null;
+                            $error = $paymentError;
+                        }
+
+                        $res[$paramKey][RefundConstants::DATA] = $data;
+                        $res[$paramKey][RefundConstants::ERROR] = $error;
+                    }
+
+                    $response[RefundConstants::EXTRA_DATA] = $res;
+                }
+
+                $responseArray[$id] = $response;
+                $responseArray= $this->convertNumericFieldsToString($responseArray);
+
+            }
+            catch (\Exception $ex)
+            {
+                array_push($skippedPayments, [
+                    $id =>
+                        [
+                            RefundConstants::CODE    => $ex->getCode(),
+                            RefundConstants::MESSAGE => $ex->getMessage()
+                        ]
+                ]);
+            }
+        }
+
+        $traceData = [
+            RefundConstants::SKIPPED_PAYMENT_IDS   => $skippedPayments,
+            RefundConstants::SUCCESS_COUNT         => count($responseArray),
+            RefundConstants::FAILURE_COUNT         => count($skippedPayments),
+            RefundConstants::REQUEST_COUNT         => count($input[RefundConstants::PAYMENT_IDS] ?? []),
+        ];
+
+        $this->trace->info(TraceCode::SCROOGE_FETCH_ENTITIES_V2_SUMMARY, $traceData);
+
+        return $responseArray;
+    }
+
+    protected function convertNumericFieldsToString($array)
+    {
+        if (is_array($array) === true)
+        {
+            foreach ($array as $key => $val)
+            {
+                if (is_array($array[$key]) === true || is_object($array[$key]) === true)
+                {
+                    $array[$key] = $this->convertNumericFieldsToString($val);
+                }
+                else
+                {
+                    if (is_numeric($array[$key]) === true)
+                    {
+                        $array[$key] = strval($val);
+                    }
+                }
+            }
+        }
+
+        return $array;
+    }
+
     protected function getExtraDataIfscCode(Entity $refund)
     {
         $bank = (empty($refund->payment->getBank()) === false) ? $refund->payment->getBank() : '';
@@ -736,6 +1056,73 @@ class Service extends Base\Service
         }
 
         return $ftaData;
+    }
+
+    protected function getPaymentExtraDataIfscCode(Payment\Entity $payment)
+    {
+        $bank = (empty($payment->getBank()) === false) ? $payment->getBank() : '';
+
+        return BankCodes::getIfscForBankCode($bank);
+    }
+
+    protected function getPaymentExtraDataIsFtaOnlyRefund(Payment\Entity $payment) : bool
+    {
+        return $this->getNewProcessor($payment->merchant)->refundViaFtaOnly($payment);
+    }
+
+    protected function getPaymentExtraDataMerchantFeatures(Payment\Entity $payment)
+    {
+        return $payment->merchant->getEnabledFeatures();
+    }
+
+    protected function getPaymentExtraDataPayerBankAccount(Payment\Entity $payment)
+    {
+        if ($payment->isBankTransfer() === true)
+        {
+            $paymentId = $payment->getId();
+
+            $bankTransfer = $this->repo->bank_transfer->findByPaymentId($paymentId);
+
+            $payerAccount = $bankTransfer->payerBankAccount;
+
+            if (empty($payerAccount) === true)
+            {
+                return null;
+            }
+
+            return $payerAccount->toArray();
+        }
+
+        return null;
+    }
+
+    protected function getPaymentExtraDataCountOfOpenNonFraudDisputes(Payment\Entity $payment)
+    {
+        $openNonFraudDisputes = $this->repo->dispute->getOpenNonFraudDisputes($payment);
+
+        return count($openNonFraudDisputes);
+    }
+
+    protected function getPaymentExtraDataIsIinPrepaid(Payment\Entity $payment)
+    {
+        if ((empty($payment->card) === true) or (empty($payment->card->iinRelation) === true))
+        {
+            return null;
+        }
+
+        return IIN::isIinPrepaid($payment->card->iinRelation->getIin());
+    }
+
+    protected function getPaymentExtraDataCardHasSupportedIssuer(Payment\Entity $payment)
+    {
+        if ((empty($payment->card) === true) or (empty($payment->card->iinRelation) === true))
+        {
+            return null;
+        }
+
+        $cardIssuer = $payment->card->iinRelation->getIssuer();
+
+        return in_array($cardIssuer, TransferMode::getSupportedIssuers());
     }
 
     public function fetchMultiple($input)

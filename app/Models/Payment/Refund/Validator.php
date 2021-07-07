@@ -167,6 +167,13 @@ class Validator extends Base\Validator
         'refund_ids.*' => 'required|filled|unsigned_id|size:14',
     ];
 
+    protected static $fetchEntitiesV2Rules = [
+        'payment_ids'   => 'required|array',
+        'payment_ids.*' => 'required|filled|unsigned_id|size:14',
+        'entities'      => 'sometimes|array',
+        'extra_data'    => 'sometimes|array',
+    ];
+
     protected $payment;
 
     public function setPayment($payment)

@@ -3,10 +3,13 @@
 namespace RZP\Tests\Functional\Refund;
 
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
+use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\BankTransfer\Entity as BankTransferEntity;
 use RZP\Models\Payment\UpiMetadata\Entity as UpiMetadataEntity;
 use RZP\Models\Payment\PaymentMeta\Entity as PaymentMetaEntity;
 
@@ -612,6 +615,728 @@ class ScroogeFetchEntitiesTest extends TestCase
                     ]
                 ]
             ]
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // Test scrooge fetch entities v2
+    public function testScroogeFetchEntitiesV2()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        // Internal auth
+        $this->ba->scroogeAuth();
+
+        $subTestArgs = [
+            'payment' => $payment,
+        ];
+
+        // To test more cases add a new function with prefix scroogeFetchEntitiesSubTest appended by test number
+        // this function is expected to return input and expected out for the test
+        // sequence of tests might matter here since db edits can happen in each sub test which are not undone
+        $subTests = 50;
+
+        for ($i = 1; $i <= $subTests; $i++)
+        {
+            $func = 'scroogeFetchEntitiesV2SubTest' . $i;
+
+            if (method_exists($this, $func)) {
+                list($input, $expectedOutput) = $this->$func($subTestArgs);
+
+                $this->testData['callScroogeFetchEntitiesV2']['request']['content'] = $input;
+
+
+                $response = $this->runRequestResponseFlow($this->testData['callScroogeFetchEntitiesV2']);
+
+                $expectedOutput = Arr::dot($expectedOutput);
+
+                $response = Arr::dot($response);
+
+                var_dump($response);
+
+                foreach ($expectedOutput as $key => $val)
+                {
+                    $this->assertEquals($val, $response[$key]);
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+    // test various entities fetch
+    public function scroogeFetchEntitiesV2SubTest1($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+
+        $input = [
+            'payment_ids' => [
+                substr($subTestArgs['payment']['id'], 4),
+            ],
+            'entities' => ['payment', 'card', 'terminal', 'upi_metadata'],
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+                'entities' => [
+                    'payment' => [
+                        'data' =>  [
+                            'merchant_id' => '10000000000000',
+                            'amount' => '50000',
+                            'amount_unrefunded' => '50000',
+                            'currency' => 'INR',
+                            'currency_conversion_rate' => '1',
+                            'is_upi_otm' => false,
+                            'status' => 'captured',
+                        ],
+                        'error' => NULL,
+                    ],
+                    'card' => [
+                        'data' =>  [
+                            'merchant_id' => '10000000000000',
+                            'iin' => '401200',
+                            'last4' => '3335',
+                            'vault_token'=>'NDAxMjAwMTAzODQ0MzMzNQ==',
+                        ],
+                        'error' => NULL,
+                    ],
+                    'terminal' => [
+                        'data' =>  [
+                            'gateway' => 'hdfc',
+                            'gateway_acquirer' => 'hdfc',
+                        ],
+                        'error' => NULL,
+                    ],
+                    'upi_metadata' => [
+                        'data' => NULL,
+                        'error' => 'NO_DATA_FOUND',
+                    ]
+                ],
+            ],
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test failed extra_data ifsc_code
+    public function scroogeFetchEntitiesV2SubTest2($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+
+        $this->fixtures->payment->edit($paymentId, ['bank' => NULL]);
+
+        $input = [
+            'payment_ids' => [
+                substr($subTestArgs['payment']['id'], 4),
+            ],
+            'extra_data' => ['ifsc_code'],
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+                'extra_data' => [
+                    'ifsc_code' => [
+                        'data' => NULL,
+                        'error' => 'NO_DATA_FOUND',
+                    ]
+                ],
+            ],
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test success extra data ifsc code fetch
+    public function scroogeFetchEntitiesV2SubTest3($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+
+        $this->fixtures->payment->edit($paymentId, ['bank' => 'hdfc']);
+
+        $input = [
+            'payment_ids' => [
+                $paymentId,
+            ],
+            'extra_data' => ['ifsc_code'],
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+                'extra_data' => [
+                    'ifsc_code' => [
+                        'data' => 'HDFC0000001',
+                        'error' => NULL,
+                    ]
+                ],
+            ],
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test is_fta_only_refund failing
+    public function scroogeFetchEntitiesV2SubTest4($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+
+        $input = [
+            'payment_ids' => [
+                $paymentId
+            ],
+            'entities' => [
+                'card',
+                'terminal'
+            ],
+            'extra_data' => [
+                'is_fta_only_refund'
+            ]
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+                'entities' => [
+                    'card' => [
+                        'data' => [
+                            'iin' => '401200',
+                            'network' => 'Visa',
+                            ],
+                        'error' => NULL
+                    ],
+                    'terminal' => [
+                        'data' => [
+                            'gateway_acquirer' => 'hdfc',
+                            'category' => NULL
+                        ],
+                        'error' => NULL
+
+                    ]
+                ],
+                'extra_data' => [
+                    'is_fta_only_refund' => [
+                        'data' => false,
+                        'error' => 'NO_DATA_FOUND',
+                    ]
+                ],
+            ],
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test upi metadata fetch and hence, is_fta_only_refund
+    public function scroogeFetchEntitiesV2SubTest5($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+
+        $upiMetadata = new UpiMetadataEntity();
+
+        $upiMetadata->build([
+            UpiMetadataEntity::TYPE => 'otm',
+            UpiMetadataEntity::FLOW => 'collect',
+            UpiMetadataEntity::VPA => 'abc@okhdfcbank',
+            UpiMetadataEntity::START_TIME => Carbon::now()->getTimestamp(),
+            UpiMetadataEntity::END_TIME => Carbon::now()->addDays(2)->getTimestamp(),
+            UpiMetadataEntity::EXPIRY_TIME => 5
+        ]);
+
+        $upiMetadata->forceFill([
+            UpiMetadataEntity::PAYMENT_ID => $paymentId
+        ]);
+
+        $upiMetadata->save();
+
+        $this->fixtures->payment->edit($paymentId, [
+            'method' => 'upi',
+            'gateway' => 'upi_mindgate',
+        ]);
+
+        $input = [
+            'payment_ids' => [
+                $paymentId
+            ],
+            'entities' => [
+                'upi_metadata'
+            ],
+            'extra_data' => [
+                'is_fta_only_refund'
+            ]
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+                'entities' => [
+                    'upi_metadata' => [
+                        'data' => [
+                            'type' => 'otm',
+                            'provider' => NULL,
+                        ],
+                        'error' => NULL
+                    ],
+                ],
+                'extra_data' => [
+                    'is_fta_only_refund' => [
+                        'data' => true,
+                        'error' => NULL,
+                    ]
+                ],
+            ],
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test gateway entity fetch
+    public function scroogeFetchEntitiesV2SubTest6($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+
+        $mozart = new MozartEntity();
+
+        $mozart->build([
+            MozartEntity::AMOUNT => '100',
+            MozartEntity::RAW => '{"data": {"transaction": {"id": "90c8ec9b", "items": [{"sku": "Eyp2nbXQAsYxOX"}], "status": "CLAIMED"}}, "status": "payment_successful", "success": true}'
+        ]);
+
+        $mozart->forceFill([
+            MozartEntity::ACTION => 'authorize',
+            MozartEntity::GATEWAY => 'hdfc',
+            MozartEntity::PAYMENT_ID => $paymentId,
+        ]);
+
+        $mozart->save();
+
+        $input = [
+            'payment_ids' => [
+                $paymentId
+            ],
+            'entities' => [
+                'gateway_entity.mozart.authorize',
+                'gateway_entity.mozart.capture'
+            ],
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+                'entities' => [
+                    'gateway_entity.mozart.authorize' => [
+                        'data' => [
+                            'status' => 'payment_successful',
+                            'data.transaction.id' => '90c8ec9b',
+                            'data.transaction.items' => [["sku" => "Eyp2nbXQAsYxOX"]]
+                        ],
+                        'error' => NULL,
+                    ],
+                    'gateway_entity.mozart.capture' => [
+                        'data' => NULL,
+                        'error' => 'FETCH_ENTITIES_ERROR',
+                    ],
+                ],
+            ],
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    public function scroogeFetchEntitiesV2SubTest7($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+
+        $this->fixtures->payment->edit($paymentId,  [
+           'method' => 'bank_transfer'
+        ]);
+
+        $input = [
+            'payment_ids' => [
+                $paymentId
+            ],
+            'extra_data' => ['ifsc_code', 'is_fta_only_refund'],
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+                'extra_data' => [
+                    'ifsc_code' => [
+                        'data' => 'HDFC0000001',
+                        'error' => NULL,
+                    ],
+                    'is_fta_only_refund' => [
+                        'data' => true,
+                        'error' => NULL,
+                    ]
+                ],
+            ],
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test successful iin entity fetch
+    public function scroogeFetchEntitiesV2SubTest8($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+
+        $paymentEntity = $this->getDbEntityById('payment', $paymentId);
+
+        $input = [
+            'payment_ids' => [
+                $paymentId
+            ],
+            'entities' => [
+                'payment', 'card', 'iin'
+            ],
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+                'entities' => [
+                    'card' => [
+                        'data' => [
+                            'iin' => '401200',
+                        ],
+                        'error' => NULL
+                    ],
+                    'iin' => [
+                        'data' => [
+                            'iin' => '401200',
+                            'type' => 'credit'
+                        ],
+                        'error' => NULL
+                    ],
+                    'payment' => [
+                        'data' => [ 'card_id' => $paymentEntity['card_id']],
+                        'error' => NULL
+                    ],
+                ],
+            ],
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test failed iin entity fetch
+    public function scroogeFetchEntitiesV2SubTest9($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+
+        $paymentEntity = $this->getDbEntityById('payment', $paymentId);
+
+        $this->fixtures->card->edit($paymentEntity['card_id'], [
+            'iin' => '998761'
+        ]);
+
+        $input = [
+            'payment_ids' => [
+                $paymentId
+            ],
+            'entities' => [
+                'payment', 'card', 'iin'
+            ],
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+                'entities' => [
+                    'card' => [
+                        'data' => [
+                            'iin' => '998761',
+                        ],
+                        'error' => NULL
+                    ],
+                    'iin' => [
+                        'data' => NULL,
+                        'error' => 'NO_DATA_FOUND'
+                    ],
+                    'payment' => [
+                        'data' => [ 'card_id' => $paymentEntity['card_id']],
+                        'error' => NULL
+                    ],
+                ],
+            ],
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    //TODO:implement FTA data support
+    public function scroogeFetchEntitiesV2SubTest99($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+
+        $paymentEntity = $this->getDbEntityById('payment', $paymentId);
+
+        // set back from previous test edit
+        $this->fixtures->card->edit($paymentEntity['card_id'], [
+            'iin' => '401200'
+        ]);
+
+        $this->fixtures->payment->edit($paymentId, [
+            'method' => 'upi',
+            'gateway' => 'upi_mindgate',
+            'recurring' => TRUE,
+            'vpa' => 'abc@rzp'
+        ]);
+
+        $input = [
+            'payment_ids' => [
+                $paymentId
+            ],
+            'entities' => [
+                'payment'
+            ],
+            'extra_data' => [
+                'fta_data'
+            ]
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+                'entities' => [
+                    'payment' => [
+                        'data' => [
+                            'method' => 'upi',
+                        ],
+                        'error' => NULL
+
+                    ],
+                ],
+                'extra_data' => [
+                    'fta_data' => [
+                        'data' => [
+                            'vpa' => [
+                                'address' => 'abc@rzp'
+                            ],
+                        'error' => NULL,
+                    ]
+                ],
+            ],
+        ]
+    ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test extra_data merchant features
+    public function scroogeFetchEntitiesV2SubTest10($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+
+        $this->fixtures->merchant->addFeatures(['google_play_cards', 'disable_instant_refunds']);
+
+        $input = [
+            'payment_ids' => [
+                $paymentId
+            ],
+            'extra_data' => ['merchant_features'],
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+                'extra_data' => [
+                    'merchant_features' => [
+                        'data' => ['google_play_cards', 'disable_instant_refunds'],
+                        'error' => NULL,
+                    ]
+                ],
+            ],
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+
+    // test extra_data count of open non fraud disputes
+    public function scroogeFetchEntitiesV2SubTest11($subTestArgs): array
+    {
+        $dispute = new DisputeEntity;
+
+        $createdAt=Carbon::now()->getTimestamp();
+        $capturedAt=Carbon::now()->getTimestamp();
+
+        $payment = $this->fixtures->create('payment:captured',
+            [
+                'captured_at' => $capturedAt,
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt + 10]);
+
+        $paymentId = $payment['id'];
+
+        $dispute->payment()->associate($payment);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $dispute->merchant()->associate($merchant);
+
+        $reason = $this->fixtures->create('dispute_reason');
+
+        $dispute->associateReason($reason);
+
+        $dispute->build([
+            DisputeEntity::GATEWAY_DISPUTE_ID  => '4342frf34r',
+            DisputeEntity::PHASE => 'Chargeback',
+            DisputeEntity::RAISED_ON => Carbon::now()->getTimestamp(),
+            DisputeEntity::EXPIRES_ON=> Carbon::now()->addDays(2)->getTimestamp(),
+            DisputeEntity::GATEWAY_AMOUNT => 10000,
+            DisputeEntity::GATEWAY_CURRENCY => 'INR',
+            DisputeEntity::DEDUCT_AT_ONSET => 0,
+            DisputeEntity::REASON_ID => 'NotAvailable00',
+            DisputeEntity::SKIP_EMAIL => true,
+        ]);
+
+        $dispute->forceFill([
+            DisputeEntity::STATUS   => 'open',
+            DisputeEntity::MERCHANT_ID   => '10000000000000',
+        ]);
+
+        $dispute->save();
+
+        $input = [
+            'payment_ids' => [
+                $paymentId
+            ],
+
+            'extra_data' => ['count_of_open_non_fraud_disputes'],
+        ];
+
+
+        $expectedOutput = [
+            $paymentId => [
+                'extra_data' => [
+                    'count_of_open_non_fraud_disputes' => [
+                        'data' => '1',
+                        'error' => NULL,
+                    ]
+                ],
+            ],
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test extra_data is_iin_prepaid
+    public function scroogeFetchEntitiesV2SubTest12($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+        $paymentEntity = $this->getDbEntityById('payment', $paymentId);
+
+        $this->fixtures->card->edit($paymentEntity['card_id'], [
+            'iin' => '222688'
+        ]);
+
+        $this->fixtures->create('iin', [
+            'iin'       => '222688',
+            'issuer'    => 'RATN',
+            'type' => 'credit',
+            'recurring' => 1,
+        ]);
+
+        $input = [
+            'payment_ids' => [
+                $paymentId
+            ],
+            'extra_data' => ['is_iin_prepaid'],
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+
+                'extra_data' => [
+                    'is_iin_prepaid' => [
+                        'data' => true,
+                        'error' => NULL,
+                    ]
+                ],
+            ],
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test extra_data card_has_supported_issuer
+    public function scroogeFetchEntitiesV2SubTest13($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+
+        //issuer was already set to RATN in previous test, which is a supported one
+
+        $input = [
+            'payment_ids' => [
+                $paymentId
+            ],
+            'extra_data' => ['card_has_supported_issuer'],
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+                'extra_data' => [
+                    'card_has_supported_issuer' => [
+                        'data' => true,
+                        'error' => NULL,
+                    ]
+                ],
+            ],
+        ];
+
+        return [$input, $expectedOutput];
+    }
+
+    // test extra data bank_transfer entity
+    public function scroogeFetchEntitiesV2SubTest14($subTestArgs): array
+    {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+
+        $paymentEntity = $this->getDbEntityById('payment', $paymentId);
+
+        $merchantEntity = $this->getDbEntityById('merchant', $paymentEntity['merchant_id']);
+
+        $this->fixtures->payment->edit($paymentId, ['method' => 'bank_transfer']);
+
+        $bankTransfer = new BankTransferEntity();
+
+        $bankTransfer->payment()->associate($paymentEntity);
+
+        $bankTransfer->merchant()->associate($merchantEntity);
+
+        $time=Carbon::now()->getTimestamp();
+
+
+        $bankTransfer->build([
+            BankTransferEntity::PAYEE_ACCOUNT => '2224440041626905',
+            BankTransferEntity::PAYEE_IFSC => 'HDFC0000001',
+            'transaction_id' => $paymentEntity['transaction_id'],
+            BankTransferEntity::AMOUNT => '100',
+            BankTransferEntity::MODE => 'IMPS',
+            BankTransferEntity::TIME => $time,
+            BankTransferEntity::PAYER_IFSC => 'HDFC0000001',
+
+        ]);
+
+        $bankTransfer->forceFill([
+           BankTransferEntity::GATEWAY => 'hdfc'
+        ]);
+
+        $bankTransfer->save();
+
+        $input = [
+            'payment_ids' => [
+                $paymentId
+            ],
+            'extra_data' => ['payer_bank_account'],
+        ];
+
+        $expectedOutput = [
+            $paymentId => [
+                'extra_data' => [
+                    'payer_bank_account' => [
+                        'data' => NULL,
+                        'error' => 'NO_DATA_FOUND',
+                    ]
+                ],
+            ],
         ];
 
         return [$input, $expectedOutput];

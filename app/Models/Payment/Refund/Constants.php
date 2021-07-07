@@ -6,11 +6,14 @@ class Constants
 {
     const META                                 = 'meta';
     const MODE                                 = 'mode';
+    const CODE                                 = 'code';
     const IS_FTA                               = 'is_fta';
     const IS_DCC                               = 'is_dcc';
     const MOZART                               = 'mozart';
+    const MESSAGE                              = 'message';
     const ENTITIES                             = 'entities';
     const REFUND_IDS                           = 'refund_ids';
+    const PAYMENT_IDS                          = 'payment_ids';
     const DB_FETCH_LIMIT                       = 'limit';
     const GATEWAY_ENTITY                       = 'gateway_entity';
     const SPEED_CHANGE_TIME                    = 'speed_change_time';
@@ -176,8 +179,22 @@ class Constants
     const ERROR    = 'error';
     const FTA_DATA = 'fta_data';
 
+    const DATA = 'data';
     // sets type of refund. Auto/manual/Merchant Initiated etc..
     const REFUND_TYPE = 'refund_type';
+
+    // fetch entities v2 related constants
+    const FAILURE_COUNT            = 'failure_count';
+    const SUCCESS_COUNT            = 'success_count';
+    const REQUEST_COUNT            = 'request_count';
+    const NO_DATA_FOUND            = 'NO_DATA_FOUND';
+    const PAYMENT_NOT_FOUND        = 'PAYMENT_NOT_FOUND';
+    const SKIPPED_PAYMENT_IDS      = 'skipped_payment_ids';
+    const FETCH_ENTITIES_ERROR     = 'FETCH_ENTITIES_ERROR';
+    const AMOUNT_UNREFUNDED        = 'amount_unrefunded';
+    const BASE_AMOUNT_UNREFUNDED   = 'base_amount_unrefunded';
+    const IS_UPI_OTM               = 'is_upi_otm';
+    const CURRENCY_CONVERSION_RATE = 'currency_conversion_rate';
 
     // Dynamic error messages for refund creation blocking
     // type 0 for neither instant nor gateway refund supported
