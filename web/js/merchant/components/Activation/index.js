@@ -2134,7 +2134,7 @@ function ActivationField(field) {
 
   if (field.name === 'e_aadhar' && rest.customField) {
     const { isAadharEkycMandatory } = this.props.user;
-    rest.isAadharEkycMandatory = (isAadharEkycMandatory && this.isUnregBiz);
+    rest.isAadharEkycMandatory = isAadharEkycMandatory && this.isUnregBiz;
     rest.aadharStatus =
       this.props.data.stakeholder && this.props.data.stakeholder.aadhaar_esign_status;
     rest.isAadharLinked = this.props.data.stakeholder
@@ -2323,7 +2323,8 @@ function isFieldValid(field, activation) {
     hasAPIL1Error({
       poi_verification_status: data.poi_verification_status,
       is_unreg: true,
-    })
+    }) &&
+    !props.user.canSkipPoiValidation
   ) {
     return false;
   }
