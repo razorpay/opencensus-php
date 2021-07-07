@@ -1054,7 +1054,7 @@ class Constants
             'description' => 'Add credits & balances to your account on your own without raising a support ticket.',
             'start_ts'    => 1625547545,
             'end_ts'      => 1633046400,
-            'icon'        => 'https://betacdn.np.razorpay.in/static/assets/notifs/save-rupee.svg', // Update before deploying
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/save-rupee.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
