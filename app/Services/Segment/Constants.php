@@ -15,6 +15,8 @@ class Constants
         Merchant\Detail\Entity::COMPANY_PAN_VERIFICATION_STATUS,
         Merchant\Detail\Entity::BANK_DETAILS_VERIFICATION_STATUS,
         Merchant\Detail\Entity::MSME_DOC_VERIFICATION_STATUS,
-        Merchant\Detail\Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS
+        Merchant\Detail\Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
+        Merchant\Detail\Entity::BUSINESS_CATEGORY,
+        Merchant\Detail\Entity::BUSINESS_SUBCATEGORY
     ];
 }

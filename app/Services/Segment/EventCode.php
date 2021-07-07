@@ -17,4 +17,8 @@ class EventCode
     const MTU_TRANSACTED            = 'MTU Transacted';
 
     const KYC_FORM_SAVED            = 'KYC Form Saved';
+
+    const L1_SUBMISSION             = 'L1 Submission';
+
+    const L2_SUBMISSION             = 'L2 Submission';
 }

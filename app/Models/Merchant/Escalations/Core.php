@@ -6,6 +6,7 @@ namespace RZP\Models\Merchant\Escalations;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Escalations\Actions\Entity as ActionEntity;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 
@@ -120,6 +121,41 @@ class Core extends Base\Core
         $this->cache->put(Constants::ESCALATION_CACHE_KEY, Carbon::now()->getTimestamp());
     }
 
+    public function handleMtuSegmentEvent()
+    {
+        $lastCronTime = $this->getLastCronTime();
+
+        // Filter out all merchants that have transacted since last time cron ran
+        $merchantIdList = $this->repo->transaction->fetchTransactedMerchants('payment', $lastCronTime);
+
+        // Since we want to push MTU event just once
+        // Filter out all merchants that have transacted before the last time cron ran
+        $merchantIdList = $this->repo->transaction->excludeTransactedMerchantsBeforeTimestamp(
+            $merchantIdList, 'payment', $lastCronTime
+        );
+
+        $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
+            'last_cron_time'    => $lastCronTime,
+            'type'              => 'segment_mtu',
+            'merchants_count'   => count($merchantIdList),
+        ]);
+
+        foreach ($merchantIdList as $merchantId)
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $properties = [
+                'mtu'                           => true,
+                'first_transaction_timestamp'   => Carbon::now()->getTimestamp()
+            ];
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $properties, SegmentEvent::MTU_TRANSACTED);
+        }
+
+        $this->app['segment-analytics']->buildRequestAndSend();
+    }
+
     /**
      * Main method that triggers payment breach escalation for merchants
      * Filtering merchants is done using these queries:
@@ -140,6 +176,9 @@ class Core extends Base\Core
             ]);
 
             $merchantIdList = $this->repo->transaction->fetchTransactedMerchants('payment', $lastCronTime);
+
+            $merchantIdList = $this->repo->merchant_detail->filterMerchantIdsByActivationStatus(
+                $merchantIdList, DetailStatus::OPEN_STATUSES);
         }
         else
         {

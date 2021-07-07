@@ -532,6 +532,8 @@ class Core extends Base\Core
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
 
+        $this->app['segment-analytics']->pushTrackEvent($merchant, [], SegmentEvent::L2_SUBMISSION);
+
         $this->attemptPennyTesting($merchantDetails, $merchant); // async
 
         $this->triggerValidationRequests($merchant, $merchantDetails);
@@ -867,6 +869,8 @@ class Core extends Base\Core
         $this->trackActivationProgressEvents($merchant, $activationProgress);
 
         $this->app->hubspot->trackL1ContactProperties($input, $merchant, $merchantDetails->getActivationFlow());
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant, [], SegmentEvent::L1_SUBMISSION);
 
         // Only Linked accounts will have auto Activated set to true.
         $response['auto_activated'] = false;
@@ -1420,7 +1424,7 @@ class Core extends Base\Core
         $this->repo->saveOrFail($merchant);
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant, $input, SegmentEvent::KYC_FORM_SAVED);
-        
+
         return $merchantDetails;
     }
 
@@ -1921,10 +1925,7 @@ class Core extends Base\Core
 
         $customProperties['activation_status'] = $currentActivationStatus;
 
-        $properties = [
-            'activation_status' => $merchantDetails->getActivationStatus(),
-            'mcc'               => $merchant->getCategory()
-        ];
+        $properties = $this->getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails);
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $merchant, $properties, SegmentEvent::ACTIVATION_STATUS_CHANGE);
@@ -1961,6 +1962,33 @@ class Core extends Base\Core
         (new MerchantProduct\Core())->syncMerchantStatusToMerchantProducts($merchantDetails);
 
         return $merchantDetails;
+    }
+
+    protected function getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails)
+    {
+        $activationStatus = $merchantDetails->getActivationStatus();
+
+        $properties = [
+            'activation_status' => $merchantDetails->getActivationStatus(),
+            'mcc'               => $merchant->getCategory()
+        ];
+
+        if ($activationStatus === Status::INSTANTLY_ACTIVATED)
+        {
+            $properties['instant_activation'] = true;
+        }
+
+        if($activationStatus === Status::ACTIVATED_MCC_PENDING)
+        {
+            $properties['activated_mcc_pending'] = true;
+        }
+
+        if ($activationStatus === Status::NEEDS_CLARIFICATION)
+        {
+            $properties['needs_clarification'] = true;
+        }
+
+        return $properties;
     }
 
     /**

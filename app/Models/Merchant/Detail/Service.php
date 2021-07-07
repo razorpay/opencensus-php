@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use Throwable;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
@@ -152,14 +153,14 @@ class Service extends Base\Service
     {
         $activationFormMilestone = $input[Entity::ACTIVATION_FORM_MILESTONE] ?? null;
 
+        $merchant = $this->repo->merchant->findOrFailPublic($this->merchant->getMerchantId());
+
         if ($activationFormMilestone === DEConstants::L1_SUBMISSION)
         {
             $response = $this->saveInstantActivationDetails($input);
         }
         else
         {
-            $merchant = $this->repo->merchant->findOrFailPublic($this->merchant->getMerchantId());
-
             $response = $this->saveMerchantDetails($input, $merchant);
 
             $this->app['terminals_service']->reRequestInternalInstrumentRequestsOnActivationFormSubmit($merchant->getId());

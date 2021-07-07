@@ -16,6 +16,15 @@ class SegmentAnalyticsClient extends AbstractEventClient
 
     const TRACK_EVENT_URL_PATTERN = '/v1/batch';
 
+    const SENSITIVE_KEYS = [
+        'bank_account_number',
+        'bank_branch_ifsc',
+        'promoter_pan',
+        'company_pan',
+        'contact_email',
+        'contact_mobile'
+    ];
+
     public function __construct()
     {
         parent::__construct();
@@ -31,15 +40,25 @@ class SegmentAnalyticsClient extends AbstractEventClient
         {
             return;
         }
-        
-        $properties += $this->getMerchantProperties($merchant);
 
-        $eventData = [
-            'type'      => 'identify',
-            'traits'    => $properties
-        ];
+        try
+        {
+            $properties += $this->getMerchantProperties($merchant);
 
-        $this->pushEvent($merchant, $eventData);
+            $eventData = [
+                'type'      => 'identify',
+                'traits'    => $properties
+            ];
+
+            $this->pushEvent($merchant, $eventData);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::SEGMENT_EVENT_PUSH_FAILURE, [
+                'type'          => 'identify',
+                'merchant_id'   => $merchant->getId()
+            ]);
+        }
     }
 
     public function pushTrackEvent(Merchant\Entity $merchant, array $properties, string $eventName)
@@ -49,17 +68,27 @@ class SegmentAnalyticsClient extends AbstractEventClient
             return;
         }
 
-        $properties += [
-            'merchant_id'   => $merchant->getId()
-        ];
+        try
+        {
+            $properties += [
+                'merchant_id'   => $merchant->getId()
+            ];
 
-        $eventData = [
-            'type'          => 'track',
-            'properties'    => $properties,
-            'event'         => $eventName
-        ];
+            $eventData = [
+                'type'          => 'track',
+                'properties'    => $properties,
+                'event'         => $eventName
+            ];
 
-        $this->pushEvent($merchant, $eventData);
+            $this->pushEvent($merchant, $eventData);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::SEGMENT_EVENT_PUSH_FAILURE, [
+                'type'          => 'track',
+                'merchant_id'   => $merchant->getId()
+            ]);
+        }
     }
 
     public function pushIdentifyAndTrackEvent(Merchant\Entity $merchant, array $properties, string $eventName)
@@ -113,7 +142,31 @@ class SegmentAnalyticsClient extends AbstractEventClient
             'userId'    => $userId,
         ];
 
+        $this->maskSensitiveKeys($eventData);
+
+        $this->trace->info(TraceCode::SEGMENT_EVENT_PUSH, [
+            'eventData' => $eventData
+        ]);
+
         $this->events[] = $eventData;
+    }
+
+    protected function maskSensitiveKeys(array & $properties)
+    {
+        foreach ($properties as $key => $value)
+        {
+            if(is_array($value))
+            {
+                $this->maskSensitiveKeys($properties[$key]);
+            }
+            else
+            {
+                if(in_array($key, self::SENSITIVE_KEYS, true))
+                {
+                    $properties[$key] = mask_except_last4($properties[$key]);
+                }
+            }
+        }
     }
 
     public function buildRequestAndSend()

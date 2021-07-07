@@ -10,7 +10,6 @@ use RZP\Models\Merchant\Detail\Constants as DConstants;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\CommunicationHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\DisablePaymentsHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\MerchantTagsHandler;
-use RZP\Models\Merchant\Escalations\Actions\Handlers\MtuTransactedEventHandler;
 use RZP\Notifications\Onboarding\Events;
 
 class Constants
@@ -60,22 +59,6 @@ class Constants
                 self::ACTIONS       => [
                     [
                         self::HANDLER   => MerchantTagsHandler::class
-                    ],
-                    [
-                        self::HANDLER   => MtuTransactedEventHandler::class
-                    ]
-                ],
-            ],
-            [
-                self::DESCRIPTION   => "transacted after L2",
-                self::TO            => self::ADMIN,
-                self::CONDITIONS    => [
-                    DEntity::ACTIVATION_FORM_MILESTONE  => DConstants::L2_SUBMISSION
-                ],
-                self::MILESTONE     => 'L2',
-                self::ACTIONS       => [
-                    [
-                        self::HANDLER   => MtuTransactedEventHandler::class
                     ]
                 ],
             ]

@@ -4,7 +4,10 @@
 namespace Unit\Models\Merchant\Detail;
 
 
+use Carbon\Carbon;
+use RZP\Models\Merchant\Escalations;
 use RZP\Services\RazorXClient;
+use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Detail\Status;
@@ -22,7 +25,7 @@ class CoreTest extends TestCase
             ->setMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
-        $mockMC->expects($this->exactly(2))
+        $mockMC->expects($this->any())
             ->method('isRazorxExperimentEnable')
             ->willReturn(true);
 
@@ -30,6 +33,99 @@ class CoreTest extends TestCase
             "merchantCoreMock"    => $mockMC
         ];
     }
+
+    private function createTransaction(string $merchantId, string $type, int $amount, int $createdAt = null)
+    {
+        if($createdAt === null)
+        {
+            $createdAt = Carbon::now()->getTimestamp();
+        }
+
+        $transaction = $this->fixtures->on('live')->create('transaction', [
+            'type'          => $type,
+            'amount'        => $amount * 100,   // in paisa
+            'merchant_id'   => $merchantId,
+            'created_at'    => $createdAt
+        ]);
+    }
+
+    public function testSegmentEventPushForFirstTransaction()
+    {
+        $this->createAndFetchMocks();
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyAndTrackEvent')
+            ->willReturn(true);
+
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->createTransaction($merchantId, 'payment', 10000);
+
+        (new Escalations\Core)->handleMtuSegmentEvent();
+    }
+
+    public function testSegmentEventSkipIfNotFirstTransaction()
+    {
+        $this->createAndFetchMocks();
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(0))
+            ->method('pushIdentifyAndTrackEvent')
+            ->willReturn(true);
+
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        // Create transaction that is 4 days old (since cron picks last 3 days transacted merchants)
+        $this->createTransaction(
+            $merchantId, 'payment', 10000, Carbon::now()->subDays(4)->getTimestamp());
+
+        // Create new transaction
+        $this->createTransaction($merchantId, 'payment', 10000);
+
+        (new Escalations\Core)->handleMtuSegmentEvent();
+    }
+
+    public function testSegmentEventIfTwoTransactionsDuringSameTime()
+    {
+        $this->createAndFetchMocks();
+
+        
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyAndTrackEvent')
+            ->willReturn(true);
+
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        // Create new 2 transactions
+        $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createTransaction($merchantId, 'payment', 10000);
+
+        (new Escalations\Core)->handleMtuSegmentEvent();
+    }
+
 
     public function testValidationFieldsIfAadhaarEsignVerificationIsDone()
     {

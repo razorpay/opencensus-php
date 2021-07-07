@@ -3335,7 +3335,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NBPLUS_PAYMENT_SERVICE_ERROR                          = 'NBPLUS_PAYMENT_SERVICE_ERROR';
 
     // UPI Payment Service Trace codes
-    const UPI_PAYMENT_SERVICE_REQUEST                           = 'UPI_PAYMENT_SERVICE_REQUEST';           
+    const UPI_PAYMENT_SERVICE_REQUEST                           = 'UPI_PAYMENT_SERVICE_REQUEST';
 
     // Batch Micro Service
     const GET_BATCHES_BATCH_SERVICE                             = 'GET_BATCHES_BATCH_SERVICE';
@@ -4284,6 +4284,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ESCALATION_ACTION_JOB                 = 'ESCALATION_ACTION_JOB';
     const ESCALATION_ACTION_JOB_ERROR           = 'ESCALATION_ACTION_JOB_ERROR';
     const ESCALATION_ACTION_FAILURE             = 'ESCALATION_ACTION_FAILURE';
+
+    const SEGMENT_EVENT_PUSH                    = 'SEGMENT_EVENT_PUSH';
+    const SEGMENT_EVENT_PUSH_FAILURE            = 'SEGMENT_EVENT_PUSH_FAILURE';
 
     // Tracing error logs
     const OPENCENSUS_ERROR = 'OPENCENSUS_ERROR';
