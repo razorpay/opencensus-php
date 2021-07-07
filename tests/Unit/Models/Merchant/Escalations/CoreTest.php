@@ -52,25 +52,6 @@ class CoreTest extends TestCase
         $this->assertEmpty($escalation);
     }
 
-    public function test_escalation_1K_milestone_soft_limt()
-    {
-        $this->createAndFetchMocks(true);
-
-        [$merchantDetail] = $this->createAndFetchFixturesForMilestone('soft_limit');
-        $merchantId = $merchantDetail->getMerchantId();
-
-        $this->createTransaction($merchantId, 'payment', 1000);
-
-        (new Escalations\Core)->triggerPaymentEscalations(false);
-
-        $escalation = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
-
-        // Verify that escalation is trigged
-        $this->assertNotEmpty($escalation);
-        $this->assertEquals('soft_limit', $escalation->getAttribute('milestone'));
-        $this->assertEquals(100000, $escalation->getAttribute('threshold'));
-    }
-
     /**
      * Scenario:
      * -1 merchant is moved to activated mcc pending state

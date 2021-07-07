@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6c9b0a062024d3166add7d1e271c7e33",
+    "content-hash": "3013d8edbeb312e23e8799122fa833fa",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -8939,6 +8939,57 @@
                 "validation"
             ],
             "time": "2020-05-13T09:16:49+00:00"
+        },
+        {
+            "name": "segmentio/analytics-php",
+            "version": "1.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/segmentio/analytics-php.git",
+                "reference": "7e25b2f6094632bbfb79e33ca024d533899a2ffe"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/segmentio/analytics-php/zipball/7e25b2f6094632bbfb79e33ca024d533899a2ffe",
+                "reference": "7e25b2f6094632bbfb79e33ca024d533899a2ffe",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "require-dev": {
+                "overtrue/phplint": "^1.1",
+                "phpunit/phpunit": "~4.0",
+                "squizlabs/php_codesniffer": "^3.3"
+            },
+            "bin": [
+                "bin/analytics"
+            ],
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "lib/Segment.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Segment.io <friends@segment.com>",
+                    "homepage": "https://segment.com/"
+                }
+            ],
+            "description": "Segment Analytics PHP Library",
+            "homepage": "https://segment.com/libraries/php",
+            "keywords": [
+                "analytics",
+                "analytics.js",
+                "segment",
+                "segmentio"
+            ],
+            "time": "2021-05-31T22:44:22+00:00"
         },
         {
             "name": "sentry/sdk",

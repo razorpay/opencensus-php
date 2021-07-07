@@ -185,6 +185,9 @@ final class RazorxTreatment
     // experiment to enable esign aadhar functionality
     const ESIGN_AADHAR_FUNCTIONALITY = 'esign_aadhar_functionality';
 
+    // experiment to enable pushing events to segment
+    const SEGMENT_ANALYTICS_FUNCTIONALITY = 'segment_analytics_functionality';
+
     // experiment to enable instant activations on L1 submit;
     const INSTANT_ACTIVATION_FUNCTIONALITY = 'instant-activations-functionality';
 

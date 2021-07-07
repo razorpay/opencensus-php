@@ -84,7 +84,7 @@ class Handler
 
             if(empty($possibleEscalations) === false)
             {
-                $escalationConfig = $possibleEscalations[0];
+                $escalationConfig = array_values($possibleEscalations)[0];
 
                 if($this->canTriggerEscalation($merchantDetails, $escalationConfig) === true)
                 {
@@ -101,7 +101,14 @@ class Handler
         $conditions = $escalationConfig[Constants::CONDITIONS];
 
         return (new Parser)->parse($conditions, function ($key, $value) use ($merchantDetails){
-            return $merchantDetails->getAttribute($key) === $value;
+            if(is_array($value) === true)
+            {
+                return in_array($merchantDetails->getAttribute($key), $value, true);
+            }
+            else
+            {
+                return $merchantDetails->getAttribute($key) === $value;
+            }
         });
     }
 

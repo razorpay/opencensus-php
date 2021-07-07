@@ -391,6 +391,8 @@ class DetailServiceTest extends TestCase
 
         $this->merchantEntityMock->shouldReceive('getCategory2')->andReturn(2);
 
+        $this->merchantEntityMock->shouldReceive('getId')->andReturn('1232');
+
         $this->merchantDetailEntityMock->shouldReceive('isDirty')->andReturn(false);
 
         $this->merchantDetailEntityMock->shouldReceive('getBusinessName')->andReturn('dummy-business');

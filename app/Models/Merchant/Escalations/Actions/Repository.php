@@ -15,4 +15,12 @@ class Repository extends Base\Repository
             ->where(Entity::ESCALATION_ID, $escalationId)
             ->first();
     }
+
+    public function fetchActionWithHandlerAndStatus(string $handlerName, string $status)
+    {
+        return $this->newQuery()
+            ->where(Entity::ACTION_HANDLER, $handlerName)
+            ->where(Entity::STATUS, $status)
+            ->first();
+    }
 }

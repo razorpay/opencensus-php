@@ -56,6 +56,23 @@ class EventTracker
         $this->sendEventsToLumberjack();
 
         $this->sendEventsToEventManager();
+
+        $this->sendEventsToSegmentAnalytics();
+    }
+
+    /**
+     * Data can be sent to segment-analytics once the response has been already sent.
+     */
+    protected function sendEventsToSegmentAnalytics()
+    {
+        try
+        {
+            $this->app['segment-analytics']->buildRequestAndSend();
+        }
+        catch (\Throwable $e)
+        {
+            $this->app['trace']->traceException($e);
+        }
     }
 
     /**

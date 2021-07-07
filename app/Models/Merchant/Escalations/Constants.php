@@ -6,9 +6,11 @@ namespace RZP\Models\Merchant\Escalations;
 
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Detail\Entity as DEntity;
+use RZP\Models\Merchant\Detail\Constants as DConstants;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\CommunicationHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\DisablePaymentsHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\MerchantTagsHandler;
+use RZP\Models\Merchant\Escalations\Actions\Handlers\MtuTransactedEventHandler;
 use RZP\Notifications\Onboarding\Events;
 
 class Constants
@@ -41,32 +43,41 @@ class Constants
     // This is required to optimise DB query. We ignore all merchants with GMV below this threshold
     const LOWEST_PAYMENTS_THRESHOLD = 00; // in paisa
 
+    const OPEN_STATUS_CONDITION = [
+        DEntity::ACTIVATION_STATUS  => Status::OPEN_STATUSES
+    ];
+
     const PAYMENTS_ESCALATION_MATRIX = [
         0             => [
             [
                 self::DESCRIPTION   => "transacted after L1",
                 self::TO            => self::ADMIN,
                 self::CONDITIONS    => [
-                    'activation_form_milestone'         => 'L1',
+                    DEntity::ACTIVATION_FORM_MILESTONE  => DConstants::L1_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS          => Status::OPEN_STATUSES
                 ],
                 self::MILESTONE     => 'L1',
                 self::ACTIONS       => [
                     [
                         self::HANDLER   => MerchantTagsHandler::class
+                    ],
+                    [
+                        self::HANDLER   => MtuTransactedEventHandler::class
                     ]
                 ],
-            ]
-        ],
-        100000        => [
+            ],
             [
-                self::DESCRIPTION   => "soft limit breach after activated mcc pending",
+                self::DESCRIPTION   => "transacted after L2",
                 self::TO            => self::ADMIN,
                 self::CONDITIONS    => [
-                    'activation_form_milestone'         => 'L2',
-                    DEntity::ACTIVATION_STATUS          => Status::ACTIVATED_MCC_PENDING
+                    DEntity::ACTIVATION_FORM_MILESTONE  => DConstants::L2_SUBMISSION
                 ],
-                self::MILESTONE     => 'soft_limit',
-                self::ACTIONS       => [],  // This is getting escalated from v1 so disabling actions from here.
+                self::MILESTONE     => 'L2',
+                self::ACTIONS       => [
+                    [
+                        self::HANDLER   => MtuTransactedEventHandler::class
+                    ]
+                ],
             ]
         ],
         500000        => [
@@ -74,7 +85,8 @@ class Constants
                 self::DESCRIPTION   => "payments breach of 5k after L1, before L2",
                 self::TO            => self::MERCHANT,
                 self::CONDITIONS    => [
-                    'activation_form_milestone'         => 'L1',
+                    DEntity::ACTIVATION_FORM_MILESTONE  => DConstants::L1_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS          => Status::OPEN_STATUSES
                 ],
                 self::MILESTONE     => 'L1',
                 self::ACTIONS       => [
@@ -92,7 +104,8 @@ class Constants
                 self::DESCRIPTION   => "payments breach of 10k after L1, before L2",
                 self::TO            => self::MERCHANT,
                 self::CONDITIONS    => [
-                    'activation_form_milestone' => 'L1'
+                    DEntity::ACTIVATION_FORM_MILESTONE  => DConstants::L1_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS          => Status::OPEN_STATUSES
                 ],
                 self::MILESTONE     => 'L1',
                 self::ACTIONS       => [
@@ -110,7 +123,8 @@ class Constants
                 self::DESCRIPTION   => "payments breach of 15k after L1, before L2",
                 self::TO            => self::MERCHANT,
                 self::CONDITIONS    => [
-                    'activation_form_milestone' => 'L1'
+                    DEntity::ACTIVATION_FORM_MILESTONE  => DConstants::L1_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS          => Status::OPEN_STATUSES
                 ],
                 self::MILESTONE     => 'L1',
                 self::ACTIONS       => [
@@ -151,7 +165,8 @@ class Constants
                 self::DESCRIPTION   => "payments breach of 1cr after L2",
                 self::TO            => self::MERCHANT,
                 self::CONDITIONS    => [
-                    'activation_form_milestone' => 'L2'
+                    DEntity::ACTIVATION_FORM_MILESTONE  => DConstants::L2_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS          => Status::OPEN_STATUSES
                 ],
                 self::MILESTONE     => 'L2',
                 self::ACTIONS       => [

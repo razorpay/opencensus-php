@@ -67,6 +67,19 @@ class Core extends Base\Core
         return true;
     }
 
+    public function getDedupeMatchedFields(Merchant\Entity $merchant): array
+    {
+        if ($this->isDedupeRequired($merchant) === false)
+        {
+            return [];
+        }
+
+        $riskScores = $this->merchantRiskClient->getMerchantImpersonatedDetails(
+            Constants::MERCHANT_RISK_CLIENT_TYPE_ONBOARDING, $merchant->getId());
+
+        return $this->getMatchedFieldsFromRiskScore($riskScores);
+    }
+
     public function isMerchantImpersonated(Merchant\Entity $merchant): bool
     {
         if ($this->isDedupeRequired($merchant) === false)
@@ -189,6 +202,39 @@ class Core extends Base\Core
         }
 
         return $matchedMerchantIds;
+    }
+
+    private function getMatchedFieldsFromRiskScore($riskScores): array
+    {
+        $matchedFields = [];
+
+        if (isset($riskScores['fields']) === false)
+        {
+            return [];
+        }
+
+        $response = [];
+        foreach ($riskScores['fields'] as $riskScore)
+        {
+            $response[$riskScore['field']][$riskScore['list']] = $riskScore['score'];
+        }
+
+        foreach (Constants::MERCHANT_RISK_ACTIONS as $action)
+        {
+            foreach ($action['keysToCheck'] as $key => $value)
+            {
+                if (isset($response[$key][$value['list']]) === false)
+                {
+                    break;
+                }
+
+                $matchedFields[] = [
+                    $key  => $action[Constants::ACTION] ?? null
+                ];
+            }
+        }
+
+        return $matchedFields;
     }
 
     private function checkImpersonationFromRiskScore($riskScores, bool $action = true): array

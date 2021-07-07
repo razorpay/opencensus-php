@@ -140,10 +140,6 @@ class Core extends Base\Core
             ]);
 
             $merchantIdList = $this->repo->transaction->fetchTransactedMerchants('payment', $lastCronTime);
-
-            $merchantIdList = $this->repo->merchant_detail->filterMerchantIdsByActivationStatus(
-                $merchantIdList, DetailStatus::OPEN_STATUSES
-            );
         }
         else
         {

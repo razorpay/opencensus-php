@@ -54,6 +54,7 @@ use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Mail\Merchant\Rejection as RejectionEmail;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Models\Merchant\Product as MerchantProduct;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionGreylist;
@@ -984,6 +985,15 @@ class Core extends Base\Core
         ];
 
         $this->app['diag']->trackOnboardingEvent(EventCode::MERCHANT_DEDUPE, $merchant, null, $eventAttributes);
+
+        $properties = [
+            'dedupe_status'     => $dedupeTag,
+            'dedupe_timestamp'  => Carbon::now()->getTimestamp(),
+            'fields'            => $this->dedupeCore->getDedupeMatchedFields($merchant)
+        ];
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $properties, SegmentEvent::DEDUPE);
     }
 
     protected function triggerWorkflowFlowForImpersonatedMerchant(Merchant\Entity $merchant, Entity $merchantDetails)
@@ -1409,6 +1419,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant, $input, SegmentEvent::KYC_FORM_SAVED);
+        
         return $merchantDetails;
     }
 
@@ -1908,6 +1920,14 @@ class Core extends Base\Core
         }
 
         $customProperties['activation_status'] = $currentActivationStatus;
+
+        $properties = [
+            'activation_status' => $merchantDetails->getActivationStatus(),
+            'mcc'               => $merchant->getCategory()
+        ];
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $properties, SegmentEvent::ACTIVATION_STATUS_CHANGE);
 
         $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_STATUS_SUCCESS,
                                                  $merchant,
