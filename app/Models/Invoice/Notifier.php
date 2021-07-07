@@ -1199,6 +1199,20 @@ class Notifier extends Base\Core
 
         $viewPayload['org'] = $this->invoice->merchant->org->toArrayPublic();
 
+        $branding = [
+            'show_rzp_logo' => true,
+            'branding_logo' => '',
+        ];
+
+        if($this->invoice->merchant->shouldShowCustomOrgBranding() === true)
+        {
+            $branding['show_rzp_logo'] = false;
+
+            $branding['branding_logo'] = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.png';
+        }
+
+        $viewPayload['org']['branding'] = $branding;
+
         $viewPayload['invoice']['amount_spread'] = $this->invoice->getAmountComponents();
 
         if ($viewPayload['invoice']['partial_payment'] === true)

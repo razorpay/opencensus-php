@@ -138,7 +138,7 @@ class ViewDataSerializer extends Base\Core
 
                     $branding['show_rzp_logo'] = false;
 
-                    $branding['branding_logo'] = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.svg';
+                    $branding['branding_logo'] = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.png';
 
                     break;
             }
