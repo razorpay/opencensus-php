@@ -2812,6 +2812,44 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesAfterFilterForMinimumAmountOnCardlessEmi' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+                'amount'   => '89900'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'mode'  => 'test'
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithAmountGreaterForCardlessEmi' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+                'amount'   => '90001'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'mode'  => 'test',
+                'methods' =>[
+                    'cardless_emi' => [
+                        'zestmoney' => true,
+                        'walnut369' => true,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testPreferencesAfterFilterForMinimumAmountWithOrderAmountLess' => [
         'request'  => [
             'url'    => '/preferences',

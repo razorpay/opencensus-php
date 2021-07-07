@@ -2443,6 +2443,9 @@ class Gateway
     public static $minAmountForMethodAndGateway = [
         Payment\Method::PAYLATER => [
             PayLater::HDFC => '100000'
+        ],
+        Payment\Method::CARDLESS_EMI => [
+            CardlessEmi::WALNUT369 => '90000'
         ]
     ];
 

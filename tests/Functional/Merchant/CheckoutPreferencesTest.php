@@ -851,6 +851,37 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertArrayNotHasKey('hdfc', $response['methods']['paylater']);
     }
 
+    public function testGetCheckoutPreferencesAfterFilterForMinimumAmountOnCardlessEmi()
+    {
+        $this->fixtures->merchant->enableCardlessEmi();
+
+        $this->fixtures->create('terminal:shared_cardless_emi_walnut369_terminal');
+        $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('walnut369', $response['methods']['cardless_emi']);
+        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
+
+    }
+
+    public function testGetCheckoutPreferencesWithAmountGreaterForCardlessEmi()
+    {
+        $this->fixtures->merchant->enableCardlessEmi();
+
+        $this->fixtures->create('terminal:shared_cardless_emi_walnut369_terminal');
+        $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('walnut369', $response['methods']['cardless_emi']);
+        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
+    }
+
     public function testGetCheckoutPreferencesForCardlessEmiEnabledBanks()
     {
         $this->fixtures->merchant->enableCardlessEmi();
