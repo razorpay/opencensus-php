@@ -24,6 +24,7 @@ class Core extends Base\Core
     const EVENT_DESCRIPTION     = 'description';
     const ENTITIES              = 'entities';
     const FTS_FUND_ACCOUNT_ID   = 'fts_fund_account_id';
+    const BANKING_ACCOUNT_ID    = 'banking_account_id';
 
     const IDEMPOTENCY_KEY = 'idempotency_key';
     const UUID_FORMAT     = '%04x%04x-%04x-%04x-%04x-%04x%04x%04x';
@@ -57,15 +58,16 @@ class Core extends Base\Core
             self::MERCHANT_ID       => $merchant->getId(),
             self::EVENT             => [
                 self::EVENT_NAME            => $event,
-                self::EVENT_DESCRIPTION     => $this->eventDescription[$event]
+                self::EVENT_DESCRIPTION     => $this->eventDescription[$event],
+                self::ENTITIES              => [
+                    self::BANKING_ACCOUNT_ID => [$bankingAccount->getPublicId()],
+                ],
             ],
         ];
 
         if ($bankingAccount->getFtsFundAccountId() !== null)
         {
-            $payload[self::EVENT][self::ENTITIES] = [
-                self::FTS_FUND_ACCOUNT_ID => [$bankingAccount->getFtsFundAccountId()],
-            ];
+            $payload[self::EVENT][self::ENTITIES][self::FTS_FUND_ACCOUNT_ID] = [$bankingAccount->getFtsFundAccountId()];
         }
 
         $this->trace->info(TraceCode::LEDGER_ACCOUNT_STREAMING_STARTED, $payload);
