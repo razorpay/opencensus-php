@@ -72,6 +72,27 @@ class AccountV2DocumentsTest extends OAuthTestCase
 
     }
 
+    public function testDocumentUploadDownloadV1Routes()
+    {
+        $this->ba->privateAuth();
+
+        $this->updateUploadDocumentData(__FUNCTION__);
+
+        $uploadResponse = $this->startTest();
+
+        $this->assertFalse(empty($uploadResponse), false);
+
+        $file_id = $uploadResponse['id'];
+
+        $testData = $this->testData['testDocumentDownloadSuccess'];
+
+        $testData['request']['url'] = '/documents/' . $file_id;
+
+        $downloadResponse = $this->runRequestResponseFlow($testData);
+
+        $this->assertFalse(empty($downloadResponse));
+    }
+
     public function testValidationsForInvalidInput()
     {
         list($subMerchant, $partner) = $this->setupPrivateAuthForPartner();

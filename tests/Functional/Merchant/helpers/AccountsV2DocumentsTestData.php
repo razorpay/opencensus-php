@@ -21,6 +21,24 @@ return [
         ]
     ],
 
+    'testDocumentUploadDownloadV1Routes' => [
+        'request'  => [
+            'url'     => '/documents',
+            'method'  => 'POST',
+            'content' => [
+                'purpose' => 'kyc_proof'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'mime_type' => 'image/png',
+                'purpose'   => 'kyc_proof',
+                'size'      => 12345,
+                'id'        => 'doc_1cXSLlUU8V9sXl',
+            ],
+        ]
+    ],
+
     'testDocumentUploadWrongPurpose' => [
         'request'   => [
             'url'     => '/v2/documents',

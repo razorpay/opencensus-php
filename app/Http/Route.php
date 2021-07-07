@@ -2222,6 +2222,9 @@ class Route
         'merchant_document_admin_fetch'           => ['get',      'merchant/documents/{mid}',                                  'DocumentController@getMerchantDocumentsByAdmin'            ],
 
         //account and stakeholder document related routes
+        'document_upload_v1'                         => ['post',      'documents',                                                          'GenericDocumentController@uploadDocument'                  ],
+        'document_get_v1'                            => ['get',       'documents/{fileStoreId}',                                            'GenericDocumentController@getDocument'                     ],
+        'document_download_v1'                       => ['get',       'documents/{fileStoreId}/content',                                    'GenericDocumentController@getDocumentContent'              ],
         'document_upload_v2'                         => ['post',      'documents',                                                          'GenericDocumentController@uploadDocument'                  ],
         'document_get_v2'                            => ['get',       'documents/{fileStoreId}',                                            'GenericDocumentController@getDocument'                     ],
         'document_download_v2'                       => ['get',       'documents/{fileStoreId}/content',                                    'GenericDocumentController@getDocumentContent'              ],
@@ -2992,6 +2995,9 @@ class Route
         'payment_page_activate',
 
         // routes for account and stakeholder documents
+        'document_upload_v1',
+        'document_get_v1',
+        'document_download_v1',
         'document_upload_v2',
         'document_get_v2',
         'document_download_v2',
@@ -6548,6 +6554,9 @@ class Route
             'dispute_fetch_multiple',
             'dispute_file_delete',
             'dispute_files_fetch',
+            'document_upload_v1',
+            'document_get_v1',
+            'document_download_v1',
             'document_download_v2',
             'document_get_v2',
             'document_upload_v2',
@@ -7617,6 +7626,9 @@ class Route
             'dispute_files_fetch',
             'dispute_poc_mails',
             'dispute_reason_create',
+            'document_upload_v1',
+            'document_get_v1',
+            'document_download_v1',
             'document_download_v2',
             'document_get_v2',
             'document_upload_v2',
