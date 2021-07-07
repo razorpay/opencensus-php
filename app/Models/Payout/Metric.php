@@ -23,6 +23,7 @@ final class Metric
     const PAYOUT_CANCELLED_TOTAL                            = 'payout_cancelled_total';
     const PAYOUT_BATCH_SUBMITTED_TOTAL                      = 'payout_batch_submitted_total';
     const PAYOUT_SCHEDULED_TOTAL                            = 'payout_scheduled_total';
+    const PAYOUT_ON_HOLD_TOTAL                              = 'payout_on_hold_total';
     const PAYOUT_CREATE_REQUEST_SUBMITTED_TOTAL             = 'payout_create_request_submitted_total';
     const PAYOUT_WORKFLOW_CREATION_FAILED_TOTAL             = 'payout_workflow_creation_failed_total';
     const PAYOUT_WORKFLOW_ACTION_FAILED_TOTAL               = 'payout_workflow_action_failed_total';
@@ -42,16 +43,25 @@ final class Metric
     const PAYOUT_PROCESSED_TO_REVERSED_DURATION_SECONDS                  = 'payout_processed_to_reversed_duration_seconds.histogram';
     const PAYOUT_BATCH_SUBMITTED_TO_CREATED_DURATION_SECONDS             = 'payout_batch_submitted_to_created_duration_seconds.histogram';
     const PAYOUT_BATCH_SUBMITTED_TO_FAILED_DURATION_SECONDS              = 'payout_batch_submitted_to_failed_duration_seconds.histogram';
+    const PAYOUT_BATCH_SUBMITTED_TO_ON_HOLD_DURATION_SECONDS             = 'payout_batch_submitted_to_on_hold_duration_seconds.histogram';
     const PAYOUT_SCHEDULED_TO_CREATED_DURATION_SECONDS                   = 'payout_scheduled_to_created_duration_seconds.histogram';
     const PAYOUT_SCHEDULED_TO_CANCELLED_DURATION_SECONDS                 = 'payout_scheduled_to_cancelled_duration_seconds.histogram';
     const PAYOUT_SCHEDULED_TO_FAILED_DURATION_SECONDS                    = 'payout_scheduled_to_failed_duration_seconds.histogram';
     const PAYOUT_SCHEDULED_TO_REJECTED_DURATION_SECONDS                  = 'payout_scheduled_to_rejected_duration_seconds.histogram';
     const PAYOUT_SCHEDULED_TO_BATCH_SUBMITTED_DURATION_SECONDS           = 'payout_scheduled_to_batch_submitted_duration_seconds.histogram';
+    const PAYOUT_SCHEDULED_TO_ON_HOLD_DURATION_SECONDS                   = 'payout_scheduled_to_on_hold_duration_seconds.histogram';
     const PAYOUT_PENDING_TO_SCHEDULED_DURATION_SECONDS                   = 'payout_pending_to_scheduled_duration_seconds.histogram';
     const PAYOUT_PENDING_TO_BATCH_SUBMITTED_DURATION_SECONDS             = 'payout_pending_to_batch_submitted_duration_seconds.histogram';
+    const PAYOUT_PENDING_TO_ON_HOLD_DURATION_SECONDS                     = 'payout_pending_to_on_hold_duration_seconds.histogram';
     const PAYOUT_CREATE_REQUEST_SUBMITTED_TO_CREATED_DURATION_SECONDS    = 'payout_create_request_submitted_to_created_duration_seconds.histogram';
     const PAYOUT_CREATE_REQUEST_SUBMITTED_TO_FAILED_DURATION_SECONDS     = 'payout_create_request_submitted_to_failed_duration_seconds.histogram';
+    const PAYOUT_CREATE_REQUEST_SUBMITTED_TO_ON_HOLD_DURATION_SECONDS     = 'payout_create_request_submitted_to_on_hold_duration_seconds.histogram';
     const PAYOUT_CREATE_REQUEST_SUBMITTED_TO_QUEUED_DURATION_SECONDS     = 'payout_create_request_submitted_to_queued_duration_seconds.histogram';
+    const PAYOUT_ON_HOLD_TO_CREATED_DURATION_SECONDS                     = 'payout_on_hold_to_created_duration_seconds.histogram';
+    const PAYOUT_ON_HOLD_TO_FAILED_DURATION_SECONDS                      = 'payout_on_hold_to_failed_duration_seconds.histogram';
+    const PAYOUT_ON_HOLD_TO_QUEUED_DURATION_SECONDS                      = 'payout_on_hold_to_queued_duration_seconds.histogram';
+    const PAYOUT_ON_HOLD_TO_CANCELLED_DURATION_SECONDS                   = 'payout_on_hold_to_cancelled_duration_seconds.histogram';
+
 
     // Dimension constants
     const SOURCE     = 'source';
@@ -394,6 +404,94 @@ final class Metric
 
         app('trace')->histogram(
             self::PAYOUT_PENDING_TO_BATCH_SUBMITTED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushOnHoldToCreatedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getCreatedAt() - $payout->getOnHoldAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_ON_HOLD_TO_CREATED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushOnHoldToCancelledMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getCancelledAt() - $payout->getOnHoldAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_ON_HOLD_TO_CANCELLED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushOnHoldToFailedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getFailedAt() - $payout->getOnHoldAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_ON_HOLD_TO_FAILED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushOnHoldToQueuedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getQueuedAt() - $payout->getOnHoldAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_ON_HOLD_TO_QUEUED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushScheduledToOnHoldMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getOnHoldAt() - $payout->getScheduledAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_ON_HOLD_TO_QUEUED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushBatchSubmittedToOnHoldMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getOnHoldAt() - $payout->getBatchSubmittedAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_BATCH_SUBMITTED_TO_ON_HOLD_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushCreateRequestSubmittedToOnHoldMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getOnHoldAt() - $payout->getCreateRequestSubmittedAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_CREATE_REQUEST_SUBMITTED_TO_ON_HOLD_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushPendingToOnHoldMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getOnHoldAt() - $payout->getPendingAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_PENDING_TO_ON_HOLD_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
     }
