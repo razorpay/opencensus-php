@@ -206,7 +206,7 @@ class DashboardProxy extends TestCase
 
         $this->assertSame('PATCH', $req->getMethod());
         $this->assertSame('/services/test_service/rate-limit-rules/123', $req->getUri()->getPath());
-        $this->assertSame(json_encode(['enabled' => "1",]), $req->getBody()->getContents());
+        $this->assertSame(json_encode(['enabled' => true,]), $req->getBody()->getContents());
 
         $response->assertOk();
         $response->assertExactJson($responseArray);
@@ -362,14 +362,14 @@ class DashboardProxy extends TestCase
 
         $mockResponse = new Response(200, [], json_encode([
             'data' => [self::RATE_LIMITS_REQUEST_CONTENT + $additionalData],
-            'next' => '/rate-limits?offset=aqwe',
+            'next' => '/rate-limits?offset=aqwe+',
         ]));
 
         $httpClient = app('throttler_http_client');
         $httpClient->addResponse($mockResponse);
 
         $response = $this->sendRequest([
-            'url'     => '/edge/rate_limiter/limits?offset=123',
+            'url'     => '/edge/rate_limiter/limits?offset=123+',
             'method'  => 'GET',
         ]);
 
@@ -379,12 +379,12 @@ class DashboardProxy extends TestCase
 
         $this->assertSame('GET', $req->getMethod());
         $this->assertSame('/rate-limits', $req->getUri()->getPath());
-        $this->assertSame('offset=123', $req->getUri()->getQuery());
+        $this->assertSame('offset=123+', $req->getUri()->getQuery());
 
         $response->assertOk();
         $response->assertExactJson([
             'data'   => [self::RATE_LIMITS_REQUEST_CONTENT + $additionalData],
-            'offset' => 'aqwe',
+            'offset' => 'aqwe+',
         ]);
 
     }
