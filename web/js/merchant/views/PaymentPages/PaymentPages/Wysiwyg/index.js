@@ -59,6 +59,7 @@ const ERROR = {
   (state) => ({
     user: state.session.user,
     mode: state.session.mode,
+    org: state.session.org,
     config: state.config.config,
     ...state.wysiwyg,
   }),
@@ -741,7 +742,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     const merchantData = {
       name: this.props.user.billing_label || this.props.user.name,
-      brand_color: this.props.config.brand_color,
+      brand_color: this.props.config.brand_color || this.props.org?.merchant_styles?.checkout_theme_color,
       image: this.props.user.logo_url,
     };
 
