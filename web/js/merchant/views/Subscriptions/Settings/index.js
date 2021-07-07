@@ -24,6 +24,7 @@ const PAYMENT_METHODS = {
   (state) => ({
     settings: state.subscriptions.settings,
     user: state.session.user,
+    org: state.session.org,
   }),
   { fetchSettings, saveSettings, showNotification },
 )
@@ -69,7 +70,7 @@ export default class SubscriptionsSettings extends React.Component {
   };
 
   render() {
-    const { settings, user } = this.props;
+    const { settings, user, org } = this.props;
 
     if (settings.loading) {
       return (
@@ -99,7 +100,13 @@ export default class SubscriptionsSettings extends React.Component {
             <>
               <div class="panel-heading">
                 <span class="title">Payment Methods</span>{' '}
-                <DocsLink url="https://www.razorpay.com/docs/Payment-Subscription-Payment-method-Emandate-new/razorpay/subscriptions/dashboard/settings/#steps" />
+                <DocsLink
+                  url={
+                    org.custom_code === 'axis'
+                      ? 'https://razorpay.com/subscriptions/dashboard/settings/'
+                      : 'https://www.razorpay.com/docs/Payment-Subscription-Payment-method-Emandate-new/razorpay/subscriptions/dashboard/settings/#steps'
+                  }
+                />
               </div>
               <div class="panel-body">
                 <div class="row">
@@ -186,7 +193,7 @@ export default class SubscriptionsSettings extends React.Component {
   }
 }
 
-const ToggleCard = ({ isNew, title, checked, info=null, description, onToggleChange }) => {
+const ToggleCard = ({ isNew, title, checked, info = null, description, onToggleChange }) => {
   return (
     <div class="panel panel-default ToggleCard">
       <div class="panel-heading">
@@ -203,14 +210,14 @@ const ToggleCard = ({ isNew, title, checked, info=null, description, onToggleCha
 
       <div class="panel-body">
         <div class="description">{description}</div>
-        { info !== null &&
+        {info !== null && (
           <div class="m-t">
             <Banner>
-              <i class="i i-info-outline m-r"/>
+              <i class="i i-info-outline m-r" />
               <div>{info}</div>
             </Banner>
           </div>
-        }
+        )}
       </div>
     </div>
   );

@@ -20,6 +20,7 @@ import setGaTrack from 'merchant/containers/BatchNew/ga';
 import { titleCase } from 'common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { getCustomURL } from '../../../../components/DocsLink';
 
 const gaEvents = setGaTrack('Dashboard - Instant Refunds - BU');
 
@@ -152,7 +153,7 @@ export default class BatchList extends Component {
       size: 'large',
       component: (
         <BatchUpload
-          docUrl="https://razorpay.com/docs/refunds/batch-refunds/"
+          docUrl={getCustomURL("https://razorpay.com/docs/payments/refunds/batch/")}
           sampleUrl={this.props.sampleUrl}
           closeUrl="/refunds/batchuploads"
           ctaText="Create Batch"

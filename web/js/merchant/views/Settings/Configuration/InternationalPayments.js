@@ -4,7 +4,7 @@ import InternationalCards from './InternationalCards';
 import PaypalOnboardingButton from './PaypalOnboarding';
 import { DocLink } from 'merchant/components/DocsLink';
 
-const InternationalPayments = ({ mode, user, config }) => {
+const InternationalPayments = ({ mode, user, config, org }) => {
   const internationalSection = useRef(null);
   useEffect(() => {
     if (internationalSection.current && location.hash === '#request-international') {
@@ -18,7 +18,11 @@ const InternationalPayments = ({ mode, user, config }) => {
         <a
           target="_blank"
           class="know-more-link"
-          href="https://razorpay.com/payment-gateway/#go-international"
+          href={
+            org.custom_code === 'axis'
+              ? 'https://axisbank-docs.razorpay.com/payments/payments/international-payments/'
+              : 'https://razorpay.com/payment-gateway/#go-international'
+          }
         >
           Know more
           <i class="i i-external-link" />

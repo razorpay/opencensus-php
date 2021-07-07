@@ -19,6 +19,7 @@ import {
 } from 'common/ui/item/pair';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCustomURL } from '../../../components/DocsLink';
 
 const type = {
   title: 'Type',
@@ -51,7 +52,7 @@ export default class Dispute extends ListContainer {
           <ShowWhen
             additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
           >
-            <a class="btn btn-link" href="https://razorpay.com/docs/disputes/" target="_blank">
+            <a class="btn btn-link" href={getCustomURL("https://razorpay.com/docs/payments/disputes/")} target="_blank">
               Guide to Dispute
             </a>
           </ShowWhen>

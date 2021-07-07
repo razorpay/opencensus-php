@@ -144,6 +144,8 @@ ${it.brandBg ? `.${org} .brand-logo{background:${it.brandBg};}` : ''}
   border-color: ${it.borderColor || it.transparent};
 }
 
+${
+  /*
 .${org} .sidebar .nav > a {
   color: ${it.sideBarColor || it.textLight};
 }
@@ -157,21 +159,23 @@ ${it.brandBg ? `.${org} .brand-logo{background:${it.brandBg};}` : ''}
 .${org} .sidebar .nav > a.active {
   background-color: ${it.sidebarLinkActiveBg || it.transparentDark};
   border-color: ${it.sidebarLinkActive || it.transparent};
+} */ ''
 }
-
 
 .${org} .sidebar .nav .NavLinkGroup--active .Collapsible--title {
-  background-color: transparent
+  background-color: transparent;
 }
 
-.${org} .sidebar .nav .NavLinkGroup--title, .sidebar .nav .NavLink {
-  color: ${it.textLight} !important
+.${org} .sidebar .nav .NavLinkGroup--title, .sidebar .nav .NavLink,
+.${org} .sidebar .nav .NavLinkGroup .Collapsible--title > i {
+  color: ${it.sideBarIcon} !important
 }
 
-.${org} .sidebar .nav .NavLinkGroup--title:hover, .sidebar .nav .NavLink:hover, .sidebar .nav .NavLinkGroup--title:focus, .sidebar .nav .NavLink:focus,
-.${org} .sidebar .nav .NavLinkGroup--title.active, .sidebar .nav .NavLink.active,
-.${org} .sidebar .nav .NavLinkGroup .Collapsible--title:hover{
-  background-color: ${it.transparent} !important;
+.${org} .sidebar .nav .NavLink:hover,
+.${org} .sidebar .nav .NavLink.active,
+.${org} .sidebar .nav .NavLinkGroup .Collapsible--title:hover {
+  background-color: ${it.transparent};
+  border-color: ${it.transparent};
 }
 
 ${
@@ -245,9 +249,9 @@ color:${it.sideBarIconActive} !important;
   background-color: ${it.primary};
 }
 
-.${org} .btn-link,
+${/* .${org} .btn-link, */ ''}
 .${org} a.breadcrumb__backNav--link,
-${/* .${org} a:not(.btn-primary):not(.NavLink):not(.Button):not(.btn) */ ''},
+${/* .${org} a:not(.btn-primary):not(.NavLink):not(.Button):not(.btn), */ ''}
 .${org} .Button--Link,
 .${org} .OnBoarding--Features .Header .Header-external-links,
 .${org} .link,

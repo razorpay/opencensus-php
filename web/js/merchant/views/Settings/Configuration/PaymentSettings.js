@@ -534,9 +534,11 @@ export default class PaymentSettings extends Component {
 
           <span class="toggler-btn">
             <DocLink
-              href={getCustomURL(
-                'https://razorpay.com/docs/payment-gateway/payments/capture-settings/',
-              )}
+              href={
+                custom_code === 'axis'
+                  ? 'https://razorpay.com/payments/payments/capture-settings/'
+                  : 'https://razorpay.com/docs/payment-gateway/payments/capture-settings/'
+              }
               target="_blank"
               rel="noreferrer"
               onClick={this.onKnowMoreClick}

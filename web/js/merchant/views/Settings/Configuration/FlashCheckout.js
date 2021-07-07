@@ -6,7 +6,6 @@ import { updateFeatures } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import SwitchField from 'common/ui/Forms/SwitchField';
-import { getCustomURL } from 'merchant/components/DocsLink';
 @connect(
   (state) => {
     return {
@@ -157,7 +156,7 @@ export default class FlashCheckout extends Component {
                     target="_blank"
                     href={
                       custom_code === 'axis'
-                        ? 'https://axisbank-docs.razorpay.com/payment-gateway/dashboard-guide/settings/configuration/#enable-flash-checkout'
+                        ? 'https://axisbank-docs.razorpay.com/payments/dashboard/settings/configuration/#enable-flash-checkout'
                         : 'https://razorpay.com/flashcheckout/'
                     }
                     onClick={() =>

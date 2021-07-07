@@ -13,6 +13,7 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
 import LoaderDots from 'common/ui/LoaderDots';
+import { getCustomURL } from 'merchant/components/DocsLink';
 
 const languageOptions = [
   { name: 'English', code: 'en' },
@@ -355,19 +356,19 @@ export default class CheckoutTheme extends Component {
               <ShowWhen
                 additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
               >
-                <a target="_blank" href="https://razorpay.com/payment-gateway/">
+                <a target="_blank" href={getCustomURL("https://razorpay.com/payment-gateway/")}>
                   Checkout page
                 </a>
                 ,{' '}
-                <a target="_blank" href="https://razorpay.com/payment-links/">
+                <a target="_blank" href={getCustomURL("https://razorpay.com/payment-links/")}>
                   Payment Links
                 </a>
                 ,{' '}
-                <a target="_blank" href="https://razorpay.com/invoices/">
+                <a target="_blank" href={getCustomURL("https://razorpay.com/invoices/")}>
                   Invoices
                 </a>{' '}
                 &{' '}
-                <a target="_blank" href="https://razorpay.com/payment-pages">
+                <a target="_blank" href={getCustomURL("https://razorpay.com/payment-pages")}>
                   Payment pages
                 </a>
                 .

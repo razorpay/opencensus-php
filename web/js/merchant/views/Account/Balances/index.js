@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Alert from 'common/ui/Forms/Alert';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
 import {
@@ -24,7 +23,7 @@ import {
   OPEN_DOCUMENTATION,
 } from './ga';
 import { CreateTicketEmitter } from '../../TicketSupport/utils';
-
+import { getCustomURL } from 'merchant/components/DocsLink';
 @connect(
   (state) => ({
     ...state.session,
@@ -233,7 +232,7 @@ export default class AddFundsContainer extends Component {
           <span>Note: Standard TDR charges applies on adding funds</span>
           <span class="text-primary">
             <a
-              href="https://razorpay.com/docs/payment-gateway/dashboard-guide/balances/"
+              href={getCustomURL("https://razorpay.com/docs/payment-gateway/dashboard-guide/balances/")}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => {
