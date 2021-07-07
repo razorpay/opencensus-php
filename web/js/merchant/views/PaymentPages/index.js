@@ -16,7 +16,6 @@ import QuickGuide from './QuickGuide';
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
 import PaymentPageAnalyticsBanner from 'merchant/components/Announcements/PaymentPageAnalytics';
-import MTUSaverCampaignBanner from 'merchant/components/Announcements/MTUSaverCampaign';
 
 @connect(
   (state) => {
@@ -45,9 +44,6 @@ export default class PaymentPagesContainer extends React.Component {
           <PaymentPageAnalyticsBanner
             bannerKey={`payment-pages-analytics-${user.current}`}
             />
-          
-          <MTUSaverCampaignBanner productName='payment-pages' />
-
         </div>
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
