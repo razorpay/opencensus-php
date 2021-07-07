@@ -86,7 +86,6 @@ import { fetchInstantSettlements } from 'merchant/reducers/collection';
         business_type: user.business_type,
         activation_status: user.activated,
         is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
-        is_esign_aadhar_enabled: user.isEsignAadharEnabled,
         is_instant_activation_enabled: user.isInstantActivationEnabled,
         is_aadhar_ekyc_mandatory: user.isAadharEkycMandatory,
       };
@@ -758,10 +757,8 @@ export default class App extends Component {
     const { user } = this.props;
     return {
       canGenerateTnCPage: user.canGenerateTnCPage,
-      canSkipPOADocument: user.canSkipPOADocument,
       isBDAndAovEnabled: user.isBDAndAovEnabled,
       canSkipPoiValidation: user.canSkipPoiValidation,
-      isEsignAadharEnabled: user.isEsignAadharEnabled,
       isInstantActivationEnabled: user.isInstantActivationEnabled,
       isAadharEkycMandatory: user.isAadharEkycMandatory,
     };

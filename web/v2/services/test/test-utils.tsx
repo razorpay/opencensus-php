@@ -11,9 +11,8 @@ const AllTheProviders: React.FC<{ children: ReactElement<any, any> | null }> = (
     isInstantActivationEnabled: true,
     canSkipPoiValidation: false,
     canGenerateTnCPage: false,
-    canSkipPOADocument: true,
     isBDAndAovEnabled: true,
-    isEsignAadharEnabled: true,
+    isAadharEkycMandatory: true,
   };
   return (
     <Wrapper

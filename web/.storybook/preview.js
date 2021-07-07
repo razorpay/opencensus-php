@@ -15,9 +15,8 @@ const mockRazorXExp = {
   isInstantActivationEnabled: true,
   canSkipPoiValidation: false,
   canGenerateTnCPage: false,
-  canSkipPOADocument: true,
   isBDAndAovEnabled: true,
-  isEsignAadharEnabled: true,
+  isAadharEkycMandatory: true,
 };
 
 addParameters({

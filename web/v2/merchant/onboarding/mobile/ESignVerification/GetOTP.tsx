@@ -68,7 +68,7 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
   });
   const { user, experiments } = useApp();
   const shouldHideAadharUploadCheckbox =
-    experiments.isAadharEkycMandatory && isUnregisteredBusiness(data.business_type);
+    experiments.isAadharEkycMandatory && isUnregisteredBusiness(data?.business_type);
   const [fetchOTP] = useMutation(getOTPAPi, {
     onSuccess: (response) => {
       if (response.is_success) {

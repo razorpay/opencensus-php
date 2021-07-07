@@ -861,10 +861,6 @@ export default class User {
     return isRoleAllowed && isRazorXExperimentEnabled && isMerchantOnOldPL;
   }
 
-  get isEsignAadharEnabled() {
-    return this.getExpStatus('esign_aadhar_functionality');
-  }
-
   get isOnboardingV2Enabled() {
     return this.getExpStatus('onboarding_v2');
   }
@@ -1065,10 +1061,6 @@ export default class User {
 
   get canSkipPoiValidation() {
     return this.getExpStatus('bvs_personal_pan_validation');
-  }
-
-  get canSkipPOADocument() {
-    return this.getExpStatus('SKIP_POA_DOCUMENT_FUNCTIONALITY');
   }
 
   get canGenerateTnCPage() {

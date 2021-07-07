@@ -365,7 +365,6 @@ function canShowEAadharComponent(activation) {
 
   if (
     E_SIGN_AADHAR.includes(Number(currentBusinessType)) &&
-    activation.props.user.isEsignAadharEnabled &&
     activation.props.user.isOrgRZP
   ) {
     return true;
@@ -403,7 +402,6 @@ function showAadharDoc(activation) {
     activation.state.dirty.business_type || activation.props.data.business_type;
   if (
     E_SIGN_AADHAR.includes(Number(currentBusinessType)) &&
-    activation.props.user.canSkipPOADocument &&
     activation.state.isAadharDocVisible &&
     !!activation.props.user.isOrgRZP &&
     !activation.props.user.needsClarification
