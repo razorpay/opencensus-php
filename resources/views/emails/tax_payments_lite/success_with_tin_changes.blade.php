@@ -146,7 +146,7 @@
                                                                 <div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #08CA73;"></div>
                                                             </div>
                                                         </div>
-                                                        <div class="para-dark center" style="color: #9195A6; font-size: 14px; line-height: 1.5; text-align: center;">Tax Payment for <b>{{ $tds_category['code'] }} : {{ $tds_category['description'] }} </b> for {{ $deduction_date }} is successfully processed. Challan for this payment is attached to this mail.</div>
+                                                        <div class="para-dark center" style="color: #9195A6; font-size: 14px; line-height: 1.5; text-align: center;">Tax Payment for <b>{{ $tds_category['code'] }} : {{ $tds_category['description'] }} </b> for {{ $deduction_date }} is successfully processed. CRN / CIN for this payment is attached to this mail.</div>
                                                         <br><br>
                                                         <div class="para-dark center" style="color: #9195A6; font-size: 14px; line-height: 1.5; text-align: center;">Sign Up with RazorpayX to manage and fill all your tax Payments in under 30 seconds using our tax payment app!</div>
                                                         <div class="center-align" style="text-align: center;"><a class="link btn primary font-bold" href="https://x.razorpay.com/auth/signup" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 145px; display: inline-block; font-family: Trebuchet MS; margin: 24px auto 0 auto; text-align: center; color: #FFF; background-color: #3281FF; border-color: #3281FF;">SIGN UP NOW</a></div>
@@ -239,6 +239,14 @@
                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                             <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">State</div>
                                                             <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $state }}</div>
+                                                        </div>
+                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
+                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">CRN</div>
+                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $crn }}</div>
+                                                        </div>
+                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
+                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">CIN</div>
+                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $cin }}</div>
                                                         </div>
                                                         @if(isset($phone_number))
                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">

@@ -140,13 +140,13 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
                                                     <div class="card secondary title informative" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-bottom: 16px; padding-left: 24px; padding-right: 24px;">
-                                                        <div class="center-align font-size-18 font-color-primary margin-bottom-8 line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px; margin-bottom: 8px;">Tax Payment for {{ $deduction_date }} is successful!</div>
+                                                        <div class="center-align font-size-18 font-color-primary margin-bottom-8 line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px; margin-bottom: 8px;">Tax Payment for {{ $deduction_date }} is being processed!</div>
                                                         <div class="center-align" style="text-align: center;">
                                                             <div class="puck para" style="margin: 0; padding: 12px 0;">
                                                                 <div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #08CA73;"></div>
                                                             </div>
                                                         </div>
-                                                        <div class="para-dark center" style="color: #9195A6; font-size: 14px; line-height: 1.5; text-align: center;">Tax Payment for <b>{{ $tds_category['code'] }} : {{ $tds_category['description'] }} </b> for {{ $deduction_date }} is successfully processed. Challan for this payment is attached to this mail.</div>
+                                                        <div class="para-dark center" style="color: #9195A6; font-size: 14px; line-height: 1.5; text-align: center;">Tax Payment for <b>{{ $tds_category['code'] }} : {{ $tds_category['description'] }} </b> for {{ $deduction_date }} is processing. We will share the crn/cin for this payment in sometime, in the meantime here are your details for Tax Payment ID {{ $direct_tax_payment_id }}.</div>
                                                         <br><br>
                                                         <div class="para-dark center" style="color: #9195A6; font-size: 14px; line-height: 1.5; text-align: center;">Sign Up with RazorpayX to manage and fill all your tax Payments in under 30 seconds using our tax payment app!</div>
                                                         <div class="center-align" style="text-align: center;"><a class="link btn primary font-bold" href="https://x.razorpay.com/auth/signup" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 145px; display: inline-block; font-family: Trebuchet MS; margin: 24px auto 0 auto; text-align: center; color: #FFF; background-color: #3281FF; border-color: #3281FF;">SIGN UP NOW</a></div>
@@ -229,8 +229,8 @@
                                                         </div>
                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                             <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Address</div>
-                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;"> @if(isset($address_line_1)) <span>{{ $address_line_1 }}</span> @endif 
-                                                              @if(isset($address_line_2)) <span>{{ $address_line_2 }}</span> @endif</div>
+                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">@if(isset($address_line_1)) <span>{{ $address_line_1 }}</span> @endif 
+                                                            @if(isset($address_line_2)) <span>{{ $address_line_2 }}</span> @endif</div>
                                                         </div>
                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                             <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Pincode</div>
@@ -246,6 +246,11 @@
                                                             <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $phone_number }}</div>
                                                         </div>
                                                         @endif
+                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
+                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Email ID</div>
+                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $email }}</div>
+                                                        </div>
+
                                                         <div class="divider" style="padding: 12px 0;">
                                                             <div class="divider-line" style="height: 1px; background: #3a405f;"></div>
                                                         </div>
@@ -269,7 +274,7 @@
                                                         @if(isset($penalty))
                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                             <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Penalty</div>
-                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">₹{{ $penalty }} • <span  style="color: #bdbfC9; font-size: 12px; ">{{ $penalty_code }}</span></div>
+                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">₹{{ $penalty }} • <span  style="color: #bdbfC9; font-size: 12px;">{{ $penalty_code }}</span></div>
                                                         </div>
                                                         @endif
                                                         @if(isset($education_cess))
@@ -293,7 +298,7 @@
                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                             <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Total Amount</div>
                                                             <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">₹{{ $total_tax_amount }}</div>
-                                                        </div>      
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>

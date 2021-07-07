@@ -220,10 +220,11 @@
                                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Tax Type</div>
                                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $tax_payment['minor_head'] }}</div>
                                                                         </div>
+                                                                        @isset($tax_payment['challan_number'])
                                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">ITR/ Challan No.</div>
                                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $tax_payment['challan_number'] }}</div>
-                                                                        </div>
+                                                                        </div>@endisset
                                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Due Date</div>
                                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $tax_payment['due_date'] }}</div>

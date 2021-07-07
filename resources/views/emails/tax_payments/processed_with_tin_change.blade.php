@@ -85,7 +85,7 @@
                                                                         </div>
                                                                         <div class="content title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; background-color: #242b4d; padding-top: 24px;">
                                                                            <div class="title-content" style="text-align: center; width: fit-content; margin: 0 auto;">
-                                                                              <div class="center-align" style="text-align: center;"><img class="image small" src="https://cdn.razorpay.com/static/assets/razorpayx/emails/priority_red.png" style="margin: 8px; background: transparent; height: 44px;" height="44"></div>
+                                                                              <div class="center-align" style="text-align: center;"><img class="image small" src="https://cdn.razorpay.com/static/assets/email/done_green.png" style="margin: 8px; background: transparent; height: 44px;" height="44"></div>
                                                                            </div>
                                                                         </div>
                                                                      </div>
@@ -140,16 +140,17 @@
                                                                <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
                                                                   <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
                                                                      <div class="card secondary title informative" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-bottom: 16px; padding-left: 24px; padding-right: 24px;">
-                                                                        <div class="center-align font-size-18 font-color-primary margin-bottom-8 line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px; margin-bottom: 8px;">Late fees added to tax payment category of {{ $tax_payment['tds_category']['code'] }}, {{$tax_payment['tds_category']['description'] }} for {{ $tax_payment['late_fee_for_month']}}</div>
+                                                                        <div class="center-align font-size-18 font-color-primary margin-bottom-8 line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px; margin-bottom: 8px;">Tax payment for {{ $tax_payment['deduction_date']}} has been processed!</div>
                                                                         <div class="center-align" style="text-align: center;">
                                                                            <div class="puck para" style="margin: 0; padding: 12px 0;">
                                                                               <div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #08CA73;"></div>
                                                                            </div>
                                                                         </div>
-                                                                        <div class="para-dark center" style="color: #9195A6; font-size: 14px; line-height: 1.5; text-align: center;"> Tax payment for {{$tax_payment['deduction_date']}} is now subject to late fees. This maybe due to 
-                                                                           delay in payment initiation or non-initiation of payment due to unavailability of funds.<br> Details are attached below.<br><br>If this payment was made outside of RazorpayX, you can mark this as paid from the dashboard.
+                                                                        <div class="para-dark center" style="color: #9195A6; font-size: 14px; line-height: 1.5; text-align: center;"> Tax payments for {{ $tax_payment['tds_category']['code'] }}: {{$tax_payment['tds_category']['description'] }} 
+                                                                           for {{$tax_payment['deduction_date']}} were successfully processed.
+                                                                           The Complete Reference No (CRN) and the Challan Idenitification No. (CIN) are available in the details below.
                                                                         </div>
-                                                                        <div class="center-align" style="text-align: center;"><a class="link btn primary font-bold" href="{{ $tax_payment['url'] }}" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 145px; display: inline-block; font-family: Trebuchet MS; margin: 24px auto 0 auto; text-align: center; color: #FFF; background-color: #3281FF; border-color: #3281FF;">VIEW ON DASHBOARD</a></div>
+                                                                        <div class="center-align" style="text-align: center;"><a class="link btn primary font-bold" href="{{ $tax_payment['url'] }}" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 145px; display: inline-block; font-family: Trebuchet MS; margin: 24px auto 0 auto; text-align: center; color: #FFF; background-color: #3281FF; border-color: #3281FF;">VIEW ON NSDL WEBSITE</a></div>
                                                                      </div>
                                                                   </div>
                                                                </td>
@@ -202,7 +203,7 @@
                                                                <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
                                                                   <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
                                                                      <div class="card secondary informative top-align-label" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-left: 24px; padding-right: 24px; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;">
-                                                                        <div class="title" style="font-size: 16px; line-height: 1.5; color: #bdbfC9; margin-bottom: 24px;">Payments Summary:</div>
+                                                                        <div class="title" style="font-size: 16px; line-height: 1.5; color: #bdbfC9; margin-bottom: 24px;">Filing Details</div>
                                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">TDS Category</div>
                                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $tax_payment['tds_category']['code'] }} {{$tax_payment['tds_category']['description'] }}</div>
@@ -217,52 +218,89 @@
                                                                         </div>
                                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Tax Type</div>
-                                                                           <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $tax_payment['minor_head'] }}</div>
+                                                                           <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">Payable by Taxpayer, 200</div>
                                                                         </div>
-                                                                        @isset($tax_payment['challan_number'])
                                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
-                                                                           <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">ITR/ Challan No.</div>
-                                                                           <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $tax_payment['challan_number'] }}</div>
-                                                                        </div>@endisset
-                                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
-                                                                           <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Late fees added to</div>
-                                                                           <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $tax_payment['late_fee_for_month'] }}</div>
+                                                                           <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">CRN</div>
+                                                                           <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $tax_payment['crn'] }}</div>
                                                                         </div>
-                                                                        @isset($tax_payment['late_fee_reason'])<div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
-                                                                           <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Reason for late fees</div>
-                                                                           <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $tax_payment['late_fee_reason'] }}</div>
-                                                                        </div>@endisset
+                                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
+                                                                           <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">CIN</div>
+                                                                           <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $tax_payment['cin'] }}</div>
+                                                                        </div>
                                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Due Date</div>
                                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $tax_payment['due_date'] }}</div>
                                                                         </div>
-                                                                        @isset($payout)
-                                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
-                                                                           <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Initiated on</div>
-                                                                           <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $payout['initiated_at'] }}</div>
+                                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 5%;">
+                                                                           <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Debit Account</div>
+                                                                           <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $tax_payment['debit_account'] }}</div>
                                                                         </div>
-                                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
-                                                                           <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Processed on</div>
-                                                                           <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $payout['processed_at'] }}</div>
-                                                                        </div>
-                                                                        @endisset
-                                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
+                                                                     </div>
+                                                                  </div>
+                                                               </td>
+                                                            </tr>
+                                                         </table>
+                                                      </td>
+                                                   </tr>
+                                                </tbody>
+                                             </table>
+                                          </div>
+                                          <!--[if mso | IE]>
+                                       </td>
+                                    </tr>
+                                 </table>
+                                 <![endif]-->
+                              </td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  </div>
+                  <!--[if mso | IE]>
+               </td>
+            </tr>
+         </table>
+
+         <table
+            align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
+            >
+            <tr>
+               <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
+                  <![endif]-->
+                  <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+                     <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                        <tbody>
+                           <tr>
+                              <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+                                 <!--[if mso | IE]>
+                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                       <td
+                                          class="" style="vertical-align:top;width:600px;"
+                                          >
+                                          <![endif]-->
+                                          <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                                             <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                                                <tbody>
+                                                   <tr>
+                                                      <td style="vertical-align:top;padding:0px;">
+                                                         <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+                                                            <tr>
+                                                               <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+                                                                  <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+                                                                     <div class="card secondary informative top-align-label" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-left: 24px; padding-right: 24px; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;">
+                                                                        <div class="title" style="font-size: 16px; line-height: 1.5; color: #bdbfC9; margin-bottom: 24px;">Payment Details</div>
+                                                                        @isset($tax_payment['late_fees'])<div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Tax Amount</div>
                                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">₹ {{ $tax_payment['tds_amount'] }}</div>
                                                                         </div>
                                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Late Fees</div>
                                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">₹ {{ $tax_payment['late_fees'] }}</div>
-                                                                        </div>
+                                                                        </div>@endisset
                                                                         <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;">
                                                                            <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Total Amount</div>
                                                                            <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">₹ {{ $tax_payment['total_amount'] }}</div>
-                                                                           <div class="label sub-label half-width" style="display: inline-block; width: 45%; vertical-align: top; font-size: 12px; color: #9fa2b1;">{{$tax_payment['penalty_percentage']}}% of total amount</div>
-                                                                           <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;"></div>
-                                                                        </div>
-                                                                        <div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 5%;">
-                                                                           <div class="label half-width" style="color: #bdbfC9; display: inline-block; width: 45%; vertical-align: top;">Debit Account</div>
-                                                                           <div class="value left-align" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: left;">{{ $tax_payment['debit_account'] }}</div>
                                                                         </div>
                                                                      </div>
                                                                   </div>
