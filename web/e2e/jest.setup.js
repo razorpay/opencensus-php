@@ -1,11 +1,12 @@
-const { jest } = require('@jest/globals');
+// why jestGlobals? => to get rid of Identifier 'jest' has already been declared
+const { jest: jestGlobals } = require('@jest/globals');
 const constants = require('./const');
 const utils = require('./utils');
 
-jest.setTimeout(constants.DEFAULT_TIMEOUT);
+jestGlobals.setTimeout(constants.DEFAULT_TIMEOUT);
 
 if (constants.RETRY_COUNT) {
-  jest.retryTimes(constants.RETRY_COUNT);
+  jestGlobals.retryTimes(constants.RETRY_COUNT);
 }
 
 const LOGIN_SELECTORS = constants.SELECTORS.LOGIN;
