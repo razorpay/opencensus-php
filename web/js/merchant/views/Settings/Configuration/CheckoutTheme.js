@@ -5,7 +5,13 @@ import AsyncButton from 'react-async-button';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import FileUploadButton from 'common/ui/FileUpload/Button';
-import { uploadLogo, fetchLocale, updateLocale, saveLocale } from 'merchant/reducers/config';
+import {
+  uploadLogo,
+  fetchLocale,
+  updateLocale,
+  saveLocale,
+  removeLogo,
+} from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getIcon } from './components/paymentMethodIcons';
@@ -13,6 +19,8 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
 import LoaderDots from 'common/ui/LoaderDots';
+import Button from 'common/new-ui/Button';
+import { merchantFetch } from 'merchant/utils/ajax';
 import { getCustomURL } from 'merchant/components/DocsLink';
 
 const languageOptions = [
@@ -26,6 +34,7 @@ const languageOptions = [
 
 @connect((state) => ({ ...state.config, user: state.session.user }), {
   uploadLogo,
+  removeLogo,
   showNotification,
   fetchLocale,
   updateLocale,
@@ -112,7 +121,24 @@ export default class CheckoutTheme extends Component {
         });
       });
   };
-
+  removeLogo = () => {
+    let config = this.props.config;
+    let payLoad = { ...config, logo_url: null };
+    return this.props
+      .removeLogo(payLoad)
+      .then(() => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Logo Removed Successfully',
+        });
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
+  };
   onSave = (e) => {
     this.analytics();
     this.props.handleSubmit(this.props.onSave)(e, 'theme');
@@ -189,7 +215,6 @@ export default class CheckoutTheme extends Component {
     const { textClr, colorVariations } = this.state;
     const { user } = this.props;
     const isEnabled = user.isFeatureEnabled('covid_19_relief');
-
     return (
       <div class="panel panel-default panel-theme">
         <div class="panel-section--theme">
@@ -302,12 +327,20 @@ export default class CheckoutTheme extends Component {
 
                   <div class="media-body">
                     <FileUploadButton
-                      text="Choose File"
+                      text={this.props?.config?.logo_url ? 'Change Logo' : 'Choose File'}
                       labelClass="btn-primary"
                       accept="image/jpeg,image/jpg,image/png"
                       maxSize="1048576"
                       onChange={this.uploadLogo}
                     />
+                    {this.props?.config?.logo_url && (
+                      <span className="remove-logo">
+                        <Button.Transparent type="button" onClick={this.removeLogo}>
+                          Remove
+                        </Button.Transparent>
+                      </span>
+                    )}
+
                     <div class="help-block" style={{ marginBottom: 0 }}>
                       <i style={{ fontSize: 12 }}>Max file size: 1MB</i>
                     </div>

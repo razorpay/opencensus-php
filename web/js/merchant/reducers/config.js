@@ -25,7 +25,7 @@ const FETCH_SUPPORT_TICKETS = 'FETCH_SUPPORT_TICKETS';
 const FETCH_ACTIVE_TICKETS = 'FETCH_ACTIVE_TICKETS';
 const FETCH_CALL_SLOTS = 'FETCH_CALL_SLOTS';
 const CALLBACK_SERVICE = 'rzp.care.callback.v1.CallbackService';
-
+const REMOVE_LOGO = 'REMOVE_LOGO';
 export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
 
 const DEFAULT_CALL_BACK_SCHEDULE_RESPONSE = {
@@ -314,7 +314,6 @@ export const getRefundPricing = (gateway) => {
 export const uploadLogo = (file, fieldName) => {
   let formData = new FormData();
   formData.append(fieldName, file);
-
   return {
     type: MERCHANT_LOGO_UPLOADED,
     payload: merchantFetch({
@@ -325,7 +324,17 @@ export const uploadLogo = (file, fieldName) => {
     }),
   };
 };
-
+export const removeLogo = (payload) => {
+  
+  return {
+    type: REMOVE_LOGO,
+    payload: merchantFetch({
+      url: 'account/config/logo',
+      method: 'delete',
+      data:payload
+    })
+  };
+};
 /* normalize config in proper format*/
 const normalizeConfig = (config) => {
   let logoUrl = config.logo_url;
@@ -499,7 +508,8 @@ export default function (state = initialState, action) {
     case `${CONFIG_SAVE}::SUCCESS`:
     case `${MERCHANT_LOGO_UPLOADED}::SUCCESS`:
       return set(state, 'config', normalizeConfig(action.payload.data));
-
+    case `${REMOVE_LOGO}::SUCCESS`:
+      return set(state, 'config', normalizeConfig(action.payload.data));
     case `${LOCALE_FETCH}::SUCCESS`:
       const locale = action.payload.data.items[0];
       return set(state, 'locale', locale || defaultLocale);
