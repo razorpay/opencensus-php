@@ -25,6 +25,7 @@ import { getCustomURL } from 'merchant/components/DocsLink';
 
 const languageOptions = [
   { name: 'English', code: 'en' },
+  { name: 'Bengali', code: 'ben' },
   { name: 'Hindi', code: 'hi' },
   { name: 'Marathi', code: 'mar' },
   { name: 'Gujarati', code: 'guj' },
