@@ -182,7 +182,10 @@ export default class OnboardingCardInstant extends Component {
       };
     const showJuggernautCaFlow = isActivated && hasNeoCouponCode(campaigns);
     const hasAppliedCa = this.props.user.user.settings['clicked_ca_apply_request_done'];
-    const showNitroRXCAFlow = isActivated && user.isProjectNitroEnabled && hasAppliedCa;
+    const showNitroRXCAFlow =
+      isActivated &&
+      (user.isProjectNitroEnabled || user.isProjectNitroCorporateCard) &&
+      hasAppliedCa;
 
     return (
       <div className="onboarding-card-instant">

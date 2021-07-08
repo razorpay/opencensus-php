@@ -184,18 +184,18 @@ class Constants
                 ],
             ],
             'filters'     => [
-                'experiments'         => ['nitro_hyderabad_v2', 'nitro_hyderabad_v3', 'nitro_midmarket_mumbai_v1'],
+                'splitz_experiments'         => self::nitroSplitzExperimentsList,
             ],
         ],
         [
-            'title'       => 'Get 1.65% pricing with RazorpayX',
-            'description' => 'Open a current account with RazorpayX & reduce your platform fee to 1.65%.',
+            'title'       => 'Avail Reduced Transaction Fee!',
+            'description' => 'Reduce transaction fee to 1.65% & get a corporate card by switching to Razorpay Current Accounts!',
             'start_ts'    => 1621987200,
-            'end_ts'      => 1629936000,
+            'end_ts'      => 1629936000, 
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
             'id'          => 'projectNitro',
             'campaign'    => 'nitro',
-            "target_product_feature" => 'XCA',
+            "target_product_feature" => 'XCA+CCC',
             "target_metric" => 'MTU',
             'buttons'     => [
                 [
@@ -206,7 +206,7 @@ class Constants
                 ],
             ],
             'filters'     => [
-                'splitz_experiments'         => self::nitroSplitzExperimentsList,
+                'splitz_experiments'         => self::nitroCorporateCardsSplitzExperimentsList,
             ],
         ],
         [
@@ -1100,130 +1100,109 @@ class Constants
         'projectNitro'=>[
             [
                 'data'  => [
-                    'version'     =>  'nitro_hyderabad_v2',
-                    "version_description" => 'Nitro for hyderabad',
-                ],
-                'experiments'         => ['nitro_hyderabad_v2'],
-            ],
-            [
-                'data'  => [
-                    'version'     =>  'nitro_hyderabad_v3',
-                    "version_description" => 'Nitro for hyderabad',
-                ],
-                'experiments'         => ['nitro_hyderabad_v3'],
-            ],
-            [
-                'data'  => [
                     'version'     =>  'nitro_hyderabad_v4',
                     "version_description" => 'Nitro for hyderabad',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_HYDERABAD_SPLITZ'],
             ],
             [
                 'data'  => [
                     'version'     =>  'nitro_kolkata_v1',
                     "version_description" => 'Nitro for kolkata',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_KOLKATA_V1_SPLITZ'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_KOLKATA_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_KOLKATA_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_TEST_ACCOUNT_SPLITZ'],
             ],
             [
                 'data'  => [
                     'version'     =>  'nitro_surat_v1',
                     "version_description" => 'Nitro for surat',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_SURAT_V1_SPLITZ'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_SURAT_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_SURAT_V1_SPLITZ'],
             ],
             [
                 'data'  => [
                     'version'     =>  'nitro_jaipur_v1',
                     "version_description" => 'Nitro for jaipur',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_JAIPUR_V1_SPLITZ'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_JAIPUR_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_JAIPUR_V1_SPLITZ'],
             ],
             [
                 'data'  => [
                     'version'     =>  'nitro_chennai_v1',
                     "version_description" => 'Nitro for chennai',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_CHENNAI_V1_SPLITZ'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_CHENNAI_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_CHENNAI_V1_SPLITZ'],
             ],
             [
                 'data'  => [
                     'version'     =>  'project-nitro-gandhinagar-v1',
                     "version_description" => 'Nitro for gandhinagar',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_GANDHINAGAR_V1_SPLITZ'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_GANDHINAGAR_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_GANDHINAGAR_V1_SPLITZ'],
             ],
             [
                 'data'  => [
                     'version'     =>  'project-nitro-vadodara-v1',
                     "version_description" => 'Nitro for vadodara',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_VADODARA_V1_SPLITZ'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_VADODARA_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_VADODARA_V1_SPLITZ'],
             ],
             [
                 'data'  => [
                     'version'     =>  'project-nitro-ahmedabad-v1',
                     "version_description" => 'Nitro for ahmedabad',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_AHMEDABAD_V1_SPLITZ'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_AHMEDABAD_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_AHMEDABAD_V1_SPLITZ'],
             ],
             [
                 'data'  => [
                     'version'     =>  'project-nitro-bangalore-v1',
                     "version_description" => 'Nitro for bangalore',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_BANGALORE_V1_SPLITZ'],
-            ],
-            [
-                'data'  => [
-                    'version'     =>  'nitro_midmarket_mumbai_v1',
-                    "version_description" => 'Nitro for mumbai mid market',
-                ],
-                'experiments'         => ['nitro_midmarket_mumbai_v1'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_BANGALORE_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_BANGALORE_V1_SPLITZ'],
             ],
             [
                 'data'  => [
                     'version'     =>  'project-nitro-delhi-v1',
                     "version_description" => 'Nitro for delhi',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_DELHI_V1_SPLITZ'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_DELHI_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_DELHI_V1_SPLITZ'],
             ],
             [
                 'data'  => [
                     'version'     =>  'project-nitro-mumbai-v1',
                     "version_description" => 'Nitro for mumbai',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_MUMBAI_V1_SPLITZ'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_MUMBAI_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_MUMBAI_V1_SPLITZ'],
             ],
             [
                 'data'  => [
                     'version'     =>  'project-nitro-pune-v1',
                     "version_description" => 'Nitro for pune',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_PUNE_V1_SPLITZ'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_PUNE_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_PUNE_V1_SPLITZ'],
             ],
             [
                 'data'  => [
                     'version'     =>  'project-nitro-gurgaon-v1',
                     "version_description" => 'Nitro for gurgaon',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_GURGAON_V1_SPLITZ'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_GURGAON_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_GURGAON_V1_SPLITZ'],
             ],
             [
                 'data'  => [
                     'version'     =>  'project-nitro-nagpur-v1',
                     "version_description" => 'Nitro for nagpur',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_NAGPUR_V1_SPLITZ'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_NAGPUR_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_NAGPUR_V1_SPLITZ'],
             ],
             [
                 'data'  => [
                     'version'     =>  'project-nitro-kolhapur-v1',
                     "version_description" => 'Nitro for kolhapur',
                 ],
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_KOLHAPUR_V1_SPLITZ'],
-            ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_KOLHAPUR_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_KOLHAPUR_V1_SPLITZ'],
+            ]
             
         ],
         'whats-new-april21-m2mrewards-gtm'=> [
@@ -1339,6 +1318,24 @@ class Constants
         'ANNOUNCEMENT_NITRO_GURGAON_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_NAGPUR_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_KOLHAPUR_V1_SPLITZ',
+    ];
+    const nitroCorporateCardsSplitzExperimentsList = [
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_HYDERABAD_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_KOLKATA_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_CHENNAI_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_SURAT_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_JAIPUR_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_GANDHINAGAR_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_VADODARA_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_AHMEDABAD_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_BANGALORE_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_DELHI_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_MUMBAI_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_PUNE_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_GURGAON_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_NAGPUR_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_KOLHAPUR_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_TEST_ACCOUNT_SPLITZ',
     ];
 
     public static function getNotifications(): array

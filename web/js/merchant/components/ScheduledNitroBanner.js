@@ -40,10 +40,18 @@ export default class ScheduledNitroBanner extends Component {
     );
   };
 
+  getTitle = () => {
+    if (this.props.user.isProjectNitroCorporateCard) {
+      return 'Reduce transaction fee to 1.65% & get a corporate card by switching to Razorpay Current Accounts!';
+    }
+
+    return 'Reduce platform fee to 1.65% with a RazorpayX Current Account';
+  };
+
   render() {
     return (
       <div class="schedule-enable-container">
-        Reduce platform fee to 1.65% with a RazorpayX Current Account
+        {this.getTitle()}
         <a
           class="Button--secondary Button scheduled-btn-act btn-border"
           target="_blank"

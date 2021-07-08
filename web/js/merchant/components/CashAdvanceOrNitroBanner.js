@@ -158,9 +158,13 @@ const CashAdvanceOrNitroBanner = ({
         </Button.Secondary>
       </AnnouncementBanner>
     );
-  } else if (user.isProjectNitroEnabled) {
+  } else if (user.isProjectNitroEnabled || user.isProjectNitroCorporateCard) {
     return (
-      <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
+      <ShowWhen
+        additionalCondition={(user) =>
+          user.isProjectNitroEnabled || user.isProjectNitroCorporateCard
+        }
+      >
         <AnnouncementBanner title="Exclusive Offer For You" canBeClosed={false}>
           <ScheduledNitroBanner
             fromWhere="settlements"

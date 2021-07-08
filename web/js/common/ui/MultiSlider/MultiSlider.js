@@ -31,7 +31,7 @@ export default class MultiSliderComponent extends Component {
         position={position}
         classString={classList('MultiSlider', classString)}
       >
-        <div className='MultiSlider__Content'>
+        <div className="MultiSlider__Content">
           <button type="button" className="close close-primary" onClick={emptySliderStack}>
             <i class="i i-close" />
           </button>

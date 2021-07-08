@@ -389,6 +389,10 @@ export default class User {
     );
   }
 
+  get isProjectNitroCorporateCard() {
+    return getSplitzExperimentVariant('nitro_corporate_cards')?.variables?.result === 'on';
+  }
+
   get isWhatsNewLazyEnabled() {
     return getSplitzExperimentVariant('whats_new_lazy_experiment')?.variables?.result === 'on';
   }
@@ -1066,7 +1070,6 @@ export default class User {
   get isAadharEkycMandatory() {
     return this.getExpStatus('mandatory_aadhar_ekyc');
   }
-
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

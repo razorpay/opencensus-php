@@ -48,7 +48,11 @@ import {
   isDedupe,
 } from './ActivationUtils';
 
-import { ADDITIONAL_DOCS_LABEL_VALUE_MAP, BUSINESS_PROOF_TYPE_DOCS, BUSINESS_PROOF_CERTIFICATE_TYPES } from './Constants';
+import {
+  ADDITIONAL_DOCS_LABEL_VALUE_MAP,
+  BUSINESS_PROOF_TYPE_DOCS,
+  BUSINESS_PROOF_CERTIFICATE_TYPES,
+} from './Constants';
 
 const PROPRIETORSHIP = 1;
 const PARTNERSHIP = 3;
@@ -902,26 +906,33 @@ const uploadFields = [
     getName: (activation) => activation.state.business_proof_type,
     _cmp: Input.File,
     description: (activation) => {
-      const { props: { trackEvent, data: { merchant } } } = activation;
+      const {
+        props: {
+          trackEvent,
+          data: { merchant },
+        },
+      } = activation;
       const businessProofType = activation.state.business_proof_type;
       if (businessProofType === BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE) {
         const getMsmeDownloadLinksView = (header, cerificates) => {
           return (
             <div>
-              <div className='links-header'>{header}</div>
-              <div className='links-container'>
+              <div className="links-header">{header}</div>
+              <div className="links-container">
                 {cerificates.map(({ url, label, analyticsActionName }) => (
                   <>
                     <div className="dot" />
                     <a
                       href={url}
-                      target='_blank'
-                      className='link'
+                      target="_blank"
+                      className="link"
                       onClick={() => {
                         trackEvent(
-                          window.rzpQ.onbr().initiated(`kyc.${analyticsActionName.split(' ').join('_')}`, {
-                            merchantId: merchant.id,
-                          }),
+                          window.rzpQ
+                            .onbr()
+                            .initiated(`kyc.${analyticsActionName.split(' ').join('_')}`, {
+                              merchantId: merchant.id,
+                            }),
                         );
                         analyticsTrack({
                           objectName: 'kyc document upload',
@@ -942,23 +953,19 @@ const uploadFields = [
           );
         };
         return (
-          <div className='msme-links'>
-            {getMsmeDownloadLinksView(
-              'What is Udyog Aadhar/Udyam Cerificate? View Sample :',
-              [
-                {
-                  url:
-                    'http://www.msmeudyogaadhaar.org/msme-ssi-udyog-certificate-sample/',
-                  label: 'Udyog Aadhar Certificate',
-                  analyticsActionName: 'udyog aadhar certificate clicked',
-                },
-                {
-                  url: 'https://www.udyogaadhar.co.in/sample-certificate',
-                  label: 'Udyam Certificate',
-                  analyticsActionName: 'udyam certificate clicked',
-                },
-              ],
-            )}
+          <div className="msme-links">
+            {getMsmeDownloadLinksView('What is Udyog Aadhar/Udyam Cerificate? View Sample :', [
+              {
+                url: 'http://www.msmeudyogaadhaar.org/msme-ssi-udyog-certificate-sample/',
+                label: 'Udyog Aadhar Certificate',
+                analyticsActionName: 'udyog aadhar certificate clicked',
+              },
+              {
+                url: 'https://www.udyogaadhar.co.in/sample-certificate',
+                label: 'Udyam Certificate',
+                analyticsActionName: 'udyam certificate clicked',
+              },
+            ])}
             {getMsmeDownloadLinksView('Don’t have it right now? Download here :', [
               {
                 url: 'https://udyamregistration.gov.in/UA/PrintAcknowledgement_Pub.aspx',

@@ -110,7 +110,11 @@ export default class TransactionsContainer extends Component {
     return (
       <React.Fragment>
         <div className="banner-container">
-          <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
+          <ShowWhen
+            additionalCondition={(user) =>
+              user.isProjectNitroEnabled || user.isProjectNitroCorporateCard
+            }
+          >
             <AnnouncementBanner title="Exclusive Offer For You" canBeClosed={false}>
               <ScheduledNitroBanner
                 fromWhere="transactions"
@@ -234,10 +238,10 @@ export default class TransactionsContainer extends Component {
               Disputes
             </NavLink>
             {no_settlement &&
-              (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') &&
-              mode === 'live' &&
-              this.props.payments &&
-              this.props.payments.items.length > 0 ? (
+            (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') &&
+            mode === 'live' &&
+            this.props.payments &&
+            this.props.payments.items.length > 0 ? (
               <div class="text-right settlement-caption">
                 {no_settlement.caption}
                 {no_settlement.reason && (
@@ -255,8 +259,8 @@ export default class TransactionsContainer extends Component {
               </div>
             ) : null}
             {!no_settlement &&
-              !nextSettlement &&
-              (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') ? (
+            !nextSettlement &&
+            (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') ? (
               <div class="text-right" style={{ width: '100%' }}>
                 <strong>
                   <Amount

@@ -76,7 +76,11 @@ export default (props) => {
                   </button>
                 )}
               />
-              <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
+              <ShowWhen
+                additionalCondition={(user) =>
+                  user.isProjectNitroEnabled || user.isProjectNitroCorporateCard
+                }
+              >
                 <AnnouncementBar
                   fromWhere="settlements"
                   url="https://lp.razorpay.com/razorpayxca-sttlmnts2"

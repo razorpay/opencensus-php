@@ -13,176 +13,290 @@ import { caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 import isEmpty from '@universe/utils/isEmpty';
 
-const BENEFITS = [
-  'Use the dashboard or APIs to make rule based payouts',
-  'Add your entire team with specific access controls',
-  'Get a consolidated view of your finances 24X7',
-  'Track & automate every aspect of your finances',
-  'Process thousands of payouts simultaneously',
-  'Payouts via NEFT/IMPS/RTGS',
-];
+const BENEFITS = {
+  other: [
+    'Use the dashboard or APIs to make rule based payouts',
+    'Add your entire team with specific access controls',
+    'Get a consolidated view of your finances 24X7',
+    'Track & automate every aspect of your finances',
+    'Process thousands of payouts simultaneously',
+    'Payouts via NEFT/IMPS/RTGS',
+  ],
+  corporateCards: [
+    'Minimum Limit of Rs. 25,000 and upto 10 lacs limit* on your Corporate Card',
+    'Add your entire team with specific access controls',
+    'Get a consolidated view of your finances 24X7',
+    'Use the dashboard or APIs to make rule based payouts',
+    'Process thousands of payouts simultaneously',
+    'Payouts via NEFT/IMPS/RTGS',
+  ],
+};
 
 export const nitroCampaignId = () => {
   const map = {
-    nitro_hyderabad_v2: {
-      version: 'nitro_hyderabad_v2',
-      version_description: 'Nitro for hyderabad',
-    },
-    nitro_hyderabad_v3: {
-      version: 'nitro_hyderabad_v3',
-      version_description: 'Nitro for hyderabad',
-    },
-    nitro_midmarket_mumbai_v1: {
-      version: 'nitro_midmarket_mumbai_v1',
-      version_description: 'Nitro for mumbai mid market',
-    },
+    // Beta Nitro
     GwPth7nhHNdMND: {
       version: 'nitro_hyderabad_v4',
       version_description: 'Nitro for hyderabad',
-    },
-    GxtSf8y77iWw9e: {
-      version: 'nitro_hyderabad_v4',
-      version_description: 'Nitro for hyderabad',
+      target_product_feature: 'XCA',
     },
     H7361l13HhrBgO: {
       version: 'nitro_kolkata_v1',
       version_description: 'Nitro for kolkata',
+      target_product_feature: 'XCA',
     },
     H75RfvQFecKHsT: {
       version: 'nitro_chennai_v1',
       version_description: 'Nitro for chennai',
+      target_product_feature: 'XCA',
     },
     H75Qu5SInWp3SQ: {
       version: 'nitro_jaipur_v1',
       version_description: 'Nitro for jaipur',
+      target_product_feature: 'XCA',
     },
     H75Q0JHjnUd5xs: {
       version: 'nitro_surat_v1',
       version_description: 'Nitro for surat',
+      target_product_feature: 'XCA',
     },
-
-    H6qGPCBPduY7Gl: {
-      version: 'nitro_kolkata_v1',
-      version_description: 'Nitro for kolkata',
-    },
-    H6qJ2X77dqHG9I: {
-      version: 'nitro_chennai_v1',
-      version_description: 'Nitro for chennai',
-    },
-    H6qIJWTzrqt54X: {
-      version: 'nitro_jaipur_v1',
-      version_description: 'Nitro for jaipur',
-    },
-    H6qHJJnYOtwfoc: {
-      version: 'nitro_surat_v1',
-      version_description: 'Nitro for surat',
-    },
-
-    // Beta Nitro v3
     HF0Ml2IU6gH9rt: {
       version: 'project-nitro-gandhinagar-v1',
       version_description: 'Nitro for gandhinagar',
+      target_product_feature: 'XCA',
     },
     HF0NZThSDtgNGB: {
       version: 'project-nitro-vadodara-v1',
       version_description: 'Nitro for vadodara',
+      target_product_feature: 'XCA',
     },
     HF0OIJAqllZPRu: {
       version: 'project-nitro-ahmedabad-v1',
       version_description: 'Nitro for ahmedabad',
+      target_product_feature: 'XCA',
     },
     HF0Ox4LNEgYHbV: {
       version: 'project-nitro-bangalore-v1',
       version_description: 'Nitro for bangalore',
+      target_product_feature: 'XCA',
     },
 
-    // Prod Nitro v3
+    // Prod Nitro
+    GxtSf8y77iWw9e: {
+      version: 'nitro_hyderabad_v4',
+      version_description: 'Nitro for hyderabad',
+      target_product_feature: 'XCA',
+    },
+    H6qGPCBPduY7Gl: {
+      version: 'nitro_kolkata_v1',
+      version_description: 'Nitro for kolkata',
+      target_product_feature: 'XCA',
+    },
+    H6qJ2X77dqHG9I: {
+      version: 'nitro_chennai_v1',
+      version_description: 'Nitro for chennai',
+      target_product_feature: 'XCA',
+    },
+    H6qIJWTzrqt54X: {
+      version: 'nitro_jaipur_v1',
+      version_description: 'Nitro for jaipur',
+      target_product_feature: 'XCA',
+    },
     HExafLb492K7LU: {
       version: 'project-nitro-gandhinagar-v1',
       version_description: 'Nitro for gandhinagar',
+      target_product_feature: 'XCA',
+    },
+    H6qHJJnYOtwfoc: {
+      version: 'nitro_surat_v1',
+      version_description: 'Nitro for surat',
+      target_product_feature: 'XCA',
     },
     HExehMbAqYqlWF: {
       version: 'project-nitro-vadodara-v1',
       version_description: 'Nitro for vadodara',
+      target_product_feature: 'XCA',
     },
     HExiHP6GBUEVcu: {
       version: 'project-nitro-ahmedabad-v1',
       version_description: 'Nitro for ahmedabad',
+      target_product_feature: 'XCA',
     },
     HExnzHcFfimA6u: {
       version: 'project-nitro-bangalore-v1',
       version_description: 'Nitro for bangalore',
+      target_product_feature: 'XCA',
     },
     HPc6GXsuboNXiS: {
       version: 'project-nitro-delhi-v1',
       version_description: 'Nitro for delhi',
+      target_product_feature: 'XCA',
     },
     HPc7OB0N3kh5BR: {
       version: 'project-nitro-mumbai-v1',
       version_description: 'Nitro for mumbai',
+      target_product_feature: 'XCA',
     },
     HPc8DrLeWZc76W: {
       version: 'project-nitro-pune-v1',
       version_description: 'Nitro for pune',
+      target_product_feature: 'XCA',
     },
     HPc9cMyPKKeAAX: {
       version: 'project-nitro-gurgaon-v1',
       version_description: 'Nitro for gurgaon',
+      target_product_feature: 'XCA',
     },
     HPcAKrn53GP41d: {
       version: 'project-nitro-nagpur-v1',
       version_description: 'Nitro for nagpur',
+      target_product_feature: 'XCA',
     },
     HPcBJQw2E0BzpZ: {
       version: 'project-nitro-kolhapur-v1',
       version_description: 'Nitro for kolhapur',
+      target_product_feature: 'XCA',
+    },
+
+    // Beta nitro corporate cards
+    HVcXIX8S1cokqB: {
+      version: 'nitro_hyderabad_v4',
+      version_description: 'Nitro for hyderabad',
+      target_product_feature: 'XCA+CCC',
+    },
+
+    // Prod nitro corporate cards
+    HVdaH5ipHEzj6x: {
+      version: 'nitro_hyderabad_v4',
+      version_description: 'Nitro for hyderabad',
+      target_product_feature: 'XCA+CCC',
+    },
+    HW1KsF0APg55vP: {
+      version: 'nitro_kolkata_v1',
+      version_description: 'Nitro for kolkata',
+      target_product_feature: 'XCA+CCC',
+    },
+    // Test account for prod
+    HWP22TCyDAfcRG: {
+      version: 'test_nitro_kolkata_v1',
+      version_description: 'Testing Nitro for kolkata',
+      target_product_feature: 'XCA+CCC',
+    },
+    HW1HhztGJNiaYA: {
+      version: 'nitro_chennai_v1',
+      version_description: 'Nitro for chennai',
+      target_product_feature: 'XCA+CCC',
+    },
+    HW1IZP67ejfclG: {
+      version: 'nitro_jaipur_v1',
+      version_description: 'Nitro for jaipur',
+      target_product_feature: 'XCA+CCC',
+    },
+    HW14FoCLRKdABS: {
+      version: 'project-nitro-gandhinagar-v1',
+      version_description: 'Nitro for gandhinagar',
+      target_product_feature: 'XCA+CCC',
+    },
+    HW1382Z5BUYrDV: {
+      version: 'nitro_surat_v1',
+      version_description: 'Nitro for surat',
+      target_product_feature: 'XCA+CCC',
+    },
+    HW15QtkHIilowU: {
+      version: 'project-nitro-vadodara-v1',
+      version_description: 'Nitro for vadodara',
+      target_product_feature: 'XCA+CCC',
+    },
+    HW16dcasfI78sW: {
+      version: 'project-nitro-ahmedabad-v1',
+      version_description: 'Nitro for ahmedabad',
+      target_product_feature: 'XCA+CCC',
+    },
+    HW17UktB0YY7X7: {
+      version: 'project-nitro-bangalore-v1',
+      version_description: 'Nitro for bangalore',
+      target_product_feature: 'XCA+CCC',
+    },
+    HW18PSOqi56mMN: {
+      version: 'project-nitro-delhi-v1',
+      version_description: 'Nitro for delhi',
+      target_product_feature: 'XCA+CCC',
+    },
+    HW19AUgSRz2frR: {
+      version: 'project-nitro-mumbai-v1',
+      version_description: 'Nitro for mumbai',
+      target_product_feature: 'XCA+CCC',
+    },
+    HW19wimb0Bhu8N: {
+      version: 'project-nitro-pune-v1',
+      version_description: 'Nitro for pune',
+      target_product_feature: 'XCA+CCC',
+    },
+    HW1Al5SNojQepQ: {
+      version: 'project-nitro-gurgaon-v1',
+      version_description: 'Nitro for gurgaon',
+      target_product_feature: 'XCA+CCC',
+    },
+    HW1Bb4TphEGzuU: {
+      version: 'project-nitro-nagpur-v1',
+      version_description: 'Nitro for nagpur',
+      target_product_feature: 'XCA+CCC',
+    },
+    HW1CwITu2o0hdO: {
+      version: 'project-nitro-kolhapur-v1',
+      version_description: 'Nitro for kolhapur',
+      target_product_feature: 'XCA+CCC',
     },
   };
 
-  const getExpStatus = (name) => {
+  const getExpStatus = (name, experimentNameInAbExperimentsMap) => {
     const splitzExperiment = window.rzp_user?.splitz_experiments[name];
-    if (abExperimentsMap.project_nitro.includes(name) && !isEmpty(splitzExperiment)) {
+    if (
+      abExperimentsMap[experimentNameInAbExperimentsMap].includes(name) &&
+      !isEmpty(splitzExperiment)
+    ) {
       return splitzExperiment?.variables?.result === 'on';
     }
-    return ((window.rzp_user.experiments || {})[name] || {}).result === 'on';
+    return false;
   };
 
-  const featureId = Object.keys(map).find((feature) => getExpStatus(feature));
+  const featureId = Object.keys(map).find(
+    (feature) =>
+      getExpStatus(feature, 'project_nitro') || getExpStatus(feature, 'nitro_corporate_cards'),
+  );
 
   return {
     ...map[featureId],
     campaign: 'nitro',
-    target_product_feature: 'XCA',
     target_metric: 'MTU',
   };
 };
 
 const SubmissionSuccessfull = ({ handleClose }) => {
   return (
-    <div className='rxca-submit-finish-modal'>
-      <div className='header'>
-        <div className='title'>
+    <div className="rxca-submit-finish-modal">
+      <div className="header">
+        <div className="title">
           Congratulations! We're processing your request for a Current Account with RazorpayX.
         </div>
         <button type="button" class="close" onClick={handleClose}>
           <i class="i i-close" />
         </button>
       </div>
-      <div className='description'>
+      <div className="description">
         <p>
-          Our banking experts will be reaching out to you shortly. In the meantime, we highly recommend you keep the required documents for creating a current account handy.
+          Our banking experts will be reaching out to you shortly. In the meantime, we highly
+          recommend you keep the required documents for creating a current account handy.
         </p>
-        <a href='https://razorpay.com/docs/razorpayx/current-account/' target='_blank'>
-          <Button.Primary
-            class="btn btn-primary"
-            type="button"
-          >
+        <a href="https://razorpay.com/docs/razorpayx/current-account/" target="_blank">
+          <Button.Primary class="btn btn-primary" type="button">
             View Documents Required
           </Button.Primary>
         </a>
       </div>
-      <p className='footer'>
-        Once your new current account gets created you're pricing for Razorpay will automatically be reduced to 1.65% as promised!
+      <p className="footer">
+        Once your new current account gets created you're pricing for Razorpay will automatically be
+        reduced to 1.65% as promised!
       </p>
     </div>
   );
@@ -250,7 +364,9 @@ class DetailView extends React.Component {
           },
           {
             name: 'campaignid',
-            value: nitroCampaignId().version,
+            value: user.isProjectNitroCorporateCard
+              ? 'Nitro_Capital'
+              : nitroCampaignId(user).version,
           },
         ],
         context: {
@@ -269,9 +385,11 @@ class DetailView extends React.Component {
       event_type: caReqEventType,
       event_properties: {
         interested_in_current_account: 1,
-        product_name: 'Current_Account',
+        product_name: user.isProjectNitroCorporateCard ? 'CARDS' : 'Current_Account',
         source: 'Project Nitro',
-        Campaign_ID: nitroCampaignId().version,
+        Campaign_ID: user.isProjectNitroCorporateCard
+          ? 'Nitro_Capital'
+          : nitroCampaignId(user).version,
         contact_email: user?.user?.email,
         contact_mobile: user?.user?.contact_mobile,
       },
@@ -316,21 +434,35 @@ class DetailView extends React.Component {
   };
 
   render() {
+    const { isProjectNitroCorporateCard } = this.props.user;
+    const content = isProjectNitroCorporateCard ? BENEFITS.corporateCards : BENEFITS.other;
+
     return (
       <div className="razorpayx-announcement-details">
         <div className="section">
           <div className="left-section">
-            <img className="rx-logo" src="/dist/css/assets/razorpay-x-logo-white.svg" alt="rx-logo" />
+            <img
+              className="rx-logo"
+              src="/dist/css/assets/razorpay-x-logo-white.svg"
+              alt="rx-logo"
+            />
             <h3 className="heading">
-              Get <span>1.65% pricing</span> when you switch to a RazorpayX Current Account
+              {isProjectNitroCorporateCard ? (
+                <h3 className="heading">
+                  Get <span>1.65% pricing</span> & a Corporate Card by switching to a RazorpayX
+                  Current Account
+                </h3>
+              ) : (
+                <h3 className="heading">
+                  Get <span>1.65% pricing</span> when you switch to a RazorpayX Current Account
+                </h3>
+              )}
             </h3>
             <ul className="list">
-              {BENEFITS.map((data) => (
+              {content.map((data) => (
                 <li key={data}>
                   <img src="/dist/css/assets/rxca-bullet.svg" />
-                  <span>
-                    {data}
-                  </span>
+                  <span>{data}</span>
                 </li>
               ))}
             </ul>
@@ -341,7 +473,14 @@ class DetailView extends React.Component {
             </div>
           </div>
           <div className="right-section">
-            <img src="/dist/css/assets/rxca-dashboard-bg.svg" alt="razorpayx-current-account"></img>
+            <img
+              src={
+                isProjectNitroCorporateCard
+                  ? '/dist/css/assets/rxcacc-dashboard-bg.png'
+                  : '/dist/css/assets/rxca-dashboard-bg.svg'
+              }
+              alt="razorpayx-current-account"
+            />
           </div>
         </div>
       </div>
@@ -381,8 +520,8 @@ const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking }) => {
       </div>
     );
   }
-  
-  return <SubmissionSuccessfull handleClose={handleClose}/>
+
+  return <SubmissionSuccessfull handleClose={handleClose} />;
 };
 
 export default compose(

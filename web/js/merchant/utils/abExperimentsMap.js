@@ -11,7 +11,7 @@
 export default {
   project_nitro: [
     // beta experiment ids
-    'GwPth7nhHNdMND',
+    'HVcUcOQ5hOIHxH', // Hyderabad Nitro
     'H7361l13HhrBgO', // Kolkata Nitro
     'H75RfvQFecKHsT', // Chennai Nitro
     'H75Qu5SInWp3SQ', // Jaipur Nitro
@@ -62,5 +62,27 @@ export default {
     'HPhSWihQaCQ2wJ',
     // prod experiment ids
     'HQqeKAnGRYPO4S',
+  ],
+  nitro_corporate_cards: [
+    // beta experiment ids
+    'HVcXIX8S1cokqB', // Hyderabad
+
+    // prod experiment ids
+    'HVdaH5ipHEzj6x', // Hyderabad
+    'HW1KsF0APg55vP', // Kolkata
+    'HW1HhztGJNiaYA', // Chennai
+    'HW1382Z5BUYrDV', // Surat
+    'HW1IZP67ejfclG', // Jaipur
+    'HW14FoCLRKdABS', // Gandhinagar
+    'HW15QtkHIilowU', // Vadodara
+    'HW16dcasfI78sW', // Ahemdabad
+    'HW17UktB0YY7X7', // Bangalore
+    'HW18PSOqi56mMN', // Delhi
+    'HW19AUgSRz2frR', // Mumbai
+    'HW19wimb0Bhu8N', // Pune
+    'HW1Al5SNojQepQ', // Gurgaon
+    'HW1Bb4TphEGzuU', // Nagpur
+    'HW1CwITu2o0hdO', // Kolhapur
+    'HWP22TCyDAfcRG', // Test account prod
   ],
 };

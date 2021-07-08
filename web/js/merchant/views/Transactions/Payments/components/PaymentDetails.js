@@ -243,7 +243,11 @@ export default (props) => {
                     </span>
                   </Definition>
                 </EntityDetailRow>
-                <ShowWhen additionalCondition={() => user.isProjectNitroEnabled}>
+                <ShowWhen
+                  additionalCondition={() =>
+                    user.isProjectNitroEnabled || user.isProjectNitroCorporateCard
+                  }
+                >
                   <AnnouncementBar
                     fromWhere="transactions"
                     url="https://lp.razorpay.com/razorpayxca-pymnts2"
