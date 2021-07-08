@@ -27,8 +27,8 @@ function ShowStatusMsg({ closeModal }) {
         <div class="modal-body rzp-gst-content">
           <div class="gst-help-block">
             <span>
-              We are verifying your GSTIN details with GST portal database. Your request will be
-              processed by 28/Jan/2021.
+              We are verifying your GST details with GST portal database. We will reach out to you
+              if we need any more clarification
             </span>
           </div>
           <button class="btn btn-primary btn-block" onClick={closeModal}>
