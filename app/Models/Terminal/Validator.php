@@ -1890,7 +1890,7 @@ class Validator extends Base\Validator
 
     protected static $updateTerminalsBulkAttributesRules = [
         Entity::STATUS               => 'sometimes',
-        Entity::ENABLED              => 'required_with:status',
+        Entity::ENABLED              => 'present',
     ];
 
     protected static $netbankingFsbTerminalRules = [

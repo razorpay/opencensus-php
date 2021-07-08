@@ -504,7 +504,9 @@ class Service extends Base\Service
         // so adding this custom validation to allow only status update, this can be updated to allow more attributes to be updated
         $validator->validateInput('updateTerminalsBulkAttributes', $input['attributes']);
 
-        $enabled = $input['attributes']['enabled'];
+        $enabledStatus = $input['attributes']['enabled'];
+
+        $enabled = $this->setEnabledToValidValues($enabledStatus);
 
         unset($input['attributes']['enabled']);
 
@@ -1176,6 +1178,15 @@ class Service extends Base\Service
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setTimeLimit(300);
+    }
+
+    protected function setEnabledToValidValues($enabledStatus)
+    {
+        if($enabledStatus == 1 || $enabledStatus == true) // "1", 1, true, "true"
+        {
+            return true;
+        }
+        return false;
     }
 }
 

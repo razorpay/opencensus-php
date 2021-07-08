@@ -2936,7 +2936,7 @@ return [
             'content'  => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'The enabled field is required when status is present.',
+                    'description'   => 'The enabled field must be present.',
                 ],
             ],
             'status_code' => 400
