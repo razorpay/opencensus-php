@@ -479,7 +479,6 @@ class FreshdeskTicketClient
         );
 
         $statusCode = null;
-        
         if ($contentType === 'multipart/form-data')
         {
             list($responseBody, $statusCode) = $this->makeCurlRequest($request);

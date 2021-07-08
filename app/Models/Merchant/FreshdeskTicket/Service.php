@@ -256,7 +256,7 @@ class Service extends Base\Service
 
         $ticketId = $input['id'];
 
-        $customerDescription = $input['description'];
+        $customerDescription = trim($input['description']);
 
         $email = $input['email'];
 
@@ -592,7 +592,8 @@ class Service extends Base\Service
                 }
             }
 
-            if (isset($response['errors']) !== false) {
+            if (isset($response['errors']) !== false)
+            {
                 $this->trace->error(
                     TraceCode:: FAILED_NOTE_RESPONSE_BODY,[
                         'error' => $response['errors']
@@ -600,7 +601,8 @@ class Service extends Base\Service
                 );
             }
 
-            if (isset($response['body_text']) === false){
+            if (isset($response['body_text']) === false)
+            {
                 $this->trace->error(
                     TraceCode::  FAILED_NOTE_RESPONSE_BODY,[
                         'error'     => "Missing body_text in response"
@@ -614,8 +616,10 @@ class Service extends Base\Service
 
         if ((isset($response['private']) === false) or ($response['private'] !== false))
         {
-            if(isset($response['private']) !== false){
-                if($response['private'] !== false) {
+            if(isset($response['private']) !== false)
+            {
+                if($response['private'] !== false)
+                {
                     $this->trace->error(
                         TraceCode::FAILED_NOTE_RESPONSE_BODY, [
                         'error' => "response[private] !== false",
@@ -624,7 +628,8 @@ class Service extends Base\Service
                 }
             }
 
-            if (isset($response['errors']) !== false) {
+            if (isset($response['errors']) !== false)
+            {
                 $this->trace->error(
                     TraceCode:: FAILED_NOTE_RESPONSE_BODY,[
                         'error' => $response['errors']
@@ -632,7 +637,8 @@ class Service extends Base\Service
                 );
             }
 
-            if(isset($response['private']) === false) {
+            if(isset($response['private']) === false)
+            {
                 $this->trace->error(
                     TraceCode::  FAILED_NOTE_RESPONSE_BODY, [
                         'error' => "Missing private in response"
@@ -826,7 +832,7 @@ class Service extends Base\Service
                 $subProduct = trim($input[Constants::CUSTOM_FIELDS][Constants::CF_PRODUCT]);
 
                 if ($subProduct === Constants::CAPITAL_QUERY) {
-                    
+
                     $fdInstance = Constants::RZPCAP;
 
                     return $fdInstance;

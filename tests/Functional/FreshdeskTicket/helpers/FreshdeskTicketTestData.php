@@ -379,7 +379,6 @@ return [
             'method'  => 'POST',
             'content' => [
                 'id'          => 3328,
-                'description' => 'some description',
                 'group_id'    => '123',
                 'email'       => 'thatemail@razorpay.com',
                 'custom_fields' => [

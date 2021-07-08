@@ -233,11 +233,25 @@ class FreshdeskTicketTest extends TestCase
 
     public function testRaiseGrievanceAgainstTicket()
     {
+        $testcases = [
+            [
+                'description' => 'some description',
+            ],
+            [
+                'description' => '      some description     ',
+            ],
+            ];
+
         $this->app['config']->set('applications.freshdesk.mock', true);
 
         $this->ba->directAuth();
 
-        $this->startTest();
+        foreach ($testcases as $testcase)
+        {
+            $this->testData[__FUNCTION__]['request']['content']['description'] = $testcase['description'];
+
+            $this->startTest();
+        }
     }
 
     public function testRaiseGrievanceAgainstTicketUpdateFailure()
