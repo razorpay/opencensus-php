@@ -63,11 +63,11 @@ class Metric
         Payment\Action::FETCH_TOKEN,
         Payment\Action::VERIFY,
         Payment\Action::VERIFY_REFUND,
+        Payment\Action::VALIDATE_VPA,
         // Payment\Action::OTP_GENERATE,
         // Payment\Action::REVERSE,
         // Payment\Action::AUTHORIZE_PUSH,
         // Payment\Action::DEBIT,
-        // Payment\Action::VALIDATE_VPA,
         // Payment\Action::OTP_RESEND,
     ];
 

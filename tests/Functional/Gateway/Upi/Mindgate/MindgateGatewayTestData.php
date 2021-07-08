@@ -179,12 +179,12 @@ return [
             'url'       => '/payment/validate/vpa',
             'method'    => 'post',
             'content'   => [
-                'vpa' => 'success@hdfcbank',
+                'vpa' => 'success@okhdfcbank',
             ]
         ],
         'response'  => [
             'content' => [
-                'vpa'           => 'success@hdfcbank',
+                'vpa'           => 'success@okhdfcbank',
                 'success'       => true,
                 'customer_name' => 'User Name',
             ],

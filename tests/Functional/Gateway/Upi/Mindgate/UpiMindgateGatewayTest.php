@@ -897,6 +897,8 @@ class UpiMindgateGatewayTest extends TestCase
 
     public function testValidateVpaSuccess()
     {
+        $metricDriver = $this->mockMetricDriver(Metric::DOGSTATSD_DRIVER);
+
         config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMindgate');
 
         $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
@@ -904,10 +906,21 @@ class UpiMindgateGatewayTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
+
+        $this->assertArraySelectiveEquals([
+            [
+                Metric::DIMENSION_STATUS            => 'success',
+                Metric::DIMENSION_GATEWAY           => 'upi_mindgate',
+                Metric::DIMENSION_ACTION            => 'validate_vpa',
+                Metric::DIMENSION_UPI_PSP           => 'google_pay',
+            ],
+        ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT_V3));
     }
 
     public function testValidateVpaFailure()
     {
+        $metricDriver = $this->mockMetricDriver(Metric::DOGSTATSD_DRIVER);
+
         config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMindgate');
 
         $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
@@ -915,6 +928,15 @@ class UpiMindgateGatewayTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
+
+        $this->assertArraySelectiveEquals([
+            [
+                Metric::DIMENSION_STATUS            => 'failed',
+                Metric::DIMENSION_GATEWAY           => 'upi_mindgate',
+                Metric::DIMENSION_ACTION            => 'validate_vpa',
+                Metric::DIMENSION_UPI_PSP           => 'none',
+            ],
+        ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT_V3));
     }
 
     protected function checkPaymentStatus($id, $expectedStatus)
