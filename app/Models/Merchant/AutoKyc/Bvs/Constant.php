@@ -50,9 +50,12 @@ class Constant
     const SHOP_OWNER_NAME          = 'owner_name';
 
     // Config names
-    const PERSONAL_PAN_OCR                              = 'personal_pan_ocr';
-    const BUSINESS_PAN_OCR                              = 'business_pan_ocr';
-    const MSME_OCR                                      = 'msme_ocr';
+    const PERSONAL_PAN_OCR           = 'personal_pan_ocr';
+    const BUSINESS_PAN_OCR           = 'business_pan_ocr';
+
+    const MSME_OCR                   = 'msme_ocr';
+    const SHOP_ESTABLISHMENT_OCR     = 'shop_establishment_ocr';
+
     const CANCELLED_CHEQUE_OCR_PERSONAL_PAN             = 'cancelled_cheque_ocr_personal_pan';
     const CANCELLED_CHEQUE_OCR_BUSINESS_PAN             = 'cancelled_cheque_ocr_business_pan';
     const CANCELLED_CHEQUE_OCR_BUSINESS_OR_PROMOTER_PAN = 'cancelled_cheque_ocr_business_or_promoter_pan';

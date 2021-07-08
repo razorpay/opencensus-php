@@ -2272,6 +2272,8 @@ class Core extends Base\Core
 
         $merchantDetails->load('tnc');
 
+        $merchantDetails->load('verificationDetail');
+
         $merchant = $merchantDetails->merchant;
 
         if ($merchant->isLinkedAccount() === true)
@@ -2317,6 +2319,7 @@ class Core extends Base\Core
         $response[Entity::STAKEHOLDER]                          = $merchantDetails->stakeholder;
         $response[Entity::MERCHANT_AVG_ORDER_VALUE]             = $merchantDetails->avgOrderValue;
         $response[Entity::ACTIVATION_PROGRESS]                  = $response['verification'][Entity::ACTIVATION_PROGRESS];
+        $response[Entity::MERCHANT_VERIFICATION_DETAIL]         = $merchantDetails->verificationDetail;
         $response['dedupe']                                     = $dedupe;
         $response['isDedupe']                                   = $isDedupeBlocked;
         $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
@@ -2829,18 +2832,56 @@ class Core extends Base\Core
             switch ($entity)
             {
                 case E::MERCHANT_DETAIL:
-                    return in_array($merchantDetails->getAttribute($key), $in, true);
+                    return $this->verifyMerchantDetailCondition($merchantDetails, $key, $in);
                 case E::STAKEHOLDER:
                     return $this->verifyStakeHolderCondition($merchantDetails, $key, $in);
+                case E::MERCHANT_VERIFICATION_DETAIL:
+                    return $this->verifyBusinessVerificationCondition($merchantDetails, $key, $in);
             }
         });
+    }
+
+    protected function verifyBusinessVerificationCondition(Entity $merchantDetails, string $key, array $in)
+    {
+        $isExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
+            RazorxTreatment::SHOP_ESTABLISHMENT_DOC_VERIFICATION);
+
+        if ($isExperimentEnabled === false)
+        {
+            return false;
+        }
+
+        [$type, $identifier] = explode('|', $key);
+
+        $verificationDetail = $this->repo->merchant_verification_detail->getVerificationDetailsForArtefactTypeAndIdentifier(
+            $merchantDetails->getId(),
+            $type,
+            $identifier
+        );
+
+        if (empty($verificationDetail) === true)
+        {
+            return false;
+        }
+
+        return in_array(
+            $verificationDetail->getAttribute(Merchant\VerificationDetail\Entity::STATUS),
+            $in,
+            true
+        );
+    }
+
+    protected function verifyMerchantDetailCondition(Entity $merchantDetails, string $key, array $in)
+    {
+        return in_array($merchantDetails->getAttribute($key), $in, true);
     }
 
     protected function verifyStakeHolderCondition(Entity $merchantDetails, string $key, array $in)
     {
         $isAadhaarEsignRequired = $this->isAadhaarEsignVerificationRequired($merchantDetails);
 
-        if($isAadhaarEsignRequired and empty($merchantDetails->stakeholder) === false)
+        if (($isAadhaarEsignRequired === true) and
+            (empty($merchantDetails->stakeholder) === false))
         {
             return in_array($merchantDetails->stakeholder->getAttribute($key), $in, true);
         }

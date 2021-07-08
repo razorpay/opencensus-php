@@ -1,0 +1,58 @@
+<?php
+
+
+namespace RZP\Models\Merchant\VerificationDetail;
+
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Detail;
+
+/**
+ * Class Entity
+ *
+ * @property Merchant\Entity $merchant
+ * @property Detail\Entity $merchantDetail
+ *
+ * @package RZP\Models\Merchant\VerificationDetail
+ */
+class Entity extends Base\PublicEntity
+{
+    const ID                    = 'id';
+    const MERCHANT_ID           = 'merchant_id';
+    const ARTEFACT_TYPE         = 'artefact_type';
+    const ARTEFACT_IDENTIFIER   = 'artefact_identifier';
+    const STATUS                = 'status';
+    const CREATED_AT            = 'created_at';
+    const UPDATED_AT            = 'updated_at';
+
+    protected $entity           = 'merchant_verification_detail';
+
+    protected $generateIdOnCreate = true;
+
+    protected $fillable = [
+        self::MERCHANT_ID,
+        self::ARTEFACT_TYPE,
+        self::ARTEFACT_IDENTIFIER,
+        self::STATUS
+    ];
+
+    protected $public = [
+        self::ID,
+        self::MERCHANT_ID,
+        self::ARTEFACT_TYPE,
+        self::ARTEFACT_IDENTIFIER,
+        self::STATUS,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
+    public function merchantDetail()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Detail\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+}

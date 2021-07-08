@@ -198,6 +198,7 @@ class Type
         self::PASSPORT_FRONT,
         self::VOTER_ID_FRONT,
         self::MSME_CERTIFICATE,
+        self::SHOP_ESTABLISHMENT_CERTIFICATE,
     ];
 
     protected static $poaDocuments = [

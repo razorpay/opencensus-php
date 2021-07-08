@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Address;
@@ -19,6 +20,7 @@ use RZP\Models\Merchant\Document\OcrVerificationStatus;
  * @property Merchant\Stakeholder\Entity $stakeholder
  * @property Merchant\AvgOrderValue\Entity $avgOrderValue
  * @property Merchant\Tnc\Entity $tnc
+ * @property Merchant\VerificationDetail\Entity $verificationDetail
  *
  * @package RZP\Models\Merchant\Detail
  */
@@ -156,8 +158,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const AUTHORIZED_SIGNATORY_DOB                 = 'authorized_signatory_dob';
     const PLATFORM                                 = 'platform';
     const PENNY_TESTING_UPDATED_AT                 = 'penny_testing_updated_at';
-    const SHOP_ESTABLISHMENT_NUMBER                = "shop_establishment_number";
-    const SHOP_ESTABLISHMENT_VERIFICATION_STATUS   = "shop_establishment_verification_status";
+    const SHOP_ESTABLISHMENT_NUMBER                = 'shop_establishment_number';
+    const SHOP_ESTABLISHMENT_VERIFICATION_STATUS   = 'shop_establishment_verification_status';
 
     const BUSINESS_SUGGESTED_PIN                   = 'business_suggested_pin';
     const BUSINESS_SUGGESTED_ADDRESS               = 'business_suggested_address';
@@ -170,9 +172,10 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const ACTIVATION_FORM_MILESTONE                = 'activation_form_milestone';
 
     // relation name
-    const STAKEHOLDER               = 'stakeholder';
-    const MERCHANT_AVG_ORDER_VALUE  = 'merchant_avg_order_value';
-    const MERCHANT_TNC              = 'merchant_tnc';
+    const STAKEHOLDER                   = 'stakeholder';
+    const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
+    const MERCHANT_TNC                  = 'merchant_tnc';
+    const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_detail';
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING = 'fields_pending';
@@ -186,7 +189,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const REJECTED = 'rejected';
 
     // Details for PROMO campaign for onboarding.
-    const PROMO_COUPON_CODE = "SURGESEPT";
+    const PROMO_COUPON_CODE = 'SURGESEPT';
 
     // For mailers
     const ACTIVATION_DURATION = '4-5 working days';
@@ -525,6 +528,16 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function tnc()
     {
         return $this->hasOne('RZP\Models\Merchant\Tnc\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
+    }
+
+    /**
+     * Every detail entity will have one verification_detail entity to start with to store the bvs verification details
+     *
+     * @return HasMany
+     */
+    public function verificationDetail()
+    {
+        return $this->hasMany('RZP\Models\Merchant\VerificationDetail\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
     }
 
     public function getReviewer(){
@@ -990,7 +1003,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     public function setQrCodesActivationStatus(string $status)
     {
-        // There's no column "qr_codes_activation_status" for now. So no action here.
+        // There's no column 'qr_codes_activation_status' for now. So no action here.
         // Directly checking if Feature is enabled in getQrCodesActivationStatus
     }
 

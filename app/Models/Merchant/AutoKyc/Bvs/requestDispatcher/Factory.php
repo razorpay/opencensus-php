@@ -8,13 +8,16 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Document\Entity as DocumentEntity;
+
 class Factory
 {
     public function getBvsRequestDispatcherForArtefact(
-        string $artefact, Merchant\Entity $merchant, Detail\Entity $merchantDetails): Base
+        string $artefact,
+        Merchant\Entity $merchant,
+        Detail\Entity $merchantDetails
+    ): Base
     {
-        switch ($artefact)
-        {
+        switch ($artefact) {
             case Merchant\AutoKyc\Bvs\Constant::BANK_ACCOUNT:
 
                 return new BankAccount($merchant, $merchantDetails);
@@ -31,8 +34,13 @@ class Factory
         {
             case Type::MSME_CERTIFICATE:
                 return new MsmeDocOcr($merchant, $merchantDetails, $document);
+
+            case Type::SHOP_ESTABLISHMENT_CERTIFICATE:
+                return new ShopEstablishmentDocOcr($merchant, $merchantDetails, $document);
+
             case Type::AADHAR_BACK:
                 return new AadharBackOcr($merchant, $merchantDetails, $document);
+
             default:
                 throw new Exception\LogicException('document type not supported in this flow: ' . $document->getDocumentType());
         }
@@ -40,8 +48,7 @@ class Factory
 
     public function getBvsRequestDispatchers(Merchant\Entity $merchant, Detail\Entity $merchantDetails, string $activationFormMilestone = ''): array
     {
-        if ($activationFormMilestone === DetailConstants::L1_SUBMISSION)
-        {
+        if ($activationFormMilestone === DetailConstants::L1_SUBMISSION) {
             return [
                 new CompanyPan($merchant, $merchantDetails),
                 new PersonalPan($merchant, $merchantDetails)

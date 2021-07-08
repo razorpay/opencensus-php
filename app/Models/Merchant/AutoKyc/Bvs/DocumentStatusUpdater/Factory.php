@@ -80,10 +80,7 @@ class Factory
 
             case Constant::SHOP_ESTABLISHMENT :
 
-                return new DefaultStatusUpdater(
-                    $merchant,
-                    Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
-                    $validation);
+                return $this->getStatusUpdaterForShopEstb($merchant, $validation);
 
             case Constant::MSME:
 
@@ -166,5 +163,20 @@ class Factory
         }
 
         return new BankAccount($merchant, $validation);
+    }
+
+    public function getStatusUpdaterForShopEstb(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
+    {
+        if ($validation->getValidationUnit() === Constants::PROOF)
+        {
+            return new ShopEstbStatusUpdater(
+                $merchant,
+                $validation);
+        }
+
+        return new DefaultStatusUpdater(
+            $merchant,
+            Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
+            $validation);
     }
 }
