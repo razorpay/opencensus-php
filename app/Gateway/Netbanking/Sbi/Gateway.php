@@ -363,6 +363,18 @@ class Gateway extends Base\Gateway
 
             $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
+            if(($content[ResponseFields::STATUS] === Status::PENDING))
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_PENDING,
+                    $content[ResponseFields::STATUS],
+                    $content[ResponseFields::STATUS_DESC],
+                    [
+                        'callback_response' => $content,
+                        'payment_id'        => $this->input['payment']['id'],
+                        'gateway'           => $this->gateway
+                    ]);
+            }
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 $content[ResponseFields::STATUS],
