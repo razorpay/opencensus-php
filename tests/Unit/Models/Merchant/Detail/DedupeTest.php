@@ -33,7 +33,7 @@ class DedupeTest extends OAuthTestCase
         return $mockMR;
     }
 
-    
+
     protected function createAndFetchMocks($isDedupeRequired = true, array $mockDedupeMethods = [])
     {
         $defaultMockDedupeMethods = ['isDedupeRequired'];
@@ -391,6 +391,58 @@ class DedupeTest extends OAuthTestCase
 
         $this->assertFalse($response['merchant']['live']);
         $this->assertFalse($response['merchant']['activated']);
+    }
+
+    public function testIsDedupeBlockAfterL1Submission()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'activation_form_milestone' => 'L1'
+        ]);
+
+        $mocks = $this->createAndFetchMocks(true, ['isMerchantImpersonated', 'isDedupeBlocked']);
+
+        $dedupeCoreMock = $mocks['dedupeCoreMock'];
+        $detailCoreMock = $mocks['detailCoreMock'];
+
+        $dedupeCoreMock->expects($this->any())->method('isMerchantImpersonated')
+            ->willReturn(true);
+        $dedupeCoreMock->expects($this->any())->method('isDedupeBlocked')
+            ->willReturn(true);
+
+        $detailCoreMock->setDedupeCore($dedupeCoreMock);
+
+        $merchantDetailResponse = $detailCoreMock->createResponse($merchantDetail);
+
+        $dedupeResponseObj = $merchantDetailResponse['dedupe'];
+
+        $this->assertTrue($dedupeResponseObj['isMatch']);
+        $this->assertTrue($dedupeResponseObj['isUnderReview']);
+    }
+
+    public function testIsDedupeBlockAfterL2Submission()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'activation_form_milestone' => 'L2'
+        ]);
+
+        $mocks = $this->createAndFetchMocks(true, ['isMerchantImpersonated', 'isDedupeBlocked']);
+
+        $dedupeCoreMock = $mocks['dedupeCoreMock'];
+        $detailCoreMock = $mocks['detailCoreMock'];
+
+        $dedupeCoreMock->expects($this->any())->method('isMerchantImpersonated')
+            ->willReturn(true);
+        $dedupeCoreMock->expects($this->any())->method('isDedupeBlocked')
+            ->willReturn(true);
+
+        $detailCoreMock->setDedupeCore($dedupeCoreMock);
+
+        $merchantDetailResponse = $detailCoreMock->createResponse($merchantDetail);
+
+        $dedupeResponseObj = $merchantDetailResponse['dedupe'];
+
+        $this->assertTrue($dedupeResponseObj['isMatch']);
+        $this->assertFalse($dedupeResponseObj['isUnderReview']);
     }
 
     private function verifyLockAndDeactivate(array $response)

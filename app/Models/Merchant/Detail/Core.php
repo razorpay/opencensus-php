@@ -954,26 +954,26 @@ class Core extends Base\Core
         if ($merchantDetails->getActivationFormMilestone() !== DetailConstants::L1_SUBMISSION)
         {
             $this->triggerWorkflowFlowForImpersonatedMerchant($merchant, $merchantDetails);
+
+            if (empty($action) === false)
+            {
+                switch ($action)
+                {
+                    case DeDupe\Constants::DEACTIVATE:
+                        $merchant->merchantDetail->setLocked(true);
+                        break;
+
+                    case DeDupe\Constants::UNREG_DEACTIVATE:
+                        if ($merchantDetails->isUnregisteredBusiness() === true)
+                        {
+                            $merchant->merchantDetail->setLocked(true);
+                        }
+                        break;
+                }
+            }
         }
 
         $merchant->deactivate();
-
-        if (empty($action) === false)
-        {
-            switch ($action)
-            {
-                case DeDupe\Constants::DEACTIVATE:
-                    $merchant->merchantDetail->setLocked(true);
-                    break;
-
-                case DeDupe\Constants::UNREG_DEACTIVATE:
-                    if ($merchantDetails->isUnregisteredBusiness() === true)
-                    {
-                        $merchant->merchantDetail->setLocked(true);
-                    }
-                    break;
-            }
-        }
 
         $dedupeTag = $this->dedupeCore->getDedupeTagForAction($merchantDetails, $action);
 
@@ -2306,6 +2306,15 @@ class Core extends Base\Core
         ($merchant->getMerchantId(), Merchant\AutoKyc\Escalations\Constants::HARD_LIMIT, 4);
 
         $isDedupeBlocked = $this->dedupeCore->isDedupeBlocked($merchant);
+
+        if($merchantDetails->getActivationFormMilestone() === DEConstants::L1_SUBMISSION)
+        {
+            /*
+             * After L1 submission we do not want to block users even if they are dedupe-blocked case
+             */
+            $isDedupeBlocked = false;
+        }
+
         $isDedupeMatch   = $this->dedupeCore->isMerchantImpersonated($merchant);
         $dedupe          = [
             'isMatch'       => $isDedupeMatch,
