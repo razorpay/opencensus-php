@@ -363,7 +363,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getAmazonPayWalletExperienceEnabled", "getEnvironment"))
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getAmazonPayWalletFeatureEnabled", "getEnvironment"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -371,7 +371,7 @@ class PayoutLinkMicroserviceTest extends TestCase
             ->willReturn(Environment::TESTING);
         $mock->method("getBankingAccountInfo")
             ->willReturn($bankingAccountMock);
-        $mock->method("getAmazonPayWalletExperienceEnabled")
+        $mock->method("getAmazonPayWalletFeatureEnabled")
             ->willReturn(true);
 
         $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
@@ -398,7 +398,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletExperienceEnabled"))
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -406,7 +406,7 @@ class PayoutLinkMicroserviceTest extends TestCase
             ->willReturn(Environment::TESTING);
         $mock->method("getBankingAccountInfo")
             ->willReturn($bankingAccountMock);
-        $mock->method("getAmazonPayWalletExperienceEnabled")
+        $mock->method("getAmazonPayWalletFeatureEnabled")
             ->willReturn(true);
 
         $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
@@ -432,7 +432,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletExperienceEnabled"))
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -440,7 +440,7 @@ class PayoutLinkMicroserviceTest extends TestCase
             ->willReturn(Environment::TESTING);
         $mock->method("getBankingAccountInfo")
             ->willReturn($bankingAccountMock);
-        $mock->method("getAmazonPayWalletExperienceEnabled")
+        $mock->method("getAmazonPayWalletFeatureEnabled")
             ->willReturn(true);
 
         $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
@@ -469,7 +469,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletExperienceEnabled"))
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -477,7 +477,7 @@ class PayoutLinkMicroserviceTest extends TestCase
             ->willReturn(Environment::TESTING);
         $mock->method("getBankingAccountInfo")
             ->willReturn($bankingAccountMock);
-        $mock->method("getAmazonPayWalletExperienceEnabled")
+        $mock->method("getAmazonPayWalletFeatureEnabled")
             ->willReturn(true);
 
 

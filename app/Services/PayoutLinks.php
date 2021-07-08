@@ -767,8 +767,8 @@ class PayoutLinks
     }
 
     protected function allowAmazonPay(array $payoutLinkInfo, array $settings, MerchantEntity $merchant) {
-        // Amazon pay will only be enabled for merchants that have the experiment enabled
-        if($this->getAmazonPayWalletExperienceEnabled($merchant)) {
+        // Amazon pay will only be enabled for merchants that have the Amazon Pay feature enabled (that is, DISABLE_X_AMAZONPAY set to false)
+        if($this->getAmazonPayWalletFeatureEnabled($merchant)) {
             $channelSupportsAmazonPay = true;
 
             $amazonPayEnabledInSettings = ((key_exists(Entity::AMAZON_PAY, $settings) === true) and
@@ -794,12 +794,8 @@ class PayoutLinks
             ->findByMerchantAndAccountNumberPublic($merchant, $payoutLinkInfo['account_number']);
     }
 
-    protected function getAmazonPayWalletExperienceEnabled(MerchantEntity $merchant) {
-        $variant = $this->app['razorx']->getTreatment($merchant->getId(),
-            Merchant\RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT,
-            Mode::LIVE
-        );
-        return $variant === 'on';
+    protected function getAmazonPayWalletFeatureEnabled(MerchantEntity $merchant) {
+        return ($merchant->isFeatureEnabled(Features::DISABLE_X_AMAZONPAY) === false);
     }
 
     protected function extractFundAccountDetails(array $payoutLinkInfo, MerchantEntity $merchant)
