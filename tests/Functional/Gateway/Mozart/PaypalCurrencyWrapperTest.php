@@ -21,8 +21,6 @@ class PaypalCurrencyWrapperTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_paypal_terminal', ['currency' => ['USD'], 'merchant_id' => '10000000000000']);
 
-        $this->fixtures->merchant->addFeatures(['paypal_cc']);
-
         $this->setMockGatewayTrue();
 
         $this->fixtures->merchant->enableWallet('10000000000000', 'paypal');
