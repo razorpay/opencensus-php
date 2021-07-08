@@ -18,7 +18,14 @@ const verifyAccountNumber = (value, allValues, props) => {
   return value !== allValues.account_number ? "Bank Number doesn't match" : undefined;
 };
 
-@connect(null, {
+const regText = 'Beneficiary name should be the same as a business name',
+      unregText = 'Beneficiary name should be the same as your name in KYC documents';
+
+@connect(state=>{
+  return {
+    user:state.session.user,
+  }
+}, {
   ...ModalActions,
   ...NotificationsActions,
 })
@@ -54,7 +61,8 @@ export default class BankAccountDetailsChange extends Component {
   };
 
   render() {
-    const { isBankAccountChangeAllowed, handleSubmit } = this.props;
+    const { isBankAccountChangeAllowed, user, handleSubmit } = this.props;
+
     return (
       <div class="bank-details-change">
         <ModalHeader title="Change Bank Account Details" onCloseClick={this.props.closeModal} />
@@ -117,7 +125,9 @@ export default class BankAccountDetailsChange extends Component {
                   />
                   <small class="help-block">
                     <i class="i i-info-circle" />
-                    <span>Should be same as business/individual name</span>
+                    <span>
+                      {user.business_type == 2 || user.business_type == 11 ? unregText : regText}
+                    </span>
                   </small>
                 </div>
               </div>
