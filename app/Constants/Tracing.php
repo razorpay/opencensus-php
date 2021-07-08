@@ -29,7 +29,8 @@ class Tracing
             Route::$internalApps['ledger'],
             Route::$internalApps['payouts_service'],
             Route::$internalApps['capital_collections_client'],
-            Route::$internalApps['pg_router']
+            Route::$internalApps['pg_router'],
+            Route::$internalApps['care']
         );
 
         return array_merge($routesToInclude, [
@@ -38,6 +39,12 @@ class Tracing
             'capital_cards_service',
             'capital_cards_admin',
 
+            // care Routes
+            'care_service_dashboard_proxy',
+            'care_service_cron_proxy',
+            'care_service_admin_proxy',
+            'care_service_chat_proxy',
+            
             // used by fts service
             'update_fts_fund_transfer',
             'fts_channel_notification',
