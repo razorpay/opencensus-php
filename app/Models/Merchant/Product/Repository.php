@@ -11,6 +11,11 @@ class Repository extends BaseRepository
 
     protected $entity = 'merchant_product';
 
+    protected $proxyFetchParamRules = [
+        Entity::MERCHANT_ID  => 'sometimes|string|size:14',
+        Entity::PRODUCT_NAME => 'sometimes|string',
+    ];
+
     public function fetchMerchantProductConfigByProductName(string $merchantId, string $productName)
     {
         return $this->newQuery()

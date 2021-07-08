@@ -18,6 +18,7 @@ use RZP\Models\Partner\Config;
 use RZP\Models\Admin\Validator;
 use RZP\Models\NodalBeneficiary;
 use RZP\Gateway\Upi\Base as Upi;
+use RZP\Models\Merchant\Product;
 use RZP\Models\Partner\Activation;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Partner\Commission;
@@ -3399,6 +3400,21 @@ class AdminFetch
                 Activation\Entity::MERCHANT_ID => [
                     Fetch::LABEL => 'Merchant id',
                     Fetch::TYPE  => Fetch::TYPE_STRING
+                ],
+            ],
+
+            Entity::MERCHANT_PRODUCT => [
+                Product\Entity::MERCHANT_ID => [
+                    Fetch::LABEL => 'Merchant id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING
+                ],
+                Product\Entity::PRODUCT_NAME => [
+                    Fetch::LABEL => 'Product name',
+                    Fetch::TYPE  => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        Product\Name::PAYMENT_GATEWAY,
+                        Product\Name::PAYMENT_LINKS,
+                    ]
                 ]
             ],
 

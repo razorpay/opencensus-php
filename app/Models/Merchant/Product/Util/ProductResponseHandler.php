@@ -29,9 +29,13 @@ class ProductResponseHandler
     {
         $response = $merchantProduct->toArrayPublic();
 
+        unset($response[Product\Entity::MERCHANT_ID]);
+
         $response[Product\Entity::ID] = $merchantProduct->getPublicId();
 
-        $response[Product\Entity::MERCHANT_ID] = Entity::getSignedId($merchantProduct->getMerchantId());
+        $response[Constants::ACCOUNT_ID] = Entity::getSignedId($merchantProduct->getMerchantId());
+
+        $response[Constants::REQUESTED_AT] = $merchantProduct->getCreatedAt();
 
         return $response;
     }

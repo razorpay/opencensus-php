@@ -3,6 +3,7 @@
 namespace Functional\Merchant\Products;
 
 use Mail;
+use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant\Detail;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
@@ -48,9 +49,16 @@ class PaymentLinksConfigTest extends OAuthTestCase
 
         $testData['response']['content']['activation_status'] = 'activated';
 
+        $testData['response']['content']['account_id'] = $accountId;
+
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
 
-        $this->runRequestResponseFlow($testData);
+        $now = Carbon::now()->getTimestamp();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertGreaterThanOrEqual($now, $response['requested_at']);
+
     }
 
     public function testDefaultPaymentLinksConfig()

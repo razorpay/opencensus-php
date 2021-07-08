@@ -17,6 +17,8 @@ class Constants
     const FLASH_CHECKOUT  = 'flash_checkout';
     const FEATURES        = 'features';
     const REFUND          = 'refund';
+    const ACCOUNT_ID      = 'account_id';
+    const REQUESTED_AT    = 'requested_at';
 
     const REQUESTED_CONFIGURATION = 'requested_configuration';
     const ACTIVE_CONFIGURATION    = 'active_configuration';
