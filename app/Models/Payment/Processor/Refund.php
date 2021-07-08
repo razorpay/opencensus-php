@@ -2453,7 +2453,9 @@ trait Refund
 
         // Speed decisioned is being sent as speed_requested.
         // Once switchover happens on scrooge, we will send right value in speed requested
-        $refundData[RefundEntity::SPEED_REQUESTED] = $refundData[RefundEntity::SPEED_DECISIONED];
+        //
+        // UPDATE - SPEED_REQUESTED and SPEED_DECISIONED are being sent against respective labels.
+        // Data coming from refund entity
 
         // Flag for skipping verify call on scrooge when retrying refund
         $refundData[RefundConstants::SKIP_REFUND_VERIFY] = $input[RefundConstants::SKIP_REFUND_VERIFY] ?? false;
