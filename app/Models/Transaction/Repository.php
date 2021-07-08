@@ -2401,4 +2401,13 @@ class Repository extends Base\Repository
             ->latest()
             ->get();
     }
+
+    public function fetchTransactionIdsForSettlementId(string $settlementId)
+    {
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->select(Entity::ID)
+                      ->where(Entity::SETTLEMENT_ID, $settlementId);
+
+        return $query->pluck(Entity::ID)->toArray();
+    }
 }

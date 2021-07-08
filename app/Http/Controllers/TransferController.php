@@ -144,10 +144,9 @@ class TransferController extends Controller
     {
         $input = Request::all();
 
-        return ApiResponse::json(
-            ['msg' => 'Transfer/Route debug route. Use this route for debugging/data corrections via dark',
-             'input' => $input]
-        );
+        $response = $this->service()->pushTransactionIdsIntoQueue($input);
+
+        return ApiResponse::json($response);
     }
 
     public function transferRecon()
