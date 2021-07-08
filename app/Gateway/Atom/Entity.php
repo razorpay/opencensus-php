@@ -148,4 +148,14 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::DATE, $date);
     }
+
+    public function getReceived()
+    {
+        return $this->getAttribute(self::RECEIVED);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
 }

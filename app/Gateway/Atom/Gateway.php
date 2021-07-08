@@ -1193,4 +1193,37 @@ class Gateway extends Base\Gateway
         }
         return [];
     }
+
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+                          $input['payment']['id'],
+                          Payment\Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, We just return back.
+        if (($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getStatus() === Status::SUCCESS))
+        {
+            return true;
+        }
+
+        if (empty($input['gateway']['acquirer']['reference1']) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING,
+                null,
+                $input);
+        }
+
+        $attributes = [
+            Entity::STATUS             => Status::SUCCESS,
+            Entity::GATEWAY_PAYMENT_ID => $input['gateway']['gateway_payment_id'],
+            Entity::BANK_PAYMENT_ID    => $input['gateway']['acquirer']['reference1'],
+        ];
+
+        $gatewayPayment->fill($attributes);
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
+    }
 }

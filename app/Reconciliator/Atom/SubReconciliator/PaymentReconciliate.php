@@ -101,7 +101,7 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
 
     protected function getGatewayTransactionId(array $row)
     {
-        return $row[self::COLUMN_ATOM_TRANSACTION_ID] ?? null;
+        return trim($row[self::COLUMN_ATOM_TRANSACTION_ID]) ?? null;
     }
 
     /**
@@ -205,7 +205,8 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
     protected function getInputForForceAuthorize($row)
     {
         return [
-            'acquirer'            =>  [
+            'gateway_payment_id' => $this->getGatewayTransactionId($row),
+            'acquirer'           =>  [
                 'reference1' => $this->getReferenceNumber($row),
             ]
         ];
