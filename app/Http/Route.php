@@ -9354,6 +9354,8 @@ class Route
             'los_mail',
             'los_d2c_bureau_details_create',
             'los_d2c_bureau_report_fetch',
+            'internal_merchant_fetch',
+            'user_fetch_entity',
         ],
         'capital_cards_m2p' =>[
             'capital_cards_m2p_webhook',
