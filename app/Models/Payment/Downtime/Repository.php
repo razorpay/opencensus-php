@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Downtime;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Downtime\Constants;
 use RZP\Models\Payment\Method;
 use RZP\Models\Base\PublicCollection;
@@ -110,6 +111,8 @@ class Repository extends Base\Repository
         }
 
         $this->addMethodSpecificQuery($query, $input);
+
+        $this->trace->info(TraceCode::DUPLICATE_DOWNTIME_QUERY, ["query" => $query]);
 
         return $query->first();
     }

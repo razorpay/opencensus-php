@@ -4826,9 +4826,21 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DOWNTIME_NOTIFICATION_MERCHANT_KEY_MISSING                    = 'DOWNTIME_NOTIFICATION_MERCHANT_KEY_MISSING';
     const SKIP_MERCHANT_DOWNTIME_COMMUNICATION                          = 'SKIP_MERCHANT_DOWNTIME_COMMUNICATION';
 
-    const PAYMENT_REFERENCE6_MARKED_NULL                                = 'PAYMENT_REFERENCE6_MARKED_NULL';
-    const PAYMENT_NOT_FOUND_TO_UPDATE_REFERENCE6                        = 'PAYMENT_NOT_FOUND_TO_UPDATE_REFERENCE6';
-
+    const PAYMENT_REFERENCE6_MARKED_NULL         = 'PAYMENT_REFERENCE6_MARKED_NULL';
+    const PAYMENT_NOT_FOUND_TO_UPDATE_REFERENCE6 = 'PAYMENT_NOT_FOUND_TO_UPDATE_REFERENCE6';
+    const FETCHED_GATEWAY_DOWNTIMES_FROM_DB                             = 'FETCHED_GATEWAY_DOWNTIMES_FROM_DB';
+    const FILTERED_METHOD_PROC_SPECIFICS                                = 'FILTERED_METHOD_PROC_SPECIFICS';
+    const PLATFORM_SPECIFIC_DOWNTIMES                                   = 'PLATFORM_SPECIFIC_DOWNTIMES';
+    const MERCHANT_SPECIFIC_DOWNTIMES                                   = 'MERCHANT_SPECIFIC_DOWNTIMES';
+    const CREATE_UNAVAILABLE_BANK_DOWNTIME                              = 'CREATE_UNAVAILABLE_BANK_DOWNTIME';
+    const CREATE_UNAVAILABLE_BANK_DOWNTIME_NXT                          = 'CREATE_UNAVAILABLE_BANK_DOWNTIME_NXT';
+    const EXTRACTED_MERCHANTS_FROM_DOWNTIME                             = 'EXTRACTED_MERCHANTS_FROM_DOWNTIME';
+    const FINAL_DOWNTIME_OBJECT                                         = 'FINAL_DOWNTIME_OBJECT';
+    const DUPLICATE_DOWNTIME_QUERY                                      = 'DUPLICATE_DOWNTIME_QUERY';
+    const CREATE_NEW_PAYMENT_DOWNTIME                                   = 'CREATE_NEW_PAYMENT_DOWNTIME';
+    const EDIT_PAYMENT_DOWNTIME                                         = 'EDIT_PAYMENT_DOWNTIME';
+    const TRIGGER_WEBHOOK_NOTIFICATIONS                                 = 'TRIGGER_WEBHOOK_NOTIFICATIONS';
+    const  MERCHANT_DOWNTIME_CREATION                                   = 'MERCHANT_DOWNTIME_CREATION';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

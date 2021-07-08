@@ -2,12 +2,10 @@
 
 namespace RZP\Models\Payment\Downtime;
 
-use RZP\Exception;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Jobs\PaymentDowntimeEvent;
 use RZP\Models\Gateway\Downtime\Source;
 use RZP\Models\Payment\Downtime\Service;
@@ -30,6 +28,8 @@ class Core extends Base\Core
         if($downtime->isScheduled() === false)
         {
             (new Service())->emailDowntime(Constants::CREATED, $downtime);
+
+            $this->trace->info(TraceCode::TRIGGER_WEBHOOK_NOTIFICATIONS, ["state"=> Status::STARTED, "downtime" => $downtime]);
 
             PaymentDowntimeEvent::dispatch($this->mode, Status::STARTED, serialize($downtime));
         }
@@ -54,6 +54,8 @@ class Core extends Base\Core
         {
             (new Service())->emailDowntime(Constants::CREATED, $downtime, $lastSeverity);
 
+            $this->trace->info(TraceCode::TRIGGER_WEBHOOK_NOTIFICATIONS, ["state"=> Status::STARTED, "downtime" => $downtime]);
+
             PaymentDowntimeEvent::dispatch($this->mode, Status::STARTED, serialize($downtime), $lastSeverity);
         }
 
@@ -63,6 +65,8 @@ class Core extends Base\Core
     public function createFromGatewayDowntimes(array $input = [])
     {
         $gatewayDowntimes = $this->repo->gateway_downtime->fetchCurrentAndFutureDowntimes($withoutTerminal = true);
+
+        $this->trace->info(TraceCode::FETCHED_GATEWAY_DOWNTIMES_FROM_DB, ["context" => $gatewayDowntimes]);
 
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::STATUSCAKE);
 

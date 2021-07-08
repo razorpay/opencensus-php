@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Downtime;
 
+use RZP\Trace\TraceCode;
 use Illuminate\Database\Eloquent\Collection;
 
 use RZP\Gateway\Upi\Base\ProviderCode;
@@ -19,6 +20,8 @@ class UpiProcessor extends BaseProcessor
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
 
+        $this->trace->info(TraceCode::FILTERED_METHOD_PROC_SPECIFICS, ["context"=>$gatewayDowntimes]);
+
         $paymentDowntimesEnabled = (bool) ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIME_UPI, false);
 
         if ($paymentDowntimesEnabled === false)
@@ -29,6 +32,9 @@ class UpiProcessor extends BaseProcessor
         $platformDowntime = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '=', null);
 
         $merchantDowntime = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '!=', null);
+
+        $this->trace->info(TraceCode::PLATFORM_SPECIFIC_DOWNTIMES, ["context"=>$platformDowntime]);
+        $this->trace->info(TraceCode::MERCHANT_SPECIFIC_DOWNTIMES, ["context"=>$merchantDowntime]);
 
         $this->processPlatform($platformDowntime);
 
@@ -42,7 +48,7 @@ class UpiProcessor extends BaseProcessor
         foreach ($merchantIds as $merchantId)
         {
             $merchantDowntimes = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '=', $merchantId);
-
+            $this->trace->info(TraceCode::MERCHANT_DOWNTIME_CREATION, ["merchantId" =>$merchantId, "downtimes"  => $merchantDowntimes]);
             $this->processPlatform($merchantDowntimes, $merchantId);
         }
 
@@ -68,12 +74,15 @@ class UpiProcessor extends BaseProcessor
                 $downtimes = $gatewayDowntimes->where(GatewayDowntime::VPA_HANDLE, '=', $vpa);
             }
 
+            $this->trace->info(TraceCode::CREATE_UNAVAILABLE_BANK_DOWNTIME, ["vpa"=>$vpa, "downtime"=>$downtimes]);
+
             $this->createPaymentDowntime($downtimes, $vpa, 'vpa');
         }
 
         foreach ($unavailableIssuers as $unavailableIssuer)
         {
             $downtimes = $gatewayDowntimes->where(GatewayDowntime::ISSUER, '=', $unavailableIssuer);
+            $this->trace->info(TraceCode::CREATE_UNAVAILABLE_BANK_DOWNTIME_NXT, ["downtime"=>$downtimes]);
 
             $this->createPaymentDowntime($downtimes, $unavailableIssuer, 'issuer');
         }
@@ -120,6 +129,7 @@ class UpiProcessor extends BaseProcessor
         if ($downtime === null)
         {
             $downtime = (new Core)->create($input);
+            $this->trace->info(TraceCode::CREATE_NEW_PAYMENT_DOWNTIME, ["downtime" =>$downtime]);
         }
         else
         {
@@ -132,6 +142,7 @@ class UpiProcessor extends BaseProcessor
                     Entity::SCHEDULED => $input[Entity::SCHEDULED],
                 ];
                 $downtime = (new Core)->edit($downtime, $updateList);
+                $this->trace->info(TraceCode::EDIT_PAYMENT_DOWNTIME, ["downtime" =>$downtime]);
             }
         }
 
@@ -178,10 +189,14 @@ class UpiProcessor extends BaseProcessor
 
         $mids = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '!=', null)->unique(GatewayDowntime::MERCHANT_ID)->pluck(GatewayDowntime::MERCHANT_ID)->toArray();
 
+        $this->trace->info(TraceCode::FINAL_DOWNTIME_OBJECT, ["downtimeObject" => $input]);
+
         if(sizeof($mids) === 1)
         {
             $input[Entity::MERCHANT_ID] = $mids[0];
         }
+
+        $this->trace->info(TraceCode::FINAL_DOWNTIME_OBJECT, ["downtimeObject" => $input]);
 
         return $input;
     }
