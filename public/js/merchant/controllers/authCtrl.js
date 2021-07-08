@@ -3100,12 +3100,8 @@ app
           coupon_code = 'SURGESEPT';
         }
 
-        if (isHostedInBB) {
-          shouldRender = false;
-        }
-
         // always render via url
-        if (!isHostedInBB && coupon_code && coupon_code.length > 0) {
+        if (coupon_code && coupon_code.length > 0) {
           $scope.coupon.val = coupon_code;
           shouldRender = true;
         }
@@ -3117,7 +3113,7 @@ app
 
       $scope.$watch('signup.currentSubStep', function (newVal) {
         if (newVal === 2) {
-          if (!isHostedInBB && !$scope.coupon.shouldRender && user.getTreatment('coupons')) {
+          if (!$scope.coupon.shouldRender && user.getTreatment('coupons')) {
             $scope.coupon.shouldRender = true;
           }
 
