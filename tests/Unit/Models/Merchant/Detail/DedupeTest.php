@@ -30,6 +30,7 @@ class DedupeTest extends OAuthTestCase
                 "fields" => $fields
             ]);
 
+        
         return $mockMR;
     }
 

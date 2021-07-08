@@ -117,6 +117,7 @@ class SegmentAnalyticsClient extends AbstractEventClient
         $properties = [
             Merchant\Entity::MERCHANT_ID    => $merchant->getId(),
             Merchant\Entity::PARTNER_TYPE   => $merchant->getPartnerType(),
+            Merchant\Entity::ORG_ID         => $merchant->getOrgId(),
         ];
 
         foreach (Constants::COMMON_MERCHANT_DETAIL_PROPERTIES as $attribute)
