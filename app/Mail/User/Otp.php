@@ -59,7 +59,13 @@ class Otp extends Mailable
 
                 $this->from($fromEmail, $fromHeader);
                 break;
+            case 'x_verify_email':
+                $fromEmail = Constants::MAIL_ADDRESSES[Constants::X_SUPPORT];
 
+                $fromHeader = Constants::HEADERS[Constants::X_SUPPORT];
+
+                $this->from($fromEmail, $fromHeader);
+                break;
             default:
                 $this->from(Constants::MAIL_ADDRESSES[Constants::NOREPLY]);
         }
@@ -88,6 +94,9 @@ class Otp extends Mailable
             case 'verify_email':
                 $subject = "Razorpay | OTP to {$this->getFormattedAction()}";
                 break;
+            case 'x_verify_email':
+                $subject = "Verify your Email for RazorpayX";
+                break;
         }
 
         $this->subject($subject);
@@ -103,8 +112,8 @@ class Otp extends Mailable
         {
             $this->otp['expires_at'] = $this->otp['expires_at'] + 19800;
         }
-        //in verify_email they need only the remaining minute for otp to expire so subtracting IST epoch and current time
-        if ((isset($this->otp['expires_at']) === true) and (isset($this->input['action']) === true) and ($this->input['action'] === 'verify_email'))
+        //in verify_email and x_verify_email they need only the remaining minute for otp to expire so subtracting IST epoch and current time
+        if ((isset($this->otp['expires_at']) === true) and (isset($this->input['action']) === true) and ($this->input['action'] === 'verify_email' || $this->input['action'] === 'x_verify_email'))
         {
             $diffTime = $this->otp['expires_at'] - Carbon::now()->timestamp - 19800;
 
@@ -142,7 +151,9 @@ class Otp extends Mailable
             case 'create_bulk_payout_link':
                 $view = 'emails.user.otp_create_bulk_payout_link';
                 break;
-
+            case 'x_verify_email':
+                $view = 'emails.user.razorpayx.otp_email_verify';
+                break;
             // Generic fall back template.
             default:
                 $view = 'emails.user.otp';

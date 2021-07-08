@@ -43,6 +43,11 @@ class Entity extends Base\PublicEntity
     const TOKEN                         = 'token';
     const EXPIRY_TIME                   = 'expiryTime';
 
+    // This key in request body checks if the request to register user or resend verification link
+    // came from new signup flow for X.
+    // Remove this when signup experiment for X is ramped up.
+    const X_VERIFY_EMAIL                = 'x_verify_email';
+
     // This token is used for user authorization between api calls
     const OTP_AUTH_TOKEN                = 'otp_auth_token';
 

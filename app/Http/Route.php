@@ -6150,7 +6150,9 @@ class Route
         'sub_virtual_account_transfer_with_otp'        => Permission::MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER,
 
         // Allow coupon validation for X
-        'coupon_validate'                              => Permission::COUPON_VALIDATE
+        'coupon_validate'                              => Permission::COUPON_VALIDATE,
+        'user_resend_verification_otp'                 => '*',
+        'user_verify_email'                            => '*',
     ];
 
     public static $direct = [

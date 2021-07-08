@@ -197,6 +197,29 @@ return [
         ],
     ],
 
+    'testRegisterForSignUpFlowInX' => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'abc@rzp.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'x_verify_email'        => 'true'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+                'HTTP_X-Send-Email-Otp' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'abc@rzp.com',
+            ],
+        ],
+    ],
+
     'testRegisterWithOauthPayload'  => [
         'request'  => [
             'url'     => '/users/register',
@@ -1466,6 +1489,24 @@ return [
         'response' => [
             'content' => [
                 "token" => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+    ],
+
+    'testResendOtpVerificationMailForSignupFlowInX' => [
+        'request' => [
+            'url'     => '/users/resend-verification-otp',
+            'method'  => 'post',
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj'
             ],
         ],
     ],

@@ -196,7 +196,13 @@ class Service extends Base\Service
             $sendOtpEmail = filter_var($this->app['request']->header(RequestHeader::X_SEND_EMAIL_OTP, false),
                                        FILTER_VALIDATE_BOOLEAN);
 
-            $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer, $sendOtpEmail);
+            // Remove this when signup experiment for X is ramped up as we can find the
+            // template just from the product origin
+            $isRequestFromXVerifyEmail = $this->isRequestFromXVerifyEmail($input);
+
+            $inputData = ["isRequestFromXVerifyEmail" => $isRequestFromXVerifyEmail];
+
+            $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer, $sendOtpEmail, $inputData);
         }
 
         $visitorId = $this->fetchVisitorIdFromCookie();
@@ -236,10 +242,11 @@ class Service extends Base\Service
      * @param array  $userData
      * @param bool   $sendOtpEmail
      * @param string $referrer
+     * @param array  $inputData
      *
      * @return array
      */
-    protected function createMerchantFromUser(array $merchantInputData, array $userData, string $referrer = '', bool $sendOtpEmail = false)
+    protected function createMerchantFromUser(array $merchantInputData, array $userData, string $referrer = '', bool $sendOtpEmail = false, array $inputData = [])
     {
         $merchantData = $this->merchantService->create($merchantInputData);
 
@@ -264,7 +271,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantData['id']);
 
-        $data = $this->sendConfirmationMailIfApplicable($user, $merchant, $sendOtpEmail);
+        $data = $this->sendConfirmationMailIfApplicable($user, $merchant, $sendOtpEmail, $inputData);
 
         if ($this->auth->isProductBanking())
         {
@@ -278,14 +285,26 @@ class Service extends Base\Service
         return $data;
     }
 
+    // Checks if the request to register user or resend verification link came from new signup flow for X (v2)
+    // Remove this when signup experiment for X is ramped up.
+    protected function isRequestFromXVerifyEmail($input) :bool
+    {
+        $xVerifyEmail = $input[Entity::X_VERIFY_EMAIL] ?? "false";
+
+        $requestFromXVerifyEmail = ($xVerifyEmail === "true");
+
+        return $requestFromXVerifyEmail;
+    }
+
     /**
      * @param Entity          $user
      * @param Merchant\Entity $merchant
      * @param bool            $sendOtpEmail
+     * @param array           $inputData
      *
      * @return array
      */
-    protected function sendConfirmationMailIfApplicable(Entity $user, Merchant\Entity $merchant, bool $sendOtpEmail = false)
+    protected function sendConfirmationMailIfApplicable(Entity $user, Merchant\Entity $merchant, bool $sendOtpEmail = false, array $inputData = [])
     {
         $requestOriginProduct = $this->auth->getRequestOriginProduct();
 
@@ -294,18 +313,26 @@ class Service extends Base\Service
         $customProperties = [Entity::EMAIL       => $user->getEmail(),
                              Entity::MERCHANT_ID => $user->getMerchantId()];
 
+        // Remove this when signup experiment for X is ramped up.
+        $isRequestFromXVerifyEmail = $inputData['isRequestFromXVerifyEmail'] ?? false;
 
         // If User is New Signed up with new auth flow and
         // Already Not confirmed and product is PG.
-        if (($requestOriginProduct !== Product::BANKING) and $sendOtpEmail and ($user->getConfirmedAttribute() === false))
+        // Or if the request is coming from new signup flow for X (v2)
+
+        if ((($requestOriginProduct !== Product::BANKING) or
+             ($isRequestFromXVerifyEmail === true)) and
+              $sendOtpEmail and
+             ($user->getConfirmedAttribute() === false))
         {
-            $data = $this->sendOtpEmailVerification($merchant, $user);
+            $data = $this->sendOtpEmailVerification($merchant, $user, [], $inputData);
 
             $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_OTP_SUCCESS, $merchant, null, $customProperties);
 
             // Add the response of token from Raven Service
             $response['token'] = $data['token'];
         }
+        // Remove this else when signup experiment for X is ramped up.
         else
         {
             $this->sendConfirmationMail($user);
@@ -321,11 +348,15 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function sendOtpEmailVerification(Merchant\Entity $merchant, Entity $user, array $merchantData = [])
+    protected function sendOtpEmailVerification(Merchant\Entity $merchant, Entity $user, array $merchantData = [], array $inputData = [])
     {
         $merchantData['medium'] = 'email';
 
-        $merchantData['action'] = 'verify_email';
+        // Remove this when signup experiment for X is ramped up.
+        // We can make use of product.
+        $isRequestFromXVerifyEmail = $inputData['isRequestFromXVerifyEmail'] ?? false;
+
+        $merchantData['action'] = ($isRequestFromXVerifyEmail === true) ? 'x_verify_email' : 'verify_email';
 
         $this->trace->info(
             TraceCode::USER_EMAIL_OTP_SEND,
@@ -661,7 +692,13 @@ class Service extends Base\Service
 
         if ($user->getConfirmedAttribute() === false)
         {
-            $data = $this->sendOtpEmailVerification($merchant, $user, $merchantData);
+            $requestOriginProduct = $this->auth->getRequestOriginProduct();
+
+            $isProductBanking = ($requestOriginProduct === Product::BANKING);
+
+            $inputData = ["isRequestFromXVerifyEmail" => $isProductBanking];
+
+            $data = $this->sendOtpEmailVerification($merchant, $user, $merchantData, $inputData);
         }
         else
         {

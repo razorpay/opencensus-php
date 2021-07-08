@@ -261,6 +261,66 @@ class UserTest extends TestCase
         $this->assertArrayHasKey('token', $response);
     }
 
+    public function testRegisterForSignUpFlowInX()
+    {
+        Mail::fake();
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $response = $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $row = DB::table('merchant_map')
+            ->where('merchant_id', '=', $merchant['id'])
+            ->where('entity_id', '=', $adminId)
+            ->where('entity_type', '=', 'admin')
+            ->first();
+
+        $this->assertNotNull($row);
+
+        $this->assertArrayHasKey('token', $response);
+
+        Mail::assertQueued(Otp::class, function ($mail)
+        {
+            $this->assertEquals('x_verify_email', $mail->input['action']);
+
+            $this->assertNotEmpty($mail->user);
+
+            $this->assertNotEmpty($mail->otp);
+
+            $this->assertEquals('emails.user.razorpayx.otp_email_verify', $mail->view);
+
+            $mailSubject = "Verify your Email for RazorpayX";
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('x.support@razorpay.com', $mail->from[0]['address']);
+
+            return true;
+        });
+    }
+
     protected function mockHubSpotClient($methodName, $times = 1)
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
@@ -1850,6 +1910,52 @@ class UserTest extends TestCase
             $this->assertNotEmpty($mail->otp);
 
             $this->assertEquals('emails.user.otp_email_verify', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testResendOtpVerificationMailForSignupFlowInX()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+                        [UserEntity::CONFIRM_TOKEN => 'testing123456789',UserEntity::EMAIL => 'abc@rzp.com']);
+
+        $merchant = $this->fixtures->edit('merchant','10000000000000', ['email' => 'abc@rzp.com']);
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+
+        Mail::assertQueued(Otp::class, function ($mail)
+        {
+            $this->assertEquals('x_verify_email', $mail->input['action']);
+
+            $this->assertNotEmpty($mail->user);
+
+            $this->assertNotEmpty($mail->otp);
+
+            $this->assertEquals('emails.user.razorpayx.otp_email_verify', $mail->view);
+
+            $mailSubject = "Verify your Email for RazorpayX";
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('x.support@razorpay.com', $mail->from[0]['address']);
 
             return true;
         });

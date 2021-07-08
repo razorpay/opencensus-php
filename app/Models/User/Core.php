@@ -1529,7 +1529,7 @@ class Core extends Base\Core
         // Should have used api.user.{action} similar to post sms request to Raven. But in Raven otp.source is 10 char.
         $source = 'api';
 
-        if ($input[Entity::ACTION] === 'verify_email')
+        if ($input[Entity::ACTION] === 'verify_email' || $input[Entity::ACTION] === 'x_verify_email')
         {
             $expires_at = 20;
 

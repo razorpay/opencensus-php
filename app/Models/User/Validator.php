@@ -44,6 +44,8 @@ class Validator extends Base\Validator
         Entity::SETTINGS                        => 'nullable|associative_array',
         Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
         Entity::APP                             => 'sometimes|string',
+        // Remove this when signup experiment for X is ramped up.
+        Entity::X_VERIFY_EMAIL                  => 'sometimes|string'
     ];
 
     protected static $createOauthRules = [
