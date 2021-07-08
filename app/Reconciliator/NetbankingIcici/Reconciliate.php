@@ -12,13 +12,14 @@ class Reconciliate extends Base\Reconciliate
      * Currently Icici shares only payment report
      */
     const SUCCESS = [
-        'razorpayreport'                => self::PAYMENT,
-        'razorpaysireports'             => self::PAYMENT,
-        'razorpaybrokerreports'         => self::PAYMENT,
-        'razorpaysoftwarepvtltdreports' => self::PAYMENT,
-        'razorpaydonationreports'       => self::PAYMENT,
-        'zest_money_sip'                => self::PAYMENT,
-        'razorpaywalletreports'         => self::PAYMENT,
+        'razorpayreport'                                 => self::PAYMENT,
+        'razorpaysireports'                              => self::PAYMENT,
+        'razorpaybrokerreports'                          => self::PAYMENT,
+        'razorpaysoftwarepvtltdreports'                  => self::PAYMENT,
+        'razorpaydonationreports'                        => self::PAYMENT,
+        'zest_money_sip'                                 => self::PAYMENT,
+        'razorpaywalletreports'                          => self::PAYMENT,
+        'consumer_durable_loan_booking_razorpay_reports' => self::PAYMENT,
     ];
 
     const EXCLUDE_FILE_STRING = 'success';

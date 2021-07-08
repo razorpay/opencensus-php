@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\NetbankingIcici\SubReconciliator;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -24,7 +25,7 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
     {
         if (empty($row[self::COLUMN_PAYMENT_REF_NO]) === false)
         {
-            return $row[self::COLUMN_PAYMENT_REF_NO];
+            return trim($row[self::COLUMN_PAYMENT_REF_NO]);
         }
 
         return null;
@@ -34,7 +35,7 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
     {
         if (empty($row[self::COLUMN_BANK_PAYMENT_ID]) === false)
         {
-            return $row[self::COLUMN_BANK_PAYMENT_ID];
+            return trim($row[self::COLUMN_BANK_PAYMENT_ID]);
         }
 
         return null;
@@ -120,7 +121,7 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
 
     protected function getReconPaymentAmount(array $row)
     {
-        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT] ?? null);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount(trim($row[self::COLUMN_PAYMENT_AMOUNT]) ?? null);
     }
 
     protected function setAllowForceAuthorization(Payment\Entity $payment)
@@ -170,7 +171,7 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
     protected function getInputForForceAuthorize($row)
     {
         return [
-            'acquirer'  =>  [
+            'acquirer' => [
                 'reference1' => $this->getReferenceNumber($row),
             ]
         ];
