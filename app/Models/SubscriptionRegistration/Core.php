@@ -319,6 +319,8 @@ class Core extends Base\Core
             {
                 $bankName = array_pull($bankInput, BankAccount\Entity::BANK_NAME);
             }
+
+            $validator->validateBankAccountBeforeCreation($subrInput[Entity::METHOD], $bankInput, $merchant);
         }
 
         $subscriptionRegistration = $this->create($subrInput, $merchant, $customer);
@@ -410,7 +412,7 @@ class Core extends Base\Core
             $paperMandateInput[PaperMandate\Entity::END_AT] = $subrInput[Entity::EXPIRE_AT];
         }
 
-        $paperMandateInput[PaperMandate\Entity::BANK_ACCOUNT] = array_pull($subrInput, Entity::BANK_ACCOUNT);
+        $paperMandateInput[PaperMandate\Entity::BANK_ACCOUNT] = $subrInput[Entity::BANK_ACCOUNT];
 
         $this->parseBankAccountDetails($paperMandateInput[PaperMandate\Entity::BANK_ACCOUNT]);
 

@@ -80,8 +80,11 @@ class Entity extends Base\PublicEntity
     //
     // These values goes in the account_type field
     //
-    const ACCOUNT_TYPE_SAVINGS = 'savings';
-    const ACCOUNT_TYPE_CURRENT = 'current';
+    const ACCOUNT_TYPE_SAVINGS     = 'savings';
+    const ACCOUNT_TYPE_CURRENT     = 'current';
+    const ACCOUNT_TYPE_CASH_CREDIT = 'cc';
+    const ACCOUNT_TYPE_SB_NRE      = 'nre';
+    const ACCOUNT_TYPE_SB_NRO      = 'nro';
 
     //
     // These keys will be under recurring_details
@@ -674,7 +677,9 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicBankDetailsAttribute(array & $array)
     {
-        if($this->getMethod() === Payment\Method::EMANDATE)
+        if(($this->getMethod() === Payment\Method::EMANDATE) or
+           (((bool) app('basicauth')->isProxyAuth() === true) and
+            ($this->getMethod() === Payment\Method::NACH)))
         {
             $array[self::BANK_DETAILS] = [
                 self::BENEFICIARY_NAME => $this->getBeneficiaryName(),

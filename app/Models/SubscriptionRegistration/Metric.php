@@ -15,6 +15,7 @@ final class Metric
     const AUTH_LINK_MIGRATION_COMPLETED           = 'auth_link_migration_completed';
     const SUBSCRIPTION_REGISTRATION_CREATED       = 'subscription_registration_created';
     const SUBSCRIPTION_REGISTRATION_AUTHENTICATED = 'subscription_registration_authenticated';
+    const INVALID_TOKEN_PER_METHOD                = 'invalid_token_per_method';
 
     const SUBSCRIPTION_REGISTRATION_AUTO_ORDER_CREATED      = 'subscription_registration_auto_order_created';
     const SUBSCRIPTION_REGISTRATION_TOKEN_ASSOCIATED        = 'subscription_registration_token_associated';

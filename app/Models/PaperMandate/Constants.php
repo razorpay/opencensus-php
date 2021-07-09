@@ -1,8 +1,8 @@
 <?php
 
-
 namespace RZP\Models\PaperMandate;
 
+use RZP\Models\BankAccount\AccountType;
 
 class Constants
 {
@@ -13,4 +13,10 @@ class Constants
 
     const SHARED_TERMINAL_MERCHANT_ID    = '100000Razorpay';
     const SHARED_TERMINAL_MERCHANT_NAME  = 'Razorpay Software Pvt Ltd';
+
+    const NACH_EXTRA_BANK_ACCOUNT_TYPES = [
+        AccountType::CC,
+        AccountType::NRE,
+        AccountType::NRO
+    ];
 }

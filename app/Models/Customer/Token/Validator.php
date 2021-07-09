@@ -3,12 +3,14 @@
 namespace RZP\Models\Customer\Token;
 
 use Carbon\Carbon;
+
 use RZP\Base;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Bank;
-use RZP\Models\Card;
+use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\PaperMandate\Constants as PaperMandateConstants;
 
 class Validator extends Base\Validator
 {
@@ -35,7 +37,7 @@ class Validator extends Base\Validator
         // We generate it if expired_at is not present and method is emandate
         Entity::EXPIRED_AT          => 'sometimes|epoch:946684800,9223372036854775807|nullable|custom',
         Entity::ACCOUNT_NUMBER      => 'sometimes|nullable|alpha_num|between:5,20',
-        Entity::ACCOUNT_TYPE        => 'sometimes|nullable|string|in:savings,current',
+        Entity::ACCOUNT_TYPE        => 'sometimes|nullable|string',
         Entity::BENEFICIARY_NAME    => 'sometimes|nullable|alpha_space_num|between:4,120',
         Entity::IFSC                => 'sometimes|nullable|alpha_num|size:11',
         Entity::AADHAAR_NUMBER      => 'sometimes|nullable|string|size:12',
@@ -54,6 +56,10 @@ class Validator extends Base\Validator
         Entity::RECURRING       => 'sometimes|in:0',
     ];
 
+    protected static $createValidators = [
+        Entity::ACCOUNT_TYPE
+    ];
+
     protected static function validateBank($attribute, $value)
     {
         if (Bank\IFSC::exists($value) === false)
@@ -69,6 +75,34 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED);
+        }
+    }
+
+    protected static function validateAccountType(array $input)
+    {
+        if (isset($input[Entity::ACCOUNT_TYPE]) === false or
+            $input[Entity::ACCOUNT_TYPE] === Entity::ACCOUNT_TYPE_SAVINGS or
+            $input[Entity::ACCOUNT_TYPE] === Entity::ACCOUNT_TYPE_CURRENT)
+        {
+            return;
+        }
+
+        // If Not NACH return error
+        if ($input[Entity::METHOD] !== Method::NACH)
+        {
+            app('trace')->count(\RZP\Models\SubscriptionRegistration\Metric::INVALID_TOKEN_PER_METHOD, [
+                'mode'      => app('rzp.mode'),
+            ]);
+
+            throw new Exception\BadRequestValidationFailureException(
+                'The selected account type is invalid.');
+        }
+
+        if (in_array($input[Entity::ACCOUNT_TYPE],
+                PaperMandateConstants::NACH_EXTRA_BANK_ACCOUNT_TYPES, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The selected account type is invalid.');
         }
     }
 

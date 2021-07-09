@@ -58,6 +58,53 @@ return [
         ],
     ],
 
+    'testCreateAuthLinkForPaperMandateSBNRO' => [
+        'request' => [
+            'content' => [
+                'amount'          => 0,
+                'currency'        => 'INR',
+                'method'          => 'nach',
+                'payment_capture' => 1,
+                'customer_id'     => 'cust_100000customer',
+                'token'           =>
+                    [
+                        'auth_type'            => 'physical',
+                        'first_payment_amount' => '5000',
+                        'max_amount'           => '500000',
+                        'expire_at'            => '2047483647',
+                        'nach'                 => [
+                            'create_form' => true,
+                        ],
+                        'bank_account'         =>
+                            [
+                                'account_type'       => 'nro',
+                                'bank_name'          => 'HDFC',
+                                'account_number'     => '1111111111111',
+                                'ifsc_code'          => 'HDFC0001233',
+                                'beneficiary_name'   => 'Gaurav Kumar',
+                                'beneficiary_email'  => 'gaurav.kumar@example.com',
+                                'beneficiary_mobile' => '9483159238'
+                            ]
+                    ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'   => 0,
+                'currency' => 'INR',
+                'token'    => [
+                    'auth_type' => 'physical',
+                    'method'    => 'nach',
+                    'nach'      => [
+                        'create_form'     => true,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCreateAuthLinkForPaperMandateWithoutAuthType' => [
         'request' => [
             'content' => [

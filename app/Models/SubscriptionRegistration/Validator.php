@@ -15,16 +15,13 @@ use RZP\Models\PaperMandate;
 use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\UpiMandate\Entity as UPI_MANDATE;
 use RZP\Models\Customer\Entity as CustomerEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    const UPIMANDATE_AMOUNT_MIN_LIMIT = 100;
-
-    const UPIMANDATE_AMOUNT_MAX_LIMIT = 200000;
-
     protected static $createRules = [
         Entity::EXPIRE_AT                       => 'sometimes|epoch',
         Entity::CURRENCY                        => 'sometimes|string|size:3',
@@ -438,6 +435,34 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException(
                 'payment is already processed, can\'t perform this now'
             );
+        }
+    }
+
+    public function validateBankAccountBeforeCreation(string $method, array $bankInput, Merchant\Entity $merchant): void
+    {
+        if (isset($bankInput[Token\Entity::ACCOUNT_TYPE]) === false)
+        {
+            return;
+        }
+
+        if (in_array($bankInput[Token\Entity::ACCOUNT_TYPE],
+                PaperMandate\Constants::NACH_EXTRA_BANK_ACCOUNT_TYPES, true) === true)
+        {
+            if ($method !== Method::NACH)
+            {
+                throw new BadRequestValidationFailureException(
+                    'The selected account type is invalid.');
+            }
+
+            $variant = app('razorx')->getTreatment($merchant->getId(),
+                RazorxTreatment::RECURRING_MORE_ACCOUNT_TYPE,
+                app('rzp.mode'));
+
+            if ($variant !== 'on')
+            {
+                throw new BadRequestValidationFailureException(
+                    'The selected account type is invalid.');
+            }
         }
     }
 }

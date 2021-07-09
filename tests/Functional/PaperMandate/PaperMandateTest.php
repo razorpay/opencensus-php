@@ -6,10 +6,11 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Entity;
 use RZP\Models\PaperMandate;
+use RZP\Tests\Traits\MocksRazorx;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
-use RZP\Tests\Functional\Fixtures\Entity\Terminal;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -17,6 +18,7 @@ class PaperMandateTest extends TestCase
 {
     use DbEntityFetchTrait;
     use PaymentTrait;
+    use MocksRazorx;
 
     protected function setUp(): void
     {
@@ -36,6 +38,15 @@ class PaperMandateTest extends TestCase
     public function testCreateAuthLinkForPaperMandate()
     {
         $this->mockGenerateNACH();
+
+        $this->startTest();
+    }
+
+    public function testCreateAuthLinkForPaperMandateSBNRO()
+    {
+        $this->mockGenerateNACH();
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::RECURRING_MORE_ACCOUNT_TYPE, 'on');
 
         $this->startTest();
     }

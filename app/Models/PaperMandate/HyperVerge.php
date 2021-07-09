@@ -257,6 +257,12 @@ class HyperVerge extends Base\Core
                 return self::SB;
             case BankAccount\AccountType::CURRENT:
                 return self::CA;
+            case BankAccount\AccountType::CC:
+                return self::CC;
+            case BankAccount\AccountType::NRE:
+                return self::SB_NRE;
+            case BankAccount\AccountType::NRO:
+                return self::SB_NRO;
             default:
                 return null;
         }

@@ -203,6 +203,16 @@ class PaperMandatePaymentTest extends TestCase
         $this->startTest();
     }
 
+    public function testNachTokenSBNRO()
+    {
+        $this->createNachTokenByPayment(['account_type' => 'nro']);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals($token['method'], 'nach');
+        $this->assertEquals($token['account_type'], 'nro');
+    }
+
     public function testUMRNInsteadOfTokenForDebitPayment()
     {
         $this->fixtures->merchant->addFeatures(['recurring_debit_umrn']);
@@ -270,6 +280,111 @@ class PaperMandatePaymentTest extends TestCase
                 ],
             ],
         ]);
+    }
+
+    protected function createNachTokenByPayment(array $bankAcc)
+    {
+        $this->createOrder([
+            'amount' => 0,
+            'method' => 'nach',
+            'merchant_id'           => '10000000000000',
+            E::INVOICE => [
+                'amount' => 0,
+                E::SUBSCRIPTION_REGISTRATION => [
+                    'token_id'   => '100000000token',
+                    'max_amount' => 1000000,
+                    'auth_type'  => 'physical',
+                    E::PAPER_MANDATE => [
+                        'amount' => 1000000,
+                        'status' => PaperMandate\Status::AUTHENTICATED,
+                        'uploaded_file_id' => '1000000000file',
+                        E::BANK_ACCOUNT => [
+                            'ifsc_code' => 'HDFC0001233',
+                            'account_type' => 'nro'
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response = $this->doAuthPayment([
+            "amount"      => 0,
+            "currency"    => "INR",
+            "method"      => "nach",
+            "order_id"    => "order_100000000order",
+            "customer_id" => "cust_1000000000cust",
+            "recurring"   => true,
+            "contact"     => "9483159238",
+            "email"       => "r@g.c",
+            "auth_type"   => "physical",
+        ]);
+    }
+
+    protected function doAuthPayment($payment = null, $server = null, $key = null)
+    {
+        $request = $this->buildAuthPaymentRequest($payment, $server);
+
+        $this->ba->publicAuth($key);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function buildAuthPaymentRequest($payment = null, $server = null): array
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments',
+            'content' => $payment
+        ];
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        return $request;
+    }
+
+    protected function getDefaultPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['card'] = array(
+            'number'            => '4012001038443335',
+            'name'              => 'Harshil',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2024',
+            'cvv'               => '566',
+        );
+
+        return $payment;
+    }
+
+    protected function getDefaultPaymentArrayNeutral()
+    {
+        //
+        // default payment object
+        //
+        $payment = [
+            'amount'            => '50000',
+            'currency'          => 'INR',
+            'email'             => 'a@b.com',
+            'contact'           => '9918899029',
+            'notes'             => [
+                'merchant_order_id' => 'random order id',
+            ],
+            'description'       => 'random description',
+            'bank'              => 'UCBA',
+        ];
+
+        return $payment;
     }
 
     protected function createToken(array $overrideWith = [])
