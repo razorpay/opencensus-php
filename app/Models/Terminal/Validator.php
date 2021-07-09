@@ -281,6 +281,8 @@ class Validator extends Base\Validator
         Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
         Entity::MODE                                    => 'sometimes|in:2',
+        Entity::NETWORK_CATEGORY                        => 'sometimes|string|max:30',
+        Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed'
     ];
 
@@ -646,6 +648,9 @@ class Validator extends Base\Validator
         Entity::CARD                       => 'sometimes|boolean|in:0,1',
         Entity::ENABLED                    => 'sometimes|in:0,1',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::NETBANKING                 => 'sometimes|boolean|in:0,1',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 

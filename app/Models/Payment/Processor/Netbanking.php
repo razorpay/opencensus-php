@@ -595,6 +595,66 @@ class Netbanking
                 self::YESB_C,
             ]
         ],
+        Gateway::ZAAKPAY => [
+            'retail' => [
+                IFSC::AIRP,
+                IFSC::ALLA,
+                IFSC::ANDB,
+                self::BARB_C,
+                self::BARB_R,
+                IFSC::BBKM,
+                IFSC::BDBL,
+                IFSC::BKID,
+                IFSC::CBIN,
+                IFSC::CIUB,
+                IFSC::CNRB,
+                IFSC::CORP,
+                IFSC::COSB,
+                IFSC::CSBK,
+                IFSC::DBSS,
+                IFSC::DCBL,
+                IFSC::DEUT,
+                IFSC::DLXB,
+                IFSC::FDRL,
+                IFSC::HDFC,
+                IFSC::IBKL,
+                IFSC::ICIC,
+                IFSC::IDFB,
+                IFSC::IDIB,
+                IFSC::INDB,
+                IFSC::IOBA,
+                IFSC::JAKA,
+                IFSC::JSBP,
+                IFSC::KARB,
+                IFSC::KKBK,
+                IFSC::KVBL,
+                self::LAVB_C,
+                self::LAVB_R,
+                IFSC::MAHB,
+                IFSC::ORBC,
+                IFSC::PSIB,
+                self::PUNB_C,
+                self::PUNB_R,
+                IFSC::RATN,
+                IFSC::SBBJ,
+                IFSC::SBHY,
+                IFSC::SBIN,
+                IFSC::SBMY,
+                IFSC::SBTR,
+                IFSC::SCBL,
+                IFSC::SIBL,
+                IFSC::SRCB,
+                IFSC::STBP,
+                IFSC::SURY,
+                IFSC::SVCB,
+                IFSC::SYNB,
+                IFSC::TMBL,
+                IFSC::UCBA,
+                IFSC::UTBI,
+                IFSC::UTIB,
+                IFSC::YESB,
+            ],
+        ],
         Gateway::CCAVENUE => [
             'retail' => [
                 IFSC::AIRP,
@@ -1100,6 +1160,11 @@ class Netbanking
         return self::$gatewaySupportedBanks[Gateway::CCAVENUE]['retail'];
     }
 
+    public static function getZaakpaySupportedBanks()
+    {
+        return self::$gatewaySupportedBanks[Gateway::ZAAKPAY]['retail'];
+    }
+
     public static function getDirectlyNetbankingBanks()
     {
         return array_merge(self::$self, self::$selfCorp);
@@ -1207,6 +1272,11 @@ class Netbanking
     public static function isCcavenueSupportedBank($bank)
     {
         return in_array($bank, self::getCcavenueSupportedBanks(), true) === true;
+    }
+
+    public static function isZaakpaySupportedBank($bank)
+    {
+        return in_array($bank, self::getZaakpaySupportedBanks(), true) === true;
     }
 
     public static function isNetbankingBankDirectlySupported($bank): bool

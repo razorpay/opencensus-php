@@ -1193,6 +1193,7 @@ class Gateway
             self::PAYU,
             self::CASHFREE,
             self::CCAVENUE,
+            self::ZAAKPAY,
             self::NETBANKING_SIB,
             self::NETBANKING_CBI,
             self::NETBANKING_IDFC,
@@ -2348,6 +2349,7 @@ class Gateway
         Gateway::PAYU,
         Gateway::CASHFREE,
         Gateway::CCAVENUE,
+        Gateway::ZAAKPAY,
     ];
 
     /**
@@ -3379,6 +3381,7 @@ class Gateway
             self::NETBANKING_IOB,
             self::NETBANKING_FSB,
             self::PAYU,
+            self::ZAAKPAY,
             self::CASHFREE,
             self::NETBANKING_DCB,
             self::NETBANKING_IBK,
@@ -3477,6 +3480,7 @@ class Gateway
             self::NETBANKING_FSB,
             self::PAYTM,
             self::PAYU,
+            self::ZAAKPAY,
             self::CASHFREE,
             self::NETBANKING_IDFC,
             self::NETBANKING_OBC,
