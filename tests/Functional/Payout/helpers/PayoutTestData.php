@@ -4043,6 +4043,40 @@ return [
         ],
     ],
 
+    'testFetchMultiplePayoutsWithQueuedReasonParameter' => [
+        'request' => [
+            'url'    => '/payouts',
+            'method' => 'get',
+            'content' => [
+                'queued_reason' => 'low_balance',
+                'product'       => 'banking',
+                'status'        => 'queued',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'          => 'payout',
+                        'amount'          => 10000001,
+                        'currency'        => 'INR',
+                        'fund_account_id' => 'fa_100000000000fa',
+                        'narration'       => 'Test Merchant Fund Transfer',
+                        'purpose'         => 'refund',
+                        'status'          => 'queued',
+                        'tax'             => 0,
+                        'fees'            => 0,
+                        'notes'           => [
+
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchMultiplePayoutsWithBankingProductParameterWithViewOnlyRole' => [
         'request' => [
             'url'    => '/payouts',

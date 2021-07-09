@@ -308,8 +308,8 @@ class RblPayoutTest extends TestCase
         $summary = $this->makePayoutSummaryRequest();
 
         // Assert that there is a payout in queued state with amount 2000000.
-        $this->assertEquals(1, $summary['bacc_xba00000000000'][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(2000000, $summary['bacc_xba00000000000'][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(1, $summary['bacc_xba00000000000'][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(2000000, $summary['bacc_xba00000000000'][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         // Add enough balance to allow the payout to get processed
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(50000);

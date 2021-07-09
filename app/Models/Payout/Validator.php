@@ -807,7 +807,8 @@ class Validator extends Base\Validator
         $payout = $this->entity;
 
         if (($payout->isStatusQueued() === false) and
-            ($payout->isStatusScheduled() === false))
+            ($payout->isStatusScheduled() === false) and
+            ($payout->isStatusOnHold() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_NOT_QUEUED_OR_SCHEDULED_STATUS,

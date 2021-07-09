@@ -1040,16 +1040,16 @@ class PayoutTest extends OAuthTestCase
         $pendingSummarySecondAccount = $completeSummary[$secondBankingAccountId][Payout\Status::PENDING];
 
 
-        $this->assertEquals($queuedSummaryFirstAccount['count'],1);
-        $this->assertEquals($queuedSummaryFirstAccount['total_amount'],20000099);
-        $this->assertEquals($queuedSummaryFirstAccount['balance'],"10000000");
+        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['count'],1);
+        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['total_amount'],20000099);
+        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['balance'],"10000000");
 
         $this->assertEquals($pendingSummaryFirstAccount['count'],1);
         $this->assertEquals($pendingSummaryFirstAccount['total_amount'],54321);
 
-        $this->assertEquals($queuedSummarySecondAccount['count'],1);
-        $this->assertEquals($queuedSummarySecondAccount['total_amount'],30000099);
-        $this->assertEquals($queuedSummarySecondAccount['balance'],"10000000");
+        $this->assertEquals($queuedSummarySecondAccount['low_balance']['count'],1);
+        $this->assertEquals($queuedSummarySecondAccount['low_balance']['total_amount'],30000099);
+        $this->assertEquals($queuedSummarySecondAccount['low_balance']['balance'],"10000000");
 
         $this->assertEquals($pendingSummarySecondAccount['count'],1);
         $this->assertEquals($pendingSummarySecondAccount['total_amount'],12345);
@@ -1100,8 +1100,8 @@ class PayoutTest extends OAuthTestCase
         $summary1 = $this->makePayoutSummaryRequest();
 
         // Assert that there are 2 payouts in queued state.
-        $this->assertEquals(3, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(30000003, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(3, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(30000003, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         $dispatchResponse = $this->dispatchQueuedPayouts();
         $this->assertEquals($dispatchResponse['balance_id_list'][0], $currentBalance['id']);
@@ -1109,8 +1109,8 @@ class PayoutTest extends OAuthTestCase
         $summary2 = $this->makePayoutSummaryRequest();
 
         // Assert that there are still 2 payouts in queued state since there wasn't enough balance to process them
-        $this->assertEquals(3, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(30000003, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(3, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(30000003, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         // Add enough balance to process only one queued payout
         $this->fixtures->balance->edit($newBalance['id'], ['balance' => 11000000]);
@@ -1121,8 +1121,8 @@ class PayoutTest extends OAuthTestCase
         $updatedSummary = $this->makePayoutSummaryRequest();
 
         // Assert that there is only one payout in queued state. The other one got processed.
-        $this->assertEquals(2, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(20000002, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(2, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(20000002, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         // Add enough balance to process only all queued payouts
         $this->fixtures->balance->edit($newBalance['id'], ['balance' => 99000000]);
@@ -1139,8 +1139,8 @@ class PayoutTest extends OAuthTestCase
 
         // Assert that only one payout got processed even though there was enough balance to process both.
         // This is because offset was set to 1.
-        $this->assertEquals(1, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(10000001, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(1, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(10000001, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         $offsetData = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION]);
 
@@ -1240,8 +1240,8 @@ class PayoutTest extends OAuthTestCase
         $summary1 = $this->makePayoutSummaryRequest();
 
         // Assert that there are 2 payouts in queued state.
-        $this->assertEquals(3, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(30000003, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(3, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(30000003, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         $dispatchResponse = $this->dispatchQueuedPayouts();
 
@@ -1250,8 +1250,8 @@ class PayoutTest extends OAuthTestCase
         $summary2 = $this->makePayoutSummaryRequest();
 
         // Assert that there are still 2 payouts in queued state since there wasn't enough balance to process them
-        $this->assertEquals(3, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(30000003, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(3, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(30000003, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         // Add enough balance to process only one queued payout
         $this->fixtures->balance->edit($newBalance['id'], ['balance' => 11000000]);
@@ -1262,8 +1262,8 @@ class PayoutTest extends OAuthTestCase
         $updatedSummary = $this->makePayoutSummaryRequest();
 
         // Assert that there is only one payout in queued state. The other one got processed.
-        $this->assertEquals(2, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(20000002, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(2, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(20000002, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         // Add enough balance to process only all queued payouts
         $this->fixtures->balance->edit($newBalance['id'], ['balance' => 99000000]);
@@ -1280,8 +1280,8 @@ class PayoutTest extends OAuthTestCase
 
         // Assert that only one payout got processed even though there was enough balance to process both.
         // This is because offset was set to 1.
-        $this->assertEquals(1, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(10000001, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(1, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(10000001, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         $offsetData = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION]);
 
@@ -1324,8 +1324,8 @@ class PayoutTest extends OAuthTestCase
 
         $bankingAccountId = $bankingAccount->getPublicId();
 
-        $this->assertEquals(2, $summary[$bankingAccountId]['queued']['count']);
-        $this->assertEquals(20000002, $summary[$bankingAccountId]['queued']['total_amount']);
+        $this->assertEquals(2, $summary[$bankingAccountId]['queued']['low_balance']['count']);
+        $this->assertEquals(20000002, $summary[$bankingAccountId]['queued']['low_balance']['total_amount']);
 
         $dispatchResponse = $this->dispatchQueuedPayoutsOld();
 
@@ -1419,10 +1419,10 @@ class PayoutTest extends OAuthTestCase
         $summary1 = $this->makePayoutSummaryRequest();
 
         // Assert that there are 1 payout each in queued state for both balances.
-        $this->assertEquals(1, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(20000099, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
-        $this->assertEquals(1, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(30000099, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(1, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(20000099, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
+        $this->assertEquals(1, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(30000099, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         // Add enough balance for both balanceIds so that the payouts can go through
         $this->fixtures->edit('balance', $balanceId1,[
@@ -1444,8 +1444,8 @@ class PayoutTest extends OAuthTestCase
         $summary2 = $this->makePayoutSummaryRequest();
 
         // Assert that there are 1 payout each in queued state for both balances.
-        $this->assertEquals(1, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(20000099, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(1, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(20000099, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
         $this->assertEquals(0, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
         $this->assertEquals(0, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
     }
@@ -1510,10 +1510,10 @@ class PayoutTest extends OAuthTestCase
         $summary1 = $this->makePayoutSummaryRequest();
 
         // Assert that there are 1 payout each in queued state for both balances.
-        $this->assertEquals(1, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(20000099, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
-        $this->assertEquals(1, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(30000099, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(1, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(20000099, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
+        $this->assertEquals(1, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(30000099, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         // Add enough balance for both balanceIds so that the payouts can go through
         $this->fixtures->edit('balance', $balanceId1,[
@@ -1537,8 +1537,8 @@ class PayoutTest extends OAuthTestCase
         // Assert that there are 1 payout each in queued state for both balances.
         $this->assertEquals(0, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
         $this->assertEquals(0, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
-        $this->assertEquals(1, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(30000099, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(1, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(30000099, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
     }
 
     /**
@@ -1604,10 +1604,10 @@ class PayoutTest extends OAuthTestCase
         $summary1 = $this->makePayoutSummaryRequest();
 
         // Assert that there are 1 payout each in queued state for both balances.
-        $this->assertEquals(1, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(20000099, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
-        $this->assertEquals(1, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(30000099, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(1, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(20000099, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
+        $this->assertEquals(1, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(30000099, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         // Add enough balance for both balanceIds so that the payout amounts = balance for both balances.
         $this->fixtures->edit('balance', $balanceId1,[
@@ -1638,8 +1638,8 @@ class PayoutTest extends OAuthTestCase
         // Assert that the current account payout went through, because we do not calculate or deduct fees
         // at time of processing. Also assert that the shared account payout is still queued since
         // `balance = payout amount` but there are no free payouts available.
-        $this->assertEquals(1, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(20000099, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(1, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(20000099, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
         $this->assertEquals(0, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
         $this->assertEquals(0, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
 
@@ -3775,6 +3775,30 @@ class PayoutTest extends OAuthTestCase
         $this->testCreatePayout();
 
         $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    //test filters on fetch multiple api based on queued_reson paramter
+    public function testFetchMultiplePayoutsWithQueuedReasonParameter()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->fixtures->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => '10000000',
+            ]);
+
+        $this->ba->privateAuth();
+
+        //creates 2 queued payouts initially and then processes one of them.
+        //so the total queued when this returns is 1 and we are asserting for count as 1 in response
+        $this->testCreateQueuedPayout();
+
+        $this->ba->proxyAuth();
+
         $this->startTest();
     }
 
@@ -5702,16 +5726,16 @@ class PayoutTest extends OAuthTestCase
         $pendingSummarySecondAccount = $completeSummary[$secondBankingAccountId][Payout\Status::PENDING];
 
 
-        $this->assertEquals($queuedSummaryFirstAccount['count'],1);
-        $this->assertEquals($queuedSummaryFirstAccount['total_amount'],20000099);
-        $this->assertEquals($queuedSummaryFirstAccount['balance'],"10000000");
+        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['count'],1);
+        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['total_amount'],20000099);
+        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['balance'],"10000000");
 
         $this->assertEquals($pendingSummaryFirstAccount['count'],0);
         $this->assertEquals($pendingSummaryFirstAccount['total_amount'],0);
 
-        $this->assertEquals($queuedSummarySecondAccount['count'],1);
-        $this->assertEquals($queuedSummarySecondAccount['total_amount'],30000099);
-        $this->assertEquals($queuedSummarySecondAccount['balance'],"10000000");
+        $this->assertEquals($queuedSummarySecondAccount['low_balance']['count'],1);
+        $this->assertEquals($queuedSummarySecondAccount['low_balance']['total_amount'],30000099);
+        $this->assertEquals($queuedSummarySecondAccount['low_balance']['balance'],"10000000");
 
         $this->assertEquals($pendingSummarySecondAccount['count'],0);
         $this->assertEquals($pendingSummarySecondAccount['total_amount'],0);
@@ -11506,6 +11530,33 @@ class PayoutTest extends OAuthTestCase
         $response = $this->getPayoutStatusAPI('pout_'. $payout->getId());
 
         $this->assertNotContains('registered_name', array_keys($response));
+    }
+
+    public function testQueueingDetailsInPayoutsResponse()
+    {
+        $this->testCreatePayout();
+
+        //If feature is enabled then only we will get the queueing details for private auth
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout['id'],
+            [
+                'status'        => 'queued',
+                'queued_reason' => 'low_balance',
+            ]
+        );
+
+        $response = $this->getPayoutStatusAPI('pout_'. $payout->getId());
+
+        $this->assertNotNull($response['queueing_details']);
+        $this->assertEquals('low_balance', $response['queueing_details']['reason']);
+        $this->assertEquals('Your account has insufficient balance. Kindly load money into your account to process the payout.',
+                            $response['queueing_details']['description']);
+
     }
 
     public function testGetPrimaryBalance()

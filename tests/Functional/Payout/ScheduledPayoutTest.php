@@ -1000,10 +1000,12 @@ class ScheduledPayoutTest extends TestCase
             'bacc_1000000lcustba' =>  [
                 // Only 1 queued payout
                  'queued' =>  [
+                     'low_balance'=> [
                      'balance' =>  10000000,
                      'count' => 1,
                      'total_amount' =>  1000000000,
                      'total_fees' =>  1770,
+                      ],
                 ],
                 // Only 1 pending payout
                 'pending' =>  [

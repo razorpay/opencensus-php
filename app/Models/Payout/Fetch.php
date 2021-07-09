@@ -41,6 +41,7 @@ class Fetch extends BaseFetch
             Entity::SCHEDULED_FROM    => 'sometimes|required_with:scheduled_to|epoch',
             Entity::SCHEDULED_TO      => 'sometimes|epoch',
             Entity::SORTED_ON         => 'sometimes|string|custom',
+            Entity::QUEUED_REASON     => 'sometimes|string|max:255',
         ],
         AuthType::PROXY_AUTH => [
             self::EXPAND_EACH                       => 'filled|string|in:user,reversal,fund_account,fund_account.contact,transaction',
@@ -102,6 +103,7 @@ class Fetch extends BaseFetch
             Entity::SORTED_ON,
             PayoutSource::SOURCE_ID,
             PayoutSource::SOURCE_TYPE,
+            Entity::QUEUED_REASON,
             Entity::REVERSAL_ID
         ],
         AuthType::PRIVILEGE_AUTH => [

@@ -1137,36 +1137,57 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
-        $queuedPayouts = $this->repo->payout->fetchQueuedPayouts([$merchantId]);
+        $queuedPayouts = $this->repo->payout->fetchQueuedAndOnHoldPayouts($merchantId);
+
+        $allQueuedReasons = QueuedReasons::QUEUED_REASONS_WITH_DESCRIPTION;
 
         $groupedQueuedPayouts = $queuedPayouts->groupBy(Entity::BALANCE_ID);
 
         foreach ($groupedQueuedPayouts as $balanceId => $queuedPayouts)
         {
-            $currentBalance = $queuedPayouts->first()->balance->getBalance();
-
-            $totalAmount = $totalFees = 0;
-
             $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($balanceId);
 
-            foreach ($queuedPayouts as $payout)
+            foreach ($allQueuedReasons as $queuedReason=>$queuedDesc)
             {
-                $totalAmount += $payout->getAmount();
+                $summaryForQueuedReason = $this->processQueuedSummaryForReason($queuedReason, $queuedPayouts);
 
-                list($fees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
-
-                $totalFees += $fees;
+                if($summaryForQueuedReason['count'] > 0)
+                {
+                    $queuedPayoutsSummary[$bankingAccountId][Status::QUEUED][$queuedReason] = $summaryForQueuedReason;
+                }
             }
+        }
+        return $queuedPayoutsSummary;
+    }
 
-            $queuedPayoutsSummary[$bankingAccountId][Status::QUEUED] = [
-                'balance'       => $currentBalance,
-                'count'         => count($queuedPayouts),
-                'total_amount'  => $totalAmount,
-                'total_fees'    => $totalFees,
-            ];
+    protected function processQueuedSummaryForReason(string $reason, $queuedPayouts)
+    {
+        $currentBalance = $queuedPayouts->first()->balance->getBalance();
+
+        $queuedPayoutsForReason = $this->filterQueuedPayoutsBasedOnReason($queuedPayouts, $reason);
+
+        $totalAmount = $totalFees = 0;
+
+        foreach ($queuedPayoutsForReason as $payout)
+        {
+            $totalAmount += $payout->getAmount();
+
+            list($fees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
+
+            $totalFees += $fees;
         }
 
-        return $queuedPayoutsSummary;
+        return [
+            'balance'       => $currentBalance,
+            'count'         => count($queuedPayoutsForReason),
+            'total_amount'  => $totalAmount,
+            'total_fees'    => $totalFees,
+        ];
+    }
+
+    protected function filterQueuedPayoutsBasedOnReason($queuedPayouts, string $reason)
+    {
+        return $queuedPayouts->where(Entity::QUEUED_REASON, '=', $reason);
     }
 
     protected function getScheduledPayoutsSummary()

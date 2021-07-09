@@ -184,7 +184,7 @@ class BankingAccountServiceTest extends TestCase
 
         $merchantDetail = $this->getDbEntity('merchant_detail',
                                       [
-                                          'bas_business_id'  => '10000000000011',
+                                          'bas_business_id'  => '30000000000888',
                                       ]);
 
         $this->assertNotNull($merchantDetail);
@@ -205,7 +205,7 @@ class BankingAccountServiceTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertEquals('10000000000011', $response['data']['id']);
+        $this->assertEquals('30000000000888', $response['data']['id']);
     }
 
     public function testLmsOps()
@@ -214,7 +214,7 @@ class BankingAccountServiceTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertEquals('10000000000011', $response['data']['id']);
+        $this->assertEquals('30000000000888', $response['data']['id']);
     }
 
     public function testVendorPaymentCompositeExpands()

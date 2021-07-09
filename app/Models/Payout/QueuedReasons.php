@@ -24,6 +24,15 @@ class QueuedReasons
         self::NEFT_WINDOW_CLOSED,
     ];
 
+    const QUEUED_REASONS_WITH_DESCRIPTION = [
+
+        self::BENE_BANK_DOWN       => 'Beneficiary bank\'s systems are not working. Payout will be processed after the system starts working else it will be failed after the pre-defined time limit.',
+        self::NPCI_DOWN            => 'NPCI system is down',
+        self::LOW_BALANCE          => 'Your account has insufficient balance. Kindly load money into your account to process the payout.',
+        self::NEFT_LIMIT_EXHAUSTED => 'NEFT limit exhausted for the day',
+        self::NEFT_WINDOW_CLOSED   => 'NEFT window is closed',
+    ];
+
     public static function validateReason(string $mode)
     {
         if (self::isValid($mode) === false)

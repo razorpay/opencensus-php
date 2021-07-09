@@ -32,6 +32,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Settlement\Channel;
+use Razorpay\IFSC\IFSC as BaseIFSC;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Exception\ServerErrorException;
@@ -122,6 +123,9 @@ class Entity extends Base\PublicEntity
 
     // error object key for payout
     const ERROR                  = 'error';
+
+    // to send reason and description for queued state
+    const QUEUEING_DETAILS       = 'queueing_details';
 
     // scheduled_at is the timestamp for when the merchant schedules the payout to be processed
     const SCHEDULED_AT                          = 'scheduled_at';
@@ -448,6 +452,7 @@ class Entity extends Base\PublicEntity
         self::REGISTERED_NAME,
         self::CANCELLATION_USER_ID,
         self::CANCELLATION_USER,
+        self::QUEUEING_DETAILS,
         self::ON_HOLD_AT,
     ];
 
@@ -497,6 +502,7 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::CANCELLATION_USER_ID,
         self::CANCELLATION_USER,
+        self::QUEUEING_DETAILS,
         self::ON_HOLD_AT,
     ];
 
@@ -520,7 +526,8 @@ class Entity extends Base\PublicEntity
         self::BATCH_ID,
         self::FAILURE_REASON,
         self::CREATED_AT,
-        self::ERROR
+        self::ERROR,
+        self::QUEUEING_DETAILS,
     ];
 
     protected static $modifiers = [
@@ -564,6 +571,7 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::CANCELLATION_USER_ID,
         self::CANCELLATION_USER,
+        self::QUEUEING_DETAILS,
         self::ON_HOLD_AT,
     ];
 
@@ -1089,6 +1097,11 @@ class Entity extends Base\PublicEntity
         return $this->getAmount();
     }
 
+    public function getQueuedReason()
+    {
+        return $this->getAttribute(self::QUEUED_REASON);
+    }
+
     public function getDestinationId()
     {
         return $this->getAttribute(self::DESTINATION_ID);
@@ -1107,11 +1120,6 @@ class Entity extends Base\PublicEntity
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
-    }
-
-    public function getQueuedReason()
-    {
-        return $this->getAttribute(self::QUEUED_REASON);
     }
 
     public function hasPayment()
@@ -1766,6 +1774,35 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setPublicQueueingDetailsAttribute(array & $attributes)
+    {
+        $queuedReason = null;
+
+        $description = null;
+
+        if(($this->isStatusOnHold()) or
+           ($this->isStatusQueued()))
+        {
+            $queuedReason = $this->getQueuedReason();
+
+            $description = ($queuedReason === null) ? null : $this->getDescriptionForQueuedReason($queuedReason);
+        }
+
+        $queueingDetailsArray =
+            [
+                    'reason'      => $queuedReason,
+                    'description' => $description,
+            ];
+
+        $attributes[self::QUEUEING_DETAILS] = $queueingDetailsArray;
+
+        if ((app('basicauth')->isProxyOrPrivilegeAuth() === false) and
+            ($this->merchant->isFeatureEnabled(Features::PAYOUTS_ON_HOLD) === false))
+        {
+            unset($attributes[self::QUEUEING_DETAILS]);
+        }
+    }
+
     public function setPublicDestinationAttribute(array & $attributes)
     {
         $type = $this->getDestinationType();
@@ -1981,6 +2018,13 @@ class Entity extends Base\PublicEntity
         //
 
         // TODO: Move to serializer
+
+        $internalStatus = $this->getAttribute(self::STATUS);
+
+        if($internalStatus === STATUS::ON_HOLD)
+        {
+            $attributes[self::QUEUED_AT] = $this->getAttribute(self::ON_HOLD_AT);
+        }
 
         if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
         {
@@ -2338,6 +2382,27 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
+    private function getDescriptionForQueuedReason(String $reason)
+    {
+        $description = QueuedReasons::QUEUED_REASONS_WITH_DESCRIPTION[$reason];
+
+        if (($reason === QueuedReasons::BENE_BANK_DOWN) and
+            (str_contains($description, '%')))
+        {
+            $ifsc= $this->fundAccount->account->getIfscCode();
+
+            $beneBank= BaseIFSC::getBankName($ifsc);
+
+            if($beneBank === null)
+            {
+                return null;
+            }
+
+            $description = str_replace('%', $beneBank, $description);
+        }
+
+        return $description;
+    }
 
     /**
      * @return array|mixed

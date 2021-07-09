@@ -20,9 +20,11 @@ use RZP\Services\Mock\Mozart;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Mode as EnvMode;
+use RZP\Models\Settlement\Channel;
 Use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\BankingAccount\Gateway\Icici;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -161,6 +163,67 @@ class IciciCaPayoutTest extends TestCase
         Queue::assertPushed(IciciBankingAccountStatementJob::class, 1);
     }
 
+    protected function setUpMerchantForBusinessBankingLive(
+        bool $skipFeatureAddition = false,
+        int $balance = 0,
+        string $balanceType = AccountType::SHARED,
+        $channel = Channel::YESBANK)
+    {
+        // Activate merchant with business_banking flag set to true.
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['business_banking' => 1]);
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+        $this->fixtures->on('live')->merchant->activate();
+
+        // Creates banking balance
+        $bankingBalance = $this->fixtures->on('live')->merchant->createBalanceOfBankingType(
+            $balance, '10000000000000',$balanceType, $channel);
+
+        // Creates virtual account, its bank account receiver on new banking balance.
+        $virtualAccount = $this->fixtures->on('live')->create('virtual_account');
+        $bankAccount    = $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'id'             => '1000000lcustba',
+                'type'           => 'virtual_account',
+                'entity_id'      => $virtualAccount->getId(),
+                'account_number' => '2224440041626905',
+                'ifsc_code'      => 'RAZRB000000',
+            ]);
+
+        $virtualAccount->bankAccount()->associate($bankAccount);
+        $virtualAccount->balance()->associate($bankingBalance);
+        $virtualAccount->save();
+
+        $defaultFreePayoutsCount = $this->getDefaultFreePayoutsCount($bankingBalance);
+
+        $this->fixtures->on('live')->create('counter', [
+            'account_type'          => $balanceType,
+            'balance_id'            => $bankingBalance->getId(),
+            'free_payouts_consumed' => $defaultFreePayoutsCount,
+        ]);
+
+        // Updates banking balance's account number after bank account creation.
+        $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
+        $bankingBalance->save();
+
+        // Enables required features on merchant
+        if ($skipFeatureAddition === false)
+        {
+            $this->fixtures->on('live')->merchant->addFeatures(['virtual_accounts', 'payout']);
+        }
+
+        $this->setupRedisConfigKeysForTerminalSelection();
+
+        // Sets instance member variable to be re-usable in other test methods for assertions.
+        $this->bankingBalance = $bankingBalance;
+        $this->virtualAccount = $virtualAccount;
+        $this->bankAccount    = $bankAccount;
+    }
+
     protected function liveSetUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/IciciCaPayoutTestData.php';
@@ -200,6 +263,8 @@ class IciciCaPayoutTest extends TestCase
             Details\Entity::CHANNEL        => Details\Channel::ICICI,
             Details\Entity::STATUS         => Details\Status::ACTIVE,
         ]);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     protected function mockMozartResponseForFetchingBalanceFromIciciGateway($amount, $exception = null): void
@@ -1344,6 +1409,13 @@ class IciciCaPayoutTest extends TestCase
         $this->ba->proxyAuth('rzp_live_10000000000000',$userId);
 
         $completeSummary = $this->startTest();
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $bankingAccountId = app('banking_account_service')->fetchBankingAccountId($balanceId);
+
+        $this->assertEquals(1, $completeSummary[$bankingAccountId]['queued']['low_balance']['count']);
+        $this->assertEquals(20000099, $completeSummary[$bankingAccountId]['queued']['low_balance']['total_amount']);
 
         // assertions will break as summary API is not handled for ICICI CA
         // https://razorpay.slack.com/archives/C01CV2HQMEV/p1621860081056900
