@@ -147,6 +147,51 @@ class BankingAccountTpvTest extends TestCase
         $this->startTest();
     }
 
+    public function testXDashboardTpvCreateDuplicateException()
+    {
+        $attribute =
+            [
+                'activation_status' => 'activated',
+                'merchant_id'       => '10000000000000',
+                'business_type'     => '2',
+            ];
+
+        $this->fixtures->create('merchant_detail', $attribute);
+
+        $attributes = $this->getTpvInput();
+
+        $fav = $this->getFundAccountValidationInput();
+
+        //Change last digits of IFSC and try to create a new tpv, but this should return a BAD_REQUEST_DUPLICATE_TPV
+        $attributes[Entity::PAYER_IFSC] = 'CITI5242987';
+
+        $attributes[Entity::FUND_ACCOUNT_VALIDATION_ID] = FundAccountValidation::verifyIdAndSilentlyStripSign($fav['id']);
+
+        $this->fixtures->create('banking_account_tpv', $attributes);
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+            [
+                'merchant_id'          => '10000000000000',
+                'payer_account_number' => '98711120003344',
+            ]);
+
+        $initialFavsCount = count($this->getDbEntities("fund_account_validation"));
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+            [
+                'merchant_id'          => '10000000000000',
+                'payer_account_number' => '98711120003344',
+            ]);
+
+        $finalFavsCount = count($this->getDbEntities("fund_account_validation"));
+
+        $this->assertEquals($initialFavsCount, $finalFavsCount);
+    }
+
     public function testGetMerchantTpvs()
     {
         $attribute =
@@ -493,7 +538,7 @@ class BankingAccountTpvTest extends TestCase
 
         $this->assertEquals($response[Entity::CREATED_BY], $merchant['name']);
 
-        //$this->assertFalse(isset($response[Entity::FUND_ACCOUNT_VALIDATION_ID]));
+        $this->assertFalse(isset($response[Entity::FUND_ACCOUNT_VALIDATION_ID]));
 
         $tpv = $this->getDbEntity('banking_account_tpv',
                                   [
@@ -504,14 +549,14 @@ class BankingAccountTpvTest extends TestCase
 
         $this->assertNotNull($tpv);
 
-        /*$fav = $this->getDbEntity('fund_account_validation',
+        $fav = $this->getDbEntity('fund_account_validation',
                                   [
                                       'id' => $tpv->fund_account_validation_id,
                                   ]);
 
         $this->assertNotNull($fav);
 
-        $this->assertEquals('100000Razorpay', $fav->getMerchantId());*/
+        $this->assertEquals('100000Razorpay', $fav->getMerchantId());
     }
 
     public function testCreateTpvFromXDashboardWitInvalidMerchantBalanceId()
@@ -565,12 +610,12 @@ class BankingAccountTpvTest extends TestCase
 
         $this->assertNotNull($tpv);
 
-        /*$fav = $this->getDbEntity('fund_account_validation',
+        $fav = $this->getDbEntity('fund_account_validation',
                                   [
                                       'merchant_id' => '100000Razorpay',
                                   ]);
 
-        $this->assertNotNull($fav);*/
+        $this->assertNotNull($fav);
     }
 
     // Test creation of tpv with prepended zeros from admin create route
@@ -652,12 +697,12 @@ class BankingAccountTpvTest extends TestCase
 
         $this->assertNotNull($tpv);
 
-        /*$fav = $this->getDbEntity('fund_account_validation',
+        $fav = $this->getDbEntity('fund_account_validation',
                                   [
                                       'merchant_id' => '100000Razorpay',
                                   ]);
 
-        $this->assertNotNull($fav);*/
+        $this->assertNotNull($fav);
 
         // Assert that we don't get this key in the response (we don't want to show it to merchants/ops)
         $this->assertArrayNotHasKey('trimmed_payer_account_number', $response);

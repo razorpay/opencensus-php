@@ -182,6 +182,32 @@ return [
         ],
     ],
 
+    'testXDashboardTpvCreateDuplicateException' => [
+        'request'  => [
+            'url'     => '/merchant/tpv',
+            'method'  => 'post',
+            'content' => [
+                'balance_id'           => '10000000000000',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_DUPLICATE_TPV,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_TPV,
+        ],
+    ],
+
     'testGetMerchantTpvs' => [
         'request'  => [
             'url'     => '/merchant/tpvs',

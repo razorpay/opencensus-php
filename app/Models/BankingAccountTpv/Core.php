@@ -39,6 +39,15 @@ class Core extends Base\Core
 
     public function create(array $input, string $message = TraceCode::ADMIN_CREATE_TPV)
     {
+        $tpv = $this->buildTpv($input, $message);
+
+        $this->repo->saveOrFail($tpv);
+
+        return $tpv->toArrayPublic();
+    }
+
+    public function buildTpv(array $input, string $message = TraceCode::ADMIN_CREATE_TPV)
+    {
         $this->trace->info($message, $input);
 
         $this->duplicateTpvCheckAndPullFavId($input);
@@ -54,9 +63,7 @@ class Core extends Base\Core
 
         $tpv->trimPayerAccountNumber();
 
-        $this->repo->saveOrFail($tpv);
-
-        return $tpv->toArrayPublic();
+        return $tpv;
     }
 
     public function edit(string $id, array $input)
@@ -261,21 +268,25 @@ class Core extends Base\Core
 
     public function createTpvFromXDashboard(array $input)
     {
-        //create fav request
-        /*$fav = $this->initiatePennyTesting($input);
-
-        if($fav !== null)
-        {
-            $input[Entity::FUND_ACCOUNT_VALIDATION_ID] = $fav->getId();
-        }*/
-
         //populate fields required for creating a tpv and status will be pending since ops has to validate.
         $input[Entity::MERCHANT_ID] = $this->merchant->getId();
         $input[Entity::STATUS]      = Status::PENDING;
         $input[Entity::CREATED_BY]  = $this->merchant->getName();
 
         //re using create tpv function
-        return $this->create($input, TraceCode::CREATE_TPV_X_DASHBOARD);
+        $tpv =  $this->buildTpv($input, TraceCode::CREATE_TPV_X_DASHBOARD);
+
+        //create fav request
+        $fav = $this->initiatePennyTesting($input);
+
+        if($fav !== null)
+        {
+            $tpv->setFundAccountValidationId($fav->getId());
+        }
+
+        $this->repo->saveOrFail($tpv);
+
+        return $tpv->toArrayPublic();
     }
 
     public function initiatePennyTesting(array $input)
