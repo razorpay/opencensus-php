@@ -51,6 +51,14 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateBulkConfigs()
+    {
+        $data = $this->reportingService()->editBulkConfig($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+
     public function deleteConfig(string $id)
     {
         $data = $this->reportingService()->deleteConfig($id);

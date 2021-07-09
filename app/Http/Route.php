@@ -1763,6 +1763,7 @@ class Route
         'reporting_config_get'                     => ['get',      'reporting/configs/{id}',                         'ReportingController@getConfig'                                     ],
         'reporting_config_list'                    => ['get',      'reporting/configs',                              'ReportingController@listConfig'                                    ],
         'reporting_config_create'                  => ['post',     'reporting/configs',                              'ReportingController@createConfig'                                  ],
+        'reporting_config_edit_bulk'               => ['post',    'reporting/configs/bulk',                         'ReportingController@updateBulkConfigs'                             ],
         'reporting_config_create_full'             => ['post',     'reporting/configs/full',                         'ReportingController@createFullConfig'                              ],
         'reporting_config_edit'                    => ['patch',    'reporting/configs/{id}',                         'ReportingController@updateConfig'                                  ],
         'reporting_config_edit_full'               => ['patch',    'reporting/configs/{id}/full',                    'ReportingController@updateFullConfig'                              ],
@@ -4537,6 +4538,7 @@ class Route
         'reporting_config_options',
         'reporting_fetch_throttle_settings',
         'reporting_edit_throttle_settings',
+        'reporting_config_edit_bulk',
 
         // UFH
         'ufh_get_file_signed_url_admin',
@@ -5449,6 +5451,7 @@ class Route
         'reporting_log_list_admin'                 => Permission::DOWNLOAD_NON_MERCHANT_REPORT,
         'reporting_fetch_throttle_settings'        => Permission::REPORTING_DEVELOPER,
         'reporting_edit_throttle_settings'         => Permission::REPORTING_DEVELOPER,
+        'reporting_config_edit_bulk'               => Permission::REPORTING_DEVELOPER,
         'batch_service_route'                      => Permission::BATCH_API_CALL,
         'ufh_get_file_signed_url'                  => Permission::DOWNLOAD_UFH_FILE_BY_MID,
         'ufh_get_file_signed_url_admin'            => Permission::DOWNLOAD_UFH_FILE_BY_MID,
@@ -8508,6 +8511,7 @@ class Route
             'reporting_config_delete',
             'reporting_config_edit',
             'reporting_config_edit_full',
+            'reporting_config_edit_bulk',
             'reporting_config_get',
             'reporting_config_get_admin',
             'reporting_config_list',

@@ -82,6 +82,7 @@ class Reporting implements ExternalService
     const ADMIN_ROUTES_WITH_MERCHANT_REPORT_TYPE = [
         'reporting_config_create_full',
         'reporting_config_edit_full',
+        'reporting_config_edit_bulk',
     ];
 
     //RazorX Experiments
@@ -283,6 +284,13 @@ class Reporting implements ExternalService
     public function editFullConfig(string $id, array $input): array
     {
         $path = self::CONFIG_PATH . '/' . $id . '/full';
+
+        return $this->createAndSendRequest(Requests::PATCH, $path, $input);
+    }
+
+    public function editBulkConfig(array $input): array
+    {
+        $path = self::CONFIG_PATH . '/bulk';
 
         return $this->createAndSendRequest(Requests::PATCH, $path, $input);
     }
