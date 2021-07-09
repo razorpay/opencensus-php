@@ -1082,7 +1082,7 @@ export default class ActivationWizard extends React.Component {
       !this.props.data.activation_form_milestone && !this.isLinkedAccountForm ? this.formData : {};
 
     return this.props.submitForm({ data }).then((data) => {
-      if (data.errors) {
+      if (data?.errors) {
         // Track session for any error on submission (non-LA account)
         if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
           window.hj('tagRecording', ['activation_form_save_error']);
@@ -1093,9 +1093,11 @@ export default class ActivationWizard extends React.Component {
           type: false,
         };
         this.props.tracking.trackEvent(
-          window.rzpQ.onbr().initiated('kyc.submit_form', {
-            error: data.errors[0] ? data.errors[0] : 'Failed',
-          }),
+          window.rzpQ
+            .onbr()
+            .failed(`${!isL1Completed(this) ? 'act.submit_form' : 'kyc.submit_form'}`, {
+              error: data.errors[0] ? data.errors[0] : 'Failed',
+            }),
         );
         fireKYCSubmitEvents(_data);
       } else {
@@ -1146,7 +1148,6 @@ export default class ActivationWizard extends React.Component {
           invokeGtag(GTAG_KEYS.kycSubmitSuccessRegGreylist);
         }
 
-        this.props.tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.submit_form'));
         fireKYCSubmitEvents(_data);
         window.hj && window.hj('trigger', 'L0_NPS_Post_KYC');
       }

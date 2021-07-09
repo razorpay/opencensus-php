@@ -50,6 +50,16 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
   };
 
   const submitL2 = () => {
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: 'submit form',
+      screen: 'home page',
+      user,
+      eventAction: 'initiated',
+      properties: {
+        clickSource: 'submit-and-verify',
+      },
+    });
     const payload = isInstantActivationEnabled
       ? { activation_form_milestone: 'L2' }
       : { submit: 1 };
@@ -65,13 +75,6 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
         }
         setIsModalOpen(true);
       }
-      analyticsTrack({
-        objectName: 'SignUp',
-        actionName: 'submit and verify',
-        screen: 'home page',
-        eventAction: 'success',
-        user,
-      });
     });
   };
 

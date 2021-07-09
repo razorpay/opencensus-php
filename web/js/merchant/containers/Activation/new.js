@@ -229,7 +229,7 @@ export default class ActivationContainer extends React.Component {
         accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
       })
         .then((response) => {
-          if (isL1Done && !response.data.can_submit) {
+          if (isL1Done && !response?.data?.can_submit) {
             throw { errors: ['Some mandatory fields are required'] };
           }
 
@@ -238,19 +238,21 @@ export default class ActivationContainer extends React.Component {
             return response;
           }
 
-          this.props.tracking.trackEvent(
-            window.rzpQ.onbr().success('act.submit_form', {
-              clickSource: 'Dashboard_CTA',
-            }),
-          );
-          analyticsTrack({
-            objectName: 'act submit form success',
-            actionName: 'clicked',
-            screen: 'home page',
-            properties: {
-              ...getCommonSegmentProperties(),
-            },
-          });
+          if (response?.data?.activation_form_milestone === 'L1') {
+            this.props.tracking.trackEvent(
+              window.rzpQ.onbr().success('act.submit_form', {
+                clickSource: 'Dashboard_CTA',
+              }),
+            );
+            analyticsTrack({
+              objectName: 'act submit form success',
+              actionName: 'clicked',
+              screen: 'home page',
+              properties: {
+                ...getCommonSegmentProperties(),
+              },
+            });
+          }
 
           this.updateSession(response.data);
           this.postSubmitStep(response);

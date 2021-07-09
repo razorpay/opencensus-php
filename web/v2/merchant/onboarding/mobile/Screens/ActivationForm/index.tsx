@@ -106,6 +106,17 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     status === 'success' && hasSelectedBlacklistCategory(data, businessCategoriesData);
 
   const submitL1 = () => {
+    analyticsTrack({
+      objectName: 'SignUp L1',
+      actionName: 'submit form',
+      screen: 'home page',
+      user,
+      eventAction: 'initiated',
+      properties: {
+        clickSource: 'submit-and-verify',
+      },
+      activationType: 'act',
+    });
     postData({ activation_form_milestone: 'L1' }).then((res) => {
       if (res && res.activation_form_milestone === 'L1') {
         const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
@@ -150,16 +161,6 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         } else if (!res.business_website && experiments.canGenerateTnCPage) {
           setModalType('tnc');
         } else {
-          analyticsTrack({
-            objectName: 'SignUp',
-            actionName: 'submit form',
-            screen: 'home page',
-            eventAction: 'success',
-            user,
-            properties: {
-              clickSource: 'submit-and-verify',
-            },
-          });
           setModalType('under_review');
         }
         setIsModalOpen(true);

@@ -14,10 +14,21 @@ const SaveAndNext = ({ next }) => (
   </Button.Primary>
 );
 
-const SubmitL1Form = ({ canSubmitL1Form, submitL1 }) => (
+const SubmitL1Form = ({ canSubmitL1Form, submitL1, tracking }) => (
   <AsyncBtn.Primary
     disabled={!canSubmitL1Form}
-    onClick={submitL1}
+    onClick={() => {
+      tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
+      analyticsTrack({
+        objectName: 'SignUp',
+        actionName: 'Submit L1 CTA Clicked',
+        screen: 'home page',
+        properties: {
+          ...getCommonSegmentProperties(),
+        },
+      });
+      submitL1();
+    }}
     pendingState={'Verifying'}
     name="submit-and-verify"
   >
@@ -30,6 +41,7 @@ const SubmitKYCForm = ({ isAllTabsValid, tracking, toggleSubmitLayer }) => (
     disabled={!isAllTabsValid()}
     onClick={() => {
       tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.save_documents'));
+      tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.submit_form'));
       toggleSubmitLayer();
       analyticsTrack({
         objectName: 'SignUp',
@@ -96,6 +108,7 @@ const Footer = ({
         canSubmitL1Form={canSubmitL1Form}
         submitL1={submitL1}
         isUnregBiz={isUnregBiz}
+        tracking={tracking}
       />,
     );
   }

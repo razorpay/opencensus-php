@@ -16,6 +16,7 @@ import {
 import { ActivationModal, ModalTypeT } from 'v2/merchant/onboarding/mobile/ActivationModals';
 import useBusinessCategory from '../../hooks/useBusinessCategory';
 import { useApp } from 'v2/context/App';
+import { analyticsTrack } from 'v2/services/tracking/segment';
 
 const Screen = styled(View)`
   background-color: #f9fbfe;
@@ -26,7 +27,7 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
   showL1Modal,
 }) => {
   const { data, postData } = useActivation();
-  const { experiments } = useApp();
+  const { user, experiments } = useApp();
   const [status, businessCategoriesData] = useBusinessCategory('');
   const {
     isContactDetailsCompleted,
@@ -60,6 +61,17 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
   };
 
   const submitL1 = () => {
+    analyticsTrack({
+      objectName: 'SignUp L1',
+      actionName: 'submit form',
+      screen: 'home page',
+      user,
+      eventAction: 'initiated',
+      properties: {
+        clickSource: 'submit-and-verify',
+      },
+      activationType: 'act',
+    });
     postData({ activation_form_milestone: 'L1' }).then((res) => {
       if (res && res.activation_form_milestone === 'L1') {
         const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
