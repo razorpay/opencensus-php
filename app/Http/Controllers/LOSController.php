@@ -186,6 +186,26 @@ class LOSController extends Controller
         return $response;
     }
 
+    protected function handleDevAdminRequests($path = null)
+    {
+        $request = Request::instance();
+        $url = $path;
+        $body   = $request->all();
+
+        $this->trace->info(TraceCode::LOAN_ORIGINATION_SYSTEM_PROXY_REQUEST, [
+            'request' => $url,
+        ]);
+
+        $headers = [
+            'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
+            'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
+            'X-Auth-Type'   => 'admin'
+        ];
+
+
+        return $this->sendRequestAndParseResponse($url, $body, $headers);
+    }
+
     protected function handleCronRequests($path = null) {
         $request = Request::instance();
         $url     = $path;

@@ -867,10 +867,12 @@ class Route
         'offline_verification_webhook'             => ['post',     'offline_verification/webhook/v1/ecom_update_status', 'OfflineVerificationController@handleWebhook'                   ],
         'los_service'                              => ['any',      'los/service/{path?}',                            'LOSController@handleProxyRequests'                                 ],
         'los_service_admin'                        => ['any',      'los/admin/{path?}',                              'LOSController@handleAdminRequests'                                 ],
+        'los_service_dev_admin'                    => ['any',      'los/dev_admin/{path?}',                          'LOSController@handleDevAdminRequests'                              ],
         'los_mail'                                 => ['post',     'los/mail',                                       'LOSController@sendMail'                                            ],
-        'los_cron'                                 => ['post',     'los/cron/{path?}',                               'LOSController@handleCronRequests'                                            ],
+        'los_cron'                                 => ['post',     'los/cron/{path?}',                               'LOSController@handleCronRequests'                                  ],
         'loc_service'                              => ['post',     'loc/service/{path?}',                            'LOCController@handleProxyRequests'                                 ],
         'loc_service_admin'                        => ['post',     'loc/admin/{path?}',                              'LOCController@handleAdminRequests'                                 ],
+        'loc_service_dev_admin'                    => ['post',     'loc/dev_admin/{path?}',                          'LOCController@handleDevAdminRequests'                              ],
         'loc_mail'                                 => ['post',     'loc/mail',                                       'LOCController@sendMail'                                            ],
         'loc_razorpayx_webhook'                    => ['post',     'loc/withdrawal/update',                          'LOCController@razorpayXWebhook'                                    ],
         'loc_cron'                                 => ['post',     'loc/cron/{path?}',                               'LOCController@handleCron'                                          ],
@@ -4096,6 +4098,8 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'los_service_dev_admin',
+        'loc_service_dev_admin',
         'recon_service_request_proxy',
         'recon_service_file_upload_proxy',
         'populate_merchant_trim_data_cron',
@@ -4942,6 +4946,8 @@ class Route
     ];
 
     public static $routePermission = [
+        'los_service_dev_admin'                    => Permission::CAPITAL_DEVELOPER,
+        'loc_service_dev_admin'                    => Permission::CAPITAL_DEVELOPER,
         'recon_service_request_proxy'              => Permission::RECON_OPERATION,
         'recon_service_file_upload_proxy'           => Permission::RECON_OPERATION,
         'merchant_rtb_details_fetch'               => Permission::VIEW_MERCHANT,
@@ -7956,8 +7962,10 @@ class Route
             'loc_bulk_withdrawal_update',
             'loc_service',
             'loc_service_admin',
+            'loc_service_dev_admin',
             'los_service',
             'los_service_admin',
+            'los_service_dev_admin',
             'mailgun_webhook',
             'mark_transactions_postpaid',
             'merchant_2fa_change_setting',

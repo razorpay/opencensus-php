@@ -357,6 +357,25 @@ class LOCController extends Controller
         return $response;
     }
 
+    protected function handleDevAdminRequests($path = null)
+    {
+        $request = Request::instance();
+        $url     = $path;
+        $body    = $request->all();
+
+        $this->trace->info(TraceCode::LINE_OF_CREDIT_PROXY_REQUEST, [
+            'request' => $url,
+        ]);
+
+        $headers = [
+            'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
+            'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
+            'X-Auth-Type'   => 'admin'
+        ];
+
+        return $this->sendRequestAndParseResponse($url, $body, $headers);
+    }
+
     protected function sendRequestAndParseResponse(
         string $url,
         array $body = [],
