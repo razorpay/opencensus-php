@@ -438,7 +438,7 @@ class Service extends Base\Service
                 $input['skip']
             ]);
 
-        $txn = $this->repo->transaction->fetchTransactionForLedgerRecon(
+        $txn = $this->repo->transaction->fetchBankingTransactionsForLedgerRecon(
             $input[Entity::MERCHANT_ID],
             $input['from'],
             $input['to'],

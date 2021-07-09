@@ -2391,9 +2391,20 @@ class Repository extends Base\Repository
      * @param int $skip
      * @return mixed
      */
-    public function fetchTransactionForLedgerRecon(array $merchantIds, $from, $to, int $count = 1000, int $skip = 0)
+    public function fetchBankingTransactionsForLedgerRecon(array $merchantIds, $from, $to, int $count = 1000, int $skip = 0)
     {
+        $transactionBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+
+        $balanceIdColumn   = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeColumn = $this->repo->balance->dbColumn(Entity::TYPE);
+
         return $this->newQuery()
+            ->leftjoin(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceIdColumn)
+            // To fetch only banking transaction until pg use cases are onboarded
+            ->where(function ($query) use ($transactionBalanceIdColumn, $balanceTypeColumn)
+            {
+                $query->WhereIn($balanceTypeColumn, [Balance\Type::BANKING]);
+            })
             ->whereIn(Entity::MERCHANT_ID, $merchantIds)
             ->betweenTime($from, $to)
             ->take($count)
