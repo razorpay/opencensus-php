@@ -148,7 +148,19 @@ class NodalAccount extends NodalBase\FileProcessor
             $record[Headings::BENEFICIARY_NAME]           = $beneName;
             $record[Headings::BENEFICIARY_CODE]           = $ba->getId();
             $record[Headings::BENEFICIARY_ACCOUNT_NUMBER] = $ba->getAccountNumber();
-            $record[Headings::BENEFICIARY_IFSC_CODE]      = $ba->getIfscCode();
+
+            $ifsc = $ba->getIfscCode();
+            $ifscMapping = BankAccount\OldNewIfscMapping::$oldToNewIfscMapping;
+            if (array_key_exists($ifsc, $ifscMapping) === true)
+            {
+                $ifsc = $ifscMapping[$ifsc];
+            }
+
+            $this->trace->info(TraceCode::BANK_ACCOUNT_OLD_TO_NEW_IFSC_BEING_USED, [
+                'ifsc' => $ifsc,
+            ]);
+
+            $record[Headings::BENEFICIARY_IFSC_CODE] = $ifsc;
 
             $records[] = $record;
         }

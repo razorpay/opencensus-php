@@ -17,6 +17,7 @@ use RZP\Services\Beam\Service;
 use RZP\Encryption\PGPEncryption;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\BankAccount\OldNewIfscMapping;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\FundAccount\Type as FundAccountType;
@@ -124,17 +125,30 @@ class Beneficiary extends FileProcessor
                 continue;
             }
 
+            $ifsc = $ba->getIfscCode();
+            $ifscMapping = OldNewIfscMapping::$oldToNewIfscMapping;
+            if (array_key_exists($ifsc, $ifscMapping) === true)
+            {
+                $ifsc = $ifscMapping[$ifsc];
+            }
+
+            $record[Headings::BENEFICIARY_IFSC_CODE] = $ifsc;
+
             $rows[] = [
                 Constants::PRIME_CORP_CODE,
                 Constants::CORP_CODE,
                 $ba->getId(),
                 $beneName,
                 $ba->getAccountNumber(),
-                $ba->getIfscCode(),
+                $ifsc,
                 $bankName,
                 '',
                 '',
             ];
+
+            $this->trace->info(TraceCode::BANK_ACCOUNT_OLD_TO_NEW_IFSC_BEING_USED, [
+                'ifsc' => $ifsc,
+            ]);
         }
 
         return $rows;
