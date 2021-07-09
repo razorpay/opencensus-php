@@ -46,7 +46,6 @@ class NetbankingProcessor extends BaseProcessor
 
         foreach ($merchantIds as $merchantId)
         {
-
             $merchantDowntimes = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '=', $merchantId);
             $this->trace->info(TraceCode::MERCHANT_DOWNTIME_CREATION, ["merchantId" =>$merchantId, "downtimes"  => $merchantDowntimes]);
             $this->processPlatform($merchantDowntimes, $merchantId);
@@ -100,6 +99,7 @@ class NetbankingProcessor extends BaseProcessor
             return;
         }
 
+        // TODO add mutex around below blocks.
         $downtime = $this->getDuplicate($input);
 
         if ($downtime === null)

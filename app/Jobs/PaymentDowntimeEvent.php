@@ -45,7 +45,7 @@ class PaymentDowntimeEvent extends Job
 
             $this->trace->info(
                 TraceCode::PAYMENT_DOWNTIME_EVENT_JOB_RECEIVED,
-                ['status' => $this->status, 'downtime' => $downtime->getId()]
+                ['status' => $this->status, 'downtime' => $downtime->getId(), "merchantId" => $downtime->getMerchantId()]
             );
 
             (new Downtime\Service())->{'eventDowntime'.ucfirst($this->status)}($downtime, $this->lastSeverity);

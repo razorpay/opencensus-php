@@ -99,11 +99,7 @@ class Repository extends Base\Repository
 
         if (isset($input[Entity::MERCHANT_ID]) === true)
         {
-            $query->where(function ($query) use ($input)
-            {
-                $query->whereNull(Entity::MERCHANT_ID)
-                    ->orWhere(Entity::MERCHANT_ID, '=', $input[Entity::MERCHANT_ID]);
-            });
+            $query->where(Entity::MERCHANT_ID, '=', $input[Entity::MERCHANT_ID]);
         }
         else
         {

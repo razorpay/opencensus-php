@@ -1427,6 +1427,9 @@ class PaymentDowntimeTest extends TestCase
 
     public function testCreatePaymentDowntimeByDowntimeService()
     {
+
+        $this->markTestSkipped("Skipping for now");
+
         $this->enableGatewayDowntimeService();
 
         $downtimeCreateRequest = [

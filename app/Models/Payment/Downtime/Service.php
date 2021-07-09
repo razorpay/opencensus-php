@@ -275,7 +275,7 @@ class Service extends Base\Service
 
         if($downtime->getMerchantId() !== null)
         {
-            $this->trace.info(TraceCode::SKIP_MERCHANT_DOWNTIME_COMMUNICATION, ['merchantId' => $downtime->getMerchantId()]);
+            $this->trace->info(TraceCode::SKIP_MERCHANT_DOWNTIME_COMMUNICATION, ['merchantId' => $downtime->getMerchantId()]);
             return;
         }
 
