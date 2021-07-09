@@ -4,15 +4,12 @@
 namespace Unit\Models\Merchant\Bvs\DocumentStatusUpdater;
 
 
-use RZP\Constants\Entity;
-use RZP\Services\KafkaMessageProcessor;
-use RZP\Models\Merchant\AutoKyc\Bvs\Config\Aadhaar;
 use RZP\Models\Merchant\Document;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Fixtures\Entity\BvsValidation;
-use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\AutoKyc\Bvs;
+use RZP\Services\KafkaMessageProcessor;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+
 class AadharBackStatusUpdaterTest extends TestCase
 {
     use DbEntityFetchTrait;

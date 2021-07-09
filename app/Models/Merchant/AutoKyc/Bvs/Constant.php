@@ -63,8 +63,8 @@ class Constant
     const BANK_ACCOUNT_WITH_PERSONAL_PAN                = "bank_account_with_personal_pan";
     const BANK_ACCOUNT_WITH_BUSINESS_PAN                = "bank_account_with_business_pan";
     const BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN    = "bank_account_with_business_or_promoter_pan";
-
-    const AADHAAR_WITH_PAN = 'aadhaar_with_pan';
+    const AADHAR_BACK                                   ="aadhar_back";
+    const AADHAAR_WITH_PAN                              = 'aadhaar_with_pan';
     //
     // Response fields
     //
@@ -113,7 +113,6 @@ class Constant
     const RAZORX_EXPERIMENT               = 'razorx_experiment';
     const AADHAR_ESIGN_SESSION_KEY_PREFIX = "aadhar_esign_session";
     const CUSTOM_CALLBACK_HANDLER         = 'custom_callback_handler';
-
     const FIELD_ARTEFACT_DETAILS_MAP = [
         Type::AADHAR_FRONT                => [
             self::ARTEFACT_TYPE   => self::AADHAAR,

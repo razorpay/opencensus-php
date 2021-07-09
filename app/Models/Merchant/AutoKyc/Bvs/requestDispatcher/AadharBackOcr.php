@@ -40,7 +40,7 @@ class AadharBackOcr extends Base
 
         return [
             Constant::ARTEFACT_TYPE   => $artefactType,
-            Constant::CONFIG_NAME     => $artefactType,
+            Constant::CONFIG_NAME     => $this->getConfigName(),
             Constant::VALIDATION_UNIT => BvsValidationConstants::PROOF,
             Constant::DETAILS         => [
                 Constant::NAME => $this->merchantDetails->getPromoterPanName(),
@@ -54,5 +54,9 @@ class AadharBackOcr extends Base
     public function performPostProcessOperation(BvsValidation\Entity $bvsValidation): void
     {
         $this->document->setValidationId($bvsValidation->getValidationId());
+    }
+    protected function getConfigName()
+    {
+        return Constant::AADHAR_BACK;
     }
 }

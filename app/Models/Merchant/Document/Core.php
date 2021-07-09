@@ -2,20 +2,20 @@
 
 namespace RZP\Models\Merchant\Document;
 
+use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
-use RZP\Models\Base;
-use RZP\Models\FileStore\Entity as FileStoreEntity;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc;
+use RZP\Models\Merchant\Stakeholder;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\FileStore\Entity as FileStoreEntity;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Models\Merchant\Stakeholder;
-use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {

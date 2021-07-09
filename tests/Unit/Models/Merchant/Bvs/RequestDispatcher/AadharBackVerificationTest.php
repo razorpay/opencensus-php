@@ -61,7 +61,7 @@ class AadharBackVerificationTest extends TestCase
 
         $this->assertTrue(isset($requestPayload[Constant::ARTEFACT_TYPE]));
         $this->assertEquals(Constant::AADHAAR, $requestPayload[Constant::ARTEFACT_TYPE]);
-        $this->assertEquals(Constant::AADHAAR, $requestPayload[Constant::CONFIG_NAME]);
+        $this->assertEquals(Constant::AADHAR_BACK, $requestPayload[Constant::CONFIG_NAME]);
         $this->assertEquals('proof', $requestPayload[Constant::VALIDATION_UNIT]);
     }
 }
