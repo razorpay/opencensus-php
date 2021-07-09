@@ -83,6 +83,10 @@ class Scrooge
 
     const MODE = 'mode';
 
+    const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
+
+    const PASSPORT_AUD = 'scrooge';
+
     /**
      * Scrooge constructor.
      *
@@ -186,6 +190,9 @@ class Scrooge
      */
     public function bulkUpdateRefundStatus(array $input,  bool $throwExceptionOnFailure = false): array
     {
+        // send passport token to Scrooge
+        $this->enablePassport();
+
         return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_status_update'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
@@ -554,6 +561,27 @@ class Scrooge
         $headers[self::X_REQUEST_ID]  = $this->request->getId();
 
         $this->headers = $headers;
+    }
+
+    /**
+     * Function to set custom headers for any request
+     */
+    protected function setCustomHeaders(array $customHeaders = [])
+    {
+        $this->headers = $this->headers + $customHeaders;
+    }
+
+    /**
+     * Function to send passport token in headers in API call to Scrooge
+     */
+    protected function enablePassport()
+    {
+        $customHeader = [
+            self::X_PASSPORT_JWT_V1 => $this->auth->getPassportJwt(self::PASSPORT_AUD),
+        ];
+
+        // set custom headers
+        $this->setCustomHeaders($customHeader);
     }
 
     /**
