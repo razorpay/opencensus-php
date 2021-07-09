@@ -2457,6 +2457,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePayuWalletTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testCreateCashfreeUpiTerminal()
     {
         $url = '/merchants/10000000000000/terminals';

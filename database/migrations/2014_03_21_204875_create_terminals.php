@@ -182,7 +182,10 @@ class CreateTerminals extends Migration
                   ->nullable();
 
             $table->json(Terminal::ENABLED_APPS)
-                ->nullable();
+                  ->nullable();
+
+            $table->json(Terminal::ENABLED_WALLETS)
+                  ->nullable();
 
             $table->string(Terminal::ACCOUNT_NUMBER, 50)
                   ->nullable();

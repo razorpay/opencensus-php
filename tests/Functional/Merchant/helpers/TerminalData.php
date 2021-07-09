@@ -1243,7 +1243,6 @@ return [
         ],
     ],
 
-
     'testCreateTwidTerminal' => [
         'request' => [
             'url' => '/merchants/10000000000000/terminals',
@@ -2070,7 +2069,8 @@ return [
             'content' => [
                 'gateway'                   => 'wallet_amazonpay',
                 'gateway_merchant_id'       => '12345',
-                'enabled'                   => true
+                'enabled'                   => true,
+                'enabled_wallets'           => ['amazonpay']
             ]
         ]
     ],
@@ -2983,6 +2983,7 @@ return [
             'content'  => [
                 'gateway_merchant_id'  => 'merchant_id',
                 'enabled'              => true,
+                'enabled_wallets'      => ['phonepe']
             ]
         ]
     ],
@@ -3001,6 +3002,7 @@ return [
             'content'  => [
                 'gateway_merchant_id'  => 'merchant_id',
                 'enabled'              => true,
+                'enabled_wallets'      => ['phonepeswitch']
             ]
         ]
     ],
@@ -3021,7 +3023,8 @@ return [
             'content'  => [
                 'gateway_merchant_id'  => 'merchant_id',
                 'enabled'              => true,
-                'category'             => '1234'
+                'category'             => '1234',
+                'enabled_wallets'      => ['paypal']
             ]
         ]
     ],
@@ -3287,6 +3290,31 @@ return [
             'content'  => [
                 'gateway_merchant_id'       => '12344',
                 'enabled'                   => true
+            ]
+        ]
+    ],
+
+    'testCreatePayuWalletTerminal'        => [
+        'request' => [
+            'url'     => '/merchants/10000000000000/terminals',
+            'content' => [
+                'gateway'                       => 'payu',
+                'gateway_acquirer'              => 'payu',
+                'gateway_merchant_id'           => '12344',
+                'gateway_secure_secret'         => '12344',
+                'enabled_wallets'               => ['amazonpay'],
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => '12344',
+                'enabled'                   => true,
+                'enabled_wallets'           => ['amazonpay']
             ]
         ]
     ],

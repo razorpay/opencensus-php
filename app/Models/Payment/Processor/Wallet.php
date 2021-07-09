@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Processor;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
 
 class Wallet
 {
@@ -23,6 +24,16 @@ class Wallet
     const PHONEPE           = 'phonepe';
     const PAYPAL            = 'paypal';
     const PHONEPE_SWITCH    = 'phonepeswitch';
+
+    // non supported wallets by rzp [directly]
+    const ITZCASH              = 'itzcash';
+    const OXIGEN               = 'oxigen';
+    const AMEXEASYCLICK        = "amexeasyclick";
+    const PAYCASH              = "paycash";
+    const CITIBANKREWARDPOINTS = "citibankrewardpoints";
+    const ICICIPOCKETS         = "icicipockets";
+    const MONEYONMOBILE        = "moneyonmobile";
+
 
     public static $fullName = array(
         self::MOBIKWIK          => 'Mobikwik',

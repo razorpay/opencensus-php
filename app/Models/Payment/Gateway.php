@@ -2536,6 +2536,61 @@ class Gateway
         Gateway::UPI_MINDGATE,
     ];
 
+    public static $supportedWallets = [
+        self::WALLET_AIRTELMONEY  =>  [
+            Wallet::AIRTELMONEY
+        ],
+        self::WALLET_FREECHARGE  =>  [
+            Wallet::FREECHARGE
+        ],
+        self::WALLET_AMAZONPAY  =>  [
+            Wallet::AMAZONPAY
+        ],
+        self::WALLET_JIOMONEY  =>  [
+            Wallet::JIOMONEY
+        ],
+        self::WALLET_SBIBUDDY  =>  [
+            Wallet::SBIBUDDY
+        ],
+        self::WALLET_OLAMONEY =>  [
+            Wallet::OLAMONEY
+        ],
+        self::WALLET_MPESA  =>  [
+            Wallet::MPESA
+        ],
+        self::WALLET_OPENWALLET  =>  [
+            Wallet::OPENWALLET
+        ],
+        self::WALLET_PAYUMONEY  =>  [
+            Wallet::PAYUMONEY
+        ],
+        self::WALLET_PAYZAPP  =>  [
+            Wallet::PAYZAPP
+        ],
+        self::WALLET_PHONEPE  =>  [
+            Wallet::PHONEPE
+        ],
+        self::WALLET_PAYPAL  =>  [
+            Wallet::PAYPAL
+        ],
+        self::PAYTM  =>  [
+            Wallet::PAYTM
+        ],
+        self::MOBIKWIK  =>  [
+            Wallet::MOBIKWIK
+        ],
+        self::WALLET_PHONEPESWITCH  =>  [
+            Wallet::PHONEPE_SWITCH
+        ],
+        self::PAYU  =>  [
+            Wallet::ITZCASH, Wallet::AIRTELMONEY, Wallet::FREECHARGE, Wallet::OXIGEN, Wallet::PAYZAPP, Wallet::AMEXEASYCLICK,
+            Wallet::OLAMONEY, Wallet::PAYCASH, Wallet::JIOMONEY, Wallet::AMAZONPAY, Wallet::CITIBANKREWARDPOINTS, Wallet::PAYTM, Wallet::PHONEPE
+        ],
+        self::CCAVENUE  =>  [
+            Wallet::FREECHARGE, Wallet::ICICIPOCKETS, Wallet::ITZCASH, Wallet::JIOMONEY, Wallet::MOBIKWIK, Wallet::OLAMONEY, Wallet::PAYTM, Wallet::MONEYONMOBILE
+        ],
+    ];
+
     public static function isNonTerminalGateway(string $gateway)
     {
         return in_array($gateway, self::$nonTerminalGateways, true);
@@ -3486,5 +3541,10 @@ class Gateway
         ];
 
         return (in_array($gateway, $gateways, true));
+    }
+
+    public static function getSupportedWalletsForGateway($gateway)
+    {
+        return self::$supportedWallets[$gateway];
     }
 }

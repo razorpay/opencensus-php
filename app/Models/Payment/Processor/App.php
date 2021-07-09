@@ -37,7 +37,6 @@ class App
         ],
     ];
 
-
     public static function isValidApp($app)
     {
         return (in_array($app, self::$apps, true));

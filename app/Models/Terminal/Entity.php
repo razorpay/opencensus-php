@@ -94,6 +94,8 @@ class Entity extends Base\PublicEntity
     const BANKING_TYPES                 = 'banking_types';
     const ENABLED_BANKS                 = 'enabled_banks';
     const ENABLED_APPS                  = 'enabled_apps';
+    const ENABLED_WALLETS               = 'enabled_wallets';
+
     // used for direct settlements.
     const ACCOUNT_NUMBER                = 'account_number';
     const IFSC_CODE                     = 'ifsc_code';
@@ -187,6 +189,7 @@ class Entity extends Base\PublicEntity
         self::ENABLED,
         self::ENABLED_BANKS,
         self::ENABLED_APPS,
+        self::ENABLED_WALLETS,
         self::ACCOUNT_NUMBER,
         self::IFSC_CODE,
         self::CARDLESS_EMI,
@@ -259,6 +262,7 @@ class Entity extends Base\PublicEntity
         self::SUB_MERCHANTS,
         self::ENABLED_BANKS,
         self::ENABLED_APPS,
+        self::ENABLED_WALLETS,
         self::ACCOUNT_NUMBER,
         self::IFSC_CODE,
         self::VIRTUAL_UPI_ROOT,
@@ -290,6 +294,7 @@ class Entity extends Base\PublicEntity
         'method',
         self::ENABLED_BANKS,
         self::ENABLED_APPS,
+        self::ENABLED_WALLETS,
     ];
 
     protected static $modifiers = [
@@ -366,6 +371,7 @@ class Entity extends Base\PublicEntity
         self::USED                      => 'boolean',
         self::ENABLED_BANKS             => 'array',
         self::ENABLED_APPS              => 'array',
+        self::ENABLED_WALLETS           => 'array',
         self::CARDLESS_EMI              => 'boolean',
         self::CRED                      => 'boolean',
         self::APP                       => 'boolean',
@@ -590,6 +596,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENABLED_APPS);
     }
 
+    public function getEnabledWallets()
+    {
+        return $this->getAttribute(self::ENABLED_WALLETS);
+    }
+
     // ---------------------- END GETTERS ----------------------
 
     public function isEnabled()
@@ -788,6 +799,11 @@ class Entity extends Base\PublicEntity
     public function setEnabledApps(array $appsToEnable)
     {
         $this->setAttribute(self::ENABLED_APPS, $appsToEnable);
+    }
+
+    public function setEnabledWallets(array $walletsToEnable)
+    {
+        $this->setAttribute(self::ENABLED_WALLETS, $walletsToEnable);
     }
 
     public function setCapability($capability)
@@ -1331,6 +1347,23 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setEnabledApps($enabledApps);
+    }
+
+    protected function generateEnabledWallets(array $input)
+    {
+        // checkgateway list
+        $gateway = $input[self::GATEWAY];
+
+        $walletGateways = Payment\Gateway::$methodMap[Payment\Method::WALLET];
+
+        if ((in_array($gateway, $walletGateways, true) === false))
+        {
+            return;
+        }
+
+        $enabledWallets = Payment\Gateway::getSupportedWalletsForGateway($gateway);
+
+        $this->setEnabledWallets($enabledWallets);
     }
 
     public function edit(array $input = [], $operation = 'edit')

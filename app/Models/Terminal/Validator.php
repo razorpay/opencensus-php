@@ -73,6 +73,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_TYPE                => 'sometimes|string',
         Entity::CRED                        => 'sometimes|string',
         Entity::APP                         => 'sometimes|string',
+        Entity::ENABLED_WALLETS             => 'sometimes|array',
     ];
 
     protected static $mpansBeforeTokenizationRules = [
@@ -250,8 +251,9 @@ class Validator extends Base\Validator
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
         Entity::UPI                                     => 'sometimes|boolean|in:1',
+        Entity::ENABLED_WALLETS                         => 'sometimes',
         Entity::VPA                                     => 'sometimes|string',
-        Entity::MODE                                    => 'sometimes|in:2'
+        Entity::MODE                                    => 'sometimes|in:2',
     ];
 
     protected static $cashfreeTerminalRules = [
@@ -294,6 +296,8 @@ class Validator extends Base\Validator
         Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::ENABLED_WALLETS                         => 'sometimes',
+
     ];
 
     protected static $hdfcTerminalRules = [
