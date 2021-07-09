@@ -2164,6 +2164,8 @@ class ErrorCode
 
     const BAD_REQUEST_AMAZONPAY_PAYOUT_NOT_ALLOWED_ON_DIRECT_ACCOUNT                = 'BAD_REQUEST_AMAZONPAY_PAYOUT_NOT_ALLOWED_ON_DIRECT_ACCOUNT';
 
+    const BAD_REQUEST_IIN_NOT_EXISTS                                                = 'BAD_REQUEST_IIN_NOT_EXISTS';
+
     // Aadhar E-sign error codes
     const BAD_REQUEST_INVALID_SESSION_ID        = "BAD_REQUEST_INVALID_SESSION_ID";
 

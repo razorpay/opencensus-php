@@ -357,6 +357,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_BANK_TRANSFER_FEE_CALCULATED_GREATER_THAN_PAYMENT_AMOUNT  = 'Fee calculated is greater than the payment amount.';
 
+    const BAD_REQUEST_IIN_NOT_EXISTS                                            = 'IIN does not exist';
+
     // Virtual VPA Prefix
     const BAD_REQUEST_VIRTUAL_VPA_PREFIX_UNAVAILABLE                            = 'This prefix is already in use. Please try another prefix.';
     const BAD_REQUEST_VIRTUAL_VPA_PREFIX_NOT_ALLOWED                            = 'Prefix is not enabled for this merchant.';

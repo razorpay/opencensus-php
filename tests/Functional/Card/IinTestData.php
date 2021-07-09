@@ -96,6 +96,28 @@ return [
         ],
     ],
 
+    'testAddIinWithCountry' => [
+        'request' => [
+            'url' => '/iins',
+            'method' => 'post',
+            'content' => [
+                'iin'           => 112333,
+                'network'       => 'RuPay',
+                'type'          => 'debit',
+                'country'       => 'US',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'iin'           => '112333',
+                'network'       => 'RuPay',
+                'type'          => 'debit',
+                'recurring'     => false,
+                'country'       => 'US',
+            ],
+        ],
+    ],
+
     'testAddIinWithCategory' => [
         'request' => [
             'url' => '/iins',
@@ -393,6 +415,184 @@ return [
                 'issuer'        => 'SBIN',
                 'issuer_name'   => 'State Bank of India',
                 'trivia'        => 'random trivia'
+            ]
+        ],
+    ],
+
+    'testPrivateGetIin' => [
+        'request' => [
+            'url' => '/iins/607500',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'iin'           => '607500',
+                'entity'        => 'iin',
+                'network'       => 'RuPay',
+                'type'          => 'debit',
+                'sub_type'      => 'consumer',
+                'issuer_code'   => 'SBIN',
+                'issuer_name'   => 'State Bank of India',
+                'international' => false,
+                'emi' => [
+                    'available' => false,
+                ],
+                'recurring' => [
+                    'available' => false,
+                ],
+                'authentication_types' => [
+                    [
+                        'type' => '3ds'
+                    ],
+                ]
+            ]
+        ],
+    ],
+
+    'testPrivateGetIinWithoutFeatureFlag' => [
+        'request' => [
+            'url' => '/iins/607500',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testPrivateGetIinInternational' => [
+        'request' => [
+            'url' => '/iins/112333',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'iin'           => '112333',
+                'entity'        => 'iin',
+                'network'       => 'RuPay',
+                'type'          => 'debit',
+                'sub_type'      => 'consumer',
+                'issuer_code'   => 'Unknown',
+                'issuer_name'   => 'Unknown',
+                'international' => true,
+                'emi' => [
+                    'available' => false,
+                ],
+                'recurring' => [
+                    'available' => false,
+                ],
+                'authentication_types' => [
+                    [
+                        'type' => '3ds'
+                    ],
+                ]
+            ]
+        ],
+    ],
+
+    'testPrivateGetIinNotPresent' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_IIN_NOT_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS,
+        ],
+    ],
+
+    'testPrivateGetInvalidIin' => [
+        'request' => [
+            'url' => '/iins/abcd',
+            'method' => 'get',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The iin must be a number.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPrivateGetIinAllFlowsSupported' => [
+        'request' => [
+            'url' => '/iins/112333',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'iin'           => '112333',
+                'entity'        => 'iin',
+                'network'       => 'RuPay',
+                'type'          => 'credit',
+                'sub_type'      => 'consumer',
+                'issuer_code'   => 'Unknown',
+                'issuer_name'   => 'Unknown',
+                'international' => true,
+                'emi' => [
+                    'available' => true,
+                ],
+                'recurring' => [
+                    'available' => true,
+                ],
+                'authentication_types' => [
+                    [
+                        'type' => '3ds'
+                    ],
+                    [
+                        'type' => 'otp'
+                    ],
+                ]
+            ]
+        ],
+    ],
+
+    'testPrivateGetIinIvrSupported' => [
+        'request' => [
+            'url' => '/iins/112333',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'iin'           => '112333',
+                'entity'        => 'iin',
+                'network'       => 'RuPay',
+                'type'          => 'credit',
+                'sub_type'      => 'consumer',
+                'issuer_code'   => 'Unknown',
+                'issuer_name'   => 'Unknown',
+                'international' => true,
+                'emi' => [
+                    'available' => true,
+                ],
+                'recurring' => [
+                    'available' => true,
+                ],
+                'authentication_types' => [
+                    [
+                        'type' => '3ds'
+                    ],
+                    [
+                        'type' => 'otp'
+                    ],
+                ]
             ]
         ],
     ],
@@ -728,6 +928,57 @@ return [
         'response' => [
             'content' => [
             ],
+        ],
+    ],
+
+    'testGetInnsListBySubtype' => [
+        'request' => [
+            'url' => '/iins/list',
+            'method' => 'GET',
+            'content' => [
+                'sub_type' => 'business',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetInnsListBySubtypeNoneExisting' => [
+        'request' => [
+            'url' => '/iins/list',
+            'method' => 'GET',
+            'content' => [
+                'sub_type' => 'business',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetInnsListInvalidSubtype'  => [
+        'request' => [
+            'url' => '/iins/list',
+            'method' => 'GET',
+            'content' => [
+                'sub_type' => 'subtype_123',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected sub type is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
 

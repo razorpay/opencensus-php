@@ -124,4 +124,12 @@ class IinController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getIin($id)
+    {
+        $data = $this->service()->fetch($id);
+
+        return ApiResponse::json($data);
+
+    }
 }

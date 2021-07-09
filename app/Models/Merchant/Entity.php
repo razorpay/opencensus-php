@@ -2673,11 +2673,17 @@ class Entity extends Base\PublicEntity
         }
 
         $headless   = false;
+        $ivr        = false;
         $expressPay = false;
 
         if ($this->isHeadlessEnabled() === true)
         {
             $headless = $iin->isHeadLessOtp();
+        }
+
+        if ($this->isIvrEnabled() === true)
+        {
+            $ivr = $iin->isIvr();
         }
 
         if (($this->isAxisExpressPayEnabled() === true) and
@@ -2687,6 +2693,7 @@ class Entity extends Base\PublicEntity
         }
 
         if (($headless === true) or
+            ($ivr === true) or
             ($expressPay === true))
         {
             $data[IIN\Constants::OTP] = true;

@@ -77,6 +77,18 @@ class Repository extends Base\Repository
         return $iin;
     }
 
+    public function findIinsBySubType(string $val)
+    {
+        $iin = $this->newQuery()
+            ->where(Entity::SUBTYPE, $val)
+            ->select(Entity::IIN)
+            ->get()
+            ->pluck(Entity::IIN)
+            ->toArray();
+
+        return $iin;
+    }
+
     public function findOtpEnabledIins()
     {
         $otpVal = Flow::$flows[Flow::OTP];

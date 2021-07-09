@@ -6,12 +6,14 @@ use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
+use RZP\Models\Payment\Method;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Locale\Core as Locale;
-use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\AuthType as AuthType;
+use RZP\Models\Feature\Constants as Feature;
 
 class Service extends Base\Service
 {
@@ -94,6 +96,29 @@ class Service extends Base\Service
             Entity::NETWORK     => $iinEntity->getNetwork(),
             Entity::TYPE        => $iinEntity->getType(),
         ];
+    }
+
+    public function fetch($id)
+    {
+        $input[Entity::IIN] = $id;
+
+        (new Validator)->validateInput('fetch_iin', $input);
+
+        $iin = $this->repo->iin->find($id);
+
+        if (isset($iin) === false or $iin->isEnabled() !== true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS,
+                null,
+                [
+                    'method'  => Method::CARD
+                ]);
+        }
+
+        $data = $this->getBasicDetails($iin);
+
+        return $this->getPaymentFlows($data, $iin);
     }
 
     public function editIinBulk($input)
@@ -230,7 +255,17 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('bin_list_validation', $input);
 
-        $iins = $this->getIinsWithMerchantFeatures($input);
+        $iins = [];
+
+        if(isset($input[Entity::FlOW]) === true)
+        {
+            $iins = $this->getIinsWithMerchantFeatures($input[Entity::FlOW]);
+        }
+
+        else if(isset($input[Entity::SUBTYPE]) === true)
+        {
+            $iins = $this->repo->iin->findIinsBySubType($input[Entity::SUBTYPE]);
+        }
 
         $response['count'] = count($iins);
 
@@ -239,11 +274,9 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function getIinsWithMerchantFeatures(array $input): array
+    protected function getIinsWithMerchantFeatures($exposedFlow): array
     {
         $collectiveIins = [];
-
-        $exposedFlow = $input['flow'];
 
         foreach (AuthType::$featureToAuthMap[$exposedFlow] as $feature)
         {
@@ -431,5 +464,67 @@ class Service extends Base\Service
         $mergedValues = array_merge($existingFlows, $input[Entity::FLOWS]);
 
         $input[Entity::FLOWS] = $mergedValues;
+    }
+
+    protected function getBasicDetails(Entity $iin)
+    {
+        $data = [
+            Entity::IIN             => $iin->getIin(),
+            Constants::ENTITY       => Entity::IIN,
+            Entity::NETWORK         => $iin->getNetwork(),
+            Entity::TYPE            => $iin->getType(),
+            Entity::SUBTYPE         => $iin->getSubType(),
+            Entity::ISSUER_CODE     => $iin->isInternational()=== false ? $iin->getIssuer() : Entity::UNKNOWN,
+            Entity::ISSUER_NAME     => $iin->isInternational()=== false ? $iin->getIssuerName() : Entity::UNKNOWN,
+            Entity::INTERNATIONAL   => $iin->isInternational(),
+        ];
+
+        $this->formatResponses($data);
+
+        return $data;
+    }
+
+    protected function getPaymentFlows(array $data, Entity $iin)
+    {
+        $data[Entity::EMI][Entity::AVAILABLE] = $iin->isEmiAvailable();
+
+        $data[Entity::RECURRING][Entity::AVAILABLE] = false;
+
+        $flowsData = $this->merchant->getPaymentFlows($iin);
+
+        $authTypes = [];
+
+        // 3ds will be by default supported
+        $authType[Entity::TYPE] = Flow::_3DS;
+        array_push($authTypes, $authType);
+
+        if (isset($flowsData) === true)
+        {
+            if (isset($flowsData[Entity::RECURRING]))
+            {
+                $data[Entity::RECURRING][Entity::AVAILABLE] = $flowsData[Entity::RECURRING];
+            }
+
+            if ((isset($flowsData[Constants::OTP]) === true) and ($flowsData[Constants::OTP] === true))
+            {
+                $authType[Entity::TYPE] = Flow::OTP;
+                array_push($authTypes, $authType);
+            }
+        }
+
+        $data['authentication_types'] = $authTypes;
+
+        return $data;
+    }
+
+    protected function formatResponses(& $data)
+    {
+        foreach ($data as $key => $value)
+        {
+            if($value === null or $value === '')
+            {
+                $data[$key] = Entity::UNKNOWN;
+            }
+        }
     }
 }

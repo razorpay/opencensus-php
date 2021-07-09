@@ -78,6 +78,11 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddIinWithCountry()
+    {
+        $this->startTest();
+    }
+
     public function testEditIinFailedInvalidMessageType()
     {
         $this->testAddIin();
@@ -106,6 +111,100 @@ class IinTest extends TestCase
     public function testGetIin()
     {
         $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testPrivateGetIin()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['bin_api']);
+
+        $this->startTest();
+    }
+
+    public function testPrivateGetIinWithoutFeatureFlag()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testPrivateGetIinInternational()
+    {
+        $this->testAddIinWithCountry();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['bin_api']);
+
+        $this->startTest();
+    }
+
+    public function testPrivateGetIinNotPresent()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['bin_api']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $request = array(
+            'url'     => '/iins/607530',
+            'method'  => 'get',
+        );
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            }
+        );
+    }
+
+    public function testPrivateGetInvalidIin()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['bin_api']);
+
+        $this->startTest();
+    }
+
+    public function testPrivateGetIinAllFlowsSupported()
+    {
+        $this->testAddIin();
+
+        $flows = [
+            'headless_otp' => '1',
+            'iframe'       => '1',
+        ];
+
+        $this->fixtures->edit('iin', 112333, ['flows' => $flows, 'country' => 'US', 'recurring' => true, 'type' => 'credit', 'emi' => true]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['bin_api']);
+
+        $this->startTest();
+    }
+
+    public function testPrivateGetIinIvrSupported()
+    {
+        $this->testAddIin();
+
+        $flows = [
+            'ivr'          => '1',
+            'iframe'       => '1',
+        ];
+
+        $this->fixtures->edit('iin', 112333, ['flows' => $flows, 'country' => 'US', 'recurring' => true, 'type' => 'credit', 'emi' => true]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['bin_api']);
 
         $this->startTest();
     }
@@ -385,8 +484,6 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
-
-
     public function testGetInnsListWithFeatures()
     {
         $flows = [
@@ -419,6 +516,45 @@ class IinTest extends TestCase
         $this->assertEquals(1, $response['count']);
 
         $this->assertEquals([401200], $response['iins']);
+    }
+
+    public function testGetInnsListBySubtype()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['iin_listing']);
+
+        $this->fixtures->edit('iin', 401200, ['sub_type' => 'business']);
+
+        $this->fixtures->edit('iin', 401201, ['sub_type' => 'business']);
+
+        $response = $this->startTest();
+
+        $this->assertEquals(2, $response['count']);
+
+        $this->assertEquals([401200,401201], $response['iins']);
+    }
+
+    public function testGetInnsListBySubtypeNoneExisting()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['iin_listing']);
+
+        $response = $this->startTest();
+
+        $this->assertEquals(0, $response['count']);
+
+        $this->assertEquals([], $response['iins']);
+    }
+
+    public function testGetInnsListInvalidSubtype()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['iin_listing']);
+
+        $this->startTest();
     }
 
     public function testGetBulkFlows()

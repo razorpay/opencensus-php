@@ -28,6 +28,7 @@ class Entity extends Base\PublicEntity
     const PRODUCT_CODE  = 'product_code';
     const COUNTRY       = 'country';
     const ISSUER        = 'issuer';
+    const ISSUER_CODE   = 'issuer_code';
     const ISSUER_NAME   = 'issuer_name';
     const EMI           = 'emi';
     const OTP_READ      = 'otp_read';
@@ -40,6 +41,8 @@ class Entity extends Base\PublicEntity
     const INTERNATIONAL = 'international';
     const MESSAGE_TYPE  = 'message_type';
     const RECURRING     = 'recurring';
+    const AVAILABLE     = 'available';
+    const UNKNOWN       = 'Unknown';
 
     // Used in card_issuer_validate route
     const FlOW          = 'flow';
@@ -171,6 +174,11 @@ class Entity extends Base\PublicEntity
     public function isHeadLessOtp()
     {
         return $this->supports(Flow::HEADLESS_OTP);
+    }
+
+    public function isIvr()
+    {
+        return $this->supports(Flow::IVR);
     }
 
     public function isIframeApplicable()

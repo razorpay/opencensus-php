@@ -123,6 +123,7 @@ class Constants
     const SKIP_INTERNATIONAL_AUTH         = 'skip_international_auth';
     const ES_AUTOMATIC_THREE_PM           = 'es_automatic_three_pm';
     const IIN_LISTING                     = 'iin_listing';
+    const BIN_API                         = 'bin_api';
     const CALLBACK_URL_VALIDATION         = 'callback_url_validation';
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
     const S2S_OTP_JSON                    = 's2s_otp_json';
@@ -881,6 +882,7 @@ class Constants
         self::PAYMENT_PAGES_NO_CAPTURE        => true,
         self::ES_AUTOMATIC_THREE_PM           => true,
         self::IIN_LISTING                     => true,
+        self::BIN_API                         => true,
         self::CALLBACK_URL_VALIDATION         => true,
         self::PL_FIRST_MIN_AMOUNT             => true,
         self::PL_HIDE_ISSUED_TO               => true,

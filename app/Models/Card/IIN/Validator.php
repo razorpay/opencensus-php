@@ -80,12 +80,17 @@ class Validator extends Base\Validator
     ];
 
     protected static $binListValidationRules = [
-        Entity::FlOW             => 'required|string|in:otp',
+        Entity::FlOW             => 'sometimes|string|in:otp',
+        Entity::SUBTYPE          => 'sometimes|string|in:business',
     ];
 
     protected static $iinBatchFileRules = [
         'file'              => 'required|file',
         'type'              => 'required|custom',
+    ];
+
+    protected static $fetchIinRules = [
+        Entity::IIN            => 'required|numeric|digits:6',
     ];
 
     protected function validateCreateNetwork($input)
