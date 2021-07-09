@@ -8,6 +8,7 @@ use ApiResponse;
 use RZP\Exception;
 use RZP\Models\EMandate;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
 
 class EMandateController extends Controller
 {
@@ -31,12 +32,15 @@ class EMandateController extends Controller
 
     public function postProcessNachDebit()
     {
+        $batchId = Request::header(RequestHeader::X_Batch_Id);
+
         $data = $this->service()->processNachBatch($this->input);
 
         $this->trace->info(
             TraceCode::BATCH_PROCESSING_API_RESPONSE,
             [
-                'data' => $data
+                'data'     => $data,
+                'batch_id' => $batchId,
             ]);
 
         if(isset($data['data']['Error Code']) === true)
