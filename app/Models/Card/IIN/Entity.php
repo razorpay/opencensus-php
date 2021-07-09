@@ -42,7 +42,7 @@ class Entity extends Base\PublicEntity
     const MESSAGE_TYPE  = 'message_type';
     const RECURRING     = 'recurring';
     const AVAILABLE     = 'available';
-    const UNKNOWN       = 'Unknown';
+    const UNKNOWN       = 'unknown';
 
     // Used in card_issuer_validate route
     const FlOW          = 'flow';

@@ -477,8 +477,8 @@ return [
                 'network'       => 'RuPay',
                 'type'          => 'debit',
                 'sub_type'      => 'consumer',
-                'issuer_code'   => 'Unknown',
-                'issuer_name'   => 'Unknown',
+                'issuer_code'   => 'unknown',
+                'issuer_name'   => 'unknown',
                 'international' => true,
                 'emi' => [
                     'available' => false,
@@ -543,8 +543,8 @@ return [
                 'network'       => 'RuPay',
                 'type'          => 'credit',
                 'sub_type'      => 'consumer',
-                'issuer_code'   => 'Unknown',
-                'issuer_name'   => 'Unknown',
+                'issuer_code'   => 'unknown',
+                'issuer_name'   => 'unknown',
                 'international' => true,
                 'emi' => [
                     'available' => true,
@@ -576,8 +576,8 @@ return [
                 'network'       => 'RuPay',
                 'type'          => 'credit',
                 'sub_type'      => 'consumer',
-                'issuer_code'   => 'Unknown',
-                'issuer_name'   => 'Unknown',
+                'issuer_code'   => 'unknown',
+                'issuer_name'   => 'unknown',
                 'international' => true,
                 'emi' => [
                     'available' => true,
@@ -591,6 +591,36 @@ return [
                     ],
                     [
                         'type' => 'otp'
+                    ],
+                ]
+            ]
+        ],
+    ],
+
+    'testPrivateGetIinEmptyNetwork' => [
+        'request' => [
+            'url' => '/iins/112333',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'iin'           => '112333',
+                'entity'        => 'iin',
+                'network'       => 'Unknown',
+                'type'          => 'credit',
+                'sub_type'      => 'consumer',
+                'issuer_code'   => 'unknown',
+                'issuer_name'   => 'unknown',
+                'international' => true,
+                'emi' => [
+                    'available' => true,
+                ],
+                'recurring' => [
+                    'available' => true,
+                ],
+                'authentication_types' => [
+                    [
+                        'type' => '3ds'
                     ],
                 ]
             ]

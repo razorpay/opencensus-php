@@ -523,7 +523,14 @@ class Service extends Base\Service
         {
             if($value === null or $value === '')
             {
-                $data[$key] = Entity::UNKNOWN;
+                if ($key === Entity::NETWORK)
+                {
+                    $data[$key] = Card\NetworkName::UNKNOWN;
+                }
+                else
+                {
+                    $data[$key] = Entity::UNKNOWN;
+                }
             }
         }
     }

@@ -209,6 +209,19 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testPrivateGetIinEmptyNetwork()
+    {
+        $this->testAddIin();
+
+        $this->fixtures->edit('iin', 112333, ['network' => '', 'country' => 'US', 'recurring' => true, 'type' => 'credit', 'emi' => true]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['bin_api']);
+
+        $this->startTest();
+    }
+
     public function testBatchServiceIinUpdate()
     {
         $this->ba->batchAppAuth();
