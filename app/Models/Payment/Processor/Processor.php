@@ -1072,6 +1072,7 @@ class Processor
                                             {
                                                 $payment = $this->createPaymentEntity($input, $payment);
                                                 $payment->setBaseAmount($payment->getAmount());
+                                                $this->setAnalyticsLog($payment);
                                                 return $payment;
                                             });
 
@@ -1087,6 +1088,7 @@ class Processor
                 {
                     $payment = $this->createPaymentEntity($input, $payment);
                     $payment->setBaseAmount($payment->getAmount());
+                    $this->setAnalyticsLog($payment);
                     return $payment;
                 });
 
