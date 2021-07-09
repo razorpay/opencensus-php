@@ -1,0 +1,21 @@
+name: PHP Syntax Validator
+on: push
+jobs:
+  validate_php_syntax:
+    runs-on: [ self-hosted ]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v2
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+    continue-on-error: false
+
+    steps:
+      - name: Checkout repository
+        id: checkout
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+
+      - name: Lint Action
+        run: |
+          find -path /dashboard -prune -o -type f -iname '*.php' | xargs -n 1 php -l
