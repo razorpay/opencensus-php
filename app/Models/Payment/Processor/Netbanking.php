@@ -973,6 +973,7 @@ class Netbanking
         IFSC::CIUB,
         IFSC::FDRL,
         IFSC::HSBC,
+        IFSC::HDFC,
         self::LAVB_C,
         self::UTIB_C,
         self::IBKL_C,
