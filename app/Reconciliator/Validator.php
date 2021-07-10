@@ -106,6 +106,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_JKB     => ["/Recon File of Razorpay Dated:[0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::NETBANKING_DCB     => ["/RAZORPAY RECON file dt. [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::NETBANKING_DLB     => ["/RazorPay - Dhanalaxmi Bank PG Recon File New/"],
+        RequestProcessor\Base::NETBANKING_RBL     => ["/RBL PG Recon File/"],
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -160,6 +161,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_JSB          => ["/Dear Sir, Please find the details of payments made by our customers./"],
         RequestProcessor\Base::NETBANKING_IOB          => ["/This is a End Of Day Report email/"],
         RequestProcessor\Base::NETBANKING_KOTAK_V2     => ["/GBM CORPPG RECON REPORT FOR ENTITYCODE/"],
+        RequestProcessor\Base::NETBANKING_RBL          => ["/Dear All,\nPlease find attachment for the Razorpay Payment Gateway Reconciliation File.\nThank You From RBL Bank/"],
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
@@ -188,6 +190,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_DCB           => 1,
         RequestProcessor\Base::NETBANKING_DLB           => 1,
         RequestProcessor\Base::NETBANKING_ICICI         => 1,
+        RequestProcessor\Base::NETBANKING_RBL           => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -767,6 +770,19 @@ class Validator extends Base\Core
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
             RequestProcessor\Base::NETBANKING_DLB);
+
+        return ($validSubject and $validAttachmentCount);
+    }
+
+    public function validateNetbankingRBLEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_RBL);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::NETBANKING_RBL);
 
         return ($validSubject and $validAttachmentCount);
     }
