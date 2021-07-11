@@ -46,6 +46,10 @@ const StatusUpdate: React.FC = () => {
 
   const isDedupe = checkIfDedupe({ ...activationData, isInstantActivationEnabled }) === 'blocked';
 
+  if (!activationData) {
+    return null;
+  }
+
   if (
     (statusLastUpdated || escalationsData?.updated_at) &&
     (activationData.activated || isLimitReached) &&
