@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
-import { useQuery, useMutation } from 'react-query';
+import { useQuery } from 'react-query';
 import { fetch } from 'v2/services/rest/rest-fetch';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Text from '@razorpay/blade-old/src/atoms/Text';
@@ -10,12 +10,10 @@ import { useSnackbar } from 'v2/components/SnackBar/SnackbarContext';
 import useActivation from '../hooks/useActivation';
 import useEscalation from '../hooks/useEscalation';
 import { checkIfDedupe, getFormatedCurrency, isUnregisteredBusiness } from '../services/utils';
-import { getMode } from 'v2/services/mode';
 import AcceptPaymentsIcon from './Icons/AcceptPaymentsIcon.svg';
 import { useApp } from 'v2/context/App';
-import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import * as Messages from './Constants';
-import Time from 'v2/components/Time';
+import usePaymentVolume from '../hooks/usePaymentVolume';
 
 const ViewWithBackground = styled(View)`
   background: url('${AcceptPaymentsIcon}') right no-repeat;
@@ -63,10 +61,9 @@ const getCardContent = ({
   isWebsiteInWorkflow,
   internationalWorkflowData,
   escalationsData,
-  transactionAmount,
+  transactionAmountInfo,
   isInstantActivationEnabled,
   isDedupe,
-  lastUpdated,
 }) => {
   const isAccepted = activationData.activation_status === 'activated';
   const businessWebsite = activationData.business_website;
@@ -125,7 +122,7 @@ const getCardContent = ({
   ) {
     const isLimitReached =
       escalationsData && escalationsData?.amount >= escalationsData?.limit?.payment;
-    const isLatestTransaction = escalationsData?.amount > transactionAmount;
+    const isLatestTransaction = escalationsData?.amount > transactionAmountInfo;
     if (
       (activationData.activated || isLimitReached) &&
       activationData.activation_form_milestone === 'L1' &&
@@ -137,7 +134,9 @@ const getCardContent = ({
         <>
           <PaymentEscalation
             limit={escalationsData?.limit?.payment}
-            transactionAmount={isLatestTransaction ? escalationsData?.amount : transactionAmount}
+            transactionAmount={
+              isLatestTransaction ? escalationsData?.amount : transactionAmountInfo
+            }
             isLimitReached={isLimitReached}
           />
           <Description
@@ -147,22 +146,6 @@ const getCardContent = ({
                 : Messages.PAYMENT_ESCALATION.not_breach
             }
           />
-          {(lastUpdated || escalationsData?.updated_at) && (
-            <Flex alignItems="flex-start">
-              <Text size="small" color="shade.960">
-                <Icon name="info" fill="shade.960" size="small" />
-                <Space padding={[0, 0, 0, 0.5]}>
-                  <span>
-                    Payment volume last updated{' '}
-                    <Time
-                      value={isLatestTransaction ? escalationsData?.updated_at : lastUpdated}
-                      relative
-                    />
-                  </span>
-                </Space>
-              </Text>
-            </Flex>
-          )}
         </>
       );
     }
@@ -261,21 +244,9 @@ const fetchInternationalProductStatus = () =>
 const fetchWebsiteWorkflowStatus = () =>
   fetch<any>({ url: 'merchant/activation/websites/status', mode: 'live' });
 
-const fetchPaymentVolume = async (payload) => {
-  const response = await fetch<any>({
-    url: 'merchant/analytics',
-    mode: 'live',
-    method: 'POST',
-    data: payload,
-  });
-  return response;
-};
-
 const AcceptPaymentsCard: React.FC = () => {
   const snackbar = useSnackbar();
-  const { user, experiments } = useApp();
-  const [transactionAmount, setTransactionAmount] = useState<number>(0);
-  const [lastUpdated, setLastUpdated] = useState<number>(0);
+  const { experiments } = useApp();
   const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
 
   const { status: activationQueryStatus, data: activationData } = useActivation();
@@ -297,39 +268,16 @@ const AcceptPaymentsCard: React.FC = () => {
       onError: (err: any) => snackbar.error(err.response.errors[0]),
     },
   );
+  const {
+    fetchPayment: fetchPaymentInfo,
+    transactionAmount: transactionAmountInfo,
+  } = usePaymentVolume();
 
   const { status: escalationsStatus, data: escalationsData } = useEscalation();
 
-  const [fetchPayment] = useMutation(fetchPaymentVolume, {
-    onSuccess: (res) => {
-      if (res?.transactionVolume?.result.length) {
-        setTransactionAmount(res.transactionVolume.result[0].value);
-      }
-      if (res?.transactionVolume?.last_updated_at) {
-        setLastUpdated(res.transactionVolume.last_updated_at);
-      }
-    },
-  });
-
   useEffect(() => {
     if (activationQueryStatus === 'success' && activationData.activation_form_milestone === 'L1') {
-      const payload = {
-        filters: {
-          default: [
-            {
-              created_at: { gte: user.created_at, lte: new Date().getTime() },
-              authorized_at: { gt: 0 },
-            },
-          ],
-        },
-        aggregations: {
-          transactionVolume: {
-            agg_type: 'sum',
-            details: { index: 'payments', column: 'base_amount', mode: getMode(user.current) },
-          },
-        },
-      };
-      fetchPayment(payload);
+      fetchPaymentInfo();
     }
   }, [activationQueryStatus]);
 
@@ -349,11 +297,11 @@ const AcceptPaymentsCard: React.FC = () => {
       isWebsiteInWorkflow,
       internationalWorkflowData,
       escalationsData,
-      transactionAmount,
+      transactionAmountInfo,
       isInstantActivationEnabled,
       isDedupe,
-      lastUpdated,
     });
+
     if (
       (activationData.activation_form_milestone === 'L1' || activationData.submitted) &&
       content &&

@@ -5,10 +5,15 @@ import Space from '@razorpay/blade-old/src/atoms/Space';
 import { useApp } from 'v2/context/App';
 import AcceptPaymentsCard from '../../AcceptPaymentsCard';
 import OnboardingCard from '../../OnboardingCard';
+import { StatusUpdate } from '../../UpdateStatus';
+import styled from 'styled-components';
+
+const StatusUpdates = styled(View)`
+  margin-top: -10px;
+`;
 
 const Home: React.FC = () => {
   const { user } = useApp();
-
   return (
     <View>
       <Space padding={[2.5, 1, 0, 2]}>
@@ -19,6 +24,13 @@ const Home: React.FC = () => {
       <Space margin={[1, 2, 2, 2]}>
         <View>
           <AcceptPaymentsCard />
+        </View>
+      </Space>
+      <Space margin={[1, 2, 2, 2]}>
+        <View>
+          <StatusUpdates>
+            <StatusUpdate />
+          </StatusUpdates>
         </View>
       </Space>
       <OnboardingCard />

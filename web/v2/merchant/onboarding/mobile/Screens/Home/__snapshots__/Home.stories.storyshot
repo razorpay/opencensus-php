@@ -19,6 +19,13 @@ exports[`Storyshots Onboarding/Home Default 1`] = `
           class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 fsHGcL"
         />
         <div
+          class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 fsHGcL"
+        >
+          <div
+            class="Viewweb__View-sc-1o0hmxm-0 Home__StatusUpdates-sc-6d9aim-0 ilfyWd"
+          />
+        </div>
+        <div
           class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
           role="shimmer"
         >

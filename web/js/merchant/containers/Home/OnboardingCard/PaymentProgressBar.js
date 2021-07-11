@@ -10,7 +10,7 @@ import Time from 'common/ui/Time';
 
 const PaymentProgressBar = ({ user, mode, history, limitBreach }) => {
   const [paymentProgress, setPaymentProgress] = useState(0);
-  const [lastUpdatedTime , setLastUpdateTime] = useState(0);
+  const [lastUpdatedTime, setLastUpdateTime] = useState(0);
   const [content, setContent] = useState(null);
   const [button, setButton] = useState();
 
@@ -83,32 +83,38 @@ const PaymentProgressBar = ({ user, mode, history, limitBreach }) => {
   const isLatestTransaction = limitBreach?.amount > paymentProgress
 
   return (
-    <>
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    <React.Fragment>
       {content && user.activated ? (
-        <>
-        <div className="PaymentProgressBar-onboarding">
-          <div className="info">{content}</div>
-          <ProgressBarInfo
-            credits={limitBreach?.limit || '15000'}
-            accepted={ isLatestTransaction ? limitBreach?.amount : paymentProgress}
-          />
-          {button ? button : null}
-        </div>
-        
-          { limitBreach.escaltionsLastUpdatedAt || lastUpdatedTime ? (
-            <div>
+        <React.Fragment>
+          <div className="PaymentProgressBar-onboarding">
+            <div className="info">{content}</div>
+            <ProgressBarInfo
+              credits={limitBreach?.limit || '15000'}
+              accepted={isLatestTransaction ? limitBreach?.amount : paymentProgress}
+            />
+            {button ? button : null}
+          </div>
+          {limitBreach.escaltionsLastUpdatedAt || lastUpdatedTime ? (
+            <div className="status-info">
               <small>
-              <i className="i i-info-circle" />&nbsp;
-              <span>
-               Payment volume last updated {' '}<Time value={isLatestTransaction ? limitBreach.escaltionsLastUpdatedAt : lastUpdatedTime} relative />
-              </span>
+                <i className="i i-info-outline" />
+                &nbsp;
+                <span>
+                  Payment volume last updated{' '}
+                  <Time
+                    value={
+                      isLatestTransaction ? limitBreach.escaltionsLastUpdatedAt : lastUpdatedTime
+                    }
+                    relative
+                  />
+                </span>
               </small>
             </div>
-          ): null}
-      
-        </>
+          ) : null}
+        </React.Fragment>
       ) : null}
-    </>
+    </React.Fragment>
   );
 };
 
