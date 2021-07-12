@@ -1,3 +1,4 @@
+import React, { useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
@@ -25,7 +26,9 @@ import UserContactMobile from './UserContactMobile';
 import { analyticsTrack } from 'common/utils/analytics';
 import Button from 'common/new-ui/Button';
 import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
-
+import { EMAIL_UPDATE, CONTACT_NUMBER_UPDATE, BILLING_LABEL } from '../deeplink-constants';
+import IntoView from 'common/ui/IntoView';
+import TextHighlighter from 'common/ui/TextHighlighter';
 function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
   let businessWebsite = user.business_website ? (
     <div>
@@ -76,6 +79,15 @@ const MerchantDetails = ({
   isWebsiteInWorkflow,
   onWebsiteAdd,
 }) => {
+  // const showView = useRef(null);
+  // if (showView?.current) {
+  //   console.log(showView?.current, 'ref');
+  //   showView.current.scrollIntoView({
+  //     behavior: 'smooth',
+  //     block: 'center',
+  //     inline: 'center',
+  //   });
+  // }
   let activationName = 'KYC';
   let trackerName = 'kyc.form_fill';
   if (
@@ -124,7 +136,9 @@ const MerchantDetails = ({
       },
     });
   };
-
+  const labelHandler = (hashedWith, content) => {
+    return <TextHighlighter hashedWith={hashedWith}>{content}</TextHighlighter>;
+  };
   return (
     <div class="list-group details-row-container">
       <DetailRow label="Contact Name" value={titleCase(user.contact_name)} />
@@ -189,29 +203,31 @@ const MerchantDetails = ({
           }
         />
       )}
-
-      <DetailRow
-        label="Contact Email"
-        value={() => (
-          <a
-            onClick={() => {
-              analyticsTrack({
-                objectName: 'contact email',
-                actionName: 'clicked',
-                screen: 'my account',
-                properties: {
-                  ...getCommonAnalyticsProperties(window.rzp_user),
-                },
-              });
-            }}
-            href={`mailto:${user.email}`}
-          >
-            {user.email}
-          </a>
-        )}
-      />
-
-      <UserContactMobile />
+      <IntoView hashedWith={EMAIL_UPDATE}>
+        <DetailRow
+          label={() => labelHandler(EMAIL_UPDATE, 'Contact Email')}
+          value={() => (
+            <a
+              onClick={() => {
+                analyticsTrack({
+                  objectName: 'contact email',
+                  actionName: 'clicked',
+                  screen: 'my account',
+                  properties: {
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+              }}
+              href={`mailto:${user.email}`}
+            >
+              {user.email}
+            </a>
+          )}
+        />
+      </IntoView>
+      <IntoView hashedWith={CONTACT_NUMBER_UPDATE}>
+        <UserContactMobile />
+      </IntoView>
 
       <DetailRow label="Business Name" value={titleCase(user.business_name)} />
 
@@ -341,60 +357,62 @@ const MerchantDetails = ({
         user.activation_status == 'activated' &&
         user.business_type != 2 &&
         user.business_type != 11 && (
-          <DetailRow
-            label={() => (
-              <div>
-                <span>Brand Name</span>
-                <small class="help-content">
-                  <i class="i i-info-outline" />
-                  <Popover align="top" theme="dark">
-                    <PopoverBody>
-                      <div>
-                        <div>Brand Name changes would be reflected in the following places,</div>
-                        <div>- Transaction Confirmation Email</div>
-                        <div>- Refund Email</div>
-                        <div>- Payment Pages</div>
-                        <div>- Payment link</div>
-                        <div>- Checkout</div>
-                        <div>- Smart Collect</div>
-                        <div>- Route</div>
-                        <div>- Subscriptions</div>
-                      </div>
-                    </PopoverBody>
-                  </Popover>
-                </small>
-              </div>
-            )}
-            value={() =>
-              user.billing_label ? (
-                <span>
-                  {user.billing_label}
-                  <a
-                    class="p-l"
-                    onClick={(e) => {
-                      analyticsTrack({
-                        objectName: 'Brand name edit',
-                        actionName: 'clicked',
-                        screen: 'my account',
-                        properties: {
-                          currentBrandName: user.billing_label,
-                          ...getCommonAnalyticsProperties(window.rzp_user),
-                        },
-                      });
-                      changeBillingLabel(e);
-                    }}
-                    title="Edit Billing Label"
-                  >
-                    <i class="i i-edit" />
+          <IntoView hashedWith={BILLING_LABEL}>
+            <DetailRow
+              label={() => (
+                <div>
+                  <TextHighlighter hashedWith={BILLING_LABEL}>Brand Name</TextHighlighter>
+                  <small class="help-content">
+                    <i class="i i-info-outline" />
+                    <Popover align="top" theme="dark">
+                      <PopoverBody>
+                        <div>
+                          <div>Brand Name changes would be reflected in the following places,</div>
+                          <div>- Transaction Confirmation Email</div>
+                          <div>- Refund Email</div>
+                          <div>- Payment Pages</div>
+                          <div>- Payment link</div>
+                          <div>- Checkout</div>
+                          <div>- Smart Collect</div>
+                          <div>- Route</div>
+                          <div>- Subscriptions</div>
+                        </div>
+                      </PopoverBody>
+                    </Popover>
+                  </small>
+                </div>
+              )}
+              value={() =>
+                user.billing_label ? (
+                  <span>
+                    {user.billing_label}
+                    <a
+                      class="p-l"
+                      onClick={(e) => {
+                        analyticsTrack({
+                          objectName: 'Brand name edit',
+                          actionName: 'clicked',
+                          screen: 'my account',
+                          properties: {
+                            currentBrandName: user.billing_label,
+                            ...getCommonAnalyticsProperties(window.rzp_user),
+                          },
+                        });
+                        changeBillingLabel(e);
+                      }}
+                      title="Edit Billing Label"
+                    >
+                      <i class="i i-edit" />
+                    </a>
+                  </span>
+                ) : (
+                  <a className="p-l" onClick={changeBillingLabel} title="Set Billing Label">
+                    Set Billing Label
                   </a>
-                </span>
-              ) : (
-                <a className="p-l" onClick={changeBillingLabel} title="Set Billing Label">
-                  Set Billing Label
-                </a>
-              )
-            }
-          />
+                )
+              }
+            />
+          </IntoView>
         )}
 
       {user.merchant && (
@@ -415,6 +433,7 @@ const MerchantDetails = ({
           )}
         />
       )}
+
       {user.canGenerateTnCPage && !user.business_website && !user.isAccepted && (
         <DetailRow
           label="Terms and Conditions Page"

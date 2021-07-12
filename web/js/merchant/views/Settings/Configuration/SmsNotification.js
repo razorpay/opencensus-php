@@ -8,7 +8,8 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import SwitchField from 'common/ui/Forms/SwitchField';
-
+import { SMS_NOTIF } from './deeplink-constants';
+import TextHighlighter from 'common/ui/TextHighlighter';
 function SmsNotification({ currentUser, showNotification }) {
   const [sms_optin, setSmsOptin] = useState(null);
 
@@ -119,7 +120,9 @@ function SmsNotification({ currentUser, showNotification }) {
   return (
     <div class="panel panel-default">
       <div class="panel-heading">
-        <span class="title">SMS Notifications</span>
+        <span class="title">
+          <TextHighlighter hashedWith={SMS_NOTIF}>SMS Notifications</TextHighlighter>
+        </span>
 
         <span class="toggler-btn">
           <SwitchField

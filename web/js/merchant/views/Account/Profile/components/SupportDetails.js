@@ -8,6 +8,8 @@ import { isMobile } from 'common/utils/validators';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
+import TextHighlighter from 'common/ui/TextHighlighter';
+import { SUPPORT_DETAILS } from '../deeplink-constants';
 @connect((state) => ({ support_detail: state.supportdetails.merchantSupportDetail }), {
   fetchSupportDetail,
   openModal,
@@ -50,7 +52,7 @@ export default class SupportDetails extends Component {
     return (
       <div className="panel panel-default">
         <div className="panel-heading">
-          Support Details
+         <TextHighlighter hashedWith={SUPPORT_DETAILS}>Support Details</TextHighlighter>
           <ShowWhen
           myRole="owner admin manager"
           >

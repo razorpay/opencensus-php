@@ -20,7 +20,15 @@ import WhatsappNotification from './WhatsappNotification';
 import InternationalPayments from './InternationalPayments';
 import { fetchUser } from 'merchant/reducers/session';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
-
+import IntoView from 'common/ui/IntoView';
+import {
+  FLASH_CHECKOUT,
+  CAPTURE_SETTINGS,
+  EMAIL_NOTIF,
+  SMS_NOTIF,
+  REFUND_SETTINGS,
+  WHATSAPP_NOTIF,
+} from './deeplink-constants';
 @connect(
   (state) => {
     return {
@@ -254,7 +262,6 @@ export default class CongfigurationContainer extends Component {
       configState: { config, loading },
       org,
     } = this.props;
-
     let showInternationalPaymentsCard = false;
     if (mode === 'live') {
       if (user.activated_at < 1614105000) {
@@ -282,17 +289,34 @@ export default class CongfigurationContainer extends Component {
               onSwitchChange={this.handleCovidReliefOptinAndOut}
               isLoading={this.state.isLoading}
             />
-            {user.isOrgAllowedFunctionality('flashcheckout') && <FlashCheckout org={org} />}
-            <PaymentSettings org={org} />
-            <DefaultRefundSpeed org={org} />
+            {user.isOrgAllowedFunctionality('flashcheckout') && (
+              <IntoView hashedWith={FLASH_CHECKOUT}>
+                <FlashCheckout org={org} />
+              </IntoView>
+            )}
+            <IntoView hashedWith={CAPTURE_SETTINGS}>
+                <PaymentSettings org={org} />
+            </IntoView>
+            <IntoView hashedWith={REFUND_SETTINGS}>
+              <DefaultRefundSpeed org={org} />
+            </IntoView>
 
             {mode === 'live' && showInternationalPaymentsCard && (
               <InternationalPayments user={user} mode={mode} config={config} org={org} />
             )}
-
-            <EmailNotifications form="configForm" onSave={this.saveConfig} />
-            {user.contact_mobile && <SmsNotification />}
-            {this.isWhatsappNotificationEnabled(user) && <WhatsappNotification />}
+            <IntoView hashedWith={EMAIL_NOTIF}>
+              <EmailNotifications form="configForm" onSave={this.saveConfig} />
+            </IntoView>
+            {user.contact_mobile && (
+              <IntoView hashedWith={SMS_NOTIF}>
+                <SmsNotification />
+              </IntoView>
+            )}
+            {this.isWhatsappNotificationEnabled(user) && (
+              <IntoView hashedWith={WHATSAPP_NOTIF}>
+                <WhatsappNotification />
+              </IntoView>
+            )}
           </div>
         )}
       </div>

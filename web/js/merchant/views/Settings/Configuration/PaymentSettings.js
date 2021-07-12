@@ -20,7 +20,8 @@ import CaptureMode from './CaptureSettingsComponents/CaptureMode';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import { parseTimeoutValues } from './CaptureSettingsComponents/data';
 import { renderTimeoutAsString } from './PaymentCaptureComponents/util';
-
+import { CAPTURE_SETTINGS } from './deeplink-constants';
+import TextHighlighter from 'common/ui/TextHighlighter';
 const CAPTURE_ASSETS_CDN_URL = 'https://cdn.razorpay.com/static/assets/capture-settings';
 
 const CAPTURE_DETAILS = [
@@ -530,7 +531,9 @@ export default class PaymentSettings extends Component {
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
-          <span class="title">Payment Capture</span>
+          <span class="title">
+            <TextHighlighter hashedWith={CAPTURE_SETTINGS}>Payment Capture</TextHighlighter>
+          </span>
 
           <span class="toggler-btn">
             <DocLink

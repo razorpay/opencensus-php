@@ -6,6 +6,9 @@ import { updateFeatures } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import SwitchField from 'common/ui/Forms/SwitchField';
+import { getCustomURL } from 'merchant/components/DocsLink';
+import { FLASH_CHECKOUT } from './deeplink-constants';
+import TextHighlighter from 'common/ui/TextHighlighter';
 @connect(
   (state) => {
     return {
@@ -128,7 +131,8 @@ export default class FlashCheckout extends Component {
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
-          <span class="title">Flash Checkout</span>
+          <span class="title">
+            <TextHighlighter hashedWith={FLASH_CHECKOUT}>Flash Checkout</TextHighlighter></span>
 
           <span class="toggler-btn">
             <SwitchField

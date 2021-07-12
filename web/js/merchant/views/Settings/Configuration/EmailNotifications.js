@@ -7,7 +7,8 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { required } from 'common/utils/validators';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
+import { EMAIL_NOTIF } from './deeplink-constants';
+import TextHighlighter from 'common/ui/TextHighlighter';
 @connect((state) => state.config, { showNotification })
 @reduxForm({})
 export default class EmailNotifications extends Component {
@@ -40,7 +41,9 @@ export default class EmailNotifications extends Component {
     return (
       <div class="panel panel-default ftx-parent">
         <div class="panel-heading">
-          <span class="title">Email Notifications</span>
+          <span class="title">
+            <TextHighlighter hashedWith={EMAIL_NOTIF}>Email Notifications</TextHighlighter>
+          </span>
         </div>
 
         <div class="panel-body">

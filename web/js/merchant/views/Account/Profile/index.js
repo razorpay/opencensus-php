@@ -33,6 +33,8 @@ import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 import UpdateBillingLabel from './components/UpdateBillingLabel';
 import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import IntoView from 'common/ui/IntoView';
+import { SUPPORT_DETAILS, UPDATE_BANK_ACC, SETTELEMENT_CYCLE } from './deeplink-constants';
 
 @connect(
   (state) => {
@@ -473,8 +475,9 @@ export default class Profile extends Component {
               />
             ) : null}
           </div>
-
-          <SupportDetails />
+          <IntoView hashedWith={SUPPORT_DETAILS}>
+            <SupportDetails />
+          </IntoView>
 
           <ShowWhen
             additionalCondition={(user) =>
@@ -485,12 +488,14 @@ export default class Profile extends Component {
           </ShowWhen>
 
           {bankAccount ? (
-            <BankAccountDetails
-              bankAccount={bankAccount}
-              isBankAccountChangeAllowed={this.state.isBankAccountChangeAllowed}
-              settlement_amount={settlement_amount.data}
-              onChangeBankAccountDetails={this.openChangeBankDetailsModal}
-            />
+            <IntoView hashedWith={UPDATE_BANK_ACC}>
+              <BankAccountDetails
+                bankAccount={bankAccount}
+                isBankAccountChangeAllowed={this.state.isBankAccountChangeAllowed}
+                settlement_amount={settlement_amount.data}
+                onChangeBankAccountDetails={this.openChangeBankDetailsModal}
+              />
+            </IntoView>
           ) : null}
 
           {this.state.merchantCount > 1 || this.state.loggedInUser.email !== user.email ? (
@@ -509,7 +514,11 @@ export default class Profile extends Component {
           ) : null}
 
           {!user.isMerchantRestricted && !this.state.hasMerchant ? <UpgradeMerchantForm /> : null}
-          {<SettlementDetails />}
+          {
+            <IntoView hashedWith={SETTELEMENT_CYCLE}>
+              <SettlementDetails />
+            </IntoView>
+          }
         </div>
       </div>
     );

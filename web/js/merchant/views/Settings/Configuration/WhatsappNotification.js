@@ -5,6 +5,8 @@ import { withRouter } from 'react-router-dom';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import RTracking from 'react-tracking';
+import { WHATSAPP_NOTIF } from './deeplink-constants';
+import TextHighlighter from 'common/ui/TextHighlighter';
 
 function WhatsappNotification({ currentUser, showNotification, location, history, tracking }) {
   const [whatsapp_optin, setWhatsappOptin] = useState(null);
@@ -98,7 +100,9 @@ function WhatsappNotification({ currentUser, showNotification, location, history
   return (
     <div class="panel panel-default" ref={whatsappEnableSection}>
       <div class="panel-heading">
-        <span class="title">WhatsApp Notifications</span>
+        <span class="title">
+          <TextHighlighter hashedWith={WHATSAPP_NOTIF}>WhatsApp Notifications</TextHighlighter>
+        </span>
 
         <span class="toggler-btn">
           <SwitchField

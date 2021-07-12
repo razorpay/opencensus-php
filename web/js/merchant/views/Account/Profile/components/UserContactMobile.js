@@ -11,7 +11,8 @@ import { updateContactMobile, updateUser } from 'merchant_common/reducers/user';
 import { verifyTwoFactorOtp } from 'merchant_common/reducers/twoFactor';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
-
+import TextHighlighter from 'common/ui/TextHighlighter';
+import { CONTACT_NUMBER_UPDATE } from '../deeplink-constants';
 @connect(
   (state) => ({
     user: state.session.user.user,
@@ -45,12 +46,14 @@ export default class UserContactMobile extends React.Component {
       component: <UpdateContactMobile onComplete={this.onUpdateContactMobileComplete} />,
     });
   };
-
+  labelHandler = () => {
+    return <TextHighlighter hashedWith={CONTACT_NUMBER_UPDATE}>Contact Number</TextHighlighter>;
+  };
   render() {
     const contactMobile = this.props.user.contact_mobile;
     return (
       <DetailRow
-        label="Contact Number"
+        label={this.labelHandler}
         value={() => (
           <ContactMobileValue
             contactMobile={contactMobile}

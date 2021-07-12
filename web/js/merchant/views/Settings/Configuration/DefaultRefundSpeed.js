@@ -18,6 +18,8 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { CreateTicketEmitter } from '../../TicketSupport/utils';
 import { getCustomURL } from 'merchant/components/DocsLink';
+import { REFUND_SETTINGS } from './deeplink-constants';
+import TextHighlighter from 'common/ui/TextHighlighter';
 @connect(
   (state) => {
     return {
@@ -163,7 +165,7 @@ export default class DefaultRefundSpeed extends Component {
       <div id="default-refund-container" class="panel panel-default refund-panel">
         <div class="panel-heading pl10" style={{ paddingTop: 0 }}>
           <span class="title">
-            Default Refund Speed{' '}
+            <TextHighlighter hashedWith={REFUND_SETTINGS}>Default Refund Speed</TextHighlighter>{' '}
             <a
               class="highlight know-more"
               target="_blank"

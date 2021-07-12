@@ -5,7 +5,8 @@ import DetailRow from 'merchant/components/DetailRow';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
+import TextHighlighter from 'common/ui/TextHighlighter';
+import { UPDATE_BANK_ACC } from '../deeplink-constants';
 const BankAccountDetails = ({
   bankAccount,
   onChangeBankAccountDetails,
@@ -40,7 +41,7 @@ const BankAccountDetails = ({
   return (
     <div class="panel panel-default" ref={bankAccountSectionRef}>
       <div class="panel-heading">
-        Bank Account
+        <TextHighlighter hashedWith={UPDATE_BANK_ACC}>Bank Account</TextHighlighter>
         {settlement_amount.no_settlement &&
           settlement_amount.no_settlement.on_hold &&
           !user.isOrgAxis && (

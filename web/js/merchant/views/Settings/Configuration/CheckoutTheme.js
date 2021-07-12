@@ -19,6 +19,9 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
 import LoaderDots from 'common/ui/LoaderDots';
+import IntoView from 'common/ui/IntoView';
+import { CHECKOUT_LANG } from './deeplink-constants';
+import TextHighlighter from 'common/ui/TextHighlighter';
 import Button from 'common/new-ui/Button';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { getCustomURL } from 'merchant/components/DocsLink';
@@ -351,39 +354,43 @@ export default class CheckoutTheme extends Component {
                   </div>
                 </div>
               </div>
-              {this.props.locale && (
-                <div class="form-group">
-                  <label class="col-md-12" style={{ marginTop: 12 }}>
-                    <strong>Default Language</strong>
-                  </label>
-                  <div class="col-md-6" style={{ marginTop: 0 }}>
-                    <select
-                      class="form-control"
-                      defaultValue={this.props.locale.config.language_code}
-                      onChange={this.onChangeLocale}
-                    >
-                      {languageOptions.map((l) => (
-                        <option key={l.code} value={l.code}>
-                          {l.name}
-                        </option>
-                      ))}
-                    </select>
+              <IntoView hashedWith={CHECKOUT_LANG}>
+                {this.props.locale && (
+                  <div class="form-group">
+                    <label class="col-md-12" style={{ marginTop: 12 }}>
+                      <strong>
+                        <TextHighlighter hashedWith={CHECKOUT_LANG}>Default Language</TextHighlighter>
+                      </strong>
+                    </label>
+                    <div class="col-md-6" style={{ marginTop: 0 }}>
+                      <select
+                        class="form-control"
+                        defaultValue={this.props.locale.config.language_code}
+                        onChange={this.onChangeLocale}
+                      >
+                        {languageOptions.map((l) => (
+                          <option key={l.code} value={l.code}>
+                            {l.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                      <AsyncButton
+                        class="btn btn-primary"
+                        text="Save"
+                        pendingText="Saving..."
+                        onClick={this.saveLocale}
+                      />
+                    </div>
+                    <div class="col-md-12">
+                      <br />
+                      Default language will be used on the Checkout page if customer doesn’t specify
+                      a language.
+                    </div>
                   </div>
-                  <div class="col-md-3 col-sm-6">
-                    <AsyncButton
-                      class="btn btn-primary"
-                      text="Save"
-                      pendingText="Saving..."
-                      onClick={this.saveLocale}
-                    />
-                  </div>
-                  <div class="col-md-12">
-                    <br />
-                    Default language will be used on the Checkout page if customer doesn’t specify a
-                    language.
-                  </div>
-                </div>
-              )}
+                )}
+              </IntoView>
             </form>
             <div class="footer-note">
               Changes will reflect on{' '}

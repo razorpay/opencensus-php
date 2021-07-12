@@ -7,7 +7,8 @@ import { fetchSchedule, fetchHolidayList } from 'merchant/reducers/settlements/d
 import { fetchCurrentBalance } from 'merchant/reducers/home';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
+import TextHighlighter from 'common/ui/TextHighlighter';
+import { SETTELEMENT_CYCLE } from '../deeplink-constants';
 @connect(
   (state) => ({
     ...state.profile,
@@ -55,7 +56,7 @@ export default class SettlementDetails extends Component {
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
-          Settlement Details
+          <TextHighlighter hashedWith={SETTELEMENT_CYCLE}>Settlement Details</TextHighlighter>
           <span class="pull-right">
             <a onClick={this.viewSettlementSchedule}>View Settlement Schedule</a>
           </span>
