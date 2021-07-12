@@ -33,9 +33,9 @@ class Yesb extends NetbankingBase
 
             $formattedData[] = [
                 ClaimFields::MERCHANT_CODE      => 'RAZORPAY',
-                ClaimFields::TRANSACTION_DATE   => $date,
-                ClaimFields::PAYMENT_ID         => $row['payment']['id'],
-                ClaimFields::BANK_REFERENCE_ID  => $this->fetchBankPaymentId($row),
+                ClaimFields::TRANSACTION_DATE   => strval($date),
+                ClaimFields::PAYMENT_ID         => strval($row['payment']['id']),
+                ClaimFields::BANK_REFERENCE_ID  => strval($this->fetchBankPaymentId($row)),
                 ClaimFields::TRANSACTION_AMOUNT => $this->getFormattedAmount($row['payment']['amount']),
             ];
         }

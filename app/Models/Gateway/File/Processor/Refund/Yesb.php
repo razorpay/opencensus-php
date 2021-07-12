@@ -41,10 +41,10 @@ class Yesb extends Base
 
             $content[] = [
                 RefundFields::MERCHANT_CODE      => 'RAZORPAY',
-                RefundFields::TRANSACTION_DATE   => $date,
-                RefundFields::PAYMENT_ID         => $row['payment']['id'],
-                RefundFields::BANK_REFERENCE_ID  => $this->fetchBankPaymentId($row),
-                RefundFields::TRANSACTION_AMOUNT => $this->getFormattedAmount($row['payment']['amount']),
+                RefundFields::TRANSACTION_DATE   => strval($date),
+                RefundFields::PAYMENT_ID         => strval($row['payment']['id']),
+                RefundFields::BANK_REFERENCE_ID  => strval($this->fetchBankPaymentId($row)),
+                RefundFields::TRANSACTION_AMOUNT => strval($this->getFormattedAmount($row['payment']['amount'])),
                 RefundFields::REFUND_AMOUNT      => $this->getFormattedAmount($row['refund']['amount']),
             ];
         }
