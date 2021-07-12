@@ -79,6 +79,7 @@ class DowntimeSlackNotification
         $this->validateRequiredKeys($downtime);
 
         $downtimeId = $downtime['id'];
+        $severity = $downtime['severity'];
 
         list($channelThreadKey, $channelThreadMap) = $this->getDowntimeChannelTheadMap($downtimeId);
 
@@ -98,8 +99,23 @@ class DowntimeSlackNotification
                     'channelmap' => $channelThreadMap,
                     'downtimeId' => $downtimeId
                 ]);
-
             return;
+        }
+        else
+        {
+            if(  ($this->isResolve($downtimeState) === false)and
+                 (empty($channelThreadMap) === false) and
+                 $this->isSameSeverity($severity, $channelThreadMap))
+            {
+                $this->trace->info(TraceCode::ABORT_SAME_SEVERITY_DOWNTIME_SLACK_NOTIFICATION,
+                                   [
+                                       'key' => $channelThreadKey,
+                                       'channelmap' => $channelThreadMap,
+                                       'downtimeId' => $downtimeId,
+                                       'severity' => $severity
+                                   ]);
+                return;
+            }
         }
 
         $eventTime = null;
@@ -115,7 +131,12 @@ class DowntimeSlackNotification
 
         if ($this->isCreateState($downtimeState))
         {
-            $this->updateCache($downtime['eventTime'], $responses, $channelThreadKey, $downtimeId, $downtimeState);
+            $this->updateCache($downtime['eventTime'], $responses, $channelThreadKey, $downtimeId, $downtimeState,  $severity);
+        }
+
+        if($this->isTrannsitionState($downtimeState))
+        {
+            $this->updateSeverity($channelThreadKey, $channelThreadMap, $severity);
         }
 
         if ($this->isResolve($downtimeState))
@@ -134,7 +155,7 @@ class DowntimeSlackNotification
             $threadId = null;
             $this->trace->info(TraceCode::UPDATED_DOWNTIME_NOTIFICATION_CHANNEL_MAP,
                 [
-                    'channelmap' => $channelThreadMap,
+                    'channelMap' => $channelThreadMap,
                 ]);
 
             if (array_key_exists($channel, $channelThreadMap))
@@ -343,7 +364,7 @@ class DowntimeSlackNotification
      * @param $downtimeId
      * @param string $downtimeState
      */
-    private function updateCache($eventTime, array $responses, $channelThreadKey, $downtimeId, string $downtimeState): void
+    private function updateCache($eventTime, array $responses, $channelThreadKey, $downtimeId, string $downtimeState, $severity): void
     {
         $newMap = [];
         foreach ($responses as $res)
@@ -377,6 +398,7 @@ class DowntimeSlackNotification
             }
         }
 
+        $newMap['severity'] = $severity;
         $newMap['eventTime'] = $eventTime;
 
         $this->redis->HMSET($channelThreadKey, ['config' => json_encode($newMap)]);
@@ -455,6 +477,26 @@ class DowntimeSlackNotification
         return $merchantName['name'];
     }
 
+    private function isSameSeverity($severity, $channelThreadMap): bool
+    {
+        //For notifications where severity was not set.
+        if(isset($channelThreadMap['severity']) === false)
+        {
+            return false;
+        }
+        else
+        {
+            $oldSeverity = $channelThreadMap['severity'];
+            $this->trace->info(TraceCode::ACCOUNT_CREATION_V2_REQUEST, ["c"=>$channelThreadMap]);
+            return ($oldSeverity === $severity);
+        }
+    }
+
+    private function updateSeverity($channelThreadKey, $channelThreadMap, $severity)
+    {
+        $channelThreadMap['severity'] = $severity;
+        $this->redis->HMSET($channelThreadKey, ['config' => json_encode($channelThreadMap)]);
+    }
 
 
 }
