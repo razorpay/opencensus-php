@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Models\Emi\Migration;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Models\Payment\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
@@ -211,6 +212,13 @@ class CardPaymentService
             unset($input['gateway']);
 
             $input['gateway']['redirect']['dynamicContent'] = $dynamicContent;
+        }
+
+        if ((Gateway::isGatewayCallbackEmpty($gateway) === true) and
+            (($action === Action::CALLBACK) or
+                ($action === Action::PAY)))
+        {
+            unset($input['gateway']);
         }
 
         if ($action === Action::AUTHORIZE_FAILED)

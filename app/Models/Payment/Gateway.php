@@ -111,6 +111,7 @@ class Gateway
     const UPI_JUSPAY             = 'upi_juspay';
 
     const CARD_FSS               = 'card_fss';
+    const CHECKOUT_DOT_COM       = 'checkout_dot_com';
 
     const WALLET_AIRTELMONEY        = 'wallet_airtelmoney';
     const WALLET_AMAZONPAY          = 'wallet_amazonpay';
@@ -1075,6 +1076,7 @@ class Gateway
         Payment\Gateway::BAJAJFINSERV,
         Payment\Gateway::FULCRUM,
         Payment\Gateway::TWID,
+        Payment\Gateway::CHECKOUT_DOT_COM,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -1184,6 +1186,7 @@ class Gateway
             self::CASHFREE,
             self::ZAAKPAY,
             self::CCAVENUE,
+            self::CHECKOUT_DOT_COM,
         ],
 
         Method::NETBANKING => [
@@ -1361,6 +1364,7 @@ class Gateway
         self::HITACHI               => [],
         self::MPGS                  => [],
         self::ISG                   => [],
+        self::CHECKOUT_DOT_COM      => [],
     ];
 
     /**
@@ -1641,6 +1645,14 @@ class Gateway
             Network::RUPAY,
             Network::DICL,
             Network::DISC,
+        ],
+        self:: CHECKOUT_DOT_COM =>[
+            Network::MC,
+            Network::VISA,
+            Network::AMEX,
+            Network::DISC,
+            Network::DICL,
+            Network::JCB,
         ]
     ];
 
@@ -2159,6 +2171,7 @@ class Gateway
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
         Gateway::HITACHI,
+        Gateway::CHECKOUT_DOT_COM,
     ];
 
     /**
@@ -2461,15 +2474,16 @@ class Gateway
     ];
 
     public static $authorizationAuthenticationGatewayMap = [
-        Gateway::HITACHI     => Gateway::MPI_BLADE,
-        Gateway::FULCRUM     => Gateway::MPI_BLADE,
-        Gateway::CYBERSOURCE => Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA  => Gateway::FIRST_DATA,
-        Gateway::AXIS_MIGS   => Gateway::AXIS_MIGS,
-        Gateway::PAYU        => Gateway::PAYU,
-        Gateway::CASHFREE    => Gateway::CASHFREE,
-        Gateway::ZAAKPAY     => Gateway::ZAAKPAY,
-        Gateway::CCAVENUE    => Gateway::CCAVENUE
+        Gateway::HITACHI          => Gateway::MPI_BLADE,
+        Gateway::FULCRUM          => Gateway::MPI_BLADE,
+        Gateway::CYBERSOURCE      => Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA       => Gateway::FIRST_DATA,
+        Gateway::AXIS_MIGS        => Gateway::AXIS_MIGS,
+        Gateway::PAYU             => Gateway::PAYU,
+        Gateway::CASHFREE         => Gateway::CASHFREE,
+        Gateway::ZAAKPAY          => Gateway::ZAAKPAY,
+        Gateway::CCAVENUE         => Gateway::CCAVENUE,
+        Gateway::CHECKOUT_DOT_COM => Gateway::CHECKOUT_DOT_COM
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -3331,7 +3345,8 @@ class Gateway
             self::CASHFREE,
             self::ZAAKPAY,
             self::FULCRUM,
-            self::CCAVENUE
+            self::CCAVENUE,
+            self::CHECKOUT_DOT_COM
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -3368,6 +3383,21 @@ class Gateway
             self::ZAAKPAY,
             self::FULCRUM,
             self::CCAVENUE,
+            self::CHECKOUT_DOT_COM,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
+    /**
+     * Method to filter gateways which provide empty callbacks
+     * @param $gateway
+     * @return bool
+     */
+    public static function isGatewayCallbackEmpty($gateway): bool
+    {
+        $gateways = [
+            self::CHECKOUT_DOT_COM,
         ];
 
         return (in_array($gateway, $gateways, true));

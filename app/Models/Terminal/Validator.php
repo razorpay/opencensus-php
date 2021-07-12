@@ -148,6 +148,7 @@ class Validator extends Base\Validator
         Payment\Gateway::FULCRUM,
         Payment\Gateway::NETBANKING_UBI,
         Payment\Gateway::NETBANKING_PNB,
+        Payment\Gateway::CHECKOUT_DOT_COM,
     ];
 
     protected static $createValidators = [
@@ -284,6 +285,13 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY                        => 'sometimes|string|max:30',
         Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed'
+    ];
+
+    protected static $checkoutDotComTerminalRules = [
+        Entity::GATEWAY                                 => 'required|in:checkout_dot_com',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::INTERNATIONAL                           => 'sometimes|boolean',
     ];
 
     protected static $ccavenueTerminalRules = [

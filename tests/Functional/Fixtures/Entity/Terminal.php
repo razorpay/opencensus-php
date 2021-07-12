@@ -399,6 +399,20 @@ class Terminal extends Base
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+    public function createCheckoutDotComTerminal(array $override)
+    {
+        $attributes = [
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'checkout_dot_com',
+            'card'                  => 1,
+            'upi'                   => 0,
+            'netbanking'            => 0,
+            'gateway_merchant_id'   => 'abcd',
+            'network_category'      => 'ecommerce',
+        ];
+        $attributes = array_merge($attributes, $override);
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 
     public function createZaakpayTerminal()
     {

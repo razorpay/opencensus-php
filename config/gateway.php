@@ -123,6 +123,7 @@ return [
         'paylater_icici',
         'hdfc_debit_emi',
         'netbanking_dlb',
+        'checkout_dot_com',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -147,6 +148,7 @@ return [
     'mock_kotak'                  => env('KOTAK_MOCK'),
     'mock_mobikwik'               => env('MOBIKWIK_MOCK'),
     'mock_paytm'                  => env('PAYTM_MOCK'),
+    'mock_checkout_dot_com'       => env('CHECKOUT_DOT_COM_MOCK'),
     'mock_netbanking_sib'         => env('NETBANKING_SIB_MOCK'),
     'mock_netbanking_cbi'         => env('NETBANKING_CBI_MOCK'),
     'mock_netbanking_hdfc'        => env('NETBANKING_HDFC_MOCK'),

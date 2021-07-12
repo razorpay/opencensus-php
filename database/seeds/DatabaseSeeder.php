@@ -1292,6 +1292,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingDcbTerminal();
         $this->createTwidTerminal();
         $this->createCcavenueTerminal();
+        $this->createCheckoutDotComTerminal();
     }
 
     protected function createNetbankingCorporationTerminals()
@@ -2967,4 +2968,19 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createCheckoutDotComTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id' => 'h1t3hfU4c2A48G',
+                'merchant_id' => Account::TEST_ACCOUNT,
+                'gateway' => Gateway::CHECKOUT_DOT_COM,
+                'card' => '1',
+                'netbanking' => '0',
+                'gateway_merchant_id' => '323395bf6400747e2f43bbd9a93323',
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
 }

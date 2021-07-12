@@ -3854,4 +3854,23 @@ return [
         ],
     ],
 
+    'testCreateCheckoutDotComTerminal' => [
+        "request" => [
+            'content' => [
+                'gateway'               => 'checkout_dot_com',
+                'gateway_merchant_id'   => '323395bf6400747e2f43bbd9a93323',
+                'card'                  => 1,
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => '323395bf6400747e2f43bbd9a93323',
+                'enabled'              => true,
+            ]
+        ]
+    ],
 ];

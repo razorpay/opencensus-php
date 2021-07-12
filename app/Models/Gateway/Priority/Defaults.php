@@ -29,6 +29,7 @@ class Defaults
                 Gateway::HITACHI,
                 Gateway::MPGS,
                 Gateway::CARD_FSS,
+                Gateway::CHECKOUT_DOT_COM,
             ],
 
             /**

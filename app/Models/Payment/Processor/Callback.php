@@ -346,7 +346,8 @@ trait Callback
         }
 
         if ((empty($input['gateway']) === true) and
-            ($input['payment']['method'] === Payment\Method::CARD))
+            ($input['payment']['method'] === Payment\Method::CARD) and
+            (Gateway::isGatewayCallbackEmpty($input['payment']['gateway']) === false))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_GATEWAY_EMPTY_CALLBACK,null,null,
