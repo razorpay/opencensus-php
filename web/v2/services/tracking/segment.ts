@@ -36,6 +36,9 @@ const getCommonProperties = ({ screen, properties, user }) => {
     is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
     is_instant_activation_enabled: user.isInstantActivationEnabled,
     is_aadhar_ekyc_mandatory: user.isAadharEkycMandatory,
+    user_business_category: user.business_category,
+    user_business_sub_category: user.business_subcategory,
+    device_type: 'mweb',
     new_onboarding_flow: 'yes',
     mode: 'live',
     rzp_mode: getMode(user.id) || '',
@@ -53,6 +56,7 @@ export const analyticsTrack = ({
   eventAction,
   activationType = 'kyc',
   user,
+  isLJReqiuired = true,
 }) => {
   if (!objectName) {
     throw new Error('[analytics]: objectName cannot be empty');
@@ -82,7 +86,7 @@ export const analyticsTrack = ({
       ...commonProperties,
     });
   }
-  if (window.rzpQ && window.rzpQ.push) {
+  if (window.rzpQ && window.rzpQ.push && isLJReqiuired) {
     switch (eventAction) {
       case 'initiated':
         window.rzpQ.push(

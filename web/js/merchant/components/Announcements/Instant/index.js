@@ -38,6 +38,22 @@ export default class InstantActivationAnnouncements extends Component {
     );
   };
 
+  sendL2StartEvent = () => {
+    const isL1Submitted = this.props.user?.instantActivation?.isL1Submitted;
+    if (isL1Submitted) {
+      analyticsTrack({
+        objectName: 'L2 Start',
+        actionName: 'form fill initiated',
+        screen: 'home page',
+        properties: {
+          clickSource: 'form submission popup',
+          ...getCommonSegmentProperties(),
+          milestone: 'L2 Start',
+        },
+      });
+    }
+  };
+
   render() {
     const {
       user,
@@ -58,7 +74,6 @@ export default class InstantActivationAnnouncements extends Component {
     let theme = 'warning',
       title,
       content = payments instanceof Object;
-
 
     const limitBreachHappened =
       !!limitBreach && limitBreach.type === 'payment_breach'
@@ -103,7 +118,9 @@ export default class InstantActivationAnnouncements extends Component {
                 payments{' '}
               </div>
               <div className="big-circle-seprator" />
-              <Link to="/activation">Complete KYC</Link>
+              <Link to="/activation" onClick={this.sendL2StartEvent}>
+                Complete KYC
+              </Link>
             </div>
           );
           break;
@@ -120,7 +137,9 @@ export default class InstantActivationAnnouncements extends Component {
                   have been <b>temporarily paused </b> until you finish your KYC.{' '}
                 </div>
                 <div className="big-circle-seprator" />
-                <Link to="/activation">Complete KYC</Link>
+                <Link to="/activation" onClick={this.sendL2StartEvent}>
+                  Complete KYC
+                </Link>
               </div>
             );
           } else {
@@ -134,12 +153,12 @@ export default class InstantActivationAnnouncements extends Component {
                 </div>
                 <div className="big-circle-seprator" />
                 <button
-                className="btn-link cursor-pointer"
-                style={{ padding: '0' }}
-                onClick={() => this.props.showProductsModal()}
-              >
-                Accept Payments
-              </button>
+                  className="btn-link cursor-pointer"
+                  style={{ padding: '0' }}
+                  onClick={() => this.props.showProductsModal()}
+                >
+                  Accept Payments
+                </button>
               </div>
             );
           }
@@ -488,7 +507,9 @@ export default class InstantActivationAnnouncements extends Component {
             <span>
               You can start using our products to accept payments right away. Meanwhile we will
               await your KYC details to enable settlements for your account. &nbsp;
-              <Link to="/activation">Fill KYC Form</Link>
+              <Link to="/activation" onClick={this.sendL2StartEvent}>
+                Fill KYC Form
+              </Link>
             </span>
           );
         } else if (payments && payments.items.length > 0) {
@@ -497,7 +518,9 @@ export default class InstantActivationAnnouncements extends Component {
             <span>
               You can continue accepting payments from your customers. However, you must complete
               KYC for the payments to be settled to your account. &nbsp;
-              <Link to="/activation">Fill KYC Form</Link>
+              <Link to="/activation" onClick={this.sendL2StartEvent}>
+                Fill KYC Form
+              </Link>
             </span>
           );
         }
@@ -506,7 +529,9 @@ export default class InstantActivationAnnouncements extends Component {
         content = (
           <span>
             In order to enable payments for your business model we need your KYC Details. &nbsp;
-            <Link to="/activation">Fill KYC Form</Link>
+            <Link to="/activation" onClick={this.sendL2StartEvent}>
+              Fill KYC Form
+            </Link>
           </span>
         );
       } else if (payments && payments.items.length > 0 && !user.isAccepted && mode === 'live') {
@@ -515,7 +540,9 @@ export default class InstantActivationAnnouncements extends Component {
           <span>
             You can continue accepting payments from your customers. However, you must complete KYC
             for the payments to be settled to your account. &nbsp;
-            <Link to="/activation">Fill KYC Form</Link>
+            <Link to="/activation" onClick={this.sendL2StartEvent}>
+              Fill KYC Form
+            </Link>
           </span>
         );
       } else if (user.isActivated && user.bank_details_verification_status == 'failed') {
@@ -531,7 +558,9 @@ export default class InstantActivationAnnouncements extends Component {
               Your PAN was successfully verified and you can start accepting domestic payments now.
               Meanwhile we will await your KYC details to enable settlements for your account.
               &nbsp;
-              <Link to="/activation">Fill KYC Form</Link>
+              <Link to="/activation" onClick={this.sendL2StartEvent}>
+                Fill KYC Form
+              </Link>
             </span>
           );
         } else if (user.poi_verification_status == 'failed' && !user.canSkipPoiValidation) {

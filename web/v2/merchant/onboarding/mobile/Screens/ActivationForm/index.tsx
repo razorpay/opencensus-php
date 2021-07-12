@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Heading from '@razorpay/blade-old/src/atoms/Heading';
@@ -79,6 +79,38 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalType, setModalType] = useState<ModalTypeT>('');
+
+  const sendSegmentEvents = (isFormCloseAction) => {
+    const isL2Form = isL1Submitted(data?.activation_form_milestone);
+    const objectName = isL2Form ? 'L2 form' : 'L1 form';
+    const actionName = isFormCloseAction ? 'close' : 'load';
+    const activationType = isL2Form ? 'kyc' : 'act';
+    analyticsTrack({
+      objectName,
+      actionName,
+      screen: 'home page',
+      user,
+      eventAction: 'success',
+      properties: {
+        result: 'success',
+      },
+      activationType,
+      isLJReqiuired: false,
+    });
+  };
+
+  useEffect(() => {
+    if (data) {
+      const isFormCloseAction = false;
+      sendSegmentEvents(isFormCloseAction);
+    }
+    return () => {
+      if (data) {
+        const isFormCloseAction = true;
+        sendSegmentEvents(isFormCloseAction);
+      }
+    };
+  }, [data]);
 
   if (activationStatus === 'loading') {
     return <FullPageLoader />;

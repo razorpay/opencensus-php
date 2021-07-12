@@ -78,6 +78,7 @@ import { fetchInstantSettlements } from 'merchant/reducers/collection';
     let source = 'pg';
     let u = {};
     if (user && user.user) {
+      const device_type = isMobileDevice() ? 'mweb' : 'dweb';
       u = {
         email_id: user.user.email,
         user_id: user.user.id,
@@ -88,6 +89,9 @@ import { fetchInstantSettlements } from 'merchant/reducers/collection';
         is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
         is_instant_activation_enabled: user.isInstantActivationEnabled,
         is_aadhar_ekyc_mandatory: user.isAadharEkycMandatory,
+        user_business_category: user.business_category,
+        user_business_sub_category: user.business_subcategory,
+        device_type,
       };
     }
     if (query.merchant) {

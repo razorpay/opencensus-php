@@ -11,6 +11,9 @@ import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reduc
 import ActivationProgress from './ActivationProgress';
 import { trackGoToActivation, trackGoToConfig } from './ga';
 
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
+
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import MainNavLinkGroup from './MainNavLinkGroup';
 import MerchantNavLinks from './MerchantNavLinks';
@@ -155,6 +158,19 @@ export default class Sidebar extends Component {
       isAcceptPaymentsShown = true;
       this.props.showAcceptPaymentsModal();
     } else {
+      const isL1Submitted = user?.instantActivation?.isL1Submitted;
+      if (isL1Submitted) {
+        analyticsTrack({
+          objectName: 'L2 Start',
+          actionName: 'form fill initiated',
+          screen: 'home page',
+          properties: {
+            clickSource: 'form submission popup',
+            ...getCommonSegmentProperties(),
+            milestone: 'L2 Start',
+          },
+        });
+      }
       this.props.history.push('/activation');
     }
 

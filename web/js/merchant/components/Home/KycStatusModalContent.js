@@ -58,8 +58,8 @@ export const kycModalContent = (args = {}) => {
                 }),
               );
               analyticsTrack({
-                objectName: 'kyc form fill initiated',
-                actionName: 'clicked',
+                objectName: 'L2 Start',
+                actionName: 'form fill initiated',
                 screen: 'home page',
                 properties: {
                   clickSource: 'form submission popup',
@@ -120,6 +120,16 @@ export const kycModalContent = (args = {}) => {
             <button
               className="btn btn-default KYC__more_details"
               onClick={() => {
+                analyticsTrack({
+                  objectName: 'L2 Start',
+                  actionName: 'form fill initiated',
+                  screen: 'home page',
+                  properties: {
+                    clickSource: 'form submission popup',
+                    ...getCommonSegmentProperties(),
+                    milestone: 'L2 Start',
+                  },
+                });
                 args.onClose();
                 args.goToActivationForm();
               }}

@@ -65,6 +65,20 @@ export const getModalContent = (
     closeModal();
   };
 
+  const sendFormSegment = () => {
+    analyticsTrack({
+      objectName: 'L2 Start',
+      actionName: 'form fill',
+      screen: 'home page',
+      eventAction: 'initiated',
+      properties: {
+        milestone: 'L2 Start',
+      },
+      activationType: 'kyc',
+      user,
+    });
+  };
+
   switch (modalType) {
     case 'dedupe':
       title = isInstantActivationEnabled ? Message.DEDUPE.title : Message.DEDUPE.old_title;
@@ -112,6 +126,7 @@ export const getModalContent = (
                   variant="tertiary"
                   onClick={() => {
                     closeModal();
+                    sendFormSegment();
                     location.href = '/onboarding/steps';
                   }}
                 >
@@ -132,6 +147,7 @@ export const getModalContent = (
         <Button
           onClick={() => {
             closeModal();
+            sendFormSegment();
             history.push('/onboarding/steps');
           }}
           block

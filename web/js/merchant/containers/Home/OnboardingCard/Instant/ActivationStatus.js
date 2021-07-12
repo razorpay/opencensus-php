@@ -155,13 +155,13 @@ export default class ActivationCard extends Component {
                     }),
                   );
                   analyticsTrack({
-                    objectName: 'kyc form fill initiated',
-                    actionName: 'clicked',
+                    objectName: 'L2 Start',
+                    actionName: 'form fill initiated',
                     screen: 'home page',
                     properties: {
-                      clickSource: 'onboarding banner',
+                      clickSource: 'form submission popup',
                       ...getCommonSegmentProperties(),
-                      milestone: 'L2 start',
+                      milestone: 'L2 Start',
                     },
                   });
                 }}

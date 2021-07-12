@@ -5,9 +5,10 @@ import QueryString from 'query-string';
 import { withRouter } from 'react-router-dom';
 
 import { Modal, ModalContent } from 'common/new-ui/Modal';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { analyticsTrack } from 'common/utils/analytics';
 
 import KycForm from './new';
 import { setInstantActivationsTracking } from './ga_new';
@@ -162,11 +163,28 @@ export default class ActivationContainer extends Component {
     );
   };
 
+  sendSegmentEvents = (isFormCloseAction) => {
+    const isL1Submitted = this.props.user.instantActivation.isL1Submitted;
+    const objectName = isL1Submitted ? 'L2 form' : 'L1 form';
+    const actionName = isFormCloseAction ? 'close success' : 'load success';
+    analyticsTrack({
+      objectName,
+      actionName,
+      screen: 'home page',
+      properties: {
+        result: 'success',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  };
+
   componentWillMount() {
     this.fetchActivationDetails(this.props.accountId);
   }
 
   componentDidMount() {
+    const isFormCloseAction = false;
+    this.sendSegmentEvents(isFormCloseAction);
     this.sendEventsForSubMerchantView(
       window.rzpQ.routeActions().interaction('route.linked_account.activate_account.started'),
     );
@@ -177,6 +195,8 @@ export default class ActivationContainer extends Component {
   }
 
   componentWillUnmount() {
+    const isFormCloseAction = true;
+    this.sendSegmentEvents(isFormCloseAction);
     this.handleUnmount && this.handleUnmount();
   }
 
@@ -242,9 +262,7 @@ export default class ActivationContainer extends Component {
         </Modal>
       </div>
     ) : (
-      <div className="ActivationContainer kyc">
-        {content || spinner}
-      </div>
+      <div className="ActivationContainer kyc">{content || spinner}</div>
     );
   }
 }
