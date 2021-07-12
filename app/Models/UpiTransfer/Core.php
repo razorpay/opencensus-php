@@ -75,6 +75,9 @@ class Core extends Base\Core
                 case TraceCode::UPI_TRANSFER_PAYMENT_DUPLICATE_NOTIFICATION:
                     return true;
 
+                case TraceCode::REFUND_OR_CAPTURE_PAYMENT_FAILED:
+                    $paymentSuccess = true;
+
                 default:
                     return false;
             }

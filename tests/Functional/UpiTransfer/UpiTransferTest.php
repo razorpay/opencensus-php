@@ -650,4 +650,28 @@ class UpiTransferTest extends TestCase
             ]
         );
     }
+
+
+    public function testUpiTransferRefundFailPaymentSuccess()
+    {
+        $this->fixtures->merchant->editBalance(0);
+
+        $this->fixtures->merchant->editCredits('29000','10000000000000');
+
+        $this->fixtures->pricing->editDefaultPlan(
+            [
+                'fee_bearer'    => 'customer',
+                'percent_rate'  => '0',
+                'fixed_rate'    => '1000000',
+            ]
+        );
+
+        $this->processUpiTransfer(__FUNCTION__, false, Gateway::UPI_ICICI);
+
+        $upiTransferRequestArray = $this->getDbLastEntityToArray('upi_transfer_request');
+
+        $this->assertEquals('REFUND_OR_CAPTURE_PAYMENT_FAILED',$upiTransferRequestArray['error_message']);
+
+        $this->assertTrue($upiTransferRequestArray['is_created']);
+    }
 }

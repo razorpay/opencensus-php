@@ -6252,4 +6252,31 @@ class BankTransferTest extends TestCase
                                   return 'control';
                               }));
     }
+
+    public function testBankTransferRefundFailPaymentSuccess()
+    {
+        $this->fixtures->merchant->editBalance(0);
+
+        $this->fixtures->merchant->editCredits('29000','10000000000000');
+
+        $this->fixtures->pricing->editDefaultPlan(
+            [
+                'fee_bearer'    => 'customer',
+                'percent_rate'  => '0',
+                'fixed_rate'    => '1000',
+            ]
+        );
+
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $response = $this->processBankTransfer($accountNumber, $ifsc, null,1,'test');
+
+        $bankTransferRequestArray = $this->getDbLastEntityToArray('bank_transfer_request');
+
+        $this->assertEquals('REFUND_OR_CAPTURE_PAYMENT_FAILED',$bankTransferRequestArray['error_message']);
+
+        $this->assertTrue($bankTransferRequestArray['is_created']);
+    }
 }

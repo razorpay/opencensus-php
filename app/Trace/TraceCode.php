@@ -1395,6 +1395,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_PROCESS_QUEUE                           = 'BANK_TRANSFER_PROCESS_QUEUE';
     const BANK_TRANSFER_PROCESS_QUEUE_INITIATED                 = 'BANK_TRANSFER_PROCESS_QUEUE_INITIATED';
     const BANK_TRANSFER_PROCESS_QUEUE_COMPLETED                 = 'BANK_TRANSFER_PROCESS_QUEUE_COMPLETED';
+    const REFUND_OR_CAPTURE_PAYMENT_FAILED                      = 'REFUND_OR_CAPTURE_PAYMENT_FAILED';
 
     const BANK_ACCOUNT_DELETED                                  = 'BANK_ACCOUNT_DELETED';
     const BANK_ACCOUNT_EDIT                                     = 'BANK_ACCOUNT_EDIT';

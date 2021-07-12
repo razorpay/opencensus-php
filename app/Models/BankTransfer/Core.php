@@ -121,6 +121,15 @@ class Core extends Base\Core
 
             $errorMessage = $ex->getMessage();
 
+            switch($errorMessage)
+            {
+                case TraceCode::REFUND_OR_CAPTURE_PAYMENT_FAILED:
+                    $paymentSuccess = true;
+                    
+                default:
+                    $paymentSuccess = false;
+            }
+
             return $this->alertException($ex, $input);
         }
         finally
@@ -168,6 +177,9 @@ class Core extends Base\Core
             {
                 case TraceCode::BANK_TRANSFER_PROCESS_DUPLICATE_UTR:
                     return true;
+
+                case TraceCode::REFUND_OR_CAPTURE_PAYMENT_FAILED:
+                    $paymentSuccess = true;
 
                 default:
                     return false;
