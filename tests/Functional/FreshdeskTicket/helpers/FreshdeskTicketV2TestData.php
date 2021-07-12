@@ -397,6 +397,7 @@ return [
                 'custom_fields' => [
                     'cf_requester_category'       => 'Merchant',
                     'cf_requestor_subcategory'    => 'Technical support',
+                    'cf_requester_item'           => 'Success rate',
                 ],
             ],
         ],

@@ -853,11 +853,6 @@ class Service extends Base\Service
                         $subCategoryFound = true;
                     }
                 }
-
-                if($fdInstance === Constants::RZPSOL)
-                {
-                    unset($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]);
-                }
             }
         }
         if ($subCategoryFound === false && $type === Type::SUPPORT_DASHBOARD_X)
