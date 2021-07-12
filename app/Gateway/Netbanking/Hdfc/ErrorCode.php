@@ -57,7 +57,7 @@ class ErrorCode
         self::ACCOUNT_INVALID                     => Error\ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
         self::OTP_INCORRECT                       => Error\ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         self::UNAUTHORIZED                        => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::UNABLE_TO_FETCH_STATUS              => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::UNABLE_TO_FETCH_STATUS              => Error\ErrorCode::BAD_REQUEST_PAYMENT_PENDING,
         self::FACILITY_UNAVAILABLE                => Error\ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
         self::AMOUNT_EXCEEDED                     => Error\ErrorCode::GATEWAY_ERROR_TERMINAL_MAX_TRANSACTION_LIMIT_REACHED,
         self::SECURE_ACCESS_NOT_ENABLED           => Error\ErrorCode::BAD_REQUEST_NETBANKING_USER_NOT_REGISTERED,
