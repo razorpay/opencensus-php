@@ -34,7 +34,7 @@ function WithdrawnAmountSummary({
   roi,
   diffDays,
 }) {
-  const totalRepayableAmount = parseFloat(principle * 100).toFixed(2);
+  const totalRepayableAmount = (principle + interest) * 100;
   const interestPopoverContent = `(${getFormattedAmountNew(
     principle * 100,
     true,
@@ -55,7 +55,7 @@ function WithdrawnAmountSummary({
             <div className="description">
               <p>Principal</p>
             </div>
-            <Amount value={totalRepayableAmount} parentQuerySelector=".withdrawals__top-summary" />
+            <Amount value={principle * 100} parentQuerySelector=".withdrawals__top-summary" />
           </div>
         </div>
         <div className="withdrawals__credit-meta__list-item">

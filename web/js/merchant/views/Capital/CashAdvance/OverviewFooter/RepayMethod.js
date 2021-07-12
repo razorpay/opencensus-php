@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -50,6 +50,13 @@ const RepayMethod = ({
   repayType,
   location: { pathname = '' },
 }) => {
+  const [customAmountInput, setCustomAmountInput] = useState(settlementBalance.customAmount / 100);
+
+  useEffect(() => {
+    const amount = repayAmount > balance ? balance : repayAmount;
+    setCustomAmountInput(amount / 100);
+  }, [repayAmount, balance]);
+
   const isNextRepayableRepayType = repayType === REPAY_AMOUNT_TYPES.NEXT_REPAYABLE;
   const isTotalOwedRepayType = repayType === REPAY_AMOUNT_TYPES.TOTAL_OWED;
 
@@ -109,7 +116,7 @@ const RepayMethod = ({
           userRepayMethod = data.payment_meta.method || '';
         setView(REPAYMENT_VIEWS.RESULT_SUCCESS);
       })
-      .catch((err) => {
+      .catch(() => {
         setView(REPAYMENT_VIEWS.RESULT_FAILURE);
       })
       .finally(() => {
@@ -225,7 +232,7 @@ const RepayMethod = ({
     setSettlementBalance({
       ...settlementBalance,
       isCustomAmountActive: false,
-      amount: settlementBalance.customAmount,
+      amount: customAmountInput * 100,
     });
   };
 
@@ -248,14 +255,14 @@ const RepayMethod = ({
           Min. amount can be selected <Amount value={1000} currency="INR" />
         </p>
       );
-    } else if (value > repayAmount) {
+    } else if (value > repayAmount / 100) {
       errorStr = `Max. amount can be selected ₹ ${(repayAmount / 100).toFixed(2)}`;
       error = (
         <p>
           Max. amount can be selected <Amount value={repayAmount} currency="INR" />
         </p>
       );
-    } else if (value > balance) {
+    } else if (value > balance / 100) {
       errorStr = `Max. Available Balance is ₹ ${(balance / 100).toFixed(2)}`;
       error = (
         <p>
@@ -267,7 +274,11 @@ const RepayMethod = ({
       error: errorStr,
       amount: event.target.value,
     });
-    setSettlementBalance({ ...settlementBalance, customAmount: event.target.value, error });
+    setCustomAmountInput(event.target.value);
+    setSettlementBalance({
+      ...settlementBalance,
+      error,
+    });
   };
 
   const handleCustomAmountCloseClick = () => {
@@ -330,7 +341,7 @@ const RepayMethod = ({
                     </div>
                   }
                   name="amount"
-                  value={Math.round(settlementBalance.customAmount) / 100}
+                  value={customAmountInput}
                   onChange={handleCustomAmountChange}
                 />
                 <div className="text-danger error-message mt-5">
