@@ -66,9 +66,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $bulkAssignMethodsRules = [
-        'methods'               => 'required|array|custom',
-        'merchants'             => 'required|array',
-        'merchants.*'           => 'required|string|filled|size:14',
+        'methods'                    => 'required|array|custom',
+        'merchants'                  => 'required|array',
+        'merchants.*'                => 'required|string|filled|size:14',
+        'methods.card_networks.AMEX' => 'sometimes|boolean|not_in:1',
     ];
 
     protected function validateMethodBanks(array $input)
