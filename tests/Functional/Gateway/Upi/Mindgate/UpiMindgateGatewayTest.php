@@ -24,6 +24,7 @@ use RZP\Tests\Functional\Helpers\MocksMetricTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Unit\Mock\Metric\Driver as MockMetricDriver;
 
 class UpiMindgateGatewayTest extends TestCase
 {
@@ -137,6 +138,15 @@ class UpiMindgateGatewayTest extends TestCase
                 Metric::DIMENSION_UPI_PSP           => 'none',
             ],
         ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT_V3));
+
+        // Here we are asserting for metric data being pushed to
+        // histogram metric in callback flow
+        $this->assertArraySelectiveEquals([
+            [
+                Metric::DIMENSION_ACTION    => 'callback',
+                Metric::DIMENSION_GATEWAY   => 'upi_mindgate'
+            ],
+        ], $metricDriver->metric(Metric::GATEWAY_REQUEST_TIME, MockMetricDriver::HISTOGRAM));
 
         // Add a capture as well, just for completeness sake
         $this->capturePayment($paymentId, $payment['amount']);

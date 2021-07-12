@@ -1002,6 +1002,16 @@ class Gateway
                 ]);
         }
 
+        $this->pushGatewayMetrics($info['total_time']*1000);
+    }
+
+    protected function pushGatewayMetrics($time)
+    {
+        $dimensions = [
+            'gateway' => $this->gateway ?? 'none',
+            'action'  => $this->action ?? 'none',
+        ];
+
         try
         {
             $metricsDriver = app('trace')->metricsDriver(Metric::DOGSTATSD_DRIVER);
@@ -1010,11 +1020,8 @@ class Gateway
              * @var $metricsDriver \Razorpay\Metrics\Drivers\Driver
              */
             $metricsDriver->histogram(Metric::GATEWAY_REQUEST_TIME,
-                $info['total_time'] * 1000,
-                [
-                    'gateway' => $this->gateway ?? 'none',
-                    'action'  => $this->action ?? 'none',
-                ]);
+                $time,
+                $dimensions);
         }
         catch (\Throwable $e)
         {
@@ -1022,10 +1029,7 @@ class Gateway
                 $e,
                 Trace::ERROR,
                 TraceCode::GATEWAY_METRIC_DIMENSION_PUSH_FAILED,
-                [
-                    'gateway' => $this->gateway ?? 'none',
-                    'action'  => $this->action ?? 'none',
-                ]);
+                $dimensions);
         }
     }
 

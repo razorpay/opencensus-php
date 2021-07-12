@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Upi\Base;
 
+use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -55,6 +56,26 @@ class Gateway extends Base\Gateway
         $url = $this->app['config']->get('applications.mozart.live.url');
 
         return starts_with($url, 'https://mozart-hallmark.razorpay.com');
+    }
+
+    public function callback(array $input)
+    {
+        parent::callback($input);
+
+        $createdAt = $input['payment']['created_at'] ?? null;
+
+        // Return if created_at is null.
+        if (isset($createdAt) === false)
+        {
+            return;
+        }
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        // Time elapsed between payment creation and callback received.
+        $totalTime = $currentTime - $createdAt;
+
+        $this->pushGatewayMetrics($totalTime*1000);
     }
 
     public function redirectCallbackIfRequired(array $response)
