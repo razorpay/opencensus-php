@@ -14,7 +14,7 @@ export default class PairList extends React.PureComponent {
 
   onChange = debounce(this.props.onChange, 250); // Optimization to avoid parent re-render on every key press
 
-  onAddNew = e => {
+  onAddNew = (e) => {
     const freshPairs = [...this.state.pairs];
     freshPairs.push({
       key: '',
@@ -27,14 +27,9 @@ export default class PairList extends React.PureComponent {
 
     setTimeout(
       () =>
-        document
-          .getElementsByName(
-            `${this.props.name}[${freshPairs.length - 1}][key]`
-          )[0]
-          .focus(),
-      10
+        document.getElementsByName(`${this.props.name}[${freshPairs.length - 1}][key]`)[0].focus(),
+      10,
     );
-
     this.props.onAddNew && this.props.onAddNew(freshPairs);
   };
 
@@ -46,25 +41,24 @@ export default class PairList extends React.PureComponent {
       freshPairs[pairId][field] = e.target.value;
 
       this.onChange(freshPairs);
-
       this.setState({
         pairs: freshPairs,
       });
     }
   };
 
-  updateKey = e => {
+  updateKey = (e) => {
     this.updateField(e, 'key');
   };
-  updateValue = e => {
+  updateValue = (e) => {
     this.updateField(e, 'value');
   };
 
-  removePair = e => {
+  removePair = (e) => {
     const pairId = e.currentTarget.dataset.id;
 
     if (pairId > -1) {
-      let freshPairs = [...this.state.pairs];
+      const freshPairs = [...this.state.pairs];
       freshPairs.splice(pairId, 1);
 
       this.onChange(freshPairs);
@@ -77,12 +71,7 @@ export default class PairList extends React.PureComponent {
 
   render() {
     return (
-      <div
-        class={classList(
-          inputClass(this),
-          !!this.state.pairs.length && 'isExpanded'
-        )}
-      >
+      <div class={classList(inputClass(this), !!this.state.pairs.length && 'isExpanded')}>
         <Label text={this.props.label} />
         <div class="Input-content">
           {!!this.state.pairs.length &&
@@ -99,11 +88,7 @@ export default class PairList extends React.PureComponent {
             ))}
 
           {this.state.pairs.length < this.state.maxAllowedPairs ? (
-            <Button.Transparent
-              type="button"
-              class="Btn--Link"
-              onClick={this.onAddNew}
-            >
+            <Button.Transparent type="button" class="Btn--Link" onClick={this.onAddNew}>
               + Add New
             </Button.Transparent>
           ) : null}
@@ -116,13 +101,13 @@ export default class PairList extends React.PureComponent {
 class Pair extends React.Component {
   state = {};
 
-  onFocusTitle = e => {
+  onFocusTitle = (e) => {
     this.setState({
       focusTitle: true,
     });
   };
 
-  onBlurTitle = e => {
+  onBlurTitle = (e) => {
     this.setState({
       focusTitle: false,
     });
@@ -130,13 +115,13 @@ class Pair extends React.Component {
     this.props.onBlurTitle && this.props.onBlurTitle(e);
   };
 
-  onFocusDesc = e => {
+  onFocusDesc = (e) => {
     this.setState({
       focusDesc: true,
     });
   };
 
-  onBlurDesc = e => {
+  onBlurDesc = (e) => {
     this.setState({
       focusDesc: false,
     });
@@ -151,7 +136,7 @@ class Pair extends React.Component {
       <div
         class={classList(
           'Input-pair',
-          (this.state.focusDesc || this.state.focusTitle) && 'is-focused'
+          (this.state.focusDesc || this.state.focusTitle) && 'is-focused',
         )}
       >
         <div class="Input-elWrapper">
@@ -196,7 +181,7 @@ class Pair extends React.Component {
 export function onChangeNotes(pairs) {
   const notes = {};
 
-  pairs.forEach(p => {
+  pairs.forEach((p) => {
     if (p.key || p.value) {
       notes[p.key] = p.value;
     }

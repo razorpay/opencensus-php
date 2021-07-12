@@ -576,6 +576,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             isTPVEnabled={this.state.isTPVEnabled}
             showTPV={this.props.user.isCAWTPVEnabled}
             handleTPV={this.handleTPV}
+            notes={this.state.formFields.notes}
           />
         );
       }

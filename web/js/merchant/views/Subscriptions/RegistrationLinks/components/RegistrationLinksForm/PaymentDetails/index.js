@@ -1,5 +1,4 @@
 import { PowerSelect } from 'react-power-select';
-
 import Input from 'common/new-ui/Input';
 
 import AmountScreen from './Amount';
@@ -33,8 +32,8 @@ export default (props) => {
     onBlurElement,
     handlePaymentMethod,
     isUPIPayment,
+    notes,
   } = props;
-
   return (
     <React.Fragment>
       <PaymentMethod
@@ -103,6 +102,7 @@ export default (props) => {
         onBlurTitle={() => onBlurElement(null, 'notes_key')}
         onBlurDesc={() => onBlurElement(null, 'notes_value')}
         onAddNew={() => onBlurElement(null, 'notes_add_new')}
+        defaultValue={notes}
       />
     </React.Fragment>
   );
