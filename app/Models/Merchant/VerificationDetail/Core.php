@@ -17,18 +17,24 @@ class Core extends Base\Core
     {
         return $this->repo->transactionOnLiveAndTest(function () use ($merchantDetails, $input) {
 
-            $verificationDetail = $merchantDetails->verificationDetail;
+            $merchantId = $merchantDetails->getMerchantId();
+
+            $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
+                $merchantId,
+                $input[Entity::ARTEFACT_TYPE],
+                $input[Entity::ARTEFACT_IDENTIFIER]
+            );
 
             if ($verificationDetail === null)
             {
                 $this->trace->info(
                     TraceCode::VERIFICATION_DETAIL_DOES_NOT_EXIST,
                     [
-                        'merchant_id' => $merchantDetails->getMerchantId(),
+                        'merchant_id' => $merchantId,
                     ]
                 );
 
-                $input[Entity::MERCHANT_ID] = $merchantDetails->merchant->getId();
+                $input[Entity::MERCHANT_ID] = $merchantId;
 
                 $verificationDetail = $this->createVerificationDetail($merchantDetails, $input);
 

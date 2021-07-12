@@ -51,7 +51,7 @@ class ShopEstbStatusUpdater extends BaseStatusUpdater
         {
             $documentValidationStatus = $this->getDocumentValidationStatus($validation);
 
-            $verificationDetail = $this->repo->merchant_verification_detail->getVerificationDetailsForArtefactTypeAndIdentifier(
+            $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
                 $this->merchant->getId(),
                 MVD\Constants::SHOP_ESTABLISHMENT,
                 MVD\Constants::DOC
@@ -88,7 +88,7 @@ class ShopEstbStatusUpdater extends BaseStatusUpdater
 
     public function updateStatusToPending(): void
     {
-        $verificationDetail = $this->repo->merchant_verification_detail->getVerificationDetailsForArtefactTypeAndIdentifier(
+        $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
             $this->merchant->getId(),
             MVD\Constants::SHOP_ESTABLISHMENT,
             MVD\Constants::DOC

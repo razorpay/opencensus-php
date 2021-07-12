@@ -2862,8 +2862,8 @@ class Core extends Base\Core
 
         [$type, $identifier] = explode('|', $key);
 
-        $verificationDetail = $this->repo->merchant_verification_detail->getVerificationDetailsForArtefactTypeAndIdentifier(
-            $merchantDetails->getId(),
+        $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
+            $merchantDetails->getMerchantId(),
             $type,
             $identifier
         );

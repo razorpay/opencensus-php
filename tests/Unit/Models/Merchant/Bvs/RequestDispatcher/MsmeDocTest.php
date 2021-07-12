@@ -44,7 +44,7 @@ class MsmeDocTest extends TestCase
         $this->assertFalse($canTriggerValidation);
     }
 
-    public function testCanTriggerValidationForPropertiership()
+    public function testCanTriggerValidationForProprietorship()
     {
         $merchantDetail = $this->getMerchantDetailFixture(1);
 

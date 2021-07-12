@@ -5,6 +5,7 @@ namespace Unit\Models\Merchant\Bvs\RequestDispatcher;
 
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\VerificationDetail\Entity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -16,8 +17,10 @@ class ShopEstbDocTest extends TestCase
 
     protected $dispatcherClass = ShopEstablishmentDocOcr::class;
 
-    const PERSONAL_PAN_NAME = "kitty su personal pan";
-    const BUSINESS_PAN_NAME = "kitty su business pan";
+    const PERSONAL_PAN_NAME = 'personal pan';
+    const BUSINESS_PAN_NAME = 'business pan';
+
+    const MVD_ENTITY            = 'merchant_verification_detail';
 
     protected function getMerchantDetailFixture($businessType, $extraAttributes = [])
     {
@@ -49,9 +52,9 @@ class ShopEstbDocTest extends TestCase
         $this->assertFalse($canTriggerValidation);
     }
 
-    public function testCanTriggerValidationForPropertiership()
+    public function testCanTriggerValidationForProprietorship()
     {
-        $merchantDetail = $this->getMerchantDetailFixture(1);
+        $merchantDetail = $this->getMerchantDetailFixture(BusinessType::getIndexFromKey(BusinessType::PROPRIETORSHIP));
 
         $document = $this->fixtures->create('merchant_document', [
             'document_type' => 'shop_establishment_certificate',
@@ -68,7 +71,7 @@ class ShopEstbDocTest extends TestCase
 
     public function testRequestPayload()
     {
-        $merchantDetail = $this->getMerchantDetailFixture(1);
+        $merchantDetail = $this->getMerchantDetailFixture(BusinessType::getIndexFromKey(BusinessType::PROPRIETORSHIP));
 
         $document = $this->fixtures->create('merchant_document', [
             'document_type' => 'shop_establishment_certificate',
@@ -92,7 +95,7 @@ class ShopEstbDocTest extends TestCase
 
     public function testPostProcessOperation()
     {
-        $merchantDetail = $this->getMerchantDetailFixture(1);
+        $merchantDetail = $this->getMerchantDetailFixture(BusinessType::getIndexFromKey(BusinessType::PROPRIETORSHIP));
 
         $mid = $merchantDetail->getId();
 
@@ -113,12 +116,43 @@ class ShopEstbDocTest extends TestCase
 
         $dispatcher->performPostProcessOperation($bvsValidation);
 
-        $verificationDetail = $this->getDbLastEntity('merchant_verification_detail');
+        $verificationDetail = $this->getDbLastEntity(self::MVD_ENTITY);
 
         $this->assertEquals(Constant::SHOP_ESTABLISHMENT, $verificationDetail->getAttribute(Entity::ARTEFACT_TYPE));
 
         $this->assertEquals('doc', $verificationDetail->getAttribute(Entity::ARTEFACT_IDENTIFIER));
 
         $this->assertEquals($mid, $verificationDetail->getAttribute(Entity::MERCHANT_ID));
+    }
+
+    public function testMultipleUploads()
+    {
+        $merchantDetail = $this->getMerchantDetailFixture(BusinessType::getIndexFromKey(BusinessType::PROPRIETORSHIP));
+
+        $mid = $merchantDetail->getId();
+
+        $document = $this->fixtures->create('merchant_document', [
+            'document_type' => 'shop_establishment_certificate',
+            'file_store_id' => '123123',
+            'merchant_id'   => $mid,
+        ]);
+
+        for ($i = 0; $i < 4; $i++)
+        {
+            $bvsValidation = $this->fixtures->create('bvs_validation',
+                [
+                    'owner_id' => $mid,
+                    'artefact_type' => Constant::SHOP_ESTABLISHMENT,
+                    'validation_unit' => 'proof'
+                ]);
+
+            $dispatcher = new $this->dispatcherClass($merchantDetail->merchant, $merchantDetail, $document);
+
+            $dispatcher->performPostProcessOperation($bvsValidation);
+        }
+
+        $numOfEntries = sizeof($this->getDbEntities(self::MVD_ENTITY, [ 'merchant_id' => $mid ])->toArray());
+
+        $this->assertEquals(1, $numOfEntries);
     }
 }

@@ -12,7 +12,7 @@ class Repository extends Base\Repository
 
     protected $entity = 'merchant_verification_detail';
 
-    public function getVerificationDetailsForArtefactTypeAndIdentifier(string $mid, string $artefactType, string $artefactIdentifier)
+    public function getDetailsForTypeAndIdentifier(string $mid, string $artefactType, string $artefactIdentifier)
     {
         return $this->newQuery()
             ->where(Entity::ARTEFACT_TYPE, '=', $artefactType)

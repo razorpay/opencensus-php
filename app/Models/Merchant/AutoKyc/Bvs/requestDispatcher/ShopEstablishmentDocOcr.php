@@ -2,11 +2,8 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
-use App;
-
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\BvsValidation;
-use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\VerificationDetail as MVD;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -58,19 +55,13 @@ class ShopEstablishmentDocOcr extends Base
 
     public function performPostProcessOperation(BvsValidation\Entity $entity): void
     {
-        $verificationDetail = new MVD\Entity();
-
-        $verificationDetail->generateId();
-
-        $verificationDetail->build([
+        $input = [
             MVD\Entity::MERCHANT_ID          => $this->merchant->getId(),
             MVD\Entity::ARTEFACT_TYPE        => MVD\Constants::SHOP_ESTABLISHMENT,
             MVD\Entity::ARTEFACT_IDENTIFIER  => MVD\Constants::DOC,
             MVD\Entity::STATUS               => BvsValidationConstants::INITIATED
-        ]);
+        ];
 
-        $app = App::getFacadeRoot();
-
-        $app['repo']->merchant_verification_detail->saveOrFail($verificationDetail);
+        (new MVD\Core)->createOrEditVerificationDetail($this->merchantDetails, $input);
     }
 }
