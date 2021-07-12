@@ -14,6 +14,8 @@ class Repository extends Base\Repository
 {
     protected $entity = 'gateway_downtime';
 
+    private $SOURCES = ['statuscake','STATUSCAKE','vajra','VAJRA'];
+
     protected $entityFetchParamRules = array(
         Entity::GATEWAY     => 'sometimes|string|max:255',
         Entity::ISSUER      => 'sometimes|string|max:50',
@@ -66,6 +68,14 @@ class Repository extends Base\Repository
     public function saveOrFail($entity, array $options = [])
     {
         parent::saveOrFail($entity, $options);
+
+        if((empty($entity['source']) === false) and (isset($entity['source']) === true))
+        {
+            if(in_array($entity['source'], $this->SOURCES))
+            {
+                return;
+            }
+        }
 
         // Every update of gateway downtimes table should
         // queue a refresh of the payment downtimes table

@@ -1196,7 +1196,7 @@ class PaymentDowntimeTest extends TestCase
                 'gateway'     => 'ALL',
                 'issuer'      => 'HDFC',
                 'method'      => 'card',
-                'source'      => 'VAJRA',
+                'source'      => 'DOWNTIME_SERVICE',
                 'reason_code' => 'HIGHER_ERRORS',
                 'begin'       => strval(Carbon::now()->timestamp),
             ],
@@ -1222,7 +1222,7 @@ class PaymentDowntimeTest extends TestCase
                 'gateway'     => 'ALL',
                 'network'     => 'VISA',
                 'method'      => 'card',
-                'source'      => 'VAJRA',
+                'source'      => 'DOWNTIME_SERVICE',
                 'reason_code' => 'HIGHER_ERRORS',
                 'begin'       => strval(Carbon::now()->timestamp),
             ],
@@ -1246,7 +1246,7 @@ class PaymentDowntimeTest extends TestCase
                 'gateway'     => 'ALL',
                 'network'     => 'VISA',
                 'method'      => 'card',
-                'source'      => 'VAJRA',
+                'source'      => 'DOWNTIME_SERVICE',
                 'reason_code' => 'HIGHER_ERRORS',
                 'end'         => strval(Carbon::now()->subMinutes(5)->timestamp),
             ],
@@ -1270,7 +1270,7 @@ class PaymentDowntimeTest extends TestCase
                 'gateway'     => 'ALL',
                 'issuer'      => 'HDFC',
                 'method'      => 'card',
-                'source'      => 'VAJRA',
+                'source'      => 'DOWNTIME_SERVICE',
                 'reason_code' => 'HIGHER_ERRORS',
                 'end'         => strval(Carbon::now()->subMinutes(5)->timestamp),
             ],
@@ -1348,7 +1348,7 @@ class PaymentDowntimeTest extends TestCase
             'content' => [
                 'gateway'     => 'upi_mindgate',
                 'method'      => 'upi',
-                'source'      => 'VAJRA',
+                'source'      => 'DOWNTIME_SERVICE',
                 'reason_code' => 'HIGHER_ERRORS',
                 'begin'       => strval(Carbon::now()->timestamp),
             ],
@@ -1406,7 +1406,7 @@ class PaymentDowntimeTest extends TestCase
             'content' => [
                 'gateway'     => 'upi_mindgate',
                 'method'      => 'upi',
-                'source'      => 'VAJRA',
+                'source'      => 'DOWNTIME_SERVICE',
                 'reason_code' => 'HIGHER_ERRORS',
                 'begin'       => strval(Carbon::now()->timestamp),
             ],
@@ -1727,7 +1727,7 @@ class PaymentDowntimeTest extends TestCase
                 'gateway'     => 'ALL',
                 'network'     => 'RUPAY',
                 'method'      => 'card',
-                'source'      => 'VAJRA',
+                'source'      => 'DOWNTIME_SERVICE',
                 'reason_code' => 'HIGHER_ERRORS',
                 'begin'       => strval(Carbon::now()->timestamp),
                 'issuer'      => 'UNKNOWN'
@@ -1743,13 +1743,13 @@ class PaymentDowntimeTest extends TestCase
 
         $this->assertEquals('high', $paymentDowntime['severity']);
 
-        $request['content']['source'] = 'DOWNTIME_SERVICE';
+        $request['content']['source'] = 'VAJRA';
         $request['content']['reason_code'] = 'LOW_SUCCESS_RATE';
         $this->makeRequestAndGetContent($request);
 
         $paymentDowntime = $this->getLastEntity('payment.downtime', true);
 
-        $this->assertEquals('medium', $paymentDowntime['severity']);
+        $this->assertEquals('high', $paymentDowntime['severity']);
 
         $request['content']['source'] = 'DOPPLER';
         $request['content']['reason_code'] = 'OTHER';
@@ -1757,7 +1757,7 @@ class PaymentDowntimeTest extends TestCase
 
         $paymentDowntime = $this->getLastEntity('payment.downtime', true);
 
-        $this->assertEquals('medium', $paymentDowntime['severity']);
+        $this->assertEquals('high', $paymentDowntime['severity']);
     }
 
     protected function createUpiAllGatewayDowntime()

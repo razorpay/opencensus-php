@@ -69,6 +69,7 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::FETCHED_GATEWAY_DOWNTIMES_FROM_DB, ["context" => $gatewayDowntimes]);
 
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::STATUSCAKE);
+        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::VAJRA);
 
         $paymentDowntimesEnabled = (bool) ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIME_PHONEPE, false);
 
