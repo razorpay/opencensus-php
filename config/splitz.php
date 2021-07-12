@@ -59,13 +59,8 @@ return [
         //QR Code campaign
         'ANNOUNCEMENT_QR_CODE_V1_SPLITZ' => env('ANNOUNCEMENT_QR_CODE_V1_SPLITZ', ''),
 
-        //MTU Saver campaign
-        'ANNOUNCEMENT_MTU_SAVER_V1_SPLITZ' => env('ANNOUNCEMENT_MTU_SAVER_V1_SPLITZ', ''),
         'WHATSNEW_LAZY_EXPERIMENT_SPLITZ' => env('WHATSNEW_LAZY_EXPERIMENT_SPLITZ', ''),
         
-        //TDS Tool Campaign
-        'TDS_TOOL_CAMPAIGN' => env('TDS_TOOL_CAMPAIGN', ''),
-
         'SSL_UPDATE_ANNOUNCEMENT_SPLITZ' => env('SSL_UPDATE_ANNOUNCEMENT_SPLITZ', ''),
         'SELF_SERVE_ANNOUNCEMENT_SPLITZ' => env('SELF_SERVE_ANNOUNCEMENT_SPLITZ', ''),
     ]

@@ -299,7 +299,6 @@ export default class WhatsNew extends Component {
       'whats-new-may21-reten2-dashboard',
       'whats-new-may21-remar2-dashboard',
       'June21-QR-GTM',
-      'JUL21-TPL-GTM',
       'whats-new-JUN21-RXCC-GROWTH',
       'july-ssl-certificate-update',
       'JUL21-CC-FEATURELAUNCH',
