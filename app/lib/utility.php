@@ -1110,7 +1110,7 @@ if (!function_exists('get_Protobuf_Struct'))
 
 if (! function_exists('mask_by_percentage'))
 {
-    function mask_by_percentage(string $data = null, float $percentageToMask = 0.7): string
+    function mask_by_percentage(string $data = null, float $percentageToMask = 0.7)
     {
         if (empty($data) === true)
         {

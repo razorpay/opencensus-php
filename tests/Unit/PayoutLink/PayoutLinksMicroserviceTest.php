@@ -680,6 +680,42 @@ class PayoutLinkMicroserviceTest extends TestCase
         $this->assertEquals('te*****@g***l.com', $faDetailsInResponse->wallet->email, "Email not masked");
     }
 
+    public function testMaskedGetHostedPageDataForContactNameAndDescription()
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $walletDetails = $this->fixtures->create('wallet_account', [
+            'phone' => '9040434917',
+            'email' => 'testing@gmail.com',
+            'name'  => 'testing',
+        ]);
+        $this->fixtures->create('fund_account', [
+            'id'          => '100000000011fa',
+            'source_type' => 'contact',
+            'source_id'   => '1001contact',
+            'merchant_id' => $newMerchant->getId(),
+            'account_type'=> 'wallet_account',
+            'account_id'  => $walletDetails->getId(),
+        ]);
+
+        $response = $this->mockGetHostedResponseForProcessedPL('100000000011fa');
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($response);
+        $mock->method('allowUpi')->willReturn(false);
+        $mock->method('allowAmazonPay')->willReturn(false);
+        $mock->method('getEnvironment')->willReturn(Environment::TESTING);
+
+
+        $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
+        $this->assertEquals('t***', $data['user_name'], "contact name not masked");
+        $this->assertEquals('te*****', $data['description'], "description not masked");
+    }
+
     private function mockGetHostedResponseForProcessedPL(string $faId)
     {
         $mode['AMAZONPAY'] = 1;
