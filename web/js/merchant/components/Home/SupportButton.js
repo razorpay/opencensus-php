@@ -31,7 +31,7 @@ const SupportButton = ({ type, buttonLabel, category, openSection, tracking }) =
         },
         () => {
           setTimeout(() => {
-            rzpTicketSystem.modal.nextButton.click();
+            rzpTicketSystem.modal?.nextButton?.click?.();
           }, 0);
         },
       );
