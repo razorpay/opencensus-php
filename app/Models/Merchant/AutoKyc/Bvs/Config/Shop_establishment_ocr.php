@@ -18,17 +18,15 @@ class Shop_establishment_ocr extends BaseConfig
             '0' => [
                 'rule_type' => 'string_comparison_rule',
                 'rule_def'  => [
-                    'equals' => [
-                        'fuzzy_suzzy' => [
-                            [
-                                'var' => 'artefact.details.entity_name.value',
-                            ],
-                            [
-                                'var' => 'enrichments.ocr.details.1.entity_name.value',
-                            ],
-                            81,
-                        ]
-                    ],
+                    'fuzzy_suzzy' => [
+                        [
+                            'var' => 'artefact.details.entity_name.value',
+                        ],
+                        [
+                            'var' => 'enrichments.ocr.details.1.entity_name.value',
+                        ],
+                        81,
+                    ]
                 ],
             ],
         ],
