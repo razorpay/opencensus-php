@@ -11627,7 +11627,7 @@ class PayoutTest extends OAuthTestCase
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
 
         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
-        $this->assertEquals(ErrorCodeMapping::$alternateFailureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::FAILURE_REASON]);
+        $this->assertEquals(ErrorCodeMapping::$AlternateFailureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::FAILURE_REASON]);
     }
 
     public function testWithoutAlternateFailureReason()
@@ -12939,5 +12939,35 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('on_hold', $payout['internal_status']);
         $this->assertEquals('queued', $publicResponse['status']);
         $this->assertNotNull($payout['on_hold_at']);
+    }
+
+    public function testAlternateFailureReasonForNewError()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ALTERNATE_PAYOUT_FR,
+                                                Feature\Constants::NEW_BANKING_ERROR]);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNull($payout[Payout\Entity::FAILURE_REASON]);
+
+        $payoutId = $payout->getId();
+
+        $payout->getUtr();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'failed',
+            'failure_reason' => '',
+            'bank_status_code' => 'INVALID_VPA'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+        $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
+        $this->assertEquals(ErrorCodeMapping::$AlternateFailureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::FAILURE_REASON]);
+
+        $this->assertNotNull($updatedPayout[Payout\Entity::ERROR]);
+        $this->assertEquals(ErrorCodeMapping::$AlternateFailureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::ERROR][Payout\PayoutError::DESCRIPTION]);
     }
 }

@@ -6,6 +6,7 @@ use App;
 use ArrayObject;
 
 use RZP\Error\Error;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payout\Status as PayoutStatus;
 
@@ -69,6 +70,16 @@ class PayoutError extends Error
                 $failureStatus = PayoutStatus::getErrorStatus($payoutStatus);
 
                 $errorDetails = $statusCodeErrorDetail[$failureStatus] ?? null;
+
+                if (isset(ErrorCodeMapping::$AlternateFailureReasonMapping[$statusCode]) === true)
+                {
+                    $alternate = $this->payout->merchant->isFeatureEnabled(Feature\Constants::ALTERNATE_PAYOUT_FR);
+
+                    if ($alternate === true)
+                    {
+                        $errorDetails[self::DESCRIPTION] = ErrorCodeMapping::$AlternateFailureReasonMapping[$statusCode];
+                    }
+                }
             }
 
             if (is_null($errorDetails) === true)

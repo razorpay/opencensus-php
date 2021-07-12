@@ -170,7 +170,7 @@ class ErrorCodeMapping
         'MERCHANT_INSUFFICIENT_FUND'            => 'Payout failed due to insufficient funds in the bank account.'
     ];
 
-    public static $alternateFailureReasonMapping = [
+    public static $AlternateFailureReasonMapping = [
         'INVALID_VPA'                           => 'UPI validation failed. If the UPI ID is valid, please retry after sometime.',
     ];
 
@@ -184,7 +184,7 @@ class ErrorCodeMapping
 
         if ($alternate === true)
         {
-            $errorMessage = self::$alternateFailureReasonMapping[$bankStatusCode] ?? null;
+            $errorMessage = self::$AlternateFailureReasonMapping[$bankStatusCode] ?? null;
         }
 
         if (is_null($errorMessage) === true)
