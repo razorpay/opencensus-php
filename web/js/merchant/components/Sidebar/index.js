@@ -192,11 +192,13 @@ export default class Sidebar extends Component {
           <nav>
             {isMerchant && (
               <div class="nav">
-                <ActivationProgress
-                  onSidebarBannerClick={this.onSidebarBannerClick}
-                  user={user}
-                  config={config}
-                />
+                {!user.isOrgAxis ? (
+                  <ActivationProgress
+                    onSidebarBannerClick={this.onSidebarBannerClick}
+                    user={user}
+                    config={config}
+                  />
+                ) : null}
 
                 {user.isPartner() ? (
                   <PartnerSidebar merchantNavLinkProps={merchantNavLinkProps} user={user} />
