@@ -1,6 +1,6 @@
 // const FRESHCHAT_TOKEN = 'ecf81a9c-2040-43d2-b65f-af058b1508d9'; //test
-const FRESHCHAT_TOKEN = '188cc5ce-796c-4918-8029-c2dc1d924274'; //live
-const FRESHCHAT_HOST = 'https://wchat.freshchat.com';
+const FRESHCHAT_TOKEN = '5f1b4ead-651e-472b-afa8-a94d7fa3873f'; //live
+const FRESHCHAT_HOST = 'https://wchat.in.freshchat.com';
 
 const initFreshchat = data => {
   let role = data.userRole;
