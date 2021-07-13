@@ -80,7 +80,7 @@ class Notify
         }
     }
 
-    public function notifyOpsIfNeeded(MerchantEntity $merchant, PaymentEntity $payment, array $triggeredRules)
+    public function notifyOpsIfNeeded(MerchantEntity $merchant, array $triggeredRules)
     {
         try
         {
@@ -141,8 +141,8 @@ class Notify
                 $ruleCode = strtolower($reviewRule[Shield::RULE_CODE]);
 
                 $ruleInfo = [
-                    Shield::ID               => $blockRule[Shield::ID],
-                    Shield::RULE_DESCRIPTION => $blockRule[Shield::RULE_DESCRIPTION],
+                    Shield::ID               => $reviewRule[Shield::ID],
+                    Shield::RULE_DESCRIPTION => $reviewRule[Shield::RULE_DESCRIPTION],
                 ];
 
                 $rulesGroupedByRuleCode[$ruleCode][] = $ruleInfo;

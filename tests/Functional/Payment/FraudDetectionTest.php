@@ -879,7 +879,23 @@ class FraudDetectionTest extends TestCase
                                 [
                                     "id"               => '123',
                                     "rule_id"          => 'rule_1234',
-                                    "rule_code"        => 'power_bank_rules',
+                                    "rule_code"        => 'power_bank_rules_1',
+                                    "rule_description" => 'test_description',
+                                ],
+                            ],
+                            "review"   => [
+                                [
+                                    "id"               => '223',
+                                    "rule_id"          => 'rule_2234',
+                                    "rule_code"        => 'power_Bank_Rules',
+                                    "rule_description" => 'test_description',
+                                ],
+                            ],
+                            "whitelist"   => [
+                                [
+                                    "id"               => '323',
+                                    "rule_id"          => 'rule_3234',
+                                    "rule_code"        => 'power_Bank_Rules',
                                     "rule_description" => 'test_description',
                                 ],
                             ],
@@ -889,7 +905,7 @@ class FraudDetectionTest extends TestCase
 
         $this->app->instance('shield', $shieldClient);
 
-        $slackMessage = "*POWER_BANK_RULES (Rules) Triggered*\n\n*MID*: `<https://dashboard.razorpay.com/admin#/app/merchants/10000000000000/detail | 10000000000000>` flagged\n\n*Shield Id*: `<https://dashboard.razorpay.com/admin/entity/shield.rules/live/123 | 123>`\n*Shield Description*: test_description\n\ncc: <@S02726CADJL>";
+        $slackMessage = "*POWER_BANK_RULES (Rules) Triggered*\n\n*MID*: `<https://dashboard.razorpay.com/admin#/app/merchants/10000000000000/detail | 10000000000000>` flagged\n\n*Shield Id*: `<https://dashboard.razorpay.com/admin/entity/shield.rules/live/223 | 223>`\n*Shield Description*: test_description\n\ncc: <@S02726CADJL>";
 
         $slackPayload = [
             $slackMessage,
