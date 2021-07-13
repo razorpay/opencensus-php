@@ -94,6 +94,7 @@ class WithdrawalDetails extends Component {
         product_entity_reference_id: id,
         order_by_type: 'ORDER_BY_TYPE_DESC',
         order_by_field: 'ORDER_BY_FIELD_CREATED_AT',
+        count: 50,
       })
       .then(({ data: { repayments = [] } = {} } = {}) => {
         const response = {
