@@ -231,7 +231,14 @@ class TerminalController extends Controller
     {
         $input = Request::all();
 
-        $this->trace->info(TraceCode::SMS_SYNC_SAVE_OTP_CALL_RECEIVED, $input);
+        $traceInput = $input;
+
+        if (isset($input['message']) === true)
+        {
+            $traceInput['message'] = substr($input['message'], 0, 20); // first few charaters would be for SMS sender ID, we can log that
+        }
+
+        $this->trace->info(TraceCode::SMS_SYNC_SAVE_OTP_CALL_RECEIVED, $traceInput);
 
         // TODO: do some signature/secret validation here
 

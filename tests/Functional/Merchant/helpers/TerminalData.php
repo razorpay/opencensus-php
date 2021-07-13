@@ -3844,7 +3844,7 @@ return [
             'url'     => '/terminal_test_otp',
             'method'  => 'POST',
             'content' => [
-                'msg' => 'message'
+                'message' => "From: AD-HDFCBK\n OTP is 123456 for txn of INR 1.00 at Terminal Testing Mer on HDFC Bank card ending 6654. Valid till 17:36:20. Do not share OTP for security reasons"
             ],
         ],
         'response' => [
