@@ -52,7 +52,7 @@ export default class Support extends Component {
   componentDidMount() {
     this.props.checkCallEligibility();
     if (this.props.user.isScheduleCallbackEnabled) {
-      this.props.checkScheduleCallConfig().then(response => {
+      this.props.checkScheduleCallConfig().then((response) => {
         if (response.is_eligible) {
           analyticsTrack({
             objectName: 'request a call',
@@ -133,7 +133,9 @@ export default class Support extends Component {
     const isCallEnabled = false;
     // const isCallEnabled = !user.isActivated || this.props.isCallEnabled;
 
-    const isOnBoardingRevampScreen = history.location.pathname.includes('onboarding');
+    const isOnBoardingRevampScreen =
+      history.location.pathname.includes('onboarding') ||
+      history.location.pathname.includes('tncform');
     const DASHBOARD_HOST_REGEX = /(dashboard.*\.razorpay\.(com|in)|localhost)$/;
 
     // Don't show support for Axis org

@@ -4,11 +4,10 @@ import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
-import Link from '@razorpay/commander-shield/src/shared/Link';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import Card from 'v2/components/Card';
 import Illustration from './Illustration.svg';
-import { StyledFooter, Image, LinkText, StyledText } from './Styled';
+import { StyledFooter, Image, LinkText, StyledText, TncLink } from './Styled';
 
 interface TncSuccessLinkPropsT {
   history: any;
@@ -29,11 +28,11 @@ const TncSuccessLink: React.FC<TncSuccessLinkPropsT> = ({ history, data }) => {
           <View>
             <Flex alignItems="center" justifyContent="center">
               <View>
-                <Link href={data.link} target="_blank">
+                <TncLink href={data.link} target="_blank">
                   <Text size="medium" weight="bold" color="primary.800">
                     {data.link}
                   </Text>
-                </Link>
+                </TncLink>
                 <Space margin={[0, 0, 0, 1]}>
                   <Flex>
                     <View>

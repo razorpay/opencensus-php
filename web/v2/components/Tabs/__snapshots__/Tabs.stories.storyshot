@@ -170,10 +170,12 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

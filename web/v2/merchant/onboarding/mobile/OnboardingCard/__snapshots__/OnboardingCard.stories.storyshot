@@ -63,10 +63,12 @@ exports[`Storyshots Onboarding/OnboardingCard Default 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

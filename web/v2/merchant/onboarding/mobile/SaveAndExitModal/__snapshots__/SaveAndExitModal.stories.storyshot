@@ -19,10 +19,12 @@ exports[`Storyshots Onboarding/Save and exit Popup 1`] = `
       </button>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

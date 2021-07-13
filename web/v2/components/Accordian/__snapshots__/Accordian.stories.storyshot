@@ -108,10 +108,12 @@ exports[`Storyshots Accordian Stateless Accordian 1`] = `
       </ul>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

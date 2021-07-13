@@ -43,10 +43,12 @@ exports[`Storyshots Onboarding/Step Default 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -95,10 +97,12 @@ exports[`Storyshots Onboarding/Step Step Completed 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -154,10 +158,12 @@ exports[`Storyshots Onboarding/Step Step Error 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -192,10 +198,12 @@ exports[`Storyshots Onboarding/Step Step Locked 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

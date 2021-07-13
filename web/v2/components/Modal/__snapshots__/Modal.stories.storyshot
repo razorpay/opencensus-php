@@ -19,6 +19,7 @@ exports[`Storyshots Modal Bottom Sheet 1`] = `
       </button>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     >
       <div>
@@ -42,6 +43,7 @@ exports[`Storyshots Modal Bottom Sheet 1`] = `
     </div>
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -66,10 +68,12 @@ exports[`Storyshots Modal Default Modal 1`] = `
       </button>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -80,6 +84,7 @@ exports[`Storyshots Modal Modal With Controls 1`] = `
   <div>
     <div />
     <div
+      data-testid="layerTestId"
       id="layerHost"
     >
       <div>
@@ -140,6 +145,7 @@ exports[`Storyshots Modal Modal With Controls 1`] = `
     </div>
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

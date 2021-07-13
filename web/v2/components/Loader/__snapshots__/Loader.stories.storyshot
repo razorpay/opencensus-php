@@ -14,10 +14,12 @@ exports[`Storyshots Loader Loader Center 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -33,10 +35,12 @@ exports[`Storyshots Loader Loader Default 1`] = `
       />
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -56,10 +60,12 @@ exports[`Storyshots Loader Loader Full Page 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

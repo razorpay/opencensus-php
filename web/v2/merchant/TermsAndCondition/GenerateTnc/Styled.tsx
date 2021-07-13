@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Text from '@razorpay/blade-old/src/atoms/Text';
+import Link from '@razorpay/commander-shield/src/shared/Link';
 
 export const StyledContent = styled(View)`
   min-height: 100vh;
@@ -33,4 +34,8 @@ export const Image = styled.img`
 
 export const StyledText = styled(View)`
   background: #fcf8e5;
+`;
+
+export const TncLink = styled(Link)`
+  word-break: break-word;
 `;

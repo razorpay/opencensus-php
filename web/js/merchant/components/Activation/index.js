@@ -1801,6 +1801,23 @@ export default class ActivationWizard extends React.Component {
     if (FORM_TABS[activeTab] === bankAccountTabName && !this.isSourceRX && this.isRxCaExpEnabled) {
       showRxCA = true;
     }
+    // track hubspot event
+    if (this.state.tabs[1]) {
+      window.trackHubs({
+        name: 'update_property',
+        data: {
+          business_overview_submitted: true,
+        },
+      });
+    }
+    if (this.state.tabs[2]) {
+      window.trackHubs({
+        name: 'update_property',
+        data: {
+          business_verification_submitted: true,
+        },
+      });
+    }
 
     return (
       <div className="Activation--wizard Wizard">

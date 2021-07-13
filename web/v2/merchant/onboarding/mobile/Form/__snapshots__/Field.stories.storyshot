@@ -177,10 +177,12 @@ exports[`Storyshots Onboarding/Field Multiple Field 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -244,10 +246,12 @@ exports[`Storyshots Onboarding/Field Single Field 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

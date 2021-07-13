@@ -5,6 +5,7 @@ exports[`Storyshots Layer Basic Layer 1`] = `
   <div>
     <div />
     <div
+      data-testid="layerTestId"
       id="layerHost"
     >
       <div>
@@ -15,6 +16,7 @@ exports[`Storyshots Layer Basic Layer 1`] = `
     </div>
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -54,10 +56,12 @@ exports[`Storyshots Layer Composite Layer 1`] = `
       </button>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

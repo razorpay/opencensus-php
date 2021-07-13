@@ -81,7 +81,7 @@ export const LayerProvider: React.FC<ProviderPropsT> = (props) => {
       }}
     >
       <div>{props.children}</div>
-      <div id="layerHost" ref={hostEl} />
+      <div id="layerHost" data-testid="layerTestId" ref={hostEl} />
     </layerContext.Provider>
   );
 };

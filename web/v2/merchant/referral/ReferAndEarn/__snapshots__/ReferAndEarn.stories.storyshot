@@ -32,10 +32,12 @@ exports[`Storyshots referral/ReferaAndEarn Default 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -58,10 +60,12 @@ exports[`Storyshots referral/ReferaAndEarn Home Page Referral Done 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -99,10 +103,12 @@ exports[`Storyshots referral/ReferaAndEarn Refer Section 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

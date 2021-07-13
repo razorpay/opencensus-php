@@ -363,10 +363,7 @@ function canShowEAadharComponent(activation) {
   const currentBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
 
-  if (
-    E_SIGN_AADHAR.includes(Number(currentBusinessType)) &&
-    activation.props.user.isOrgRZP
-  ) {
+  if (E_SIGN_AADHAR.includes(Number(currentBusinessType)) && activation.props.user.isOrgRZP) {
     return true;
   }
   return false;
@@ -424,9 +421,10 @@ function getActivationState(activationData = {}, isUnregisteredBusiness) {
     activationStatusChangeLogs,
     merchant,
     isHardLimitReached,
+    merchant_tnc,
   } = activationData;
 
-  const tncRequired = !business_website && !isSourceRX() && canGenerateTnCPage;
+  const tncRequired = !business_website && !merchant_tnc && !isSourceRX() && canGenerateTnCPage;
 
   const dedupeStatus = isDedupe(activationData);
 
@@ -459,9 +457,13 @@ function getActivationState(activationData = {}, isUnregisteredBusiness) {
       } else if (activationStatusChangeLogs.includes('needs_clarification')) {
         activationState = tncRequired ? 'under_review_without_tnc' : 'under_review_with_tnc';
       } else if (dedupeStatus === 'passed') {
-        activationState = tncRequired
-          ? 'under_review_without_tnc_passed'
-          : 'under_review_with_tnc_passed';
+        if (tncRequired) {
+          activationState = activated
+            ? 'under_review_without_tnc_passed'
+            : 'under_review_without_tnc';
+        } else {
+          activationState = activated ? 'under_review_with_tnc_passed' : 'under_review_with_tnc';
+        }
       }
     } else if (activation_status === 'needs_clarification') {
       if (activationStatusChangeLogs.includes('activated_mcc_pending')) {

@@ -46,10 +46,12 @@ exports[`Storyshots ProgressBarContinuous Progress Bar 1`] = `
       </button>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -71,10 +73,12 @@ exports[`Storyshots ProgressBarContinuous Progress Bar Continuous With Controls 
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

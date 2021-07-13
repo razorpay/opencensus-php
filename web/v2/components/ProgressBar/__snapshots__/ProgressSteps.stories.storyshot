@@ -75,10 +75,12 @@ exports[`Storyshots ProgressSteps Progress Bar With Controls 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -159,10 +161,12 @@ exports[`Storyshots ProgressSteps Progress Steps 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

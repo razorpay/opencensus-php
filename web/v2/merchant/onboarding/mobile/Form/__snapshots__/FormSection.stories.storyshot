@@ -375,10 +375,12 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -580,10 +582,12 @@ exports[`Storyshots Onboarding/FormSection Single Form Section 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -792,10 +796,12 @@ exports[`Storyshots Onboarding/FormSection Single Form Section Error 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

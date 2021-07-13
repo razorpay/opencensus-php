@@ -19,10 +19,12 @@ exports[`Storyshots onboarding/FAQs Faq 1`] = `
       </button>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -62,10 +64,12 @@ exports[`Storyshots onboarding/FAQs Specific Section Faq 1`] = `
       </button>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

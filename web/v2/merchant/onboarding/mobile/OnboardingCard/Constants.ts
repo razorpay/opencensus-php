@@ -37,7 +37,7 @@ export const ACTIVATION_STATUS_UNDER_REVIEW = {
   new_flow: {
     title: 'Payment limits have been removed',
     description_with_payment_enable:
-      'You can accept unlimited payments now. Settlements will be unabled after we successfully review your KYC details. It usually takes 3-4 working days. We will notify you if we require any clarifications on your KYC.',
+      'You can accept unlimited payments now. Settlements will be enabled after we successfully review your KYC details. It usually takes 3-4 working days. We will notify you if we require any clarifications on your KYC.',
     partial_match_title: 'Payments temporarily paused',
     partial_match_desc:
       'Our compliance team and banking partners are reviewing your KYC and your payments have been temporarily paused. We will review your KYC and reach out to you for any clarifications within 3-4 days.',
@@ -52,7 +52,7 @@ export const ACTIVATION_STATUS_NEEDS_CLARIFICATION = {
     normal:
       'We need some clarification regarding your submitted details. Please clarify these details at the earliest to get your account activated.',
     activated_mcc_pending:
-      'We need some clarification regarding your submitted details.Update the required details in 1 day otherwise your settlements might get paused',
+      'We need some clarification regarding your submitted details. Update the required details in 1 day otherwise your settlements might get paused',
     funds_onhold:
       'We need some clarification regarding your submitted details. Please clarify these details to enable your settlements',
   },

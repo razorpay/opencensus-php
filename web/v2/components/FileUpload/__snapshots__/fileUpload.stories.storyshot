@@ -20,10 +20,12 @@ exports[`Storyshots Onboarding/file upload File Upload Component 1`] = `
       </label>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

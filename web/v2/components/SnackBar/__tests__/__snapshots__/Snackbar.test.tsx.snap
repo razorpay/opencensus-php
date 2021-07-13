@@ -70,6 +70,7 @@ exports[`<Snackbar /> error error 1`] = `
     </div>
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -151,6 +152,7 @@ exports[`<Snackbar /> error success 1`] = `
     </div>
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -226,6 +228,7 @@ exports[`<Snackbar /> showSnackbar hide snackbar 1`] = `
     </div>
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -301,6 +304,7 @@ exports[`<Snackbar /> showSnackbar show snackbar 1`] = `
     </div>
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>

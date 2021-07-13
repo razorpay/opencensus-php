@@ -14,10 +14,12 @@ exports[`Storyshots Onboarding/ActivationProgress Greylisted Merchant 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
@@ -37,10 +39,12 @@ exports[`Storyshots Onboarding/ActivationProgress Whitelisted Merchant 1`] = `
       </div>
     </div>
     <div
+      data-testid="layerTestId"
       id="layerHost"
     />
   </div>
   <div
+    data-testid="layerTestId"
     id="layerHost"
   />
 </div>
