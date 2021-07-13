@@ -168,7 +168,7 @@ class IciciEmi extends Base
     public function sendFile($fileData, $mailData = null)
     {
         // Push this file to Beam
-        $this->pushEmiFileToBeam(BeamConstants::ICIC_EMI_REFUND_FILE_JOB_NAME);;
+        $this->pushEmiFileToBeam(BeamConstants::ICIC_EMI_FILE_JOB_NAME);
 
         $this->gatewayFile->setStatus(Status::FILE_SENT);
 
@@ -197,13 +197,13 @@ class IciciEmi extends Base
             $formattedData[] = [
                 'EMI ID' => $row->payment_id,
                 'Full Card No.' => $this->getCardNumber($row->payment->card),
-                'Original Transaction Amount' => $row->amount * 100,
-                'Txn date' => $this->formattedDateFromTimestamp($row->created_at),
+                'Original Transaction Amount' => $row->payment->amount,
+                'Txn date' => $this->formattedDateFromTimestamp($row->payment->created_at),
                 'Auth ID' => $this->getAuthCode($row->payment),
                 'Merchant Name' => $row->merchant->name,
                 'MID' => $row->merchant->id,
-                'Refund Amount' => $row->amount * 100,
-                'Refund Date' => $this->formattedDateFromTimestamp(time()),
+                'Refund Amount' => $row->amount,
+                'Refund Date' => $this->formattedDateFromTimestamp($row->created_at),
             ];
         }
 
