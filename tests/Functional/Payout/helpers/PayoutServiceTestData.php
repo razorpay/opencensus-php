@@ -41,7 +41,7 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts_service/create_ledger',
             'content' => [
-                "id"                   => "Gg7sgBZgvYjlSB",
+                "id" => "Gg7sgBZgvYjlSB",
             ],
         ],
         'response' => [
@@ -57,7 +57,7 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts_service/create_fta/Gg7sgBZgvYjlSB',
             'content' => [
-                "id"                   => "Gg7sgBZgvYjlSB",
+                "id" => "Gg7sgBZgvYjlSB",
             ],
         ],
         'response' => [
@@ -74,7 +74,7 @@ return [
             'url'     => '/payouts',
             'content' => [
                 'account_number'  => '2224440041626905',
-                'amount'          =>  100,
+                'amount'          => 100,
                 'currency'        => 'INR',
                 'purpose'         => 'refund',
                 'narration'       => 'Batman',
@@ -85,7 +85,7 @@ return [
         'response' => [
             'content' => [
                 'entity'          => 'payout',
-                'amount'          =>  100,
+                'amount'          => 100,
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
                 'purpose'         => 'refund',
@@ -98,14 +98,14 @@ return [
     ],
 
     'testCreatePayoutServiceFailure' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
                 "id"              => "Gg7sgBZgvYjlSB",
                 "merchant_id"     => "10000000000000",
                 'account_number'  => '2224440041626905',
-                'amount'          =>  100,
+                'amount'          => 100,
                 'currency'        => 'INR',
                 'purpose'         => 'refund',
                 'narration'       => 'Batman',
@@ -263,7 +263,7 @@ return [
             'url'     => '/payouts',
             'content' => [
                 'account_number'  => '2224440041626905',
-                'amount'          =>  100,
+                'amount'          => 100,
                 'currency'        => 'INR',
                 'purpose'         => 'refund',
                 'narration'       => 'Batman',
@@ -274,7 +274,7 @@ return [
         'response' => [
             'content' => [
                 'entity'          => 'payout',
-                'amount'          =>  100,
+                'amount'          => 100,
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
                 'purpose'         => 'refund',
@@ -288,9 +288,9 @@ return [
 
     'testServiceCancelQueuedPayoutProxyAuth' => [
         'request'  => [
-            'method'  => 'POST',
+            'method' => 'POST',
         ],
-        'response'  => [
+        'response' => [
             'content' => [
                 'entity'          => 'payout',
                 'amount'          => 100,
@@ -313,7 +313,7 @@ return [
                 'remarks' => 'test remark'
             ]
         ],
-        'response'  => [
+        'response' => [
             'content' => [
                 'entity'          => 'payout',
                 'amount'          => 100,
@@ -335,7 +335,7 @@ return [
             'url'     => '/payouts',
             'content' => [
                 'account_number'  => '2224440041626905',
-                'amount'          =>  100,
+                'amount'          => 100,
                 'currency'        => 'INR',
                 'purpose'         => 'refund',
                 'narration'       => 'Batman',
@@ -346,7 +346,7 @@ return [
         'response' => [
             'content' => [
                 'entity'          => 'payout',
-                'amount'          =>  100,
+                'amount'          => 100,
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
                 'purpose'         => 'refund',
@@ -376,7 +376,7 @@ return [
         'response' => [
             'content' => [
                 'entity'          => 'payout',
-                'amount'          =>  500,
+                'amount'          => 500,
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
                 'purpose'         => 'refund',
@@ -385,6 +385,47 @@ return [
                 'tax'             => 0,
                 'fees'            => 0,
             ],
+        ],
+    ],
+
+    'testRetryPayoutService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/retry',
+            'content' => [
+                'payout_ids' => []
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count'       => 1,
+                'success_count'     => 1,
+                'failure_count'     => 0,
+                'failed_payout_ids' => [],
+            ],
+        ],
+    ],
+
+    'testRetryPayoutServiceFail' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/retry',
+            'content' => [
+                'payout_ids' => []
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Service Failure',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
 ];

@@ -1816,4 +1816,11 @@ class Service extends Base\Service
 
         return $this->core->initiateScheduledPayoutsViaPayoutService($input);
     }
+
+    public function retryPayoutsOnPayoutService($input)
+    {
+        (new Validator)->validateInput(Validator::RETRY_PAYOUTS_ON_SERVICE, $input);
+
+        return $this->core->retryPayoutsOnPayoutService($input);
+    }
 }

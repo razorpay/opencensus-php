@@ -1261,6 +1261,9 @@ return [
             ],
             Permission::UPDATE_LOW_BALANCE_CONFIG_ADMIN => [
                 'assignable' => true,
+            ],
+            Permission::RETRY_PAYOUTS_ON_SERVICE => [
+                'assignable' => true,
             ]
         ],
 

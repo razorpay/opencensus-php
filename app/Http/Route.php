@@ -2568,6 +2568,7 @@ class Route
         'create_ledger_payout_service'            => ['post',     'payouts_service/create_ledger',                          'PayoutController@createPayoutServiceTransaction'              ],
         'create_reversal_entry'                   => ['post',     'payouts_service/reversal/create',                        'ReversalController@createReversalEntryForPayoutService'       ],
         'payout_service_process_scheduled_payout' => ['post',     'payouts_service/scheduled/process',                      'PayoutController@processSchedulePayoutOnPayoutService'        ],
+        'retry_payouts_on_service'                => ['post',     'payouts_service/retry',                                  'PayoutController@retryPayoutsOnPayoutService'                 ],
 
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
 
@@ -4967,6 +4968,9 @@ class Route
         'fetch_filter_ledger',
 
         'merchant_risk_data',
+
+        // Payout service
+        'retry_payouts_on_service',
     ];
 
     public static $routePermission = [
@@ -5911,7 +5915,9 @@ class Route
         'fetch_multiple_ledger'                           => Permission::LEDGER_VIEW_DASHBOARD,
         'fetch_filter_ledger'                             => Permission::LEDGER_VIEW_DASHBOARD,
 
-        'merchant_risk_data'                              => Permission::GET_MERCHANT_RISK_DATA
+        'merchant_risk_data'                              => Permission::GET_MERCHANT_RISK_DATA,
+
+        'retry_payouts_on_service'                        => Permission::RETRY_PAYOUTS_ON_SERVICE,
     ];
 
     public static $bankingRoutePermissions = [
@@ -7365,6 +7371,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'retry_payouts_on_service',
             'populate_merchant_trim_data_cron',
             'add_verify_disabled_gateway',
             'order_create_admin',

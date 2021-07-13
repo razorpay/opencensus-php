@@ -106,6 +106,11 @@ class Core extends Base\Core
 
     protected $payoutScheduledServiceClient;
 
+    /**
+     * @var PayoutService\Retry
+     */
+    protected $payoutRetryServiceClient;
+
     /** @var Workflow\Service\Client  */
     protected $workflowService;
 
@@ -122,6 +127,8 @@ class Core extends Base\Core
         $this->payoutCancelServiceClient = $this->app[PayoutService\Cancel::PAYOUT_SERVICE_CANCEL];
 
         $this->payoutScheduledServiceClient = $this->app[PayoutService\Schedule::PAYOUT_SERVICE_SCHEDULE];
+
+        $this->payoutRetryServiceClient = $this->app[PayoutService\Retry::PAYOUT_SERVICE_RETRY];
 
         $this->workflowService = new Workflow\Service\Client;
     }
@@ -3519,5 +3526,10 @@ class Core extends Base\Core
     public function initiateScheduledPayoutsViaPayoutService($input)
     {
         return $this->payoutScheduledServiceClient->processSchedulePayoutViaMicroservice($input);
+    }
+
+    public function retryPayoutsOnPayoutService($input)
+    {
+        return $this->payoutRetryServiceClient->retryPayoutViaMicroservice($input);
     }
 }

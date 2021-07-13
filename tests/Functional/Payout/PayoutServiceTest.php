@@ -3,13 +3,11 @@
 namespace Functional\Payout;
 
 use Mockery;
-use Carbon\Carbon;
 use Requests_Response;
 
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Pricing\Fee;
-use RZP\Constants\Timezone;
 use RZP\Models\Payout\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -17,6 +15,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+use RZP\Services\PayoutService\Retry as PayoutServiceRetry;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Services\PayoutService\Status as PayoutServiceStatus;
 use RZP\Services\PayoutService\Cancel as PayoutServiceCancel;
@@ -96,7 +95,7 @@ class PayoutServiceTest extends TestCase
                                     $this->createResponseForPayoutServiceMock($fail)
                                 );
 
-        $this->app->instance('payout_service_create', $payoutServiceCreateMock);
+        $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
     }
 
     public function mockPayoutServiceStatus($status, $fail = false)
@@ -110,6 +109,48 @@ class PayoutServiceTest extends TestCase
 
         $this->app->payout_service_status->method('sendRequest')
             ->willReturn($this->createResponseForPayoutServiceMock($fail, $status));
+    }
+
+    public function mockPayoutServiceRetry($fail = false)
+    {
+        $payoutRetryStatusMock = $this->getMockBuilder(PayoutServiceRetry::class)
+                                        ->setConstructorArgs([$this->app])
+                                        ->setMethods(['sendRequest'])
+                                        ->getMock();
+
+        $this->app->instance(PayoutServiceRetry::PAYOUT_SERVICE_RETRY, $payoutRetryStatusMock);
+
+        $response = new Requests_Response();
+
+        if ($fail === true)
+        {
+            $response->body = json_encode(
+                [
+                    "error"   =>
+                        [
+                            "code"        => ErrorCode::BAD_REQUEST_ERROR,
+                            "description" => "Service Failure",
+                            "field"       => null
+                        ]
+                ]);
+            $response->status_code = 400;
+            $response->success = true;
+        }
+        else
+        {
+            $response->body = json_encode(
+                [
+                    'total_count'       => 1,
+                    'success_count'     => 1,
+                    'failure_count'     => 0,
+                    'failed_payout_ids' => [],
+                ]);
+            $response->status_code = 200;
+            $response->success = true;
+        }
+
+        $this->app->payout_service_retry->method('sendRequest')
+                                         ->willReturn($response);
     }
 
     public function mockPayoutServiceDetails($fail = false)
@@ -746,6 +787,42 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals(Status::CANCELLED, $cancelledPayout['status']);
         $this->assertEquals($this->bankingBalance['id'], $cancelledPayout['balance_id']);
         $this->assertEquals($testData['request']['content']['remarks'], $cancelledPayout['remarks']);
+    }
+
+    public function testRetryPayoutService()
+    {
+        $this->mockPayoutServiceRetry();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = [
+            $payout->getId()
+        ];
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+    }
+
+    public function testRetryPayoutServiceFail()
+    {
+        $this->mockPayoutServiceRetry(true);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $testData                                     = &$this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = [
+            $payout->getId()
+        ];
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
     }
 
     // Since queued payout has is_payout_service value set to 1, it won't be processed via api

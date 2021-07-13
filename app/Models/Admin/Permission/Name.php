@@ -676,6 +676,9 @@ class Name
     // Recon service permission
     const RECON_OPERATION                              = 'recon_operation';
 
+    // Retry payouts on payout service
+    const RETRY_PAYOUTS_ON_SERVICE  = 'retry_payouts_on_service';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

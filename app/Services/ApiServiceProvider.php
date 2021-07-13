@@ -507,6 +507,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutServiceCancel();
 
+        $this->registerPayoutServiceRetry();
+
         $this->registerPayoutServiceSchedule();
 
         $this->registerPayoutServiceCreate();
@@ -1248,6 +1250,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\Cancel::PAYOUT_SERVICE_CANCEL, function($app)
         {
             return new PayoutService\Cancel($app);
+        });
+    }
+
+    protected function registerPayoutServiceRetry()
+    {
+        $this->app->singleton(PayoutService\Retry::PAYOUT_SERVICE_RETRY, function($app)
+        {
+            return new PayoutService\Retry($app);
         });
     }
 

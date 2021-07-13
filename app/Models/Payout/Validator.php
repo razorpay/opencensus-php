@@ -81,6 +81,7 @@ class Validator extends Base\Validator
     const PAYOUT_SERVICE_CREATE             = 'payout_service_create';
     const PAYOUT_SERVICE_TRANSACTION_CREATE = 'payout_service_transaction_create';
     const PAYOUT_SERVICE_FTS_CREATE         = 'payout_service_fts_create';
+    const RETRY_PAYOUTS_ON_SERVICE          = 'retry_payouts_on_service';
 
     //
     // This is required for build. Currently, build does not
@@ -259,6 +260,11 @@ class Validator extends Base\Validator
     protected static $batchRejectRules = [
         Entity::PAYOUT_IDS          => 'required|array',
         Entity::PAYOUT_IDS . '.*'   => 'required|public_id|size:19',
+    ];
+
+    protected static $retryPayoutsOnServiceRules = [
+        Entity::PAYOUT_IDS        => 'required|array',
+        Entity::PAYOUT_IDS . '.*' => 'required|string|size:14',
     ];
 
     protected static $bulkRetryWorkflowRules = [
