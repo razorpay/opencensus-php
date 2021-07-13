@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Mail;
 use RZP\Mail\PayoutLink\CustomerDemoOtpInternal;
 use RZP\Mail\PayoutLink\SendDemoLinkInternal;
 use View;
-use Requests;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Environment;
+use RZP\Http\Request\Requests;
 use RZP\Models\FundAccount\Type;
 use RZP\Models\Merchant;
 use RZP\Http\Response\StatusCode;
@@ -919,10 +919,11 @@ class PayoutLinks
                 'url' => $url
             ]);
 
-        $response = Requests::$method(
+        $response = Requests::request(
             $url,
             $headers,
             json_encode($data, JSON_FORCE_OBJECT),
+            $method,
             $options);
 
         $responseBody = json_decode($response->body, true);
@@ -936,6 +937,13 @@ class PayoutLinks
 
         if ($response->status_code !== StatusCode::SUCCESS)
         {
+            $this->trace->info(TraceCode::PAYOUT_LINKS_MS_ERROR_RESPONSE,
+                [
+                    'url' => $url,
+                    'status_code' => $response->status_code,
+                    'response_body' => $responseBody
+                ]);
+
             if(empty($responseBody) === true)
             {
                 $description = self::INVALID_REQUEST_RESPONSE_MSG;

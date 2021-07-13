@@ -2939,6 +2939,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_LINKS_REQUEST                                  = 'PAYOUT_LINKS_REQUEST';
     const PAYOUT_LINKS_INTEGRATION_DETAILS_REQUEST              = 'PAYOUT_LINKS_INTEGRATION_DETAILS_REQUEST';
     const PAYOUT_LINKS_RESPONSE                                 = 'PAYOUT_LINKS_RESPONSE';
+    const PAYOUT_LINKS_MS_ERROR_RESPONSE                        = 'PAYOUT_LINKS_MS_ERROR_RESPONSE';
     const PAYOUT_LINKS_API_ROUTE                                = 'PAYOUT_LINKS_API_ROUTE';
     const PAYOUT_LINKS_MS_ROUTE                                 = 'PAYOUT_LINKS_MS_ROUTE';
 
