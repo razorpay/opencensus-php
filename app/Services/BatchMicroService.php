@@ -84,6 +84,13 @@ class BatchMicroService
             $data['batchTypeId'] = 'nach_' . $subType . '_' . $gateway . '';
         }
 
+        if($data['batchTypeId'] === "emandate")
+        {
+            $subType = $input[Batch\Entity::SUB_TYPE];
+            $gateway = $input[Batch\Entity::GATEWAY];
+            $data['batchTypeId'] = 'emandate_' . $subType . '_' . $gateway;
+        }
+
         $this->checkAndInsert('name', $input, $data);
 
         if (isset($input['file_id']))

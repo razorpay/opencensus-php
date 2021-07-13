@@ -11,6 +11,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Order\Entity as Order;
 use RZP\Mail\Gateway\EMandate\Base as Email;
@@ -598,23 +599,18 @@ class NetbankingHdfcEmandateTest extends TestCase
         });
     }
 
-    public function testEmandateDebitRecon()
+    public function testEmandateDebitSucessRecon()
     {
         $registrationEntities = $this->createRegistrationConfirmedEntities();
 
-        $entities = [];
         $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
         $entities[0]['status_in_file'] = 'success';
 
-        $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
-        $entities[1]['status_in_file'] = 'failure';
-
-        $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
-        $entities[2]['status_in_file'] = 'cancelled';
-
         $file = $this->generateEmandateDebitReconFile($entities);
 
-        $this->makeBatchRequest(
+        $this->mockRazorxTreatment('on');
+
+        $batch = $this->makeBatchRequest(
             [
                 'type'     => 'emandate',
                 'sub_type' => 'debit',
@@ -623,13 +619,14 @@ class NetbankingHdfcEmandateTest extends TestCase
             $file
         );
 
-        $this->assertDebitReconEntities($entities);
-    }
+        $this->assertEquals('emandate', $batch['batch_type_id']);
+        $this->assertEquals('CREATED', $batch['status']);
 
-    protected function assertDebitReconEntities($entities)
-    {
+        $entries1 = $this->createBatchRequestData($entities[0], "emandate", "debit", "hdfc", 1);
+
+        $this->runWithData($entries1, $batch['id']);
+
         // Validate debit success entities
-
         $payment = $this->getDbEntityById('payment', $entities[0]['payment']['id']);
 
         $transaction = $payment->transaction;
@@ -644,24 +641,44 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $this->assertEquals('success', $netbanking[Netbanking::STATUS]);
 
+    }
+
+    public function testEmandateDebitFailureRecon()
+    {
+        $registrationEntities = $this->createRegistrationConfirmedEntities();
+
+        $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
+        $entities[0]['status_in_file'] = 'failure';
+
+        $file = $this->generateEmandateDebitReconFile($entities);
+
+        $this->mockRazorxTreatment('on');
+
+        $batch = $this->makeBatchRequest(
+            [
+                'type'     => 'emandate',
+                'sub_type' => 'debit',
+                'gateway'  => 'hdfc',
+            ],
+            $file
+        );
+
+        $this->assertEquals('emandate', $batch['batch_type_id']);
+        $this->assertEquals('CREATED', $batch['status']);
+
+        $entries = $this->createBatchRequestData($entities[0], "emandate", "debit", "hdfc", 1);
+
+        $this->runWithData($entries, $batch['id']);
+
         // Validate registration failure entities
-        $payment = $this->getDbEntityById('payment', $entities[1]['payment']['id'])->toArray();
+        $payment = $this->getDbEntityById('payment', $entities[0]['payment']['id'])->toArray();
 
         $this->assertEquals(Payment\Status::FAILED, $payment['status']);
 
-        $netbanking = $this->getDbEntityById('netbanking', $entities[1]['netbanking']['id'])->toArray();
+        $netbanking = $this->getDbEntityById('netbanking', $entities[0]['netbanking']['id'])->toArray();
 
         $this->assertEquals('failure', $netbanking[Netbanking::STATUS]);
 
-        // for cancelled status
-
-        $payment = $this->getDbEntityById('payment', $entities[2]['payment']['id'])->toArray();
-
-        $this->assertEquals(Payment\Status::FAILED, $payment['status']);
-
-        $netbanking = $this->getDbEntityById('netbanking', $entities[2]['netbanking']['id'])->toArray();
-
-        $this->assertEquals('cancelled', $netbanking[Netbanking::STATUS]);
     }
 
     public function testSecondRecurringPaymentVerify()
@@ -1149,4 +1166,58 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         return $allSheetsContent;
     }
+
+    public function runWithData($entries, $batchId)
+    {
+        $this->ba->batchAppAuth();
+
+        $testData = $this->testData['process_via_batch_service'];
+
+        $testData['request']['server']['HTTP_X_Batch_Id'] = $batchId;
+
+        $testData['request']['content'] = $entries;
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function createBatchRequestData($entityList, $type, $subType, $gateway, $count)
+    {
+
+        $item = [
+            'Sr'                 => $count,
+            'Transaction_Ref_No' => $entityList['payment']['id'],
+            'Sub-merchant Name'  => 'ABC',
+            'Mandate ID'         => $entityList['token']['id'],
+            'Account_NO'         => $entityList['token']['account_number'],
+            'Amount'             => ($entityList['payment']['amount'] / 100),
+            'SIP_Date'           => '09/05/2018',
+            'Frequency'          => 'As & when Presented',
+            'FROM_DATE'          => '09/05/2018',
+            'TO_DATE'            => '31/12/2099',
+            'Status'             => $entityList['status_in_file'],
+            'Remark'             => '',
+            'Narration'          => '',
+        ];
+
+        return [
+            'data'        => $item,
+            'type'        => $type,
+            'sub_type'    => $subType,
+            'gateway'     => $gateway,
+        ];
+    }
+
+    protected function mockRazorxTreatment(string $returnValue = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn($returnValue);
+    }
+
 }

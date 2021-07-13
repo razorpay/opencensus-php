@@ -529,6 +529,7 @@ class AdminFetch
                         'partner_submerchant_invite',
                         'nach_debit_nach_citi',
                         'website_checker',
+                        'emandate_debit_hdfc',
                     ],
                 ],
             ],

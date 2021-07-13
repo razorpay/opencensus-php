@@ -65,4 +65,35 @@ class Hdfc extends Base
     {
         unset($payloadEntry[Headings::ACCOUNT_NO]);
     }
+
+    public function shouldSendToBatchService(): bool
+    {
+        $result = false;
+
+        $batchType = '' . $this->batch->getType() . '_' . $this->batch->getSubType() . '_' . $this->batch->getGateway() . '';
+
+        if ($this->app->batchService->isCompletelyMigratedBatchType($batchType) === true)
+        {
+            // not required to call razorx.
+            return true;
+        }
+
+        if ($this->app->batchService->isMigratingBatchType($batchType) === true)
+        {
+            //
+            // Get the RazorxTreatment based on batch Type:
+            // BATCH_SERVICE_<BATCH_TYPE>_MIGRATION
+            // Eg: for payment_link, RazorxTreatment will be batch_service_emandate_debit_hdfc_migration
+            //
+            $razorxTreatment = 'batch_service_' . $batchType . '_migration';
+
+            $this->trace->info(TraceCode::RAZORX_REQUEST, ['feature' => $razorxTreatment]);
+
+            $variant = $this->getVariant($razorxTreatment);
+
+            $result = (strtolower($variant) === 'on');
+        }
+
+        return $result;
+    }
 }

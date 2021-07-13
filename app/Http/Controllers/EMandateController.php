@@ -34,7 +34,7 @@ class EMandateController extends Controller
     {
         $batchId = Request::header(RequestHeader::X_Batch_Id);
 
-        $data = $this->service()->processNachBatch($this->input);
+        $data = $this->service()->processBatchRequest($this->input);
 
         $this->trace->info(
             TraceCode::BATCH_PROCESSING_API_RESPONSE,
@@ -48,5 +48,25 @@ class EMandateController extends Controller
             return ApiResponse::json(['Status' => 'Failure', 'body' => $data], 400);
         }
         return ApiResponse::json($data);
+    }
+
+    public function postProcessEmandateDebit()
+    {
+        $batchId = Request::header(RequestHeader::X_Batch_Id);
+
+        $data = $this->service()->processBatchRequest($this->input);
+
+        $this->trace->info(
+            TraceCode::BATCH_PROCESSING_API_RESPONSE,
+            [
+                'response_body' => $data,
+                'batch_id'      => $batchId,
+            ]);
+
+        if(isset($data['data']['Error Code']) === true)
+        {
+            return ApiResponse::json(['Status' => 'Failure', 'body' => $data], 400);
+        }
+        return ApiResponse::json(['body' => $data], 200);
     }
 }

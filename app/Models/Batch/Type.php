@@ -149,6 +149,8 @@ class Type
 
     const UPI_TERMINAL_ONBOARDING     = 'upi_terminal_onboarding';
 
+    const EMANDATE_DEBIT_HDFC         = 'emandate_debit_hdfc';
+
     //
     // Support admin action for bulk retrying refunds via FTA to custom sources
     //
@@ -390,6 +392,7 @@ class Type
         self::UPI_TERMINAL_ONBOARDING,
         self::PAYMENT_TRANSFER,
         self::RECURRING_CHARGE_AXIS,
+        self::EMANDATE_DEBIT_HDFC,
     ];
 
     /**

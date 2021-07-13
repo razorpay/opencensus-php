@@ -295,5 +295,18 @@ return [
         'target' => 'hdfc_emandate',
         'sender' => 'refunds@razorpay.com',
         'status' => 'file_sent',
-    ]
+    ],
+
+    'process_via_batch_service' => [
+        'request' => [
+            'url'    => '/emandate/batch_service',
+            'method' => 'post',
+            'server' => [
+                'mode' => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ]
+    ],
 ];

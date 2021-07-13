@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Reconciliator\Base\Constants;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
@@ -222,5 +223,86 @@ class Base extends BaseProcessor
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('2048M');
+    }
+
+    public function addSettingsIfRequired(&$input)
+    {
+        $gateway = $this->batch->getGateway();
+        $subType = $this->batch->getSubType();
+
+        $input[Batch\Entity::CONFIG][Constants::GATEWAY]  = $gateway;
+        $input[Batch\Entity::CONFIG][Constants::SUB_TYPE] = $subType;
+    }
+
+    public function batchProcessEntries(array $entries)
+    {
+        foreach ($entries as &$entry)
+        {
+            $entryTracePayload = $entry;
+
+            $this->removeCriticalDataFromTracePayload($entryTracePayload);
+
+            try
+            {
+                $this->trace->debug(TraceCode::BATCH_PROCESSING_ENTRY, $entryTracePayload);
+
+                $this->processEntry($entry);
+
+                if ($this->resetErrorOnSuccess() === true)
+                {
+                    // Set errors as null
+                    $entry[Batch\Header::ERROR_CODE]        = null;
+                    $entry[Batch\Header::ERROR_DESCRIPTION] = null;
+                }
+
+                /*
+                 Removing the account no from $entry because the entry returned from here will be logged
+                 in the api response to batch service. This won't be an issue in output file because
+                 in batch service the account no for each row is fetched from the database and not from api response.
+                 Keeping this line here and not in controller keeping in mind different child classes can call this
+                 as per different formats of account number field
+                */
+                $this->removeCriticalDataFromTracePayload($entry);
+            }
+            catch (Exception\BaseException $e)
+            {
+                // RZP Exceptions have public error code & description which can be exposed in the output file
+                $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, $entryTracePayload);
+
+                $error = $e->getError();
+
+                $entry[Batch\Header::STATUS]            = Batch\Status::FAILURE;
+                $entry[Batch\Header::ERROR_CODE]        = $error->getPublicErrorCode();
+                $entry[Batch\Header::ERROR_DESCRIPTION] = $error->getDescription();
+
+                /*
+                 Removing the account no from $entry because the entry returned from here will be logged
+                 in the api response to batch service. This won't be an issue in output file because
+                 in batch service the account no for each row is fetched from the database and not from api response.
+                 Keeping this line here and not in controller keeping in mind different child classes can call this
+                 as per different formats of account number field
+                */
+                $this->removeCriticalDataFromTracePayload($entry);
+            }
+            catch (\Throwable $e)
+            {
+                // All non RZP exception/errors case: 1) Log critical error & 2) expose just SERVER_ERROR code in output
+                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::BATCH_PROCESSING_ERROR, $entryTracePayload);
+
+                $entry[Batch\Header::STATUS]     = Batch\Status::FAILURE;
+                $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+                /*
+                 Removing the account no from $entry because the entry returned from here will be logged
+                 in the api response to batch service. This won't be an issue in output file because
+                 in batch service the account no for each row is fetched from the database and not from api response.
+                 Keeping this line here and not in controller keeping in mind different child classes can call this
+                 as per different formats of account number field
+                */
+                $this->removeCriticalDataFromTracePayload($entry);
+            }
+        }
+
+        return $entries;
     }
 }

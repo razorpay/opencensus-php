@@ -28,7 +28,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function processNachBatch(array $input)
+    public function processBatchRequest(array $input)
     {
 
         $namespaceKeys = [

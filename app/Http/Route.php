@@ -778,6 +778,7 @@ class Route
         'emandate_debit_reconcile'                 => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
 
         'nach_batch_process'                       => ['post',     'nach/batch_service',                             'EMandateController@postProcessNachDebit'                                       ],
+        'emandate_batch_process'                   => ['post',     'emandate/batch_service',                         'EMandateController@postProcessEmandateDebit'                       ],
 
         'reconciliate'                             => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
         'reconciliate_via_batch_service'           => ['post',     'reconciliate/batch_service/bulk',                'ReconciliatorController@postBulkReconciliationViaBatchService'     ],
@@ -3428,6 +3429,7 @@ class Route
         'get_issuer_from_iin',
 
         'nach_batch_process',
+        'emandate_batch_process',
 
         'loc_cron',
         'los_cron',
@@ -9591,6 +9593,7 @@ class Route
             'partner_config_bulk_upsert',
             'payout_links_batch_process',
             'nach_batch_process',
+            'emandate_batch_process',
             'website_checker',
         ],
 
