@@ -524,6 +524,65 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    /** We are removing channel from free payout pricing rules for current account */
+    public function testUpdateFreePayoutRule()
+    {
+        $pricingPlanData = [
+            'plan_name'           => 'Banking default plan 2',
+            'payment_method'      => 'fund_transfer',
+            'plan_id'             => '1To98voDY05ueB',
+            'payouts_filter'      => 'free_payout',
+            'account_type'        => 'direct',
+            'percent_rate'        => '275',
+            'max_fee'             => 0,
+            'type'                => 'pricing',
+            'product'             => 'banking',
+            'auth_type'           => 'proxy',
+            'channel'             => 'rbl',
+            'min_fee'             => 0,
+            'percent_rate'        => 0,
+        ];
+
+        $this->ba->adminAuth();
+
+        $plan = $this->createPricingPlan($pricingPlanData);
+
+        $testData['request']['url'] = '/pricing/' . $plan['id'] . '/rule';
+
+        $testData['request']['content'] =  [
+            'product'             => 'banking',
+            'feature'             => 'payout',
+            'payment_method'      => 'fund_transfer',
+            'payouts_filter'      => 'free_payout',
+            'account_type'        => 'direct',
+            'type'                => 'pricing',
+            'auth_type'           => 'proxy',
+            'channel'             => 'rbl',
+            'percent_rate'        => 0,
+        ];
+
+        $this->startTest($testData);
+
+        $pricingRule = $this->getDbLastEntity('pricing')->toArray();
+
+        $this->ba->adminAuth();
+
+        $testData['request']['url'] = '/pricing/' . $plan['id'] . '/rule/' . $pricingRule['id'];
+
+        $testData['request']['content'] = [
+            'channel'       => null,
+            'percent_rate'  => 0,
+        ];
+
+        $testData['request']['method'] = 'patch';
+
+        $this->startTest($testData);
+
+        $pricingRule = $this->getDbLastEntity('pricing')->toArray();
+
+        $this->assertEquals('', $pricingRule['channel']);
+    }
+
     /*
      * in this test we create two merchants who are customer fee bearer
      * and share a pricing plan. this pricing plan has all rules fee_bearer=customer
@@ -575,6 +634,26 @@ class PricingTest extends TestCase
         $rule = Pricing\Entity::withTrashed()->findOrFail($rule['id']);
 
         $this->assertNotNull($rule['deleted_at']);
+    }
+
+    public function testUpdatePricingPlanRuleChannelFailure()
+    {
+        $content = $this->createPricingPlan2(
+            [
+                'org_id' => Org::SBIN_ORG,
+            ],
+            [
+                'X-Cross-Org-Id' => 'org_' . Org::SBIN_ORG
+            ]
+        );
+
+        $rule = $this->getEntityById('pricing', $content['rules']['0']['id'], true);
+
+        $this->assertEquals($rule['deleted_at'], null);
+
+        $testData['request']['url'] = '/pricing/' . $content['id'] . '/rule/' . $rule['id'];
+
+        $this->startTest($testData);
     }
 
     /**

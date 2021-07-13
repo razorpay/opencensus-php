@@ -16,6 +16,7 @@ use RZP\Models\Card\Type as CardType;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Payout;
+use RZP\Models\Settlement;
 use RZP\Models\Transfer;
 use RZP\Models\FundAccount;
 use RZP\Models\FundTransfer;
@@ -68,6 +69,7 @@ class Validator extends Base\Validator
         Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:100000',
         Entity::FEE_BEARER          => 'sometimes|in:platform,customer',
         Entity::PROCURER            => 'sometimes',
+        Entity::CHANNEL             => 'sometimes'
     ];
 
     protected static $merchantPricingPlansSummaryRules = [
@@ -108,6 +110,7 @@ class Validator extends Base\Validator
         'addPlanRuleRate',
         'addPlanRuleMinAndMaxFee',
         'editPlanRuleProcurer',
+        'editPlanRuleChannel'
     ];
 
     protected static $createPlanRules = [
@@ -273,6 +276,30 @@ class Validator extends Base\Validator
         throw new Exception\BadRequestValidationFailureException(
             'Invalid Procurer Value');
 
+    }
+
+    protected function validateEditPlanRuleChannel($input)
+    {
+        if (array_key_exists(Entity::CHANNEL, $input) === false)
+        {
+            return;
+        }
+
+        if ($this->entity->isPayoutsFilterFreePayout() == false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Channel update only allowed for free payout rules');
+        }
+
+        // This is a valid scenario for free payout
+        if (empty($input[Entity::CHANNEL]) === true)
+        {
+            return;
+        }
+
+        // We can add another validation here about when channel should be sent
+        // like product checks
+        self::validateChannel(Entity::CHANNEL, $input[Entity::CHANNEL]);
     }
 
 

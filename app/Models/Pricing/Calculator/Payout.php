@@ -77,10 +77,22 @@ class Payout extends Base
         $authType      = $this->getAuthForPayout();
         $payoutsFilter = $this->getFreePayoutsFilter();
 
+        // The filters are applied in order. If you have 10 rules
+        // in total. Suppose 8 rules match with account type
+        // as direct then the next filter will be applied on those 8
+        // rules only and so on.
+        // And for a filter if any rule matches the value being passed
+        // but some other rules match default value in that case
+        // only those roles will be returned from the applyFiltersOnRules
+        // function which match the value being passed. If no rule matches
+        // the value being passed and some rules match the default value.
+        // Only then those rules matching default value will be returned.
+        // In general, the rules having $chooseDefault value as false
+        // should be kept above the ones having it as true
         $filters = [
             [Pricing\Entity::ACCOUNT_TYPE, $accountType, false, null],
-            [Pricing\Entity::CHANNEL, $channel, true, null],
             [Pricing\Entity::PAYOUTS_FILTER, $payoutsFilter, false, null],
+            [Pricing\Entity::CHANNEL, $channel, true, null],
             [Pricing\Entity::AUTH_TYPE, $authType, true, null],
         ];
 

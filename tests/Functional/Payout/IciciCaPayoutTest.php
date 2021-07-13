@@ -1177,6 +1177,52 @@ class IciciCaPayoutTest extends TestCase
         $this->assertEquals('created', $payout['status']);
     }
 
+    public function testCreateFreePayoutForNEFTModeDirectAccountProxyAuth()
+    {
+        $testData = $this->testData['testCreateFreePayoutForNEFTModeDirectAccountProxyAuth'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $balance = $this->getDbEntities('balance',
+            [
+                'merchant_id'  => "10000000000000",
+                'account_type' => 'direct',
+                'channel'      => 'icici'
+            ])->first();
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'icici');
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals("MerchantUser01", $payout->getUserId());
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $payout->getFees());
+        $this->assertEquals(0, $payout->getTax());
+
+        // Assert that free_payout is assigned as fee_type for such payouts.
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'direct',
+                'balance_id'   => $balanceId,
+            ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        // Assert that pricing rule id in payouts is correct
+        $this->assertEquals('Bbg7cl6t6I3XB2', $payout['pricing_rule_id']);
+    }
+
     protected function initiatePayoutFromCreated()
     {
         $payout = $this->getDbLastEntity('payout');
@@ -1533,5 +1579,95 @@ class IciciCaPayoutTest extends TestCase
         $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
+    }
+
+    public function testCreateFreePayoutForUPIModeDirectAccountPrivateAuth()
+    {
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "vpa",
+                "contact_id"   => "cont_1000001contact",
+                "vpa"          => [
+                    "address" => 'icici@upi',
+                ]
+            ]];
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $balance = $this->getDbEntities('balance',
+            [
+                'merchant_id'  => "10000000000000",
+                'account_type' => 'direct',
+                'channel'      => 'icici'
+            ])->first();
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'icici');
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testCreateFreePayoutForIMPSModeDirectAccountPrivateAuth()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $balance = $this->getDbEntities('balance',
+            [
+                'merchant_id'  => "10000000000000",
+                'account_type' => 'direct',
+                'channel'      => 'icici'
+            ])->first();
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'icici');
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $payout->getFees());
+        $this->assertEquals(0, $payout->getTax());
+
+        // Assert that free_payout is assigned as fee_type for such payouts
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'direct',
+                'balance_id'   => $balanceId,
+            ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        // Assert that pricing rule id in payouts is correct
+        $this->assertEquals('Bbg7cl6t6I3XB0', $payout['pricing_rule_id']);
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'direct',
+                'balance_id'   => $balanceId,
+            ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
     }
 }

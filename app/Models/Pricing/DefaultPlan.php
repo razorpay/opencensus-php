@@ -1279,6 +1279,12 @@ class DefaultPlan
                 'updated_at'          => time(),
             ],
 
+            // We are removing channel from direct account free payout rules as
+            // the pricing is flat for direct account, independent of channel (rbl
+            // or icici). In case in future we want to give different pricing
+            // for every channel, we can add this filter back and make changes in
+            // hasBankingDirectAccountFreePayoutRule method for channel specific
+            // logic
             // Rs 0 for payouts with method = fund_transfer and channel as RBl.
             [
                 'id'                  => 'Bbg7cl6t6I3XB0',
@@ -1293,7 +1299,7 @@ class DefaultPlan
                 'payouts_filter'      => Payout\Entity::FREE_PAYOUT,
                 'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
                 'account_type'        => AccountType::DIRECT,
-                'channel'             => Channel::RBL,
+                'channel'             => null,
                 'expired_at'          => null,
                 'created_at'          => time(),
                 'updated_at'          => time(),
@@ -1314,7 +1320,7 @@ class DefaultPlan
                 'payouts_filter'      => Payout\Entity::FREE_PAYOUT,
                 'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
                 'account_type'        => AccountType::DIRECT,
-                'channel'             => Channel::RBL,
+                'channel'             => null,
                 'expired_at'          => null,
                 'created_at'          => time(),
                 'updated_at'          => time(),
@@ -1373,7 +1379,7 @@ class DefaultPlan
                 'payouts_filter'      => Payout\Entity::FREE_PAYOUT,
                 'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
                 'account_type'        => AccountType::DIRECT,
-                'channel'             => Channel::RBL,
+                'channel'             => null,
                 'expired_at'          => null,
                 'created_at'          => time(),
                 'updated_at'          => time(),
@@ -1394,7 +1400,7 @@ class DefaultPlan
                 'payouts_filter'      => Payout\Entity::FREE_PAYOUT,
                 'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
                 'account_type'        => AccountType::DIRECT,
-                'channel'             => Channel::RBL,
+                'channel'             => null,
                 'expired_at'          => null,
                 'created_at'          => time(),
                 'updated_at'          => time(),

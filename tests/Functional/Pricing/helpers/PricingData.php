@@ -2100,6 +2100,31 @@ return [
         ],
     ],
 
+    'testUpdatePricingPlanRuleChannelFailure' => [
+        'request'  => [
+            'content' => [
+                'min_fee'      => 101,
+                'max_fee'      => 10000,
+                'percent_rate' => 450,
+                'fixed_rate'   => 0,
+                'channel'      => 'rbl',
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
     'testCreateCommissionPlanBySBIOrg' => [
         'request' => [
             'content' => [
@@ -3797,6 +3822,17 @@ return [
                 'amount_range_min'    => 0,
                 'international'       => false,
                 'amount_range_active' => true,
+            ]
+        ]
+    ],
+
+    'testUpdateFreePayoutRule' => [
+        'request' => [
+            'content' => [],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
             ]
         ]
     ],

@@ -351,4 +351,104 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
         ],
     ],
+
+        'testCreateFreePayoutForNEFTModeDirectAccountProxyAuth' => [
+            'request' => [
+                'method'  => 'POST',
+                'url'     => '/payouts',
+                'content' => [
+                    'account_number'  => '2224440041626905',
+                    'amount'          => 2000,
+                    'currency'        => 'INR',
+                    'purpose'         => 'refund',
+                    'narration'       => 'Batman',
+                    'mode'            => 'NEFT',
+                    'fund_account_id' => 'fa_100000000000fa',
+                    'notes'           => [
+                        'abc' => 'xyz',
+                    ],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'entity'          => 'payout',
+                    'amount'          => 2000,
+                    'currency'        => 'INR',
+                    'fund_account_id' => 'fa_100000000000fa',
+                    'purpose'         => 'refund',
+                    'mode'            => 'NEFT',
+                    'tax'             => 0,
+                    'fees'            => 0,
+                    'notes'           => [
+                        'abc' => 'xyz',
+                    ],
+                ],
+            ],
+        ],
+
+        'testCreateFreePayoutForIMPSModeDirectAccountPrivateAuth' => [
+            'request' => [
+                'method'  => 'POST',
+                'url'     => '/payouts',
+                'content' => [
+                    'account_number'  => '2224440041626905',
+                    'amount'          => 2000000,
+                    'currency'        => 'INR',
+                    'purpose'         => 'refund',
+                    'narration'       => 'Batman',
+                    'mode'            => 'IMPS',
+                    'fund_account_id' => 'fa_100000000000fa',
+                    'notes'           => [
+                        'abc' => 'xyz',
+                    ],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'entity'          => 'payout',
+                    'amount'          => 2000000,
+                    'currency'        => 'INR',
+                    'fund_account_id' => 'fa_100000000000fa',
+                    'purpose'         => 'refund',
+                    'mode'            => 'IMPS',
+                    'tax'             => 0,
+                    'fees'            => 0,
+                    'notes'           => [
+                        'abc' => 'xyz',
+                    ],
+                ],
+            ],
+        ],
+
+    'testCreateFreePayoutForUPIModeDirectAccountPrivateAuth' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'UPI',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'ICICI does not support UPI payouts to VPA',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
+        ],
+    ],
 ];
