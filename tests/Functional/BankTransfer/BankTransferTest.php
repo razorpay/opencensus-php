@@ -208,6 +208,24 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bt_dashboard', $payment['gateway']);
     }
 
+    public function testPaymentProcessRblWithNoSenderName()
+    {
+        $testData = $this->testData['testBankTransferRbl'];
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+        $testData['request']['content']['Data'][0]['senderName'] = '';
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getDbLastEntityToArray('bank_transfer', 'test');
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+        $payment =  $this->getDbLastEntityToArray('payment', 'test');
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+    }
+
     public function testBankTransferProcessForDisabledMethod()
     {
         // New merchant account, VA created

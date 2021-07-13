@@ -46,7 +46,7 @@ class Validator extends Base\Validator
         'Data.0.beneficiaryAccountNumber'   => 'required|string|alpha_num',
         'Data.0.senderIFSC'                 => 'nullable|string',
         'Data.0.senderAccountNumber'        => 'nullable|string',
-        'Data.0.senderName'                 => 'required|string',
+        'Data.0.senderName'                 => 'nullable|string',
         'Data.0.creditAccountNumber'        => 'required|string',
     ];
 
