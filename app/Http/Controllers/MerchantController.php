@@ -2185,6 +2185,24 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function websiteCheckerMilestoneCron()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_WEBSITE_CHECKER)->milestoneCron($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function websiteCheckerRiskScoreCron()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_WEBSITE_CHECKER)->riskScoreCron($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function websiteCheckerRetryCron()
     {
         $input = Request::all();

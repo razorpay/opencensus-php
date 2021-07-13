@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Fraud\WebsiteChecker;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -31,20 +32,39 @@ class Core extends Base\Core
         $merchantList = $this->repo->merchant->getMerchantListForWebsiteCheckerPeriodic();
 
         $this->trace->info(TraceCode::WEBSITE_CHECKER_DEBUG, [
-            'category'  => 'periodic_check',
-            'operation' => 'get_eligible_merchants',
-            'count'     => count($merchantList),
+            Constants::EVENT_TYPE => Constants::PERIODIC_CHECKER_EVENT,
+            'operation'           => 'get_eligible_merchants',
+            'count'               => count($merchantList),
         ]);
 
+        /** @var Merchant\Entity $merchant */
         foreach ($merchantList as $merchant)
         {
-            if ($this->isMerchantEligibleForRiskCheck($merchant) === false)
+            if ($this->isMerchantEligibleForRiskCheck($merchant, Constants::PERIODIC_CHECKER_EVENT) === false)
             {
                 continue;
             }
 
-            $this->notifyRiskChecker(
-                $merchant->getId(), Constants::PERFORM_WEBSITE_CHECK_JOB, [Constants::RETRY_COUNT_KEY => 0]);
+            $paymentExistsInWindow = $merchant->payments()
+                ->select(Payment\Entity::ID)
+                ->where(Payment\Entity::CREATED_AT, '>=', now()->timestamp - Constants::PERIODIC_CHECKER_MERCHANT_LIST_PAYMENT_CREATED_WINDOW_SECONDS)
+                ->first();
+
+            if (is_null($paymentExistsInWindow) === true)
+            {
+                $this->trace->info(TraceCode::WEBSITE_CHECKER_CRON_MERCHANT_SKIPPED, [
+                    'merchant_id' => $merchant->getId(),
+                    'skip_reason' => Constants::SKIP_REASON_NO_PAYMENT_IN_WINDOW,
+                ]);
+
+                continue;
+            }
+
+            $this->notifyRiskChecker($merchant->getId(), Constants::PERFORM_WEBSITE_CHECK_JOB, [
+                    Constants::RETRY_COUNT_KEY => 0,
+                    Constants::EVENT_TYPE      => Constants::PERIODIC_CHECKER_EVENT,
+                ]
+            );
         }
 
         $this->trace->info(TraceCode::WEBSITE_CHECKER_PERIODIC_CRON_ENDED);
@@ -56,18 +76,24 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::WEBSITE_CHECKER_RETRY_CRON_STARTED);
 
-        $retryMerchantIdList = $this->getMerchantList(Constants::RETRY_WAIT_SECONDS, Constants::REDIS_RETRY_MAP_NAME);
-
-        $this->trace->info(TraceCode::WEBSITE_CHECKER_DEBUG, [
-            'category'  => 'periodic_check',
-            'operation' => 'get_retryable_merchants',
-            'count'     => count($retryMerchantIdList),
-        ]);
-
-        foreach ($retryMerchantIdList as $merchantId)
+        foreach (Constants::EVENT_TYPE_RETRY_REDIS_HASH_MAP as  $eventType => $redisMap)
         {
-            $this->notifyRiskChecker(
-                $merchantId, Constants::PERFORM_WEBSITE_CHECK_JOB, [Constants::RETRY_COUNT_KEY => 1]);
+
+            $retryMerchantIdList = $this->getMerchantList(Constants::RETRY_WAIT_SECONDS, $redisMap);
+
+            $this->trace->info(TraceCode::WEBSITE_CHECKER_DEBUG, [
+                Constants::EVENT_TYPE => $eventType,
+                'operation'           => 'get_retryable_merchants',
+                'count'               => count($retryMerchantIdList),
+            ]);
+
+            foreach ($retryMerchantIdList as $merchantId) {
+                $this->notifyRiskChecker($merchantId, Constants::PERFORM_WEBSITE_CHECK_JOB, [
+                        Constants::RETRY_COUNT_KEY => 1,
+                        Constants::EVENT_TYPE      => $eventType,
+                    ]
+                );
+            }
         }
 
         $this->trace->info(TraceCode::WEBSITE_CHECKER_RETRY_CRON_ENDED);
@@ -83,7 +109,6 @@ class Core extends Base\Core
             Constants::REMINDER_WAIT_SECONDS, Constants::REDIS_REMINDER_MAP_NAME);
 
         $this->trace->info(TraceCode::WEBSITE_CHECKER_DEBUG, [
-            'category'  => 'periodic_check',
             'operation' => 'get_reminder_merchants',
             'count'     => count($reminderMerchantIdList),
         ]);
@@ -97,6 +122,58 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::WEBSITE_CHECKER_REMINDER_CRON_ENDED);
 
         return ['success' => true];
+    }
+
+    public function milestoneCron(): array
+    {
+        $this->trace->info(TraceCode::WEBSITE_CHECKER_MILESTONE_CRON_STARTED);
+
+        $this->getDataFromDruidAndRunCron(Constants::MILESTONE_CHECKER_EVENT);
+
+        $this->trace->info(TraceCode::WEBSITE_CHECKER_MILESTONE_CRON_ENDED);
+
+        return ['success' => true];
+    }
+
+    public function riskScoreCron(): array
+    {
+        $this->trace->info(TraceCode::WEBSITE_CHECKER_RISK_SCORE_CRON_STARTED);
+
+        $this->getDataFromDruidAndRunCron(Constants::RISK_SCORE_CHECKER_EVENT);
+
+        $this->trace->info(TraceCode::WEBSITE_CHECKER_RISK_SCORE_CRON_ENDED);
+
+        return ['success' => true];
+    }
+
+    public function getDataFromDruidAndRunCron(string $eventType)
+    {
+        $query = Constants::EVENT_TYPE_DRUID_QUERY_MAP[$eventType];
+
+        $merchantIdList = $this->getMerchantListFromDruid($query);
+
+        $this->trace->info(TraceCode::WEBSITE_CHECKER_DEBUG, [
+            Constants::EVENT_TYPE => $eventType,
+            'operation'           => 'get_eligible_merchants',
+            'count'               => count($merchantIdList),
+        ]);
+
+        foreach ($merchantIdList as $merchantId)
+        {
+            /** @var Merchant\Entity $merchant */
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            if ($this->isMerchantEligibleForRiskCheck($merchant, $eventType) === false)
+            {
+                continue;
+            }
+
+            $this->notifyRiskChecker($merchant->getId(), Constants::PERFORM_WEBSITE_CHECK_JOB, [
+                    Constants::RETRY_COUNT_KEY => 0,
+                    Constants::EVENT_TYPE      => $eventType,
+                ]
+            );
+        }
     }
 
     private function getMerchantList(int $waitSeconds, string $redisMap): array
@@ -126,11 +203,11 @@ class Core extends Base\Core
         return $merchantList;
     }
 
-    private function isMerchantEligibleForRiskCheck(Merchant\Entity $merchant)
+    private function isMerchantEligibleForRiskCheck(Merchant\Entity $merchant, string $eventType)
     {
         if ($merchant->isFeatureEnabled(Feature\Constants::APPS_EXTEMPT_RISK_CHECK) === true)
         {
-            $this->trace->info(TraceCode::WEBSITE_CHECKER_PERIODIC_CRON_MERCHANT_SKIPPED, [
+            $this->trace->info(TraceCode::WEBSITE_CHECKER_CRON_MERCHANT_SKIPPED, [
                 'merchant_id' => $merchant->getId(),
                 'skip_reason' => Constants::SKIP_REASON_EXEMPT_RISK_CHECK,
             ]);
@@ -144,14 +221,16 @@ class Core extends Base\Core
         // will add if needed (as will be storing way more data compared to the retry map)
         // also, chances that it will be retried are extremely low
 
-        $isAlreadyScheduledForRetry = $this->redis->connection()->hexists(
-            Constants::REDIS_RETRY_MAP_NAME, $merchant->getId());
+        $redisMap = Constants::EVENT_TYPE_RETRY_REDIS_HASH_MAP[$eventType];
+
+        $isAlreadyScheduledForRetry = $this->redis->connection()->hexists($redisMap, $merchant->getId());
 
         if (empty($isAlreadyScheduledForRetry) === false)
         {
-            $this->trace->info(TraceCode::WEBSITE_CHECKER_PERIODIC_CRON_MERCHANT_SKIPPED, [
-                'merchant_id' => $merchant->getId(),
-                'skip_reason' => Constants::SKIP_REASON_RETRY_SCHEDULED,
+            $this->trace->info(TraceCode::WEBSITE_CHECKER_CRON_MERCHANT_SKIPPED, [
+                Constants::EVENT_TYPE  => $eventType,
+                'merchant_id'          => $merchant->getId(),
+                'skip_reason'          => Constants::SKIP_REASON_RETRY_SCHEDULED,
             ]);
 
             return false;
@@ -186,5 +265,25 @@ class Core extends Base\Core
                 ]
             );
         }
+    }
+
+    private function getMerchantListFromDruid(string $query): array
+    {
+        list($error, $res) = $this->app['druid.service']->getDataFromDruid([
+            'query' => $query
+        ]);
+
+        if (isset($error) === true)
+        {
+            $this->trace->traceException(
+                new \Exception($error),
+                Trace::ERROR,
+                TraceCode::WEBSITE_CHECKER_DRUID_ERROR
+            );
+
+            return [];
+        }
+
+        return array_pluck($res, 'merchants_id');
     }
 }

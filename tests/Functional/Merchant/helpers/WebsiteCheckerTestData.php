@@ -49,6 +49,28 @@ return [
             ],
         ],
     ],
+    'testMilestoneCron' => [
+        'request'  => [
+            'url'     => '/merchant/website/checker/milestone/cron',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+    'testMilestoneCronNotLive' => [
+        'request'  => [
+            'url'     => '/merchant/website/checker/milestone/cron',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
     'testPeriodicCron' => [
         'request'  => [
             'url'     => '/merchant/website/checker/cron',

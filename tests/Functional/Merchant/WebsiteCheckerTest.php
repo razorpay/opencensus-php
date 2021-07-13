@@ -8,6 +8,7 @@ use Queue;
 use RZP\Jobs\RiskWebsiteChecker;
 use RZP\Models\Workflow\Action\Repository as WorkflowActionRepository;
 use RZP\Models\Workflow\Action\Entity as WorkflowActionEntity;
+use RZP\Services\Mock\DruidService as MockDruidService;
 use RZP\Models\Merchant\Fraud\WebsiteChecker\Constants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Services\FreshdeskTicketClient;
@@ -52,6 +53,70 @@ class WebsiteCheckerTest extends TestCase
         $this->startTest();
     }
 
+    public function testMilestoneCron()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+            'business_website' => 'https://razorpay.com'
+        ]);
+
+        $druidService = $this->getMockBuilder(MockDruidService::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods([ 'getDataFromDruid'])
+            ->getMock();
+
+        $this->app->instance('druid.service', $druidService);
+
+        $dataFromDruid = ['merchants_id' => $merchant->getId()];
+
+        $druidService->method( 'getDataFromDruid')
+            ->willReturn([null, [$dataFromDruid]]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $redisMap = Constants::EVENT_TYPE_RETRY_REDIS_HASH_MAP[Constants::MILESTONE_CHECKER_EVENT];
+
+        $redisKey = $this->app['cache']->connection()->hget($redisMap, $merchant->getId());
+
+        $this->assertNull($redisKey);
+    }
+
+    public function testMilestoneCronNotLive()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+            'business_website' => 'https://razorpay2.com'
+        ]);
+
+        $druidService = $this->getMockBuilder(MockDruidService::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods([ 'getDataFromDruid'])
+            ->getMock();
+
+        $this->app->instance('druid.service', $druidService);
+
+        $dataFromDruid = ['merchants_id' => $merchant->getId()];
+
+        $druidService->method( 'getDataFromDruid')
+            ->willReturn([null, [$dataFromDruid]]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $redisMap = Constants::EVENT_TYPE_RETRY_REDIS_HASH_MAP[Constants::MILESTONE_CHECKER_EVENT];
+
+        $redisKey = $this->app['cache']->connection()->hget($redisMap, $merchant->getId());
+
+        $this->assertNotNull($redisKey);
+    }
+
     public function testPeriodicCron()
     {
         $this->ba->cronAuth();
@@ -67,9 +132,15 @@ class WebsiteCheckerTest extends TestCase
             'business_website' => 'https://razorpay.com'
         ]);
 
+        $this->fixtures->create('payment', [
+            'merchant_id' => $merchant->getId(),
+        ]);
+
         $this->startTest();
 
-        $redisKey = $this->app['cache']->connection()->hget(Constants::REDIS_RETRY_MAP_NAME, $merchant->getId());
+        $redisMap = Constants::EVENT_TYPE_RETRY_REDIS_HASH_MAP[Constants::PERIODIC_CHECKER_EVENT];
+
+        $redisKey = $this->app['cache']->connection()->hget($redisMap, $merchant->getId());
 
         $this->assertNull($redisKey);
     }
@@ -89,9 +160,15 @@ class WebsiteCheckerTest extends TestCase
             'business_website' => 'https://razorpay2.com'
         ]);
 
+        $this->fixtures->create('payment', [
+            'merchant_id' => $merchant->getId(),
+        ]);
+
         $this->startTest();
 
-        $redisKey = $this->app['cache']->connection()->hget(Constants::REDIS_RETRY_MAP_NAME, $merchant->getId());
+        $redisMap = Constants::EVENT_TYPE_RETRY_REDIS_HASH_MAP[Constants::PERIODIC_CHECKER_EVENT];
+
+        $redisKey = $this->app['cache']->connection()->hget($redisMap, $merchant->getId());
 
         $this->assertNotNull($redisKey);
     }
@@ -102,7 +179,9 @@ class WebsiteCheckerTest extends TestCase
 
         $merchant = $this->fixtures->create('merchant');
 
-        $this->app['cache']->connection()->hset(Constants::REDIS_RETRY_MAP_NAME, $merchant->getId(), now()->timestamp - Constants::RETRY_WAIT_SECONDS);
+        $redisMap = Constants::EVENT_TYPE_RETRY_REDIS_HASH_MAP[Constants::PERIODIC_CHECKER_EVENT];
+
+        $this->app['cache']->connection()->hset($redisMap, $merchant->getId(), now()->timestamp - Constants::RETRY_WAIT_SECONDS);
 
         $this->fixtures->create('merchant_detail', [
             'merchant_id' => $merchant->getId(),
@@ -122,7 +201,9 @@ class WebsiteCheckerTest extends TestCase
 
         $merchant = $this->fixtures->create('merchant');
 
-        $this->app['cache']->connection()->hset(Constants::REDIS_RETRY_MAP_NAME, $merchant->getId(), now()->timestamp - Constants::RETRY_WAIT_SECONDS);
+        $redisMap = Constants::EVENT_TYPE_RETRY_REDIS_HASH_MAP[Constants::PERIODIC_CHECKER_EVENT];
+
+        $this->app['cache']->connection()->hset($redisMap, $merchant->getId(), now()->timestamp - Constants::RETRY_WAIT_SECONDS);
 
         $this->fixtures->create('merchant_detail', [
             'merchant_id' => $merchant->getId(),

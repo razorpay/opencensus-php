@@ -31,11 +31,13 @@ class Job extends Base\Core
         $this->redis = $this->app['cache'];
     }
 
-    public function performRiskCheck($merchantId, $retryCount = 0)
+    public function performRiskCheck($merchantId, $eventType, $retryCount = 0)
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if ($this->noWebsiteLive($merchant) === false)
+        list($isNotLive, $websiteResults) = $this->noWebsiteLive($merchant);
+
+        if ($isNotLive === false)
         {
             $this->trace->info(TraceCode::WEBSITE_CHECKER_MERCHANT_REACHABLE, [
                 'retry_count' => $retryCount,
@@ -52,15 +54,17 @@ class Job extends Base\Core
 
         $maxTriesReached = ($retryCount >= Constants::MAX_RISK_CHECK_RETRIES);
 
+        $redisMap = Constants::EVENT_TYPE_RETRY_REDIS_HASH_MAP[$eventType];
+
         if ($maxTriesReached === true)
         {
-            $this->notifyRas($merchant);
+            $this->notifyRas($merchant, $websiteResults, $eventType);
 
-            $this->redis->connection()->hdel(Constants::REDIS_RETRY_MAP_NAME, $merchantId);
+            $this->redis->connection()->hdel($redisMap, $merchantId);
         }
         else
         {
-            $this->redis->connection()->hset(Constants::REDIS_RETRY_MAP_NAME, $merchantId, now()->timestamp);
+            $this->redis->connection()->hset($redisMap, $merchantId, now()->timestamp);
         }
     }
 
@@ -90,7 +94,8 @@ class Job extends Base\Core
             return false;
         }
 
-        if ($this->noWebsiteLive($merchant) === false)
+        list($isNotLive, ) = $this->noWebsiteLive($merchant);
+        if ($isNotLive === false)
         {
             $this->trace->info(TraceCode::WEBSITE_CHECKER_REMINDER_ABORT, [
                 'workflow_action_id' => $workflowAction->getId(),
@@ -189,7 +194,7 @@ class Job extends Base\Core
         }
     }
 
-    private function noWebsiteLive(Merchant\Entity $merchant): bool
+    private function noWebsiteLive(Merchant\Entity $merchant): array
     {
         $businessWebsite = $merchant->merchantDetail->getWebsite();
 
@@ -199,46 +204,45 @@ class Job extends Base\Core
 
         $websites = array_filter(array_unique($additionalWebsites));
 
+        $results = [];
+
         foreach ($websites as $website)
         {
-            if ($this->isLive($website) === true)
+            $singleResult = $this->isLive($website);
+
+            if ($singleResult['result'] === Constants::RESULT_LIVE)
             {
-                return false;
+                return [false, null];
             }
+
+            $results []= $singleResult;
         }
 
-        return true;
+        return [true, $results];
     }
 
-    private function isLive(string $url): bool
+    public function isLive(string $url): array
     {
         try
         {
             $response = Requests::request($url);
-
-            $res = Constants::STATUS_CODE_RESULT_MAP[$response->status_code] === Constants::RESULT_LIVE;
-
-            if ($res === false)
-            {
-                $this->trace->info(TraceCode::WEBSITE_CHECKER_URL_NOT_REACHABLE, [
-                    'url'      => $url,
-                    'response' => $response,
-                ]);
-            }
-
-            return $res;
+            $comment = sprintf(Constants::NO_EXCEPTION_COMMENT_FORMAT, $response->status_code);
+            $result = Constants::STATUS_CODE_RESULT_MAP[$response->status_code] ?? Constants::RESULT_MANUAL_REVIEW;
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::WEBSITE_CHECKER_URL_NOT_REACHABLE, [
-                'url' => $url,
-            ]);
-
-            return false;
+            $comment = sprintf(Constants::EXCEPTION_COMMENT_FORMAT, $e->getMessage());
+            $result = Constants::RESULT_MANUAL_REVIEW;
         }
+
+        return [
+            'url'     => $url,
+            'result'  => $result,
+            'comment' => $comment,
+        ];
     }
 
-    private function notifyRas(Merchant\Entity $merchant)
+    private function notifyRas(Merchant\Entity $merchant, array $websiteResults, string $eventType)
     {
         $merchantId = $merchant->getId();
 
@@ -247,7 +251,7 @@ class Job extends Base\Core
         try
         {
             // sending additionally,
-            // just in case to track any issues with isMerchantEligibleForRiskCheck 
+            // just in case to track any issues with isMerchantEligibleForRiskCheck
             $merchantAppsExemptFromRiskCheck = $merchant->isFeatureEnabled(Feature\Constants::APPS_EXTEMPT_RISK_CHECK);
 
             $rasAlertRequest = [
@@ -256,10 +260,11 @@ class Job extends Base\Core
                 'entity_id'       => $merchantId,
                 'category'        => 'website_checker',
                 'source'          => 'api_service',
-                'event_type'      => 'periodic_checker',
+                'event_type'      => $eventType,
                 'event_timestamp' => now()->timestamp,
                 'data'            => [
                     'apps_exempt_risk_check' => ($merchantAppsExemptFromRiskCheck === true ? '1' : '0'),
+                    'website_results'        => $websiteResults,
                 ],
             ];
 

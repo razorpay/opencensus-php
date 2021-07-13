@@ -47,7 +47,9 @@ class RiskWebsiteChecker extends Job
             {
                 $retryCount = $jobDetails[WebCheckerConstants::RETRY_COUNT_KEY] ?? 0;
 
-                $wcJob->performRiskCheck($merchantId, $retryCount);
+                $eventType = $jobDetails[WebCheckerConstants::EVENT_TYPE] ?? WebCheckerConstants::PERIODIC_CHECKER_EVENT;
+
+                $wcJob->performRiskCheck($merchantId, $eventType, $retryCount);
             }
             else if ($jobType === WebCheckerConstants::SEND_REMINDER_TO_MERCHANT_JOB)
             {

@@ -21,8 +21,9 @@ class Constants
     const REDIS_RETRY_MAP_NAME    = 'risk:web_checker:retry_map';
     const REDIS_REMINDER_MAP_NAME = 'risk:web_checker:reminder_map';
 
-    const SKIP_REASON_EXEMPT_RISK_CHECK = 'exempt_risk_check';
-    const SKIP_REASON_RETRY_SCHEDULED   = 'retry_scheduled';
+    const SKIP_REASON_NO_PAYMENT_IN_WINDOW = 'no_payment_in_window';
+    const SKIP_REASON_EXEMPT_RISK_CHECK    = 'exempt_risk_check';
+    const SKIP_REASON_RETRY_SCHEDULED      = 'retry_scheduled';
 
     // 2 days = 2*24*60*60
     const REMINDER_WAIT_SECONDS  = 172800;
@@ -48,4 +49,37 @@ class Constants
     const SEND_REMINDER_TO_MERCHANT_JOB = 'send_reminder_to_merchant';
 
     const RETRY_COUNT_KEY = 'retry_count';
+
+    const EVENT_TYPE               = 'event_type';
+    const PERIODIC_CHECKER_EVENT   = 'periodic_checker';
+    const MILESTONE_CHECKER_EVENT  = 'milestone_checker';
+    const RISK_SCORE_CHECKER_EVENT = 'risk_score_checker';
+
+    // 2592000 = 30 days = 30 * 24 * 60 * 60
+    const PERIODIC_CHECKER_MERCHANT_LIST_PAYMENT_CREATED_WINDOW_SECONDS = 2592000;
+
+    const EVENT_TYPE_RETRY_REDIS_HASH_MAP = [
+        self::PERIODIC_CHECKER_EVENT   => self::REDIS_RETRY_MAP_NAME,
+        self::MILESTONE_CHECKER_EVENT  => self::REDIS_RETRY_MAP_NAME . ':' . self::MILESTONE_CHECKER_EVENT,
+        self::RISK_SCORE_CHECKER_EVENT => self::REDIS_RETRY_MAP_NAME . ':' . self::RISK_SCORE_CHECKER_EVENT,
+    ];
+
+    const GMV_MILESTONE_AMOUNT                = 15000;
+    const GMV_MILESTONE_AMOUNT2               = 100000;
+    const TRANSACTION_MILESTONE_COUNT         = 50;
+    const MILESTONE_MERCHANT_LIST_DRUID_QUERY =
+        'SELECT merchants_id FROM druid.merchant_risk_fact ' .
+        'WHERE (overall_gmv_lt_yesterday < '. self::GMV_MILESTONE_AMOUNT .' AND overall_gmv_ltd >= '. self::GMV_MILESTONE_AMOUNT .') OR ' .
+        '(overall_gmv_lt_yesterday < '. self::GMV_MILESTONE_AMOUNT2 .' AND overall_gmv_ltd >= '. self::GMV_MILESTONE_AMOUNT2 .') OR ' .
+        '(txn_count_lt_yesterday < ' . self::TRANSACTION_MILESTONE_COUNT . ' AND txn_count_ltd >= ' . self::TRANSACTION_MILESTONE_COUNT . ')';
+
+    const TRANSACTION_DEDUPE_RISK_SCORE        = 90;
+    const RISK_SCORE_MERCHANT_LIST_DRUID_QUERY =
+        'SELECT merchants_id FROM druid.risk_scoring_fact ' .
+        'where Transacting_Dedupe_Merchant_Risk_Scoring_Transacting_Dedupe_Merchant_Risk_Score >= ' . self::TRANSACTION_DEDUPE_RISK_SCORE;
+
+    const EVENT_TYPE_DRUID_QUERY_MAP = [
+        self::MILESTONE_CHECKER_EVENT  => self::MILESTONE_MERCHANT_LIST_DRUID_QUERY,
+        self::RISK_SCORE_CHECKER_EVENT => self::RISK_SCORE_MERCHANT_LIST_DRUID_QUERY,
+    ];
 }
