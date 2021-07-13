@@ -21,4 +21,8 @@ class EventCode
     const L1_SUBMISSION             = 'L1 Submission';
 
     const L2_SUBMISSION             = 'L2 Submission';
+
+    const SIGNUP_SUCCESS            = 'Signup Success';
+
+    const SIGNUP_EMAIL_SEND_VERIFICATION_SUCCESS = 'Signup Email Send Verification Success';
 }

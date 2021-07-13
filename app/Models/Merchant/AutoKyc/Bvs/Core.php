@@ -48,9 +48,9 @@ class Core extends Base\Core
      */
     public function verify(string $ownerId, array $input): ?BvsValidation\Entity
     {
-        $this->trace->info(TraceCode::BVS_VERIFICATION_REQUEST, ['input' => $input]);
-
         $input[Constant::OWNER_ID] = $ownerId;
+
+        $this->trace->info(TraceCode::BVS_VERIFICATION_REQUEST, ['input' => $input]);
 
         $validation                  = null;
         $validationTriggeringSuccess = true;

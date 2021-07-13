@@ -26,6 +26,7 @@ use RZP\Services\HubspotClient;
 use RZP\Models\Admin\AdminLead;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Account;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 
 class Service extends Base\Service
 {
@@ -213,7 +214,22 @@ class Service extends Base\Service
 
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $this->merchant, null, $customProperties);
 
+        $this->pushSegmentSignupEvent($user[Entity::ID], $customProperties);
+
         return $data;
+    }
+
+    protected function pushSegmentSignupEvent($userId, $customProperties)
+    {
+        $user = $this->repo->user->findOrFailPublic($userId);
+
+        $merchant = $user->getMerchantEntity();
+
+        if(empty($merchant) === false)
+        {
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $customProperties, SegmentEvent::SIGNUP_SUCCESS);
+        }
     }
 
     protected function traceRegisterInput($input) {
@@ -328,6 +344,9 @@ class Service extends Base\Service
             $data = $this->sendOtpEmailVerification($merchant, $user, [], $inputData);
 
             $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_OTP_SUCCESS, $merchant, null, $customProperties);
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $customProperties, SegmentEvent::SIGNUP_EMAIL_SEND_VERIFICATION_SUCCESS);
 
             // Add the response of token from Raven Service
             $response['token'] = $data['token'];
