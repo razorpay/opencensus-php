@@ -292,7 +292,7 @@ class Reporting implements ExternalService
     {
         $path = self::CONFIG_PATH . '/bulk';
 
-        return $this->createAndSendRequest(Requests::PATCH, $path, $input);
+        return $this->createAndSendRequest(Requests::POST, $path, $input);
     }
 
     public function deleteConfig(string $id): array
