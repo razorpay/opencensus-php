@@ -46,7 +46,7 @@ class Core extends Base\Core
 
         Validator::validateNotificationEmailRules($input);
 
-        Validator::validateAndTranslateAccountNumberForBanking($input, $this->merchant);
+        Validator::validateAndTranslateAccountNumberForBanking($input, $merchant);
 
         $balanceId = $input[Entity::BALANCE_ID];
 
@@ -54,7 +54,7 @@ class Core extends Base\Core
 
         $type = $input[Entity::TYPE] ?? Entity::NOTIFICATION;
 
-        $this->checkAndThrowErrorIfAlreadyExistingConfig($balanceId, $this->merchant->getId(), $type);
+        $this->checkAndThrowErrorIfAlreadyExistingConfig($balanceId, $merchant->getId(), $type);
 
         // building entity
         $lowBalanceConfig = new Entity();

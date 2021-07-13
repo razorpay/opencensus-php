@@ -689,7 +689,7 @@ class LowBalanceConfigTest extends TestCase
 
         $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
 
-        $this->ba->adminProxyAuth('10000000000000', 'rzp_live_10000000000000');
+        $this->ba->adminAuth('live');
 
         $this->startTest();
 
@@ -727,7 +727,7 @@ class LowBalanceConfigTest extends TestCase
 
         $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
 
-        $this->ba->adminProxyAuth('10000000000000', 'rzp_live_10000000000000');
+        $this->ba->adminAuth('live');
 
         $this->startTest();
 
@@ -748,7 +748,7 @@ class LowBalanceConfigTest extends TestCase
 
         $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
 
-        $this->ba->adminProxyAuth('10000000000000', 'rzp_live_10000000000000');
+        $this->ba->adminAuth('live');
 
         $this->startTest();
 
@@ -772,7 +772,7 @@ class LowBalanceConfigTest extends TestCase
 
         $this->fixtures->on('test')->edit('admin', $admin["id"], ['allow_all_merchants' => true]);
 
-        $this->ba->adminProxyAuth('10000000000000', 'rzp_live_10000000000000');
+        $this->ba->adminAuth('live');
 
         $this->startTest();
 
@@ -795,7 +795,9 @@ class LowBalanceConfigTest extends TestCase
         $this->assertSame('disabled', $lowBalanceConfig['status']);
 
         $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/low_balance_configs/'  . 'lbc_' . $lowBalanceConfig['id'] . '/enable';
+        $testData['request']['url'] = '/low_balance_configs/'  . 'lbc_' . $lowBalanceConfig['id'] . '/enable/admin';
+
+        $this->ba->adminAuth('live');
 
         $this->startTest();
     }
@@ -811,7 +813,9 @@ class LowBalanceConfigTest extends TestCase
         $lowBalanceConfig = $this->getDbLastEntity('low_balance_config', 'live');
 
         $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/low_balance_configs/'  . 'lbc_' . $lowBalanceConfig['id'] . '/disable';
+        $testData['request']['url'] = '/low_balance_configs/'  . 'lbc_' . $lowBalanceConfig['id'] . '/disable/admin';
+
+        $this->ba->adminAuth('live');
 
         $this->startTest();
     }
@@ -827,7 +831,10 @@ class LowBalanceConfigTest extends TestCase
         $lowBalanceConfig = $this->getDbLastEntity('low_balance_config', 'live');
 
         $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/low_balance_configs/lbc_'  . $lowBalanceConfig['id'];
+        $testData['request']['url'] = '/low_balance_configs/lbc_'  . $lowBalanceConfig['id'] . '/admin';
+
+        $this->ba->adminAuth('live');
+
         $this->startTest();
     }
 
@@ -844,7 +851,10 @@ class LowBalanceConfigTest extends TestCase
         $countBeforeDeleting = count($this->getDbEntities('low_balance_config',[], 'live'));
 
         $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/low_balance_configs/lbc_'  . $lowBalanceConfig['id'];
+        $testData['request']['url'] = '/low_balance_configs/lbc_'  . $lowBalanceConfig['id'] . '/admin';
+
+        $this->ba->adminAuth('live');
+
         $this->startTest();
 
         $countAfterDeletion = count($this->getDbEntities('low_balance_config',[], 'live'));
@@ -868,6 +878,7 @@ class LowBalanceConfigTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/low_balance_configs/lbc_'  . $lowBalanceConfig['id'];
+
         $this->startTest();
 
         $countAfterDeletion = count($this->getDbEntities('low_balance_config',[], 'live'));

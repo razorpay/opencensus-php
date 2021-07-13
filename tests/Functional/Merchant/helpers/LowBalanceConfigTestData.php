@@ -323,9 +323,10 @@ return [
 
     'testCreateLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth' => [
         'request' => [
-            'url'     => '/low_balance_configs',
+            'url'     => '/low_balance_configs/admin',
             'method'  => 'POST',
             'content' => [
+                'merchant_id'         => '10000000000000',
                 'account_number'      => '2224440041626905',
                 'threshold_amount'    => 1000,
                 'notify_after'        => 21600,
@@ -375,9 +376,10 @@ return [
 
     'testCreateLowBalanceConfigOfTypeInvalidViaAdminAuth' => [
         'request' => [
-            'url'     => '/low_balance_configs',
+            'url'     => '/low_balance_configs/admin',
             'method'  => 'POST',
             'content' => [
+                'merchant_id'         => '10000000000000',
                 'account_number'      => '2224440041626905',
                 'threshold_amount'    => 1000,
                 'notify_after'        => 21600,
@@ -402,9 +404,10 @@ return [
 
     'testCreateLowBalanceConfigOfTypeAutoloadBalanceWithNegativeAmountViaAdminAuth' => [
         'request' => [
-            'url'     => '/low_balance_configs',
+            'url'     => '/low_balance_configs/admin',
             'method'  => 'POST',
             'content' => [
+                'merchant_id'         => '10000000000000',
                 'account_number'      => '2224440041626905',
                 'threshold_amount'    => 1000,
                 'notify_after'        => 21600,
@@ -429,9 +432,10 @@ return [
 
     'testCreateLowBalanceConfigOfTypeAutoloadBalanceWhenEmailConfigExists' => [
         'request' => [
-            'url'     => '/low_balance_configs',
+            'url'     => '/low_balance_configs/admin',
             'method'  => 'POST',
             'content' => [
+                'merchant_id'         => '10000000000000',
                 'account_number'      => '2224440041626905',
                 'threshold_amount'    => 1000,
                 'notify_after'        => 21600,
@@ -451,7 +455,7 @@ return [
 
     'testEnableLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth' => [
         'request' => [
-            'url'     => '/low_balance_configs',
+            'url'     => '/low_balance_configs/admin',
             'method'  => 'POST',
             'content' => [],
             'server' => [

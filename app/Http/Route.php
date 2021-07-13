@@ -2385,12 +2385,18 @@ class Route
 
         // low balance notification config apis
         'create_low_balance_config'               => ['post',       'low_balance_configs',                    'LowBalanceConfigController@create'],
+        'create_low_balance_config_admin'         => ['post',       'low_balance_configs/admin',              'LowBalanceConfigController@adminCreate'],
         'update_low_balance_config'               => ['patch',      'low_balance_configs/{id}',               'LowBalanceConfigController@update'],
+        'update_low_balance_config_admin'         => ['patch',      'low_balance_configs/{id}/admin',         'LowBalanceConfigController@adminUpdate'],
         'fetch_low_balance_config'                => ['get',        'low_balance_configs/{id}',               'LowBalanceConfigController@get'],
         'list_low_balance_config'                 => ['get',        'low_balance_configs',                    'LowBalanceConfigController@list'],
+        'list_low_balance_config_admin'           => ['get',        'low_balance_configs/admin/{mid}',        'LowBalanceConfigController@adminList'],
         'delete_low_balance_config'               => ['delete',     'low_balance_configs/{id}',               'LowBalanceConfigController@delete'],
+        'delete_low_balance_config_admin'         => ['delete',     'low_balance_configs/{id}/admin',         'LowBalanceConfigController@adminDelete'],
         'disable_low_balance_config'              => ['post',       'low_balance_configs/{id}/disable',       'LowBalanceConfigController@disableConfig'],
+        'disable_low_balance_config_admin'        => ['post',       'low_balance_configs/{id}/disable/admin', 'LowBalanceConfigController@adminDisableConfig'],
         'enable_low_balance_config'               => ['post',       'low_balance_configs/{id}/enable',        'LowBalanceConfigController@enableConfig'],
+        'enable_low_balance_config_admin'         => ['post',       'low_balance_configs/{id}/enable/admin',  'LowBalanceConfigController@adminEnableConfig'],
         'low_balance_config_alert_cron'           => ['post',       'low_balance_configs/alert',              'LowBalanceConfigController@alert'],
 
         // merchant notification config APIs
@@ -4941,6 +4947,14 @@ class Route
         'freshchat_put_chat_holidays_config',
         'freshchat_get_chat_holidays_config',
 
+        // Low Balance Configs for X - Autoload
+        'create_low_balance_config_admin',
+        'update_low_balance_config_admin',
+        'enable_low_balance_config_admin',
+        'disable_low_balance_config_admin',
+        'delete_low_balance_config_admin',
+        'list_low_balance_config_admin',
+
         'create_ledger_account',
         'create_ledger_accounts_in_bulk',
         'activate_ledger_account',
@@ -5855,11 +5869,12 @@ class Route
         'admin_fetch_tpvs'                                    => Permission::VIEW_BANKING_ACCOUNT_TPV,
         'admin_merchants_tpvs_create'                         => Permission::CREATE_BANKING_ACCOUNT_TPV,
 
-        'create_low_balance_config'                     => Permission::CREATE_LOW_BALANCE_CONFIG_ADMIN,
-        'update_low_balance_config'                     => Permission::UPDATE_LOW_BALANCE_CONFIG_ADMIN,
-        'enable_low_balance_config'                     => Permission::UPDATE_LOW_BALANCE_CONFIG_ADMIN,
-        'disable_low_balance_config'                    => Permission::UPDATE_LOW_BALANCE_CONFIG_ADMIN,
-        'delete_low_balance_config'                     => Permission::UPDATE_LOW_BALANCE_CONFIG_ADMIN,
+        'create_low_balance_config_admin'                     => Permission::CREATE_LOW_BALANCE_CONFIG_ADMIN,
+        'delete_low_balance_config_admin'                     => Permission::CREATE_LOW_BALANCE_CONFIG_ADMIN,
+        'update_low_balance_config_admin'                     => Permission::UPDATE_LOW_BALANCE_CONFIG_ADMIN,
+        'enable_low_balance_config_admin'                     => Permission::UPDATE_LOW_BALANCE_CONFIG_ADMIN,
+        'disable_low_balance_config_admin'                    => Permission::UPDATE_LOW_BALANCE_CONFIG_ADMIN,
+        'list_low_balance_config_admin'                       => Permission::UPDATE_LOW_BALANCE_CONFIG_ADMIN,
 
         'templating_create_namespace'                         => Permission::TEMPLATING_SERVICE_WRITE_NAMESPACES,
         'templating_list_namespace'                           => Permission::TEMPLATING_SERVICE_READ_NAMESPACES,
@@ -7571,7 +7586,7 @@ class Route
             'coupon_update',
             'coupon_validate',
             'create_credit_note',
-            'create_low_balance_config',
+            'create_low_balance_config_admin',
             'create_merchant_notification_config',
             'create_merchant_notification_config_admin',
             'create_merchant_options',
@@ -7633,7 +7648,7 @@ class Route
             'delete_additional_websites',
             'delete_config_key',
             'delete_internal_instrument_request_by_id',
-            'delete_low_balance_config',
+            'delete_low_balance_config_admin',
             'delete_merchant_notification_config',
             'delete_merchant_notification_config_admin',
             'delete_merchant_options',
@@ -7642,7 +7657,7 @@ class Route
             'device_create',
             'device_verify',
             'device_verify_token',
-            'disable_low_balance_config',
+            'disable_low_balance_config_admin',
             'disable_merchant_notification_config',
             'disable_merchant_notification_config_admin',
             'dispute_bulk_create',
@@ -7684,7 +7699,7 @@ class Route
             'emi_plans_migrate',
             'enable_emi_merchant_sub',
             'enable_es_scheduled',
-            'enable_low_balance_config',
+            'enable_low_balance_config_admin',
             'enable_merchant_notification_config',
             'enable_merchant_notification_config_admin',
             'entity_balance_id_update',
@@ -7732,7 +7747,6 @@ class Route
             'fetch_batch_actions',
             'fetch_instrument_comment_list',
             'fetch_internal_instrument_requests',
-            'fetch_low_balance_config',
             'fetch_merchant_balance_configs',
             'fetch_merchant_instrument_requests',
             'fetch_merchant_notification_config',
@@ -7965,7 +7979,7 @@ class Route
             'link_stakeholder_documents_v2',
             'linked_account_create_batch',
             'payment_transfer_batch',
-            'list_low_balance_config',
+            'list_low_balance_config_admin',
             'list_merchant_notification_config',
             'list_merchant_notification_config_admin',
             'loc_bulk_withdrawal_update',
@@ -8856,7 +8870,7 @@ class Route
             'update_config_key',
             'update_free_payouts_attributes',
             'update_late_auth_config_admin_bulk',
-            'update_low_balance_config',
+            'update_low_balance_config_admin',
             'update_merchant_notification_config',
             'update_merchant_notification_config_admin',
             'update_merchant_options',
@@ -10354,6 +10368,14 @@ class Route
         'admin_merchants_tpvs_create',
 
         'sub_virtual_account_transfer_with_otp',
+
+        // Low Balance Configs for X - Autoload
+        'create_low_balance_config_admin',
+        'update_low_balance_config_admin',
+        'enable_low_balance_config_admin',
+        'disable_low_balance_config_admin',
+        'delete_low_balance_config_admin',
+        'list_low_balance_config_admin',
     ];
 
     public static $routesWithV2Prefix = [

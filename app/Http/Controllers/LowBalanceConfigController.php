@@ -34,4 +34,52 @@ class LowBalanceConfigController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function adminCreate()
+    {
+        $input = Request::all();
+
+        $entity = $this->service()->adminCreate($input);
+
+        return ApiResponse::json($entity);
+    }
+
+    public function adminUpdate(string $id)
+    {
+        $input = Request::all();
+
+        $entity = $this->service()->adminUpdate($id, $input);
+
+        return ApiResponse::json($entity);
+    }
+
+    public function adminEnableConfig(string $id)
+    {
+        $entity = $this->service()->adminEnableConfig($id);
+
+        return ApiResponse::json($entity);
+    }
+
+    public function adminDisableConfig(string $id)
+    {
+        $entity = $this->service()->adminDisableConfig($id);
+
+        return ApiResponse::json($entity);
+    }
+
+    public function adminDelete(string $id)
+    {
+        $entity = $this->service()->adminDelete($id);
+
+        return ApiResponse::json($entity);
+    }
+
+    public function adminList(string $mid)
+    {
+        $input = Request::all();
+
+        $entity = $this->service()->adminFetchMultiple($input, $mid);
+
+        return ApiResponse::json($entity);
+    }
 }
