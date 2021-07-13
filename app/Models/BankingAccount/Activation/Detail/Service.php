@@ -144,7 +144,7 @@ class Service extends Base\Service
 
             $activationDetail = $this->core->update($activationDetail, $input);
 
-            $this->initiatePanVerification($activationDetail, $isBusinessNameEdit, $isMerchantPocNameEdit, $isPanEdit);
+            $this->initiatePanVerification($activationDetail, $bankingAccount, $isBusinessNameEdit, $isMerchantPocNameEdit, $isPanEdit);
 
             $this->checkAndPushEventForRmAssigned($bankingAccount, $input);
 
@@ -242,9 +242,13 @@ class Service extends Base\Service
         }
     }
 
-    private function initiatePanVerification(Entity $activationDetail,bool $isBusinessNameEdit, bool $isMerchantPocNameEdit, bool $isPanEdit)
+    private function initiatePanVerification(Entity $activationDetail, BankingAccount\Entity $bankingAccount, bool $isBusinessNameEdit, bool $isMerchantPocNameEdit, bool $isPanEdit)
     {
         $businessType = $activationDetail->getBusinessCategory();
+
+        $merchant = $bankingAccount->merchant;
+
+        $merchantDetail = $merchant->merchantDetail;
 
         if ($businessType === Validator::SOLE_PROPRIETORSHIP)
         {
@@ -253,7 +257,7 @@ class Service extends Base\Service
             {
                 $activationDetail->setPanVerificationStatus(BvsValidationConstants::PENDING);
 
-                $panVerifier = new requestDispatcher\PersonalPanForBankingAccount($this->merchant,($this->merchant)->merchantDetail, $activationDetail);
+                $panVerifier = new requestDispatcher\PersonalPanForBankingAccount($merchant, $merchantDetail, $activationDetail);
 
                 $panVerifier->triggerBVSRequest();
 
@@ -266,7 +270,7 @@ class Service extends Base\Service
             {
                 $activationDetail->setPanVerificationStatus(BvsValidationConstants::PENDING);
 
-                $panVerifier = new requestDispatcher\BusinessPanForBankingAccount($this->merchant,($this->merchant)->merchantDetail, $activationDetail);
+                $panVerifier = new requestDispatcher\BusinessPanForBankingAccount($merchant, $merchantDetail, $activationDetail);
 
                 $panVerifier->triggerBVSRequest();
 
