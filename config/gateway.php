@@ -123,6 +123,7 @@ return [
         'paylater_icici',
         'hdfc_debit_emi',
         'netbanking_dlb',
+        'fulcrum',
         'checkout_dot_com',
     ],
 
