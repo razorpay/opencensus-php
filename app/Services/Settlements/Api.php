@@ -46,6 +46,19 @@ class Api extends Base
     /******************** Following routes are added for the migration purpose *********************/
 
     /**
+     * Merchant Config Service Get
+     * @param array  $input
+     * @param null $mode
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function merchantConfigGet(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::MERCHANT_CONFIG_GET, $input, self::SERVICE_API, $mode);
+    }
+
+    /**
      * migrateMerchantConfigCreate used to create default merchant config while migration
      * @param array $input
      * @param null $mode

@@ -740,7 +740,13 @@ class Core extends Base\Core
 
         $scheduleMapping = $this->getScheduleMappingForMethodNewService($merchant, $mode, $featureResult);
 
-        $response = app('settlements_api')->migrateMerchantConfigCreate($req, $mode);
+        try
+        {
+            $response =  app('settlements_api')->merchantConfigGet($req, $mode);
+        }
+        catch (\Throwable $e){
+            $response = app('settlements_api')->migrateMerchantConfigCreate($req, $mode);
+        }
 
         foreach ($scheduleMapping as $type => $methods)
         {
