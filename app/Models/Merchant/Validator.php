@@ -77,8 +77,11 @@ class Validator extends Base\Validator
     ];
 
     const ACTION_PERMISSION_MAP_FOR_MERCHANT_EDIT_BULK = [
-        Action::SUSPEND               => Permission::EDIT_MERCHANT_SUSPEND_BULK
-    ];
+        Action::SUSPEND               => Permission::EDIT_MERCHANT_SUSPEND_BULK,
+        Action::UNSUSPEND             => Permission::EDIT_MERCHANT_SUSPEND_BULK,
+        Action::LIVE_DISABLE          => Permission::EDIT_MERCHANT_TOGGLE_LIVE_BULK,
+        Action::LIVE_ENABLE           => Permission::EDIT_MERCHANT_TOGGLE_LIVE_BULK,
+        ];
 
     const MERCHANT_RISK_ATTRIBUTES = [
         Entity::MAX_PAYMENT_AMOUNT
@@ -1254,6 +1257,37 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED);
+        }
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function validateLiveDisable()
+    {
+        $merchant = $this->entity;
+        $this->validateIsActivated($merchant);
+        $this->validateSuspend();
+
+        if ($merchant->isLive() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE);
+        }
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function validateLiveEnable()
+    {
+        $merchant = $this->entity;
+        $this->validateIsActivated($merchant);
+        $this->validateSuspend();
+        if ($merchant->isLive())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_LIVE);
         }
     }
 

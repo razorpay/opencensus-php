@@ -60,6 +60,7 @@ class Name
     const EDIT_MERCHANT_SUSPEND               = 'edit_merchant_suspend';
     const EDIT_MERCHANT_SUSPEND_BULK          = 'edit_merchant_suspend_bulk';
     const EDIT_MERCHANT_UNSUSPEND             = 'edit_merchant_unsuspend';
+    const EDIT_MERCHANT_TOGGLE_LIVE_BULK      = 'edit_merchant_toggle_live_bulk';
     const EDIT_MERCHANT_METHODS               = 'edit_merchant_methods';
     const EDIT_MERCHANT_TERMINAL              = 'edit_merchant_terminal';
     const EDIT_MERCHANT_PRICING               = 'edit_merchant_pricing';

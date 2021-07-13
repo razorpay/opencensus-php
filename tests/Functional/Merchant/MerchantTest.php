@@ -10586,4 +10586,189 @@ class MerchantTest extends TestCase
         $merchants = (new Merchant\Repository)->fetchMerchantsWithTag(Merchant\Constants::MERCHANT_RISK_SUSPEND_CRON_TAG);
         $this->assertCount(0, $merchants);
     }
+
+    public function testEditBulkMerchantActionDisableLive()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_toggle_live_bulk']);
+
+        $this->fixtures->merchant->edit('10000000000044', ['live' => true, 'activated' => 1]);
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000044');
+
+        $this->assertFalse($merchant->isLive());
+
+        $merchants = (new Merchant\Repository)->fetchMerchantsWithTag(Merchant\Constants::MERCHANT_RISK_DISABLE_LIVE_CRON_TAG);
+        $this->assertCount(1, $merchants, 'array empty'.$merchants);
+        $this->assertEquals($merchant->getId(), $merchants[0]->getId(), 'id not matching'.$merchants[0]);
+    }
+
+    public function testEditBulkMerchantActionEnableLive()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000044', ['live' => false, 'activated' => 1]);
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_toggle_live_bulk']);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000044');
+
+        $this->assertTrue($merchant->isLive());
+
+        $merchants = (new Merchant\Repository)->fetchMerchantsWithTag(Merchant\Constants::MERCHANT_RISK_DISABLE_LIVE_CRON_TAG);
+        $this->assertCount(0, $merchants, 'array is not empty'.$merchants);
+    }
+
+
+    public function testBulkDisableLiveWithoutPermissionFail()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $this->createMerchant([
+            'id'    => '10000000000055',
+            'email' => 'test2@razorpay.com',
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000044', ['live' => true, 'activated' => 1]);
+        $this->fixtures->merchant->edit('10000000000055', ['live' => true, 'activated' => 1]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkEnableLiveWithoutPermissionFail()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $this->createMerchant([
+            'id'    => '10000000000055',
+            'email' => 'test2@razorpay.com',
+        ]);
+        $this->fixtures->merchant->edit('10000000000044', ['live' => false, 'activated' => 1]);
+        $this->fixtures->merchant->edit('10000000000055', ['live' => false, 'activated' => 1]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditBulkDisableLiveMerchantNotLive()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000044', ['live' => false, 'activated' => 1]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_toggle_live_bulk']);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditBulkEnableLiveMerchantAlreadyLive()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000044', ['live' => true, 'activated' => 1]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_toggle_live_bulk']);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditBulkEnableLiveMerchantSuspended()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000044', ['live' => true, 'activated' => 1]);
+        $this->fixtures->base->editEntity('merchant', '10000000000044', [ 'suspended_at' => '123456789' ]);
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_toggle_live_bulk']);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditBulkEnableLiveMerchantNotActivated()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000044', ['live' => true, 'activated' => 0]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_toggle_live_bulk']);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 }

@@ -8507,4 +8507,191 @@ return [
         ],
     ],
 
+    'testEditBulkMerchantActionDisableLive' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'live_disable',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 1,
+                'success'   => 1,
+                'failed'    => 0,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditBulkDisableLiveMerchantNotLive' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'live_disable',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 1,
+                'success'   => 0,
+                'failed'    => 1,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBulkDisableLiveWithoutPermissionFail' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044', '10000000000055'],
+                'action'       => "live_disable",
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+
+    'testEditBulkMerchantActionEnableLive' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'live_enable',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 1,
+                'success'   => 1,
+                'failed'    => 0,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditBulkEnableLiveMerchantAlreadyLive' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'live_enable',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 1,
+                'success'   => 0,
+                'failed'    => 1,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testEditBulkEnableLiveMerchantNotActivated' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'live_enable',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 1,
+                'success'   => 0,
+                'failed'    => 1,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testEditBulkEnableLiveMerchantSuspended' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'live_enable',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 1,
+                'success'   => 0,
+                'failed'    => 1,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testBulkEnableLiveWithoutPermissionFail' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044', '10000000000055'],
+                'action'       => "live_enable",
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
 ];

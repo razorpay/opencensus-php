@@ -19,6 +19,8 @@ class SlackActions
     const HDFC_EXCEL                   = 'HDFC Excel generated';
     const LIVE_ENABLED                 = 'Live transactions enabled';
     const LIVE_DISABLED                = 'Live transactions disabled';
+    const RISK_ACTION_LIVE_ENABLED     = 'Risk Action - Live transactions enabled';
+    const RISK_ACTION_LIVE_DISABLED    = 'Risk Action - Live transactions disabled';
     const ARCHIVED                     = 'Archived';
     const UNARCHIVED                   = 'Unarchived';
     const SUSPENDED                    = 'Suspended';
@@ -38,6 +40,8 @@ class SlackActions
     const UNSUSPEND              = 'unsuspend';
     const ENABLE                 = 'enable';
     const DISABLE                = 'disable';
+    const LIVE_ENABLE            = 'live_enable';
+    const LIVE_DISABLE           = 'live_disable';
     const LOCK                   = 'lock';
     const UNLOCK                 = 'unlock';
     const ASSIGN_PRICING         = 'assign_pricing';
@@ -59,6 +63,8 @@ class SlackActions
         self::UNSUSPEND              => self::UNSUSPENDED,
         self::ENABLE                 => self::LIVE_ENABLED,
         self::DISABLE                => self::LIVE_DISABLED,
+        self::LIVE_ENABLE            => self::RISK_ACTION_LIVE_ENABLED,
+        self::LIVE_DISABLE           => self::RISK_ACTION_LIVE_DISABLED,
         self::LOCK                   => self::FORM_LOCKED,
         self::UNLOCK                 => self::FORM_UNLOCKED,
         self::ASSIGN_PRICING         => self::PRICING_PLAN_SET,

@@ -27,6 +27,8 @@ class Action
     const FORCE_ACTIVATE                      = 'force_activate';
     const SET_RECEIPT_EMAIL_EVENT_AUTHORIZED  = 'set_receipt_email_event_authorized';
     const SET_RECEIPT_EMAIL_EVENT_CAPTURED    = 'set_receipt_email_event_captured';
+    const LIVE_DISABLE                        = 'live_disable';
+    const LIVE_ENABLE                         = 'live_enable';
 
     public static function exists($action)
     {

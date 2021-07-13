@@ -435,8 +435,9 @@ final class Constants
     const TAGS = 'tags';
 
     //cron tag names
-    const MERCHANT_RISK_FOH_CRON_TAG     = 'Merchant_risk_cron_tag_foh';
-    const MERCHANT_RISK_SUSPEND_CRON_TAG = 'Merchant_risk_cron_tag_suspend';
+    const MERCHANT_RISK_FOH_CRON_TAG            = 'Merchant_risk_cron_tag_foh';
+    const MERCHANT_RISK_SUSPEND_CRON_TAG        = 'Merchant_risk_cron_tag_suspend';
+    const MERCHANT_RISK_DISABLE_LIVE_CRON_TAG   = 'Merchant_risk_cron_tag_disable_live';
 
     //FOH Notification templates
     const FOH_SMS_TEMPLATE           = 'sms.merchant_risk.generic.funds_on_hold.confirmation';
@@ -449,19 +450,27 @@ final class Constants
     const SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_NAME = 'whatsapp.merchant_risk_actions.suspend';
     const SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE      = 'We have suspended your account as we observed suspicious account activity on your account - {merchant_id} in the name of M/s. {business_name} held with Razorpay. Please check your registered email for an email with subject Razorpay Account disabled: {merchant_name} | {merchant_id} for more details';
 
+    //Disable Live Notification templates
+    const DISABLE_LIVE_SMS_TEMPLATE           = 'sms.merchant_risk_actions.disable_live';
+    const DISABLE_LIVE_WHATSAPP_TEMPLATE_NAME = 'whatsapp.merchant_risk_actions.disable_live';
+    const DISABLE_LIVE_WHATSAPP_TEMPLATE      = 'We have disabled your account as we observed suspicious account activity on your account - {merchant_id} in the name of M/s. {business_name} held with Razorpay.  Please check your registered email for an email with subject Razorpay Account disabled: {merchant_name} | {merchant_id} for more details';
+    const DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG = 'merchant_risk_action_disabled';
+
     const MERCHANT_RISK_ACTION_CRON_ADD_TAG_MAP = [
-        Action::SUSPEND    => self::MERCHANT_RISK_SUSPEND_CRON_TAG,
-        Action::HOLD_FUNDS => self::MERCHANT_RISK_FOH_CRON_TAG,
+        Action::SUSPEND         => self::MERCHANT_RISK_SUSPEND_CRON_TAG,
+        Action::HOLD_FUNDS      => self::MERCHANT_RISK_FOH_CRON_TAG,
+        Action::LIVE_DISABLE    => self::MERCHANT_RISK_DISABLE_LIVE_CRON_TAG,
     ];
 
     const MERCHANT_RISK_ACTION_CRON_REMOVE_TAG_MAP = [
         Action::UNSUSPEND     => self::MERCHANT_RISK_SUSPEND_CRON_TAG,
         Action::RELEASE_FUNDS => self::MERCHANT_RISK_FOH_CRON_TAG,
+        Action::LIVE_ENABLE   => self::MERCHANT_RISK_DISABLE_LIVE_CRON_TAG,
     ];
 
     const MERCHANT_RISK_ACTION_DASHBOARD_TAG = [
-        Action::HOLD_FUNDS    => self::FOH_DASHBOARD_TEMPLATE_TAG,
         Action::RELEASE_FUNDS => self::FOH_DASHBOARD_TEMPLATE_TAG,
+        Action::LIVE_ENABLE   => self::DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG,
     ];
 
     const MERCHANT_RISK_ACTIONS_CRON_TAG_TEMPLATE_MAP = [
@@ -477,6 +486,13 @@ final class Constants
            self::WHATSAPP_TEMPLATE_NAME => self::FOH_WHATSAPP_TEMPLATE_NAME,
            self::WHATSAPP_TEMPLATE      => self::FOH_WHATSAPP_TEMPLATE,
            self::DASHBOARD_TEMPLATE_TAG => self::FOH_DASHBOARD_TEMPLATE_TAG,
+        ],
+
+        self::MERCHANT_RISK_DISABLE_LIVE_CRON_TAG => [
+           self::SMS_TEMPLATE           => self::DISABLE_LIVE_SMS_TEMPLATE,
+           self::WHATSAPP_TEMPLATE_NAME => self::DISABLE_LIVE_WHATSAPP_TEMPLATE_NAME,
+           self::WHATSAPP_TEMPLATE      => self::DISABLE_LIVE_WHATSAPP_TEMPLATE,
+           self::DASHBOARD_TEMPLATE_TAG => self::DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG,
         ],
     ];
 
