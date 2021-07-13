@@ -10,7 +10,7 @@ import { trackGoToActivationFromError } from '../../../containers/Home/ga';
 import Button from 'common/new-ui/Button';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonSegmentProperties, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';

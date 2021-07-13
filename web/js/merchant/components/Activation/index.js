@@ -1102,10 +1102,13 @@ export default class ActivationWizard extends React.Component {
         fireKYCSubmitEvents(_data);
       } else {
         const isUnregisteredBusiness = this.isUnregBiz;
-        const _data = {
-          ...data.data,
-          isUnregisteredBusiness,
-        };
+        let _data = { isUnregisteredBusiness };
+        if(data?.data) {
+          _data = {
+            ...data.data,
+            isUnregisteredBusiness,
+          };
+        }
 
         let activationFlow = '';
         if (businessCategories && businessCategories.data && !businessCategories.data.errors) {
