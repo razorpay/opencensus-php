@@ -49,6 +49,20 @@ class CoreTest extends TestCase
         ]);
     }
 
+    private function createPayment(string $merchantId, int $amount, int $createdAt = null)
+    {
+        if($createdAt === null)
+        {
+            $createdAt = Carbon::now()->getTimestamp();
+        }
+
+        $transaction = $this->fixtures->on('live')->create('payment', [
+            'amount'        => $amount * 100,   // in paisa
+            'merchant_id'   => $merchantId,
+            'created_at'    => $createdAt
+        ]);
+    }
+
     public function testSegmentEventPushForFirstTransaction()
     {
         $this->createAndFetchMocks();
@@ -68,6 +82,7 @@ class CoreTest extends TestCase
         $merchantId = $merchantDetail->getMerchantId();
 
         $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createPayment($merchantId, 10000);
 
         (new Escalations\Core)->handleMtuSegmentEvent();
     }
@@ -93,9 +108,11 @@ class CoreTest extends TestCase
         // Create transaction that is 4 days old (since cron picks last 3 days transacted merchants)
         $this->createTransaction(
             $merchantId, 'payment', 10000, Carbon::now()->subDays(4)->getTimestamp());
+        $this->createPayment($merchantId, 10000, Carbon::now()->subDays(4)->getTimestamp());
 
         // Create new transaction
         $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createPayment($merchantId, 10000);
 
         (new Escalations\Core)->handleMtuSegmentEvent();
     }
@@ -104,7 +121,6 @@ class CoreTest extends TestCase
     {
         $this->createAndFetchMocks();
 
-        
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
             ->setMethods(['pushIdentifyAndTrackEvent'])
             ->getMock();
@@ -121,7 +137,10 @@ class CoreTest extends TestCase
 
         // Create new 2 transactions
         $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createPayment($merchantId, 10000);
+
         $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createPayment($merchantId, 10000);
 
         (new Escalations\Core)->handleMtuSegmentEvent();
     }

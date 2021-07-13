@@ -126,19 +126,33 @@ class Core extends Base\Core
         $lastCronTime = $this->getLastCronTime();
 
         // Filter out all merchants that have transacted since last time cron ran
-        $merchantIdList = $this->repo->transaction->fetchTransactedMerchants('payment', $lastCronTime);
-
-        // Since we want to push MTU event just once
-        // Filter out all merchants that have transacted before the last time cron ran
-        $merchantIdList = $this->repo->transaction->excludeTransactedMerchantsBeforeTimestamp(
-            $merchantIdList, 'payment', $lastCronTime
-        );
+        $transactedMerchants = $this->repo->transaction->fetchTransactedMerchants('payment', $lastCronTime);
 
         $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
             'last_cron_time'    => $lastCronTime,
             'type'              => 'segment_mtu',
-            'merchants_count'   => count($merchantIdList),
+            'merchants_count'   => count($transactedMerchants),
         ]);
+
+        $merchantIdChunks = array_chunk($transactedMerchants, 100);
+        $merchantIdList = [];
+
+        foreach ($merchantIdChunks as $merchantIdChunk)
+        {
+            $filteredMerchants = $this->repo->payment->filterMerchantsWithFirstPaymentAboveTimestamp(
+                $merchantIdChunk, $lastCronTime);
+
+            $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
+                'last_cron_time'    => $lastCronTime,
+                'type'              => 'segment_mtu',
+                'merchants_count'   => count($filteredMerchants),
+            ]);
+
+            if(empty($filteredMerchants) === false)
+            {
+                $merchantIdList = array_merge($merchantIdList, $filteredMerchants);
+            }
+        }
 
         foreach ($merchantIdList as $merchantId)
         {

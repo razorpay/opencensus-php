@@ -2564,6 +2564,18 @@ class Repository extends Base\Repository
                         ->where(Entity::BANK, $org->getCustomCode());
     }
 
+    public function filterMerchantsWithFirstPaymentAboveTimestamp(array $merchantIdList, int $timestamp)
+    {
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+            ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+            ->groupBy(Entity::MERCHANT_ID)
+            ->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
+            ->having('first_created_at', '>=', $timestamp)
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
     public function findFirstDataAuthSeparatedPaymentIdsBetween(int $start, int $end)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
