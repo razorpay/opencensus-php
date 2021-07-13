@@ -256,7 +256,7 @@ const AcceptPaymentsCard: React.FC = () => {
     {
       retry: false,
       staleTime: Infinity,
-      onError: (err: any) => snackbar.error(err.response.errors[0]),
+      onError: (err: any) => snackbar.error(err?.response?.errors[0]),
     },
   );
   const { status: websiteWorkflowQueryStatus, data: isWebsiteInWorkflow } = useQuery(
@@ -265,7 +265,7 @@ const AcceptPaymentsCard: React.FC = () => {
     {
       retry: false,
       staleTime: Infinity,
-      onError: (err: any) => snackbar.error(err.response.errors[0]),
+      onError: (err: any) => snackbar.error(err?.response?.errors[0]),
     },
   );
   const {

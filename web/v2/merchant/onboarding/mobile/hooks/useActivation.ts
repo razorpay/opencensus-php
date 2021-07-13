@@ -54,7 +54,7 @@ export default function useActivation() {
   const { status, data } = useQuery('activation', fetchActivationData, {
     refetchOnMount: 'always',
     staleTime: Infinity,
-    onError: (err: any) => snackbar.error(err.response.errors[0]),
+    onError: (err: any) => snackbar.error(err?.response?.errors[0]),
   });
 
   const queryCache = useQueryCache();
@@ -63,7 +63,7 @@ export default function useActivation() {
       const formattedData = activationFormatter(result);
       queryCache.setQueryData('activation', formattedData);
     },
-    onError: (err: any) => snackbar.error(err.response.errors[0]),
+    onError: (err: any) => snackbar.error(err?.response?.errors[0]),
   });
 
   const [documentUpload] = useMutation(saveFile, {
@@ -71,7 +71,7 @@ export default function useActivation() {
       const formattedData = activationFormatter(result);
       queryCache.setQueryData('activation', formattedData);
     },
-    onError: (err: any) => snackbar.error(err.response.errors[0]),
+    onError: (err: any) => snackbar.error(err?.response?.errors[0]),
   });
 
   const [documentDelete] = useMutation(deleteFile, {
@@ -79,7 +79,7 @@ export default function useActivation() {
       const formattedData = activationFormatter(result);
       queryCache.setQueryData('activation', formattedData);
     },
-    onError: (err: any) => snackbar.error(err.response.errors[0]),
+    onError: (err: any) => snackbar.error(err?.response?.errors[0]),
   });
 
   const setContactDetailsCompleted = useActivationFormState(
