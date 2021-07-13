@@ -57,7 +57,7 @@ class Leads extends Base
           ActivationDetail\Validator::ZERO_BALANCE  => 'Zero Balance',
       ],
       self::SALES_TEAM => [
-          ActivationDetail\Validator::GROWTH                 => 'X Growth',
+          ActivationDetail\Validator::GROWTH                 => 'X NIT - Enterprise / Mid-Market',
           ActivationDetail\Validator::DIRECT_SALES           => 'X Direct Sales',
           ActivationDetail\Validator::KEY_ACCOUNT            => 'X Key Account',
           ActivationDetail\Validator::SME                    => 'X SME',
@@ -69,7 +69,8 @@ class Leads extends Base
           ActivationDetail\Validator::PG_GROWTH              => 'PG Growth',
           ActivationDetail\Validator::PG_KAM                 => 'PG KAM',
           ActivationDetail\Validator::PG_DIRECT_SALES        => 'PG Direct Sales',
-          ActivationDetail\Validator::SELF_SERVE             => 'Self Serve'
+          ActivationDetail\Validator::SELF_SERVE             => 'Self Serve',
+          ActivationDetail\Validator::NIT_PARTNERSHIPS       => 'X NIT - Partnerships'
 
       ]
     ];

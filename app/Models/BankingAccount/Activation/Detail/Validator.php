@@ -80,6 +80,7 @@ class Validator extends Base\Validator
     const PG_KAM = 'pg_kam';
     const PG_DIRECT_SALES = 'pg_direct_sales';
     const SELF_SERVE = 'self_serve';
+    const NIT_PARTNERSHIPS = 'nit_partnerships';
 
     const SALES_POC_ID = 'sales_poc_id';
 
@@ -276,7 +277,8 @@ class Validator extends Base\Validator
         self::PG_GROWTH,
         self::PG_KAM,
         self::PG_DIRECT_SALES,
-        self::SELF_SERVE
+        self::SELF_SERVE,
+        self::NIT_PARTNERSHIPS
     ];
 
     public function validateBusinessCategory($attribute, $value)
