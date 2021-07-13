@@ -1579,7 +1579,8 @@ class Service extends Base\Service
             'instant-activations-functionality',
             'mandatory_aadhar_ekyc',
             'rx_email_integration_rollout',
-            'rx_taxpayments_tin_change'
+            'rx_taxpayments_tin_change',
+            'pb_new_success_screen'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

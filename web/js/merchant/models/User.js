@@ -337,6 +337,10 @@ export default class User {
     return isEnabled;
   }
 
+  get isPBNewSuccessScreenEnabled() {
+    return this.getExpStatus('pb_new_success_screen');
+  }
+
   get isQRCodeProductEnabled() {
     return this.isFeatureEnabled('qr_codes');
   }
