@@ -12662,6 +12662,8 @@ class PayoutTest extends OAuthTestCase
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
 
+        $this->expectWebhookEvent('payout.queued');
+
         $this->startTest();
 
         $payout = $this->getDbLastEntity('payout');
@@ -12688,6 +12690,8 @@ class PayoutTest extends OAuthTestCase
                 ]
             ];
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        $this->dontExpectWebhookEvent('payout.queued');
 
         $this->testCreatePayout();
 

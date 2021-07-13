@@ -120,7 +120,7 @@ class FundAccountPayout extends Base
 
     protected function fireEventForPayoutStatus(Payout\Entity $payout)
     {
-        if ($payout->isStatusQueued() === true)
+        if (($payout->isStatusQueued() === true) || ($payout->isStatusOnHold() === true))
         {
             $this->app->events->dispatch('api.payout.queued', [$payout]);
         }

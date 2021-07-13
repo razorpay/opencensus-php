@@ -670,6 +670,8 @@ trait PayoutTrait
         ],
     ];
 
+        $this->expectWebhookEvent('payout.queued');
+
         $this->makeRequestAndGetContent($request);
     }
 
