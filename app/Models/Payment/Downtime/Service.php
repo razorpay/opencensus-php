@@ -162,6 +162,7 @@ class Service extends Base\Service
     public function eventDowntimeResolved(Entity $downtime, $lastSeverity=null)
     {
         try {
+            $merchantIds = [];
             // @see getMerchantsSubscribingToWebhookEvent method.
             if($downtime->getMerchantId() === null)
             {
@@ -177,7 +178,6 @@ class Service extends Base\Service
                     $merchantIds = $this->getMerchantsSubscribingToWebhookEventForMerchant(Event::PAYMENT_DOWNTIME_RESOLVED, $downtime->getMerchantId());
                 }
             }
-
 
             foreach ($merchantIds as $merchantId)
             {
