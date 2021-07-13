@@ -58,33 +58,42 @@ trait KafkaTrait
 
             $kafkaCaCertFilePath = $certsPath . '/' . $kafkaCaCertFileName;
 
-            $isCaCertExportSuccess = openssl_x509_export_to_file($kafkaCaCertString, $kafkaCaCertFilePath);
-
-            if ($isCaCertExportSuccess === false)
+            if (file_exists($kafkaCaCertFilePath) === false)
             {
-                $this->error('failed to export ca-cert into file path');
+                $isCaCertExportSuccess = openssl_x509_export_to_file($kafkaCaCertString, $kafkaCaCertFilePath);
+
+                if ($isCaCertExportSuccess === false)
+                {
+                    $this->error('failed to export ca-cert into file path');
+                }
             }
 
             $conf->set('ssl.ca.location', $kafkaCaCertFilePath);
 
             $kafkaUserCertFilePath = $certsPath . '/' . $kafkaUserCertFileName;
 
-            $isUserCertExportSuccess = openssl_x509_export_to_file($kafkaUserCertString, $kafkaUserCertFilePath);
-
-            if ($isUserCertExportSuccess === false)
+            if (file_exists($kafkaUserCertFilePath) === false)
             {
-                $this->error('failed to export user cert into file path');
+                $isUserCertExportSuccess = openssl_x509_export_to_file($kafkaUserCertString, $kafkaUserCertFilePath);
+
+                if ($isUserCertExportSuccess === false)
+                {
+                    $this->error('failed to export user cert into file path');
+                }
             }
 
             $conf->set('ssl.certificate.location', $kafkaUserCertFilePath);
 
             $kafkaUserKeyFilePath = $certsPath . '/' . $kafkaUserKeyFileName;
 
-            $isUserCertExportSuccess = openssl_pkey_export_to_file($kafkaUserKeyString, $kafkaUserKeyFilePath);
-
-            if ($isUserCertExportSuccess === false)
+            if (file_exists($kafkaUserKeyFilePath) === false)
             {
-                $this->error('failed to export user key into file path');
+                $isUserCertExportSuccess = openssl_pkey_export_to_file($kafkaUserKeyString, $kafkaUserKeyFilePath);
+
+                if ($isUserCertExportSuccess === false)
+                {
+                    $this->error('failed to export user key into file path');
+                }
             }
 
             $conf->set('ssl.key.location', $kafkaUserKeyFilePath);
