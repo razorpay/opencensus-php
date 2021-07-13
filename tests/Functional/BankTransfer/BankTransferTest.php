@@ -27,6 +27,7 @@ use RZP\Mail\Transaction\BankTransfer;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\BankTransfer\Entity as E;
+use RZP\Models\BankTransferRequest\Entity;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Mail\Merchant\RazorpayX\FundLoadingFailed;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
@@ -2665,6 +2666,83 @@ class BankTransferTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testBankTransferProcessWithPayeeAccountLessThanFiveDigits()
+    {
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading,
+            $countOfPayoutsBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        $countOfBankTransferRequestsBeforeFundLoading = count($this->getDbEntities('bank_transfer_request', [], 'live'));
+
+        Mail::fake();
+
+        $balance1 = $this->getDbEntity('balance',
+                                       [
+                                           'merchant_id' => '10000000000000',
+                                       ], 'live');
+
+        $this->fixtures->on('live')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => '2224440041626905',
+        ]);
+
+        $ba = $this->fixtures->on('live')->create('bank_account',
+                                                  [
+                                                      'merchant_id'    => '10000000000000',
+                                                      'entity_id'      => 'ShrdVirtualAcc',
+                                                      'type'           => 'virtual_account',
+                                                      'account_number' => '2224440041626905',
+                                                  ]);
+
+        $this->fixtures->on('live')->create('virtual_account',
+                                            [
+                                                'id'              => 'ShrdVirtualAcc',
+                                                'merchant_id'     => '10000000000000',
+                                                'status'          => 'active',
+                                                'bank_account_id' => $ba->getId(),
+                                                'balance_id'      => $balance1->getId(),
+                                            ]);
+
+        // Keeping it equal to 4 digits to make this request fail.
+        $accountNumber = '3434';
+        $utr           = strtoupper(random_alphanum_string(22));
+
+        $this->testData[__FUNCTION__]['request']['content']['payee_account']  = $accountNumber;
+        $this->testData[__FUNCTION__]['request']['content']['payee_ifsc']     = 'ICIC0000104';
+        $this->testData[__FUNCTION__]['request']['content']['transaction_id'] = $utr;
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading,
+            $countOfPayoutsAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        $countOfBankTransferRequestsAfterFundLoading = count($this->getDbEntities('bank_transfer_request', [], 'live'));
+
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfTransactionsBeforeFundLoading, $countOfTransactionsAfterFundLoading);
+        $this->assertEquals($countOfPayoutsBeforeFundLoading, $countOfPayoutsAfterFundLoading);
+        $this->assertEquals($countOfBankTransferRequestsBeforeFundLoading + 1, $countOfBankTransferRequestsAfterFundLoading);
+
+        $bankTransferRequest = $this->getDbLastEntity('bank_transfer_request', 'live');
+
+        $this->assertEquals('BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER',
+                            $bankTransferRequest[Entity::ERROR_MESSAGE]);
+        $this->assertEquals(false, $bankTransferRequest[Entity::IS_CREATED]);
+
+        // This ensures that we did not create a Bank Transfer and are not sending any email for the same.
+        Mail::assertNotQueued(BankTransfer::class);
     }
 
     protected function processBankTransfer($accountNumber, $ifsc, $utr = null, $amount = null, $mode = 'test')

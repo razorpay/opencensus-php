@@ -37,6 +37,8 @@ class Service extends Base\Service
     // Seconds in 15 minutes
     const FIFTEEN_MINUTES = 900;
 
+    const BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER = 'BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER';
+
     /**
      * Service constructor. Sets provider from app auth, and
      * sets request IP for use in validation of providers.
@@ -97,6 +99,13 @@ class Service extends Base\Service
 
         if ($bankTransferRequest !== null and $bankTransferRequest->getPayeeAccount() !== null)
         {
+            $response = $this->validateProviderSpecificFields($bankTransferRequest);
+
+            if (empty($response) === false)
+            {
+                return $response;
+            }
+
             $dispatchToQueue = $this->isRequestValidForQueueProcessing($provider ?? $this->provider);
 
             if ($dispatchToQueue === true)
@@ -590,6 +599,37 @@ class Service extends Base\Service
                 ];
             }
         }
+
         return  [];
+    }
+
+    protected function validateProviderSpecificFields(BankTransferRequest\Entity $bankTransferRequest)
+    {
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        // Validation for ICICI (We are keeping this based on the route).
+        if ($routeName === 'bank_transfer_process_icici_internal')
+        {
+            if (strlen(trim($bankTransferRequest->getPayeeAccount())) <= 4)
+            {
+                $this->trace->info(TraceCode::BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER,
+                                   [
+                                       $bankTransferRequest->toArrayTrace()
+                                   ]);
+
+                (new BankTransferRequest\Core)->updateBankTransferRequest($bankTransferRequest->getUtr(),
+                                                                          false,
+                                                                          self::BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER,
+                                                                          $bankTransferRequest);
+
+                return [
+                    'valid'          => false,
+                    'message'        => self::BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER,
+                    'transaction_id' => $bankTransferRequest->getUtr() ?? '',
+                ];
+            }
+        }
+
+        return [];
     }
 }
