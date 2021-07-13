@@ -2111,6 +2111,10 @@ app
                 version: $scope.authVersion,
                 error: 'Script initiated but could not load',
               });
+              $scope.alerts.addAlert(
+                'danger',
+                "Some scripts didn't load. Please try another browser/network or disable ad blockers",
+              );
             };
           }
         }
