@@ -30,6 +30,7 @@ class Entity extends QrCode\Entity
     const REQ_IMAGE_URL                = 'image_url';
     const RESP_PAYMENTS_COUNT_RECEIVED = 'payments_count_received';
     const RESP_IMAGE_CONTENT           = 'image_content';
+    const TAX_INVOICE                  = 'tax_invoice';
 
     const SHARED_ID = 'FallbackQrCode';
 
@@ -50,7 +51,8 @@ class Entity extends QrCode\Entity
         self::CLOSE_BY,
         self::CLOSED_AT,
         self::CLOSE_REASON,
-        self::MPANS_TOKENIZED
+        self::MPANS_TOKENIZED,
+        self::TAX_INVOICE,
     ];
 
     protected $visible = [
@@ -72,7 +74,8 @@ class Entity extends QrCode\Entity
         self::CUSTOMER_ID,
         self::CLOSE_BY,
         self::CLOSED_AT,
-        self::CLOSE_REASON
+        self::CLOSE_REASON,
+        self::TAX_INVOICE,
     ];
 
     protected $public = [
@@ -95,12 +98,14 @@ class Entity extends QrCode\Entity
         self::CLOSED_AT,
         self::CLOSE_REASON,
         self::RESP_IMAGE_CONTENT,
+        self::TAX_INVOICE,
     ];
 
     protected $casts = [
         self::AMOUNT       => 'int',
         self::FIXED_AMOUNT => 'bool',
         self::CLOSE_BY     => 'int',
+        self::TAX_INVOICE  => 'json',
     ];
 
     protected $publicSetters = [
@@ -123,6 +128,7 @@ class Entity extends QrCode\Entity
         self::NAME                     => null,
         self::DESCRIPTION              => null,
         self::CLOSE_BY                 => null,
+        self::TAX_INVOICE              => [],
     ];
 
     protected static $generators = [
@@ -193,6 +199,11 @@ class Entity extends QrCode\Entity
     protected function setPublicTypeAttribute(array & $array)
     {
         $array[self::REQ_PROVIDER] = $this->getAttribute(self::PROVIDER);
+    }
+
+    protected function setPublicTaxInvoiceAttribute(array & $array)
+    {
+        $array[self::TAX_INVOICE] = $this->getAttribute(self::TAX_INVOICE);
     }
 
     protected function setPublicImageUrlAttribute(array & $array)
@@ -283,5 +294,10 @@ class Entity extends QrCode\Entity
     public function getCloseBy()
     {
         return ($this->getAttribute(self::CLOSE_BY));
+    }
+
+    public function getTaxInvoice()
+    {
+        return $this->getAttribute(self::TAX_INVOICE);
     }
 }

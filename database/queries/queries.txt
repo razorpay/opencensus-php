@@ -6294,5 +6294,9 @@ ALTER TABLE terminals
 ALTER TABLE terminals
     ADD COLUMN app TINYINT(1) NOT NULL DEFAULT 0;
 
+
+ALTER TABLE qr_code
+    ADD COLUMN tax_invoice JSON;
+
 ALTER TABLE terminals
     ADD COLUMN enabled_wallets json DEFAULT NULL;

@@ -4,7 +4,10 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
 use RZP\Models\QrCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Models\QrPaymentRequest\Type;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends QrCode\Validator
@@ -21,7 +24,23 @@ class Validator extends QrCode\Validator
         Entity::NOTES          => 'filled|notes',
         Entity::CUSTOMER_ID    => 'filled|string|nullable',
         Entity::CLOSE_BY       => 'filled|epoch|custom',
+        Entity::TAX_INVOICE    => 'sometimes_if:type,upi_qr|array|custom'
     ];
+
+    protected static $taxInvoiceRules = [
+        InvoiceDetails::INVOICE_DATE   => 'sometimes|integer',
+        InvoiceDetails::INVOICE_NUMBER => 'sometimes|string',
+        InvoiceDetails::CUSTOMER_NAME  => 'sometimes|string',
+        InvoiceDetails::BUSINESS_GSTIN => 'sometimes|string',
+        InvoiceDetails::SUPPLY_TYPE    => 'sometimes|string|in:interstate,intrastate',
+        InvoiceDetails::CESS_AMOUNT    => 'sometimes|integer',
+        InvoiceDetails::GST_AMOUNT     => 'sometimes|integer',
+    ];
+
+    public function validateTaxInvoice(string $attribute, array $taxInvoiceInput)
+    {
+        $this->validateInput('tax_invoice', $taxInvoiceInput);
+    }
 
     public function validateCloseBy(string $attribute, int $closeBy)
     {

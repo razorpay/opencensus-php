@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Status;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\CloseReason;
 use RZP\Tests\Functional\Helpers\QrCode\NonVirtualAccountQrCodeTrait;
 
@@ -78,6 +79,18 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->createQrCode(['customer_id' => 'cust_110000customer']);
     }
 
+    public function testBadRequestBharatQrCodeWithTaxInvoice()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The tax invoice field may be sent only when type is upi_qr');
+
+        $input['tax_invoice'] = $this->testData['tax_invoice'];
+        $input['type'] = 'bharat_qr';
+
+        $this->createQrCode($input);
+    }
+
     public function testCreateUpiQrCode()
     {
         $input = [
@@ -92,6 +105,21 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
         $this->runEntityAssertions($response);
+    }
+
+    public function testCreateUpiQrWithInvoiceDetails()
+    {
+        $this->fixtures->merchant->addFeatures(['qr_image_content']);
+
+        $qrCode = $this->createQrCode(['tax_invoice' => $this->testData['tax_invoice'], 'type' => 'upi_qr']);
+
+        $this->assertNotNull($qrCode['image_content']);
+        $this->assertStringContainsString('gstIn=06AABCU9603R1ZR', $qrCode['image_content']);
+        $this->assertStringContainsString('gstBrkUp=GST:40.1|SGST:20.05|CGST:20.05|CESS:2', $qrCode['image_content']);
+        $this->assertStringContainsString('invoiceNo=INV001', $qrCode['image_content']);
+        $this->assertStringContainsString('invoiceDate=2020-05-2017:14:58', $qrCode['image_content']);
+
+        $this->runEntityAssertions($qrCode);
     }
 
     public function testCreateUpiQrCodeUpiIntentLinkExposure()

@@ -126,6 +126,8 @@ class Generator extends QrCode\Generator
             $content[Base\IntentParams::TXN_AMOUNT] = $qrCode->getAmount() / 100;
         }
 
+        $content = array_merge($content, InvoiceDetails::getTaxDetails($qrCode));
+
         return $url = 'upi://pay?' . str_replace(' ', '', urldecode(http_build_query($content)));
     }
 
@@ -409,5 +411,4 @@ class Generator extends QrCode\Generator
             $ypos += $line_height;
         }
     }
-
 }

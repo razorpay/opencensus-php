@@ -20,4 +20,19 @@ class IntentParams
     const PURPOSE       = 'purpose';
     const ORG_ID        = 'orgid';
     const SIGN          = 'sign';
+
+    // GST Params
+
+    const GSTIN         = 'gstIn';
+    const GST_BREAKUP   = 'gstBrkUp';
+    const INVOICE_NO    = 'invoiceNo';
+    const INVOICE_DATE  = 'invoiceDate';
+    const INVOICE_NAME  = 'invoiceName';
+    const GST           = 'GST';
+    const SGST          = 'SGST';
+    const CGST          = 'CGST';
+    const IGST          = 'IGST';
+    const CESS          = 'CESS';
+    const GST_INCENTIVE = 'GSTIncentive';
+    const GST_PCT       = 'GSTPCT';
 }

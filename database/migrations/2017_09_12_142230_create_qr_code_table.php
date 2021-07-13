@@ -81,6 +81,9 @@ class CreateQrCodeTable extends Migration
             $table->json(NonVaQrCode::NOTES)
                   ->nullable();
 
+            $table->json(NonVaQrCode::TAX_INVOICE)
+                  ->nullable();
+
             $table->string(NonVaQrCode::CUSTOMER_ID, Customer\Entity::ID_LENGTH)
                   ->nullable();
 

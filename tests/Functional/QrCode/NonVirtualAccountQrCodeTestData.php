@@ -95,4 +95,14 @@ return [
             ]
         ],
     ],
+
+    'tax_invoice' => [
+        'number'         => 'INV001',
+        'date'           => 1589994898,
+        'customer_name'  => 'Abc xyz',
+        'business_gstin' => '06AABCU9603R1ZR',
+        'gst_amount'     => 4010,
+        'cess_amount'    => 200,
+        'supply_type'    => 'intrastate'
+    ]
 ];
