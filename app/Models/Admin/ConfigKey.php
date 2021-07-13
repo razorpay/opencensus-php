@@ -225,7 +225,7 @@ class ConfigKey
 
     // This is the number of times we are going to save records in chunks. This will be revisited. It can be high
     // for some a/cs and low for some.
-    const ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL = self::PREFIX . 'account_statement_records_to_process_at_once';
+    const ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL = self::PREFIX . 'account_statement_records_to_save_in_total';
 
     // Account numbers for which new flow applies where we divide fetch and process flow
     const ACCOUNT_STATEMENT_V2_FLOW = self::PREFIX . 'account_statement_v2_flow';

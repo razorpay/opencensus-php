@@ -382,6 +382,21 @@ return [
         'test'       => env('AWS_RISK_WEBSITE_CHECKER_TEST_QUEUE'),
         'live'       => env('AWS_RISK_WEBSITE_CHECKER_LIVE_QUEUE'),
     ],
+
+    'rbl_banking_account_statement_fetch' => [
+        'test'       => env('AWS_RBL_BANKING_ACCOUNT_STATEMENT_FETCH_TEST_QUEUE'),
+        'live'       => env('AWS_RBL_BANKING_ACCOUNT_STATEMENT_FETCH_LIVE_QUEUE'),
+    ],
+
+    'icici_banking_account_statement_fetch' => [
+        'test'       => env('AWS_ICICI_BANKING_ACCOUNT_STATEMENT_FETCH_TEST_QUEUE'),
+        'live'       => env('AWS_ICICI_BANKING_ACCOUNT_STATEMENT_FETCH_LIVE_QUEUE'),
+    ],
+
+    'banking_account_statement_processor' => [
+        'test'       => env('AWS_BANKING_ACCOUNT_STATEMENT_PROCESSOR_TEST_QUEUE'),
+        'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_PROCESSOR_LIVE_QUEUE'),
+    ],
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings

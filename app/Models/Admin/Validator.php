@@ -157,6 +157,7 @@ class Validator extends Base\Validator
         ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS               => 'filled|array',
         ConfigKey::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING             => 'filled|array',
         ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE                           => 'filled|integer',
+        ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL                          => 'filled|integer',
         ConfigKey::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE                      => 'filled|integer',
         ConfigKey::ACCOUNT_STATEMENT_V2_FLOW                                           => 'filled|array',
         ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_PROCESS_AT_ONCE                        => 'filled|integer',
