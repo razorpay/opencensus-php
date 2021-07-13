@@ -23,14 +23,18 @@ class SkipOnboardingCommFromHubSpot extends Job
 
     private $partnerId;
 
+    private $partnerEmail;
+
     private $subMerchantEmails;
 
 
-    public function __construct(string $mode, string $partnerId, array $subMerchantEmails)
+    public function __construct(string $mode, string $partnerId, string $partnerEmail, array $subMerchantEmails)
     {
         parent::__construct($mode);
 
         $this->partnerId = $partnerId;
+
+        $this->partnerEmail = $partnerEmail;
 
         $this->subMerchantEmails = $subMerchantEmails;
     }
@@ -53,7 +57,10 @@ class SkipOnboardingCommFromHubSpot extends Job
 
             foreach ($this->subMerchantEmails as $subMerchantEmail)
             {
-                $merchantCore->skipMerchantOnboardingCommFromHubSpot($subMerchantEmail);
+                if ($this->partnerEmail !== $subMerchantEmail)
+                {
+                    $merchantCore->skipMerchantOnboardingCommFromHubSpot($subMerchantEmail);
+                }
             }
 
             $this->delete();

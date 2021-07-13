@@ -121,9 +121,11 @@ class Core extends Base\Core
         if (($feature->getName() === Feature::SKIP_SUBM_ONBOARDING_COMM) && ($feature->getEntityType() === Constants::MERCHANT)
             && ($this->mode === Mode::LIVE))
         {
-            $merchant = $this->repo->merchant->findOrFailPublic($entityId);
+            $partner = $this->repo->merchant->findOrFailPublic($entityId);
 
-            $appIds = (new Merchant\Core())->getPartnerApplicationIds($merchant);
+            $partnerEmail = $partner->getEmail();
+
+            $appIds = (new Merchant\Core())->getPartnerApplicationIds($partner);
 
             $subMerchants = $this->repo->merchant->fetchSubmerchantsByAppIds($appIds);
 
@@ -133,7 +135,7 @@ class Core extends Base\Core
 
             foreach ($subMerchantEmailChunks as $subMerchantEmailChunk)
             {
-                SkipOnboardingCommFromHubSpot::dispatch($this->mode, $entityId, $subMerchantEmailChunk);
+                SkipOnboardingCommFromHubSpot::dispatch($this->mode, $entityId, $partnerEmail, $subMerchantEmailChunk);
             }
         }
 
