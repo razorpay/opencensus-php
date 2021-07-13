@@ -417,6 +417,7 @@ class Gateway
         self::NETBANKING_DLB,
         self::NETBANKING_NSDL,
         self::TWID,
+        self::NETBANKING_CSB,
     ];
 
     /**
