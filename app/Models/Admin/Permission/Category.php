@@ -59,4 +59,5 @@ class Category
     const CONFIG_KEY                   = 'config_key';
     const FRESHCHAT                    = 'freshchat';
     const RECON                        = 'recon';
+    const FTS_DASHBOARD_ADMIN          = 'fts_dashboard_admin';
 }

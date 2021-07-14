@@ -8,6 +8,17 @@ use RZP\Models\BankingAccount;
 
 class Core extends Base\Core
 {
+    /**
+     * This function updates banking account details pertaining to a bank account
+     * It also returns the tokenised form of the input, so that the input can now be freely used in further flows
+     *
+     * @param array                            $input
+     * @param BankingAccount\Entity            $bankingAccount
+     * @param BankingAccount\Gateway\Processor $processor
+     *
+     * @return mixed
+     * @throws \RZP\Exception\LogicException
+     */
     public function updateBankingAccountDetails(array $input,
                                                 BankingAccount\Entity $bankingAccount,
                                                 BankingAccount\Gateway\Processor $processor)
@@ -52,5 +63,8 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($bankingAccountDetail);
         }
+
+        // Adding this return to reflect any tokenisation changes in the input
+        return $input;
     }
 }

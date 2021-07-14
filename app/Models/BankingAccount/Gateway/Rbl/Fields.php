@@ -52,6 +52,15 @@ class Fields
     const PASSWORD                          = 'auth_password';
     const MOZART_IDENTIFIER                 = 'mozart_identifier';
 
+    // Credentials for UPI
+    const PAYER_VPA                         = 'payerVpa';
+    const BCAGENT                           = 'bcagent';
+    const BCAGENT_USERNAME                  = 'bcagent_username';
+    const BCAGENT_PASSWORD                  = 'bcagent_password';
+    const HMAC_KEY                          = 'hmacKey';
+    const MRCH_ORG_ID                       = 'mrchOrgId';
+    const AGGR_ORG_ID                       = 'aggrOrgId';
+
     // Fields for Fetch Balance API
     const SOURCE_ACCOUNT                    = 'source_account';
     const SOURCE_ACCOUNT_NUMBER             = 'account_number';
@@ -77,6 +86,8 @@ class Fields
         self::CLIENT_SECRET,
         self::MERCHANT_PASSWORD,
         Entity::PASSWORD,
+        self::BCAGENT_PASSWORD,
+        self::HMAC_KEY,
     ];
 
     public static $rblFieldsToEntityMap = [
@@ -96,5 +107,15 @@ class Fields
       self::EMAIL_ID                => Entity::BENEFICIARY_EMAIL,
       self::PHONE_NUM               => Entity::BENEFICIARY_MOBILE,
       self::CORP_ID                 => Entity::REFERENCE1,
+    ];
+
+    public static $upiCredentialsFields = [
+        self::PAYER_VPA,
+        self::BCAGENT,
+        self::BCAGENT_USERNAME,
+        self::BCAGENT_PASSWORD,
+        self::HMAC_KEY,
+        self::MRCH_ORG_ID,
+        self::AGGR_ORG_ID,
     ];
 }

@@ -740,7 +740,7 @@ class PayoutLinks
 
     /**
      * 1. Setting is enabled
-     * 2. Is not RBL
+     * 2. Is featured enabled for merchant on RBL
      * 3. Amount less than 1 lac
      * @param array $payoutLinkInfo
      * @param array $settings

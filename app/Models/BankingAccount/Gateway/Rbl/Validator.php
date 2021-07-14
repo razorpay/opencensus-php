@@ -56,6 +56,13 @@ class Validator extends Base\Validator
         Fields::MERCHANT_EMAIL    => 'sometimes|email',
         Fields::CLIENT_ID         => 'sometimes|string',
         Fields::CLIENT_SECRET     => 'sometimes|string',
+        Fields::BCAGENT           => 'sometimes|string',
+        Fields::BCAGENT_USERNAME  => 'sometimes|string',
+        Fields::BCAGENT_PASSWORD  => 'sometimes|string',
+        Fields::HMAC_KEY          => 'sometimes|string',
+        Fields::PAYER_VPA         => 'sometimes|string',
+        Fields::MRCH_ORG_ID       => 'sometimes|string',
+        Fields::AGGR_ORG_ID       => 'sometimes|string',
     ];
 
     public static $accountActivateRules = [

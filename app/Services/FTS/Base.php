@@ -338,6 +338,10 @@ class Base
         {
             return $this->mockCreateFundTransferResponse();
         }
+        if ($endpoint === self::BULK_SOURCE_ACCOUNT_UPDATE_URI)
+        {
+            return $this->mockUpdateSourceAccountResponse();
+        }
     }
 
     public function mockCreateFundTransferResponse()
@@ -366,5 +370,21 @@ class Base
     protected function getAdminEmail(): string
     {
         return $this->auth->getDashboardHeaders()[self::ADMIN_EMAIL] ?? 'EMAIL_NOT_FOUND';
+    }
+
+    public function mockUpdateSourceAccountResponse()
+    {
+        $response = new Requests_Response();
+
+        $response->status_code = 200;
+
+        $content = json_encode([
+                                   Constants::STATUS  => 'updated',
+                                   Constants::MESSAGE => 'source account updated at FTS',
+                               ]);
+
+        $response->body = $content;
+
+        return $response;
     }
 }

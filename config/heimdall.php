@@ -1434,6 +1434,13 @@ return [
                 'assignable'    => true,
             ],
         ],
+
+        PermissionCategory::FTS_DASHBOARD_ADMIN => [
+            Permission::FTS_SOURCE_ACCOUNT_UPDATE => [
+                'description'   => 'Update FTS source account details. This may also update baking account details creds depending upon the source of the request',
+                'assignable'    => true,
+            ],
+        ]
     ],
 
     'workflows' => [

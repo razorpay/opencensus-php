@@ -8,10 +8,14 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\FTS\Transfer\Client;
+use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\FundTransfer\Attempt\Status;
+use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Gateway\File\Processor\Emi\Rbl;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\BankingAccount\Gateway\Rbl\Fields as RblGatewayFields;
 
 class FtsTest extends TestCase
 {
@@ -35,6 +39,27 @@ class FtsTest extends TestCase
         parent::tearDown();
 
         Carbon::setTestNow();
+    }
+
+    public function setUpForRblUpiCredsUpdateTest()
+    {
+        // Creates banking balance
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            1000000, '10000000000000',AccountType::DIRECT, Channel::RBL);
+
+        $bankingAccount    = $this->fixtures->create(
+            'banking_account',
+            [
+                'id'             => '1000000lcustba',
+                'account_type'   => AccountType::DIRECT,
+                'merchant_id'    => '10000000000000',
+                'account_number' => '2224440041626905',
+                'account_ifsc'   => 'RAZRB000000',
+                'status'         => 'activated'
+            ]);
+
+        $bankingAccount->balance()->associate($bankingBalance);
+        $bankingAccount->save();
     }
 
     public function testFtsTransferGet()
@@ -197,5 +222,73 @@ class FtsTest extends TestCase
         $this->ba->adminAuth(Mode::LIVE);
 
         $this->startTest();
+    }
+
+    public function testGracefulUpdateOfExistingSourceAccount()
+    {
+        $this->setUpForRblUpiCredsUpdateTest();
+
+        $this->ba->adminAuth();
+
+        $request = $this->generateMockRequestForGracefulSourceAccountUpdate();
+
+        $this->makeRequestAndGetContent($request);
+
+        $credentials = $request['content']['source_account']['credentials'];
+
+        $bankingAccountDetails = $this->getDbEntities('banking_account_detail',
+                                                      ['banking_account_id' => '1000000lcustba'])->toArray();
+
+        $vpa = $this->getDbEntities('vpa',
+                                    ['entity_id' => '1000000lcustba', 'entity_type' => 'banking_account'])->toArray();
+
+        $this->assertCount(count($credentials), $bankingAccountDetails);
+
+        foreach($bankingAccountDetails as $bankingAccountDetail)
+        {
+            $this->assertEquals('1000000lcustba', $bankingAccountDetail['banking_account_id']);
+            if(($bankingAccountDetail['gateway_key'] === RblGatewayFields::BCAGENT_PASSWORD) or
+               ($bankingAccountDetail['gateway_key'] === RblGatewayFields::HMAC_KEY))
+            {
+                // This is because these credentials will be tokenised.
+                $this->assertNotEquals($credentials[$bankingAccountDetail['gateway_key']],
+                                    $bankingAccountDetail['gateway_value']);
+            }
+            else
+            {
+                $this->assertEquals($credentials[$bankingAccountDetail['gateway_key']],
+                                    $bankingAccountDetail['gateway_value']);
+            }
+        }
+
+        $this->assertEquals('testusername', $vpa[0]['username']);
+        $this->assertEquals('rzp', $vpa[0]['handle']);
+        $this->assertEquals('banking_account', $vpa[0]['entity_type']);
+        $this->assertEquals('1000000lcustba', $vpa[0]['entity_id']);
+        $this->assertEquals('testusername@rzp', $vpa[0]['address']);
+    }
+
+    protected function generateMockRequestForGracefulSourceAccountUpdate()
+    {
+        return [
+            'url'     => '/fts/dashboard/source_account/update',
+            'method'  => 'PATCH',
+            'content' => [
+                'source_account' => [
+                    'id'                 => 'testSrcAcc1010',
+                    'banking_account_id' => '1000000lcustba',
+                    'credentials'        => [
+                        RblGatewayFields::BCAGENT          => 'RandomBcagent',
+                        RblGatewayFields::BCAGENT_USERNAME => 'username123',
+                        RblGatewayFields::BCAGENT_PASSWORD => 'passwordIsRedacted',
+                        RblGatewayFields::HMAC_KEY         => 'hMacKeyIsTested',
+                        RblGatewayFields::PAYER_VPA        => 'testUsername@rzp',
+                        RblGatewayFields::MRCH_ORG_ID      => 'TheMrchOrgId',
+                        RblGatewayFields::AGGR_ORG_ID      => 'TheAggrOrgId',
+                    ],
+                    'graceful_update'    => true,
+                ],
+            ],
+        ];
     }
 }

@@ -4885,6 +4885,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRIGGER_WEBHOOK_NOTIFICATIONS                                 = 'TRIGGER_WEBHOOK_NOTIFICATIONS';
     const MERCHANT_DOWNTIME_CREATION                                    = 'MERCHANT_DOWNTIME_CREATION';
 
+    // FTS Update Source Account
+    const FTS_UPDATE_EXISTING_SOURCE_ACCOUNT                           = 'FTS_UPDATE_EXISTING_SOURCE_ACCOUNT';
+    const FTS_PROCESS_REQUEST_TO_UPDATE_SOURCE_ACCOUNT_GRACEFULLY      = 'FTS_PROCESS_REQUEST_TO_UPDATE_SOURCE_ACCOUNT_GRACEFULLY';
+    const FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_TOKENISED_CREDS           = 'FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_TOKENISED_CREDS';
+    const FTS_PROCESS_REQUEST_SENT_TO_UPDATE_SOURCE_ACCOUNT_GRACEFULLY = 'FTS_PROCESS_REQUEST_SENT_TO_UPDATE_SOURCE_ACCOUNT_GRACEFULLY';
+    const FTS_PROCESS_REQUEST_TO_UPDATE_BANKING_ACCOUNT_DETAILS        = 'FTS_PROCESS_REQUEST_TO_UPDATE_BANKING_ACCOUNT_DETAILS';
+    const FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_INPUT_FOR_FTS             = 'FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_INPUT_FOR_FTS';
+    const FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_GRACEFULLY                = 'FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_GRACEFULLY';
+    const FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_GRACEFULLY_FAILED         = 'FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_GRACEFULLY_FAILED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
@@ -5068,6 +5078,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::FAV_UPDATE_FROM_FTS_WEBHOOK_CORE_HANDLER_SUCCESSFUL   => 'FAV update using FTS webhook successful',
         self::FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_FAV                => 'Function called to update FAV entity using the mapping created from the FTS webhook',
         self::FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_TRANSACTION_INIT   => 'Updating transaction entity for FAV as FTS webhook was received',
+        self::FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_TOKENISED_CREDS   => 'Input creds received from vault after tokenisation',
     ];
 
     public static $fileBasedReconTraceCodes = [

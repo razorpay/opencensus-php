@@ -2,6 +2,7 @@
 
 namespace RZP\Services\FTS;
 
+use Razorpay\Trace\Logger;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Vpa;
@@ -11,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Country;
 use RZP\Models\BankAccount;
+use RZP\Http\RequestHeader;
 use RZP\Models\WalletAccount;
 use RZP\Http\Request\Requests;
 use RZP\Models\BankingAccount;
@@ -23,11 +25,23 @@ use RZP\Models\NodalBeneficiary;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\FTS\CreateAccount as Account;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\Gateway\File\Processor\Emi\Rbl;
 use RZP\Models\FundTransfer\Attempt\Type as Product;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\BankingAccount\Gateway\Rbl\Fields as RblGatewayFields;
+use RZP\Models\BankingAccount\Detail\Core as BankingAccountDetailCore;
+use RZP\Models\BankingAccount\Detail\Entity as BankingAccountDetailEntity;
 
 class CreateAccount extends Base
 {
+    /**
+     * Request key to differentiate graceful update of FTS source accounts
+     */
+    const GRACEFUL_UPDATE      = 'graceful_update';
+    const SOURCE_ACCOUNT_CONST = 'source_account';
+    const CREDENTIALS          = 'credentials';
+    const BANKING_ACCOUNT_ID   = 'banking_account_id';
+
     protected $status;
 
     protected $account;
@@ -616,6 +630,56 @@ class CreateAccount extends Base
     //Bulk patch route function for fts source account update.
     public function updateSourceAccount(array $input)
     {
+        $this->trace->info(
+            TraceCode::FTS_UPDATE_EXISTING_SOURCE_ACCOUNT
+        );
+
+        // If we need to append existing source account credentials instead of entirely replacing them
+        if ((empty($input[self::SOURCE_ACCOUNT_CONST][self::GRACEFUL_UPDATE]) === false) and
+            (boolval($input[self::SOURCE_ACCOUNT_CONST][self::GRACEFUL_UPDATE]) === true))
+        {
+            // Remove sensitive fields for tracing purposes
+            $inputTrace = $input;
+            foreach(RblGatewayFields::$sensitiveAccountDetails as $sensitiveAccountDetailKey)
+            {
+                unset($inputTrace[self::SOURCE_ACCOUNT_CONST][Constants::CREDENTIALS][$sensitiveAccountDetailKey]);
+            }
+
+            $this->trace->info(
+                TraceCode::FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_GRACEFULLY,
+                [
+                    'graceful_update_flag' => $input[self::SOURCE_ACCOUNT_CONST][self::GRACEFUL_UPDATE],
+                    'input' => $inputTrace,
+                ]
+            );
+
+            // Creating a transaction as updating banking account details and updating source account
+            // should be one atomic operation
+            return $this->repo->transaction(function () use ($input)
+            {
+                try
+                {
+                    return $this->updateSourceAccountGracefully($input);
+                }
+                catch(\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Logger::CRITICAL,
+                        TraceCode::FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_GRACEFULLY_FAILED,
+                        [
+                            'source_account_id'  => $input[self::SOURCE_ACCOUNT_CONST][Constants::ID],
+                            'message' => $e->getMessage(),
+                        ]);
+
+                    return [
+                        'message' => 'Graceful update of source account/banking account details failed',
+                        'exception' => $e->getMessage(),
+                    ];
+                }
+            });
+        }
+
         return $this->createAndSendRequest(
             parent::BULK_SOURCE_ACCOUNT_UPDATE_URI,
             Requests::PATCH,
@@ -641,5 +705,143 @@ class CreateAccount extends Base
             parent::FTS_ONE_OFF_DB_MIGRATE_URL,
             Requests::PATCH,
             $input);
+    }
+
+    /**
+     * For now, we are only handling RBL CA banking accounts for UPI based banking accounts/source accounts.
+     * There is this weird ask from RBL where the UPI creds will be different from other creds,
+     * hence the existing RBL CA accounts need to be updated separately.
+     *
+     * Check "RBL UPI Creds Update" under FTS Dashboard in Admin Dashboard. Also check the existing banking accounts
+     *  update LMS form for the new fields
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
+     */
+    protected function updateSourceAccountGracefully(array $input)
+    {
+        $this->trace->info(
+            TraceCode::FTS_PROCESS_REQUEST_TO_UPDATE_SOURCE_ACCOUNT_GRACEFULLY,
+            [
+                'source_account_id' => $input[self::SOURCE_ACCOUNT_CONST][Constants::ID],
+            ]
+        );
+
+        /**
+         * This array will contain all the sensitive input details after tokenisation
+         * @var array
+         */
+        $tokenisedCreds = $this->updateBankingAccountDetails($input);
+
+        $this->trace->info(
+            TraceCode::FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_TOKENISED_CREDS,
+            [
+                'tokenised_creds' => $tokenisedCreds,
+            ]
+        );
+
+        // Replace the existing input with the tokenised creds
+        foreach ($tokenisedCreds as $key => $value)
+        {
+            $input[self::SOURCE_ACCOUNT_CONST][Constants::CREDENTIALS][$key] = $value;
+        }
+
+        $reformattedInput = $this->formatInputForGracefulSourceAccountUpdate($input);
+
+        $this->trace->info(
+            TraceCode::FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_INPUT_FOR_FTS,
+            [
+                'input' => $reformattedInput,
+            ]
+        );
+
+        $response = $this->createAndSendRequest(
+            parent::BULK_SOURCE_ACCOUNT_UPDATE_URI,
+            Requests::PATCH,
+            $reformattedInput);
+
+        $this->trace->info(
+            TraceCode::FTS_PROCESS_REQUEST_SENT_TO_UPDATE_SOURCE_ACCOUNT_GRACEFULLY,
+            [
+                'source_account_id' => $input[self::SOURCE_ACCOUNT_CONST][Constants::ID],
+                'response'          => $response,
+            ]
+        );
+
+        return $response;
+    }
+
+    /**
+     * -To append new creds on API monolith side as well. Banking account details table will get new records
+     *
+     * @param array $input
+     *
+     * @return mixed
+     */
+    protected function updateBankingAccountDetails(array $input)
+    {
+        $this->trace->info(
+            TraceCode::FTS_PROCESS_REQUEST_TO_UPDATE_BANKING_ACCOUNT_DETAILS,
+            [
+                'source_account_id' => $input[self::SOURCE_ACCOUNT_CONST][Constants::ID],
+            ]
+        );
+
+        // Need to append new creds on API monolith side as well. Banking account details table will get new records.
+        return $this->processRequestToUpdateBankingAccountDetailsGracefully($input[self::SOURCE_ACCOUNT_CONST]);
+    }
+
+    protected function processRequestToUpdateBankingAccountDetailsGracefully($srcAccDetails)
+    {
+        // Fetch all the objects related to the relevant banking account
+        $bankingAccountId     = $srcAccDetails[BankingAccountDetailEntity::BANKING_ACCOUNT_ID];
+        $bankingAccountEntity = $this->repo->banking_account->findOrFail($bankingAccountId);
+        $this->channel        = $bankingAccountEntity->getChannel();
+        $processor            = $this->bankingAccountCore->getProcessor($this->channel);
+
+        // This if-clause is put here to specifically cater to RBL UPI onboarding for now, will be made more generic
+        // if required in the future.
+        if(($this->channel === Channel::RBL) and
+           (empty($srcAccDetails[Constants::CREDENTIALS][RblGatewayFields::PAYER_VPA]) === false))
+        {
+            // Right now, we are only expecting the VPA of a merchant to be created once.
+            // Since the VPA address is generated manually, update requests for VPAs shall be rare.
+            // Hence, not checking for already existing VPAs for now.
+            $this->vpaCore->createForSource(
+                [
+                    (new Vpa\Entity())::ADDRESS => $srcAccDetails[Constants::CREDENTIALS][RblGatewayFields::PAYER_VPA],
+                ],
+                $bankingAccountEntity
+            );
+        }
+
+        // This call will tokenise the input and then store them in the DB/vault as needed. Check out the function
+        // implementation for details.
+        return (new BankingAccountDetailCore())->updateBankingAccountDetails(
+            $srcAccDetails[Constants::CREDENTIALS],
+            $bankingAccountEntity,
+            $processor
+        );
+    }
+
+    /**
+     * Modifies the graceful_update request to adhere to API<>FTS Contract
+     * @param array $input
+     *
+     * @return array[]
+     */
+    protected function formatInputForGracefulSourceAccountUpdate(array $input)
+    {
+        $input = $input[self::SOURCE_ACCOUNT_CONST];
+
+        return [
+            $input[Constants::ID] => [
+                Constants::CREDENTIALS   => $input[Constants::CREDENTIALS],
+                self::GRACEFUL_UPDATE => true,
+            ],
+        ];
     }
 }
