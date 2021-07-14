@@ -34,7 +34,7 @@ class Constants
             'track_event' => true,
             'id'          => 'merchant-risk-action-FOH',
             'filters'     => [
-                'tags' => ["merchant_risk_action_foh"]
+                'tags' => ["merchant_risk_action_foh","mra_foh"]
             ],
             'buttons'     => [
                 [
@@ -51,7 +51,7 @@ class Constants
             'track_event' => true,
             'id'          => 'merchant-risk-action-disabled',
             'filters'     => [
-                'tags' => ["merchant_risk_action_disabled"]
+                'tags' => ["merchant_risk_action_disabled","mra_disabled"]
             ],
             'buttons'     => [
                 [
