@@ -47,10 +47,6 @@ Route::group(['middleware' => ['web']], function () {
         ->where(['path' => '.*'])
         ->name('user');
 
-    Route::get('/extension/user/logout', 'UserController@getExtensionLogout')
-        ->name('extension_user_logout')
-        ->middleware(['jwt']);
-
     Route::post('/extension/user/logout', 'UserController@getExtensionLogout')
         ->name('extension_user_logout')
         ->middleware(['jwt']);
@@ -85,7 +81,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/resend_email_otp', 'UserController@resendEmailOtp');
         Route::post('/resend', 'MerchantController@postResendConfirmation');
         Route::get('/keepalive', 'UserController@getKeepAlive');
-        Route::get('/logout', 'UserController@getLogout');
         Route::post('/logout', 'UserController@getLogout');
 
         // This returns all the needed information
@@ -158,7 +153,6 @@ Route::group(['middleware' => ['web']], function () {
     {
         Route::any('/admin/stats/{id}', 'AdminController@getMerchantStats')->name('admin_merchant_stats');
         Route::get('/admin/user', 'AdminController@getAdmin');
-        Route::get('/admin/user/logout', 'AdminController@getLogout');
         Route::post('/admin/user/logout', 'AdminController@getLogout');
         Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
 
