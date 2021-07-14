@@ -48,11 +48,17 @@ export default class WhatsNew extends Component {
   whatsNew = false;
 
   componentWillMount() {
-    let notifications = window.notifications || [];
+    let notifications = [ ...window.notifications ] || [];
 
     //sort notifications in most recent order using start_timestamp
     if (notifications.length > 1) {
-      notifications = notifications.sort((first, second) => second.start_ts - first.start_ts);
+      notifications = notifications.sort((first, second) => {
+        if (first.id === 'projectNitro')
+          return -1;
+        if (second.id === 'projectNitro')
+          return 1;
+        return second.start_ts - first.start_ts;
+      });
     }
 
     this.setState({
@@ -305,7 +311,7 @@ export default class WhatsNew extends Component {
       'JUN21-SELFSERVE-CR&BL',
     ];
 
-    let cardsList = window.notifications.map((card, idx) => (
+    let cardsList = this.state.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>
         <NotificationCard
           {...card}
