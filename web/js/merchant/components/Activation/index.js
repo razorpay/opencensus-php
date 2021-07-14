@@ -359,6 +359,7 @@ export default class ActivationWizard extends React.Component {
 
     /* This calls for all fields instead of just file fields */
     NEEDS_CLARIFICATION_STEP &&
+      FORM_TABS_CONTENT[NEEDS_CLARIFICATION_STEP] &&
       FORM_TABS_CONTENT[NEEDS_CLARIFICATION_STEP].forEach(prepareFileFields);
   }
 
@@ -1103,7 +1104,7 @@ export default class ActivationWizard extends React.Component {
       } else {
         const isUnregisteredBusiness = this.isUnregBiz;
         let _data = { isUnregisteredBusiness };
-        if(data?.data) {
+        if (data?.data) {
           _data = {
             ...data.data,
             isUnregisteredBusiness,
