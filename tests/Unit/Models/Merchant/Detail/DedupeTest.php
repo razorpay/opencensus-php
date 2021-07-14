@@ -29,6 +29,7 @@ class DedupeTest extends OAuthTestCase
                 "entity_id" => $merchantId,
                 "fields" => $fields
             ]);
+
         
         return $mockMR;
     }

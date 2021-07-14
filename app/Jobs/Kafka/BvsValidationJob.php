@@ -12,12 +12,17 @@ class BvsValidationJob extends Job
      */
     public function handle()
     {
+        $taskId = gen_uuid();
+
+        $this->setTaskId($taskId);
+
         parent::handle();
 
         $tracePayload = [
             'job_attempts' => $this->attempts(),
             'mode' => $this->mode,
             'payload' => $this->getPayload(),
+            'task_id' => $taskId
         ];
         $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_JOB_REQUEST, $tracePayload);
 

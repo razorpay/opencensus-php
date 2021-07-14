@@ -25,4 +25,9 @@ class Job extends BaseJob
     {
         return $this->payload;
     }
+
+    public function setTaskId(string $taskId)
+    {
+        $this->taskId = $taskId;
+    }
 }
