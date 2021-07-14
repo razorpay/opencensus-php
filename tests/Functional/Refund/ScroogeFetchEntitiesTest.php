@@ -714,7 +714,7 @@ class ScroogeFetchEntitiesTest extends TestCase
                     ],
                     'upi_metadata' => [
                         'data' => NULL,
-                        'error' => 'NO_DATA_FOUND',
+                        'error' => NULL,
                     ]
                 ],
             ],
@@ -742,7 +742,7 @@ class ScroogeFetchEntitiesTest extends TestCase
                 'extra_data' => [
                     'ifsc_code' => [
                         'data' => NULL,
-                        'error' => 'NO_DATA_FOUND',
+                        'error' => NULL,
                     ]
                 ],
             ],
@@ -819,7 +819,7 @@ class ScroogeFetchEntitiesTest extends TestCase
                 'extra_data' => [
                     'is_fta_only_refund' => [
                         'data' => false,
-                        'error' => 'NO_DATA_FOUND',
+                        'error' => NULL,
                     ]
                 ],
             ],
@@ -1049,7 +1049,7 @@ class ScroogeFetchEntitiesTest extends TestCase
                     ],
                     'iin' => [
                         'data' => NULL,
-                        'error' => 'NO_DATA_FOUND'
+                        'error' => NULL,
                     ],
                     'payment' => [
                         'data' => [ 'card_id' => $paymentEntity['card_id']],
@@ -1333,7 +1333,7 @@ class ScroogeFetchEntitiesTest extends TestCase
                 'extra_data' => [
                     'payer_bank_account' => [
                         'data' => NULL,
-                        'error' => 'NO_DATA_FOUND',
+                        'error' => NULL,
                     ]
                 ],
             ],

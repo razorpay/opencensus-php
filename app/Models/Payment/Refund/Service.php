@@ -870,10 +870,6 @@ class Service extends Base\Service
                                     {
                                         $data = $upiMetadataEntity->toArray();
                                     }
-                                    else
-                                    {
-                                        $error = RefundConstants::NO_DATA_FOUND;
-                                    }
                                 }
                                 catch (\Exception $ex)
                                 {
@@ -928,10 +924,6 @@ class Service extends Base\Service
                                 {
                                     $data = $entity->toArray();
                                 }
-                                else
-                                {
-                                    $error = RefundConstants::NO_DATA_FOUND;
-                                }
                             }
                         }
 
@@ -955,8 +947,14 @@ class Service extends Base\Service
 
                             try
                             {
-                                $data = (method_exists($this, $func)) ? $this->$func($payment) : null;
-                                $error = empty($data) ? RefundConstants::NO_DATA_FOUND : null;
+                                if (method_exists($this, $func))
+                                {
+                                    $data = $this->$func($payment);
+                                }
+                                else
+                                {
+                                 $error = RefundConstants::FETCH_ENTITIES_ERROR;
+                                }
                             }
                             catch(\Exception $ex)
                             {
