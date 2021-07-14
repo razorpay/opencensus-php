@@ -3,10 +3,11 @@
 namespace RZP\Jobs;
 
 use App;
-use RZP\Constants\Entity;
-use RZP\Models\Payment;
-use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Transfer\Constant as TransferConstant;
+use RZP\Models\Transfer\OrderTransfer as OrderTransferProcessor;
+use RZP\Models\Transfer\PaymentTransfer as PaymentTransferProcessor;
 
 class TransferProcess extends Job
 {
@@ -16,21 +17,26 @@ class TransferProcess extends Job
 
     protected $repo;
 
-    protected $payment;
+    protected $sourceType;
 
-    protected $transferMode;
-
-    public $timeout = 900;
+    protected $paymentId;
 
     protected $queueConfigKey = 'transfer_process';
 
-    public function __construct(string $mode, $payment, $transfermode = Transfer\Constant::ORDER)
+    public $timeout = 900;
+
+    public function __construct(string $mode, string $sourceType, string $paymentId, $queueConfigKey = null)
     {
         parent::__construct($mode);
 
-        $this->payment = $payment;
+        $this->sourceType = $sourceType;
 
-        $this->transferMode = $transfermode;
+        $this->paymentId = $paymentId;
+
+        if (empty($queueConfigKey) === false)
+        {
+            $this->queueConfigKey = $queueConfigKey;
+        }
     }
 
     public function handle()
@@ -38,40 +44,38 @@ class TransferProcess extends Job
         parent::handle();
 
         $this->trace->info(
-            TraceCode::TRANSFER_PROCESS_QUEUE,
+            TraceCode::TRANSFER_PROCESS_JOB_STARTED,
             [
-                'payment_id'   => $this->payment,
-                'transfermode' => $this->transferMode
+                'source_type'   => $this->sourceType,
+                'payment_id'    => $this->paymentId,
             ]
         );
 
         try
         {
-            $this->payment = $this->getPaymentEntity($this->payment);
+            $payment = $this->getPaymentEntity($this->paymentId);
 
-            $transfer = null;
+            $transferProcessor = $this->getTransferProcessor($payment);
 
-            if ($this->transferMode === Transfer\Constant::ORDER)
-            {
-                $transfer = new Transfer\OrderTransfer($this->payment);
-            }
-            else
-            {
-                $transfer = new Transfer\PaymentTransfer($this->payment);
-            }
+            $transferProcessor->process();
 
-            $transfer->process();
-
-        }catch (\Exception $ex)
+            $this->trace->info(
+                TraceCode::TRANSFER_PROCESS_JOB_COMPLETED,
+                [
+                    'source_type'   => $this->sourceType,
+                    'payment_id'    => $this->paymentId,
+                ]
+            );
+        }
+        catch (\Exception $ex)
         {
             $this->trace->traceException(
                 $ex,
                 null,
-                TraceCode::TRANSFER_FAILURE,
+                TraceCode::TRANSFER_PROCESS_JOB_FAILED,
                 [
-                    'message'     => 'transfer failed',
-                    'payment_id'   => $this->payment,
-                    'transfermode' => $this->transferMode,
+                    'source_type'   => $this->sourceType,
+                    'payment_id'    => $this->paymentId,
                 ]
             );
         }
@@ -81,7 +85,7 @@ class TransferProcess extends Job
         }
     }
 
-    private  function getPaymentEntity($paymentId)
+    private function getPaymentEntity(string $id)
     {
         $app = App::getFacadeRoot();
 
@@ -89,22 +93,33 @@ class TransferProcess extends Job
 
         try
         {
-            return $this->repo->payment->findOrFailPublic($paymentId);
+            return $this->repo->payment->findOrFail($id);
         }
         catch (\Exception $ex)
         {
             $this->trace->traceException(
                 $ex,
                 null,
-                TraceCode::TRANSFER_PROCESS_PAYMENT_ID_NOT_FOUND,
+                TraceCode::TRANSFER_PROCESS_INVALID_PAYMENT_ID,
                 [
-                    'message'     => 'paymentId not found',
-                    'payment_id'   => $this->payment,
-                    'transfermode' => $this->transferMode,
+                    'source_type'   => $this->sourceType,
+                    'payment_id'    => $id,
                 ]
             );
 
             throw $ex;
+        }
+    }
+
+    private function getTransferProcessor(Payment $payment)
+    {
+        if ($this->sourceType === TransferConstant::PAYMENT)
+        {
+            return new PaymentTransferProcessor($payment);
+        }
+        else
+        {
+            return new OrderTransferProcessor($payment);
         }
     }
 }

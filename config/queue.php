@@ -181,6 +181,11 @@ return [
         'test'       => env('AWS_ORDER_TRANSFER_TEST_QUEUE'),
         'live'       => env('AWS_ORDER_TRANSFER_LIVE_QUEUE'),
     ],
+    // Second transfer process queue (for key merchants).
+    'transfer_process_key_merchants' => [
+        'test'       => env('AWS_TRANSFER_PROCESS_TEST_QUEUE'),
+        'live'       => env('AWS_TRANSFER_PROCESS_LIVE_QUEUE'),
+    ],
     // settlement related QUEUES
     'settlement_create' => [
         'test'       => env('AWS_SETTLEMENT_CREATE_TEST_QUEUE'),

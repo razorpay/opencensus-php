@@ -19,7 +19,6 @@ use RZP\Models\Transaction;
 use RZP\Jobs\TransferProcess;
 use RZP\Models\Settlement\Bucket;
 use RZP\Listeners\ApiEventSubscriber;
-use RZP\Models\Merchant\RazorxTreatment;
 
 class Core extends Base\Core
 {
@@ -876,5 +875,19 @@ class Core extends Base\Core
 
             (new Metric())->pushTransferProcessingTimeMetrics($sourceType, $processingTime);
         }
+    }
+
+    public function dispatchForTransferProcessing(string $sourceType, Payment\Entity $payment)
+    {
+        $queueConfigKey = 'transfer_process';
+
+        $merchant = $payment->merchant;
+
+        if ($merchant->isRouteKeyMerchant() === true)
+        {
+            $queueConfigKey = 'transfer_process_key_merchants';
+        }
+
+        TransferProcess::dispatch($this->mode, $sourceType, $payment->getId(), $queueConfigKey);
     }
 }
