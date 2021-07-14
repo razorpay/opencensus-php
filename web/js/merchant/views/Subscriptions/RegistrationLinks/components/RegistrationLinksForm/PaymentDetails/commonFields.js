@@ -2,6 +2,14 @@ import Input from 'common/new-ui/Input';
 
 import { validateBeneficiaryName } from 'common/utils/validators';
 
+const getAccountTypes = (isNACHPayment) => {
+  if (isNACHPayment) {
+    return [...OPTIONS, ...NACH_OPTIONS];
+  }
+
+  return OPTIONS;
+};
+
 export const BankDetails = ({
   hideBankName,
   disabled,
@@ -48,6 +56,7 @@ export const BankDetails = ({
 export const AccountDetails = ({
   required,
   disabled,
+  isNACHPayment = false,
   accountType,
   beneficiaryName,
   bankAccountNumber,
@@ -85,7 +94,7 @@ export const AccountDetails = ({
     <Input.Select
       name="accountType"
       data-name="account_type"
-      options={['--Select Account Type--', ...OPTIONS]}
+      options={['--Select Account Type--', ...getAccountTypes(isNACHPayment)]}
       onBlur={onBlurElement}
       placeholder="Account Type"
       value={accountType}
@@ -101,5 +110,20 @@ const OPTIONS = [
   {
     label: 'Current',
     name: 'current',
+  },
+];
+
+const NACH_OPTIONS = [
+  {
+    label: 'SB-NRE',
+    name: 'nre',
+  },
+  {
+    label: 'SB-NRO',
+    name: 'nro',
+  },
+  {
+    label: 'Cash Credit',
+    name: 'cc',
   },
 ];

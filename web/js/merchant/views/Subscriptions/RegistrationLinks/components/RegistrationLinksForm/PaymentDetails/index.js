@@ -9,6 +9,7 @@ import { checkIfAmount } from './utils';
 
 export default (props) => {
   const {
+    showNACHAccountTypes,
     showAmountField,
     amount,
     accountType,
@@ -79,6 +80,7 @@ export default (props) => {
 
       {isNACHPayment && (
         <NACH
+          showNACHAccountTypes={showNACHAccountTypes}
           isNachFormAval={isNachFormAval}
           bankName={bankName}
           accountType={accountType}

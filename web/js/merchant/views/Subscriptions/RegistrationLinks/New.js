@@ -552,6 +552,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       case 1: {
         return (
           <PaymentDetailsForm
+            showNACHAccountTypes={this.props.user.isRecurringMoreAccountType}
             showAmountField={this.props.user.isEmandateNonzeroAmountEnabled}
             amount={formFields.amount}
             accountType={formFields.accountType}

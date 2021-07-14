@@ -1068,6 +1068,10 @@ export default class User {
   get isAadharEkycMandatory() {
     return this.getExpStatus('mandatory_aadhar_ekyc');
   }
+
+  get isRecurringMoreAccountType() {
+    return this.getExpStatus('recurring_more_account_type');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

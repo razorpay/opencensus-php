@@ -252,7 +252,7 @@ export default class TokenDetailsContainer extends Component {
                       <MandatePaymentMethod mandate={entity} />
                     </EntityDetailRow>
 
-                    {this.isEmandateMethod && (
+                    {(this.isEmandateMethod || this.isNACHMethod) && (
                       <ShowWhen featureEnabled="token_bank_details">
                         <EntityDetailRow label="Bank Account Details">
                           <MandateBankAccountDetails

@@ -1580,7 +1580,8 @@ class Service extends Base\Service
             'mandatory_aadhar_ekyc',
             'rx_email_integration_rollout',
             'rx_taxpayments_tin_change',
-            'pb_new_success_screen'
+            'pb_new_success_screen',
+            'recurring_more_account_type'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
