@@ -66,13 +66,49 @@ class RefundController extends Controller
         return ApiResponse::json($fee);
     }
 
+    /**
+     * Does necessary payment update for refund
+     * Supports compensatory update
+     *
+     * returns error if update fails
+     *
+     * @return mixed
+     */
+    public function scroogeRefundsPaymentUpdate()
+    {
+        $input = Request::all();
+
+        $fee = $this->service()->scroogeRefundsPaymentUpdate($input);
+
+        return ApiResponse::json($fee);
+    }
+
+    /**
+     * Does balance check, transaction create and payment update for refund and returns necessary data
+     *
+     * @return mixed
+     */
+    public function scroogeRefundsTransactionCreate()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->scroogeRefundsTransactionCreate($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Fetch refund creation data for display logic on FE apps
+     *
+     * @return mixed
+     */
     public function fetchRefundCreationData()
     {
         $input = Request::all();
 
-        $fee = $this->service()->fetchRefundCreationData($input);
+        $response = $this->service()->fetchRefundCreationData($input);
 
-        return ApiResponse::json($fee);
+        return ApiResponse::json($response);
     }
 
     public function generateRefunds()

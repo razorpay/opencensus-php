@@ -78,7 +78,7 @@ class Refund extends Base
             return ($paymentTxn->isSettled() ? $nowTimestamp : $paymentTxn->getSettledAt());
         }
 
-        if (($payment->isAuthorized() === true) and
+        if (($payment->hasBeenAuthorized() === true) and
             ($refund->isDirectSettlementWithoutRefund() === true))
         {
             return $nowTimestamp;
@@ -92,12 +92,12 @@ class Refund extends Base
         $payment = $this->source->payment;
         $refund  = $this->source;
 
-        if ($payment->isCaptured() === true)
+        if ($payment->hasBeenCaptured() === true)
         {
             return true;
         }
 
-        if (($payment->isAuthorized() === true) and
+        if (($payment->hasBeenAuthorized() === true) and
             ($refund->isDirectSettlementWithoutRefund() === true))
         {
             return true;
@@ -145,7 +145,7 @@ class Refund extends Base
 
         $payment = $refund->payment;
 
-        if (($payment->isCaptured() === true) or
+        if (($payment->hasBeenCaptured() === true) or
             ($refund->isDirectSettlementWithoutRefund() === true))
         {
             if ($refund->isRefundSpeedInstant() === true)

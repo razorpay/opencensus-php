@@ -43,6 +43,7 @@ use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
+use RZP\Models\Payment\Refund\Helpers as RefundHelpers;
 use RZP\Models\Settlement\Holidays as SettlementHoliday;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
@@ -1535,8 +1536,8 @@ trait Refund
                     // calculating dynamic error description
                     $desc = ((isset($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === true) and
                              (is_int($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === false)) ?
-                        RefundConstants::getBlockRefundsMessage(0):
-                        RefundConstants::getBlockRefundsMessage(0, $supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]);
+                        RefundHelpers::getBlockRefundsMessage(0):
+                        RefundHelpers::getBlockRefundsMessage(0, $supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]);
 
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_REFUND_NOT_SUPPORTED_BY_THE_BANK,
@@ -1559,8 +1560,8 @@ trait Refund
                         // calculating dynamic error description
                         $errorMsg = ((isset($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === true) and
                                      (is_int($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === false)) ?
-                            RefundConstants::getBlockRefundsMessage(1):
-                            RefundConstants::getBlockRefundsMessage(1, $supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]);
+                            RefundHelpers::getBlockRefundsMessage(1):
+                            RefundHelpers::getBlockRefundsMessage(1, $supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]);
 
                         $errorCode = ErrorCode::BAD_REQUEST_ONLY_INSTANT_REFUND_SUPPORTED;
                     }
@@ -1569,8 +1570,8 @@ trait Refund
                         // calculating dynamic error description
                         $errorMsg = ((isset($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === true) and
                                      (is_int($supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]) === false)) ?
-                            RefundConstants::getBlockRefundsMessage(0):
-                            RefundConstants::getBlockRefundsMessage(0, $supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]);
+                            RefundHelpers::getBlockRefundsMessage(0):
+                            RefundHelpers::getBlockRefundsMessage(0, $supportData[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND]);
 
                         $errorCode = ErrorCode::BAD_REQUEST_REFUND_NOT_SUPPORTED_BY_THE_BANK;
                     }
@@ -1604,6 +1605,159 @@ trait Refund
             {
                 $this->validateMerchantBalance($refund, 'refund');
             }
+        }
+    }
+
+    public function refundPaymentUpdate($payment, array $refundInput)
+    {
+        $this->setPayment($payment);
+
+        $refundId = $refundInput[RefundEntity::ID];
+
+        $amount = intval($refundInput[RefundEntity::AMOUNT]);
+
+        $baseAmount = intval($refundInput[RefundEntity::BASE_AMOUNT]);
+
+        // Updates payment attributes. Throws exception on failure
+        $this->handlePaymentUpdate($payment, $refundId, $amount, $baseAmount);
+    }
+
+    protected function handlePaymentUpdate($payment, string $refundId, int $refundAmount, int $refundBaseAmount)
+    {
+        // setting strict attribute to true on mutex acquire so that updates dont happen on redis exceptions
+        $this->mutex->acquireAndRelease(
+            $payment->getId(),
+            function() use ($payment, $refundId, $refundAmount, $refundBaseAmount)
+            {
+                if ($payment->isExternal() == false)
+                {
+                    $payment->reload();
+                }
+
+                $this->trace->info(
+                    TraceCode::REFUND_PAYMENT_UPDATE_INITIATED,
+                    [
+                        'refund_id'                    => $refundId,
+                        'payment_id'                   => $payment->getId(),
+                        'payment_status'               => $payment->getStatus(),
+                        'payment_refund_status'        => $payment->getRefundStatus(),
+                        'payment_amount_refunded'      => $payment->getAmountRefunded(),
+                        'payment_base_amount_refunded' => $payment->getBaseAmountRefunded(),
+                    ]);
+
+                if ($refundBaseAmount >= 0)
+                {
+                    if ($payment->isFullyRefunded() === true)
+                    {
+                        throw new Exception\InvalidArgumentException(
+                            'Can only refund a non-refunded payment but here ' .
+                            'the status is ' . $payment->getStatus());
+                    }
+
+                    // update the payment entity for refund
+                    $this->payment->refundAmount($refundAmount, $refundBaseAmount);
+                }
+                // amount will be negative for compensatory actions
+                else
+                {
+                    $amountRefunded = $payment->getAmountRefunded();
+
+                    $baseAmountRefunded = $payment->getBaseAmountRefunded();
+
+                    $amountRefunded = $amountRefunded + $refundAmount;
+                    $baseAmountRefunded = $baseAmountRefunded + $refundBaseAmount;
+
+                    $payment->setAmountRefunded($amountRefunded);
+                    $payment->setBaseAmountRefunded($baseAmountRefunded);
+
+                    $this->resetPaymentStatusAndRefundStatus($payment);
+                }
+
+                $this->repo->saveOrFail($payment);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            0,
+            100,
+            200,
+            true);
+
+        $this->trace->info(
+            TraceCode::REFUND_PAYMENT_UPDATE_COMPLETE,
+            [
+                'refund_id'                    => $refundId,
+                'payment_id'                   => $payment->getId(),
+                'payment_status'               => $payment->getStatus(),
+                'payment_refund_status'        => $payment->getRefundStatus(),
+                'payment_amount_refunded'      => $payment->getAmountRefunded(),
+                'payment_base_amount_refunded' => $payment->getBaseAmountRefunded(),
+            ]);
+    }
+
+    public function scroogeRefundTransactionCreate($payment, array $refundInput)
+    {
+        $this->setPayment($payment);
+
+        $refundId = $refundInput[RefundEntity::ID];
+
+        $amount = intval($refundInput[RefundEntity::AMOUNT]);
+
+        $baseAmount = intval($refundInput[RefundEntity::BASE_AMOUNT]);
+
+        $refundCreateInput = [
+            RefundEntity::AMOUNT => $amount,
+        ];
+
+        $refund = (new Payment\Refund\Entity)->build($refundCreateInput, $payment);
+
+        $refund->merchant()->associate($this->merchant);
+
+        $refund->balance()->associate($this->merchant->primaryBalance);
+
+        // Setting the original refund id created on scrooge
+        $refund->setId($refundId);
+
+        $refund->setRawBaseAmount($baseAmount);
+
+        $refund->setSpeedDecisioned($refundInput[RefundEntity::SPEED_DECISIONED]);
+
+        $refund->setGateway($refundInput[RefundEntity::GATEWAY]);
+
+        if (empty($refundInput[RefundConstants::MODE]) === false)
+        {
+            $refund->setModeRequested($refundInput[RefundConstants::MODE]);
+        }
+
+        // Validates and throws exception in case of insufficient balance
+        $this->validateMerchantBalance($refund, 'refund');
+
+        // Updates payment attributes. Throws exception on failure
+        $this->handlePaymentUpdate($payment, $refundId, $amount, $baseAmount);
+
+        try
+        {
+            $transaction = $this->repo->transaction(function() use ($refund, $payment)
+            {
+                return $this->createTransactionForRefund($refund, $payment);
+            });
+
+            $transactionId = null;
+
+            // transaction will not be created for cases like non captured payment with no transaction
+            // if there is an actual error in transaction create, an exception will be thrown
+            if (empty($transaction) === false)
+            {
+                $transactionId = $transaction->getId();
+            }
+
+            return RefundHelpers::getScroogeRefundTransactionCreateResponse(null, false, $transactionId);
+        }
+        catch (\Exception $ex)
+        {
+            // catching exception here specifically
+            // because payment is already updated by now but transaction create failed
+            // so we set compensate flag true and scrooge will handle compensating the payment
+            return RefundHelpers::getScroogeRefundTransactionCreateResponse($ex, true);
         }
     }
 
@@ -1755,7 +1909,7 @@ trait Refund
                     $data[RefundConstants::INSTANT_REFUND][RefundConstants::IR_OPTION] = RefundConstants::IR_OPTION_ONLY_OPTIMUM;
 
                     // Message : only instant refund supported
-                    $data[RefundConstants::MESSAGES][RefundConstants::MESSAGE_KEY_REFUNDS_ON_AGED_PAYMENTS][RefundConstants::MESSAGE_REASON] = RefundConstants::getBlockRefundsMessage(1);
+                    $data[RefundConstants::MESSAGES][RefundConstants::MESSAGE_KEY_REFUNDS_ON_AGED_PAYMENTS][RefundConstants::MESSAGE_REASON] = RefundHelpers::getBlockRefundsMessage(1);
                 }
                 // If merchants default refund is optimum, use defaultOptimum option
                 else if ($payment->merchant->getDefaultRefundSpeed() === RefundSpeed::OPTIMUM)

@@ -38,6 +38,7 @@ use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Payment\Refund\Core as RefundCore;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\Payment\Refund\Helpers as RefundHelpers;
 use RZP\Models\Merchant\Email\Type as MerchantEmailType;
 use RZP\Models\Merchant\Email\Core as MerchantEmailCore;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -1176,6 +1177,84 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         return $this->getNewProcessor($merchant)->fetchFeeForRefundAmount($payment, $input);
+    }
+
+    // updates payment for a refund creation/reversal
+    // bulk route. consumed by scrooge for re arch refunds
+    public function scroogeRefundsPaymentUpdate(array $input)
+    {
+        (new Validator)->validateInput('refunds_payment_update', $input);
+
+        $this->trace->info(TraceCode::REFUNDS_PAYMENT_UPDATE_INITIATED, $input);
+
+        $result = [];
+
+        foreach ($input[RefundConstants::REFUNDS] as $refundInput)
+        {
+            $result[$refundInput[RefundConstants::ID]] = [
+                RefundConstants::ERROR => NULL,
+            ];
+
+            try
+            {
+                $paymentId = $refundInput[Entity::PAYMENT_ID];
+
+                $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+                $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
+
+                $this->getNewProcessor($merchant)->refundPaymentUpdate($payment, $refundInput);
+            }
+            catch (\Exception $ex)
+            {
+                $result[$refundInput[RefundConstants::ID]] = [
+                    RefundConstants::ERROR => [
+                        RefundConstants::CODE => $ex->getCode(),
+                        RefundConstants::MESSAGE => $ex->getMessage(),
+                    ]
+                ];
+            }
+        }
+
+        $this->trace->info(TraceCode::REFUNDS_PAYMENT_UPDATE_SUMMARY, $result);
+
+        return $result;
+    }
+
+    // creates transaction and updates payment for refunds created on scrooge
+    public function scroogeRefundsTransactionCreate(array $refundInput)
+    {
+        (new Validator)->validateInput('refunds_transaction_create', $refundInput);
+
+        // mode must be set for instant refunds as its needed for pricing calculation. throws exception otherwise
+        if ((empty($refundInput[RefundEntity::MODE]) === true) and
+            (in_array($refundInput[RefundEntity::SPEED_DECISIONED], Speed::REFUND_INSTANT_SPEEDS, true) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException('mode must be set for instant refund speeds');
+        }
+
+        $this->trace->info(TraceCode::SCROOGE_REFUND_TRANSACTION_CREATE_INITIATED, $refundInput);
+
+        $result = [];
+
+        try
+        {
+            $paymentId = $refundInput[Entity::PAYMENT_ID];
+
+            $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+            $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
+
+            $result = $this->getNewProcessor($merchant)->scroogeRefundTransactionCreate($payment, $refundInput);
+        }
+        catch (\Exception $ex)
+        {
+            $result = RefundHelpers::getScroogeRefundTransactionCreateResponse($ex);
+        }
+
+        $this->trace->info(TraceCode::SCROOGE_REFUND_TRANSACTION_CREATE_COMPLETE, $result);
+
+        return $result;
     }
 
     public function fetchRefundCreationData(array $input)

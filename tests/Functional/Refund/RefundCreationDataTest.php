@@ -2,9 +2,11 @@
 
 namespace RZP\Tests\Functional\Refund;
 
-use RZP\Models\Payment\Refund\Constants as RefundConstants;
-use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Services\Scrooge;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\Payment\Refund\Helpers as RefundHelpers;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
+
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -273,7 +275,7 @@ class RefundCreationDataTest extends TestCase
             RefundConstants::IS_TRANSFERS_REVERSAL_ALLOWED => false,
             RefundConstants::MESSAGES => [
                 RefundConstants::MESSAGE_KEY_REFUNDS_ON_AGED_PAYMENTS => [
-                    RefundConstants::MESSAGE_REASON => RefundConstants::getBlockRefundsMessage(1)
+                    RefundConstants::MESSAGE_REASON => RefundHelpers::getBlockRefundsMessage(1)
                 ]
             ]
         ];
@@ -333,7 +335,7 @@ class RefundCreationDataTest extends TestCase
             RefundConstants::IS_TRANSFERS_REVERSAL_ALLOWED => false,
             RefundConstants::MESSAGES => [
                 RefundConstants::MESSAGE_KEY_REFUNDS_ON_AGED_PAYMENTS => [
-                    RefundConstants::MESSAGE_REASON => RefundConstants::getBlockRefundsMessage()
+                    RefundConstants::MESSAGE_REASON => RefundHelpers::getBlockRefundsMessage()
                 ]
             ]
         ];

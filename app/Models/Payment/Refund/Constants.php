@@ -196,22 +196,7 @@ class Constants
     const IS_UPI_OTM               = 'is_upi_otm';
     const CURRENCY_CONVERSION_RATE = 'currency_conversion_rate';
 
-    // Dynamic error messages for refund creation blocking
-    // type 0 for neither instant nor gateway refund supported
-    // type 1 for only instant refund supported
-    public static function getBlockRefundsMessage($type = 0, $days = 180)
-    {
-        $months = intdiv($days, 30);
-
-        switch ($type)
-        {
-            case 0 :
-                return 'Refund is not supported by the bank because the payment is more than ' . $months . ' months old';
-
-            case 1 :
-                return 'Payment is more than ' . $months . ' months old, only instant refund is supported';
-        }
-
-        return '';
-    }
+    // to revert payment attributes on transaction create failure
+    const COMPENSATE_PAYMENT = 'compensate_payment';
+    const TRANSACTION_ID     = 'transaction_id';
 }

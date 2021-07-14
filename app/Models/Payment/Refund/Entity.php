@@ -987,6 +987,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BASE_AMOUNT, $baseAmount);
     }
 
+    // Original setBaseAmount setter does custom calculation. This can be used to avoid that
+    public function setRawBaseAmount(int $baseAmount)
+    {
+        $this->setAttribute(self::BASE_AMOUNT, $baseAmount);
+    }
+
     public function incrementAttempts()
     {
         $attempts = $this->getAttribute(self::ATTEMPTS);

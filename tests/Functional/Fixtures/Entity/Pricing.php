@@ -1301,6 +1301,29 @@ class Pricing extends Base
         $this->addPricingRulesToDb($rows);
     }
 
+    public function createInstantRefundsModeLevelPricingPlanV2NEFT()
+    {
+        $pricingPlanId = Models\Pricing\Fee::DEFAULT_INSTANT_REFUNDS_PLAN_V2_ID;
+
+        $rows = [
+            [
+                'id'                  => '1zE3CYqf1zby00',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'NEFT',
+                'fixed_rate'          => 350,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 50000,
+                'org_id'              => '100000razorpay',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+    }
+
     protected function getDefaultCommissionPlanArray()
     {
         $rows = [

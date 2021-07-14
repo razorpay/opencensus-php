@@ -162,6 +162,24 @@ class Validator extends Base\Validator
         'mode'          => 'sometimes|filled|string|in:IMPS,UPI,NEFT,RTGS,IFT,CT',  // instant refunds mode
     ];
 
+    protected static $refundsPaymentUpdateRules = [
+        'refunds'               => 'required|array|max:1000',
+        'refunds.*.id'          => 'required|unsigned_id',
+        'refunds.*.payment_id'  => 'required|unsigned_id',
+        'refunds.*.amount'      => 'required|integer',
+        'refunds.*.base_amount' => 'required|integer',
+    ];
+
+    protected static $refundsTransactionCreateRules = [
+        'id'               => 'required|unsigned_id',
+        'payment_id'       => 'required|unsigned_id',
+        'amount'           => 'required|integer',
+        'base_amount'      => 'required|integer',
+        'speed_decisioned' => 'required|string|in:instant,optimum,normal',
+        'gateway'          => 'required|string',
+        'mode'             => 'sometimes|string|in:IMPS,UPI,NEFT,RTGS,IFT,CT',  // instant refunds mode
+    ];
+
     protected static $setUnprocessedRefundsConfigRules = [
         'refund_ids'   => 'required|sequential_array|max:5000',
         'refund_ids.*' => 'required|filled|unsigned_id|size:14',

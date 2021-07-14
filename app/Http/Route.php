@@ -204,11 +204,11 @@ class Route
         'refund_fetch_multiple'                    => ['get',      'refunds',                                        'RefundController@getRefunds'                                       ],
         'refund_fetch_fee'                         => ['get',      'refunds/fee',                                    'RefundController@getRefundFee'                                     ],
         'refund_scrooge_fetch_fee'                 => ['get',      'refunds/scrooge_fetch_fee',                      'RefundController@scroogeFetchRefundFee'                            ],
+        'refund_scrooge_payment_update'            => ['post',     'refunds/payment_update',                         'RefundController@scroogeRefundsPaymentUpdate'                      ],
+        'refund_scrooge_transaction_create'        => ['post',     'refunds/transaction_create',                     'RefundController@scroogeRefundsTransactionCreate'                  ],
         'refund_fetch_creation_data'               => ['get',      'refunds/fetch_creation_data',                    'RefundController@fetchRefundCreationData'                          ],
         'refund_generate_excel'                    => ['post',     'refunds/excel',                                  'RefundController@generateRefunds'                                  ],
         'refund_verify_multiple'                   => ['post',     'refunds/{ids}/verify',                           'RefundController@postRefundVerifyMultiple'                         ],
-// deprecating the route
-//        'refund_create_missing_txn'                => ['post',     'refunds/transaction',                            'RefundController@postRefundsTransactions'                          ],
         'refund_gateway_refunded_txns'             => ['post',     'refunds/gateway_refunded/transaction',           'RefundController@postGatewayRefundedTransactions'                  ],
         'refund_retry_failed'                      => ['post',     'refunds/retry/failed',                           'RefundController@postRetryFailedRefunds'                           ],
         'refund_verify_failed'                     => ['post',     'refunds/{id}/retry',                             'RefundController@postRefundRetry'                                  ],
@@ -3287,6 +3287,8 @@ class Route
         'low_balance_config_alert_cron',
         'merchant_notification_config_alert_cron',
         'refund_scrooge_fetch_fee',
+        'refund_scrooge_payment_update',
+        'refund_scrooge_transaction_create',
 
         // account service routes
         'account_service_details_fetch',
@@ -9468,6 +9470,8 @@ class Route
             'fund_transfer_attempt_modes',
             'scrooge_refund_reference1_bulk_update',
             'refund_scrooge_fetch_fee',
+            'refund_scrooge_payment_update',
+            'refund_scrooge_transaction_create',
         ],
 
         'thirdwatch_reports' => [
