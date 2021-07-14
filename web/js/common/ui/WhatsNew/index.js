@@ -11,7 +11,7 @@ import { showAcceptPaymentsModal } from 'merchant/reducers/home';
 import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnouncementV2';
 import OpfinAnnouncement10L from '../NotificationsDropdown/components/OpfinAnnouncement10L';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, isMobileAndTablet } from 'common/utils/rzp-utils';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { sendDataToSalesForce } from 'common/utils/common-api';
 import './WhatsNew.styl';
@@ -20,6 +20,7 @@ import {
   getNotificationTrackingProperties,
   getExperimentVersion,
 } from './common';
+import MobileAppQRCode from 'merchant/components/MobileAppQRCode';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -128,6 +129,23 @@ export default class WhatsNew extends Component {
     });
   };
 
+  onMobileAppCampaignCTAClick = () => {
+    // handle the popup open here. refer showRazorpayXNitroAnnouncement function
+    const { user } = this.props;
+    const isMWeb = isMobileAndTablet();
+    const isActivated = user.activation_status === 'activated';
+    const mWebUrl = isActivated
+      ? 'https://razorpay.app.link/WXejnLoeVgb'
+      : 'https://razorpay.app.link/eQpmmyD4ygb';
+
+    if (isMWeb) window.open(mWebUrl, '_blank').focus();
+    else
+      this.props.openModal({
+        component: <MobileAppQRCode />,
+        size: 'small',
+      });
+  };
+
   createSalesforceOpportunity = (id, url) => {
     let event = '';
 
@@ -165,6 +183,9 @@ export default class WhatsNew extends Component {
       case 'cash-advance-cta-1':
       case 'whats-new-JUN21-RXCC-GROWTH-cta1':
         this.createSalesforceOpportunity(id, url);
+        break;
+      case 'announcement-May21-PLMApp-GTM':
+        this.onMobileAppCampaignCTAClick();
         break;
     }
   };
@@ -309,6 +330,7 @@ export default class WhatsNew extends Component {
       'july-ssl-certificate-update',
       'JUL21-CC-FEATURELAUNCH',
       'JUN21-SELFSERVE-CR&BL',
+      'May21-PLMApp-GTM',
     ];
 
     let cardsList = this.state.notifications.map((card, idx) => (
