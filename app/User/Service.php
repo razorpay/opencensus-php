@@ -1580,6 +1580,7 @@ class Service extends Base\Service
             'mandatory_aadhar_ekyc',
             'rx_email_integration_rollout',
             'rx_taxpayments_tin_change',
+            'email_self_serve',
             'pb_new_success_screen',
             'recurring_more_account_type'
         ];

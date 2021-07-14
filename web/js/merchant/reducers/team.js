@@ -13,6 +13,8 @@ export const INVITATION_RESEND = 'INVITATION_RESEND';
 export const INVITATION_UPDATE = 'INVITATION_UPDATE';
 export const INVITATION_REMOVE = 'INVITATION_REMOVE';
 export const USER_UPDATE = 'USER_UPDATE';
+export const OWNER_UPDATE = 'OWNER_UPDATE';
+export const NEW_EMAIL_STATUS = 'NEW_EMAIL_STATUS';
 export const USER_REMOVE = 'USER_REMOVE';
 export const UPDATE_SESSION = 'UPDATE_SESSION';
 
@@ -65,6 +67,28 @@ export const updateUser = (userId, data) => {
       method: 'put',
       data,
       mode: 'live',
+    }),
+  };
+};
+
+export const updateOwner = (email) => {
+  return {
+    type: OWNER_UPDATE,
+    payload: merchantFetch({
+      url: 'merchants/email/update',
+      method: 'put',
+      data: {email, set_contact_email:false},
+    }),
+  };
+};
+
+export const getEmailStatus = (email, setContactEmail) => {
+  return {
+    type: NEW_EMAIL_STATUS,
+    payload: merchantFetch({
+      url: 'merchants/email_user/status',
+      method: 'get',
+      data: { email, set_contact_email: +setContactEmail },
     }),
   };
 };

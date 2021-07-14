@@ -44,6 +44,7 @@ export const states = {
 export const roles = {
   [rolesList.OWNER]: {
     label: 'Owner',
+    desc: 'Will become the owner of your workspace. Your id will be changed to an manager role'
   },
   [rolesList.MANAGER]: {
     label: 'Manager',

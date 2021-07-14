@@ -102,7 +102,7 @@ export default class NewInvitation extends Component {
   };
 
   filterRoles = () => {
-    const rolesToRemove = [rolesList.OWNER];
+    const rolesToRemove = [];
 
     if (!this.props.user.isEnhancedEPOSEnabled) {
       rolesToRemove.push(rolesList.SELLERAPP_PLUS);

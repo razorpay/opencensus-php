@@ -148,6 +148,10 @@ var app = angular
           templateUrl: 'tpl/page_confirm.html',
           data: { role: 'any' },
         })
+        .state('access.emailupdate', {
+          url: '/emailupdate',
+          templateUrl: 'tpl/page_emailupdate.html',
+        })
         .state('access.resetpwd', {
           url: '/resetpwd/:token',
           templateUrl: 'tpl/page_resetpwd.html',

@@ -1,0 +1,94 @@
+import React, { useState } from 'react';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { connect } from 'react-redux';
+
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { getEmailStatus } from 'merchant/reducers/team';
+import Input from 'common/new-ui/Input';
+import Form from 'common/new-ui/Form';
+import Button from 'common/new-ui/Button';
+
+import NewID from './components/NewId/NewID';
+import SameTeam from './components/SameTeam/SameTeam';
+import DifferentTeam from './components/DifferentTeam/DifferentTeam';
+
+const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmailStatus }) => {
+  const [disabled, setDisabled] = useState(false);
+
+  const onProceed = (e) => {
+    const { email, setContactEmail } = e;
+
+    setDisabled(true);
+    return getEmailStatus(email, setContactEmail)
+      .then((res) => {
+        setDisabled(false);
+        if (res.data && !res.data.is_user_exist) {
+          openModal({
+            size: 'small',
+            component: <NewID newEmail={email} />,
+          });
+        } else if (res.data && res.data.is_team_member) {
+          openModal({
+            size: 'small',
+            component: <SameTeam newEmail={email} />,
+          });
+        } else {
+          openModal({
+            size: 'small',
+            component: <DifferentTeam newEmail={email} />,
+          });
+        }
+      })
+      .catch((err) => {
+        setDisabled(false);
+        showNotification({
+          type: 'error',
+          message: err.errors[0] || 'some error occured',
+        });
+      });
+  };
+  return (
+    <div className="e-self-serve">
+      <div className="e-self-serve-heading">
+        Enter the New Email ID
+        <button type="button" className="close" onClick={closeModal}>
+          <i className="i i-close" />
+        </button>
+      </div>
+      <div className="subtitle-msg">Enter the email to which you wish to update your login id</div>
+      <Form onSubmit={onProceed}>
+        <Input name="email" type="email" required />
+        <Input.Check
+          name="setContactEmail"
+          fieldLabel={
+            <div className="set-contact-email">
+              Use this ID as my contact email and receive all Razorpay related communication to this
+              ID
+              <div className="current-email-msg">
+                Currently your contact email has been set to {user.user.email}
+              </div>
+            </div>
+          }
+          defaultValue="1"
+        />
+        <Button.Primary type="submit" className="btn-block" disabled={disabled}>
+          Proceed
+        </Button.Primary>
+      </Form>
+    </div>
+  );
+};
+
+export default connect(
+  (state) => {
+    return {
+      user: state.session.user,
+    };
+  },
+  {
+    openModal,
+    closeModal,
+    showNotification,
+    getEmailStatus
+  },
+)(EmailInputForm);

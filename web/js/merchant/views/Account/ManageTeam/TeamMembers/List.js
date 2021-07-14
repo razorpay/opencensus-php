@@ -20,6 +20,7 @@ const actions = {
 
 @connect(
   (state) => ({
+    user: state.session.user,
     currentUser: state.session.user.user,
     ...state.team,
   }),
@@ -33,6 +34,18 @@ const actions = {
 export default class MembersListContainer extends ListContainer {
   static contextTypes = {
     confirm: PropTypes.func,
+  };
+
+  actions = {
+    title: '',
+    columnClass: 'text-right',
+    value: (member) => (
+      <Actions
+        member={member}
+        items={this.props.items}
+        isEmailSelfServeEnabled={this.props.user.isEmailSelfServeEnabled}
+      />
+    ),
   };
 
   member = {
@@ -87,7 +100,7 @@ export default class MembersListContainer extends ListContainer {
             ),
           }
         }
-        columns={[this.member, this.contactPhone, role, actions]}
+        columns={[this.member, this.contactPhone, role, this.actions]}
         {...this.props}
       />
     );

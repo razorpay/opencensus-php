@@ -1,0 +1,34 @@
+<div class="container w-xxl w-auto-xs page-reset-container" ng-controller="emailUpdateCtrl">
+    <a href="#/" class="col-sm-12 text-center m-t m-b"><img class="img-responsive" src="{{login_logo}}" alt=""></a>
+    <div class="m-b-lg">
+      <div class="wrapper text-center">
+        <strong>Set Password</strong>
+      </div>
+      <form name="reset" ng-submit="submit(reset.$valid)" class="form-validation" novalidate>
+        <div class="list-group list-group-sm">
+          <div class="list-group-item">
+            <input type="email" ng-readonly='true' value="{{data.email}}" placeholder="Email" class="form-control no-border" required>
+          </div>
+          <div class="list-group-item">
+            <input type="password" placeholder="Password" name="password" ng-model="data.password" class="form-control no-border" required>
+          </div>
+          <div class="list-group-item">
+            <input type="password" placeholder="Password Confirmation" name="password_confirmation" ng-model="data.password_confirmation" class="form-control no-border" required ui-validate=" '$value==data.password' " ui-validate-watch=" 'data.password' ">
+          </div>
+          <span ng-show='reset.password_confirmation.$error.validator'>Passwords do not match!</span>
+        </div>
+        <button type="submit" class="btn btn-lg btn-primary btn-block">Set Password</button>
+        <div class="text-center m-t m-b">
+          <spinner></spinner>
+          <div id="alerts" class="static-alert"></div>
+        </div>
+        <div ng-show="success" class="m-t">
+          <div class="alert alert-success">
+            <p>Password set successfully. <a ui-sref="access.signin" class="btn btn-sm btn-success">Sign in</a></p>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="text-center" ng-include="'tpl/blocks/page_footer.html'"></div>
+  </div>
+  

@@ -597,6 +597,10 @@ export default class User {
     return this.getExpStatus('self_serve_credits');
   }
 
+  get isEmailSelfServeEnabled() {
+    return this.getExpStatus('email_self_serve');
+  }
+
   get isCovidReliefFlowEnabled() {
     return this.getExpStatus('covid_19_donation_show');
   }

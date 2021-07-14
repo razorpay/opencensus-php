@@ -4,7 +4,7 @@ import AsyncButton from 'react-async-button';
 import PropTypes from 'prop-types';
 
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
-import { removeMember, updateMember } from 'merchant/reducers/team';
+import { removeMember, updateMember, updateOwner } from 'merchant/reducers/team';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { pickProps, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -13,10 +13,13 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import ModalHeader from 'common/ui/ModalHeader';
 import NewInvitation from '../components/NewInvitation';
 import { analyticsTrack } from 'common/utils/analytics';
+import ChangeOwner from 'merchant/views/Settings/EmailSelfServe/components/SameTeam/ChangeOwner';
+import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 
 @connect(null, {
   removeMember,
   updateMember,
+  updateOwner,
   openModal,
   closeModal,
   showNotification,
@@ -50,7 +53,69 @@ export default class MembersActions extends Component {
     const toBePickedFields = getToBePickedUpFields(visibleFields, ['id']);
 
     const defaults = pickProps(member, toBePickedFields);
-
+    const onFormSubmit = (...e) => {
+      const { role } = e[0];
+      if (role === 'owner') {
+        return this.props
+          .updateOwner(member.email)
+          .then(() => {
+            analyticsTrack({
+              objectName: 'team member update',
+              actionName: 'status',
+              screen: 'my account',
+              properties: {
+                location: 'manage team',
+                status: 'success',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
+            return Promise.resolve();
+          })
+          .catch((e) => {
+            analyticsTrack({
+              objectName: 'team member update',
+              actionName: 'status',
+              screen: 'my account',
+              properties: {
+                location: 'manage team',
+                status: 'failure',
+                failureReason: e.errors[0],
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
+            return Promise.reject();
+          });
+      }
+      return this.props
+        .updateMember(...e)
+        .then(() => {
+          analyticsTrack({
+            objectName: 'team member update',
+            actionName: 'status',
+            screen: 'my account',
+            properties: {
+              location: 'manage team',
+              status: 'success',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+          return Promise.resolve();
+        })
+        .catch((e) => {
+          analyticsTrack({
+            objectName: 'team member update',
+            actionName: 'status',
+            screen: 'my account',
+            properties: {
+              location: 'manage team',
+              status: 'failure',
+              failureReason: e.errors[0],
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+          return Promise.reject();
+        });
+    };
     return this.props.openModal({
       size: 'small',
       component: (
@@ -63,37 +128,7 @@ export default class MembersActions extends Component {
               ctaText="Update Member Details"
               successMsg="Member updated successfully"
               closeModal={this.props.closeModal}
-              onFormSubmit={(...e) => {
-                return this.props
-                  .updateMember(...e)
-                  .then(() => {
-                    analyticsTrack({
-                      objectName: 'team member update',
-                      actionName: 'status',
-                      screen: 'my account',
-                      properties: {
-                        location: 'manage team',
-                        status: 'success',
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
-                    return Promise.resolve();
-                  })
-                  .catch((e) => {
-                    analyticsTrack({
-                      objectName: 'team member update',
-                      actionName: 'status',
-                      screen: 'my account',
-                      properties: {
-                        location: 'manage team',
-                        status: 'failure',
-                        failureReason: e.errors[0],
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
-                    return Promise.reject();
-                  });
-              }}
+              onFormSubmit={onFormSubmit}
             />
           </div>
         </>
@@ -172,26 +207,50 @@ export default class MembersActions extends Component {
     });
   };
 
+  change = (context) => {
+    const items = this.props.items;
+    return context.criticalFlow({
+      modes: ['test', 'live'],
+      onUserTwoFaVerified: () => {
+        this.props.openModal({
+          size: 'medium',
+          component: <ChangeOwner items={items} />,
+        });
+      },
+    });
+  };
+
   render() {
-    const member = this.props.member;
+    const { member, items, isEmailSelfServeEnabled } = this.props;
+
+    if (isOwner(member)) {
+      if(items.length == 1 || !isEmailSelfServeEnabled)return null;
+      return (
+        <TwoFactorVerificationContext.Consumer>
+          {(context) => (
+            <button class="btn btn-primary" onClick={() => this.change(context)}>
+              Change
+            </button>
+          )}
+        </TwoFactorVerificationContext.Consumer>
+      );
+    }
 
     return (
-      !isOwner(member) && (
-        <>
-          <button class="btn btn-primary m-r" onClick={this.update}>
-            Update
-          </button>
+      <>
+        <button class="btn btn-primary m-r" onClick={this.update}>
+          Update
+        </button>
 
-          <ShowWhen additionalCondition={(user) => user.isAllowedEdit('team')}>
-            <AsyncButton
-              class="btn btn-default"
-              text="Remove"
-              pendingText="Removing..."
-              onClick={this.remove}
-            />
-          </ShowWhen>
-        </>
-      )
+        <ShowWhen additionalCondition={(user) => user.isAllowedEdit('team')}>
+          <AsyncButton
+            class="btn btn-default"
+            text="Remove"
+            pendingText="Removing..."
+            onClick={this.remove}
+          />
+        </ShowWhen>
+      </>
     );
   }
 }

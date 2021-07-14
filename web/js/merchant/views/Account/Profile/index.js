@@ -27,6 +27,8 @@ import { updateSession } from 'merchant/reducers/session';
 import { fetchSettlementAmount } from 'merchant/reducers/home';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import SupportDetails from 'merchant/views/Account/Profile/components/SupportDetails';
+import { openModal } from 'merchant_common/reducers/modals';
+import EmailSelfServeModal from 'merchant/views/Settings/EmailSelfServe/EmailInput';
 
 import User2FASettings from './components/User2FASettings';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
@@ -54,6 +56,7 @@ import { SUPPORT_DETAILS, UPDATE_BANK_ACC, SETTELEMENT_CYCLE } from './deeplink-
     updateBillingLabel,
     updateSession,
     fetchSettlementAmount,
+    openModal
   },
 )
 @RTracking(() => window.rzpQ.component('Profile'))
@@ -115,6 +118,18 @@ export default class Profile extends Component {
   componentWillReceiveProps(nextProps) {
     this.refreshUser(nextProps.user);
   }
+
+  handleUpdateClick = () => {
+    return this.context.criticalFlow({
+      modes: ['test', 'live'],
+      onUserTwoFaVerified: () => {
+        this.props.openModal({
+          size: 'small',
+          component: <EmailSelfServeModal />,
+        });
+      },
+    });
+  };
 
   refreshUser(user) {
     if (!user.current) {
@@ -498,10 +513,12 @@ export default class Profile extends Component {
             </IntoView>
           ) : null}
 
-          {this.state.merchantCount > 1 || this.state.loggedInUser.email !== user.email ? (
+          {this.state.loggedInUserRole==='owner' || this.state.merchantCount > 1 || this.state.loggedInUser.email !== user.email ? (
             <LoggedInUserDetails
               loggedInUser={this.state.loggedInUser}
               loggedInUserRole={this.state.loggedInUserRole}
+              handleUpdateClick={this.handleUpdateClick}
+              isEmailSelfServeEnabled={user.isEmailSelfServeEnabled}
             />
           ) : null}
 
