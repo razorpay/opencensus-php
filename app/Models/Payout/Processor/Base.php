@@ -339,8 +339,9 @@ class Base extends BaseCore
         {
             $this->trace->info(TraceCode::SYNC_FTS_FUND_TRANSFER_INIT,
                                [
-                                   'payout_id' => $payout->getId(),
-                                   'fta_id'    => $fta->getId(),
+                                   'payout_id'   => $payout->getId(),
+                                   'fta_id'      => $fta->getId(),
+                                   'merchant_id' => $payout->getMerchantId(),
                                ]);
 
             $transferService = App::getFacadeRoot()['fts_fund_transfer'];
@@ -370,14 +371,24 @@ class Base extends BaseCore
 
             $this->trace->info(
                 TraceCode::SYNC_FTS_FUND_TRANSFER_COMPLETE,
-                $ftsResponse);
+                [
+                    'payout_id'   => $payout->getId(),
+                    'fta_id'      => $fta->getId(),
+                    'merchant_id' => $payout->getMerchantId(),
+                    'response'    => $ftsResponse,
+                ]);
         }
         catch (\Throwable $exception)
         {
             $this->trace->traceException(
                 $exception,
                 Trace::ERROR,
-                TraceCode::SYNC_FTA_DISPATCH_FOR_MERCHANT_FAILED);
+                TraceCode::SYNC_FTA_DISPATCH_FOR_MERCHANT_FAILED,
+                [
+                    'payout_id'   => $payout->getId(),
+                    'fta_id'      => $fta->getId(),
+                    'merchant_id' => $payout->getMerchantId(),
+                ]);
 
             // If any exception is raised while making sync call, we push the fta to queue as fall back.
             (new Initiator)->sendFTSFundTransferRequest($fta);
