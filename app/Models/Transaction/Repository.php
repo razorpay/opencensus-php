@@ -2394,6 +2394,8 @@ class Repository extends Base\Repository
     public function fetchBankingTransactionsForLedgerRecon(array $merchantIds, $from, $to, int $count = 1000, int $skip = 0)
     {
         $transactionBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $transactionMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $transactionCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
 
         $balanceIdColumn   = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeColumn = $this->repo->balance->dbColumn(Entity::TYPE);
@@ -2405,11 +2407,11 @@ class Repository extends Base\Repository
             {
                 $query->WhereIn($balanceTypeColumn, [Balance\Type::BANKING]);
             })
-            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+            ->whereIn($transactionMerchantIdColumn, $merchantIds)
             ->betweenTime($from, $to)
             ->take($count)
             ->skip($skip)
-            ->latest()
+            ->latest($transactionCreatedAtColumn)
             ->get();
     }
 
