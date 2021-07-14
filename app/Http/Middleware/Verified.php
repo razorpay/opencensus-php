@@ -2,6 +2,8 @@
 
 use Closure;
 use Auth;
+use Route;
+use Request;
 use App\Admin;
 
 class Verified
@@ -10,7 +12,13 @@ class Verified
     {
         $user = Auth::guard('user')->user();
 
-        if ($user and $user->confirmed)
+        $xSignUpFlowV2 = Request::header('x-signup-flow-v2');
+
+        $routeName = Route::currentRouteName();
+
+        if ($user and
+           (($user->confirmed) ||
+            ($routeName === 'merchant' && $xSignUpFlowV2 === 'true')))
         {
             return $next($request);
         }

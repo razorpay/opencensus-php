@@ -52,7 +52,9 @@ class Cors
                 'X-Report-Type',
                 'x-recaptcha-mode',
                 // Added this to allow email verification via OTP in X
-                'x-send-email-otp'
+                'x-send-email-otp',
+                // Added to allow access to users api for non confirmed user
+                'x-signup-flow-v2'
             ];
 
             $headers = [
