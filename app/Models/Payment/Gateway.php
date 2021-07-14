@@ -534,6 +534,7 @@ class Gateway
         IFSC::AUBL,
         Netbanking::BARB_R,
         IFSC::CITI,
+        IFSC::CNRB,
         IFSC::DBSS,
         IFSC::DCBL,
         IFSC::DEUT,
