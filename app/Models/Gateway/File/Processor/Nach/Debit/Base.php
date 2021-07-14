@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking;
+use RZP\Models\Customer\Token;
 use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
@@ -65,5 +66,20 @@ abstract class Base extends Nach\Base
     public function generateData(PublicCollection $tokens): PublicCollection
     {
         return $tokens;
+    }
+
+    public function getAccountTypeValue(Token\Entity $token): string
+    {
+        $accountTypeMap = [
+            Token\Entity::ACCOUNT_TYPE_SAVINGS     => '10',
+            Token\Entity::ACCOUNT_TYPE_CURRENT     => '11',
+            Token\Entity::ACCOUNT_TYPE_CASH_CREDIT => '13',
+            Token\Entity::ACCOUNT_TYPE_SB_NRE      => '10',
+            Token\Entity::ACCOUNT_TYPE_SB_NRO      => '10',
+        ];
+
+        $accountType = $token->getAccountType() ?? 'savings';
+
+        return $accountTypeMap[$accountType];
     }
 }

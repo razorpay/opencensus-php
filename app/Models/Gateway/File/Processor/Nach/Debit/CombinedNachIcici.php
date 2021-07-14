@@ -373,20 +373,6 @@ class CombinedNachIcici extends Debit\Base
         return substr($pad_str, 0, $size);
     }
 
-    public function getAccountTypeValue(Token\Entity $token)
-    {
-        $row = [
-            Fields::SAVINGS => '10',
-            Fields::CURRENT => '11',
-        ];
-
-        $accountType  = $token->getAccountType() ?? 'savings' ;
-
-        $accountTypeValue  = $row[$accountType];
-
-        return $accountTypeValue;
-    }
-
     public function getTextData($data, $prependLine = '', string $glue = '|')
     {
         $ignoreLastNewline = true;

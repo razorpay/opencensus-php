@@ -15,6 +15,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Customer\Token;
 use RZP\Exception\RuntimeException;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
@@ -369,8 +370,9 @@ class PaperNachIcici extends Base
 
         $destinationBankFfsc = $token->getIfsc();
 
-        $accountType = $token->getAccountType() ?? 'savings';
-        $accountType = strtoupper($accountType);
+        $accountTypeMapping = $this->getAccountTypeMapping($token->getAccountType());
+
+        $accountType = strtoupper($accountTypeMapping);
 
         $mandateCategoryCode = CategoryCode::getCategoryCodeFromMcc($merchantCategory);
 
@@ -529,5 +531,18 @@ class PaperNachIcici extends Base
         $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
         unlink($zipFileLocalPath);
+    }
+
+    public static function getAccountTypeMapping(string $accountType): string
+    {
+        $accountTypeMap = [
+            Token\Entity::ACCOUNT_TYPE_SAVINGS     => 'savings',
+            Token\Entity::ACCOUNT_TYPE_CURRENT     => 'current',
+            Token\Entity::ACCOUNT_TYPE_CASH_CREDIT => 'cc',
+            Token\Entity::ACCOUNT_TYPE_SB_NRE      => 'savings',
+            Token\Entity::ACCOUNT_TYPE_SB_NRO      => 'savings',
+        ];
+
+        return $accountTypeMap[$accountType] ?? 'savings';
     }
 }

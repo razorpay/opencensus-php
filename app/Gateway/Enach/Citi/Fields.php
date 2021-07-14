@@ -82,7 +82,7 @@ class Fields
 
         $ifsc = $token->getIfsc();
 
-        $accountType = $token->getAccountType() ?? 'savings';
+        $accountType = Fields::getAccountTypeMapping($token->getAccountType());
 
         $categoryCode = Base\CategoryCode::getCategoryCodeFromMcc($merchantCategory);
 
@@ -109,5 +109,18 @@ class Fields
             self::START_TIMESTAMP                                   => $startDate,
             self::END_TIMESTAMP                                     => $endDate,
         ];
+    }
+
+    public static function getAccountTypeMapping(string $accountType): string
+    {
+        $accountTypeMap = [
+            Token\Entity::ACCOUNT_TYPE_SAVINGS     => 'savings',
+            Token\Entity::ACCOUNT_TYPE_CURRENT     => 'current',
+            Token\Entity::ACCOUNT_TYPE_CASH_CREDIT => 'cc',
+            Token\Entity::ACCOUNT_TYPE_SB_NRE      => 'savings',
+            Token\Entity::ACCOUNT_TYPE_SB_NRO      => 'savings',
+        ];
+
+        return $accountTypeMap[$accountType] ?? 'savings';
     }
 }

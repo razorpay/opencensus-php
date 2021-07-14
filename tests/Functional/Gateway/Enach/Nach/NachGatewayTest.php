@@ -173,9 +173,65 @@ class NachGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($expectedRegisterFileContent, $registerFileRows[0]);
     }
 
+    public function testGatewayFileRegisterForCashCredit()
+    {
+        $payment = $this->createDummyRegisterToken(['account_type' => 'cc']);
+
+        $this->fixtures->stripSign($payment['id']);
+
+        $this->ba->cronAuth();
+
+        $content = $this->startTest($this->testData['testGatewayFileRegister']);
+
+        $content = $content['items'][0];
+
+        $files = $this->getEntities('file_store', [], true);
+
+        $zipFile = $files['items'][0];
+        $registerFile = $files['items'][1];
+
+        $expectedFileContentZip = [
+            'type'        => 'citi_nach_register',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+            'name'        => 'RAZORP_EMANDATE_NACH00000000013149_10022020_test'
+        ];
+
+        $expectedFileContentRegister = [
+            'type'        => 'citi_nach_register',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'xls',
+            'name'        => 'RAZORP_EMANDATE_NACH00000000013149_11022020_test',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContentZip, $zipFile);
+        $this->assertArraySelectiveEquals($expectedFileContentRegister, $registerFile);
+
+        $registerFileRows = (new ExcelImport)->toArray('storage/files/filestore/' . $registerFile['location'])[0];
+
+        $expectedRegisterFileContent = [
+            'category_code'        => "U099",
+            'category_description' => "Others",
+            'start_date'           => "16/02/2020",
+            'end_date'             => "Until cancelled",
+            'client_code'          => "CTRAZORPAY",
+            'unique_reference_no'  => $payment['id'],
+            'account_no'           => "1111111111111",
+            'account_holder_name'  => "dead pool",
+            'account_type'         => "cc",
+            'bank_name'            => "HDFC",
+            'bank_micr_ifsc'       => "HDFC0001233",
+            'amount'               => "10000",
+        ];
+
+        $this->assertArraySelectiveEquals($expectedRegisterFileContent, $registerFileRows[0]);
+    }
+
     public function testGatewayFileRegisterWithIfscMapping()
     {
-        $payment = $this->createDummyRegisterToken('ORBC0100326');
+        $payment = $this->createDummyRegisterToken(['ifsc' => 'ORBC0100326']);
 
         $this->fixtures->stripSign($payment['id']);
 
@@ -307,6 +363,69 @@ class NachGatewayTest extends TestCase
         $expectedDebitRow = [
             'ACH Transaction Code' => '67',
             'Destination Account Type' => '10',
+            'Beneficiary Account Holder\'s Name' => 'dead pool',
+            'User Name' => 'CTRAZORPAY',
+            'Amount' => '0000000300000',
+            'Destination Bank IFSC / MICR / IIN' => 'HDFC0001233',
+            'Beneficiary\'s Bank Account number' => '1111111111111',
+            'Sponsor Bank IFSC / MICR / IIN' => 'CITI000PIGW',
+            'User Number' => 'NACH00000000013149',
+            'Transaction Reference' => 'TESTMERCHA' . $response['razorpay_payment_id'],
+            'Product Type' => '10',
+            'UMRN' => 'UTIB6000000005844847'
+        ];
+
+        $this->assertArraySelectiveEquals($expectedDebitRow, $debitRow);
+    }
+
+    public function testGatewayFileDebitCashCredit()
+    {
+        $response = $this->createRecurringNachPayment(['account_type' => 'cc']);
+
+        $this->fixtures->stripSign($response['razorpay_payment_id']);
+
+        $this->ba->cronAuth();
+
+        $content = $this->startTest($this->testData['testGatewayFileDebit']);
+
+        $content = $content['items'][0];
+
+        $files = $this->getEntities('file_store', ['count' => 2], true);
+
+        $summary = $files['items'][0];
+        $debit = $files['items'][1];
+
+        $expectedFileContentSummary = [
+            'type'        => 'citi_nach_debit_summary',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'xls',
+            'name'        => 'citi/nach/RAZORP_SUMMARY_NACH00000000013149_11022020_test'
+        ];
+
+        $expectedFileContentDebit = [
+            'type'        => 'citi_nach_debit',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'txt',
+            'name'        => 'citi/nach/RAZORP_COLLECT_NACH00000000013149_11022020_test',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContentSummary, $summary);
+        $this->assertArraySelectiveEquals($expectedFileContentDebit, $debit);
+
+        $fileContent = explode("\n", file_get_contents('storage/files/filestore/' . $debit['location']));
+
+        // since date and amount is fixed for this test header is a constant
+        $expectedHeader = '56       RAZORPAY SOFTWARE PVT LTD                                                                 0001000000000000000030000011022020                       NACH00000000013149000000000000000000CITI000PIGW000018003                          000000001                                                           ';
+
+        $this->assertEquals($expectedHeader, $fileContent[0]);
+
+        $debitRow = array_map('trim', $this->parseTextRow($fileContent[1], 0, ''));
+
+        $expectedDebitRow = [
+            'ACH Transaction Code' => '67',
+            'Destination Account Type' => '13',
             'Beneficiary Account Holder\'s Name' => 'dead pool',
             'User Name' => 'CTRAZORPAY',
             'Amount' => '0000000300000',
@@ -752,9 +871,9 @@ class NachGatewayTest extends TestCase
         $this->assertEmpty($token['recurring_failure_reason'], "Token should not have some Error Reason");
     }
 
-    protected function createRecurringNachPayment()
+    protected function createRecurringNachPayment($overideData = [])
     {
-        $initialPayment = $this->createAcceptedToken();
+        $initialPayment = $this->createAcceptedToken($overideData);
 
         $tokenId = $initialPayment[Payment::TOKEN_ID];
 
@@ -788,9 +907,9 @@ class NachGatewayTest extends TestCase
         return $content;
     }
 
-    protected function createAcceptedToken()
+    protected function createAcceptedToken($overideData = [])
     {
-        $payment = $this->createDummyRegisterToken();
+        $payment = $this->createDummyRegisterToken($overideData);
 
         $batchFile = $this->getBatchFileToUploadForBankRegisterResponse($payment);
 
@@ -902,7 +1021,7 @@ class NachGatewayTest extends TestCase
         return $file;
     }
 
-    protected function createDummyRegisterToken(string $ifsc = 'HDFC0001233')
+    protected function createDummyRegisterToken(array $overideData = [])
     {
         $this->createOrder([
             'amount' => 0,
@@ -918,7 +1037,8 @@ class NachGatewayTest extends TestCase
                         'status' => PaperMandate\Status::AUTHENTICATED,
                         'uploaded_file_id' => '1000000000file',
                         E::BANK_ACCOUNT => [
-                            'ifsc_code' => $ifsc,
+                            'ifsc_code'    => $overideData['ifsc'] ?? 'HDFC0001233',
+                            'account_type' => $overideData['account_type'] ?? 'savings',
                         ],
                     ],
                 ],
