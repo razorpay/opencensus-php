@@ -398,6 +398,7 @@ class Route
         'terminal_edit_internal'                   => ['put',      'terminals/{id}/internal',                        'TerminalController@putTerminal'                                    ],
         'terminal_restore'                         => ['put',      'terminals/{id}/restore',                         'TerminalController@restoreTerminal',                               ],
         'terminal_toggle'                          => ['put',      'terminals/{id}/toggle',                          'TerminalController@toggleTerminal'                                 ],
+        'terminal_fill_enabled_wallets'            => ['patch',    'terminals/fill/enabled_wallets',                 'TerminalController@fillEnabledWallets',                           ],
         'terminal_update_bulk'                     => ['patch',    'terminals/bulk',                                 'TerminalController@updateTerminalsBulk',                           ],
         'terminal_add_merchant'                    => ['put',      'terminals/{id}/merchants/{mid}',                 'TerminalController@addMerchant'                                    ],
         'terminal_remove_merchant'                 => ['delete',   'terminals/{id}/merchants/{mid}',                 'TerminalController@removeMerchant'                                 ],
@@ -405,6 +406,8 @@ class Route
         'terminal_check_encrypted_value'           => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
         'terminal_get_banks'                       => ['get',      'terminals/{id}/banks',                           'TerminalController@getBanks'                                       ],
         'terminal_set_banks'                       => ['patch',    'terminals/{id}/banks',                           'TerminalController@setBanks'                                       ],
+        'terminal_get_wallets'                     => ['get',      'terminals/{id}/wallets',                         'TerminalController@getWallets'                                       ],
+        'terminal_set_wallets'                     => ['patch',    'terminals/{id}/wallets',                         'TerminalController@setWallets'                                       ],
         'terminal_migrate_cron'                    => ['post',     'terminals/migrate_cron',                         'TerminalController@postTerminalsMigrateCron'                       ],
         'terminal_create_bulk'                     => ['post',     'terminals/bulk',                                 'TerminalController@postTerminalsBulk'                              ],
         'terminal_service_sync_delete'             => ['post',     'terminals/sync/deleted',                         'TerminalController@syncDeletedTerminalsOnTerminalService'          ],
@@ -3486,7 +3489,9 @@ class Route
 
         // merchant risk alert crons
         'merchant_risk_identify_blacklist_country_alerts',
-        'payment_update_reference6'
+
+        'terminal_fill_enabled_wallets',
+        'payment_update_reference6',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -4562,7 +4567,8 @@ class Route
         'nodal_beneficiary_update',
         'terminal_get_banks',
         'terminal_set_banks',
-
+        'terminal_get_wallets',
+        'terminal_set_wallets',
         'merchant_details_patch',
         'merchant_schedule_bulk',
         'merchant_schedule_reset',
@@ -5524,6 +5530,8 @@ class Route
         'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'terminal_get_banks'                       => Permission::VIEW_TERMINAL,
         'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
+        'terminal_get_wallets'                     => Permission::VIEW_TERMINAL,
+        'terminal_set_wallets'                     => Permission::EDIT_TERMINAL,
         'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
         'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
         'merchant_schedule_reset'                  => Permission::SCHEDULE_ASSIGN_BULK,
@@ -8824,6 +8832,8 @@ class Route
             'terminal_enable',
             'terminal_fetch',
             'terminal_get_banks',
+            'terminal_get_wallets',
+            'terminal_set_wallets',
             'terminal_onboard',
             'terminal_onboard_callback',
             'terminal_reassign_merchant',
@@ -9297,6 +9307,7 @@ class Route
             'banking_account_service_cron_routes',
             'merchant_action_notification_cron',
             'merchant_risk_identify_blacklist_country_alerts',
+            'terminal_fill_enabled_wallets',
         ],
 
         'subscriptions' => [

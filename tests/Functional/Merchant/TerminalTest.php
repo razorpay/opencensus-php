@@ -1638,6 +1638,63 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetTerminalWallets()
+    {
+        $attributes = array(
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'wallet_amazonpay',
+            'gateway_merchant_id'   => 'gateway_merchant_random',
+            'gateway_access_code'   => 'gateway_access_code',
+            'gateway_terminal_password' => 'abcdef',
+            'enabled_wallets'       => ['amazonpay']
+        );
+
+        $terminal = $this->fixtures->create('terminal', $attributes);
+
+        $url = '/terminals/' . $terminal['id'] . '/wallets';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testFillEnabledWallets()
+    {
+        $attributes = array(
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'wallet_amazonpay',
+            'gateway_merchant_id'   => 'gateway_merchant_random',
+            'gateway_access_code'   => 'gateway_access_code',
+            'gateway_terminal_password' => 'abcdef',
+        );
+
+        $terminal1 = $this->fixtures->create('terminal', $attributes);
+
+        $attributes = array(
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'ccavenue',
+            'gateway_merchant_id'   => 'gateway_merchant_random',
+            'gateway_access_code'   => 'gateway_access_code',
+            'gateway_secure_secret' => 'abcdef',
+        );
+
+        $terminal2 = $this->fixtures->create('terminal', $attributes);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $updatedTerminal = $this->getEntityById(
+            'terminal',
+            $terminal1->getId(),
+            true
+        );
+
+        $this->assertEquals(['amazonpay'], $updatedTerminal['enabled_wallets']);
+    }
+
     public function testGetTerminalBanksForBilldesk()
     {
         $terminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
@@ -1734,6 +1791,27 @@ class TerminalTest extends TestCase
         $terminal = $this->fixtures->create('terminal:shared_atom_terminal');
 
         $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testSetWalletsForTerminal()
+    {
+        $attributes = array(
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'ccavenue',
+            'gateway_merchant_id'   => 'gateway_merchant_random',
+            'gateway_access_code'   => 'gateway_access_code',
+            'gateway_secure_secret' => 'abcdef',
+            'enabled_wallets'       => ['paytm','mobikwik']
+        );
+
+        $terminal = $this->fixtures->create('terminal', $attributes);
+        $url = '/terminals/' . $terminal['id'] . '/wallets';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -2250,6 +2328,24 @@ class TerminalTest extends TestCase
     }
 
     public function testCreateWalletPhonepeTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateWalletPhonepeTerminalWrongWallet()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateHdfcTerminalWithEnabledWallet()
     {
         $url = '/merchants/100000Razorpay/terminals';
 

@@ -259,6 +259,18 @@ class Repository extends Base\Repository
         return $terminal;
     }
 
+    public function getTerminalsWithNullEnabledWallets($count)
+    {
+        $gateways = Payment\Gateway::$methodMap['wallet'];
+
+        $terminals = $this->newQuery()
+                          ->whereIn(Entity::GATEWAY, $gateways)
+                          ->limit($count)
+                          ->get();
+
+        return $terminals;
+    }
+
     public function findOrFail($id, $columns = array('*'))
     {
         $model = $this->find($id, $columns);

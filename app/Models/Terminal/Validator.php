@@ -159,6 +159,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACQUIRER,
         Entity::MODE,
         Entity::TPV,
+        Entity::ENABLED_WALLETS,
     ];
 
     protected static $updateTerminalsBankValidators = [
@@ -252,7 +253,6 @@ class Validator extends Base\Validator
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
         Entity::UPI                                     => 'sometimes|boolean|in:1',
-        Entity::ENABLED_WALLETS                         => 'sometimes',
         Entity::VPA                                     => 'sometimes|string',
         Entity::MODE                                    => 'sometimes|in:2',
     ];
@@ -305,9 +305,7 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY                        => 'sometimes|string',
         Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
-        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
-        Entity::ENABLED_WALLETS                         => 'sometimes',
-
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed'
     ];
 
     protected static $hdfcTerminalRules = [
@@ -2034,7 +2032,9 @@ class Validator extends Base\Validator
                 $input[Entity::MERCHANT_ID],
                 $input[Entity::NETWORK_CATEGORY],
                 $input[Entity::GATEWAY_ACQUIRER],
+                $input[Entity::ENABLED_WALLETS],
                 $input[Entity::MODE]);
+
         }
         $op = $input['gateway'] . '_terminal';
         $var = $this->getRulesVariableName($op);
@@ -2061,6 +2061,35 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'tpv is not required and shouldn\'t be sent',
                 Entity::TPV);
+        }
+    }
+
+    protected function validateEnabledWallets($input)
+    {
+
+        if (isset($input[Entity::ENABLED_WALLETS]) === false)
+        {
+            return;
+        }
+
+        $gateway = $input[Entity::GATEWAY];
+
+        $enabledWallets = $input[Entity::ENABLED_WALLETS];
+
+        if (in_array($gateway, Payment\Gateway::getAllWalletSupportingGateways()) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'enabled_wallets is not required and shouldn\'t be sent',
+                Entity::ENABLED_WALLETS);
+        }
+
+        foreach ($enabledWallets as $wallet)
+        {
+            if (in_array($wallet, Payment\Gateway::getSupportedWalletsForGateway($gateway)) === false) {
+                throw new Exception\BadRequestValidationFailureException(
+                    'wallets is not supported for the gateway',
+                    Entity::ENABLED_WALLETS);
+            }
         }
     }
 

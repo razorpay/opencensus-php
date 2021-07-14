@@ -1351,7 +1351,6 @@ class Entity extends Base\PublicEntity
 
     protected function generateEnabledWallets(array $input)
     {
-        // checkgateway list
         $gateway = $input[self::GATEWAY];
 
         $walletGateways = Payment\Gateway::$methodMap[Payment\Method::WALLET];

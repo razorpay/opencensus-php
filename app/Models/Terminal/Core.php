@@ -532,6 +532,31 @@ class Core extends Base\Core
         ];
     }
 
+    public function getWalletsForTerminal(Entity $terminal): array
+    {
+        $gateway = $terminal->getGateway();
+
+        if (in_array($gateway, Payment\Gateway::getAllWalletSupportingGateways(), true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Wallet available only for wallet gateways');
+        }
+
+        $enabledWalletList = (array) $terminal->getEnabledWallets();
+
+        $supportedWallets = Payment\Gateway::getSupportedWalletsForGateway($gateway);
+
+        $disabledWalletList = array_values(array_diff($supportedWallets, $enabledWalletList));
+
+        $enabledWallets  = $enabledWalletList;
+        $disabledWallets = $disabledWalletList;
+
+
+        return [
+            'enabled'  => $enabledWallets,
+            'disabled' => $disabledWallets,
+        ];
+    }
+
     public function setBanksForTerminal(Entity $terminal, $banksToEnable, $option): array
     {
         $gateway = $terminal->getGateway();
@@ -602,6 +627,60 @@ class Core extends Base\Core
         }
 
         return $this->getBanksForTerminal($terminal);
+    }
+
+
+    public function setWalletsForTerminal(Entity $terminal, $walletsToEnable, $option): array
+    {
+        $gateway = $terminal->getGateway();
+
+        if (in_array($gateway, Payment\Gateway::getAllWalletSupportingGateways(), true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Wallet available only for wallet gateways');
+        }
+
+        if (is_array($walletsToEnable) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('enabled_wallets should be an array');
+        }
+
+        $supportedWallets = Payment\Gateway::getSupportedWalletsForGateway($gateway);
+
+        if (empty(array_diff($walletsToEnable, $supportedWallets)) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('wallet not supported by gateway');
+        }
+
+        $terminal->setEnabledWallets($walletsToEnable);
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $mId = $terminal->getMerchantId();
+
+        $variantFlag = $this->app->razorx->getTreatment($mId, "TERMINAL_EDIT_PROXY", $mode);
+
+        if ($variantFlag === "on" and $option['bulk_update'] === false)
+        {
+            $path = "v1/terminals/".$terminal->getId()."/wallets";
+
+            $input = [
+                Entity::ENABLED_BANKS => $walletsToEnable
+            ];
+
+            $response = $this->app['terminals_service']->proxyTerminalService($input, "PATCH", $path);
+
+            $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+
+            $this->repo->saveOrFail($terminal, ['shouldSync' => false]);
+
+            return $response;
+        }
+        else
+        {
+            $this->repo->saveOrFail($terminal, ['shouldSync' => $option['sync_with_terminals_service']]);
+        }
+
+        return $this->getWalletsForTerminal($terminal);
     }
 
     public function processMerchantMccUpdate(Merchant\Entity $merchant, array $input)

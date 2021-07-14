@@ -95,6 +95,15 @@ class TerminalController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fillEnabledWallets()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fillEnabledWallets($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getBanks(string $id)
     {
         $data = $this->service()->getBanks($id);
@@ -138,6 +147,53 @@ class TerminalController extends Controller
         $input = Request::all();
 
         $data = $this->service()->setBanks($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getWallets(string $id)
+    {
+        $data = $this->service()->getWallets($id);
+
+        $mode  = $this->ba->getMode();
+
+        try
+        {
+            $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_WALLET_FETCH", $mode);
+
+            if ($variantFlag === 'proxy') {
+
+                $path = "v1/terminals/" . $id . "/wallets";
+
+                $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
+
+                if ($response != $data) {
+                    $traceData = ["api" => $data, "terminals" => $response,];
+
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TS_WALLET_FETCH_COMPARISON_FAILED, $traceData);
+                }
+
+                return ApiResponse::json($response);
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->info(
+                TraceCode::TERMINALS_SERVICE_PROXY_TS_WALLET_FETCH_FAILED,
+                [
+                    'message'             => 'exception',
+                    'error'               => $exception->getMessage(),
+                ]);
+        }
+
+        return ApiResponse::json($data);
+    }
+
+    public function setWallets(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->setWallets($id, $input);
 
         return ApiResponse::json($data);
     }

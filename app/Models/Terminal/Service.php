@@ -354,6 +354,17 @@ class Service extends Base\Service
         return $banks;
     }
 
+    public function getWallets(string $id): array
+    {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
+        $terminal = $this->repo->terminal->getById($id);
+
+        $banks = $this->core()->getWalletsForTerminal($terminal);
+
+        return $banks;
+    }
+
     public function setBanks(string $id, array $input): array
     {
         Entity::verifyIdAndSilentlyStripSign($id);
@@ -368,6 +379,24 @@ class Service extends Base\Service
         ];
 
         $banks = $this->core()->setBanksForTerminal($terminal, $banksToEnable, $option);
+
+        return $banks;
+    }
+
+    public function setWallets(string $id, array $input): array
+    {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
+        $terminal = $this->repo->terminal->getById($id);
+
+        $walletsToEnable = $input[Entity::ENABLED_WALLETS] ?? [];
+
+        $option = [
+            'sync_with_terminals_service' => true,
+            'bulk_update' => false,
+        ];
+
+        $banks = $this->core()->setWalletsForTerminal($terminal, $walletsToEnable, $option);
 
         return $banks;
     }
@@ -483,6 +512,69 @@ class Service extends Base\Service
         {
             throw $e;
         }
+    }
+
+    public function fillEnabledWallets(array $input)
+    {
+        $count = 100;
+        $success = 0;
+        $failed = 0;
+        $total = 0;
+
+        $this->trace->info(
+            TraceCode::TERMINAL_UPDATE_ENABLED_WALLET_REQUEST,
+            $input
+        );
+
+        if (isset($input['count']))
+        {
+            $count = $input['count'];
+        }
+
+        // fetch methods from slave, debit_emi_provider value as null
+        $terminals = $this->repo->useSlave(function() use ($count)
+        {
+            return $this->repo->terminal->getTerminalsWithNullEnabledWallets($count);;
+
+        });
+
+        foreach($terminals as $terminal)
+        {
+            try
+            {
+                $total++;
+
+                $gateway = $terminal->getGateway();
+
+                $supportedWallets = Payment\Gateway::getSupportedWalletsForGateway($gateway);
+
+                $terminal->setEnabledWallets($supportedWallets);
+
+                $this->repo->saveOrFail($terminal);
+
+                $success++;
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->traceException($ex,
+                    Trace::ERROR,
+                    TraceCode::TERMINAL_UPDATE_ENAABLED_WALLET_FAILED,
+                    [
+                        'terminal_id'   =>  $terminal->getId()
+                    ]);
+
+                $failed++;
+            }
+        }
+
+        $res = ["count" => $count, "total" => $total, "success" => $success, "failed" => $failed];
+
+        $this->trace->info(
+            TraceCode::TERMINAL_UPDATE_ENABLED_WALLET_RESULT,
+            $res
+        );
+        return $res;
+
     }
 
     public function updateTerminalsBulk(array $input)

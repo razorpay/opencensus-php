@@ -1266,6 +1266,29 @@ return [
         ],
     ],
 
+    'testCreateTwidTerminal' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/terminals',
+            'content' => [
+                'gateway'                  => 'twid',
+                'gateway_merchant_id'      => '12344',
+                'gateway_secure_secret'    => 'gateway_secure_secret',
+                'gateway_secure_secret2'   => 'gateway_secure_secret2',
+                'app'                      =>  1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'      => '12344',
+                'enabled_apps'             => [
+                    'twid'
+                ],
+                'app'                       => true,
+            ]
+        ],
+    ],
+
     'testCreatePaytmCardTerminal' => [
         'request' => [
             'content' => [
@@ -2205,6 +2228,36 @@ return [
         ],
     ],
 
+    'testGetTerminalWallets' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                    'amazonpay'
+                ],
+                'disabled' => [
+                ],
+            ],
+        ],
+    ],
+
+    'testFillEnabledWallets' => [
+        'request' => [
+            'url'=> '/terminals/fill/enabled_wallets',
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 1,
+                'count'   => 100,
+                'success' => 1,
+                'failed'  => 0
+            ],
+        ],
+    ],
+
     'testGetTerminalBanksForBilldesk' => [
         'request' => [
             'method' => 'GET'
@@ -2358,6 +2411,28 @@ return [
                     'UCBA'   => 'UCO Bank',
                     'UBIN'   => 'Union Bank of India',
                     'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
+                ],
+            ],
+        ],
+    ],
+
+    'testSetWalletsForTerminal' => [
+        'request' => [
+            'method' => 'PATCH',
+            'content' => [
+                'enabled_wallets' => ['paytm', 'freecharge'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                    'paytm',
+                    "freecharge",
+                ],
+                'disabled' => [
+                    "itzcash",
+                    "jiomoney",
+                    'mobikwik',
                 ],
             ],
         ],
@@ -2985,6 +3060,57 @@ return [
                 'enabled'              => true,
                 'enabled_wallets'      => ['phonepe']
             ]
+        ]
+    ],
+
+    'testCreateWalletPhonepeTerminalWrongWallet'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_phonepe',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_secure_secret'     => 'secure_secret',
+                'gateway_access_code'       => 'access_code',
+                'enabled_wallets'           => ['amazonpay']
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => "wallets is not supported for the gateway",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ]
+    ],
+
+    'testCreateHdfcTerminalWithEnabledWallet'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hdfc',
+                'gateway_merchant_id'       => '12345567',
+                'gateway_terminal_id'       => '12345567',
+                'gateway_terminal_password' => '12345567',
+                'gateway_acquirer'           => 'hdfc',
+                'enabled_wallets'           => ['amazonpay']
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => "enabled_wallets is not required and shouldn't be sent",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
         ]
     ],
 

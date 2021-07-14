@@ -1267,7 +1267,7 @@ class Gateway
             self::WALLET_AMAZONPAY,
             self::WALLET_PHONEPE,
             self::WALLET_PHONEPESWITCH,
-            self::WALLET_PAYPAL,
+            self::WALLET_PAYPAL
         ],
 
         Method::EMI => [
@@ -2555,6 +2555,7 @@ class Gateway
         Gateway::UPI_MINDGATE,
     ];
 
+    // all supported wallets including external
     public static $supportedWallets = [
         self::WALLET_AIRTELMONEY  =>  [
             Wallet::AIRTELMONEY
@@ -3583,5 +3584,10 @@ class Gateway
     public static function getSupportedWalletsForGateway($gateway)
     {
         return self::$supportedWallets[$gateway];
+    }
+
+    public static function getAllWalletSupportingGateways()
+    {
+        return array_keys(self::$supportedWallets);
     }
 }
