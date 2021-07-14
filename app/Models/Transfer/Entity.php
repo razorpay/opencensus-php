@@ -12,6 +12,7 @@ use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
@@ -655,6 +656,14 @@ class Entity extends Base\PublicEntity
 
     public function toArrayReport()
     {
+        app('trace')->info(
+            TraceCode::GENERATING_TRANSFERS_REPORT,
+            [
+                'id'            => $this->getId() ?? null,
+                'merchant_id'   => $this->getMerchantId() ?? null,
+            ]
+        );
+
         $data = parent::toArrayReport();
 
         $settlementId          = null;
