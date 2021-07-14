@@ -170,6 +170,39 @@ class FundAccountsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateFundAccountBankAccountWithOldIfscMappedToNewIfsc()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountBankAccountWithNbsp()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountBankAccountWithExtraSpacesAtStartAndEndOfBeneName()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+    }
+
     public function testCreateFundAccountBankAccountPublic()
     {
         $this->ba->publicAuth();

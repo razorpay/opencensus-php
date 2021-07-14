@@ -47,11 +47,13 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);
 
+        $input = str_replace("&nbsp;", ' ', $input);
+
+        $input = $this->trimSpaces($input);
+
         (new Validator)->validateInput('create', $input);
 
         $merchantId = $merchant->getId();
-
-        $input = $this->trimSpaces($input);
 
         if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
         {

@@ -240,6 +240,11 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateContactWithNbsp()
+    {
+        $this->startTest();
+    }
+
     public function testCreateContactWithApostrophe()
     {
         $this->startTest();

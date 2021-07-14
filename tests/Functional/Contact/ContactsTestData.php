@@ -358,6 +358,37 @@ return [
         ],
     ],
 
+    'testCreateContactWithNbsp' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Simplocity&nbsp;Labs Private Limited',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Simplocity Labs Private Limited',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
     'testCreateContactWithApostrophe' => [
         'request'  => [
             'content' => [

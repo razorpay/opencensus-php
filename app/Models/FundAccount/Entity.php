@@ -58,6 +58,8 @@ class Entity extends Base\PublicEntity
     // when account type is wallet
     const WALLET        = 'wallet';
 
+    const NAME          = 'name';
+
     // merchant_disabled flag is publicly exposed only for merchant dashboard
     // requests to indicate the merchant status on FE by providing info if
     // merchant has been blocked for the product associated with the fund account

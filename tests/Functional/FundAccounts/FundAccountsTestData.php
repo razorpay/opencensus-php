@@ -232,6 +232,93 @@ return [
         ],
     ],
 
+    'testCreateFundAccountBankAccountWithOldIfscMappedToNewIfsc' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'ORBC0101316',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'PUNB0131610',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateFundAccountBankAccountWithNbsp' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'ORBC0101316',
+                    'name'           => 'Simplocity&nbsp;Labs Private Limited',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'PUNB0131610',
+                    'name'           => 'Simplocity Labs Private Limited',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateFundAccountBankAccountWithExtraSpacesAtStartAndEndOfBeneName' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => ' Razorpay Ltd. ',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Razorpay Ltd.',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
     'testCreateFundAccountBankAccountWithInvalidAccountNumber' => [
         'request'  => [
             'content' => [

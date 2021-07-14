@@ -16,6 +16,7 @@ use RZP\Http\RequestHeader;
 use RZP\Exception\BaseException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Contact\Core as ContactCore;
+use RZP\Models\Order\Service as OrderService;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
 
@@ -63,6 +64,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $traceRequest);
 
         $this->unsetIfscIfRequired($input);
+
+        (new OrderService())->updateIfscIfRequired($input);
 
         (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 

@@ -430,6 +430,11 @@ class Service extends Base\Service
             return;
         }
 
+        $this->updateIfscIfRequired($input);
+    }
+
+    public function updateIfscIfRequired(array & $input)
+    {
         if (isset($input[Entity::BANK_ACCOUNT][BankAccount\Entity::IFSC]) === true)
         {
             $oldIfsc = $input[Entity::BANK_ACCOUNT][BankAccount\Entity::IFSC];
@@ -445,7 +450,6 @@ class Service extends Base\Service
 
                 $input[Entity::BANK_ACCOUNT][BankAccount\Entity::IFSC] = $newIfsc;
             }
-
         }
     }
 
