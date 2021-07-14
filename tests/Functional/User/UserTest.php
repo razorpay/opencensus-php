@@ -433,6 +433,26 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testMobileLoginWithPassword()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '0123456789',
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+
     public function testFailedLogin()
     {
         $user = $this->fixtures->create('user', ['password' => 'hello123']);
@@ -442,6 +462,64 @@ class UserTest extends TestCase
         $content = [
             'email'    => $user['email'],
             'password' => 'hello1234',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testMobileFailedLoginWrongPassword()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '0123456789',
+            'password'              => 'hello1234',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testMobileFailedLogin()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '0123457689', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '0123456789',
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testMobileFailedLoginWithPasswordMultipleAccounts()
+    {
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $user2 = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '0123456789',
+            'password'              => 'hello1234',
             'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 

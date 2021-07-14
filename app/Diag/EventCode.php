@@ -595,6 +595,10 @@ class EventCode
         'name'  => 'merchant_onboarding.login.success'
     ];
 
+    const LOGIN_SUCCESS_WITH_MOBILE = [
+        'group' => 'onboarding',
+        'name'  => 'login.success.with.mobile'
+    ];
     const PARTNERSHIP_PARTNER_SIGNUP = [
         'group' => 'onboarding',
         'name'  => 'partnerships.partner.signup'

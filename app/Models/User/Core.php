@@ -34,6 +34,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
 use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
+use RZP\Constants\Environment;
 
 class Core extends Base\Core
 {
@@ -423,6 +424,19 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::USER_LOGIN, $data);
     }
 
+    protected function traceMobileLoginRoute(array $input)
+    {
+        $keysToTrace = [Entity::CONTACT_MOBILE];
+
+        $data = [];
+        foreach ($keysToTrace as $key)
+        {
+            $data[$key] = $input[$key] ?? null;
+        }
+
+        $this->trace->info(TraceCode::USER_MOBILE_LOGIN, $data);
+    }
+
     public function delIncorrectPasswordCount(string $merchantEmail)
     {
         try
@@ -448,8 +462,53 @@ class Core extends Base\Core
         return $this->getUserEntity()->getValidator()->isCaptchaDisabled($input);
     }
 
+    public function isMobileLoginAllowed(): bool
+    {
+        if ($this->app['env'] === Environment::PRODUCTION)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function mobileLoginApplicable(array $input)
+    {
+        if ($this->isMobileLoginAllowed() === false)
+        {
+            return null;
+        }
+
+        if (isset($input[Entity::CONTACT_MOBILE]) === false)
+        {
+            return null;
+        }
+
+        $this->getUserEntity()->getValidator()->validateInput('loginMobile', $input);
+
+        $user = $this->getUserByMobile($input[Entity::CONTACT_MOBILE]);
+
+        $this->verifyPassword($user, $input[Entity::PASSWORD]);
+
+        $maskedInput[Entity::CONTACT_MOBILE] = $user->getMaskedContactMobile();
+
+        $this->traceMobileLoginRoute($maskedInput);
+
+        (new Core)->trackOnboardingEvent($user->getContactMobile(),
+            EventCode::LOGIN_SUCCESS_WITH_MOBILE);
+
+        return $this->get($user);
+    }
+
     public function login(array $input)
     {
+        $user = $this->mobileLoginApplicable($input);
+
+        if ($user !== null)
+        {
+            return $user;
+        }
+
         $this->getUserEntity()->getValidator()->validateInput('login', $input);
 
         $this->traceLoginRoute($input);
@@ -459,17 +518,17 @@ class Core extends Base\Core
         $incorrectPasswordCountTrack = $this->trackIncorrectPasswordCount($input);
 
         // if login successful, delete incorrect password counter.
-        if ($incorrectPasswordCountTrack === true)
-        {
+        if ($incorrectPasswordCountTrack === true) {
             $this->delIncorrectPasswordCount($input[Entity::EMAIL]);
         }
 
         $this->checkSecondFactorAuthAndSendOtp($user);
 
         (new Core)->trackOnboardingEvent($user->getEmail(),
-                                         EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
+            EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
 
         return $this->get($user);
+
     }
 
     public function checkSecondFactorAuthAndSendOtp($user)
@@ -911,6 +970,48 @@ class Core extends Base\Core
         }
 
         return $user;
+    }
+
+    /**
+     * Takes in user entity and password and returns
+     * user entity
+     *
+     * @param Entity $user
+     * @param string $password
+     *
+     * @return Entity
+     * @throws BadRequestException
+     */
+    protected function verifyPassword(Entity $user, string $password)
+    {
+        $isPasswordEqual = (new BcryptHasher)->check($password, $user->getPassword());
+
+        if ($isPasswordEqual === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
+        }
+    }
+
+    /**
+     * Takes in mobile number and returns
+     * user entity
+     *
+     * @param string $mobile
+     *
+     * @return Entity
+     */
+    protected function getUserByMobile(string $mobile):Entity
+    {
+        $user = $this->repo->user->findByMobile($mobile);
+
+        if ($user->count() === 1)
+        {
+            return $user->firstOrFail();
+        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED);
     }
 
     /**

@@ -370,6 +370,27 @@ return [
         ],
     ],
 
+    'testMobileLoginWithPassword' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testFailedLogin' => [
         'request' => [
             'url'     => '/users/login',
@@ -388,6 +409,70 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+        ],
+    ],
+
+    'testMobileFailedLoginWrongPassword' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                ],
+            ],
+            'status_code' => 401,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+        ],
+    ],
+
+
+    'testMobileFailedLogin' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED,
+        ],
+    ],
+
+    'testMobileFailedLoginWithPasswordMultipleAccounts' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED,
         ],
     ],
 

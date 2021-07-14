@@ -97,6 +97,14 @@ class Validator extends Base\Validator
         Entity::APP             => 'sometimes|string',
     ];
 
+    protected static $loginMobileRules = [
+        Entity::CONTACT_MOBILE  => 'required|max:15|contact_syntax',
+        Entity::PASSWORD        => 'required|between:6,50',
+        Entity::CAPTCHA         => 'required_without:captcha_disable',
+        Entity::CAPTCHA_DISABLE => 'sometimes|string',
+        Entity::APP             => 'sometimes|string',
+    ];
+
     protected static $loginOauthRules = [
         Entity::EMAIL           => 'required|email',
         Entity::OAUTH_PROVIDER  => 'required|string|custom',
@@ -279,6 +287,10 @@ class Validator extends Base\Validator
         'captcha'
     ];
 
+    protected static $loginMobileValidators = [
+        'captcha'
+    ];
+
     protected static $changePasswordValidators = [
         'old_password'
     ];
@@ -428,29 +440,12 @@ class Validator extends Base\Validator
     {
         $app = App::getFacadeRoot();
 
-        if ($this->isCaptchaDisabled($input) === true)
+        if ($this->isCaptchaDisabled($input) === true and isset($input[Entity::EMAIL]) === true)
         {
-            $this->incrementRequestCount($input[Entity::EMAIL]);
-
-            // check if attempts is greater than threshold
-            // if yes throw error captcha is required.
-            $count = $this->getIncorrectPasswordCount($input[Entity::EMAIL]);
-
-            if ($count > Constants::INCORRECT_LOGIN_THRESHOLD_COUNT)
-            {
-                $app['trace']->info(TraceCode::USER_LOGIN_INCORRECT_PASSWORD_EXHAUSTED, [$input[Entity::EMAIL]]);
-
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INCORRECT_LOGIN_ATTEMPT
-                );
-            }
-
-            $app['trace']->info(TraceCode::USER_LOGIN_CAPTCHA_DISABLED, [$input[Entity::EMAIL]]);
-
-            return;
+            return $this->handleCaptchaDisabled($input);
         }
 
-        $emailData['email'] = $input[Entity::EMAIL];
+        $emailData['email'] = $input[Entity::EMAIL] ?? null;
 
         if ((in_array($app->environment(), Constants::WHITELIST_ENVIRONMENT_CAPTCHA_VALIDATION, true) === true) and
             (in_array($emailData['email'], Constants::WHITELIST_CAPTCHA_EMAILS, true) === false))
@@ -572,6 +567,31 @@ class Validator extends Base\Validator
 
         return $response;
     }
+
+    protected function handleCaptchaDisabled($input)
+    {
+        $app = App::getFacadeRoot();
+
+        $this->incrementRequestCount($input[Entity::EMAIL]);
+
+        // check if attempts is greater than threshold
+        // if yes throw error captcha is required.
+        $count = $this->getIncorrectPasswordCount($input[Entity::EMAIL]);
+
+        if ($count > Constants::INCORRECT_LOGIN_THRESHOLD_COUNT)
+        {
+            $app['trace']->info(TraceCode::USER_LOGIN_INCORRECT_PASSWORD_EXHAUSTED, [$input[Entity::EMAIL]]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INCORRECT_LOGIN_ATTEMPT
+            );
+        }
+
+        $app['trace']->info(TraceCode::USER_LOGIN_CAPTCHA_DISABLED, [$input[Entity::EMAIL]]);
+
+        return;
+    }
+
 
     protected function validateAction(string $attribute, string $action)
     {

@@ -62,6 +62,8 @@ class CreateUsersTable extends Migration
             $table->index(User::CONFIRM_TOKEN);
 
             $table->index(User::CREATED_AT);
+
+            $table->index(User::CONTACT_MOBILE);
         });
 
         Schema::table(Table::INVOICE, function(Blueprint $table)

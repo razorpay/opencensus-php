@@ -6279,6 +6279,9 @@ ALTER TABLE credit_transaction MODIFY COLUMN credits_used BIGINT;
 ALTER TABLE payouts
     ADD COLUMN queued_reason varchar(255) DEFAULT NULL;
 
+ALTER TABLE users
+    ADD INDEX users_contact_mobile_index (contact_mobile);
+
 ALTER TABLE payouts
     ADD COLUMN on_hold_at bigint unsigned DEFAULT NULL;
 

@@ -24,6 +24,15 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
+    public function findByMobile(string $mobile)
+    {
+        $liveMode = $this->auth->getLiveConnection();
+
+        return $this->newQueryWithConnection($liveMode)
+                    ->where(Entity::CONTACT_MOBILE, '=', $mobile)
+                    ->get();
+    }
+
     public function getUserFromEmailOrFail(string $email)
     {
         return $this->newQuery()
