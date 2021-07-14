@@ -29,10 +29,16 @@ class Core extends Base\Core
     const BENEFICIARY_ACCOUNT_NUMBER = 'beneficiary_account_number';
     const CHANNEL                    = 'channel';
     const TYPE_MERCHANT              = 'merchant';
+    const TYPE_CONTACT               = 'contact';
     const SOURCE_ACCOUNT_NUMBER      = 'source_account_number';
 
     // fetchNodalBeneficiaryCode output
     const BENEFICIARY_CODE           = 'beneficiary_code';
+
+    const PRIMARY_YESBANK_NODAL_ACC = 'nodal.yesbank.primary';
+    const BANKING_YESBANK_NODAL_ACC = 'nodal.yesbank.banking';
+
+
 
     public function createWithBankAccount(array $input): Entity
     {
@@ -265,8 +271,12 @@ class Core extends Base\Core
 
             $validator->validateInput('fetch', $input);
 
-            if (!$this->validateSourceBankAccount($input[self::CHANNEL], $input[self::SOURCE_ACCOUNT_NUMBER])){
-
+            if ($this->validateSourceBankAccount($input[self::CHANNEL], $input[self::SOURCE_ACCOUNT_NUMBER], self::PRIMARY_YESBANK_NODAL_ACC)) {
+                $type = self::TYPE_MERCHANT;
+            }
+            else if($this->validateSourceBankAccount($input[self::CHANNEL], $input[self::SOURCE_ACCOUNT_NUMBER], self::BANKING_YESBANK_NODAL_ACC)) {
+                $type = self::TYPE_CONTACT;
+            } else {
                 $this->trace->info(
                     TraceCode::FTS_FETCH_NODAL_BENEFICIARY_ATTEMPT_FAILED,
                     [
@@ -285,7 +295,7 @@ class Core extends Base\Core
                 $input[self::BENEFICIARY_IFSC_CODE],
                 $input[self::BENEFICIARY_ACCOUNT_NUMBER],
                 strtolower($input[self::CHANNEL]),
-                self::TYPE_MERCHANT
+                $type
             );
 
             if ($bankAccountId != null)
@@ -339,7 +349,7 @@ class Core extends Base\Core
      * @param string $sourceAccountNumber
      * @return bool
      */
-    private function validateSourceBankAccount(string $channel, string $sourceAccountNumber)
+    private function validateSourceBankAccount(string $channel, string $sourceAccountNumber, string $nodalAccType)
     {
         /**
          *  For this route currently we have use case of fetching settlement type source account means account
@@ -347,7 +357,7 @@ class Core extends Base\Core
          switch (strtolower($channel))
          {
              case 'yesbank':
-                 $config = Config::get('nodal.yesbank.primary');
+                 $config = Config::get($nodalAccType);
 
                  $primaryAccountNumber = $config['account_number'];
 
@@ -355,7 +365,8 @@ class Core extends Base\Core
                      TraceCode::FTS_FETCH_NODAL_BENEFICIARY_DEBUG,
                      [
                          'stored_source_account_no'  => mask_except_last4($primaryAccountNumber),
-                         'input_source_account_no'   => mask_except_last4($sourceAccountNumber)
+                         'input_source_account_no'   => mask_except_last4($sourceAccountNumber),
+                         'nodalAccType'              => $nodalAccType
                      ]
                  );
 
