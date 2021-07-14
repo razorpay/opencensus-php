@@ -19,12 +19,8 @@ class Aadhar_back extends BaseConfig
                 "rule_type" => "string_comparison_rule",
                 "rule_def"  => [
                     "equals" => [
-                        [
-                            "var" => "dummy_value",
-                        ],
-                        [
-                            "var" => "dummy_value",
-                        ]
+                        "dummy_value",
+                        "dummy_value"
                     ],
                 ],
             ],
