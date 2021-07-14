@@ -4,6 +4,11 @@ import { connect } from 'react-redux';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { classList } from 'common/utils/rzp-utils';
 
+import {
+  COMDEL_POPOVER_TEXT as comdelText,
+  SUPPORT_POPOVER_TEXT as supportText,
+} from '../constants';
+
 @connect((state) => {
   return {
     closeOnboardingStep: state.home.closeOnboardingStep,
@@ -35,7 +40,13 @@ export default class SupportHeader extends Component {
   }
 
   render() {
-    const { notifyCount = 0, isOpened, onToggle, isOnBoardingRevampScreen } = this.props;
+    const {
+      notifyCount = 0,
+      isOpened,
+      onToggle,
+      isOnBoardingRevampScreen,
+      showComdelPopover,
+    } = this.props;
     const content = (
       <>
         {notifyCount ? <span class="notify-icon">{notifyCount}</span> : null}
@@ -57,18 +68,16 @@ export default class SupportHeader extends Component {
         )}
         onClick={onToggle}
       >
-        {!this.state.showHelpTooltip ? (
-          content
-        ) : (
-          <span className="help-content">
-            {content}
+        <span className="help-content">
+          {content}
+          {(showComdelPopover || this.state.showHelpTooltip) && (
             <Popover align="left" theme="dark" persistent={this.state.showHelpTooltip}>
               <PopoverBody>
-                <div>To know how to use the Dashboard, read the Dashboard Guide</div>
+                <div>{showComdelPopover ? comdelText : supportText}</div>
               </PopoverBody>
             </Popover>
-          </span>
-        )}
+          )}
+        </span>
       </div>
     );
   }

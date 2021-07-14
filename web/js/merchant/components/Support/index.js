@@ -13,10 +13,9 @@ import {
 import SupportHeader from 'merchant/components/Support/components/SupportHeader';
 import SupportBody from 'merchant/components/Support/components/SupportBody';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { getOrg } from 'merchant/store';
-import { COMDEL_URL } from './constants';
-
 import { classList } from 'common/utils/rzp-utils';
+
+import { COMDEL_URL } from './constants';
 
 @withRouter
 @connect(
@@ -149,7 +148,6 @@ export default class Support extends Component {
     if (isOnBoardingRevampScreen) {
       return null;
     }
-
     return (
       <div class={classList('support', isHidden && 'hidden')}>
         <SupportHeader
@@ -157,6 +155,7 @@ export default class Support extends Component {
           isOpened={isOpened}
           notifyCount={notifyCount}
           isOnBoardingRevampScreen={isOnBoardingRevampScreen}
+          showComdelPopover = {user.isComdelApiEnabled}
         />
         <SupportBody
           onToggle={this.handleToggle}
