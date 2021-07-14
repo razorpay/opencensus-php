@@ -839,7 +839,9 @@ class Service extends Base\Service
 
                         $data[RefundConstants::CURRENCY_CONVERSION_RATE] = $payment->getCurrencyConversionRate();
 
-                        $data[RefundConstants::IS_UPI_OTM] = $payment->IsUpiOtm();
+                        $data[RefundConstants::IS_UPI_OTM] = $payment->isUpiOtm();
+
+                        $data[RefundConstants::IS_DCC] = $payment->isDCC();
                     }
 
                     $response[RefundConstants::ENTITIES][Constants\Entity::PAYMENT][RefundConstants::DATA] = $data;
