@@ -2605,7 +2605,7 @@ class Gateway
             Wallet::OLAMONEY, Wallet::PAYCASH, Wallet::JIOMONEY, Wallet::AMAZONPAY, Wallet::CITIBANKREWARDPOINTS, Wallet::PAYTM, Wallet::PHONEPE
         ],
         self::CCAVENUE  =>  [
-            Wallet::FREECHARGE, Wallet::ICICIPOCKETS, Wallet::ITZCASH, Wallet::JIOMONEY, Wallet::MOBIKWIK, Wallet::OLAMONEY, Wallet::PAYTM, Wallet::MONEYONMOBILE
+            Wallet::FREECHARGE, Wallet::ITZCASH, Wallet::JIOMONEY, Wallet::MOBIKWIK, Wallet::PAYTM
         ],
     ];
 

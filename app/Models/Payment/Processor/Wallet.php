@@ -31,9 +31,6 @@ class Wallet
     const AMEXEASYCLICK        = "amexeasyclick";
     const PAYCASH              = "paycash";
     const CITIBANKREWARDPOINTS = "citibankrewardpoints";
-    const ICICIPOCKETS         = "icicipockets";
-    const MONEYONMOBILE        = "moneyonmobile";
-
 
     public static $fullName = array(
         self::MOBIKWIK          => 'Mobikwik',
