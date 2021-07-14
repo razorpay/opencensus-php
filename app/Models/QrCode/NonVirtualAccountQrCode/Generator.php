@@ -128,7 +128,7 @@ class Generator extends QrCode\Generator
 
         $content = array_merge($content, InvoiceDetails::getTaxDetails($qrCode));
 
-        return $url = 'upi://pay?' . str_replace(' ', '', urldecode(http_build_query($content)));
+        return 'upi://pay?' . str_replace(' ', '', urldecode(http_build_query($content)));
     }
 
     /**
@@ -350,7 +350,7 @@ class Generator extends QrCode\Generator
 
         try
         {
-            $merchantLogo = imagecreatefromstring(file_get_contents($logo));;
+            $merchantLogo = imagecreatefromstring(file_get_contents($logo));
             $logo_width  = imagesx($merchantLogo);
             $logo_height = imagesy($merchantLogo);
 

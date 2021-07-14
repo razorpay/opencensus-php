@@ -105,4 +105,23 @@ trait NonVirtualAccountQrCodeTrait
 
         return $response;
     }
+
+    private function makeUpiIciciPayment($request)
+    {
+        $this->ba->directAuth();
+
+        $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        return $response;
+    }
 }

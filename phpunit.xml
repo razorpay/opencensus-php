@@ -192,6 +192,7 @@
           <directory>./tests/Functional/UpiTransfer</directory>
           <directory>./tests/Functional/BankTransfer</directory>
           <directory>./tests/Functional/BharatQrPayment</directory>
+          <directory>./tests/Functional/QrCode</directory>
       </testsuite>
       <testsuite name="Route Test Suite">
           <directory>./tests/Functional/Transfer/</directory>

@@ -25,6 +25,17 @@ return [
         ],
     ],
 
+    'testCreateUpiQrCodeFixedAmount' => [
+        'name'           => 'Test QR Code',
+        'description'    => 'QR code for tests',
+        'usage'          => 'multiple_use',
+        'type'           => 'upi_qr',
+        'fixed_amount'   => true,
+        'notes'          => [
+            'a' => 'b',
+        ],
+    ],
+
     'testFetchQrCodeByCustomerId' => [
         'entity' => 'collection',
         'count'  => 1,
@@ -93,6 +104,21 @@ return [
                 'error_code'        => null,
                 'error_description' => null,
             ]
+        ],
+    ],
+
+    'testFetchQrCodeByCustomerEmail' => [
+        'entity' => 'collection',
+        'count'  => 1,
+        'items'  => [
+            [
+                'name'         => 'Test QR Code',
+                'description'  => 'QR code for tests',
+                'usage'        => 'multiple_use',
+                'type'         => 'bharat_qr',
+                'fixed_amount' => false,
+                'customer_id'  => 'cust_100000customer',
+            ],
         ],
     ],
 

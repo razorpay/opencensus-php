@@ -50,7 +50,7 @@ jobs:
           GIT_COMMIT_ID: ${{ github.sha }}
           SONAR_PROJECT_ID: API_SMARTCOLLECT_UT
           TEST_SUITE_NAME: "Smart Collect Test Suite"
-          SOURCE_DIR: /__w/api/api/app/Models/BankAccount,/__w/api/api/app/Models/BankTransfer,/__w/api/api/app/Models/BankTransferRequest,/__w/api/api/app/Models/QrCode,/__w/api/api/app/Models/VirtualAccount,/__w/api/api/app/Models/VirtualAccountProducts,/__w/api/api/app/Models/VirtualAccountTpv,/__w/api/api/app/Models/VirtualVpaPrefix,/__w/api/api/app/Models/VirtualVpaPrefixHistory,/__w/api/api/app/Models/Vpa,/__w/api/api/app/Models/UpiTransfer,/__w/api/api/app/Models/UpiTransferRequest
+          SOURCE_DIR: /__w/api/api/app/Models/BankAccount,/__w/api/api/app/Models/BankTransfer,/__w/api/api/app/Models/BankTransferRequest,/__w/api/api/app/Models/QrCode,/__w/api/api/app/Models/VirtualAccount,/__w/api/api/app/Models/VirtualAccountProducts,/__w/api/api/app/Models/VirtualAccountTpv,/__w/api/api/app/Models/VirtualVpaPrefix,/__w/api/api/app/Models/VirtualVpaPrefixHistory,/__w/api/api/app/Models/Vpa,/__w/api/api/app/Models/UpiTransfer,/__w/api/api/app/Models/UpiTransferRequest,/__w/api/api/app/Models/QrPayment
     services:
       redis:
         credentials:

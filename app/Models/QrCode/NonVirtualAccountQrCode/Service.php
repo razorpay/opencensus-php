@@ -154,8 +154,6 @@ class Service extends QrCode\Service
 
         $qrCodeId    = $qrCode->getPublicId();
 
-        $callbackURL = sprintf('%s/%s/%s/%s/%s', $baseUrl, $mode, $entity, $namespace, $qrCodeId);
-
-        return $callbackURL;
+        return sprintf('%s/%s/%s/%s/%s', $baseUrl, $mode, $entity, $namespace, $qrCodeId);
     }
 }

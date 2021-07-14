@@ -234,14 +234,12 @@ class Processor extends Base\Core
     {
         $receiver = $this->qrCode;
 
-        $paymentArray = [
+        return [
             Payment\Entity::RECEIVER => [
                 'id'   => $receiver->getPublicId(),
                 'type' => $receiver->getEntity(),
             ],
         ];
-
-        return $paymentArray;
     }
 
     protected function getPaymentProcessor(bool $forceCreate = false): PaymentProcessor
@@ -267,14 +265,14 @@ class Processor extends Base\Core
 
             $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_PAYMENT_QR_NOT_FOUND);
 
-            return false;
+            return;
         }
 
         if ($this->qrCode->isClosed())
         {
             $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_PAYMENT_ON_CLOSED_QR_CODE);
 
-            return false;
+            return;
         }
 
         if (($this->qrCode->hasFixedAmount() === true) and
@@ -282,12 +280,10 @@ class Processor extends Base\Core
         {
             $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_PAYMENT_AMOUNT_MISMATCH);
 
-            return false;
+            return;
         }
 
         $qrPayment->setExpected(true);
-
-        return true;
     }
 
     /**
