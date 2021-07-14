@@ -20,6 +20,8 @@ class PlinkController extends Controller
 
     const MERCHANT_ID = 'merchant_id';
 
+    const PUBLIC_KEY = 'public_key';
+
     /**
      * @var string
      */
@@ -261,11 +263,13 @@ class PlinkController extends Controller
             $headers['X-Razorpay-UserRole'] = $role;
         }
 
-        $headers['X-Razorpay-Mode']          = $this->ba->getMode();
+        $headers['X-Razorpay-Mode'] = $this->ba->getMode();
 
-        $headers['X-Razorpay-Auth']          = $this->ba->getAuthType();
+        $headers['X-Razorpay-Auth'] = $this->ba->getAuthType();
 
-        $headers['User-Agent']  = $request->userAgent();
+        $headers['User-Agent'] = $request->userAgent();
+
+        $headers['X-Razorpay-Public-Key'] = $this->ba->getPublicKey();
 
         $requester = $request->header('X-Razorpay-Requester');
 
@@ -343,6 +347,19 @@ class PlinkController extends Controller
         unset($input[self::MERCHANT_ID]);
 
         ksort($input);
+
+        if (isset($input[self::PUBLIC_KEY]) === true)
+        {
+            $key = $input[self::PUBLIC_KEY];
+
+            unset($input[self::PUBLIC_KEY]);
+
+            $str = implode('|', $input);
+
+            $response['razorpay_signature'] = (new CredcaseSigner)->sign($str, $key);
+
+            return $response;
+        }
 
         $str = implode('|', $input);
 

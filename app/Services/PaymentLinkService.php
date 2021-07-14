@@ -337,9 +337,11 @@ class PaymentLinkService
             }
         }
 
-        $headers['X-Razorpay-Mode']          = $this->ba->getMode();
+        $headers['X-Razorpay-Mode']       = $this->ba->getMode();
 
-        $headers['X-Razorpay-Auth']          = $this->ba->getAuthType();
+        $headers['X-Razorpay-Auth']       = $this->ba->getAuthType();
+
+        $headers['X-Razorpay-Public-Key'] = $this->ba->getPublicKey();
 
         return $headers;
     }
