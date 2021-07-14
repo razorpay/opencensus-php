@@ -15,6 +15,7 @@ use RZP\Models\UpiMandate;
 use RZP\Models\Payment\Config;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Order\OrderMeta\Type;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration;
 
@@ -25,6 +26,7 @@ use RZP\Models\SubscriptionRegistration;
  * @property Transfer\Entity $transfer
  * @property UpiMandate\Entity $upiMandate
  * @property Product\Entity $products
+ * @property OrderMeta\Entity $orderMeta
  */
 class Entity extends Base\PublicEntity
 {
@@ -159,6 +161,8 @@ class Entity extends Base\PublicEntity
 
     const PG_ROUTER_SYNCED = 'pg_router_synced';
 
+    const TAX_INVOICE = 'tax_invoice';
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,
@@ -231,6 +235,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN,
         self::TRANSFERS,
         self::CHECKOUT_CONFIG_ID,
+        self::TAX_INVOICE
     ];
 
     protected $casts = [
@@ -267,6 +272,7 @@ class Entity extends Base\PublicEntity
         // This is likely needed for the merchant,
         // but still needs to be discussed.
         // self::DISCOUNT,
+        self::TAX_INVOICE,
     ];
 
     protected $dates = [
@@ -781,6 +787,11 @@ class Entity extends Base\PublicEntity
         {
             unset($array[self::PRODUCTS]);
         }
+    }
+
+    public function setPublicTaxInvoiceAttribute(array & $array)
+    {
+       //Definition to be added with Core Changes
     }
 
     protected function modifyCheckoutConfigId(& $input)

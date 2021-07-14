@@ -2446,6 +2446,15 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOrderWithoutTaxInvoice()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateOrder'];
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('tax_invoice', $response);
+    }
+
     public function testCreateOrderWithAmountGreaterThanMaxAmountAndCurrencyUSD()
     {
         $merchantId = "10000000000000";

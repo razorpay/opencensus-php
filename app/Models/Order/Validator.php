@@ -66,6 +66,7 @@ class Validator extends Base\Validator
         Entity::PRODUCT_TYPE                       => 'required_with:product_id|string|max:32|custom',
         Entity::APP_OFFER                          => 'sometimes|boolean',
         Entity::PRODUCTS                           => 'sometimes|array|max:128',
+        Entity::TAX_INVOICE                        => 'sometimes|array',
     ];
 
     protected static $createValidators = [
