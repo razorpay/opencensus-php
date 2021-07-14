@@ -28,6 +28,7 @@ class FreshdeskTicketV2Test extends TestCase
 
     const RZP_CREATE_TICKET_SALESFORCE    = 'rzp_create_ticket_salesforce';
     const RZP_CREATE_TICKET_INTERNAL_AUTH = 'rzp_create_ticket_internal_auth';
+    const RZP_FETCH_TICKET_FILTER         = 'rzp_fetch_ticket_filter';
     const RZP_FETCH_TICKET                = 'rzp_fetch_ticket';
 
     const RZP_GET_TICKET_BY_ID = 'rzp_get_ticket_by_id';
@@ -176,6 +177,18 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27%22&page=1', 'get',
             $expectedRequestResponse['request'], $expectedRequestResponse['response'], 4);
+
+        $this->createTicketsToFetch();
+
+        $this->startTest();
+    }
+
+    public function testFetchTicketsForMerchantWithFilter()
+    {
+        $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET_FILTER);
+
+        $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27%22&page=1', 'get',
+                                                    $expectedRequestResponse['request'], $expectedRequestResponse['response'], 4);
 
         $this->createTicketsToFetch();
 
@@ -1433,12 +1446,20 @@ Team Razorpay',
                         [
                             'id'        => 12,
                             'body'      => 'some random body 12',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                            ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 
                         ],
                         [
                             'id'        => 34,
                             'body'      => 'some random body 34',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                            ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 
                         ],
@@ -1446,12 +1467,70 @@ Team Razorpay',
                             // 56 is not mapped to this merchant in our db. so we don't show it in the response, even if Freshdesk somehow returned this in the response
                             'id'        => 56,
                             'body'      => 'some random body 56',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                            ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
                         ],
                         [
                             // 78 is not mapped to 'support_dashboard' in our db. so we don't show it in the response
                             'id'        => 78,
                             'body'      => 'some random body 78',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+                        ],
+                    ],
+
+                ]];
+        }
+        else if ($key === self::RZP_FETCH_TICKET_FILTER)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                    'results' => [
+                        [
+                            'id'        => 12,
+                            'body'      => 'some random body 12',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                        [
+                            'id'        => 34,
+                            'body'      => 'some random body 34',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Merchant Activation",
+                                "cf_requester_category"     => "Merchant",
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                        [
+                            // 56 is not mapped to this merchant in our db. so we don't show it in the response, even if Freshdesk somehow returned this in the response
+                            'id'        => 56,
+                            'body'      => 'some random body 56',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+                        ],
+                        [
+                            // 78 is not mapped to 'support_dashboard' in our db. so we don't show it in the response
+                            'id'        => 78,
+                            'body'      => 'some random body 78',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                            ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
                         ],
                     ],

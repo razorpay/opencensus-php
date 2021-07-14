@@ -431,6 +431,12 @@ class Service extends Base\Service
 
         $allTickets = $this->getTicketsFromType($queryParams, $type);
 
+        // Filter on category
+        $allTickets = $this->additionalFilterOnKey($allTickets, $input[Constants::CF_REQUESTOR_CATEGORY] ?? "",Constants::CUSTOM_FIELDS.'.'.Constants::CF_REQUESTOR_CATEGORY);
+
+        // Filter on subcategory
+        $allTickets = $this->additionalFilterOnKey($allTickets, $input[Constants::CF_REQUESTOR_SUBCATEGORY] ?? "", Constants::CUSTOM_FIELDS.'.'.Constants::CF_REQUESTOR_SUBCATEGORY);
+
         // Sorting the tickets in descending order of created_at
         $this->sortTicketsInDescendingOrderOfCreatedAt($allTickets);
 
@@ -1455,6 +1461,21 @@ class Service extends Base\Service
         $input['phone'] = $this->merchant->merchantDetail->getContactMobile();
 
         return $input;
+    }
+
+    protected function additionalFilterOnKey(array $allTickets, $valueToVerify, $key)
+    {
+        if (empty($valueToVerify) === true)
+        {
+            return $allTickets;
+        }
+
+        $allTickets = array_filter($allTickets, function ($ticket) use ($valueToVerify, $key)
+        {
+            return $valueToVerify === array_get($ticket,$key,"");
+        });
+
+        return $allTickets;
     }
 
 }

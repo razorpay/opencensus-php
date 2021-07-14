@@ -50,16 +50,16 @@ return [
                 'total'   => 4,
                 'results' => [
                     [
-                        'id'    => 'razorpayid0012',
+                        'id' => 'razorpayid0012',
                     ],
                     [
-                        'id'    => 'razorpayid0034',
+                        'id' => 'razorpayid0034',
                     ],
                     [
-                        'id'    => 'razorpayid0012',
+                        'id' => 'razorpayid0012',
                     ],
                     [
-                        'id'    => 'razorpayid0034',
+                        'id' => 'razorpayid0034',
                     ],
                 ],
             ],
@@ -70,25 +70,68 @@ return [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket',
             'method'  => 'GET',
-            'content' => [ 'cf_requester_category'    => 'Merchant',
-                           'cf_requestor_subcategory' => 'Activation',
-                           'cf_requester_item'        => '']
+            'content' => [
+                'cf_requester_category'    => 'Merchant',
+                'cf_requestor_subcategory' => 'Activation',
+                'cf_requester_item'        => ''
+            ]
         ],
         'response' => [
             'content' => [
                 'total'   => 8,
                 'results' => [
                     [
-                        'id'    => 'razorpayid0012',
+                        'id' => 'razorpayid0012',
                     ],
                     [
-                        'id'    => 'razorpayid0034',
+                        'id' => 'razorpayid0034',
                     ],
                     [
-                        'id'    => 'razorpayid0012',
+                        'id' => 'razorpayid0012',
                     ],
                     [
-                        'id'    => 'razorpayid0034',
+                        'id' => 'razorpayid0034',
+                    ],
+                    [
+                        'id' => 'razorpayid0012',
+                    ],
+                    [
+                        'id' => 'razorpayid0034',
+                    ],
+                    [
+                        'id' => 'razorpayid0012',
+                    ],
+                    [
+                        'id' => 'razorpayid0034',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchTicketsForMerchantWithFilter' => [
+        'request'  => [
+            'url'     => '/fd/support_dashboard/ticket',
+            'method'  => 'GET',
+            'content' => ['cf_requester_category'    => 'Merchant',
+                          'cf_requestor_subcategory' => 'Activation',
+                          'cf_requester_item'        => '']
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 4,
+                'results' => [
+                    [
+                        'id' => 'razorpayid0012',
+                    ],
+                    [
+                        'id' => 'razorpayid0012',
+                    ],
+                    [
+                        'id' => 'razorpayid0012',
+                    ],
+                    [
+                        'id' => 'razorpayid0012',
                     ],
                 ],
             ],
@@ -96,10 +139,10 @@ return [
     ],
 
     'testFetchTicketsForMerchantWithStatusOnly' => [
-        'request' => [
+        'request'  => [
             'url'     => '/fd/support_dashboard/ticket',
             'method'  => 'GET',
-            'content' => [ 'status' => 2]
+            'content' => ['status' => 2]
         ],
         'response' => [
             'content' => [
