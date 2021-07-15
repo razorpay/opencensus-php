@@ -264,7 +264,7 @@ class EventCode
 
     const PAYMENT_VERIFICATION_STATUS_NOT_FOR_VERIFY    = [
         'group' => 'verification',
-        'name'  => 'payment.verification.status_not_for_verify'
+        'name'  => 'payment.verification.status.not.for.verify'
     ];
 
     const PAYMENT_VERIFICATION_SCHEDULER_VERIFY_INITIATED = [
