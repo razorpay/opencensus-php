@@ -39,6 +39,9 @@ class TraceCode
     const USER_LOGOUT                               = 'USER_LOGOUT';
     const USER_RETRIEVE_CREDS                       = 'USER_RETRIEVE_CREDS';
     const ENABLE_INSTANT_ACTIVATIONS                = 'ENABLE_INSTANT_ACTIVATIONS';
+
+    const USERS_LOGOUT_BY_ROUTE                     = 'USERS_LOGOUT_BY_ROUTE';
+
     const INVALIDATE_OTHER_ACTIVE_SESSIONS          = 'INVALIDATE_OTHER_ACTIVE_SESSIONS';
 
     const USER_UNAUTHORIZED                         = 'USER_UNAUTHORIZED';

@@ -42,7 +42,17 @@ class GenericController extends Controller
         'merchant/activation' => ['clientId']
     ];
 
-    const USERS_RESET_PASSWORD_PATH  = 'users/reset-password-token';
+    const USERS_RESET_PASSWORD_PATH           = 'users/reset-password-token';
+    const MERCHANT_EMAIL_UPDATE               = 'merchants/email/update';
+    const MERCHANT_EMAIL_UPDATE_NEW_USER      = 'merchants/email/update/create_user';
+
+    const ROUTES_FOR_SESSION_DELETE = [
+        self::USERS_RESET_PASSWORD_PATH,
+        self::MERCHANT_EMAIL_UPDATE,
+        self::MERCHANT_EMAIL_UPDATE_NEW_USER,
+    ];
+
+    const LOGOUT_SESSIONS_FOR_USERS = 'logout_sessions_for_users';
 
     const MERCHANT_BULK_ACTION_ROUTE = 'merchants/bulk';
 
@@ -118,14 +128,52 @@ class GenericController extends Controller
             (new Admin\Service())->clearMerchantsUserSessions($input['merchant_ids']);
         }
 
-        if (($path === self::USERS_RESET_PASSWORD_PATH) &&
-            ($httpCode === 200) &&
-            (isset($data['user_id']) === true))
-        {
-            (new AppSession)->deleteSessionsForUser($data['user_id']);
-        }
+        $this->checkAndDeleteUserSessions($path, $data, $httpCode);
 
         return AppResponse::jsonResponse($error, $data, $httpCode);
+    }
+
+    protected function checkAndDeleteUserSessions($path, $data, $httpCode)
+    {
+        $userIDs = $this->getUserIDsForLogout($data);
+
+        if ((in_array($path, self::ROUTES_FOR_SESSION_DELETE) === true) and
+            ($httpCode === 200) and
+            (is_null($userIDs) === false))
+        {
+            $this->traceLogOutUserIDs($userIDs, $path);
+
+            $appSession = (new AppSession);
+
+            foreach ($userIDs as $userID)
+            {
+                $appSession->deleteSessionsForUser($userID);
+            }
+        }
+    }
+
+    protected function getUserIDsForLogout($data)
+    {
+        if (isset($data[self::LOGOUT_SESSIONS_FOR_USERS]) === true)
+        {
+            return $data[self::LOGOUT_SESSIONS_FOR_USERS];
+        }
+        else if (isset($data['user_id']) === true)
+        {
+            return [$data['user_id']];
+        }
+
+        return null;
+    }
+
+    protected function traceLogOutUserIDs($userIDs, $path)
+    {
+        $app = App::getFacadeRoot();
+
+        $app['trace']->info(TraceCode::USERS_LOGOUT_BY_ROUTE, [
+            'route' => $path,
+            'users' => $userIDs
+        ]);
     }
 
     /**
