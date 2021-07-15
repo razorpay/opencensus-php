@@ -58,6 +58,7 @@ class ErrorTest extends TestCase
         $allErrorCodes4 = array();
         $allErrorCodes5 = array();
         $allErrorCodes6 = array();
+        $allErrorCodes7 = array();
         $count = 0;
 
        foreach($allErrorMapping as $key => $value)
@@ -86,6 +87,10 @@ class ErrorTest extends TestCase
            {
                $allErrorCodes6[$value['internal_error_code']] = true;
            }
+           if ($count >= 2401 and $count <= 2800)
+           {
+               $allErrorCodes7[$value['internal_error_code']] = true;
+           }
 
             ++$count;
        }
@@ -104,7 +109,8 @@ class ErrorTest extends TestCase
                (array_key_exists($key, $allErrorCodes3) === true) or
                (array_key_exists($key, $allErrorCodes4) === true) or
                (array_key_exists($key, $allErrorCodes5) === true) or
-               (array_key_exists($key, $allErrorCodes6) === true))
+               (array_key_exists($key, $allErrorCodes6) === true) or
+               (array_key_exists($key, $allErrorCodes7) === true))
            {
                $foundErrorCode = true;
            }

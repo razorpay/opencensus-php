@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers\P2p;
 
 use RZP\Models\P2p;
+use RZP\Services\Pspx;
 
 /**
  * @property  P2p\Device\Service $service

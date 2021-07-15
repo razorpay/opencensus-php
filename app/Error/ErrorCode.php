@@ -2203,6 +2203,10 @@ class ErrorCode
 
     const BAD_REQUEST_PAYMENT_CUSTOMER_DROPPED_OFF                                  = 'BAD_REQUEST_PAYMENT_CUSTOMER_DROPPED_OFF';
 
+    // PSPX
+    const SERVER_ERROR_PSPX_SERVICE_UNAVAILABLE                                     = 'SERVER_ERROR_PSPX_SERVICE_UNAVAILABLE';
+    const SERVER_ERROR_PSPX_SERVICE_ERROR                                           = 'SERVER_ERROR_PSPX_SERVICE_ERROR';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

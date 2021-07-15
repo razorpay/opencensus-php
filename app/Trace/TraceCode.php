@@ -3306,6 +3306,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const P2P_MANAGE_REQUEST                                    = 'P2P_MANAGE_REQUEST';
     const P2P_MANAGE_RESPONSE                                   = 'P2P_MANAGE_RESPONSE';
     const P2P_REMINDER_CALLBACK                                 = 'P2P_REMINDER_CALLBACK';
+
+    // PSPx Traces
+    const PSPX_REQUEST                                          = 'PSPX_REQUEST';
+    const PSPX_RESPONSE                                         = 'PSPX_RESPONSE';
+    const PSPX_SERVICE_ERROR                                    = 'PSPX_SERVICE_ERROR';
+
     const SETTLEMENT_REMINDER_CALLBACK                          = 'SETTLEMENT_REMINDER_CALLBACK';
     const NEGATIVE_BALANCE_REMINDER_CALLBACK                    = 'NEGATIVE_BALANCE_REMINDER_CALLBACK';
     const TERMINAL_CREATED_WEBHOOK_REMINDER_CALLBACK            = 'TERMINAL_CREATED_WEBHOOK_REMINDER_CALLBACK';

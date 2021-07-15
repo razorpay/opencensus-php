@@ -975,7 +975,12 @@ return [
             'test' => env('UPI_PAYMENT_SERVICE_TEST_URL'),
         ],
     ],
-
+    'pspx'  => [
+      'username'  => env('PSPX_SERVICE_API_USERNAME'),
+      'password'  => env('PSPX_SERVICE_API_PASSWORD'),
+      'url'       => env('PSPX_SERVICE_URL'),
+      'mock'      => env('PSPX_SERVICE_MOCK', false),
+    ],
     'gupshup' => [
         'secret' => env('GUPSHUP_CALLBACK_SECRET')
     ],
