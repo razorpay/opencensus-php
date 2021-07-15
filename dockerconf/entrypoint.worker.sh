@@ -129,6 +129,14 @@ main() {
     topics=$4
     create_kafka_credentials_dir
     php artisan "${command}" "${mode}" "${APP_MODE}-${topics}"
+  elif [[ "${app_type}" == "kafka-general-consumer" ]]; then
+    echo "Starting Kafka general Consumer Job"
+    mode=$5
+    groupId=$4
+    consumer=$3
+    topics=$2
+    create_kafka_credentials_dir
+    php artisan kafka-consumer:consume --topics="${topics}" --consumer="${consumer}" --groupId="${groupId}" --mode="${mode}"
   elif [[ "${app_type}" == "sqs" ]]; then
     change_db_user_for_workers
     sleep_time=$2

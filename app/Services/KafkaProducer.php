@@ -19,7 +19,7 @@ class KafkaProducer
 
     protected $producerFlushTimeOutMS = 120000;
 
-    public function __construct($topicName, $message)
+    public function __construct($topicName, $message, $key = null)
     {
         $conf = $this->getConfig();
 
@@ -29,6 +29,8 @@ class KafkaProducer
 
         $this->message = $message;
 
+        $this->key = $key;
+
         $this->producerPollTimeOutMS = env('PRODUCER_POLL_TIMEOUT_MS', $this->producerPollTimeOutMS);
 
         $this->producerFlushTimeOutMS = env('PRODUCER_FLUSH_TIMEOUT_MS', $this->producerFlushTimeOutMS);
@@ -36,7 +38,7 @@ class KafkaProducer
 
     public function Produce()
     {
-        $this->kafkaTopic->produce(RD_KAFKA_PARTITION_UA, 0, $this->message);
+        $this->kafkaTopic->produce(RD_KAFKA_PARTITION_UA, 0, $this->message, $this->key);
 
         $this->producer->poll($this->producerPollTimeOutMS);
 
