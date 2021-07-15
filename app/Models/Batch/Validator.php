@@ -733,7 +733,7 @@ class Validator extends Base\Validator
     protected static $linkedAccountCreateCreateRules = [
         Entity::TYPE                 => 'required|in:linked_account_create',
         Entity::NAME                 => 'filled|string|max:255',
-        Entity::FILE                 => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE                 => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID              => 'required_without:file|public_id',
         Entity::SCHEDULE             => 'sometimes|numeric',
     ];
@@ -741,7 +741,7 @@ class Validator extends Base\Validator
     protected static $paymentTransferCreateRules = [
         Entity::TYPE                 => 'required|in:payment_transfer',
         Entity::NAME                 => 'filled|string|max:255',
-        Entity::FILE                 => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE                 => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID              => 'required_without:file|public_id',
         Entity::SCHEDULE             => 'sometimes|numeric',
     ];
