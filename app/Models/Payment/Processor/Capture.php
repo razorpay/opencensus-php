@@ -1262,7 +1262,7 @@ trait Capture
                        'input' => $input,
                    ]);
 
-               (new Transfer\Core())->dispatchForTransferProcessing(Transfer\Constant::ORDER, $payment);
+               Jobs\TransferProcess::dispatch($this->mode, $payment->getId());
            }
            else
            {

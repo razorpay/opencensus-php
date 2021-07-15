@@ -2214,7 +2214,7 @@ class Processor
 
                 if ($asyncTransfer === true)
                 {
-                    (new TransferCore())->dispatchForTransferProcessing(TransferConstant::PAYMENT, $payment);
+                    TransferProcess::dispatch($this->mode, $payment->getId(), TransferConstant::PAYMENT);
 
                     $this->trace->info(
                         TraceCode::PAYMENT_DISPATCHED_FOR_TRANSFER_PROCESS,

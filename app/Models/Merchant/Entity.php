@@ -731,12 +731,6 @@ class Entity extends Base\PublicEntity
     {
         return $this->isFeatureEnabled(Feature\Constants::MARKETPLACE);
     }
-
-    public function isRouteKeyMerchant() : bool
-    {
-        return $this->isFeatureEnabled(Feature\Constants::ROUTE_KEY_MERCHANTS_QUEUE);
-    }
-
     public function isDisplayParentPaymentId(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::DISPLAY_LA_PARENT_PAYMENT_ID);
