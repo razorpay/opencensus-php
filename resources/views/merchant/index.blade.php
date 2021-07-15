@@ -121,7 +121,7 @@ _dcs.account = '9421167';
 @endif
 
 <!-- Blank interface init before loading the project entry file -->
-@include('partials/rzpq-interface');
+@include('partials/rzpq-interface')
 
 @if ($isConfirmed and $isPreSignupComplete)
   <script type="text/javascript">
