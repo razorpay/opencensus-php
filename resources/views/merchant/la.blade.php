@@ -27,7 +27,7 @@
   @include('partials/sentry')
 @endif
 
-@include('partials/rzpq-interface');
+@include('partials/rzpq-interface')
 
 <script src="{{$cdnDashboardUrl}}/dist/merchantLA-entry.js"></script>
 
