@@ -232,6 +232,14 @@ class TerminalsService
             $options[self::CONNECT_TIMEOUT] = 0.5;
         }
 
+        // For merchant dashboard requests : RaaS
+        if (strpos($path, "/mid/provider") !== false)
+        {
+            $mid = $this->app['basicauth']->getMerchant()->getId();
+
+            $path =  str_replace_first('/mid/', "/" . $mid . "/", $path);
+        }
+
         $response = $this->sendRequest($path, $input, $method, $options, $headers);
 
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
@@ -544,7 +552,7 @@ class TerminalsService
         return Requests::request($url, $headers, $content, $method, $options);
     }
 
-    protected function parseAndReturnResponse(\Requests_Response $response): array
+    protected function parseAndReturnResponse(\Requests_Response $response)
     {
         $responseArray = json_decode($response->body, true);
 

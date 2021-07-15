@@ -58,4 +58,119 @@ class TerminalOnboardingTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testProxyAuthForGetOptimizerGateways()
+    {
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertEquals('v2/optimizer/supported_gateways', $path);
+
+            $response = new \Requests_Response;
+
+            $response->body = json_encode([
+                'data' => [
+                    'payu' => [
+                        'Key' => [
+                            'data_type'  => 'string',
+                            'data_value' => 'payu key',
+                            'min_length' => 6,
+                        ],
+                        'Salt' => [
+                            'data_type'  => 'string',
+                            'data_value' => 'payu salt',
+                            'min_length' => 8,
+                        ],
+                    ],
+                ],
+            ]);
+
+            return $response;
+        }, 1);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testProxyAuthForAddingOptimizerProvider()
+    {
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            $this->assertEquals(Requests::POST, $method);
+
+            $this->assertEquals('v2/optimizer/10000000000000/provider', $path);
+
+            $response = new \Requests_Response;
+
+            $response->body = json_encode([
+                'data' => [
+                    'terminal' => [
+                        'id' => 'HWo8Z0G0c0az74',
+                    ],
+                ],
+            ]);
+
+            return $response;
+        }, 1);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testProxyAuthForEditingOptimizerProvider()
+    {
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            $this->assertEquals(Requests::PUT, $method);
+
+            $this->assertEquals('v2/optimizer/10000000000000/provider', $path);
+
+            $response = new \Requests_Response;
+
+            $response->body = json_encode([
+                'data' => [
+                    'terminal' => [
+                        'id' => 'HWo8Z0G0c0az74',
+                    ],
+                ],
+            ]);
+
+            return $response;
+        }, 1);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testProxyAuthForListOptimizerMerchantProviders()
+    {
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertEquals('v2/optimizer/list/10000000000000/provider', $path);
+
+            $response = new \Requests_Response;
+
+            $response->body = json_encode([
+                'data' => [
+                    [
+                        'Provider_name' => 'PayU',
+                        'Description'   => 'Cards and UPI',
+                        'Gateway'       => 'payu',
+                    ],
+                ],
+            ]);
+
+            return $response;
+        }, 1);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
 }

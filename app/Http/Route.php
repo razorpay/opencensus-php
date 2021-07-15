@@ -421,6 +421,12 @@ class Route
         'terminals_proxy_delete_gateway_credential'=> ['delete',   'terminals/proxy/gateway_credentials/{id}',       'TerminalController@proxyV2TerminalService'                         ],
         'terminals_proxy_fetch_terminals_credentials'=> ['post',   'terminals/credentials',                          'TerminalController@fetchTerminalsCredentials'                      ],
 
+        // terminal service optimizer related proxies
+        'terminals_proxy_get_optimizer_gateways'            =>  ['get',     'terminals/proxy/optimizer/supported_gateways',          'TerminalController@proxyV2TerminalService'             ],
+        'terminals_proxy_add_optimizer_provider'            =>  ['post',    'terminals/proxy/optimizer/mid/provider',                'TerminalController@proxyV2TerminalService'             ],
+        'terminals_proxy_update_optimizer_provider'         =>  ['put',     'terminals/proxy/optimizer/mid/provider',                'TerminalController@proxyV2TerminalService'             ],
+        'terminals_proxy_get_merchant_optimizer_provider'   =>  ['get',     'terminals/proxy/optimizer/list/mid/provider',           'TerminalController@proxyV2TerminalService'             ],
+
         // Automatic terminal testing
         'execute_terminal_test_run'                => ['post',     'terminals/proxy/terminal_test_run',                              'TerminalController@proxyV2TerminalService'                         ],
         'fetch_terminal_test_run'                  => ['get',      'terminals/proxy/terminal_test_run',                              'TerminalController@proxyV2TerminalService'                         ],
@@ -3945,6 +3951,10 @@ class Route
 
         'initiate_terminal_onboarding',
         'proxy_merchant_get_terminals',
+        'terminals_proxy_get_optimizer_gateways',
+        'terminals_proxy_add_optimizer_provider',
+        'terminals_proxy_update_optimizer_provider',
+        'terminals_proxy_get_merchant_optimizer_provider',
 
         'payout_links_merchant_settings_post',
         'payout_links_merchant_settings_get',
@@ -6716,6 +6726,10 @@ class Route
             'hosted_subscription_button_details',
             'iin_list_by_flow',
             'initiate_terminal_onboarding',
+            'terminals_proxy_get_optimizer_gateways',
+            'terminals_proxy_add_optimizer_provider',
+            'terminals_proxy_update_optimizer_provider',
+            'terminals_proxy_get_merchant_optimizer_provider',
             'inspector_view_get',
             'invitation_create',
             'invitation_delete',
