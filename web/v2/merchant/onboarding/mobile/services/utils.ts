@@ -18,6 +18,7 @@ import {
   PUBLIC,
   SOCIETY,
   TRUST,
+  BUSINESS_PROOF_CERTIFICATE_TYPES,
 } from '../Constants/OnboardingConstants';
 
 export const getLabel = (field, data) => {
@@ -214,8 +215,12 @@ export function checkIfEAadharStepCompleted(data) {
   return isEAadharFieldFilled;
 }
 
-export function isDocumentTabComplete(data) {
+export function isDocumentTabComplete(data, isGstinMandatory = false) {
   const tabData = { ...onScreenDocuments(data) };
+
+  if (isGstinMandatory && tabData[BUSINESS_PROOF_CERTIFICATE_TYPES.GST_CERTIFICATE]) {
+    tabData.gstin = { value: data.gstin };
+  }
 
   const isDocumentFieldsFilled = Object.keys(tabData).every((key) => {
     return !!tabData[key].value && !tabData[key].error;

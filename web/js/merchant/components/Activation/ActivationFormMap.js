@@ -994,7 +994,7 @@ const uploadFields = [
     label: 'GSTIN',
     _autoRenderImpure: true, // Re-render to show the error
     placeholder: 'Enter GSTIN',
-    required: false,
+    required: (activation) => activation.props.user.isGstinMandatory,
     size: 'small',
     info: 'Enter GSTIN & get reviewed faster. Should match your business address.',
     validator: (value) => {

@@ -36,6 +36,7 @@ const getCommonProperties = ({ screen, properties, user }) => {
     is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
     is_instant_activation_enabled: user.isInstantActivationEnabled,
     is_aadhar_ekyc_mandatory: user.isAadharEkycMandatory,
+    is_gstin_mandatory: user.isGstinMandatory,
     user_business_category: user.business_category,
     user_business_sub_category: user.business_subcategory,
     device_type: 'mweb',

@@ -1514,6 +1514,8 @@ export default class ActivationWizard extends React.Component {
           // re-validate the tab once state changes
           if (stateName === 'additional_doc') {
             this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+          } else if (stateName === 'business_proof_type') {
+            this.markTabIfActive(this.state.activeTab);
           }
         },
       );

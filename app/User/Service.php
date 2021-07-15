@@ -1582,7 +1582,8 @@ class Service extends Base\Service
             'rx_taxpayments_tin_change',
             'email_self_serve',
             'pb_new_success_screen',
-            'recurring_more_account_type'
+            'mandatory_gstin_input',
+            'recurring_more_account_type',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

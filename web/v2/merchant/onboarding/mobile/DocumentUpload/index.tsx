@@ -55,7 +55,10 @@ interface DocumentUploadProps {
 
 const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
   const { data, documentUpload, documentDelete, postData } = useActivation();
-  const { user } = useApp();
+  const {
+    user,
+    experiments: { isGstinMandatory },
+  } = useApp();
   const documents = data.documents;
   const businessDetails = data.business_details;
 
@@ -124,14 +127,17 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       });
     }
 
-    const isComplete = isDocumentTabComplete({
-      ...data,
-      documents: { ...documents, ...response.documents },
-      addressDoc,
-      businessDoc,
-      bankDoc,
-      additionalDoc,
-    });
+    const isComplete = isDocumentTabComplete(
+      {
+        ...data,
+        documents: { ...documents, ...response.documents },
+        addressDoc,
+        businessDoc,
+        bankDoc,
+        additionalDoc,
+      },
+      isGstinMandatory,
+    );
     setDocumentUploadCompleted(isComplete);
   };
 
@@ -176,13 +182,16 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
 
   // update document tab complete checkbox whenever state change
   useEffect(() => {
-    const isComplete = isDocumentTabComplete({
-      ...data,
-      addressDoc,
-      businessDoc,
-      bankDoc,
-      additionalDoc,
-    });
+    const isComplete = isDocumentTabComplete(
+      {
+        ...data,
+        addressDoc,
+        businessDoc,
+        bankDoc,
+        additionalDoc,
+      },
+      isGstinMandatory,
+    );
     setDocumentUploadCompleted(isComplete);
   }, [addressDoc, businessDoc, bankDoc, additionalDoc]);
 

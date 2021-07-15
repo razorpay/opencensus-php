@@ -1077,6 +1077,10 @@ export default class User {
     return this.getExpStatus('mandatory_aadhar_ekyc');
   }
 
+  get isGstinMandatory() {
+    return this.getExpStatus('mandatory_gstin_input');
+  }
+
   get isRecurringMoreAccountType() {
     return this.getExpStatus('recurring_more_account_type');
   }
