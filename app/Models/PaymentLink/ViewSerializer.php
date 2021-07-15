@@ -42,10 +42,6 @@ class ViewSerializer extends Base\Core
 
     const RAZORX_ASTERIX_EXPERIMENT = 'pp_hostedpage_asterisk';
 
-    const RAZORX_PAGELOAD_OPTIMIZATION_ENABLED = 'pp_pageload_optimization_enabled';
-
-    const RAZORX_DISCLAIMER_TEXT_ENABLED = 'pp_disclaimer_text_enabled';
-
     public function __construct(Entity $paymentLink)
     {
         parent::__construct();
@@ -338,17 +334,9 @@ class ViewSerializer extends Base\Core
 
         $mode = $this->mode ?? Mode::LIVE;
 
-        $pageLoadOptimizationEnabled = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            self::RAZORX_PAGELOAD_OPTIMIZATION_ENABLED,
-            $mode
-        );
+        $pageLoadOptimizationEnabled = 'on';
 
-        $disclaimerTextEnabled = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            self::RAZORX_DISCLAIMER_TEXT_ENABLED,
-            $mode
-        );
+        $disclaimerTextEnabled = 'on';
 
         return [
             'exempt_customer_flagging'       => $exemptCustomerFlagging,
