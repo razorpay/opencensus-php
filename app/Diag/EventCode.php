@@ -262,6 +262,16 @@ class EventCode
         'name'  => 'payment.verification.initiated'
     ];
 
+    const PAYMENT_VERIFICATION_STATUS_NOT_FOR_VERIFY    = [
+        'group' => 'verification',
+        'name'  => 'payment.verification.status_not_for_verify'
+    ];
+
+    const PAYMENT_VERIFICATION_SCHEDULER_VERIFY_INITIATED = [
+        'group' => 'verification',
+        'name'  => 'payment.verification.scheduler.verify.initiated'
+    ];
+
     const PAYMENT_VERIFICATION_FILTERED_FINAL_FAILURE   = [
         'group' => 'verification',
         'name'  => 'payment.verification.filtered.final.failure'

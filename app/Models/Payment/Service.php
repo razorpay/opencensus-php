@@ -3675,6 +3675,12 @@ class Service extends Base\Service
             return $data;
         }
 
+        $extraProperties = [
+            'is_pushed_to_kafka'  => $payment->getIsPushedToKafka(),
+        ];
+
+        $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_SCHEDULER_VERIFY_INITIATED, $payment, null, $extraProperties);
+
         if(array_search($payment->getStatus(), $statusToVerify) === false)
         {
             $this->trace->info(
@@ -3682,6 +3688,8 @@ class Service extends Base\Service
                 [
                     'payment_id' => $id
                 ]);
+
+            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_STATUS_NOT_FOR_VERIFY, $payment, null, $extraProperties);
 
             $data['retry_verify'] = false;
         }
