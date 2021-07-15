@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Hitachi;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Gateway;
 use RZP\Services\DowntimeMetric;
 use RZP\Services\RazorXClient;
@@ -97,6 +98,11 @@ class HitachiGatewayTest extends TestCase
                     if ($feature === 'recurring_card_not_enabled')
                     {
                         return 'control';
+                    }
+
+                    if ($feature === RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1)
+                    {
+                        return 'off';
                     }
 
                     return 'on';

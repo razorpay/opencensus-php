@@ -291,4 +291,7 @@ final class RazorxTreatment
      * Experiment to indicate if a payment should go via capture queue for Visa and other n/ws like Amex,Diner etc.
      */
     const PAYMENT_GATEWAY_CAPTURE_ASYNC_OTHER_NETWORKS = 'payment_gateway_capture_async_other_networks';
+
+    // Experiment to have refunds created directly on scrooge based on merchant id
+    const MERCHANTS_REFUND_CREATE_V_1_1 = 'merchants_refund_create_v1.1';
 }

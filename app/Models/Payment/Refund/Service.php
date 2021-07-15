@@ -3,10 +3,13 @@
 namespace RZP\Models\Payment\Refund;
 
 use Config;
+use ApiResponse;
 use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Error\Error;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -26,6 +29,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Jobs\ScroogeRefundUpdate;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Error\PublicErrorDescription;
 use RZP\Jobs\BulkScroogeVerifyRefund;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\BulkRefund as BulkRefundJob;
@@ -131,7 +135,7 @@ class Service extends Base\Service
         {
             return $input;
         }
-}
+    }
 
     public function create(array $input)
     {
@@ -144,6 +148,38 @@ class Service extends Base\Service
         unset($input[Entity::PAYMENT_ID]);
 
         return (new Payment\Service)->refund($paymentId, $input);
+    }
+
+    // scroogeRefundCreate : call create new refund v2 route on scrooge. Refund creation fully happens on scrooge
+    public function scroogeRefundCreate(string $paymentId, array $input)
+    {
+        $input[RefundConstants::PAYMENT_ID] = $paymentId;
+
+        // call to scrooge
+        $response = $this->app['scrooge']->createNewRefundV2($input);
+
+        // response handling
+        if (in_array($response['code'], [200, 201, "200", "201"]) == false)
+        {
+            $publicErrorCode = $response['body']['internal_error']['code'] ?? ErrorCode::SERVER_ERROR;
+
+            $publicErrorMessage = $response['body']['internal_error']['message'] ?? PublicErrorDescription::SERVER_ERROR;
+
+            // If errorcode is undefined, will fallback to server_error
+            if (defined(ErrorCode::class . '::' . $publicErrorCode) === false)
+            {
+                $publicErrorCode = ErrorCode::SERVER_ERROR;
+
+                $publicErrorMessage = PublicErrorDescription::SERVER_ERROR;
+            }
+
+            $error = new Error($publicErrorCode, $publicErrorMessage);
+
+            return ApiResponse::generateErrorResponse($error);
+        }
+
+        // body has the actual scrooge response
+        return $response['body'];
     }
 
     public function getRefundsFile(array $input = [])

@@ -8,12 +8,13 @@ use Queue;
 use Illuminate\Support\Facades\Redis;
 
 use RZP\Gateway\Hitachi;
+use RZP\Services\RazorXClient;
 use RZP\Services\DowntimeMetric;
 use RZP\Gateway\Paysecure\Entity;
 use RZP\Gateway\Paysecure\Gateway;
-use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\Capture as CaptureJob;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Mail\Payment\Captured as CapturedMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -99,6 +100,12 @@ class PaysecureGatewayTest extends TestCase
                     {
                         return 'off';
                     }
+
+                    if ($feature === RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1)
+                    {
+                        return 'off';
+                    }
+
                     return 'on';
                 }));
 

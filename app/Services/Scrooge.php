@@ -66,6 +66,7 @@ class Scrooge
         'retry_source_fund_transfers'          => 'retry/source_fund_transfers',
         'retry_custom_fund_transfers'          => 'retry/custom_fund_transfers',
         'retry_with_attempt_appended_id'       => 'retry/with_attempt_appended_id',
+        'create_new_refund_v2'                 => 'create-new-refund-v2',
     ];
 
     // Headers
@@ -82,6 +83,10 @@ class Scrooge
     const RESPONSE_STATUS        = 'status';
 
     const MODE = 'mode';
+
+    const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
+
+    const PASSPORT_AUD = 'scrooge';
 
     /**
      * Scrooge constructor.
@@ -512,6 +517,23 @@ class Scrooge
     }
 
     /**
+     * New refund create V2 API.
+     * Validate incoming refund requests in sync
+     * @param array $input
+     * @return array
+     */
+    public function createNewRefundV2(array $input): array
+    {
+        // send passport token to Scrooge
+        $this->enablePassport();
+
+        return $this->sendRequest(
+            self::RefundsBaseURL . '/' . self::URLS['create_new_refund_v2'],
+            Requests::POST,
+            $input);
+    }
+
+    /**
      * @param string $endpoint
      * @param string $method
      * @param array  $data
@@ -554,6 +576,27 @@ class Scrooge
         $headers[self::X_REQUEST_ID]  = $this->request->getId();
 
         $this->headers = $headers;
+    }
+
+    /**
+     * Function to set custom headers for any request
+     */
+    protected function setCustomHeaders(array $customHeaders = [])
+    {
+        $this->headers = $this->headers + $customHeaders;
+    }
+
+    /**
+     * Function to send passport token in headers in API call to Scrooge
+     */
+    protected function enablePassport()
+    {
+        $customHeader = [
+            self::X_PASSPORT_JWT_V1 => $this->auth->getPassportJwt(self::PASSPORT_AUD),
+        ];
+
+        // set custom headers
+        $this->setCustomHeaders($customHeader);
     }
 
     /**

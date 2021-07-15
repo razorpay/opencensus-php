@@ -222,10 +222,11 @@ class Service extends Base\Service
     /**
      * Refunds a payment
      *
-     * @param  string $id
-     * @param  array  $input
+     * @param string $id
+     * @param array $input
      *
      * @return array
+     * @throws BadRequestException
      */
     public function refund($id, array $input)
     {
@@ -235,6 +236,18 @@ class Service extends Base\Service
                 'payment_id' => $id,
                 'input'      => $input
             ]);
+
+        $variant = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                Merchant\RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1,
+                $this->mode
+        );
+
+        if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            // Route refund creation to scrooge
+            return (new Payment\Refund\Service())->scroogeRefundCreate($id, $input);
+        }
 
         $refund = $this->getNewProcessor()->refundPaymentViaMerchant($id, $input);
 

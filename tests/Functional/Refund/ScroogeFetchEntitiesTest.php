@@ -655,8 +655,6 @@ class ScroogeFetchEntitiesTest extends TestCase
 
                 $response = Arr::dot($response);
 
-                var_dump($response);
-
                 foreach ($expectedOutput as $key => $val)
                 {
                     $this->assertEquals($val, $response[$key]);

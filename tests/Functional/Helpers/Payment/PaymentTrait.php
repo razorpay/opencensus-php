@@ -6,6 +6,7 @@ use App;
 use Mockery;
 use Requests;
 use Carbon\Carbon;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Constants\Shield as ShieldConstants;
@@ -2784,7 +2785,16 @@ trait PaymentTrait
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode)
+                              {
+                                  if ($feature === RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1)
+                                  {
+                                      return 'off';
+                                  }
+
+                                  return 'on';
+                              }));
     }
 
     protected function assignSubMerchant(string $tid, string $mid)

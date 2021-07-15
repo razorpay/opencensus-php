@@ -8,6 +8,8 @@ use Mockery;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -521,6 +523,25 @@ class MerchantInvoiceTest extends TestCase
         ]);
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1)
+                    {
+                        return 'off';
+                    }
+
+                    return 'control';
+                }));
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
         $this->refundPayment($p4['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
