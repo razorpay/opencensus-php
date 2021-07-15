@@ -95,11 +95,21 @@ class Service extends Base\Service
 
         if(empty($personId) === false)
         {
-            $signatories = $this->buildSignatoryPayload($personId, $input);
+            $this->createOrUpdateSignatory($input, $personId, $path);
 
             $input = $this->getPersonDocumentDetails($input, $personId);
 
-            $input[Constants::SIGNATORIES] = $signatories;
+            unset($input[Constants::SIGNATORIES]);
+        }
+
+        if($method === Request::METHOD_DELETE)
+        {
+            $idArray = $this->getBusinessRelatedAndApplicationRelatedIdsForSignatoryCallToBAS($path, $method);
+
+            if(empty($idArray[Constants::SIGNATORY_ID]) === false)
+            {
+                return $this->deleteSignatory($idArray, $method, $input);
+            }
         }
 
         $response =  $this->bankingAccountService->sendRequestAndProcessResponse($uri, $method, $input);
@@ -235,17 +245,6 @@ class Service extends Base\Service
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BAS_PERSON_API_FAILURE);
     }
 
-    public function buildSignatoryPayload($personId, $input)
-    {
-        return
-            [
-                [
-                    Constants::PERSON_ID      => $personId,
-                    Constants::SIGNATORY_TYPE => $input[Constants::SIGNATORIES][Constants::SIGNATORY_TYPE],
-                ]
-            ];
-    }
-
     /**
      * Fetches accounts from banking service based on merchantId
      *
@@ -356,4 +355,215 @@ class Service extends Base\Service
         return $this->bankingAccountService->sendRequestAndProcessResponse($basPinCodeServiceabilityPath, 'GET', $input);
     }
 
+    /**
+     * @param $input
+     * @param $personId
+     * @param string $path
+     * @return array
+     * This method create/update the signatory for the specific application
+     */
+    public function createOrUpdateSignatory($input, $personId, string $path)
+    {
+        if (empty($input[Constants::SIGNATORIES][Constants::PERSON_ID]) === false)
+        {
+            $method = Request::METHOD_PATCH;
+
+            $idArray = $this->getBusinessRelatedAndApplicationRelatedIdsForSignatoryCallToBAS($path, $method);
+
+            $signatoryId = $input[Constants::SIGNATORIES][Constants::SIGNATORY_ID];
+
+            //PATCH :business/{id}/application/{id}/signatory/{id}
+            $path = Constants::BUSINESS_PATH . '/' . $idArray[Constants::BUSINESS_ID] . '/' . Constants::APPLICATION_PATH . '/' . $idArray[Constants::APPLICATION_ID] . '/' . Constants::SIGNATORY_PATH . '/' . $signatoryId;
+        }
+        else
+        {
+            $method = Request::METHOD_POST;
+
+            $idArray = $this->getBusinessRelatedAndApplicationRelatedIdsForSignatoryCallToBAS($path, $method);
+
+            //POST : business/{id}/application/{id}/signatory
+            $path = Constants::BUSINESS_PATH . '/' . $idArray[Constants::BUSINESS_ID] . '/' . Constants::APPLICATION_PATH . '/' . $idArray[Constants::APPLICATION_ID] . '/' . Constants::SIGNATORY_PATH;
+        }
+
+        $signatoryPayload = [
+            Constants::PERSON_ID      => $personId,
+            Constants::SIGNATORY_TYPE => $input[Constants::SIGNATORIES][Constants::SIGNATORY_TYPE],
+        ];
+
+        $response = $this->bankingAccountService->sendRequestAndProcessResponse($path, $method, $signatoryPayload);
+
+        if (isset($response['data']) === true)
+        {
+            //person id
+            return $response['data']['id'];
+        }
+
+        $this->trace->error(
+            TraceCode::BANKING_ACCOUNT_SERVICE_ERROR_SIGNATORY_API_FAILURE,
+            $response['error']
+        );
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BAS_SIGNATORY_API_FAILURE);
+
+    }
+
+    /**
+     * @param string $path
+     * @param $method
+     * @return array
+     * This method parses the url and returns the Ids related to Business and Application
+     */
+    public function getBusinessRelatedAndApplicationRelatedIdsForSignatoryCallToBAS(string $path, $method)
+    {
+        $result = preg_split("/[\/]/", $path);
+
+        if($method === Request::METHOD_POST || $method === Request::METHOD_PATCH)
+        {
+            return [
+                Constants::BUSINESS_ID => $result[1],
+                Constants::APPLICATION_ID => $result[3]
+            ];
+        }
+        else if($method === Request::METHOD_DELETE)
+        {
+            return [
+                Constants::BUSINESS_ID => $result[1],
+                Constants::APPLICATION_ID => $result[3],
+                Constants::PERSON_ID=> $result[5],
+                Constants::SIGNATORY_ID => $result[7]
+            ];
+        }
+    }
+
+    /**
+     * @param array $idArray
+     * @param string $path
+     * @param string $method
+     * @param $input
+     * @return array
+     * @throws Exception\BadRequestException
+     * Delete Signatory -
+     * call the delete Bas signatory Api
+     * call the delete person person Api
+     * get the application patch(get the application specific fields for that application)
+     * call the application patch and remove the person doc mapping for that person_id
+     */
+    public function deleteSignatory(array $idArray, string $method, $input)
+    {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_DELETE_SIGNATORY_REQUEST,
+            [
+                Constants::BUSINESS_ID    => $idArray[Constants::BUSINESS_ID],
+                Constants::APPLICATION_ID => $idArray[Constants::APPLICATION_ID],
+                Constants::SIGNATORY_ID => $idArray[Constants::SIGNATORY_ID ],
+                'method' => $method,
+            ]);
+
+        //Delete the signatory entity
+        $path = Constants::BUSINESS_PATH . '/' . $idArray[Constants::BUSINESS_ID] . '/' . Constants::APPLICATION_PATH . '/' . $idArray[Constants::APPLICATION_ID] . '/' . Constants::SIGNATORY_PATH . '/' . $idArray[Constants::SIGNATORY_ID];
+
+        $response = $this->bankingAccountService->sendRequestAndProcessResponse($path, $method, $input);
+
+        if (empty($response['deleted']) === true || $response['deleted'] === false)
+        {
+            $this->trace->error(
+                TraceCode::BANKING_ACCOUNT_SERVICE_ERROR_SIGNATORY_API_FAILURE,
+                $response['error']);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BAS_SIGNATORY_API_FAILURE);
+        }
+
+        //Delete the person entity
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_DELETE_PERSON_REQUEST,
+            [
+                Constants::BUSINESS_ID => $idArray[Constants::BUSINESS_ID],
+                Constants::PERSON_ID  => $idArray[Constants::PERSON_ID],
+                'method' => $method,
+            ]);
+
+        $path = Constants::BUSINESS_PATH . '/' . $idArray[Constants::BUSINESS_ID] .  '/' . Constants::PERSON_PATH . '/' . $idArray[Constants::PERSON_ID];
+
+        $response = $this->bankingAccountService->sendRequestAndProcessResponse($path, $method, $input);
+
+        if (empty($response['deleted']) === true || $response['deleted'] === false)
+        {
+            $this->trace->error(
+                TraceCode::BANKING_ACCOUNT_SERVICE_ERROR_PERSON_API_FAILURE,
+                $response['error']
+            );
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BAS_PERSON_API_FAILURE);
+        }
+
+        //Update the application entity(application_specific_fields)
+        return $this->getAndUpdateApplicationSpecificFields($idArray, $input);
+    }
+
+    /**
+     * @param $idArray
+     * @param $input
+     * @return bool[]
+     * @throws Exception\BadRequestException
+     */
+    public function getAndUpdateApplicationSpecificFields($idArray, $input)
+    {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_GET_APPLICATION_REQUEST,
+            [
+                Constants::BUSINESS_ID => $idArray[Constants::BUSINESS_ID],
+                Constants::PERSON_ID  => $idArray[Constants::PERSON_ID],
+                'input' => $input
+            ]);
+
+        $path = Constants::BUSINESS_PATH . '/' . $idArray[Constants::BUSINESS_ID] . '/' . Constants::APPLICATIONS_PATH . '/' . $idArray[Constants::APPLICATION_ID];
+
+        // Get the application
+        $response = $this->bankingAccountService->sendRequestAndProcessResponse($path, Request::METHOD_GET, $input);
+
+        if (isset($response['data']) === false) {
+
+            $this->trace->error(
+                TraceCode::BANKING_ACCOUNT_SERVICE_ERROR_GET_APPLICATION_API_FAILURE,
+                $response['error']
+            );
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BAS_GET_APPLICATION_API_FAILURE);
+        }
+
+        $applicationSpecificFields = $response['data'][Constants::APPLICATION_SPECIFIC_FIELDS];
+
+        unset($applicationSpecificFields[Constants::PERSONS_DOCUMENT_MAPPING][$idArray[Constants::PERSON_ID]]);
+
+        $personDocumentMapping = $applicationSpecificFields[Constants::PERSONS_DOCUMENT_MAPPING];
+
+        if (count($personDocumentMapping) === 0) {
+            unset($applicationSpecificFields[Constants::PERSONS_DOCUMENT_MAPPING]);
+        }
+
+        $applicationSpecificFields = [
+            Constants::APPLICATION_SPECIFIC_FIELDS => $applicationSpecificFields
+        ];
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_PATCH_APPLICATION_REQUEST,
+            [
+                Constants::BUSINESS_ID => $idArray[Constants::BUSINESS_ID],
+                Constants::PERSON_ID  => $idArray[Constants::PERSON_ID],
+                'input' => $applicationSpecificFields
+            ]);
+
+        //PATCH the application specific fields
+        $response = $this->bankingAccountService->sendRequestAndProcessResponse($path, Request::METHOD_PATCH, $applicationSpecificFields);
+
+        if (isset($response['data']) === true) {
+            //person id
+            return [
+                'deleted' => true
+            ];
+        }
+
+        $this->trace->error(
+            TraceCode::BANKING_ACCOUNT_SERVICE_ERROR_PATCH_APPLICATION_API_FAILURE,
+            $response['error']
+        );
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BAS_PATCH_APPLICATION_API_FAILURE);
+    }
 }

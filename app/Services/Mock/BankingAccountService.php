@@ -138,6 +138,83 @@ class BankingAccountService
             ];
         }
 
+        else if($path === 'business/10000000000000/application/10000000000000/signatory' and $method === 'POST')
+        {
+            $result = [
+                'data' => [
+                    'id' => '40000000000000',
+                ]
+            ];
+        }
+
+        else if($path === 'business/10000000000000/application/10000000000000/signatory/40000000000000' and $method === 'PATCH')
+        {
+            $result = [
+                'data' => [
+                    'id' => '40000000000000',
+                ]
+            ];
+        }
+
+        else if($path === 'business/10000000000000/person/20000000000000' and $method === 'DELETE')
+        {
+            $result = [
+                'deleted' => true
+            ];
+        }
+
+        else if($path === 'business/10000000000000/application/10000000000000/signatory/40000000000000' and $method === 'DELETE')
+        {
+            $result = [
+                'deleted' => true
+            ];
+        }
+
+        else if($path === 'business/10000000000000/applications/10000000000000' and $method === 'GET')
+        {
+            $result = [
+                'data' => [
+                    'id' => '10000000000000',
+                    'application_specific_fields' => [
+                        'isBusinessGovtBodyOrLiasedOnUnrecognisedStockOrInternationalOrg' => 'N',
+                        'isIndianFinancialInstitution'                                    => 'Y',
+                        'isOwnerNotIndianCitizen'                                         => 'N',
+                        'isTaxResidentOutsideIndia'                                       => 'Y',
+                        'role_in_business'                                                => 'ACCOUNTANT',
+                        'business_document_mapping'   => [
+                            'entityProof1' => 'AADHAR',
+                            'entityProof2' => 'PANCARD'
+                        ],
+                        'persons_document_mapping' => [
+                            '20000000000000' => [
+                                'addressProof' => 'AADHAAR',
+                                'idProof' => 'PANCARD'
+                            ],
+                            '50000000000000' => [
+                                'addressProof' => 'AADHAAR',
+                                'idProof' => 'PANCARD'
+                            ]
+                        ]
+                    ],
+                    'signatories' => [
+                        0 => [
+                            'person_id'      => '20000000000000',
+                            'signatory_type' => 'AUTHORIZED_SIGNATORY',
+                        ],
+                    ],
+                ],
+            ];
+        }
+
+        else if($path === 'business/10000000000000/person/20000000000000' and $method === 'PATCH')
+        {
+            $result = [
+                'data' => [
+                    'id' => '20000000000000',
+                ]
+            ];
+        }
+
         return $result;
     }
 

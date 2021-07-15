@@ -52,4 +52,12 @@ class Constants
     const PERSONS_DOCUMENT_MAPPING      = 'persons_document_mapping';
 
     const BAS_PIN_CODE_SERVICEABILITY   = 'is_serviceable';
+
+    const SIGNATORY_PATH                = 'signatory';
+
+    const SIGNATORY_ID                  = 'signatory_id';
+
+    const APPLICATION_ID                = 'application_id';
+
+    const APPLICATION_PATH              = 'application';
 }
