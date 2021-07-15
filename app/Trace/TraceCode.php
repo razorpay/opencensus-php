@@ -1858,6 +1858,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const IIN_UPDATE_BULK                                       = 'IIN_UPDATE_BULK';
     const IIN_UPDATE_FAILED                                     = 'IIN_UPDATE_FAILED';
     const IIN_FLOW_DISABLE                                      = 'IIN_FLOW_DISABLE';
+    const IIN_METRICS_PUSH_EXCEPTION                            = 'IIN_METRICS_PUSH_EXCEPTION';
+    const IIN_ERROR_LOGGING_RESPONSE_TIME_METRIC                = 'IIN_ERROR_LOGGING_RESPONSE_TIME_METRIC';
+    const BIN_API                                               = 'BIN_API';
+    const BIN_API_EXCEPTION                                     = 'BIN_API_EXCEPTION';
     const RECON_BEGIN_FILE_PARSING                              = 'RECON_BEGIN_FILE_PARSING';
     const RECON_END_FILE_PARSING                                = 'RECON_END_FILE_PARSING';
     const RECON_BATCH_CREATION_FAILED                           = 'RECON_BATCH_CREATION_FAILED';

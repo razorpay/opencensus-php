@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Card\IIN;
 
+use App;
+use RZP\Diag\EventCode;
 use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -100,25 +102,64 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        $input[Entity::IIN] = $id;
+        $startTime = microtime(true);
 
-        (new Validator)->validateInput('fetch_iin', $input);
+        $this->trace->info(TraceCode::BIN_API, [
+            'iin'           => $id,
+            'merchant'      => $this->merchant->getId(),
+        ]);
 
-        $iin = $this->repo->iin->find($id);
-
-        if (isset($iin) === false or $iin->isEnabled() !== true)
+        try
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS,
-                null,
-                [
-                    'method'  => Method::CARD
-                ]);
+            $this->app['diag']->trackIINEvent(EventCode::BIN_API_INITIATION, null, null, $this->getCustomProperties($id));
+
+            $input[Entity::IIN] = $id;
+
+            (new Validator)->validateInput('fetch_iin', $input);
+
+            $iin = $this->repo->iin->find($id);
+
+            if (isset($iin) === false or $iin->isEnabled() !== true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS,
+                    null,
+                    [
+                        'method'  => Method::CARD
+                    ]);
+            }
+
+            $data = $this->getBasicDetails($iin);
+
+            $data = $this->getPaymentFlows($data, $iin);
+
+            $this->app['diag']->trackIINEvent(EventCode::BIN_API_SUCCESS, $iin, null, $this->getCustomProperties($id));
+
+            (new Metric())->pushIinMetrics(Metric::BIN_API, Metric::SUCCESS, $iin);
+
+            (new Metric())->pushIINResponseTimeMetrics($iin, Metric::BIN_API_RESPONSE_TIME, $startTime);
+
+            return $data;
         }
 
-        $data = $this->getBasicDetails($iin);
+        catch (\Exception $e)
+        {
+            $iin = $iin ?? null;
 
-        return $this->getPaymentFlows($data, $iin);
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::BIN_API_EXCEPTION,
+                [
+                    'iin'   => $id,
+                ]);
+
+            $this->app['diag']->trackIINEvent(EventCode::BIN_API_FAILURE, $iin, $e, $this->getCustomProperties($id));
+
+            (new Metric())->pushIinMetrics(Metric::BIN_API, Metric::FAILED, $iin, $e);
+
+            throw $e;
+        }
     }
 
     public function editIinBulk($input)
@@ -533,5 +574,13 @@ class Service extends Base\Service
                 }
             }
         }
+    }
+
+    protected function getCustomProperties($id)
+    {
+        return  [
+            'iin'           => $id,
+            'merchant'      => $this->merchant->getId(),
+        ];
     }
 }

@@ -796,6 +796,21 @@ class EventCode
         'name'  => 'payment.eligibility_check.processed'
     ];
 
+    const BIN_API_SUCCESS = [
+        'group' => 'bin_api',
+        'name'  => 'bin.api.success'
+    ];
+
+    const BIN_API_FAILURE = [
+        'group' => 'bin_api',
+        'name'  => 'bin.api.failure'
+    ];
+
+    const BIN_API_INITIATION = [
+        'group' => 'bin_api',
+        'name'  => 'bin.api.initiation'
+    ];
+
     const ERROR_RESPONSE              = [
         'group' => 'error_response',
         'name'  => 'error.response'
