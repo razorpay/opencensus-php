@@ -609,6 +609,10 @@ export default class User {
     return this.isFeatureEnabled('ES_AUTOMATIC');
   }
 
+  get isOndemandSettlementsRestricted() {
+    return this.isFeatureEnabled('es_on_demand_restricted');
+  }
+
   get isCreditPullEnabled() {
     return this.isFeatureEnabled('show_credit_score');
   }

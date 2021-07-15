@@ -1238,7 +1238,7 @@ angular
           pageUrl: window.location.href,
           eventTimestamp: new Date().toISOString(),
         });
-        if (window.analytics) {
+        if (window.analytics && window.analytics.track) {
           window.analytics.track(eventName, properties);
         }
       }

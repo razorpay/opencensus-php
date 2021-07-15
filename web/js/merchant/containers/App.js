@@ -2,6 +2,7 @@ import { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import moment from 'moment';
+import analyticsService from '@razorpay/commander-services/analytics';
 import { createSidetab } from '@typeform/embed';
 
 import Loader from 'common/ui/Loader';
@@ -169,6 +170,13 @@ export default class App extends Component {
 
   componentWillMount() {
     const user = window.rzp_user;
+
+    analyticsService.init({
+      lumberjackAppName: 'pg-dashboard',
+      lumberjackApiKey: window.LUMBERJACK_API_KEY,
+      lumberjackApiUrl: window.LUMBERJACK_API_URL,
+    });
+
     initAnalytics().then(() => {
       window.segment_loaded = true;
       if (user && window.analytics) {

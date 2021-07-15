@@ -117,7 +117,7 @@ export const analyticsTrack = ({
 
   const eventTimestamp = new Date().toISOString();
   const eventName = titleCase(`${objectName} ${actionName}`);
-  if (window.analytics) {
+  if (window.analytics && window.analytics.track) {
     window.analytics.track(eventName, {
       ...properties,
       screen,

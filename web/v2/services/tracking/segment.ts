@@ -81,7 +81,7 @@ export const analyticsTrack = ({
   const eventName = titleCase(`${objectName} ${actionName} ${eventAction}`);
   const dataLakeEventName = `${activationType}.${actionName.split(' ').join('_')}`;
   const commonProperties = getCommonProperties({ screen, properties, user });
-  if (window.analytics) {
+  if (window.analytics && window.analytics.track) {
     window.analytics.track(eventName, {
       ...commonProperties,
     });
