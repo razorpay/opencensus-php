@@ -795,4 +795,9 @@ class EventCode
         'group' => 'eligibility',
         'name'  => 'payment.eligibility_check.processed'
     ];
+
+    const ERROR_RESPONSE              = [
+        'group' => 'error_response',
+        'name'  => 'error.response'
+    ];
 }

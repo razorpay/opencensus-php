@@ -527,6 +527,15 @@ class Processor
 
     public function process(array $input, $gatewayInput = []): array
     {
+        $meta = [
+            'metadata' => [
+                'trackId' => $this->app['req.context']->getTrackId()
+
+            ],
+            'read_key' => array('trackId'),
+            'write_key' => '',
+        ];
+
         try
         {
             $startTime = microtime(true);
@@ -540,15 +549,6 @@ class Processor
             $this->preProcessForUpiIfApplicable($input);
 
             $this->validateLavbBankPayments($input);
-
-            $meta = [
-                'metadata' => [
-                    'trackId' => $this->app['req.context']->getTrackId()
-
-                ],
-                'read_key' => array('trackId'),
-                'write_key' => '',
-            ];
 
             if ($this->canRouteThroughRearchFlow($input) === true)
             {
@@ -617,7 +617,7 @@ class Processor
 
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions, $payment);
 
-            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e, $meta);
 
             throw $e;
         }

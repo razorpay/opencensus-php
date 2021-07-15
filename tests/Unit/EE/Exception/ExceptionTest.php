@@ -205,6 +205,12 @@ class ExceptionTest extends TestCase
                     return null;
                 })->mock();
 
+        $handler->shouldReceive('getDevice')
+            ->andReturnUsing(function ()
+            {
+                return null;
+            })->mock();
+
         $this->app->instance('basicauth', $handler);
     }
 

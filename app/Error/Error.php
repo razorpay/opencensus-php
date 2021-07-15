@@ -7,6 +7,7 @@ use ArrayObject;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use Illuminate\Support;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
@@ -818,6 +819,16 @@ class Error extends Support\Fluent
         {
             $array = array_merge($array, $extra);
         }
+
+        $metaDetails =[
+            'metadata'  => $array,
+            'read_key'  => array() ,
+            'write_key' => 'trackId',
+        ];
+
+        $metaDetails['metadata']['trackId'] = $this->app['req.context']->getTrackId();
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::ERROR_RESPONSE, null,null,$metaDetails,$array);
 
         return $array;
     }
