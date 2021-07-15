@@ -71,7 +71,6 @@ export default class ConfirmModalProvider extends Component {
         })
         .catch(err => {
           this.close();
-          throw err;
         });
     }
 

@@ -10,4 +10,5 @@ module.exports = {
   SETTINGS: `${DASHBOARD_URL}app/config`,
   MY_ACCOUNT: `${DASHBOARD_URL}app/profile`,
   APP_KEYS: `${DASHBOARD_URL}app/keys`,
+  TICKETS_PAGE: `${DASHBOARD_URL}app/ticket-support/tickets`,
 };
