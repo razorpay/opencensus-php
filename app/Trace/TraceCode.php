@@ -48,6 +48,8 @@ class TraceCode
 
     const GENERIC_ROUTE_PATH                        = 'GENERIC_ROUTE_PATH';
 
+    const ADMIN_LOGGED_IN_AS_MERCHANT               = 'ADMIN_LOGGED_IN_AS_MERCHANT';
+
     const BULK_RAZORX_CALL_FAILED                   = 'BULK_RAZORX_CALL_FAILED';
 
     const ADMIN_LOGIN                               = 'ADMIN_LOGIN';

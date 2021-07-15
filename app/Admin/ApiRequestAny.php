@@ -14,6 +14,7 @@ use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors as RZPErrors;
 use Lcobucci\JWT\Parser as JWTParser;
+use App\Admin\Service as AdminService;
 use App\User\Constants as UserConstants;
 
 use App\Http\ApiUrl;
@@ -34,15 +35,17 @@ class ApiRequestAny
 
     protected $routeMap;
 
-    protected $shouldProcessInput = true;
+    protected $shouldProcessInput       = true;
 
-    const RAZORPAY_ACCOUNT_HEADER = 'X-Razorpay-Account';
+    const RAZORPAY_ACCOUNT_HEADER       = 'X-Razorpay-Account';
 
-    const CONTENT_TYPE_JSON = 'application/json';
+    const CONTENT_TYPE_JSON             = 'application/json';
 
-    const CONTENT_TYPE_FORM = 'application/x-www-form-urlencoded';
+    const CONTENT_TYPE_FORM             = 'application/x-www-form-urlencoded';
 
     const CONTENT_TYPE_MULTIPART_PREFIX = 'multipart/form-data;';
+
+    const ADMIN_AS_MERCHANT             = 'admin_as_merchant';
 
     // field passed by the API in case of errors are exposed
     // dashboard handles these error in a custom way
@@ -201,6 +204,15 @@ class ApiRequestAny
                     // bool value is converted to '1' for true & '0' for false
                     $this->options['headers']['X-Dashboard-User-2FA-Verified'] =
                         $twoFaVerified ? 'true' : 'false';
+
+                    $isAdminAsMerchant = (new AdminService())->isAdminLoggedIn();
+
+                    $this->options[Headers::HEADERS][Headers::X_DASHBOARD_ADMIN_AS_MERCHANT] = $isAdminAsMerchant;
+
+                    Trace::info(TraceCode::ADMIN_LOGGED_IN_AS_MERCHANT, [
+                        self::ADMIN_AS_MERCHANT => $isAdminAsMerchant
+                    ]);
+
                 }
 
                 $accountId = Request::header(self::RAZORPAY_ACCOUNT_HEADER);

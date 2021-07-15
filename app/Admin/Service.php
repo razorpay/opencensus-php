@@ -705,6 +705,11 @@ class Service extends Base\Service
         $job->delete();
     }
 
+    public function isAdminLoggedIn()
+    {
+        return Auth::guard('api')->check() === true;
+    }
+
     protected function activationZapierData(array $merchant)
     {
         $date =  Carbon::createFromTimeStamp(time(), "Asia/Kolkata")->format('j/m/Y');
