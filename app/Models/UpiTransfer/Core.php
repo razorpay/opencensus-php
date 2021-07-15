@@ -77,6 +77,7 @@ class Core extends Base\Core
 
                 case TraceCode::REFUND_OR_CAPTURE_PAYMENT_FAILED:
                     $paymentSuccess = true;
+                    break;
 
                 default:
                     return false;

@@ -36,9 +36,10 @@ class Core extends BankTransfer\Core
                 {
                     case TraceCode::BANK_TRANSFER_PROCESS_DUPLICATE_UTR:
                         return StatusCode::ALREADY_PROCESSED;
-                        
+
                     case TraceCode::REFUND_OR_CAPTURE_PAYMENT_FAILED:
                          $paymentSuccess = true;
+                         break;
 
                     default:
                         return $errorMessage;
