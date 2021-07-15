@@ -1923,6 +1923,7 @@ return [
         'request'  => [
             'content' => [
                 'type'         => null,
+                'email'        => "",
             ],
             'url'     => '/contacts/cont_1000000contact',
             'method'  => 'PATCH'
@@ -1932,6 +1933,24 @@ return [
                 'id'           => 'cont_1000000contact',
                 'entity'       => 'contact',
                 'type'         => null,
+                'email'        => null,
+            ]
+        ]
+    ],
+
+    'testUpdateContactWithEmailNull' => [
+        'request'  => [
+            'content' => [
+                'email'        => null,
+            ],
+            'url'     => '/contacts/cont_1000000contact',
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'id'           => 'cont_1000000contact',
+                'entity'       => 'contact',
+                'email'        => null,
             ]
         ]
     ],

@@ -1025,7 +1025,19 @@ class ContactsTest extends TestCase
 
     public function testUpdateContactWithNull()
     {
-        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213']);
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213', 'email' => 'test@gmail.com']);
+
+        $this->startTest();
+
+        // Test with Proxy Auth
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateContactWithEmailNull()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213', 'email' => 'test@gmail.com']);
 
         $this->startTest();
 

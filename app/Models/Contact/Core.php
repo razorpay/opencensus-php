@@ -162,6 +162,12 @@ class Core extends Base\Core
             $contact->setType(null);
         }
 
+        // to fix "" empty string in contact email
+        if (empty($contact->getEmail()) === true)
+        {
+            $contact->setEmail(null);
+        }
+
         $this->repo->saveOrFail($contact);
 
         $this->updateAppSpecificInformation($contact, $input);

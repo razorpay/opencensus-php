@@ -176,6 +176,11 @@ class Entity extends Base\PublicEntity
 
     // --------------- Setters ---------------
 
+    public function setEmail(string $email = null)
+    {
+        $this->setAttribute(self::EMAIL, $email);
+    }
+
     public function setType(string $type = null)
     {
         $this->setAttribute(self::TYPE, $type);
