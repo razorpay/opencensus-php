@@ -103,7 +103,6 @@ trait Migrate
             Entity::SYNC_STATUS,
             Entity::SHARED,
             Entity::USED_COUNT,
-            Entity::NOTES,
             ];
 
         foreach (array_keys($originalTerminalArray) as $attribute)
