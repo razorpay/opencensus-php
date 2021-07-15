@@ -9744,8 +9744,8 @@ class PayoutTest extends OAuthTestCase
         // Below function returns the file contents where every row is a string (all columns are comma separated)
         $fileContent = file($res['signed_url']);
 
-        // Assert that there are only two rows. The first being the header and the second being the row with data.
-        $this->assertEquals(2, count($fileContent));
+        // Assert that there are only four rows. The first being the header and the second being the row with data.
+        $this->assertEquals(4, count($fileContent));
 
         $expectedRowOne = "RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,Payout Purpose," .
                           "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
@@ -9760,6 +9760,18 @@ class PayoutTest extends OAuthTestCase
                           "This is a sample note";
 
         $this->assertEquals($expectedRowTwo, trim($fileContent[1]));
+
+        // NOTE : Account number is set as a sample : 7878780021057150
+        $expectedRowThree = "7878780021057150,10,INR,UPI,refund,,vpa,,,,sample@example,,sample,Sample Narration,,," .
+                            "vendor,sample@example.com,9988998899,,Bangalore,This is a sample note";
+
+        $this->assertEquals($expectedRowThree, trim($fileContent[2]));
+
+        // NOTE : Account number is set as a sample : 7878780021057150
+        $expectedRowFour = "7878780021057150,10,INR,NEFT,refund,fa_ABCDEFGGFEDCBA,,,,,,,sample,Sample Narration,,," .
+                           "vendor,sample@example.com,9988998899,,Bangalore,This is a sample note";
+
+        $this->assertEquals($expectedRowFour, trim($fileContent[3]));
     }
 
     public function testCsvSampleFileForBulkPayoutsAmazonPayEnabled()
@@ -9771,8 +9783,8 @@ class PayoutTest extends OAuthTestCase
         // Below function returns the file contents where every row is a string (all columns are comma separated)
         $fileContent = file($res['signed_url']);
 
-        // Assert that there are only two rows. The first being the header and the second being the row with data.
-        $this->assertEquals(3, count($fileContent));
+        // Assert that there are only five rows. The first being the header and the second being the row with data.
+        $this->assertEquals(5, count($fileContent));
 
         $expectedRowOne = "RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,Payout Purpose," .
             "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
@@ -9788,11 +9800,23 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals($expectedRowTwo, trim($fileContent[1]));
 
-        $expectedRowThree = "7878780021057150,10,INR,amazonpay,refund,,wallet,sample,," .
-            ",,+918124632237,sample,Sample Narration,,sample@example.com,vendor,sample@example.com,9988998899,,Bangalore," .
-            "This is a sample note";
+        // NOTE : Account number is set as a sample : 7878780021057150
+        $expectedRowThree = "7878780021057150,10,INR,UPI,refund,,vpa,,,,sample@example,,sample,Sample Narration,,," .
+                            "vendor,sample@example.com,9988998899,,Bangalore,This is a sample note";
 
         $this->assertEquals($expectedRowThree, trim($fileContent[2]));
+
+        $expectedRowFour = "7878780021057150,10,INR,amazonpay,refund,,wallet,sample,," .
+                           ",,+918124632237,sample,Sample Narration,,sample@example.com,vendor,sample@example.com," .
+                           "9988998899,,Bangalore,This is a sample note";
+
+        $this->assertEquals($expectedRowFour, trim($fileContent[3]));
+
+        // NOTE : Account number is set as a sample : 7878780021057150
+        $expectedRowFive = "7878780021057150,10,INR,NEFT,refund,fa_ABCDEFGGFEDCBA,,,,,,,sample,Sample Narration,,," .
+                           "vendor,sample@example.com,9988998899,,Bangalore,This is a sample note";
+
+        $this->assertEquals($expectedRowFive, trim($fileContent[4]));
     }
 
     public function testCsvTemplateFileForBulkPayouts()
@@ -9811,8 +9835,8 @@ class PayoutTest extends OAuthTestCase
         // Below function returns the file contents where every row is a string (all columns are comma separated)
         $fileContent = file($res['signed_url']);
 
-        // Assert that there are only three rows. The first being the header, the second and third being the rows with data.
-        $this->assertEquals(2, count($fileContent));
+        // Assert that there are only four rows. The first being the header, the second and third being the rows with data.
+        $this->assertEquals(4, count($fileContent));
 
         $expectedRowOne = "RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,Payout Purpose," .
             "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
@@ -9827,6 +9851,18 @@ class PayoutTest extends OAuthTestCase
             "This is a sample note";
 
         $this->assertEquals($expectedRowTwo, trim($fileContent[1]));
+
+        // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
+        $expectedRowThree = "2224440041626905,10,INR,UPI,refund,,vpa,,,,sample@example,,sample,Sample Narration,,," .
+                            "vendor,sample@example.com,9988998899,,Bangalore,This is a sample note";
+
+        $this->assertEquals($expectedRowThree, trim($fileContent[2]));
+
+        // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
+        $expectedRowFour = "2224440041626905,10,INR,NEFT,refund,fa_ABCDEFGGFEDCBA,,,,,,,sample,Sample Narration,,," .
+                           "vendor,sample@example.com,9988998899,,Bangalore,This is a sample note";
+
+        $this->assertEquals($expectedRowFour, trim($fileContent[3]));
     }
 
     public function testCsvTemplateFileForBulkPayoutsAmazonPayEnabled()
@@ -9838,8 +9874,8 @@ class PayoutTest extends OAuthTestCase
         // Below function returns the file contents where every row is a string (all columns are comma separated)
         $fileContent = file($res['signed_url']);
 
-        // Assert that there are only three rows. The first being the header, the second and third being the rows with data.
-        $this->assertEquals(3, count($fileContent));
+        // Assert that there are only five rows. The first being the header, the second and third being the rows with data.
+        $this->assertEquals(5, count($fileContent));
 
         $expectedRowOne = "RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,Payout Purpose," .
             "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
@@ -9855,11 +9891,24 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals($expectedRowTwo, trim($fileContent[1]));
 
-        $expectedRowThree = "2224440041626905,10,INR,amazonpay,refund,,wallet,sample,," .
+        // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
+        $expectedRowThree = "2224440041626905,10,INR,UPI,refund,,vpa,,,,sample@example,,sample,Sample Narration,,," .
+                            "vendor,sample@example.com,9988998899,,Bangalore,This is a sample note";
+
+        $this->assertEquals($expectedRowThree, trim($fileContent[2]));
+
+        // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
+        $expectedRowFour = "2224440041626905,10,INR,amazonpay,refund,,wallet,sample,," .
             ",,+918124632237,sample,Sample Narration,,sample@example.com,vendor,sample@example.com,9988998899,,Bangalore," .
             "This is a sample note";
 
-        $this->assertEquals($expectedRowThree, trim($fileContent[2]));
+        $this->assertEquals($expectedRowFour, trim($fileContent[3]));
+
+        // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
+        $expectedRowFive = "2224440041626905,10,INR,NEFT,refund,fa_ABCDEFGGFEDCBA,,,,,,,sample,Sample Narration,,," .
+                           "vendor,sample@example.com,9988998899,,Bangalore,This is a sample note";
+
+        $this->assertEquals($expectedRowFive, trim($fileContent[4]));
     }
 
     public function testXlsxTemplateFileForBulkPayouts()
@@ -9879,7 +9928,7 @@ class PayoutTest extends OAuthTestCase
 
         $activeSheet = $spreadsheet->getActiveSheet();
 
-        $this->assertEquals(3, $activeSheet->getHighestRow());
+        $this->assertEquals(5, $activeSheet->getHighestRow());
 
         $expectedData = [
             [
@@ -9957,9 +10006,59 @@ class PayoutTest extends OAuthTestCase
                 'Bangalore',
                 'This is a sample note',
             ],
+            [
+                // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
+                '2224440041626905 ',
+                10,
+                'INR',
+                'UPI',
+                'refund',
+                null,
+                'vpa',
+                null,
+                null,
+                ' ',
+                'sample@example',
+                null,
+                'sample',
+                'Sample Narration',
+                null,
+                null,
+                'vendor',
+                'sample@example.com',
+                '9988998899 ',
+                null,
+                'Bangalore',
+                'This is a sample note',
+            ],
+            [
+                // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
+                '2224440041626905 ',
+                10,
+                'INR',
+                'NEFT',
+                'refund',
+                'fa_ABCDEFGGFEDCBA',
+                null,
+                null,
+                null,
+                ' ',
+                null,
+                null,
+                'sample',
+                'Sample Narration',
+                null,
+                null,
+                'vendor',
+                'sample@example.com',
+                '9988998899 ',
+                null,
+                'Bangalore',
+                'This is a sample note',
+            ],
         ];
 
-        for ($row = 1; $row <= 3; $row++)
+        for ($row = 1; $row <= 5; $row++)
         {
             for ($col = 1; $col <= 22; $col++)
             {
@@ -9980,7 +10079,7 @@ class PayoutTest extends OAuthTestCase
 
         $activeSheet = $spreadsheet->getActiveSheet();
 
-        $this->assertEquals(4, $activeSheet->getHighestRow());
+        $this->assertEquals(6, $activeSheet->getHighestRow());
 
         $expectedData = [
             [
@@ -10063,6 +10162,31 @@ class PayoutTest extends OAuthTestCase
                 '2224440041626905 ',
                 10,
                 'INR',
+                'UPI',
+                'refund',
+                null,
+                'vpa',
+                null,
+                null,
+                ' ',
+                'sample@example',
+                null,
+                'sample',
+                'Sample Narration',
+                null,
+                null,
+                'vendor',
+                'sample@example.com',
+                '9988998899 ',
+                null,
+                'Bangalore',
+                'This is a sample note',
+            ],
+            [
+                // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
+                '2224440041626905 ',
+                10,
+                'INR',
                 'amazonpay',
                 'refund',
                 null,
@@ -10082,10 +10206,35 @@ class PayoutTest extends OAuthTestCase
                 null,
                 'Bangalore',
                 'This is a sample note',
-            ]
+            ],
+            [
+                // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
+                '2224440041626905 ',
+                10,
+                'INR',
+                'NEFT',
+                'refund',
+                'fa_ABCDEFGGFEDCBA',
+                null,
+                null,
+                null,
+                ' ',
+                null,
+                null,
+                'sample',
+                'Sample Narration',
+                null,
+                null,
+                'vendor',
+                'sample@example.com',
+                '9988998899 ',
+                null,
+                'Bangalore',
+                'This is a sample note',
+            ],
         ];
 
-        for ($row = 1; $row <= 4; $row++)
+        for ($row = 1; $row <= 6; $row++)
         {
             for ($col = 1; $col <= 22; $col++)
             {
@@ -10113,7 +10262,7 @@ class PayoutTest extends OAuthTestCase
 
         $activeSheet = $spreadsheet->getActiveSheet();
 
-        $this->assertEquals(3, $activeSheet->getHighestRow());
+        $this->assertEquals(5, $activeSheet->getHighestRow());
 
         $expectedData = [
             [
@@ -10191,9 +10340,59 @@ class PayoutTest extends OAuthTestCase
                 'Bangalore',
                 'This is a sample note',
             ],
+            [
+                // NOTE : Account number is set as a sample account number account number : 7878780021057150
+                '7878780021057150 ',
+                10,
+                'INR',
+                'UPI',
+                'refund',
+                null,
+                'vpa',
+                null,
+                null,
+                ' ',
+                'sample@example',
+                null,
+                'sample',
+                'Sample Narration',
+                null,
+                null,
+                'vendor',
+                'sample@example.com',
+                '9988998899 ',
+                null,
+                'Bangalore',
+                'This is a sample note',
+            ],
+            [
+                // NOTE : Account number is set as a sample account number account number : 7878780021057150
+                '7878780021057150 ',
+                10,
+                'INR',
+                'NEFT',
+                'refund',
+                'fa_ABCDEFGGFEDCBA',
+                null,
+                null,
+                null,
+                ' ',
+                null,
+                null,
+                'sample',
+                'Sample Narration',
+                null,
+                null,
+                'vendor',
+                'sample@example.com',
+                '9988998899 ',
+                null,
+                'Bangalore',
+                'This is a sample note',
+            ],
         ];
 
-        for ($row = 1; $row <= 3; $row++)
+        for ($row = 1; $row <= 5; $row++)
         {
             for ($col = 1; $col <= 22; $col++)
             {
@@ -10214,7 +10413,7 @@ class PayoutTest extends OAuthTestCase
 
         $activeSheet = $spreadsheet->getActiveSheet();
 
-        $this->assertEquals(4, $activeSheet->getHighestRow());
+        $this->assertEquals(6, $activeSheet->getHighestRow());
 
         $expectedData = [
             [
@@ -10280,6 +10479,31 @@ class PayoutTest extends OAuthTestCase
                 'SBIN0007105',
                 '1234567890 ',
                 null,
+                null,
+                'sample',
+                'Sample Narration',
+                null,
+                null,
+                'vendor',
+                'sample@example.com',
+                '9988998899 ',
+                null,
+                'Bangalore',
+                'This is a sample note',
+            ],
+            [
+                // NOTE : Account number is set as a sample account number account number : 7878780021057150
+                '7878780021057150 ',
+                10,
+                'INR',
+                'UPI',
+                'refund',
+                null,
+                'vpa',
+                null,
+                null,
+                ' ',
+                'sample@example',
                 null,
                 'sample',
                 'Sample Narration',
@@ -10316,10 +10540,35 @@ class PayoutTest extends OAuthTestCase
                 null,
                 'Bangalore',
                 'This is a sample note',
-            ]
+            ],
+            [
+                // NOTE : Account number is set as a sample account number account number : 7878780021057150
+                '7878780021057150 ',
+                10,
+                'INR',
+                'NEFT',
+                'refund',
+                'fa_ABCDEFGGFEDCBA',
+                null,
+                null,
+                null,
+                ' ',
+                null,
+                null,
+                'sample',
+                'Sample Narration',
+                null,
+                null,
+                'vendor',
+                'sample@example.com',
+                '9988998899 ',
+                null,
+                'Bangalore',
+                'This is a sample note',
+            ],
         ];
 
-        for ($row = 1; $row <= 4; $row++)
+        for ($row = 1; $row <= 6; $row++)
         {
             for ($col = 1; $col <= 22; $col++)
             {
