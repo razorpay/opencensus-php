@@ -361,7 +361,7 @@ return [
     'testCreateContactWithNbsp' => [
         'request'  => [
             'content' => [
-                'name'         => 'Simplocity&nbsp;Labs Private Limited',
+                'name'         => 'Tanmay Hospitality and Solution ',
                 'type'         => 'self',
                 'reference_id' => '#123abc',
                 'email'        => 'asd@abc.com',
@@ -376,7 +376,7 @@ return [
         'response' => [
             'content' => [
                 'entity'       => 'contact',
-                'name'         => 'Simplocity Labs Private Limited',
+                'name'         => 'Tanmay Hospitality and Solution',
                 'type'         => 'self',
                 'reference_id' => '#123abc',
                 'email'        => 'asd@abc.com',

@@ -73,7 +73,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $traceRequest);
 
-        $this->sanitizeInput($input);
+        $input = $this->trimSpaces($input);
 
         if ((isset($input[Entity::ACCOUNT_TYPE]) === true) and
             (strtolower($input[Entity::ACCOUNT_TYPE]) ===  Entity::WALLET))
@@ -233,20 +233,6 @@ class Core extends Base\Core
         Metric::pushCreateMetrics($fundAccount);
 
         return $fundAccount;
-    }
-
-    protected function sanitizeInput(array & $input)
-    {
-        if (isset($input[Entity::BANK_ACCOUNT][Entity::NAME]) === true)
-        {
-            $beneName = $input[Entity::BANK_ACCOUNT][Entity::NAME];
-
-            $beneName = str_replace("&nbsp;", ' ', $beneName);
-
-            $input[Entity::BANK_ACCOUNT][Entity::NAME] = $beneName;
-        }
-
-        $input = $this->trimSpaces($input);
     }
 
     /**

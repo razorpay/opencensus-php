@@ -268,7 +268,7 @@ return [
                 'contact_id'   => 'cont_1000000contact',
                 'bank_account'      => [
                     'ifsc'           => 'ORBC0101316',
-                    'name'           => 'Simplocity&nbsp;Labs Private Limited',
+                    'name'           => 'Tanmay Hospitality and Solution ',
                     'account_number' => '111000111',
                 ],
             ],
@@ -282,7 +282,7 @@ return [
                 'contact_id'   => 'cont_1000000contact',
                 'bank_account'      => [
                     'ifsc'           => 'PUNB0131610',
-                    'name'           => 'Simplocity Labs Private Limited',
+                    'name'           => 'Tanmay Hospitality and Solution',
                     'account_number' => '111000111'
                 ],
             ],

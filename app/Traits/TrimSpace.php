@@ -23,9 +23,17 @@ trait TrimSpace
         }
         else if (is_string($data) === true)
         {
+            $data = $this->trimNbsps($data);
+
             return trim($data);
         }
 
         return $data;
+    }
+
+    // Function to remove Non breaking spaces
+    public function trimNbsps($data)
+    {
+        return str_replace("\xc2\xa0", ' ', $data);
     }
 }
