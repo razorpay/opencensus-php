@@ -121,6 +121,8 @@ abstract class BaseStatusUpdater implements StatusUpdater
         $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_REQUEST, [
             'artefact_type'     => $this->artefactType,
             'experiment_status' => $isSystemBasedNeedsClarificationEnabled,
+            'bvs_validation_id' => $this->consumedValidationId,
+            'merchant_id'       => $merchantId
         ]);
 
         if ($isSystemBasedNeedsClarificationEnabled === true)

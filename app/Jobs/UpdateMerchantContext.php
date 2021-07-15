@@ -54,6 +54,7 @@ class UpdateMerchantContext extends Job
         {
             $tracePayload = [
                 Entity::MERCHANT_ID => $this->merchantId,
+                'bvs_validation_id' => $this->validationId
             ];
 
             $this->trace->debug(TraceCode::UPDATE_MERCHANT_CONTEXT_JOB, $tracePayload);
@@ -78,7 +79,8 @@ class UpdateMerchantContext extends Job
                 Trace::ERROR,
                 TraceCode::UPDATE_MERCHANT_CONTEXT_JOB_ERROR,
                 [
-                    'merchant_id' => $this->merchantId,
+                    'merchant_id'       => $this->merchantId,
+                    'bvs_validation_id' => $this->validationId
                 ]);
         }
 
@@ -91,7 +93,9 @@ class UpdateMerchantContext extends Job
 
         $canUpdateMerchantContext = $this->updateContextRequirements
             ->canUpdateMerchantContext($merchantDetail);
-        $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_INITIATED,[
+
+        $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_JOB,[
+            "merchant_id"   => $merchant->getId(),
             "Method"=>"updateMerchantContext",
             "CAN_UPDATE_MERCHANT_CONTEXT"=>$canUpdateMerchantContext,
             "POA_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::POA_VERIFICATION_STATUS),
@@ -102,6 +106,7 @@ class UpdateMerchantContext extends Job
             "GSTIN_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::GSTIN_VERIFICATION_STATUS),
             "SHOP_ESTABLISHMENT_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS)
         ]);
+
         if ($canUpdateMerchantContext === true)
         {
             $detailCore = new DetailCore();

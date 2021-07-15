@@ -89,7 +89,8 @@ class DefaultStatusUpdater extends BaseStatusUpdater
             $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_STATUS, [
                 'merchant_id'                  => $this->merchantDetails->getId(),
                 'artefact_type'                => $this->artefactType,
-                'document_verification_status' => $documentValidationStatus
+                'document_verification_status' => $documentValidationStatus,
+                'bvs_validation_id'            => $this->consumedValidationId
             ]);
         }
 
