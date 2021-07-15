@@ -36,6 +36,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Promotion;
 use RZP\Models\Admin\Org;
+use RZP\Models\Settlement;
 use RZP\Http\CheckoutView;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
@@ -2995,6 +2996,16 @@ class Service extends Base\Service
                                                         Feature\Constants::ES_AUTOMATIC => 1
                                                     ],
                                                     Feature\Entity::SHOULD_SYNC => 1]);
+
+            // Updating the merchant_config for merchants migrated to new settlement service
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::NEW_SETTLEMENT_SERVICE) === true)
+            {
+                (new Settlement\Core)->MigrateMerchantConfiguration($this->merchant->getId(),Settlement\Core::PAYOUT,Mode::LIVE);
+
+                (new Settlement\Core)->MigrateMerchantConfiguration($this->merchant->getId(),Settlement\Core::PAYOUT,Mode::TEST);
+
+            }
+
         });
 
         // All the mail sending steps are taken out of the transactionOnLiveAndTest.
