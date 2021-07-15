@@ -2682,6 +2682,21 @@ class BasicAuth
         }
     }
 
+    public function isAdminLoggedInAsMerchantOnDashboard()
+    {
+        $headerValue =  $this->request->header(RequestHeader::X_DASHBOARD_ADMIN_AS_MERCHANT);
+
+        $isAdminLoggedIn = (bool) ($headerValue ?? false);
+
+        if (($isAdminLoggedIn === true) and
+            ($this->isDashboardApp() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function getKeyForNonBasicAuthTokens()
     {
         // Check `key_id` first, else fallback to BasicAuth user

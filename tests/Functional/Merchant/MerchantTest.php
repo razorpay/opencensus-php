@@ -9269,11 +9269,35 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testOrgLevelFeatureAccessForSubMerchantCreate()
+    public function testOrgLevelFeatureAccessForSubMerchantCreateLoginAsMerchantPass()
+    {
+        $testData = $this->testData['testCreateSubmerchantWithCode'];
+
+        $testData['request']['headers'] = [ 'X-Dashboard-AdminLoggedInAsMerchant' => true];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        // need this to create sub merchant
+        $this->fixtures->merchant->addFeatures(['marketplace', 'route_code_support']);
+
+        // create feature for org to block route access
+        $this->fixtures->create('feature', [
+            'name'        => 'sub_merchant_create',
+            'entity_id'   => '100000razorpay',
+            'entity_type' => 'org'
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testOrgLevelFeatureAccessForSubMerchantCreateFail()
     {
         $request = [
-            'url'    => '/submerchants',
-            'method' => 'post'
+            'url'       => '/submerchants',
+            'method'    => 'post',
+            'headers'   =>  [ 'X-Dashboard-AdminLoggedInAsMerchant' => false],
         ];
 
         $routeFeatureName = 'sub_merchant_create';

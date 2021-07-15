@@ -38,6 +38,9 @@ class RequestHeader
     // Is user's identity verfied using 2FA?
     const X_DASHBOARD_USER_2FA_VERIFIED = 'X-Dashboard-User-2FA-Verified';
 
+    // Is admin making request as merchant
+    const X_DASHBOARD_ADMIN_AS_MERCHANT = 'X-Dashboard-AdminLoggedInAsMerchant';
+
     /**
      * To support Account Auth: Allows API requests to be served under the
      * scope of a merchant ID that is sent as the value to this header

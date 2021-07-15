@@ -155,6 +155,13 @@ class FeatureAccess
             Entity::MERCHANT_ID => $this->merchant->getId(),
         ]);
 
+        if ($this->app['basicauth']->isAdminLoggedInAsMerchantOnDashboard() === true)
+        {
+            $this->trace->info(TraceCode::ALLOW_ROUTE_ACCESS_FOR_LOGIN_AS_MERCHANT, []);
+
+            return null;
+        }
+
         return ApiResponse::routeNotFound();
     }
 
