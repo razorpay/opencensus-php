@@ -379,7 +379,8 @@ trait Authorize
         if ((empty($this->isJsonRoute) === false) and
             ($this->isJsonRoute === true) and
             ($payment->isMethodCardOrEmi() === true) and
-            ($payment->getAuthType() === Payment\AuthType::_3DS))
+            ($payment->getAuthType() === Payment\AuthType::_3DS) and
+            ($payment->getAuthenticationGateway() !== Gateway::VISA_SAFE_CLICK))
         {
             return $this->validateAndReturnRedirectResponseIfApplicable($payment, []);
         }
