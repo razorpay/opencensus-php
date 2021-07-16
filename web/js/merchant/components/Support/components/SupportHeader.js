@@ -1,8 +1,9 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { classList } from 'common/utils/rzp-utils';
 
 import {
   COMDEL_POPOVER_TEXT as comdelText,
@@ -66,7 +67,19 @@ export default class SupportHeader extends Component {
           isOpened && 'active',
           isOnBoardingRevampScreen && 'onboarding-screen',
         )}
-        onClick={onToggle}
+        onClick={(...e) => {
+          analyticsTrack({
+            objectName: 'Help and Support',
+            actionName: 'clicked',
+            screen: 'home page',
+            properties: {
+              location: 'Help and Support',
+              type: !isOpened ? 'open' : 'close',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+          onToggle(...e)
+        }}
       >
         <span className="help-content">
           {content}

@@ -35,11 +35,10 @@ class SupportBody extends Component {
   };
   openDashboardGuide = (_) => {
     analyticsTrack({
-      objectName: 'help and support',
+      objectName: 'dashboard guide',
       actionName: 'clicked',
       screen: 'home page',
       properties: {
-        item: 'dashboard guide',
         location: 'Help and Support',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
@@ -118,11 +117,10 @@ class SupportBody extends Component {
 
       if (id === 'chat') {
         analyticsTrack({
-          objectName: 'help and support',
+          objectName: 'chat with us',
           actionName: 'clicked',
           screen: 'home page',
           properties: {
-            item: 'chat with us',
             location: 'Help and Support',
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
@@ -136,26 +134,7 @@ class SupportBody extends Component {
         onChat();
         return;
       }
-      analyticsTrack({
-        objectName: 'help and support',
-        actionName: 'clicked',
-        screen: 'home page',
-        properties: {
-          item: 'write to us',
-          location: 'Help and Support',
-          ...getCommonAnalyticsProperties(window.rzp_user),
-        },
-      });
       onToggle();
-      analyticsTrack({
-        objectName: 'contact us',
-        actionName: 'clicked',
-        screen: 'my account',
-        properties: {
-          location: 'widget',
-          ...getCommonAnalyticsProperties(window.rzp_user),
-        },
-      });
       this.createTicket(id);
     } else {
       console.log('RZP TICKET SYSTEM INIT FAILED');
@@ -165,11 +144,10 @@ class SupportBody extends Component {
   handleFeedback = () => {
     const { onToggle } = this.props;
     analyticsTrack({
-      objectName: 'help and support',
+      objectName: 'share feedback',
       actionName: 'clicked',
       screen: 'home page',
       properties: {
-        item: 'share feedback',
         location: 'Help and Support',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
@@ -187,11 +165,10 @@ class SupportBody extends Component {
 
   handleFaqs = () => {
     analyticsTrack({
-      objectName: 'help and support',
+      objectName: 'faqs',
       actionName: 'clicked',
       screen: 'home page',
       properties: {
-        item: "faq's",
         location: 'Help and Support',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
@@ -257,11 +234,10 @@ class SupportBody extends Component {
                 }`}
               onClick={() => {
                 analyticsTrack({
-                  objectName: 'help and support',
+                  objectName: 'have a query',
                   actionName: 'clicked',
                   screen: 'home page',
                   properties: {
-                    item: 'have a query',
                     location: 'Help and Support',
                     ...getCommonAnalyticsProperties(window.rzp_user),
                   },
@@ -280,7 +256,18 @@ class SupportBody extends Component {
             <li
               class={`support-item p-all ticket ${!this.props.supportFlags.loaded ? 'disabled' : ''
                 }`}
-              onClick={() => handleClick('tickets')}
+              onClick={() => {
+                analyticsTrack({
+                  objectName: 'have a query',
+                  actionName: 'clicked',
+                  screen: 'home page',
+                  properties: {
+                    location: 'Help and Support',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+                handleClick('tickets');
+              }}
             >
               Have a query?
               <small class="help-block">Check existing query/raise a new one</small>
@@ -344,11 +331,10 @@ class SupportBody extends Component {
                   }`}
                 onClick={() => {
                   analyticsTrack({
-                    objectName: 'help and support',
+                    objectName: 'chat with us',
                     actionName: 'clicked',
                     screen: 'home page',
                     properties: {
-                      item: 'chat with us',
                       location: 'Help and Support',
                       ...getCommonAnalyticsProperties(window.rzp_user),
                     },
@@ -385,16 +371,6 @@ class SupportBody extends Component {
           <li
             className="support-item p-all dashboard_guide"
             onClick={() => {
-              analyticsTrack({
-                objectName: 'help and support',
-                actionName: 'clicked',
-                screen: 'home page',
-                properties: {
-                  item: 'dashboard guide',
-                  location: 'Help and Support',
-                  ...getCommonAnalyticsProperties(window.rzp_user),
-                },
-              });
               openDashboardGuide();
             }}
           >
