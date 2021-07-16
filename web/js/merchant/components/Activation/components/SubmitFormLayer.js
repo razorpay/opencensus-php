@@ -2,7 +2,7 @@ import React from 'react';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { Link } from 'react-router-dom';
+import * as trackers from 'merchant/containers/Activation/ga_new';
 
 /*
  * Submit Form opens with backdrop inside Activation form's main content
@@ -67,7 +67,7 @@ class SubmitFormLayer extends React.Component {
                   target="_blank"
                   className="highlight"
                   onClick={() =>
-                    onAction && onAction.trackLinkClick('Terms of use')
+                    trackers && trackers.trackLinkClick('Terms of use')
                   }
                 >
                   Terms & Conditions
@@ -91,7 +91,7 @@ class SubmitFormLayer extends React.Component {
                   target="_blank"
                   className="highlight"
                   onClick={() =>
-                    onAction && onAction.trackLinkClick('Merchant Agreement')
+                    trackers && trackers.trackLinkClick('Merchant Agreement')
                   }
                 >
                   Merchant Agreement
@@ -115,7 +115,7 @@ class SubmitFormLayer extends React.Component {
                   target="_blank"
                   className="highlight"
                   onClick={() =>
-                    onAction && onAction.trackLinkClick('Privacy Policy')
+                    trackers && trackers.trackLinkClick('Privacy Policy')
                   }
                 >
                   Privacy Policy
