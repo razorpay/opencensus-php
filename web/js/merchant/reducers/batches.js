@@ -42,7 +42,10 @@ export const fetchBatchAjax = (id) =>
   }));
 
 const fetchBatchesAjax = (params, type) => {
-  params[Array.isArray(type) ? 'types' : 'type'] = type;
+  // add types/type only if type filter not applied
+  if(!params.type) {
+    params[Array.isArray(type) ? 'types' : 'type'] = type;
+  } 
   return merchantFetch({
     url: 'batches',
     params: params,
@@ -390,6 +393,14 @@ export const validateRecurringChargeBatch = validateBatch('recurring_charge');
 export const createRecurringChargeAxisBatch = createBatch('recurring_charge_axis');
 export const validateRecurringChargeAxisBatch = validateBatch('recurring_charge_axis');
 export const fetchHostedMandateBatchDetails = fetchBatchDetails();
+
+/* batches for route */
+export const fetchAllRouteBatches = fetchBatches(['payment_transfer', 'linked_account_create']);
+export const createTransferBatch = createBatch('payment_transfer');
+export const validateTransferBatch = validateBatch('payment_transfer');
+export const createLinkedAccountBatch = createBatch('linked_account_create');
+export const validateLinkedAccountBatch = validateBatch('linked_account_create');
+export const fetchRouteBatchDetails = fetchBatchDetails();
 
 /* reducers */
 export const refundBatchesReducer = makeActionCollectionReducer(REFUND);

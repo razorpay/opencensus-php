@@ -30,6 +30,8 @@ const batchBaseUrls = {
   recurring_charge: 'subscriptions',
   recurring_charge_axis: 'subscriptions',
   linked_account_reversal: 'reversals',
+  payment_transfer: 'route',
+  linked_account_create: 'route',
 };
 
 const commissionBase = {

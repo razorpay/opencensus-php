@@ -14,6 +14,11 @@ import { getCustomURL } from 'merchant/components/DocsLink'
  * Container:  Switches between validation or creation of batch.
  */
 
+const successMessageMap = {
+  refund: ' You can download the batch file report to check the final state of each refund request.',
+  payment_transfer: 'You can download the output file from batch details view to check the items which were generated. For the items that could not be generated due to some issues, please upload a new batch file.',
+  linked_account_create: 'You can download the output file from batch details view to check the items which were generated. For the items that could not be generated due to some issues, please upload a new batch file.',
+}
 @connect(null, { closeModal, openModal, luminateRow })
 export default class BatchUpload extends Component {
   state = {
@@ -91,20 +96,10 @@ export default class BatchUpload extends Component {
             case 'success':
               return (
                 <SuccessModal onModalClose={this.onModalClose}>
-                  {this.props.batchType === 'refund' ? (
-                    <p class="text-center">
-                      You can download the batch file report to check the final state of each refund
-                      request.
-                      <br />
-                    </p>
-                  ) : (
-                    <p class="text-center">
-                      You can download the output file from batch detail view to check payment links
-                      generated. For the links that could not be generated due to some issues,
-                      please upload a new batch file.
-                      <br />
-                    </p>
-                  )}
+                  <p class="text-center">
+                      {successMessageMap[this.props.batchType] || 'You can download the output file from batch detail view to check payment links generated. For the links that could not be generated due to some issues, please upload a new batch file.'}
+                    <br />
+                  </p>
                 </SuccessModal>
               );
             case 'default':

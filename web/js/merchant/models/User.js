@@ -846,6 +846,10 @@ export default class User {
     return this.isFeatureEnabled('route_code_support');
   }
 
+  get isRouteBatchUploadEnabled() {
+    return this.getExpStatus('route_batch_upload');
+  }
+
   get isSubscriptionPauseAndResumeEnabled() {
     return this.getExpStatus('pause_resume_enabled');
   }

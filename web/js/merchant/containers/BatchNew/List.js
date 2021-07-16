@@ -166,7 +166,8 @@ export default class BatchList extends ListContainer {
             uploadUrl,
             !this.props.multiBatch
               ? this.openUploadModal(this.props.renderUploadModal)
-              : undefined
+              : undefined,
+            this.props.emptyResultsDescription,
           )}
           {...this.props}
         />
