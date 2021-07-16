@@ -4,6 +4,7 @@ namespace RZP\Models\Pricing\Calculator;
 
 use Cache;
 
+use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Payment;
@@ -656,7 +657,11 @@ abstract class Base extends BaseModel\Core
             }
 
             // No tax is levied on card payments of 2000 Rs. or less
-            if (($payment->isMethodCardOrEmi() === true) and
+
+            // For the Bajaj finserv emi payments we have to skip this condition because tax
+            //must be calculated whether amount is smaller, equal or greater than the 2000 for bajaj emi payments
+            if ( !($payment->gateway === Entity::BAJAJFINSERV and $payment->isMethod(Payment\Entity::EMI)) and
+                ($payment->isMethodCardOrEmi() === true) and
                 ($amount <= self::CARD_TAX_CUT_OFF))
             {
                 return false;

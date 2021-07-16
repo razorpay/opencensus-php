@@ -43,6 +43,271 @@ class BajajFinservEmiTest extends TestCase
         $this->mockCardVault();
     }
 
+    public function testBajajFinservEmiFailedRefundTest()
+    {
+        $emiPlan = $this->emiPlan;
+
+        $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
+
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
+        $this->fixtures->create('terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'bajajfinserv',
+                'gateway_merchant_id' => '250000002',
+                'enabled' => 1,
+                'emi' => 1,
+                'emi_duration' => 9
+            ]);
+
+        $payment = $this->fixtures->create('payment',
+            [
+                'method'        => 'emi',
+                'gateway'       => 'bajajfinserv',
+                'otp_attempts'  => 0,
+                'terminal_id'   => 'AqdfGh5460opVt',
+                'emi_plan_id'   => '30111111111110',
+                'card_id'       => $card->getId(),
+                'status'        => 'created',
+                'amount'        => 10000,
+            ]);
+
+        $this->fixtures->create('mozart',
+            [
+                'payment_id'        => $payment->getId(),
+                'amount'            => 100,
+                'action'            => 'authorize',
+                'raw'               => '{}',
+            ]);
+
+        $this->fixtures->create('payment_analytics', ['ip' => '127.0.0.1', 'payment_id' => $payment->getId()]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $url = $this->getOtpSubmitUrl($payment);
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refundAmount1 = '5000';
+
+        $refund = $this->refundPayment($payment['id'], $refundAmount1);
+
+        $refundAmount1 = '6000';
+
+        try
+        {
+            $refund = $this->refundPayment($payment['id'], $refundAmount1);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertEquals("BAD_REQUEST_TOTAL_REFUND_AMOUNT_IS_GREATER_THAN_THE_PAYMENT_AMOUNT", $e->getCode());
+        }
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(5000, $paymentEntity['amount_refunded']);
+
+        $this->assertEquals('AqdfGh5460opVt', $paymentEntity['terminal_id']);
+
+        $this->assertEquals($paymentEntity['emi_plan_id'], '30111111111110');
+
+        $this->assertEquals(10000, $paymentEntity['base_amount']);
+    }
+
+    public function testBajajFinservEmiPartialRefundTest()
+    {
+        $emiPlan = $this->emiPlan;
+
+        $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
+
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
+        $this->fixtures->create('terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'bajajfinserv',
+                'gateway_merchant_id' => '250000002',
+                'enabled' => 1,
+                'emi' => 1,
+                'emi_duration' => 9
+            ]);
+
+        $payment = $this->fixtures->create('payment',
+            [
+                'method'        => 'emi',
+                'gateway'       => 'bajajfinserv',
+                'otp_attempts'  => 0,
+                'terminal_id'   => 'AqdfGh5460opVt',
+                'emi_plan_id'   => '30111111111110',
+                'card_id'       => $card->getId(),
+                'status'        => 'created',
+                'amount'        => 10000,
+            ]);
+
+        $this->fixtures->create('mozart',
+            [
+                'payment_id'        => $payment->getId(),
+                'amount'            => 100,
+                'action'            => 'authorize',
+                'raw'               => '{}',
+            ]);
+
+        $this->fixtures->create('payment_analytics', ['ip' => '127.0.0.1', 'payment_id' => $payment->getId()]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $url = $this->getOtpSubmitUrl($payment);
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refundAmount = '5000';
+
+        $refund = $this->refundPayment($payment['id'], $refundAmount);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $txn = $this->getLastTransaction(true);
+
+        $this->assertEquals(4940, $txn['debit']);
+
+        $this->assertEquals(60, $txn['fee']);
+
+        $this->assertEquals(10, $txn['tax']);
+
+        $this->assertEquals(60, $txn['mdr']);
+
+        $this->assertEquals(118, $paymentEntity['fee']);
+
+        $this->assertEquals('captured', $paymentEntity['status']);
+
+        $this->assertEquals('emi', $paymentEntity['method']);
+
+        $this->assertEquals('partial', $paymentEntity['refund_status']);
+
+        $this->assertEquals('AqdfGh5460opVt', $paymentEntity['terminal_id']);
+
+        $this->assertEquals('processed', $refund['status']);
+
+        $this->assertEquals($paymentEntity['emi_plan_id'], '30111111111110');
+
+        $this->assertEquals(10000, $paymentEntity['base_amount']);
+
+        $this->assertEquals(5000, $paymentEntity['amount_refunded']);
+
+        $this->assertEquals(5000, $refund['amount']);
+    }
+
+
+    public function testBajajFinservEmiFullRefundTest()
+    {
+        $emiPlan = $this->emiPlan;
+
+        $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
+
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
+        $this->fixtures->create('terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'bajajfinserv',
+                'gateway_merchant_id' => '250000002',
+                'enabled' => 1,
+                'emi' => 1,
+                'emi_duration' => 9
+            ]);
+
+        $payment = $this->fixtures->create('payment',
+            [
+                'method'        => 'emi',
+                'gateway'       => 'bajajfinserv',
+                'otp_attempts'  => 0,
+                'terminal_id'   => 'AqdfGh5460opVt',
+                'emi_plan_id'   => '30111111111110',
+                'card_id'       => $card->getId(),
+                'status'        => 'created',
+                'amount'        => 10000,
+            ]);
+
+        $this->fixtures->create('mozart',
+            [
+                'payment_id'        => $payment->getId(),
+                'amount'            => 100,
+                'action'            => 'authorize',
+                'raw'               => '{}',
+            ]);
+
+        $this->fixtures->create('payment_analytics', ['ip' => '127.0.0.1', 'payment_id' => $payment->getId()]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $url = $this->getOtpSubmitUrl($payment);
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refundAmount = null;
+
+        $refund = $this->refundPayment($payment['id'], $refundAmount);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $txn = $this->getLastTransaction(true);
+
+        $this->assertEquals(9882, $txn['debit']);
+
+        $this->assertEquals(118, $txn['fee']);
+
+        $this->assertEquals(18, $txn['tax']);
+
+        $this->assertEquals(118, $txn['mdr']);
+
+        $this->assertEquals(118, $paymentEntity['fee']);
+        $this->assertEquals('refunded', $paymentEntity['status']);
+
+        $this->assertEquals('emi', $paymentEntity['method']);
+
+        $this->assertEquals('full', $paymentEntity['refund_status']);
+
+        $this->assertEquals('AqdfGh5460opVt', $paymentEntity['terminal_id']);
+
+        $this->assertEquals('processed', $refund['status']);
+
+        $this->assertEquals($paymentEntity['emi_plan_id'], '30111111111110');
+
+        $this->assertEquals(10000, $paymentEntity['base_amount']);
+
+        $this->assertEquals(10000, $paymentEntity['amount_refunded']);
+
+        $this->assertEquals(10000, $refund['amount']);
+    }
+
     public function testBajajFinservEmiPaymentCreate()
     {
         $emiPlan = $this->emiPlan;

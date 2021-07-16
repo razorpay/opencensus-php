@@ -19,6 +19,48 @@ return [
         ],
     ],
 
+    'testBajajFinservEmiPartialRefundTest' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '111111'
+            ]
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBajajFinservEmiFailedRefundTest' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '111111'
+            ]
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBajajFinservEmiFullRefundTest' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '111111'
+            ]
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testWrongOtpSubmitPayment' => [
         'request'   => [
             'method'    => 'POST',
