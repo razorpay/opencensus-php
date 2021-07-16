@@ -11,7 +11,7 @@ class Schedule extends Base
 {
     const SCHEDULE_PAYOUT_SERVICE_URI = '/payouts/schedule_payout/';
 
-    // payout cancel service name for singleton class
+    // payout schedule service name for singleton class
     const PAYOUT_SERVICE_SCHEDULE = 'payout_service_schedule';
 
     /**

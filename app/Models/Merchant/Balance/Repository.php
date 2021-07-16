@@ -3,8 +3,10 @@
 namespace RZP\Models\Merchant\Balance;
 
 use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -439,5 +441,31 @@ class Repository extends Base\Repository
             ]);
 
         return $result;
+    }
+
+    /**
+     * Filter balance ids with merchants having payout_service_enabled feature
+     *
+     * @return mixed
+     */
+    public function getBalanceIdsWithAMerchantsHavingPayoutServiceEnabled(array $balanceIdList = [])
+    {
+        $idColumn         = $this->dbColumn(Entity::ID);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $featureEntityIdColumn   = $this->repo->feature->dbColumn(Feature\Entity::ENTITY_ID);
+        $featureEntityTypeColumn = $this->repo->feature->dbColumn(Feature\Entity::ENTITY_TYPE);
+        $featureNameColumn       = $this->repo->feature->dbColumn(Feature\Entity::NAME);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->select($idColumn)
+                    ->join(Table::FEATURE, $merchantIdColumn, '=', $featureEntityIdColumn)
+                    ->where($featureEntityTypeColumn, Feature\Constants::MERCHANT)
+                    ->whereIn($idColumn, $balanceIdList)
+                    ->where($featureNameColumn, Feature\Constants::PAYOUT_SERVICE_ENABLED)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::ID)
+                    ->toArray();
     }
 }

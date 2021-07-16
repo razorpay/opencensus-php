@@ -511,6 +511,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutServiceSchedule();
 
+        $this->registerPayoutServiceQueuedInitiate();
+
         $this->registerPayoutServiceCreate();
 
         $this->registerFTSChannelNotification();
@@ -1268,6 +1270,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\Schedule::PAYOUT_SERVICE_SCHEDULE, function($app)
         {
             return new PayoutService\Schedule($app);
+        });
+    }
+
+    protected function registerPayoutServiceQueuedInitiate()
+    {
+        $this->app->singleton(PayoutService\QueuedInitiate::PAYOUT_SERVICE_QUEUED_INITIATE, function($app)
+        {
+            return new PayoutService\QueuedInitiate($app);
         });
     }
 

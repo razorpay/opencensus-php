@@ -49,11 +49,11 @@ use RZP\Models\Payout\Notifications;
 use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
-use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
@@ -111,6 +111,11 @@ class Core extends Base\Core
      */
     protected $payoutRetryServiceClient;
 
+    /**
+     * @var PayoutService\QueuedInitiate
+     */
+    protected $payoutServiceQueuedInitiateClient;
+
     /** @var Workflow\Service\Client  */
     protected $workflowService;
 
@@ -129,6 +134,9 @@ class Core extends Base\Core
         $this->payoutScheduledServiceClient = $this->app[PayoutService\Schedule::PAYOUT_SERVICE_SCHEDULE];
 
         $this->payoutRetryServiceClient = $this->app[PayoutService\Retry::PAYOUT_SERVICE_RETRY];
+
+        $this->payoutServiceQueuedInitiateClient =
+            $this->app[PayoutService\QueuedInitiate::PAYOUT_SERVICE_QUEUED_INITIATE];
 
         $this->workflowService = new Workflow\Service\Client;
     }
@@ -1524,6 +1532,41 @@ class Core extends Base\Core
             }
         }
     }
+
+    public function dispatchBalanceIdsForQueuedPayoutsToPayoutsService(array $balanceIdList = [])
+    {
+        try
+        {
+            // Filter out the balance ids for which the merchants have payout_service_enabled feature
+            $balanceIdList = $this->repo->balance
+                ->getBalanceIdsWithAMerchantsHavingPayoutServiceEnabled($balanceIdList);
+
+            $payoutServiceInput = [Entity::BALANCE_IDS => $balanceIdList];
+
+            $this->trace->info(
+                TraceCode::PAYOUT_QUEUED_INITIATE_DISPATCH_TO_PAYOUT_SERVICE,
+                $payoutServiceInput);
+
+            $this->payoutServiceQueuedInitiateClient->dispatchQueuedPayoutBalanceIdToMicroservice($payoutServiceInput);
+
+            $this->trace->info(
+                TraceCode::PAYOUT_QUEUED_INITIATE_DISPATCH_TO_PAYOUT_SERVICE_COMPLETE,
+                $payoutServiceInput);
+        }
+        catch (\Throwable $e)
+        {
+            // If the dispatch fails due to any reason, cron will
+            // pick up these payouts again and attempt to dispatch.
+            $data = $payoutServiceInput + [ 'message' => $e->getMessage() ];
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYOUT_QUEUED_DISPATCH_TO_PAYOUT_SERVICE_FAILED,
+                $data);
+        }
+    }
+
     //returns the sla for on hold payouts if present specific for a merchant else default sla
     public function getMerchantSlaForOnHoldPayouts(string $merchantId)
     {

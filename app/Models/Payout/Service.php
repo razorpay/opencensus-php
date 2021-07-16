@@ -23,6 +23,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
+use RZP\Services\PayoutService;
 use RZP\Models\Admin\Permission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountService;
@@ -713,6 +714,8 @@ class Service extends Base\Service
         {
             $balanceIdList = array_values(array_diff($balanceIdList, $balanceIdsBlacklist));
         }
+
+        $this->core->dispatchBalanceIdsForQueuedPayoutsToPayoutsService($balanceIdList);
 
         $this->core->dispatchBalanceIdsForQueuedPayouts($balanceIdList);
 

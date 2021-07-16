@@ -65,7 +65,8 @@ class PayoutServiceTest extends TestCase
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
-        $payoutServiceCreateMock = Mockery::mock('RZP\Services\PayoutService\Create', [$this->app])->makePartial();
+        $payoutServiceCreateMock = Mockery::mock('RZP\Services\PayoutService\Create',
+                                                 [$this->app])->makePartial();
 
         $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
 
@@ -96,6 +97,53 @@ class PayoutServiceTest extends TestCase
                                 );
 
         $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
+    }
+
+    public function mockPayoutServiceQueuedInitiate($fail = false, $request = [])
+    {
+        // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request content that
+        // is going to be sent to payout service.
+        $payoutServiceQueuedInitiateMock = Mockery::mock('RZP\Services\PayoutService\QueuedInitiate',
+                                                         [$this->app])->makePartial();
+
+        $defaultRequest['content']['balance_ids'] = "";
+
+        $request = array_merge($defaultRequest, $request);
+
+        $payoutServiceQueuedInitiateMock->shouldReceive('sendRequest')
+                                ->withArgs(
+                                    function($arg) use ($request) {
+                                        try
+                                        {
+                                            // json decoding the content so that we can assert the keys of content.
+                                            $arg['content'] = json_decode($arg['content'], true);
+
+                                            // Using this method only here as we want to check if the keys in the
+                                            // request are coming properly or not.
+                                            $this->assertArrayKeySelectiveEquals($request, $arg);
+
+                                            if (empty($request['content']['balance_ids']) === false)
+                                            {
+                                                return ($request['content']['balance_ids'] ===
+                                                        $arg['content']['balance_ids']);
+                                            }
+
+                                            return true;
+                                        }
+                                        catch (\Throwable $e)
+                                        {
+                                            return false;
+                                        }
+                                    }
+                                )
+                                ->andReturn(
+                                // We are returning this response only as we don't have a use case of supporting
+                                // response based on $request, if needed, that can also be added here using
+                                // andReturnUsing method instead of andReturn
+                                    $this->createResponseForPayoutServiceMock($fail)
+                                );
+
+        $this->app->instance('payout_service_queued_initiate', $payoutServiceQueuedInitiateMock);
     }
 
     public function mockPayoutServiceStatus($status, $fail = false)
@@ -686,9 +734,12 @@ class PayoutServiceTest extends TestCase
     }
 
     // Since payout has queue_if_low_balance flag set to true, it won't go via payouts service
-    public function testCreateQueuedPayoutViaPayoutService()
+    public function testCreateQueuedPayoutViaPayoutService(string $balanceId = '')
     {
-        $balanceId = $this->bankingBalance->getId();
+        if (empty($balanceId) === true)
+        {
+            $balanceId = $this->bankingBalance->getId();
+        }
 
         $this->fixtures->on('live')->edit(
             'balance',
@@ -697,6 +748,12 @@ class PayoutServiceTest extends TestCase
                 'balance' => 100
             ]
         );
+
+        $balance = $this->getDbEntityById('balance', $balanceId, "live");
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['account_number'] = $balance->getAccountNumber();
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
@@ -825,35 +882,222 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
-    // Since queued payout has is_payout_service value set to 1, it won't be processed via api
+    // Since queued payout has is_payout_service value set to 1, it won't be processed via api. But we can assert that
+    // it's balance id is being sent to payout service for dispatching.
     public function testProcessQueuedPayoutCreatedPayoutService()
     {
+        $balanceId = $this->bankingBalance->getId();
+
+        $request['content']['balance_ids'] = $balanceId;
+
+        $this->mockPayoutServiceQueuedInitiate($request);
+
         $this->testCreateQueuedPayoutViaPayoutService();
 
-        $payout = $this->getDbLastEntity('payout', 'live');
+        $payout1 = $this->getDbLastEntity('payout', 'live');
 
+        // Doing this because as of now queued payouts can't be created via payout service
         $this->fixtures->edit(
             'payout',
-            $payout->getId(),
+            $payout1->getId(),
             [
                 'is_payout_service' => 1
             ]
         );
 
-        $balanceId = $this->bankingBalance->getId();
+        $this->testCreateQueuedPayoutViaPayoutService();
+
+        $payout2 = $this->getDbLastEntity('payout', 'live');
 
         $this->fixtures->on('live')->edit(
             'balance',
             $balanceId,
             [
-                'balance' => 100000
+                'balance' => 1000000
             ]
         );
 
-        $this->dispatchQueuedPayouts('live');
+        $secondBankingBalance = $this->createSecondBankingBalance();
 
-        $payout->reload();
+        $balanceId2 = $secondBankingBalance['id'];
 
-        $this->assertEquals('queued', $payout->getStatus());
+        $this->fixtures->on('live')->create(
+            'counter',
+            [
+                'balance_id' => $balanceId2,
+                'account_type' => $secondBankingBalance->getAccountType(),
+            ]
+        );
+
+        $this->testCreateQueuedPayoutViaPayoutService($balanceId2);
+
+        $payout3 = $this->getDbLastEntity('payout', 'live');
+
+        $this->fixtures->on('live')->edit(
+            'balance',
+            $balanceId2,
+            [
+                'balance' => 1000000
+            ]
+        );
+
+        $response = $this->dispatchQueuedPayouts('live');
+
+        $expectedResponse = [
+            'balance_id_list' => [
+                $balanceId,
+                $balanceId2
+            ]
+        ];
+
+        $this->assertEquals($expectedResponse, $response);
+
+        $payout1->reload();
+
+        $this->assertEquals('queued', $payout1->getStatus());
+
+        $payout2->reload();
+
+        // This payout should go to processing state as it is not created via payout service.
+        $this->assertEquals('created', $payout2->getStatus());
+
+        $payout3->reload();
+
+        // This payout should go to processing state as it is not created via payout service.
+        $this->assertEquals('created', $payout3->getStatus());
+    }
+
+    // Since queued payout has is_payout_service value set to 1, it won't be processed via api. Here we check that even
+    // if dispatch to service fails, the dispatch functionality of queued payouts isn't affected at all. The balance
+    // ids will be dispatched to payout service on later try of the cron.
+    public function testProcessQueuedPayoutCreatedPayoutServiceWhenDispatchToServiceFails()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        // Since we are sending incorrect balance id to the mock, it'll fail there and it'll create failure response
+        // from service and hence it'll behave as if the request to service failed.
+        $request['content']['balance_ids'] = "random_balance_id";
+
+        $this->mockPayoutServiceQueuedInitiate($request);
+
+        $this->testCreateQueuedPayoutViaPayoutService();
+
+        $payout1 = $this->getDbLastEntity('payout', 'live');
+
+        // Doing this because as of now queued payouts can't be created via payout service
+        $this->fixtures->edit(
+            'payout',
+            $payout1->getId(),
+            [
+                'is_payout_service' => 1
+            ]
+        );
+
+        $this->testCreateQueuedPayoutViaPayoutService();
+
+        $payout2 = $this->getDbLastEntity('payout', 'live');
+
+        $this->fixtures->on('live')->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 1000000
+            ]
+        );
+
+        $secondBankingBalance = $this->createSecondBankingBalance();
+
+        $balanceId2 = $secondBankingBalance['id'];
+
+        $this->fixtures->on('live')->create(
+            'counter',
+            [
+                'balance_id' => $balanceId2,
+                'account_type' => $secondBankingBalance->getAccountType(),
+            ]
+        );
+
+        $this->testCreateQueuedPayoutViaPayoutService($balanceId2);
+
+        $payout3 = $this->getDbLastEntity('payout', 'live');
+
+        $this->fixtures->on('live')->edit(
+            'balance',
+            $balanceId2,
+            [
+                'balance' => 1000000
+            ]
+        );
+
+        $response = $this->dispatchQueuedPayouts('live');
+
+        $expectedResponse = [
+            'balance_id_list' => [
+                $balanceId,
+                $balanceId2
+            ]
+        ];
+
+        $this->assertEquals($expectedResponse, $response);
+
+        $payout1->reload();
+
+        $this->assertEquals('queued', $payout1->getStatus());
+
+        $payout2->reload();
+
+        // This payout should go to processing state as it is not created via payout service.
+        $this->assertEquals('created', $payout2->getStatus());
+
+        $payout3->reload();
+
+        // This payout should go to processing state as it is not created via payout service.
+        $this->assertEquals('created', $payout3->getStatus());
+    }
+
+    public function createSecondBankingBalance()
+    {
+        // Create second Balance
+        $balanceAttributes = [
+            'balance' => 10000000,
+            'balanceType' => 'shared',
+            'channel' => 'icici',
+        ];
+
+        $secondBankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            '10000000000000',
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        // Create Second Bank Account
+
+        $virtualAccount = $this->fixtures->create('virtual_account');
+        $secondBankAccount    = $this->fixtures->create(
+            'bank_account',
+            [
+                'type'           => 'virtual_account',
+                'entity_id'      => $virtualAccount->getId(),
+                'account_number' => '2224440041626906',
+                'ifsc_code'      => 'RAZRB000000',
+            ]);
+
+        $virtualAccount->bankAccount()->associate($secondBankAccount);
+        $virtualAccount->balance()->associate($secondBankingBalance);
+        $virtualAccount->save();
+
+        $secondBankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
+
+        $secondBankingBalance->save();
+
+        $mode = $this->getConnection()->getName();
+
+        $balance = $this->getDbEntity('balance', [
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'shared'
+        ], $mode);
+
+        return $balance;
     }
 }
