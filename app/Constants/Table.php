@@ -40,6 +40,8 @@ class Table
     const PAYMENT                      = 'payments';
     const FEATURE                      = 'features';
     const DISPUTE                      = 'disputes';
+    const DISPUTE_EVIDENCE             = 'dispute_evidence';
+    const DISPUTE_EVIDENCE_DOCUMENT    = 'dispute_evidence_document';
     const ADDRESS                      = 'addresses';
     const DISCOUNT                     = 'discounts';
     const MERCHANT                     = 'merchants';

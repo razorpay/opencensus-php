@@ -1753,15 +1753,6 @@ class DisputeTest extends TestCase
         }
     }
 
-    public function testGetDisputeDocumentTypesMetadata()
-    {
-        $this->fixtures->merchant->addFeatures(['dispute_presentment']);
-
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
     // ---------------------------- helper methods-------------------------------
 
     protected function freshdeskFlow(

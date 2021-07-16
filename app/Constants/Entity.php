@@ -42,6 +42,8 @@ class Entity
     const COUNTER                    = 'counter';
     const CONTACT                    = 'contact';
     const DISPUTE                    = 'dispute';
+    const DISPUTE_EVIDENCE           = 'dispute_evidence';
+    const DISPUTE_EVIDENCE_DOCUMENT  = 'dispute_evidence_document';
     const ADDRESS                    = 'address';
     const BALANCE                    = 'balance';
     const CREDITS                    = 'credits';
@@ -643,6 +645,8 @@ class Entity
         self::PRODUCT                   => \RZP\Models\Order\Product::class,
         self::FEATURE                   => \RZP\Models\Feature::class,
         self::DISPUTE                   => \RZP\Models\Dispute::class,
+        self::DISPUTE_EVIDENCE          => \RZP\Models\Dispute\Evidence::class,
+        self::DISPUTE_EVIDENCE_DOCUMENT => \RZP\Models\Dispute\Evidence\Document::class,
         self::CUSTOMER                  => \RZP\Models\Customer::class,
         self::EMI_PLAN                  => \RZP\Models\Emi::class,
         self::MERCHANT                  => \RZP\Models\Merchant::class,

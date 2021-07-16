@@ -1,0 +1,118 @@
+<?php
+
+
+namespace RZP\Models\Dispute\Evidence\Document;
+
+
+use RZP\Models\Base;
+use RZP\Models\Dispute;
+use RZP\Trace\TraceCode;
+
+class Core extends Base\Core
+{
+
+    public function createMany(Dispute\Entity $dispute, array $merchantInput)
+    {
+        $createManyInput = $this->makeInputForCreateMany($merchantInput);
+
+        $this->app->trace->info(TraceCode::EVIDENCE_DOCUMENT_CREATE_MANY_INPUT, $createManyInput);
+
+        (new Validator)->validateCreateManyInput($createManyInput);
+
+        $bulkCreateInput = $this->makeBulkCreateInputFromCreateManyInput($dispute, $createManyInput);
+
+        (new Validator)->validateBulkCreateInput($bulkCreateInput);
+
+        $this->repo->dispute_evidence_document->transaction(function () use ($dispute, $bulkCreateInput)
+        {
+            foreach ($bulkCreateInput as $row)
+            {
+                $this->create($dispute, $row);
+            }
+        });
+    }
+
+    protected function create(Dispute\Entity $dispute, $input): Entity
+    {
+        $this->trace->info(TraceCode::EVIDENCE_DOCUMENT_CREATE_INPUT, $input);
+
+        $document = (new Entity)->build($input);
+
+        $this->repo->dispute_evidence_document->saveOrFail($document);
+
+        return $document;
+    }
+
+    protected function makeBulkCreateInputFromCreateManyInput(Dispute\Entity $dispute, array $createManyInput)
+    {
+        $result = [];
+
+        foreach ($createManyInput as $proofType => $proof)
+        {
+            $inputs = $this->makeInputForCreate($dispute, $proofType, $proof);
+
+            $result = array_merge($result, $inputs);
+        }
+
+        return $result;
+    }
+
+    protected function makeInputForCreateMany($input)
+    {
+        $result = array_filter($input, function ($attribute)
+        {
+            return Types::isValidType($attribute) === true;
+        }, ARRAY_FILTER_USE_KEY);
+
+        return $result;
+    }
+
+    protected function makeInputForCreate(Dispute\Entity $dispute, $proofType, $proof)
+    {
+        switch ($proofType)
+        {
+            case Types::OTHERS:
+                return $this->makeInputForCreateOthersType($dispute, $proofType, $proof);
+            default:
+                return $this->makeInputForCreateDefaultType($dispute, $proofType, $proof);
+        }
+    }
+
+    protected function makeInputForCreateOthersType(Dispute\Entity $dispute, $proofType, $othersTypeProofs)
+    {
+        $result = [];
+
+        foreach ($othersTypeProofs as $othersTypeProof)
+        {
+            foreach ($othersTypeProof['document_ids'] as $documentId)
+            {
+                array_push($result, [
+                    Entity::DISPUTE_ID  => $dispute->getId(),
+                    Entity::TYPE        => $proofType,
+                    Entity::CUSTOM_TYPE => $othersTypeProof[Entity::TYPE],
+                    Entity::DOCUMENT_ID => Entity::stripDefaultSign($documentId),
+                    Entity::SOURCE      => (new Dispute\Evidence\Core)->getSourceForCreateEvidence(),
+                ]);
+            }
+        }
+
+        return $result;
+    }
+
+    protected function makeInputForCreateDefaultType(Dispute\Entity $dispute, $proofType, $documentIds)
+    {
+        $result = [];
+
+        foreach ($documentIds as $documentId)
+        {
+            array_push($result, [
+                Entity::DISPUTE_ID  => $dispute->getId(),
+                Entity::TYPE        => $proofType,
+                Entity::DOCUMENT_ID => Entity::stripDefaultSign($documentId),
+                Entity::SOURCE      => (new Dispute\Evidence\Core)->getSourceForCreateEvidence(),
+            ]);
+        }
+
+        return $result;
+    }
+}

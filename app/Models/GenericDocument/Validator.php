@@ -26,9 +26,14 @@ class Validator extends Base\Validator
         Constants::FILE    => 'mimes:jpeg,jpg,png'
     ];
 
+    protected static $disputeEvidenceMimeRules = [
+        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png',
+    ];
+
     protected $mimeValidators = [
-        Constants::KYC_PROOF => 'kyc_mime',
-        Constants::TRADEMARK_LOGO => 'logo_mime'
+        Constants::KYC_PROOF        => 'kyc_mime',
+        Constants::TRADEMARK_LOGO   => 'logo_mime',
+        Constants::DISPUTE_EVIDENCE => 'dispute_evidence_mime',
     ];
 
     public function validateMimeType(array $input)

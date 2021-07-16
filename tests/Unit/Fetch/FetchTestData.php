@@ -678,4 +678,8 @@ return [
     E::MERCHANT_E_INVOICE => [],
 
     E::SUB_VIRTUAL_ACCOUNT => [],
+
+    E::DISPUTE_EVIDENCE => [],
+
+    E::DISPUTE_EVIDENCE_DOCUMENT => [],
 ];

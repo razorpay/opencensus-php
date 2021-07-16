@@ -824,4 +824,9 @@ class Service extends Base\Service
     {
         return $this->core()->getDisputeDocumentTypesMetadata();
     }
+
+    public function patchDisputeContestById($disputeId, $input)
+    {
+        return $this->core()->patchDisputeContestById($disputeId, $input)->toArrayPublic();
+    }
 }

@@ -1201,7 +1201,24 @@ class Core extends Base\Core
 
     public function getDisputeDocumentTypesMetadata()
     {
-        return Document\Types::getTypesMetadata();
+        return Evidence\Document\Types::getTypesMetadata();
+    }
+
+    public function patchDisputeContestById($disputeId, $input)
+    {
+        $disputeId = Entity::verifyIdAndStripSign($disputeId);
+
+        $dispute = $this->repo->dispute->findByIdAndMerchantId($disputeId, $this->merchant->getId());
+
+        $dispute = $this->repo->transaction(function () use ($dispute, $input) {
+            $evidence = (new Evidence\Core)->handlePatchDisputeEvidence($dispute, $input);
+
+            $this->repo->dispute_evidence->saveOrFail($evidence);
+
+            return $dispute->refresh();
+        });
+
+        return $dispute;
     }
 
     private function doRiskAnalysisAndNotifyRas()

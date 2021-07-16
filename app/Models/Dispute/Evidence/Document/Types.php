@@ -1,7 +1,7 @@
 <?php
 
 
-namespace RZP\Models\Dispute\Document;
+namespace RZP\Models\Dispute\Evidence\Document;
 
 
 class Types
@@ -81,8 +81,18 @@ class Types
         ],
     ];
 
-    public static function getTypesMetadata()
+    public static function getTypesMetadata(): array
     {
         return array_values(self::$typesMetadataMap);
+    }
+
+    public static function getTypes(): array
+    {
+        return array_keys(self::$typesMetadataMap);
+    }
+
+    public static function isValidType(string $type) : bool
+    {
+        return in_array($type, self::getTypes()) === true;
     }
 }

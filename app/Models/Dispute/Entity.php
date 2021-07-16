@@ -6,6 +6,7 @@ use App;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Adjustment;
@@ -72,6 +73,7 @@ class Entity extends Base\PublicEntity
     const REASON                  = 'reason';
     const MERCHANT                = 'merchant';
     const TRANSACTION             = 'transaction';
+    const EVIDENCE                = 'evidence';
 
     const SKIP_DEDUCTION          = 'skip_deduction';
     const CONTACT                 = 'contact';
@@ -138,6 +140,7 @@ class Entity extends Base\PublicEntity
         self::PHASE,
         self::COMMENTS,
         self::EMAIL_NOTIFICATION_STATUS,
+        self::EVIDENCE,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -156,6 +159,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::PHASE,
         self::COMMENTS,
+        self::EVIDENCE,
         self::CREATED_AT,
     ];
 
@@ -170,6 +174,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DEDUCTED,
         self::RESPOND_BY,
         self::REASON_DESCRIPTION,
+        self::EVIDENCE,
     ];
 
     protected $casts = [
@@ -384,6 +389,22 @@ class Entity extends Base\PublicEntity
         $attributes[self::RESPOND_BY] = (int) $this->getExpiresOn();
     }
 
+    public function setPublicEvidenceAttribute(array &$attributes)
+    {
+        if ($this->isEnabledForDisputePresentment() === false)
+        {
+            return;
+        }
+
+        if ($this->evidence === null)
+        {
+            return;
+        }
+
+        // todo: clarify this behavior
+        $attributes[self::EVIDENCE] = $this->evidence->toArrayPublic();
+    }
+
     public function setComments(string $comments = null)
     {
         $this->setAttribute(self::COMMENTS, $comments);
@@ -562,6 +583,11 @@ class Entity extends Base\PublicEntity
         return $this->morphMany(Adjustment\Entity::class, 'entity');
     }
 
+    public function evidence()
+    {
+        return $this->hasOne(Evidence\Entity::class);
+    }
+
     // --------------- Relation to other entity section ends --------------------
 
     public function associateReason($reason)
@@ -632,5 +658,14 @@ class Entity extends Base\PublicEntity
         $this->payment()->associate($payment);
 
         return $payment;
+    }
+
+    protected function isEnabledForDisputePresentment() : bool
+    {
+        if ($this->merchant === null)
+        {
+            return false;
+        }
+        return $this->merchant->isFeatureEnabled(Feature\Constants::DISPUTE_PRESENTMENT) === true;
     }
 }

@@ -145,6 +145,8 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Gateway\Enach\Base\Repository                         $enach
  * @property Models\SubVirtualAccount\Repository                   $sub_virtual_account
  * @property Models\Settlement\Transfer\Repository                 $settlement_transfer;
+ * @property Models\Dispute\Evidence\Repository                    $dispute_evidence;
+ * @property Models\Dispute\Evidence\Document\Repository           $dispute_evidence_document;
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

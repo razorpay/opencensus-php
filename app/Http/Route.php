@@ -1683,6 +1683,7 @@ class Route
         'fd_customer_dispute'                      => ['post',     'fd/disputes',                                    'FreshdeskTicketController@postCustomerDispute'                     ],
         'dispute_reason_fetch_internal'            => ['get',      'dispute_reasons_internal/{disputeReasonId}',     'DisputeController@getReasonInternal'                               ],
         'get_dispute_document_types_metadata'      => ['get',      'disputes/documents/types',                       'DisputeController@getDisputeDocumentTypesMetadataDescription'      ],
+        'patch_dispute_contest_by_id'              => ['patch',    'disputes/{id}/contest',                          'DisputeController@patchDisputeContestById',                        ],
 
         // This is a different route from /payouts since we need a different auth (internal) for this
         // Hence, created two different routes - one for customer and another for merchant.
@@ -2924,6 +2925,7 @@ class Route
         'beta_account_fetch_setl_destinations',
         'dispute_fetch',
         'get_dispute_document_types_metadata',
+        'patch_dispute_contest_by_id',
         'account_features_add',
         'account_features_get',
         'payment_acknowledge',
@@ -9938,6 +9940,7 @@ class Route
         'merchant_gstin_self_serve_status'     => [Feature::GSTIN_SELF_SERVE],
         'merchant_gstin_self_serve_update'     => [Feature::GSTIN_SELF_SERVE],
         'get_dispute_document_types_metadata'  => [Feature::DISPUTE_PRESENTMENT],
+        'patch_dispute_contest_by_id'          => [Feature::DISPUTE_PRESENTMENT],
     ];
 
     /**
