@@ -125,7 +125,7 @@ class Core extends Base\Core
     {
         // Adds type label & dashboard path for referral.
 
-        $longUrl = $dashboardUrl . "/signup?referral_code=";
+        $longUrl = $dashboardUrl . "signup?referral_code=";
 
         $longUrl = $longUrl . $refCode;
 
