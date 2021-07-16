@@ -18,9 +18,8 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class MyOperator
 {
-    const API_BASE_URL                           = 'https://developers.myoperator.co/';
-    const API_BASE_URLV2                          = 'https://obd-api.myoperator.co/';
-    const API_CALL_OUTBOUND_PATH                 = '/call/outbound';
+    const API_BASE_URL                           = 'https://obd-api.myoperator.co';
+    const API_CALL_OUTBOUND_PATH                 = '/obd-api-v1';
 
     // Remote API set timeout in seconds.
     const API_TIMEOUT                            = 5;
@@ -61,11 +60,9 @@ class MyOperator
      */
     public function submitSupportCallRequest(array $input): array
     {
-        list ($code, $number) = $this->splitContactAndGetCodeAndNumber($input['contact']);
-
         $payload = [
-            'country_code'   => $code,
-            'contact_number' => $number,
+            'number'         => $this->splitContactAndGetCodeAndNumber($input['contact']),
+            'type'           => "2",
         ];
         $resp = $this->makeCalLOutboundApiRequest($payload, self::API_CALL_OUTBOUND_PATH,Requests::POST);
 
@@ -78,11 +75,11 @@ class MyOperator
      *
      * @param string $contact
      *
-     * @return array
+     * @return string
      * @throws BadRequestValidationFailureException
      * @throws \libphonenumber\NumberParseException
      */
-    protected function splitContactAndGetCodeAndNumber(string $contact): array
+    protected function splitContactAndGetCodeAndNumber(string $contact): String
     {
         $phonebook = new PhoneBook($contact, true);
 
@@ -96,7 +93,7 @@ class MyOperator
         $code        = (($code === null) or ($code === 91)) ? '+91' : (string) $code;
         $number      = $phoneNumber->getNationalNumber();
 
-        return [$code, (int) $number];
+        return $code.$number;
     }
 
     protected function makeCalLOutboundApiRequest(array $payload, $path, $method): Requests_Response
@@ -106,6 +103,7 @@ class MyOperator
         $headers = [
             'Accept'       => 'application/json',
             'Content-type' => 'application/json',
+            'x-api-key'    => $this->config['x_api_key'],
         ];
         $options = [
             'timeout' => self::API_TIMEOUT,
@@ -113,8 +111,11 @@ class MyOperator
 
         if($method == Requests::POST)
         {
-            // MyOperator expects API token in post payload.
-            $payload += $this->getToken();
+            //redacted secrets so that they do not appear in logs
+            $payload += $this->getToken() +
+                        ['company_id' => $this->config['x_company_id']] +
+                        ["public_ivr_id"  => $this->config['x_public_ivr_id']];
+
             $payload = json_encode($payload);
 
             return Requests::post($endpoint, $headers, $payload, $options);
@@ -180,7 +181,7 @@ class MyOperator
         {
             $this->trace->error("No token found for MyOperator");
         }
-        return ['token' => $token];
+        return ['secret_token' => $token];
     }
 
     public function getProxyCallToMyOperatorV1($path): array
@@ -211,7 +212,7 @@ class MyOperator
         ];
 
         $request = [
-            'url' => self::API_BASE_URLV2 . $path,
+            'url' => self::API_BASE_URL . $path,
             'headers'   => $headers,
             'content'   => json_encode($payload),
             'options'   => $options,

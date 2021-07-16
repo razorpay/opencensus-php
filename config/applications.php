@@ -751,10 +751,12 @@ return [
     'myoperator' => [
         'mock'              => env('MYOPERATOR_MOCK'),
         'api_token'         => env('MYOPERATOR_API_TOKEN'),
-        'x_api_token'       => env('X_MYOPERATOR_API_TOKEN'),
         'secret_token'      => env('MYOPERATOR_SECRET_TOKEN'),
-        'x_api_key'         => env('MYOPERATOR_X_API_KEY'),
         'secret'            => env('MYOPERATOR_INTERNAL_APP_SECRET'),
+        'x_api_token'       => env('X_MYOPERATOR_API_TOKEN'),
+        'x_api_key'         => env('MYOPERATOR_X_API_KEY'),
+        'x_public_ivr_id'   => env('X_MYOPERATOR_PUBLIC_IVR_ID'),
+        'x_company_id'      => env('X_MYOPERATOR_COMPANY_ID')
     ],
 
     'vendor_payments' => [

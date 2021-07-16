@@ -22,8 +22,8 @@ class MyOperator extends \RZP\Services\MyOperator
             [
                 'status'       => 'success',
                 'code'         => '200',
-                'message'      => 'Call queued successfully',
-                'reference_id' => '1000000000000000',
+                'details'      => 'Request accepted successfully',
+                'unique_id'    => '39f45ff0-e3ab-11eb-9257-46dda8eef2ac',
             ]);
 
         return $resp;
