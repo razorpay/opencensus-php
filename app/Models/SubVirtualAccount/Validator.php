@@ -35,11 +35,11 @@ class Validator extends Base\Validator
         UserEntity::TOKEN              => 'required',
     ];
 
-    // Maximum transfer allowed is 10cr
+    // Maximum transfer allowed is 50cr
     protected static $subVirtualAccountTransferRules = [
         Entity::MASTER_ACCOUNT_NUMBER  => 'required|string|between:5,35',
         Entity::SUB_ACCOUNT_NUMBER     => 'required|string|between:5,35',
-        Entity::AMOUNT                 => 'required|integer|min:100|max:10000000000',
+        Entity::AMOUNT                 => 'required|integer|min:100|max:50000000000',
         Entity::CURRENCY               => 'sometimes|size:3|in:INR',
     ];
 
@@ -60,7 +60,7 @@ class Validator extends Base\Validator
                 ]
             );
         }
-        
+
         if ($masterMerchant->isBusinessBankingEnabled() === false)
         {
             throw new Exception\BadRequestException(

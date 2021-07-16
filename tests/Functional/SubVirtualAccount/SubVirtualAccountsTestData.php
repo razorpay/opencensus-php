@@ -490,7 +490,7 @@ return [
             'content' => [
                 'master_account_number'  => '2224440041626905',
                 'sub_account_number'     => '2323230041626906',
-                'amount'                 => 10000001000,
+                'amount'                 => 50000001000,
                 'currency'               => 'INR',
                 'token'                  => 'BUIj3m2Nx2VvVj',
                 'otp'                    => '0007',
@@ -500,7 +500,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The amount may not be greater than 10000000000.',
+                    'description' => 'The amount may not be greater than 50000000000.',
                 ],
             ],
             'status_code' => 400,
