@@ -188,11 +188,12 @@ trait Authorize
         return $response;
     }
 
-    //
-    // Called from to places
-    // 1. authorize - regular flow
-    // 2. processRedirectToAuthorize - s2s redirect flow
-    //
+    /**
+     *  Called from :
+     *  1. authorize - regular flow
+     *  2. processRedirectToAuthorize - s2s redirect flow
+     *  3. updateAndRedirectToAuthorize ->processRedirectToAuthorize - dcc redirect flow
+     */
     public function gatewayRelatedProcessing(Payment\Entity $payment, array $input, array $gatewayInput = []): array
     {
         $ret = $this->hitGatewayIfRequired($payment, $input, $gatewayInput);
@@ -2808,7 +2809,8 @@ trait Authorize
         // We need to disable fraud checks for redirection payments before redirection hence this check. This will
         // be later handled within payment service
         if (($this->shouldRedirect($payment) === true) or
-            ($this->shouldRedirectV2($payment, []) === true))
+            ($this->shouldRedirectV2($payment, []) === true) or
+            ($this->shouldRedirectDCC($payment) === true))
         {
             return;
         }
@@ -8067,6 +8069,48 @@ trait Authorize
         return true;
     }
 
+    /**
+     * Check and return if DCC is applicable for this s2s payment
+     * @param Payment\Entity $payment
+     * @return bool
+     */
+    protected function shouldRedirectDCC(Payment\Entity $payment): bool
+    {
+        if (($this->app['api.route']->isS2SPaymentRoute() === false) or
+            ($this->app['basicauth']->isPrivateAuth() === false))
+        {
+            return false;
+        }
+
+        //TODO Remove this condition once rollout complete, should work on DCC common feature flag only
+        if ($payment->merchant->issDCCS2SEnabled() === false)
+        {
+            return false;
+        }
+
+        if (($payment->isCard() === false) or ($payment->merchant->isDCCEnabledInternationalMerchant() === false))
+        {
+            return false;
+        }
+
+        if($payment->card === null or (new Payment\Service)->isDccEnabledIIN($payment->card->iinRelation) === false)
+        {
+            return false;
+        }
+
+        // We are not redirecting to non INR currency as of now,
+        // since this can cause issue in cases were bin country details are incorrect/missing
+        // Can cause customer to pay more than one conversion charges.
+        // TODO : To evaluate with product and if required enable it for all currency later.
+        if( ($payment->getCurrency() !== Currency\Currency::INR) or
+            ($payment->getCurrency() === $payment->card->iinRelation->getIinCurrency()))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     // function accepts, $terminalGatewayInput to check whether we can return a redirect response or not
     // since it has auth terminal selection data and if we can return a redirect response, we are using
     // $gatewayInput to add selected terminalIds node which will be used in the redirect flow
@@ -8076,8 +8120,11 @@ trait Authorize
         {
             $merchant = $payment->merchant;
 
+            $redirectDcc = $this->shouldRedirectDCC($payment);
+
             if (($this->shouldRedirect($payment) === false) and
-                ($this->shouldRedirectV2($payment, $terminalGatewayInput) === false))
+                ($this->shouldRedirectV2($payment, $terminalGatewayInput) === false) and
+                ($redirectDcc === false))
             {
                 return null;
             }
@@ -8122,7 +8169,16 @@ trait Authorize
 
             $this->cache->put($key, $encryptedPayload, self::REDIRECT_CACHE_TTL);
 
-            $redirectUrl = $this->route->getUrl('payment_redirect_to_authenticate_get', ['id' => $trackId]);
+            $redirectUrl = '';
+
+            if ($redirectDcc === true)
+            {
+                $redirectUrl = $this->route->getUrl('payment_redirect_to_dcc_info', ['id' => $trackId]);
+            }
+            else
+            {
+                $redirectUrl = $this->route->getUrl('payment_redirect_to_authenticate_get', ['id' => $trackId]);
+            }
 
             $this->trace->info(
                 TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
@@ -8332,7 +8388,7 @@ trait Authorize
         return null;
     }
 
-    public function processRedirectToAuthorize(Payment\Entity $payment, string $trackId)
+    public function processRedirectToAuthorize(Payment\Entity $payment, string $trackId, $input=[])
     {
         $this->setPayment($payment);
 
@@ -8350,7 +8406,7 @@ trait Authorize
 
         $response = $this->mutex->acquireAndRelease(
             $resource,
-            function() use ($payment)
+            function() use ($payment, $input)
             {
                 $ret = $this->reCheckPayment($payment, PaymentConstants::REQUEST_TYPE_REDIRECT);
 
@@ -8358,6 +8414,9 @@ trait Authorize
                 {
                     return $ret;
                 }
+
+                //DCC S2S Flow. Doing this inside mutex to avoid duplicate processing
+                $this->preProcessDCCInputs($input, $payment);
 
                 $key = $payment->getCacheRedirectInputKey();
 

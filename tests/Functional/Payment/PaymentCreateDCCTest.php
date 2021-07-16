@@ -31,6 +31,116 @@ class PaymentCreateDCCTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
     }
 
+    public function testPaymentCreateWithDCCS2SFeatureNotEnabled()
+    {
+        $payment = $this->payment;
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $responseContent = $this->doS2SPrivateAuthAndCapturePayment($payment);
+
+        $this->assertFalse($this->redirectToDCCInfo);
+        $this->assertFalse($this->redirectToUpdateAndAuthorize);
+
+        $this->ba->privateAuth();
+
+        $paymentEntity = $this->getEntityById('payment', $responseContent['id'],true);
+
+        $this->assertEquals('captured', $paymentEntity['status']);
+        $this->assertEquals(false, $paymentEntity['dcc']);
+    }
+
+    public function testPaymentCreateWithDCCS2SNonINR()
+    {
+        $payment = $this->payment;
+        $payment['currency'] = 'EUR';
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['enable_dcc_s2s']);
+        $responseContent = $this->doS2SPrivateAuthAndCapturePayment($payment);
+
+        $this->assertFalse($this->redirectToDCCInfo);
+        $this->assertFalse($this->redirectToUpdateAndAuthorize);
+
+        $this->ba->privateAuth();
+
+        $paymentEntity = $this->getEntityById('payment', $responseContent['id'],true);
+
+        $this->assertEquals('captured', $paymentEntity['status']);
+        $this->assertEquals(false, $paymentEntity['dcc']);
+    }
+
+    public function testPaymentCreateWithDCCS2SRedirect()
+    {
+        $payment = $this->payment;
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['enable_dcc_s2s']);
+        $responseContent = $this->doS2SPrivateAuthAndCapturePayment($payment);
+
+        $this->assertTrue($this->redirectToDCCInfo);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $this->ba->privateAuth();
+
+        $paymentEntity = $this->getEntityById('payment', $responseContent['id'],true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals('captured', $paymentEntity['status']);
+        $this->assertEquals($paymentEntity['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals('USD', $paymentMeta['gateway_currency']);
+        $this->assertEquals(true, $paymentEntity['dcc']);
+        $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
+    }
+
+    public function testPaymentCreateWithDCCS2SJson()
+    {
+        $payment = $this->payment;
+        $this->fixtures->merchant->addFeatures(['s2s','s2s_json']);
+        $this->fixtures->merchant->addFeatures(['enable_dcc_s2s']);
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+
+        $this->assertArrayHasKey('next', $responseContent);
+
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToDCCInfoUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToDCCInfo($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertTrue($this->redirectToDCCInfo);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $this->ba->privateAuth();
+
+        $paymentEntity = $this->getEntityById('payment', $content['razorpay_payment_id'],true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($paymentEntity['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals('USD', $paymentMeta['gateway_currency']);
+        $this->assertEquals(true, $paymentEntity['dcc']);
+        $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
+    }
+
     public function testPaymentCreateWithDCC()
     {
         $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
@@ -50,7 +160,12 @@ class PaymentCreateDCCTest extends TestCase
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
 
+        $this->fixtures->merchant->addFeatures(['enable_dcc_s2s']);
+
         $this->doAuthAndCapturePayment($payment);
+
+        $this->assertFalse($this->redirectToDCCInfo);
+        $this->assertFalse($this->redirectToUpdateAndAuthorize);
 
         $payment = $this->getLastEntity('payment', true);
         $paymentMeta = $this->getLastEntity('payment_meta', true);

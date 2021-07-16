@@ -74,6 +74,10 @@ trait PaymentTrait
 
     protected $redirectToAuthorize = false;
 
+    protected $redirectToDCCInfo = false;
+
+    protected $redirectToUpdateAndAuthorize = false;
+
     /**
      * For certain payments, user has the option to fail it
      * on the bank page. If this property is set to true in
@@ -2124,6 +2128,30 @@ trait PaymentTrait
         ];
 
         $url = \URL::route('payment_redirect_to_authenticate_get', $params, false);
+        $url = 'http://localhost' . $url;
+
+        return $url;
+    }
+
+    public function getPaymentRedirectToDCCInfoUrl($trackId)
+    {
+        $params = [
+            'id' => $trackId,
+        ];
+
+        $url = \URL::route('payment_redirect_to_dcc_info', $params, false);
+        $url = 'http://localhost' . $url;
+
+        return $url;
+    }
+
+    public function getPaymentRedirectToUpdateDCCAndAuthorize($trackId)
+    {
+        $params = [
+            'id' => $trackId,
+        ];
+
+        $url = \URL::route('payment_update_and_redirect', $params, false);
         $url = 'http://localhost' . $url;
 
         return $url;

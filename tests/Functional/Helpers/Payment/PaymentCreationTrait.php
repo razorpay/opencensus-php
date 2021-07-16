@@ -117,6 +117,20 @@ trait PaymentCreationTrait
         return (preg_match($pattern, $uri) === 1);
     }
 
+    protected function isRedirectToDCCInfoUrl($uri)
+    {
+        $pattern = '/payments\/[\w]+\/dcc_info/';
+
+        return (preg_match($pattern, $uri) === 1);
+    }
+
+    protected function isUpdateDCCAndRedirectToAuthorizeUrl($uri)
+    {
+        $pattern = '/payments\/[\w]+\/updateAndRedirect/';
+
+        return (preg_match($pattern, $uri) === 1);
+    }
+
     protected function isOtpFallbackUrl($uri)
     {
         $pattern = '/payments\/pay_[\w]+\/authentication\/redirect\?key_id=rzp_[\w]+/';
@@ -336,6 +350,15 @@ trait PaymentCreationTrait
             {
                 return $this->makeRedirectToAuthorize($targetUrl);
             }
+            else if ($this->isRedirectToDCCInfoUrl($targetUrl) === true)
+            {
+                return $this->makeRedirectToDCCInfo($targetUrl);
+            }
+        }
+
+        if ($this->isRedirectToDCCInfoUrl($request['url']) === true)
+        {
+            return $this->makeRedirectToUpdateAndAuthorize($response);
         }
 
         if ($request['url'] === '/payments/create/json')
@@ -368,6 +391,69 @@ trait PaymentCreationTrait
         $response = $this->makeRequestParent($request);
 
         $this->ba->publicAuth();
+
+        return $this->handlePaymentCreationFlow($response, $request);
+    }
+
+    protected function makeRedirectToDCCInfo($targetUrl)
+    {
+        $id = getTextBetweenStrings($targetUrl, '/payments/', '/dcc_info');
+
+        $this->redirectToDCCInfo = true;
+
+        $url = $this->getPaymentRedirectToDCCInfoUrl($id);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => 'get',
+            'content' => [],
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $this->ba->publicAuth();
+
+        $this->resetSingletons();
+
+        return $this->handlePaymentCreationFlow($response, $request);
+    }
+
+    protected function makeRedirectToUpdateAndAuthorize($response)
+    {
+        $content = $response->getContent();
+
+        $this->redirectToUpdateAndAuthorize = true;
+
+        list($url, $method, $content) = $this->getFormDataFromResponse($content, 'http://localhost');
+
+        $this->assertTrue($this->isUpdateDCCAndRedirectToAuthorizeUrl($url));
+        $this->assertFalse(empty($content['currency_request_id']));
+        $this->assertFalse(empty($content['dcc_currency']));
+        $this->assertFalse(empty($content['amount']));
+        $this->assertFalse(empty($content['forex_rate']));
+        $this->assertFalse(empty($content['fee']));
+        $this->assertFalse(empty($content['conversion_percentage']));
+
+        unset($content['amount']);
+        unset($content['forex_rate']);
+        unset($content['fee']);
+        unset($content['conversion_percentage']);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => $method,
+            'content' => $content,
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $this->ba->publicAuth();
+
+        $this->resetSingletons();
 
         return $this->handlePaymentCreationFlow($response, $request);
     }

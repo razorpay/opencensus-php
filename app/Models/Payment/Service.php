@@ -501,7 +501,7 @@ class Service extends Base\Service
         return (new CardMandate\Core)->processMandateHQCallBack($input);
     }
 
-    public function redirectToAuthorize($id)
+    public function redirectToAuthorize($id, $input=[])
     {
         $attrs = [
             'payment_id'       =>  $id,
@@ -509,14 +509,14 @@ class Service extends Base\Service
         ];
 
         $response = Tracer::inSpan(['name' => 'payment.redirect.authorize', 'attributes' => $attrs],
-            function() use ($id){
-                return $this->coreRedirectToAuthorize($id);
+            function() use ($id, $input){
+                return $this->coreRedirectToAuthorize($id, $input);
             });
 
         return $response;
     }
 
-    public function coreRedirectToAuthorize($id)
+    public function coreRedirectToAuthorize($id, $input=[])
     {
         $traceData = ['track_id' => $id];
 
@@ -551,7 +551,7 @@ class Service extends Base\Service
             // cant do this before as mode is set in above, and mode is required to ensure data goes to write place
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REDIRECT_INITIATED, $payment, null, [], $traceData);
 
-            $response = $this->getNewProcessor($merchant)->processRedirectToAuthorize($payment, $id);
+            $response = $this->getNewProcessor($merchant)->processRedirectToAuthorize($payment, $id, $input);
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, null, [], $traceData);
 
@@ -1650,6 +1650,57 @@ class Service extends Base\Service
     protected function addDashboardFlagRefundCreateData(array &$entity, $payment)
     {
         $this->getNewProcessor($this->merchant)->getRefundCreationDataForDashboard($payment, $entity);
+    }
+
+    public function redirectToDCCInfo($id)
+    {
+        $data = [];
+
+        $dccInfo = [];
+
+        list($merchant, $payment) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
+
+        if ( $payment->isCreated() === false )
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
+            );
+        }
+
+        $iin = $payment->card->iinRelation;
+
+        $this->updateDccDataIfApplicable($payment, $iin, $merchant,$dccInfo);
+
+        $route = $this->app['api.route'];
+
+        $data['type'] = 'dcc';
+
+        $data['payment_id'] = $payment->getPublicId();
+        $data['amount'] = number_format(($payment->getAmount() / 100), 2);
+        $data['currency'] = $payment->getCurrency();
+        $data['formatted_amount'] = $payment->getFormattedAmount();
+        $data['gateway'] = '';
+
+        $data['request'] = [
+            'url'      => $route->getUrl('payment_update_and_redirect', ['id' => $payment->getId()]),
+            'method'   => 'post',
+            'content'  => []
+        ];
+        $data['version'] = 1;
+
+        $data['theme_color'] = $merchant->getBrandColorElseDefault();
+        $data['nobranding'] = $merchant->isFeatureEnabled(Feature\Constants::PAYMENT_NOBRANDING);
+        $data['merchant_id'] = $merchant->getId();
+        $data['merchant'] = $merchant->getBillingLabel();
+
+        $data['dcc_info'] = $dccInfo;
+
+        return $data;
+    }
+
+    public function updateAndRedirectToAuthorize($id, $input)
+    {
+        return $this->redirectToAuthorize($id, $input);
     }
 
     public function getPaymentFlows(array $input)
