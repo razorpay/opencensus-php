@@ -61,27 +61,4 @@ class UpiPaymentServiceTest extends TestCase
 
         $this->assertNull($upiEntity);
     }
-
-    public function testInvalidAction()
-    {
-        $this->app['config']->set(['applications.upi_payment_service.mock' => false]);
-
-        $this->testPaymentCreateSuccess();
-
-        $this->gateway = 'mozart';
-
-        $this->setMockGatewayTrue();
-
-        $payment = $this->getDbLastPayment();
-
-        $payment = $this->getDbLastPayment();
-
-        $this->makeRequestAndCatchException(
-            function () use ($payment) {
-                $this->verifyPayment($payment->getPublicId());
-            },
-            Exception\LogicException::class,
-            'No supported actions found for UPS'
-        );
-    }
 }

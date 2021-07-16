@@ -3382,6 +3382,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // UPI Payment Service Trace codes
     const UPI_PAYMENT_SERVICE_REQUEST                           = 'UPI_PAYMENT_SERVICE_REQUEST';
+    const UPI_PAYMENT_SERVICE_REQUEST_RETRY                     = 'UPI_PAYMENT_SERVICE_REQUEST_RETRY';
+    const UPI_PAYMENT_SERVICE_REQUEST_ERROR                     = 'UPI_PAYMENT_SERVICE_REQUEST_ERROR';
 
     // Batch Micro Service
     const GET_BATCHES_BATCH_SERVICE                             = 'GET_BATCHES_BATCH_SERVICE';

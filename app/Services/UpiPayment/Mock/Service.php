@@ -2,9 +2,7 @@
 
 namespace RZP\Services\UpiPayment\Mock;
 
-use RZP\Exception;
-use RZP\Services\UpiPayment\Action;
-use RZP\Services\UpiPayment\Request;
+use Requests_Response;
 use RZP\Services\UpiPayment\Service as UpiPaymentService;
 
 /**
@@ -13,12 +11,48 @@ use RZP\Services\UpiPayment\Service as UpiPaymentService;
 class Service extends UpiPaymentService
 {
     /**
-     * Action handles mocks all the action based payment requests
+     * Mocks sending request to UPS
      *
      * @param array $request
+     * @return void
      */
-    public function action(string $gateway, string $action, array $input) : array
+    protected function sendRawRequest(array $request)
     {
-        return ['data' => ['vpa' => 'razorpay@airtel']];
+        $action  = camel_case(explode('/', $request['url'])[3]);
+
+        $response = $this->$action();
+
+        return $response;
+    }
+
+    /**
+     * Authorize returns the authorize response
+     *
+     * @return void
+     */
+    protected function authorize()
+    {
+        $response = ['data' => ['vpa' => 'razorpay@airtel']];
+
+        return $this->toJsonResponse($response);
+    }
+
+    /**
+     * toJsonReponse returns a json response
+     *
+     * @param  array $content
+     * @return void
+     */
+    protected function toJsonResponse(array $content)
+    {
+        $response = new Requests_Response();
+
+        $response->headers = ['Content-Type' => 'application/json', 'Cache-Control' => 'no-cache'];
+
+        $response->status_code = 200;
+
+        $response->body = json_encode($content);
+
+        return $response;
     }
 }

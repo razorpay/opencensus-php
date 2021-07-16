@@ -301,6 +301,6 @@ trait UpiTrait
             $gatewayData['upi'] = array_merge($metadata, $gatewayData['upi']);
         }
 
-        return $this->app['upi.payments']->action($gateway, $action, $gatewayData);
+        return $this->app['upi.payments']->action($action, $gatewayData);
     }
 }

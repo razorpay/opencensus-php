@@ -1,5 +1,10 @@
 <?php
 
+namespace RZP\Services\UpiPayment;
+
+/**
+ * Defines all the UPI Service Constants
+ */
 class Constant
 {
     // Trace Parameters
@@ -11,4 +16,6 @@ class Constant
     const FLOW          = 'flow';
     const TYPE          = 'type';
     const BILLING_LABEL = 'billing_label';
+
+    const MAX_RETRY = 2;
 }

@@ -1436,4 +1436,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYLATER_INSTRUMENT_INVALID                                   = 'Invalid paylater instrument code';
     const BAD_REQUEST_EMI_INSTRUMENT_INVALID                                        = 'Invalid emi instrument code';
     const BAD_REQUEST_PAYMENT_CUSTOMER_DROPPED_OFF                                  = 'Customer dropped off without completing the payment';
+
+    // Upi Payment Service
+    const SERVER_ERROR_UPI_PAYMENT_SERVICE_REQUEST_ERROR                            = 'The server encountered an error. The incident has been reported to admins.';
+    const SERVER_ERROR_UPI_PAYMENT_SERVICE_REQUEST_TIMEOUT                          = 'The server encountered an error. The incident has been reported to admins.';
+    const SERVER_ERROR_UPI_PAYMENT_SERVICE_CONNECTION_FAILED                        = 'The server encountered an error. The incident has been reported to admins.';
 }
