@@ -312,6 +312,107 @@ return [
         ],
     ],
 
+    'testMerchantEmailGetUserStatus' => [
+        'request' => [
+            'content' => [
+                'email'                  => 'newowner@gmail.com',
+                'set_contact_email'      => true,
+                'reattach_current_owner' => true
+            ],
+            'url' => '/merchants/email_user/status',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'logout_sessions_for_users' => []
+            ],
+        ],
+    ],
+
+    'testMerchantEmailUpdateCreateNewUser' => [
+        'request' => [
+            'content' => [
+                'token'                 => '',
+                'password'              => 'New124@user',
+                'password_confirmation' => 'New124@user',
+                'merchant_id'           => '',
+            ],
+            'url' => '/merchants/email/update/create_user',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testMerchantEmailUpdateCreateNewUserByExpiredToken' => [
+        'request'   => [
+            'url'     => '/merchants/email/update/create_user',
+            'method'  => 'POST',
+            'content' => [
+                'token'                 => '',
+                'password'              => 'New124@user',
+                'password_confirmation' => 'New124@user',
+                'merchant_id'           => '',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID,
+        ],
+    ],
+
+    'testMerchantEmailUpdateExistingUser' => [
+        'request' => [
+            'content' => [
+                'email'                  => 'newowner@gmail.com',
+                'set_contact_email'      => true,
+                'reattach_current_owner' => true
+            ],
+            'url' => '/merchants/email/update',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'logout_sessions_for_users' => []
+            ],
+        ],
+    ],
+
+    'testMerchantEmailUpdateEmailUserExistContactEmailAlreadyTakenFail' => [
+        'request' => [
+            'content' => [
+                'email'                  => 'newowner@gmail.com',
+                'set_contact_email'      => true,
+                'reattach_current_owner' => true
+            ],
+            'url' => '/merchants/email/update',
+            'method' => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The email has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testMerchantFetchKeys' => [
         'request' => [
             'content' => [

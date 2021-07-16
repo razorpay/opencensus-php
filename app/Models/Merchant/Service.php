@@ -737,6 +737,142 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    public function getUserStatusForEmailUpdateSelfServe($input)
+    {
+        $this->trace->info(TraceCode::EMAIL_USER_STATUS_FOR_EDIT_EMAIL, $input);
+
+        (new Validator())->validateInput('editMerchantEmailSelfServe', $input);
+
+        $input[Entity::EMAIL]   = mb_strtolower($input[Entity::EMAIL]);
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $product = $this->app['basicauth']->getRequestOriginProduct();
+
+        $status = $this->core()->getUserStatusForEmailUpdateSelfServe($input[Entity::EMAIL], $merchant, $product);
+
+        if ($status[Constants::IS_USER_EXIST] === false)
+        {
+            // this flow is used by owner user only : basic auth user is same as owner user
+            $ownerUser = $this->app['basicauth']->getUser();
+
+            $this->saveMerchantEmailUpdateData($ownerUser->getEmail(), $merchant->getId(), $input);
+
+            $this->core()->sendMailForEditMerchantEmailSelfServe($ownerUser, $input[Entity::EMAIL]);
+
+            $this->trace->info(TraceCode::EMAIL_SENT_FOR_EDIT_MERCHANT_EMAIL, []);
+        }
+
+        return $status;
+    }
+
+    public function editMerchantEmailAndTransferOwnershipToEmailUser(array $input): array
+    {
+        (new Validator())->validateInput('editMerchantEmailSelfServe', $input);
+
+        $input[Entity::EMAIL]   = mb_strtolower($input[Entity::EMAIL]);
+
+        $this->trace->info(TraceCode::MERCHANT_EDIT_EMAIL_REQUEST, $input);
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $user = $this->repo->user->getUserFromEmailOrFail($input[Entity::EMAIL]);
+
+        // this flow is used by owner user only : basic auth user is same as owner user
+        $currentOwner = $this->app['basicauth']->getUser();
+
+        $this->core()->editMerchantEmailAndTransferOwnershipToUser($user, $currentOwner, $merchant, $input);
+
+        $this->invalidatePreviousRequestForEmailUpdate($merchant, $currentOwner);
+
+        return  [
+            Constants::LOGOUT_SESSIONS_FOR_USERS => [$user->getId(), $currentOwner->getId()]
+        ];
+    }
+
+    public function editMerchantEmailCreateNewUserAndTransferOwnerShip($input)
+    {
+        (new Validator())->validateInput('changeEmailToken', $input);
+
+        $data = $this->getMerchantEmailUpdateData($input[Entity::MERCHANT_ID]);
+
+        // reset token expires before cache data: throw token expire exception on cache expire
+        if (is_null($data) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID);
+        }
+
+        $merchantId = $data[Entity::MERCHANT_ID];
+
+        $this->trace->info(TraceCode::MERCHANT_EDIT_EMAIL_REQUEST,[
+            Entity::MERCHANT_ID => $merchantId
+        ]);
+
+        $input = array_merge($input, $data);
+
+        // using merchant_id from cache
+        $input[Entity::MERCHANT_ID] = $merchantId;
+
+        $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+
+        $currentOwnerUser = $this->repo->user->getUserFromEmailOrFail($input[Constants::CURRENT_OWNER_EMAIL]);
+
+        (new Validator())->validateUserIsOwnerForMerchant($currentOwnerUser->getId(), $input[Entity::MERCHANT_ID]);
+
+        $this->core()->createNewUserAndTransferOwnerShip($input, $merchant, $currentOwnerUser);
+
+        $this->deleteMerchantEmailUpdateData($input[Entity::MERCHANT_ID]);
+
+        return [
+            Constants::LOGOUT_SESSIONS_FOR_USERS => [$currentOwnerUser->getId()]
+        ];
+    }
+
+    protected function deleteMerchantEmailUpdateData($merchantId)
+    {
+        $cacheKey = $this->getMerchantEmailUpdateCacheKey($merchantId);
+
+        $this->app->cache->delete($cacheKey);
+    }
+
+    protected function invalidatePreviousRequestForEmailUpdate($merchant, $currentOwnerUser)
+    {
+        // delete cached data to invalidated any previous request : data will be missing if link is accessed
+        $this->deleteMerchantEmailUpdateData($merchant->getId());
+
+        // invalidate Token
+        (new User\Service())->setAndSaveResetPasswordToken($currentOwnerUser, null);
+    }
+
+
+    protected function saveMerchantEmailUpdateData($userEmail, $merchantId, $input)
+    {
+        $data = [
+            Constants::CURRENT_OWNER_EMAIL    => $userEmail,
+            Entity::EMAIL                     => $input[Entity::EMAIL],
+            Entity::MERCHANT_ID               => $merchantId,
+            Constants::REATTACH_CURRENT_OWNER => (bool) ($input[Constants::REATTACH_CURRENT_OWNER] ?? true),
+            Constants::SET_CONTACT_EMAIL      => (bool) ($input[Constants::SET_CONTACT_EMAIL] ?? false)
+        ];
+
+        $cacheKey = $this->getMerchantEmailUpdateCacheKey($merchantId);
+
+        $this->app->cache->put($cacheKey, $data, Constants::MERCHANT_EMAIL_UPDATE_CACHE_TTL);
+    }
+
+    protected function getMerchantEmailUpdateData($merchantId)
+    {
+        $cacheKey = $this->getMerchantEmailUpdateCacheKey($merchantId);
+
+        return $this->app->cache->get($cacheKey);
+    }
+
+    protected function getMerchantEmailUpdateCacheKey($merchantId)
+    {
+        return sprintf(Constants::MERCHANT_EMAIL_UPDATE_CACHE_KEY, $merchantId);
+    }
+
+
     public function correctMerchantOwnerForBanking($id): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);

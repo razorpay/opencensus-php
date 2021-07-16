@@ -9,6 +9,7 @@ use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
 use RZP\Jobs\SyncStakeholder;
+use RZP\Mail\User as UserMail;
 use \RZP\Models\BankingAccount;
 use RZP\Listeners\ApiEventSubscriber;
 use Razorpay\OAuth\Application as OAuthApp;
@@ -1421,6 +1422,195 @@ class Core extends Base\Core
 
         return $batches;
     }
+
+    public function createNewUserAndTransferOwnerShip($input, $merchant, $currentOwnerUser)
+    {
+        $this->repo->transactionOnLiveAndTest(function () use ($input, $merchant, $currentOwnerUser)
+        {
+            (new User\Validator())->validatePasswordResetToken($currentOwnerUser, $input['token']);
+
+            // invalidate Token
+            (new User\Service())->setAndSaveResetPasswordToken($currentOwnerUser, null);
+
+            $this->createNewUserForMerchantEmailUpdate($input, $currentOwnerUser);
+
+            // set contact mobile verified field same as current owner
+            $newOwnerUser = $this->repo->user->getUserFromEmailOrFail($input['email']);
+            $newOwnerUser->setContactMobileVerified($currentOwnerUser->isContactMobileVerified());
+            $this->repo->saveOrFail($newOwnerUser);
+
+            (new User\Service())->confirm($newOwnerUser->getId());
+
+            $this->editMerchantEmailAndTransferOwnershipToUser($newOwnerUser, $currentOwnerUser, $merchant, $input);
+        });
+    }
+
+    protected function createNewUserForMerchantEmailUpdate($input, $currentOwnerUser)
+    {
+        $input = array_only($input, [
+            User\Entity::PASSWORD,
+            User\Entity::PASSWORD_CONFIRMATION,
+            User\Entity::EMAIL]);
+
+        $input[User\Entity::CONTACT_MOBILE] = $currentOwnerUser->getContactMobile();
+
+        $input[User\Entity::NAME] = $currentOwnerUser->getName();
+
+        $input[User\Entity::CAPTCHA_DISABLE] = User\Validator::DISABLE_CAPTCHA_SECRET;
+
+        (new User\Service())->create($input);
+    }
+
+    public function editMerchantEmailAndTransferOwnershipToUser($user, $currentOwner, $merchant, $input)
+    {
+        $this->repo->transactionOnLiveAndTest(function () use ($user, $merchant, $input, $currentOwner)
+        {
+            $product              = $this->app['basicauth']->getRequestOriginProduct();
+
+            $updateContactEmail   = (bool) ($input[Constants::SET_CONTACT_EMAIL] ?? false);
+
+            $reAttachCurrentOwner = (bool) ($input[Constants::REATTACH_CURRENT_OWNER] ?? true);
+
+            $this->transferOwnerShipToUserForEmailUpdate($merchant, $user, $currentOwner, $product, $reAttachCurrentOwner);
+
+            if ($updateContactEmail === true)
+            {
+                $this->editEmail($merchant, [
+                    'email' => $input['email']
+                ]);
+            }
+
+            $this->trace->info(TraceCode::OWNERSHIP_TRANSFER_FOR_EMAIL_UPDATE, [
+                'new_owner_id'          => $user->getId(),
+                'new_owner_email'       => $user->getEmail(),
+                'old_owner_id'          => $currentOwner->getId(),
+                'old_owner_email'       => $currentOwner->getEmail(),
+                'contact_email_updated' => $updateContactEmail,
+                'old_owner_reattached'  => $reAttachCurrentOwner,
+            ]);
+        });
+    }
+
+    protected function transferOwnerShipToUserForEmailUpdate($merchant, $user, $currentOwner, $product, $reAttachCurrentOwner)
+    {
+        // detach current owner
+        $this->detachUserForMerchant($merchant->getId(), $currentOwner, $product);
+
+        // if user is in team member : detach before attaching as owner
+        if ($this->hasUserAnyRoleForMerchantAndProduct($user->getEmail(), $merchant, $product) === true)
+        {
+            $this->detachUserForMerchant($merchant->getId(), $user, $product);
+        }
+
+        // attach user as owner.
+        $this->attachUserForMerchant($merchant->getId(), $user, Role::OWNER, $product);
+
+        // if current user need to be in team
+        if ($reAttachCurrentOwner === true)
+        {
+            // Assign Manager role to the current owner on PG.
+            // Assign Finance L1 role to the current owner on X.
+            $currentOwnerNewRole = $product === Product::PRIMARY ? Role::MANAGER : BankingRole::FINANCE_L1;
+
+            $this->attachUserForMerchant($merchant->getId(), $currentOwner, $currentOwnerNewRole, $product);
+        }
+    }
+
+    protected function attachUserForMerchant($merchantId, $user, $role, $product)
+    {
+        $userMerchantMappingInputData = [
+            Entity::ACTION      => 'attach',
+            Entity::ROLE        => $role,
+            Entity::MERCHANT_ID => $merchantId,
+            Entity::PRODUCT     => $product,
+        ];
+
+        (new User\Core)->updateUserMerchantMapping($user, $userMerchantMappingInputData);
+    }
+
+    protected function detachUserForMerchant($merchantId, $user, $product)
+    {
+        // Detach the existing merchant User.
+        $userMerchantMappingData = [
+            Entity::ACTION       => 'detach',
+            Entity::MERCHANT_ID => $merchantId,
+            Entity::PRODUCT     => $product,
+        ];
+
+        (new User\Core())->updateUserMerchantMapping($user, $userMerchantMappingData);
+    }
+
+    public function getUserStatusForEmailUpdateSelfServe($userEmail, $merchant, $product)
+    {
+         return [
+            Constants::IS_USER_EXIST    => $this->isUserExistForEmail($userEmail),
+            Constants::IS_TEAM_MEMBER   => $this->hasUserAnyRoleForMerchantAndProduct($userEmail, $merchant, $product),
+            Constants::IS_OWNER         => $this->isOwnerRoleExistForEmailUserAndProduct($userEmail, $product),
+        ];
+    }
+
+    protected function isUserExistForEmail($userEmail)
+    {
+        $existingUser = $this->repo->user->getUserFromEmail($userEmail);
+
+        if (empty($existingUser) === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function isOwnerRoleExistForEmailUserAndProduct($userEmail, $product)
+    {
+        $existingUser = $this->repo->user->getUserFromEmail($userEmail);
+
+        if (empty($existingUser) === true)
+        {
+            return false;
+        }
+
+        return  $this->repo->merchant_user->isOwnerRoleExistForUserIdAndProduct($existingUser->getId(), $product);;
+    }
+
+    /**
+     *  checks if email user is having any role in merchant team for given product
+     * @param $userEmail
+     * @param $merchant
+     * @param $product
+     * @return bool
+     */
+    protected function hasUserAnyRoleForMerchantAndProduct($userEmail, $merchant, $product)
+    {
+        $teamUser = $merchant->users()
+            ->where(Entity::EMAIL, $userEmail)
+            ->where(Entity::PRODUCT, $product)
+            ->first();
+
+        if (empty($teamUser) === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function sendMailForEditMerchantEmailSelfServe($user, $email)
+    {
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $merchantId = $this->app['basicauth']->getMerchantId();
+
+        //get Org and send it to mailer, deal with other orgs as well.
+        $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+
+        $org['hostname'] = $this->app['basicauth']->getOrgHostName();
+
+        $passwordAndEmailResetMail = new UserMail\PasswordAndEmailReset($user->toArrayPublic(), $org, $email, $merchantId);
+
+        Mail::queue($passwordAndEmailResetMail);
+    }
+
 
     public function sendPayoutMail(Entity $merchant, int $from, int $to, string $email)
     {

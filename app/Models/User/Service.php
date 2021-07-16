@@ -849,6 +849,13 @@ class Service extends Base\Service
         return $token;
     }
 
+    public function setAndSaveResetPasswordToken($user, $token)
+    {
+        $user->setPasswordResetToken($token);
+
+        $this->repo->user->saveOrFail($user);
+    }
+
     /**
      * @param  array $input
      *
@@ -892,7 +899,7 @@ class Service extends Base\Service
             }
         }
 
-        return ['success' => true, 'user_id' => $user->getId()];
+      return ['success' => true, 'user_id' => $user->getId()];
     }
 
     /**

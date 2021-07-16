@@ -9,6 +9,7 @@ use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Base;
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -825,6 +826,28 @@ class Validator extends Base\Validator
 
         return;
 
+    }
+
+    public function validatePasswordResetToken($user, $token)
+    {
+        $app = App::getFacadeRoot();
+
+        $expiry = $user->getPasswordResetExpiry();
+
+        $now = Carbon::now()->getTimestamp();
+
+        if ($expiry < $now)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID);
+        }
+
+        $userToken = $user->getPasswordResetToken();
+
+        if ((empty($token) === true) or (hash_equals($userToken, $token) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID);
+        }
     }
 
     public function validateOauthRequest(array $input)

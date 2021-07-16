@@ -97,6 +97,17 @@ final class Constants
     const CUSTOM_PRICING            = 'custom_pricing';
     const MAX_RULES_TO_BE_DISPLAYED = 6;
 
+    const IS_USER_EXIST                                 = 'is_user_exist';
+    const IS_TEAM_MEMBER                                = 'is_team_member';
+    const IS_OWNER                                      = 'is_owner';
+    const LOGOUT_SESSIONS_FOR_USERS                     = 'logout_sessions_for_users';
+    const MERCHANT_EMAIL_UPDATE_CACHE_KEY               = 'merchant_email_update_%s';
+    const MERCHANT_EMAIL_UPDATE_CACHE_TTL               = 60*24;    // 24 hours
+    const CURRENT_OWNER_EMAIL                           = 'current_owner_email';
+    const REATTACH_CURRENT_OWNER                        = 'reattach_current_owner';
+    const SET_CONTACT_EMAIL                             = 'set_contact_email';
+
+
     public static $EntityBatchActionSettingParams = [
         self::BATCH_ACTION,
         self::IDEMPOTENT_ID,

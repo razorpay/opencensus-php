@@ -279,6 +279,9 @@ class Route
         'merchant_fetch_config'                    => ['get',      'account/config',                                 'MerchantController@getAccountConfig'                               ],
         'merchant_fetch_config_internal'           => ['get',      'internal/account/config',                        'MerchantController@getAccountConfigInternal'                       ],
         'merchant_edit_email'                      => ['put',      'merchants/{id}/email',                           'MerchantController@putMerchantEmail'                               ],
+        'email_user_status_for_email_update'       => ['get',      'merchants/email_user/status',                    'MerchantController@getUserStatusForEmailUpdateSelfServe'           ],
+        'merchant_edit_email_self_serve'           => ['put',      'merchants/email/update',                         'MerchantController@putEditEmailAndTransferOwnershipToEmailUser'    ],
+        'merchant_edit_email_create_user'          => ['post',     'merchants/email/update/create_user',             'MerchantController@putCreateNewUserAndTransferOwnerShip'           ],
         'merchant_billing_label_suggestions'       => ['get',      'merchants/billing_label/suggestions',            'MerchantController@getBillingLabelSuggestions'                     ],
         'merchant_billing_label_update'            => ['patch',    'merchants/billing_label/update',                 'MerchantController@patchMerchantBillingLabelAndDba'                ],
         // TODO : Remove this route after permanent fix is deployed.
@@ -3205,6 +3208,7 @@ class Route
         'user_resend_verification',
         'user_reset_password_create',
         'user_reset_password_token',
+        'merchant_edit_email_create_user',
         'user_oauth_login',
         'user_oauth_register',
         'razorx_guest',
@@ -3606,6 +3610,8 @@ class Route
         'recon_service_file_upload_proxy',
         'rbl_current_account_serviceability_get',
         'merchant_primary_balance_fetch',
+        'merchant_edit_email_self_serve',
+        'email_user_status_for_email_update',
         'virtual_account_expiry_setting_upsert',
         'virtual_account_expiry_setting_get',
         'fetch_product_details_for_order',
@@ -6443,6 +6449,8 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'merchant_edit_email_self_serve',
+            'email_user_status_for_email_update',
             'merchant_fire_hubspot_event',
             'rbl_current_account_serviceability_get',
             'account',
@@ -9080,6 +9088,7 @@ class Route
             'invitation_fetch_by_token',
             'user_resend_verification',
             'user_reset_password_token',
+            'merchant_edit_email_create_user',
             // Called during signup flow
             'admin_authentication',
             'admin_lead_verify',
@@ -10439,6 +10448,8 @@ class Route
         'user_2fa_change_setting'               => [Mode::LIVE, Mode::TEST],
         'merchant_2fa_change_setting'           => [Mode::LIVE, Mode::TEST],
         'merchant_bank_account_update'          => [Mode::LIVE, Mode::TEST],
+        'merchant_edit_email_self_serve'        => [Mode::LIVE, Mode::TEST],
+        'email_user_status_for_email_update'    => [Mode::LIVE, Mode::TEST],
     ];
 
     // Route specific config for running read queries on mysql db:

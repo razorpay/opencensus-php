@@ -2524,6 +2524,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_REFERRAL_FETCH_REQUEST                       = 'MERCHANT_REFERRAL_FETCH_REQUEST';
     const MERCHANT_REFERRAL_CODE_CREATE_CONFLICT                = 'MERCHANT_REFERRAL_CODE_CREATE_CONFLICT';
 
+    const MERCHANT_EDIT_EMAIL_REQUEST                           = 'MERCHANT_EDIT_EMAIL_REQUEST';
+    const EMAIL_USER_STATUS_FOR_EDIT_EMAIL                      = 'EMAIL_USER_STATUS_FOR_EDIT_EMAIL';
+    const EMAIL_SENT_FOR_EDIT_MERCHANT_EMAIL                    = 'EMAIL_SENT_FOR_EDIT_MERCHANT_EMAIL';
+    const OWNERSHIP_TRANSFER_FOR_EMAIL_UPDATE                   = 'OWNERSHIP_TRANSFER_FOR_EMAIL_UPDATE';
+
     const ENTITY_BULK_ADD_REQUEST                               = 'ENTITY_BULK_ADD_REQUEST';
 
     // Trace code for OAuth and Authentication service

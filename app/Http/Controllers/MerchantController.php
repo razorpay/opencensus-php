@@ -146,6 +146,33 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getUserStatusForEmailUpdateSelfServe()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getUserStatusForEmailUpdateSelfServe($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putEditEmailAndTransferOwnershipToEmailUser()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editMerchantEmailAndTransferOwnershipToEmailUser($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putCreateNewUserAndTransferOwnerShip()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editMerchantEmailCreateNewUserAndTransferOwnerShip($input);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      *  This corrects mismatch in owners of different products
      *  Don't use lightly

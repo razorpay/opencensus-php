@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\MerchantUser;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\User\Role;
 
 class Repository extends Base\Repository
 {
@@ -103,5 +104,14 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    public function isOwnerRoleExistForUserIdAndProduct(string $userId, $product)
+    {
+        return $this->newQuery()
+                ->where(Entity::USER_ID, $userId)
+                ->where(Entity::ROLE, ROLE::OWNER)
+                ->where(Entity::PRODUCT, $product)
+                ->count() > 0;
     }
 }

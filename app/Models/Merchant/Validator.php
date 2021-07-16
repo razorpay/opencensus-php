@@ -14,6 +14,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\User\Role;
 use RZP\Models\Settlement;
 use RZP\Constants\Product;
 use RZP\Models\Admin\Admin;
@@ -69,6 +70,8 @@ class Validator extends Base\Validator
     const FAILED = 'failed';
 
     const BILLING_LABEL_INVALID_MESSAGE = 'Invalid value, the brand name must be similar to business name or website name';
+
+    const EMAIL_UPDATE_SAME_AS_CURRENT_VALIDATION_FAILURE_MESSAGE = 'Provided Email Should Be different than current one';
 
     const EXTENSIONMIMEMAP = [
         'jpeg'  => 'image/jpeg',
@@ -158,6 +161,19 @@ class Validator extends Base\Validator
 
     protected static $editEmailRules = [
         Entity::EMAIL                               => 'required|email|unique:merchants',
+    ];
+
+    protected static $changeEmailTokenRules = [
+        User\Entity::PASSWORD                    => 'required|between:8,50|confirmed|numbers|letters',
+        User\Entity::PASSWORD_CONFIRMATION       => 'required|between:8,50',
+        User\Entity::TOKEN                       => 'required|string|size:50',
+        Entity::MERCHANT_ID                      => 'required|string',
+    ];
+
+    protected static $editMerchantEmailSelfServeRules = [
+        Entity::EMAIL                           => 'required|email|custom:edit_email_not_same_as_current',
+        Constants::REATTACH_CURRENT_OWNER       => 'sometimes|boolean',
+        Constants::SET_CONTACT_EMAIL            => 'sometimes|boolean',
     ];
 
     protected static $editPreSignupRules = [
@@ -763,6 +779,20 @@ class Validator extends Base\Validator
         $percentageFromTokenSort = $fuzz->tokenSortRatio($string1, $string2);
 
         return max($percentageFromRatio, $percentageFromTokenSort);
+    }
+
+    public function validateEditEmailNotSameAsCurrent($attribute, $email)
+    {
+        $app = App::getFacadeRoot();
+
+        $currentEmail = $app['basicauth']->getUser()->getEmail();
+
+        if ($currentEmail === $email)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::EMAIL_UPDATE_SAME_AS_CURRENT_VALIDATION_FAILURE_MESSAGE
+            );
+        }
     }
 
     public function validateCategory2($attribute, $value)
@@ -1571,6 +1601,19 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS);
+        }
+    }
+
+    public function validateUserIsOwnerForMerchant($userId, $merchantId)
+    {
+        $userMapping = app('repo')->merchant->getMerchantUserMapping($merchantId, $userId);
+
+        $userRoleForMerchant = $userMapping->pivot->role;
+
+        if ($userRoleForMerchant !== Role::OWNER)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCESS_DENIED);
         }
     }
 
