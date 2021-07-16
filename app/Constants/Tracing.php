@@ -16,6 +16,7 @@ class Tracing
         $otherRoutesToExclude = ['merchant_edit_config_logo', 'merchant_checkout_preferences'];
 
         $routesToExclude = array_merge($allCronRoutes, $otherRoutesToExclude);
+        $routesToExclude = array_diff($routesToExclude, self::getRoutesToInclude());
         return $routesToExclude;
     }
 
@@ -44,7 +45,7 @@ class Tracing
             'care_service_cron_proxy',
             'care_service_admin_proxy',
             'care_service_chat_proxy',
-            
+
             // used by fts service
             'update_fts_fund_transfer',
             'fts_channel_notification',
@@ -225,4 +226,3 @@ class Tracing
         return true;
     }
 }
-
