@@ -20,6 +20,7 @@ use RZP\Models\Merchant\Document\OcrVerificationStatus;
  * @property Merchant\Stakeholder\Entity $stakeholder
  * @property Merchant\AvgOrderValue\Entity $avgOrderValue
  * @property Merchant\Tnc\Entity $tnc
+ * @property Merchant\BusinessDetail\Entity $businessDetail
  * @property Merchant\VerificationDetail\Entity $verificationDetail
  *
  * @package RZP\Models\Merchant\Detail
@@ -161,22 +162,22 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const SHOP_ESTABLISHMENT_NUMBER                = 'shop_establishment_number';
     const SHOP_ESTABLISHMENT_VERIFICATION_STATUS   = 'shop_establishment_verification_status';
 
-    const BUSINESS_SUGGESTED_PIN                   = 'business_suggested_pin';
-    const BUSINESS_SUGGESTED_ADDRESS               = 'business_suggested_address';
+    const BUSINESS_SUGGESTED_PIN     = 'business_suggested_pin';
+    const BUSINESS_SUGGESTED_ADDRESS = 'business_suggested_address';
 
-    const FRAUD_TYPE                               = 'fraud_type';
+    const FRAUD_TYPE = 'fraud_type';
 
     //merchant's business banking id generated from banking account service.
-    const BAS_BUSINESS_ID                          = 'bas_business_id';
+    const BAS_BUSINESS_ID = 'bas_business_id';
 
-    const ACTIVATION_FORM_MILESTONE                = 'activation_form_milestone';
+    const ACTIVATION_FORM_MILESTONE = 'activation_form_milestone';
 
     // relation name
     const STAKEHOLDER                   = 'stakeholder';
     const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
     const MERCHANT_TNC                  = 'merchant_tnc';
     const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_detail';
-
+    const MERCHANT_BUSINESS_DETAIL       = 'merchant_business_detail';
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING = 'fields_pending';
 
@@ -197,13 +198,13 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     // Other general use input constants
     const FILE = 'file';
 
-    const SEND_ACTIVATION_EMAIL='send_activation_email';
+    const SEND_ACTIVATION_EMAIL = 'send_activation_email';
 
-    protected $entity = 'merchant_detail';
+    protected $entity     = 'merchant_detail';
 
     protected $primaryKey = self::MERCHANT_ID;
 
-    protected $fillable = [
+    protected $fillable   = [
         self::CONTACT_NAME,
         self::CONTACT_EMAIL,
         self::CONTACT_MOBILE,
@@ -309,7 +310,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::FRAUD_TYPE
     ];
 
-    protected $public = [
+    protected $public     = [
         self::CONTACT_NAME,
         self::CONTACT_EMAIL,
         self::CONTACT_MOBILE,
@@ -423,7 +424,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::BAS_BUSINESS_ID,
     ];
 
-    protected $defaults = [
+    protected $defaults   = [
         self::SUBMITTED_AT        => null,
         self::ACTIVATION_PROGRESS => 0,
         self::GSTIN               => null,
@@ -431,7 +432,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::ADDITIONAL_WEBSITES => [],
     ];
 
-    protected $casts = [
+    protected $casts      = [
         self::LOCKED                    => 'bool',
         self::SUBMITTED                 => 'bool',
         self::BUSINESS_INTERNATIONAL    => 'bool',
@@ -456,7 +457,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::P_GSTIN
     ];
 
-    protected $eventFields = [
+    protected $eventFields     = [
         self::BUSINESS_NAME,
         self::CONTACT_NAME,
         self::CONTACT_EMAIL,
@@ -469,7 +470,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::BUSINESS_OPERATION_STATE,
     ];
 
-    protected $publicSetters = [
+    protected $publicSetters   = [
         self::REVIEWER,
         self::REVIEWER_ID,
         self::ARCHIVED_AT,
@@ -530,6 +531,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this->hasOne('RZP\Models\Merchant\Tnc\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
     }
 
+
     /**
      * Every detail entity will have one verification_detail entity to start with to store the bvs verification details
      *
@@ -540,14 +542,20 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this->hasMany('RZP\Models\Merchant\VerificationDetail\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
     }
 
+    public function businessDetail()
+    {
+        return $this->hasOne('RZP\Models\Merchant\BusinessDetail\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
+    }
     public function getReviewer(){
         // https://tomgrohl.medium.com/how-to-not-load-null-relations-in-laravel-5-dbfaedf56df2
         // even if reviewer_id is null, $this->reviewer will make an unnecessary query
         // select * from `admins` where `admins`.`id` is null and `admins`.`deleted_at` is null limit 1`
-        if ($this->getAttribute(self::REVIEWER_ID) === null){
+        if ($this->getAttribute(self::REVIEWER_ID) === null)
+        {
             return null;
         }
-        else{
+        else
+        {
             return $this->reviewer;
         }
     }
@@ -601,14 +609,14 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return ((empty($accountNumber) === false) and (empty($ifscCode) === false));
     }
 
-    protected function setPublicArchivedAtAttribute(array & $array)
+    protected function setPublicArchivedAtAttribute(array &$array)
     {
         $array[self::ARCHIVED] = (isset($array[self::ARCHIVED_AT]) === true) ? 1 : 0;
 
         unset($array[self::ARCHIVED_AT]);
     }
 
-    protected function setPublicAllowedNextActivationStatusesAttribute(array & $array)
+    protected function setPublicAllowedNextActivationStatusesAttribute(array &$array)
     {
         $activationStatus = $this->getActivationStatus();
 
@@ -728,18 +736,18 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function getBusinessAddress(): array
     {
         return [
-            Address\Entity::LINE1     => $this->getBusinessRegisteredAddress(),
-            Address\Entity::LINE2     => $this->getBusinessRegisteredAddressLine2(),
-            Address\Entity::CITY      => $this->getBusinessRegisteredCity(),
-            Address\Entity::STATE     => $this->getBusinessRegisteredStateName(),
-            Address\Entity::COUNTRY   => 'India',
-            Address\Entity::ZIPCODE   => $this->getBusinessRegisteredPin(),
+            Address\Entity::LINE1   => $this->getBusinessRegisteredAddress(),
+            Address\Entity::LINE2   => $this->getBusinessRegisteredAddressLine2(),
+            Address\Entity::CITY    => $this->getBusinessRegisteredCity(),
+            Address\Entity::STATE   => $this->getBusinessRegisteredStateName(),
+            Address\Entity::COUNTRY => 'India',
+            Address\Entity::ZIPCODE => $this->getBusinessRegisteredPin(),
         ];
     }
 
     public function hasBusinessRegisteredAddress(): bool
     {
-        $city = $this->getBusinessRegisteredCity();
+        $city  = $this->getBusinessRegisteredCity();
         $state = $this->getBusinessRegisteredStateName();
 
         return ((empty($city) === false) and (empty($state) === false));
@@ -747,7 +755,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     public function hasBusinessOperationAddress(): bool
     {
-        $city = $this->getBusinessOperationCity();
+        $city  = $this->getBusinessOperationCity();
         $state = $this->getBusinessOperationStateName();
 
         return ((empty($city) === false) and (empty($state) === false));
@@ -891,12 +899,12 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return ($this->getCinVerificationStatus() === CinVerificationStatus::VERIFIED);
     }
 
-    public function isPoiVerified() : bool
+    public function isPoiVerified(): bool
     {
         return ($this->getPoiVerificationStatus() === POIStatus::VERIFIED);
     }
 
-    public function isBankDetailStatusVerified() : bool
+    public function isBankDetailStatusVerified(): bool
     {
         return ($this->getBankDetailsVerificationStatus() === BankDetailsVerificationStatus::VERIFIED);
     }
@@ -1210,7 +1218,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
             return true;
         }
 
-        $hasBusinessCategory = empty($this->getBusinessCategory()) === false;
+        $hasBusinessCategory    = empty($this->getBusinessCategory()) === false;
         $hasBusinessSubCategory = empty($this->getBusinessSubcategory()) === false;
 
         return $hasBusinessCategory and $hasBusinessSubCategory;
@@ -1224,15 +1232,14 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function getFeatureOnboardingStatuses(): array
     {
         $response = [
-            self::MARKETPLACE_ACTIVATION_STATUS       => $this->getMarketplaceActivationStatus(),
-            self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS  => $this->getVirtualAccountsActivationStatus(),
-            self::SUBSCRIPTIONS_ACTIVATION_STATUS     => $this->getSubscriptionsActivationStatus(),
-            self::QR_CODES_ACTIVATION_STATUS          => $this->getQrCodesActivationStatus(),
+            self::MARKETPLACE_ACTIVATION_STATUS      => $this->getMarketplaceActivationStatus(),
+            self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS => $this->getVirtualAccountsActivationStatus(),
+            self::SUBSCRIPTIONS_ACTIVATION_STATUS    => $this->getSubscriptionsActivationStatus(),
+            self::QR_CODES_ACTIVATION_STATUS         => $this->getQrCodesActivationStatus(),
         ];
 
         // Filter out the null values
-        $response = array_filter($response, function ($status)
-        {
+        $response = array_filter($response, function($status) {
             return ($status !== null);
         });
 

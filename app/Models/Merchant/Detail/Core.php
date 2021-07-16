@@ -1630,7 +1630,7 @@ class Core extends Base\Core
         $submit = $input[Entity::SUBMIT] ?? false;
 
         return (($submit === '1') or
-            ($activationFormMilestone === DEConstants::L2_SUBMISSION));
+                ($activationFormMilestone === DEConstants::L2_SUBMISSION));
     }
 
     /**
@@ -1804,13 +1804,13 @@ class Core extends Base\Core
         });
 
         $this->repo->transactionOnLiveAndTest(function() use (
-                                                            $merchantDetails,
-                                                            $oldMerchantDetails,
-                                                            $newMerchantDetails,
-                                                            $input,
-                                                            $rejectionReasons,
-                                                            $maker, $merchant,
-                                                            $shouldSave)
+            $merchantDetails,
+            $oldMerchantDetails,
+            $newMerchantDetails,
+            $input,
+            $rejectionReasons,
+            $maker, $merchant,
+            $shouldSave)
         {
             if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED) and
                 ($merchant->isLinkedAccount() === false))
@@ -1820,9 +1820,9 @@ class Core extends Base\Core
                  * which will be triggered once all the validations are checked in the activate method.
                  */
                 $this->app['workflow']
-                     ->setEntity($merchantDetails->getEntity())
-                     ->setOriginal($oldMerchantDetails)
-                     ->setDirty($newMerchantDetails);
+                    ->setEntity($merchantDetails->getEntity())
+                    ->setOriginal($oldMerchantDetails)
+                    ->setDirty($newMerchantDetails);
 
                 (new Merchant\Activate)->activate($merchant, true, $shouldSave);
 
@@ -1930,6 +1930,7 @@ class Core extends Base\Core
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $merchant, $properties, SegmentEvent::ACTIVATION_STATUS_CHANGE);
 
+
         $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_STATUS_SUCCESS,
                                                  $merchant,
                                                  null,
@@ -1942,7 +1943,7 @@ class Core extends Base\Core
                 $currentActivationStatus));
 
         $isWhatsappEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
-            RazorxTreatment::WHATSAPP_NOTIFICATIONS);
+                                                                             RazorxTreatment::WHATSAPP_NOTIFICATIONS);
 
         if ($isWhatsappEnabled === true)
         {
@@ -1967,27 +1968,22 @@ class Core extends Base\Core
     protected function getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails)
     {
         $activationStatus = $merchantDetails->getActivationStatus();
-
         $properties = [
             'activation_status' => $merchantDetails->getActivationStatus(),
             'mcc'               => $merchant->getCategory()
         ];
-
         if ($activationStatus === Status::INSTANTLY_ACTIVATED)
         {
             $properties['instant_activation'] = true;
         }
-
         if($activationStatus === Status::ACTIVATED_MCC_PENDING)
         {
             $properties['activated_mcc_pending'] = true;
         }
-
         if ($activationStatus === Status::NEEDS_CLARIFICATION)
         {
             $properties['needs_clarification'] = true;
         }
-
         return $properties;
     }
 
@@ -2092,8 +2088,8 @@ class Core extends Base\Core
         $newMerchantDetailsArray[Entity::REJECTION_REASONS] = $rejectionReasonDescriptions;
 
         $this->app['workflow']
-             ->setEntity($newMerchantDetails->getEntity())
-             ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
+            ->setEntity($newMerchantDetails->getEntity())
+            ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
 
         $merchant = $newMerchantDetails->merchant;
 
@@ -2274,6 +2270,8 @@ class Core extends Base\Core
 
         $merchantDetails->load('verificationDetail');
 
+        $merchantDetails->load('businessDetail');
+
         $merchant = $merchantDetails->merchant;
 
         if ($merchant->isLinkedAccount() === true)
@@ -2334,7 +2332,7 @@ class Core extends Base\Core
         $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
         $response['isHardLimitReached']                         = empty($hardEscalationLevel4) ? false : true;
         $response['activationStatusChangeLogs']                 = $this->getStatusChangeLogs($merchant);
-
+        $response[Entity::MERCHANT_BUSINESS_DETAIL]              = $merchantDetails->businessDetail;
         if ($this->isMerchantTncApplicable($merchant) === true)
         {
             $response[Entity::MERCHANT_TNC] = (new Merchant\Tnc\Core)->getTncDetails($merchantDetails->tnc);
@@ -2374,24 +2372,24 @@ class Core extends Base\Core
     private function appendBankingSpecificDetails(array $response, Merchant\Entity $merchant): array
     {
         $balance = $this->repo
-                        ->balance
-                        ->getMerchantBalanceByTypeAndAccountType(
-                            $merchant->getId(),
-                            Product::BANKING,
-                            Merchant\Balance\AccountType::SHARED);
+            ->balance
+            ->getMerchantBalanceByTypeAndAccountType(
+                $merchant->getId(),
+                Product::BANKING,
+                Merchant\Balance\AccountType::SHARED);
 
         if (empty($balance) === false)
         {
             $bankingAccount = $this->repo
-                                   ->banking_account
-                                   ->getFromBalanceId($balance->getId());
+                ->banking_account
+                ->getFromBalanceId($balance->getId());
 
             $response[Merchant\Entity::BANKING_ACCOUNT] = $bankingAccount->toArrayPublic();
         }
 
         $response[Merchant\Entity::CREDIT_BALANCE]  = $this->fetchBankingCreditBalances(
-                                                                            $merchant->getId(),
-                                                                            Product::BANKING);
+            $merchant->getId(),
+            Product::BANKING);
 
         return $response;
     }
@@ -2399,10 +2397,10 @@ class Core extends Base\Core
     protected function fetchBankingCreditBalances($merchantId, $product)
     {
         $creditBalances = $this->repo
-                                ->credits
-                                ->getTypeAggregatedMerchantCreditsForProductForDashboard(
-                                    $merchantId,
-                                    $product);
+            ->credits
+            ->getTypeAggregatedMerchantCreditsForProductForDashboard(
+                $merchantId,
+                $product);
 
         return $creditBalances;
     }
@@ -2518,15 +2516,15 @@ class Core extends Base\Core
         ];
     }
 
-      /**
-       * This function is used for creating activation flow metric dimensions
-       *
-       * @param string(activation flow)
-       * @param array  $extra
-       *
-       * @return array
-       *
-      */
+    /**
+     * This function is used for creating activation flow metric dimensions
+     *
+     * @param string(activation flow)
+     * @param array  $extra
+     *
+     * @return array
+     *
+     */
 
     protected function fetchActivationMetricDimensions(string $label = null, array $extra = []): array
     {
@@ -2592,7 +2590,7 @@ class Core extends Base\Core
         }
 
         $experimentEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-            RazorxTreatment::SKIP_POA_DOCUMENT_FUNCTIONALITY);
+                                                                    RazorxTreatment::SKIP_POA_DOCUMENT_FUNCTIONALITY);
 
         if($experimentEnabled === false)
         {
@@ -2853,7 +2851,7 @@ class Core extends Base\Core
     protected function verifyBusinessVerificationCondition(Entity $merchantDetails, string $key, array $in)
     {
         $isExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-            RazorxTreatment::SHOP_ESTABLISHMENT_DOC_VERIFICATION);
+                                                                             RazorxTreatment::SHOP_ESTABLISHMENT_DOC_VERIFICATION);
 
         if ($isExperimentEnabled === false)
         {
@@ -3371,7 +3369,7 @@ class Core extends Base\Core
         }
 
         $isAadhaarEsignEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-            RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY);
+                                                                        RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY);
 
         if($isAadhaarEsignEnabled === false)
         {
@@ -3485,7 +3483,7 @@ class Core extends Base\Core
         }
 
         $isExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
-            RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
+                                                                               RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
 
         if ($isExperimentEnabled === true)
         {
@@ -3518,8 +3516,8 @@ class Core extends Base\Core
         }
 
         if (in_array(
-            Status::ACTIVATED_MCC_PENDING,
-            $this->getStatusChangeLogs($merchantDetails->merchant)) === true)
+                Status::ACTIVATED_MCC_PENDING,
+                $this->getStatusChangeLogs($merchantDetails->merchant)) === true)
         {
             $activationProgress = 90;
         }
@@ -4140,7 +4138,7 @@ class Core extends Base\Core
     public function isPromoCodeActive(string $merchantId) : bool
     {
         $isCouponActive = (new Coupon\Repository())
-                ->isPromoCodeActiveForMerchant($merchantId, Entity::PROMO_COUPON_CODE);
+            ->isPromoCodeActiveForMerchant($merchantId, Entity::PROMO_COUPON_CODE);
 
         if ($isCouponActive === true)
         {
@@ -4367,7 +4365,7 @@ class Core extends Base\Core
             foreach ($allFiles as $xmlFile) {
                 if (ends_with($xmlFile, 'xml')) {
                     return new UploadedFile($tmpFolder. '/' . $xmlFile,
-                        'file.xml', null, null, null, true);
+                                            'file.xml', null, null, null, true);
                 }
             }
         }
@@ -4420,7 +4418,7 @@ class Core extends Base\Core
     public function isMerchantTncApplicable(Merchant\Entity $merchant)
     {
         if (empty($merchant->merchantDetail->getAttribute(
-            Entity::BUSINESS_WEBSITE)) === false)
+                Entity::BUSINESS_WEBSITE)) === false)
         {
             return false;
         }
@@ -4431,8 +4429,8 @@ class Core extends Base\Core
         }
 
         if ((new Merchant\Core())->isRazorxExperimentEnable(
-            $merchant->getId(),
-            RazorxTreatment::MERCHANT_TNC) === false)
+                $merchant->getId(),
+                RazorxTreatment::MERCHANT_TNC) === false)
         {
             return false;
         }

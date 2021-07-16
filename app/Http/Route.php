@@ -578,6 +578,9 @@ class Route
         'merchant_aov_config'                      => ['get',      'merchant/aov-config',                            'MerchantController@getAovConfig'                                   ],
         'merchant_tnc_details'                     => ['get',      'merchant/tnc/{id}',                              'MerchantController@getMerchantTnc'                                 ],
         'merchant_tnc_save'                        => ['post',     'merchant/tnc',                                   'MerchantController@postMerchantTnc'                                 ],
+        //merchant website details related routes
+        'merchant_business_detail_fetch'           => ['get',      'merchant/{id}/business/detail',                  'MerchantController@getMerchantBusinessDetail'                      ],
+        'merchant_business_detail_save'            => ['post',     'merchant/{id}/business/detail',                  'MerchantController@postMerchantBusinessDetail'                     ],
         'merchant_batches'                         => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
         'merchant_payout_mail'                     => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
         'merchant_post_preferences'                => ['post',     'merchant/preferences/{group}',                   'MerchantController@postMerchantPreferences'                        ],
@@ -3733,6 +3736,7 @@ class Route
         'merchant_activation_upload_file',
         'merchant_activation_save',
         'merchant_tnc_save',
+        'merchant_business_detail_save',
         'merchant_activation_update_website',
         'merchant_one_time_token',
         'merchant_activation_business_categories',
@@ -4129,6 +4133,8 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'merchant_business_detail_fetch',
+        'merchant_business_detail_save',
         'los_service_dev_admin',
         'loc_service_dev_admin',
         'recon_service_request_proxy',
@@ -4990,10 +4996,12 @@ class Route
     ];
 
     public static $routePermission = [
+        'merchant_business_detail_fetch'            => Permission::VIEW_MERCHANT,
+        'merchant_business_detail_save'             => Permission::EDIT_MERCHANT,
         'los_service_dev_admin'                    => Permission::CAPITAL_DEVELOPER,
         'loc_service_dev_admin'                    => Permission::CAPITAL_DEVELOPER,
         'recon_service_request_proxy'              => Permission::RECON_OPERATION,
-        'recon_service_file_upload_proxy'           => Permission::RECON_OPERATION,
+        'recon_service_file_upload_proxy'          => Permission::RECON_OPERATION,
         'merchant_rtb_details_fetch'               => Permission::VIEW_MERCHANT,
         'populate_merchant_trim_data_cron'         => Permission::MANAGE_BULK_FEATURE_MAPPING,
         'bvs_service_dashboard'                    => Permission::EDIT_MERCHANT,

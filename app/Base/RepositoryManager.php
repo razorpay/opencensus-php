@@ -52,6 +52,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\AvgOrderValue\Repository            $merchant_avg_order_value
  * @property Models\Merchant\Tnc\Repository                      $merchant_tnc
  * @property Models\Merchant\VerificationDetail\Repository       $merchant_verification_detail
+ * @property Models\Merchant\BusinessDetail\Repository           $merchant_business_detail
  * @property Models\Merchant\Escalations\Repository              $merchant_onboarding_escalations
  * @property Models\Merchant\Escalations\Actions\Repository      $onboarding_escalation_actions
  * @property Models\Merchant\Promotion\Repository                $merchant_promotion
@@ -401,9 +402,9 @@ class RepositoryManager extends Illuminate\Support\Manager
             $this->db->connection(Mode::TEST)->commit();
         }
 
-        // If we catch an exception, we will roll back so nothing gets messed
-        // up in the database. Then we'll re-throw the exception so it can
-        // be handled how the developer sees fit for their applications.
+            // If we catch an exception, we will roll back so nothing gets messed
+            // up in the database. Then we'll re-throw the exception so it can
+            // be handled how the developer sees fit for their applications.
         catch (\Throwable $e)
         {
             $this->db->connection(Mode::LIVE)->rollBack();
@@ -483,6 +484,6 @@ class RepositoryManager extends Illuminate\Support\Manager
     public function addComment(string $comment = 'default')
     {
         $this->db
-             ->select('SELECT /* comment: ' . $comment . ' */ 1;' );
+            ->select('SELECT /* comment: ' . $comment . ' */ 1;' );
     }
 }

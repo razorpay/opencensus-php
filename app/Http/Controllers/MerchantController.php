@@ -2166,7 +2166,21 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+    public function getMerchantBusinessDetail($merchantId)
+    {
+        $response = $this->service(E::MERCHANT_BUSINESS_DETAIL)->fetchBusinessDetailsForMerchant($merchantId);
 
+        return ApiResponse::json($response);
+    }
+
+    public function postMerchantBusinessDetail($merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_BUSINESS_DETAIL)->saveBusinessDetailsForMerchant($merchantId,$input);
+
+        return ApiResponse::json($response);
+    }
     public function createPartnerActivationForPartners()
     {
         $input = Request::all();

@@ -12,6 +12,10 @@ use RZP\Models\Merchant\Detail\Status as ActivationStatus;
  */
 final class Constants
 {
+    const TRACE                                   = 'trace';
+    const API_MUTEX                               = 'api.mutex';
+    const EDIT                                    = 'edit';
+    const INPUT                                   = "input";
     const INDIVIDUAL                              = 'individual';
     const CONTACT                                 = 'contact';
     const TIMESTAMP                               = 'timestamp';

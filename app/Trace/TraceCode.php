@@ -4915,6 +4915,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFICATION_DETAIL_DOES_NOT_EXIST                            = 'VERIFICATION_DETAIL_DOES_NOT_EXIST';
     const PAYMENT_REFERENCE6_MARKED_NULL                                = 'PAYMENT_REFERENCE6_MARKED_NULL';
     const PAYMENT_NOT_FOUND_TO_UPDATE_REFERENCE6                        = 'PAYMENT_NOT_FOUND_TO_UPDATE_REFERENCE6';
+
+    //Website Detail
+    const MERCHANT_CREATE_BUSINESS_DETAILS                               = 'MERCHANT_CREATE_BUSINESS_DETAILS';
+    const MERCHANT_EDIT_BUSINESS_DETAILS                               = 'MERCHANT_EDIT_BUSINESS_DETAILS';
+    const BUSINESS_DETAIL_DOES_NOT_EXIST                                 = 'BUSINESS_DETAIL_DOES_NOT_EXIST';
+
     const FETCHED_GATEWAY_DOWNTIMES_FROM_DB                             = 'FETCHED_GATEWAY_DOWNTIMES_FROM_DB';
     const FILTERED_METHOD_PROC_SPECIFICS                                = 'FILTERED_METHOD_PROC_SPECIFICS';
     const PLATFORM_SPECIFIC_DOWNTIMES                                   = 'PLATFORM_SPECIFIC_DOWNTIMES';

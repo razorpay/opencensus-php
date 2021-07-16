@@ -488,7 +488,7 @@ class Entity
     const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
     const MERCHANT_TNC                  = 'merchant_tnc';
     const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_detail';
-
+    const MERCHANT_BUSINESS_DETAIL       = 'merchant_business_detail';
     //api request log entity
     const REQUEST_LOG = 'request_log';
 
@@ -930,6 +930,7 @@ class Entity
         self::MERCHANT_AVG_ORDER_VALUE        => \RZP\Models\Merchant\AvgOrderValue::class,
         self::MERCHANT_TNC                    => \RZP\Models\Merchant\Tnc::class,
         self::MERCHANT_VERIFICATION_DETAIL    => \RZP\Models\Merchant\VerificationDetail::class,
+        self::MERCHANT_BUSINESS_DETAIL         => \RZP\Models\Merchant\BusinessDetail::class,
 
         self::MERCHANT_ONBOARDING_ESCALATIONS   => \RZP\Models\Merchant\Escalations::class,
         self::ONBOARDING_ESCALATION_ACTIONS     => \RZP\Models\Merchant\Escalations\Actions::class,
