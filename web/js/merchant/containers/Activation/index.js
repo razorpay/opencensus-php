@@ -116,7 +116,8 @@ export default class ActivationContainer extends Component {
     return Promise.all([
       merchantFetch({
         url: 'merchant/activation',
-        mode: 'live',
+        // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
+        mode: !!accountId ? this.props.session.mode : 'live',
         accountId,
       }),
       !accountId && merchantFetch('merchant/activation/business_categories'),
