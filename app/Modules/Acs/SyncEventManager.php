@@ -113,7 +113,7 @@ class SyncEventManager
      *
      * @throws LogicException
      */
-    public function recordAccountSync(string $accountId, string $mode = Mode::LIVE)
+    public function recordAccountSync(string $accountId, $mode = Mode::LIVE)
     {
         switch ($mode) {
             case Mode::LIVE:
@@ -146,7 +146,6 @@ class SyncEventManager
 
 //        // Skipping publishing test accounts because we have decided to only sync live for now
 //        // Enabling this would need to use test mode outbox instance
-//        // current outbox singleton instance is bound to live db connection
 //        foreach ($this->testAccountIds as $accountId => $ignoredValue)
 //        {
 //            $this->publishOutboxJob($accountId, Mode::TEST, $metadata);
@@ -178,6 +177,7 @@ class SyncEventManager
             (new MerchantRepo())->connection($mode)->transaction(function () use ($mode, $jobPayload) {
                 $this->outbox->send(self::OUTBOX_JOB_NAME, $jobPayload, $mode, false);
             });
+
             $this->trace->info(TraceCode::ACS_SYNC_EVENT_PUBLISHED, $jobPayload);
             $this->trace->count(Metric::ACS_SYNC_EVENT_PUBLISHED, $metricDimensions);
         } catch (\Throwable $e) {
