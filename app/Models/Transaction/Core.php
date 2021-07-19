@@ -1759,6 +1759,8 @@ class Core extends Base\Core
 
         $startTime = microtime(true);
 
+        $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($txn->getMerchantId());
+
         $processor->setMerchantBalanceLockForUpdate();
 
         $processor->updateCredits($negativeLimit);
@@ -1767,6 +1769,8 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_TIME_TAKEN,
             [
+                'merchant_id'           => $txn->getMerchantId(),
+                'payment_id'            => $txn->getEntityId(),
                 'txn_type'              => $txn->getType(),
                 'async_update'          => true,
                 'balance_update_time'  => (microtime(true) - $startTime) * 1000

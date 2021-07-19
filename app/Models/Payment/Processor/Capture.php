@@ -806,6 +806,7 @@ trait Capture
                 TraceCode::MERCHANT_BALANCE_UPDATE_INIT,
                 [
                     'input' => $input,
+                    'merchant_id' => $payment->getMerchantId(),
                 ]);
 
             Jobs\MerchantBalanceUpdate::dispatch($input, $this->mode);
@@ -1070,6 +1071,7 @@ trait Capture
 
         $this->trace->debug(TraceCode::TRANSACTION_DETAILS,
             [
+                'merchant_id'           => $txn->getMerchantId(),
                 'transaction_id'        => $txn->getId(),
                 'payment_id'            => $txn->getEntityId(),
                 'transaction_credit'    => $txn->getCredit(),

@@ -803,6 +803,7 @@ abstract class Base extends BaseCore
 
         $this->trace->info(TraceCode::MERCHANT_BALANCE_DATA,
             [
+                'merchant_id' => $this->txn->getMerchantId(),
                 'new_balance' => $newBalance,
                 'old_balance' => $oldBalance,
                 'method'      => 'updateMerchantBalance',

@@ -60,7 +60,7 @@ class MerchantBalanceUpdate extends Job
                     $this->delete();
                 },
                 self::MUTEX_LOCK_TIMEOUT,
-                ErrorCode::ASYN_MERCHANT_BALANCE_UPDATE_IN_PROGRESS);
+                ErrorCode::BAD_REQUEST_ASYNC_MERCHANT_BALANCE_UPDATE_IN_PROGRESS);
 
         }
         catch (\Throwable $e)

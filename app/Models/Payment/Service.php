@@ -3092,6 +3092,13 @@ class Service extends Base\Service
 
         if ($transaction->isBalanceUpdated() === true)
         {
+            $this->trace->info(TraceCode::TRANSACTION_BALANCE_ALREADY_UPDATED,
+                [
+                    'merchant_id'           => $paymentId->getMerchantId(),
+                    'payment_id'            => $paymentId,
+                ]
+            );
+
             return;
         }
 
