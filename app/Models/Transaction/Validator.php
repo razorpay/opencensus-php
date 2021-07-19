@@ -28,7 +28,7 @@ class Validator extends Base\Validator
     protected static $toggleTransactionHoldRules = [
         'transaction_ids'     =>  'required|array',
         'transaction_ids.*'   =>  'required|alpha_num|size:14',
-        'reason'              =>  'required|string',
+        'reason'              =>  'required|alpha_dash_space',
     ];
 
     protected static $toggleTransactionReleaseRules = [

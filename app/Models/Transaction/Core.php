@@ -1844,6 +1844,11 @@ class Core extends Base\Core
                     {
                         $txn = $this->repo->transaction->lockForUpdate($transactionId);
 
+                        if($txn->isSettled() === true)
+                        {
+                            throw new Exception\LogicException('settled transaction can not be put on hold');
+                        }
+
                         $txn->setOnHold($holdFlag);
 
                         $this->repo->saveOrFail($txn);
