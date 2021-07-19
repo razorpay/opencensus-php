@@ -374,6 +374,27 @@ return [
         ],
     ],
 
+    'testCreateTicketRzpWithHtmlTags' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => '<br>Ticket<b>Description</b><br><a href=test1.com></a>HTML',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requester_category'       => 'Merchant',
+                    'cf_requestor_subcategory'    => 'Activation'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => '<br>Ticket<b>Description</b><br>HTML',
+            ],
+        ],
+    ],
+
     'testCreateTicketRzpWithDCMigrationExperimentOn' => [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket/',

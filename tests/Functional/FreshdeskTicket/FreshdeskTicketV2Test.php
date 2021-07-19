@@ -30,6 +30,7 @@ class FreshdeskTicketV2Test extends TestCase
     const RZP_CREATE_TICKET_INTERNAL_AUTH = 'rzp_create_ticket_internal_auth';
     const RZP_FETCH_TICKET_FILTER         = 'rzp_fetch_ticket_filter';
     const RZP_FETCH_TICKET                = 'rzp_fetch_ticket';
+    const RZP_CREATE_TICKET_HTML_TAGS     = 'rzp_create_ticket_html_tags';
 
     const RZP_GET_TICKET_BY_ID = 'rzp_get_ticket_by_id';
 
@@ -382,6 +383,16 @@ class FreshdeskTicketV2Test extends TestCase
         $this->assertEquals($frDueByFreshdeskFormat, $ticket['ticket_details']['fr_due_by']);
 
         $this->assertEquals('rzp', $fdInstance);
+    }
+
+    public function testCreateTicketRzpWithHtmlTags()
+    {
+        $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_HTML_TAGS);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
+            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->startTest();
     }
 
     public function testCreateTicketRzpWithDCMigrationExperimentOn()
@@ -1328,6 +1339,39 @@ Team Razorpay',
                     ],
                     'priority' =>  1,
                 ]
+            ];
+        }
+
+        if ($key === self::RZP_CREATE_TICKET_HTML_TAGS)
+        {
+            return [
+                'request'   =>  [
+                    'description' => '<br>Ticket<b>Description</b><br>HTML',
+                    'subject' => 'ticket subject',
+                    'cc_emails' => ['a@b.com','merchantuser01@razorpay.com'],
+                    'custom_fields' => [
+                        'cf_requester_category'    => 'Merchant',
+                        'cf_requestor_subcategory' => 'Activation',
+                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                        'cf_merchant_id'           => '10000000000000',
+                    ],
+                    'email' =>  'test@razorpay.com',
+                    'phone' => '9876543210',
+                    'priority' =>  1,
+                ],
+                'response'  =>
+                    [
+                        'id'            => '99',
+                        'description'   => '<br>Ticket<b>Description</b><br>HTML',
+                        'fr_due_by'     => $frDueByFreshdeskFormat,
+                        'custom_fields' => [
+                            'cf_requester_category'    => 'Merchant',
+                            'cf_requestor_subcategory' => 'Activation',
+                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                            'cf_merchant_id'           => '10000000000000',
+                        ],
+                        'priority' =>  1,
+                    ]
             ];
         }
 

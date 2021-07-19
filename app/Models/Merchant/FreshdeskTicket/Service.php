@@ -1147,6 +1147,9 @@ class Service extends Base\Service
 
         $this->getGroupIdForTicketInput($input);
 
+        //Removing HTML tags in description
+        $input['description'] = strip_tags($input['description'], '<b><br>');
+
         return $input;
     }
 
