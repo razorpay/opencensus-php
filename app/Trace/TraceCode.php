@@ -24,6 +24,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_MULTIPLE_BALANCE_REQUEST                        = 'FETCH_MULTIPLE_BALANCE_REQUEST';
 
     const GATEWAY_HEALTH_CHECK_REQUEST                          = 'GATEWAY_HEALTH_CHECK_REQUEST';
+    const PAYMENT_CREATION_INITIATED                            = 'PAYMENT_CREATION_INITIATED';
     const PAYMENT_NEW_REQUEST                                   = 'PAYMENT_NEW_REQUEST';
     const PAYMENT_CREATED                                       = 'PAYMENT_CREATED';
     const PAYMENT_UPDATED_WITH_CPS_RESPONSE                     = 'PAYMENT_UPDATED_WITH_CPS_RESPONSE';
@@ -483,6 +484,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT               = 'GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT';
     const GATEWAY_VALIDATE_CUSTOMER_RESPONSE                    = 'GATEWAY_VALIDATE_CUSTOMER_RESPONSE';
 
+    const ORDER_CREATION_INITIATED                              = 'ORDER_CREATION_INITIATED';
     const ORDER_CREATE_REQUEST                                  = 'ORDER_CREATE_REQUEST';
     const ORDER_CREATED                                         = 'ORDER_CREATED';
     const REFUND_TRANSACTION_CREATED                            = 'REFUND_TRANSACTION_CREATED';
