@@ -175,6 +175,11 @@ class Core extends Base\Core
     {
         $settlementOndemandAttempt->setStatus($payoutStatus);
 
+        if(isset($payoutData['id']) === true)
+        {
+            $settlementOndemandAttempt->setPayoutId($payoutData['id']);
+        }
+
         if($payoutStatus === Status::REVERSED)
         {
             $settlementOndemandAttempt->setFailureReason($payoutData['failure_reason']);
