@@ -61,7 +61,7 @@ class PayoutServiceTest extends TestCase
         $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
-    public function mockPayoutServiceCreate($fail = false, $request = [])
+    public function mockPayoutServiceCreate($fail = false, $request = [], $status = 'created')
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
@@ -74,7 +74,7 @@ class PayoutServiceTest extends TestCase
 
         $payoutServiceCreateMock->shouldReceive('sendRequest')
                                 ->withArgs(
-                                    function($arg) use ($request) {
+                                    function($arg) use ($request, $status) {
                                         try
                                         {
                                             // Using this method only here as we want to check if the keys in the
@@ -93,7 +93,7 @@ class PayoutServiceTest extends TestCase
                                 // We are returning this response only as we don't have a use case of supporting
                                 // response based on $request, if needed, that can also be added here using
                                 // andReturnUsing method instead of andReturn
-                                    $this->createResponseForPayoutServiceMock($fail)
+                                    $this->createResponseForPayoutServiceMock($fail, $status)
                                 );
 
         $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
@@ -763,6 +763,85 @@ class PayoutServiceTest extends TestCase
 
         // Payout should not have gone via payouts service
         $this->assertEquals(false, $payout->getIsPayoutService());
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Payout should be in queued state
+        $this->assertEquals('queued', $payout->getStatus());
+    }
+
+    // Since payout has queue_if_low_balance flag set to true, it won't go via payouts service
+    public function testCreateQueuedPayoutViaPayoutServiceWhenQueuedPayoutViaServiceEnabledForMerchant(
+        string $balanceId = '')
+    {
+        if (empty($balanceId) === true)
+        {
+            $balanceId = $this->bankingBalance->getId();
+        }
+
+        $this->fixtures->on('live')->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 100
+            ]
+        );
+
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'off',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'control',
+            'on',
+            'on',
+            'on' //Just use this as on, rest everything as default.
+        );
+
+
+        $balance = $this->getDbEntityById('balance', $balanceId, "live");
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreateQueuedPayoutViaPayoutService'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['account_number'] = $balance->getAccountNumber();
+
+        $this->mockPayoutServiceCreate();
+
+        // Doing this because we fetch payout from the db before returning response from api.
+        $this->testCreatePayoutEntry('NEFT');
+
+        $payout = $this->getDbLastEntity('payout','live');
+
+        $this->fixtures->on('live')->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'queued',
+                'amount' => '500',
+            ]
+        );
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        // Payout should have gone via payouts service
+        $this->assertEquals(true, $payout->getIsPayoutService());
 
         // On private auth, payout.user_id should be null
         $this->assertNull($payout['user_id']);

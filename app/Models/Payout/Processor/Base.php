@@ -37,6 +37,7 @@ use RZP\Models\Base\Core as BaseCore;
 use RZP\Jobs\PayoutPostCreateProcess;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Workflow\Service\Adapter;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Settlement\SlackNotification;
@@ -2275,12 +2276,23 @@ class Base extends BaseCore
                     return false;
                 }
 
-                // skip payout creation via payout service if queue_if_low_balance flag is true
+                // skip payout creation via payout service if queue_if_low_balance flag is true and queued payouts via
+                // service are not enabled for the merchant.
                 if (empty($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === false)
                 {
                     if (boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true)
                     {
-                        return false;
+                        $variant = $this->app->razorx->getTreatment(
+                            $this->merchant->getId(),
+                            RazorxTreatment::ENABLE_QUEUED_PAYOUTS_VIA_PAYOUTS_SERVICE,
+                            $this->mode,
+                            Payout\Entity::RAZORX_RETRY_COUNT
+                        );
+
+                        if (strtolower($variant) !== 'on')
+                        {
+                            return false;
+                        }
                     }
                 }
 

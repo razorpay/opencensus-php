@@ -322,7 +322,8 @@ trait TestsBusinessBanking
                                            string $rejectCommentInWebhook = 'off',
                                            string $allowVAToVAPayouts = 'control',
                                            string $allowWalletAccountAmazonPay = 'on',
-                                           string $fundAccountDuplicateViaUniqueHash = 'on')
+                                           string $fundAccountDuplicateViaUniqueHash = 'on',
+                                           string $enableQueuedPayoutsViaPayoutsService = 'control')
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -350,7 +351,8 @@ trait TestsBusinessBanking
                     $rejectCommentInWebhook,
                     $allowVAToVAPayouts,
                     $allowWalletAccountAmazonPay,
-                    $fundAccountDuplicateViaUniqueHash
+                    $fundAccountDuplicateViaUniqueHash,
+                    $enableQueuedPayoutsViaPayoutsService
                 )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
@@ -411,6 +413,11 @@ trait TestsBusinessBanking
                     if ($feature === 'fund_account_duplicate_check_via_unique_hash')
                     {
                         return strtolower($fundAccountDuplicateViaUniqueHash);
+                    }
+
+                    if ($feature === 'enable_queued_payouts_via_payouts_service')
+                    {
+                        return strtolower($enableQueuedPayoutsViaPayoutsService);
                     }
 
                     return strtolower($defaultBehaviour);
