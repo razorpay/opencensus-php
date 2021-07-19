@@ -139,6 +139,12 @@ class UpdateMerchantContext extends Job
 
             $activationStatus = $merchantDetail->getActivationStatus();
 
+            $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_JOB,[
+                'merchant_id'           => $merchant->getId(),
+                'new_activation_status' => $newActivationStatus,
+                'old_activation_status' => $activationStatus
+            ]);
+
             if (($activationStatus !== $newActivationStatus) and
                 ($activationStatus === Status::UNDER_REVIEW))
             {
