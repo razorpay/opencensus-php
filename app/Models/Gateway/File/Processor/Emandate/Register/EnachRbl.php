@@ -176,7 +176,7 @@ class EnachRbl extends Base
         ];
 
         // In seconds
-        $timelines = [];
+        $timelines = [60, 300, 900, 1800, 3600];
 
         $mailInfo = [
             'fileInfo' => $fileInfo,
@@ -186,23 +186,7 @@ class EnachRbl extends Base
             'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NBPLUS_TECH]
         ];
 
-        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
-
-        if ((isset($beamResponse['success']) === false) or
-            ($beamResponse['success'] === null) or
-            ($beamResponse['failed'] !== null))
-        {
-            throw new BadRequestException(
-                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-                null,
-                [
-                    'beam_response' => $beamResponse,
-                    'filestore_id'  => $this->fileStore,
-                    'gateway_file'  => $this->gatewayFile->getId(),
-                    'gateway'       => 'enach_rbl',
-                ]
-            );
-        }
+        $this->sendBeamRequest($data, $timelines, $mailInfo, true);
 
         $mailData = $this->formatDataForMail($files);
 

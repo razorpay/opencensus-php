@@ -139,7 +139,7 @@ return [
                 'admin' => true,
                 'items' => [
                     [
-                        'status'              => 'file_generated',
+                        'status'              => 'file_sent',
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,
