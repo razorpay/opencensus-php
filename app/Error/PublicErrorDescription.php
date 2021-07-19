@@ -395,6 +395,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BATCH_ACTION_ENTITY_NOT_SUPPORTED                         = 'The input batch action entity is not supported for the merchant';
     const BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS                           = 'Merchant details does not exists';
     const BAD_REQUEST_MERCHANT_DETAIL_CANNOT_BE_UPDATED                         = 'Merchant details cannot be updated';
+    const BAD_REQUEST_CANNOT_UPDATE_COMMON_FIELDS                               = 'Fields already submitted in partner activation form';
     const BAD_REQUEST_MERCHANT_ALREADY_LIVE                                     = 'The merchant is already live';
     const BAD_REQUEST_MERCHANT_NOT_LIVE                                         = 'The merchant is not live currently';
     const BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED                           = 'There is a temporary block placed on the account currently because of which new payment operations are put on hold. If you are seeing this message unexpectedly, please contact the site admin regarding the issue.';

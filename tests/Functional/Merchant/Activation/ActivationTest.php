@@ -1366,6 +1366,48 @@ class ActivationTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testSaveCommonMerchantDetailsWhenPartnerActivationLocked()
+    {
+        $this->fixtures->create('partner_activation', [
+            'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+            'activation_status' => 'under_review',
+            'locked'            => true,
+            'submitted'         => true
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'         => self::DEFAULT_MERCHANT_ID,
+            'promoter_pan'        => 'ABCPE0000Z',
+            'bank_account_number' => '123456789012345',
+            'bank_branch_ifsc'    => 'ICIC0000001'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testSaveUncommonMerchantDetailsWhenPartnerActivationLocked()
+    {
+        $this->fixtures->create('partner_activation', [
+            'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+            'activation_status' => 'under_review',
+            'locked'            => true,
+            'submitted'         => true
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'         => self::DEFAULT_MERCHANT_ID,
+            'promoter_pan'        => 'ABCPE0000Z',
+            'bank_account_number' => '123456789012345',
+            'bank_branch_ifsc'    => 'ICIC0000001'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
     public function testUpdateActivationFlow()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail', [

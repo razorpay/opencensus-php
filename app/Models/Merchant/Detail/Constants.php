@@ -289,5 +289,18 @@ class Constants
             EmailEntity::EMAIL,
         ]
     ];
+
+    const COMMON_FIELDS_WITH_PARTNER_ACTIVATION = [
+        Entity::CONTACT_NAME,
+        Entity::CONTACT_MOBILE,
+        Entity::CONTACT_EMAIL,
+        Entity::COMPANY_PAN,
+        Entity::PROMOTER_PAN,
+        Entity::PROMOTER_PAN_NAME,
+        Entity::BANK_ACCOUNT_NUMBER,
+        Entity::BANK_ACCOUNT_NAME,
+        Entity::BANK_BRANCH_IFSC,
+        Entity::GSTIN
+    ];
 }
 

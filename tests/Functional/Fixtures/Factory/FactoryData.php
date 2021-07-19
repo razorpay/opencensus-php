@@ -1802,5 +1802,12 @@ final class FactoryData
             'merchant_id'        => '10000000000000',
             'created_at'         => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Models\Partner\Activation\Entity::class, [
+            'merchant_id'  => $faker->uniqueid,
+            'created_at'   => $faker->timestamp,
+            'updated_at'   => $faker->timestamp,
+            'submitted_at' => $faker->timestamp,
+        ]);
     }
 }

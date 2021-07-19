@@ -41,14 +41,16 @@ class Service extends Base\Service
 
         $this->partnerActivationValidator->validateInput('savePartnerActivation', $input);
 
-        $response = (new Detail\Core())->saveMerchantDetails($input, $this->merchant);
-
         $this->merchant->load('merchantDetail');
 
         $merchantDetail = $this->merchant->merchantDetail;
 
-        return $this->core->processPartnerActivation($input, $merchantDetail, $this->merchant);
+        if ($merchantDetail->isLocked() === false and $isFormSubmit === false)
+        {
+            (new Detail\Core())->saveMerchantDetails($input, $this->merchant);
+        }
 
+        return $this->core->processPartnerActivation($input, $merchantDetail, $this->merchant);
     }
 
     public function getPartnerActivationDetails()

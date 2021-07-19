@@ -5,13 +5,14 @@ namespace RZP\Models\Merchant\Detail;
 use App;
 
 use RZP\Base;
-use RZP\Constants\IndianStates;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\IndianStates;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Document\Type;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 
@@ -1241,5 +1242,36 @@ class Validator extends Base\Validator
         }
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_GSTIN_SELF_SERVE_IN_PROGRESS);
+    }
+
+    /**
+     * In merchant activation form, do not allow common fields between partner & merchant activation to be edited
+     * if partner activation form is submitted
+     *
+     * @param array $input
+     * @param Entity $merchantDetails
+     *
+     * @return void
+     * @throws Exception\BadRequestException
+     */
+    public function validateCommonFieldsWithPartnerActivation(array $input, Entity $merchantDetails)
+    {
+        $merchant = $merchantDetails->merchant;
+
+        $partnerActivation = (new PartnerCore())->getPartnerActivation($merchant);
+
+        if ($partnerActivation === null or $partnerActivation->isLocked() === false)
+        {
+            return;
+        }
+
+        $commonActivationFields = DetailConstants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION;
+
+        $commonFieldsFromInput = array_intersect(array_keys($input), $commonActivationFields);
+
+        if (count($commonFieldsFromInput) > 0)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CANNOT_UPDATE_COMMON_FIELDS);
+        }
     }
 }

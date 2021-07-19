@@ -117,6 +117,46 @@ class PartnerActivationTest extends OAuthTestCase
         $this->assertEquals('partner_activation', $state['entity_type']);
     }
 
+    public function testSubmitPartnerActivationWhenMerchantActivationLocked()
+    {
+        $this->createMerchant(self::MERCHANT_ID, false, 'under_review');
+
+        $this->fillAllRequirements(self::MERCHANT_ID, false);
+
+        $this->fixtures->merchant_detail->onLive()->edit(self::MERCHANT_ID, ['locked' => true]);
+        $this->fixtures->merchant_detail->onTest()->edit(self::MERCHANT_ID, ['locked' => true]);
+
+        $this->fillStatusForRequirements(self::MERCHANT_ID, false, 'pending');
+
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+
+        $this->startTest();
+
+        $state = $this->getDbEntity('action_state');
+
+        $this->assertEquals(self::MERCHANT_ID, $state['merchant_id']);
+
+        $this->assertEquals('under_review', $state['name']);
+
+        $this->assertEquals('partner_activation', $state['entity_type']);
+    }
+
+    public function testSavePartnerActivationWhenMerchantActivationLocked()
+    {
+        $this->createMerchant(self::MERCHANT_ID, false, 'under_review');
+
+        $this->fillAllRequirements(self::MERCHANT_ID, false);
+
+        $this->fixtures->merchant_detail->onLive()->edit(self::MERCHANT_ID, ['locked' => true]);
+        $this->fixtures->merchant_detail->onTest()->edit(self::MERCHANT_ID, ['locked' => true]);
+
+        $this->fillStatusForRequirements(self::MERCHANT_ID, false, 'pending');
+
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+
+        $this->startTest();
+    }
+
     public function testFetchPartnerActivationForNonPartner()
     {
         $this->createMerchant(self::MERCHANT_ID, false , null, false);

@@ -1997,6 +1997,69 @@ return [
         ],
     ],
 
+    'testSaveCommonMerchantDetailsWhenPartnerActivationLocked' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'contact_name'                => 'test',
+                'contact_mobile'              => '9123456789',
+                'business_type'               => '1',
+                'business_name'               => 'Acme',
+                'business_dba'                => 'Acme',
+                'bank_account_name'           => 'test',
+                'bank_account_number'         => '123456789012345',
+                'bank_branch_ifsc'            => 'ICIC0000001',
+                'business_operation_address'  => 'Test address',
+                'business_operation_state'    => 'Karnataka',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560030',
+                'business_registered_address' => 'Test address',
+                'business_registered_state'   => 'Karnataka',
+                'business_registered_city'    => 'Bengaluru',
+                'business_registered_pin'     => '560030',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_UPDATE_COMMON_FIELDS,
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CANNOT_UPDATE_COMMON_FIELDS,
+        ]
+    ],
+
+    'testSaveUncommonMerchantDetailsWhenPartnerActivationLocked' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_operation_address'  => 'Test address',
+                'business_operation_state'    => 'Karnataka',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560030',
+                'business_registered_address' => 'Test address',
+                'business_registered_state'   => 'Karnataka',
+                'business_registered_city'    => 'Bengaluru',
+                'business_registered_pin'     => '560030',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => 'ABCPE0000Z',
+                'bank_account_number' => '123456789012345',
+                'bank_branch_ifsc'    => 'ICIC0000001',
+                'can_submit'           => false,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     'testPostInstantActivationByActivatedMerchant' => [
         'request'   => [
             'method'  => 'POST',

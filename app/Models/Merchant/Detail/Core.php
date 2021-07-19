@@ -145,6 +145,8 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
+        $merchantDetails->getValidator()->validateCommonFieldsWithPartnerActivation($input, $oldMerchantDetails);
+
         $activationFormMilestone = $input[Entity::ACTIVATION_FORM_MILESTONE] ?? null;
 
         unset($input[Entity::ACTIVATION_FORM_MILESTONE]);

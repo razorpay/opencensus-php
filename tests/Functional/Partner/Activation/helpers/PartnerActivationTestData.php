@@ -125,6 +125,58 @@ return [
         ],
     ],
 
+    'testSubmitPartnerActivationWhenMerchantActivationLocked' => [
+        'request'  => [
+            'url'     => '/partner/activation',
+            'method'  => 'POST',
+            'content' => [
+                'submit' => '1',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'partner_activation' => [
+                    'merchant_id'       => '1cXSLlUU8V9sXl',
+                    'hold_funds'        => false,
+                    'submitted'         => true,
+                    'activation_status' => 'under_review',
+                    'verification'      => [
+                        'activation_progress' => 100,
+                        'status'              => 'pending',
+                    ],
+                    'can_submit'        => true
+                ]
+            ],
+        ],
+    ],
+
+    'testSavePartnerActivationWhenMerchantActivationLocked' => [
+        'request'  => [
+            'url'     => '/partner/activation',
+            'method'  => 'POST',
+            'content' => [
+                'bank_account_name'   => 'User 1',
+                'bank_account_number' => '051610000039259',
+                'bank_branch_ifsc'    => 'UBIN0805165',
+                'promoter_pan'        => 'EBPPK8222K',
+                'promoter_pan_name'   => 'User 1',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Activation form has been locked for editing by admin.',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED,
+        ],
+    ],
+
     'testFetchPartnerActivationForNonPartner' => [
         'request'   => [
             'url'    => '/partner/activation',
