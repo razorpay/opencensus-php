@@ -8447,8 +8447,8 @@ trait Authorize
 
                 $this->repo->saveOrFail($payment);
 
-                if ((empty($input['headless_error']) === true) or
-                    ($input['headless_error'] === false))
+                if ((empty($inputDetails['headless_error']) === true) or
+                    ($inputDetails['headless_error'] === false))
                 {
                     $this->setPreferredAuthIfApplicable($payment);
                 }
