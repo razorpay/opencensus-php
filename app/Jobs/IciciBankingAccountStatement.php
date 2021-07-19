@@ -73,22 +73,6 @@ class IciciBankingAccountStatement extends Job
         {
             parent::handle();
 
-            $newStatementFetchFlowFeature = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::ACCOUNT_STATEMENT_V2_FLOW]);
-
-            if (in_array($this->params['account_number'], $newStatementFetchFlowFeature) === false)
-            {
-                $this->trace->info(
-                    TraceCode::ICICI_BANKING_ACCOUNT_STATEMENT_JOB_CALLED_BUT_V2_FEATURE_NOT_ENABLED,
-                    [
-                        'channel'           => $this->params['channel'],
-                        'account_number'    => $this->params['account_number'],
-                    ]);
-
-                $this->delete();
-
-                return;
-            }
-
             $enableRateLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_ENABLE_RATE_LIMIT_FLOW]);
 
             if ($enableRateLimit === 1)

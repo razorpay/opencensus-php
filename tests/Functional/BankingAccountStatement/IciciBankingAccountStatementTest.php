@@ -31,7 +31,7 @@ use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Models\BankingAccountStatement\Entity as BasEntity;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
-use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
+use RZP\Jobs\IciciBankingAccountStatement as IciciBankingAccountStatementJob;
 use RZP\Models\BankingAccountStatement\Processor\Icici\RequestResponseFields as F;
 
 class IciciBankingAccountStatementTest extends TestCase
@@ -77,8 +77,6 @@ class IciciBankingAccountStatementTest extends TestCase
         ]);
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
-
-        (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"]]);
     }
 
     protected function setMozartMockResponse($mockedResponse)
@@ -366,7 +364,7 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        Queue::assertPushed(BankingAccountStatementJob::class, 1);
+        Queue::assertPushed(IciciBankingAccountStatementJob::class, 1);
     }
 
     /**

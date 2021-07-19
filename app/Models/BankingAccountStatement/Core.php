@@ -103,7 +103,8 @@ class Core extends Base\Core
 
         $newStatementFetchFlowFeature = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::ACCOUNT_STATEMENT_V2_FLOW]);
 
-        if (in_array($accountNumber, $newStatementFetchFlowFeature) === true)
+        if (($channel === Channel::ICICI) or
+            (in_array($accountNumber, $newStatementFetchFlowFeature) === true))
         {
             $input = [
                 Entity::CHANNEL         => $channel,
@@ -1996,7 +1997,8 @@ class Core extends Base\Core
     {
         $accountNumbers = (new AdminService)->getConfigKey(['key' => ConfigKey::ACCOUNT_STATEMENT_V2_FLOW]);
 
-        if (in_array($accountNumber, $accountNumbers) === true)
+        if (($channel === BASDetails\Channel::ICICI) or
+            (in_array($accountNumber, $accountNumbers) === true))
         {
             $job = 'RZP\Jobs' . '\\' . studly_case($channel) . 'BankingAccountStatement';
 
