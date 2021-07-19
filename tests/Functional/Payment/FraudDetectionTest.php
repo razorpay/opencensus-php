@@ -908,20 +908,45 @@ class FraudDetectionTest extends TestCase
         $slackMessage = "*POWER_BANK_RULES (Rules) Triggered*\n\n*MID*: `<https://dashboard.razorpay.com/admin#/app/merchants/10000000000000/detail | 10000000000000>` flagged\n\n*Shield Id*: `<https://dashboard.razorpay.com/admin/entity/shield.rules/live/223 | 223>`\n*Shield Description*: test_description\n\ncc: <@S02726CADJL>";
 
         $slackPayload = [
-            $slackMessage,
-            [],
-            [
-                'channel'  => \Config::get('slack.channels.risk'),
-                'username' => 'Transaction Risk',
-                'color'    => 'danger',
-            ]
+            'channel' => \Config::get('slack.channels.risk'),
+            'text'    => $slackMessage,
         ];
 
-        $slackClient = Mockery::mock();
+        $shieldSlackClient = Mockery::mock('RZP\Services\Mock\ShieldSlackClient');
 
-        $slackClient->shouldReceive('queue');
+        $shieldSlackClient->shouldReceive('sendRequest')
+            ->withArgs(function ($payload) use ($slackPayload) {
+                return ($slackPayload['channel'] === $payload['channel']) &&
+                       ($slackPayload['text'] === $payload['text']);
+            })
+            ->andReturnUsing(function ($content) {
+                return [
+                    'status_code' => 200,
+                    'body' => [
+                        'ok'      => true,
+                        'channel' => $content['channel'],
+                        'ts'      => '1626322523.000100',
+                        'message' => [
+                            'bot_id' => 'B123123VCLS',
+                            'type'   => 'message',
+                            'text'   => $content['text'],
+                            'user'   => 'U1231236A11',
+                            'ts'     => '1626322523.000100',
+                            'team'   => 'T1231236F',
+                            'bot_profile' => [
+                                'id'      => 'B123123VCLS',
+                                'deleted' => false,
+                                'name'    => 'risk_alerts',
+                                'updated' => 1626273159,
+                                'app_id'  => 'A123123A732',
+                                'team_id' => 'T1231236F',
+                            ],
+                        ],
+                    ],
+                ];
+            });
 
-        $this->app->instance('slack', $slackClient);
+        $this->app->instance('shield.slack', $shieldSlackClient);
 
         \Config::set('applications.shield.slack.cc_user_ids', 'S02726CADJL');
 
@@ -935,8 +960,6 @@ class FraudDetectionTest extends TestCase
         {
             $this->doAuthPayment($testPayment);
         });
-
-        $slackClient->shouldHaveReceived('queue')->withArgs($slackPayload);
 
         $payment = $this->getLastEntity('payment', true);
 

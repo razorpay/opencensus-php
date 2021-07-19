@@ -405,6 +405,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerShield();
 
+        $this->registerShieldSlackClient();
+
         $this->registerRedisDualWrite();
 
         $this->registerApiMutex();
@@ -1057,6 +1059,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $implementation = $mock ? Mock\PincodeSearch::class : PincodeSearch::class;
 
             return new $implementation($app);
+        });
+    }
+
+    protected function registerShieldSlackClient()
+    {
+        $this->app->singleton('shield.slack', function($app)
+        {
+            $mock = $app['config']->get('applications.shield.slack.mock');
+
+            $implementation = $mock ? Mock\ShieldSlackClient::class : ShieldSlackClient::class;
+
+            return new $implementation;
         });
     }
 

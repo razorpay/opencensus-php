@@ -7,8 +7,8 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Shield;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Payment\Fraud\Notifications\Config;
 use RZP\Models\Payment\Fraud\Constants\Notification as Constants;
 
@@ -28,7 +28,7 @@ class Notify
 
     protected $trace;
 
-    protected $slack;
+    protected $shieldSlackClient;
 
     protected $config;
 
@@ -38,7 +38,7 @@ class Notify
 
         $this->trace = $app['trace'];
 
-        $this->slack = $app['slack'];
+        $this->shieldSlackClient = $app['shield.slack'];
 
         $this->config = $app['config'];
 
@@ -171,13 +171,21 @@ class Notify
 
         $message = $this->prepareSlackMessage($merchant, $ruleCode, $rulesInfo);
 
-        $settings = [
-            'channel'  => $this->config->get('slack.channels.risk'),
-            'username' => self::SLACK_MESSAGE_USER_NAME,
-            'color'    => 'danger',
+        $content = [
+            'channel' => $this->config->get('slack.channels.risk'),
+            'text'    => $message,
         ];
 
-        $this->slack->queue($message, [], $settings);
+        $formattedResponse = $this->shieldSlackClient->sendRequest($content);
+
+        $this->trace->info(
+            TraceCode::FRAUD_NOTIFICATION_TO_OPS_COMPLETE,
+            [
+                'rule_code'   => $ruleCode,
+                'date'        => Carbon::now(Timezone::IST)->toFormattedDateString(),
+                'merchant_id' => $merchant->getId(),
+                'response'    => $formattedResponse,
+            ]);
     }
 
     private function prepareSlackMessage(MerchantEntity $merchant, string $ruleCode, array $rulesInfo): string

@@ -615,6 +615,9 @@ return [
         'slack' => [
             'cc_user_ids'         => env('SHIELD_SLACK_CC_USER_IDS'),
             'eligible_rule_codes' => env('SHIELD_SLACK_NOTIFICATION_RULE_CODES'),
+            'url'                 => env('SHIELD_SLACK_POSTMESSAGE_URL'),
+            'bearer_token'        => env('SHIELD_SLACK_BEARER_TOKEN'),
+            'mock'                => env('SHIELD_SLACK_MOCK'),
         ],
     ],
 

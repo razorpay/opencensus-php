@@ -1785,6 +1785,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HARVESTER_RESPONSE                                    = 'HARVESTER_RESPONSE';
 
     const SHIELD_INTEGRATION_ERROR                              = 'SHIELD_INTEGRATION_ERROR';
+    const SHIELD_SLACK_REQUEST_INITIATED                        = 'SHIELD_SLACK_REQUEST_INITIATED';
+    const SHIELD_SLACK_REQUEST_COMPLETE                         = 'SHIELD_SLACK_REQUEST_COMPLETE';
+    const SHIELD_SLACK_INTEGRATION_ERROR                        = 'SHIELD_SLACK_INTEGRATION_ERROR';
     const REVERSAL_ADJUSTMENT_CREATE_REQUEST                    = 'REVERSAL_ADJUSTMENT_CREATE_REQUEST';
 
     const NON_BLOCKING_HTTP_ERROR                               = 'NON_BLOCKING_HTTP_ERROR';
@@ -4493,6 +4496,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FRAUD_NOTIFICATION_TO_OPS_FAILED    = 'FRAUD_NOTIFICATION_TO_OPS_FAILED';
     const FRAUD_NOTIFICATION_TO_OPS_SKIPPED   = 'FRAUD_NOTIFICATION_TO_OPS_SKIPPED';
     const FRAUD_NOTIFICATION_TO_OPS_INITIATED = 'FRAUD_NOTIFICATION_TO_OPS_INITIATED';
+    const FRAUD_NOTIFICATION_TO_OPS_COMPLETE  = 'FRAUD_NOTIFICATION_TO_OPS_COMPLETE';
 
     //                                ==========
 
