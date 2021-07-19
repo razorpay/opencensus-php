@@ -49,6 +49,17 @@ const Repay = ({
   const repayInputType = getInputType();
 
   useEffect(() => {
+    setSettlementBalance({
+      ...settlementBalance,
+      active: !isBalanceZero,
+    });
+    setBankBalance({
+      ...bankBalance,
+      active: isSettlementBalanceLessThanRepayAmount,
+    });
+  }, [view]);
+
+  useEffect(() => {
     const amount = repayAmount > balance ? balance : repayAmount;
     setSettlementBalance({
       ...settlementBalance,
@@ -60,10 +71,10 @@ const Repay = ({
 
   useEffect(() => {
     setBankBalance({
+      ...bankBalance,
       amount: settlementBalance.active
         ? repayAmount - Math.min(settlementBalance.customAmount, settlementBalance.amount)
         : repayAmount,
-      active: isSettlementBalanceLessThanRepayAmount,
     });
   }, [
     settlementBalance.amount,

@@ -301,7 +301,8 @@ const RepayMethod = ({
             settlementBalance.active && !settlementBalance.error ? 'active' : ''
           } ${settlementBalance.active && settlementBalance.error ? 'error' : ''} ${
             balance === 0 ? 'disabled' : ''
-          }`}
+          } cursor-pointer`}
+          onClick={() => handleSettlementBalanceSelect(!settlementBalance.active)}
         >
           <div className="mr-7">
             <input
@@ -313,74 +314,40 @@ const RepayMethod = ({
             />
           </div>
           <div>
-            <div
-              onClick={() => handleSettlementBalanceSelect(!settlementBalance.active)}
-              className="repay--type-title cursor-pointer"
-            >
-              Settlement Balance
-            </div>
-            {settlementBalance.isCustomAmountActive ? (
-              <div className="custom-input mt-8">
-                <Input
-                  addonBefore="₹"
-                  type="number"
-                  className="settlement-balance--input"
-                  addonAfter={
-                    <div className="settlement-balance--input-actions">
-                      {!settlementBalance.error && (
-                        <Button.Transparent className="mr-12" onClick={handleCustomAmountDoneClick}>
-                          Done
-                        </Button.Transparent>
-                      )}
-                      <span
-                        className="settlement-balance--close"
-                        onClick={handleCustomAmountCloseClick}
-                      >
-                        <i className="i i-close" />
-                      </span>
-                    </div>
-                  }
-                  name="amount"
-                  value={customAmountInput}
-                  onChange={handleCustomAmountChange}
-                />
-                <div className="text-danger error-message mt-5">
-                  {settlementBalance.error && settlementBalance.error}
+            <div className="repay--type-title">Settlement Balance</div>
+            <div className="mt-4">
+              {balance === 0 ? (
+                <div className="repay--type-description">
+                  Not Available, As balance is{' '}
+                  <Amount
+                    className="repay--amount"
+                    currency="INR"
+                    value={settlementBalance.amount}
+                  />
                 </div>
-              </div>
-            ) : (
-              <div className="mt-4">
-                {balance === 0 ? (
-                  <div className="repay--type-description">
-                    Not Available, As balance is{' '}
-                    <Amount
-                      className="repay--amount"
-                      currency="INR"
-                      value={settlementBalance.amount}
-                    />
-                  </div>
-                ) : (
-                  <div className="repay--type-description">
-                    Use{' '}
-                    <Amount
-                      className="repay--amount"
-                      currency="INR"
-                      value={settlementBalance.amount}
-                    />{' '}
-                    from balance.
-                    <Button.Transparent className="edit-btn" onClick={handleEditClick}>
-                      Edit
-                    </Button.Transparent>
-                  </div>
-                )}
-              </div>
-            )}
+              ) : (
+                <div className="repay--type-description">
+                  Use{' '}
+                  <Amount
+                    className="repay--amount"
+                    currency="INR"
+                    value={settlementBalance.amount}
+                  />{' '}
+                  from balance.
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div
           className={`action mr-24 ${settlementBalance.isCustomAmountActive ? 'ml--1' : ''} ${
             bankBalance.active ? 'active' : ''
-          } cursor-pointer ${settlementBalance.active ? 'bank__disable' : ''}`}
+          } ${
+            (isSettlementBalanceLessThanRepayAmount && repayInputType === 'checkbox') ||
+            balance === 0
+              ? 'bank__disable'
+              : ''
+          } cursor-pointer`}
           onClick={() => handleBankSelect(!bankBalance.active)}
         >
           <div className="mr-7">
@@ -408,9 +375,7 @@ const RepayMethod = ({
         </div>
         <div>
           <AsyncBtn.Primary
-            disabled={
-              settlementBalance.error || settlementBalance.isCustomAmountActive || repayAmount === 0
-            }
+            disabled={settlementBalance.error || repayAmount === 0}
             className="btn btn-primary mr-24"
             onClick={handleRepayClick}
           >

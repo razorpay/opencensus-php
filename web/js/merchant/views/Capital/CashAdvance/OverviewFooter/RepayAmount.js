@@ -60,7 +60,7 @@ const RepayAmount = ({
 
   const handleCustomAmountChange = (e) => {
     const value = parseInt(e.currentTarget.value, 10);
-    if (value > totalOwedAmount)
+    if (value > totalOwedAmount / 100)
       setCustomAmountError(
         <p>
           Max. amount can be repaid <Amount currency="INR" value={totalOwedAmount} />
