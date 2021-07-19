@@ -5005,8 +5005,6 @@ trait Authorize
 
     protected function setBankAndEmiPlanDetails(Payment\Entity $payment, $cardNumberArray, int $emiDuration)
     {
-        $cardNumber = $cardNumberArray['number'];
-
         $iinEntity = $payment->card->iinRelation;
 
         // On custom checkouts, sometimes users are entering random cards for
@@ -5017,7 +5015,7 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD);
         }
 
-        IIN\IIN::validateEmiAvailableForCard($iinEntity, $cardNumber);
+        IIN\IIN::validateEmiAvailableForCard($iinEntity, $cardNumberArray);
 
         $payment->setBank($iinEntity->getIssuer());
 

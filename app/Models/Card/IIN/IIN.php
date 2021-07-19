@@ -719,8 +719,10 @@ class IIN
             (in_array($type, self::$ignoreIinCheckForEmi[$issuer])));
     }
 
-    public static function validateEmiAvailableForCard(Entity $iin, string $cardNumber)
+    public static function validateEmiAvailableForCard(Entity $iin, array $cardNumberArray)
     {
+        $cardNumber = $cardNumberArray['number'];
+
         // If we can not ignore IIN checks and if emi is not available for this card IIN
         if ((self::ignoreIinChecks($iin) === false) AND
             (self::isEmiAvailableForCard($iin, $cardNumber) === false))
