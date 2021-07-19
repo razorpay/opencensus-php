@@ -84,11 +84,11 @@ const IntentForm = ({ merchantId, updatedValues, handleIntentSubmit }) => {
         <div className="Input-content credit-use">
           <div>
             <PowerSelectMultiple
-              className={`credit-use-select ${
+              className={`${
                 formData.credit_request_purpose.length
                   ? `selected-${formData.credit_request_purpose.length}`
                   : ''
-              }`}
+              } credit-use-select`}
               options={INTENT_CREDIT_USE_OPTIONS}
               selected={formData.credit_request_purpose || []}
               onChange={handleCreditUseChange}
@@ -100,7 +100,7 @@ const IntentForm = ({ merchantId, updatedValues, handleIntentSubmit }) => {
 
       <AsyncBtn.Primary
         type="submit"
-        className="btn btn-primary no-margin new-onboarding-button"
+        className="btn btn-primary continue-cta"
         onClick={handleSubmit}
         disabled={!isValidIntentForm()}
       >

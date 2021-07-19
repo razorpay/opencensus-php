@@ -311,28 +311,32 @@ const PersonalDetailsForm = ({
                 />
               </div>
             </div>
-            <Input
-              placeholder="PAN number"
-              value={formData.pan_number}
-              onChange={handleChange}
-              label="PAN Number"
-              key="pan_number"
-              name="pan_number"
-              size="small"
-              className="InputGroup--vTop Input--required los-row"
-              validator={fieldsChanged && validatePanNumber}
-            />
-            <Input.Textarea
-              placeholder="Address"
-              value={formData.address}
-              onChange={handleChange}
-              label="Residential Address"
-              name="address"
-              key="address"
-              size="large"
-              className="InputGroup--vTop Input--required los-row"
-              validator={fieldsChanged && validateAddress}
-            />
+            <div className="los-row">
+              <Input
+                placeholder="PAN number"
+                value={formData.pan_number}
+                onChange={handleChange}
+                label="PAN Number"
+                key="pan_number"
+                name="pan_number"
+                size="small"
+                className="InputGroup--vTop Input--required"
+                validator={fieldsChanged && validatePanNumber}
+              />
+            </div>
+            <div className="los-row">
+              <Input.Textarea
+                placeholder="Address"
+                value={formData.address}
+                onChange={handleChange}
+                label="Residential Address"
+                name="address"
+                key="address"
+                size="large"
+                className="InputGroup--vTop Input--required"
+                validator={fieldsChanged && validateAddress}
+              />
+            </div>
             <div className="flex pincode los-row">
               <Input
                 name="pincode"
@@ -403,7 +407,7 @@ const PersonalDetailsForm = ({
             <div>
               <AsyncBtn.Primary
                 type="submit"
-                className="btn btn-primary no-margin check-cta"
+                className="btn btn-primary check-cta"
                 onClick={handleSubmit}
                 isPending={isPending}
               >

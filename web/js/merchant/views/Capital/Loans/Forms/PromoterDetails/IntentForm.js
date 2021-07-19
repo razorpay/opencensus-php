@@ -76,7 +76,7 @@ const IntentForm = ({ loanApplicationDetails, handleIntentSubmit }) => {
 
           <Button.Primary
             type="submit"
-            className="btn btn-primary no-margin new-onboarding-button"
+            className="btn btn-primary continue-cta"
             onClick={handleIntentSubmit}
           >
             Continue <i className="i i-chevron-right" />

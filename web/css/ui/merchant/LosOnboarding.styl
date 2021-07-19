@@ -1,11 +1,8 @@
-.loan-application-form-footer > .btn
-    margin-left: 180px !important
-
 .loan-onboarding-content-body 
+    .continue-cta
+        margin-top: 40px
     .Input-label
         margin-bottom: 6px
-    .los-row
-        margin-bottom: 24px !important
     .no-cursor
         cursor auto
     tabbed-container
@@ -33,6 +30,8 @@
     .edit-btn i.i::before
         color: rgba(88, 102, 110, 0.87)
     .los-business-details-form
+        .los-row
+            margin-bottom: 24px
         .Input 
             margin: 0
         .Input--disabled
@@ -61,7 +60,7 @@
         .pincode
             align-items: center
             &:not(.error)
-                margin-bottom: 0 !important
+                margin-bottom: 0
             .city-state
                 margin: 0 0 -20px 15px
     .los-intent-details-form
@@ -71,6 +70,8 @@
             &:nth-child(2) .Input-label
                 margin-bottom: 3px
     .los-personal-details-form
+        .los-row
+            margin-bottom: 24px
         .Input 
             margin: 0
         .form-control
@@ -108,7 +109,7 @@
             .city-state
                 margin: 0 0 10px 15px
         .check-cta
-            margin-bottom: 20px !important
+            margin-bottom: 20px
         .info
             width: 100%
             margin: 20px 0 5px
@@ -134,6 +135,142 @@
             line-height: 24px
             color: rgba(22, 47, 86, 0.87)
             margin-top: 24px
+    // Styles for changes in PromoterDetailsEntity for Loan Form Revamp
+    .promoter-details
+        display: flex
+        justify-content: center
+        flex-direction: column
+        .Input--disabled
+            opacity: 1
+            .Input-label
+                color: rgba(88, 102, 110, 0.87)
+            .Input-el
+                background-color: rgba(22, 47, 86, 0.01)
+                border: 1px solid rgba(22, 47, 86, 0.08)
+                color: rgba(22, 47, 86, 0.87)
+        .form-control[disabled]
+            background-color: rgba(22, 47, 86, 0.01)
+            border: 1px solid rgba(22, 47, 86, 0.08)
+            color: rgba(22, 47, 86, 0.87)
+            cursor: auto
+        .Input-content
+            opacity: 1 !important
+        .Input-elWrapper .Input-addons
+            background: rgba(22, 47, 86, 0.06)
+        .intent-form
+            margin: 0 auto
+            padding: 0 20px
+            .Input-label
+                width: 160px
+                text-align: right
+                margin-right: 20px
+            .InputGroup--inline
+                display: flex
+                align-items: center
+            .PowerSelectMultiple_TriggerInputContainer
+                display: none
+            .btn
+                margin-left: 180px
+        .business-details-form
+            .Input--disabled
+                opacity: 1
+                background-color: rgba(22, 47, 86, 0.01)
+                cursor: not-allowed
+                .Input-label
+                    color: rgba(88, 102, 110, 0.87)
+                    margin-bottom: 5px
+                .Input-el
+                    background-color: rgba(22, 47, 86, 0.01)
+            .Input-content
+                margin-left: 30px
+            .InputGroup--inline
+                margin: 24px 0
+                .Input-label
+                    position: relative
+                    top: 10px !important
+            .address
+                .Input-label
+                    top: -20px !important
+            .pincode
+                margin-bottom: 0
+            .city-state
+                &.error
+                    position: relative
+                    top: -10px
+            .state-group
+                margin-bottom: 0
+            .btn
+                margin-left: 200px
+        .personal-details-form
+            .loan-application-form-footer .btn
+                margin-left: 180px
+            .terms
+                margin: 24px 0 6px 190px
+                white-space: nowrap
+            .Input--disabled
+                cursor: not-allowed
+            .InputGroup--inline
+                margin: 24px 0
+            .city-state
+                margin: auto 0
+            .city-state-error
+                margin: 0
+                .Input-label
+                    top: 15px
+            .dob 
+                .dob-wrapper.error input
+                    border-color: #f05050
+                .rdt
+                    width: 192px
+            .gender .Input-content
+                margin-left: 16px
+            .pan_number
+                position: relative
+                margin: 20px 0
+            .contact
+                align-items: flex-start
+                .email
+                    margin: 0
+        .PowerSelect--disabled
+            background: rgba(22,47,86,0.01)
+        &-header
+            padding-left: 30px
+            &-left
+                justify-content: flex-start
+                align-items: center
+                margin-top: 24px
+            &-radios
+                margin: 0 0 0 20px
+            &-text
+                text-align: right
+                font-size: 14px
+                font-weight: bold
+                color: rgba(22, 47, 86, 0.74)
+                line-height: 18px
+            .heading
+                font-weight: bold
+                font-size: 16px
+                line-height: 22px
+                color: rgba(22, 47, 86, 0.74)
+                margin-left: 180px
+            .info
+                margin: 20px 0 20px 180px
+                padding: 12px 30px 12px 0
+                background-color: rgba(22, 47, 86, 0.03)
+                border: 1px solid rgba(22, 47, 86, 0.12)
+                align-items: center
+                border-radius: 3px
+                &-border
+                    background-color: rgba(22, 47, 86, 0.87)
+                    min-width: 3px
+                    height: 38px
+                    border-radius: 3px 0px 0px 3px
+                    transform: rotate(-180deg)
+                &-text
+                    font-size: 13px
+                    line-height: 19px
+                    color: rgba(22, 47, 86, 0.74)
+                    padding-left: 11px
 
 .credit-need
     display: flex
@@ -154,23 +291,27 @@
         color: rgba(22, 47, 86, 0.45)
         line-height: 18px
 
-.credit-need-select__Tether > .PowerSelect__Menu
-    box-shadow: 0px 3px 8px rgba(22, 47, 86, 0.16), 0px 4px 12px rgba(22, 47, 86, 0.08)
+.credit-need-select__Tether
+    .PowerSelect__Menu
+        box-shadow: 0px 3px 8px rgba(22, 47, 86, 0.16), 0px 4px 12px rgba(22, 47, 86, 0.08)
+        .PowerSelect__Option
+            padding: 8px 12px
+            &--highlighted
+                background-color: rgba(11, 112, 231, 0.08)
+                &:after
+                    content: "\f00c"
+                    font-size: 1.2rem
+                    color: #1AA50E
+                    font-family: FontAwesome
+                    display: inline-block
+                    margin-left: 4rem
+                    vertical-align: middle
 
-.credit-use-select__Tether > .PowerSelect__Menu
-    border: 1px solid #528FF0
-
-.PowerSelect__Option--highlighted
-    background-color: rgba(11, 112, 231, 0.08)
-
-    &:after
-        content: "\f00c"
-        font-size: 1.2rem
-        color: #1AA50E
-        font-family: FontAwesome
-        display: inline-block
-        margin-left: 4rem
-        vertical-align: middle
+.credit-use-select__Tether 
+    .PowerSelect__Menu 
+        border: 1px solid #528FF0
+        .PowerSelect__Option
+            padding: 8px 12px
 
 .credit-use
     *, *::before, *::after {
@@ -203,150 +344,6 @@
 
     .PowerSelect__Trigger--empty
         width: 100%
-
-
-.PowerSelect__Option
-    padding: 8px 12px !important
-
-.new-onboarding-button
-    margin-top: 40px !important
-
-// Styles for changes in PromoterDetailsEntity for Loan Form Revamp
-.promoter-details
-    display: flex
-    justify-content: center
-    flex-direction: column
-    .Input--disabled
-        opacity: 1
-        .Input-label
-            color: rgba(88, 102, 110, 0.87)
-        .Input-el
-            background-color: rgba(22, 47, 86, 0.01)
-            border: 1px solid rgba(22, 47, 86, 0.08)
-            color: rgba(22, 47, 86, 0.87)
-    .form-control[disabled]
-        background-color: rgba(22, 47, 86, 0.01)
-        border: 1px solid rgba(22, 47, 86, 0.08)
-        color: rgba(22, 47, 86, 0.87)
-        cursor: auto
-    .Input-content
-        opacity: 1 !important
-    .Input-elWrapper .Input-addons
-        background: rgba(22, 47, 86, 0.06)
-    .intent-form
-        margin: 0 auto
-        padding: 0 20px
-        .Input-label
-            width: 160px
-            text-align: right
-            margin-right: 20px
-        .InputGroup--inline
-            display: flex
-            align-items: center
-        .PowerSelectMultiple_TriggerInputContainer
-            display: none
-        .btn
-            margin-left: 180px !important
-    .business-details-form
-        .Input--disabled
-            opacity: 1
-            background-color: rgba(22, 47, 86, 0.01)
-            cursor: not-allowed
-            .Input-label
-                color: rgba(88, 102, 110, 0.87)
-                margin-bottom: 5px
-            .Input-el
-                background-color: rgba(22, 47, 86, 0.01)
-        .Input-content
-            margin-left: 30px
-        .InputGroup--inline
-            margin: 24px 0
-            .Input-label
-                position: relative
-                top: 10px !important
-        .address
-            .Input-label
-                top: -20px !important
-        .city-state
-            &.error
-                position: relative
-                top: -10px
-        .state-group
-            margin-bottom: 0
-        .btn
-            margin-left: 200px !important
-    .personal-details-form
-        .terms
-            margin: 24px 0 6px 190px
-            white-space: nowrap
-        .Input--disabled
-            cursor: not-allowed
-        .Input-addons
-            background: rgba(22, 47, 86, 0.06) !important
-        .InputGroup--inline
-            margin: 24px 0
-        .loan-application-form-footer .btn
-            margin-left: 180px !important
-        .city-state
-            margin: auto 0
-        .city-state-error
-            margin: 0 !important
-            .Input-label
-                top: 15px !important
-        .dob 
-            .dob-wrapper.error input
-                border-color: #f05050
-            .rdt
-                width: 192px
-        .gender .Input-content
-            margin-left: 16px !important
-        .pan_number
-            position: relative
-            margin: 20px 0
-        .contact
-            align-items: flex-start
-            .email
-                margin: 0
-    .PowerSelect--disabled
-        background: rgba(22,47,86,0.01)
-    &-header
-        padding-left: 30px
-        &-left
-            justify-content: flex-start
-            align-items: center
-            margin-top: 24px
-        &-radios
-            margin: 0 0 0 20px !important
-        &-text
-            text-align: right
-            font-size: 14px
-            font-weight: bold
-            color: rgba(22, 47, 86, 0.74)
-            line-height: 18px
-        .heading
-            font-weight: bold
-            font-size: 16px
-            line-height: 22px
-            color: rgba(22, 47, 86, 0.74)
-            margin-left: 180px
-        .info
-            margin: 20px 0 20px 180px
-            padding: 12px 30px 12px 0
-            background-color: rgba(22, 47, 86, 0.03)
-            border: 1px solid rgba(22, 47, 86, 0.12)
-            align-items: center
-            border-radius: 3px
-            &-border
-                background-color: rgba(22, 47, 86, 0.87)
-                min-width: 3px
-                height: 38px
-                border-radius: 3px 0px 0px 3px
-                transform: rotate(-180deg)
-            &-text
-                font-size: 13px
-                line-height: 19px
-                color: rgba(22, 47, 86, 0.74)
-                padding-left: 11px
 
 .promoter-content-body 
     margin-top: -25px

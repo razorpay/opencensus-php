@@ -230,7 +230,7 @@ const BusinessDetailsForm = ({
 
       <Button.Primary
         type="submit"
-        className="btn btn-primary no-margin new-onboarding-button"
+        className="btn btn-primary continue-cta"
         onClick={handleSubmit}
         disabled={!isValidForm()}
       >

@@ -431,7 +431,7 @@ const PersonalDetailsForm = ({
         <div className="loan-application-form-footer">
           <AsyncBtn.Primary
             type="submit"
-            className="btn btn-primary no-margin"
+            className="btn btn-primary"
             onClick={handleSubmit}
             isPending={isPending}
           >
