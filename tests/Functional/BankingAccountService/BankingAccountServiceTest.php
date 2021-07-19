@@ -95,6 +95,28 @@ class BankingAccountServiceTest extends TestCase
         $this->assertEquals($schedule['id'], $scheduleTask['schedule_id']);
     }
 
+    public function testInitiateBVSValidationForPersonalPan()
+    {
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $this->app['config']->set('applications.kyc.mock', true);
+        $this->app['config']->set('services.bvs.mock', true);
+        $this->app['config']->set('services.bvs.response', 'success');
+
+        $this->startTest();
+    }
+
+    public function testInitiateBVSValidationForBusinessPan()
+    {
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $this->app['config']->set('applications.kyc.mock', true);
+        $this->app['config']->set('services.bvs.mock', true);
+        $this->app['config']->set('services.bvs.response', 'success');
+
+        $this->startTest();
+    }
+
     public function testCreateBankingEntitiesAndAddPayoutFeatureAndAllowHasKeyAccess()
     {
         $schedule = $this->setupDefaultScheduleForFeeRecovery();

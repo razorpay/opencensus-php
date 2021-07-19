@@ -190,6 +190,22 @@ class Core extends Base\Core
         $statusUpdater->updateValidationStatus();
     }
 
+    /**
+     * This updates bvs validation details back to BAS
+     * As
+     *
+     * @param string|null $merchantId
+     * @param Entity      $validation
+     *
+     * @throws LogicException
+     */
+    protected function UpdateValidationStatusForBAS(?string $merchantId, Entity $validation)
+    {
+        $statusUpdater = new DocumentStatusUpdater\UpdateStatusForBAS($validation);
+
+        $statusUpdater->updateValidationStatus();
+    }
+
     protected function GstinSelfServeCallbackHandler(string $merchantId, Entity $validation): void
     {
         [$merchant, $merchantDetails] = (New Detail\Core())->getMerchantAndSetBasicAuth($merchantId);

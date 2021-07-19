@@ -1705,6 +1705,9 @@ class Service extends Base\Service
         return empty($activationStatusChangeLogs) === false ? $activationStatusChangeLogs[0][StateChangeEntity::CREATED_AT] : 0;
     }
 
+    /**
+     * @throws Exception\LogicException
+     */
     public function getBvsValidationArtefactDetails(string $merchantId, string $validationArtefact)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);

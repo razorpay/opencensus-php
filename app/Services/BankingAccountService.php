@@ -167,6 +167,36 @@ class BankingAccountService
     }
 
     /**
+     * @throws \Exception
+     */
+    public function updateBVSValidationStatus(array $payload)
+    {
+        $path = 'document/bvs_validation_status';
+
+        try
+        {
+            $this->sendRequestAndProcessResponse($path, 'POST', $payload);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(TraceCode::REQUEST_TO_BAS_DOCUMENT_STATUS_FAIL, ['ERROR' => $ex]);
+
+            try
+            {
+                $this->trace->info(TraceCode::RETRYING_REQUEST_TO_BAS_DOCUMENT_STATUS);
+
+                $this->sendRequestAndProcessResponse($path, 'POST', $payload);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->error(TraceCode::REQUEST_TO_BAS_DOCUMENT_STATUS_FAIL, ['ERROR' => $ex]);
+
+                throw $ex;
+            }
+        }
+    }
+
+    /**
      *
      * @param string $balanceId
      *
@@ -386,7 +416,7 @@ class BankingAccountService
 
         return $response['data'];
     }
-  
+
     public function fetchIciciActivatedAccountFromBas(MerchantEntity $merchant)
     {
         $merchantId = $merchant->getMerchantId();

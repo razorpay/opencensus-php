@@ -63,6 +63,15 @@ class BasController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function initiateExternalBvsValidation()
+    {
+        $input = Request::all();
+
+        $response = $this->service->requestBvsValidation($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function forwardLMSRequest($path = '')
     {
         $input = Request::all();

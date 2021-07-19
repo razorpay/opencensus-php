@@ -1829,6 +1829,7 @@ class Route
 
         //creates balance and banking_account_statement_details
         'bas_banking_accounts_create'              => ['post',     'bas/merchant/{id}/banking_accounts',             'BasController@createCurrentAccountBankingDependencies'             ],
+        'external_bvs_validation_request'          => ['post',     'bas/bvs_validation',                             'BasController@initiateExternalBvsValidation'                       ],
 
         //splitz service
         'splitz_route'                             => ['any',      'service/splitz',                                 'SplitzController@sendRequest'                                      ],
@@ -3052,6 +3053,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'external_bvs_validation_request',
         'bas_banking_accounts_create',
         'banking_account_service_cron_routes',
         'merchant_update_fraud_type',
@@ -9801,6 +9803,7 @@ class Route
         ],
 
         'banking_account_service' => [
+            'external_bvs_validation_request',
             'bas_banking_accounts_create',
             'merchant_fetch_internal',
         ],

@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccountService;
 
 use Illuminate\Http\Request;
+use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
@@ -10,6 +11,10 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Services\BankingAccountService;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\BvsValidation\Entity as ValidationEntity;
+use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\BusinessPanForExternalRequest;
+use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\PersonalPanForExternalRequest;
 
 class Service extends Base\Service
 {
@@ -346,6 +351,31 @@ class Service extends Base\Service
         }
 
         return $input;
+    }
+
+    /**
+     * @throws Exception\ServerErrorException
+     */
+    public function requestBvsValidation(array $input): array
+    {
+        (new Validator)->validateInput(Validator::BVS_INITIATE_VALIDATION, $input);
+
+        $artefactType = $input[Constant::ARTEFACT_TYPE];
+
+        $processor = $this->getProcessorByArtefactType($artefactType, $input);
+
+        return $processor->triggerBVSRequest();
+    }
+
+    private function getProcessorByArtefactType(string $artefactType, array $input)
+    {
+        switch ($artefactType)
+        {
+            case Constant::BUSINESS_PAN:
+                return new BusinessPanForExternalRequest($input[Constant::OWNER_ID], $input[Constant::DETAILS]);
+            case Constant::PERSONAL_PAN:
+                return new PersonalPanForExternalRequest($input[Constant::OWNER_ID], $input[Constant::DETAILS]);
+        }
     }
 
     public function checkPinCodeServiceability($input)

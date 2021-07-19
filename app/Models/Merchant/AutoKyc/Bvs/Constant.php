@@ -105,6 +105,8 @@ class Constant
 
     // Owner Types
     const BANKING_ACCOUNT = 'banking_account';
+
+    const BAS_DOCUMENT = 'bas_document';
     const MERCHANT        = 'merchant';
 
     const ARTEFACT_TYPE                   = 'artefact_type';

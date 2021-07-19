@@ -25,7 +25,6 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 
-
 class Service extends Base\Service
 {
     protected $pincodeSearch;

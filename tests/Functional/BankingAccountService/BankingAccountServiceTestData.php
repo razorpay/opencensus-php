@@ -3,7 +3,10 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\BvsValidation\Entity;
 use RZP\Models\BankingAccountService\Constants;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
 return [
     'testCreateBankingEntities' => [
@@ -17,6 +20,52 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testInitiateBVSValidationForPersonalPan' => [
+        'request'  => [
+            'url'     => '/bas/bvs_validation',
+            'method'  => 'POST',
+            'content' => [
+                Constant::ARTEFACT_TYPE     => Constant::PERSONAL_PAN,
+                Constant::OWNER_TYPE        => Constant::BAS_DOCUMENT,
+                Constant::OWNER_ID          => 'D6Z9Jfir2egAUT',
+                Constant::DETAILS           => [
+                    Constant::NAME          => 'Sample',
+                    Constant::PAN_NUMBER    => 'RZP3W2345L'
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                Constant::OWNER_TYPE        => Constant::BAS_DOCUMENT,
+                Constant::OWNER_ID          => 'D6Z9Jfir2egAUT',
+                Entity::VALIDATION_STATUS   => BvsValidationConstants::INITIATED
+            ],
+        ],
+    ],
+
+    'testInitiateBVSValidationForBusinessPan' => [
+        'request'  => [
+            'url'     => '/bas/bvs_validation',
+            'method'  => 'POST',
+            'content' => [
+                Constant::ARTEFACT_TYPE     => Constant::BUSINESS_PAN,
+                Constant::OWNER_TYPE        => Constant::BAS_DOCUMENT,
+                Constant::OWNER_ID          => 'D6Z9Jfir2egAUT',
+                Constant::DETAILS           => [
+                    Constant::NAME          => 'Sample',
+                    Constant::PAN_NUMBER    => 'RZP3W2345L'
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                Constant::OWNER_TYPE        => Constant::BAS_DOCUMENT,
+                Constant::OWNER_ID          => 'D6Z9Jfir2egAUT',
+                Entity::VALIDATION_STATUS   => BvsValidationConstants::INITIATED
             ],
         ],
     ],
