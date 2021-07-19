@@ -11876,7 +11876,7 @@ class PayoutTest extends OAuthTestCase
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
 
         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
-        $this->assertEquals(ErrorCodeMapping::$AlternateFailureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::FAILURE_REASON]);
+        $this->assertEquals(ErrorCodeMapping::$alternateFailureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::FAILURE_REASON]);
     }
 
     public function testWithoutAlternateFailureReason()
@@ -13218,9 +13218,9 @@ class PayoutTest extends OAuthTestCase
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
 
         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
-        $this->assertEquals(ErrorCodeMapping::$AlternateFailureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::FAILURE_REASON]);
+        $this->assertEquals(ErrorCodeMapping::$alternateFailureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::FAILURE_REASON]);
 
         $this->assertNotNull($updatedPayout[Payout\Entity::ERROR]);
-        $this->assertEquals(ErrorCodeMapping::$AlternateFailureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::ERROR][Payout\PayoutError::DESCRIPTION]);
+        $this->assertEquals(ErrorCodeMapping::$alternateFailureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::ERROR][Payout\PayoutError::DESCRIPTION]);
     }
 }

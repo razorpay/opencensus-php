@@ -71,13 +71,13 @@ class PayoutError extends Error
 
                 $errorDetails = $statusCodeErrorDetail[$failureStatus] ?? null;
 
-                if (isset(ErrorCodeMapping::$AlternateFailureReasonMapping[$statusCode]) === true)
+                if (isset(ErrorCodeMapping::$alternateFailureReasonMapping[$statusCode]) === true)
                 {
                     $alternate = $this->payout->merchant->isFeatureEnabled(Feature\Constants::ALTERNATE_PAYOUT_FR);
 
                     if ($alternate === true)
                     {
-                        $errorDetails[self::DESCRIPTION] = ErrorCodeMapping::$AlternateFailureReasonMapping[$statusCode];
+                        $errorDetails[self::DESCRIPTION] = ErrorCodeMapping::$alternateFailureReasonMapping[$statusCode];
                     }
                 }
             }

@@ -170,8 +170,13 @@ class ErrorCodeMapping
         'MERCHANT_INSUFFICIENT_FUND'            => 'Payout failed due to insufficient funds in the bank account.'
     ];
 
-    public static $AlternateFailureReasonMapping = [
+    public static $alternateFailureReasonMapping = [
         'INVALID_VPA'                           => 'UPI validation failed. If the UPI ID is valid, please retry after sometime.',
+        'YB_SFMS_E59'                           => 'Beneficiary bank systems are down. Please retry after some time.',
+        'BENE_BANK_RESPONSE_AWAITED'            => 'Beneficiary bank systems are down. Please retry after some time.',
+        'YB_NPCI_EM1'                           => 'Invalid Beneficiary MMID or Mobile Number',
+        'YB_NPCI_E307'                          => 'Failure or Rejection at beneficiary bank',
+        'YB_NPCI_E308'                          => 'Failure or Rejection at beneficiary bank',
     ];
 
     const DEFAULT_FAILURE_REASON = 'Payout failed. Contact support for help.';
@@ -184,7 +189,7 @@ class ErrorCodeMapping
 
         if ($alternate === true)
         {
-            $errorMessage = self::$AlternateFailureReasonMapping[$bankStatusCode] ?? null;
+            $errorMessage = self::$alternateFailureReasonMapping[$bankStatusCode] ?? null;
         }
 
         if (is_null($errorMessage) === true)
