@@ -6349,6 +6349,35 @@ class BankTransferTest extends TestCase
                               }));
     }
 
+    public function testAdminTestBankTransferPayment()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $amount = 100;
+
+        $mode = 'test';
+
+        $this->ba->adminProxyAuth();
+
+        $this->ba->setType('proxy');
+
+        $response = $this->processOrNotifyBankTransfer($accountNumber,$ifsc, 'awesome_utr', $amount, $mode);
+
+        $this->assertTrue($response['valid']);
+
+        $bankTransfer =  $this->getDbLastEntityToArray('bank_transfer', 'test');
+
+        $this->assertEquals($bankTransfer['utr'], 'awesome_utr');
+
+        $this->assertEquals(10000, $bankTransfer['amount']);
+
+        $payment =  $this->getDbLastEntityToArray('payment', 'test');
+
+        $this->assertEquals(10000, $payment['amount']);
+    }
+
     public function testBankTransferRefundFailPaymentSuccess()
     {
         $this->fixtures->merchant->editBalance(0);

@@ -860,7 +860,6 @@ class Entity extends Base\PublicEntity
         return in_array($this->getAttribute(self::CATEGORY), $insuranceCategories);
     }
 
-
     public function isFeatureEnabled(string $featureName): bool
     {
         $assignedFeatures = $this->getEnabledFeatures();

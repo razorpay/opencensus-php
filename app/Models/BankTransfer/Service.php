@@ -51,7 +51,7 @@ class Service extends Base\Service
 
         $this->core = new Core;
 
-        $this->provider = ($this->auth->getInternalApp() === 'merchant_dashboard') ? 'dashboard' : $this->auth->getInternalApp();
+        $this->provider = $this->getProvider();
 
         $this->ip = $this->app['request']->ip();
 
@@ -601,6 +601,16 @@ class Service extends Base\Service
         }
 
         return  [];
+    }
+  
+    protected function getProvider()
+    {
+        if(in_array($this->auth->getInternalApp(),['merchant_dashboard','admin_dashboard']) === true)
+        {
+            return 'dashboard';
+        }
+
+        return $this->auth->getInternalApp();
     }
 
     protected function validateProviderSpecificFields(BankTransferRequest\Entity $bankTransferRequest)
