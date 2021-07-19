@@ -676,6 +676,11 @@ class Name
     // Recon service permission
     const RECON_OPERATION                              = 'recon_operation';
 
+    // Metro
+    const METRO_PROJECT_CREATE                        = 'metro_project_create';
+    const METRO_PROJECT_CREDENTIALS_CREATE            = 'metro_project_credentials_create';
+    const METRO_PROJECT_TOPIC_UPDATE                  = 'metro_project_topic_update';
+
     // Retry payouts on payout service
     const RETRY_PAYOUTS_ON_SERVICE  = 'retry_payouts_on_service';
 

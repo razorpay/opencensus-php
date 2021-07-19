@@ -2607,6 +2607,11 @@ class Route
         'recon_service_request_proxy'             => ['any',        'recon/service/common/{path?}',                         'ReconServiceController@handleAny'                             ],
         'recon_service_file_upload_proxy'         => ['post',       'recon/service/upload_file',                            'ReconServiceController@uploadFile'                            ],
         'payment_update_reference6'               => ['patch',      'payments/{id}/updateReference6',                       'PaymentController@updateReference6'                           ],
+
+        // Metro
+        'metro_project_create'                    => ['post',       'metro/projects',                                       'EdgeProxyController@proxy'                                    ],
+        'metro_project_credentials_create'        => ['post',       'metro/projects/{id}/credentials',                      'EdgeProxyController@proxy'                                    ],
+        'metro_project_topic_update'              => ['put',        'metro/projects/{id}/topics/{name}',                    'EdgeProxyController@proxy'                                    ],
     ];
 
     public static $public = [
@@ -4993,6 +4998,11 @@ class Route
 
         'merchant_risk_data',
 
+        // Metro
+        'metro_project_create',
+        'metro_project_credentials_create',
+        'metro_project_topic_update',
+
         // Payout service
         'retry_payouts_on_service',
     ];
@@ -5944,6 +5954,11 @@ class Route
         'fetch_filter_ledger'                             => Permission::LEDGER_VIEW_DASHBOARD,
 
         'merchant_risk_data'                              => Permission::GET_MERCHANT_RISK_DATA,
+
+        // Metro service Route
+        'metro_project_create'                            => Permission::METRO_PROJECT_CREATE,
+        'metro_project_credentials_create'                => Permission::METRO_PROJECT_CREDENTIALS_CREATE,
+        'metro_project_topic_update'                      => Permission::METRO_PROJECT_TOPIC_UPDATE,
 
         'retry_payouts_on_service'                        => Permission::RETRY_PAYOUTS_ON_SERVICE,
     ];
@@ -9057,6 +9072,11 @@ class Route
 
             'merchant_risk_data',
             'oauth_application_update_admin',
+
+            // metro
+            'metro_project_create',
+            'metro_project_credentials_create',
+            'metro_project_topic_update',
         ],
 
         //

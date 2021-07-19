@@ -79,10 +79,13 @@ class EdgeProxyController extends Controller
             throw new IntegrationException(null, ErrorCode::SERVER_ERROR_EDGE_PROXY_NO_CONFIG);
         }
 
+        $prefixTrim = $hostCfg['path_prefix_to_skip'] ?? "";
+        $prefixAdd = $hostCfg['path_prefix_to_add'] ?? "";
+
         // 2. Prepares proxy request args.
         $host        = $hostCfg['host'];
         $method      = $request->method();
-        $path        = $request->path();
+        $path        = $this->getPath($request->path(), $prefixTrim, $prefixAdd);
         $query       = $request->getQueryString();
         $body        = $request->getContent();
         $contentType = $request->getContentType();
@@ -151,5 +154,24 @@ class EdgeProxyController extends Controller
         }
 
         return $proxyResponse;
+    }
+
+    /**
+     * @param string $path
+     * @param string $prefixTrim
+     * @param string $prefixAdd
+     * @return string
+     */
+    protected function getPath($path, $prefixTrim, $prefixAdd)
+    {
+        // removes the $prefixTrim from the path prefix
+        if (substr($path, 0, strlen($prefixTrim)) == $prefixTrim)
+        {
+            $path = substr($path, strlen($prefixTrim));
+        }
+
+        $path = $prefixAdd . $path;
+
+        return $path;
     }
 }
