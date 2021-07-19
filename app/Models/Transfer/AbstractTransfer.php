@@ -155,6 +155,8 @@ abstract class AbstractTransfer
             return;
         }
 
+        $deadlockRetryAttempts = 3;
+
         try
         {
             $transfer = $this->repo->transaction(function () use ($payment, $transfer)
@@ -178,7 +180,7 @@ abstract class AbstractTransfer
                 $this->repo->saveOrFail($transfer);
 
                 return $transfer;
-            });
+            }, $deadlockRetryAttempts);
 
             (new Metric())->pushTransferProcessSuccessMetrics();
 
@@ -192,13 +194,15 @@ abstract class AbstractTransfer
         }
     }
 
-    protected function updateTransferAmount($transfer, $payment) {
+    protected function updateTransferAmount($transfer, $payment)
+    {
         if ($transfer->isBalanceTransfer() === true)
         {
             $transfer->setAmount($payment->getAmount() - $payment->getFee());
 
             $transfer->saveOrFail();
         }
+
         return $transfer;
     }
 
