@@ -333,7 +333,7 @@ return [
         ],
     ],
 
-    'testCreateTicketRzpWithoutCcEmails'=> [
+    'testCreateTicketRzpCheckingCCEmails'=> [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket/',
             'method'  => 'POST',
@@ -352,7 +352,7 @@ return [
             ],
         ],
     ],
-
+    
     'testCreateTicketRzp' => [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket/',

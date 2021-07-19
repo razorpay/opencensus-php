@@ -1353,13 +1353,16 @@ class Service extends Base\Service
 
         if (empty($emailId) === false)
         {
-            if (empty($input[Constants::CC_EMAILS]) === false)
+            if($input['email'] !== $emailId)
             {
-                $input[Constants::CC_EMAILS][] = $emailId;
-            }
-            else
-            {
-                $input[Constants::CC_EMAILS] = [$emailId];
+                if (empty($input[Constants::CC_EMAILS]) === false)
+                {
+                    $input[Constants::CC_EMAILS][] = $emailId;
+                }
+                else
+                {
+                    $input[Constants::CC_EMAILS] = [$emailId];
+                }
             }
         }
 

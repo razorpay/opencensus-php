@@ -6,9 +6,12 @@ use Mockery;
 use RZP\Services\RazorXClient;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
+use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
+
 
 class FreshdeskTicketV2Test extends TestCase
 {
@@ -23,16 +26,15 @@ class FreshdeskTicketV2Test extends TestCase
     protected $storkMock;
 
     const RZP_CREATE_TICKET = 'rzp_create_ticket';
+    
+    const RZP_CREATE_TICKET_CHECKING_CC_EMAILS = 'rzp_create_ticket_checking_cc_emails';
+    const RZP_CREATE_TICKET_SALESFORCE         = 'rzp_create_ticket_salesforce';
+    const RZP_CREATE_TICKET_INTERNAL_AUTH      = 'rzp_create_ticket_internal_auth';
+    const RZP_FETCH_TICKET_FILTER              = 'rzp_fetch_ticket_filter';
+    const RZP_FETCH_TICKET                     = 'rzp_fetch_ticket';
+    const RZP_CREATE_TICKET_HTML_TAGS          = 'rzp_create_ticket_html_tags';
 
-    const RZP_CREATE_TICKET_USER_EMAIL_ONLY = 'rzp_create_ticket_user_email_only';
-
-    const RZP_CREATE_TICKET_SALESFORCE    = 'rzp_create_ticket_salesforce';
-    const RZP_CREATE_TICKET_INTERNAL_AUTH = 'rzp_create_ticket_internal_auth';
-    const RZP_FETCH_TICKET_FILTER         = 'rzp_fetch_ticket_filter';
-    const RZP_FETCH_TICKET                = 'rzp_fetch_ticket';
-    const RZP_CREATE_TICKET_HTML_TAGS     = 'rzp_create_ticket_html_tags';
-
-    const RZP_GET_TICKET_BY_ID = 'rzp_get_ticket_by_id';
+    const RZP_GET_TICKET_BY_ID                 = 'rzp_get_ticket_by_id';
 
     protected function setUp(): void
     {
@@ -433,16 +435,44 @@ class FreshdeskTicketV2Test extends TestCase
         $this->startTest();
     }
 
-    public function testCreateTicketRzpWithoutCcEmails()
+    public function testCreateTicketRzpCheckingCCEmails()
     {
+        /*Appending user emails to cc_emails only if merchant and user emails are different*/
+        
         $frDueBy = time() + self::DAY * 2;
+        
+        $testcases = [
+            [
+                'cc_emails'             => ['test@razorpay.com'],
+                'userAndMerchantEqual'  => false,
+            ],
+            [
+                'cc_emails'             => [],
+                'userAndMerchantEqual'  => true,
+            ],
+        ];
+        
+        foreach ($testcases as $testcase)
+        {
+            $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_CHECKING_CC_EMAILS);
 
-        $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_USER_EMAIL_ONLY);
+            if($testcase['userAndMerchantEqual'] === true)
+            {
+                $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+                    [UserEntity::EMAIL => 'test@razorpay.com']);
+                
+                $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+            }
+            
+            $expectedRequestResponse['response']['cc_emails'] = $testcase['cc_emails'];
+            
+            $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
+                $expectedRequestResponse['request'], $expectedRequestResponse['response']);
 
-        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
-            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+            $this->testData[__FUNCTION__]['response']['cc_emails'] = $testcase['cc_emails'];
 
-        $this->startTest();
+            $this->startTest();
+        }
     }
 
     public function testCreateTicketRzpSalesForce()
@@ -1375,13 +1405,12 @@ Team Razorpay',
             ];
         }
 
-        if ($key === self::RZP_CREATE_TICKET_USER_EMAIL_ONLY)
+        if ($key === self::RZP_CREATE_TICKET_CHECKING_CC_EMAILS)
         {
             return [
                 'request'   =>  [
                     'description' => 'ticket description',
                     'subject' => 'ticket subject',
-                    'cc_emails' => ['merchantuser01@razorpay.com']
                 ],
                 'response'  =>
                     [
