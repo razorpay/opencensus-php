@@ -161,9 +161,9 @@ class Service extends Base\Service
         // response handling
         if (in_array($response['code'], [200, 201, "200", "201"]) == false)
         {
-            $publicErrorCode = $response['body']['internal_error']['code'] ?? ErrorCode::SERVER_ERROR;
+            $publicErrorCode = $response['body']['public_error']['code'] ?? ErrorCode::SERVER_ERROR;
 
-            $publicErrorMessage = $response['body']['internal_error']['message'] ?? PublicErrorDescription::SERVER_ERROR;
+            $publicErrorMessage = $response['body']['public_error']['message'] ?? PublicErrorDescription::SERVER_ERROR;
 
             // If errorcode is undefined, will fallback to server_error
             if (defined(ErrorCode::class . '::' . $publicErrorCode) === false)
@@ -175,7 +175,7 @@ class Service extends Base\Service
 
             $error = new Error($publicErrorCode, $publicErrorMessage);
 
-            return ApiResponse::generateErrorResponse($error);
+            return ApiResponse::generateErrorResponse($error, false)->original;
         }
 
         // body has the actual scrooge response
