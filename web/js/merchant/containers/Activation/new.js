@@ -254,6 +254,14 @@ export default class ActivationContainer extends React.Component {
             });
           }
 
+          const isTestMode =
+            localStorage.getItem(`rzp_mode--${this.props.user.current}`) === 'test';
+
+          if (response?.data?.activated && isTestMode) {
+            localStorage.setItem(`rzp_mode--${this.props.user.current}`, 'live');
+            this.props.updateSession({ mode: 'live' });
+          }
+
           this.updateSession(response.data);
           this.postSubmitStep(response);
 

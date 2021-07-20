@@ -30,7 +30,7 @@ import { checkIfDedupe } from '../../services/utils';
 import { analyticsTrack } from '../../../../../services/tracking/segment';
 import { ActivationModal, ModalTypeT } from '../../ActivationModals';
 import { useApp } from 'v2/context/App';
-import { switchMode } from 'v2/services/mode';
+import { getMode, switchMode } from 'v2/services/mode';
 
 type NextTextT = 'Submit And Verify' | 'Submit KYC' | 'Next';
 
@@ -73,6 +73,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     (state) => state.isDocumentsUploadCompleted,
   );
 
+  const isTestMode = getMode(user.current) === 'test';
   const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
   const activeTabId = useActivationFormState((state) => state.active_tab_id);
   const setActiveTabId = useActivationFormState((state) => state.setActiveTabId);
@@ -194,6 +195,9 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           setModalType('tnc');
         } else {
           setModalType('under_review');
+          if (isTestMode && res.activated) {
+            switchMode(user.current, 'live');
+          }
         }
         setIsModalOpen(true);
       }

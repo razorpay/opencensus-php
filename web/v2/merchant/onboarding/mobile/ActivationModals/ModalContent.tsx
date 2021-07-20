@@ -179,7 +179,7 @@ export const getModalContent = (
         description = Message.UNDER_REVIEW.payment_enable_description;
       }
       button = (
-        <Button onClick={() => history.push('/')} block>
+        <Button onClick={() => (location.href = '/')} block>
           Back To Dashboard
         </Button>
       );

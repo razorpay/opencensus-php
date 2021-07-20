@@ -9,6 +9,7 @@ import { checkIfDedupe } from '../../services/utils';
 import { analyticsTrack } from '../../../../../services/tracking/segment';
 import { ActivationModal, ModalTypeT } from 'v2/merchant/onboarding/mobile/ActivationModals';
 import { useApp } from 'v2/context/App';
+import { getMode, switchMode } from 'v2/services/mode';
 
 const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any) => void }> = ({
   history,
@@ -36,6 +37,8 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalType, setModalType] = useState<ModalTypeT>('');
   const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
+  const isTestMode = getMode(user.current) === 'test';
+
   const onClick = (step: string) => {
     setActiveTabId(step);
     history.push('/onboarding/form');
@@ -72,6 +75,9 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
           setModalType('tnc');
         } else {
           setModalType('under_review');
+          if (isTestMode && res.activated) {
+            switchMode(user.current, 'live');
+          }
         }
         setIsModalOpen(true);
       }

@@ -13,7 +13,6 @@ import useEscalation from '../hooks/useEscalation';
 import CurrentActivationProgress from './CurrentActivationProgress';
 import FormIcon from './Icons/FormIcon.svg';
 import OnboardingCardShimmer from './OnboardingCardShimmer';
-import { getMode, switchMode } from 'v2/services/mode';
 import { checkIfDedupe, isUnregisteredBusiness, setLocalStorage } from '../services/utils';
 import { ActivationModal, ModalTypeT } from '../ActivationModals';
 import { useApp } from 'v2/context/App';
@@ -47,7 +46,6 @@ const OnboardingCard: React.FC = () => {
   const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
   const dedupeStatus = checkIfDedupe({ ...activationData, isInstantActivationEnabled });
   const isDedupe = dedupeStatus === 'blocked';
-  const isTestMode = getMode(user.current) === 'test';
 
   useEffect(() => {
     if (activationQueryStatus === 'success' && isInstantActivationEnabled) {
@@ -101,9 +99,6 @@ const OnboardingCard: React.FC = () => {
           setIsModalOpen(true);
           setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, rejected: true });
         }
-      }
-      if (isTestMode && !!activationData.activated) {
-        switchMode(user.current, 'live');
       }
     }
   }, [activationQueryStatus]);
