@@ -540,7 +540,12 @@ class Entity extends Base\PublicEntity
 
     public function isSbibuddyEnabled()
     {
-        return $this->getAttribute(self::SBIBUDDY);
+        /*
+         Disabling sbibuddy permanently, this gateway has been shutdown since 2019
+         https://jira.corp.razorpay.com/browse/NBPLUS-688
+        */
+        //return $this->getAttribute(self::SBIBUDDY);
+        return false;
     }
 
     public function isEmiEnabled()

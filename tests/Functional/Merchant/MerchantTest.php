@@ -11297,6 +11297,18 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testPreferencesToCheckDisabledSbibuddyWallet()
+    {
+        $this->fixtures->create('terminal:shared_sbibuddy_terminal');
+        $this->fixtures->merchant->enableWallet('10000000000000', 'sbibuddy');
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('sbibuddy', $response['methods']['wallet']);
+    }
+
     public function testEditBulkEnableLiveMerchantNotActivated()
     {
         $this->createMerchant([

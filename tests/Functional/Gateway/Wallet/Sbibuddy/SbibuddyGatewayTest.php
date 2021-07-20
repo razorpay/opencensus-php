@@ -21,6 +21,8 @@ class SbibuddyGatewayTest extends TestCase
 
         parent::setUp();
 
+        $this->markTestSkipped();
+
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sbibuddy_terminal');
 
         $this->gateway = 'wallet_sbibuddy';
