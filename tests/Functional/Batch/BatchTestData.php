@@ -224,6 +224,115 @@ return [
         ],
     ],
 
+    'testValidateFileName' => [
+        'request' => [
+            'url' => '/batches/validateFileName',
+            'method' => 'get',
+            'content' => [
+                'filename' => 'file1',
+                'batch_type_id' => 'tally_payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'file_exists' => true
+            ]
+
+        ]
+    ],
+
+    'testValidateFileNameWithWrongBatchTypeId' => [
+        'request' => [
+            'url' => '/batches/validateFileName',
+            'method' => 'get',
+            'content' => [
+                'filename' => 'file1',
+                'batch_type_id' => 'xyz'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected batch type id is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testValidateFileNameWithoutFileNamePassed' => [
+        'request' => [
+            'url' => '/batches/validateFileName',
+            'method' => 'get',
+            'content' => [
+                'filename' => '',
+                'batch_type_id' => 'tally_payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The filename field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testValidateFileNameWithoutBatchTypePassed' => [
+        'request' => [
+            'url' => '/batches/validateFileName',
+            'method' => 'get',
+            'content' => [
+                'filename' => 'file1',
+                'batch_type_id' => ''
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The batch type id field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testValidateFileNameWithIncorrectMerchantAuth' => [
+        'request' => [
+            'url' => '/batches/validateFileName',
+            'method' => 'get',
+            'content' => [
+                'filename' => 'file1',
+                'batch_type_id' => 'tally_payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED,
+                ],
+            ],
+            'status_code' => 401,
+        ]
+    ],
+
     'testSendMailFromBatchService' => [
         'request'  => [
             'url'     => '/batch/sendmail',

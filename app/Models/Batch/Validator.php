@@ -103,6 +103,13 @@ class Validator extends Base\Validator
         . 'xlsx,'
         . 'txt,';
 
+    const VALIDATE_FILE_NAME = 'validate_file_name';
+
+    protected static $validateFileNameRules = [
+        'filename'      => 'required|string',
+        'batch_type_id' => 'required|string|in:' . Constants::TALLY_PAYOUT_BATCH
+    ];
+
     protected static $defaultCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',

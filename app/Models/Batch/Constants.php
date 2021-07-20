@@ -20,6 +20,12 @@ class Constants
     const ENTITY                         = 'entity';
     const ACTION                         = 'action';
 
+    // Validate Batch filename
+    const BATCH_TYPE_ID                  = 'batch_type_id';
+    const VALIDATE_FILE_NAME_URL         = 'validateFileName';
+    const FILENAME                       = 'filename';
+    const TALLY_PAYOUT_BATCH             = 'tally_payout';
+
     const IDEMPOTENCY_KEY                = 'idempotency_key';
     const TYPE                           = 'type';
     const SCHEDULE                       = 'schedule';

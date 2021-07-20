@@ -4,7 +4,7 @@ namespace RZP\Tests\Functional\Batch;
 
 use Hash;
 use Mail;
-
+use Mockery;
 use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Payout;
@@ -33,11 +33,96 @@ class BatchTest extends TestCase
 
         parent::setUp();
 
+    }
+
+    public function testValidateFileName()
+    {
         $this->ba->proxyAuth();
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id' => '10000000000000',
+            'business_type' => '2',
+        ]);
+
+        $this->mockBatchService();
+
+        $this->startTest();
+    }
+
+    public function testValidateFileNameWithWrongBatchTypeId()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id' => '10000000000000',
+            'business_type' => '2',
+        ]);
+
+        $this->mockBatchService();
+
+        $this->startTest();
+    }
+
+    public function testValidateFileNameWithIncorrectMerchantAuth()
+    {
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id' => '10000000000000',
+            'business_type' => '2',
+        ]);
+
+        $this->mockBatchService();
+
+        $this->startTest();
+    }
+
+    public function testValidateFileNameWithoutBatchTypePassed()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id' => '10000000000000',
+            'business_type' => '2',
+        ]);
+
+        $this->mockBatchService();
+
+        $this->startTest();
+    }
+
+    public function testValidateFileNameWithoutFileNamePassed()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id' => '10000000000000',
+            'business_type' => '2',
+        ]);
+
+        $this->mockBatchService();
+
+        $this->startTest();
+    }
+
+    protected function mockBatchService()
+    {
+        $response = ['file_exists' => true];
+        $mock = Mockery::mock(BatchMicroService::class)->makePartial();
+        $this->app->instance('batchService', $mock);
+
+        $mock->shouldAllowMockingMethod('validateFileName')
+            ->shouldReceive('validateFileName')
+            ->andReturn($response);
     }
 
     public function testSendMailFromBatchService()
     {
+        $this->ba->proxyAuth();
 
         Mail::fake();
 
@@ -63,6 +148,7 @@ class BatchTest extends TestCase
 
     public function testPayoutApprovalSendMailFromBatchService()
     {
+        $this->ba->proxyAuth();
 
         Mail::fake();
 
@@ -94,6 +180,8 @@ class BatchTest extends TestCase
 
     public function testCreateAdminBatchWithRequiredPermission()
     {
+        $this->ba->proxyAuth();
+
         /** @var PublicCollection $permissions */
         $permissions = $this->getDbEntities('permission', [
                                 'name'  => 'admin_batch_create' ,
@@ -139,6 +227,8 @@ class BatchTest extends TestCase
 
     public function testCreateAdminBatchWithoutRequiredPermission()
     {
+        $this->ba->proxyAuth();
+
         // adjustment batch requires admin to have `adjustment_batch_upload`.
         // in this test, admin does not has that permission.
         // batch is not created and error is return while creating batch.
@@ -177,6 +267,8 @@ class BatchTest extends TestCase
 
     public function testPLBulkBatchCreateForValidUserRoles()
     {
+        $this->ba->proxyAuth();
+
         $entries = [
             [
                 Batch\Header::PAYOUT_LINK_BULK_CONTACT_NAME        => 'Amit',
@@ -212,6 +304,8 @@ class BatchTest extends TestCase
 
     protected function mockRazorXTreatmentAccessDenyUnauthorised($value = 'on')
     {
+        $this->ba->proxyAuth();
+
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
             ->setMethods(['getTreatment'])

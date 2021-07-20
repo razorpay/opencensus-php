@@ -101,6 +101,13 @@ class Service extends Base\Service
         return $batch->toArrayPublic();
     }
 
+    public function validateFileName(array $queryParams)
+    {
+        (new Validator())->validateInput(Validator::VALIDATE_FILE_NAME, $queryParams);
+
+        return $this->app->batchService->validateFileName($queryParams, $this->merchant);
+    }
+
     /**
      * for admin route
      *

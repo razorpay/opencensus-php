@@ -15,8 +15,10 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use GuzzleHttp\RequestOptions;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Http\BasicAuth\KeylessPublicAuth;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\BadResponseException;
+
 
 class BatchMicroService
 {
@@ -45,6 +47,7 @@ class BatchMicroService
     const BATCH_URLS = [
         'download'  => 'download',
         'batch'     => 'batch',
+        Batch\Constants::VALIDATE_FILE_NAME_URL => 'batch/validateFileName',
         'filestore' => 'filestore',
         'notify'    => 'batch/{id}/settings'
     ];
@@ -582,6 +585,52 @@ class BatchMicroService
         return $response;
     }
 
+    /**
+     * @throws Exception\BadRequestException
+     * @throws Exception\ServerNotFoundException
+     */
+    public function validateFileName(array $inputQueryParams, Merchant\Entity $merchant)
+    {
+        $this->trace->info(
+            TraceCode::VERIFY_DUPLICATE_FILE_NAME,
+            [
+                TraceCode::INPUT_QUERY_PARAMS => $inputQueryParams,
+            ]);
+
+        $queryParams = [];
+
+        $queryParams[Batch\Constants::BATCH_TYPE_ID] = $inputQueryParams[Batch\Constants::BATCH_TYPE_ID];
+
+        $options[KeylessPublicAuth::X_ENTITY_ID_HEADER_KEY] = $merchant->getId();
+
+        $queryParams[Batch\Constants::FILENAME] = $inputQueryParams[Batch\Constants::FILENAME];
+
+        $relativeUrl = self::BATCH_URLS[Batch\Constants::VALIDATE_FILE_NAME_URL];
+
+        try {
+            $options['mode'] = $this->mode;
+
+            $response = $this->getResponseFromBatchService($relativeUrl, Requests::GET, $options, $queryParams);
+
+            $this->trace->info(
+                TraceCode::VERIFY_DUPLICATE_FILE_NAME,
+                [
+                    TraceCode::VALIDATE_FILENAME_RESPONSE => $response,
+                    TraceCode::INPUT_QUERY_PARAMS => $inputQueryParams,
+                ]);
+
+        } catch (\Exception $exception) {
+
+            $this->trace->traceException($exception,
+                Trace::ERROR,
+                TraceCode::VALIDATE_FILE_NAME_BAD_REQUEST);
+
+                throw $exception;
+        }
+
+        return $response;
+    }
+
     private function checkAndMergeBatchTypes(& $output)
     {
         if (isset($output['batchTypeId']) and
@@ -747,6 +796,7 @@ class BatchMicroService
 
     public function shouldBatchServiceBeCalled(): bool
     {
+
         if ($this->batchServiceConfig['mock'] === true)
         {
             return false;
