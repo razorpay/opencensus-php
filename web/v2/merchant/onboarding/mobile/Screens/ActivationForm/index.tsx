@@ -426,7 +426,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       return (
         false ||
         (activeTabId === 'business_details' &&
-          (isDedupe || poi_verification_status === 'initiated') &&
+          poi_verification_status === 'initiated' &&
           isInstantActivationEnabled)
       );
     }

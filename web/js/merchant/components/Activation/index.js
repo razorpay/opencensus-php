@@ -294,7 +294,7 @@ export default class ActivationWizard extends React.Component {
         // set default additional doc
         const defaultAdditionalDoc = getDefaultAdditionalDoc(this);
         this.state.additional_doc = defaultAdditionalDoc || '';
-        const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 14;
+        const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 15;
         FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
           ADDITIONAL_DOC_SELECT_FIELD_INDEX
         ].options = getAdditionalDocOptions(this);
@@ -1467,7 +1467,7 @@ export default class ActivationWizard extends React.Component {
       if (doesHaveAdditionalDocs(this, bizCatSubCatPair)) {
         const additionalDoc = getDefaultAdditionalDoc(this, bizCatSubCatPair);
         const additionalDocOptions = getAdditionalDocOptions(this, bizCatSubCatPair);
-        const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 14;
+        const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 15;
 
         if (
           FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP] &&

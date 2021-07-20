@@ -217,12 +217,19 @@ export function checkIfEAadharStepCompleted(data) {
 
 export function isDocumentTabComplete(data, isGstinMandatory = false) {
   const tabData = { ...onScreenDocuments(data) };
+  const optionalDocumentsFields = {
+    iata_certificate: 'iata_certificate',
+    sla_iata_certificate: 'sla_iata_certificate',
+    affiliation_certificate: 'affiliation_certificate',
+    shop_establishment_number: 'shop_establishment_number',
+  };
 
   if (isGstinMandatory && tabData[BUSINESS_PROOF_CERTIFICATE_TYPES.GST_CERTIFICATE]) {
     tabData.gstin = { value: data.gstin };
   }
 
   const isDocumentFieldsFilled = Object.keys(tabData).every((key) => {
+    if (optionalDocumentsFields[key] && isVisible(optionalDocumentsFields[key], data)) return true;
     return !!tabData[key].value && !tabData[key].error;
   });
 

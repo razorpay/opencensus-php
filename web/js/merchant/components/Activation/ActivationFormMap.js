@@ -573,10 +573,7 @@ const businessDetails = [
       options: ['We have a registered GSTIN', "We don't have a GSTIN"],
       className: 'Input--vTop Input--capitalize',
       _cmp: Input.Radio,
-      _when: (activation) =>
-        excludeFor_Indiv(activation) &&
-        isL1Completed(activation) &&
-        isDedupe(activation.props.data) !== 'blocked',
+      _when: (activation) => excludeFor_Indiv(activation) && isL1Completed(activation),
       description: (activation) => {
         if (activation.state.has_gstin == '1') {
           const currentBusinessType =
@@ -605,8 +602,7 @@ const businessDetails = [
         return (
           excludeFor_Indiv(activation) &&
           activation.state.has_gstin === '0' &&
-          isL1Completed(activation) &&
-          isDedupe(activation.props.data) !== 'blocked'
+          isL1Completed(activation)
         );
       },
       _autoRenderImpure: true, // Re-render to show the error
@@ -897,7 +893,7 @@ const uploadFields = [
         activation.state.business_proof_type === 'shop_establishment_certificate'
       );
     },
-    className: 'Input--required Input--vTop document-group',
+    className: 'Input--vTop document-group',
   },
   {
     label: '',
