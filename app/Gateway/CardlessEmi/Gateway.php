@@ -1125,7 +1125,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    public function pushDimensions($action, $input, $status, $excData = null)
+    public function pushDimensions($action, $input, $status, $excData = null, $statusCode = null)
     {
         $gatewayMetric = new Metric();
 

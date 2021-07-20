@@ -598,6 +598,8 @@ class UpiMindgateGatewayTest extends TestCase
      */
     public function testCollectRejectedFailure()
     {
+        $metricDriver = $this->mockMetricDriver(Metric::DOGSTATSD_DRIVER);
+
         $payment = $this->getDefaultUpiPaymentArray();
 
         $payment['vpa'] = 'failed@hdfcbank';
@@ -627,6 +629,29 @@ class UpiMindgateGatewayTest extends TestCase
         $upiEntity = $this->getDbLastEntity('upi');
 
         $this->assertSame('ZA', $upiEntity['status_code']);
+
+        $this->assertArraySubset([
+            [
+                Metric::DIMENSION_STATUS            => 'success',
+                Metric::DIMENSION_ERROR             =>  null,
+                Metric::DIMENSION_GATEWAY           => 'upi_mindgate',
+                Metric::DIMENSION_ACTION            => 'authorize',
+                Metric::DIMENSION_PAYMENT_METHOD    => 'upi',
+                Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
+                Metric::DIMENSION_TPV               => '0',
+                Metric::DIMENSION_STATUS_CODE       =>  null,
+            ],
+            [
+                Metric::DIMENSION_STATUS            => 'failed',
+                Metric::DIMENSION_ERROR             => 'BAD_REQUEST',
+                Metric::DIMENSION_GATEWAY           => 'upi_mindgate',
+                Metric::DIMENSION_ACTION            => 'callback',
+                Metric::DIMENSION_PAYMENT_METHOD    => 'upi',
+                Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
+                Metric::DIMENSION_TPV               => '0',
+                Metric::DIMENSION_STATUS_CODE       =>  400,
+            ],
+        ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT_V3));
     }
 
     public function testCollectNumericRespCode()

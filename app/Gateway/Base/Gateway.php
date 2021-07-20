@@ -319,11 +319,16 @@ class Gateway
             {
                 $excData = 'UKNOWN';
 
+                $statusCode = null;
+
                 if($exc instanceof Exception\BaseException)
                 {
                     $excData = $exc->getError()->getClass();
+
+                    $statusCode = $exc->getError()->getHttpStatusCode();
                 }
-                $this->pushDimensions($action, $input, Metric::FAILED, $excData);
+
+                $this->pushDimensions($action, $input, Metric::FAILED, $excData, $statusCode);
             }
 
             throw $exc;
@@ -1704,7 +1709,7 @@ class Gateway
         return $urlDomain . $this->getRelativeUrl($type);
     }
 
-    protected function pushDimensions($action, $input, $status, $excData = null)
+    protected function pushDimensions($action, $input, $status, $excData = null, $statusCode = null)
     {
         if (($this->mode === Mode::TEST) and
             ($this->app->runningUnitTests() === false))
@@ -1721,7 +1726,7 @@ class Gateway
             $gateway = $this->getGateway($input, $action);
         }
 
-        $gatewayMetric->pushGatewayDimensions($action, $input, $status, $gateway, $excData);
+        $gatewayMetric->pushGatewayDimensions($action, $input, $status, $gateway, $excData, $statusCode);
     }
 
     protected function isDuplicateUnexpectedPayment($callbackData)
