@@ -23,7 +23,7 @@ export default class TicketBrief extends React.Component {
     const responseFormatDate = moment(ticket.fr_due_by).format('DD MMM');
     // only date showed here
     return (
-      <div className="panel ticket-row-panel">
+      <div className="panel ticket-row-panel" style={{ marginBottom: 0 }}>
         <div
           className="panel-header"
           style={{ borderBottom: this.props.last ? `1px solid rgba(22,47,86,0.1)` : 'auto' }}

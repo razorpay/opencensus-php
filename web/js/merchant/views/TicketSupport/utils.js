@@ -55,3 +55,63 @@ export function getExpiryTime(awsURL) {
 }
 
 export const CreateTicketEmitter = new EventEmitter();
+
+
+
+export const getFormattedDate = d => {
+  const month = d.getMonth();
+  const date = d.getDate();
+  const year = d.getFullYear() % 2000;
+  return `${date} ${monthsMap[month]}' ${year}`;
+};
+
+const monthsMap = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+export const raiseTicket = () => {
+  window.rzpAnalytics({
+    eventCategory: 'Ticket Dashboard',
+    eventAction: 'write to us clicked',
+    eventLabel: `Tickets`,
+  });
+
+  if (window.rzpTicketSystem) {
+    const rzpTicketSystem = window.rzpTicketSystem;
+    rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+    let options = {};
+    options = {
+      screens: 'dashboardRequest',
+      email: window.rzp_user ? window.rzp_user.email : '',
+    };
+    rzpTicketSystem.openModal('#ticket', options);
+
+    setTimeout(() => {
+      rzpTicketSystem.modal.next();
+    }, 0);
+  }
+};
+
+
+export const STATUSES = {
+  '2': 'ACTIVE',
+  '3': 'WORK_IN_PROGRESS',
+  '4': 'RESOLVED',
+  '5': 'CLOSED',
+  '6': 'AWAITING_YOUR_REPLY',
+  '8': 'WORK_IN_PROGRESS',
+  '9': 'WORK_IN_PROGRESS',
+  '10': 'WORK_IN_PROGRESS',
+  '11': 'WORK_IN_PROGRESS',
+};

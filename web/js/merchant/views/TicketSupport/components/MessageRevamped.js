@@ -1,14 +1,8 @@
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink, Link, Redirect } from 'react-router-dom';
-import * as axios from 'axios';
-import { Fragment } from 'react';
-import { tickets, statuses, conversations } from './data.js';
-import { titleCase } from 'common/utils/rzp-utils.js';
-import Ticket from './Ticket';
-import Reply from './Reply';
-import Attachment from './Attachment.js';
 import { withRouter } from 'react-router-dom';
+import Attachment from './Attachment';
 
+const RAZORPAY_LOGO = `https://razorpay.com/assets/razorpay-glyph.svg`;
 @withRouter
 @connect((state) => {
   return {
@@ -22,8 +16,7 @@ export default class Message extends React.Component {
     if (from_razorpay) {
       return (
         <div
-          className="message-body body"
-          style={{ marginTop: '0' }}
+          className="message-body revamped body mt-0"
           dangerouslySetInnerHTML={{
             __html: `<div>${this.props.message.body}</div>`,
           }}
@@ -31,7 +24,7 @@ export default class Message extends React.Component {
       );
     } else {
       return (
-        <div className="message-body body" style={{ marginTop: '0' }}>
+        <div className="message-body revamped body mt-0">
           {this.props.message.body_text}
         </div>
       );
@@ -39,20 +32,24 @@ export default class Message extends React.Component {
   }
 
   render() {
+    const isTicketRevampFlowEnabled=this.props.user.isTicketRevampFlowEnabled;
     let from_dashboard_user = this.props.message.user_id === this.props.ticket.requester_id;
     let from_razorpay = !from_dashboard_user;
     if (this.props.message.incoming) {
       from_razorpay = false;
     }
-    let img = <i className="i i-user-circle message-user-circle" />;
+
+    let img = <i className="i i-user-circle message-user-circle-revamped" />;
     if (!from_razorpay) {
       img = this.props.user.logo_url ? (
-        <img class="img-round user-image" src={this.props.user.logo_url} />
+        <div class="revamped-user-image"><img class="img-round revamped-user-image" src={this.props.user.logo_url} /></div>
       ) : (
-        <i className="i i-user-circle message-user-circle" />
+        <div class="revamped-user-image"><i className="i i-user-circle message-user-circle-revamped" /></div>
       );
     } else {
-      img = <img class="img-round user-image" src={RZP_IMG} />;
+      img = <div class="revamped-user-image">
+        <img class="img-round revamped-user-image" src={RAZORPAY_LOGO} />
+      </div>;
     }
     let name = !from_razorpay
       ? from_dashboard_user
@@ -63,28 +60,30 @@ export default class Message extends React.Component {
     const attachments = this.props.message.attachments;
 
     return (
-      <Fragment>
-        <div className={`message panel ticket-row-panel ${this.props.last ? 'border-bt-0' : 'border-bottom-solid'}`} key={i}>
-          <div className="panel-body" style={{ paddingLeft: 0 }}>
+      <React.Fragment>
+        <div className={`message ${isTicketRevampFlowEnabled?'revamped':''} panel ticket-row-panel mt-0 border-bt-0 mb-0` }key={i}>
+          <div className="panel-body p-v-24">
             <div className="row min-ht-56">
-              <div className="col-xs-2">{img}</div>
-              <div className="col-xs-10 reply-message-container">
-                <h5 style={{ marginBottom: 0, marginTop: 0 }}>
-                  <div className="row">
+              <div className="col-xs-2 w-auto">{img}</div>
+              <div className="col-xs-10 reply-message-container pr-0">
+                <h5 className="title-container">
+                  <div className="row flex pr-0">
                     <div className="col-xs-5 message-owner">
-                      <b>{name}</b>
+                      <b className="name">{name}</b>
                     </div>
-                    <div className="col-xs-7 text-right">
-                      {moment(this.props.message.created_at).format('ddd, MMM D, h:mm A')} (
-                      {moment(this.props.message.created_at).fromNow()})
+                    <div
+                      className="col-xs-7 text-right created-time"
+                    >
+                      {moment(this.props.message.created_at).fromNow('h')} ago
                     </div>
                   </div>
                 </h5>
-                <div class="message-body" style={{ marginTop: '15px' }}>
+                {/* <p class="message-to">To - {this.props.message.to_emails.join(', ')}</p> */}
+                <div class="message-body revamped">
                   {this.renderMessage(from_razorpay)}
                 </div>
                 {attachments && attachments.length !== 0 && (
-                  <div className="message-body body">
+                  <div className="message-body revamped body mt-20">
                     {attachments.map((file, index) => (
                       <Attachment key={file.id} file={file} />
                     ))}
@@ -94,9 +93,7 @@ export default class Message extends React.Component {
             </div>
           </div>
         </div>
-      </Fragment>
+      </React.Fragment>
     );
   }
 }
-
-const RZP_IMG = `https://cdn.razorpay.com/static/assets/merchant-dash/rzp-logo.png`;

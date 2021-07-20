@@ -325,13 +325,13 @@ export const uploadLogo = (file, fieldName) => {
   };
 };
 export const removeLogo = (payload) => {
-  
+
   return {
     type: REMOVE_LOGO,
     payload: merchantFetch({
       url: 'account/config/logo',
       method: 'delete',
-      data:payload
+      data: payload
     })
   };
 };
@@ -550,6 +550,7 @@ export default function (state = initialState, action) {
     case `${FETCH_SUPPORT_TICKETS}::ERROR`:
       let S = deepClone(state.support_tickets);
       S.loading = false;
+      S.error = true;
       return merge(state, {
         support_tickets: S,
       });
