@@ -1776,7 +1776,7 @@ export default class ActivationWizard extends React.Component {
 
     if (
       (this.isLinkedAccountForm && !isFormSubmitted) ||
-      (this.props.user.instantActivation.isL1Submitted &&
+      (isL1Completed(this) &&
         !isFormSubmitted &&
         isDedupe(this.props.user) !== 'blocked' &&
         userCanSubmitForm)
