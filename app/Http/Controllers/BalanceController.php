@@ -25,11 +25,18 @@ class BalanceController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function fetchBalanceById($id)
+    public function fetchBalanceByIdAndParams($id)
     {
         $input = Request::all();
 
-        $data = $this->service()->fetchBalanceById($id, $input);
+        $data = $this->service()->fetchBalanceByIdAndParams($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchBalanceById($id)
+    {
+        $data = $this->service()->fetchBalanceById($id);
 
         return ApiResponse::json($data);
     }

@@ -26,7 +26,7 @@ class Service extends Base\Service
         return $this->core()->createWithInitialBalance($merchant, $input, $this->mode, $initialBalance);
     }
 
-    public function fetchBalanceById(string $id, array $input)
+    public function fetchBalanceByIdAndParams(string $id, array $input)
     {
         $this->trace->info(TraceCode::FETCH_BALANCE_REQUEST, [
                 'id'        => $id,
@@ -40,6 +40,15 @@ class Service extends Base\Service
         $balance = $this->repo->balance->findByIdAndMerchantId($id, $input[Entity::MERCHANT_ID]);
 
         return $balance->toArrayPublic();
+    }
+
+    public function fetchBalanceById(string $id)
+    {
+        $this->trace->info(TraceCode::FETCH_BALANCE_REQUEST, [
+            'balance_id'        => $id,
+        ]);
+
+        return $this->repo->balance->findByIdAndMerchantId($id, $this->merchant->getId())->toArrayPublic();
     }
 
     public function fetchBalanceMultiple($input)

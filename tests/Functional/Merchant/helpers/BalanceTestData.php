@@ -99,6 +99,25 @@ return [
         ],
     ],
 
+    'testGetBalanceForGraphQL' => [
+        'request'  => [
+            'url'     => '/balance/{id}',
+            'method'  => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'balance'           => 900,
+                'type'              => 'primary',
+                'currency'          => 'INR',
+                // 'id'                => 'G36eVO6FseJ35v',
+                // 'updated_at'        => 1605806235,
+                'last_fetched_at'   => null,
+            ],
+        ],
+    ],
+
     'testGetBalanceMultiple' => [
         'request' => [
             'url'     => '/internal_balances_multiple',

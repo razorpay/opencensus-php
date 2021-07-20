@@ -373,8 +373,10 @@ class Route
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'merchant_balance_fetch'                   => ['get',      'balances',                                       'MerchantController@getAccountBalances'                             ],
         'merchant_primary_balance_fetch'           => ['get',      'primary_balance',                                'MerchantController@getPrimaryBalance'                              ],
-        'internal_balance_fetch_by_merchant_id'    => ['get',      'balances/{id}',                                  'MerchantController@getBalance'                                     ],
-        'internal_balance_fetch_by_id'             => ['get',      'internal_balances/{id}',                         'BalanceController@fetchBalanceById'                                ],
+        'internal_balance_fetch_by_merchant_id'    => ['get',      'internal_merchants/{id}/balance',                'MerchantController@getBalanceByMerchantId'                         ],
+        'internal_balance_fetch_by_merchant_id_old'=> ['get',      'balances/{id}',                                  'MerchantController@getBalanceByMerchantId'                         ],
+        'internal_balance_fetch_by_id'             => ['get',      'internal_balances/{id}',                         'BalanceController@fetchBalanceByIdAndParams'                       ],
+        'merchant_balance_fetch_by_id'             => ['get',      'balance/{id}',                                   'BalanceController@fetchBalanceById'                                ],
         'internal_balance_fetch_multiple_by_ids'   => ['get',      'internal_balances_multiple',                     'BalanceController@fetchBalanceMultiple'                            ],
         'merchant_balance_create'                  => ['post',     'capital_balances',                               'BalanceController@createCapitalBalance'                            ],
         'merchant_balance_fetch_admin'             => ['get',      'admin_balances',                                 'MerchantController@getAccountBalances'                             ],
@@ -3066,6 +3068,7 @@ class Route
         'merchant_onboarding_escalations',
         'settlement_ondemand_process',
         'internal_balance_fetch_by_merchant_id',
+        'internal_balance_fetch_by_merchant_id_old',
         'merchant_balance_create',
         'internal_balance_fetch_by_id',
         'internal_balance_fetch_multiple_by_ids',
@@ -3616,6 +3619,7 @@ class Route
     ];
 
     public static $proxy = [
+        'merchant_balance_fetch_by_id',
         'merchant_rtb_details_fetch',
         'merchant_fire_hubspot_event',
         'freshchat_get_chat_timings_config_proxy',
@@ -6812,6 +6816,7 @@ class Route
             'fetch_merchant_escalation',
             'merchant_activation_needs_clarification',
             'merchant_activation_save',
+            'merchant_balance_fetch_by_id',
             'merchant_tnc_save',
             'merchant_tnc_details',
             'merchant_activation_status_partner',
@@ -9473,6 +9478,7 @@ class Route
         'capital_collections_client' => [
             'merchant_balance_create',
             'internal_balance_fetch_by_merchant_id',
+            'internal_balance_fetch_by_merchant_id_old',
             'credit_repayment_transaction_create',
             'capital_transaction_create',
             'capital_multiple_transaction_create',

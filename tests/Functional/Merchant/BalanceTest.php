@@ -37,6 +37,24 @@ class BalanceTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetBalanceForGraphQL()
+    {
+        $balance = $this->fixtures->create('balance', [
+            Balance::TYPE         => Type::PRIMARY,
+            Balance::BALANCE      => 900,
+        ]);
+
+        $config = \Config::get('applications.frontend_graphql');
+
+        $pwd = $config['secret'];
+
+        $this->ba->appAuth('rzp_test_'. $balance['merchant_id'] , $pwd);
+
+        $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $balance['id'],]);
+
+        $this->startTest();
+    }
+
     public function testGetBalanceMultiple()
     {
         $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
