@@ -1,6 +1,7 @@
 import React from 'react';
 import RTracking from 'react-tracking';
-import { withRouter, Link } from 'react-router-dom';
+import { popSlider, emptySliderStack } from 'merchant_common/reducers/multiSlider';
+import { withRouter } from 'react-router-dom';
 import { classList } from 'common/utils/rzp-utils';
 import debounce from 'common/utils/debounce';
 import { connect } from 'react-redux';
@@ -28,7 +29,7 @@ const isWhatsNewSection = (id) => {
   (state) => ({
     user: state.session.user,
   }),
-  {},
+  { popSlider, emptySliderStack },
 )
 @RTracking(() => window.rzpQ.component('AnnouncementDetails'))
 export default class AnnouncementDetails extends React.Component {
@@ -46,7 +47,7 @@ export default class AnnouncementDetails extends React.Component {
       version_description: notification.version_description,
       target_product_feature: notification.target_product_feature,
       target_metric: notification.target_metric,
-      lazy: this.props.location?.state?.lazy || false,
+      lazy: this.props.lazy || this.props.location?.state?.lazy || false,
     };
   }
 
@@ -108,6 +109,8 @@ export default class AnnouncementDetails extends React.Component {
         }),
     );
 
+    if (!isExternal)
+      this.props.emptySliderStack();
     if (button.id) this.handleCTA({ id: button.id, url: urlPath });
     else window.open(urlPath, isExternal ? '_blank' : '_self');
   };
@@ -156,7 +159,7 @@ export default class AnnouncementDetails extends React.Component {
   }, 20);
 
   render() {
-    const { closeUrl, id: notificationId } = this.props;
+    const { id: notificationId, popSlider } = this.props;
     const { buttons, title, content } = window.notifications.find(
       (notification) => notification.id === notificationId,
     ).l2_content;
@@ -166,11 +169,7 @@ export default class AnnouncementDetails extends React.Component {
         <div className="panel panel-default SliderPanel announcement-details__container">
           <div className="panel-heading">
             <div className="heading-content">
-              {closeUrl ? (
-                <Link to={closeUrl} onClick={this.handleBackButtonClick}>
-                  <i className="i i-chevron-left"></i>
-                </Link>
-              ) : null}
+              <i className="i i-chevron-left" onClick={popSlider}></i>
               <b>Announcements</b>
             </div>
           </div>

@@ -67,7 +67,7 @@ $slider-width = 500px
   }
 }
 
-.ModalSlider__Content {
+.ModalSlider__Content, .MultiSlider__Content {
   min-height: 100%;
   transform: none;
   position: relative;
@@ -123,6 +123,12 @@ $slider-width = 500px
       padding-bottom: 80px;
     }
   }
+}
+
+.MultiSlider__Content {
+  button.close {
+    top: 11px;
+  }  
 }
 
 .SliderPanel__Body {

@@ -41,6 +41,10 @@ export const MultiSlider__Component = styled.div.attrs((props) => ({
     left: 100%;
     z-index: 1110;
   }
+
+  @media(max-width: 650px) {
+    max-width: 92%;
+  }
 `;
 
 export const MultiSlider__Overlay = styled.div`
@@ -49,7 +53,7 @@ export const MultiSlider__Overlay = styled.div`
   width: 100%;
   height: 100%;
   z-index: 1109;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.6);
   transition: all 0.3s linear;
 
   &.MultiSlider__Overlay--transition-enter {

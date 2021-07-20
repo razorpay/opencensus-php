@@ -1,19 +1,22 @@
-import { Component, useEffect, useState } from 'react';
+import { Component, useEffect, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import LocalStorageService from 'common/utils/localStorage';
 import { classList } from 'common/utils/rzp-utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { pushSlider, emptySliderStack } from 'merchant_common/reducers/multiSlider';
 import { trackLoad, trackExpand, trackAnnouncement, track } from '../NotificationsDropdown/ga';
 import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
 import { showAcceptPaymentsModal } from 'merchant/reducers/home';
 import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnouncementV2';
 import OpfinAnnouncement10L from '../NotificationsDropdown/components/OpfinAnnouncement10L';
+import Loader from 'common/ui/Loader';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, isMobileAndTablet } from 'common/utils/rzp-utils';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { sendDataToSalesForce } from 'common/utils/common-api';
+import lazy from 'merchant/routes/LazyLoader';
 import './WhatsNew.styl';
 import {
   getNotificationsReadData,
@@ -21,6 +24,10 @@ import {
   getExperimentVersion,
 } from './common';
 import MobileAppQRCode from 'merchant/components/MobileAppQRCode';
+
+const WhatsNewDetailsPage = lazy(() =>
+  import(/* webpackChunkName: "WhatsNewDetailsPage" */ 'merchant/views/WhatsNew/Details'),
+);
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -38,6 +45,8 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
     openModal,
     closeModal,
     showAcceptPaymentsModal,
+    pushSlider,
+    emptySliderStack,
   },
 )
 @RTracking(() => window.rzpQ.component('WhatsNew'))
@@ -345,6 +354,8 @@ export default class WhatsNew extends Component {
           onCTAClick={this.handleCTA}
           history={history}
           tracking={this.props.tracking}
+          pushSlider={this.props.pushSlider}
+          emptySliderStack={this.props.emptySliderStack}
         />
       </div>
     ));
@@ -414,6 +425,8 @@ const NotificationCard = ({
   onCTAClick,
   history,
   tracking,
+  pushSlider,
+  emptySliderStack,
   ...notification
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
@@ -451,7 +464,7 @@ const NotificationCard = ({
     }
   }, []);
 
-  const handleCTAClick = (e, btn, urlPath) => {
+  const handleCTAClick = (e, btn, urlPath, isExternal) => {
     analyticsTrack({
       objectName: 'announcements',
       actionName: 'clicked',
@@ -471,10 +484,27 @@ const NotificationCard = ({
       `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`,
     );
     trackEvents && trackEvents(btn.label, urlPath, btn.type, id, notification);
+    if (!(isExternal || btn.id === 'announcement-details-l2'))
+      emptySliderStack();
     // distinguish between links and buttons that open modals
     if (btn.id === 'announcement-details-l2') {
       e.preventDefault();
-      history.push(btn.url, { lazy: true });
+      const urlParts = btn.url.split('/');
+      const urlPartsLength = urlParts.length;
+      let notifID = null;
+      if (urlPartsLength) {
+        if (urlParts[urlPartsLength - 1].length)
+          notifID = urlParts[urlPartsLength - 1];
+        else (urlParts[urlPartsLength - 2].length)
+          notifID = urlParts[urlPartsLength - 2];
+      }
+      notifID && pushSlider({
+        component: (
+          <Suspense fallback={<Loader />}>
+            <WhatsNewDetailsPage id={notifID} lazy/>
+          </Suspense>
+        ),
+      });
     } else if (btn.id) {
       e.preventDefault();
       onCTAClick({ id: btn.id, url: btn.url });
@@ -562,7 +592,7 @@ const NotificationCard = ({
               <a
                 key={idx}
                 class={classList('btn', getButtonClass(btn.type))}
-                onClick={(e) => handleCTAClick(e, btn, urlPath)}
+                onClick={(e) => handleCTAClick(e, btn, urlPath, isExternal)}
                 href={urlPath}
                 target={isExternal ? '_blank' : ''}
               >

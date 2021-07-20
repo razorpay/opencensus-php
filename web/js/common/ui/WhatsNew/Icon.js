@@ -1,8 +1,7 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import lazy from 'merchant/routes/LazyLoader';
 import Loader from 'common/ui/Loader';
-import Slider from 'common/ui/Slider';
-import { openSlider, closeSlider } from 'merchant_common/reducers/slider';
+import { pushSlider } from 'merchant_common/reducers/multiSlider';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { classList } from 'common/utils/rzp-utils';
@@ -15,27 +14,8 @@ const WhatsNewLazyComponent = lazy(() =>
   import(/* webpackChunkName: "WhatsNewLazyComponent" */ 'common/ui/WhatsNew'),
 );
 
-const WhatsNewIcon = ({ user, open, showMobileNav, close, tracking }) => {
+const WhatsNewIcon = ({ user, showMobileNav, tracking, pushSlider }) => {
   const [isOpen, setOpen] = useState(false);
-
-  const handleDocumentClick = (event) => {
-    const target = event.target;
-    const sliderContent = document.querySelector('.content-wrapper.whats-new');
-    const sliderToggle = document.querySelector('.whats-new-slide-toggle');
-    const whatsNewTooltip = document.querySelector('.whats-new__tooltip');
-    const announcementDetails = document.querySelector(
-      '.panel.panel-default.SliderPanel.announcement-details__container',
-    );
-    if (
-      (sliderContent && sliderContent.contains(target)) ||
-      (sliderToggle && sliderToggle.contains(target)) ||
-      (whatsNewTooltip && whatsNewTooltip.contains(target)) ||
-      (announcementDetails && announcementDetails.contains(target))
-    ) {
-      return;
-    }
-    setOpen(false);
-  };
 
   const setUnreadMsgs = () => {
     const { totalUnread, ID, readID, unreadID } = getNotificationsReadData(user.current);
@@ -56,14 +36,18 @@ const WhatsNewIcon = ({ user, open, showMobileNav, close, tracking }) => {
   };
 
   useEffect(() => {
-    document.addEventListener('click', handleDocumentClick, true);
     setUnreadMsgs();
-
-    return () => document.removeEventListener('click', handleDocumentClick, true);
   }, []);
 
   const handleSliderToggleClick = () => {
-    open();
+    pushSlider({
+      component: (
+        <Suspense fallback={<Loader />}>
+          <WhatsNewLazyComponent />
+        </Suspense>
+      ),
+      onClose: () => { setOpen(false); }
+    });
     setOpen(true);
   };
 
@@ -93,18 +77,11 @@ const WhatsNewIcon = ({ user, open, showMobileNav, close, tracking }) => {
   return (
     <div className={classList('whats-new-icon', isOpen && 'whats-new-icon--active')}>
       <div className="whats-new-icon-text">{getAnnouncementCta()}</div>
-      {isOpen ? (
-        <Slider>
-          <Suspense fallback={<Loader />}>
-            <WhatsNewLazyComponent />
-          </Suspense>
-        </Slider>
-      ) : null}
     </div>
   );
 };
 
 export default compose(
-  connect((state) => ({ user: state.session.user }), { open: openSlider, close: closeSlider }),
+  connect((state) => ({ user: state.session.user }), { pushSlider }),
   RTracking(() => window.rzpQ.component('WhatsNewIcon')),
 )(WhatsNewIcon);
