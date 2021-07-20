@@ -2520,8 +2520,9 @@ class Processor
 
                 $this->repo->reload($this->payment);
 
-                // return if payment is already gateway captured
-                if($this->payment->isGatewayCaptured() === true)
+                // return if payment is already gateway captured or status is not authorized
+                if (($this->payment->isGatewayCaptured() === true) or
+                    ($this->payment->getStatus() !== Payment\Status::AUTHORIZED))
                 {
                     return;
                 }
