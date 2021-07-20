@@ -26,6 +26,11 @@ class Constants
     const FUZZY_MATCH_THRESHOLD = 'FUZZY_MATCH_THRESHOLD';
     const MERCHANT_RISK_CLIENT_TYPE_ONBOARDING = 'onboarding';
 
+    const MATCHED_ENTITY = 'matched_entity';
+    const FIELDS         = 'fields';
+    const KEY            = 'key';
+    const VALUE          = 'value';
+
     const MERCHANT_RISK_CONFIG = [
         Detail\Entity::PROMOTER_PAN => [
             'lists' => [

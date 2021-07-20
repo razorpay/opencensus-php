@@ -184,24 +184,31 @@ class Core extends Base\Core
     {
         $matchedMerchantIds = [];
 
-        if (isset($riskScores['fields']) === false)
+        if (isset($riskScores[Constants::FIELDS]) === false)
         {
             return $matchedMerchantIds;
         }
 
-        foreach ($riskScores['fields'] as $riskScore)
+        foreach ($riskScores[Constants::FIELDS] as $riskScore)
         {
-            foreach ($riskScore['matched_entity'] as $matchedEntity)
+            if (isset($riskScore[Constants::MATCHED_ENTITY]) === false)
             {
-                if ($matchedEntity['key'] === 'id')
+                continue;
+            }
+
+            foreach ($riskScore[Constants::MATCHED_ENTITY] as $matchedEntity)
+            {
+                if ((isset($matchedEntity[Constants::KEY]) === true) and
+                    (isset($matchedEntity[Constants::VALUE]) === true) and
+                    ($matchedEntity[Constants::KEY] === Entity::ID))
                 {
-                    array_push($matchedMerchantIds, $matchedEntity['value']);
+                    array_push($matchedMerchantIds, $matchedEntity[Constants::VALUE]);
                     break;
                 }
             }
         }
 
-        return $matchedMerchantIds;
+        return array_unique($matchedMerchantIds);
     }
 
     private function getMatchedFieldsFromRiskScore($riskScores): array
