@@ -10,7 +10,7 @@ const AllTheProviders: React.FC<{ children: ReactElement<any, any> | null }> = (
   const mockRazorXExp = {
     isInstantActivationEnabled: true,
     canSkipPoiValidation: false,
-    canGenerateTnCPage: false,
+    canGenerateTnCPage: true,
     isBDAndAovEnabled: true,
     isAadharEkycMandatory: true,
   };

@@ -3,28 +3,47 @@ import 'regenerator-runtime/runtime';
 import '@testing-library/jest-dom/extend-expect';
 import ESignVerification from '../index';
 import AadharError from '../AadharError';
+import * as ActivationDB from '../../services/data/ActivationDB';
 import GetOTP from '../GetOTP';
 import VerifyOTP from '../VerifyOTP';
 import AadharSuccess from '../AadharSuccess';
-import { fireEvent, render, waitFor, screen, cleanup } from 'test-utils';
+import useActivation from '../../hooks/useActivation';
+import { fireEvent, render, waitFor, screen, waitForElementToBeRemoved } from 'test-utils';
 
 afterEach(() => {
-  cleanup();
+  ActivationDB.reset();
 });
 
-describe('ESignVerification', () => {
-  it('calls getcaptcha onClick prop when clicked', () => {
-    render(<ESignVerification disabled={false} />, {});
-    fireEvent.click(
-      screen.getByText(/Submit & Get OTP/i),
-      new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-      }),
-    );
-  });
+const App: React.FC = () => {
+  const { status } = useActivation();
+  if (status === 'loading') return <div>Loading...</div>;
+  return <AadharSuccess />;
+};
 
-  it.skip('should show the disabled form when checkbox is true', async () => {
+const GetOtpApp: React.FC = () => {
+  const { status } = useActivation();
+  const setOPT = jest.fn();
+  const setAadharNumber = jest.fn();
+  const goToNextScreen = jest.fn();
+  const setUserEnteredCaptcha = jest.fn();
+  if (status === 'loading') return <div>Loading...</div>;
+  return (
+    <GetOTP
+      setOTP={setOPT}
+      otp=""
+      setAadharNumber={setAadharNumber}
+      goToNextScreen={goToNextScreen}
+      setUserEnteredCaptcha={setUserEnteredCaptcha}
+      aadharError=""
+      disabled={false}
+    />
+  );
+};
+
+const waitForLoadingToFinish = () => waitForElementToBeRemoved(screen.queryByText('Loading...'));
+
+describe('ESignVerification', () => {
+  it('should show the disabled form when checkbox is true', async () => {
     render(<ESignVerification disabled={false} />, {});
     const disableAadharFlowContainer = screen.getByRole('checkbox', { checked: false });
     await waitFor(() => {
@@ -35,61 +54,30 @@ describe('ESignVerification', () => {
 });
 
 describe('GetOTP', () => {
-  it.skip("should throw an validation message if get otp pin number field doesn't have  4 digit number", async () => {
-    const { getByText, getAllByTestId } = render(
-      <GetOTP
-        setOTP={() => {}}
-        otp=""
-        setAadharNumber={() => {}}
-        goToNextScreen={() => {}}
-        setUserEnteredCaptcha={() => {}}
-        aadharError=""
-        disabled={false}
-      />,
-      {},
-    );
-    const pinNumberInput = getAllByTestId('ds-text-input')[2];
-
-    fireEvent.change(pinNumberInput, {
-      target: {
-        value: '1',
-      },
+  it("should throw an validation message if get otp pin number field doesn't have  4 digit number", async () => {
+    ActivationDB.update({
+      business_type: '1',
     });
+    render(<GetOtpApp />, {});
+    await waitForLoadingToFinish();
 
-    await waitFor(() => {
-      fireEvent.blur(pinNumberInput);
-    });
+    expect(screen.getByText('12 Digit Aadhar Number')).toBeInTheDocument();
+    expect(screen.getByText('Enter the captcha shown above')).toBeInTheDocument();
+    const [aadharNumber, captcha]: any = screen.getAllByTestId('ds-text-input');
+    const checkbox = screen.getByText('My Aadhar is not linked with any mobile number');
 
-    const errorMessageNode = getByText(/Pin number should be of 4 digits/i);
-    expect(pinNumberInput).toMatchSnapshot();
-    expect(errorMessageNode).toBeInTheDocument();
-  });
+    fireEvent.change(aadharNumber, { target: { value: '941743462460' } });
+    fireEvent.change(captcha, { target: { value: 'DId2s' } });
+    expect(screen.getByText('Submit & Get OTP')).toBeInTheDocument();
+    await waitFor(() => fireEvent.click(screen.getByText('Submit & Get OTP')));
 
-  it.skip('calls Get OTP onClick prop when clicked', () => {
-    render(
-      <GetOTP
-        setOTP={() => {}}
-        otp=""
-        setAadharNumber={() => {}}
-        goToNextScreen={() => {}}
-        setUserEnteredCaptcha={() => {}}
-        aadharError=""
-        disabled={false}
-      />,
-      {},
-    );
-    fireEvent.click(
-      screen.getByText(/Get OTP/i),
-      new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-      }),
-    );
+    expect(checkbox).toBeInTheDocument();
+    fireEvent.click(checkbox);
   });
 });
 
 describe('VerifyOTP', () => {
-  it.skip("should throw an validation message if otp field doesn't have  4 digit number", async () => {
+  it("should throw an validation message if otp field doesn't have  4 digit number", async () => {
     const { getByText, getAllByTestId } = render(
       <VerifyOTP
         goToNextScreen={() => {}}
@@ -99,24 +87,21 @@ describe('VerifyOTP', () => {
       />,
       {},
     );
-    const otpNumberInput = getAllByTestId('ds-text-input')[1];
-    fireEvent.change(otpNumberInput, {
-      target: {
-        value: '12',
-      },
-    });
 
-    await waitFor(() => {
-      fireEvent.blur(otpNumberInput);
-    });
+    const otpNumberInput = getAllByTestId('ds-text-input')[1];
+    fireEvent.change(otpNumberInput, { target: { value: '12' } });
+    await waitFor(() => fireEvent.blur(otpNumberInput));
 
     const errorMessageNode = getByText(/OTP number should be of 6 digits/i);
     expect(otpNumberInput).toMatchSnapshot();
     expect(errorMessageNode).toBeInTheDocument();
+
+    fireEvent.change(otpNumberInput, { target: { value: '123452' } });
+    await waitFor(() => expect(screen.getByText('Submitting OTP ...')).toBeInTheDocument());
   });
 
-  it.skip('calls Get OTP onClick prop when clicked', () => {
-    render(
+  it('should sussfully verify otp', async () => {
+    const { getAllByTestId } = render(
       <VerifyOTP
         goToNextScreen={() => {}}
         aadharNumber=""
@@ -125,19 +110,27 @@ describe('VerifyOTP', () => {
       />,
       {},
     );
-    fireEvent.click(
-      screen.getByText(/Submit OTP/i),
-      new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-      }),
-    );
+
+    const [aadharNumber, otpNumberInput] = getAllByTestId('ds-text-input');
+
+    await waitFor(() => fireEvent.blur(aadharNumber));
+    fireEvent.change(otpNumberInput, { target: { value: '123456' } });
+    await waitFor(() => expect(screen.getByText('Submitting OTP ...')).toBeInTheDocument());
+    expect(screen.getByText('Start again')).toBeInTheDocument();
+    await waitFor(() => fireEvent.click(screen.getByText('Start again')));
   });
 });
 
 describe('AadharSuccess', () => {
-  it('should show the success screen', () => {
-    expect(<AadharSuccess />).toMatchSnapshot();
+  it('should show the success screen', async () => {
+    ActivationDB.update({
+      stakeholder: { aadhaar_esign_status: 'verified' },
+    });
+    render(<App />, {});
+    await waitForLoadingToFinish();
+    expect(
+      screen.getByText('We have Received your Aadhar details successfully'),
+    ).toBeInTheDocument();
   });
 });
 

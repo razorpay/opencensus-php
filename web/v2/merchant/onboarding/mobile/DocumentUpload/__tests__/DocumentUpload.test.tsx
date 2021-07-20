@@ -40,9 +40,18 @@ test('should manage the uploaded state of all types individually', async () => {
 test('on changing category or sub-category expected doc is visible or not', async () => {
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.queryByText('Certificate of Incorporation')).not.toBeInTheDocument();
+  expect(screen.queryByText('Business Registration Proof')).not.toBeInTheDocument();
+  expect(screen.queryByText('Shop Establishment Number')).not.toBeInTheDocument();
   ActivationDB.update({
-    business_type: '4',
+    business_type: '1',
+    shop_establishment_verifiable_zone: true,
   });
-  waitFor(() => expect(screen.queryByText('Certificate of Incorporation')).toBeInTheDocument());
+  waitFor(() => expect(screen.queryByText('Business Registration Proof')).toBeInTheDocument());
+  waitFor(() => expect(screen.queryByText('Shop Establishment Number')).toBeInTheDocument());
+  waitFor(() =>
+    fireEvent.change(screen.getByLabelText('Shop Establishment Number'), {
+      target: { value: 'NDJF3243dsfs23' },
+    }),
+  );
+  waitFor(() => fireEvent.blur(screen.getByLabelText('Shop Establishment Number')));
 });

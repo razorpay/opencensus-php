@@ -12,7 +12,7 @@ test('FAQs component rendering', () => {
     const setFAQSection = useActivationFormState((state) => state.setFAQSection);
 
     const handleBillingLabelFaqClick = () => {
-      setFAQSection('Q1');
+      setFAQSection('Q3');
       setIsOpen(true);
     };
     return (
@@ -27,9 +27,11 @@ test('FAQs component rendering', () => {
   fireEvent.click(screen.getByText(buttonText));
   expect(screen.getByText('What is Billing label?')).toBeInTheDocument();
   expect(screen.getByText('How can I add api keys to my website?')).toBeInTheDocument();
+  fireEvent.click(screen.getByText('What is Billing label?'));
   expect(
     screen.getByText(
       "Billing label is your brand's identity, it will be displayed on your invoices and bills. Please ensure billing label is as close to your business name/website as possible.",
     ),
   ).toBeInTheDocument();
+  fireEvent.click(screen.getByTestId('modalCloseButton'));
 });

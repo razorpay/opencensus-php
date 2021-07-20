@@ -129,7 +129,7 @@ export const GENERATE_TNC = {
   mcc_pending: {
     title: 'Payments have been enabled, Generate TnC to complete activation',
     description:
-      'Your payments can now be settled to your bank account according to your settlement schedule.  As part of the routine compliance checks mandated by our banking partners, we will review your kyc and reach out for further.',
+      'Your payments can now be settled to your bank account according to your settlement schedule. As part of the routine compliance checks mandated by our banking partners, we will review your kyc and reach out for further.',
     old_description_with_live:
       'Your account has been activated and you are in live mode now . Your payments will be settled to you according to your settlement schedule. Please generate Tnc at the earliest, failing which your settlements can be suspended.',
     old_description_with_test:

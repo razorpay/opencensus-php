@@ -506,7 +506,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             <Flex flexDirection="row" justifyContent="left">
               <View>
                 <Space padding={[0, 0.5, 0, 0]}>
-                  <View onClick={() => onBack()}>
+                  <View data-testid="backIcon" onClick={() => onBack()}>
                     <Icon name="chevronLeft" size="large" fill="shade.800" />
                   </View>
                 </Space>

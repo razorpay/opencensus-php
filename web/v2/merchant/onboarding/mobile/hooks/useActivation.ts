@@ -25,7 +25,7 @@ export const getRequestData = (prevDetails, updatedDetails) => {
     (key) =>
       key !== 'undefined' &&
       !updatedDetails[key].error &&
-      prevDetails[key].value !== updatedDetails[key].value,
+      prevDetails[key]?.value !== updatedDetails[key]?.value,
   );
   const reqData = filteredFields.reduce((prev, cur) => {
     return {

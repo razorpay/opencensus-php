@@ -3,7 +3,7 @@ import '@testing-library/jest-dom/extend-expect';
 import * as Messages from '../Constant';
 import useActivation from '../../hooks/useActivation';
 import ActivationFormModal from '../ActivationFormModals';
-import { render, screen, waitForElementToBeRemoved, cleanup } from 'test-utils';
+import { render, screen, waitForElementToBeRemoved, cleanup, fireEvent } from 'test-utils';
 
 afterEach(() => {
   cleanup();
@@ -24,6 +24,8 @@ test('should open dedupe modal and show correct message', async () => {
   expect(screen.getByText(Messages.DEDUPE.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.DEDUPE.description)).toBeInTheDocument();
   expect(screen.getByText(Messages.DEDUPE.buttonText)).toBeInTheDocument();
+  fireEvent.click(screen.getByTestId('modalCloseButton'));
+  //post modal close merchant go to home screen.
 });
 
 test('should open Poi initiated modal and show correct message', async () => {
@@ -32,6 +34,8 @@ test('should open Poi initiated modal and show correct message', async () => {
   expect(screen.getByText(Messages.POI_INITIATED.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.POI_INITIATED.description)).toBeInTheDocument();
   expect(screen.getByText(Messages.POI_INITIATED.buttonText)).toBeInTheDocument();
+  fireEvent.click(screen.getByText(Messages.POI_INITIATED.buttonText));
+  //post modal close merchant go to home screen and wait untill get poi updated response.
 });
 
 test('should open Payment Enable modal and show correct message', async () => {
@@ -41,6 +45,7 @@ test('should open Payment Enable modal and show correct message', async () => {
   expect(screen.getByText(Messages.PAYMENT_ENABLE.description)).toBeInTheDocument();
   expect(screen.getByText(Messages.PAYMENT_ENABLE.buttonText)).toBeInTheDocument();
   expect(screen.getByText(Messages.PAYMENT_ENABLE.secondryButtonText)).toBeInTheDocument();
+  fireEvent.click(screen.getByText(Messages.PAYMENT_ENABLE.secondryButtonText));
 });
 
 test('should open Payment Disable modal and show correct message', async () => {
@@ -49,6 +54,7 @@ test('should open Payment Disable modal and show correct message', async () => {
   expect(screen.getByText(Messages.PAYMENT_DISABLE.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.PAYMENT_DISABLE.description)).toBeInTheDocument();
   expect(screen.getByText(Messages.PAYMENT_DISABLE.buttonText)).toBeInTheDocument();
+  fireEvent.click(screen.getByText(Messages.PAYMENT_DISABLE.buttonText));
 });
 
 test('should open TNC generate modal and show correct message', async () => {
@@ -57,6 +63,16 @@ test('should open TNC generate modal and show correct message', async () => {
   expect(screen.getByText(Messages.TNC.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.TNC.description)).toBeInTheDocument();
   expect(screen.getByText(Messages.TNC.buttonText)).toBeInTheDocument();
+  fireEvent.click(screen.getByText(Messages.TNC.buttonText));
+});
+
+test('should open underreview modal and show correct message', async () => {
+  render(<App isOpen={true} modaltype="under_review" />, {});
+  await waitForLoadingToFinish();
+  expect(screen.getByText(Messages.UNDER_REVIEW.title)).toBeInTheDocument();
+  expect(screen.getByText(Messages.UNDER_REVIEW.description)).toBeInTheDocument();
+  expect(screen.getByText('Back To Dashboard')).toBeInTheDocument();
+  fireEvent.click(screen.getByText('Back To Dashboard'));
 });
 
 test('should open Needs clarification modal and show correct message', async () => {
@@ -65,6 +81,7 @@ test('should open Needs clarification modal and show correct message', async () 
   expect(screen.getByText(Messages.NC.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.NC.description.normal_nc)).toBeInTheDocument();
   expect(screen.getByText(Messages.NC.buttonText)).toBeInTheDocument();
+  fireEvent.click(screen.getByText(Messages.NC.buttonText));
 });
 
 test('should open Rejected modal and show correct message', async () => {
@@ -73,4 +90,11 @@ test('should open Rejected modal and show correct message', async () => {
   expect(screen.getByText(Messages.REJECTED.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.REJECTED.description)).toBeInTheDocument();
   expect(screen.getByText(Messages.REJECTED.buttonText)).toBeInTheDocument();
+  fireEvent.click(screen.getByText(Messages.REJECTED.buttonText));
+});
+
+test('should not open if modal type empty', async () => {
+  render(<App isOpen={true} modaltype="" />, {});
+  await waitForLoadingToFinish();
+  expect(screen.queryByText('modal should not be open')).not.toBeInTheDocument();
 });

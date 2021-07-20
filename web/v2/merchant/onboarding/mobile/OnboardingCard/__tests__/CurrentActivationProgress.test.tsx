@@ -7,7 +7,7 @@ import OnboardingCardShimmer from '../OnboardingCardShimmer';
 import useActivation from '../../hooks/useActivation';
 import useEscalation from '../../hooks/useEscalation';
 import CurrentActivationProgress from 'v2/merchant/onboarding/mobile/OnboardingCard/CurrentActivationProgress';
-import { render, screen, waitForElementToBeRemoved } from 'test-utils';
+import { fireEvent, render, screen, waitForElementToBeRemoved } from 'test-utils';
 
 afterEach(() => {
   ActivationDB.reset();
@@ -118,6 +118,7 @@ test('should render correct message for activation_status = needs_clarification'
   expect(
     screen.getByText(Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.description.normal),
   ).toBeInTheDocument();
+  fireEvent.click(screen.getByText('Clarify Details'));
 });
 
 test('should render correct message for activation_status = activated', async () => {
@@ -132,6 +133,7 @@ test('should render correct message for activation_status = activated', async ()
   await waitForLoadingToFinish();
   expect(screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED.description)).toBeInTheDocument();
+  fireEvent.click(screen.getByText('Switch To Live Mode'));
 });
 
 test('should render correct message of dedupe for L1', async () => {
@@ -166,6 +168,7 @@ test('should render correct message of dedupe for L2', async () => {
   await waitForLoadingToFinish();
   expect(screen.getByText(Messages.DEDUPE.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.DEDUPE.description)).toBeInTheDocument();
+  fireEvent.click(screen.getByText('Contact Support'));
 });
 
 test('should render correct message if L1 is not submitted', async () => {
@@ -177,6 +180,7 @@ test('should render correct message if L1 is not submitted', async () => {
   await waitForLoadingToFinish();
   expect(screen.getByText(Messages.ACTIVATION_PROGRESS.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.ACTIVATION_PROGRESS.description)).toBeInTheDocument();
+  fireEvent.click(screen.getByText('Submit KYC'));
 });
 
 test('should render correct message if activation_status = rejected', async () => {
@@ -206,4 +210,68 @@ test('should render correct message if flow is greylist', async () => {
   await waitForLoadingToFinish();
   expect(screen.getByText(Messages.GREYLIST_STEP.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.GREYLIST_STEP.description)).toBeInTheDocument();
+});
+
+test('should render correct message for under review tnc flow', async () => {
+  ActivationDB.update({
+    ...DataPieces.ActivationFlowWW,
+    ...DataPieces.OnboardingMileStoneL2,
+    activation_status: 'under_review',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.getByText(Messages.GENERATE_TNC.under_review.old_title)).toBeInTheDocument();
+  expect(screen.getByText(Messages.GENERATE_TNC.under_review.description)).toBeInTheDocument();
+  expect(screen.getByText('View submitted details')).toBeInTheDocument();
+  expect(screen.getByText('Generate Terms And Conditions')).toBeInTheDocument();
+});
+
+test('should render correct message for activated mcc pendingw tnc flow', async () => {
+  ActivationDB.update({
+    ...DataPieces.ActivationFlowWW,
+    ...DataPieces.OnboardingMileStoneL2,
+    activation_status: 'activated_mcc_pending',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.getByText(Messages.GENERATE_TNC.mcc_pending.title)).toBeInTheDocument();
+  expect(screen.getByText(Messages.GENERATE_TNC.mcc_pending.description)).toBeInTheDocument();
+  expect(screen.getByText('Generate Terms And Conditions')).toBeInTheDocument();
+  fireEvent.click(screen.getByText('Generate Terms And Conditions'));
+});
+
+test('should render correct message when merchant reached hard limit', async () => {
+  ActivationDB.update({
+    ...DataPieces.ActivationFlowWW,
+    ...DataPieces.OnboardingMileStoneL2,
+    isHardLimitReached: true,
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.getByText(Messages.HARD_LIMIT_REACHED.title)).toBeInTheDocument();
+  expect(screen.getByText(Messages.HARD_LIMIT_REACHED.description)).toBeInTheDocument();
+  expect(screen.getByText('More details')).toBeInTheDocument();
+});
+
+test('should render correct message for activated_mcc_pending', async () => {
+  ActivationDB.update({
+    ...DataPieces.ActivationFlowWW,
+    ...DataPieces.regBusinessOverview,
+    ...DataPieces.OnboardingMileStoneL2,
+    activation_status: 'activated_mcc_pending',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(
+    screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.new_title),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.new_description),
+  ).toBeInTheDocument();
+});
+
+test('should not render any message', async () => {
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.queryByText('null')).not.toBeInTheDocument();
 });

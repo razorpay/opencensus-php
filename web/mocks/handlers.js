@@ -5,6 +5,7 @@ import * as WebsiteWorkflowDB from '../v2/merchant/onboarding/mobile/services/da
 import * as InternationalWorkflowDB from '../v2/merchant/onboarding/mobile/services/data/InternationalWorkflowDB';
 import * as BusinessCategoryDB from '../v2/merchant/onboarding/mobile/services/data/BusinessCategoryDB';
 import * as PaymentEscalationDB from '../v2/merchant/onboarding/mobile/services/data/PaymentEscalationDB';
+import * as TermsAndConditionDB from '../v2/merchant/TermsAndCondition/services/TermsAndConditionDB';
 
 export const handlers = [
   // Handles a "Login" mutation
@@ -267,4 +268,30 @@ export const handlers = [
       );
     },
   ),
+
+  rest.post('http://localhost:6006/merchant/api/live/merchant/tnc', (req, res, ctx) => {
+    if (req.body) {
+      TermsAndConditionDB.update(req.body);
+    }
+
+    return res(
+      ctx.status(200),
+      ctx.delay(50),
+      ctx.json({
+        status_code: 200,
+        data: TermsAndConditionDB.read(),
+      }),
+    );
+  }),
+
+  rest.get(`http://localhost:6006/merchant/api/test/pincodes/530068`, (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.delay(50),
+      ctx.json({
+        status_code: 200,
+        data: { city: 'Noida', state: 'UP' },
+      }),
+    );
+  }),
 ];

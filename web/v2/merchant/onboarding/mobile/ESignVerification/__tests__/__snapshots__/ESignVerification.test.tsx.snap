@@ -2,28 +2,15 @@
 
 exports[`AadharError should show the Error screen 1`] = `<AadharError />`;
 
-exports[`AadharSuccess should show the success screen 1`] = `<AadharSuccess />`;
-
 exports[`ESignVerification should show the disabled form when checkbox is true 1`] = `
 <ESignVerification
   disabled={false}
 />
 `;
 
-exports[`GetOTP should throw an validation message if get otp pin number field doesn't have  4 digit number 1`] = `
-<input
-  class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
-  data-testid="ds-text-input"
-  name="createdPin"
-  placeholder="Enter text here"
-  type="text"
-  value="1"
-/>
-`;
-
 exports[`VerifyOTP should throw an validation message if otp field doesn't have  4 digit number 1`] = `
 <input
-  class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
+  class="TextInputweb__StyledInput-sc-18gz688-1 hxHBWr Sizeweb__Size-sc-1e5yf1-0 exhaHT Spaceweb__Space-sc-1abqisc-0 gvLSev Flexweb__Flex-sc-1yhcoea-0 fCJFon"
   data-testid="ds-text-input"
   name="enteredOTP"
   placeholder="Enter text here"

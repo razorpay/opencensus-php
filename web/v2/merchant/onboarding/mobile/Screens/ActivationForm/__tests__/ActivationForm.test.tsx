@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import ActivationForm from '..';
+import ActivationForm from '../index';
 import * as ActivationDB from '../../../services/data/ActivationDB';
+import * as DataPieces from '../../../services/data/pieces';
 import { waitForElementToBeRemoved, screen, render, fireEvent, waitFor } from 'test-utils';
 
 /* eslint-disable func-names */
@@ -17,7 +18,16 @@ const waitForLoaderToFinish = () =>
 
 test('ActivationForm Flow', async () => {
   ActivationDB.update({
-    business_type: '4',
+    ...DataPieces.ActivationFlowWW,
+    ...DataPieces.regBusinessOverview,
+    business_model: 'asdas',
+    merchant_avg_order_value: {
+      min_aov: 151,
+      max_aov: 300,
+    },
+    ...DataPieces.businessDetails,
+    ...DataPieces.bankAndCompanyDetails,
+    ...DataPieces.Documents,
   });
   jest.setTimeout(30000);
   render(<ActivationForm />, {});
@@ -78,4 +88,9 @@ test('ActivationForm Flow', async () => {
   fireEvent.change(pincodeInput, { target: { value: '530068' } });
   fireEvent.change(cityInput, { target: { value: 'Bangalore' } });
   fireEvent.change(stateInput, { target: { value: 'Karnataka' } });
+  await waitFor(() => fireEvent.click(screen.getByText('Submit KYC')));
+  fireEvent.click(screen.getByTestId('backIcon'));
+  fireEvent.click(screen.getByText('Documents'));
+  await waitFor(() => fireEvent.click(screen.getByText('Save and Exit')));
+  await waitFor(() => fireEvent.click(screen.getByText('FAQs')));
 });

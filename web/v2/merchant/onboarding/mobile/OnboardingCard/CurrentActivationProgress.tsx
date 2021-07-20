@@ -38,7 +38,7 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; esc
   const isTestMode = getMode(user.current) === 'test';
 
   const contactSupport = () => {
-    window.rzpTicketSystem.openModal('#ticket');
+    window.rzpTicketSystem?.openModal('#ticket');
   };
 
   const goToNcFlow = () => {

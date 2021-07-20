@@ -102,3 +102,56 @@ export const BusinessModelPicker = {
 export const PaymentEnable = {
   activated: true,
 };
+
+export const Documents = {
+  documents: {
+    aadhar_back: [
+      {
+        id: 'HYOU9XMj32ZZXF',
+        file_store_id: 'HYOU9hrP2FNh07',
+        merchant_id: 'HYOL66VVU5SpIO',
+        created_at: 1626174666,
+      },
+    ],
+    aadhar_front: [
+      {
+        id: 'HYORFCcwPHH0nt',
+        file_store_id: 'HYORFP1NMI6HNC',
+        merchant_id: 'HYOL66VVU5SpIO',
+        created_at: 1626174501,
+      },
+    ],
+    msme_certificate: [
+      {
+        id: 'HYOUVQ6CaZEOQD',
+        file_store_id: 'HYOUVZHDDzRd9S',
+        merchant_id: 'HYOL66VVU5SpIO',
+        created_at: 1626174686,
+      },
+    ],
+    business_proof_url: [
+      {
+        id: 'HYOUVQ6CaZEOQD',
+        file_store_id: 'HYOUVZHDDzRd9S',
+        merchant_id: 'HYOL66VVU5SpIO',
+        created_at: 1626174686,
+      },
+    ],
+    business_pan_url: [
+      {
+        id: 'HYOUVQ6CaZEOQD',
+        file_store_id: 'HYOUVZHDDzRd9S',
+        merchant_id: 'HYOL66VVU5SpIO',
+        created_at: 1626174686,
+      },
+    ],
+    personal_pan: [
+      {
+        id: 'HYOUNzdKcwxUUJ',
+        file_store_id: 'HYOUOARuDHvS9M',
+        merchant_id: 'HYOL66VVU5SpIO',
+        created_at: 1626174679,
+      },
+    ],
+  },
+};

@@ -14,7 +14,7 @@ if (typeof global.process === 'undefined') {
 const mockRazorXExp = {
   isInstantActivationEnabled: true,
   canSkipPoiValidation: false,
-  canGenerateTnCPage: false,
+  canGenerateTnCPage: true,
   isBDAndAovEnabled: true,
   isAadharEkycMandatory: true,
 };

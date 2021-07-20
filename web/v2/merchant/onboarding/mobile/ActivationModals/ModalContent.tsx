@@ -61,7 +61,7 @@ export const getModalContent = (
       eventAction: 'initiated',
       user,
     });
-    window.rzpTicketSystem.openModal('#ticket');
+    window.rzpTicketSystem?.openModal('#ticket');
     closeModal();
   };
 

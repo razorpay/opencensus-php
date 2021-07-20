@@ -19,15 +19,44 @@ test('renders all the input fields of the form correctly', async () => {
   await waitForLoadingToFinish();
   expect(screen.getByText('About Your Business')).toBeInTheDocument();
 
-  const [businessTypeInput, businessCategorySelect, billingLabelInput]: any = screen.getAllByTestId(
-    'ds-text-input',
-  );
+  const [
+    businessTypeInput,
+    businessCategorySelect,
+    billingLabelInput,
+    AovField,
+  ]: any = screen.getAllByTestId('ds-text-input');
+
+  const businessModal = screen.getByTestId('ds-text-area');
   fireEvent.click(businessTypeInput);
   expect(screen.getByText('Private Limited')).toBeInTheDocument();
   fireEvent.click(businessCategorySelect);
+  fireEvent.change(businessCategorySelect, { target: { value: 'ecomerce' } });
+
   fireEvent.click(screen.getByText('Private Limited'));
   fireEvent.change(billingLabelInput, { target: { value: 'Some Label' } });
   expect(businessTypeInput.value).toBe('Private Limited');
   expect(billingLabelInput.value).toBe('Some Label');
+  fireEvent.blur(billingLabelInput);
+
+  fireEvent.change(businessModal, {
+    target: {
+      value:
+        "Unregistered business type is for freelancers or small businesses who have not yet registered as a company. Don't choose this option if your business is already registered. Business type cannot be changed once submitted.",
+    },
+  });
+  fireEvent.blur(businessModal);
+  expect(screen.getByText('Average Order Value')).toBeInTheDocument();
+
+  fireEvent.click(AovField);
+  fireEvent.change(AovField, { target: { value: { value: '₹ 1 - ₹ 150' } } });
+  fireEvent.blur(AovField);
   expect(screen.getByText('Website Details')).toBeInTheDocument();
+  expect(screen.getByText('I have a live website/app')).toBeInTheDocument();
+
+  fireEvent.click(screen.getByText('I have a live website/app'));
+  expect(screen.getByText('Website/App URL')).toBeInTheDocument();
+  fireEvent.change(screen.getAllByPlaceholderText('Enter text here')[2], {
+    target: { value: 'www.google.com' },
+  });
+  fireEvent.blur(screen.getAllByPlaceholderText('Enter text here')[2]);
 });

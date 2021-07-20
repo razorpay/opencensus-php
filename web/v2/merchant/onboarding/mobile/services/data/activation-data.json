@@ -175,5 +175,6 @@
     "product_international": "0000000000",
     "signup_source": "primary"
   },
-  "credit_balance": []
+  "credit_balance": [],
+  "merchant_tnc": null
 }

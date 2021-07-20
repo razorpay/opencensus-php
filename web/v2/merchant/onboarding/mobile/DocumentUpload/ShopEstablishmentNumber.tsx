@@ -6,7 +6,7 @@ import { Field, GetTouchedFields } from '../Form';
 import { useActivationFormState } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
 
-const ContactDetails: React.FC = () => {
+const ShopEstablishmentNumber: React.FC = () => {
   const { data, postData } = useActivation();
   const documents = data.documents;
 
@@ -68,4 +68,4 @@ const ContactDetails: React.FC = () => {
   );
 };
 
-export default ContactDetails;
+export default ShopEstablishmentNumber;
