@@ -31,7 +31,7 @@ class CreateMaskedSettlementOndemandTransferView extends Migration
 
         $view = DB::getConfig('view_db') . '.masked_settlement_ondemand_transfer_view';
 
-        $statement = 'CREATE ALGORITHM=MERGE VIEW ' . wrap_db_table($view) . ' AS
+        $statement = 'CREATE OR REPLACE ALGORITHM=MERGE VIEW ' . wrap_db_table($view) . ' AS
                         SELECT ' . $columnStr .
             ' FROM ' . Table::SETTLEMENT_ONDEMAND_TRANSFER;
 
