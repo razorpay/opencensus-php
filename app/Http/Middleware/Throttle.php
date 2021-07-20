@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Middleware;
 
+use RZP\Http\RouteTeamMap;
 use Illuminate\Http\Request;
 use Razorpay\Edge\Passport\Passport;
 use Symfony\Component\HttpFoundation\Response;
@@ -75,6 +76,7 @@ final class Throttle
             Metric::LABEL_RZP_INTERNAL_APP_NAME => $requestCtx->getInternalAppName() ?: Metric::LABEL_NONE_VALUE,
             Metric::LABEL_HAS_PASSPORT          => $request->headers->has(Passport::PASSPORT_JWT_V1),
             Metric::LABEL_RZP_PRODUCT           => optional($basicAuth)->getProduct(), // optional because not sure basicAuth is initialized in all flows
+            Metric::LABEL_RZP_TEAM              => RouteTeamMap::getTeamNamesForRoute($request->route()->getName()),
         ];
     }
 }

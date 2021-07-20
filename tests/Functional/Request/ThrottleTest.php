@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Request;
 
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Facades\Trace;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsThrottle;
 use RZP\Http\Throttle\Constant as K;
@@ -369,5 +370,33 @@ class ThrottleTest extends TestCase
             $expected,
             $this->makeRequestAndGetContent($this->testData[__FUNCTION__]['request'])
         );
+    }
+
+    /**
+     * Even though the testcase is not related to throttling, adding it here because the corresponding code is in Middleware/Throttle.php
+     */
+    public function testPushHttpMetricsTeamDimension()
+    {
+        $this->ba->adminAuth();
+
+        Trace::shouldReceive('histogram')->zeroOrMoreTimes();
+
+        Trace::shouldReceive('info', 'debug', 'addRecord', 'error')->zeroOrMoreTimes();
+
+        $actualData = [];
+
+        Trace::shouldReceive('count')->andReturnUsing(function ($metric, $data) use (&$actualData)
+        {
+            $actualData[$metric] = $data;
+        });
+
+        $this->makeRequestAndGetContent([
+            'method'  => 'GET',
+            'url'     => '/roles',
+        ]);
+
+        $this->assertArrayHasKey('http_requests_total', $actualData);
+
+        $this->assertEquals('payments_care', $actualData['http_requests_total']['rzp_team']);
     }
 }
