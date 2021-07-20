@@ -147,6 +147,10 @@ class Entity extends Base\PublicEntity
     const MERCHANT_EMAIL = 'merchant_email';
     const MERCHANT_POC_CITY = 'merchant_poc_city';
     const IS_DOCUMENTS_WALKTHROUGH_COMPLETE = 'is_documents_walkthrough_complete';
+    const SALES_TEAM = 'sales_team';
+    const BUSINESS_PAN_VALIDATION = 'business_pan_validation';
+    const DECLARATION_STEP = 'declaration_step';
+    const BUSINESS_CATEGORY = 'business_category';
     const BANK_ACCOUNT_TYPE = 'bank_account_type';
     const ASSIGNEE_TEAM = 'assignee_team';
     const SOURCE = 'source';

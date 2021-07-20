@@ -2678,6 +2678,34 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testAdminFetchBankingAccountRequests()
+    {
+        $attribute = [
+            'contact_email'     => 'test@rzp.com',
+            'activation_status' => 'activated'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail->merchant['id']);
+
+        $payload = [
+            'activation_detail' => [
+                ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
+                ActivationDetail\Entity::SALES_TEAM        => 'self_serve',
+                ActivationDetail\Entity::BUSINESS_PAN      => 'RZPD38493L',
+                ActivationDetail\Entity::BUSINESS_NAME     => 'ABC pvt',
+                ActivationDetail\Entity::DECLARATION_STEP  => 1
+            ]
+        ];
+
+        $this->createBankingAccountFromDashboard($payload);
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+    }
+
     public function testFetchBankingAccountRequests()
     {
         $this->createBankingAccount();

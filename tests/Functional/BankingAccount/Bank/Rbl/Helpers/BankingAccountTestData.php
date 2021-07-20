@@ -1725,6 +1725,31 @@ return [
         ],
     ],
 
+    'testAdminFetchBankingAccountRequests' => [
+        'request'  => [
+            'url'     => '/admin/banking_account?count=20&skip=0&sales_team=self_serve&declaration_step=1&business_category=partnership',
+            'method'  => 'GET',
+            'content' => [
+                'expand' => ['merchant','merchant.merchantDetail'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'merchant'      => [
+                            'merchant_detail' => [
+                                'contact_email' => 'test@rzp.com'
+                            ]
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchBankingAccountRequests' => [
         'request'  => [
             'url'     => '/admin/banking_account',

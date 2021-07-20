@@ -402,6 +402,74 @@ class Repository extends Base\Repository
         $query->where($isDocWalkthroughCompleteColumn, '=', $isDocWalkthroughComplete);
     }
 
+    public function addQueryParamSalesTeam(Base\BuilderEx $query, array $params)
+    {
+        $salesTeamColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::SALES_TEAM);
+
+        $this->joinQueryActivationDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        // case insensitive
+        $salesTeam = $params[Entity::SALES_TEAM];
+
+        $query->where($salesTeamColumn, '=', $salesTeam);
+    }
+
+    public function addQueryParamBusinessPanValidation(Base\BuilderEx $query, array $params)
+    {
+        $businessPanValidationColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::BUSINESS_PAN_VALIDATION);
+
+        $this->joinQueryActivationDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        // case insensitive
+        $businessPanValidation = $params[Entity::BUSINESS_PAN_VALIDATION];
+
+        $query->where($businessPanValidationColumn, '=', $businessPanValidation);
+    }
+
+    public function addQueryParamDeclarationStep(Base\BuilderEx $query, array $params)
+    {
+        $declarationStepColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::DECLARATION_STEP);
+
+        $this->joinQueryActivationDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        // case insensitive
+        $declarationStep = $params[Entity::DECLARATION_STEP];
+
+        $query->where($declarationStepColumn, '=', $declarationStep);
+    }
+
+    public function addQueryParamBusinessCategory(Base\BuilderEx $query, array $params)
+    {
+        $businessCategoryColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::BUSINESS_CATEGORY);
+
+        $this->joinQueryActivationDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        // case insensitive
+        $businessCategory = $params[Entity::BUSINESS_CATEGORY];
+
+        $query->where($businessCategoryColumn, '=', $businessCategory);
+    }
+
     /**
      *
      * select distinct `merchant_id` from `banking_accounts`
