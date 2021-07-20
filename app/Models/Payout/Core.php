@@ -501,7 +501,7 @@ class Core extends Base\Core
         $initialUtr = $payout->getUtr();
 
         $this->repo->transaction(
-            function() use ($payout, $ftaData, $initialUtr, $isPayoutService)
+            function() use ($payout, $ftaData, $initialUtr)
             {
                 // For non-Yesbank, we will not get public_failure_reason
                 $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
@@ -535,7 +535,7 @@ class Core extends Base\Core
                 if (($updatedChannel !== null) and
                     ($initialChannel !== $updatedChannel))
                 {
-                    $this->updateChannelToPayoutAndTransaction($payout, $initialChannel, $updatedChannel, $isPayoutService);
+                    $this->checkOrUpdateChannelToPayoutAndTransaction($payout, $initialChannel, $updatedChannel, true);
                 }
 
                 //
@@ -2828,10 +2828,10 @@ class Core extends Base\Core
             ]);
     }
 
-    protected function updateChannelToPayoutAndTransaction(Entity $payout,
-                                                           string $payoutChannel,
-                                                           string $ftsChannel,
-                                                           bool $updateForService = false)
+    protected function checkOrUpdateChannelToPayoutAndTransaction(Entity $payout,
+                                                                  string $payoutChannel,
+                                                                  string $ftsChannel,
+                                                                  bool $updateChannel = false)
     {
         $traceInfo = [
             'payout_id'         => $payout->getId(),
@@ -2861,7 +2861,7 @@ class Core extends Base\Core
                 null,
                 $traceInfo);
         }
-        else if (($payout->getIsPayoutService() === false) or ($updateForService === true))
+        else if ($updateChannel === true)
         {
             $this->trace->info(
                 TraceCode::PAYOUT_CHANNEL_CHANGED_USING_FTA_DATA,
@@ -3424,7 +3424,7 @@ class Core extends Base\Core
             if (($updatedChannel !== null) and
                 ($initialChannel !== $updatedChannel))
             {
-                $this->updateChannelToPayoutAndTransaction($payout, $initialChannel, $updatedChannel);
+                $this->checkOrUpdateChannelToPayoutAndTransaction($payout, $initialChannel, $updatedChannel);
 
                 $input[Entity::CHANNEL] = $updatedChannel;
             }
