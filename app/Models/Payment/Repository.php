@@ -1956,13 +1956,10 @@ class Repository extends Base\Repository
 
         $query->whereNotNull(Entity::RECEIVER_ID);
 
-        /**
-         * @todo Kritika to identify better solution to not return qr v2 payments
-         */
-        //if ($this->merchant->isFeatureEnabled(Feature\Constants::QR_CODES) === true)
-        //{
-        //    $this->joinQueryVaReceiver($query);
-        //}
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::QR_CODES) === true)
+        {
+            $this->joinQueryVaReceiver($query);
+        }
     }
 
     /**

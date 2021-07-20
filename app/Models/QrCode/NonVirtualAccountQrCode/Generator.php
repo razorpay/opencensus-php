@@ -231,6 +231,10 @@ class Generator extends QrCode\Generator
 
         $qrCodeImage = $this->getQrCodeStringAndGenerateImage($qrCode);
 
+        $displayDetails = $this->getMerchantDisplayDetails();
+
+        $this->setMerchantLogoInQrImage($displayDetails['logo'], $qrCodeImage);
+
         $logoImage = imagecreatefrompng(public_path() . '/img/new_upi_qr.png');
 
         imageAlphaBlending($logoImage, true);
@@ -247,7 +251,7 @@ class Generator extends QrCode\Generator
 
         $ypos = QrCode\Constants::QR_V2_UPI_QR_NAME_YPOS;
 
-        $this->alignCentre($logoImage, $this->merchant->getName(), $color, 'Mulish-ExtraBold.ttf', $ypos, 40, 20);
+        $this->alignCentre($logoImage, $displayDetails['name'], $color, 'Mulish-ExtraBold.ttf', $ypos, 40, 20);
 
         $this->alignCentre($logoImage, $qrCode->getDescription(), $color, 'Mulish-SemiBold.ttf', $ypos, 25, 40);
 
@@ -286,7 +290,9 @@ class Generator extends QrCode\Generator
 
             $ypos = Constants::QR_V2_BHARAT_QR_NAME_YPOS;
 
-            $this->alignCentre($qrCodeImage, $this->merchant->getName(), $color, 'Mulish-ExtraBold.ttf', $ypos, 10, 30);
+            $displayDetails = $this->getMerchantDisplayDetails();
+
+            $this->alignCentre($qrCodeImage, $displayDetails['name'], $color, 'Mulish-ExtraBold.ttf', $ypos, 10, 30);
 
             $this->alignCentre($qrCodeImage, $qrCode->getDescription(), $color, 'Mulish-SemiBold.ttf', $ypos, 8, 50);
         }
@@ -337,50 +343,7 @@ class Generator extends QrCode\Generator
 
         $qrCodeString = $writer->writeString($qrCode->getQrString());
 
-        $qrImage   = imagecreatefromstring($qrCodeString);
-        $QR_width  = imagesx($qrImage);
-        $QR_height = imagesy($qrImage);
-
-        $logo = $this->merchant->getFullLogoUrlWithSize();
-
-        if ($logo === null)
-        {
-            return $qrImage;
-        }
-
-        try
-        {
-            $merchantLogo = imagecreatefromstring(file_get_contents($logo));
-            $logo_width  = imagesx($merchantLogo);
-            $logo_height = imagesy($merchantLogo);
-
-            //create new image
-            $finalImage = imagecreatetruecolor($QR_width, $QR_height);
-            imagealphablending($finalImage, true);
-            $transparent = imagecolorallocatealpha($finalImage, 4, 9, 63, 127);
-            imagefill($finalImage, 0, 0, $transparent);
-
-            imagecopy($finalImage, $qrImage, 0, 0, 0, 0, $QR_width, $QR_height);
-
-            $mergeRatio           = round($logo_width / $logo_height, 2);
-            $postMergeImageWidth  = intval($QR_width * .2);
-            $postMergeImageHeight = intval($postMergeImageWidth / $mergeRatio);
-
-            $centerX = intval(($QR_width / 2) - ($postMergeImageWidth / 2));
-            $centerY = intval(($QR_height / 2) - ($postMergeImageHeight / 2));
-
-            imagecopyresampled($finalImage, $merchantLogo, $centerX, $centerY, 0, 0,
-                               $postMergeImageWidth, $postMergeImageHeight,
-                               $logo_width, $logo_height);
-
-            return $finalImage;
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException($e);
-
-            return $qrImage;
-        }
+        return imagecreatefromstring($qrCodeString);
     }
 
     private function alignCentre($logoImage, $text, $color, $font, & $ypos, $size, $width)
@@ -392,9 +355,9 @@ class Generator extends QrCode\Generator
 
         $font_file = public_path() . '/fonts/' . $font;
 
-        $textWrap = wordwrap($text, $width, "\n", false);
+        $textWrap = wordwrap($text, $width, '\n', false);
 
-        $lines = explode("\n", $textWrap);
+        $lines = explode('\n', $textWrap);
 
         foreach ($lines as $line)
         {
@@ -411,4 +374,70 @@ class Generator extends QrCode\Generator
             $ypos += $line_height;
         }
     }
+
+    private function getMerchantDisplayDetails()
+    {
+        $partners = (new Merchant\Core())->fetchAffiliatedPartners($this->merchant->getId());
+
+        //submerchant can belong to only one aggregator or fully managed at a time
+        $partner = $partners->filter(function(Merchant\Entity $partner)
+        {
+            return (($partner->isAggregatorPartner() === true) or ($partner->isFullyManagedPartner() === true));
+        })->first();
+
+        if ($partner === null)
+        {
+            $partner = $this->merchant;
+        }
+
+        return [
+            'logo' => $partner->getFullLogoUrlWithSize(),
+            'name' => $partner->getName()
+        ];
+    }
+
+    protected function setMerchantLogoInQrImage($logo, $qrImage)
+    {
+        if ($logo === null)
+        {
+            return $qrImage;
+        }
+
+        try
+        {
+            $merchantLogo = imagecreatefromstring(file_get_contents($logo));
+            $logo_width   = imagesx($merchantLogo);
+            $logo_height  = imagesy($merchantLogo);
+
+            $qr_width  = imagesx($qrImage);
+            $qr_height = imagesy($qrImage);
+            //create new image
+            $finalImage = imagecreatetruecolor($qr_width, $qr_height);
+            imagealphablending($finalImage, true);
+            $transparent = imagecolorallocatealpha($finalImage, 4, 9, 63, 127);
+            imagefill($finalImage, 0, 0, $transparent);
+
+            imagecopy($finalImage, $qrImage, 0, 0, 0, 0, $qr_width, $qr_height);
+
+            $mergeRatio           = round($logo_width / $logo_height, 2);
+            $postMergeImageWidth  = intval($qr_width * .2);
+            $postMergeImageHeight = intval($postMergeImageWidth / $mergeRatio);
+
+            $centerX = intval(($qr_width / 2) - ($postMergeImageWidth / 2));
+            $centerY = intval(($qr_height / 2) - ($postMergeImageHeight / 2));
+
+            imagecopyresampled($finalImage, $merchantLogo, $centerX, $centerY, 0, 0,
+                               $postMergeImageWidth, $postMergeImageHeight,
+                               $logo_width, $logo_height);
+
+            return $finalImage;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            return $qrImage;
+        }
+    }
+
 }
