@@ -116,13 +116,16 @@ export default function useActivation() {
         'business_details',
       );
       const isBankAndCompanyDetailsTabComplete = isTabComplete(data, 'bank_and_company_details');
-      const isDocumentsUploadTabComplete = isDocumentTabComplete({
-        ...data,
-        addressDoc,
-        bankDoc,
-        businessDoc,
-        additionalDoc,
-      });
+      const isDocumentsUploadTabComplete = isDocumentTabComplete(
+        {
+          ...data,
+          addressDoc,
+          bankDoc,
+          businessDoc,
+          additionalDoc,
+        },
+        experiments.isGstinMandatory,
+      );
       setContactDetailsCompleted(isContactDetailsTabComplete);
       setBusinessOverviewCompleted(isBusinessOverviewTabComplete);
       setBusinessDetailsCompleted(isBusinessDetailsTabComplete);
