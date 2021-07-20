@@ -284,7 +284,7 @@ class BankingAccountService
                 ]);
 
             throw new IntegrationException('banking account service exception',
-                                           ErrorCode::SERVER_ERROR);
+                                     ErrorCode::SERVER_ERROR);
         }
 
         return $parsedResponse;
@@ -313,15 +313,21 @@ class BankingAccountService
     protected function getHeaders(): array
     {
         $headers = [
-            'Accept'            => self::CONTENT_TYPE_JSON,
-            'Content-Type'      => self::CONTENT_TYPE_JSON,
+            'Accept' => self::CONTENT_TYPE_JSON,
+            'Content-Type' => self::CONTENT_TYPE_JSON,
             'X-Razorpay-TaskId' => $this->app['request']->getTaskId(),
-            'Api-Token'         => $this->secret,
+            'Api-Token' => $this->secret,
         ];
 
-        if ($this->ba->getMerchantId() !== null)
-        {
+        if ($this->ba->getMerchantId() !== null) {
             $headers['X-Razorpay-MerchantId'] = $this->ba->getMerchantId();
+        }
+
+        if ($this->ba->isAdminAuth() === true)
+        {
+            $headers['X-Admin-Id'] = $this->ba->getAdmin()->getId() ?? '';
+            $headers['X-Admin-Email'] = $this->ba->getAdmin()->getEmail() ?? '';
+            $headers['X-Admin-Name'] = $this->ba->getAdmin()->getName() ?? '';
         }
 
         $user = $this->ba->getUser();
