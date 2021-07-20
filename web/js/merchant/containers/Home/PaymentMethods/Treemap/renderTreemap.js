@@ -1,12 +1,5 @@
-import {
-  titleCase,
-  paiseToRupees,
-  arrayToCsvDataUrl,
-} from 'common/utils/rzp-utils';
-import {
-  humanReadableIndian,
-  humanReadableIndianCurrency,
-} from 'common/utils/numerals';
+import { titleCase, paiseToRupees, arrayToCsvDataUrl } from 'common/utils/rzp-utils';
+import { humanReadableIndian, humanReadableIndianCurrency } from 'common/utils/numerals';
 
 import { getPaymentMethodColor } from 'merchant/components/Home/data';
 import { paymentMethodsColumns } from 'merchant/containers/Home/PaymentMethods/data';
@@ -31,12 +24,12 @@ function main(
   onTransition,
   onShowTooltip,
   onHideTooltip,
-  groupTitleMap
+  groupTitleMap,
 ) {
   var root,
     opts = { ...defaults, ...o },
     formatNumber = isCurrency
-      ? value => humanReadableIndianCurrency(paiseToRupees(value))
+      ? (value) => humanReadableIndianCurrency(paiseToRupees(value))
       : humanReadableIndian,
     rname = opts.rootname,
     margin = opts.margin;
@@ -49,22 +42,16 @@ function main(
     height = opts.height - margin.top - margin.bottom,
     transitioning;
 
-  var x = d3.scale
-    .linear()
-    .domain([0, width])
-    .range([0, width]);
+  var x = d3.scale.linear().domain([0, width]).range([0, width]);
 
-  var y = d3.scale
-    .linear()
-    .domain([0, height])
-    .range([0, height]);
+  var y = d3.scale.linear().domain([0, height]).range([0, height]);
 
   var treemap = d3.layout
     .treemap()
-    .children(function(d, depth) {
+    .children(function (d, depth) {
       return depth ? null : d._children;
     })
-    .sort(function(a, b) {
+    .sort(function (a, b) {
       return a.value - b.value;
     })
     .size([1, 1])
@@ -108,7 +95,7 @@ function main(
       colors[key] = getPaymentMethodColor(titleCase(key));
     });
 
-  Object.keys(aliases).forEach(key => {
+  Object.keys(aliases).forEach((key) => {
     colors[key] = colors[aliases[key]];
   });
 
@@ -135,12 +122,9 @@ function main(
 
     if (node.depth === 1 && node.parent) {
       if (!node.percent) {
-        const sum = node.parent._children.reduce(
-          (result, child) => result + child.value,
-          0
-        );
+        const sum = node.parent._children.reduce((result, child) => result + child.value, 0);
 
-        node.percent = (node.value / sum * 100).toFixed(2);
+        node.percent = ((node.value / sum) * 100).toFixed(2);
       }
 
       rollup(node.parent, node.color);
@@ -162,7 +146,7 @@ function main(
     }
 
     return (d._children = d.values)
-      ? (d.value = d.values.reduce(function(p, v) {
+      ? (d.value = d.values.reduce(function (p, v) {
           return p + accumulate(v);
         }, 0))
       : d.value;
@@ -178,7 +162,7 @@ function main(
   function layout(d) {
     if (d._children) {
       treemap.nodes({ _children: d._children });
-      d._children.forEach(function(c) {
+      d._children.forEach(function (c) {
         c.x = d.x + c.x * d.dx;
         c.y = d.y + c.y * d.dy;
         c.dx *= d.dx;
@@ -196,29 +180,21 @@ function main(
   }
 
   function display(d, isTransitioning) {
-    g1 = svg
-      .append('g')
-      .datum(d)
-      .attr('class', 'depth');
+    g1 = svg.append('g').datum(d).attr('class', 'depth');
 
-    var g = g1
-      .selectAll('g')
-      .data(d._children)
-      .enter()
-      .append('g');
+    var g = g1.selectAll('g').data(d._children).enter().append('g');
 
-    g
-      .filter(function(d) {
-        return d.key && d._children;
-      })
+    g.filter(function (d) {
+      return d.key && d._children;
+    })
       .classed('children', true)
-      .style('cursor', function(d) {
+      .style('cursor', function (d) {
         return canBeZoomed(d) ? 'pointer' : 'default';
       })
-      .style('font-size', d => {
+      .style('font-size', (d) => {
         return Math.min((y(d.y + d.dy) - y(d.y)) * 0.2, maxFontSize) + 'px';
       })
-      .on('mouseenter', function(d) {
+      .on('mouseenter', function (d) {
         var hasZoom = canBeZoomed(d);
 
         onShowTooltip({
@@ -229,21 +205,15 @@ function main(
         });
 
         if (hasZoom) {
-          d3
-            .select(this)
-            .selectAll('rect.parent')
-            .style('fill-opacity', 0.1);
+          d3.select(this).selectAll('rect.parent').style('fill-opacity', 0.1);
         }
       })
-      .on('mouseleave', function(d) {
+      .on('mouseleave', function (d) {
         if (canBeZoomed(d)) {
-          d3
-            .select(this)
-            .selectAll('rect.parent')
-            .style('fill-opacity', 0);
+          d3.select(this).selectAll('rect.parent').style('fill-opacity', 0);
         }
       })
-      .on('click', function(d) {
+      .on('click', function (d) {
         trackTreemapClick(d);
 
         if (canBeZoomed(d) && typeof onTransition === 'function') {
@@ -253,21 +223,15 @@ function main(
 
     var children = g
       .selectAll('.child')
-      .data(function(d) {
+      .data(function (d) {
         return d._children || [d];
       })
       .enter()
       .append('g');
 
-    children
-      .append('rect')
-      .attr('class', 'child')
-      .call(rect);
+    children.append('rect').attr('class', 'child').call(rect);
 
-    g
-      .append('rect')
-      .attr('class', 'parent')
-      .call(rect);
+    g.append('rect').attr('class', 'parent').call(rect);
 
     var t = g
       .append('text')
@@ -276,12 +240,11 @@ function main(
       .attr('class', 'ptext')
       .style('font-size', '1em');
 
-    t
-      .append('tspan')
+    t.append('tspan')
       .attr('class', 'amount method-text')
       .style('font-size', '1em')
       .attr('dx', '1em')
-      .text(function(d) {
+      .text(function (d) {
         return formatNumber(d.value);
       })
       .append('tspan')
@@ -290,23 +253,22 @@ function main(
       .style('font-size', '0.6em')
       .style('fill', '#ffffff')
       .style('fill-opacity', 0.6)
-      .text(function(d) {
+      .text(function (d) {
         return `(${d.percent}%)`;
       });
 
-    t
-      .append('tspan')
+    t.append('tspan')
       .style('font-size', '0.6em')
       .attr('dx', '1.67em') // inverse of 0.6
       .attr('dy', '1.5em')
       .attr('class', 'group-name method-text')
-      .text(function(d) {
+      .text(function (d) {
         return d.displayText;
       });
 
     t.call(text);
 
-    g.selectAll('rect.child').style('fill', function(d) {
+    g.selectAll('rect.child').style('fill', function (d) {
       return d.color;
     });
 
@@ -323,14 +285,8 @@ function main(
       var oldG1 = g1;
 
       var g2 = display(d).g,
-        t1 = oldG1
-          .transition()
-          .duration(100)
-          .ease('expOut'),
-        t2 = g2
-          .transition()
-          .duration(100)
-          .ease('expOut');
+        t1 = oldG1.transition().duration(100).ease('expOut'),
+        t2 = g2.transition().duration(100).ease('expOut');
 
       // Update the domain only after entering new elements.
       x.domain([d.x, d.x + d.dx]);
@@ -340,7 +296,7 @@ function main(
       svg.style('shape-rendering', null);
 
       // Draw child nodes on top of parent nodes.
-      svg.selectAll('.depth').sort(function(a, b) {
+      svg.selectAll('.depth').sort(function (a, b) {
         return a.depth - b.depth;
       });
 
@@ -348,15 +304,11 @@ function main(
       g2.selectAll('text').style('fill-opacity', 0);
 
       // Transition to the new view.
-      t1
-        .selectAll('.ptext')
-        .call(text)
-        .style('fill-opacity', 0);
+      t1.selectAll('.ptext').call(text).style('fill-opacity', 0);
 
-      t2.each('end', function(d) {
-        d3
-          .select(this)
-          .style('font-size', d => {
+      t2.each('end', function (d) {
+        d3.select(this)
+          .style('font-size', (d) => {
             return Math.min((y(d.y + d.dy) - y(d.y)) * 0.2, 24) + 'px';
           })
           .selectAll('.ptext')
@@ -368,7 +320,7 @@ function main(
       t2.selectAll('rect').call(rect);
 
       // Remove the old node when the transition is finished.
-      t1.remove().each('end', function() {
+      t1.remove().each('end', function () {
         svg.style('shape-rendering', 'crispEdges');
         transitioning = false;
 
@@ -385,19 +337,19 @@ function main(
 
   function text(text) {
     text
-      .attr('x', function(d) {
+      .attr('x', function (d) {
         return x(d.x);
       })
-      .attr('y', function(d) {
+      .attr('y', function (d) {
         return y(d.y) + this.getBoundingClientRect().height / 2 + 'px';
       })
       .style('fill', '#ffffff')
       .selectAll('tspan.method-text')
-      .attr('x', function(d) {
+      .attr('x', function (d) {
         return x(d.x);
       });
 
-    text.style('opacity', function(d) {
+    text.style('opacity', function (d) {
       var fontSize = Number(this.parentNode.style.fontSize.replace('px', ''));
 
       return fontSize < 10 ||
@@ -410,16 +362,16 @@ function main(
 
   function rect(rect) {
     rect
-      .attr('x', function(d) {
+      .attr('x', function (d) {
         return x(d.x);
       })
-      .attr('y', function(d) {
+      .attr('y', function (d) {
         return y(d.y);
       })
-      .attr('width', function(d) {
+      .attr('width', function (d) {
         return x(d.x + d.dx) - x(d.x);
       })
-      .attr('height', function(d) {
+      .attr('height', function (d) {
         return y(d.y + d.dy) - y(d.y);
       });
   }
@@ -437,49 +389,47 @@ const getBankName = (name, bankNames) => {
 
 const getGroupingFactor = (groupKey, bankNames) => {
   if (groupKey === 'method') {
-    return d =>
-      d[groupKey] === 'card' || d[groupKey] === 'emi' ? 'card' : d[groupKey];
+    return (d) => (d[groupKey] === 'card' || d[groupKey] === 'emi' ? 'card' : d[groupKey]);
   } else if (groupKey === 'issuer') {
-    return d =>
-      d[groupKey]
-        ? getBankName(d[groupKey], bankNames)
-        : getGroupingFactor('bank', bankNames)(d);
+    return (d) =>
+      d[groupKey] ? getBankName(d[groupKey], bankNames) : getGroupingFactor('bank', bankNames)(d);
   } else if (groupKey === 'bank') {
-    return d => getBankName(d[groupKey], bankNames);
+    return (d) => getBankName(d[groupKey], bankNames);
   }
 
-  return d => d[groupKey];
+  return (d) => d[groupKey];
 };
 
 const makeCSVData = (data, bankNames, groupTitleMap) => {
-  const csvHeader = []
-      .concat(paymentMethodsColumns.map(titleCase))
-      .concat(['Amount', '%Share']),
+  const csvHeader = [].concat(paymentMethodsColumns.map(titleCase)).concat(['Amount', '%Share']),
     csvBody = [];
 
   let total = 0;
 
-  let rows = data.map((record, index) => {
-    let body = paymentMethodsColumns.map(columnName => {
-      let value = record[columnName];
+  let rows =
+    data instanceof Array
+      ? data.map((record, index) => {
+          let body = paymentMethodsColumns.map((columnName) => {
+            let value = record[columnName];
 
-      if (columnName === 'bank' || columnName === 'issuer') {
-        value = bankNames[value] || 'Unknown';
-      } else if (columnName === 'method') {
-        value = groupTitleMap[value] || titleCase(value);
-      } else {
-        value = titleCase(value);
-      }
+            if (columnName === 'bank' || columnName === 'issuer') {
+              value = bankNames[value] || 'Unknown';
+            } else if (columnName === 'method') {
+              value = groupTitleMap[value] || titleCase(value);
+            } else {
+              value = titleCase(value);
+            }
 
-      return value;
-    });
+            return value;
+          });
 
-    total += record.value;
+          total += record.value;
 
-    body.push(record.value);
+          body.push(record.value);
 
-    return body;
-  });
+          return body;
+        })
+      : [];
 
   rows.sort((item1, item2) => (item1[0] <= item2[0] ? -1 : 1));
 
