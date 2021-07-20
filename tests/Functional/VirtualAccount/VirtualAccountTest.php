@@ -45,7 +45,7 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->org->createHdfcOrg();
 
-        $this->fixtures->merchant->createMerchantWithDetails(Org::HDFC_ORG, '10000000000035');
+        $this->fixtures->merchant->createMerchantWithDetails(Org::HDFC_ORG, '10000000000035', ['name' => 'Test Account']);
 
         $this->fixtures->create('terminal:hdfc_ecms_bank_account_dedicated_terminal');
 
