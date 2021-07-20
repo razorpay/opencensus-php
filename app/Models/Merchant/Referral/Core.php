@@ -147,7 +147,7 @@ class Core extends Base\Core
 
         $productConfig = array( Product::PRIMARY => $this->config['applications.dashboard.url'],
 
-                                Product::BANKING => $this->config['applications.banking_service_url']);
+                                Product::BANKING => $this->config['applications.banking_service_url'] . '/auth/');
 
 
         if (empty($referrals) === true)
