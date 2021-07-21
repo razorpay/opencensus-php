@@ -17,6 +17,7 @@ class Table
     const USER                         = 'users';
     const OFFER                        = 'offers';
     const ORDER                        = 'orders';
+    const ORDER_META                   = 'order_meta';
     const TOKEN                        = 'tokens';
     const BLADE                        = 'blade';
     const ADDON                        = 'addons';

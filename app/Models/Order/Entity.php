@@ -26,7 +26,7 @@ use RZP\Models\SubscriptionRegistration;
  * @property Transfer\Entity $transfer
  * @property UpiMandate\Entity $upiMandate
  * @property Product\Entity $products
- * @property OrderMeta\Entity $orderMeta
+ * @property OrderMeta\Entity $orderMetas
  */
 class Entity extends Base\PublicEntity
 {
@@ -363,6 +363,11 @@ class Entity extends Base\PublicEntity
     public function products()
     {
         return $this->hasMany(Product\Entity::class);
+    }
+
+    public function orderMetas()
+    {
+        return $this->hasMany(OrderMeta\Entity::class);
     }
 
 /** End Related Models */
