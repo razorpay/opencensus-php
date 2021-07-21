@@ -344,6 +344,9 @@ class PlinkController extends Controller
 
         $merchant = $this->repo->merchant->findByPublicId($input[self::MERCHANT_ID]);
 
+        // Set merchantId for the current request
+        $this->ba->setMerchantById($input[self::MERCHANT_ID]);
+
         unset($input[self::MERCHANT_ID]);
 
         ksort($input);
