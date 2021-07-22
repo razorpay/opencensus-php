@@ -4,6 +4,7 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
 use RZP\Gateway\Upi\Base;
+use RZP\Constants\Timezone;
 
 class InvoiceDetails
 {
@@ -104,6 +105,11 @@ class InvoiceDetails
         if (empty($gstBreakUp) === false)
         {
             $taxDetails[Base\IntentParams::GST_BREAKUP] = implode('|', $gstBreakUp);
+        }
+
+        if (empty($taxDetails[Base\IntentParams::INVOICE_DATE]) === true)
+        {
+            $taxDetails[Base\IntentParams::INVOICE_DATE] = Carbon::now(Timezone::IST)->toDateTimeString();
         }
 
         return $taxDetails;
