@@ -56,15 +56,25 @@ class PaymentCreateDCCTest extends TestCase
         $this->fixtures->merchant->addFeatures(['enable_dcc_s2s']);
         $responseContent = $this->doS2SPrivateAuthAndCapturePayment($payment);
 
-        $this->assertFalse($this->redirectToDCCInfo);
-        $this->assertFalse($this->redirectToUpdateAndAuthorize);
+        $this->assertTrue($this->redirectToDCCInfo);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
 
         $this->ba->privateAuth();
 
         $paymentEntity = $this->getEntityById('payment', $responseContent['id'],true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
 
         $this->assertEquals('captured', $paymentEntity['status']);
-        $this->assertEquals(false, $paymentEntity['dcc']);
+        $this->assertEquals($paymentEntity['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals('USD', $paymentMeta['gateway_currency']);
+        $this->assertEquals(true, $paymentEntity['dcc']);
+        $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
     }
 
     public function testPaymentCreateWithDCCS2SRedirect()

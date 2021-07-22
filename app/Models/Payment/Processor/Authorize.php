@@ -8096,12 +8096,7 @@ trait Authorize
             return false;
         }
 
-        // We are not redirecting to non INR currency as of now,
-        // since this can cause issue in cases were bin country details are incorrect/missing
-        // Can cause customer to pay more than one conversion charges.
-        // TODO : To evaluate with product and if required enable it for all currency later.
-        if( ($payment->getCurrency() !== Currency\Currency::INR) or
-            ($payment->getCurrency() === $payment->card->iinRelation->getIinCurrency()))
+        if($payment->getCurrency() === $payment->card->iinRelation->getIinCurrency())
         {
             return false;
         }
