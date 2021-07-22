@@ -1494,6 +1494,7 @@ class Service extends Base\Service
             'show_new_grievance_flow',
             'show_schedule_callback',
             'ticket_creation_flow_revamp',
+            'ticket_creation_flow_revamp_dashboard',
             'settlement_ux_revamp_p2',
             'rx_scheduled_payouts_rollout',
             'validate_user_2fa_status',
