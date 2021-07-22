@@ -31,6 +31,7 @@ export const CLICK_ON_MANAGE_ALERTS = {
 
 export const CLICK_CANCEL_MANAGE_ALERTS = {
   screen: 'Dashboard - My Account (Credits)',
+  objectName: `Manage Alerts`,
   actionName: 'Cancel',
   properties: {
     ...getCommonAnalyticsProperties(window.rzp_user),

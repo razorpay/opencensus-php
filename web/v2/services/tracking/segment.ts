@@ -49,6 +49,19 @@ const getCommonProperties = ({ screen, properties, user }) => {
   return commonProperties;
 };
 
+const throwAnalyticsException = (errorMessage: string) => {
+  const error = new Error(errorMessage);
+
+  if (window.Sentry) {
+    Sentry.captureException(error, (scope) => {
+      scope.setTag('section', 'analytics');
+      return scope;
+    });
+  } else {
+    throw error;
+  }
+};
+
 export const analyticsTrack = ({
   objectName,
   actionName,
@@ -71,12 +84,18 @@ export const analyticsTrack = ({
     throw new Error('[analytics]: screen cannot be empty');
   }
 
+  // Instead of throwing error, replace '_' with '-' in object and action name
   if (/_/g.test(objectName)) {
-    throw new Error(`[analytics]: expected objectName: ${objectName} to not have '_'`);
+    throwAnalyticsException(`[analytics]: expected objectName: ${objectName} to not have '_'`);
+
+    return; // Don't capture the event if the objectName contains a "_".
   }
 
   if (/_/g.test(actionName)) {
-    throw new Error(`[analytics]: expected actionName: ${actionName} to not have '_'`);
+    const errorMessage = `[analytics]: expected actionName: ${actionName} to not have '_'`;
+    throwAnalyticsException(errorMessage);
+
+    return; // Don't capture the event if the actionName contains a "_".
   }
 
   const eventName = titleCase(`${objectName} ${actionName} ${eventAction}`);
