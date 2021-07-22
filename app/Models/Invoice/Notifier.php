@@ -1133,6 +1133,7 @@ class Notifier extends Base\Core
 
                 break;
 
+            /*
             case Preferences::MID_ADITYA_BIRLA_HEALTH:
 
                 $sender = 'ABCPRO';
@@ -1144,6 +1145,7 @@ class Notifier extends Base\Core
                 ];
 
                 break;
+            */
         }
 
         return ['template' => $template, 'params' => $params, 'sender' => $sender];
