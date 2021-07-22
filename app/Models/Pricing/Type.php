@@ -12,10 +12,12 @@ class Type
     //
     const PRICING    = 'pricing';
     const COMMISSION = 'commission';
+    const BUY_PRICING = 'buy_pricing';
 
     protected static $types = [
         self::PRICING,
         self::COMMISSION,
+        self::BUY_PRICING,
     ];
 
     /**

@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Pricing;
 
+use App;
+
+use Cryptomute\Cryptomute;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -33,6 +36,7 @@ class Entity extends Base\PublicEntity
     const INTERNATIONAL                 = 'international';
     const FEE_BEARER                    = 'fee_bearer';
     const PAYOUTS_FILTER                = 'payouts_filter';
+    const IS_BUY_PRICING_ALLOWED        = 'is_buy_pricing_allowed';
 
     //
     // By default, all the rules are of type pricing
@@ -76,6 +80,10 @@ class Entity extends Base\PublicEntity
     const RULES                = 'rules';
 
     const ORG_ID               = 'org_id';
+
+    protected $cryptomute;
+    protected $password = '0123456789qwerty';
+    protected $iv = '0123456789abcdef';
 
     protected $revisionEnabled = true;
 
@@ -132,7 +140,7 @@ class Entity extends Base\PublicEntity
      */
     protected static $modifiers = ['inputRemoveBlanks', 'inputProvideDefaults'];
 
-    protected static $generators = ['plan_id', 'org_id'];
+    protected static $generators = ['plan_id', 'org_id', 'buy_pricing_type'];
 
     protected $defaults = [
         self::PROCURER                  => null,
@@ -192,7 +200,33 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION        => 'int',
     ];
 
+    public static $buyPricingMethods = [
+        self::PLAN_NAME,
+        self::PAYMENT_METHOD,
+        self::PAYMENT_METHOD_TYPE,
+        self::RECEIVER_TYPE,
+        self::INTERNATIONAL,
+        self::EMI_DURATION,
+        self::PAYMENT_ISSUER,
+        self::PAYMENT_NETWORK,
+    ];
+
     const ZERO_PRICING = '10ZeroPricingP';
+
+    public function __construct(array $attributes = [])
+    {
+        $app = App::getFacadeRoot();
+
+        $this->cryptomute = new Cryptomute(
+            'aes-256-cbc',      // cipher
+            $app['config']['app.key'], // base key
+            7                  // number of rounds
+        );
+
+        $this->cryptomute->setValueRange(0, 4294967295);
+
+        parent::__construct($attributes);
+    }
 
     protected function modifyInputProvideDefaults(& $input)
     {
@@ -249,9 +283,68 @@ class Entity extends Base\PublicEntity
         return $this;
     }
 
+    // group rules by mai.
+    public function groupBuyPricingRules($inputRules)
+    {
+        return collect($inputRules)->groupBy(function ($rule)
+        {
+            return (new Entity())->getBuyPricingGroupString($rule);
+        });
+    }
+
+    public function formattedBuyPricingRules($inputRules): array
+    {
+        return array_merge(...collect($inputRules)->map(function ($rule)
+        {
+            return Plan::formattedBuyPricing($rule);
+        })->all());
+    }
+
+    public function getBuyPricingGroupString(array $rule)
+    {
+        $groupString = '';
+
+        foreach (self::$buyPricingMethods as $method)
+        {
+            $value = $rule[$method] ?? '';
+
+            if (is_array($value))
+            {
+                sort($value);
+
+                $groupString .= join($value);
+
+                continue;
+            }
+            $groupString .= $value;
+        }
+
+        return $groupString;
+    }
+
     protected function setFeeBearerAttribute($bearer)
     {
         $this->attributes[self::FEE_BEARER] = FeeBearer::getValueForBearerString($bearer);
+    }
+
+    protected function setFixedRateAttribute(int $fixedRate)
+    {
+        $this->attributes[self::FIXED_RATE] = $fixedRate;
+
+        if ($this->getType() === Type::BUY_PRICING)
+        {
+            $this->attributes[self::FIXED_RATE] = $this->cryptomute->encrypt($fixedRate, 10, false, $this->password, $this->iv);
+        }
+    }
+
+    protected function setPercentRateAttribute(int $percentRate)
+    {
+        $this->attributes[self::PERCENT_RATE] = $percentRate;
+
+        if ($this->getType() === Type::BUY_PRICING)
+        {
+            $this->attributes[self::PERCENT_RATE] = $this->cryptomute->encrypt($percentRate, 10, false, $this->password, $this->iv);
+        }
     }
 
     public function isInternational()
@@ -287,6 +380,14 @@ class Entity extends Base\PublicEntity
         $orgId = Org\Entity::stripDefaultSign($orgId);
 
         $this->setAttribute(self::ORG_ID, $orgId);
+    }
+
+    protected function generateBuyPricingType($input)
+    {
+        if ($input[Entity::TYPE] === Type::BUY_PRICING)
+        {
+            $this->setAttribute(self::TYPE, Type::BUY_PRICING);
+        }
     }
 
     /**
@@ -404,6 +505,30 @@ class Entity extends Base\PublicEntity
     public function getEmiDuration()
     {
         return $this->getAttribute(self::EMI_DURATION);
+    }
+
+    protected function getFixedRateAttribute(): int
+    {
+        $value = $this->attributes[self::FIXED_RATE] ?? $this->defaults[Entity::FIXED_RATE];
+
+        if ($this->getType() === Type::BUY_PRICING)
+        {
+            $value = $this->cryptomute->decrypt($value, 10, false, $this->password, $this->iv);
+        }
+
+        return $value;
+    }
+
+    protected function getPercentRateAttribute(): int
+    {
+        $value = $this->attributes[self::PERCENT_RATE] ?? $this->defaults[Entity::PERCENT_RATE];
+
+        if ($this->getType() === Type::BUY_PRICING)
+        {
+            $value = $this->cryptomute->decrypt($value, 10, false, $this->password, $this->iv);
+        }
+
+        return $value;
     }
 
     protected function getAmountRangeMinAttribute()

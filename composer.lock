@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3013d8edbeb312e23e8799122fa833fa",
+    "content-hash": "b195883cdbd450e7ce238f5c3c10d20d",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -11476,6 +11476,63 @@
                 }
             ],
             "time": "2021-01-27T09:09:26+00:00"
+        },
+        {
+            "name": "teakowa/cryptomute",
+            "version": "v1.4.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Teakowa/cryptomute.git",
+                "reference": "da0197a0472303e8c28ef863ae5edd096a147eaf"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Teakowa/cryptomute/zipball/da0197a0472303e8c28ef863ae5edd096a147eaf",
+                "reference": "da0197a0472303e8c28ef863ae5edd096a147eaf",
+                "shasum": ""
+            },
+            "require": {
+                "ext-gmp": "*",
+                "ext-openssl": "*",
+                "php": "^7.2.5"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^2.16",
+                "phpunit/phpunit": "^8.5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Cryptomute\\": "lib/Cryptomute/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Teakowa",
+                    "email": "packagist+contact@teakowa.me"
+                }
+            ],
+            "description": "Encrypt numeric data (binary, decimal, hex) preserving it's format (eg. 16-digits card number to 16-digits encrypted number).",
+            "keywords": [
+                "cryptomute",
+                "decode",
+                "decrypt",
+                "encode",
+                "encrypt",
+                "format-preserving",
+                "obfuscate",
+                "permute"
+            ],
+            "time": "2020-08-29T05:42:45+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",

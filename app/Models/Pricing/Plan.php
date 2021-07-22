@@ -3,6 +3,7 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Models\Bank;
+use RZP\Models\Base\Utility;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Exception\LogicException;
@@ -107,10 +108,7 @@ class Plan extends PublicCollection
                         break;
 
                     default:
-                        throw new LogicException(
-                            'Network set for wrong method',
-                            null,
-                            ['network' => $network, 'method' => $method]);
+                        break;
                 }
             }
 
@@ -150,6 +148,34 @@ class Plan extends PublicCollection
         }
 
         return $res;
+    }
+
+    public static function formattedBuyPricing(array $rule)
+    {
+        $formattedRules = [];
+
+        $items = [];
+
+        foreach (Entity::$buyPricingMethods as $method)
+        {
+            $attribute = $rule[$method] ?? '';
+
+            if (is_array($attribute))
+            {
+                $items[$method] = $attribute;
+            }
+        }
+
+        foreach (Utility::getCombinations($items) as $item)
+        {
+            $item[Entity::IS_BUY_PRICING_ALLOWED] = true;
+
+            $item[Entity::TYPE] = Type::BUY_PRICING;
+
+            $formattedRules[] = array_merge($rule, $item);
+        }
+
+        return $formattedRules;
     }
 
     protected function getDefaultPlanCollectionValues()

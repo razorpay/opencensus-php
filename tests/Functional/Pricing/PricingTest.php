@@ -758,10 +758,22 @@ class PricingTest extends TestCase
         $this->assertNotNull($response['bank']);
         $this->assertNotNull($response['card']);
         $this->assertNotNull($response['wallet']);
+        $this->assertNotNull($response['emandate']);
+        $this->assertNotNull($response['upi']);
+        $this->assertNotNull($response['emi']);
+        $this->assertNotNull($response['nach']);
+        $this->assertNotNull($response['paylater']);
+        $this->assertNotNull($response['cardless_emi']);
 
         $this->assertNotEquals(count($response['bank']), 0);
         $this->assertNotEquals(count($response['card']), 0);
         $this->assertNotEquals(count($response['wallet']), 0);
+        $this->assertNotEquals(count($response['emandate']), 0);
+        $this->assertNotEquals(count($response['upi']), 0);
+        $this->assertNotEquals(count($response['emi']), 0);
+        $this->assertNotEquals(count($response['nach']), 0);
+        $this->assertNotEquals(count($response['paylater']), 0);
+        $this->assertNotEquals(count($response['cardless_emi']), 0);
 
     }
 

@@ -27,6 +27,12 @@ class Repository extends Base\Repository
 
     const WITH_TRASHED = 'deleted';
 
+    const WITH_BUY_PRICING      = 'with_buy_pricing';
+    const WITHOUT_BUY_PRICING   = 'without_buy_pricing';
+    const ONLY_BUY_PRICING      = 'only_buy_pricing';
+
+    protected $buyPricingEnum = self::WITHOUT_BUY_PRICING;
+
     protected $appFetchParamRules = array(
         Entity::PLAN_ID         => 'sometimes|string',
         self::WITH_TRASHED      => 'sometimes|in:0,1',
@@ -41,6 +47,37 @@ class Repository extends Base\Repository
         Product::PRIMARY
     ];
 
+    protected function newQuery()
+    {
+        return $this->addQueryParamBuyPricing(parent::newQuery());
+    }
+
+    protected function newQueryWithConnection($connection)
+    {
+        return $this->addQueryParamBuyPricing(parent::newQueryWithConnection($connection));
+    }
+
+    public function withBuyPricing()
+    {
+        return $this->setBuyPricingEnum(self::WITH_BUY_PRICING);
+    }
+
+    public function withoutBuyPricing()
+    {
+        return $this->setBuyPricingEnum(self::WITHOUT_BUY_PRICING);
+    }
+
+    public function onlyBuyPricing()
+    {
+        return $this->setBuyPricingEnum(self::ONLY_BUY_PRICING);
+    }
+
+    public function setBuyPricingEnum($value)
+    {
+        $this->buyPricingEnum = $value;
+
+        return $this;
+    }
 
     protected function newQueryWithOrgIdParam($orgId = null)
     {
@@ -487,6 +524,19 @@ class Repository extends Base\Repository
         if ($params[self::WITH_TRASHED] === '1')
         {
             $query->withTrashed();
+        }
+    }
+
+    protected function addQueryParamBuyPricing($query)
+    {
+        switch ($this->buyPricingEnum)
+        {
+            case self::WITH_BUY_PRICING :
+                return $query;
+            case self::ONLY_BUY_PRICING :
+                return $query->where(Entity::TYPE, '=', Type::BUY_PRICING);
+            default :
+                return $query->where(Entity::TYPE, '!=', Type::BUY_PRICING);
         }
     }
 

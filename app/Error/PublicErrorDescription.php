@@ -333,7 +333,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT                         = 'Amex pricing rule not present for merchant';
     const BAD_REQUEST_ANOTHER_PRICING_UPDATE_IN_PROGRESS                        = 'Request failed because another merchant pricing update is in progress';
     const BAD_REQUEST_PRICING_PLAN_CANNOT_HAVE_MULTIPLE_TYPES                   = 'Pricing Plan cannot have rules of multiple types';
+    const BAD_REQUEST_BUY_PRICING_RANGE_VALIDATION_FAILED                       = 'Rules Not Defined On Complete Range For MAI';
     const BAD_REQUEST_PRICING_TYPE_COMMISSION_INVALID_FOR_NON_RZP_ORG           = 'Commission plan cannot be posted for this org';
+    const BAD_REQUEST_PRICING_TYPE_BUY_PRICING_INVALID_FOR_NON_RZP_ORG          = 'Buy Pricing plan cannot be assigned for this org';
     const BAD_REQUEST_PRICING_RULE_FOR_CARD_NETWORK_NOT_PRESENT                 = 'Pricing rule not present for merchant with this card network';
     const BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP                     = 'Pricing rule amount range collides with another existing rule\'s amount range.';
     const BAD_REQUEST_UNKNOWN_SCHEDULE                                          = 'Schedule not found in database.';
@@ -657,6 +659,8 @@ class PublicErrorDescription
     const BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED                          = 'Shared terminal cannot be copied';
     const BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED                = 'Shared terminal merchant cannot be changed';
     const BAD_REQUEST_TERMINAL_NO_GATEWAY_MAPPING_FOR_DIRECTSETTLEMENT          = 'No terminal gateway mapping for direct settlement';
+    const BAD_REQUEST_PLAN_ID_IS_NOT_REQUIRED                                   = 'plan_id cannot be passed with terminals';
+    const BAD_REQUEST_BUY_PRICING_PLAN_WITH_NAME_DOES_NOT_EXIST                 = 'No pricing plan found with plan name';
     const BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL                 = 'Sub-Merchant already assigned to terminal';
     const BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL                   = 'Cannot change email of Sub-Merchant with same email as its parent';
     const BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY                          = 'This operation is not supported for the given business subcategory';

@@ -43,8 +43,8 @@ class Validator extends Base\Validator
         Entity::PAYMENT_METHOD_TYPE     => 'sometimes|nullable',
         Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
         Entity::PAYMENT_NETWORK         => 'sometimes|nullable|string',
-        Entity::PAYMENT_ISSUER          => 'sometimes_if:payment_method,card,emi,emandate,cardless_emi,paylater,nach|nullable|alphanum|max:255',
-        Entity::EMI_DURATION            => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
+        Entity::PAYMENT_ISSUER          => 'sometimes|nullable|max:255',
+        Entity::EMI_DURATION            => 'sometimes_if:payment_method,emi|nullable|integer|in:3,6,9,12,18,24',
         Entity::AUTH_TYPE               => 'sometimes|nullable',
         Entity::INTERNATIONAL           => 'sometimes|in:0,1',
         Entity::RECEIVER_TYPE           => 'sometimes_if:payment_method,card,upi|nullable|in:qr_code,vpa',
@@ -60,6 +60,7 @@ class Validator extends Base\Validator
         Entity::CHANNEL                 => 'required_if:account_type,direct|filled|custom',
         Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
         Entity::PAYOUTS_FILTER          => 'sometimes_if:product,banking',
+        Entity::IS_BUY_PRICING_ALLOWED  => 'sometimes',
     ];
 
     protected static $editPlanRuleRules = [
@@ -73,7 +74,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $merchantPricingPlansSummaryRules = [
-        Entity::TYPE      => 'sometimes|string|in:pricing,commission',
+        Entity::TYPE      => 'sometimes|string|in:pricing,commission,buy_pricing',
         Entity::PLAN_NAME => 'sometimes|string',
         Entity::PLAN_ID   => 'sometimes|string|size:14',
         Fetch::COUNT      => 'sometimes|integer|min:0',
@@ -81,6 +82,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $addPlanRuleValidators = [
+        'addBuyPricingTypeRule',
         'addPlanRuleRate',
         'addPlanRuleCard',
         'addPlanRuleEmi',
@@ -98,12 +100,13 @@ class Validator extends Base\Validator
         'addPlanRuleRefund',
         'addPlanRuleAuthType',
         'addPlanRuleProcurer',
+        'addPlanRulePaymentIssuer',
         // Skipped for now as it blocks the creation of 0-pricing rules.
         // 'addPlanRuleBankTransfer',
     ];
 
     protected static $fetchRules = [
-        Entity::TYPE   => 'sometimes|string|custom',
+        Entity::TYPE   => 'sometimes|string|in:pricing,commission',
     ];
 
     protected static $editPlanRuleValidators = [
@@ -146,6 +149,76 @@ class Validator extends Base\Validator
 
         throw new Exception\BadRequestValidationFailureException(
             'procurer is not required when feature is optimizer.');
+    }
+
+    protected function validateAddPlanRulePaymentIssuer($input)
+    {
+        if (isset($input[Entity::PAYMENT_ISSUER]) === false)
+        {
+            return;
+        }
+
+        if ($input[Entity::TYPE] === Type::BUY_PRICING)
+        {
+            if (in_array($input[Entity::PAYMENT_METHOD], Payment\Method::getAllPaymentMethods()) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'invalid method sent for buy pricing: '. $input[Entity::PAYMENT_METHOD]);
+            }
+
+            if (BuyPricing::isValidBuyPricingIssuer($input[Entity::PAYMENT_METHOD], $input[Entity::PAYMENT_ISSUER]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'invalid issuer '. $input[Entity::PAYMENT_ISSUER] .' sent for buy pricing method '. $input[Entity::PAYMENT_METHOD]);
+            }
+
+        }
+        else
+        {
+            $validMethods = [
+                Payment\Method::CARD,
+                Payment\Method::EMI,
+                Payment\Method::CARDLESS_EMI,
+                Payment\Method::EMANDATE,
+                Payment\Method::PAYLATER,
+                Payment\Method::NACH,
+            ];
+
+            if (in_array($input[Entity::PAYMENT_METHOD], $validMethods) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    $input[Entity::PAYMENT_ISSUER] .' is not required for method: '. $input[Entity::PAYMENT_METHOD]);
+            }
+
+            if ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARDLESS_EMI)
+            {
+                if (CardlessEmi::exists($input[Entity::PAYMENT_ISSUER]) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Provider selected for cardless emi should be valid');
+                }
+            }
+
+            if ($input[Entity::PAYMENT_METHOD] === Payment\Method::PAYLATER)
+            {
+                if (Payment\Processor\PayLater::exists($input[Entity::PAYMENT_ISSUER]) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Provider selected for paylater should be valid');
+                }
+            }
+        }
+    }
+
+    protected function validateAddBuyPricingTypeRule(array $input)
+    {
+        $isBuyPricingAllowed = $input[Entity::IS_BUY_PRICING_ALLOWED] ?? false;
+
+        if ($isBuyPricingAllowed === false and $input[Entity::TYPE] === Type::BUY_PRICING)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'type buy pricing is not permitted');
+        }
     }
 
     protected function validateAddPlanRulePricingMethod(array $input)
@@ -334,6 +407,11 @@ class Validator extends Base\Validator
                 Payment\AuthType::validateAuthType($input[Entity::PAYMENT_METHOD_TYPE], $input[Entity::PAYMENT_METHOD]);
             }
 
+            if ($input[Entity::TYPE] === Type::BUY_PRICING)
+            {
+                return;
+            }
+
             if (isset($input[Entity::PAYMENT_ISSUER]) === true)
             {
                 Payment\RecurringType::validateRecurringType($input[Entity::PAYMENT_ISSUER]);
@@ -353,6 +431,11 @@ class Validator extends Base\Validator
 
     protected function validateAddPlanRuleNB($input)
     {
+        if ($input[Entity::TYPE] === Type::BUY_PRICING)
+        {
+            return;
+        }
+
         // Check that payment_method_type is not defined when mode is net-banking
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::NETBANKING)
         {
@@ -518,24 +601,6 @@ class Validator extends Base\Validator
             }
         }
 
-        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARDLESS_EMI)
-        {
-            if (CardlessEmi::exists($input[Entity::PAYMENT_ISSUER]) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Provider selected for cardless emi should be valid');
-            }
-        }
-
-        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::PAYLATER)
-        {
-            if (Payment\Processor\PayLater::exists($input[Entity::PAYMENT_ISSUER]) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Provider selected for cardless emi should be valid');
-            }
-        }
-
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARD)
         {
             $network = $input[Entity::PAYMENT_NETWORK];
@@ -559,7 +624,7 @@ class Validator extends Base\Validator
             if (IFSC::exists($input[Entity::PAYMENT_NETWORK]) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Payment network for bank should be a valid bank name');
+                    'Payment network for bank/emandate should be a valid bank name');
             }
         }
 
@@ -569,6 +634,27 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Provider selected for app should be valid');
+            }
+        }
+
+        if ($input[Entity::TYPE] === Type::BUY_PRICING and isset($input[Entity::PAYMENT_NETWORK]))
+        {
+            if (in_array($input[Entity::PAYMENT_METHOD],
+                [
+                    Payment\Method::UPI,
+                    Payment\Method::EMI,
+                    Payment\Method::NACH,
+                    Payment\Method::PAYLATER,
+                    Payment\Method::CARDLESS_EMI,
+                ]) === false)
+            {
+                return;
+            }
+
+            if (BuyPricing::isValidBuyPricingNetwork($input[Entity::PAYMENT_METHOD], $input[Entity::PAYMENT_NETWORK] ) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Network selected for method ' . $input[Entity::PAYMENT_METHOD] .' is invalid');
             }
         }
     }
@@ -633,6 +719,11 @@ class Validator extends Base\Validator
 
     protected function validateAddPlanRuleAmountRange($input)
     {
+        if ($input[Entity::TYPE] === Type::BUY_PRICING)
+        {
+            return;
+        }
+
         if ((isset($input[Entity::AMOUNT_RANGE_ACTIVE]) === false) or
             ($input[Entity::AMOUNT_RANGE_ACTIVE] === '0'))
         {
@@ -796,6 +887,17 @@ class Validator extends Base\Validator
                 ]
             );
         }
+
+        if (($type === Type::BUY_PRICING) and ($orgId !== Org::RAZORPAY_ORG_ID))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PRICING_TYPE_BUY_PRICING_INVALID_FOR_NON_RZP_ORG,
+                Entity::TYPE,
+                [
+                    'org_id' => $orgId,
+                ]
+            );
+        }
     }
 
     /**
@@ -928,6 +1030,66 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
+        }
+    }
+
+    public function validateBuyPricingRules($inputRules)
+    {
+        foreach ($inputRules as $rule)
+        {
+            if (isset($rule[Entity::TYPE]) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'type is not required for buy pricing');
+            }
+        }
+
+        $inputRules = (new Entity())->groupBuyPricingRules($inputRules);
+
+        $inputRules->map(function ($groupedRules)
+        {
+            $this->validateGroupedRulesRange($groupedRules->toArray());
+        });
+    }
+
+    protected function validateGroupedRulesRange($groupedRules)
+    {
+        $size = sizeof($groupedRules);
+
+        array_walk($groupedRules, function ($rules)
+        {
+            $validParams = [Entity::AMOUNT_RANGE_MIN, Entity::AMOUNT_RANGE_MAX, Entity::AMOUNT_RANGE_ACTIVE, Entity::FIXED_RATE, Entity::PERCENT_RATE];
+
+            $validParams = array_merge(Entity::$buyPricingMethods, $validParams);
+
+            $invalidParams = array_diff(array_keys($rules), $validParams);
+
+            if (count($invalidParams) > 0)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    implode(', ', $invalidParams).' are not permitted');
+            }
+        });
+
+        array_multisort(array_column($groupedRules, Entity::AMOUNT_RANGE_MIN), SORT_ASC, $groupedRules);
+
+        $expectedPrice = 0;
+
+        for ($i=0; $i<$size; $i++)
+        {
+           if ((int)$groupedRules[$i][Entity::AMOUNT_RANGE_MIN] !== (int)$expectedPrice)
+           {
+               throw new Exception\BadRequestValidationFailureException(
+                   ErrorCode::BAD_REQUEST_RANGE_VALIDATION_FAILED);
+           }
+
+            $expectedPrice = (int)($groupedRules[$i][Entity::AMOUNT_RANGE_MAX] ?? 0);
+        }
+
+        if (isset($expectedPrice) and $expectedPrice !== 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_RANGE_VALIDATION_FAILED);
         }
     }
 

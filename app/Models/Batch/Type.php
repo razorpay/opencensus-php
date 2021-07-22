@@ -63,6 +63,8 @@ class Type
 
     const PRICING_RULE              = 'pricing_rule';
 
+    const BUY_PRICING_RULE          = 'buy_pricing_rule';
+
     const LOC_WITHDRAWAL            = 'loc_withdrawal';
 
     const MERCHANT_CONFIG_INHERITANCE = 'merchant_config_inheritance';
@@ -190,6 +192,7 @@ class Type
         self::MPAN,
         self::CAPTURE_SETTING,
         self::PRICING_RULE,
+        self::BUY_PRICING_RULE,
         self::LOC_WITHDRAWAL,
         self::ADMIN_BATCH,
         self::MERCHANT_CONFIG_INHERITANCE,
@@ -289,6 +292,7 @@ class Type
         self::IIN_MC_MASTERCARD,
         self::MPAN,
         self::PRICING_RULE,
+        self::BUY_PRICING_RULE,
         self::LOC_WITHDRAWAL,
         self::ADMIN_BATCH,
         self::ADJUSTMENT,
@@ -363,6 +367,7 @@ class Type
         self::FUND_ACCOUNT,
         self::SUBMERCHANT_ASSIGN,
         self::PRICING_RULE,
+        self::BUY_PRICING_RULE,
         self::LOC_WITHDRAWAL,
         self::RECURRING_CHARGE,
         self::AUTH_LINK,
@@ -407,6 +412,7 @@ class Type
         self::PAYOUT,
         self::FUND_ACCOUNT,
         self::PRICING_RULE,
+        self::BUY_PRICING_RULE,
         self::LOC_WITHDRAWAL,
         self::MERCHANT_CONFIG_INHERITANCE,
         self::ENTITY_UPDATE_ACTION,
