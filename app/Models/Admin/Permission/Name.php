@@ -28,6 +28,7 @@ class Name
     const VIEW_MERCHANT_AGGREGATIONS          = 'view_merchant_aggregations';
     const VIEW_MERCHANT_TAGS                  = 'view_merchant_tags';
     const CREATE_PRICING_PLAN                 = 'create_pricing_plan';
+    const CREATE_BUY_PRICING_PLAN             = 'create_buy_pricing_plan';
     const ADMIN_FETCH_MERCHANTS               = 'admin_fetch_merchants';
     const ADMIN_GET_APP_AUTH                  = 'admin_get_app_auth';
     const ADMIN_GET_FILE                      = 'admin_get_file';
@@ -36,6 +37,7 @@ class Name
     const FEATURE_ONBOARDING_FETCH_ALL_RESPONSES = 'feature_onboarding_fetch_all_responses';
     const FETCH_PAYMENT_CONFIG_ADMIN          = 'fetch_payment_config_admin';
     const UPDATE_PRICING_PLAN                 = 'update_pricing_plan';
+    const UPDATE_BUY_PRICING_PLAN             = 'update_buy_pricing_plan';
     const SET_PRICING_RULES                   = 'set_pricing_rules';
     const DELETE_PRICING_PLAN_RULES           = 'delete_pricing_plan_rules';
     const DELETE_EMI_PLAN                     = 'delete_emi_plan';
@@ -98,6 +100,7 @@ class Name
     const MERCHANT_INVOICE_CONTROL            = 'merchant_invoice_control';
     const MERCHANT_EMAIL_EDIT                 = 'merchant_edit_email';
     const MERCHANT_PRICING_PLANS              = 'merchant_pricing_plans';
+    const TERMINAL_BUY_PRICING_PLANS          = 'terminal_buy_pricing_plans';
     const CREATE_RECONCILIATE                 = 'create_reconciliate';
     const VIEW_ACTIVATION_FORM                = 'view_activation_form';
     const RESET_WEBHOOK_DATA                  = 'reset_webhook_data';

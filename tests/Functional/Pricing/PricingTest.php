@@ -53,6 +53,15 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddBuyPricingPlanRule()
+    {
+        $plan = $this->createBuyPricingPlan();
+
+        $testData['request']['url'] = '/buy_pricing/'. $plan['id'] .'/grouped_rule';
+
+        $this->startTest($testData);
+    }
+
     public function testAddPricingPlanRuleFeeBearerValidation()
     {
         $content = $this->createPricingPlan([]);
@@ -224,6 +233,13 @@ class PricingTest extends TestCase
     public function testCreatePricingPlanByRZPAdmin()
     {
         $this->ba->adminAuth('test', null, 'org_' . Org::SBIN_ORG);
+
+        $this->startTest();
+    }
+
+    public function testCreateBuyPricingPlan()
+    {
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -498,6 +514,23 @@ class PricingTest extends TestCase
         $this->assertNotNull($rule['deleted_at']);
     }
 
+    public function testUpdateBuyPricingPlanRule()
+    {
+        $content = $this->createBuyPricingPlan();
+
+        $rule = $content['rules']['0'];
+
+        $this->assertEquals($rule['deleted_at'], null);
+
+        $testData['request']['url'] = '/buy_pricing/' . $content['id'] . '/rule/' . $rule['id'];
+
+        $this->startTest($testData);
+
+        $rule = Pricing\Entity::withTrashed()->findOrFail($rule['id']);
+
+        $this->assertNotNull($rule['deleted_at']);
+    }
+
     public function testUpdatePricingPlanRuleEmptyProcurer()
     {
         $content = $this->createPricingPlan2();
@@ -725,6 +758,21 @@ class PricingTest extends TestCase
         $this->startTest($testData);
 
         $this->ba->adminAuth('live');
+        $this->startTest($testData);
+    }
+
+    public function testGetBuyPricingPlan()
+    {
+        $id = $this->createBuyPricingPlan()['id'];
+
+        $testData['request']['url']    = '/buy_pricing/'. $id;
+        $testData['request']['method'] = 'GET';
+
+        $this->ba->adminAuth('test');
+        $this->startTest($testData);
+
+        $this->ba->adminAuth('live');
+
         $this->startTest($testData);
     }
 
@@ -1326,6 +1374,15 @@ class PricingTest extends TestCase
     {
 
         $content = $this->startTest();
+    }
+
+    public function testDeleteBuyPricingPlanRuleForce()
+    {
+        $plan = $this->createBuyPricingPlan();
+
+        $testData['request']['url'] = '/buy_pricing/'. $plan['id'] .'/rule/'. $plan['rules'][0]['id'] . '/force';
+
+        $this->startTest($testData);
     }
 
     public function startTest($testDataToReplace = array())

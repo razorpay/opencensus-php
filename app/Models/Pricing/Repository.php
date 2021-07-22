@@ -519,6 +519,19 @@ class Repository extends Base\Repository
         return $this->delete($rule);
     }
 
+    public function deleteBuyPlanGroupedRuleForce($planId, $input, $orgId = null)
+    {
+        $query = $this->newQueryWithOrgIdParam($orgId)
+                      ->planId($planId);
+
+        foreach ($input as $key => $value)
+        {
+            $query->where($key, '=', $value);
+        }
+
+        return $query->delete();
+    }
+
     protected function addQueryParamDeleted($query, $params)
     {
         if ($params[self::WITH_TRASHED] === '1')

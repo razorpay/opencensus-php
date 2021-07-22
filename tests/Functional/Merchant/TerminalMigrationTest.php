@@ -1677,6 +1677,34 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals($beforeCount - 1, $afterCount);
     }
 
+    public function testBulkAssignBuyPricingPlans()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'gateway_merchant_id'        => 'testGatewayMerchantId',
+            'enabled' => '1'
+        ]);
+
+        $buyPricingPlan = $this->createBuyPricingPlan();
+
+        $url = '/buy_pricing/assign/bulk/';
+
+        $input = [
+            [
+                'idempotency_key' => 'randomKey',
+                'terminal_id'     => $terminal->getId(),
+                'plan_name'       => $buyPricingPlan['rules'][0]['plan_name'],
+            ]
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->testData[__FUNCTION__]['request']['content'] = $input;
+
+        $response = $this->startTest();
+
+        $this->assertTrue($response['items'][0]['success']);
+    }
+
     public function testAdminFetchMultipleTerminalsProxy()
     {
         $terminal = $this->fixtures->create(

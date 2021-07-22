@@ -926,6 +926,49 @@ return [
         ],
     ],
 
+    'testCreateBuyPricingPlan' => [
+        'request'  => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'rules'     => [
+                    [
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => ['DICL'],
+                        'payment_issuer'      => ['hdfc'],
+                        'percent_rate'        => 1000,
+                        'amount_range_active' => 1,
+                        'amount_range_min'    => 0,
+                        'amount_range_max'    => null,
+                    ],
+                ],
+            ],
+            'url'     => '/buy_pricing/',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'   => 'TestPlan1',
+                'entity' => 'pricing',
+                'count'  => 1,
+                'rules'  => [
+                    [
+                        'type'                => 'buy_pricing',
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'hdfc',
+                        'percent_rate'        => 1000,
+                        'international'       => false,
+                        'amount_range_active' => true,
+                        'amount_range_min'    => 0,
+                        'amount_range_max'    => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testAddPricingPlanRule' => [
         'request' => [
             'content' => [
@@ -984,6 +1027,66 @@ return [
                 'amount_range_active' => false,
                 'amount_range_min'    => null,
                 'amount_range_max'    => null,
+            ],
+        ],
+    ],
+
+    'testAddBuyPricingPlanRule' => [
+        'request'  => [
+            'content' => [
+                'rules' => [
+                    [
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => ['MAES'],
+                        'payment_issuer'      => ['hdfc'],
+                        'percent_rate'        => 1000,
+                        'international'       => '0',
+                        'amount_range_active' => '1',
+                        'amount_range_min'    => 0,
+                        'amount_range_max'    => 500,
+                    ],
+                    [
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => ['MAES'],
+                        'payment_issuer'      => ['hdfc'],
+                        'percent_rate'        => 1000,
+                        'international'       => '0',
+                        'amount_range_active' => '1',
+                        'amount_range_min'    => 500,
+                        'amount_range_max'    => null,
+                    ],
+                ],
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'plan_name'           => 'testPlan',
+                    'payment_method'      => 'card',
+                    'payment_method_type' => 'credit',
+                    'payment_network'     => 'MAES',
+                    'payment_issuer'      => 'hdfc',
+                    'percent_rate'        => 1000,
+                    'international'       => false,
+                    'amount_range_active' => true,
+                    'amount_range_min'    => 0,
+                    'amount_range_max'    => 500,
+                ],
+                [
+                    'plan_name'           => 'testPlan',
+                    'payment_method'      => 'card',
+                    'payment_method_type' => 'credit',
+                    'payment_network'     => 'MAES',
+                    'payment_issuer'      => 'hdfc',
+                    'percent_rate'        => 1000,
+                    'international'       => false,
+                    'amount_range_active' => true,
+                    'amount_range_min'    => 500,
+                    'amount_range_max'    => null,
+                ],
             ],
         ],
     ],
@@ -2009,6 +2112,23 @@ return [
         ],
     ],
 
+    'testUpdateBuyPricingPlanRule' => [
+        'request' => [
+            'content' => [
+                'percent_rate' => 450,
+                'fixed_rate'   => 0,
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'    => 'testPlan',
+                'percent_rate' => 450,
+                'fixed_rate'   => 0,
+            ],
+        ],
+    ],
+
     'testUpdatePricingPlanRuleEmptyProcurer' => [
         'request' => [
             'content' => [
@@ -2310,6 +2430,16 @@ return [
                         'amount_range_max'    => null,
                     ],
                 ],
+            ],
+        ],
+    ],
+
+    'testGetBuyPricingPlan' => [
+        'response' => [
+            'content' => [
+                'name'   => 'testPlan',
+                'entity' => 'pricing',
+                'count'  => 10,
             ],
         ],
     ],
@@ -3015,6 +3145,17 @@ return [
         'response' => [
             'content' => [
                 'message' => 'Pricing successfully deleted',
+            ],
+        ],
+    ],
+
+    'testDeleteBuyPricingPlanRuleForce' => [
+        'request' => [
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'Buy Pricing rule group successfully deleted',
             ],
         ],
     ],

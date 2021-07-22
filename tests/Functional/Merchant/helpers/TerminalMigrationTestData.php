@@ -399,6 +399,16 @@ return [
             ],
         ],
     ],
+    'testBulkAssignBuyPricingPlans' => [
+        'request'    => [
+            'method'    => 'POST',
+        ],
+        'response'   => [
+            'content'   => [
+                'count' => 1,
+            ],
+        ],
+    ],
     'testAdminFetchMultipleTerminalsProxy' => [
         'request'    => [
             'method'    => 'GET',

@@ -19,7 +19,8 @@ class Core extends Base\Core
      */
     public function addPlanRule(Plan $plan, array $input, string $ruleOrgId = null): Entity
     {
-        $this->trace->info(TraceCode::PRICING_PLAN_RULE_ADD_ATTEMPT, $input);
+        $this->trace->info(TraceCode::PRICING_PLAN_RULE_ADD_ATTEMPT,
+            $this->redactSensitiveInfoFromLogs($input));
 
         $rule = (new Entity)->addPlanRule($input, $plan);
 
@@ -46,7 +47,7 @@ class Core extends Base\Core
         $this->repo->saveOrFail($rule);
 
         $this->trace->info(TraceCode::PRICING_PLAN_RULE_ADD_SUCCESS,
-            $rule->toArray());
+            $this->redactSensitiveInfoFromLogs($rule->toArray()));
 
         return $rule;
     }
@@ -88,11 +89,15 @@ class Core extends Base\Core
      */
     public function editPlanRule(String $planId, String $ruleId, array $input, String $orgId = null): Entity
     {
+        $this->trace->info(
+            TraceCode::PRICING_PLAN_RULE_UPDATE_ATTEMPT,
+            ['id' => $ruleId]);
+
         $rule = $this->repo->pricing->getPlanRule($planId, $ruleId, $orgId);
 
         $newRule = $rule->replicate();
 
-        $plan = $this->repo->pricing->getPricingPlanById($planId);
+        $plan = $this->repo->pricing->getPlan($planId);
 
         $planWithoutOldRule = $plan->reject(function($existingRule) use ($rule) {
             return $existingRule->getId() === $rule->getId();
@@ -121,6 +126,10 @@ class Core extends Base\Core
             return $newRule;
         });
 
+        $this->trace->info(
+            TraceCode::PRICING_PLAN_RULE_UPDATE_SUCCESS,
+            [$this->redactSensitiveInfoFromLogs($rule->toArray())]);
+
         return $newRule;
     }
 
@@ -140,13 +149,13 @@ class Core extends Base\Core
         $inputRules = $input[Entity::RULES];
 
         // Validate plan name is unique
-        $plan = $this->repo->pricing->getPlanByName($planName);
+        $plan = $this->repo->pricing->withBuyPricing()->getPlanByName($planName);
 
         $validator->validatePlanCountZero($plan);
 
         $plan = $this->repo->transactionOnLiveAndTest(function() use ($planName, $inputRules, $ruleOrgId)
         {
-            $this->trace->info(TraceCode::PRICING_PLAN_CREATE_ATTEMPT,$inputRules[0]);
+            $this->trace->info(TraceCode::PRICING_PLAN_CREATE_ATTEMPT,$this->redactSensitiveInfoFromLogs($inputRules[0]));
 
             $plan = $this->createPlan($planName, $inputRules[0], $ruleOrgId);
 
@@ -167,6 +176,16 @@ class Core extends Base\Core
         });
 
         return $plan;
+    }
+
+    private function redactSensitiveInfoFromLogs(array $input)
+    {
+        if (isset($input[Entity::TYPE]) and $input[Entity::TYPE] === Type::BUY_PRICING)
+        {
+            unset($input[Entity::FIXED_RATE], $input[Entity::PERCENT_RATE]);
+        }
+
+        return $input;
     }
 
     protected function createPlanFromRule(Entity $rule): Plan

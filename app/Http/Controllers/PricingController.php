@@ -4,6 +4,8 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use RZP\Models\Pricing\Entity;
+use RZP\Models\Pricing\Type;
 
 class PricingController extends Controller
 {
@@ -16,9 +18,25 @@ class PricingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postCreateBuyPlan()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createPlan($input, Type::BUY_PRICING);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPlan($id)
     {
         $data = $this->service()->getPlanById($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getBuyPricingPlan($id)
+    {
+        $data = $this->service()->getBuyPricingPlanById($id);
 
         return ApiResponse::json($data);
     }
@@ -57,6 +75,15 @@ class PricingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postAddBuyPlanGroupedRule($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addPlanRule($id, $input, null, true);
+
+        return ApiResponse::json($data);
+    }
+
     public function postAddBulkPlanRules()
     {
         $input = Request::all();
@@ -75,9 +102,25 @@ class PricingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateBuyPricingPlanRule($planId, $ruleId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updatePlanRule($planId, $ruleId, $input, true);
+
+        return ApiResponse::json($data);
+    }
+
     public function deletePlanRuleForce($planId, $ruleId)
     {
         $data = $this->service()->deletePlanRuleForce($planId, $ruleId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteBuyPlanGroupedRuleForce($planId, $ruleId)
+    {
+        $data = $this->service()->deleteBuyPlanGroupedRuleForce($planId, $ruleId);
 
         return ApiResponse::json($data);
     }

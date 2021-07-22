@@ -25,9 +25,20 @@ class Service extends Base\Service
     const MERCHANT_PRICING_UPDATE_MUTEX         = 'merchant_pricing_update_%s';
     const MERCHANT_PRICING_UPDATE_MUTEX_TIMEOUT = 30;
 
-    public function createPlan($input)
+    public function createPlan($input, $type = null)
     {
         $ruleOrgId = $this->getRuleOrgId();
+
+        $this->repo->pricing->withBuyPricing();
+
+        if ($type === Type::BUY_PRICING)
+        {
+            $inputRules = $input[Entity::RULES];
+
+            (new Validator)->validateBuyPricingRules($inputRules);
+
+            $input[Entity::RULES] = (new Entity())->formattedBuyPricingRules($inputRules);
+        }
 
         (new Pricing\Core)->create($input, $ruleOrgId);
 
@@ -36,21 +47,41 @@ class Service extends Base\Service
         return $plan->toArrayPublic();
     }
 
-    public function addPlanRule($id, $input, $orgId = null)
+    public function addPlanRule($id, $input, $orgId = null, $isBuyPricingRule = false)
     {
-        $this->trace->info(
-            TraceCode::PRICING_PLAN_RULE_ADD_ATTEMPT,
-            ['id' => $id, $input]);
+        if ($isBuyPricingRule === true)
+        {
+            $this->repo->pricing->onlyBuyPricing();
+        }
 
         $plan = $this->repo->pricing->getPlanByIdOrFailPublic($id, $orgId);
 
         $ruleOrgId = $plan->getOrgId();
 
-        $rule = (new Pricing\Core)->addPlanRule($plan, $input, $ruleOrgId);
+        if ($isBuyPricingRule === true)
+        {
+            $inputRules = $input[Entity::RULES];
 
-        $this->trace->info(
-            TraceCode::PRICING_PLAN_RULE_ADD_SUCCESS,
-            [$rule->toArray()]);
+            (new Validator)->validateBuyPricingRules($inputRules);
+
+            $inputRules = (new Entity())->formattedBuyPricingRules($inputRules);
+
+            $rules = $this->repo->transactionOnLiveAndTest(function () use ($inputRules, $plan, $ruleOrgId)
+            {
+                $rules = [];
+
+                foreach ($inputRules as $inputRule)
+                {
+                    $rules[] = (new Pricing\Core)->addPlanRule($plan, $inputRule, $ruleOrgId);
+                }
+
+                return $rules;
+            });
+
+            return $rules;
+        }
+
+        $rule = (new Pricing\Core)->addPlanRule($plan, $input, $ruleOrgId);
 
         return $rule->toArray();
     }
@@ -278,6 +309,15 @@ class Service extends Base\Service
         return $plan->toArrayPublic();
     }
 
+    public function getBuyPricingPlanById($id)
+    {
+        $this->repo->pricing->onlyBuyPricing();
+
+        $plan = $this->repo->pricing->getPlan($id);
+
+        return $plan->toArrayPublic();
+    }
+
     public function getPlans(array $input) : array
     {
         $validator = new Validator;
@@ -322,17 +362,14 @@ class Service extends Base\Service
         return $pricingPlans->toArrayMultiplePlansPublic();
     }
 
-    public function updatePlanRule($planId, $ruleId, $input)
+    public function updatePlanRule($planId, $ruleId, $input, $isBuyPricingRule = false)
     {
-        $this->trace->info(
-            TraceCode::PRICING_PLAN_RULE_UPDATE_ATTEMPT,
-            ['id' => $ruleId, $input]);
+        if ($isBuyPricingRule === true)
+        {
+            $this->repo->pricing->onlyBuyPricing();
+        }
 
         $rule = (new Pricing\Core)->editPlanRule($planId, $ruleId, $input);
-
-        $this->trace->info(
-            TraceCode::PRICING_PLAN_RULE_UPDATE_SUCCESS,
-            [$rule->toArray()]);
 
         return $rule->toArray();
     }
@@ -357,6 +394,38 @@ class Service extends Base\Service
         if ($flag === true)
         {
             return ['message' => 'Pricing successfully deleted'];
+        }
+    }
+
+    public function deleteBuyPlanGroupedRuleForce($planId, $ruleId)
+    {
+        $this->trace->info(TraceCode::BUY_PRICING_PLAN_RULE_DELETE_ATTEMPT,
+            [
+                'plan_id'    => $planId,
+                'rule_id'    => $ruleId,
+                'force'      => true,
+            ]);
+
+        $this->repo->pricing->onlyBuyPricing();
+
+        $rule = $this->repo->pricing->getPlanRule($planId, $ruleId);
+
+        $this->app['workflow']
+            ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
+            ->handle($rule, (new \stdClass));
+
+        $input = [];
+
+        foreach (Entity::$buyPricingMethods as $attribute)
+        {
+            $input[$attribute] = $rule->getAttribute($attribute);
+        }
+
+        $flag = $this->repo->pricing->deleteBuyPlanGroupedRuleForce($planId, $input);
+
+        if ($flag > 0)
+        {
+            return ['message' => 'Buy Pricing rule group successfully deleted'];
         }
     }
 

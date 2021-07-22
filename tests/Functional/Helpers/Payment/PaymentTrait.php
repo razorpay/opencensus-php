@@ -6,6 +6,7 @@ use App;
 use Mockery;
 use Requests;
 use Carbon\Carbon;
+use RZP\Models\Pricing\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\FeeBearer;
@@ -2631,6 +2632,85 @@ trait PaymentTrait
         $plan = $plan->toArray();
 
         $plan['id'] = $plan['plan_id'];
+
+        return $plan;
+    }
+
+    protected function createBuyPricingPlan()
+    {
+        $request = array(
+            'method'    => 'POST',
+            'url'       => '/buy_pricing',
+            'content'   => $this->getDefaultBuyPricingPlan(),
+        );
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function getDefaultBuyPricingPlan()
+    {
+        $rules = [
+            [
+                'payment_method'        => 'card',
+                'payment_method_type'   => 'credit',
+                'payment_issuer'        => ['hdfc'],
+                'payment_network'       => ['Visa', 'MasterCard'],
+                'percent_rate'          => '10',
+                'international'         => '0',
+                'amount_range_active'   => '1',
+                'amount_range_min'      => 500,
+                'amount_range_max'      => null,
+            ],
+            [
+                'payment_method'        => 'card',
+                'payment_method_type'   => 'credit',
+                'payment_issuer'        => ['hdfc'],
+                'payment_network'       => ['Visa', 'MasterCard'],
+                'percent_rate'          => '10',
+                'international'         => '0',
+                'amount_range_active'   => '1',
+                'amount_range_min'      => 0,
+                'amount_range_max'      => 500,
+            ],
+            [
+                'payment_method'        => 'card',
+                'payment_method_type'   => 'debit',
+                'payment_issuer'        => ['hdfc'],
+                'payment_network'       => ['Visa', 'MasterCard'],
+                'percent_rate'          => '10',
+                'international'         => '0',
+                'amount_range_active'   => '1',
+                'amount_range_min'      => 0,
+                'amount_range_max'      => 500,
+            ],
+            [
+                'payment_method'        => 'card',
+                'payment_method_type'   => 'debit',
+                'payment_issuer'        => ['hdfc'],
+                'payment_network'       => ['Visa', 'MasterCard'],
+                'percent_rate'          => '10',
+                'international'         => '0',
+                'amount_range_active'   => '1',
+                'amount_range_min'      => 500,
+                'amount_range_max'      => 700,
+            ],
+            [
+                'payment_method'        => 'card',
+                'payment_method_type'   => 'debit',
+                'payment_issuer'        => ['hdfc'],
+                'payment_network'       => ['Visa', 'MasterCard'],
+                'percent_rate'          => '10',
+                'international'         => '0',
+                'amount_range_active'   => '1',
+                'amount_range_min'      => 700,
+                'amount_range_max'      => null,
+            ],
+        ];
+
+        $plan = [
+            Entity::PLAN_NAME => 'testPlan',
+            Entity::RULES     => $rules,
+        ];
 
         return $plan;
     }

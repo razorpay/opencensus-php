@@ -99,6 +99,10 @@ return [
                 'description' => 'List all the merchant pricing plans',
                 'assignable'  => true,
             ],
+            Permission::TERMINAL_BUY_PRICING_PLANS => [
+                'description' => 'List all the terminal buy pricing plans',
+                'assignable'  => true,
+            ],
             Permission::ADMIN_FETCH_MERCHANTS => [
                 'description' => 'Fetch Merchants',
                 'assignable'  => true,
@@ -659,8 +663,18 @@ return [
                 'assignable'  => true,
                 'workflow'    => true
             ],
+            Permission::CREATE_BUY_PRICING_PLAN       => [
+                'description' => 'create buy pricing plan',
+                'assignable'  => true,
+                'workflow'    => true
+            ],
             Permission::UPDATE_PRICING_PLAN       => [
                 'description' => 'update pricing plan',
+                'assignable'  => true,
+                'workflow'    => true
+            ],
+            Permission::UPDATE_BUY_PRICING_PLAN       => [
+                'description' => 'update buy pricing plan',
                 'assignable'  => true,
                 'workflow'    => true
             ],
