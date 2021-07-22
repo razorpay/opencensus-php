@@ -3,11 +3,13 @@
 namespace RZP\Tests\Functional\Payout;
 
 use Queue;
+use Mockery;
 use Carbon\Carbon;
 
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card\Type;
 use RZP\Constants\Timezone;
@@ -18,6 +20,7 @@ use RZP\Services\Mock\Mozart;
 use RZP\Models\BankingAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
+use RZP\Services\Mozart as MozartService;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Feature\Constants as Features;
@@ -914,5 +917,107 @@ class RblPayoutTest extends TestCase
         $this->assertEquals('rbl', $payout->getChannel());
         $this->assertEquals($expectedStatus, $payout->getStatus());
         $this->assertEquals('UPI', $payout->getMode());
+    }
+
+    public function testBalanceFetchWithURL()
+    {
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $mock = Mockery::mock(MozartService::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive('sendRawRequest')
+             ->andReturnUsing(function(array $request) {
+
+                 $requestData = json_decode($request['content'], true);
+
+                 if ((array_key_exists('url',$requestData['entities']) === true) and
+                     (array_key_exists('version', $requestData['entities']['url']) === true))
+                 {
+                     $mockResponse =  $this->getMozartServiceSuccessResponse();
+                 }
+                 else
+                 {
+                     $mockResponse =  $this->getMozartServiceFailureResponse();
+                 }
+
+                 return json_encode($mockResponse);
+             });
+
+        $this->app->instance('mozart', $mock);
+
+        /** @var Details\Entity $basDetailsBeforeCronRuns */
+        $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                      ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
+
+        $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var Details\Entity $basDetailsAfterCronRuns */
+        $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                      ['account_number' => 2224440041626905]);
+
+        $this->assertNotEquals(0, $basDetailsAfterCronRuns->getBalanceLastFetchedAt());
+
+        $this->assertEquals(100, $basDetailsAfterCronRuns->getGatewayBalance());
+    }
+
+    protected function getMozartServiceSuccessResponse(int $amount = 1)
+    {
+        $response = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'BalAmt' => [
+                            'amountValue' => $amount
+                        ]
+                    ],
+                    'Header' => [
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ]
+                ]
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
+    protected function getMozartServiceFailureResponse()
+    {
+        $response = [
+            'data' => [
+                'PayGenRes' => [
+                    'Header' => [
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => 'ER034',
+                        'Error_Desc' => 'Request not valid for the given Account Number',
+                        'Status' => 'FAILED',
+                        'TranID' => 'A1'
+                    ]
+                ],
+            ],
+            'error' => [
+                'description' => 'Request not valid for the given Account Number',
+                'gateway_error_code' => 'ER034',
+                'gateway_error_description' => 'Request not valid for the given Account Number',
+                'gateway_status_code' => 200,
+                'internal_error_code' => 'VALIDATION_ERROR'
+            ],
+            'external_trace_id' => '',
+            'mozart_id' => 'bk1mej3c1osssas3oghg',
+            'next' => [],
+            'success' => false
+        ];
+
+        return $response;
     }
 }

@@ -230,6 +230,8 @@ class ConfigKey
     // Account numbers for which new flow applies where we divide fetch and process flow
     const ACCOUNT_STATEMENT_V2_FLOW = self::PREFIX . 'account_statement_v2_flow';
 
+    const BALANCE_FETCH_URL_V2 = self::PREFIX . 'balance_fetch_url_v2';
+
     const RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API = self::PREFIX . 'rbl_direct_accounts_on_single_payments_api';
 
     const REQUEST_LOG_STATE = self::PREFIX . 'request_log_state';
@@ -353,6 +355,7 @@ class ConfigKey
         self::ICICI_STATEMENT_FETCH_ATTEMPT_LIMIT,
         self::ICICI_STATEMENT_FETCH_RETRY_LIMIT,
         self::ACCOUNT_STATEMENT_V2_FLOW,
+        self::BALANCE_FETCH_URL_V2,
         self::REARCH_CARD_PAYMENTS,
         self::MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION,
         self::MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1,

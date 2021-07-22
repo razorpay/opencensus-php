@@ -169,6 +169,7 @@ class Validator extends Base\Validator
         ConfigKey::REARCH_CARD_PAYMENTS                                                => 'filled|boolean',
         ConfigKey::RX_FUND_LOADING_REFUNDS_VIA_X                                       => 'filled|boolean',
         ConfigKey::PAYMENT_SHOW_DCC_MARKUP                                             => 'filled|boolean',
+        ConfigKey::BALANCE_FETCH_URL_V2                                                => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

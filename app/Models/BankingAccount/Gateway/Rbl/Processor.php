@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccount\Gateway\Rbl;
 use Carbon\Carbon;
 
 use RZP\Services\FTS;
+use RZP\Models\Admin;
 use RZP\Services\Mozart;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -352,9 +353,25 @@ class Processor extends BankingAccount\Gateway\Processor
         return self::GATEWAY_ERROR_PREFIX . "Unknown";
     }
 
+    protected function appendUrlVersion(array & $request)
+    {
+        $newBalanceApiUrl = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::BALANCE_FETCH_URL_V2]);
+
+        if (in_array($request[Fields::SOURCE_ACCOUNT][Fields::SOURCE_ACCOUNT_NUMBER], $newBalanceApiUrl) === true)
+        {
+            $request['url']['version'] = 'v2';
+        }
+        else
+        {
+            $request['url']['version'] = 'v1';
+        }
+    }
+
     protected function verifyCredentials(BankingAccount\Entity $bankingAccount)
     {
         $request = $this->formatDataForMozartFetchBalanceApi($bankingAccount);
+
+        $this->appendUrlVersion($request);
 
         $retryCount = 0;
 
