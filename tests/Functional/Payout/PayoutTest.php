@@ -13223,4 +13223,95 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotNull($updatedPayout[Payout\Entity::ERROR]);
         $this->assertEquals(ErrorCodeMapping::$alternateFailureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::ERROR][Payout\PayoutError::DESCRIPTION]);
     }
+
+    public function testPayoutWebhookNotContainingQueueingDetailsForNonWhitelistedMerchant()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]
+        );
+
+        $ftaForPayout = $this->getDbEntities(
+            'fund_transfer_attempt',
+            [
+                'source_id'   => $payout->getId(),
+                'source_type' => 'payout',
+                'is_fts'      => true,
+            ]
+        )->first();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $ftaForPayout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]
+        );
+
+        $this->expectWebhookEvent(
+            'payout.processed',
+            function (array $event) {
+                $this->assertNotContains('queueing_details', $event['payload']['payout']['entity']);
+            }
+        );
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED);
+    }
+
+
+    public function testPayoutWebhookContainingQueueingDetailsForWhitelistedMerchant()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]
+        );
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]
+        );
+
+        $ftaForPayout = $this->getDbEntities(
+            'fund_transfer_attempt',
+            [
+                'source_id'   => $payout->getId(),
+                'source_type' => 'payout',
+                'is_fts'      => true,
+            ]
+        )->first();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $ftaForPayout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]
+        );
+
+        $this->expectWebhookEvent(
+            'payout.processed',
+            function (array $event) {
+                $this->assertEquals(null, $event['payload']['payout']['entity']['queueing_details']['reason']);
+                $this->assertEquals(null, $event['payload']['payout']['entity']['queueing_details']['description']);
+            }
+        );
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED);
+    }
 }

@@ -1774,30 +1774,30 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setPublicQueueingDetailsAttribute(array & $attributes)
+    public function setPublicQueueingDetailsAttribute(array &$attributes)
     {
-        $queuedReason = null;
-
-        $description = null;
-
-        if(($this->isStatusOnHold()) or
-           ($this->isStatusQueued()))
+        if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_ON_HOLD) === true)
         {
-            $queuedReason = $this->getQueuedReason();
+            $queuedReason = null;
 
-            $description = ($queuedReason === null) ? null : $this->getDescriptionForQueuedReason($queuedReason);
-        }
+            $description = null;
 
-        $queueingDetailsArray =
-            [
-                    'reason'      => $queuedReason,
+            if (($this->isStatusOnHold()) or
+                ($this->isStatusQueued())) {
+                $queuedReason = $this->getQueuedReason();
+
+                $description = ($queuedReason === null) ? null : $this->getDescriptionForQueuedReason($queuedReason);
+            }
+
+            $queueingDetailsArray =
+                [
+                    'reason' => $queuedReason,
                     'description' => $description,
-            ];
+                ];
 
-        $attributes[self::QUEUEING_DETAILS] = $queueingDetailsArray;
-
-        if ((app('basicauth')->isProxyOrPrivilegeAuth() === false) and
-            ($this->merchant->isFeatureEnabled(Features::PAYOUTS_ON_HOLD) === false))
+            $attributes[self::QUEUEING_DETAILS] = $queueingDetailsArray;
+        }
+        else
         {
             unset($attributes[self::QUEUEING_DETAILS]);
         }
