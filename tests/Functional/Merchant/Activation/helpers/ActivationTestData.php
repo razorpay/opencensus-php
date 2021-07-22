@@ -3590,4 +3590,245 @@ return [
             ],
         ],
     ],
+
+    'testMerchantActivationWithEmptyBusinessCategoryInX' => [
+        'request'     => [
+            'method'                 => 'POST',
+            'url'                    => '/merchant/activation',
+            'server'                 => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content'                => [
+                'business_category'    => null,
+                'business_subcategory' => null
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'             => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'      => 'The business category field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantActivationWithEmptyBusinessCategoryInPg' => [
+        'request'     => [
+            'method'                 => 'POST',
+            'url'                    => '/merchant/activation',
+            'content'                => [
+                'business_category'    => null,
+                'business_subcategory' => null
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'             => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'      => 'The business category field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantActivationWithEmptyIfscInX' => [
+        'request'     => [
+            'method'                 => 'POST',
+            'url'                    => '/merchant/activation',
+            'server'                 => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content'                => [
+                'bank_branch_ifsc' => null,
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'         => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'  => 'The bank branch ifsc field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantActivationWithEmptyIfscInPg' => [
+        'request'     => [
+            'method'                 => 'POST',
+            'url'                    => '/merchant/activation',
+            'content'                => [
+                'bank_branch_ifsc' => null,
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'             => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'      => 'The bank branch ifsc field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantActivationWithEmptySubCategoryInX' => [
+        'request'     => [
+            'method'                 => 'POST',
+            'url'                    => '/merchant/activation',
+            'server'                 => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content'                => [
+                'business_subcategory' => null,
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testMerchantActivationWithEmptySubCategoryInPg' => [
+        'request'     => [
+            'method'                 => 'POST',
+            'url'                    => '/merchant/activation',
+            'content'                => [
+                'business_subcategory' => null,
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testMerchantActivationWithEmptyCompanyPanInX' => [
+        'request'     => [
+            'method'                 => 'POST',
+            'url'                    => '/merchant/activation',
+            'server'                 => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content'                => [
+                'company_pan' => null,
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'         => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'  => 'The company pan field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantActivationWithEmptyCompanyPanInPg' => [
+        'request'     => [
+            'method'                 => 'POST',
+            'url'                    => '/merchant/activation',
+            'content'                => [
+                'company_pan' => null,
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'         => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'  => 'The company pan field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantActivationWithEmptyBusinessRegisteredAddressInX' => [
+        'request'     => [
+            'method'                 => 'POST',
+            'url'                    => '/merchant/activation',
+            'server'                 => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content'                => [
+                'business_registered_address' => null,
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'         => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'  => 'The business registered address field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantActivationWithEmptyBusinessRegisteredAddressInPg' => [
+        'request'     => [
+            'method'                 => 'POST',
+            'url'                    => '/merchant/activation',
+            'content'                => [
+                'business_registered_address' => null,
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'         => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'  => 'The business registered address field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

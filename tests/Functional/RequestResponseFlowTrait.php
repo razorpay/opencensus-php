@@ -247,7 +247,12 @@ trait RequestResponseFlowTrait
             $request['url'] = '/v1' . $request['url'];
         }
 
-        $this->convertContentToString($request['content']);
+        $convertContentToString = $request['convertContentToString'] ?? true;
+
+        if ($convertContentToString === true)
+        {
+            $this->convertContentToString($request['content']);
+        }
 
         if ($this->cloud)
         {

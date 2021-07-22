@@ -59,7 +59,7 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
         Entity::CONTACT_LANDLINE                => 'sometimes|numeric|digits_between:8,11',
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
-        Entity::BUSINESS_NAME                   => 'sometimes|string|max:255',
+        Entity::BUSINESS_NAME                   => 'filled|string|max:255',
         Entity::BUSINESS_DESCRIPTION            => 'sometimes|string|max:255',
         Entity::BUSINESS_DBA                    => 'sometimes|string|max:255',
         Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
@@ -135,52 +135,52 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::STAKEHOLDER                              => 'sometimes|array|custom',
-        Entity::MERCHANT_AVG_ORDER_VALUE                 => 'sometimes|array|custom',
+        Entity::MERCHANT_AVG_ORDER_VALUE                 => 'filled|array|custom',
         Entity::CONTACT_NAME                             => 'sometimes|alpha_space|max:255',
-        Entity::CONTACT_EMAIL                            => 'sometimes|email|max:255',
+        Entity::CONTACT_EMAIL                            => 'filled|email|max:255',
         Entity::CONTACT_MOBILE                           => 'sometimes|numeric|digits_between:8,11',
         Entity::CONTACT_LANDLINE                         => 'sometimes|numeric|digits_between:8,11',
-        Entity::BUSINESS_TYPE                            => 'sometimes|numeric|digits_between:1,10',
+        Entity::BUSINESS_TYPE                            => 'filled|numeric|digits_between:1,10',
         Entity::BUSINESS_NAME                            => 'sometimes|max:255',
         Entity::BUSINESS_DESCRIPTION                     => 'filled|max:255',
-        Entity::BUSINESS_DBA                             => 'sometimes|max:255',
+        Entity::BUSINESS_DBA                             => 'filled|max:255',
         Entity::BUSINESS_WEBSITE                         => 'sometimes|active_url|max:255|nullable',
         Entity::ADDITIONAL_WEBSITE                       => 'sometimes|active_url|max:255|nullable',
         Entity::BUSINESS_INTERNATIONAL                   => 'sometimes|in:0,1',
         Entity::BUSINESS_PAYMENTDETAILS                  => 'sometimes|max:2000',
         Entity::BUSINESS_MODEL                           => 'sometimes|max:255',
-        Entity::BUSINESS_REGISTERED_ADDRESS              => 'sometimes|max:255',
+        Entity::BUSINESS_REGISTERED_ADDRESS              => 'filled|max:255',
         Entity::BUSINESS_REGISTERED_ADDRESS_L2           => 'sometimes|max:255',
-        Entity::BUSINESS_REGISTERED_STATE                => 'sometimes|alpha_space|max:2|custom',
+        Entity::BUSINESS_REGISTERED_STATE                => 'filled|alpha_space|max:2|custom',
         Entity::BUSINESS_REGISTERED_COUNTRY              => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_CITY                 => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_REGISTERED_CITY                 => 'filled|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_DISTRICT             => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_PIN                  => 'sometimes|size:6',
-        Entity::BUSINESS_OPERATION_ADDRESS               => 'sometimes|max:255',
+        Entity::BUSINESS_REGISTERED_PIN                  => 'filled|size:6',
+        Entity::BUSINESS_OPERATION_ADDRESS               => 'filled|max:255',
         Entity::BUSINESS_OPERATION_ADDRESS_L2            => 'sometimes|max:255',
-        Entity::BUSINESS_OPERATION_STATE                 => 'sometimes|alpha_space|max:2|custom',
+        Entity::BUSINESS_OPERATION_STATE                 => 'filled|alpha_space|max:2|custom',
         Entity::BUSINESS_OPERATION_COUNTRY               => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_CITY                  => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_CITY                  => 'filled|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_DISTRICT              => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN                   => 'sometimes|size:6',
+        Entity::BUSINESS_OPERATION_PIN                   => 'filled|size:6',
         Entity::BUSINESS_DOE                             => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::GSTIN                                    => 'sometimes|string|size:15|nullable',
         Entity::P_GSTIN                                  => 'sometimes|string|size:15',
-        Entity::COMPANY_CIN                              => ['sometimes', 'regex:/^([A-Z|a-z]{3}-\d{4}|[ulUL]\d{5}[A-Z|a-z]{2}\d{4}[A-Z|a-z]{3}\d{6})/'],
-        Entity::COMPANY_PAN                              => 'sometimes|companyPan',
+        Entity::COMPANY_CIN                              => ['filled', 'regex:/^([A-Z|a-z]{3}-\d{4}|[ulUL]\d{5}[A-Z|a-z]{2}\d{4}[A-Z|a-z]{3}\d{6})/'],
+        Entity::COMPANY_PAN                              => 'filled|companyPan',
         Entity::COMPANY_PAN_NAME                         => 'sometimes|max:255',
-        Entity::BUSINESS_CATEGORY                        => 'sometimes|max:255|custom',
+        Entity::BUSINESS_CATEGORY                        => 'filled|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY                     => 'sometimes|max:255|custom',
         Entity::TRANSACTION_VOLUME                       => 'sometimes|numeric|digits_between:1,4',
         Entity::TRANSACTION_VALUE                        => 'filled|numeric|min:0|max:10000000',
-        Entity::PROMOTER_PAN                             => 'sometimes|personalPan',
-        Entity::PROMOTER_PAN_NAME                        => 'sometimes|max:255',
+        Entity::PROMOTER_PAN                             => 'filled|personalPan',
+        Entity::PROMOTER_PAN_NAME                        => 'filled|max:255',
         Entity::BANK_NAME                                => 'sometimes|alpha_num|between:5,20',
-        Entity::BANK_ACCOUNT_NUMBER                      => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,35|custom',
-        Entity::BANK_ACCOUNT_NAME                        => 'sometimes|string|min:4|max:120',
+        Entity::BANK_ACCOUNT_NUMBER                      => 'filled|regex:/^[a-zA-Z0-9-]+$/|between:5,35|custom',
+        Entity::BANK_ACCOUNT_NAME                        => 'filled|string|min:4|max:120',
         Entity::BANK_ACCOUNT_TYPE                        => 'sometimes|alpha_space|max:20',
         Entity::BANK_BRANCH                              => 'sometimes|max:255',
-        Entity::BANK_BRANCH_IFSC                         => 'sometimes|alpha_num|max:11|custom',
+        Entity::BANK_BRANCH_IFSC                         => 'filled|alpha_num|max:11|custom',
         Entity::BANK_BENEFICIARY_ADDRESS1                => 'sometimes|max:30',
         Entity::BANK_BENEFICIARY_ADDRESS2                => 'sometimes|max:30',
         Entity::BANK_BENEFICIARY_ADDRESS3                => 'sometimes|max:30',
@@ -690,12 +690,16 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateBusinessCategory(string $attribute, string $businessCategory)
+    public function validateBusinessCategory(string $attribute, $businessCategory)
     {
+        $errorMessage = (empty($businessCategory) === true) ?
+                         self::INVALID_BUSINESS_CATEGORY :
+                        (self::INVALID_BUSINESS_CATEGORY . ': ' . $businessCategory);
+
         if (isset(BusinessCategory::SUBCATEGORY_MAP[$businessCategory]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                self::INVALID_BUSINESS_CATEGORY . ': ' . $businessCategory,
+                $errorMessage,
                 Entity::BUSINESS_CATEGORY,
                 [
                     Entity::BUSINESS_CATEGORY => $businessCategory

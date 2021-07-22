@@ -3716,6 +3716,96 @@ class ActivationTest extends OAuthTestCase
         });
     }
 
+    public function testMerchantActivationWithEmptyBusinessCategoryInX()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testMerchantActivationWithEmptyBusinessCategoryInPg()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testMerchantActivationWithEmptyIfscInX()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testMerchantActivationWithEmptyIfscInPg()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testMerchantActivationWithEmptySubCategoryInX()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testMerchantActivationWithEmptySubCategoryInPg()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testMerchantActivationWithEmptyCompanyPanInX()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testMerchantActivationWithEmptyCompanyPanInPg()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testMerchantActivationWithEmptyBusinessRegisteredAddressInX()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testMerchantActivationWithEmptyBusinessRegisteredAddressInPg()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
     protected function getExpectedArraysForWorkflowObserverTestCases($arrayType) : array
     {
         if ($arrayType === self::MERCHANT_ACTIVATED_WORKFLOW_DATA)
