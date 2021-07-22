@@ -450,29 +450,6 @@ class AnalyticsDesktop extends Component {
               </Link>
             </AnnouncementBanner>
           )}
-          {!LocalStorageService.getItem('rtb_page_visited') && (
-            <AnnouncementBanner title="Get the trusted badge" theme="warning">
-              Become a trusted merchant and flaunt the badge of trust on checkout to increase
-              conversion.{' '}
-              <Link
-                onClick={() => {
-                  analyticsTrack({
-                    objectName: 'banner',
-                    actionName: 'clicked',
-                    screen: 'home page',
-                    properties: {
-                      hyperlinkClicked: 'Join the waitlist now',
-                      title: 'RTB Join the waitlist now',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
-                to="/trustedbadge"
-              >
-                Join the waitlist now!
-              </Link>
-            </AnnouncementBanner>
-          )}
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
           {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}

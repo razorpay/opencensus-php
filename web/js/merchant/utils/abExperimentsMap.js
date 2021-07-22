@@ -20,6 +20,7 @@ export default {
     'HF0NZThSDtgNGB', // Vadodara Nitro
     'HF0OIJAqllZPRu', // Ahmedabad Nitro
     'HF0Ox4LNEgYHbV', // Bangalore Nitro
+    'HZ76WCrNYDOyy9', // App switcher segment
 
     // prod experiment ids
     'GxtSf8y77iWw9e',
@@ -37,6 +38,7 @@ export default {
     'HPc9cMyPKKeAAX', // Gurgaon Nitro
     'HPcAKrn53GP41d', // Nagpur Nitro
     'HPcBJQw2E0BzpZ', // Kolhapur Nitro
+    'HYlnMMJoE1RjFf', // App switcher segment
   ],
   announcement_text_experiment: [
     // beta experiment ids

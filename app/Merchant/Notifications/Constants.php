@@ -754,8 +754,8 @@ class Constants
                     'url'   => '/announcements/whats-new-MAY21-CA-GROWTH/'
                 ],
             ],
-            'start_ts'    => 1621254600,
-            'end_ts'      => 1625077799,
+            'start_ts'    => 1626912000,
+            'end_ts'      => 1634860800,
             'filters'     => [
                 'features' => ['loc'],
                 'not_features' => ['withdraw_loc'],
@@ -1178,6 +1178,13 @@ class Constants
                     "version_description" => 'Nitro for kolhapur',
                 ],
                 'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_KOLHAPUR_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_KOLHAPUR_V1_SPLITZ'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'project-nitro-appswitcher',
+                    "version_description" => 'Nitro for appswitcher merchants',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_APP_SWITCHER_SPLITZ'],
             ]
             
         ],
@@ -1294,6 +1301,7 @@ class Constants
         'ANNOUNCEMENT_NITRO_GURGAON_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_NAGPUR_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_KOLHAPUR_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_APP_SWITCHER_SPLITZ'
     ];
     const nitroCorporateCardsSplitzExperimentsList = [
         'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_HYDERABAD_SPLITZ',

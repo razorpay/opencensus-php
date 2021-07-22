@@ -80,6 +80,11 @@ export const nitroCampaignId = () => {
       version_description: 'Nitro for bangalore',
       target_product_feature: 'XCA',
     },
+    HZ76WCrNYDOyy9: {
+      version: 'project-nitro-appswitcher',
+      version_description: 'Nitro for appswitcher merchants',
+      target_product_feature: 'XCA',
+    },
 
     // Prod Nitro
     GxtSf8y77iWw9e: {
@@ -155,6 +160,11 @@ export const nitroCampaignId = () => {
     HPcBJQw2E0BzpZ: {
       version: 'project-nitro-kolhapur-v1',
       version_description: 'Nitro for kolhapur',
+      target_product_feature: 'XCA',
+    },
+    HYlnMMJoE1RjFf: {
+      version: 'project-nitro-appswitcher',
+      version_description: 'Nitro for appswitcher merchants',
       target_product_feature: 'XCA',
     },
 
