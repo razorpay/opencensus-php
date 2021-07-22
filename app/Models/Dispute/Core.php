@@ -13,8 +13,11 @@ use RZP\Services\Mutex;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Dispute\Constants as DisputeConstants;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Admin\Action;
+use RZP\Models\Payment\Refund;
+use RZP\Models\Dispute\Evidence;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Mail\Dispute as DisputeMailer;
@@ -452,6 +455,34 @@ class Core extends Base\Core
                 ($dispute->getAmountReversed() === 0));
     }
 
+    public function createRefundAndUpdateDispute(Entity $dispute)
+    {
+        // https://docs.google.com/spreadsheets/d/1znRQjMiV7WFywAo1a7qb5WCHky96D6iycCbcYulyD7s/edit#gid=1471838983&range=C16
+        if ($dispute->getBaseAmount() > $dispute->payment->getBaseAmountUnRefunded())
+        {
+            $message = 'Cannot create refund for dispute accept because dispute amount is greater than unrefunded amount';
+
+            throw new Exception\BadRequestValidationFailureException($message);
+        }
+
+        $refundCreateInput = [
+            Refund\Entity::AMOUNT => $dispute->getAmount(),
+            Refund\Entity::NOTES  => [
+                'reason' => $dispute->getPublicId(),
+            ],
+        ];
+
+        $refundId = (new Payment\Service)->refund(Payment\Entity::getSignedId($dispute->getPaymentId()), $refundCreateInput)[Refund\Entity::ID];
+
+        $dispute->setAmountDeducted($dispute->getBaseAmount());
+
+        $this->updateDeductionSourceTypeAndId($dispute,
+            EntityConstants::REFUND,
+        Refund\Entity::verifyIdAndStripSign($refundId));
+
+        $this->repo->dispute->saveOrFail($dispute);
+    }
+
     protected function createNegativeAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0)
     {
         if ($amount === 0)
@@ -467,9 +498,11 @@ class Core extends Base\Core
 
         if ($dispute->isBackfill() === false)
         {
-            (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
+            $adjustment = (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
 
             $this->updatePaymentRefundedAmount($dispute);
+
+            $this->updateDeductionSourceTypeAndId($dispute, $adjustment->getEntityName(), $adjustment->getId());
         }
 
         $dispute->setAmountDeducted($amount);
@@ -557,13 +590,8 @@ class Core extends Base\Core
         $submit        = (bool) ($input[Entity::SUBMIT] ?? false);
         $acceptDispute = (bool) ($input[Entity::ACCEPT_DISPUTE] ?? false);
 
-        $org = $dispute->merchant->org;
 
-        $data = [
-            'dispute'            => $dispute->toArrayAdmin(),
-            'payment'            => $dispute->payment->toArrayAdmin(),
-            'dashboard_hostname' => $org->getPrimaryHostName(),
-        ];
+        $data = $this->getSendDisputeMailToAdminData($dispute);
 
         if ($dispute->hasMerchantAcceptedStatus($acceptDispute) === true)
         {
@@ -883,14 +911,12 @@ class Core extends Base\Core
             return;
         }
 
-        $gatewayDisputeId = $dispute->getGatewayDisputeId();
-
-        if ((strlen($gatewayDisputeId) <= 7) || (substr($gatewayDisputeId, 0, 7) !== 'DISPUTE'))
+        if ($dispute->isCustomerDispute() === false)
         {
             return;
         }
 
-        $customerSupportTicketID = substr($gatewayDisputeId, 7);
+        $customerSupportTicketID = substr($dispute->getGatewayDisputeId(), 7);
 
         $response = $this->app['freshdesk_client']->fetchTicketById($customerSupportTicketID);
 
@@ -1213,9 +1239,25 @@ class Core extends Base\Core
         $dispute = $this->repo->transaction(function () use ($dispute, $input) {
             $evidence = (new Evidence\Core)->handlePatchDisputeEvidence($dispute, $input);
 
-            $this->repo->dispute_evidence->saveOrFail($evidence);
+            return $dispute->refresh();
+        });
+
+        return $dispute;
+    }
+
+    public function postDisputeAcceptById($disputeId, $input)
+    {
+        $disputeId = Entity::verifyIdAndStripSign($disputeId);
+
+        $dispute = $this->repo->dispute->findByIdAndMerchantId($disputeId, $this->merchant->getId());
+
+        $dispute = $this->repo->transaction(function() use ($dispute, $input) {
+             (new Evidence\Core)->handlePatchDisputeEvidence($dispute, [
+              Evidence\Constants::ACTION => Evidence\Action::ACCEPT,
+           ]);
 
             return $dispute->refresh();
+
         });
 
         return $dispute;
@@ -1293,5 +1335,25 @@ class Core extends Base\Core
         ];
 
         return $result;
+    }
+
+    public function getSendDisputeMailToAdminData(Entity $dispute): array
+    {
+        $org = $dispute->merchant->org;
+
+        $data = [
+            'dispute'            => $dispute->toArrayAdmin(),
+            'payment'            => $dispute->payment->toArrayAdmin(),
+            'dashboard_hostname' => $org->getPrimaryHostName(),
+        ];
+
+        return $data;
+    }
+
+    protected function updateDeductionSourceTypeAndId(Entity $dispute, string $entityType, string $entityId)
+    {
+        $dispute->setDeductionSourceType($entityType);
+
+        $dispute->setDeductionSourceId($entityId);
     }
 }

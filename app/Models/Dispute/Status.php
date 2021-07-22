@@ -38,9 +38,11 @@ class Status
     ];
 
     public static $webhookEventMap = [
-        self::WON    => WebhookEvent::PAYMENT_DISPUTE_WON,
-        self::LOST   => WebhookEvent::PAYMENT_DISPUTE_LOST,
-        self::CLOSED => WebhookEvent::PAYMENT_DISPUTE_CLOSED,
+        self::WON          => WebhookEvent::PAYMENT_DISPUTE_WON,
+        self::LOST         => WebhookEvent::PAYMENT_DISPUTE_LOST,
+        self::CLOSED       => WebhookEvent::PAYMENT_DISPUTE_CLOSED,
+        self::UNDER_REVIEW => WebhookEvent::PAYMENT_DISPUTE_UNDER_REVIEW,
+        self::OPEN         => WebhookEvent::PAYMENT_DISPUTE_ACTION_REQUIRED,
     ];
 
     public static function exists(string $status): bool

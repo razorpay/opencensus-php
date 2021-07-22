@@ -4,13 +4,23 @@
 namespace Functional\Dispute;
 
 use DB;
+use Config;
+use RZP\Models\Dispute;
+use RZP\Models\Adjustment;
+use RZP\Models\Transaction;
+use RZP\Models\Payment\Refund;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use Illuminate\Support\Facades\Mail;
+use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+use RZP\Mail\Dispute\Admin\DisputePresentmentRiskOpsReview;
 
 class DisputePresentmentTest extends TestCase
 {
-
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
+    use WorkflowTrait;
+    use TestsWebhookEvents;
 
     public function setUp(): void
     {
@@ -19,35 +29,57 @@ class DisputePresentmentTest extends TestCase
         parent::setUp();
     }
 
-    protected function setUpForInitiateDraftEvidenceTest(): void
+    protected function setUpForInitiateDraftEvidenceTest(array $disputeAttributes = [],
+                                                         string $paymentResource = 'payment:captured',
+                                                         array $paymentAttributes = []): void
     {
-        $this->setupDisputeFixture();
+        $this->setUpFixtures($disputeAttributes, $paymentResource, $paymentAttributes);
 
         $this->fixtures->merchant->addFeatures(['dispute_presentment']);
 
         $this->ba->privateAuth();
     }
 
-    protected function setupDisputeFixture(array $attributes = []): void
+    protected function setUpFixtures(array $disputeAttributes = [], string $paymentResource = 'payment:captured',
+                                     array $paymentAttributes = []): void
     {
-        $paymentId = 'randomPayId123';
+        $this->setUpPaymentFixtures($paymentResource, $paymentAttributes);
 
-        $this->fixtures->create('payment:captured', [
-            'id' => $paymentId,
-        ]);
+        $this->setUpDisputeFixtures($disputeAttributes);
+    }
 
-        $defaultAttributes = [
-            'id'          => '0123456789abcd',
-            'payment_id'  => $paymentId,
-            'reason_code' => 'chargeback',
-            'created_at'  => 1600000000,
-            'expires_on'  => 1610000000,
+    protected function setUpPaymentFixtures($paymentResource, $paymentAttributes = [])
+    {
+        $defaultPaymentAttributes = [
+            'id' => 'randomPayId123',
         ];
 
-        $attributes = array_merge($defaultAttributes, $attributes);
+        $paymentAttributes = array_merge($defaultPaymentAttributes, $paymentAttributes);
 
-        $this->fixtures->create('dispute', $attributes);
+        $this->fixtures->create($paymentResource, $paymentAttributes);
     }
+
+    protected function setUpDisputeFixtures($disputeAttributes = [])
+    {
+        $defaultDisputeAttributes = [
+            'id'               => '0123456789abcd',
+            'payment_id'       => 'randomPayId123',
+            'reason_code'      => 'chargeback',
+            'created_at'       => 1600000000,
+            'expires_on'       => 1610000000,
+            'base_amount'      => 1000000,
+            'base_currency'    => 'INR',
+            'amount'           => 1000000,
+            'currency'         => 'INR',
+            'gateway_amount'   => 1000000,
+            'gateway_currency' => 'INR',
+        ];
+
+        $disputeAttributes = array_merge($defaultDisputeAttributes, $disputeAttributes);
+
+        $this->fixtures->create('dispute', $disputeAttributes);
+    }
+
 
     public function testGetDisputeDocumentTypesMetadata()
     {
@@ -67,11 +99,12 @@ class DisputePresentmentTest extends TestCase
         $expectedOthersEvidence = [
             [
                 'type'         => 'custom_proof_type_1',
-                'document_ids' => ['doc_1cXSLlUU8V9sXl', 'doc_1cXSLlUU8V9sXm'],
+                'document_ids' => ['doc_customType1Id2', 'doc_customType1Id1'],
             ],
             [
                 'type'         => 'custom_proof_type_2',
-                'document_ids' => ['doc_1cXSLlUU8V9sXm'],
+                'document_ids' => ['doc_customType2Id1'],
+
             ],
         ];
 
@@ -134,8 +167,8 @@ class DisputePresentmentTest extends TestCase
         $this->startTest();
 
 
-        // contest amount cannot be 0
-        $this->testData[__FUNCTION__]['request']['content']['amount'] = 0;
+        // contest amount cannot be -1
+        $this->testData[__FUNCTION__]['request']['content']['amount'] = -1;
 
         $this->testData[__FUNCTION__]['response']['content']['error']['description'] = 'Minimum transaction amount allowed is Re. 1';
 
@@ -177,11 +210,20 @@ class DisputePresentmentTest extends TestCase
         $this->startTest();
     }
 
+
+    public function testInitiateDraftEvidenceInvalidDocumentTypeSubmittedAsEvidence()
+    {
+        $this->setUpForInitiateDraftEvidenceTest();
+
+        $this->startTest();
+    }
+
+
     public function testInitiateDraftEvidenceDisputeDoesntBelongToMerchant()
     {
         $merchantId = $this->fixtures->create('merchant')['id'];
 
-        $this->setupDisputeFixture(['merchant_id' => $merchantId]);
+        $this->setUpFixtures(['merchant_id' => $merchantId]);
 
         $this->fixtures->merchant->addFeatures(['dispute_presentment']);
 
@@ -200,17 +242,17 @@ class DisputePresentmentTest extends TestCase
             'content' => [
                 'amount'             => 1000,
                 'summary'            => 'sample contest summary',
-                'shipping_proof'     => ['doc_1cXSLlUU8V9sXl'],
-                'billing_proof'      => ['doc_1cXSLlUU8V9sXm'], //these fileids are hardcoded as valid files in ufh mock
-                'cancellation_proof' => ['doc_1cXSLlUU8V9sXl'],
+                'shipping_proof'     => ['doc_shippingProfId'],
+                'billing_proof'      => ['doc_billingProfId1'], //these fileids are hardcoded as valid files in ufh mock
+                'cancellation_proof' => ['doc_cancelProofId1'],
                 'others'             => [
                     [
                         'type'         => 'custom_proof_type_1',
-                        'document_ids' => ['doc_1cXSLlUU8V9sXl'],
+                        'document_ids' => ['file_customType1Id1'],
                     ],
                     [
                         'type'         => 'custom_proof_type_2',
-                        'document_ids' => ['doc_1cXSLlUU8V9sXm'],
+                        'document_ids' => ['file_customType2Id1'],
                     ],
                 ],
                 'action'             => 'draft',
@@ -263,6 +305,71 @@ class DisputePresentmentTest extends TestCase
     }
 
 
+    public function testContestDispute()
+    {
+        $this->setUpForUpdateDraftEvidenceTest();
+
+        $this->expectDisputeWebhook('under_review');
+
+        $this->startTest();
+    }
+
+    public function testContestDisputePartialAmount()
+    {
+        $this->setUpForInitiateDraftEvidenceTest();
+
+        $this->startTest();
+    }
+
+    public function testContestDisputeWithoutAmountProvided()
+    {
+        $this->setUpForInitiateDraftEvidenceTest();
+
+        $this->startTest();
+    }
+
+    public function testContestDisputeWithoutEvidenceSubmittedShouldFail()
+    {
+        $this->setUpForInitiateDraftEvidenceTest();
+
+        $this->startTest();
+    }
+
+    public function testContestDisputeInvalidDisputeStatus()
+    {
+        $errorDescriptionFormat = $this->testData[__FUNCTION__]['response']['content']['error']['description'];
+
+        $this->setUpForInitiateDraftEvidenceTest();
+
+        foreach (['under_review', 'lost', 'won', 'closed'] as $status)
+        {
+            $this->fixtures->edit('dispute', '0123456789abcd', [
+                'status' => $status,
+            ]);
+
+            $this->testData[__FUNCTION__]['response']['content']['error']['description'] = sprintf($errorDescriptionFormat, $status);
+
+            $this->startTest();
+        }
+    }
+
+    public function testDisputeReopenedFromUnderReviewWebhook()
+    {
+        $this->setUpFixtures(['status' => 'under_review']);
+
+        $this->addPermissionToBaAdmin('edit_dispute');
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->expectDisputeWebhook('action_required');
+
+        $this->startTest();
+    }
+
     public function testGetDisputeByIDWithoutFeatureEnabled()
     {
         $this->setUpForInitiateDraftEvidenceTest();
@@ -283,6 +390,654 @@ class DisputePresentmentTest extends TestCase
         $response = $this->startTest();
 
         $this->assertArrayNotHasKey('evidence', $response);
+    }
+
+
+    public function testAcceptDisputeWithoutFeatureEnabled()
+    {
+        $this->setUpForInitiateDraftEvidenceTest();
+
+        $this->fixtures->merchant->removeFeatures(['dispute_presentment']);
+
+        $this->startTest();
+    }
+
+    public function testAcceptDispute()
+    {
+        $this->setUpForInitiateDraftEvidenceTest();
+
+        $this->expectDisputeWebhook('lost');
+
+        $this->startTest();
+    }
+
+    public function testAcceptDisputeShouldPurgeExistingEvidence()
+    {
+        $this->setUpForUpdateDraftEvidenceTest();
+
+        $currentEvidence = $this->makeRequestAndGetContent([
+            'url'    => '/disputes/disp_0123456789abcd/',
+            'method' => 'GET',
+        ])['evidence'];
+
+        $this->assertEquals(1000, $currentEvidence['amount']);
+
+        $this->assertEquals('sample contest summary', $currentEvidence['summary']);
+
+        $this->testData[__FUNCTION__] = $this->testData['testAcceptDispute'];
+
+        $this->startTest();
+    }
+
+    /**
+     * Any customer dispute should result in refund as the recovery method
+     * refer: https://docs.google.com/spreadsheets/d/1Uh_s0rm3PO9GOdiNVo6xRWdaG13wsD6W_YwJMZ_4OEE/edit?ts=60f15177#gid=0
+     */
+    public function testAcceptDisputeGetRecoveryAmountMethodForCustomerDispute()
+    {
+        $this->setUpForInitiateDraftEvidenceTest();
+
+        $evidenceCore = (new Dispute\Evidence\Core);
+
+        $disputeEntity = (new Dispute\Repository)->findOrFail('0123456789abcd');
+
+        $testcases = [
+            [
+                'payment_edit_input' => ['method' => 'unknown_method'],
+            ],
+            [
+                'payment_edit_input' => ['method' => 'card'],
+            ],
+            [
+                'payment_edit_input' => ['method' => 'upi', 'gateway' => 'upi_axis'],
+            ],
+            [
+                'payment_edit_input' => ['method' => 'wallet', 'gateway' => 'wallet_mpesa'],
+            ],
+            [
+                'payment_edit_input' => ['method' => 'netbanking', 'gateway' => 'netbanking_sbi'],//example netbanking gateway that needs to be sent to risk for review
+            ],
+        ];
+
+        foreach ($testcases as $testcase)
+        {
+            $this->fixtures->payment->edit('randomPayId123', $testcase['payment_edit_input']);
+
+            $this->fixtures->dispute->edit('0123456789abcd', ['gateway_dispute_id' => 'DISPUTE123']);
+
+            $disputeEntity->refresh();
+
+            $actualRecoveryOption = $evidenceCore->getRecoveryMethodForDisputeAccept($disputeEntity);
+
+            $this->assertEquals('refund', $actualRecoveryOption, 'Test recovery option for ' . json_encode($testcase));
+        }
+    }
+
+    /**
+     * refer: https://docs.google.com/spreadsheets/d/1Uh_s0rm3PO9GOdiNVo6xRWdaG13wsD6W_YwJMZ_4OEE/edit?ts=60f15177#gid=0
+     */
+    public function testAcceptDisputeGetRecoveryAmountMethodForBankDispute()
+    {
+        $this->setUpForInitiateDraftEvidenceTest();
+
+        $evidenceCore = (new Dispute\Evidence\Core);
+
+        $disputeEntity = (new Dispute\Repository)->findOrFail('0123456789abcd');
+
+        $testcases = [
+            [
+                'payment_edit_input'       => ['method' => 'unknown_method'],
+                'expected_recovery_method' => 'risk_ops_review',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'card'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'netbanking', 'gateway' => 'netbanking_hdfc'],
+                'expected_recovery_method' => 'refund',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'netbanking', 'gateway' => 'netbanking_yesb'],
+                'expected_recovery_method' => 'refund',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'netbanking', 'gateway' => 'netbanking_axis'],
+                'expected_recovery_method' => 'refund',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'netbanking', 'gateway' => 'atom'],
+                'expected_recovery_method' => 'refund',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'netbanking', 'gateway' => 'billdesk'],
+                'expected_recovery_method' => 'refund',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'netbanking', 'gateway' => 'netbanking_icici'],
+                'expected_recovery_method' => 'refund',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'netbanking', 'gateway' => 'netbanking_sbi'],//example netbanking gateway that needs to be sent to risk for review
+                'expected_recovery_method' => 'risk_ops_review',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_axis'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_icici'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_sbi'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_yesbank'],//example netbanking gateway that needs to be sent to risk for review
+                'expected_recovery_method' => 'risk_ops_review',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_olamoney'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_phonepe'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'mobikwik'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_payzapp'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'bajajfinserv'],
+                'expected_recovery_method' => 'refund',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_freecharge'],
+                'expected_recovery_method' => 'refund',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_jiomoney'],
+                'expected_recovery_method' => 'refund',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'bajajfinserv'],
+                'expected_recovery_method' => 'refund',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_mpesa'],
+                'expected_recovery_method' => 'risk_ops_review',
+            ],
+            [
+                'payment_edit_input'       => ['international' => true, 'method' => 'card'], // international payments -> always risk ops review
+                'expected_recovery_method' => 'risk_ops_review',
+            ],
+        ];
+
+        foreach ($testcases as $testcase)
+        {
+            $this->fixtures->payment->edit('randomPayId123', $testcase['payment_edit_input']);
+
+            $expectedRecoveryOption = $testcase['expected_recovery_method'];
+
+            $disputeEntity->refresh();
+
+            $actualRecoveryOption = $evidenceCore->getRecoveryMethodForDisputeAccept($disputeEntity);
+
+
+            $this->assertEquals($expectedRecoveryOption, $actualRecoveryOption, 'Test recovery option for ' . json_encode($testcase));
+        }
+    }
+
+    public function testAcceptDisputeRecoverViaAdjustment()
+    {
+        $this->setUpForInitiateDraftEvidenceTest(); // payment is of card type -> recovery via adjustment
+
+        $this->expectDisputeWebhook('lost');
+
+        [$paymentBefore, $disputeBefore] = $this->getEntitiesByTypeAndIdMultiple(
+            'payment', 'randomPayId123',
+            'dispute', '0123456789abcd'
+        );
+
+        $this->ba->privateAuth();
+
+        $this->acceptDispute('disp_0123456789abcd');
+
+        [$paymentAfter, $disputeAfter, $adjustment, $transaction] = $this->getEntitiesByTypeAndIdMultiple(
+            'payment', 'randomPayId123',
+            'dispute', '0123456789abcd',
+            'adjustment', null,
+            'transaction', null
+        );
+
+        $this->assertArraySelectiveEquals([
+            'amount_refunded' => 0,
+        ], $paymentBefore);
+
+        $this->assertArraySelectiveEquals([
+            'amount_refunded' => 1000000,
+        ], $paymentAfter);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 0,
+            'status'                => 'open',
+            'deduction_source_type' => null,
+            'deduction_source_id'   => null,
+        ], $disputeBefore);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 1000000,
+            'status'                => 'lost',
+            'deduction_source_type' => 'adjustment',
+            'deduction_source_id'   => Adjustment\Entity::verifyIdAndSilentlyStripSign($adjustment['id']),
+        ], $disputeAfter);
+
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'    => '10000000000000',
+            'entity_type'    => 'dispute',
+            'entity_id'      => '0123456789abcd',
+            'amount'         => -1000000,
+            'currency'       => 'INR',
+            'description'    => 'Debit disputed amount V2',
+            'transaction_id' => Transaction\Entity::verifyIdAndSilentlyStripSign($transaction['id']),
+        ], $adjustment);
+
+
+        $this->assertArraySelectiveEquals([
+            'amount'    => 1000000,
+            'entity_id' => 'adj_' . $adjustment['id'],
+        ], $transaction);
+    }
+
+    public function testAcceptDisputeRecoveryViaAdjustmentFail()
+    {
+        Mail::fake();
+
+        $this->setUpForInitiateDraftEvidenceTest();
+
+        $this->fixtures->edit('balance', '10000000000000', [
+            'balance' => 200, // reduce balance to below dispute amount
+        ]);
+
+        $this->acceptDispute('disp_0123456789abcd');
+
+        // even though adjustment creation failed, dispute should be moved into lost state
+        // this is the product requirement
+        $disputeAfter = $this->getEntityById('dispute', '0123456789abcd', true);
+
+        $adjustment = $this->getLastEntity('adjustment', true);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted' => 0,
+            'status'          => 'lost',
+        ], $disputeAfter);
+
+        $this->assertNull($adjustment);
+
+        Mail::assertQueued(DisputePresentmentRiskOpsReview::class, function (DisputePresentmentRiskOpsReview $mail)
+        {
+            $this->assertEquals('DisputePresentment | RiskOps Review needed for disp_0123456789abcd', $mail->subject);
+
+            $this->assertCount(2, $mail->to);
+
+            $this->assertArrayKeysExist($mail->viewData, ['dispute', 'payment', 'dashboard_hostname', 'reason_for_review', 'review_message']);
+
+            $this->assertEquals('adjustment or refund creation failed', $mail->viewData['reason_for_review']);
+
+            $this->assertEquals('Merchant does not have enough balance for negative adjustment', $mail->viewData['review_message']);
+
+            return true;
+        });
+    }
+
+
+    public function testAcceptDisputeRecoveryViaRefundWithNoPreExistingRefunds()
+    {
+        Mail::fake();
+
+        $this->expectDisputeWebhook('lost');
+
+        $this->setUpForInitiateDraftEvidenceTest([], 'payment:netbanking_captured', ['gateway' => 'netbanking_hdfc']);
+
+        [$paymentBefore, $disputeBefore, $refundBefore] = $this->getEntitiesByTypeAndIdMultiple(
+            'payment', 'randomPayId123',
+            'dispute', '0123456789abcd',
+            'refund', null
+        );
+
+        $this->ba->privateAuth();
+
+        $this->acceptDispute('disp_0123456789abcd');
+
+        [$paymentAfter, $disputeAfter, $refundAfter] = $this->getEntitiesByTypeAndIdMultiple(
+            'payment', 'randomPayId123',
+            'dispute', '0123456789abcd',
+            'refund', null
+        );
+
+
+        $this->assertNull($refundBefore);
+
+        $this->assertArraySelectiveEquals([
+            'payment_id' => 'pay_randomPayId123',
+            'amount'     => 1000000,
+            'currency'   => 'INR',
+            'notes'      => [
+                'reason' => 'disp_0123456789abcd',
+            ],
+        ], $refundAfter);
+
+        $this->assertArraySelectiveEquals([
+            'amount_refunded' => 0,
+            'refund_status'   => null,
+            'disputed'        => true,
+        ], $paymentBefore);
+
+        $this->assertArraySelectiveEquals([
+            'amount_refunded'      => 1000000,
+            'base_amount_refunded' => 1000000,
+            'refund_status'        => 'full',
+            'disputed'             => false,
+        ], $paymentAfter);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 0,
+            'status'                => 'open',
+            'deduction_source_type' => null,
+            'deduction_source_id'   => null,
+        ], $disputeBefore);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 1000000,
+            'status'                => 'lost',
+            'deduction_source_type' => 'refund',
+            'deduction_source_id'   => Refund\Entity::verifyIdAndSilentlyStripSign($refundAfter['id']),
+        ], $disputeAfter);
+
+        Mail::assertNotQueued(DisputePresentmentRiskOpsReview::class);
+    }
+
+    public function testAcceptDisputeRecoveryViaRefundWithDisputeAmountGreaterThanUnrefundedAmount()
+    {
+        Mail::fake();
+
+        $this->setUpForAcceptDisputeViaRefundTest(300000, 800000);
+
+        [$paymentBefore, $disputeBefore, $refundBefore] = $this->getEntitiesByTypeAndIdMultiple(
+            'payment', 'randomPayId123',
+            'dispute', '0123456789abcd',
+            'refund', null
+        );
+
+        $this->ba->privateAuth();
+
+        $this->acceptDispute('disp_0123456789abcd');
+
+        [$paymentAfter, $disputeAfter, $refundAfter] = $this->getEntitiesByTypeAndIdMultiple(
+            'payment', 'randomPayId123',
+            'dispute', '0123456789abcd',
+            'refund', null
+        );
+
+        //--------assertions
+        $this->assertArraySelectiveEquals([
+            'payment_id' => 'pay_randomPayId123',
+            'amount'     => 300000,
+        ], $refundBefore);
+
+        // we dont want a refund to be created when dispute amount > unrefunded amount
+        // this is a product/ops requirement. therefore asserting no new refund entity got created
+        $this->assertEquals($refundBefore, $refundAfter);
+
+        $this->assertArraySelectiveEquals([
+            'amount_refunded'      => 300000,
+            'base_amount_refunded' => 300000,
+            'refund_status'        => 'partial',
+            'disputed'             => true,
+        ], $paymentBefore);
+
+        $this->assertArraySelectiveEquals([
+            'amount_refunded'      => 300000,
+            'base_amount_refunded' => 300000,
+            'refund_status'        => 'partial',
+            'disputed'             => false,
+        ], $paymentAfter);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 0,
+            'status'                => 'open',
+            'deduction_source_type' => null,
+            'deduction_source_id'   => null,
+        ], $disputeBefore);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 0,
+            'status'                => 'lost',
+            'deduction_source_type' => null,
+            'deduction_source_id'   => null,
+        ], $disputeAfter);
+
+
+        Mail::assertQueued(DisputePresentmentRiskOpsReview::class, function (DisputePresentmentRiskOpsReview $mail)
+        {
+            $this->assertEquals('adjustment or refund creation failed', $mail->viewData['reason_for_review']);
+
+            $this->assertEquals('Cannot create refund for dispute accept because dispute amount is greater than unrefunded amount',
+                $mail->viewData['review_message']);
+
+            return true;
+        });
+    }
+
+    public function testAcceptDisputeRecoveryViaRefundWithDisputeAmountLesserThanUnrefundedAmount()
+    {
+        Mail::fake();
+
+        $this->setUpForAcceptDisputeViaRefundTest(300000, 600000);
+
+
+        [$paymentBefore, $disputeBefore, $refundBefore] = $this->getEntitiesByTypeAndIdMultiple(
+            'payment', 'randomPayId123',
+            'dispute', '0123456789abcd',
+            'refund', null
+        );
+
+        $this->ba->privateAuth();
+
+        $this->acceptDispute('disp_0123456789abcd');
+
+        [$paymentAfter, $disputeAfter, $refundAfter] = $this->getEntitiesByTypeAndIdMultiple(
+            'payment', 'randomPayId123',
+            'dispute', '0123456789abcd',
+            'refund', null
+        );
+
+        $this->assertArraySelectiveEquals([
+            'amount_refunded'      => 300000,
+            'base_amount_refunded' => 300000,
+            'refund_status'        => 'partial',
+            'disputed'             => true,
+        ], $paymentBefore);
+
+        $this->assertArraySelectiveEquals([
+            'amount_refunded'      => 900000,
+            'base_amount_refunded' => 900000,
+            'refund_status'        => 'partial',
+            'disputed'             => false,
+        ], $paymentAfter);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 0,
+            'status'                => 'open',
+            'deduction_source_type' => null,
+            'deduction_source_id'   => null,
+        ], $disputeBefore);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 600000,
+            'status'                => 'lost',
+            'deduction_source_type' => 'refund',
+            'deduction_source_id'   => Refund\Entity::verifyIdAndSilentlyStripSign($refundAfter['id']),
+        ], $disputeAfter);
+
+        $this->assertArraySelectiveEquals([
+            'payment_id' => 'pay_randomPayId123',
+            'amount'     => 300000,
+        ], $refundBefore);
+
+        $this->assertArraySelectiveEquals([
+            'payment_id' => 'pay_randomPayId123',
+            'amount'     => 600000,
+            'currency'   => 'INR',
+        ], $refundAfter);
+
+        Mail::assertNotQueued(DisputePresentmentRiskOpsReview::class);
+    }
+
+    public function testAcceptDisputeRecoveryViaRefundWithDisputeAmountEqualToUnrefundedAmount()
+    {
+        Mail::fake();
+
+        $this->setUpForAcceptDisputeViaRefundTest(300000, 700000);
+
+
+        [$paymentBefore, $disputeBefore, $refundBefore] = $this->getEntitiesByTypeAndIdMultiple(
+            'payment', 'randomPayId123',
+            'dispute', '0123456789abcd',
+            'refund', null
+        );
+
+        $this->ba->privateAuth();
+
+        $this->acceptDispute('disp_0123456789abcd');
+
+        [$paymentAfter, $disputeAfter, $refundAfter] = $this->getEntitiesByTypeAndIdMultiple(
+            'payment', 'randomPayId123',
+            'dispute', '0123456789abcd',
+            'refund', null
+        );
+
+        $this->assertArraySelectiveEquals([
+            'amount_refunded'      => 300000,
+            'base_amount_refunded' => 300000,
+            'refund_status'        => 'partial',
+            'disputed'             => true,
+        ], $paymentBefore);
+
+        $this->assertArraySelectiveEquals([
+            'amount_refunded'      => 1000000,
+            'base_amount_refunded' => 1000000,
+            'refund_status'        => 'full',
+            'disputed'             => false,
+        ], $paymentAfter);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 0,
+            'status'                => 'open',
+            'deduction_source_type' => null,
+            'deduction_source_id'   => null,
+        ], $disputeBefore);
+
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'       => 700000,
+            'status'                => 'lost',
+            'deduction_source_type' => 'refund',
+            'deduction_source_id'   => Refund\Entity::verifyIdAndSilentlyStripSign($refundAfter['id']),
+        ], $disputeAfter);
+
+        $this->assertArraySelectiveEquals([
+            'payment_id' => 'pay_randomPayId123',
+            'amount'     => 300000,
+        ], $refundBefore);
+
+        $this->assertArraySelectiveEquals([
+            'payment_id' => 'pay_randomPayId123',
+            'amount'     => 700000,
+            'currency'   => 'INR',
+        ], $refundAfter);
+
+        Mail::assertNotQueued(DisputePresentmentRiskOpsReview::class);
+
+    }
+
+    public function testAcceptDisputeRecoveryViaRiskOpsReview()
+    {
+        Mail::fake();
+
+        $this->setUpForInitiateDraftEvidenceTest([], 'payment:netbanking_captured'); // goes via unmapped gateway
+
+        $this->acceptDispute('disp_0123456789abcd');
+
+        Mail::assertQueued(DisputePresentmentRiskOpsReview::class, function (DisputePresentmentRiskOpsReview $mail)
+        {
+            $this->assertEquals('behavior not specified for payment+gateway combination', $mail->viewData['reason_for_review']);
+
+            return true;
+        });
+    }
+
+    protected function expectDisputeWebhook(string $event)
+    {
+        $testCase = $this->getName();
+
+        $this->expectWebhookEventWithContents("payment.dispute.{$event}", "{$testCase}EventData");
+    }
+
+    protected function acceptDispute(string $disputeId)
+    {
+        return $this->makeRequestAndGetContent([
+            'url'     => "/disputes/{$disputeId}/accept",
+            'method'  => 'POST',
+            'content' => [
+
+            ],
+        ]);
+    }
+
+    protected function setUpForAcceptDisputeViaRefundTest($refundAmount, $disputeAmount): void
+    {
+        $this->setUpPaymentFixtures('payment:netbanking_captured', ['gateway' => 'netbanking_hdfc']);
+
+        $this->refundPayment('pay_randomPayId123', $refundAmount);
+
+        $this->setUpDisputeFixtures(['amount' => $disputeAmount, 'base_amount' => $disputeAmount]);
+
+        $this->fixtures->merchant->addFeatures(['dispute_presentment']);
+    }
+
+    /**
+     * @param ...$params
+     * in the format arg1=entityName arg2=entityId
+     * A helper function to avoid repeated code to fetch different types of entitites before/after test scenario
+     */
+    protected function getEntitiesByTypeAndIdMultiple(...$params)
+    {
+        $result = [];
+
+        for ($i = 0; $i < count($params); $i += 2)
+        {
+            $entityType = $params[$i];
+
+            $entityId = $params[$i + 1];
+
+            if ($entityId === null)
+            {
+                $entity = $this->getLastEntity($entityType, true);
+            }
+            else
+            {
+                $entity = $this->getEntityById($entityType, $entityId, true);
+            }
+            array_push($result, $entity);
+        }
+        return $result;
     }
 
 }

@@ -1,5 +1,8 @@
 <?php
 
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 return [
     'testGetDisputeDocumentTypesMetadata' => [
         'request'  => [
@@ -74,16 +77,16 @@ return [
             'content' => [
                 'amount'         => 1000,
                 'summary'        => 'sample contest summary',
-                'shipping_proof' => ['doc_1cXSLlUU8V9sXm'],
-                'billing_proof'  => ['doc_1cXSLlUU8V9sXl', 'doc_1cXSLlUU8V9sXm'], //these fileids are hardcoded as valid files in ufh mock
+                'shipping_proof' => ['doc_shippingProfId'],
+                'billing_proof'  => ['doc_billingProfId1', 'doc_billingProfId2'], //these fileids are hardcoded as valid files in ufh mock
                 'others'         => [
                     [
                         'type'         => 'custom_proof_type_1',
-                        'document_ids' => ['doc_1cXSLlUU8V9sXm', 'doc_1cXSLlUU8V9sXl'],
+                        'document_ids' => ['doc_customType1Id1', 'doc_customType1Id2'],
                     ],
                     [
                         'type'         => 'custom_proof_type_2',
-                        'document_ids' => ['doc_1cXSLlUU8V9sXm'],
+                        'document_ids' => ['doc_customType2Id1'],
                     ],
                 ],
                 'action'         => 'draft',
@@ -104,11 +107,8 @@ return [
                 'evidence'        => [
                     'amount'                     => 1000,
                     'summary'                    => 'sample contest summary',
-                    'shipping_proof'             => ['doc_1cXSLlUU8V9sXm'],
-                    'billing_proof'              => [
-                        'doc_1cXSLlUU8V9sXl',
-                        'doc_1cXSLlUU8V9sXm',
-                    ],
+                    'shipping_proof'             => ['doc_shippingProfId'],
+                    'billing_proof'              => ['doc_billingProfId1', 'doc_billingProfId2'], //these fileids are hardcoded as valid files in ufh mock
                     'cancellation_proof'         => null,
                     'customer_communication'     => null,
                     'proof_of_service'           => null,
@@ -129,8 +129,8 @@ return [
             'method'  => 'PATCH',
             'content' => [
                 'summary'        => 'sample contest summary',
-                'shipping_proof' => ['doc_1cXSLlUU8V9sXl'],
-                'billing_proof'  => ['doc_1cXSLlUU8V9sXl', 'doc_1cXSLlUU8V9sXm'], //these fileids are hardcoded as valid files in ufh mock
+                'shipping_proof' => ['doc_shippingProfId'],
+                'billing_proof'  => ['doc_billingProfId1', 'doc_billingProfId2'], //these fileids are hardcoded as valid files in ufh mock
                 'action'         => 'draft',
             ],
         ],
@@ -150,8 +150,8 @@ return [
             'method'  => 'PATCH',
             'content' => [
                 'summary'        => 'sample contest summary',
-                'shipping_proof' => ['doc_1cXSLlUU8V9sXl'],
-                'billing_proof'  => ['doc_1cXSLlUU8V9sXl', 'doc_1cXSLlUU8V9sXm'], //these fileids are hardcoded as valid files in ufh mock
+                'shipping_proof' => ['doc_shippingProfId'],
+                'billing_proof'  => ['doc_billingProfId1', 'doc_billingProfId2'], //these fileids are hardcoded as valid files in ufh mock
             ],
         ],
         'response' => [
@@ -222,7 +222,7 @@ return [
             'content' => [
                 'amount'        => 10000000, // dispute amount is 10000
                 'summary'       => 'sample contest summary',
-                'billing_proof' => ['doc_1cXSLlUU8V9sXl', 'doc_1cXSLlUU8V9sXm'], //these fileids are hardcoded as valid files in ufh mock
+                'billing_proof' => ['doc_billingProfId1', 'doc_billingProfId2'], //these fileids are hardcoded as valid files in ufh mock
                 'action'        => 'draft',
             ],
         ],
@@ -248,7 +248,7 @@ return [
             'content' => [
                 'amount'        => 100, // dispute amount is 10000
                 'summary'       => 'sample contest summary',
-                'billing_proof' => ['doc_1cXSLlUU8V9sXl'], //these fileids are hardcoded as valid files in ufh mock
+                'billing_proof' => ['doc_billingProfId1'], //these fileids are hardcoded as valid files in ufh mock
                 'action'        => 'draft',
             ],
         ],
@@ -256,7 +256,8 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => 'BAD_REQUEST_ERROR',
-                    'description' => 'cannot draft evidence when dispute is in %s status',
+                    'description' => 'Action not allowed when dispute is in %s status.',
+
                 ],
             ],
             'status_code' => 400,
@@ -319,15 +320,44 @@ return [
         ],
     ],
 
-    'testInitiateDraftEvidenceDisputeDoesntBelongToMerchant' => [
+
+    'testInitiateDraftEvidenceInvalidDocumentTypeSubmittedAsEvidence' => [
+
         'request'   => [
             'url'     => '/disputes/disp_0123456789abcd/contest',
             'method'  => 'PATCH',
             'content' => [
                 'amount'         => 100, // dispute amount is 10000
                 'summary'        => 'sample contest summary',
-                'billing_proof' => ['doc_1cXSLlUU8V9sXl'], //these fileids are hardcoded as valid files in ufh mock
+                'shipping_proof' => ['doc_1cXSLlUU8V9sXl'], //some random docid which doesnt belong to this merchant [as per mock ufh]
                 'action'         => 'draft',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => "Only documents with purpose 'dispute_evidence' maybe submitted. doc_1cXSLlUU8V9sXl is of purpose 'delivery_proof'",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
+    'testInitiateDraftEvidenceDisputeDoesntBelongToMerchant' => [
+        'request'   => [
+            'url'     => '/disputes/disp_0123456789abcd/contest',
+            'method'  => 'PATCH',
+            'content' => [
+                'amount'        => 100, // dispute amount is 10000
+                'summary'       => 'sample contest summary',
+                'billing_proof' => ['doc_1cXSLlUU8V9sXl'], //these fileids are hardcoded as valid files in ufh mock
+                'action'        => 'draft',
+
             ],
         ],
         'response'  => [
@@ -353,17 +383,17 @@ return [
             'content' => [
                 'amount'             => 2000,
                 'summary'            => 'new sample contest summary',
-                'billing_proof'      => ['doc_1cXSLlUU8V9sXl', 'doc_1cXSLlUU8V9sXm'], //these fileids are hardcoded as valid files in ufh mock
-                'explanation_letter' => ['doc_1cXSLlUU8V9sXm'],
+                'billing_proof'      => ['doc_billingProfId1', 'doc_billingProfId2'],
+                'explanation_letter' => ['doc_explnationProf'],
                 'cancellation_proof' => null,
                 'others'             => [
                     [
                         'type'         => 'custom_proof_type_2',
-                        'document_ids' => ['doc_1cXSLlUU8V9sXl'],
+                        'document_ids' => ['doc_customType2Id1'],
                     ],
                     [
                         'type'         => 'custom_proof_type_3',
-                        'document_ids' => ['doc_1cXSLlUU8V9sXm'],
+                        'document_ids' => ['doc_customType3Id1'],
                     ],
                 ],
                 'action'             => 'draft',
@@ -386,15 +416,15 @@ return [
                     'amount'                     => 2000,
                     'summary'                    => 'new sample contest summary',
                     // we didnt pass 'shipping_proof' in request -> should retain previous value
-                    'shipping_proof'             => ['doc_1cXSLlUU8V9sXl'],
-                    // ['doc_1cXSLlUU8V9sXm'] was the only doc id previously. assert that after request its updated
-                    'billing_proof'              => ['doc_1cXSLlUU8V9sXl', 'doc_1cXSLlUU8V9sXm'],
+                    'shipping_proof'             => ['doc_shippingProfId'],
+                    //  was the only doc id previously. assert that after request its updated to 2
+                    'billing_proof'              => ['doc_billingProfId1', 'doc_billingProfId2'],
                     //asserting cancellation_proof is null as it was explicitly nullified in above request
                     'cancellation_proof'         => null,
                     'customer_communication'     => null,
                     'proof_of_service'           => null,
                     // explanation_letter was null initially. assert that if passed as a part of update request, its updated
-                    'explanation_letter'         => ['doc_1cXSLlUU8V9sXm'],
+                    'explanation_letter'         => ['doc_explnationProf'],
                     'refund_confirmation'        => null,
                     'access_activity_log'        => null,
                     'refund_cancellation_policy' => null,
@@ -402,15 +432,15 @@ return [
                     'others'                     => [
                         [
                             'type'         => 'custom_proof_type_1',
-                            'document_ids' => ['doc_1cXSLlUU8V9sXl'],
+                            'document_ids' => ['doc_customType1Id1'],
                         ],
                         [
                             'type'         => 'custom_proof_type_2',
-                            'document_ids' => ['doc_1cXSLlUU8V9sXl'],
+                            'document_ids' => ['doc_customType2Id1'],
                         ],
                         [
                             'type'         => 'custom_proof_type_3',
-                            'document_ids' => ['doc_1cXSLlUU8V9sXm'],
+                            'document_ids' => ['doc_customType3Id1'],
                         ],
                     ],
                 ],
@@ -455,7 +485,7 @@ return [
             'url'     => '/disputes/disp_0123456789abcd/contest',
             'method'  => 'PATCH',
             'content' => [
-                'billing_proof' => ['doc_1cXSLlUU8V9sXl'], //these fileids are hardcoded as valid files in ufh mock
+                'billing_proof' => ['doc_billingProfId1'],
             ],
         ],
         'response' => [
@@ -474,8 +504,7 @@ return [
                     // request should be the previous contest amount equal to 1000
                     'amount'        => 1000,
                     'summary'       => 'sample contest summary',
-                    'billing_proof' => ['doc_1cXSLlUU8V9sXl'], //these fileids are hardcoded as valid files in ufh mock
-
+                    'billing_proof' => ['doc_billingProfId1'],
                 ],
                 'created_at'      => 1600000000,
             ],
@@ -508,6 +537,195 @@ return [
         ],
     ],
 
+
+    'testContestDispute' => [
+        'request'  => [
+            'url'     => '/disputes/disp_0123456789abcd/contest',
+            'method'  => 'PATCH',
+            'content' => [
+                'amount'        => 1000,
+                'summary'       => 'sample contest summary',
+                'billing_proof' => ['doc_billingProfId1'],
+                'action'        => 'submit',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'         => 'disp_0123456789abcd',
+                'status'     => 'under_review',
+                'evidence'   => [
+                    'amount'        => 1000,
+                    'summary'       => 'sample contest summary',
+                    'billing_proof' => ['doc_billingProfId1'],
+                ],
+                'created_at' => 1600000000,
+            ],
+        ],
+    ],
+
+    'testContestDisputeEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.under_review',
+        'contains' => [
+            'payment',
+            'dispute',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity' => 'payment',
+                    'amount' => 1000000,
+                    'id'     => 'pay_randomPayId123',
+                ],
+            ],
+            'dispute' => [
+                'entity' => [
+                    'entity'   => 'dispute',
+                    'amount'   => 1000000,
+                    'status'   => 'under_review',
+                    'evidence' => [
+                        'amount'         => 1000,
+                        'summary'        => 'sample contest summary',
+                        'billing_proof'  => ['doc_billingProfId1'],
+                        'shipping_proof' => ['doc_shippingProfId'],
+                        'others'         => [],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testContestDisputePartialAmount' => [
+        'request'  => [
+            'url'     => '/disputes/disp_0123456789abcd/contest',
+            'method'  => 'PATCH',
+            'content' => [
+                'amount'        => 100,
+                'summary'       => 'sample contest summary',
+                'billing_proof' => ['doc_billingProfId1'],
+                'action'        => 'submit',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'       => 'disp_0123456789abcd',
+                'status'   => 'under_review',
+                'phase'    => 'chargeback',
+                'evidence' => [
+                    'amount' => 100,
+                ],
+            ],
+        ],
+    ],
+
+    'testContestDisputeWithoutAmountProvided' => [
+        'request'  => [
+            'url'     => '/disputes/disp_0123456789abcd/contest',
+            'method'  => 'PATCH',
+            'content' => [
+                'summary'       => 'sample contest summary',
+                'billing_proof' => ['doc_billingProfId1'],
+                'action'        => 'submit',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'       => 'disp_0123456789abcd',
+                'status'   => 'under_review',
+                'phase'    => 'chargeback',
+                'evidence' => [
+                    'amount' => 1000000,
+                ],
+            ],
+        ],
+    ],
+
+    'testContestDisputeWithoutEvidenceSubmittedShouldFail' => [
+        'request'   => [
+            'url'     => '/disputes/disp_0123456789abcd/contest',
+            'method'  => 'PATCH',
+            'content' => [
+                'action' => 'submit',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'action not allowed as it will lead to all proof becoming empty',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
+    'testContestDisputeInvalidDisputeStatus' => [
+        'request'   => [
+            'url'     => '/disputes/disp_0123456789abcd/contest',
+            'method'  => 'PATCH',
+            'content' => [
+                'action'        => 'submit',
+                'summary'       => 'test summary',
+                'billing_proof' => ['doc_billingProfId1'],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Action not allowed when dispute is in %s status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
+    'testDisputeReopenedFromUnderReviewWebhook' => [
+        'request'  => [
+            'url'     => '/disputes/disp_0123456789abcd',
+            'method'  => 'POST',
+            'content' => [
+                'status' => 'open',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testDisputeReopenedFromUnderReviewWebhookEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.action_required',
+        'contains' => [
+            'payment',
+            'dispute',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity' => 'payment',
+                ],
+            ],
+            'dispute' => [
+                'entity' => [
+                    'entity' => 'dispute',
+                    'status' => 'open',
+                ],
+            ],
+        ],
+    ],
+
+
     'testGetDisputeByIDWithoutFeatureEnabled' => [
         'request'  => [
             'url'    => '/disputes/disp_0123456789abcd',
@@ -529,4 +747,188 @@ return [
             ],
         ],
     ],
+
+
+    'testAcceptDisputeWithoutFeatureEnabled' => [
+        'request'  => [
+            'url'     => '/disputes/disp_0123456789abcd/accept',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testAcceptDispute' => [
+        'request'  => [
+            'url'     => '/disputes/disp_0123456789abcd/accept',
+            'method'  => 'POST',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'              => 'disp_0123456789abcd',
+                'entity'          => 'dispute',
+                'payment_id'      => 'pay_randomPayId123',
+                'amount'          => 1000000,
+                'currency'        => 'INR',
+                'amount_deducted' => 1000000, //todo: needs to be dispute amount. functionality will be added in later PR
+                'reason_code'     => 'chargeback',
+                'respond_by'      => 1610000000,
+                'status'          => 'lost',
+                'phase'           => 'chargeback',
+                'evidence'        => [
+                    'amount'                     => 0,
+                    'summary'                    => 'dispute accepted',
+                    'shipping_proof'             => null,
+                    'billing_proof'              => null,
+                    'cancellation_proof'         => null,
+                    'customer_communication'     => null,
+                    'proof_of_service'           => null,
+                    'explanation_letter'         => null,
+                    'refund_confirmation'        => null,
+                    'access_activity_log'        => null,
+                    'refund_cancellation_policy' => null,
+                    'terms_and_conditions'       => null,
+                    'others'                     => null,
+                ],
+                'created_at'      => 1600000000,
+            ],
+        ],
+    ],
+
+    'testAcceptDisputeEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.lost',
+        'contains' => [
+            'payment',
+            'dispute',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity' => 'payment',
+                    'amount' => 1000000,
+                    'id'     => 'pay_randomPayId123',
+                ],
+            ],
+            'dispute' => [
+                'entity' => [
+                    'entity'   => 'dispute',
+                    'amount'   => 1000000,
+                    'status'   => 'lost',
+                    'evidence' => [
+                        'amount'                     => 0,
+                        'summary'                    => 'dispute accepted',
+                        'shipping_proof'             => NULL,
+                        'billing_proof'              => NULL,
+                        'cancellation_proof'         => NULL,
+                        'customer_communication'     => NULL,
+                        'proof_of_service'           => NULL,
+                        'explanation_letter'         => NULL,
+                        'refund_confirmation'        => NULL,
+                        'access_activity_log'        => NULL,
+                        'refund_cancellation_policy' => NULL,
+                        'terms_and_conditions'       => NULL,
+                        'others'                     => NULL,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAcceptDisputeRecoverViaAdjustmentEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.lost',
+        'contains' => [
+            'payment',
+            'dispute',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'          => 'payment',
+                    'amount'          => 1000000,
+                    'id'              => 'pay_randomPayId123',
+                    'amount_refunded' => 1000000,
+                ],
+            ],
+            'dispute' => [
+                'entity' => [
+                    'entity'          => 'dispute',
+                    'amount'          => 1000000,
+                    'status'          => 'lost',
+                    'amount_deducted' => 1000000,
+                    'evidence'        => [
+                        'amount'                     => 0,
+                        'summary'                    => 'dispute accepted',
+                        'shipping_proof'             => NULL,
+                        'billing_proof'              => NULL,
+                        'cancellation_proof'         => NULL,
+                        'customer_communication'     => NULL,
+                        'proof_of_service'           => NULL,
+                        'explanation_letter'         => NULL,
+                        'refund_confirmation'        => NULL,
+                        'access_activity_log'        => NULL,
+                        'refund_cancellation_policy' => NULL,
+                        'terms_and_conditions'       => NULL,
+                        'others'                     => NULL,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAcceptDisputeRecoveryViaRefundWithNoPreExistingRefundsEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.lost',
+        'contains' => [
+            'payment',
+            'dispute',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'          => 'payment',
+                    'amount'          => 1000000,
+                    'id'              => 'pay_randomPayId123',
+                    'amount_refunded' => 1000000,
+                ],
+            ],
+            'dispute' => [
+                'entity' => [
+                    'entity'          => 'dispute',
+                    'amount'          => 1000000,
+                    'status'          => 'lost',
+                    'amount_deducted' => 1000000,
+                    'evidence'        => [
+                        'amount'                     => 0,
+                        'summary'                    => 'dispute accepted',
+                        'shipping_proof'             => NULL,
+                        'billing_proof'              => NULL,
+                        'cancellation_proof'         => NULL,
+                        'customer_communication'     => NULL,
+                        'proof_of_service'           => NULL,
+                        'explanation_letter'         => NULL,
+                        'refund_confirmation'        => NULL,
+                        'access_activity_log'        => NULL,
+                        'refund_cancellation_policy' => NULL,
+                        'terms_and_conditions'       => NULL,
+                        'others'                     => NULL,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
 ];

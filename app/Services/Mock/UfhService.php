@@ -2,15 +2,26 @@
 
 namespace RZP\Services\Mock;
 
-use RZP\Error\ErrorCode;
+use Config;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base\Entity;
 use RZP\Services\UfhService as BaseUfhClient;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class UfhService extends BaseUfhClient
 {
     const MOCK_FILE_ID      = 'file_1cXSLlUU8V9sXl';
+
+    const DISPUTE_EVIDENCE_FILE_IDS = [
+        'file_shippingProfId',
+        'file_billingProfId1',
+        'file_billingProfId2',
+        'file_cancelProofId1',
+        'file_explnationProf',
+        'file_customType1Id1',
+        'file_customType1Id2',
+        'file_customType2Id1',
+        'file_customType3Id1',
+    ];
 
     /**
      * {@inheritDoc}
@@ -75,13 +86,27 @@ class UfhService extends BaseUfhClient
     public function fetchFiles(array $queryParams, $merchantId = null): array
     {
         $entityId = $queryParams['entity_id'] ?? 'id1';
+        $ids = $queryParams['ids'] ?? [];
+
+        $type = null;
+        $id0 = 'file_1cXSLlUU8V9sXl';
+
+        if (empty($ids) === false)
+        {
+            if ($this->isDisputeEvidenceFileId($ids[0]))
+            {
+                $type = 'dispute_evidence';
+                $id0 = $ids[0];
+            }
+        }
+
         return [
             'entity'  => 'collection',
             'count'   => 2,
             'items'   => [
                 [
-                    'id'            => 'file_1cXSLlUU8V9sXl',
-                    'type'          => 'explanation_letter',
+                    'id'            => $id0,
+                    'type'          => $type ?? 'explanation_letter',
                     'entity_type'   => $queryParams['entity_type'] ?? 'merchant',
                     'entity_id'     => $entityId,
                     'name'          => 'myfile1.png',
@@ -94,7 +119,7 @@ class UfhService extends BaseUfhClient
                 ],
                 [
                     'id'            => 'file_1cXSLlUU8V9sXm',
-                    'type'          => 'delivery_proof',
+                    'type'          =>  $type ?? 'delivery_proof',
                     'entity_type'   => $queryParams['entity_type'] ?? 'merchant',
                     'entity_id'     => $entityId,
                     'name'          => 'myfile2.pdf',
@@ -112,8 +137,8 @@ class UfhService extends BaseUfhClient
     public function getSignedUrl(string $fileId, array $params = [], $merchantId = null)
     {
         return [
-            'id'            => 'file_DczOEmU9U0FFsb',
-            'type'          => 'delivery_proof',
+            'id'            => $fileId,
+            'type'          => $this->isDisputeEvidenceFileId($fileId) ? 'dispute_evidence' : 'delivery_proof',
             'name'          => 'myfile2.pdf',
             'bucket'        => 'test_bucket',
             'mime'          => 'text/csv',
@@ -125,4 +150,10 @@ class UfhService extends BaseUfhClient
     }
 
     public function deletefile(string $fileId) {}
+
+
+    protected function isDisputeEvidenceFileId($fileId): string
+    {
+        return (in_array($fileId, self::DISPUTE_EVIDENCE_FILE_IDS, true) === true);
+    }
 }

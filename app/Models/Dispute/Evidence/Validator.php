@@ -13,7 +13,7 @@ class Validator extends Base\Validator
     protected static $createForDisputeRules = [
         Entity::AMOUNT                             => 'sometimes|integer',
         Entity::SUMMARY                            => 'sometimes|string',
-        Constants::ACTION                          => 'sometimes|in:draft,submit',
+        Constants::ACTION                          => 'sometimes|in:draft,submit,accept',
         Document\Types::SHIPPING_PROOF             => 'sometimes|array',
         Document\Types::BILLING_PROOF              => 'sometimes|array',
         Document\Types::CANCELLATION_PROOF         => 'sometimes|array',
@@ -30,7 +30,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::DISPUTE_ID => 'required|size:14',
         Entity::SUMMARY    => 'required',
-        Entity::AMOUNT     => 'required|integer|min:1',
+        Entity::AMOUNT     => 'required|integer|min:0',
         Entity::CURRENCY   => 'required',
         Entity::SOURCE     => 'required',
         Constants::ACTION  => 'required',
@@ -69,7 +69,8 @@ class Validator extends Base\Validator
             Constants::ACTION      => $action,
         ];
 
-        throw new BadRequestValidationFailureException("cannot draft evidence when dispute is in {$status} status",
+        throw new BadRequestValidationFailureException("Action not allowed when dispute is in {$status} status.",
+
             Constants::ACTION,
             $exceptionData);
     }

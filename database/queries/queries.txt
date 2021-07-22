@@ -6303,3 +6303,7 @@ ALTER TABLE qr_code
 
 ALTER TABLE terminals
     ADD COLUMN enabled_wallets json DEFAULT NULL;
+
+ALTER TABLE disputes
+    ADD COLUMN deduction_source_type varchar(30) DEFAULT NULL,
+    ADD COLUMN deduction_source_id char(14) DEFAULT NULL;

@@ -1692,6 +1692,8 @@ class Route
         'dispute_reason_fetch_internal'            => ['get',      'dispute_reasons_internal/{disputeReasonId}',     'DisputeController@getReasonInternal'                               ],
         'get_dispute_document_types_metadata'      => ['get',      'disputes/documents/types',                       'DisputeController@getDisputeDocumentTypesMetadataDescription'      ],
         'patch_dispute_contest_by_id'              => ['patch',    'disputes/{id}/contest',                          'DisputeController@patchDisputeContestById',                        ],
+        'post_dispute_accept_by_id'                => ['post',     'disputes/{id}/accept',                           'DisputeController@postDisputeAcceptById'                           ],
+
 
         // This is a different route from /payouts since we need a different auth (internal) for this
         // Hence, created two different routes - one for customer and another for merchant.
@@ -2940,6 +2942,7 @@ class Route
         'dispute_fetch',
         'get_dispute_document_types_metadata',
         'patch_dispute_contest_by_id',
+        'post_dispute_accept_by_id',
         'account_features_add',
         'account_features_get',
         'payment_acknowledge',
@@ -9987,6 +9990,7 @@ class Route
         'merchant_gstin_self_serve_update'     => [Feature::GSTIN_SELF_SERVE],
         'get_dispute_document_types_metadata'  => [Feature::DISPUTE_PRESENTMENT],
         'patch_dispute_contest_by_id'          => [Feature::DISPUTE_PRESENTMENT],
+        'post_dispute_accept_by_id'            => [Feature::DISPUTE_PRESENTMENT],
     ];
 
     /**

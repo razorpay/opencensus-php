@@ -51,6 +51,8 @@ class Event
     const PAYMENT_DISPUTE_WON               = 'payment.dispute.won';
     const PAYMENT_DISPUTE_LOST              = 'payment.dispute.lost';
     const PAYMENT_DISPUTE_CLOSED            = 'payment.dispute.closed';
+    const PAYMENT_DISPUTE_UNDER_REVIEW      = 'payment.dispute.under_review';
+    const PAYMENT_DISPUTE_ACTION_REQUIRED   = 'payment.dispute.action_required';
     const TRANSACTION_CREATED               = 'transaction.created';
     const PAYOUT_CREATED                    = 'payout.created';
     const PAYOUT_PROCESSED                  = 'payout.processed';
@@ -154,6 +156,8 @@ class Event
         self::PAYMENT_DISPUTE_WON,
         self::PAYMENT_DISPUTE_LOST,
         self::PAYMENT_DISPUTE_CLOSED,
+        self::PAYMENT_DISPUTE_UNDER_REVIEW,
+        self::PAYMENT_DISPUTE_ACTION_REQUIRED,
         self::TRANSACTION_CREATED,
         self::PAYOUT_CREATED,
         self::PAYOUT_PROCESSED,
@@ -261,6 +265,8 @@ class Event
         self::PAYMENT_DISPUTE_WON,
         self::PAYMENT_DISPUTE_LOST,
         self::PAYMENT_DISPUTE_CLOSED,
+        self::PAYMENT_DISPUTE_UNDER_REVIEW,
+        self::PAYMENT_DISPUTE_ACTION_REQUIRED,
         self::TRANSACTION_CREATED,
         self::PAYOUT_CREATED,
         self::PAYOUT_PROCESSED,
@@ -427,6 +433,8 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION => 28,
         self::PAYMENT_GATEWAY_PRODUCT_REJECTED            => 29,
         self::PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW        => 30,
+        self::PAYMENT_DISPUTE_UNDER_REVIEW                => 31,
+        self::PAYMENT_DISPUTE_ACTION_REQUIRED             => 32,
     ];
 
     /**
@@ -467,6 +475,8 @@ class Event
         self::PAYMENT_DISPUTE_WON               => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_LOST              => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_CLOSED            => [Product::PRIMARY],
+        self::PAYMENT_DISPUTE_UNDER_REVIEW      => [Product::PRIMARY],
+        self::PAYMENT_DISPUTE_ACTION_REQUIRED   => [Product::PRIMARY],
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => [Product::PRIMARY, Product::BANKING],
         self::FUND_ACCOUNT_VALIDATION_FAILED    => [Product::PRIMARY, Product::BANKING],
         self::TRANSACTION_CREATED               => [Product::BANKING],
@@ -572,6 +582,8 @@ class Event
         self::PAYMENT_DISPUTE_WON               => Entity::DISPUTE,
         self::PAYMENT_DISPUTE_LOST              => Entity::DISPUTE,
         self::PAYMENT_DISPUTE_CLOSED            => Entity::DISPUTE,
+        self::PAYMENT_DISPUTE_UNDER_REVIEW      => Entity::DISPUTE,
+        self::PAYMENT_DISPUTE_ACTION_REQUIRED   => Entity::DISPUTE,
         self::TRANSACTION_CREATED               => Entity::TRANSACTION,
         self::PAYOUT_CREATED                    => Entity::PAYOUT,
         self::PAYOUT_PROCESSED                  => Entity::PAYOUT,

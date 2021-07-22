@@ -22,6 +22,8 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID          = 'transaction_id';
     const AMOUNT                  = 'amount';
     const AMOUNT_DEDUCTED         = 'amount_deducted';
+    const DEDUCTION_SOURCE_TYPE   = 'deduction_source_type';
+    const DEDUCTION_SOURCE_ID     = 'deduction_source_id';
     const AMOUNT_REVERSED         = 'amount_reversed';
     const CURRENCY                = 'currency';
     const DEDUCT_AT_ONSET         = 'deduct_at_onset';
@@ -80,6 +82,9 @@ class Entity extends Base\PublicEntity
 
     const DISPUTE_PRECISION_FACTOR = 1000000;
 
+    const DEDUCTION_SOURCE_TYPE_LENGTH = 30;
+    const DEDUCTION_SOURCE_ID_LENGTH   = 14;
+
     private $backfill = false;
 
     protected static $sign = 'disp';
@@ -128,6 +133,8 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_CURRENCY,
         self::CONVERSION_RATE,
         self::AMOUNT_DEDUCTED,
+        self::DEDUCTION_SOURCE_TYPE,
+        self::DEDUCTION_SOURCE_ID,
         self::AMOUNT_REVERSED,
         self::DEDUCT_AT_ONSET,
         self::GATEWAY_DISPUTE_ID,
@@ -198,10 +205,12 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::STATUS          => Status::OPEN,
-        self::DEDUCT_AT_ONSET => false,
-        self::AMOUNT_DEDUCTED => 0,
-        self::AMOUNT_REVERSED => 0,
+        self::STATUS                => Status::OPEN,
+        self::DEDUCT_AT_ONSET       => false,
+        self::AMOUNT_DEDUCTED       => 0,
+        self::AMOUNT_REVERSED       => 0,
+        self::DEDUCTION_SOURCE_TYPE => null,
+        self::DEDUCTION_SOURCE_ID   => null,
     ];
 
     protected static $generators = [
@@ -309,6 +318,16 @@ class Entity extends Base\PublicEntity
     public function setAmountDeducted(int $amount)
     {
         $this->setAttribute(self::AMOUNT_DEDUCTED, $amount);
+    }
+
+    public function setDeductionSourceType(string $deductionSourceType)
+    {
+        $this->setAttribute(self::DEDUCTION_SOURCE_TYPE, $deductionSourceType);
+    }
+
+    public function setDeductionSourceId(string $deductionSourceId)
+    {
+        $this->setAttribute(self::DEDUCTION_SOURCE_ID, $deductionSourceId);
     }
 
     public function setPaymentId($paymentId)
@@ -544,6 +563,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_DISPUTE_ID);
     }
 
+
     // ----------------------- Getters Ends-------------------------------------
 
     // --------------- Relation to other entities ------------------------------
@@ -667,5 +687,18 @@ class Entity extends Base\PublicEntity
             return false;
         }
         return $this->merchant->isFeatureEnabled(Feature\Constants::DISPUTE_PRESENTMENT) === true;
+    }
+
+    public function isCustomerDispute() : bool
+    {
+        $gatewayDisputeId = $this->getGatewayDisputeId() ?? '';
+
+        if ((strlen($gatewayDisputeId) <= 7) or
+            (substr($gatewayDisputeId, 0, 7) !== Constants::CUSTOMER_DISPUTE_GATEWAY_DISPUTE_ID_PREFIX))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

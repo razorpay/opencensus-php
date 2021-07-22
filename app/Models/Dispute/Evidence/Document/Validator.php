@@ -5,11 +5,8 @@ namespace RZP\Models\Dispute\Evidence\Document;
 
 use App;
 use RZP\Base;
-use RZP\Error\Error;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Models\GenericDocument;
-use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -45,7 +42,7 @@ class Validator extends Base\Validator
         Entity::DOCUMENT_ID => 'required|size:14|custom',
         Entity::TYPE        => 'required|custom',
         Entity::SOURCE      => 'required|custom',
-        Entity::CUSTOM_TYPE => 'required_if:type,others'
+        Entity::CUSTOM_TYPE => 'required_if:type,others',
     ];
 
     public function validateCreateManyInput(array $createManyInput)
@@ -66,7 +63,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        throw new BadRequestValidationFailureException( Constants::ACTION_DISALLOWED_PROOF_BECOMES_EMPTY_EXCEPTION_MESSAGE);
+        throw new BadRequestValidationFailureException(Constants::ACTION_DISALLOWED_PROOF_BECOMES_EMPTY_EXCEPTION_MESSAGE);
     }
 
     protected function validateDocumentId($attribute, $value)
@@ -75,8 +72,27 @@ class Validator extends Base\Validator
             Entity::DOCUMENT_ID => $value,
         ]);
 
+        $documentId = 'doc_' . $value;
+
         // if the document doesnt exist or doesnt belong to this merchant, below line throws an exception which is propagated
-        (new GenericDocument\Service())->getDocument([], 'doc_' . $value);
+        $data = (new GenericDocument\Service())->getDocument([], $documentId);
+
+        if ((isset($data[GenericDocument\Constants::PURPOSE]) === false) or
+            ($data[GenericDocument\Constants::PURPOSE] !== GenericDocument\Constants::DISPUTE_EVIDENCE))
+        {
+
+            $purpose = $data[GenericDocument\Constants::PURPOSE] ?? '';
+
+            $exceptionData = [
+                'document_id' => $documentId,
+                'purpose'     => $purpose,
+            ];
+
+            $message = "Only documents with purpose 'dispute_evidence' maybe submitted. {$documentId} is of purpose '{$purpose}'";
+
+            throw new BadRequestValidationFailureException($message, GenericDocument\Constants::PURPOSE, $exceptionData);
+        }
+
 
         $this->app->trace->info(TraceCode::EVIDENCE_DOCUMENT_CREATE_VERIFIED_DOC_ID, [
             Entity::DOCUMENT_ID => $value,

@@ -95,6 +95,12 @@ class CreateDisputesTable extends Migration
             $table->string(Dispute::EMAIL_NOTIFICATION_STATUS, 50)
                   ->nullable();
 
+            $table->char(Dispute::DEDUCTION_SOURCE_ID, Dispute::DEDUCTION_SOURCE_ID_LENGTH)
+                   ->nullable();
+
+            $table->string(Dispute::DEDUCTION_SOURCE_TYPE, Dispute::DEDUCTION_SOURCE_TYPE_LENGTH)
+                   ->nullable();
+
             $table->integer(Dispute::CREATED_AT);
 
             $table->integer(Dispute::UPDATED_AT);

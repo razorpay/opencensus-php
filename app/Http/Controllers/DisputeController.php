@@ -143,4 +143,13 @@ class DisputeController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function postDisputeAcceptById($disputeId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postDisputeAcceptById($disputeId, $input);
+
+        return ApiResponse::json($response);
+    }
 }

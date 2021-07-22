@@ -3,18 +3,24 @@
 
 namespace RZP\Models\Dispute\Evidence;
 
+use Mail;
+use Exception;
 use RZP\Models\Base;
 use RZP\Models\Dispute;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Method;
+use RZP\Mail\Dispute\Admin\DisputePresentmentRiskOpsReview;
 
 class Core extends Base\Core
 {
-    const PATCH_DISPUTE_EVIDENCE_CREATE_HANDLER = "createForDispute";
-    const PATCH_DISPUTE_EVIDENCE_UPDATE_HANDLER = "updateForDispute";
+
+    const EVIDENCE_CREATE_HANDLER = "createForDispute";
+    const EVIDENCE_UPDATE_HANDLER = "updateForDispute";
+    const EVIDENCE_ACCEPT_HANDLER = "acceptForDispute";
+    const EVIDENCE_SUBMIT_HANDLER = "submitEvidenceHandler";
 
 
-
-    public function handlePatchDisputeEvidence(Dispute\Entity $dispute, array $input) : Entity
+    public function handlePatchDisputeEvidence(Dispute\Entity $dispute, array $input): Entity
     {
         $handler = $this->getHandlerForPatchDisputeEvidence($dispute, $input);
 
@@ -23,16 +29,52 @@ class Core extends Base\Core
             'handler' => $handler,
         ]);
 
+        $result = null;
+
         switch ($handler)
         {
-            case self::PATCH_DISPUTE_EVIDENCE_CREATE_HANDLER:
-                return $this->createForDispute($dispute, $input);
-            case self::PATCH_DISPUTE_EVIDENCE_UPDATE_HANDLER:
-                return $this->updateForDispute($dispute, $input);
+            case self::EVIDENCE_CREATE_HANDLER:
+                $result = $this->createForDispute($dispute, $input);
+                break;
+            case self::EVIDENCE_UPDATE_HANDLER:
+                $result = $this->updateForDispute($dispute, $input);
+                break;
+            case self::EVIDENCE_ACCEPT_HANDLER:
+                $result = $this->acceptForDispute($dispute, $input);
+                break;
+            case self::EVIDENCE_SUBMIT_HANDLER:
+                $result = $this->submitEvidenceForDispute($dispute, $input);
+                break;
         }
+
+        $dispute->refresh();
+
+        return $result;
     }
 
-    public function createForDispute(Dispute\Entity $dispute, array $input) : Entity
+    protected function getHandlerForPatchDisputeEvidence(Dispute\Entity $dispute, array $input): string
+    {
+        $action = $input[Constants::ACTION] ?? Action::DRAFT;
+
+        if ($action === Action::ACCEPT)
+        {
+            return self::EVIDENCE_ACCEPT_HANDLER;
+        }
+
+        if ($action === Action::SUBMIT)
+        {
+            return self::EVIDENCE_SUBMIT_HANDLER;
+        }
+
+        if ($dispute->evidence()->first() === null)
+        {
+            return self::EVIDENCE_CREATE_HANDLER;
+        }
+
+        return self::EVIDENCE_UPDATE_HANDLER;
+    }
+
+    public function createForDispute(Dispute\Entity $dispute, array $input): Entity
     {
         $this->trace->info(TraceCode::DISPUTE_EVIDENCE_CREATE_FOR_DISPUTE_INPUT, $input);
 
@@ -40,6 +82,12 @@ class Core extends Base\Core
 
         (new Document\Core)->createMany($dispute, $input);
 
+
+        return $this->createAndSaveEvidenceForDispute($dispute, $input);
+    }
+
+    protected function createAndSaveEvidenceForDispute(Dispute\Entity $dispute, array $input): Entity
+    {
         $createInput = $this->getInputForCreateForDispute($dispute, $input);
 
         $this->validateInputForCreateForDispute($dispute, $createInput);
@@ -51,32 +99,6 @@ class Core extends Base\Core
         $entity->dispute()->associate($dispute);
 
         return $entity;
-    }
-
-    protected function updateForDispute(Dispute\Entity $dispute, array $updateInput): Entity
-    {
-        $this->trace->info(TraceCode::DISPUTE_EVIDENCE_UPDATE_FOR_DISPUTE_INPUT, $updateInput);
-
-        $createInput = $this->getInputForCreateForDisputeFromUpdateRequest($dispute, $updateInput);
-
-        $this->repo->dispute_evidence_document->deleteDocumentsForDispute($dispute->getId());
-
-        $this->repo->dispute_evidence->deleteOrFail($dispute->evidence()->firstOrFail());
-
-        $result = $this->createForDispute($dispute, $createInput);
-
-        return $result;
-    }
-
-    protected function validateInputForCreateForDispute(Dispute\Entity $dispute, array $createInput)
-    {
-        $validator = (new Validator);
-
-        $validator->validateInput('create', $createInput);
-
-        $validator->validateAmount($dispute, $createInput);
-
-        $validator->validateActionForDisputeStatus($dispute, $createInput[Constants::ACTION]);
     }
 
     protected function getInputForCreateForDispute(Dispute\Entity $dispute, $input): array
@@ -101,15 +123,26 @@ class Core extends Base\Core
         return Source::UNKNOWN;
     }
 
-    protected function getHandlerForPatchDisputeEvidence(Dispute\Entity $dispute, array $input): string
+    protected function validateInputForCreateForDispute(Dispute\Entity $dispute, array $createInput)
     {
-        //todo handle inputs based on action as well[action can be "submit" later on..]
-        if ($dispute->evidence()->first() === null)
-        {
-            return self::PATCH_DISPUTE_EVIDENCE_CREATE_HANDLER;
-        }
+        $validator = (new Validator);
 
-        return self::PATCH_DISPUTE_EVIDENCE_UPDATE_HANDLER;
+        $validator->validateInput('create', $createInput);
+
+        $validator->validateAmount($dispute, $createInput);
+
+        $validator->validateActionForDisputeStatus($dispute, $createInput[Constants::ACTION]);
+    }
+
+    protected function updateForDispute(Dispute\Entity $dispute, array $updateInput): Entity
+    {
+        $this->trace->info(TraceCode::DISPUTE_EVIDENCE_UPDATE_FOR_DISPUTE_INPUT, $updateInput);
+
+        $createInput = $this->getInputForCreateForDisputeFromUpdateRequest($dispute, $updateInput);
+
+        $this->purgeDisputeEvidence($dispute);
+
+        return $this->createForDispute($dispute, $createInput);
     }
 
     protected function getInputForCreateForDisputeFromUpdateRequest(Dispute\Entity $dispute, array $newInput)
@@ -121,7 +154,7 @@ class Core extends Base\Core
 
         $inputFromCurrentEvidence = $dispute->evidence()->first()->toArrayPublic();
 
-        $inputFromCurrentEvidence = array_filter($inputFromCurrentEvidence, function($key)
+        $inputFromCurrentEvidence = array_filter($inputFromCurrentEvidence, function ($key)
         {
             return in_array($key, Constants::IGNORE_FIELDS_FOR_UPDATE_REQUEST, true) === false;
         }, ARRAY_FILTER_USE_KEY);
@@ -132,7 +165,8 @@ class Core extends Base\Core
         {
             //1. key is not present in new input => prefer existing value
             if ((array_key_exists($key, $newInput) === false) and
-                (empty($currentValue) === false))
+                (empty($currentValue) === false)
+            )
             {
                 $result[$key] = $currentValue;
 
@@ -162,7 +196,6 @@ class Core extends Base\Core
     {
         if ((empty($newOthersProof) === true) or
             (is_sequential_array($newOthersProof) === false))
-
         {
             return [];
         }
@@ -186,6 +219,11 @@ class Core extends Base\Core
 
     protected function fillCustomProofTypeDocumentIdsMap($othersProof, $customProofTypeDocumentIdsMap = []): array
     {
+        if (empty($othersProof) === true)
+        {
+            return $customProofTypeDocumentIdsMap;
+        }
+
         foreach ($othersProof as $proof)
         {
             $customType = $proof[Document\Entity::TYPE];
@@ -197,4 +235,243 @@ class Core extends Base\Core
 
         return $customProofTypeDocumentIdsMap;
     }
+
+    protected function purgeDisputeEvidence(Dispute\Entity $dispute): void
+    {
+        $this->repo->dispute_evidence_document->deleteDocumentsForDispute($dispute->getId());
+
+        if ($dispute->evidence()->first() === null)
+        {
+            return;
+        }
+
+        $this->repo->dispute_evidence->deleteOrFail($dispute->evidence()->firstOrFail());
+    }
+
+    protected function acceptForDispute(Dispute\Entity $dispute, array $input)
+    {
+        $acceptDisputeInput = $this->makeInputForAcceptDispute($dispute);
+
+        $this->purgeDisputeEvidence($dispute);
+
+        $result = $this->createAndSaveEvidenceForDispute($dispute, $acceptDisputeInput);
+
+        $this->recoverAmountFromMerchantOnDisputeAccept($dispute);
+
+
+        return $result;
+    }
+
+    protected function makeInputForAcceptDispute(Dispute\Entity $dispute)
+    {
+        return [
+            Entity::SUMMARY   => 'dispute accepted',
+            Entity::AMOUNT    => 0, // if merchant accepts dispute, then evidence is for 0 amount, because they are not denying the contest
+            Constants::ACTION => Action::ACCEPT,
+        ];
+    }
+
+    /**
+     * @param Dispute\Entity $dispute
+     * Adding the functionality here and not in Dispute/Core. Reason: the recovery flow is applicable only to dispute presentment flows
+     * and not to all disputes in general.
+     * When it becomes applicable to all disputes, the code can be moved into Dispute/Core
+     */
+    protected function recoverAmountFromMerchantOnDisputeAccept(Dispute\Entity $dispute)
+    {
+        $recoveryOption = $this->getRecoveryMethodForDisputeAccept($dispute);
+
+        $traceData = [
+            'recovery_method' => $recoveryOption,
+            'dispute_id'      => $dispute->getId(),
+        ];
+
+        $this->trace->info(TraceCode::DISPUTE_RECOVER_FROM_MERCHANT_ON_ACCEPT_INITIATE, $traceData);
+
+        try
+        {
+            $this->repo->transaction(function () use ($dispute, $recoveryOption)
+            {
+                switch ($recoveryOption)
+                {
+                    case RecoveryMethod::ADJUSTMENT:
+                        $this->recoverAmountFromMerchantOnDisputeAcceptViaAdjustment($dispute);
+                        break;
+                    case RecoveryMethod::REFUND:
+                        $this->recoverAmountFromMerchantOnDisputeAcceptViaRefund($dispute);
+                        break;
+                    case RecoveryMethod::RISK_OPS_REVIEW:
+                        $this->recoverAmountFromMerchantOnDisputeAcceptViaRiskOpsReview($dispute);
+                        break;
+                }
+            });
+
+            $success = true;
+        }
+        catch (Exception $exception)
+        {
+            $this->trace->traceException($exception);
+
+            $success = false;
+
+            $traceData['exception'] = [
+                'message' => $exception->getMessage(),
+            ];
+
+            $this->recoverAmountFromMerchantOnDisputeAcceptViaRiskOpsReview(
+                $dispute,
+                Constants::RISK_OPS_REVIEW_REASON_ADJUSTMENT_OR_REFUND_CREATION_FAILED,
+                $exception->getMessage());
+        }
+
+        $traceData['success'] = $success;
+
+
+        $this->trace->info(TraceCode::DISPUTE_RECOVER_FROM_MERCHANT_ON_ACCEPT_COMPLETE, $traceData);
+    }
+
+    /**
+     *  Reference: https://docs.google.com/spreadsheets/d/1Uh_s0rm3PO9GOdiNVo6xRWdaG13wsD6W_YwJMZ_4OEE/edit?ts=60f15177#gid=0
+     * Tldr:
+     * 1. if its customer dispute -> refund
+     * 2. if not, follow above spreadsheet
+     */
+    public function getRecoveryMethodForDisputeAccept(Dispute\Entity $dispute): string
+    {
+        $payment = $dispute->payment;
+
+        if (($payment === null) or
+            ($payment->isInternational() === true)
+        )
+        {
+            return RecoveryMethod::RISK_OPS_REVIEW;
+        }
+
+        if ($dispute->isCustomerDispute() === true)
+        {
+            return RecoveryMethod::REFUND;
+        }
+
+        switch ($payment->getMethod())
+        {
+            case Method::CARD:
+                return $this->getRecoveryMethodForCardDispute($dispute);
+            case Method::NETBANKING:
+                return $this->getRecoveryMethodForNetbankingDispute($dispute);
+            case Method::UPI:
+                return $this->getRecoveryMethodForUpiDispute($dispute);
+            case Method::WALLET:
+                return $this->getRecoveryMethodForWalletDispute($dispute);
+        }
+
+        return RecoveryMethod::RISK_OPS_REVIEW;
+    }
+
+    protected function getRecoveryMethodForCardDispute(Dispute\Entity $dispute): string
+    {
+        return RecoveryMethod::ADJUSTMENT;
+    }
+
+    protected function getRecoveryMethodForNetbankingDispute(Dispute\Entity $dispute): string
+    {
+        if (in_array($dispute->payment->getGateway(), RecoveryMethod::NETBANKING_RECOVER_VIA_REFUND_GATEWAYS, true) === true)
+        {
+            return RecoveryMethod::REFUND;
+        }
+
+        return RecoveryMethod::RISK_OPS_REVIEW;
+    }
+
+    protected function getRecoveryMethodForUpiDispute(Dispute\Entity $dispute): string
+    {
+        if (in_array($dispute->payment->getGateway(), RecoveryMethod::UPI_RECOVER_VIA_ADJUSTMENT_GATEWAYS, true) === true)
+        {
+            return RecoveryMethod::ADJUSTMENT;
+        }
+
+        return RecoveryMethod::RISK_OPS_REVIEW;
+    }
+
+    protected function getRecoveryMethodForWalletDispute(Dispute\Entity $dispute): string
+    {
+        if (in_array($dispute->payment->getGateway(), RecoveryMethod::WALLET_RECOVER_VIA_ADJUSTMENT_GATEWAYS, true) === true)
+        {
+            return RecoveryMethod::ADJUSTMENT;
+        }
+
+        if (in_array($dispute->payment->getGateway(), RecoveryMethod::WALLET_RECOVER_VIA_REFUND_GATEWAYS, true) === true)
+        {
+            return RecoveryMethod::REFUND;
+        }
+
+
+        return RecoveryMethod::RISK_OPS_REVIEW;
+    }
+
+    protected function recoverAmountFromMerchantOnDisputeAcceptViaAdjustment(Dispute\Entity $dispute)
+    {
+        (new Dispute\Core)->update($dispute, [
+            Dispute\Entity::BACKFILL => false,
+            Dispute\Entity::STATUS   => Dispute\Status::LOST,
+        ]);
+    }
+
+    protected function recoverAmountFromMerchantOnDisputeAcceptViaRefund(Dispute\Entity $dispute)
+    {
+        $payment = $this->repo->payment->findOrFail($dispute->getPaymentId());
+
+        // need to explicitly set and save here because if a payment is already in disputed state
+        // we dont allow refunds on it. in case of an error, this is in a txn block and the txn will be rolled back
+        $payment->setDisputed(false);
+
+        $this->repo->payment->saveOrFail($payment);
+
+        (new Dispute\Core)->createRefundAndUpdateDispute($dispute);
+
+        (new Dispute\Core)->update($dispute, [
+            Dispute\Entity::BACKFILL       => false,
+            Dispute\Entity::STATUS         => Dispute\Status::LOST,
+            Dispute\Entity::SKIP_DEDUCTION => true,
+        ]);
+    }
+
+    protected function recoverAmountFromMerchantOnDisputeAcceptViaRiskOpsReview(Dispute\Entity $dispute,
+                                                                                $reasonForReview = Constants::RISK_OPS_REVIEW_REASON_BEHAVIOR_NOT_SPECIFIED,
+                                                                                $reviewMessage = '')
+    {
+        $dispute->reload();
+
+        if ($dispute->isLost() === false)
+        {
+            (new Dispute\Core)->update($dispute, [
+                Dispute\Entity::BACKFILL       => false,
+                Dispute\Entity::SKIP_DEDUCTION => true,
+                Dispute\Entity::STATUS         => Dispute\Status::LOST,
+            ]);
+        }
+
+
+        $data = (new Dispute\Core)->getSendDisputeMailToAdminData($dispute);
+
+        $data['reason_for_review'] = $reasonForReview;
+
+        $data['review_message'] = $reviewMessage;
+
+        $mail = (new DisputePresentmentRiskOpsReview($data))->build();
+
+        Mail::queue($mail);
+    }
+
+    protected function submitEvidenceForDispute(Dispute\Entity $dispute, array $input)
+    {
+        $result = $this->updateForDispute($dispute, $input);
+
+        (new Dispute\Core)->update($dispute, [
+            Dispute\Entity::STATUS   => Dispute\Status::UNDER_REVIEW,
+            Dispute\Entity::BACKFILL => false,
+        ]);
+
+        return $result;
+    }
+
 }

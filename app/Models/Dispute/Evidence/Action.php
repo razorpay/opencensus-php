@@ -10,15 +10,20 @@ class Action
 {
     const DRAFT  = "draft";
     const SUBMIT = "submit";
+    const ACCEPT = "accept";
+
 
     protected static $validActions = [
         self::DRAFT,
         self::SUBMIT,
+        self::ACCEPT,
     ];
 
     protected static $validActionForDisputeStatusMap = [
         self::DRAFT  => [Dispute\Status::OPEN],
         self::SUBMIT => [Dispute\Status::OPEN],
+        self::ACCEPT => [Dispute\Status::OPEN],
+
     ];
 
     public static function isValidAction(string $action): bool

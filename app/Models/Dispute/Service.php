@@ -829,4 +829,11 @@ class Service extends Base\Service
     {
         return $this->core()->patchDisputeContestById($disputeId, $input)->toArrayPublic();
     }
+
+
+    public function postDisputeAcceptById($disputeId, $input)
+    {
+        return $this->core()->postDisputeAcceptById($disputeId, $input)->toArrayPublic();
+    }
+
 }

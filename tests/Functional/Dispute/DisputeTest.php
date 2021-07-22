@@ -779,6 +779,10 @@ class DisputeTest extends TestCase
 
         $content = $this->runRequestResponseFlow($testData);
 
+        $this->assertArrayNotHasKey('deduction_source_type', $content);
+
+        $this->assertArrayNotHasKey('deduction_source_id', $content);
+
         $adjustment = $this->getLastEntity('adjustment', true);
 
         $this->checkDisputeFetchProxyAuth($dispute, $adjustment, $content);

@@ -440,6 +440,20 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onPaymentDisputeUnderReview($payment)
+    {
+        $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onPaymentDisputeActionRequired($payment)
+    {
+        $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onFundAccountValidationCompleted(FundAccount\Validation\Entity $fundAccountValidation)
     {
         $payload = $this->getFundAccountValidationPayload($fundAccountValidation);

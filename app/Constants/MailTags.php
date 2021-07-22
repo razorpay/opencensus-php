@@ -182,10 +182,11 @@ class MailTags
     const MERCHANT_REQUEST_NEEDS_CLARIFICATION = 'merchant_request_needs_clarification';
 
     // Dispute tags
-    const DISPUTE_CREATED                  = 'dispute_created';
-    const DISPUTES_CREATED_IN_BULK         = 'disputes_created_in_bulk';
-    const DISPUTE_ACCEPTED_ADMIN           = 'dispute_accepted_admin';
-    const DISPUTE_SUBMITTED_ADMIN          = 'files_submitted_admin';
+    const DISPUTE_CREATED                       = 'dispute_created';
+    const DISPUTES_CREATED_IN_BULK              = 'disputes_created_in_bulk';
+    const DISPUTE_ACCEPTED_ADMIN                = 'dispute_accepted_admin';
+    const DISPUTE_PRESENTMENT_RISK_OPS_REVIEW   = 'dispute_presentment_risk_ops_review';
+    const DISPUTE_SUBMITTED_ADMIN               = 'files_submitted_admin';
 
     // Fraud Notification tags
     const FRAUD_NOTIFICATION_DOMAIN_MISMATCH = 'fraud_notification_domain_mismatch';
