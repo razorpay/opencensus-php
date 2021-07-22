@@ -1271,6 +1271,11 @@ class Gateway
         return $this->input['terminal']['gateway_secure_secret'];
     }
 
+    protected function getLiveSecret2()
+    {
+        return $this->input['terminal']['gateway_secure_secret2'];
+    }
+
     public function getTerminalPassword()
     {
         if ($this->mode === Mode::TEST)
@@ -1291,6 +1296,11 @@ class Gateway
     protected function getLiveTerminalPassword()
     {
         return $this->input['terminal']['gateway_terminal_password'];
+    }
+
+    protected function getLiveTerminalPassword2()
+    {
+        return $this->input['terminal']['gateway_terminal_password2'];
     }
 
     protected function getLiveGatewayTerminalId()

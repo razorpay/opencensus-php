@@ -1283,7 +1283,7 @@ class Gateway extends Base\Gateway
         return strtr($url, [':contact' => $this->getFormattedContact($contact)]);
     }
 
-    protected function getRequestHeaders()
+    protected function getRequestHeaders(): array
     {
         return [
             'Content-Type'  => 'application/json',
@@ -1519,7 +1519,12 @@ class Gateway extends Base\Gateway
             return $this->config['test_private_key'];
         }
 
-        return $this->config['live_private_key'];
+        if ($this->input['terminal']['gateway_merchant_id'] === 'SfTgUl9XYRvb0m2FL5q5')
+        {
+            return $this->config['live_private_key'];
+        }
+
+        return $this->getLiveTerminalPassword2();
     }
 
     public function getOlaPublicKey()
@@ -1529,7 +1534,12 @@ class Gateway extends Base\Gateway
             return $this->config['test_ola_public_key'];
         }
 
-        return $this->config['live_ola_public_key'];
+        if ($this->input['terminal']['gateway_merchant_id'] === 'SfTgUl9XYRvb0m2FL5q5')
+        {
+            return $this->config['live_ola_public_key'];
+        }
+
+        return $this->getLiveSecret2();
     }
 
     public function getPublicKey()
