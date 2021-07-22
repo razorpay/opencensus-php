@@ -2393,6 +2393,15 @@ class Repository extends Base\Repository
      */
     public function fetchBankingTransactionsForLedgerRecon(array $merchantIds, $from, $to, int $count = 1000, int $skip = 0)
     {
+        // select column
+        $transactionIdColumn = $this->dbColumn(Entity::ID);
+        $transactionAmountColumn = $this->dbColumn(Entity::AMOUNT);
+        $transactionTaxColumn = $this->dbColumn(Entity::TAX);
+        $transactionFeeColumn = $this->dbColumn(Entity::FEE);
+        $transactionEntityIdColumn = $this->dbColumn(Entity::ENTITY_ID);
+        $transactionTypeColumn = $this->dbColumn(Entity::TYPE);
+        $transactionBalanceColumn = $this->dbColumn(Entity::BALANCE);
+
         $transactionBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
         $transactionMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $transactionCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
@@ -2400,7 +2409,19 @@ class Repository extends Base\Repository
         $balanceIdColumn   = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeColumn = $this->repo->balance->dbColumn(Entity::TYPE);
 
+        $selectColumn = [
+            $transactionIdColumn,
+            $transactionAmountColumn,
+            $transactionTaxColumn,
+            $transactionFeeColumn,
+            $transactionEntityIdColumn,
+            $transactionTypeColumn,
+            $transactionMerchantIdColumn,
+            $transactionBalanceColumn,
+        ];
+
         return $this->newQuery()
+            ->select($selectColumn)
             ->leftjoin(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceIdColumn)
             // To fetch only banking transaction until pg use cases are onboarded
             ->where(function ($query) use ($transactionBalanceIdColumn, $balanceTypeColumn)
