@@ -264,7 +264,7 @@ class Job extends Base\Core
                 'event_timestamp' => now()->timestamp,
                 'data'            => [
                     'apps_exempt_risk_check' => ($merchantAppsExemptFromRiskCheck === true ? '1' : '0'),
-                    'website_results'        => $websiteResults,
+                    'website_results'        => json_encode($websiteResults),
                 ],
             ];
 
