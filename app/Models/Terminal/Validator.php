@@ -252,9 +252,11 @@ class Validator extends Base\Validator
         Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
-        Entity::UPI                                     => 'sometimes|boolean|in:1',
+        Entity::UPI                                     => 'sometimes|boolean|in:0,1',
+        Entity::ENABLED_WALLETS                         => 'sometimes',
         Entity::VPA                                     => 'sometimes|string',
         Entity::MODE                                    => 'sometimes|in:2',
+        Entity::NOTES                                   => 'sometimes|string',
     ];
 
     protected static $cashfreeTerminalRules = [
@@ -634,6 +636,10 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::VPA                        => 'sometimes|string',
         Entity::ENABLED                    => 'sometimes|in:0,1',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::NOTES                      => 'sometimes|string',
+        Entity::ENABLED_WALLETS            => 'sometimes',
     ];
 
     protected static $cashfreeEditTerminalRules = [
