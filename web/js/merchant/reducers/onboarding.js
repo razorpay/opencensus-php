@@ -1,4 +1,4 @@
-import ajax, { merchantFetch } from 'merchant/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import { set } from 'common/utils/immutable';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
 

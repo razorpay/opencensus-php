@@ -53,7 +53,7 @@
       ';}.alert-danger { background-color: ' +
       it.errorBackground +
       '; color: ' +
-      it.secondary +
+      it.tertiary +
       ';}@-webkit-keyframes changebar { 0% { background-color: ' +
       it.primary +
       '; } 33.3% { background-color: ' +

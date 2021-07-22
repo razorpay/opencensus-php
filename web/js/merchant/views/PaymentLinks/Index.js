@@ -4,15 +4,12 @@ import { Route, Switch, NavLink } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
-import ShowWhen from 'merchant/components/ShowWhen';
-
 import PaymentLinksList from 'merchant/views/PaymentLinks/PaymentLinks/List';
 import BatchUploadList from 'merchant/views/PaymentLinks/BatchUpload/List';
-
 import PaymentButtonLaunchBanner from 'merchant/components/Announcements/PaymentButtonLaunch';
 import SwitchToPaymentLinksV2 from 'merchant/components/Announcements/SwitchToPaymentLinksV2';
 import TestModeBanner from 'merchant/components/TestModeBanner';
-import { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
 import {
   handleProductQuickGuide,
@@ -148,11 +145,12 @@ export default class PaymentLinksContainer extends React.Component {
   };
 
   render() {
+    const { user } = this.props;
     const { isQuickGuideOpen, showOnboarding } = this.props.paymentLinksProductOnBoarding;
 
     const { activation_status, role } = window.rzp_user;
 
-    if (showOnboarding) {
+    if (showOnboarding && !user.isOrgAxis) {
       return <OnBoarding />;
     }
     return (

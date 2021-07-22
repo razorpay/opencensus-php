@@ -3,13 +3,9 @@ import { Route, Switch, NavLink } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
-import {
-  handleProductQuickGuide,
-  getCurrentProductOnBoardingDetails,
-} from 'merchant/reducers/onboarding';
+import { getCurrentProductOnBoardingDetails } from 'merchant/reducers/onboarding';
 
 import TestModeBanner from 'merchant/components/TestModeBanner';
-
 import OnBoarding from './OnBoarding';
 import QuickGuide from './QuickGuide';
 
@@ -17,33 +13,25 @@ import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
 import PaymentPageAnalyticsBanner from 'merchant/components/Announcements/PaymentPageAnalytics';
 
-@connect(
-  (state) => {
-    return {
-      paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
-      user: state.session.user,
-    };
-  },
-  {
-    handleProductQuickGuide,
-  },
-)
+@connect((state) => {
+  return {
+    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
+    user: state.session.user,
+  };
+})
 export default class PaymentPagesContainer extends React.Component {
   render() {
-    const user = this.props.user;
+    const { user } = this.props;
     const { isQuickGuideOpen, showOnboarding } = this.props.paymentPageProductOnBoarding;
 
-    if (showOnboarding) {
+    if (showOnboarding && !user.isOrgAxis) {
       return <OnBoarding />;
     }
 
     return (
       <>
-        <div className='banner-container'>
-
-          <PaymentPageAnalyticsBanner
-            bannerKey={`payment-pages-analytics-${user.current}`}
-            />
+        <div className="banner-container">
+          <PaymentPageAnalyticsBanner bannerKey={`payment-pages-analytics-${user.current}`} />
         </div>
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}

@@ -6,13 +6,7 @@ import { Field } from 'redux-form';
 import HeaderAction from 'common/ui/HeaderAction';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
-import { RZPFeatures } from 'merchant/helpers/data';
-import { getCustomURL } from 'merchant/components/DocsLink'
-import {
-  getKeysSeparatedByPipe,
-  findBy,
-  getCommonAnalyticsProperties,
-} from 'common/utils/rzp-utils';
+import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 
 import { fetchPaymentLinks } from 'merchant/reducers/paymentlinks/list';
@@ -23,6 +17,7 @@ import DocsLink from 'merchant/components/DocsLink';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import List from 'merchant/views/Invoices/Invoices/components/List';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
+import { RZPFeatures } from 'merchant/helpers/data';
 import ListFilter from 'merchant/views/Invoices/Invoices/components/ListFilter';
 import DateRangePicker from 'common/ui/DateRangePicker';
 
@@ -165,13 +160,11 @@ export default class PaymentLinksContainer extends ListContainer {
 
               <Link to="/reminders">Reminder Settings</Link>
             </span>
-
-            {/*
-              <TakeATourButton feature={RZPFeatures.PL} />  // TODO: Re-enable it after few weeks, check [PAYAPPS-839] for full details
-            */}
+            <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
+              <TakeATourButton feature={RZPFeatures.PL} />
+            </ShowWhen>
 
             <DocsLink {...docsLinkProps} />
-
             <ShowWhen
               additionalCondition={(user) =>
                 (mode !== 'live' || !user.isRejected) && user.isAllowedEdit('payment_links')

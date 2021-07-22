@@ -13,12 +13,10 @@ import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 
-
 import ShowWhen from 'merchant/components/ShowWhen';
 import EmptyList from 'merchant/components/EmptyList';
-import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-import { DocLink } from 'merchant/components/DocsLink'
+import { DocLink } from 'merchant/components/DocsLink';
 
 import List from './List';
 
@@ -312,7 +310,9 @@ export default class PaymentPagesContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <TakeATourButton feature={RZPFeatures.PP} />
+            <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
+              <TakeATourButton feature={RZPFeatures.PP} />
+            </ShowWhen>
 
             <ShowWhen
               additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}

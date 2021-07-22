@@ -102,16 +102,16 @@ export default class PaymentButtonsContainer extends React.Component {
     const { user } = this.props;
     const { showOnboarding, isQuickGuideOpen } = this.props.paymentButtonsProductOnBoarding;
 
-    if (showOnboarding) {
+    if (showOnboarding && !user.isOrgAxis) {
       return <OnBoarding />;
     }
 
     return (
       <>
-        <div className='banner-container'>
+        <div className="banner-container">
           {user.isSubscriptionButtonEnabled && user.isCardRecurringPaymentsBlocked && (
             <CardPaymentsBlockedBanner />
-            )}
+          )}
         </div>
 
         <tabbed-container>
