@@ -297,4 +297,7 @@ final class RazorxTreatment
 
     // Experiment to enable queued payouts creation via payouts service
     const ENABLE_QUEUED_PAYOUTS_VIA_PAYOUTS_SERVICE = 'enable_queued_payouts_via_payouts_service';
+
+    // Experiment to block customer prefill on checkout
+    const BLOCK_CUSTOMER_PREFILL = 'block_customer_prefill';
 }

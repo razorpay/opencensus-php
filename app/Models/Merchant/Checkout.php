@@ -99,7 +99,7 @@ class Checkout
 
         $this->checkAndAddDetailsForOrder($input, $merchant, $data);
 
-        $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
+        $this->checkAndAddDetailsForInvoice($input, $merchant, $data, $mode);
 
         // This should be after `checkAndFillSavedTokens` because this expects
         // `$this->subscription` to be set.
@@ -401,7 +401,8 @@ class Checkout
     protected function checkAndAddDetailsForInvoice(
         array $input,
         Merchant\Entity $merchant,
-        array & $data)
+        array & $data,
+        $mode)
     {
         if (empty($input[Payment\Entity::INVOICE_ID]) === true)
         {
@@ -431,11 +432,17 @@ class Checkout
             }
         }
 
-        // Unsets Customer email and contact if pl_block_customer_prefill is true
-        $plBlockCustomerPrefill = $merchant->isFeatureEnabled(Feature\Constants::PL_BLOCK_CUSTOMER_PREFILL);
-        if ($plBlockCustomerPrefill === true)
+        $treatment = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::BLOCK_CUSTOMER_PREFILL,
+            $mode
+        );
+
+        if ($treatment === 'on')
         {
-            if (isset($data['customer']) === true) {
+            // Unsets Customer email, name and contact if block_customer_prefill experiment is enabled
+            if (isset($data['customer']) === true)
+            {
                 $data['customer']['email'] = '';
                 $data['customer']['contact'] = '';
                 $data['customer']['name'] = '';
@@ -1302,7 +1309,7 @@ class Checkout
 
         $this->checkAndAddDetailsForOrder($input, $merchant, $data);
 
-        $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
+        $this->checkAndAddDetailsForInvoice($input, $merchant, $data, $mode);
 
         $this->fillPreferredMethods($merchant, $input, $data);
 
