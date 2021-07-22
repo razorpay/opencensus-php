@@ -1858,7 +1858,7 @@ class Service extends Base\Service
 
         list($error, $data) = $request->processInput($payload)->send("merchants/fire_hubspot_event", "POST");
 
-        if (empty($error) === true)
+        if (empty($error) === false)
         {
             $this->trace->error(TraceCode::PUSHED_HUBSPOT_EVENT_TO_API_FAILED, [
                 'error'                 => $error,
@@ -1876,6 +1876,13 @@ class Service extends Base\Service
 
     private function fireNeoStoneEventToHubspot(array $merchant)
     {
+        $adminUser = Auth::guard('api')->user();
+
+        if (empty($adminUser) === false)
+        {
+            return;
+        }
+
         if (isset($merchant['email']) === false)
         {
             return;
