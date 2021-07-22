@@ -53,7 +53,7 @@ const throwAnalyticsException = (errorMessage: string) => {
   const error = new Error(errorMessage);
 
   if (window.Sentry) {
-    Sentry.captureException(error, (scope) => {
+    window.Sentry.captureException(error, (scope) => {
       scope.setTag('section', 'analytics');
       return scope;
     });
