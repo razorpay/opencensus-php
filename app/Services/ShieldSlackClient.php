@@ -9,7 +9,6 @@ use RZP\Http\Request\Requests;
 
 class ShieldSlackClient
 {
-    const CONTENT_TYPE    = 'content-type';
     const AUTHORIZATION   = 'Authorization';
 
     const TIMEOUT         = 'timeout';
@@ -76,7 +75,6 @@ class ShieldSlackClient
         $bearerToken = $this->config['bearer_token'];
 
         return [
-            self::CONTENT_TYPE  => 'application/json',
             self::AUTHORIZATION => 'Bearer ' . $bearerToken,
 
         ];
