@@ -72,6 +72,7 @@ class Service extends Base\Service
             $data['flows']['emi'] = $iinEntity->isEmiAvailable();
             $data['type']         = $iinEntity->getType();
             $data['issuer']       = $iinEntity->getIssuer();
+            $data['network']      = $iinEntity->getNetwork();
 
             /*
              * Need to return emi as available for HDFC Debit Cards because their eligibility is checked

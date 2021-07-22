@@ -911,8 +911,9 @@ return [
                     'iframe'    => false,
                     'emi'       => true,
                 ],
-                'issuer' => 'HDFC',
-                'type'   => 'debit',
+                'issuer'  => 'HDFC',
+                'type'    => 'debit',
+                'network' => 'Visa',
             ]
         ]
     ],
