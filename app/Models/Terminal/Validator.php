@@ -1880,6 +1880,7 @@ class Validator extends Base\Validator
         'count'                 => 'required_with:sync_status|min:1|max:1000',
         'gateway'               => 'sometimes|string',
         'ids'                   => 'required_without:sync_status|array',
+        'mode'                  => 'sometimes|string'
     ];
 
     protected static $hdfcDebitEmiTerminalRules = [

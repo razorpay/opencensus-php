@@ -752,6 +752,12 @@ class Service extends Base\Service
 
         (new Terminal\Validator)->validateInput('migrate_terminals_cron', $input);
 
+        $mode = 'sqs';
+
+        if (isset($input['mode']) === true){
+            $mode = $input['mode'];
+        }
+
         if (isset($input["ids"]) === true)
         {
             $ids = $input["ids"];
@@ -767,11 +773,20 @@ class Service extends Base\Service
         {
             try
             {
-                $this->createTerminalMigrateJob($terminal);
+                if ($mode !== 'sync')
+                {
+                    $this->createTerminalMigrateJob($terminal);
 
-                $terminal->setSyncStatus(SyncStatus::SYNC_IN_PROGRESS);
+                    $terminal->setSyncStatus(SyncStatus::SYNC_IN_PROGRESS);
 
-                $this->repo->terminal->saveOrFail($terminal, ['shouldSync' => false]);
+                    $this->repo->terminal->saveOrFail($terminal, ['shouldSync' => false]);
+                }
+                else
+                {
+                    $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+
+                    $this->repo->terminal->saveOrFail($terminal, ['shouldSync' => true]);
+                }
 
                 $succesCount += 1;
             }
