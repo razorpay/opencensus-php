@@ -37,6 +37,8 @@ class Core extends Base\Core
 
         $input['merchant_id'] = $merchant->getKey();
 
+        $this->validateBuyPricing($input);
+
         $terminal = (new Entity)->build($input);
 
         $terminal->merchant()->associate($merchant);
@@ -75,6 +77,8 @@ class Core extends Base\Core
 
         unset($input["id"]);
 
+        $this->validateBuyPricing($input);
+
         $terminal = (new Entity)->build($input);
 
         $terminal->merchant()->associate($merchant);
@@ -105,6 +109,33 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TERMINAL_NO_GATEWAY_MAPPING_FOR_DIRECTSETTLEMENT);
+        }
+    }
+
+    protected function validateBuyPricing(& $input)
+    {
+        if (isset($input[Entity::PLAN_ID]))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PLAN_ID_IS_NOT_REQUIRED);
+        }
+
+        $planName = $input[Entity::PLAN_NAME] ?? null;
+        unset($input[Entity::PLAN_NAME]);
+
+        if (isset($planName) === true)
+        {
+            $plan = $this->repo->pricing
+                         ->onlyBuyPricing()
+                         ->getPlanByName($planName);
+
+            if ($plan->count() === 0)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_BUY_PRICING_PLAN_WITH_NAME_DOES_NOT_EXIST);
+            }
+
+            $input[Entity::PLAN_ID] = $plan->getId();
         }
     }
 
@@ -232,6 +263,8 @@ class Core extends Base\Core
                     'terminal_id' => $terminal->getId(),
                     'input'       => $this->removeSecretFieldsForTrace($input),
                 ]);
+
+            $this->validateBuyPricing($input);
 
             $terminal->edit($input);
 

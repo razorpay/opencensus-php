@@ -19,6 +19,15 @@ class TerminalController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postBulkAssignBuyPricingPlans()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bulkAssignPricingPlans($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function restoreTerminal(string $id)
     {
         $data = $this->service()->restoreTerminal($id);

@@ -3,8 +3,10 @@
 namespace RZP\Models\Terminal;
 
 use App;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -220,6 +222,40 @@ class Service extends Base\Service
         $terminal = (new Terminal\Core)->edit($terminal, $input);
 
         return $terminal->toArrayAdmin();
+    }
+
+    public function bulkAssignPricingPlans($input)
+    {
+        (new Terminal\Validator())->validateInput('assign_plan', ["input" => $input]);
+
+        $returnData = new PublicCollection();
+
+        foreach ($input as $item)
+        {
+            try
+            {
+                $terminal = $this->editTerminal($item[Entity::TERMINAL_ID], [Entity::PLAN_NAME => $item[Entity::PLAN_NAME]]);
+
+                $returnData->push([
+                    Entity::TERMINAL_ID => $terminal[Entity::ID],
+                    Constants::BATCH_SUCCESS => true,
+                    Constants::IDEMPOTENCY_KEY => $item[Constants::IDEMPOTENCY_KEY]
+                ]);
+            }
+            catch (\Throwable $e)
+            {
+                $returnData->push([
+                    Constants::IDEMPOTENCY_KEY => $item[Constants::IDEMPOTENCY_KEY],
+                    Constants::BATCH_SUCCESS   => false,
+                    Constants::BATCH_ERROR     => [
+                        Constants::BATCH_ERROR_DESCRIPTION  => $e->getMessage(),
+                        Constants::BATCH_ERROR_CODE         => $e->getCode(),
+                    ],
+                ]);
+            }
+        }
+
+        return $returnData->toArrayWithItems();
     }
 
     public function restoreTerminal($id)
@@ -675,6 +711,8 @@ class Service extends Base\Service
     {
         $response = new Base\PublicCollection;
 
+        $this->verifyInputPlans($input);
+
         foreach ($input as $row)
         {
             $rowOutput = $this->processTerminalCreationBulkRow($row);
@@ -683,6 +721,31 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    // Verifying than all terminals on same gateway merchant id have same plans in input.
+    protected function verifyInputPlans(& $input)
+    {
+        $idempotencyKeys = [];
+
+        collect($input)->groupBy(function ($row)
+        {
+            return $row[Batch\Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID];
+        })->map(function ($rows) use (& $idempotencyKeys)
+        {
+            if (count($rows->unique(Batch\Header::TERMINAL_CREATION_PLAN_NAME)) > 1)
+            {
+                $idempotencyKeys = array_merge($idempotencyKeys, $rows->pluck(Constants::IDEMPOTENCY_KEY)->toArray());
+            }
+        });
+
+        foreach ($input as & $item)
+        {
+            if (in_array($item[Constants::IDEMPOTENCY_KEY], $idempotencyKeys))
+            {
+                $item[Constants::INVALID_PLAN] = true;
+            }
+        }
     }
 
     public function processTerminalCreationBulkRow(array $row)
@@ -702,6 +765,8 @@ class Service extends Base\Service
 
         try
         {
+            (new Validator())->validateEntry($row);
+
             (new TerminalCreation())->processEntry($row);
 
             $result[Constants::BATCH_SUCCESS] = true;

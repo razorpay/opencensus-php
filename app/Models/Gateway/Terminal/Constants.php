@@ -51,6 +51,7 @@ class Constants
     // new batch service related constants
     const IDEMPOTENCY_KEY             = 'idempotency_key';
     const TERMINAL_ID                 = 'terminal_id';
+    const INVALID_PLAN                = 'invalid_plan';
     const BATCH_ERROR                 = 'error';
     const BATCH_ERROR_CODE            = 'code';
     const BATCH_ERROR_DESCRIPTION     = 'description';

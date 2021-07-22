@@ -32,6 +32,8 @@ class Entity extends Base\PublicEntity
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';
     const ORG_ID                        = 'org_id';
+    const PLAN_ID                       = 'plan_id';
+    const PLAN_NAME                     = 'plan_name';
     const PROCURER                      = 'procurer';
     const USED_COUNT                    = 'used_count';
     const USED                          = 'used';
@@ -200,6 +202,7 @@ class Entity extends Base\PublicEntity
         self::SYNC_STATUS,
         self::ACCOUNT_TYPE,
         self::CRED,
+        self::PLAN_ID,
         self::APP,
     ];
 
@@ -218,6 +221,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::MERCHANT_ID,
         self::ORG_ID,
+        self::PLAN_ID,
         self::PROCURER,
         self::GATEWAY,
         self::CARD,
@@ -348,6 +352,7 @@ class Entity extends Base\PublicEntity
         self::RUPAY_MPAN                 => null,
         self::SYNC_STATUS                => SyncStatus::NOT_SYNCED,
         self::ACCOUNT_TYPE               => null,
+        self::PLAN_ID                    => null,
     ];
 
     protected $casts = [
@@ -405,6 +410,11 @@ class Entity extends Base\PublicEntity
     public function getOrgId() : string
     {
         return $this->getAttribute(self::ORG_ID);
+    }
+
+    public function getPlanId()
+    {
+        return $this->getAttribute(self::PLAN_ID);
     }
 
     public function getGatewayMerchantId()

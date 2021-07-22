@@ -335,6 +335,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PRICING_PLAN_CANNOT_HAVE_MULTIPLE_TYPES                   = 'Pricing Plan cannot have rules of multiple types';
     const BAD_REQUEST_BUY_PRICING_RANGE_VALIDATION_FAILED                       = 'Rules Not Defined On Complete Range For MAI';
     const BAD_REQUEST_PRICING_TYPE_COMMISSION_INVALID_FOR_NON_RZP_ORG           = 'Commission plan cannot be posted for this org';
+    const BAD_REQUEST_MULTIPLE_PLAN_NAME_ON_SAME_GATEWAY_MERCHANT_ID            = 'Multiple Plans sent for same Gateway Merchant Id terminals';
     const BAD_REQUEST_PRICING_TYPE_BUY_PRICING_INVALID_FOR_NON_RZP_ORG          = 'Buy Pricing plan cannot be assigned for this org';
     const BAD_REQUEST_PRICING_RULE_FOR_CARD_NETWORK_NOT_PRESENT                 = 'Pricing rule not present for merchant with this card network';
     const BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP                     = 'Pricing rule amount range collides with another existing rule\'s amount range.';

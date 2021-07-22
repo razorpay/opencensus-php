@@ -1809,6 +1809,12 @@ ALTER TABLE terminals
     ADD INDEX terminals_gateway_merchant_id_index (gateway_merchant_id),
     ADD INDEX terminals_network_category_index (network_category);
 
+ALTER TABLE terminals
+    ADD COLUMN `plan_id` char(14) COLLATE utf8_bin NULL AFTER `org_id`;
+
+ALTER TABLE terminals
+    ADD INDEX terminals_plan_id_index (plan_id);
+
 ALTER TABLE gateway_status_absence
     CHANGE COLUMN `from` `begin` INT(11),
     CHANGE COLUMN `to` `end` INT(11) DEFAULT NULL,

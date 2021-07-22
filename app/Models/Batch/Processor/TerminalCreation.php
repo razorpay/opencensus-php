@@ -5,6 +5,8 @@ namespace RZP\Models\Batch\Processor;
 use RZP\Constants;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Models\Pricing\Repository;
+use RZP\Models\Pricing\Type;
 use RZP\Models\Terminal;
 use RZP\Models\Batch\Entity;
 use RZP\Exception\BaseException;
@@ -38,6 +40,7 @@ class TerminalCreation extends Base
         $gatewayMerchantId2 = $entry[Batch\Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID2];
         $gatewayTerminalId  = $entry[Batch\Header::TERMINAL_CREATION_GATEWAY_TERMINAL_ID];
         $gatewayAccessCode  = $entry[Batch\Header::TERMINAL_CREATION_GATEWAY_ACCESS_CODE];
+        $plan_name          = $entry[Batch\Header::TERMINAL_CREATION_PLAN_NAME];
 
         $gatewayTerminalPassword  = $entry[Batch\Header::TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD];
         $gatewayTerminalPassword2 = $entry[Batch\Header::TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD2];
@@ -78,6 +81,8 @@ class TerminalCreation extends Base
         $capability         = $entry[Batch\Header::TERMINAL_CREATION_CAPABILITY];
 
         $currency = empty($currency) ? null : explode(', ', trim($currency));
+
+        $plan_name = blank($plan_name) ? null : $plan_name;
 
         $type = $this->getTerminalTypeParam($entry[Batch\Header::TERMINAL_CREATION_TYPE]);
 
@@ -125,6 +130,7 @@ class TerminalCreation extends Base
             Terminal\Entity::ENABLED                    => $enabled,
             Terminal\Entity::STATUS                     => empty($status) ? "activated" : $status,
             Terminal\Entity::CAPABILITY                 => $capability,
+            Terminal\Entity::PLAN_NAME                  => $plan_name,
         ];
 
         // Unsetting empty or null values

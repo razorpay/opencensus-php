@@ -403,6 +403,7 @@ class Route
         'internal_fetch_configs'                   => ['get',      'internal/config',                                'ConfigController@internalFetchConfigs'                             ],
         'terminal_delete'                          => ['delete',   'terminals/{id}',                                 'TerminalController@deleteTerminal'                                 ],
         'terminal_edit'                            => ['put',      'terminals/{id}',                                 'TerminalController@putTerminal'                                    ],
+        'buy_pricing_assign_bulk'                  => ['post',     'buy_pricing/assign/bulk',                        'TerminalController@postBulkAssignBuyPricingPlans'                  ],
         'terminal_edit_internal'                   => ['put',      'terminals/{id}/internal',                        'TerminalController@putTerminal'                                    ],
         'terminal_restore'                         => ['put',      'terminals/{id}/restore',                         'TerminalController@restoreTerminal',                               ],
         'terminal_toggle'                          => ['put',      'terminals/{id}/toggle',                          'TerminalController@toggleTerminal'                                 ],
@@ -3065,6 +3066,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'buy_pricing_assign_bulk',
         'external_bvs_validation_request',
         'bas_banking_accounts_create',
         'banking_account_service_cron_routes',
@@ -5223,6 +5225,7 @@ class Route
         'terminal_check_encrypted_value'           => Permission::CHECK_TERMINAL_SECRET,
         'terminal_delete'                          => Permission::DELETE_TERMINAL,
         'terminal_edit'                            => Permission::EDIT_TERMINAL,
+        'buy_pricing_assign_bulk'                  => Permission::EDIT_TERMINAL,
         'terminal_reassign_merchant'               => Permission::ASSIGN_MERCHANT_TERMINAL,
         'terminal_add_merchant'                    => Permission::TERMINAL_MANAGE_MERCHANT,
         'terminal_remove_merchant'                 => Permission::TERMINAL_MANAGE_MERCHANT,
@@ -8895,6 +8898,7 @@ class Route
             'terminal_delete',
             'terminal_disable',
             'terminal_edit',
+            'buy_pricing_assign_bulk',
             'terminal_enable',
             'terminal_fetch',
             'terminal_get_banks',
@@ -9653,6 +9657,7 @@ class Route
             'bulk_contact_create',
             'partner_submerchant_map',
             'iin_batch_process_record',
+            'buy_pricing_assign_bulk',
             'pricing_add_plan_rule_bulk',
             'loc_bulk_withdrawal_update',
             'subscription_registration_charge_token',

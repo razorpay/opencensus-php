@@ -119,6 +119,7 @@ class TerminalCreationBulkTest extends TestCase
                 Batch\Header::TERMINAL_CREATION_ENABLED              => null,
                 Batch\Header::TERMINAL_CREATION_STATUS               => null,
                 Batch\Header::TERMINAL_CREATION_CAPABILITY           => null,
+                Batch\Header::TERMINAL_CREATION_PLAN_NAME            => null,
             ],
         ];
     }

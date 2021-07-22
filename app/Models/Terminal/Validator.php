@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Card;
+use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -73,6 +74,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_TYPE                => 'sometimes|string',
         Entity::CRED                        => 'sometimes|string',
         Entity::APP                         => 'sometimes|string',
+        Entity::PLAN_ID                     => 'sometimes',
         Entity::ENABLED_WALLETS             => 'sometimes|array',
     ];
 
@@ -1826,6 +1828,13 @@ class Validator extends Base\Validator
         Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
+    protected static $assignPlanRules = [
+        'input'                         => 'required|array',
+        'input.*.'.Entity::TERMINAL_ID  => 'required|string',
+        'input.*.'.Entity::PLAN_NAME    => 'required|string',
+        'input.*.idempotency_key'       => 'required',
+    ];
+
     protected static $bajajfinservTerminalRules = [
         Entity::GATEWAY                    => 'required|in:bajajfinserv',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
@@ -1978,6 +1987,18 @@ class Validator extends Base\Validator
         Entity::STATUS  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
+    public function validateEntry($entry)
+    {
+        $hasInvalidPlan = $entry[Constants::INVALID_PLAN] ?? false;
+
+        if ($hasInvalidPlan)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_MULTIPLE_PLAN_NAME_ON_SAME_GATEWAY_MERCHANT_ID
+            );
+        }
+    }
+
     public function validateType()
     {
         $type = $this->entity->getType();
@@ -2042,7 +2063,8 @@ class Validator extends Base\Validator
                 $input[Entity::NETWORK_CATEGORY],
                 $input[Entity::GATEWAY_ACQUIRER],
                 $input[Entity::ENABLED_WALLETS],
-                $input[Entity::MODE]);
+                $input[Entity::MODE],
+                $input[Entity::PLAN_ID]);
 
         }
         $op = $input['gateway'] . '_terminal';
@@ -2375,6 +2397,8 @@ class Validator extends Base\Validator
 
     public function editTerminalValidator($terminal, $input)
     {
+        unset($input[Entity::PLAN_ID]);
+
         if (in_array($terminal->getGateway(), self::$editTerminalGateways))
         {
             $gateway = $terminal->getGateway();

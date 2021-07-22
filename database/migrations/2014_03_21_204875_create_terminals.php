@@ -34,6 +34,9 @@ class CreateTerminals extends Migration
             $table->char(Terminal::ORG_ID, Terminal::ID_LENGTH)
                   ->default(ORG::RAZORPAY_ORG_ID);
 
+            $table->char(Terminal::PLAN_ID, Terminal::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Terminal::PROCURER)
                   ->default(Procurer::RAZORPAY);
 
@@ -248,6 +251,7 @@ class CreateTerminals extends Migration
             $table->index(Terminal::ORG_ID);
             $table->index(Terminal::BANK_TRANSFER);
             $table->index(Terminal::SYNC_STATUS);
+            $table->index(Terminal::PLAN_ID);
         });
     }
 
