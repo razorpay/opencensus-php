@@ -1955,11 +1955,6 @@ class Repository extends Base\Repository
         }
 
         $query->whereNotNull(Entity::RECEIVER_ID);
-
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::QR_CODES) === true)
-        {
-            $this->joinQueryVaReceiver($query);
-        }
     }
 
     /**
