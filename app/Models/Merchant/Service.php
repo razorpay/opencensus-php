@@ -6285,6 +6285,8 @@ class Service extends Base\Service
 
     public function getMerchantDetailsForAccountService(string $accountId): array
     {
+        $this->trace->info(TraceCode::ACS_FETCH_ACCOUNT_DETAILS, ['id' => $accountId]);
+
         $data = [];
         $merchant = $this->repo->merchant->findOrFailPublic($accountId);
         $merchantDetails = $this->repo->merchant_detail->findOrFailPublic($accountId);

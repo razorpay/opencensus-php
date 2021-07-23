@@ -337,6 +337,11 @@ class Helper
                         {
                             $stateCode  = IndianStates::getStateCode($address[Constants::STATE]);
 
+                            if (isset($stateCode) === false)
+                            {
+                                throw new BadRequestValidationFailureException('Not a valid state: '. $address[Constants::STATE]);
+                            }
+
                             $registeredAddress[$value] = $stateCode;
                         }
                         else

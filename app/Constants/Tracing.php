@@ -31,7 +31,8 @@ class Tracing
             Route::$internalApps['payouts_service'],
             Route::$internalApps['capital_collections_client'],
             Route::$internalApps['pg_router'],
-            Route::$internalApps['care']
+            Route::$internalApps['care'],
+            Route::$internalApps['account_service']
         );
 
         return array_merge($routesToInclude, [
