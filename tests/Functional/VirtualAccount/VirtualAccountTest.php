@@ -2254,4 +2254,120 @@ class VirtualAccountTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
+
+    public function testVaCoreGetVaName()
+    {
+        $input = [];
+
+        // Case 1: name = "a", billing_label = "a"
+        $merchant = $this->fixtures->edit('merchant', '10000000000000', ['name' => 'a', 'billing_label' => 'a']);
+
+        $vaName = $this->invokeGetVaName($merchant, $input);
+
+        $this->assertEquals('default', $vaName);
+
+        // Case 2: name = "test", billing_label = "a"
+        $merchant = $this->fixtures->edit('merchant', '10000000000000', ['name' => 'test', 'billing_label' => 'a']);
+
+        $vaName = $this->invokeGetVaName($merchant, $input);
+
+        $this->assertEquals('test', $vaName);
+
+        // Case 3: name = "test1", billing_label = "test2"
+        $merchant = $this->fixtures->edit('merchant', '10000000000000', ['name' => 'test1', 'billing_label' => 'test2']);
+
+        $vaName = $this->invokeGetVaName($merchant, $input);
+
+        $this->assertEquals('test2', $vaName);
+
+        // Case 4: name = "a", billing_label = "test"
+        $merchant = $this->fixtures->edit('merchant', '10000000000000', ['name' => 'a', 'billing_label' => 'test']);
+
+        $vaName = $this->invokeGetVaName($merchant, $input);
+
+        $this->assertEquals('test', $vaName);
+
+        // Case 5: $input = ["name" => "testing"];
+        $input = ["name" => "testing"];
+
+        $merchant = $this->fixtures->edit('merchant', '10000000000000', ['name' => 'test', 'billing_label' => 'test']);
+
+        $vaName = $this->invokeGetVaName($merchant, $input);
+
+        $this->assertEquals('testing', $vaName);
+    }
+
+    public function invokeGetVaName (\RZP\Models\Merchant\Entity $merchant, array $input) :string
+    {
+        $vaCore = new \RZP\Models\VirtualAccount\Core();
+
+        $vaCoreReflectionObj = new \ReflectionObject($vaCore);
+
+        $getVaNameMethod = $vaCoreReflectionObj->getMethod('getVaName');
+
+        $getVaNameMethod->setAccessible(true);
+
+        $vaName = $getVaNameMethod->invokeArgs($vaCore, [$merchant, $input]);
+
+        return $vaName;
+    }
+
+    public function testVaEntityModifyName()
+    {
+        $input = [];
+
+        // Case 1: name = "a", billing_label = "a"
+        $merchant = $this->fixtures->edit('merchant', '10000000000000', ['name' => 'a', 'billing_label' => 'a']);
+
+        $vaName = $this->invokeModifyName($merchant, $input);
+
+        $this->assertTrue(array_key_exists('name', $vaName) === false);
+
+        // Case 2: name = "test", billing_label = "a"
+        $merchant = $this->fixtures->edit('merchant', '10000000000000', ['name' => 'test', 'billing_label' => 'a']);
+
+        $vaName = $this->invokeModifyName($merchant, $input);
+
+        $this->assertEquals('test', $vaName['name']);
+
+        // Case 3: name = "test1", billing_label = "test2"
+        $merchant = $this->fixtures->edit('merchant', '10000000000000', ['name' => 'test1', 'billing_label' => 'test2']);
+
+        $vaName = $this->invokeModifyName($merchant, $input);
+
+        $this->assertEquals('test2', $vaName['name']);
+
+        // Case 4: name = "a", billing_label = "test"
+        $merchant = $this->fixtures->edit('merchant', '10000000000000', ['name' => 'a', 'billing_label' => 'test']);
+
+        $vaName = $this->invokeModifyName($merchant, $input);
+
+        $this->assertEquals('test', $vaName['name']);
+
+        // Case 5: $input = ["name" => "testing"];
+        $input = ["name" => "testing"];
+
+        $merchant = $this->fixtures->edit('merchant', '10000000000000', ['name' => 'test', 'billing_label' => 'test']);
+
+        $vaName = $this->invokeModifyName($merchant, $input);
+
+        $this->assertEquals('testing', $vaName['name']);
+    }
+
+    public function invokeModifyName (\RZP\Models\Merchant\Entity $merchant, array $input) :array
+    {
+        $vaEntity = new \RZP\Models\VirtualAccount\Entity();
+
+        $vaEntity->merchant = $merchant;
+
+        $vaEntityReflectionObj = new \ReflectionObject($vaEntity);
+
+        $method = $vaEntityReflectionObj->getMethod('modifyName');
+
+        $method->setAccessible(true);
+
+        $method->invokeArgs($vaEntity, array(&$input));
+
+        return $input;
+    }
 }

@@ -208,21 +208,11 @@ class Entity extends Base\PublicEntity
             $this->merchant->getName(),
         ];
 
-        //merchant name is the contact name provided during presignup process. FE has a validation(special characters, spaces).
-        //So it'll have four characters for sure.
-        foreach ($priorityOrderHighToLow as $value)
+        $vaName = $this->getHighestPriorityName($this->merchant, $input);
+
+        if(empty($vaName) === false)
         {
-            if (empty($value) === false)
-            {
-                $sanitizedValue = trim(substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $value), 0, 39));
-
-                if (strlen($sanitizedValue) > 2)
-                {
-                    $input[self::NAME] = $sanitizedValue;
-
-                    break;
-                }
-            }
+            $input[self::NAME] = $vaName;
         }
     }
 
@@ -524,5 +514,27 @@ class Entity extends Base\PublicEntity
         }
 
         return $array;
+    }
+
+    public function getHighestPriorityName($merchant, $data)
+    {
+        $priorityOrderHighToLow = [
+            $data[Entity::NAME] ?? null,
+            $merchant->getBillingLabel(),
+            $merchant->getName()
+        ];
+
+        foreach ($priorityOrderHighToLow as $value)
+        {
+            if (empty($value) === false)
+            {
+                $sanitizedValue = trim(substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $value), 0, 39));
+
+                if (strlen($sanitizedValue) > 2)
+                {
+                    return $sanitizedValue;
+                }
+            }
+        }
     }
 }

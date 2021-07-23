@@ -30,6 +30,8 @@ class Core extends Base\Core
 {
     const VA_BANK_ACCOUNT_GENERATION = 'va_bank_account_generation';
 
+    const DEFAULT                    = 'default';
+
     public function __construct()
     {
         parent::__construct();
@@ -141,16 +143,28 @@ class Core extends Base\Core
             ],
         ];
 
-        // Since this route is exposed to the merchants now, they may want to pass
-        // custom name for the VA. It's an optional param
-        // If we receive name as input, we'll use that, otherwise fallback on the
-        // default behaviour of VA, i.e.. using merchant.billing_label or merchant.name
-        if (empty($data[Entity::NAME]) === false)
-        {
-            $input[Entity::NAME] = $data[Entity::NAME];
-        }
+        $input[Entity::NAME] = $this->getVaName($merchant, $data);
 
         return $this->create($input, $merchant, null, null, $balance);
+    }
+
+    /**
+     * Since this route is exposed to the merchants now, they may want to pass
+     * custom name for the VA. It's an optional param
+     * If we receive name as input, we'll use that, otherwise fallback on the
+     * default behaviour of VA, i.e.. using merchant.billing_label or merchant.name
+     * In case everything is null, return default
+     * @param  Merchant $merchant
+     * @param  array $data
+     * @return string
+     */
+    public function getVaName(Merchant $merchant, array $data) :string
+    {
+        $vaEntity = new \RZP\Models\VirtualAccount\Entity();
+
+        $vaName = $vaEntity->getHighestPriorityName($merchant, $data) ?? Constants::DEFAULT;
+
+        return $vaName;
     }
 
     public function createOrFetchBankingVirtualAccount(Merchant $merchant,
