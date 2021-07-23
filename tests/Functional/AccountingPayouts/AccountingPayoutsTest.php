@@ -269,4 +269,109 @@ class AccountingPayoutsTest extends TestCase
         $apMock->shouldHaveReceived('syncStatus');
     }
 
+
+    public function testCreateTallyInvoiceServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('createTallyInvoice')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('createTallyInvoice');
+    }
+
+    public function testFetchTallyInvoiceServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('fetchTallyInvoice')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('fetchTallyInvoice');
+    }
+
+    public function testCancelTallyInvoiceServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('cancelTallyInvoice')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('cancelTallyInvoice');
+    }
+
+    public function testFetchTallyPaymentsServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('fetchTallyPayments')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('fetchTallyPayments');
+    }
+
+    public function testAcknowledgeTallyPaymentServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('acknowledgeTallyPayment')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('acknowledgeTallyPayment');
+    }
+
+    public function testIntegrateTallyServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('integrateTally')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('integrateTally');
+    }
+
+    public function testDeleteIntegrationTallyServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('deleteIntegrationTally')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('deleteIntegrationTally');
+    }
 }

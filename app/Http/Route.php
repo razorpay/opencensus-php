@@ -1333,6 +1333,14 @@ class Route
         'accounting_payouts_sync_internal'                      => ['post',    'accounting-payouts/internal/sync/{app}',         'AccountingPayoutsController@syncInternal'              ],
         'accounting_payouts_waitlist'                           => ['post',    'accounting-payouts/waitlist/{app}',              'AccountingPayoutsController@waitlist'                  ],
 
+        'accounting_integration_tally_invoices'                 => ['post',     'accounting-integration/tally/invoices',                    'AccountingPayoutsController@createTallyInvoice'        ],
+        'accounting_integration_tally_fetch_invoice'            => ['get',      'accounting-integration/tally/invoices',                    'AccountingPayoutsController@fetchTallyInvoice'         ],
+        'accounting_integration_tally_cancel_invoice'           => ['post',     'accounting-integration/tally/invoices/cancel',             'AccountingPayoutsController@cancelTallyInvoice'        ],
+        'accounting_integration_tally_fetch_payment'            => ['get',      'accounting-integration/tally/payments',                    'AccountingPayoutsController@fetchTallyPayments'        ],
+        'accounting_integration_tally_acknowledge_payment'      => ['post',     'accounting-integration/tally/payments/{id}/acknowledge',   'AccountingPayoutsController@acknowledgeTallyPayment'   ],
+        'accounting_integration_tally_integrate'                => ['post',     'accounting-integration/tally/integrate',                   'AccountingPayoutsController@integrateTally'            ],
+        'accounting_integration_tally_delete_integration'       => ['post',     'accounting-integration/tally/delete',                      'AccountingPayoutsController@deleteIntegrationTally'    ],
+
         // Tax Payments
         'tax_payments_add_penalty_cron'            => ['post',    'tax-payments/addPenalty',                         'TaxPaymentController@addPenalty'                                   ],
         'tax_payments_mail_cron'                   => ['post',    'tax-payments/mailCron',                           'TaxPaymentController@mailCron'                                     ],
@@ -3050,6 +3058,16 @@ class Route
         'payment_page_list',
         'payment_page_deactivate',
         'payment_page_activate',
+
+        // accounting integration routes for tally plugin
+        'accounting_integration_tally_invoices',
+        'accounting_integration_tally_fetch_invoice',
+        'accounting_integration_tally_cancel_invoice',
+        'accounting_integration_tally_fetch_payment',
+        'accounting_integration_tally_acknowledge_payment',
+        'accounting_integration_tally_integrate',
+        'accounting_integration_tally_delete_integration',
+
 
         // routes for account and stakeholder documents
         'document_upload_v1',
@@ -6015,6 +6033,7 @@ class Route
         'accounting_payouts_sync_status'               => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_payouts_sync'                      => Permission::SYNC_ACCOUNTING_INTEGRATION,
         'accounting_payouts_waitlist'                  => Permission::WAITLIST_ACCOUNTING_INTEGRATION,
+
         'merchant_primary_balance_fetch'               => '*',
         'ufh_upload_file'                              => '*',
         'capital_cards_service'                        => '*',
@@ -6513,6 +6532,7 @@ class Route
             'app_merchant_mapping_create',
             'app_merchant_mapping_update',
             'merchant_fetch_internal_users',
+            'user_details_unified',
         ],
 
         'dashboard' => [
@@ -6547,6 +6567,13 @@ class Route
             'accounting_payouts_sync',
             'accounting_payouts_sync_status',
             'accounting_payouts_waitlist',
+            'accounting_integration_tally_invoices',
+            'accounting_integration_tally_fetch_invoice',
+            'accounting_integration_tally_cancel_invoice',
+            'accounting_integration_tally_fetch_payment',
+            'accounting_integration_tally_acknowledge_payment',
+            'accounting_integration_tally_integrate',
+            'accounting_integration_tally_delete_integration',
             'activate_live_offline_device',
             'activate_test_offline_device',
             'get_merchant_data_for_segment',
@@ -10310,7 +10337,16 @@ class Route
 
         //transaction related routes
         'transaction_statement_fetch',
-        'transaction_statement_fetch_multiple'
+        'transaction_statement_fetch_multiple',
+
+        //accounting integration routes for tally plugin
+        'accounting_integration_tally_invoices',
+        'accounting_integration_tally_fetch_invoice',
+        'accounting_integration_tally_cancel_invoice',
+        'accounting_integration_tally_fetch_payment',
+        'accounting_integration_tally_acknowledge_payment',
+        'accounting_integration_tally_integrate',
+        'accounting_integration_tally_delete_integration',
     ];
 
     //
@@ -10406,6 +10442,13 @@ class Route
         'accounting_payouts_sync',
         'accounting_payouts_sync_internal',
         'accounting_payouts_waitlist',
+        'accounting_integration_tally_invoices',
+        'accounting_integration_tally_fetch_invoice',
+        'accounting_integration_tally_cancel_invoice',
+        'accounting_integration_tally_fetch_payment',
+        'accounting_integration_tally_acknowledge_payment',
+        'accounting_integration_tally_integrate',
+        'accounting_integration_tally_delete_integration',
 
         'contact_get',
         'contact_list',

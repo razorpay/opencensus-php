@@ -69,4 +69,39 @@ class AccountingPayoutsController extends Controller
         return $this->service->waitlist($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
     }
 
+    public function createTallyInvoice()
+    {
+        return $this->service->createTallyInvoice($this->ba->getMerchant(), $this->input);
+    }
+
+    public function fetchTallyInvoice()
+    {
+        return $this->service->fetchTallyInvoice($this->ba->getMerchant(), $this->input);
+    }
+
+    public function cancelTallyInvoice()
+    {
+        return $this->service->cancelTallyInvoice($this->ba->getMerchant(), $this->input);
+    }
+
+    public function fetchTallyPayments()
+    {
+        return $this->service->fetchTallyPayments($this->ba->getMerchant(), $this->input);
+    }
+
+    public function acknowledgeTallyPayment(string $id)
+    {
+        return $this->service->acknowledgeTallyPayment($this->ba->getMerchant(), $id, $this->input);
+    }
+
+    public function integrateTally()
+    {
+        return $this->service->integrateTally($this->ba->getMerchant(), $this->input);
+    }
+
+    public function deleteIntegrationTally()
+    {
+        return $this->service->deleteIntegrationTally($this->ba->getMerchant(), $this->input);
+    }
+
 }

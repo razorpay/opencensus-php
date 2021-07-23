@@ -32,6 +32,14 @@ class Service
     const SYNC                      = 'Sync';
     const WAITLIST                  = 'Waitlist';
     const X_APP_MODE                = 'X-App-Mode';
+    const CREATE_INVOICE_FROM_TALLY = 'CreateInvoiceFromTally';
+    const FETCH_TALLY_INVOICE       = 'FetchTallyInvoice';
+    const CANCEL_TALLY_INVOICE      = 'CancelTallyInvoice';
+    const FETCH_TALLY_PAYMENTS      = 'FetchTallyPayments';
+    const ACKNOWLEDGE_TALLY_PAYMENT = 'AcknowledgeTallyPayment';
+    const INTEGRATE_TALLY           = 'IntegrateTally';
+    const DELETE_INTEGRATION_TALLY  = 'DeleteTallyIntegration';
+
 
     protected $app;
 
@@ -216,6 +224,57 @@ class Service
         $input["merchant_id"] = $merchant;
 
         return $this->makeRequest($merchant, $url, $input, $app);
+    }
+
+    public function createTallyInvoice(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_INVOICE_FROM_TALLY);
+
+        return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
+    }
+
+    public function fetchTallyInvoice(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::FETCH_TALLY_INVOICE);
+
+        return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
+    }
+
+    public function cancelTallyInvoice(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CANCEL_TALLY_INVOICE);
+
+        return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
+    }
+
+    public function fetchTallyPayments(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::FETCH_TALLY_PAYMENTS);
+
+        return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
+    }
+
+    public function acknowledgeTallyPayment(MerchantEntity $merchant,string $id, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ACKNOWLEDGE_TALLY_PAYMENT);
+
+        $input["id"] = $id;
+
+        return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
+    }
+
+    public function integrateTally(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::INTEGRATE_TALLY);
+
+        return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
+    }
+
+    public function deleteIntegrationTally(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::DELETE_INTEGRATION_TALLY);
+
+        return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,

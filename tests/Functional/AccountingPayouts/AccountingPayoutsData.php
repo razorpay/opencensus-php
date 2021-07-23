@@ -124,4 +124,74 @@ return [
            'content' => []
          ]
     ],
+
+     'testCreateTallyInvoiceServiceMethod'  => [
+         'request'  => [
+             'method' => 'POST',
+             'url'    => '/accounting-integration/tally/invoices',
+         ],
+         'response' => [
+             'content' => []
+         ]
+     ],
+
+     'testFetchTallyInvoiceServiceMethod'  => [
+         'request'  => [
+             'method' => 'GET',
+             'url'    => '/accounting-integration/tally/invoices',
+         ],
+         'response' => [
+             'content' => []
+         ]
+     ],
+
+     'testCancelTallyInvoiceServiceMethod'  => [
+         'request'  => [
+             'method' => 'POST',
+             'url'    => '/accounting-integration/tally/invoices/cancel',
+         ],
+         'response' => [
+             'content' => []
+         ]
+     ],
+
+     'testFetchTallyPaymentsServiceMethod'  => [
+         'request'  => [
+             'method' => 'GET',
+             'url'    => '/accounting-integration/tally/payments',
+         ],
+         'response' => [
+             'content' => []
+         ]
+     ],
+
+     'testAcknowledgeTallyPaymentServiceMethod'  => [
+         'request'  => [
+             'method' => 'POST',
+             'url'    => '/accounting-integration/tally/payments/randomid/acknowledge',
+         ],
+         'response' => [
+             'content' => []
+         ]
+     ],
+
+     'testIntegrateTallyServiceMethod'  => [
+         'request'  => [
+             'method' => 'POST',
+             'url'    => '/accounting-integration/tally/integrate',
+         ],
+         'response' => [
+             'content' => []
+         ]
+     ],
+
+     'testDeleteIntegrationTallyServiceMethod'  => [
+         'request'  => [
+             'method' => 'POST',
+             'url'    => '/accounting-integration/tally/delete',
+         ],
+         'response' => [
+             'content' => []
+         ]
+     ],
 ];

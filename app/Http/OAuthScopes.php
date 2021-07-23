@@ -16,6 +16,9 @@ class OAuthScopes
     const RX_READ_ONLY = 'rx_read_only';
     const RX_READ_WRITE = 'rx_read_write';
 
+    const TALLY_READ_ONLY  = 'tally_read_only';
+    const TALLY_READ_WRITE = 'tally_read_write';
+
     /**
      * Map of additional scopes for a route (identified by the route name alias)
      * If the token has any one of the scopes for that route, then request is allowed
@@ -71,6 +74,14 @@ class OAuthScopes
         'fund_account_update'                            => [self::READ_WRITE, self::RX_READ_WRITE],
         'merchant_activation_update_partner'             => [],
         'merchant_activation_status_partner'             => [],
+
+        'accounting_integration_tally_invoices'            => [self::TALLY_READ_WRITE],
+        'accounting_integration_tally_fetch_invoice'       => [self::TALLY_READ_ONLY, self::TALLY_READ_WRITE],
+        'accounting_integration_tally_cancel_invoice'      => [self::TALLY_READ_WRITE],
+        'accounting_integration_tally_fetch_payment'       => [self::TALLY_READ_ONLY, self::TALLY_READ_WRITE],
+        'accounting_integration_tally_acknowledge_payment' => [self::TALLY_READ_WRITE],
+        'accounting_integration_tally_integrate'           => [self::TALLY_READ_WRITE],
+        'accounting_integration_tally_delete_integration'  => [self::TALLY_READ_WRITE]
     ];
 
     /**
