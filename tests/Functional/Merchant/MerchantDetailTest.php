@@ -714,6 +714,20 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
     }
+    public function testMerchantUpdateBusinessDetails()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/$merchantId/business/detail";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 
     public function testMerchantUpdateWebsiteDetails()
     {

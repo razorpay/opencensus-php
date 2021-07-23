@@ -694,7 +694,24 @@ return [
             ],
         ],
     ],
-
+    'testMerchantUpdateBusinessDetails' => [
+        'request'  => [
+            'content' => [
+                "website_details" => [
+                    "about"=> "http://hello.com"
+                ]
+            ],
+            'url'     => '/merchant/{id}/business/detail',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                "website_details"=> [
+                    "about"=> "http://hello.com"
+                ]
+            ],
+        ],
+    ],
     'testMerchantReviewer' => [
         'request' => [
             'content' => [

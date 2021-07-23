@@ -7499,6 +7499,8 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'merchant_business_detail_fetch',
+            'merchant_business_detail_save',
             'retry_payouts_on_service',
             'populate_merchant_trim_data_cron',
             'add_verify_disabled_gateway',
