@@ -407,6 +407,18 @@ class Repository extends Base\Repository
         return $terminals;
     }
 
+    public function getTerminalIdsByPlanIds($ids)
+    {
+        $path = "v1/plans/terminals?";
+
+        foreach ($ids as $id)
+        {
+            $path .= 'plan_ids=' . $id . '&';
+        }
+
+        return $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
+    }
+
     public function getByIdNonDeleted($id)
     {
         return $this->newQuery()

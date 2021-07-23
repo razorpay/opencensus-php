@@ -452,7 +452,7 @@ class Repository extends Base\Repository
                      ->get();
     }
 
-    public function getMerchantPricingPlansSummary(array $input = [])
+    public function getPricingPlansSummary(array $input = [])
     {
         $query = $this->newQueryWithOrgIdParam();
 

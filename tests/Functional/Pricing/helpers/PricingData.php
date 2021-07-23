@@ -470,6 +470,109 @@ return [
         ]
     ],
 
+    'testAddBulkBuyPlanRules' => [
+        'request'  => [
+            'content' => [
+                [
+                    'plan_name'             => 'testPlan',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'credit',
+                    'payment_issuer'        => 'hdfc',
+                    'payment_network'       => 'Visa,MasterCard',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaM',
+                    'amount_range_active'   => '1',
+                    'amount_range_min'      => '500',
+                    'amount_range_max'      => '',
+                ],
+                [
+                    'plan_name'             => 'testPlan',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'credit',
+                    'payment_issuer'        => 'hdfc',
+                    'payment_network'       => 'Visa,MasterCard',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLfM',
+                    'amount_range_active'   => '1',
+                    'amount_range_min'      => '0',
+                    'amount_range_max'      => '500',
+                ],
+                [
+                    'plan_name'             => 'testPlan',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'debit',
+                    'payment_issuer'        => 'hdfc',
+                    'payment_network'       => 'Visa,MasterCard',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_aZtFGiJXmcdLfM',
+                    'amount_range_active'   => '1',
+                    'amount_range_min'      => '0',
+                    'amount_range_max'      => '500',
+                ],
+                [
+                    'plan_name'             => 'testPlan',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'debit',
+                    'payment_issuer'        => 'hdfc',
+                    'payment_network'       => 'Visa,MasterCard',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DxtFGiJXmcdLaM',
+                    'amount_range_active'   => '1',
+                    'amount_range_min'      => '500',
+                    'amount_range_max'      => '700',
+                ],
+                [
+                    'plan_name'             => 'testPlan',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'debit',
+                    'payment_issuer'        => 'hdfc',
+                    'payment_network'       => 'Visa,MasterCard',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DxtFGiJXmcdLfa',
+                    'amount_range_active'   => '1',
+                    'amount_range_min'      => '700',
+                    'amount_range_max'      => '',
+                ],
+            ],
+            'url'       => '/buy_pricing/rules/bulk',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content'   => [
+                'entity'    => 'collection',
+                'count'     => 5,
+                'items'     => [
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLaM',
+                        'success'           => true,
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLfM',
+                        'success'           => true,
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_aZtFGiJXmcdLfM',
+                        'success'           => true,
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DxtFGiJXmcdLaM',
+                        'success'           => true,
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DxtFGiJXmcdLfa',
+                        'success'           => true,
+                    ],
+                ]
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testAddBulkPlanRulesReplicatePlan' => [
         'request'  => [
             'content' => [
@@ -2846,6 +2949,23 @@ return [
                     'plan_name'   => 'testDefaultPlan',
                     'rules_count' => 28,
                     'type'        => 'pricing',
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBuyPricingPlansGrouping' => [
+        'request' => [
+            'url' => '/buy_pricing/terminals',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'plan_name'       => 'testPlan',
+                    'rules_count'     => 10,
+                    'type'            => 'buy_pricing',
+                    'terminals_count' => 10,
                 ],
             ],
         ],

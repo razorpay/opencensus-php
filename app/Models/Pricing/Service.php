@@ -7,6 +7,7 @@ use RZP\Error\Error;
 use RZP\Models\Bank;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -23,7 +24,9 @@ use RZP\Models\Pricing\Feature as PricingFeature;
 class Service extends Base\Service
 {
     const MERCHANT_PRICING_UPDATE_MUTEX         = 'merchant_pricing_update_%s';
+    const TERMINAL_BUY_PRICING_MUTEX            = 'terminal_buy_pricing_%s';
     const MERCHANT_PRICING_UPDATE_MUTEX_TIMEOUT = 30;
+    const TERMINAL_BUY_PRICING_MUTEX_TIMEOUT = 30;
 
     public function createPlan($input, $type = null)
     {
@@ -237,6 +240,136 @@ class Service extends Base\Service
         return $pricingRulesCollection->toArrayWithItems();
     }
 
+    public function postAddBulkBuyPricingRules($input)
+    {
+        $this->trace->info(
+            TraceCode::BATCH_ADD_BUY_PRICING_RULE_REQUEST,
+            [
+                'request body' => $this->redactBulkInput($input),
+            ]);
+
+        // grouping pricing rules by MAI and Plan Name.
+        $groupedRules = (new Entity)->groupBuyPricingRules($input);
+
+        $buyPricingRules = new PublicCollection();
+
+        foreach ($groupedRules as $item)
+        {
+            // Item is a group of rules with same MAI and plan name. These will be processed together.
+            $rowOutput = $this->processAddBulkBuyPricingRules($item);
+
+            $buyPricingRules = $buyPricingRules->mergeRecursive($rowOutput);
+
+        }
+
+        return $buyPricingRules->toArrayWithItems();
+    }
+
+    private function redactBulkInput($input)
+    {
+        foreach ($input as $row)
+        {
+            unset($row[Entity::FIXED_RATE], $input[Entity::PERCENT_RATE]);
+        }
+
+        return $input;
+    }
+
+    protected function processAddBulkBuyPricingRules($item)
+    {
+        $idempotencyKeys = $item->pluck(Constants::IDEMPOTENCY_KEY);
+
+        $item = $this->modifyInput($item);
+
+        $input[Entity::PLAN_NAME] = $item[0][Entity::PLAN_NAME];
+        $input[Entity::RULES] = $item->toArray();
+
+        try
+        {
+            // input is plan_name + group of rules on same MAI.
+            $this->processEntry($input);
+
+            $planName = $input[Entity::PLAN_NAME];
+
+            return $idempotencyKeys->map(function ($key) use ($planName)
+            {
+                return [Entity::PLAN_NAME => $planName, Constants::BATCH_SUCCESS => true, Constants::IDEMPOTENCY_KEY => $key];
+            });
+        }
+        catch (\Throwable $e)
+        {
+            return $idempotencyKeys->map(function ($key) use ($e)
+            {
+                return [
+                    Constants::IDEMPOTENCY_KEY   => $key,
+                    Constants::BATCH_SUCCESS     => false,
+                    Constants::BATCH_ERROR       => [
+                        Constants::BATCH_ERROR_DESCRIPTION  => $e->getMessage(),
+                        Constants::BATCH_ERROR_CODE         => $e->getCode(),
+                    ]
+                ];
+            });
+        }
+    }
+
+    private function modifyInput($item)
+    {
+        $item = $item->map(function ($rule)
+        {
+            unset($rule[Constants::IDEMPOTENCY_KEY]);
+
+            array_walk($rule, function (&$value, &$key)
+            {
+                $value = $value === '' ? null : $value;
+
+                // Networks, Issuers can be passed as array for multiple rules creation in one go.
+                if (in_array($key, [Entity::PAYMENT_ISSUER, Entity::PAYMENT_NETWORK]))
+                {
+                    $value = isset($value) ? explode(",",$value) : null;
+                }
+
+            });
+
+            return $rule;
+        });
+
+        return $item;
+    }
+
+    protected function processEntry($item)
+    {
+        $planName = $item[Entity::PLAN_NAME];
+
+        $mutex = App::getFacadeRoot()['api.mutex'];
+        $mutexKey = sprintf(self::TERMINAL_BUY_PRICING_MUTEX, $planName);
+
+        return $mutex->acquireAndRelease($mutexKey, function () use ($item, $planName)
+        {
+            return $this->repo->transactionOnLiveAndTest(function () use ($item, $planName)
+            {
+                $existingPlan = (new Pricing\Repository)->onlyBuyPricing()->getPlanByName($planName);
+
+                // Create a new Plan if plan with name doesn't exist.
+                if (count($existingPlan) === 0)
+                {
+                    (new Validator)->validateBuyPricingRules($item[Entity::RULES]);
+
+                    $item[Entity::RULES] = (new Entity())->formattedBuyPricingRules($item[Entity::RULES]);
+
+                    (new Pricing\Core)->create($item, '100000razorpay');
+                }
+                // Add new group of rules on MAI to plan.
+                else
+                {
+                    $this->addPlanRule($existingPlan->getId(), $item, $existingPlan->getOrgId(), true);
+                }
+            });
+        },
+
+        static::TERMINAL_BUY_PRICING_MUTEX_TIMEOUT,
+        ErrorCode::BAD_REQUEST_ANOTHER_PRICING_UPDATE_IN_PROGRESS);
+    }
+
     protected function setFeeBearerIfApplicable(array $input, $merchant)
     {
         $input[Pricing\Entity::FEE_BEARER] = $merchant->getFeeBearer();
@@ -329,7 +462,7 @@ class Service extends Base\Service
         return $plans->toArrayMultiplePlansPublic();
     }
 
-    public function getMerchantPricingPlans(array $input = []): array
+    public function getPricingPlansSummary(array $input = []): array
     {
         $this->trace->info(TraceCode::PRICING_PLAN_FETCH_ATTEMPT);
 
@@ -338,16 +471,45 @@ class Service extends Base\Service
 
         $input[Fetch::SKIP] = $input[Fetch::SKIP] ?? 0;
 
-        (new Pricing\Validator)->validateInput('merchant_pricing_plans_summary', $input);
+        $validator = new Pricing\Validator;
+
+        $validator->validateInput('pricing_plans_summary', $input);
 
         $pricingPlans = $this->repo->useSlave( function() use ($input)
         {
-            return $this->repo->pricing->getMerchantPricingPlansSummary($input);
+            return $this->repo->pricing->getPricingPlansSummary($input);
         });
 
         $pricingPlans->map(function ($plan)
         {
             $plan->rules_count = (int) $plan->rules_count;
+
+            return $plan;
+        });
+
+        return $pricingPlans->toArray();
+    }
+
+    public function getBuyPricingPlansSummary(array $input = []): array
+    {
+        $this->repo->pricing->onlyBuyPricing();
+
+        $pricingPlans = collect($this->getPricingPlansSummary($input));
+
+        $ids = $pricingPlans->pluck(Entity::PLAN_ID)->toArray();
+
+        $terminalPlans = $this->repo->terminal->getTerminalIdsByPlanIds($ids);
+
+        $terminalPlansMap = [];
+
+        array_walk($terminalPlans, function ($value) use (&$terminalPlansMap)
+        {
+            $terminalPlansMap[$value[Entity::PLAN_ID]] = $value['count'];;
+        });
+
+        $pricingPlans = $pricingPlans->map(function ($plan) use ($terminalPlansMap)
+        {
+            $plan['terminals_count'] = $terminalPlansMap[$plan[Entity::PLAN_ID]] ?? 0;
 
             return $plan;
         });

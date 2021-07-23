@@ -73,8 +73,8 @@ class Validator extends Base\Validator
         Entity::CHANNEL             => 'sometimes'
     ];
 
-    protected static $merchantPricingPlansSummaryRules = [
-        Entity::TYPE      => 'sometimes|string|in:pricing,commission,buy_pricing',
+    protected static $pricingPlansSummaryRules = [
+        Entity::TYPE      => 'sometimes|string|in:pricing,commission',
         Entity::PLAN_NAME => 'sometimes|string',
         Entity::PLAN_ID   => 'sometimes|string|size:14',
         Fetch::COUNT      => 'sometimes|integer|min:0',

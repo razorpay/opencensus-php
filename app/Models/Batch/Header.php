@@ -885,14 +885,18 @@ class Header
 
 
     // Pricing Rules Addition Headers
+    const PRICING_RULE_PLAN_NAME                = 'plan_name';
     const PRICING_RULE_MERCHANT_ID              = 'merchant_id';
     const PRICING_RULE_PRODUCT                  = 'product';
     const PRICING_RULE_FEATURE                  = 'feature';
     const PRICING_RULE_PAYMENT_METHOD           = 'payment_method';
     const PRICING_RULE_PAYMENT_METHOD_TYPE      = 'payment_method_type';
     const PRICING_RULE_PAYMENT_METHOD_SUBTYPE   = 'payment_method_subtype';
+    const PRICING_RULE_RECEIVER_TYPE            = 'receiver_type';
+    const PRICING_RULE_PAYMENT_ISSUER           = 'payment_issuer';
     const PRICING_RULE_PAYMENT_NETWORK          = 'payment_network';
     const PRICING_RULE_INTERNATIONAL            = 'international';
+    const PRICING_RULE_EMI_DURATION             = 'emi_duration';
     const PRICING_RULE_PERCENT_RATE             = 'percent_rate';
     const PRICING_RULE_AMOUNT_RANGE_ACTIVE      = 'amount_range_active';
     const PRICING_RULE_AMOUNT_RANGE_MIN         = 'amount_range_min';
@@ -3191,6 +3195,48 @@ class Header
                 self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,
                 self::PRICING_RULE_AMOUNT_RANGE_MAX,
+            ]
+        ],
+        Type::BUY_PRICING_RULE => [
+            self::INPUT => [
+                self::PRICING_RULE_PLAN_NAME,
+                self::PRICING_RULE_PAYMENT_METHOD,
+                self::PRICING_RULE_PAYMENT_METHOD_TYPE,
+                self::PRICING_RULE_RECEIVER_TYPE,
+                self::PRICING_RULE_INTERNATIONAL,
+                self::PRICING_RULE_EMI_DURATION,
+                self::PRICING_RULE_PAYMENT_ISSUER,
+                self::PRICING_RULE_PAYMENT_NETWORK,
+                self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
+                self::PRICING_RULE_AMOUNT_RANGE_MIN,
+                self::PRICING_RULE_AMOUNT_RANGE_MAX,
+                self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_FIXED_RATE,
+            ],
+            self::OUTPUT => [
+                self::PRICING_RULE_PLAN_NAME,
+                self::PRICING_RULE_PAYMENT_METHOD,
+                self::PRICING_RULE_PAYMENT_METHOD_TYPE,
+                self::PRICING_RULE_RECEIVER_TYPE,
+                self::PRICING_RULE_INTERNATIONAL,
+                self::PRICING_RULE_EMI_DURATION,
+                self::PRICING_RULE_PAYMENT_ISSUER,
+                self::PRICING_RULE_PAYMENT_NETWORK,
+                self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
+                self::PRICING_RULE_AMOUNT_RANGE_MIN,
+                self::PRICING_RULE_AMOUNT_RANGE_MAX,
+                self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_FIXED_RATE,
+            ]
+        ],
+        Type::BUY_PRICING_ASSIGN => [
+            self::INPUT => [
+                self::TERMINAL_ID,
+                self::PRICING_RULE_PLAN_NAME,
+            ],
+            self::OUTPUT => [
+                self::TERMINAL_ID,
+                self::PRICING_RULE_PLAN_NAME,
             ]
         ],
         Type::LOC_WITHDRAWAL => [

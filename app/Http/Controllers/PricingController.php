@@ -54,7 +54,16 @@ class PricingController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->getMerchantPricingPlans($input);
+        $data = $this->service()->getPricingPlansSummary($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getTerminalBuyPricingPlans()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getBuyPricingPlansSummary($input);
 
         return ApiResponse::json($data);
     }
@@ -89,6 +98,15 @@ class PricingController extends Controller
         $input = Request::all();
 
         $data = $this->service()->postAddBulkPricingRules($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postAddBulkBuyPricingRules()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->postAddBulkBuyPricingRules($input);
 
         return ApiResponse::json($data);
     }

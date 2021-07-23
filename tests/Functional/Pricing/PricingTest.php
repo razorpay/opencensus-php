@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Transaction;
 use RZP\Error\PublicErrorCode;
 use RZP\Constants\Entity as E;
+use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use Illuminate\Cache\Events\CacheHit;
@@ -26,8 +27,11 @@ class PricingTest extends TestCase
     use PaymentTrait;
     use HeimdallTrait;
     use DbEntityFetchTrait;
+    use TerminalTrait;
 
     protected $authToken = null;
+
+    protected $terminalsServiceMock;
 
     protected $org = null;
 
@@ -920,6 +924,36 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetBuyPricingPlansGrouping()
+    {
+        $this->ba->adminAuth();
+
+        $id = $this->createBuyPricingPlan()['id'];
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $this->mockTerminalsServiceSendRequest(function() use ($id)
+        {
+            $response =  new \Requests_Response;
+
+            $data['plan_id'] = $id;
+
+            $data['count'] = 10;
+
+            $responseData = ['data' => [$data]];
+
+            $response->body = json_encode($responseData);
+
+            return $response;
+        });
+
+        $this->ba->adminAuth('test');
+        $this->startTest();
+
+        $this->ba->adminAuth('live');
+        $this->startTest();
+    }
+
     public function testGetPricingPlansGroupingPagination()
     {
         $this->ba->adminAuth();
@@ -1318,6 +1352,13 @@ class PricingTest extends TestCase
         }
 
         $this->assertEquals($response['items'][0]['plan_id'],$content['id']);
+    }
+
+    public function testAddBulkBuyPlanRules()
+    {
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
     }
 
     public function testAddBulkEsPlanRulesForCustomerFeeBearerMerchant()
