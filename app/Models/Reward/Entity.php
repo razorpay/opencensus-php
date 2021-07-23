@@ -18,11 +18,14 @@ class Entity extends Base\PublicEntity
     const DISPLAY_TEXT                   = 'display_text';
     const TERMS                          = 'terms';
     const COUPON_CODE                    = 'coupon_code';
+    const UNIQUE_COUPON_CODES            = 'unique_coupon_codes';
     const LOGO                           = 'logo';
     const ADVERTISER_ID                  = 'advertiser_id';
     const IS_DELETED                     = 'is_deleted';
     const MERCHANT_WEBSITE_REDIRECT_LINK = 'merchant_website_redirect_link';
     const BRAND_NAME                     =  'brand_name';
+    const UNIQUE_COUPONS_EXIST           = 'unique_coupons_exist';
+    const UNIQUE_COUPONS_EXHAUSTED       = 'unique_coupons_exhausted';
     //Attribute lengths
     const NAME_LENGTH         = 50;
     const DISPLAY_TEXT_LENGTH = 255;
@@ -49,6 +52,8 @@ class Entity extends Base\PublicEntity
         self::TERMS,
         self::MERCHANT_WEBSITE_REDIRECT_LINK,
         self::BRAND_NAME,
+        self::UNIQUE_COUPONS_EXIST,
+        self::UNIQUE_COUPONS_EXHAUSTED
     ];
 
     protected $visible = [
@@ -71,6 +76,8 @@ class Entity extends Base\PublicEntity
         self::IS_DELETED,
         self::MERCHANT_WEBSITE_REDIRECT_LINK,
         self::BRAND_NAME,
+        self::UNIQUE_COUPONS_EXIST,
+        self::UNIQUE_COUPONS_EXHAUSTED
     ];
 
     protected $public = [
@@ -93,6 +100,8 @@ class Entity extends Base\PublicEntity
         self::IS_DELETED,
         self::MERCHANT_WEBSITE_REDIRECT_LINK,
         self::BRAND_NAME,
+        self::UNIQUE_COUPONS_EXIST,
+        self::UNIQUE_COUPONS_EXHAUSTED
     ];
 
     protected $dates = [
@@ -110,6 +119,8 @@ class Entity extends Base\PublicEntity
 
         $this->getValidator()->validateRewardPeriod($input);
 
+        $this->getValidator()->validateGenericOrUniqueCoupons($input);
+
         $this->fillAndGenerateId($input);
 
         return $this;
@@ -125,9 +136,24 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STARTS_AT, $startsAt);
     }
 
+    public function setUniqueCouponsExist($uniqueCouponsExist)
+    {
+        $this->setAttribute(self::UNIQUE_COUPONS_EXIST, $uniqueCouponsExist);
+    }
+
+    public function setUniqueCouponsExhausted($uniqueCouponsExhausted)
+    {
+        $this->setAttribute(self::UNIQUE_COUPONS_EXHAUSTED, $uniqueCouponsExhausted);
+    }
+
     public function getId()
     {
         return $this->getAttribute(self::ID);
+    }
+
+    public function getAdvertiserId()
+    {
+        return $this->getAttribute(self::ADVERTISER_ID);
     }
 
     public function getLogo()
@@ -148,6 +174,65 @@ class Entity extends Base\PublicEntity
     public function getCouponCode()
     {
         return $this->getAttribute(self::COUPON_CODE);
+    }
+
+    public function getUniqueOrGenericCouponCode(){
+        /*
+         * First get the uniq exists and exhausted flags
+         * If uniq coupons dont exist, send the generic coupon
+         * If exist, check if exhausted
+         * If coupons exhausted, check if generic coupon present and send it
+         * If generic coupon not present, it should not have come to this, so send a mail and coupon to null
+         * if not exhausted, fetch and update uniq coupon code and update redis count
+         * if redis count < 100, then  mark exhausted in rewards table
+         */
+
+        $uniqueCouponsExist = $this->getUniqueCouponsExist();
+
+        $uniqueCouponsExhausted = $this->getUniqueCouponsExhausted();
+
+        //If reward has only a generic coupon code
+        if($uniqueCouponsExist === 0)
+        {
+            $genericCouponCode = $this->getCouponCode();
+
+            return [$genericCouponCode, 'generic'];
+        }
+
+        //If reward has unique coupon codes
+        //If the unique coupon codes are exhausted
+        if($uniqueCouponsExhausted === 1)
+        {
+            $genericCouponCode = $this->getCouponCode();
+            if(isset($genericCouponCode) === false)
+            {
+                $uniqueCouponCode = (new RewardCoupon\Core())->getUniqueCouponCodeForReward($this);
+
+                if(isset($uniqueCouponCode))
+                {
+                    return [$uniqueCouponCode, 'unique'];
+                }
+                else
+                {
+                    //This should not happen ideally since we already have 100 coupons as buffer
+                    //So log an error and send trying to access exhausted coupon codes mail
+                    //With this we can identify and adjust the min uniq coupons threshold later
+                    (new RewardCoupon\Core())->sendCouponCountThresholdMail($this, 0);
+
+                    return [null, 'unique'];
+                }
+            }
+            else
+            {
+                return [$genericCouponCode, 'generic'];
+            }
+        }
+
+        //Remaining case -> unique coupon codes are not exhausted and are present to distribute
+        //Get a unique coupon code and return it
+        $uniqueCouponCode = (new RewardCoupon\Core())->getUniqueCouponCodeForReward($this);
+
+        return [$uniqueCouponCode, 'unique'];
     }
 
     public function getTerms()
@@ -198,5 +283,15 @@ class Entity extends Base\PublicEntity
     public function getBrandName()
     {
         return $this->getAttribute(self::BRAND_NAME);
+    }
+
+    public function getUniqueCouponsExist()
+    {
+        return $this->getAttribute(self::UNIQUE_COUPONS_EXIST);
+    }
+
+    public function getUniqueCouponsExhausted()
+    {
+        return $this->getAttribute(self::UNIQUE_COUPONS_EXHAUSTED);
     }
 }

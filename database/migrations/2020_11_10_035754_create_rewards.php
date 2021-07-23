@@ -29,7 +29,7 @@ class CreateRewards extends Migration
                 ->nullable(false);
 
             $table->string(Reward::COUPON_CODE)
-                ->nullable(false);
+                ->nullable();
 
             $table->integer(Reward::PERCENT_RATE)
                 ->nullable();
@@ -78,6 +78,12 @@ class CreateRewards extends Migration
 
             $table->string(Reward::BRAND_NAME, Reward::BRAND_NAME_LENGTH)
                 ->nullable();
+
+            $table->boolean(Reward::UNIQUE_COUPONS_EXIST)
+                ->default(false);
+
+            $table->boolean(Reward::UNIQUE_COUPONS_EXHAUSTED)
+                ->default(false);
         });
     }
 

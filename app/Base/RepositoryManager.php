@@ -133,6 +133,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\MerchantNotificationConfig\Repository $merchant_notification_config
  * @property Models\Reward\Repository                              $reward;
  * @property Models\Reward\MerchantReward\Repository               $merchant_reward;
+ * @property Models\Reward\RewardCoupon\Repository                 $reward_coupon;
  * @property Models\AppStore\Repository                            $app_store;
  * @property Models\Survey\Tracker\Repository                      $survey_tracker;
  * @property Models\Survey\Repository                              $survey;

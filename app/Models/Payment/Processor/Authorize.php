@@ -6287,12 +6287,13 @@ trait Authorize
             $event = Payment\Event::INVOICE_PAYMENT_AUTHORIZED;
         }
 
-        (new Notify($this->payment))->trigger($event);
+        $notifier = (new Notify($this->payment, true));
 
+        $notifier->trigger($event);
 
         if($event === Payment\Event::AUTHORIZED)
         {
-            (new Notify($this->payment))->triggerSms();
+            $notifier->triggerSms();
         }
 
     }

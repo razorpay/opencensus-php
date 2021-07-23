@@ -65,11 +65,18 @@ class RewardController extends Controller
 
     public function getRewardTerms($id, $paymentId)
     {
+        $input = Request::All();
+
         $data = $this->service()->getRewardTerms($id, $paymentId);
 
         if (isset($data) === false)
         {
             return View::make('reward.terms_error');
+        }
+
+        if(isset($input['coupon_code']))
+        {
+            $data['reward']['coupon_code'] = $input['coupon_code'];
         }
 
         return View::make('reward.terms')->with('data', $data);

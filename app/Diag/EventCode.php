@@ -786,6 +786,16 @@ class EventCode
         'name'  => 'reward.redirect'
     ];
 
+    const REWARD_COUPON_DISTRIBUTED = [
+        'group' => 'reward_coupon',
+        'name'  => 'reward.coupon_distributed'
+    ];
+
+    const REWARD_COUPON_COUNT_THRESHOLD = [
+        'group' => 'reward_coupon',
+        'name'  => 'reward.coupon_count_threshold'
+    ];
+
     const PAYMENT_ELIGIBILITY_CHECK_INITIATED = [
         'group' => 'eligibility',
         'name'  => 'payment.eligibility_check.initiated'

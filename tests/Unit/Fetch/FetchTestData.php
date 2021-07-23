@@ -566,6 +566,8 @@ return [
 
     E::MERCHANT_REWARD => [],
 
+    E::REWARD_COUPON => [],
+
     E::NODAL_STATEMENT => [],
 
     E::PAYMENT_LINK => [],

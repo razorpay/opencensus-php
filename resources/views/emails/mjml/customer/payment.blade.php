@@ -527,7 +527,7 @@
                                                     {{$reward["name"]}}
                                                 </div>
                                             </div>
-                                            <a href="https://api.razorpay.com/v1/reward/{{$reward['id']}}/{{$payment['id']}}/terms" style="color: #3F71D7; font-weight: 500; font-size: 15px; line-height: 20px;">
+                                            <a href="https://api.razorpay.com/v1/reward/{{$reward['id']}}/{{$payment['id']}}/terms?coupon_code={{$reward['coupon_code']}}" style="color: #3F71D7; font-weight: 500; font-size: 15px; line-height: 20px;">
                                                 View T&C
                                             </a>
                                         </div>

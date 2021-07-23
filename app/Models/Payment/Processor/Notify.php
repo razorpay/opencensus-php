@@ -11,6 +11,7 @@ use RZP\Diag\EventCode;
 use RZP\Events\Event;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Models\Reward\RewardCoupon\Core as RewardCouponCore;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
@@ -57,6 +58,7 @@ class Notify
     protected $invoice = null;
     protected $slackEnabled = true;
     protected $elfin;
+    protected $fetchReward = false;
 
     /**
      * @var \RZP\Services\Raven
@@ -68,11 +70,13 @@ class Notify
      *
      * @param Payment\Entity $payment The payment associated with the Notify
      */
-    function __construct(Payment\Entity $payment)
+    function __construct(Payment\Entity $payment, $fetchReward = false)
     {
         $this->app = App::getFacadeRoot();
 
         $this->payment = $payment;
+
+        $this->fetchReward = $fetchReward;
 
         $this->merchant = $this->payment->merchant;
 
@@ -627,7 +631,7 @@ class Notify
             $data['payment']['dcc_base_amount'] = $this->payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $dccBaseAmount);
         }
 
-        if (($this->payment->isFailed() === false))
+        if (($this->payment->isFailed() === false) and $this->fetchReward === true)
         {
             $entityOffers = (new EntityOfferRepository())->findByEntityIdAndType($this->payment->getId());
 
@@ -637,22 +641,43 @@ class Notify
                 {
                     $reward = (new RewardRepository())->find($entityOffer->offer_id);
 
-                    $data['rewards'][] = array(
-                        'id'            => $reward->getId(),
-                        'logo'          => $reward->getLogo(),
-                        'ends_at'       => $reward->getEndsAt(),
-                        'stats_at'      => $reward->getStartsAt(),
-                        'coupon_code'   => $reward->getCouponCode(),
-                        'terms'         => $reward->getTerms(),
-                        'name'          => $reward->getName(),
-                        'display_text'  => $reward->getDisplayText(),
-                        'percent_rate'  => $reward->getPercentRate(),
-                        'flat_cashback' => $reward->getFlatCashback(),
-                        'max_cashback'  => $reward->getMaxCashback(),
-                        'min_amount'    => $reward->getMinAmount(),
-                        'merchant_website_redirect_link' => $reward->getMerchantWebsiteRedirectLink(),
-                        'brand_name'    => $reward->getBrandName(),
-                    );
+                    list($couponCode, $couponType) = $reward->getUniqueOrGenericCouponCode();
+
+                    if(isset($couponCode))
+                    {
+                        $eventProperties = [
+                            'reward_id'     => $reward->getId(),
+                            'coupon_code'   => $couponCode,
+                            'coupon_type'   => $couponType,
+                            'brand_name'    => $reward->getBrandName(),
+                            'payment_id'    => $this->payment->getId(),
+                            'publisher_id'  => $this->merchant->getId(),
+                        ];
+
+                        (new RewardCouponCore())->triggerRewardCouponDistributedEvent($eventProperties);
+
+                        $data['rewards'][] = array(
+                            'id'            => $reward->getId(),
+                            'logo'          => $reward->getLogo(),
+                            'ends_at'       => $reward->getEndsAt(),
+                            'stats_at'      => $reward->getStartsAt(),
+                            'coupon_code'   => $couponCode,
+                            'terms'         => $reward->getTerms(),
+                            'name'          => $reward->getName(),
+                            'display_text'  => $reward->getDisplayText(),
+                            'percent_rate'  => $reward->getPercentRate(),
+                            'flat_cashback'  => $reward->getFlatCashback(),
+                            'max_cashback'  => $reward->getMaxCashback(),
+                            'min_amount'    => $reward->getMinAmount(),
+                            'merchant_website_redirect_link' => $reward->getMerchantWebsiteRedirectLink(),
+                            'brand_name'    => $reward->getBrandName(),
+                        );
+                    } else {
+                        $this->trace->info(TraceCode::NULL_COUPON_CODE, [
+                            'payment_id' => $this->payment->getId(),
+                            'reward_id'  => $reward->getId()
+                        ]);
+                    }
                 }
             }
         }

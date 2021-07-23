@@ -36,6 +36,21 @@ class Service extends Base\Service
 
         $success  = 0;
         $failures = [];
+        $uniqueCouponResponse = [];
+
+        if(isset($input['reward']['unique_coupon_codes']))
+        {
+            $uniqueCouponCodes = $input['reward']['unique_coupon_codes'];
+
+            try
+            {
+                $uniqueCouponResponse = (new RewardCoupon\Core())->create($uniqueCouponCodes, $reward->getId());
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e, null, TraceCode::REWARD_UNIQUE_COUPON_CREATE_ERROR);
+            }
+        }
 
         foreach ($merchantIds as $merchantId)
         {
@@ -61,8 +76,9 @@ class Service extends Base\Service
         }
 
         $summary  = [
-            'success'  => $success,
-            'failures' => $failures
+            'success'               => $success,
+            'failures'              => $failures,
+            'uniqueCouponResponse'  => $uniqueCouponResponse
         ];
 
         return $summary;
@@ -75,6 +91,7 @@ class Service extends Base\Service
         (new Validator())->validateInput('update', $input);
 
         $newMerchantIds = [];
+        $uniqueCouponResponse = [];
 
         $reward = $input['reward'];
 
@@ -87,6 +104,20 @@ class Service extends Base\Service
 
 
         $updatedRewardFields = $this->core->update($reward);
+
+        if(isset($reward['unique_coupon_codes']))
+        {
+            $uniqueCouponCodes = $reward['unique_coupon_codes'];
+
+            try
+            {
+                $uniqueCouponResponse = (new RewardCoupon\Core())->create($uniqueCouponCodes, $reward['id']);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e, null, TraceCode::REWARD_UNIQUE_COUPON_CREATE_ERROR);
+            }
+        }
 
         $failed_merchants_id = (new MerchantReward\Core())->update($reward);
 
@@ -106,7 +137,12 @@ class Service extends Base\Service
                 $failed_merchants_id[] = $merchantId;
             }
         }
-        $response = ["failed_merchant_ids" =>  $failed_merchants_id, "reward" => $updatedRewardFields];
+
+        $response = [
+            'failed_merchant_ids'   => $failed_merchants_id,
+            'reward'                => $updatedRewardFields,
+            'uniqueCouponResponse'  => $uniqueCouponResponse
+        ];
 
         return $response;
     }

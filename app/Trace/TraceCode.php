@@ -4603,6 +4603,17 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REWARD_SMS_FLOW_TRIGGERED                                      = 'REWARD_SMS_FLOW_TRIGGERED';
     const REWARD_SMS_GET_REQUEST_INPUT                                   = 'REWARD_SMS_GET_REQUEST_INPUT';
     const REWARD_GETTING_RAVEN_REQUEST                                   = 'REWARD_GETTING_RAVEN_REQUEST';
+    const REWARD_UNIQUE_COUPON_CREATE_REQUEST                            = 'REWARD_UNIQUE_COUPON_CREATE_REQUEST';
+    const REWARD_UNIQUE_COUPON_CREATE_ERROR                              = 'REWARD_UNIQUE_COUPON_CREATE_ERROR';
+    const REWARD_COUPON_SUCCESSFUL_CHUNK                                 = 'REWARD_COUPON_SUCCESSFUL_CHUNK';
+    const REWARD_COUPON_FAILURE_CHUNK                                    = 'REWARD_COUPON_FAILURE_CHUNK';
+    const REWARD_UNIQUE_COUPON_CREATE_RESULT                             = 'REWARD_UNIQUE_COUPON_CREATE_RESULT';
+    const REWARD_UNIQUE_COUPON_INSERT_ERROR                              = 'REWARD_UNIQUE_COUPON_INSERT_ERROR';
+    const GET_UNIQUE_COUPON_CODE_ERROR                                   = 'GET_UNIQUE_COUPON_CODE_ERROR';
+    const COUPON_COUNT_THRESHOLD_MAIL_ERROR                              = 'COUPON_COUNT_THRESHOLD_MAIL_ERROR';
+    const REWARD_COUPON_DISTRIBUTED_EVENT                                = 'REWARD_COUPON_DISTRIBUTED_EVENT';
+    const REWARD_COUPON_DISTRIBUTED_EVENT_ERROR                          = 'REWARD_COUPON_DISTRIBUTED_EVENT_ERROR';
+    const NULL_COUPON_CODE                                               = 'NULL_COUPON_CODE';
     const PUBLIC_KEY_SIGNATURE_GENERATION_RAZORX                         = 'PUBLIC_KEY_SIGNATURE_GENERATION_RAZORX';
     const INTERNAL_ERROR_CODE_NOT_FOUND_IN_REPO                          = 'INTERNAL_ERROR_CODE_NOT_FOUND_IN_REPO';
 

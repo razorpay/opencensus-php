@@ -28,7 +28,8 @@ class Validator extends Base\Validator
         Entity::ENDS_AT                         => 'required|epoch',
         Entity::DISPLAY_TEXT                    => 'filled|string|max:255',
         Entity::TERMS                           => 'filled|string',
-        Entity::COUPON_CODE                     => 'required|string',
+        Entity::COUPON_CODE                     => 'sometimes|filled|string',
+        Entity::UNIQUE_COUPON_CODES             => 'sometimes|filled|array',
         Entity::LOGO                            => 'sometimes|string',
         Entity::MERCHANT_WEBSITE_REDIRECT_LINK  => 'sometimes|string',
         Entity::BRAND_NAME                      => 'sometimes|filled|string|max:26',
@@ -63,6 +64,17 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateGenericOrUniqueCoupons(array $input){
+        $genericCouponPresent = isset($input[Entity::COUPON_CODE]);
+        $uniqueCouponPresent = isset($input[Entity::UNIQUE_COUPON_CODES]);
+
+        if(!$genericCouponPresent and !$uniqueCouponPresent)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REWARD_COUPON_MUST_BE_PRESENT, null, null, "Either generic or unique coupons must be present");
+        }
+    }
+
     protected static $updateRules = [
         'reward'         => 'required|associative_array',
         'merchant_ids'   => 'array',
@@ -92,6 +104,7 @@ class Validator extends Base\Validator
         Entity::DISPLAY_TEXT                    => 'sometimes|filled|string|max:255',
         Entity::TERMS                           => 'sometimes|filled|string',
         Entity::COUPON_CODE                     => 'sometimes|filled|string',
+        Entity::UNIQUE_COUPON_CODES             => 'sometimes|filled|array',
         Entity::LOGO                            => 'sometimes|filled|string',
         Entity::MERCHANT_WEBSITE_REDIRECT_LINK  => 'sometimes|filled|string',
     ];

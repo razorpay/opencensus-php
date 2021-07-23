@@ -2130,6 +2130,8 @@ class ErrorCode
 
     const BAD_REQUEST_INVALID_REWARD_DURATION                                       = 'BAD_REQUEST_INVALID_REWARD_DURATION';
 
+    const BAD_REQUEST_REWARD_COUPON_MUST_BE_PRESENT                                 = 'BAD_REQUEST_REWARD_COUPON_MUST_BE_PRESENT';
+
     const BAD_REQUEST_REWARD_ACTIVATE                                               = 'BAD_REQUEST_REWARD_ACTIVATE';
 
     const BAD_REQUEST_REWARD_DEACTIVATE                                             = 'BAD_REQUEST_REWARD_DEACTIVATE';

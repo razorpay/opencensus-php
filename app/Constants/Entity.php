@@ -479,6 +479,7 @@ class Entity
     const STAKEHOLDER       = 'stakeholder';
     const REWARD            = 'reward';
     const MERCHANT_REWARD   = 'merchant_reward';
+    const REWARD_COUPON     = 'reward_coupon';
 
     // merchant auto kyc escalations
     const MERCHANT_AUTO_KYC_ESCALATIONS  = 'merchant_auto_kyc_escalations';
@@ -939,6 +940,7 @@ class Entity
 
         self::REWARD            => \RZP\Models\Reward::class,
         self::MERCHANT_REWARD   => \RZP\Models\Reward\MerchantReward::class,
+        self::REWARD_COUPON     => \RZP\Models\Reward\RewardCoupon::class,
 
         self::APP_STORE         => \RZP\Models\AppStore::class,
         self::GUP_SHUP          => \RZP\Models\GupShup::class,

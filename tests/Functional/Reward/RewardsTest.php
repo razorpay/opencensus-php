@@ -25,6 +25,13 @@ class RewardsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateRewardWithUniqueCoupons()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
 
     public function testActivateReward()
     {
@@ -62,6 +69,29 @@ class RewardsTest extends TestCase
 
         $this->startTest();
     }
+    
+    public function testUpdateRewardWithUniqueCoupons()
+    {
+        $this->ba->adminAuth();
+
+        $reward = $this->fixtures->create('reward');
+
+        $this->fixtures->create('merchant_reward',['reward_id' => $reward->id]);
+
+        $this->testData[__FUNCTION__]['request']['content']['reward']['id'] = $reward->getPublicId();
+
+
+        $this->testData[__FUNCTION__]['response']['content']['reward']['id'] = $reward->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['content']['reward']['ends_at'] = Carbon::now()->addDays(2)->getTimestamp();
+
+        $this->testData[__FUNCTION__]['response']['content']['reward']['starts_at'] = $reward->starts_at;
+
+        $this->testData[__FUNCTION__]['response']['content']['reward']['ends_at'] = Carbon::now()->addDays(2)->getTimestamp();
+
+        $this->startTest();
+    }
+
 
     public function testUpdateRewardWithWrongStartTime()
     {

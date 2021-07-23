@@ -4,6 +4,7 @@
 namespace RZP\Models\Reward;
 
 use RZP\Models\Base;
+use Carbon\Carbon;
 
 
 class Repository extends Base\Repository
@@ -25,4 +26,13 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    public function setUniqueCouponsExhaustedForReward($rewardId)
+    {
+        $this->newQuery()
+            ->where(Entity::ID, '=', $rewardId)
+            ->update([
+                Entity::UNIQUE_COUPONS_EXHAUSTED => true,
+                Entity::UPDATED_AT               => Carbon::now()->getTimestamp()
+            ]);
+    }
 }

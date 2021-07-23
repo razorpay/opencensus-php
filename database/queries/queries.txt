@@ -6303,7 +6303,6 @@ ALTER TABLE terminals
 ALTER TABLE terminals
     ADD COLUMN app TINYINT(1) NOT NULL DEFAULT 0;
 
-
 ALTER TABLE qr_code
     ADD COLUMN tax_invoice JSON;
 
@@ -6313,3 +6312,8 @@ ALTER TABLE terminals
 ALTER TABLE disputes
     ADD COLUMN deduction_source_type varchar(30) DEFAULT NULL,
     ADD COLUMN deduction_source_id char(14) DEFAULT NULL;
+
+ALTER TABLE rewards
+    ADD COLUMN unique_coupons_exist TINYINT(1) DEFAULT 0 NOT NULL
+    ADD COLUMN unique_coupons_exhausted TINYINT(1) DEFAULT 0 NOT NULL
+    MODIFY COLUMN coupon_code VARCHAR(255) COLLATE utf8_bin;

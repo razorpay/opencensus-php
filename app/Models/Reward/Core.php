@@ -19,7 +19,15 @@ class Core extends Base\Core
 
     public function create($input)
     {
-        $this->trace->info(TraceCode::REWARD_CREATE_REQUEST, $input);
+        $logInput = $input;
+        unset($logInput[Entity::UNIQUE_COUPON_CODES]);
+        $uniqueCouponsCount = isset($input[Entity::UNIQUE_COUPON_CODES]) ? sizeof($input[Entity::UNIQUE_COUPON_CODES]) : null;
+
+        $this->trace->info(TraceCode::REWARD_CREATE_REQUEST,
+            [
+                'input'                        => $logInput,
+                'unique_coupon_count_in_input' => $uniqueCouponsCount
+            ]);
 
         $reward = new Entity;
 
@@ -30,13 +38,28 @@ class Core extends Base\Core
             $reward->setStartsAt(Carbon::today()->getTimestamp());
         }
 
+        if(isset($input[Entity::UNIQUE_COUPON_CODES]))
+        {
+            $reward->setUniqueCouponsExist(true);
+
+            $reward->setUniqueCouponsExhausted(false);
+        }
+
         $this->repo->saveOrFail($reward);
         return $reward;
     }
 
     public function update($reward)
     {
-        $this->trace->info(TraceCode::REWARD_UPDATE_REQUEST, $reward);
+        $logReward = $reward;
+        unset($logReward[Entity::UNIQUE_COUPON_CODES]);
+        $uniqueCouponsCount = isset($reward[Entity::UNIQUE_COUPON_CODES]) ? sizeof($reward[Entity::UNIQUE_COUPON_CODES]) : null;
+
+        $this->trace->info(TraceCode::REWARD_UPDATE_REQUEST,
+            [
+                'reward'                       => $logReward,
+                'unique_coupon_count_in_input' => $uniqueCouponsCount
+            ]);
 
         $rewardEntity = $this->repo->reward->find($reward['id']);
 
@@ -69,6 +92,13 @@ class Core extends Base\Core
             {
                 $columnsToUpdate[$column] = $reward[$column];
             }
+        }
+
+        if(isset($reward[Entity::UNIQUE_COUPON_CODES]))
+        {
+            $columnsToUpdate[Entity::UNIQUE_COUPONS_EXIST] = true;
+
+            $columnsToUpdate[Entity::UNIQUE_COUPONS_EXHAUSTED] = false;
         }
 
         array_unshift($columns, ENTITY::ID);

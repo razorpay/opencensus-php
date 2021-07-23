@@ -124,6 +124,15 @@ class Repository extends Base\Repository
             ->select(Table::REWARD.'.*')
             ->from(TABLE::REWARD)
             ->where(RewardEntity::ENDS_AT, '>', $now)
+            ->where(function($query)
+            {
+                $query->whereNotNull(RewardEntity::COUPON_CODE)
+                      ->orWhere(function($query)
+                      {
+                          $query->where(RewardEntity::UNIQUE_COUPONS_EXIST, '=', 1)
+                                ->where(RewardEntity::UNIQUE_COUPONS_EXHAUSTED, '=', 0);
+                      });
+            })
             ->whereIn(RewardEntity::ID, function($query) use($now, $merchantId) {
                 $query->select(Table::MERCHANT_REWARD.'.'.(Entity::REWARD_ID))
                     ->from(TABLE::MERCHANT_REWARD)

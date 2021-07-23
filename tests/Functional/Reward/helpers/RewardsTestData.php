@@ -28,7 +28,41 @@ return [
         'response' => [
             'content' => [
                 "success"  => 1,
-                "failures" => []
+                "failures" => [],
+                "uniqueCouponResponse" => []
+            ]
+        ]
+    ],
+    'testCreateRewardWithUniqueCoupons' => [
+        'request' => [
+            'content' => [
+                "merchant_ids"  => ['10000000000000'],
+                "reward"        => [
+                    'name'                => 'Test Reward',
+                    'advertiser_id'       => '100000Razorpay',
+                    'percent_rate'        => 1000,
+                    'starts_at'           => Carbon::tomorrow()->getTimestamp(),
+                    'ends_at'             => Carbon::now()->addDays(2)->getTimestamp(),
+                    'display_text'        => 'Some more details',
+                    'terms'               => 'Some more details',
+                    'percent_rate'        => 1000,
+                    'max_cashback'        => 200,
+                    'coupon_code'         => 'coupon_code',
+                    'unique_coupon_codes' => ['coup1','coup2','coup3']
+                ],
+            ],
+            'url'    => '/rewards',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "success"  => 1,
+                "failures" => [],
+                "uniqueCouponResponse" => [
+                    'failed_coupons_count'          => 0,
+                    'failed_coupons'                => [],
+                    'unique_coupon_available_count' => 3
+                ]
             ]
         ]
     ],
@@ -59,6 +93,44 @@ return [
                     'logo'                 => 'Updated logo',
                     'terms'                => 'Updated Terms',
                     'merchant_website_redirect_link' => 'https:\/\/bewakoof.app.link'
+                ],
+                'uniqueCouponResponse' => []
+            ]
+        ]
+    ],
+    'testUpdateRewardWithUniqueCoupons' => [
+        'request' => [
+            'content' => [
+                "merchant_ids"  => ['10000000000000'],
+                "reward"        => [
+                    'name'                => 'Updated Reward Name',
+                    'display_text'         => 'Extra Flat 15% off on Rs.499 or more',
+                    'logo'                => 'Updated logo',
+                    'terms'               => 'Updated Terms',
+                    'coupon_code'         => 'updated_coupon_code',
+                    'merchant_website_redirect_link' => 'https:\/\/bewakoof.app.link',
+                    'unique_coupon_codes' => ['coup1','coup2','coup3']
+                ],
+            ],
+            'url'    => '/rewards/update',
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'failed_merchant_ids' => [],
+                'reward' => [
+                    'entity'               => 'reward',
+                    'name'                 => 'Updated Reward Name',
+                    'display_text'         => 'Extra Flat 15% off on Rs.499 or more',
+                    'coupon_code'          => 'updated_coupon_code',
+                    'logo'                 => 'Updated logo',
+                    'terms'                => 'Updated Terms',
+                    'merchant_website_redirect_link' => 'https:\/\/bewakoof.app.link'
+                ],
+                'uniqueCouponResponse' => [
+                    'failed_coupons_count'          => 0,
+                    'failed_coupons'                => [],
+                    'unique_coupon_available_count' => 3
                 ]
             ]
         ]

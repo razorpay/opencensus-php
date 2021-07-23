@@ -2928,6 +2928,17 @@ class AdminFetch
                 ],
             ],
 
+            Entity::REWARD_COUPON => [
+                'reward_id' => [
+                    Fetch::LABEL  => 'Reward Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'coupon_code' => [
+                    Fetch::LABEL  => 'Coupon Code',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ]
+            ],
+
             Entity::REPORT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'type' => [

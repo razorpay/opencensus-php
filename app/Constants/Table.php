@@ -343,6 +343,7 @@ class Table
 
     const REWARD           = 'rewards';
     const MERCHANT_REWARD  = 'merchant_rewards';
+    const REWARD_COUPON    = 'reward_coupons';
 
     // this table doesn't exist in api db. this constant is required for transaction queries
     const CREDIT_REPAYMENT = 'credit_repayment';
