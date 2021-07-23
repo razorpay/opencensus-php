@@ -211,12 +211,12 @@ export default class BaseOriginationEntity extends GenericEntity {
   }
 
   submitOtp(data) {
-    return this.request(`${this.resourceUrlPrefix('d2c_new', 'D2CBureauAPI', 'SubmitOtp')}`, data);
+    return this.request(`${this.resourceUrlPrefix('origination.d2c', 'D2CBureauAPI', 'SubmitOtp')}`, data);
   }
 
   fetchD2cReport(data) {
     return this.request(
-      `${this.resourceUrlPrefix('d2c_new', 'D2CBureauAPI', 'GetBureauReport')}`,
+      `${this.resourceUrlPrefix('origination.d2c', 'D2CBureauAPI', 'GetBureauReport')}`,
       data,
     );
   }

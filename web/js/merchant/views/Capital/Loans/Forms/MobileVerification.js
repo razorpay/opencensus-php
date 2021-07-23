@@ -78,7 +78,7 @@ class MobileVerification extends Component {
     try {
       sendOtpResponse = await ajax(
         {
-          url: 'los/service/twirp/rzp.capital.los.d2c_new.v1.D2CBureauAPI/SendOtp',
+          url: 'los/service/twirp/rzp.capital.los.origination.d2c.v1.D2CBureauAPI/SendOtp',
           method: 'post',
           data: payload,
           mode: 'live',
