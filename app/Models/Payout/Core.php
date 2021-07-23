@@ -1535,35 +1535,44 @@ class Core extends Base\Core
 
     public function dispatchBalanceIdsForQueuedPayoutsToPayoutsService(array $balanceIdList = [])
     {
-        try
+        if ($this->isLiveMode() === true)
         {
-            // Filter out the balance ids for which the merchants have payout_service_enabled feature
-            $balanceIdList = $this->repo->balance
-                ->getBalanceIdsWithAMerchantsHavingPayoutServiceEnabled($balanceIdList);
+            try
+            {
+                // Filter out the balance ids for which the merchants have payout_service_enabled feature
+                $balanceIdList = $this->repo->balance
+                    ->getBalanceIdsWithAMerchantsHavingPayoutServiceEnabled($balanceIdList);
 
-            $payoutServiceInput = [Entity::BALANCE_IDS => $balanceIdList];
+                if (empty($balanceIdList) === true)
+                {
+                    return;
+                }
 
-            $this->trace->info(
-                TraceCode::PAYOUT_QUEUED_INITIATE_DISPATCH_TO_PAYOUT_SERVICE,
-                $payoutServiceInput);
+                $payoutServiceInput = [Entity::BALANCE_IDS => $balanceIdList];
 
-            $this->payoutServiceQueuedInitiateClient->dispatchQueuedPayoutBalanceIdToMicroservice($payoutServiceInput);
+                $this->trace->info(
+                    TraceCode::PAYOUT_QUEUED_INITIATE_DISPATCH_TO_PAYOUT_SERVICE,
+                    $payoutServiceInput);
 
-            $this->trace->info(
-                TraceCode::PAYOUT_QUEUED_INITIATE_DISPATCH_TO_PAYOUT_SERVICE_COMPLETE,
-                $payoutServiceInput);
-        }
-        catch (\Throwable $e)
-        {
-            // If the dispatch fails due to any reason, cron will
-            // pick up these payouts again and attempt to dispatch.
-            $data = $payoutServiceInput + [ 'message' => $e->getMessage() ];
+                $this->payoutServiceQueuedInitiateClient
+                    ->dispatchQueuedPayoutBalanceIdToMicroservice($payoutServiceInput);
 
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::PAYOUT_QUEUED_DISPATCH_TO_PAYOUT_SERVICE_FAILED,
-                $data);
+                $this->trace->info(
+                    TraceCode::PAYOUT_QUEUED_INITIATE_DISPATCH_TO_PAYOUT_SERVICE_COMPLETE,
+                    $payoutServiceInput);
+            }
+            catch (\Throwable $e)
+            {
+                // If the dispatch fails due to any reason, cron will
+                // pick up these payouts again and attempt to dispatch.
+                $data = $payoutServiceInput + [ 'message' => $e->getMessage() ];
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYOUT_QUEUED_DISPATCH_TO_PAYOUT_SERVICE_FAILED,
+                    $data);
+            }
         }
     }
 
