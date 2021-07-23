@@ -796,7 +796,23 @@ class Entity extends Base\PublicEntity
 
     public function setPublicTaxInvoiceAttribute(array & $array)
     {
-       //Definition to be added with Core Changes
+        $orderMetaArray = $this->orderMetas;
+
+        if (($orderMetaArray !== null) and
+            (count($orderMetaArray) > 0))
+        {
+            foreach ($orderMetaArray as $orderMeta)
+            {
+                if ($orderMeta->getType() === Type::TAX_INVOICE)
+                {
+                    $array[Type::TAX_INVOICE] = $orderMeta->getValue();
+
+                    return;
+                }
+            }
+        }
+
+        unset($array[Type::TAX_INVOICE]);
     }
 
     protected function modifyCheckoutConfigId(& $input)

@@ -14,16 +14,18 @@ class Type
 {
     const TAX_INVOICE = 'tax_invoice';
 
+    /* map to store types and type specific requirements */
+    protected $typeMap = [
+        self::TAX_INVOICE => true,
+    ];
+
     /**
      * @param $type
      * @return bool
      */
-    public static function isValidType($type)
+    public function isValidType($type): bool
     {
-        $key = __CLASS__ . '::' . strtoupper($type);
-
-        return ((defined($key) === true) and
-                (constant($key) === $type));
+        return in_array(strtolower($type), array_keys($this->typeMap));
     }
 }
 

@@ -2182,6 +2182,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const  MERCHANT_DETAILS_EDIT_REQUEST                        =  'MERCHANT_DETAILS_EDIT_REQUEST';
     const  MERCHANT_EDIT_REQUEST                                =  'MERCHANT_EDIT_REQUEST';
 
+    //Trace code for orderMeta
+    const ORDER_META_TAX_INVOICE_NON_GST_FLOW                   = 'ORDER_META_TAX_INVOICE_NON_GST_FLOW';
+    const ORDER_META_CREATED                                    = 'ORDER_META_CREATED';
+
     // Trace codes for offers
 
     const OFFER_CREATE_REQUEST                                  = 'OFFER_CREATE_REQUEST';

@@ -77,6 +77,11 @@ trait DbEntityFetchTrait
         return $this->getDbLastEntity('order');
     }
 
+    protected function getDbLastOrderMeta(): Models\Order\OrderMeta\Entity
+    {
+        return $this->getDbLastEntity('order_meta');
+    }
+
     protected function getDbLastUpi(): Gateway\Upi\Base\Entity
     {
         return $this->getDbLastEntity('upi');

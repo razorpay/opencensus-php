@@ -37,7 +37,7 @@ class Validator extends Base\Validator
      */
     protected function validateType($attribute, $value)
     {
-        if (Type::isValidType($value) === false)
+        if ((new Type)->isValidType($value) === false)
         {
             throw new BadRequestValidationFailureException(
                 sprintf('%s is not a valid order_meta type', $value)

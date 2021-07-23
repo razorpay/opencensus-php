@@ -95,6 +95,8 @@ class Core extends Base\Core
 
             $this->associateProducts($order, $input);
 
+            $this->associateOrderMeta($order, $input);
+
             if ($dummyProcessing === false)
             {
                 $this->repo->saveOrFail($order);
@@ -192,6 +194,17 @@ class Core extends Base\Core
         }
 
         (new Product\Core)->createMany($order, $input[Entity::PRODUCTS]);
+    }
+
+    /**
+     * @param Entity $order
+     * @param array  $input
+     *
+     * @return OrderMeta\Entity|null
+     */
+    protected function associateOrderMeta(Entity $order, array $input)
+    {
+       return (new OrderMeta\Core)->createAndSaveOrderMeta($order, $input);
     }
 
     protected function validateAndAssociateOffer(Entity $order, string $offerId)
