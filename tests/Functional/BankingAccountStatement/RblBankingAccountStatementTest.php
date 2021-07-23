@@ -32,6 +32,7 @@ use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Jobs\BankingAccountStatementProcessor;
 use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
@@ -4479,6 +4480,90 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup[0]['name']);
         $this->assertEquals(90, $feeBreakup[1]['amount']);
         $this->assertEquals(EntityConstants::TAX, $feeBreakup[1]['name']);
+    }
+
+    // Case when there is a payout of IMPS mode with UTR not present but cms ref no is present
+    public function testAccountStatementFetchForUpiMode()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures([Features::RBL_CA_UPI]);
+
+        $this->ba->privateAuth();
+
+        $this->createContact();
+
+        $this->fundAccount = $this->createVpaFundAccount();
+
+        $content = [
+            'account_number'  => '2224440041626905',
+            'amount'          => 104,
+            'currency'        => 'INR',
+            'purpose'         => 'payout',
+            'narration'       => 'Rbl account payout',
+            'fund_account_id' => 'fa_' . $this->fundAccount->getId(),
+            'mode'            => FundTransfer\Mode::UPI,
+            'notes'           => [
+                'abc' => 'xyz',
+            ],
+        ];
+
+        $request = [
+            'url'       => '/payouts',
+            'method'    => 'POST',
+            'content'   => $content
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout1 = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('rbl', $payout1[Payout\Entity::CHANNEL]);
+
+        $this->assertEquals(FundTransfer\Mode::UPI, $payout1[Payout\Entity::MODE]);
+
+        $attempt1 = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('balance', $payout1['balance_id'], ['balance' => 30019995]);
+
+        $this->fixtures->edit('payout', $payout1['id'], ['status' => 'PROCESSED', 'utr' => 120310176379]);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt1['id'],
+                              ['status' => 'PROCESSED', 'utr' => 120310176379]);
+
+        // fetch account statement
+        $mockedResponse = $this->getRblPayoutMappingResponse();
+
+        // set UPI type regex for description
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['transactionSummary']['txnDesc'] =
+            'UPI/120310176379/Test transfer RAZORPAY/razorpayx.';
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $payoutTxn = $this->getDbLastEntity('transaction');
+        $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout1['balance_id']]);
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('rbl', $payout[Payout\Entity::CHANNEL]);
+
+        $this->assertEquals(FundTransfer\Mode::UPI, $payout[Payout\Entity::MODE]);
+
+        $this->assertEquals('120310176379', $basEntries[0]['utr']);
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[0]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[0]['transaction_id']);
+
+        $this->assertEquals(0, count($externalEntries));
+        $this->assertEquals(EntityConstants::PAYOUT, $payoutTxn['type']);
+        $this->assertEquals($payoutTxn['id'], $payout['transaction_id']);
     }
 
     //Case when there is a payout of NEFT mode with UTR not present but cms ref no is present

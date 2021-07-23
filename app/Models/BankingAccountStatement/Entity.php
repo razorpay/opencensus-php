@@ -52,7 +52,7 @@ class Entity extends Base\PublicEntity
     // Relation names/attributes
     const SOURCE                = 'source';
 
-    const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|R-)(.*?)(\/|-)/';
+    const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|UPI\/|R\/UPI\/|R-)(.*?)(\/|-)/';
 
     // sample IMPS - 010617021414-QCREDIT 234412
     const IMPS_DEBIT_REGEX = '/^(.*?)-/';
@@ -60,6 +60,9 @@ class Entity extends Base\PublicEntity
     // sample NEFT - NEFT/000119662132/maYANK SHARMA
     // sample RTGS - RTGS/UTIBH20106341692/RAZORPAY SOFTWARE PRIVATE LI
     const NEFT_RTGS_DEBIT_REGEX = '/^(RTGS\/|NEFT\/)(.*?)(\/)/';
+
+    // sample UPI- UPI/120310176379/Test transfer RAZORPAY/razorpayx.
+    const UPI_DEBIT_REGEX = '/^(UPI\/)(.*?)(\/)/';
 
     protected static $sign = 'bas';
 
@@ -351,6 +354,10 @@ class Entity extends Base\PublicEntity
             {
                 $regex = self::NEFT_RTGS_DEBIT_REGEX;
             }
+            if ($this->isUpi($description) === true)
+            {
+                $regex = self::UPI_DEBIT_REGEX;
+            }
         }
 
         $match = preg_match($regex, $description, $matches);
@@ -358,7 +365,8 @@ class Entity extends Base\PublicEntity
         if ($match === 1)
         {
             $match = (($regex === self::CREDIT_REGEX) or
-                     ($regex === self::NEFT_RTGS_DEBIT_REGEX)) ? $matches[2] : $matches[1];
+                      ($regex === self::NEFT_RTGS_DEBIT_REGEX) or
+                      ($regex === self::UPI_DEBIT_REGEX)) ? $matches[2] : $matches[1];
         }
 
         // Could be an empty string match
@@ -373,6 +381,20 @@ class Entity extends Base\PublicEntity
     protected function isNeftOrRtgs(string  $description)
     {
         $regex = self::NEFT_RTGS_DEBIT_REGEX;
+
+        $match = preg_match($regex, $description, $matches);
+
+        if ($match === 1)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isUpi(string $description)
+    {
+        $regex = self::UPI_DEBIT_REGEX;
 
         $match = preg_match($regex, $description, $matches);
 

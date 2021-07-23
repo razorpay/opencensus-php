@@ -41,7 +41,7 @@ class Gateway extends BaseProcessor
     const RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE_DEFAULT = 200;
 
     // regex to fetch utr from description
-    const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|R-)(.*?)(\/|-)/';
+    const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|UPI\/|R\/UPI\/|R-)(.*?)(\/|-)/';
 
     // sample IMPS - 010617021414-QCREDIT 234412
     const IMPS_DEBIT_REGEX = '/^(.*?)-/';
@@ -51,6 +51,9 @@ class Gateway extends BaseProcessor
     const NEFT_RTGS_DEBIT_REGEX = '/^(RTGS\/|NEFT\/)(.*?)(\/)/';
 
     const OFFSET_FOR_SAVING_RECORD = 60;
+
+    // sample UPI- UPI/120310176379/Test transfer RAZORPAY/razorpayx.
+    const UPI_DEBIT_REGEX = '/^(UPI\/)(.*?)(\/)/';
 
     /** @var BasDetails\Entity */
     protected $basDetails;
@@ -702,6 +705,10 @@ class Gateway extends BaseProcessor
             {
                 $regex = self::NEFT_RTGS_DEBIT_REGEX;
             }
+            if ($this->isUpi($description) === true)
+            {
+                $regex = self::UPI_DEBIT_REGEX;
+            }
         }
 
         $match = preg_match($regex, $description, $matches);
@@ -709,7 +716,8 @@ class Gateway extends BaseProcessor
         if ($match === 1)
         {
             $match = (($regex === self::CREDIT_REGEX) or
-                      ($regex === self::NEFT_RTGS_DEBIT_REGEX)) ? $matches[2] : $matches[1];
+                      ($regex === self::NEFT_RTGS_DEBIT_REGEX) or
+                      ($regex === self::UPI_DEBIT_REGEX)) ? $matches[2] : $matches[1];
         }
 
         // Could be an empty string match
@@ -724,6 +732,20 @@ class Gateway extends BaseProcessor
     protected function isNeftOrRtgs(string  $description)
     {
         $regex = self::NEFT_RTGS_DEBIT_REGEX;
+
+        $match = preg_match($regex, $description, $matches);
+
+        if ($match === 1)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isUpi(string $description)
+    {
+        $regex = self::UPI_DEBIT_REGEX;
 
         $match = preg_match($regex, $description, $matches);
 
