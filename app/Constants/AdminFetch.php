@@ -1930,6 +1930,20 @@ class AdminFetch
                 ],
             ],
 
+            Entity::DISPUTE_EVIDENCE => [
+                Dispute\Evidence\Entity::DISPUTE_ID =>  [
+                        Fetch::LABEL        => 'Dispute ID',
+                        Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::DISPUTE_EVIDENCE_DOCUMENT => [
+                Dispute\Evidence\Document\Entity::DISPUTE_ID =>  [
+                    Fetch::LABEL        => 'Dispute ID',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+            ],
+
+
             Entity::DISPUTE_REASON => [
                 'network' => [
                     Fetch::LABEL  => 'Network',

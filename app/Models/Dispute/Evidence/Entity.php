@@ -23,7 +23,6 @@ class Entity extends Base\PublicEntity
 
     const CURRENCY_LENGTH = 3;
     const SOURCE_LENGTH   = 50;
-    const SUMMARY_MAX_LENGTH = 10000;
 
     const SUBMITTED_AT = 'submitted_at';
 
@@ -44,7 +43,12 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::AMOUNT,
         self::SUMMARY,
+        self::REJECTION_REASON,
+        self::CURRENCY,
+        self::SOURCE,
         self::SUBMITTED_AT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $public = [

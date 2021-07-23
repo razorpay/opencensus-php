@@ -983,6 +983,17 @@ class DisputePresentmentTest extends TestCase
         });
     }
 
+    public function testAdminFetchPresentmentEntities()
+    {
+        $this->setUpForUpdateDraftEvidenceTest();
+
+        [$disputeEvidence, $disputeEvidenceDocument] = $this->getEntitiesByTypeAndIdMultiple('dispute_evidence', null, 'dispute_evidence_document', null);
+
+        $this->assertArrayKeysExist($disputeEvidence, ['id', 'summary', 'amount', 'currency', 'rejection_reason', 'source', 'created_at', 'updated_at', 'submitted_at', 'admin']);
+
+        $this->assertArrayKeysExist($disputeEvidenceDocument, ['id', 'dispute_id', 'type', 'custom_type', 'document_id', 'created_at', 'updated_at',  'admin', 'entity']);
+    }
+
     protected function expectDisputeWebhook(string $event)
     {
         $testCase = $this->getName();

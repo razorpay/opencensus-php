@@ -15,8 +15,6 @@ class Entity extends Base\PublicEntity
     const TYPE        = 'type';
     const CUSTOM_TYPE = 'custom_type';
     const DOCUMENT_ID = 'document_id'; // refers to the underlying ufh file id/document id
-    const CREATED_BY  = 'created_by';
-    const UPDATED_BY  = 'updated_by';
     const SOURCE      = 'source';
 
     const TYPE_LENGTH        = 100;
@@ -36,8 +34,12 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::DISPUTE_ID,
         self::DOCUMENT_ID,
+        self::TYPE,
+        self::CUSTOM_TYPE,
         self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $entity = Constants\Entity::DISPUTE_EVIDENCE_DOCUMENT;
