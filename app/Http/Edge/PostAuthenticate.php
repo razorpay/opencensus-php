@@ -3,6 +3,7 @@
 namespace RZP\Http\Edge;
 
 use Illuminate\Http\Request;
+use RZP\Http\Route;
 use Throwable;
 use Razorpay\Trace\Logger;
 use Razorpay\Edge\Passport;
@@ -70,6 +71,18 @@ final class PostAuthenticate
     }
 
     /**
+     * Checks if current route a public callback route
+     *
+     * @return bool true if the route is public callback route
+     */
+    private function isPublicCallbackRoute()
+    {
+        $currentRoute = app('router')->currentRouteName();
+
+        return (in_array($currentRoute, Route::$publicCallback, true) === true);
+    }
+
+    /**
      * (1A) If request.ctx.v2's passport is not set then set the same.
      * (1B) If request.ctx.v2's passport is set (i.e. from edge service)
      * then asserts that those attributes are same as what Authenticate
@@ -90,12 +103,16 @@ final class PostAuthenticate
 
         $errors = [];
 
+        // For $passport->consumer existence.
+        $consumerExists = ($this->ba->getMerchantId() !== null);
+
         // For $passport's scalar attributes.
-        ensureSameOrOverride($passport->identified, $authenticated, 'identified', $errors);
+        ensureSameOrOverride($passport->identified, $consumerExists, 'identified', $errors);
         ensureSameOrOverride($passport->authenticated, $authenticated, 'authenticated', $errors);
         ensureSameOrOverride($passport->mode, $this->ba->getMode(), 'mode', $errors);
 
         $this->ensureRequestContextPassportForDirectAuth($passport, $errors);
+        $this->ensureRequestContextPassportForPublicAuth($passport, $errors);
         $this->ensureRequestContextPassportForPrivateAuth($passport, $errors);
         $this->ensureRequestContextPassportForOAuth($passport, $errors);
 
@@ -105,7 +122,8 @@ final class PostAuthenticate
             $this->reqCtx->passportAttrsMismatch = true;
 
             // It reports mismatches only for scenarios which are expected to be handled at edge presently.
-            $shouldReport = $this->isPrivateAuth() or $this->isOAuth();
+            $shouldReport = $this->isPrivateAuth() or $this->isOAuth() or $this->isPublicAuth();
+
             if ($shouldReport === true)
             {
                 $this->trace->count(Metric::PASSPORT_ATTRS_MISMATCH_TOTAL, $this->ba->getRequestMetricDimensions());
@@ -113,13 +131,28 @@ final class PostAuthenticate
                 $dimensions = [
                     'key_id' => $this->ba->getPublicKey()
                 ];
+
                 $this->trace->warning(TraceCode::PASSPORT_ATTRS_MISMATCH, [
-                    'errors' => $errors,
-                    'passport' => $dimensions,
-                    'trace_id' => $this->reqCtx->edgeTraceId,
-                ] + $this->ba->getRequestMetricDimensions());
+                        'errors' => $errors,
+                        'passport' => $dimensions,
+                        'trace_id' => $this->reqCtx->edgeTraceId,
+                    ] + $this->ba->getRequestMetricDimensions());
             }
         }
+    }
+
+    private function ensureRequestContextPassportForPublicAuth(Passport\Passport $passport, array &$errors)
+    {
+        if (!$this->isPublicAuth()) {
+            return;
+        }
+
+        $isConsumerExpected = true;
+        ensureSameExistenceOrOverride($passport->consumer, $isConsumerExpected, 'consumer', $errors, new Passport\ConsumerClaims);
+
+        // For $passport->consumer's scalar attributes.
+        ensureSameOrOverride($passport->consumer->id, $this->ba->getMerchantId(), 'consumer.id', $errors);
+        ensureSameOrOverride($passport->consumer->type, self::CONSUMER_TYPE_MERCHANT, 'consumer.type', $errors);
     }
 
     private function ensureRequestContextPassportForPrivateAuth(Passport\Passport $passport, array &$errors)
@@ -182,6 +215,13 @@ final class PostAuthenticate
         return $this->reqCtx->authType == BasicAuth\Type::DIRECT_AUTH;
     }
 
+    private function isPublicAuth()
+    {
+        return (($this->reqCtx->authType == BasicAuth\Type::PUBLIC_AUTH) &&
+                ($this->isPublicCallbackRoute() === false) &&
+                ($this->ba->isKeylessPublicAuth() === false));
+    }
+
     /**
      * (2) In request.ctx.v2 set additional attributes (which does not come
      * from edge service) which api's code uses etc.
@@ -213,18 +253,21 @@ final class PostAuthenticate
             return;
         }
 
+        $identified = ($this->ba->getMerchantId() !== null);
+
         // API & Enforcer allowed. No mismatch.
-        if ($authzEnforcementResult === Constant::AUTHZ_RESULT_ALLOWED and $authenticated === TRUE) {
+        if ($authzEnforcementResult === Constant::AUTHZ_RESULT_ALLOWED and $identified === TRUE)
+        {
             return;
         }
-
-        // API & Enforcer denied. No mismatch.
-        if ($authzEnforcementResult === Constant::AUTHZ_RESULT_DENIED and $authenticated === FALSE) {
+        else if ($authzEnforcementResult === Constant::AUTHZ_RESULT_DENIED and $identified === FALSE)
+        {
             return;
         }
 
         $dimensions                            = $this->ba->getRequestMetricDimensions();
         $dimensions['is_api_authenticated']    = $authenticated;
+        $dimensions['is_api_identifier']       = $identified;
         $dimensions['edge_enforcement_result'] = $authzEnforcementResult;
         $this->trace->count(Metric::AUTHZ_ENFORCEMENT_MISMATCH_TOTAL, $dimensions);
         // For logs, add merchant_id & key_id as well.

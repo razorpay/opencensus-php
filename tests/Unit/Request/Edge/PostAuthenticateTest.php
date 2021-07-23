@@ -14,20 +14,25 @@ class PostAuthenticateTest extends TestCase
     use HasRequestCases;
 
     /**
-     * @param  Passport\Passport|null $passport
-     * @param  boolean|null           $expectedAuthenticated
-     * @param  string|null            $expectedMode
-     * @param  string|null            $expectedMerchantId
-     * @param  string|null            $expectedAuth
-     * @param  boolean|null           $expectedProxy
-     * @param  boolean|null           $expectPassportAttrsMismatch
+     * @param Passport\Passport|null $passport
+     * @param boolean|null $expectedAuthenticated
+     * @param boolean|null $expectedIdentified
+     * @param string|null $expectedMode
+     * @param string|null $expectedMerchantId
+     * @param string|null $expectedAuth
+     * @param boolean|null $expectedProxy
+     * @param boolean|null $expectPassportAttrsMismatch
      * @return void
      *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \PHPUnit\Framework\MockObject\RuntimeException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      * @dataProvider getRequestCases
      */
     public function testHandleWhenNoPassport(
         $passport,
         $expectedAuthenticated,
+        $expectedIdentified,
         $expectedMode,
         $expectedMerchantId,
         $expectedAuth,
@@ -58,7 +63,7 @@ class PostAuthenticateTest extends TestCase
         // Asserts passport.
         $passport = $reqCtx->passport;
         $this->assertNotNull($passport);
-        $this->assertSame($passport->identified, $expectedAuthenticated);
+        $this->assertSame($passport->identified, $expectedIdentified);
         $this->assertSame($passport->authenticated, $expectedAuthenticated);
         $this->assertSame($passport->mode, $expectedMode);
         $this->assertSame($passport->consumer !== null, $expectedMerchantId !== null);
@@ -93,17 +98,17 @@ class PostAuthenticateTest extends TestCase
         // Returns list of [passport, expectedAuthenticated, expectedMode, expectedMerchant, expectedAuth, expectedProxy, expectPassportAttrsMismatch].
         return [
             // Case 1: Private route.
-            [null, true, 'live', '10000000000000', 'private', false, false],
+            [null, true, true, 'live', '10000000000000', 'private', false, false],
             // Case 2: Direct route.
-            [null, false, null, null, 'direct', false, false],
+            [null, false, false, null, null, 'direct', false, false],
             // Case 3: Direct route and invalid passport comes form edge.
-            [$passport3, false, null, null, 'direct', false, true],
+            [$passport3, false, false, null, null, 'direct', false, true],
             // Case 4: Privat route and passport comes from edge.
-            [$passport4, true, 'live', '10000000000000', 'private', false, false],
+            [$passport4, true, true, 'live', '10000000000000', 'private', false, false],
             // Case 5: Privat route and invalid passport comes from edge.
-            [$passport5, true, 'live', '10000000000000', 'private', false, true],
+            [$passport5, true, true, 'live', '10000000000000', 'private', false, true],
             // Case 6: Privat route and invalid passport comes from edge.
-            [$passport6, true, 'live', '10000000000000', 'private', false, true],
+            [$passport6, true, true, 'live', '10000000000000', 'private', false, true],
         ];
     }
 
