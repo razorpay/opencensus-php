@@ -442,8 +442,8 @@ class Route
         'fetch_terminal_test_run_by_params'        => ['post',     'terminal_test_run_fetch',                                        'TerminalController@fetchTerminalTestRun'                           ],
         'create_terminal_test_instrument'          => ['post',     'terminals/proxy/terminal_test_instrument',                       'TerminalController@proxyV2TerminalService'                         ],
         'delete_terminal_test_instrument'          => ['delete',   'terminals/proxy/terminal_test_instrument/{id}',                  'TerminalController@proxyV2TerminalService'                         ],
-
-        'get_templates'                            => ['get',      'terminals/proxy/templates/internal_instrument_request',       'TerminalController@proxyV2TerminalService'                         ],
+        'get_templates'                            => ['get',      'terminals/proxy/templates/internal_instrument_request',          'TerminalController@proxyV2TerminalService'                         ],
+        'get_method_templates'                     => ['get',      'terminals/proxy/method_templates/internal_instrument_request','   TerminalController@proxyV2TerminalService'                         ],
 
         'terminal_test_save_otp'                   => ['post',     'terminal_test_otp',                              'TerminalController@postTerminalTestOtp'                            ],
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
@@ -4897,6 +4897,7 @@ class Route
         // instrument requests
         'get_internal_instrument_request_by_id',
         'get_templates',
+        'get_method_templates',
         'patch_internal_instrument_request_by_id',
         'bulk_copy_internal_instrument_request',
         'delete_internal_instrument_request_by_id',
@@ -5891,6 +5892,7 @@ class Route
         // Instrument requests
         'get_internal_instrument_request_by_id'       => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'get_templates'                               => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
+        'get_method_templates'                        => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'patch_internal_instrument_request_by_id'     => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
         'bulk_copy_internal_instrument_request'       => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
         'delete_internal_instrument_request_by_id'    => Permission::DELETE_INTERNAL_INSTRUMENT_REQUEST,
@@ -7997,6 +7999,7 @@ class Route
             'get_scheduled_es_pricing_merchant',
             'get_stakeholder_documents_v2',
             'get_templates',
+            'get_method_templates',
             'governor_create_bulk_rule_group_v1',
             'governor_create_config_v1',
             'governor_create_domain_model',
