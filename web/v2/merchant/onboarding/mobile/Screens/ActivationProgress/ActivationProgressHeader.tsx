@@ -14,7 +14,7 @@ import { useApp } from 'v2/context/App';
 
 const StyledActivationProgressHeader = styled(View)`
   box-shadow: 0px 4px 5px rgba(11, 112, 231, 0.05);
-  background: url("${HeaderBackground}") right bottom -10px no-repeat;
+  background: url('${HeaderBackground}') right bottom -10px no-repeat;
   background-color: ${({ theme }) => theme.colors.background['200']};
 `;
 const ActivationProgressHeader: React.FC<RouteComponentProps & { progress: number }> = ({

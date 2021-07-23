@@ -209,6 +209,12 @@ const RuleDetail = lazy(() =>
   ),
 );
 
+const ProviderDetails = lazy(() =>
+    import(
+      /* webpackChunkName: "componentsProviderDetails" */ 'merchant/views/Navigator/components/ProviderDetails'
+    ),
+);
+
 const ActivationSteps = lazy(() =>
   import(
     /* webpackChunkName: "OnboardingForm" */ 'v2/merchant/onboarding/mobile/Screens/ActivationProgress'
@@ -258,8 +264,11 @@ const entityDetailsMap = {
     component: RefundDetails,
     additionalCondition: (user) => user.isAllowedView('refunds'),
   },
-  '/navigator/rules/:id': {
+  '/optimizer/rules/:id': {
     component: RuleDetail,
+  },
+  '/optimizer/provider/:id': {
+    component: ProviderDetails,
   },
   '/offers/:id(offer_.+)': {
     component: OfferEntity,

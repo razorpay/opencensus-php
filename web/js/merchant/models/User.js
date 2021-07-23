@@ -541,6 +541,10 @@ export default class User {
     return ((this.experiments || {})[name] || {}).result === 'on';
   }
 
+  get isAddProviderEnabled() {
+    return this.getExpStatus('optimizer_add_provider');
+  }
+
   get isOndemandSettlementEnabled() {
     return this.isFeatureEnabled('ES_ON_DEMAND');
   }

@@ -122,7 +122,7 @@ export default function MerchantNavLinks(props) {
           label="Optimizer"
           type="product"
           icon="i i-routing text-warm temp-icon-style"
-          to="/navigator/rules"
+          to="/optimizer/rules"
         />
       </ShowWhen>
 

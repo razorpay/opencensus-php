@@ -130,7 +130,7 @@ export default class CreateRule extends React.Component {
 
   escFunction = (event) => {
     if (event.keyCode === 27) {
-      this.setState({ redirect: '/navigator/rules' });
+      this.setState({ redirect: '/optimizer/rules' });
     }
   };
 
@@ -514,7 +514,7 @@ export default class CreateRule extends React.Component {
                   </div>
                   <div className="col-xs-5" />
                   <div className="col-xs-3">
-                    <Link to={'/navigator/rules'}>
+                    <Link to={'/optimizer/rules'}>
                       <span
                         style={{
                           fontSize: '20px',
@@ -930,7 +930,7 @@ export default class CreateRule extends React.Component {
                                                   closeTimeout: 5000,
                                                 });
                                                 this.props.closeModal();
-                                                this.setState({ redirect: '/navigator/rules' });
+                                                this.setState({ redirect: '/optimizer/rules' });
                                               });
                                             }}
                                             onClose={() => {
@@ -990,7 +990,7 @@ export default class CreateRule extends React.Component {
                                         message: 'Rule saved as draft successully',
                                         closeTimeout: 5000,
                                       });
-                                      this.setState({ redirect: '/navigator/rules' });
+                                      this.setState({ redirect: '/optimizer/rules' });
                                     })
                                     .catch((e) => {
                                       this.props.showNotification({
@@ -1083,7 +1083,7 @@ export default class CreateRule extends React.Component {
                                                       closeTimeout: 5000,
                                                     });
                                                     this.setState({
-                                                      redirect: '/navigator/rules',
+                                                      redirect: '/optimizer/rules',
                                                     });
                                                   })
                                                   .then(() =>
@@ -1156,7 +1156,7 @@ export default class CreateRule extends React.Component {
                                                 closeTimeout: 5000,
                                               });
                                               this.setState({
-                                                redirect: '/navigator/rules',
+                                                redirect: '/optimizer/rules',
                                               });
                                             })
                                             .catch((e) => {
@@ -1202,7 +1202,7 @@ export default class CreateRule extends React.Component {
                                           message: 'Draft rule has been updated',
                                           closeTimeout: 5000,
                                         });
-                                        this.setState({ redirect: '/navigator/rules' });
+                                        this.setState({ redirect: '/optimizer/rules' });
                                       })
                                       .catch((e) => {
                                         this.props.showNotification({

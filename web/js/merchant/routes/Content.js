@@ -534,7 +534,7 @@ export default class Content extends Component {
             component={CheckoutRewards}
             additionalCondition={(user) => user.isAllowedView('checkoutrewards')}
           />
-          <ShowWhenRoute path="/navigator" component={Navigator} />
+          <ShowWhenRoute path="/optimizer" component={Navigator} />
           <ShowWhenRoute path="/paypal_onboard_redirect" component={PaypalOnboardRedirect} />
           <ShowWhenRoute strict path="/capital/:product/apply" component={LoanDetails} />
           <Redirect from="/capital/loans" to="/capital/loans/apply" />

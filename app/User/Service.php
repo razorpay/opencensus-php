@@ -1586,6 +1586,7 @@ class Service extends Base\Service
             'pb_new_success_screen',
             'mandatory_gstin_input',
             'recurring_more_account_type',
+            'optimizer_add_provider'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

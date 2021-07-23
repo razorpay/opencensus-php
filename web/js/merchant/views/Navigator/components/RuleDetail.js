@@ -108,7 +108,7 @@ export default class RuleDetail extends Component {
         abortLabel: 'Cancel',
         action: () => {
           this.props.deleteRule(this.props.rule.id).then(() => {
-            this.setState({ redirect: '/navigator/rules' });
+            this.setState({ redirect: '/optimizer/rules' });
           });
         },
       })
@@ -165,7 +165,7 @@ export default class RuleDetail extends Component {
                     </button>
                   ) : null}
 
-                  <Link to={'/navigator/update-rule/' + this.props.rule.id}>
+                  <Link to={'/optimizer/update-rule/' + this.props.rule.id}>
                     <button className="btn btn-primary edit-rule-btn">
                       {' '}
                       <i style={{ marginRight: '6px' }} className="i i-pencil-edit" />

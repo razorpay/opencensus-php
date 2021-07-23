@@ -8,6 +8,7 @@ const FETCH_RULES = 'FETCH_RULES';
 const REORDER_RULES = 'REORDER_RULES';
 const RULE_RESET = 'RULE_RESET';
 const FETCH_RULE_PROVIDERS = 'FETCH_RULE_PROVIDERS';
+const FETCH_TERMINAL_PROVIDERS = 'FETCH_TERMINAL_PROVIDERS';
 const CHANGE_RULE_MODE = 'CHANGE_RULE_MODE';
 const DELETE_RULE = 'DELETE_RULE';
 const CREATE_RULE = 'CREATE_RULE';
@@ -74,8 +75,16 @@ export const reorderRuleGroups = (rules, rule) => {
 };
 
 export const getRuleProviders = () => {
-  let params = {
+  const params = {
     url: `merchant/mid/providers`,
+    method: 'get',
+  };
+  return merchantFetch(params).then((d) => d.data);
+};
+
+export const getTerminalProviders = () => {
+  const params = {
+    url: 'terminals/proxy/optimizer/list/mid/provider',
     method: 'get',
   };
   return merchantFetch(params).then((d) => d.data);
@@ -160,6 +169,13 @@ export const fetchRuleProviders = () => {
   };
 };
 
+export const fetchTerminalProviders = () => {
+  return {
+    type: FETCH_TERMINAL_PROVIDERS,
+    payload: getTerminalProviders(),
+  };
+};
+
 export const deleteRule = (id) => {
   return {
     type: DELETE_RULE,
@@ -189,6 +205,7 @@ let initialState = {
       id: 'razorpay',
     },
   ],
+  terminalProviders: [],
   rule: rule,
   error: null,
 };
@@ -325,6 +342,18 @@ export default function (state = initialState, action) {
       });
 
     case `${FETCH_RULE_PROVIDERS}::PENDING`:
+      return merge(state, {
+        loading: true,
+      });
+
+    case `${FETCH_TERMINAL_PROVIDERS}::SUCCESS`:
+      return merge(state, {
+        loading: false,
+        terminalProviders: action.payload,
+        error: null,
+      });
+
+    case `${FETCH_TERMINAL_PROVIDERS}::PENDING`:
       return merge(state, {
         loading: true,
       });

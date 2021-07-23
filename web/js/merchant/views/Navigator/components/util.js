@@ -765,6 +765,18 @@ export const rule = {
   rules: [],
 };
 
+export const gatewayLogos = {
+  razorpay: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/razorpay.png',
+  payu: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/payu.png',
+  paytm: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/paytm.png',
+  billdesk: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/bill-desk.png',
+  atom: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/atom.png',
+  fss: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/fss.png',
+  cybersource: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/cybersource.png',
+};
+
+export const popularGateways = ['payu'];
+
 export const mapRulesObjectToArray = (e) => {
   const rules = [];
   Object.keys(e).forEach((key) => {
@@ -832,3 +844,11 @@ export const uniqueArray = function (arr) {
 };
 
 export const SMART_ROUTER = 'smart_router';
+
+export const gatewayDetailsMapping = {
+  payu: {
+    dashboardImg:
+      'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/payu_dashboard.png',
+    dashboardUrl: 'onboarding.payu.in',
+  },
+};

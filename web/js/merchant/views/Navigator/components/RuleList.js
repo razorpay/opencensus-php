@@ -17,8 +17,9 @@ import ListFilter from 'merchant/components/ListFilter';
 import Field from 'common/new-ui/Input';
 import { titleCase } from 'common/utils/rzp-utils';
 import Provider from './Provider';
+import ProviderNewView from './ProviderNewView';
 import { idItem } from 'common/ui/item/id';
-import { fetchRules, fetchRuleProviders } from 'merchant/reducers/navigator/details';
+import { fetchRules, fetchRuleProviders, fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Spinner from 'common/ui/Spinner';
 
@@ -29,11 +30,14 @@ import Spinner from 'common/ui/Spinner';
       isLoading: state.navigator.loading,
       default_rule: state.navigator.default_rule,
       providers: state.navigator.providers,
+      terminalProviders: state.navigator.terminalProviders,
+      user: state.session.user,
     };
   },
   {
     fetchRules: fetchRules,
     fetchRuleProviders: fetchRuleProviders,
+    fetchTerminalProviders: fetchTerminalProviders,
   },
 )
 export default class RuleList extends React.Component {
@@ -42,13 +46,17 @@ export default class RuleList extends React.Component {
   };
   state = {
     redirect: null,
+    isCollapsed: true,
   };
   componentDidMount() {
     if (this.props.location.search.includes('?redirect')) {
       const id = this.props.location.search.replace('?redirect=', '');
       setTimeout(() => {
-        this.setState({ redirect: '/navigator/rules' + id });
+        this.setState({ redirect: '/optimizer/rules' + id });
       }, 1000);
+    }
+    if(this.props.user.isAddProviderEnabled) {
+      this.props.fetchTerminalProviders();
     }
   }
 
@@ -66,21 +74,54 @@ export default class RuleList extends React.Component {
     });
   };
 
+  collapse = () => {
+    const { isCollapsed } = this.state;
+    this.setState({ isCollapsed: !isCollapsed });
+  }
+
   render() {
+    const { isCollapsed } = this.state;
+    const { providers, terminalProviders } = this.props;
     if (this.state.redirect) {
       return <Redirect to={this.state.redirect} />;
     }
+    const isAddProviderEnabled = this.props.user.isAddProviderEnabled;
     return (
       <Fragment>
         <div>
           <div class="panel gateway-list" style={{ borderLeft: 0, borderRight: 0 }}>
             <div class="panel-header">
               <h2 class="payment-gateway-title" style={{ marginTop: '20px' }}>
-                Payment Provider
-                <button onClick={this.addGateway} className="pull-right no-border create-rule-act">
-                  {' '}
-                  Add New Gateway
-                </button>
+                <span className="provider-title">
+                  Payment Provider
+                  {isAddProviderEnabled && ` (${terminalProviders.length})`}
+                </span>
+                {isAddProviderEnabled ? (
+                  terminalProviders.length > 4 && (
+                    <span className="collapse-action-span" onClick={this.collapse}>
+                      {isCollapsed ? 'View All' : 'Hide All'}
+                      <img
+                        src={'https://cdn.razorpay.com/static/assets/rewards/rewards_list_up_vector.svg'}
+                        className={`arrow-img ${isCollapsed ? 'arrow-img-rotate' : ''}`}
+                      />
+                    </span>
+                  )
+                ) : null
+                }
+                {isAddProviderEnabled ? (
+                  <Link to={'/optimizer/add-provider'} class="pull-right">
+                    <button className="pull-right no-border create-rule-act">
+                      {' '}
+                      <i className="i i-plus" />
+                      Add provider
+                    </button>
+                  </Link>
+                ) : (
+                  <button onClick={this.addGateway} className="pull-right no-border create-rule-act">
+                    {' '}
+                    Add New Gateway
+                  </button>
+                )}
               </h2>
             </div>
             <div
@@ -90,24 +131,36 @@ export default class RuleList extends React.Component {
                 padding: '10px 30px 15px !important',
               }}
             >
-              <div
-                class="row"
-                style={{ marginBottom: '10px', display: 'flex', overflowX: 'scroll' }}
-              >
-                {this.props.providers
-                  .filter((p) => p.id !== SMART_ROUTER)
-                  .map((g, i) => (
-                    <div style={{ width: '220px', marginRight: '8px' }} key={i}>
-                      <Provider provider={g} />
-                    </div>
-                  ))}
-              </div>
+              {isAddProviderEnabled ? (
+                <div
+                  className={`row active-providers-list ${isCollapsed ? 'collapsed-providers-view' : 'expand-providers-view'}`}
+                  style={{ marginBottom: '10px' }}
+                >
+                  {terminalProviders
+                    .map((g, i) => (
+                      <ProviderNewView provider={g} key={i} />
+                    ))
+                  }
+                </div>
+              ) : (
+                <div
+                  class="row"
+                  style={{ marginBottom: '10px', display: 'flex', overflowX: 'scroll' }}
+                >
+                  {providers
+                      .filter((p) => p.id !== SMART_ROUTER)
+                      .map((g, i) => (
+                        <Provider provider={g} key={i} />
+                      ))
+                  }
+                </div>
+              )}
             </div>
 
             <div class="panel-header">
               <h2 class="payment-gateway-title" style={{ marginTop: '20px', marginBottom: '10px' }}>
-                Default Rule
-                <Link to={`/navigator/rules/${this.props.default_rule.id}`} class="pull-right">
+                <span className="provider-title">Default Rule</span>
+                <Link to={`/optimizer/rules/${this.props.default_rule.id}`} class="pull-right">
                   <button className="pull-right no-border create-rule-act">
                     {' '}
                     View Default Rule
@@ -123,7 +176,7 @@ export default class RuleList extends React.Component {
                 <div className="col-xs-12">
                   <p style={{ marginTop: '-13px', paddingLeft: '20px !important' }}>
                     All transactions which do not fall under the custom rules will be routed via{' '}
-                    <Link to={`/navigator/rules/${this.props.default_rule.id}`}>
+                    <Link to={`/optimizer/rules/${this.props.default_rule.id}`}>
                       <span className="rule-status-label default-rule-status-label status-label label label-info">
                         {uniqueArray(
                           this.props.default_rule.rules
@@ -144,8 +197,8 @@ export default class RuleList extends React.Component {
                 class="payment-gateway-title all-custom-rule-title"
                 style={{ marginTop: '20px !important' }}
               >
-                All Custom Rules
-                <Link to={'/navigator/create-rule'} class="pull-right">
+                <span className="provider-title">All Custom Rules</span>
+                <Link to={'/optimizer/create-rule'} class="pull-right">
                   <button className="btn btn-primary">
                     {' '}
                     <i className="i i-plus" />
@@ -176,7 +229,7 @@ export default class RuleList extends React.Component {
                               {/* <a class="nav-link">Learn More</a> */}
                             </p>
                             <div class="text-center">
-                              <Link to={'/navigator/create-rule'}>
+                              <Link to={'/optimizer/create-rule'}>
                                 <button style={{ marginTop: '15px' }} className="btn btn-primary">
                                   <i className="i i-plus" /> Add New Rule
                                 </button>
@@ -192,7 +245,7 @@ export default class RuleList extends React.Component {
                           {
                             title: 'Rule Name',
                             value: (item) => {
-                              const url = 'navigator/rules';
+                              const url = 'optimizer/rules';
                               return (
                                 <div class="rule-table-overflow">
                                   <Link to={`/${url}/${item.id}`}>
