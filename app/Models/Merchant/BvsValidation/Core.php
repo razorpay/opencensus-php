@@ -259,6 +259,36 @@ class Core extends Base\Core
             Merchant\Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
             Merchant\Constants::MERCHANT_MUTEX_RETRY_COUNT);
+
+        try
+        {
+            $statusUpdateFactory = new DocumentStatusUpdater\Factory();
+
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $statusUpdater = $statusUpdateFactory->getInstance($merchant, $validation);
+
+            if ($statusUpdater instanceof DocumentStatusUpdater\ShopEstbStatusUpdater)
+            {
+                $this->trace->info(TraceCode::MERCHANT_STATUS_UPDATER_TRY, [
+                    'merchant_id'   => $merchantId,
+                    'validation_id' => $validationId,
+                ]);
+
+                $statusUpdater->updateMerchantContext();
+            }
+        }
+        catch (\Exception $e)
+        {
+            $errorContext = [
+                'merchant_id'              => $merchantId,
+                'validation_id'            => $validationId,
+                'shop_estb_status_updater' => $statusUpdater instanceof DocumentStatusUpdater\ShopEstbStatusUpdater,
+                'message'                  => $e->getMessage(),
+            ];
+
+            $this->trace->error(TraceCode::MERCHANT_STATUS_UPDATER_FAIL, $errorContext);
+        }
     }
 
     /**

@@ -4984,6 +4984,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_QUEUED_INITIATE_DISPATCH_TO_PAYOUT_SERVICE_COMPLETE = 'PAYOUT_QUEUED_INITIATE_DISPATCH_TO_PAYOUT_SERVICE_COMPLETE';
     const PAYOUT_QUEUED_DISPATCH_TO_PAYOUT_SERVICE_FAILED            = 'PAYOUT_QUEUED_DISPATCH_TO_PAYOUT_SERVICE_FAILED';
 
+    const MERCHANT_STATUS_UPDATER_FAIL                                  = 'MERCHANT_STATUS_UPDATER_FAIL';
+    const MERCHANT_STATUS_UPDATER_TRY                                   = 'MERCHANT_STATUS_UPDATER_TRY';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

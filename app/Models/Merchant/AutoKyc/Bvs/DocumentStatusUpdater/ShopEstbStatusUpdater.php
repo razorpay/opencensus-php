@@ -82,7 +82,7 @@ class ShopEstbStatusUpdater extends BaseStatusUpdater
             ]);
         }
 
-        $this->updateMerchantContext();
+//        $this->updateMerchantContext();
 
         $this->sendConsumedValidationResultEvent();
     }
