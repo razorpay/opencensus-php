@@ -9,12 +9,14 @@ import { analyticsTrack } from 'common/utils/analytics';
 import ManageCreditAlerts from './ManageCreditAlerts';
 import { CLICK_ON_MANAGE_ALERTS } from '../ga';
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
-import Alert from 'common/ui/Forms/Alert';
+import { connect } from 'react-redux';
 
 function CreditsList(props) {
-  const { creditsData, balanceData, loading, showDocumentation = true } = props;
+  const { creditsData, balanceData, loading, showDocumentation = true, user } = props;
   const creditItems = groupBy(creditsData.items, 'type');
+
   const [status, setStatus] = useState({});
+
   useEffect(() => {
     analyticsTrack({
       objectName: 'credits',
@@ -64,6 +66,10 @@ function CreditsList(props) {
             </div>
           )}
 
+          {(user.business_type === '11' || user.business_type === '2') && (
+            <div class="note">These credits can not be applied for credit cards transactions.</div>
+          )}
+
           <CreditDetailsNew
             totalCredits={balanceData.credits}
             title="Amount Credits"
@@ -99,4 +105,4 @@ function CreditsList(props) {
   );
 }
 
-export default CreditsList;
+export default connect((state) => ({ user: state.session.user }), null)(CreditsList);
