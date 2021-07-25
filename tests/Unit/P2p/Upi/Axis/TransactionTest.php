@@ -2,21 +2,21 @@
 
 namespace RZP\Tests\Unit\P2p\Upi\Axis;
 
-use Carbon\Carbon;
 use RZP\Constants\Mode;
-use RZP\Models\P2p\Status;
 use RZP\Models\P2p\Transaction\Entity;
 use RZP\Models\P2p\Transaction\Service;
 use RZP\Models\P2p\Base\Libraries\Context;
-use RZP\Models\Payment\Flow;
 use RZP\Tests\P2p\Service\Base\Constants;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
+use RZP\Models\P2p\Base\Metrics\TransactionMetric;
+use RZP\Tests\P2p\Service\Base\Traits\MetricsTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
 
 class TransactionTest extends TestCase
 {
+    use MetricsTrait;
     use TransactionTrait;
     /**
      * @var Context
@@ -312,7 +312,7 @@ class TransactionTest extends TestCase
             Entity::ID => $transaction->getPublicId()
         ]);
     }
-    
+
     /**
      * same device with different vpa and different bank account
      */
@@ -392,6 +392,37 @@ class TransactionTest extends TestCase
             'payee'     => [
                 'id'    => $payeeVpa->getPublicId(),
             ],
+        ]);
+    }
+
+    public function testTransactionMetricForSelfPay()
+    {
+        $this->mockMetric();
+
+        $service = $this->getService();
+
+        $payerVpa = $this->fixtures->vpa(self::DEVICE_1);
+
+        $payeeVpa = $this->fixtures->createVpa([
+            'bank_account_id' => Constants::CUSTOMER_2_BANK_ACCOUNT_1_AXIS,
+        ]);
+
+        $service->initiatePay([
+            'amount'    => 500000,
+            'currency'  => 'INR',
+            'payer'     => [
+                'id'    => $payerVpa->getPublicId(),
+            ],
+            'payee'     => [
+                'id'    => $payeeVpa->getPublicId(),
+            ],
+        ]);
+
+        $this->assertCountMetric(TransactionMetric::PSP_TRANSACTION_TOTAL, [
+            TransactionMetric::DIMENSION_TYPE               => 'pay',
+            TransactionMetric::DIMENSION_FLOW               => 'debit',
+            TransactionMetric::DIMENSION_IS_SELF_TRANSFER   =>  true,
+            TransactionMetric::DIMENSION_PREVIOUS_STATUS    =>  null,
         ]);
     }
 

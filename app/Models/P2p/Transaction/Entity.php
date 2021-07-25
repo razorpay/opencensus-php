@@ -67,6 +67,7 @@ class Entity extends Base\Entity
     const CONCERNS             = 'concerns';
     const IS_CONCERN_ELIGIBLE  = 'is_concern_eligible';
     const IS_PENDING_COLLECT   = 'is_pending_collect';
+    const IS_SELF_TRANSFER     = 'is_self_transfer';
 
     /************** Entity Properties ************/
 
@@ -751,6 +752,20 @@ class Entity extends Base\Entity
     protected function getIsPendingCollectAttribute()
     {
         return ($this->getStatus() === Status::REQUESTED);
+    }
+
+    protected function getIsSelfTransferAttribute()
+    {
+        $payerDeviceId = $this->payer->getDeviceId();
+
+        $payeeDeviceId = $this->payee->getDeviceId();
+
+        return $payerDeviceId === $payeeDeviceId;
+    }
+
+    public function isSelfTransfer(): bool
+    {
+        return $this->getAttribute(self::IS_SELF_TRANSFER);
     }
 
     public function toArrayPublic(): array

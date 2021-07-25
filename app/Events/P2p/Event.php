@@ -24,18 +24,23 @@ abstract class Event extends Events\Event
      */
     public $entity;
 
-    abstract public function getWebhookPaylaod();
+    public $original;
 
+    abstract public function getWebhookPaylaod();
 
     abstract public function getNotificationPayload();
 
     abstract public function getReminderPayload();
+
+    public function postHandle() { return; }
 
     public function __construct(Context $context, Base\Entity $entity)
     {
         $this->context = $context;
 
         $this->entity  = $entity;
+
+        $this->setOriginal($this->entity->getOriginal());
     }
 
     /**
@@ -56,5 +61,10 @@ abstract class Event extends Events\Event
     public function getName()
     {
         return static::class;
+    }
+
+    protected function setOriginal(array $original = null)
+    {
+        return $this;
     }
 }

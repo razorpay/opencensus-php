@@ -6,8 +6,7 @@ use App;
 use RZP\Models\P2p\Transaction\Entity;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use RZP\Models\P2p\Base\Libraries\Context;
+use RZP\Models\P2p\Base\Metrics\TransactionMetric;
 
 class TransactionFailed extends Event implements ShouldQueue
 {
@@ -31,5 +30,22 @@ class TransactionFailed extends Event implements ShouldQueue
     public function getReminderPayload()
     {
         return;
+    }
+
+    public function postHandle()
+    {
+        /**
+         * @var $transaction Entity
+         */
+        $transaction = $this->getEntity();
+
+        (new TransactionMetric($transaction, $this->original))->pushCount();
+    }
+
+    protected function setOriginal(array $original = null)
+    {
+        $this->original = $original;
+
+        return $this;
     }
 }

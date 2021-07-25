@@ -24,8 +24,11 @@ class P2pWebhookListener extends P2pListener
         parent::handle($event);
 
         $eventPayload = $this->event->getWebhookPaylaod();
+
         if (empty($eventPayload) === true)
         {
+            $this->event->postHandle();
+
             return;
         }
 
@@ -42,5 +45,7 @@ class P2pWebhookListener extends P2pListener
 
         // Invokes fail safe stork's processor on event.
         (new Stork($this->getMode()))->processEventSafe($event);
+
+        $this->event->postHandle();
     }
 }

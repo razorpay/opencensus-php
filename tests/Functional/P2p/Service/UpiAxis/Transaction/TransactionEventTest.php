@@ -3,15 +3,9 @@
 namespace RZP\Tests\P2p\Service\UpiAxis\Transaction;
 
 use RZP\Gateway\P2p\Upi\Axis\Fields;
-use RZP\Models\P2p\Transaction\Mode;
-use RZP\Models\P2p\Transaction\Type;
-use RZP\Models\P2p\Transaction\Flow;
-use RZP\Models\P2p\Transaction\Entity;
-use RZP\Models\P2p\Transaction\Status;
 use RZP\Tests\P2p\Service\Base\Traits;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
-use RZP\Models\P2p\Transaction\UpiTransaction;
 
 class TransactionEventTest extends TestCase
 {

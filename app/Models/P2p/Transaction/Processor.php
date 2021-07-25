@@ -12,6 +12,7 @@ use RZP\Models\P2p\Base\Upi;
 use RZP\Models\P2p\Beneficiary;
 use RZP\Http\Controllers\P2p\Requests;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
+use RZP\Models\P2p\Base\Metrics\TransactionMetric;
 
 /**
  * @property Core $core
@@ -361,9 +362,9 @@ class Processor extends Base\Processor
         else if ($input[Entity::INTERNAL_STATUS] === Status::REQUESTED)
         {
             $transaction->setInternalStatus(Status::REQUESTED);
-
-            $actions->setEvent(new P2p\TransactionCreated($this->context(), $transaction));
         }
+
+        $actions->setEvent(new P2p\TransactionCreated($this->context(), $transaction));
 
         return $actions;
     }

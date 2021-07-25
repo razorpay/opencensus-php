@@ -11,9 +11,12 @@ use RZP\Models\P2p\Transaction\Status;
 use RZP\Tests\P2p\Service\Base\Traits;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 use RZP\Models\P2p\Transaction\UpiTransaction;
+use RZP\Models\P2p\Base\Metrics\TransactionMetric;
+use RZP\Tests\P2p\Service\Base\Traits\MetricsTrait;
 
 class TransactionTest extends TestCase
 {
+    use MetricsTrait;
     use Traits\TransactionTrait;
 
     public function testInitiatePay()
@@ -1104,5 +1107,38 @@ class TransactionTest extends TestCase
         ], $transaction->upi->toArrayPublic());
 
         $this->assertSame('CUSTOMER_DEBITED_FOR_MERCHANT_VIA_COLLECT', $transaction->upi->getGatewayData()['type']);
+    }
+
+    public function testTransactionMetricForPay()
+    {
+        $this->mockMetric();
+
+        $helper = $this->getTransactionHelper();
+
+        $coproto = $helper->initiatePay();
+
+        $this->assertCountMetric(TransactionMetric::PSP_TRANSACTION_TOTAL, [
+            TransactionMetric::DIMENSION_TYPE               => 'pay',
+            TransactionMetric::DIMENSION_FLOW               => 'debit',
+            TransactionMetric::DIMENSION_PREVIOUS_STATUS    =>  null
+        ]);
+
+        $this->mockSdkContentFunction(
+            function(& $content)
+            {
+                $content['gatewayResponseCode']     = 'ZM';
+                $content['gatewayResponseMessage']  = 'Wrong MPIN';
+            });
+
+        $content = $this->handleSdkRequest($coproto);
+
+        $helper->authorizeTransaction($coproto['callback'], $content);
+
+        $this->assertCountMetric(TransactionMetric::PSP_TRANSACTION_TOTAL, [
+            TransactionMetric::DIMENSION_TYPE       => 'pay',
+            TransactionMetric::DIMENSION_FLOW       => 'debit',
+            TransactionMetric::DIMENSION_STATUS     => 'failed',
+            TransactionMetric::DIMENSION_ERROR_CODE => 'BAD_REQUEST_ERROR',
+        ], 1);
     }
 }

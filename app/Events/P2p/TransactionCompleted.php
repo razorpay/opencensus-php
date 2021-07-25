@@ -3,13 +3,16 @@
 namespace RZP\Events\P2p;
 
 use App;
+use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Device;
 use RZP\Models\P2p\Transaction\Core;
 use RZP\Models\P2p\Transaction\Flow;
 use RZP\Models\P2p\Transaction\Status;
 use RZP\Models\P2p\Transaction\Entity;
 use Illuminate\Queue\SerializesModels;
+use RZP\Models\P2p\Base\Libraries\Context;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use RZP\Models\P2p\Base\Metrics\TransactionMetric;
 
 class TransactionCompleted extends Event implements ShouldQueue
 {
@@ -63,5 +66,22 @@ class TransactionCompleted extends Event implements ShouldQueue
                 ]
             ];
         }
+    }
+
+    public function postHandle()
+    {
+        /**
+         * @var $transaction Entity
+         */
+        $transaction = $this->getEntity();
+
+        (new TransactionMetric($transaction, $this->original))->pushCount();
+    }
+
+    protected function setOriginal(array $original = null)
+    {
+        $this->original = $original;
+
+        return $this;
     }
 }
