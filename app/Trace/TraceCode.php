@@ -4237,6 +4237,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // HDFC eCMS integration
     const HDFC_ECMS_VA_CALLBACK                                 = 'HDFC_ECMS_VA_CALLBACK';
 
+    // For HDFC VAS we modify gateway amount
+    const HDFC_VAS_SURCHARGE_GATEWAY_AMOUNT_MODIFIED            = 'HDFC_VAS_SURCHARGE_GATEWAY_AMOUNT_MODIFIED';
+    const HDFC_VAS_RAZORX_RESULT    =   'HDFC_VAS_RAZORX_RESULT';
+
     // VA Migrate - Yesbank -> RBL
     const VA_MIGRATE_REQUEST            = 'VA_MIGRATE_REQUEST';
     const VA_MIGRATE_JOB_TRIGGERED      = 'VA_MIGRATE_JOB_TRIGGERED';

@@ -898,6 +898,30 @@ class Entity extends Base\PublicEntity
             $gatewayAmount = $this->getDiscountedRefundAmountIfApplicable();
         }
 
+        // HDFC VAS Surcharge - Direct settlement - Customer fee bearer
+        if ($this->payment->isHdfcVasDSCustomerFeeBearerSurcharge() === true)
+        {
+            /*
+             * We refund upto a maximum of the original gateway amount.
+             * If the refund amount being requested + amount already refunded > gateway amount, 0 amt will be refunded.
+             */
+            $maxGatewayAmount = $this->payment->getGatewayAmount() - $this->payment->getAmountRefunded();
+
+            if($maxGatewayAmount < 0)
+            {
+                $maxGatewayAmount = 0;
+            }
+
+            $gatewayAmount = $this->getAmount();
+
+            // This is as per the product requirements.
+            // https://razorpay.slack.com/archives/C01D04KGYP8/p1625133817268800?thread_ts=1624255989.087000&cid=C01D04KGYP8
+            if($gatewayAmount > $maxGatewayAmount)
+            {
+                $gatewayAmount = $maxGatewayAmount;
+            }
+        }
+
         $this->setAttribute(self::GATEWAY_AMOUNT, $gatewayAmount);
     }
 
@@ -959,6 +983,11 @@ class Entity extends Base\PublicEntity
         if ($this->payment->isAppCred() === true)
         {
             // since cred is only for INR
+            $gatewayCurrency = Currency\Currency::INR;
+        }
+
+        if($this->payment->isHdfcVasDSCustomerFeeBearerSurcharge())
+        {
             $gatewayCurrency = Currency\Currency::INR;
         }
 

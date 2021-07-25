@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Constants\Procurer;
 use RZP\Mail\Payment\Failed;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Card\Network;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\FeeBearer;
@@ -3925,6 +3926,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::AMOUNT_REFUNDED, $amountRefunded);
 
         $this->setAttribute(self::BASE_AMOUNT_REFUNDED, $baseAmountRefunded);
+
+        // Enabling this check specific to hdfc surcharge as
+        // we dont want to get partial refunds created with gateway amount as zero
+        if (($this->isHdfcVasDSCustomerFeeBearerSurcharge() === true) and
+            ($amountRefunded >= $this->getGatewayAmount()))
+        {
+            $this->setRefundStatus(RefundStatus::FULL);
+
+            $this->setStatus(Payment\Status::REFUNDED);
+
+            $this->setRefundAt(null);
+        }
     }
 
     public function transferAmount(int $amount)
@@ -4615,6 +4628,49 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return true;
+    }
+
+    public function isHdfcVasDSCustomerFeeBearerSurcharge()
+    {
+        if ($this->isCard() === false)
+        {
+            return false;
+        }
+
+        if ($this->merchant->org->isFeatureEnabled(Feature\Constants::ORG_HDFC_VAS_CARDS_SURCHARGE) === false)
+        {
+            return false;
+        }
+
+        $network = $this->card->getNetwork();
+
+        $validNetworks = [
+         Network::getFullName(Network::VISA),
+         Network::getFullName(Network::MC),
+         Network::getFullName(Network::RUPAY),
+         Network::getFullName(Network::DICL),
+        ];
+
+        $app = \App::getFacadeRoot();
+
+        $experimentResult = $app['razorx']->getTreatment($this->merchant->getId(),
+            'hdfc_vas_surcharge', $app['rzp.mode']);
+
+        $app['trace']->debug(TraceCode::HDFC_VAS_RAZORX_RESULT, [
+            'merchantId' => $this->merchant->getId(),
+            'paymentId' => $this->getId(),
+            'razorXResult' => $experimentResult,
+        ]);
+
+        if ((in_array($network, $validNetworks, true) === true) and
+             ($this->isFeeBearerCustomer() === true) and
+             ($this->isDirectSettlement() === true) and
+             ($experimentResult === 'on'))
+       {
+          return true;
+       }
+
+        return false;
     }
 
     public function isUpiAndAmountMismatched()

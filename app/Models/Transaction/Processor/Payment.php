@@ -349,6 +349,7 @@ class Payment extends Base
 
         switch (true)
         {
+            case ($this->source->isHdfcVasDSCustomerFeeBearerSurcharge()):
             case ($this->isVasMerchantWithDirectSettlement()):
             case ($this->txn->isPostpaid() === true):
             case ($this->txn->getCreditType() === Transaction\CreditType::FEE):

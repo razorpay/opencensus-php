@@ -2605,6 +2605,11 @@ trait Refund
             $extraData['payment_gateway_amount'] = $payment->getDiscountedAmountIfApplicable();
         }
 
+        if ($payment->isHdfcVasDSCustomerFeeBearerSurcharge() === true)
+        {
+            $extraData['payment_gateway_amount'] = $payment->paymentMeta->getGatewayAmount();
+        }
+
         // Speed decisioned is being sent as speed_requested.
         // Once switchover happens on scrooge, we will send right value in speed requested
         //

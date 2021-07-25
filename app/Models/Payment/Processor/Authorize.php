@@ -2335,6 +2335,7 @@ trait Authorize
 
         $this->setPaymentRoutedThroughCpsIfApplicable($payment, $gatewayInput);
 
+        $this->preProcessHdfcVasSurcharge($payment);
 
         $this->trace->info(
             TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
@@ -3284,6 +3285,46 @@ trait Authorize
 
             $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
         }
+    }
+
+    protected function preProcessHdfcVasSurcharge(Payment\Entity $payment)
+    {
+        if( $payment->isHdfcVasDSCustomerFeeBearerSurcharge() === false )
+        {
+            return;
+        }
+
+        $surchargeDetails = $payment->getFee();
+
+        $tax = $payment->getTax();
+
+        $gatewayAmount = $payment->getBaseAmount() - $surchargeDetails;
+
+        $paymentMetaInput = [
+            'payment_id'                => $payment->getId(),
+            'gateway_amount'            => $gatewayAmount,
+        ];
+
+        $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+        $paymentMetaEntity->payment()->associate($payment);
+
+        // payment meta relation ship will be called during the terminal selection and the
+        // in memory object is set to null, hence reloading the inmemory object by calling load
+        $payment->load('paymentMeta');
+
+        $this->trace->debug(
+            TraceCode::HDFC_VAS_SURCHARGE_GATEWAY_AMOUNT_MODIFIED,
+            [
+                'network'           => $payment->card->getNetwork(),
+                'feeBearerCustomer' => $payment->isFeeBearerCustomer(),
+                'iDirectSettlement' => $payment->isDirectSettlement(),
+                'surchargeDetails'  => $surchargeDetails,
+                'tax'               => $tax,
+                'baseAmount'        => $payment->getBaseAmount(),
+                'newGatewayAmount'  => $gatewayAmount,
+            ]
+        );
     }
 
     protected function preProcessWalletCurrencyWrapper(array $input, Payment\Entity $payment)

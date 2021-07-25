@@ -715,6 +715,11 @@ class Constants
     const PAYMENT_SHOW_DCC_MARKUP   =   'payment_show_dcc_markup';
 
     /**
+     * Feature for HDFC VAS org. To enable customerfeeBearer surcharge cards gateway.
+     */
+    const ORG_HDFC_VAS_CARDS_SURCHARGE  =   'hdfc_vas_cards_surcharge';
+
+    /**
      * Show old error desc to merchant based on feature value
      */
     const SHOW_OLD_ERROR_DESC = 'show_old_error_desc';
@@ -1062,6 +1067,7 @@ class Constants
         self::PAYMENT_SHOW_DCC_MARKUP         => true,
         self::EXPOSE_SETTLED_BY               => true,
         self::PAYPAL_CC                       => true,
+        self::ORG_HDFC_VAS_CARDS_SURCHARGE    => true,
         self::SHOW_OLD_ERROR_DESC             => true,
         self::PAYOUT_SYNC_FTS_TRANSFER        => true,
         self::SKIP_SUBM_ONBOARDING_COMM       => true,
