@@ -36,6 +36,8 @@ class Service extends Base\Service
 
         if ($type === Type::BUY_PRICING)
         {
+            (new Validator())->validateInput('createBulkPricing', $input);
+
             $inputRules = $input[Entity::RULES];
 
             (new Validator)->validateBuyPricingRules($inputRules);

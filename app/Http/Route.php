@@ -443,7 +443,7 @@ class Route
         'create_terminal_test_instrument'          => ['post',     'terminals/proxy/terminal_test_instrument',                       'TerminalController@proxyV2TerminalService'                         ],
         'delete_terminal_test_instrument'          => ['delete',   'terminals/proxy/terminal_test_instrument/{id}',                  'TerminalController@proxyV2TerminalService'                         ],
         'get_templates'                            => ['get',      'terminals/proxy/templates/internal_instrument_request',          'TerminalController@proxyV2TerminalService'                         ],
-        'get_method_templates'                     => ['get',      'terminals/proxy/method_templates/internal_instrument_request','   TerminalController@proxyV2TerminalService'                         ],
+        'get_method_templates'                     => ['get',      'terminals/proxy/method_templates/internal_instrument_request',   'TerminalController@proxyV2TerminalService'                         ],
 
         'terminal_test_save_otp'                   => ['post',     'terminal_test_otp',                              'TerminalController@postTerminalTestOtp'                            ],
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],

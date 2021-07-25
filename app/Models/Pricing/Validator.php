@@ -1080,7 +1080,7 @@ class Validator extends Base\Validator
            if ((int)$groupedRules[$i][Entity::AMOUNT_RANGE_MIN] !== (int)$expectedPrice)
            {
                throw new Exception\BadRequestValidationFailureException(
-                   ErrorCode::BAD_REQUEST_RANGE_VALIDATION_FAILED);
+                   ErrorCode::BAD_REQUEST_BUY_PRICING_RANGE_VALIDATION_FAILED);
            }
 
             $expectedPrice = (int)($groupedRules[$i][Entity::AMOUNT_RANGE_MAX] ?? 0);
@@ -1089,7 +1089,7 @@ class Validator extends Base\Validator
         if (isset($expectedPrice) and $expectedPrice !== 0)
         {
             throw new Exception\BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_RANGE_VALIDATION_FAILED);
+                ErrorCode::BAD_REQUEST_BUY_PRICING_RANGE_VALIDATION_FAILED);
         }
     }
 
