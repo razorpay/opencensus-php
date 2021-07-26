@@ -1091,7 +1091,7 @@ export default class User {
   }
 
   get isAadharEkycMandatory() {
-    return this.getExpStatus('mandatory_aadhar_ekyc');
+    return this.getExpStatus('mandatory_aadhar_ekyc') && !this.isPartner();
   }
 
   get isGstinMandatory() {
