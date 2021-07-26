@@ -531,4 +531,10 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findOrFailTrashedById($tokenId)
+    {
+        return $this->newQuery()
+                    ->withTrashed()
+                    ->findOrFailPublic($tokenId);
+    }
 }

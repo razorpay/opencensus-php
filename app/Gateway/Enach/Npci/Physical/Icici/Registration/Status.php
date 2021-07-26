@@ -15,7 +15,7 @@ class Status
         self::FAILURE
     ];
 
-    public static function isRegistrationSuccess($status)
+    public static function isRegistrationSuccess($status): bool
     {
         $status = strtolower($status);
 

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.012.001.01">
+  <MndtAccptncRpt>
+    <GrpHdr>
+      <MsgId>CITI00000020938036</MsgId>
+      <CreDtTm>2021-05-07T15:46:36+05:30</CreDtTm>
+      <InstgAgt>
+        <FinInstnId>
+          <ClrSysMmbId>
+            <MmbId>NPCI</MmbId>
+          </ClrSysMmbId>
+        </FinInstnId>
+      </InstgAgt>
+      <InstdAgt>
+        <FinInstnId>
+          <ClrSysMmbId>
+            <MmbId>CITI0RTGSMI</MmbId>
+          </ClrSysMmbId>
+        </FinInstnId>
+      </InstdAgt>
+    </GrpHdr>
+    <UndrlygAccptncDtls>
+      <OrgnlMsgInf>
+        <MsgId>$tokenId</MsgId>
+        <MsgNmId>pain.011.001.01</MsgNmId>
+        <CreDtTm>2021-04-28T11:26:22</CreDtTm>
+      </OrgnlMsgInf>
+      <AccptncRslt>
+        <Accptd>false</Accptd>
+        <RjctRsn>
+          <Prtry>MANDATE is not in final state</Prtry>
+        </RjctRsn>
+      </AccptncRslt>
+      <OrgnlMndt>
+        <OrgnlMndtId>ICIC7010807200000568</OrgnlMndtId>
+      </OrgnlMndt>
+    </UndrlygAccptncDtls>
+  </MndtAccptncRpt>
+</Document>

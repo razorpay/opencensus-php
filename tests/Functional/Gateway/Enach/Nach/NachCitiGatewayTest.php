@@ -3,9 +3,13 @@
 namespace RZP\Tests\Functional\Gateway\Enach\Nach;
 
 use Excel;
+use ZipArchive;
+use DOMDocument;
 use Carbon\Carbon;
+use Illuminate\Http\Testing\File as TestingFile;
 
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Entity as Payment;
 
 class NachCitiGatewayTest extends NachGatewayTest
 {
@@ -283,5 +287,91 @@ class NachCitiGatewayTest extends NachGatewayTest
         $this->ba->cronAuth();
 
         $this->startTest();
+    }
+
+    public function testMandateCancellationFailureAckFile()
+    {
+        $this->createAcceptedToken();
+
+        $paymentEntity = $this->getDbLastPayment();
+
+        $this->assertTrue($paymentEntity->isCaptured());
+
+        $this->assertEquals('confirmed', $paymentEntity->localToken->getRecurringStatus());
+
+        $response = $this->deleteCustomerToken(
+            'token_' . $paymentEntity['token_id'], 'cust_' . $paymentEntity['customer_id']);
+
+        $this->assertTrue($response['deleted']);
+
+        $batchFile = $this->getBatchFileToUploadForMandateCancelAck($paymentEntity, 'failure');
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestWithGivenUrlAndFile($url, $batchFile,'cancel');
+
+        $token = $this->getTrashedDbEntityById('token', $paymentEntity->getTokenId());
+
+        $this->assertEquals('confirmed', $token['recurring_status']);
+    }
+
+    public function testMandateCancellationSuccessAckFile()
+    {
+        $this->createAcceptedToken();
+
+        $paymentEntity = $this->getDbLastPayment();
+
+        $this->assertTrue($paymentEntity->isCaptured());
+
+        $this->assertEquals('confirmed', $paymentEntity->localToken->getRecurringStatus());
+
+        $response = $this->deleteCustomerToken(
+            'token_' . $paymentEntity['token_id'], 'cust_' . $paymentEntity['customer_id']);
+
+        $this->assertTrue($response['deleted']);
+
+        $batchFile = $this->getBatchFileToUploadForMandateCancelAck($paymentEntity, 'success');
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestWithGivenUrlAndFile($url, $batchFile,'cancel');
+
+        $token = $this->getTrashedDbEntityById('token', $paymentEntity->getTokenId());
+
+        $this->assertEquals('cancelled', $token['recurring_status']);
+    }
+
+    protected function getBatchFileToUploadForMandateCancelAck(Payment $payment, $type): TestingFile
+    {
+        $tokenId = $payment->getTokenId();
+
+        $dom = new DOMDocument();
+
+        if ($type === 'success')
+        {
+            $dom->load(__DIR__ . '/MandateCancelSuccessAck.xml');
+        }
+        else
+        {
+            $dom->load(__DIR__ . '/MandateCancelFailedAck.xml');
+        }
+
+        $responseXml = strtr($dom->saveXML(), ['$tokenId' => $tokenId]);
+
+        $zip = new ZipArchive();
+
+        $zip->open(__DIR__ . '/MMS-CANCEL-CITI-CITI137268-06052021-000001-INP-ACK.zip', ZipArchive::CREATE);
+
+        $zip->addFromString( 'MMS-CANCEL-CITI-CITI137268-06052021-000001-INP-ACK.xml', $responseXml);
+
+        $zip->close();
+
+        $handle = fopen(__DIR__ . '/MMS-CANCEL-CITI-CITI137268-06052021-000001-INP-ACK.zip', 'r');
+
+        return (new TestingFile('MMS-CANCEL-CITI-CITI137268-06052021-000001-INP-ACK.zip', $handle));
     }
 }

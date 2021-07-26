@@ -85,6 +85,11 @@ class RecurringStatus
         return (in_array($recurringStatus, self::$finalStatuses, true) === true);
     }
 
+    public static function isTokenStatusConfirmed($recurringStatus): bool
+    {
+        return ($recurringStatus === self::CONFIRMED);
+    }
+
     public static function isTimestampedStatus($recurringStatus): bool
     {
         return (in_array($recurringStatus, self::$timestampedStatuses, true) === true);

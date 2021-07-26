@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.012.001.01">
+  <MndtAccptncRpt>
+    <GrpHdr>
+      <MsgId>ICIC00000090682417</MsgId>
+      <CreDtTm>2021-04-16T15:56:52+05:30</CreDtTm>
+      <InstgAgt>
+        <FinInstnId>
+          <ClrSysMmbId>
+            <MmbId>NPCI</MmbId>
+          </ClrSysMmbId>
+        </FinInstnId>
+      </InstgAgt>
+      <InstdAgt>
+        <FinInstnId>
+          <ClrSysMmbId>
+            <MmbId>ICIC0TREA00</MmbId>
+          </ClrSysMmbId>
+        </FinInstnId>
+      </InstdAgt>
+    </GrpHdr>
+    <UndrlygAccptncDtls>
+      <OrgnlMsgInf>
+        <MsgId>$tokenId</MsgId>
+        <MsgNmId>pain.011.001.01</MsgNmId>
+        <CreDtTm>2021-04-06T14:26:22</CreDtTm>
+      </OrgnlMsgInf>
+      <AccptncRslt>
+        <Accptd>true</Accptd>
+      </AccptncRslt>
+      <OrgnlMndt>
+        <OrgnlMndtId>UTIB6000000005844847</OrgnlMndtId>
+      </OrgnlMndt>
+    </UndrlygAccptncDtls>
+  </MndtAccptncRpt>
+</Document>

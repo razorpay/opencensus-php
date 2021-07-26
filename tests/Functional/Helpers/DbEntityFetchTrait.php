@@ -67,6 +67,18 @@ trait DbEntityFetchTrait
         return $entityClass->findOrFailPublic($id);
     }
 
+    protected function getTrashedDbEntityById($entity, $id, $mode = 'test')
+    {
+        $entityClass = $this->getEntityObjectForMode($entity, $mode);
+
+        if (in_array($entity, $this->verificationSkipEntities) === false)
+        {
+            $id = $entityClass::verifyIdAndSilentlyStripSign($id);
+        }
+
+        return $entityClass->withTrashed()->findOrFailPublic($id);
+    }
+
     protected function getDbLastPayment(): Models\Payment\Entity
     {
         return $this->getDbLastEntity('payment');
