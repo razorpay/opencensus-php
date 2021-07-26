@@ -6,11 +6,11 @@ use Mail;
 use Excel;
 use Queue;
 use Mockery;
-
+use ZipArchive;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Encryption;
-use RZP\Jobs\BeamJob;
-use RZP\Services\Beam;
+use RZP\Excel\Import as ExcelImport;
 use RZP\Models\Payment;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Emi as EmiMail;
@@ -166,6 +166,62 @@ class GatewayEmiFileTest extends TestCase
 
         Mail::assertQueued(EmiMail\Password::class);
         Mail::assertQueued(EmiMail\File::class);
+    }
+
+    public function testGenerateEmiFileForIndusIndForCardMasking()
+    {
+        Mail::fake();
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('4147720000000009', 9);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'indusind_emi_file',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertQueued(EmiMail\Password::class);
+
+        Mail::assertQueued(EmiMail\File::class, function ($file) {
+            $fileData = $file->getFileData();
+
+            $monthYear = Carbon::now(Timezone::IST)->format('mY');
+
+            $zip = new ZipArchive();
+            $zip->open($fileData['signed_url']);
+            $zip->setPassword('razorpay' . $monthYear);
+            $pathinfo = pathinfo($fileData['signed_url']);
+            $zip->extractTo($pathinfo['dirname']);
+            $filename = $zip->getNameIndex(0);
+            $zip->close();
+
+            $emiFileContents = (new ExcelImport)->toArray($pathinfo['dirname'] . '/' . $filename);
+
+            // Check if the fields are set correctly
+            $this->assertEquals('414772XXXXXX0009', $emiFileContents[0][0]['card_pan']);
+            $this->assertEquals('INDUSIND', $emiFileContents[0][0]['issuer']);
+            $this->assertEquals('14%', $emiFileContents[0][0]['interest_rate']);
+
+            return true;
+        });
     }
 
     public function testGenerateEmiFileForKotak()

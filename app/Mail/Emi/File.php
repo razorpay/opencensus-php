@@ -22,6 +22,11 @@ class File extends Base
         $this->data = $data;
     }
 
+    public function getFileData()
+    {
+        return $this->fileData;
+    }
+
     protected function addSender()
     {
         $fromEmail = Constants::MAIL_ADDRESSES[Constants::EMI];

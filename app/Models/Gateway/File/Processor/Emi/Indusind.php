@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\FileStore;
 
 class Indusind extends Base
@@ -11,6 +14,23 @@ class Indusind extends Base
     const FILE_TYPE   = FileStore\Type::INDUSIND_EMI_FILE;
     const FILE_NAME   = 'IndusInd_Emi_File';
     const DATE_FORMAT = 'j/n/Y';
+
+    public function generateData(PublicCollection $emiPayments): array
+    {
+        $data['items'] = $emiPayments->all();
+
+        if($this->mode === "test")
+        {
+            $monthYear = Carbon::now(Timezone::IST)->format('mY');
+
+            $data['password'] = "razorpay" . $monthYear;
+        }
+        else {
+            $data['password'] = $this->generateEmiFilePassword();
+        }
+
+        return $data;
+    }
 
     protected function formatDataForFile($data)
     {
@@ -24,15 +44,7 @@ class Indusind extends Base
 
             $emiPercent = $emiPlan['rate'] / 100;
 
-            try
-            {
-                $cardNumber = $this->getCardNumber($emiPayment->card);
-            }
-            catch (\Exception $e)
-            {
-                // Ignore those payments for which card numbers are lost
-                continue;
-            }
+            $cardNumber = $emiPayment->card->getMaskedCardNumber();
 
             $formattedData[] = [
                 'EMI ID'                       => $emiPayment->getId(),
