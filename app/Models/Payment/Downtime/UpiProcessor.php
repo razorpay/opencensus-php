@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Downtime;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Trace\TraceCode;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -76,7 +78,17 @@ class UpiProcessor extends BaseProcessor
 
             $this->trace->info(TraceCode::CREATE_UNAVAILABLE_BANK_DOWNTIME, ["vpa"=>$vpa, "downtime"=>$downtimes]);
 
-            $this->createPaymentDowntime($downtimes, $vpa, 'vpa');
+            if($this->shouldUseMutex()) {
+                $input = $this->getPaymentDowntimeCreationArray($downtimes, $vpa, 'vpa');
+
+                $mutexKey = $input[Entity::METHOD] . $vpa . $input[Entity::SCHEDULED] . $input[Entity::STATUS];
+
+                $this->createDowntimeWithMutex($input, $mutexKey);
+            }
+            else
+            {
+                $this->createPaymentDowntime($downtimes, $vpa, 'vpa');
+            }
         }
 
         foreach ($unavailableIssuers as $unavailableIssuer)
@@ -84,7 +96,17 @@ class UpiProcessor extends BaseProcessor
             $downtimes = $gatewayDowntimes->where(GatewayDowntime::ISSUER, '=', $unavailableIssuer);
             $this->trace->info(TraceCode::CREATE_UNAVAILABLE_BANK_DOWNTIME_NXT, ["downtime"=>$downtimes]);
 
-            $this->createPaymentDowntime($downtimes, $unavailableIssuer, 'issuer');
+            if($this->shouldUseMutex()) {
+                $input = $this->getPaymentDowntimeCreationArray($downtimes, $unavailableIssuer, 'issuer');
+
+                $mutexKey = $input[Entity::METHOD] . $unavailableIssuer . $input[Entity::SCHEDULED] . $input[Entity::STATUS];
+
+                $this->createDowntimeWithMutex($input, $mutexKey);
+            }
+            else
+            {
+                $this->createPaymentDowntime($downtimes, $unavailableIssuer, 'issuer');
+            }
         }
 
         $unavailableList = array_merge($vpaList, $unavailableIssuers);
@@ -147,6 +169,37 @@ class UpiProcessor extends BaseProcessor
         }
 
         return $downtime;
+    }
+
+    protected function createPaymentDowntimeWithDowntimeCreationArray(array $input): Entity
+    {
+        $downtime = $this->getDuplicate($input);
+
+        if ($downtime === null)
+        {
+            $downtime = (new Core)->create($input);
+            $this->trace->info(TraceCode::CREATE_NEW_PAYMENT_DOWNTIME, ["downtime" => $downtime]);
+        }
+        else {
+            if (isset($input[Entity::SCHEDULED]) && isset($input[Entity::SEVERITY]) &&
+                ($input[Entity::SEVERITY] != $downtime->getSeverity())) {
+                $updateList = [
+                    Entity::SEVERITY => $input[Entity::SEVERITY],
+                    Entity::SCHEDULED => $input[Entity::SCHEDULED],
+                ];
+                $downtime = (new Core)->edit($downtime, $updateList);
+                $this->trace->info(TraceCode::EDIT_PAYMENT_DOWNTIME, ["downtime" => $downtime]);
+            }
+            else {
+                $this->trace->info(TraceCode::BAD_REQUEST_PAYMENT_DOWNTIME_DUPLICATE_EDIT, ["downtime" =>$downtime]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_DOWNTIME_DUPLICATE_EDIT);
+            }
+        }
+
+        return $downtime;
+
     }
 
     protected function getPaymentDowntimeCreationArray(Collection $gatewayDowntimes, $instrument = null, $instrumentType = null): array
@@ -261,7 +314,18 @@ class UpiProcessor extends BaseProcessor
         {
             if ($this->isGooglePayDown($gatewayDowntimes) === true)
             {
-                $this->createPaymentDowntime($gatewayDowntimes, ProviderPsp::GOOGLE_PAY, 'psp');
+
+                if($this->shouldUseMutex()) {
+                    $input = $this->getPaymentDowntimeCreationArray($gatewayDowntimes, ProviderPsp::GOOGLE_PAY, 'psp');
+
+                    $mutexKey = $input[Entity::METHOD] . ProviderPsp::GOOGLE_PAY . $input[Entity::SCHEDULED] . $input[Entity::STATUS];
+
+                    $this->createDowntimeWithMutex($input, $mutexKey);
+                }
+                else
+                {
+                    $this->createPaymentDowntime($gatewayDowntimes, ProviderPsp::GOOGLE_PAY, 'psp');
+                }
             }
         }
         else
@@ -271,6 +335,19 @@ class UpiProcessor extends BaseProcessor
                 $this->endDowntime($activeDowntime);
             }
         }
+    }
+
+    protected function createDowntimeWithMutex(array $input, string $mutexKey)
+    {
+        $this->mutex->acquireAndRelease(
+            $mutexKey,
+            function () use ($input)
+            {
+                $this->createPaymentDowntimeWithDowntimeCreationArray($input);
+            },
+            10,
+            ErrorCode::BAD_REQUEST_PAYMENT_DOWNTIME_MUTEX_TIMED_OUT
+        );
     }
 
     protected function isGooglePayDown($gatewayDowntimes)

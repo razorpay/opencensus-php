@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Downtime;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Admin\ConfigKey;
@@ -64,7 +65,23 @@ class CardProcessor extends BaseProcessor
             $downtimes = $gatewayDowntimes->where(GatewayDowntime::NETWORK, '=', $network);
             $this->trace->info(TraceCode::CREATE_UNAVAILABLE_BANK_DOWNTIME, ["network"=>$network, "downtime"=>$downtimes]);
 
-            $this->createPaymentDowntime($network, $downtimes->count() != 0 ? $downtimes : $gatewayDowntimes);
+            if($this->shouldUseMutex()) {
+                $input = $this->getPaymentDowntimeCreationArray($network, $downtimes->count() != 0 ? $downtimes : $gatewayDowntimes, false);
+
+                if ($input === null)
+                {
+                    return null;
+                }
+
+                $mutexKey = $input[Entity::METHOD] . $network . $input[Entity::SCHEDULED] . $input[Entity::STATUS];
+
+                $this->createPaymentDowntimeWithMutex($input, $mutexKey);
+            }
+            else
+            {
+                $this->createPaymentDowntime($network, $downtimes->count() != 0 ? $downtimes : $gatewayDowntimes);
+            }
+
         }
 
         foreach ($unavailableIssuer as $issuer)
@@ -72,7 +89,23 @@ class CardProcessor extends BaseProcessor
             $downtimes = $gatewayDowntimes->where(GatewayDowntime::ISSUER, '=', $issuer);
             $this->trace->info(TraceCode::CREATE_UNAVAILABLE_BANK_DOWNTIME, ["issuer"=>$issuer, "downtime"=>$downtimes]);
 
-            $this->createPaymentDowntime($issuer, $downtimes, true);
+            if($this->shouldUseMutex()) {
+                $input = $this->getPaymentDowntimeCreationArray($issuer, $downtimes, true);
+
+                if ($input === null)
+                {
+                    return null;
+                }
+
+                $mutexKey = $input[Entity::METHOD] . $issuer . $input[Entity::SCHEDULED] . $input[Entity::STATUS];
+
+                $this->createPaymentDowntimeWithMutex($input, $mutexKey);
+            }
+            else
+            {
+                $this->createPaymentDowntime($issuer, $downtimes, true);
+            }
+
         }
 
         // Since the The value of issuer and network can not be same, combined them in a single list
@@ -155,6 +188,47 @@ class CardProcessor extends BaseProcessor
         else
         {
             // During update the status gets updated and hence multiple notifications are triggered.
+            if (isset($input[Entity::SCHEDULED]) && isset($input[Entity::SEVERITY]) &&
+                ($input[Entity::SEVERITY] != $downtime->getSeverity()))
+            {
+                $updateList = [
+                    Entity::SEVERITY => $input[Entity::SEVERITY],
+                    Entity::SCHEDULED => $input[Entity::SCHEDULED],
+                ];
+
+                $downtime = (new Core)->edit($downtime, $updateList);
+                $this->trace->info(TraceCode::EDIT_PAYMENT_DOWNTIME, ["downtime" =>$downtime]);
+
+            }
+            return $downtime;
+        }
+    }
+
+    protected function createPaymentDowntimeWithMutex($input, $mutexKey)
+    {
+        $this->mutex->acquireAndRelease(
+            $mutexKey,
+            function () use ($input)
+            {
+                $this->createPaymentDowntimeWithDowntimeCreationArray($input);
+            },
+            10,
+            ErrorCode::BAD_REQUEST_PAYMENT_DOWNTIME_MUTEX_TIMED_OUT
+        );
+    }
+
+    protected function createPaymentDowntimeWithDowntimeCreationArray(array $input)
+    {
+
+        $downtime = $this->getDuplicate($input);
+
+        if ($downtime === null)
+        {
+            $downtime = (new Core)->create($input);
+            $this->trace->info(TraceCode::CREATE_NEW_PAYMENT_DOWNTIME, ["downtime" =>$downtime]);
+        }
+        else
+        {
             if (isset($input[Entity::SCHEDULED]) && isset($input[Entity::SEVERITY]) &&
                 ($input[Entity::SEVERITY] != $downtime->getSeverity()))
             {

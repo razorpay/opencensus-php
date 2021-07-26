@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Downtime;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
@@ -29,12 +30,36 @@ class WalletProcessor extends BaseProcessor
 
         foreach ($gatewayDowntimes as $gatewayDowntime)
         {
-            $this->createPaymentDowntime($gatewayDowntime);
+
+            if($this->shouldUseMutex()) {
+                $input = $this->getPaymentDowntimeCreationArray($gatewayDowntime);
+
+                $this->createPaymentDowntimeWithMutex($input);
+            }
+            else
+            {
+                $this->createPaymentDowntime($gatewayDowntime);
+            }
 
             $unavailableWallets[] = Gateway::getWalletForGateway($gatewayDowntime->getGateway());
         }
 
         $this->endOngoingDowntimes($unavailableWallets);
+    }
+
+    protected function createPaymentDowntimeWithMutex(array $input)
+    {
+        $mutexKey = $input[Entity::METHOD] . $input[Entity::ISSUER] . $input[Entity::SCHEDULED] . $input[Entity::STATUS];
+
+        $this->mutex->acquireAndRelease(
+            $mutexKey,
+            function () use ($input)
+            {
+                $this->createPaymentDowntimeWithDowntimeCreationArray($input);
+            },
+            10,
+            ErrorCode::BAD_REQUEST_PAYMENT_DOWNTIME_MUTEX_TIMED_OUT
+        );
     }
 
     protected function createPaymentDowntime(GatewayDowntime $gatewayDowntime): Entity
@@ -50,6 +75,27 @@ class WalletProcessor extends BaseProcessor
         else
         {
             // During update the status gets updated and hence multiple notifications are triggered.
+            if (isset($input[Entity::STATUS]))
+            {
+                unset($input[Entity::STATUS]);
+            }
+
+            $downtime = (new Core)->edit($downtime, $input);
+        }
+
+        return $downtime;
+    }
+
+    protected function createPaymentDowntimeWithDowntimeCreationArray(array $input): Entity
+    {
+        $downtime = $this->getDuplicate($input);
+
+        if ($downtime === null)
+        {
+            $downtime = (new Core)->create($input);
+        }
+        else
+        {
             if (isset($input[Entity::STATUS]))
             {
                 unset($input[Entity::STATUS]);

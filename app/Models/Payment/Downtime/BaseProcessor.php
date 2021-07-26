@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Downtime;
 
 use RZP\Exception;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -18,6 +19,16 @@ use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
 
 class BaseProcessor extends Base\Core
 {
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
+
     protected function endOngoingDowntimes(array $unavailableList = [], string $mid = null)
     {
         $ongoingDowntimes = $this->getRepo()->fetchOngoingDowntimesByMethodAndMerchant($this->method, $mid);
@@ -156,5 +167,10 @@ class BaseProcessor extends Base\Core
     protected function getRepo()
     {
         return $this->repo->getCustomDriver(EntityConstants::PAYMENT_DOWNTIME);
+    }
+
+    protected function shouldUseMutex():bool
+    {
+        return (bool) ConfigKey::get(ConfigKey::USE_MUTEX_FOR_DOWNTIMES, false);
     }
 }

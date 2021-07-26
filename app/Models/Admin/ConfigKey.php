@@ -72,6 +72,7 @@ class ConfigKey
     const ENABLE_DOWNTIME_SERVICE_CARD          = self::PREFIX . 'enable_downtime_service_card';
     const ENABLE_DOWNTIME_SERVICE_UPI           = self::PREFIX . 'enable_downtime_service_upi';
     const ENABLE_DOWNTIME_SERVICE_NETBANKING    = self::PREFIX . 'enable_downtime_service_netbanking';
+    const USE_MUTEX_FOR_DOWNTIMES               = self::PREFIX . 'use_mutex_for_downtimes';
 
     const CARD_PAYMENT_SERVICE_ENABLED          = self::PREFIX . 'card_payment_service_enabled';
     const CARD_PAYMENT_SERVICE_EMI_FETCH        = self::PREFIX . 'card_payment_service_emi_fetch';

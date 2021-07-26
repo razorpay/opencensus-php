@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Downtime;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Payment\Method;
@@ -67,10 +68,40 @@ class NetbankingProcessor extends BaseProcessor
 
             $this->trace->info(TraceCode::CREATE_UNAVAILABLE_BANK_DOWNTIME_NXT, ["bank"=>$bank, "downtime"=>$tDowntimes]);
 
-            $this->createPaymentDowntime($bank, $tDowntimes);
+            if($this->shouldUseMutex())
+            {
+                $input = $this->getPaymentDowntimeCreationArray($bank, $tDowntimes);
+
+                if ($input === null)
+                {
+                    return;
+                }
+
+                $this->createPaymentDowntimeWithMutex($input);
+            }
+            else
+            {
+                $this->createPaymentDowntime($bank, $tDowntimes);
+            }
+
         }
 
         $this->endOngoingDowntimes($unavailableBanks, $mid);
+    }
+
+    protected function createPaymentDowntimeWithMutex(array $input)
+    {
+        $mutexKey = $input[Entity::METHOD] . $input[Entity::ISSUER] . $input[Entity::SCHEDULED] . $input[Entity::STATUS];
+
+        $this->mutex->acquireAndRelease(
+            $mutexKey,
+            function () use ($input)
+            {
+                $this->createPaymentDowntimeWithDowntimeCreationArray($input);
+            },
+            10,
+            ErrorCode::BAD_REQUEST_PAYMENT_DOWNTIME_MUTEX_TIMED_OUT
+        );
     }
 
     protected function calculateUnavailableBanks(Collection $gatewayDowntimes)
@@ -110,6 +141,32 @@ class NetbankingProcessor extends BaseProcessor
         else
         {
             // During update the status gets updated and hence multiple notifications are triggered.
+            if (isset($input[Entity::SCHEDULED]) && isset($input[Entity::SEVERITY]) &&
+                ($input[Entity::SEVERITY] != $downtime->getSeverity()))
+            {
+                $updateList = [
+                    Entity::SEVERITY => $input[Entity::SEVERITY],
+                    Entity::SCHEDULED => $input[Entity::SCHEDULED],
+                ];
+                $downtime = (new Core)->edit($downtime, $updateList);
+                $this->trace->info(TraceCode::EDIT_PAYMENT_DOWNTIME, ["downtime" =>$downtime]);
+            }
+            return $downtime;
+        }
+
+    }
+
+    protected function createPaymentDowntimeWithDowntimeCreationArray(array $input)
+    {
+        $downtime = $this->getDuplicate($input);
+
+        if ($downtime === null)
+        {
+            $downtime = (new Core)->create($input);
+            $this->trace->info(TraceCode::CREATE_NEW_PAYMENT_DOWNTIME, ["downtime" =>$downtime]);
+        }
+        else
+        {
             if (isset($input[Entity::SCHEDULED]) && isset($input[Entity::SEVERITY]) &&
                 ($input[Entity::SEVERITY] != $downtime->getSeverity()))
             {
@@ -205,4 +262,5 @@ class NetbankingProcessor extends BaseProcessor
 
         return [$begin, $end];
     }
+
 }

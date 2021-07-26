@@ -37,6 +37,8 @@ class DowntimeServiceProcessor implements ProcessorInterface
 
     protected $mode;
 
+    protected $mutex;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -50,6 +52,8 @@ class DowntimeServiceProcessor implements ProcessorInterface
         $this->mode = $this->app['rzp.mode'];
 
         $this->core = new Downtime\Core;
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     public function validate(array $input)
@@ -119,12 +123,65 @@ class DowntimeServiceProcessor implements ProcessorInterface
 
         if ($status === self::STATUS_CREATE)
         {
-            return $this->createDowntime($data);
+            $useMutex = (bool) ConfigKey::get(ConfigKey::USE_MUTEX_FOR_DOWNTIMES, false);
+
+            $this->trace->info(
+                TraceCode::GATEWAY_DOWNTIME_SERVICE_USE_MUTEX,
+                [
+                    'useMutex' => $useMutex
+                ]
+            );
+
+            if($useMutex)
+            {
+                $mutexKey = $this->getMutexKeyForGatewayDowntime($data);
+
+                return $this->createDowntimeWithMutex($data, $mutexKey);
+            }
+            else
+            {
+                return $this->createDowntime($data);
+            }
         }
         elseif ($status === self::STATUS_RESOLVE)
         {
             return $this->resolveDowntime($data);
         }
+    }
+
+    protected function getMutexKeyForGatewayDowntime(array $data):string
+    {
+        $mutexKey = $data[Entity::METHOD];
+
+        $mutexKey .= isset($data[Entity::GATEWAY]) ? $data[Entity::GATEWAY] : $data[Entity::ALL];
+
+        $mutexKey .= isset($data[Entity::NETWORK]) ? $data[Entity::NETWORK] : "nullnetwork";
+
+        $mutexKey .= isset($data[Entity::ISSUER]) ? $data[Entity::ISSUER] : "nullissuer";
+
+        $mutexKey .= isset($data[Entity::MERCHANT_ID]) ? $data[Entity::MERCHANT_ID] : "platform";
+
+        $this->trace->info(
+            TraceCode::GATEWAY_DOWNTIME_SERVICE_MUTEX_KEY,
+            [
+                'mutexKey' => $mutexKey
+            ]
+        );
+
+        return $mutexKey;
+    }
+
+    protected function createDowntimeWithMutex(array $data, string $mutexKey)
+    {
+        return $this->mutex->acquireAndRelease(
+            $mutexKey,
+            function () use ($data)
+            {
+                return $this->createDowntime($data);
+            },
+            10,
+            ErrorCode::BAD_REQUEST_GATEWAY_DOWNTIME_MUTEX_TIMED_OUT
+        );
     }
 
     protected function createDowntime(array $data)

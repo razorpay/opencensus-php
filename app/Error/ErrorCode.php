@@ -1750,6 +1750,9 @@ class ErrorCode
     const GATEWAY_ERROR_OUTSTANDING_LIMIT_BREACHED                                  = 'GATEWAY_ERROR_OUTSTANDING_LIMIT_BREACHED';
 
     const BAD_REQUEST_GATEWAY_DOWNTIME_CONFLICT                                     = 'BAD_REQUEST_GATEWAY_DOWNTIME_CONFLICT';
+    const BAD_REQUEST_PAYMENT_DOWNTIME_MUTEX_TIMED_OUT                              = 'BAD_REQUEST_PAYMENT_DOWNTIME_MUTEX_TIMED_OUT';
+    const BAD_REQUEST_GATEWAY_DOWNTIME_MUTEX_TIMED_OUT                              = 'BAD_REQUEST_GATEWAY_DOWNTIME_MUTEX_TIMED_OUT';
+    const BAD_REQUEST_PAYMENT_DOWNTIME_DUPLICATE_EDIT                               = 'BAD_REQUEST_PAYMENT_DOWNTIME_DUPLICATE_EDIT';
 
     //TPV - Third party validation
     //- validations on source accounts through which money gets loaded to va.
