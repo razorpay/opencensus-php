@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { render } from 'react-dom';
 import Styled, { ThemeProvider } from 'styled-components';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
-import SignUp from '@razorpay/commander-shield/src/bootstrap/Wrapper/Wrapper';
+import SignUp from '@razorpay/commander-shield/src/bootstrap/SignUpWrapper';
 import Size from '@razorpay/blade-old/src/atoms/Size';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
