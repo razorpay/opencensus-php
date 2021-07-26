@@ -48,6 +48,10 @@ class SalesforceClientTest extends TestCase
             'first_utm_campaign' => 'xyx',
             'first_utm_medium'   => 'abc',
             'first_utm_source'   => 'def',
+            'final_utm_medium'   => 'random',
+            'final_utm_source'   => 'random_source',
+            'final_utm_campaign' => 'random_campaign',
+            'final_page'         => 'www.random.com',
         ];
 
         $payload = $this->salesforceClient->payloadGenerationForPreSignupDetails($input, $merchant);

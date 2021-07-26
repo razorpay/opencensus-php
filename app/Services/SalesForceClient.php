@@ -124,6 +124,8 @@ class SalesForceClient
 
         $data = $this->payloadGenerationForPreSignupDetails($input, $merchant);
 
+        $this->trace->info(TraceCode::SALESFORCE_PRE_SIGNUP_REQUEST, $data);
+
         $this->dispatchRequestJob($url,
                                   $data,
                                   TraceCode::SALESFORCE_PRE_SIGNUP_REQUEST,
@@ -185,7 +187,13 @@ class SalesForceClient
             'first_utm_campaign' => 'Traffic_Campaign',
             'first_utm_medium'   => 'Traffic_Medium',
             'first_utm_source'   => 'Traffic_Source',
+            'first_page'         => 'Traffic_Page',
             'first_utm_term'     => 'final_click_attribution_term',
+            'final_utm_medium'   => 'Last_Click_Medium',
+            'final_utm_source'   => 'Last_Click_Source',
+            'final_utm_term'     => 'Last_Click_Term',
+            'final_utm_campaign' => 'Last_Click_Campaign',
+            'final_page'         => 'Last_Click_Page',
         ];
 
         foreach ($keyMap as $key => $value)
