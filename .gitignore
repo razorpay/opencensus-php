@@ -40,7 +40,7 @@ tmp/
 # E2E
 /web/screenshots
 
-# typescript dist 
+# typescript dist
 /web/dist
 # IDE config
 /jsconfig.json
@@ -51,3 +51,4 @@ _ide_helper.php
 
 .vscode
 .history
+.devspace
