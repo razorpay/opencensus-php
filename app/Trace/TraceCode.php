@@ -798,6 +798,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CAPITAL_COLLECTIONS_PROXY_REQUEST                     = 'CAPITAL_COLLECTIONS_PROXY_REQUEST';
     const CAPITAL_COLLECTIONS_PROXY_RESPONSE                    = 'CAPITAL_COLLECTIONS_PROXY_RESPONSE';
     const CAPITAL_COLLECTIONS_PROXY                             = 'CAPITAL_COLLECTIONS_PROXY';
+    const EXTERNAL_SERVICE_PROXY                                = 'EXTERNAL_SERVICE_PROXY';
+    const EXTERNAL_SERVICE_PROXY_REQUEST                        = 'EXTERNAL_SERVICE_PROXY_REQUEST';
+    const EXTERNAL_SERVICE_PROXY_RESPONSE                       = 'EXTERNAL_SERVICE_PROXY_RESPONSE';
 
     const MERCHANTS_RISK_PROXY_REQUEST                          = 'MERCHANTS_RISK_PROXY_REQUEST';
     const MERCHANTS_RISK_PROXY_RESPONSE                         = 'MERCHANTS_RISK_PROXY_RESPONSE';

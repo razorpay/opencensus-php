@@ -434,6 +434,34 @@ class Entity
     const LINE_OF_CREDIT_SOURCE_ACCOUNTS                          = 'line_of_credit.source_accounts';
     const LINE_OF_CREDIT_WITHDRAWALS                              = 'line_of_credit.withdrawals';
 
+    //loan_origination_system
+    const CAPITAL_LOS_D2C_BUREAU_REPORTS                          = 'loan_origination_system.d2c_bureau_reports';
+    const CAPITAL_LOS_APPLICATIONS                                = 'loan_origination_system.applications';
+    const CAPITAL_LOS_APPLICATION_CREDIT_POLICY_MAPPINGS          = 'loan_origination_system.application_credit_policy_mappings';
+    const CAPITAL_LOS_BUSINESSES                                  = 'loan_origination_system.businesses';
+    const CAPITAL_LOS_BUSINESS_APPLICANTS                         = 'loan_origination_system.business_applicants';
+    const CAPITAL_LOS_CARD_OFFERS                                 = 'loan_origination_system.card_offers';
+    const CAPITAL_LOS_CONTRACTS                                   = 'loan_origination_system.contracts';
+    const CAPITAL_LOS_CREDIT_OFFERS                               = 'loan_origination_system.credit_offers';
+    const CAPITAL_LOS_LOC_OFFERS                                  = 'loan_origination_system.loc_offers';
+    const CAPITAL_LOS_CREDIT_POLICIES                             = 'loan_origination_system.credit_policies';
+    const CAPITAL_LOS_DISBURSALS                                  = 'loan_origination_system.disbursals';
+    const CAPITAL_LOS_DOC_SIGN_FILES                              = 'loan_origination_system.doc_sign_files';
+    const CAPITAL_LOS_DOCUMENTS                                   = 'loan_origination_system.documents';
+    const CAPITAL_LOS_DOCUMENT_GROUPS                             = 'loan_origination_system.document_groups';
+    const CAPITAL_LOS_DOCUMENT_MASTERS                            = 'loan_origination_system.document_masters';
+    const CAPITAL_LOS_DOCUMENT_MASTERS_GROUPS                     = 'loan_origination_system.document_masters_groups';
+    const CAPITAL_LOS_DOCUMENT_SIGNS                              = 'loan_origination_system.document_signs';
+    const CAPITAL_LOS_LEAD_TYPES                                  = 'loan_origination_system.lead_types';
+    const CAPITAL_LOS_LENDERS                                     = 'loan_origination_system.lenders';
+    const CAPITAL_LOS_NACH_APPLICATIONS                           = 'loan_origination_system.nach_applications';
+    const CAPITAL_LOS_NACH_MANDATES                               = 'loan_origination_system.nach_mandates';
+    const CAPITAL_LOS_OFFER_VERIFICATION_TASKS                    = 'loan_origination_system.offer_verification_tasks';
+    const CAPITAL_LOS_PRODUCTS                                    = 'loan_origination_system.products';
+    const CAPITAL_LOS_PRODUCT_LENDERS                             = 'loan_origination_system.product_lenders';
+    const CAPITAL_LOS_SIGN_INVITEES                               = 'loan_origination_system.sign_invitees';
+    const CAPITAL_LOS_VENDORS                                     = 'loan_origination_system.vendors';
+
     // care service
     const CARE_CALLBACK                 = 'care.callback';
     const CARE_CALLBACK_OPERATOR        = 'care.callback_operator';
@@ -1119,6 +1147,33 @@ class Entity
         self::LINE_OF_CREDIT_REPAYMENT_BREAKDOWNS                   => \RZP\Services\CapitalLineOfCreditClient::class,
         self::LINE_OF_CREDIT_SOURCE_ACCOUNTS                        => \RZP\Services\CapitalLineOfCreditClient::class,
         self::LINE_OF_CREDIT_WITHDRAWALS                            => \RZP\Services\CapitalLineOfCreditClient::class,
+
+        self::CAPITAL_LOS_D2C_BUREAU_REPORTS                        => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_APPLICATIONS                              => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_APPLICATION_CREDIT_POLICY_MAPPINGS        => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_BUSINESSES                                => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_BUSINESS_APPLICANTS                       => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_CARD_OFFERS                               => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_CONTRACTS                                 => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_CREDIT_OFFERS                             => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_LOC_OFFERS                                => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_CREDIT_POLICIES                           => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_DISBURSALS                                => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_DOC_SIGN_FILES                            => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_DOCUMENTS                                 => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_DOCUMENT_GROUPS                           => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_DOCUMENT_MASTERS                          => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_DOCUMENT_MASTERS_GROUPS                   => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_DOCUMENT_SIGNS                            => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_LEAD_TYPES                                => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_LENDERS                                   => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_NACH_APPLICATIONS                         => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_NACH_MANDATES                             => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_OFFER_VERIFICATION_TASKS                  => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_PRODUCTS                                  => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_PRODUCT_LENDERS                           => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_SIGN_INVITEES                             => \RZP\Services\ExternalServiceClient::class,
+        self::CAPITAL_LOS_VENDORS                                   => \RZP\Services\ExternalServiceClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [
@@ -1332,8 +1387,13 @@ class Entity
         return App::getFacadeRoot()[$singletonName];
     }
 
-    public static function getExternalEntityName(string $entity)
+    public static function getExternalEntityName(string $entity, $object)
     {
+        if($object instanceof \RZP\Services\ExternalServiceClient)
+        {
+            return $entity;
+        }
+
         if(strpos($entity, '.') == true)
         {
             return explode('.', $entity)[1];

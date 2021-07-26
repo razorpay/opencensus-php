@@ -150,7 +150,7 @@ class Service extends Base\Service
             {
                 $class = Entity::getExternalServiceClass($entity);
 
-                $entityName = Entity::getExternalEntityName($entity);
+                $entityName = Entity::getExternalEntityName($entity, $class);
 
                 if (empty($id) === true)
                 {

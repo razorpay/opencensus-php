@@ -974,6 +974,115 @@ class AdminFetch
                         Fetch::TYPE => Fetch::TYPE_STRING,
                 ],
             ],
+            Entity::CAPITAL_LOS_APPLICATION_CREDIT_POLICY_MAPPINGS => [
+                'application_id'              => [
+                    Fetch::LABEL => 'application id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'credit_policy_id'              => [
+                    Fetch::LABEL => 'credit policy id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+
+            ],
+            Entity::CAPITAL_LOS_APPLICATIONS => [
+                'owner_id'              => [
+                    Fetch::LABEL => 'owner id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'status'               => [
+                    Fetch::LABEL  => 'status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'CREATED',
+                        'CREDIT_PULL_PENDING',
+                        'OFFLINE_DOCUMENT_COLLECTION_PENDING',
+                        'PREVERIFICATION_UPLOAD_PENDING',
+                        'PREVERIFICATION_IN_PROGRESS',
+                        'PREVERIFICATION_FAILED',
+                        'SCORE_GENERATION_PENDING',
+                        'CREDIT_OFFER_PENDING',
+                        'CREDIT_OFFER_GENERATED',
+                        'CONTRACT_PENDING',
+                        'NACH_CREATION_PENDING',
+                        'NACH_UPLOAD_PENDING',
+                        'SLOT_SELECTION_PENDING',
+                        'DOCUMENT_COLLECTION_INITIATED',
+                        'DOCUMENT_COLLECTION_FAILED',
+                        'DOCUMENTS_UNDER_REVIEW',
+                        'RZP_APPROVED',
+                        'CREDIT_DISBURSED',
+                        'CLOSED',
+                        'RZP_REJECTED',
+                        'LOC_OFFER_GENERATED',
+                        'LOC_OFFER_PENDING',
+                    ],
+                ],
+            ],
+            Entity::CAPITAL_LOS_BUSINESS_APPLICANTS => [],
+            Entity::CAPITAL_LOS_BUSINESSES => [
+                'reference_id'              => [
+                    Fetch::LABEL => 'reference id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::CAPITAL_LOS_CARD_OFFERS => [
+                'application_id'              => [
+                    Fetch::LABEL => 'application id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::CAPITAL_LOS_CONTRACTS => [
+                'application_id'              => [
+                    Fetch::LABEL => 'application id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::CAPITAL_LOS_CREDIT_OFFERS => [
+                'application_id'              => [
+                    Fetch::LABEL => 'application id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::CAPITAL_LOS_CREDIT_POLICIES => [],
+            Entity::CAPITAL_LOS_D2C_BUREAU_REPORTS => [
+                'merchant_id'                   => [
+                Fetch::LABEL => 'merchant id',
+                Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::CAPITAL_LOS_DISBURSALS => [
+                'application_id'              => [
+                    Fetch::LABEL => 'application id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::CAPITAL_LOS_DOC_SIGN_FILES => [],
+            Entity::CAPITAL_LOS_DOCUMENT_GROUPS => [],
+            Entity::CAPITAL_LOS_DOCUMENT_MASTERS => [],
+            Entity::CAPITAL_LOS_DOCUMENT_MASTERS_GROUPS => [],
+            Entity::CAPITAL_LOS_DOCUMENT_SIGNS => [],
+            Entity::CAPITAL_LOS_DOCUMENTS => [
+                'application_id'              => [
+                    Fetch::LABEL => 'application id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::CAPITAL_LOS_LEAD_TYPES => [],
+            Entity::CAPITAL_LOS_LENDERS => [],
+            Entity::CAPITAL_LOS_LOC_OFFERS => [],
+            Entity::CAPITAL_LOS_NACH_APPLICATIONS => [
+                'loan_application_id'              => [
+                    Fetch::LABEL => 'loan application id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::CAPITAL_LOS_NACH_MANDATES => [],
+            Entity::CAPITAL_LOS_OFFER_VERIFICATION_TASKS => [],
+            Entity::CAPITAL_LOS_PRODUCT_LENDERS => [],
+            Entity::CAPITAL_LOS_PRODUCTS => [],
+            Entity::CAPITAL_LOS_SIGN_INVITEES => [],
+            Entity::CAPITAL_LOS_VENDORS => [],
             Entity::PAYMENTS_CARDS_AUTHORIZATION  => [
                 'payment_id'   => Fetch::FIELD_PAYMENT_ID,
                 'merchant_id'  => Fetch::FIELD_MERCHANT_ID,
