@@ -8122,6 +8122,11 @@ trait Authorize
             return false;
         }
 
+        if ($payment->isRecurring() === true)
+        {
+            return false;
+        }
+
         //TODO Remove this condition once rollout complete, should work on DCC common feature flag only
         if ($payment->merchant->issDCCS2SEnabled() === false)
         {
