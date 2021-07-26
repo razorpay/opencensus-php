@@ -562,7 +562,8 @@ class Route
         'merchant_fetch_keys'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
         'merchant_replace_key'                     => ['put',      'keys/{id}',                                      'KeyController@putKeys'                                             ],
         'admin_key_migrate_to_credcase'            => ['post',     'admin/keys/migrate_to_credcase',                 'KeyController@migratetoCredcase'                                   ],
-        'admin_key_migrate_impersonation_grants'   => ['post',     'admin/keys/migrate_impersonation_grants',        'MerchantController@migrateImpersonationGrants'                                   ],
+        'admin_key_migrate_impersonation_grants'   => ['post',     'admin/keys/migrate_impersonation_grants',        'MerchantController@migrateImpersonationGrants'                     ],
+        'admin_consumer_migrate_apps_to_credcase'  => ['post',     'admin/consumers/migrate_apps_to_credcase',       'ConsumerController@migrateInternalApplicationsToCredcase'          ],
         'merchant_gst_fetch'                       => ['get',      'merchant/gst',                                   'MerchantController@getGSTDetails'                                  ],
         'merchant_gst_edit'                        => ['patch',    'merchant/gst',                                   'MerchantController@editGSTDetails'                                 ],
         'merchant_gstin_self_serve_status'         => ['get',      'merchant/gstin_self_serve',                      'MerchantController@getGstinSelfServeStatus'                        ],
@@ -4964,6 +4965,7 @@ class Route
         'update_payout_status_batch',
         'cities_get',
         'admin_key_migrate_to_credcase',
+        'admin_consumer_migrate_apps_to_credcase',
         'admin_key_migrate_impersonation_grants',
         'admin_access_maps_bootstrap_cache',
 
@@ -5924,6 +5926,7 @@ class Route
         'payouts_bulk_amount_type'                 => Permission::MANAGE_BULK_FEATURE_MAPPING,
 
         'admin_key_migrate_to_credcase'            => Permission::EDGE_WRITE_OPERATION,
+        'admin_consumer_migrate_apps_to_credcase'  => Permission::EDGE_WRITE_OPERATION,
         'admin_key_migrate_impersonation_grants'   => Permission::EDGE_WRITE_OPERATION,
 
         'admin_access_maps_bootstrap_cache'        => Permission::STORK_WRITE_OPERATION,
@@ -7576,6 +7579,7 @@ class Route
             'admin_get_free_payouts_attributes',
             'admin_get_multiple',
             'admin_key_migrate_to_credcase',
+            'admin_consumer_migrate_apps_to_credcase',
             'admin_key_migrate_impersonation_grants',
             'admin_lead_create',
             'admin_lead_get_multiple',

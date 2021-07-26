@@ -3753,6 +3753,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREDCASE_OUTBOX_REQUEST_MIGRATE                       = 'CREDCASE_OUTBOX_REQUEST_MIGRATE';
     const CREDCASE_OUTBOX_REQUEST_ROTATE                        = 'CREDCASE_OUTBOX_REQUEST_ROTATE';
     const MIGRATE_TO_CREDCASE_REQUEST                           = 'MIGRATE_TO_CREDCASE_REQUEST';
+    const SKIP_INTERNAL_CREDENTIAL_MIGRATION                    = 'SKIP_INTERNAL_CREDENTIAL_MIGRATION';
 
     const CREDCASE_SIGNER_ERROR                                 = 'CREDCASE_SIGNER_ERROR';
     const CREDCASE_SIGNER_REDIS_ERROR                           = 'CREDCASE_SIGNER_REDIS_ERROR';

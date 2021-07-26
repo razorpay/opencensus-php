@@ -38,14 +38,18 @@ class Credcase
     }
 
     /**
-     * @param  Entity $key
-     * @param  string $mode
+     * @param Entity $key
+     * @param string $mode
+     * @param bool   $isForced - force a migration irrespective of dual write configuration
+     *
      * @return void
+     * @throws \Razorpay\Outbox\Encoder\EncodeFailureException
+     * @throws \Razorpay\Outbox\Encrypt\KeyMissingException
+     * @throws \Razorpay\Outbox\Job\InvalidTransactionStateException
      */
-    public function migrate(Entity $key, string $mode)
+    public function migrate(Entity $key, string $mode, bool $isForced = false)
     {
-        if ($this->dualWriteEnabled === false)
-        {
+        if ($isForced === false and $this->dualWriteEnabled === false) {
             return;
         }
 
@@ -93,8 +97,15 @@ function newMigrateApiKeyRequest(Entity $key, string $mode)
     $req["mode"]              = constant(Mode::class . '::' . $mode);
     $req[Entity::MERCHANT_ID] = $key->getMerchantId();
     $req[Entity::CREATED_AT]  = $key->getCreatedAt();
+    $req[Entity::OWNER_ID]    = empty($key->getOwnerId()) ? $key->getMerchantId() : $key->getOwnerId();
+    $req[Entity::OWNER_TYPE]  = empty($key->getOwnerType()) ? Entity::OWNER_TYPE_MERCHANT : $key->getOwnerType();
+    $req[Entity::DOMAIN]      = Entity::DOMAIN_RAZORPAY;
     if (!empty($key->getExpiredAt())) {
         $req[Entity::EXPIRED_AT] = $key->getExpiredAt();
+    }
+
+    if (!empty($key->getRoleNames())) {
+        $req[Entity::ROLE_NAMES] = $key->getRoleNames();
     }
 
     return $req;

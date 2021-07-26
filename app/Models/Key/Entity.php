@@ -33,6 +33,21 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT
     ];
 
+    // These are not persisted in DB and are only used during migration of credentials of internal apps from applications_v2 config.
+    const OWNER_ID   = 'owner_id';
+    const OWNER_TYPE = 'owner_type';
+    const ROLE_NAMES = 'role_names';
+    const DOMAIN     = 'domain';
+
+    const OWNER_TYPE_MERCHANT    = "merchant";
+    const OWNER_TYPE_APPLICATION = "application";
+    const DOMAIN_RAZORPAY        = "razorpay";
+
+    // These are transient properties and will not be persisted in DB, i.e these are not attributes in this entity.
+    public $ownerType = "";
+    public $ownerId   = "";
+    public $roleNames = [];
+
     /**
      * 86400 sec or more accurately 24 hours.
      * When a key is rolled over, by default
@@ -57,6 +72,48 @@ class Entity extends Base\PublicEntity
     public function getSecret()
     {
         return $this->getAttribute(self::SECRET);
+    }
+
+    public function setOwnerId(string $ownerId)
+    {
+        $this->ownerId = $ownerId;
+    }
+
+    /**
+     * owner_id is a transient property and this will return an empty string if it has not been set via setOwnerId.
+     * @return string
+     */
+    public function getOwnerId()
+    {
+        return $this->ownerId;
+    }
+
+    public function setOwnerType(string $ownerType)
+    {
+        $this->ownerType = $ownerType;
+    }
+
+    /**
+     * owner_type is a transient property and this will return an empty string if it has not been set via setOwnerType.
+     * @return string
+     */
+    public function getOwnerType()
+    {
+        return $this->ownerType;
+    }
+
+    public function setRoleNames(array $roleNames)
+    {
+        $this->roleNames = $roleNames;
+    }
+
+    /**
+     * role_names is a transient property and this will return an empty array if it has not been set via setRoleNames.
+     * @return array
+     */
+    public function getRoleNames()
+    {
+        return $this->roleNames;
     }
 
     public function getPublicId()
