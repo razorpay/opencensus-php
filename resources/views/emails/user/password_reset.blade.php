@@ -32,7 +32,9 @@
     <p>
         --<br/>
         {{$org['display_name']}} <br/>
-        For queries, contact us <a href="https://dashboard.razorpay.com/#/app/dashboard#request">here</a>
+        @if ($org['showAxisSupportUrl'] !== true)
+             For queries, contact us <a href="https://dashboard.razorpay.com/#/app/dashboard#request">here</a>
+        @endif
     </p>
     <div>
         <img style="width:200px; height:auto;" src="{{$org['login_logo_url']}}">

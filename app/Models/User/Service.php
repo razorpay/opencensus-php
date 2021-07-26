@@ -27,6 +27,7 @@ use RZP\Models\Admin\AdminLead;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Account;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Feature\Constants as FeatureConstant;
 
 class Service extends Base\Service
 {
@@ -758,10 +759,15 @@ class Service extends Base\Service
             {
                 $orgId = $this->auth->getOrgId();
 
+                $org = $this->repo->org->findByPublicId($orgId);
+
+                $showAxisSupportUrl = $org->isFeatureEnabled(FeatureConstant::SHOW_SUPPORT_URL);
+
                 //get Org and send it to mailer, deal with other orgs as well.
-                $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+                $org = $org->toArrayPublic();
 
                 $org['hostname'] = $this->auth->getOrgHostName();
+                $org['showAxisSupportUrl'] = $showAxisSupportUrl;
 
                 $requestOriginProduct = $this->auth->getRequestOriginProduct();
 

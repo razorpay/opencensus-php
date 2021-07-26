@@ -31,6 +31,7 @@ use RZP\Http\UserRolePermissionsMap;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountService;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
 use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
@@ -2072,7 +2073,15 @@ class Core extends Base\Core
 
     private function notifyUserAboutAccountLocked(Entity $user)
     {
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $org = $this->repo->org->findByPublicId($orgId);
+
+        // feature at org level in feature entity
+        $showAxisSupportUrl = $org->isFeatureEnabled(FeatureConstant::SHOW_SUPPORT_URL);
+
         $data = [
+            'showAxisSupportUrl' => $showAxisSupportUrl,
             'user'  => [
                 Entity::ID              => $user->getId(),
                 Entity::EMAIL           => $user->getEmail(),

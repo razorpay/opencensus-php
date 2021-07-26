@@ -589,6 +589,11 @@ class Constants
      */
     const SETTLEMENTS_SMS_STOP = 'settlements_sms_stop';
 
+    /*
+     * Enable feature to appear/disappear support url at org level
+    */
+    const SHOW_SUPPORT_URL = 'show_support_url';
+
     /**
      * Enables custom branding at org level.
      */
@@ -923,6 +928,7 @@ class Constants
         self::X_PAYOUT_LINKS_MS               => true,
         self::GOOGLE_PAY_OMNICHANNEL          => true,
         self::TERMINAL_ONBOARDING             => true,
+        self::SHOW_SUPPORT_URL                => true,
         self::TEST_MODE_SETTLEMENT            => true,
         self::VIJAYA_MERCHANT                 => true,
         self::VAS_MERCHANT                    => true,

@@ -2537,7 +2537,17 @@ class UserTest extends TestCase
 
         $mailMock = Mockery::mock('RZP\Mail');
 
+        $orgMock = Mockery::mock('RZP\Models\Admin\Org\Repository');
+
+        $orgEntityMock = Mockery::mock('RZP\Models\Admin\Org\Entity');
+
         $mailMock->shouldReceive('send')->withAnyArgs()->andReturn([]);
+
+        $this->repoMock->shouldReceive('driver')->with('org')->andReturn($orgMock);
+
+        $orgMock->shouldReceive('findByPublicId')->withAnyArgs()->andReturn($orgMock);
+
+        $orgMock->shouldReceive('isFeatureEnabled')->withAnyArgs()->andReturn(true);
 
         $r = new \ReflectionMethod('RZP\Models\User\Core', 'notifyUserAboutAccountLocked');
 
@@ -2552,6 +2562,7 @@ class UserTest extends TestCase
         $response = $r->invoke($this->coreMock,$this->userEntityMock);
 
         $this->assertEquals(null, $response);
+
     }
 
     public function testSendOtpForSecondFactorAuthOnLogin()

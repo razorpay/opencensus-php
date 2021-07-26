@@ -2056,6 +2056,7 @@ class UserTest extends TestCase
             $this->assertArrayHasKey('org', $viewData);
             $this->assertArrayHasKey('token', $viewData);
             $this->assertArrayHasKey('email', $viewData);
+            $this->assertArrayHasKey('showAxisSupportUrl', $viewData['org']);
 
             $this->assertEquals('emails.user.password_reset', $mail->view);
 

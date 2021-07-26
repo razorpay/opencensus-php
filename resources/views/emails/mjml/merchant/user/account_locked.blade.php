@@ -243,10 +243,15 @@
 
             <tr>
               <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-      <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-        <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">Your Razorpay user account is locked as the OTP verification is failed multiple times. Please reach out to your account owner to unlock.</p><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">Your account can be unlocked by navigating to My Account -> Manage Team. You can find more details on account unlock&nbsp;<a class="link" href="https://razorpay.com/docs/payment-gateway/dashboard-guide/my-account/#troubleshooting" target="_blank" style="text-decoration: none; color: #528FF0;">here</a></p></div>
-      </div>
+                  @if ($showAxisSupportUrl === true)
+                      <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+                          <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">Your Razorpay user account is locked as the OTP verification is failed multiple times. Please reach out to your account owner to unlock.</p><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">Your account can be unlocked by navigating to My Account -> Manage Team. You can find more details on account unlock&nbsp;<a class="link" href="https://axisbank-docs.razorpay.com/payments/dashboard/my-account/profile/#faqs" target="_blank" style="text-decoration: none; color: #528FF0;">here</a></p></div>
+                      </div>
+                  @else
+                      <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+                          <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">Your Razorpay user account is locked as the OTP verification is failed multiple times. Please reach out to your account owner to unlock.</p><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">Your account can be unlocked by navigating to My Account -> Manage Team. You can find more details on account unlock&nbsp;<a class="link" href="https://razorpay.com/docs/payment-gateway/dashboard-guide/my-account/#troubleshooting" target="_blank" style="text-decoration: none; color: #528FF0;">here</a></p></div>
+                      </div>
+                  @endif
 
               </td>
             </tr>
@@ -315,11 +320,11 @@
 
             <tr>
               <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-      <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-        <div class="footer" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; margin-top: 8px; margin-bottom: 8px;"><div class="footer-text" style="font-size: 12px; line-height: 1.5; color: #7B8199; text-align: center; padding: 8px 0;">For any further queries or clarifications, feel free to reach out to us by visiting&nbsp;<a class="link" href="https://razorpay.com/support" target="_blank" style="text-decoration: none; color: #528FF0;">here</a></div></div>
-      </div>
-
+                  @if ($showAxisSupportUrl !== true)
+                      <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+                        <div class="footer" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; margin-top: 8px; margin-bottom: 8px;"><div class="footer-text" style="font-size: 12px; line-height: 1.5; color: #7B8199; text-align: center; padding: 8px 0;">For any further queries or clarifications, feel free to reach out to us by visiting&nbsp;<a class="link" href="https://razorpay.com/support" target="_blank" style="text-decoration: none; color: #528FF0;">here</a></div></div>
+                      </div>
+                  @endif
               </td>
             </tr>
 
