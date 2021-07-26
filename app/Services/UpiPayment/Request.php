@@ -4,16 +4,6 @@ namespace RZP\Services\UpiPayment;
 
 class Request
 {
-    // request body parameters
-    const PAYMENT   = 'payment';
-    const METADATA  = 'metadata';
-    const TERMINAL  = 'terminal';
-    const MERCHANT  = 'merchant';
-    const ACTION    = 'action';
-
-    // request uri
-    const AUTHORIZE_URI = 'authorize';
-
     // request constants
     const URL       = 'url';
     const METHOD    = 'method';
@@ -31,7 +21,7 @@ class Request
     const X_RAZORPAY_TASKID_HEADER  = 'X-Razorpay-TaskId';
     const X_REQUEST_ID              = 'X-Request-ID';
     const X_RAZORPAY_TRACKID        = 'X-Razorpay-TrackId';
-    const AUTH_HEADER               = 'auth';
+    const AUTH_HEADER               = 'Authorization';
 
     //Content Type
     const APPLICATION_JSON          = 'application/json';

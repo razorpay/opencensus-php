@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Functional\PaymentsUpi\Service;
 
-use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Method;
@@ -39,9 +38,18 @@ class UpiPaymentServiceTest extends TestCase
         $this->payment = $this->getDefaultUpiPaymentArray();
     }
 
+    /**
+     * Test Successful Payment Creation
+     *
+     * @return void
+     */
     public function testPaymentCreateSuccess()
     {
-        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $payment = $this->payment;
+
+        $payment['description'] = 'create_collect_success';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $this->assertEquals('async', $response['type']);
 

@@ -2,7 +2,7 @@
 
 namespace RZP\Services\UpiPayment\Mock;
 
-use Requests_Response;
+use Psr\Http\Message\RequestInterface;
 use RZP\Services\UpiPayment\Service as UpiPaymentService;
 
 /**
@@ -11,48 +11,45 @@ use RZP\Services\UpiPayment\Service as UpiPaymentService;
 class Service extends UpiPaymentService
 {
     /**
-     * Mocks sending request to UPS
+     * Mocks the request to the UPS server
      *
-     * @param array $request
-     * @return void
+     * @param RequestInterface $request
+     * @return array
      */
-    protected function sendRawRequest(array $request)
+    protected function sendRequest(RequestInterface $request): array
     {
-        $action  = camel_case(explode('/', $request['url'])[3]);
+        $content = json_decode($request->getBody()->getContents(),true);
 
-        $response = $this->$action();
+        $action = $this->action;
 
-        return $response;
+        list($response, $code) = $this->$action($content);
+
+        return [$response, $code];
     }
 
     /**
      * Authorize returns the authorize response
      *
-     * @return void
+     * @param array $content
+     * @return array
      */
-    protected function authorize()
+    protected function authorize(array $content): array
     {
-        $response = ['data' => ['vpa' => 'razorpay@airtel']];
+        $description = $content['payment']['description'];
 
-        return $this->toJsonResponse($response);
-    }
+        $response = [];
 
-    /**
-     * toJsonReponse returns a json response
-     *
-     * @param  array $content
-     * @return void
-     */
-    protected function toJsonResponse(array $content)
-    {
-        $response = new Requests_Response();
+        $code = 500;
 
-        $response->headers = ['Content-Type' => 'application/json', 'Cache-Control' => 'no-cache'];
+        switch ($description)
+        {
+            case 'create_collect_success':
+                $response = ['data' => ['vpa' => 'razorpay@airtel']];
+                $code = 200;
 
-        $response->status_code = 200;
+                break;
+        }
 
-        $response->body = json_encode($content);
-
-        return $response;
+        return [$response, $code];
     }
 }
