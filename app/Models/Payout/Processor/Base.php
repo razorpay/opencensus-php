@@ -526,9 +526,10 @@ class Base extends BaseCore
                             $this->trace->info(
                                 TraceCode::ON_HOLD_PAYOUT_FAILED,
                                 [
-                                    'payout_id' => $payout->getId(),
+                                    'payout_id'      => $payout->getId(),
                                     'transaction_id' => $payout->getTransactionId(),
-                                    'payout_status' => $payout->getStatus(),
+                                    'payout_status'  => $payout->getStatus(),
+                                    'failure_reason' => $payout->getFailureReason(),
                                 ]);
 
                             return $payout;

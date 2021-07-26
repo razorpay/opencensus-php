@@ -2998,6 +2998,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const QUEUED_PAYOUT_CREATED                                 = 'QUEUED_PAYOUT_CREATED';
     const ON_HOLD_PAYOUT_CREATED                                = 'ON_HOLD_PAYOUT_CREATED';
+    const PAYOUT_ON_HOLD_TO_BE_DISPATCHED                       = 'PAYOUT_ON_HOLD_TO_BE_DISPATCHED';
+    const ON_HOLD_PAYOUT_MERCHANT_SLA_CHECKED                   = 'ON_HOLD_PAYOUT_MERCHANT_SLA_CHECKED';
     const ON_HOLD_PAYOUT_MOVED_TO_CREATED_STATE                 = 'ON_HOLD_PAYOUT_MOVED_TO_CREATED_STATE';
     const PAYOUT_SENT_TO_DETECT_BENE_UPTIME                     = 'PAYOUT_SENT_TO_DETECT_BENE_UPTIME';
     const ON_HOLD_PAYOUT_CHECK_FAILED                           = 'ON_HOLD_PAYOUT_CHECK_FAILED';

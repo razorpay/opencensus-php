@@ -1788,7 +1788,7 @@ class Service extends Base\Service
 
         $this->trace->info
         (
-            TraceCode::PAYOUT_ON_HOLD_PROCESSING_COMPLETED,
+            TraceCode::PAYOUT_ON_HOLD_TO_BE_DISPATCHED,
             [
                 'payout_ids_to_process' => $payoutIdsToProcess,
                 'payout_ids_to_auto_cancel' => $payoutIdsToFail,
@@ -1806,7 +1806,7 @@ class Service extends Base\Service
 
         $this->trace->info
         (
-            TraceCode::PAYOUT_ON_HOLD_PROCESSING_COMPLETED,
+            TraceCode::PAYOUT_ON_HOLD_TO_BE_DISPATCHED,
             $response
         );
 

@@ -1639,6 +1639,16 @@ class Core extends Base\Core
                             $payout->setStatusCode("BBANK_OFFLINE");
 
                             $this->repo->payout->saveOrFail($payout);
+
+                            $this->trace->info(
+                                TraceCode::ON_HOLD_PAYOUT_FAILED,
+                                [
+                                    'payout_id'      => $payout->getId(),
+                                    'payout_status'  => $payout->getStatus(),
+                                    'failure_reason' => $payout->getFailureReason(),
+                                ]);
+
+                            $this->app->events->dispatch('api.payout.failed', [$payout]);
                         }
                     }
                 },
@@ -1661,9 +1671,17 @@ class Core extends Base\Core
     {
         $slaValue = $this->getMerchantSlaForOnHoldPayouts($payout->getMerchantId());
 
+        $this->trace->info(
+            TraceCode::ON_HOLD_PAYOUT_MERCHANT_SLA_CHECKED,
+            [
+                'sla'         => $slaValue,
+                'payout_id'   => $payout->getId(),
+                'merchant_id' => $payout->getMerchantId()
+            ]);
+
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
 
-        if($payout->getQueuedAt() <= (strtotime(('-' . ($slaValue * 60) . ' seconds'), $currentTimeStamp)))
+        if($payout->getOnHoldAt() <= (strtotime(('-' . ($slaValue * 60) . ' seconds'), $currentTimeStamp)))
         {
              return true;
         }

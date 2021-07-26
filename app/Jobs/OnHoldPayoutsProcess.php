@@ -33,6 +33,10 @@ class OnHoldPayoutsProcess extends Job
 
         try
         {
+            //For a payout id first checks if bene bank is up even if merchant sla is breached for payout
+            //If bene bank is found up, the payout is processed
+            //If bene bank is down, checks for merchant sla and if sla is breached, fails the payout instantly
+
             (new Payout\Core)->processOnHoldPayouts($this->payoutId);
         }
         catch (\Throwable $ex)

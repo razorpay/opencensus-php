@@ -12777,6 +12777,10 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->cronAuth();
 
+        $this->expectWebhookEvent('payout.failed');
+
+        $this->expectWebhookEvent('payout.failed');
+
         $this->startTest();
 
         $counter = $this->getDbEntities('counter',
