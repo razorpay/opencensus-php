@@ -349,7 +349,7 @@ class InstrumentRequestController extends BaseController
             $input,
             \Requests::POST,
             'v2/merchant_instrument_requests',
-            [],
+            ['timeout' => 1.5],
             $this->getKAMHeadersForInstrumentRequest());
 
         return ApiResponse::json($response);
