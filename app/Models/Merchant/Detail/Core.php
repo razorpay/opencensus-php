@@ -1932,6 +1932,7 @@ class Core extends Base\Core
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $merchant, $properties, SegmentEvent::ACTIVATION_STATUS_CHANGE);
 
+        $this->pushHubspotEvent($merchant, $merchantDetails);
 
         $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_STATUS_SUCCESS,
                                                  $merchant,
@@ -1965,6 +1966,20 @@ class Core extends Base\Core
         (new MerchantProduct\Core())->syncMerchantStatusToMerchantProducts($merchantDetails);
 
         return $merchantDetails;
+    }
+
+    protected function pushHubspotEvent($merchant, $merchantDetails)
+    {
+        $properties = [
+            'live'  => $merchant->isLive()
+        ];
+
+        if($merchantDetails->getActivationStatus() === Status::INSTANTLY_ACTIVATED)
+        {
+            $properties['instant_activation'] = 1;
+        }
+
+        $this->app->hubspot->trackHubspotEvent($merchant->getEmail(), $properties);
     }
 
     protected function getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails)
