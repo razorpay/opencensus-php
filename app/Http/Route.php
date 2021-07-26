@@ -2744,6 +2744,7 @@ class Route
         'subscription_button_hosted_view',
         'subscription_button_create_subscription',
         'checkout_rewards',
+        'pincode_get',
     ];
 
     public static $device = [
