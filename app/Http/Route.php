@@ -2242,6 +2242,8 @@ class Route
 
         'rbl_current_account_serviceability_get'  => ['get',      'banking_accounts/serviceability/rbl/pincode/{pincode}',      'BankingAccountController@checkPincodeServiceabilityByRBL'       ],
 
+        'rbl_current_account_serviceability_get_admin'  => ['get',      'banking_accounts_admin/serviceability/rbl/pincode/{pincode}',      'BankingAccountController@checkPincodeServiceabilityByRBL'       ],
+
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
         'bootstrap_key_cache'                     => ['post',     'throttle/bootstrap_key_cache',                              'ThrottleController@bootstrapKeyCache'                      ],
@@ -4226,6 +4228,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'rbl_current_account_serviceability_get_admin',
         'merchant_business_detail_fetch',
         'merchant_business_detail_save',
         'los_service_dev_admin',
@@ -5317,6 +5320,7 @@ class Route
         'fetch_merchant_escalation'                => Permission::VIEW_MERCHANT,
         'merchant_aov_config'                      => Permission::VIEW_MERCHANT,
         'merchant_fetch'                           => Permission::VIEW_MERCHANT,
+        'rbl_current_account_serviceability_get_admin'   => Permission::VIEW_MERCHANT,
         'admin_get_file'                           => Permission::ADMIN_GET_FILE,
         'admin_change_password'                    => Permission::AUTH_LOCAL_ADMIN,
         'merchant_fetch_users'                     => Permission::VIEW_MERCHANT,
@@ -7543,6 +7547,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'rbl_current_account_serviceability_get_admin',
             'merchant_business_detail_fetch',
             'merchant_business_detail_save',
             'retry_payouts_on_service',

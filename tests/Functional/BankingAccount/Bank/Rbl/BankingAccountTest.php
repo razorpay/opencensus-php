@@ -450,6 +450,17 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testCheckServiceableByRBLFromAdminDashboard()
+    {
+        $this->app['config']->set('applications.banking_account.mock', true);
+
+        $this->app['config']->set('applications.pincodesearcher.mock', true);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateBankingAccountWithActivationDetailFails()
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();

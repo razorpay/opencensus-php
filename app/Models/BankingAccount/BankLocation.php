@@ -5,63 +5,63 @@ namespace RZP\Models\BankingAccount;
 class BankLocation
 {
     public static $rblBankLocation = [
-        [16.681941,74.337056], // RBL Bank Ltd A/P  :VASGADE Vasagade
+        //[16.681941,74.337056], // RBL Bank Ltd A/P  :VASGADE Vasagade
         [16.701381,74.237708], // RBL Bank Ltd, 1st Lane Shahupuri
-        [16.540296,74.501443], // RBL Bank Ltd, Khemlapure Building, Near Bedkihal Circle Shamanewadi
+        //[16.540296,74.501443], // RBL Bank Ltd, Khemlapure Building, Near Bedkihal Circle Shamanewadi
         [16.698504,74.228614], // RBL Bank Ltd, CTS No. 1414, Shop No. 1 To 5, Om Estate, C Ward Kolhapur
         [16.829476,74.638982], // RBL Bank Ltd SUKH SHANTI HEIGHTS, GROUND FLOOR C.S.NO 1044 Sangli
-        [16.845213,74.124933], // RBL Bank Ltd, A/P: BORPADALE, TALUKA : PANHALA Borpadale
+        //[16.845213,74.124933], // RBL Bank Ltd, A/P: BORPADALE, TALUKA : PANHALA Borpadale
         [16.817669,74.641385], // RBL Bank Ltd HIGH SCHOOL ROAD, JAWAHAR CHOWK, SHIVAJI COMPLEX Miraj
-        [16.779927,74.554636], // RBL Bank Ltd, A.B Patil Complex, Subhash Road Jaysingpur
-        [15.620704,73.896388], // RBL Bank Ltd H.NO.12/1  WADACHA WADA  SHIRGAO ASSONORA Shirgaon
+        //[16.779927,74.554636], // RBL Bank Ltd, A.B Patil Complex, Subhash Road Jaysingpur
+        //[15.620704,73.896388], // RBL Bank Ltd H.NO.12/1  WADACHA WADA  SHIRGAO ASSONORA Shirgaon
         [28.699215,77.13721], // RBL Bank Ltd  4 Kapil Vihar  Ground floor Delhi
-        [16.833915,74.316877], // RBL Bank Ltd R S NO. 126  Bavadekar Complex Pethvadgaon
-        [16.624107,74.398641], // RBL Bank Ltd CTS NO 3105/C, PLOT NO 108,  MAHAVEER NAGAR, OPP. HUTATMA MAIN ROAD HUPARI Hupari
-        [16.721927,74.350472], // RBL Bank Ltd, MAIN ROAD,  AT POST RUKADI Rukadi
+        //[16.833915,74.316877], // RBL Bank Ltd R S NO. 126  Bavadekar Complex Pethvadgaon
+        //[16.624107,74.398641], // RBL Bank Ltd CTS NO 3105/C, PLOT NO 108,  MAHAVEER NAGAR, OPP. HUTATMA MAIN ROAD HUPARI Hupari
+        //[16.721927,74.350472], // RBL Bank Ltd, MAIN ROAD,  AT POST RUKADI Rukadi
         [16.684794,74.46457], // RBL Bank Ltd, Shop No. 3, 4, 5, Hira Towers, Ward No. 12 Ichalkaranji
         [16.709106,74.246521], // RBL Bank Ltd SHOP NO 6, 7 & 8, SIDDIVINAYAK APPARTMENT, CTS NO 233, PLOT NO12/13 Kolhapur
         [16.854157,74.587147], // RBL Bank Ltd PLOT NO.88  BANK BUILDING Sangli
-        [16.750122,74.706513], // RBL Bank Ltd, GROUND FLOOR, C.S. NO 386, PARMPUJYA SHATI SAGAR MUNI ROAD, NEAR VIJAPUR-MIRAJ HIGHWAY Mhaisal
+        //[16.750122,74.706513], // RBL Bank Ltd, GROUND FLOOR, C.S. NO 386, PARMPUJYA SHATI SAGAR MUNI ROAD, NEAR VIJAPUR-MIRAJ HIGHWAY Mhaisal
         [18.950236,72.831536], // RBL Bank Ltd, Shop no. 222/224, Ground floor, Zaveri Bazar Mumbai
-        [16.991757,74.453854], // RBL Bank Ltd. DAKSHIN BHAG BHILWADI VIKAS SOCIETY BUILDING Bhilawdi
-        [16.955753,74.542347], // RBL Bank Ltd. 249,  E WARD, SOCIETY BUILDING Nandre
-        [16.867574,74.496901], // RBL Bank Ltd. A/P SAMDOLI TALUKA  MIRAJ Samdoli
-        [16.664913,74.394541], // RBL Bank Ltd. 446 Ingali
-        [16.707807,74.300403], // RBL Bank Ltd. Main Road, Gandhinagar
+        //[16.991757,74.453854], // RBL Bank Ltd. DAKSHIN BHAG BHILWADI VIKAS SOCIETY BUILDING Bhilawdi
+        //[16.955753,74.542347], // RBL Bank Ltd. 249,  E WARD, SOCIETY BUILDING Nandre
+        //[16.867574,74.496901], // RBL Bank Ltd. A/P SAMDOLI TALUKA  MIRAJ Samdoli
+        //[16.664913,74.394541], // RBL Bank Ltd. 446 Ingali
+        //[16.707807,74.300403], // RBL Bank Ltd. Main Road, Gandhinagar
         [16.693896,74.245721], // RBL Bank Ltd. VITTHAL COMPLEX, 9TH LANE Kolhapur
         [16.376194,74.245084], // RBL Bank Ltd, Opp. Ravji Kamate Hall, Main Road Tal-Karveer
         [16.822515,74.586042], // RBL Bank Ltd A/P : INAM DHAMANI Inam Dhamni
-        [16.779871,74.625526], // RBL Bank Ltd A/P : ARJUNWAD, TALUKA  : SHIROL Arjunwad
+        //[16.779871,74.625526], // RBL Bank Ltd A/P : ARJUNWAD, TALUKA  : SHIROL Arjunwad
         [15.868891,74.507185], // RBL Bank Ltd GROUND FLOOR Belgaum
-        [17.045144,74.260927], // RBL Bank Ltd, CTS No. 4467, Ground Floor, Siddhanath Sankul, A wing Sangli
-        [16.641246,74.446696], // RBL Bank Ltd A/P : Rangoli
-        [16.710153,74.147662], // RBL Bank Ltd, C/O Shri Balbhim, Vikas Seva Sanstha Khupire
-        [16.415278,73.997561], // RBL Bank Ltd, Bapu Dongale Building Ghotawade
-        [16.6385967,74.611802], // RBL Bank Ltd. A/P AKKIWAT Akkiwat
+        //[17.045144,74.260927], // RBL Bank Ltd, CTS No. 4467, Ground Floor, Siddhanath Sankul, A wing Sangli
+        //[16.641246,74.446696], // RBL Bank Ltd A/P : Rangoli
+        //[16.710153,74.147662], // RBL Bank Ltd, C/O Shri Balbhim, Vikas Seva Sanstha Khupire
+        //[16.415278,73.997561], // RBL Bank Ltd, Bapu Dongale Building Ghotawade
+        //[16.6385967,74.611802], // RBL Bank Ltd. A/P AKKIWAT Akkiwat
         [18.513446,73.868287], // RBL Bank Ltd. MCCIA TRADE TOWER, OFF INTERNATIONAL CONVENTIONAL CENTER, SHOWROOM NO 5 Pune
-        [17.044416,74.425623], // RBL Bank Ltd A/P : BURLI, TALUKA : PALUS Burli
-        [16.691347,74.758451], // RBL Bank Ltd BAZAR PETH A/P Shedbal
-        [16.617744,74.712707], // RBL Bank Ltd NO.289/2  BAZAAR PETHA/P SHIRGUPPITAL. ATHANI Shirguppi
-        [16.954785,74.204635], // RBL Bank Ltd, 529, Society building No 2, Taluka : Walwa
-        [16.9868311,73.9894143], // RBL Bank Ltd. A/P : NERLETAL . TALUKA : WALWA Nerle
-        [16.80719,74.691011], // RBL Bank Ltd. 395/2 Dudhagaon
+        //[17.044416,74.425623], // RBL Bank Ltd A/P : BURLI, TALUKA : PALUS Burli
+        //[16.691347,74.758451], // RBL Bank Ltd BAZAR PETH A/P Shedbal
+        //[16.617744,74.712707], // RBL Bank Ltd NO.289/2  BAZAAR PETHA/P SHIRGUPPITAL. ATHANI Shirguppi
+        //[16.954785,74.204635], // RBL Bank Ltd, 529, Society building No 2, Taluka : Walwa
+        //[16.9868311,73.9894143], // RBL Bank Ltd. A/P : NERLETAL . TALUKA : WALWA Nerle
+        //[16.80719,74.691011], // RBL Bank Ltd. 395/2 Dudhagaon
         [16.822536,74.58616], // RBL Bank Ltd. 178 Ankali(Sangli)
-        [16.302549,74.723372], // RBL Bank Ltd 395  BASAVA CIRLE Bellad Bagewadi
-        [16.699809,74.439946], // RBL Bank Ltd, Opposite of Marathi Primary School Kabnur
-        [16.95054,74.739108], // RBL Bank Ltd A/P, CS NO 191, GANDHI CHOWK Bhose
-        [16.978521,74.859552], // RBL Bank Ltd, 53, GRAMPANCHAYAT BUILDING Hingangaon
+        //[16.302549,74.723372], // RBL Bank Ltd 395  BASAVA CIRLE Bellad Bagewadi
+        //[16.699809,74.439946], // RBL Bank Ltd, Opposite of Marathi Primary School Kabnur
+        //[16.95054,74.739108], // RBL Bank Ltd A/P, CS NO 191, GANDHI CHOWK Bhose
+        //[16.978521,74.859552], // RBL Bank Ltd, 53, GRAMPANCHAYAT BUILDING Hingangaon
         [16.855785,74.558952], // RBL Bank Ltd CS NO 966 & 967 Sangli
         [16.16809,74.8221], // RBL Bank Ltd 3195/B/2B NILKANTH NILAYAOPP COURT Gokak
-        [16.695618,74.273918], // RBL Bank Ltd, SEEMA PRIDE, PLOT NO 5, RS NO 350A, MAIN ROAD Kolhapur
-        [16.541147,74.673528], // RBL Bank Ltd At & Post : Ankali ( Shitol ) Tal : Chikkodi Ankali (Belgaum)
+        //[16.695618,74.273918], // RBL Bank Ltd, SEEMA PRIDE, PLOT NO 5, RS NO 350A, MAIN ROAD Kolhapur
+        //[16.541147,74.673528], // RBL Bank Ltd At & Post : Ankali ( Shitol ) Tal : Chikkodi Ankali (Belgaum)
         [16.401288,74.378554], // RBL Bank Ltd 228 PADMARAJ BLDG Nipani
         [15.350938,75.140497], // RBL Bank Ltd C.T.S. N0. 4634 Hotel Srikrishna Bhavan Compound Hubli
         [18.499929,73.863902], // RBL Bank Ltd, SHOWROOM NO 8, GROUND FLOOR, VEGA CENTRE, SHANKARSETH ROAD Pune
-        [16.16831,74.228616], // RBL Bank Ltd, KAVLEKAR BLDG Madilge
+        //[16.16831,74.228616], // RBL Bank Ltd, KAVLEKAR BLDG Madilge
         [18.641445,73.788842], // RBL Bank Ltd, Ashirwaad, Plot No 199/A Pune
         [19.205385,72.845886], // RBL Bank Ltd, Shop no.1, 2 & 3 Grishma Heights Mumbai
-        [16.163445,74.26079], // RBL Bank Ltd, Shop No. 1 & 2, Ground floor, CTS No. 999/c Kolhapur
-        [17.116688,74.587847], // RBL Bank Ltd A/P  :  VISAPUR, TALUKA :  TASGAON Visapur
+        //[16.163445,74.26079], // RBL Bank Ltd, Shop No. 1 & 2, Ground floor, CTS No. 999/c Kolhapur
+        //[17.116688,74.587847], // RBL Bank Ltd A/P  :  VISAPUR, TALUKA :  TASGAON Visapur
         [15.459564,75.004903], // RBL Bank Ltd KABABI MANSION   KOSMOS CLUB ROAD Dharwad
         [12.980787,77.58946], // RBL Bank Ltd 197  6TH CROSS Bangalore
         [19.209986,72.960591], // RBL Bank Ltd  Laxmi Market  Pokharan Road No 1 Thane
@@ -80,37 +80,37 @@ class BankLocation
         [28.644823,77.199394], // RBL Bank Ltd,17A/53, Ground Floor, W.E.A. Road New Delhi
         [14.469193,75.904249], // RBL Bank Ltd 718/1  SUBHASH ROAD Davanagere
         [19.023991,73.020882], // RBL Bank Ltd . Millenium Park  Plot No.17 Thane
-        [17.036883,74.601887], // RBL Bank Ltd 1565A Tasgaon
+        //[17.036883,74.601887], // RBL Bank Ltd 1565A Tasgaon
         [15.400124,74.019442], // RBL Bank Ltd DR. DADA VAIDYA CHOWK Ponda
         [18.546389,73.903145], // RBL Bank Ltd SHOP NO.126 127 Pune
         [15.60019,73.819725], // RBL Bank Ltd SHOP NO S1 MAPUSA TRADE CENTRE MARODA MAPUSA GOA 403 507 Mapusa
         [19.050144,73.077525], // RBL Bank Ltd . Surya Koti Building  Surya Chs Ltd. Plot No.16 Raigad
-        [17.27503,74.179626], // RBL Bank Ltd SHOP NO. 1 2 Kolhapur
+        //[17.27503,74.179626], // RBL Bank Ltd SHOP NO. 1 2 Kolhapur
         [20.277553,73.002101], // RBL Bank Ltd  Unit No1 2 & 7 Silvassa
         [19.221506,73.087452], // RBL Bank Ltd . Atma Tara  Ground Floor Thane
         [15.496098,73.823489], // RBL Bank Ltd SHOP NO.G10 11 Panjim
         [18.563989,73.77715], // RBL Bank Ltd C WING ANMOL PRIDE C.T.S NO 270  BANER ROAD PUNEMAHARASHTRA Pune
-        [19.461981,72.818805], // RBL Bank Ltd Sumant chhaya purandarewadi near railway station Thane
+        //[19.461981,72.818805], // RBL Bank Ltd Sumant chhaya purandarewadi near railway station Thane
         [19.007853,72.831267], // RBL Bank Ltd  One Indiabulls Centre  Tower 2 Brihan Mumbai
         [19.192425,72.972502], // RBL Bank Ltd . Gr Floor . Gr Floor Thane
         [12.928566,77.621716], // RBL Bank Ltd 631  3RD BLOCK Bangalore
         [18.748175,73.827495], // RBL Bank Ltd GROUND FLOOR SHOP NO 5 Chakanpune
-        [16.919122,73.932857], // RBL Bank Ltd MORE BUILDING Malkapur
+        //[16.919122,73.932857], // RBL Bank Ltd MORE BUILDING Malkapur
         [16.675078,74.204196], // RBL Bank Ltd PLOT NO 9 Kolhapur
-        [16.580442,74.319774], // RBL Bank Ltd AMEYA COMPLEX CS NO 3611 Kagal
-        [19.221334,72.977982], // RBL Bank Ltd . Ground Floor Thane
+        //[16.580442,74.319774], // RBL Bank Ltd AMEYA COMPLEX CS NO 3611 Kagal
+        //[19.221334,72.977982], // RBL Bank Ltd . Ground Floor Thane
         [17.840143,76.620496], // RBL Bank Ltd, Mane hospital Main road Omerga
-        [16.681108,74.589631], // RBL Bank Ltd ABOVE SADHANA MANDAL OFFICE Kurundwad
+        //[16.681108,74.589631], // RBL Bank Ltd ABOVE SADHANA MANDAL OFFICE Kurundwad
         [28.631403,77.223169], // RBL Bank Ltd, Ground Floor, DLF Capitol Point Delhi
-        [13.28916,77.539314], // RBL Bank Ltd KHATA NO 1762 / 66 WARD NO 4D CROSS MAIN ROAD Doddaballapur
-        [19.074295,72.997526], // RBL Bank Ltd Arti CHS Ltd. Plot No. 29 Navi Mumbai
+        //[13.28916,77.539314], // RBL Bank Ltd KHATA NO 1762 / 66 WARD NO 4D CROSS MAIN ROAD Doddaballapur
+        //[19.074295,72.997526], // RBL Bank Ltd Arti CHS Ltd. Plot No. 29 Navi Mumbai
         [19.168262,73.232193], // RBL Bank Ltd  Nisarg Pratiksha Apartments Old D P Road Thane
         [19.874371,75.362326], // RBL Bank Ltd Gr Floor N3 Plot no 303 Aurangabad
         [28.201078,76.807997], // RBL Bank LtdA4  Ground Floor  Bhagat Singh Colny Alwar
         [19.796864,72.756422], // RBL Bank Ltd . Ameya Park Near Hotel Boisar Thane
         [21.183768,72.832598], // RBL Bank Ltd  Showroom No 4  Ground Floor Surat
         [19.115349,74.729713], // RBL Bank Ltd  Sai Icon  Opp.Mauli Sankul Ahmednagar
-        [12.720321,77.296913], // RBL Bank Ltd GROUND FLOOR  GNR COMPLEX I STAGE Ramanagaram
+        //[12.720321,77.296913], // RBL Bank Ltd GROUND FLOOR  GNR COMPLEX I STAGE Ramanagaram
         [17.436364,78.45433], // RBL Bank Ltd D NO 63865 Hyderabad
         [13.046358,80.242001], // RBL Bank Ltd, Sai Kalyani Tower, Accord Business Center Chennai
         [28.569316,77.321705], // RBL Bank Ltd  P7  Sector18 Noida
@@ -124,15 +124,15 @@ class BankLocation
         [16.327227,75.290554], // RBL Bank Ltd NO.4026/3/D/6 NEAR RANNA CIRCLE Mudhol
         [11.008842,76.979803], // RBL Bank Ltd 5/215  RAJAN NAGAR Avinashi
         [20.360038,72.925179], // RBL Bank Ltd  9/10/11 Sahara Market Vapi
-        [20.943634,75.6295], // RBL Bank Ltd  . Gut No 111 Plot No 5 & 6 Chincholi Village Jalgaon
+        //[20.943634,75.6295], // RBL Bank Ltd  . Gut No 111 Plot No 5 & 6 Chincholi Village Jalgaon
         [23.298186,72.337717], // RBL Bank Ltd, Shop Nos 9A Mehsana
-        [17.119772,75.7000056], // RBL Bank Ltd, Ground Floor, Gram Panchayat Building Dist:  Vijayapur
+        //[17.119772,75.7000056], // RBL Bank Ltd, Ground Floor, Gram Panchayat Building Dist:  Vijayapur
         [20.411032,72.878781], // RBL Bank Ltd, Ground Floor Dabhel
         [21.120823,73.117468], // RBL Bank Ltd   U01 & U02 Empire Plaza Bardoli
-        [24.267041,72.181804], // RBL Bank Ltd, Shop No 9 - 10 Deesa
-        [23.803694,72.387994], // RBL Bank Ltd  Plot No 82 Mehsana
+        //[24.267041,72.181804], // RBL Bank Ltd, Shop No 9 - 10 Deesa
+        //[23.803694,72.387994], // RBL Bank Ltd  Plot No 82 Mehsana
         [16.908476,81.753125], // RBL Bank Ltd DOOR NO 2/43 1ST FLOOR Peravaram
-        [15.545461,73.760915], // RBL Bank Ltd SHOP NO. 7 ,8,9, 10 GROUND FLOOR & 1ST FLOOR Goa
+        //[15.545461,73.760915], // RBL Bank Ltd SHOP NO. 7 ,8,9, 10 GROUND FLOOR & 1ST FLOOR Goa
         [15.520967,73.834449], // RBL Bank Ltd H/NO:456 NEAR CHODANKAR NURSING HOME Alto Porvorim
         [27.824929,76.274826], // RBL Bank Ltd Grand Sapphire Infotech Pvt Ltd  Village jainpurwas  NH8 highway Alwar
         [23.189056,75.789084], // RBL Bank Ltd Ground Floor  Survey No 283/2 Ujjain
@@ -156,7 +156,7 @@ class BankLocation
         [19.138941,72.831692], // RBL Bank LTtd, Ground Floor (South West Corner), Ghanshyam Chamber, Plot No. B-12 Mumbai
         [23.855557,78.793404], // RBL Bank Ltd Ground Floor  Khasra No 174/21 Sagar
         [22.57278,88.345911], // RBL Bank Ltd  Thapar House Kolkata
-        [20.99039,77.809705], // RBL Bank Ltd Shop no. 13  A wing Amravati
+        //[20.99039,77.809705], // RBL Bank Ltd Shop no. 13  A wing Amravati
         [21.133716,79.074434], // RBL Bank Ltd Nagpur
         [22.713404,75.874093], // RBL Bank Ltd, Shop no.3, Ground floor Indore
         [16.966886,82.200314], // RBL Bank Ltd, Door NO.193,  Kovvada Panchayat, Kakinada Rural Mandal Kakinada
@@ -166,14 +166,14 @@ class BankLocation
         [10.911978,78.721407], // RBL Bank Ltd, Sasha Complex, Samayapuram - Manachanallur Main Road Trichy
         [10.449306,79.305314], // RBL Bank Ltd 221/7 RANGANATHA VELLALAR COMPLEX THANJAVUR MAIN ROAD  ALADIKKUMULAI PATTUKKOTAI TALUK Thanjavur
         [11.008851,76.979763], // RBL Bank Ltd 1023  R G CHAMBERSAVINASHI ROAD Coimbatore
-        [23.6629943,69.7037454], // RBL Bank Ltd Behind Sarhad Dairy  BhujKhavda Highway Bhuj
-        [22.332686,70.685678], // RBL Bank Ltd, Umiya Nivas, Main Bazar Rajkot
+        //[23.6629943,69.7037454], // RBL Bank Ltd Behind Sarhad Dairy  BhujKhavda Highway Bhuj
+        //[22.332686,70.685678], // RBL Bank Ltd, Umiya Nivas, Main Bazar Rajkot
         [27.198825,78.004234], // RBL Bank Ltd  Ground Floor  Block No: 41/4 Agra
         [24.89886,74.624665], // RBL Bank Ltd, Ground Floor, Plot No. 2 Chittorgarh
         [26.630062,74.847515], // RBL Bank Ltd, Ground Floor, Khasra No. 374/264 Ajmer
-        [25.235825,75.844109], // RBL Bank Ltd, Ground Floor, Patta no.7 District - Bundi
+        //[25.235825,75.844109], // RBL Bank Ltd, Ground Floor, Patta no.7 District - Bundi
         [13.059829,80.242364], // RBL Bank Ltd  FIRST FLOOR  RASHMI TOWERS NO.1 Chennai
-        [23.583319,72.972261], // RBL Bank Ltd Shop No 7 8 & 9 Himatnagar
+        //[23.583319,72.972261], // RBL Bank Ltd Shop No 7 8 & 9 Himatnagar
         [28.559254,77.163793], // RBL Bank Ltd  23 Community Center  Basant Lok Delhi
         [22.601021,72.835536], // RBL Bank Ltd, Shop No 1 & 2  First Floor Nadiad
         [19.022112,72.837985], // RBL Bank Ltd  .plot No.399 Mumbai
@@ -219,12 +219,12 @@ class BankLocation
         [26.915075,75.809949], // RBL Bank Ltd. SHOP NO.1 JAIPUR
         [23.012034,72.510754], // RBL Bank Ltd, Ground Floor, Shop No. 1, Safal Pegasus Ahmedabad
         [23.02062,72.468715], // RBL Bank Ltd, Shop no 8 & 9, Ground floor, Orchid Centre Ahmedabad
-        [23.452078,73.317519], // RBL Bank Ltd, Shop No. 16 & 17, Ground Floor, Sanskruti Complex, Nr Shuyog Petrol Pump, Malpur Road, Khalikpur, Khalikpur
-        [22.0104024,70.7941564], // RBL Bank Ltd, R.S. NO – 58/3, PLOT NO – 6, NR. GALAXY PETROL PUMP, NATIONAL HIGHWAY 27, VILLAGE – BHOJPARA,TALUKA – GONDAL, Gondal
+        //[23.452078,73.317519], // RBL Bank Ltd, Shop No. 16 & 17, Ground Floor, Sanskruti Complex, Nr Shuyog Petrol Pump, Malpur Road, Khalikpur, Khalikpur
+        //[22.0104024,70.7941564], // RBL Bank Ltd, R.S. NO – 58/3, PLOT NO – 6, NR. GALAXY PETROL PUMP, NATIONAL HIGHWAY 27, VILLAGE – BHOJPARA,TALUKA – GONDAL, Gondal
         [13.0658694,80.1733397], // RBL Bank Ltd, No. 135/A, PH Road, Maduravoyal, Tiruvallur Remove district Chennai
         [12.529069,78.205243], // RBL Bank Ltd. Vasavi Complex, Royaotta Road, Adjacent to State Bank of Hyderabad Krishnagiri
         [11.739232,78.926108], // RBL Bank Ltd, NO.127/2, Near Om Sakthi Kovil, Kachirayapalayam Main Road, Kattukottai, Sadaiyampattu Village, Somandarkudi Post, Kallakurichi TK Sadaiyampattu
-        [23.441065,72.842441], // RBL Bank Ltd, Shop No. 7 & 8, First Floor, Sakel Avenue, Kamalpur, Prantij
+        //[23.441065,72.842441], // RBL Bank Ltd, Shop No. 7 & 8, First Floor, Sakel Avenue, Kamalpur, Prantij
         [22.527024,88.432958], // RBL Bank Ltd, Salt Lake Electronics Complex,Block EP & GP,Plot No-X1-16, Kolkata
         [22.682425,88.282808], // RBL Bank Ltd, FLAT NO. 101 & 102, SHREYA APARTMENTS, 1ST FLOOR, Kolkata
         [22.582344,88.361539], // RBL BANK LIMITED, Metro 187, Ground Floor, Chittranjan Avenue, (formerly 11 and 12, Parbati Ghosh Lane), Police Station Girish Park, Ward no 25 Kolkata
@@ -244,23 +244,23 @@ class BankLocation
         [18.522078,73.931743], // Ground Floor, Farena Corporate Park, Sr. No. 135 & 136, Pune
         [30.356245,76.397872], // RBL Bank Ltd, Dlf Colony Banking Lane, Ground Floor, Patiala
         [30.962724,76.519073], // Ground Floor, Sco No 36, Beant Singh Aman Nagar Ropar
-        [29.933645,73.844822], // RBL Bank Ltd, Ground Floor, Murraba No. 42 & 26 - Shop No. 18-21, Sriganganagar
-        [29.978061,76.906051], // RBL Bank Ltd, Ground Floor, Pipli - Ladwa Road, Tehsil - Thanesar,
+        //[29.933645,73.844822], // RBL Bank Ltd, Ground Floor, Murraba No. 42 & 26 - Shop No. 18-21, Sriganganagar
+        //[29.978061,76.906051], // RBL Bank Ltd, Ground Floor, Pipli - Ladwa Road, Tehsil - Thanesar,
         [21.623476,73.003523], // RBL Bank Ltd, C-Block, Shop No. 1 To 5, Mayur Nagar, Opp. Lords Plaza, Old N H No. 08, Ankleshwar
         [22.555872,72.927691], // RBL Bank Ltd, “Nilkanth Estate”  Plot No.154/155, Ground Floor, Shop No G-3, Nana Bazar, Anand
         [22.994602,72.607524], // RBL Bank Ltd, Shop No. 3, Sparsh, Jai Hind Char Rasta, Ahmedabad
         [26.912799,75.743533], // RBL Bank Ltd, Shop No. C, Ground Floor, Plot No C1, C-Block, Vaibhav Complex, Jaipur
         [22.977098,88.433888], // RBL Bank Ltd., B-7/20(S), Kalyani, Besides Beri Honda Showroom, Nadia
         [11.378522,77.893337], // RBL Bank Ltd., Door No 180, Sri Balaji Towers, Tiruchengode
-        [22.746427,76.629116], // RBL Bank Ltd.,Gram Panchyat Bawadikheda Bawadikheda
-        [27.195405,75.714797], // RBL Bank Ltd,Ground Floor Anjani Hanuman Bus Stand,Harota Chomu
+        //[22.746427,76.629116], // RBL Bank Ltd.,Gram Panchyat Bawadikheda Bawadikheda
+        //[27.195405,75.714797], // RBL Bank Ltd,Ground Floor Anjani Hanuman Bus Stand,Harota Chomu
         [28.538591,77.28982], // RBL Bank Ltd.Shop No.Ja0028 & Ja0029 Jasola
         [28.703776,77.190345], // RBL Bank Ltd, Ground Floor, B-11 Gujranwala, Model Town
         [13.076184,77.798912], // RBL Bank Ltd, #4189/6275/2/Survey No 125, Ground Floor, Knd Complex,N H Road Bangalore Rural
         [17.43551,78.48829], // RBL Bank Ltd, 50 Ground Floor, Mg Road, Secundrabad
         [12.839929,77.689812], // RBL Bank Ltd, Shop No. 03 Bhavani Tower Bangalore Urban
         [22.512925,88.323666], // RBL Bank Ltd, First Floor Premises No: 51, Kolkata
-        [22.652193,76.792113], // RBL Bank Ltd. Village Nanasa, P.H. 21, Dewas
+        //[22.652193,76.792113], // RBL Bank Ltd. Village Nanasa, P.H. 21, Dewas
         [30.479983,76.594237], // RBL Bank Ltd., D-21 Caliber Market, Patiala Road Rajpura
         [31.215714,75.777591], // RBL Bank Ltd., 338,City Center Tower Phagwara
         [28.402407,77.050141], // RBL Bank Ltd., Shop No Psq R-1-Gf-009A Gurgaon
@@ -279,10 +279,10 @@ class BankLocation
         [28.683308,77.201132], // RBL Bank Ltd, Ground Floor Kamla Nagar
         [28.569955,77.362122], // RBL Bank Ltd, Ground floor, B- 258, Noida
         [28.55455,77.242722], // RBL Bank Ltd, A-13, Ground floor New Delhi
-        [30.724938,76.765355], // RBL Bank Ltd, SCO 329 Sector 35-B
+        //[30.724938,76.765355], // RBL Bank Ltd, SCO 329 Sector 35-B
         [28.643955,77.240267], // RBL Bank Ltd, Ground floor, 2/3619 Faiz Bazar Daryaganj
         [19.059752,72.899773], // RBL Bank Ltd, Samrudhhi, Plot No. 157, 18th Road, Mumbai
-        [30.90775,77.101611], // RBL Bank Ltd, Shop No. 1 & 2, Ground Floor Solan
+        //[30.90775,77.101611], // RBL Bank Ltd, Shop No. 1 & 2, Ground Floor Solan
         [12.988723,77.591873], // RBL Bank Ltd, Ground Floor, Unit No.1 Bangalore
         [22.51665,88.342027], // RBL Bank Ltd, 8 A Rashbihari Avenue Kolkata
         [25.615487,85.143162], // RBL Bank Ltd, Space No:1,2,3,4 Twin Tower Patna
@@ -340,13 +340,13 @@ class BankLocation
         [9.595014,76.529491], // RBL Bank Ltd, Ground floor, Karimattam Plazza Kottayam
         [13.029394,77.519433], // RBL Bank Ltd, No.V-2, 1st Stage, TVS Cross Road Bangalore
         [22.512521,88.367084], // RBL Bank Ltd, 38/3A Kolkata
-        [26.888973,75.803293], // RBL Bank Ltd, Shop No. 110, Ground Floor, Apex Mall, Main Tonk Road Jaipur
-        [22.756215,75.896663], // RBL Bank Ltd, Showroom No. 1, Vishal Astra, Satya Sai Sqare Indore
+        //[26.888973,75.803293], // RBL Bank Ltd, Shop No. 110, Ground Floor, Apex Mall, Main Tonk Road Jaipur
+        //[22.756215,75.896663], // RBL Bank Ltd, Showroom No. 1, Vishal Astra, Satya Sai Sqare Indore
         [19.116519,72.909865], // RBL Bank Ltd, Shop no-9, Wing B Ventura Shopping, Mumbai
         [19.114721,72.842414], // RBL Bank Ltd, B/2, Ratandeep Cosmopolitan CHS LTD. Mumbai
         [22.321456,73.197311], // RBL Bank Ltd, Shop No 1, Ground Floor, Shukan Ananta Complex Vadodara
         [22.568614,88.355007], // RBL Bank Ltd, 65, Ganesh Chandra Avenue Kolkata
-        [12.946922,77.569271], // RBL Bank Ltd, No. 98/1 Gandhi Bazar Main Road Bangalore
+        //[12.946922,77.569271], // RBL Bank Ltd, No. 98/1 Gandhi Bazar Main Road Bangalore
         [19.011729,73.034967], // RBL Bank Ltd, Shop No. 8, Trishul Goldmine Navi Mumbai
         [12.933126,77.6311], // RBL Bank Ltd, No.14, Ground Floor, 4th block Bangalore
         [18.526248,73.841564], // RBL Bank Ltd, Shop No 1, Lower Ground Floor, B wing Pune
@@ -382,7 +382,7 @@ class BankLocation
         [25.628541,85.104073], // RBL Bank Ltd, 169, Pataliputra Colony, Patna
         [17.42264,78.462282], // RBL Bank Ltd, 6-3-1239/2,Amar building ,Ground floor, Hyderabad
         [22.592286,88.420314], // RBL Bank Ltd, CG 221 Saltlake
-        [9.656695,76.506742], // RBL Bank Ltd, Pulickal Building Kottayam
+        //[9.656695,76.506742], // RBL Bank Ltd, Pulickal Building Kottayam
         [13.044096,80.183993], // RBL Bank Ltd, Ground Floor, No 175, Arcot Road Chennai
         [12.960683,77.643816], // RBL Bank Ltd, Ground Floor, Unit No. 17 & 18, No. 01 Bangalore
         [17.4431802,78.4746699], // RBL Bank Ltd, Ground Floor, 1-8-304 Secunderabad
@@ -395,6 +395,6 @@ class BankLocation
         [26.847622,80.985928], // RBL Bank Ltd, C-4/2 Vipul Khand Gomti Nagar Lucknow
         [8.889958,76.590467], // RBL Bank Ltd, Ground Floor, Sugatha Arcade Kollam
         [19.094529,72.826625], // RBL Bank Ltd, Shop No. 1, Ground Floor, Ratnadeep Building, Plot No. 29 Mumbai
-        [21.213008,81.663341], // RBL Bank Ltd, Shop No.20, Progressive Point Complex Raipur
+        //[21.213008,81.663341], // RBL Bank Ltd, Shop No.20, Progressive Point Complex Raipur
     ];
 }
