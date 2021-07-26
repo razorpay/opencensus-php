@@ -2381,6 +2381,8 @@ trait Authorize
             {
                 $gatewayInput['order']['bank_account'] = $orderBankAccount->toArray();
             }
+
+            $this->updateOrderMetaIfApplicable($payment, $gatewayInput);
         }
 
         // modify account number in gateway input for some banks
@@ -2424,6 +2426,36 @@ trait Authorize
                 'flow'      => "runPostGatewaySelectionPreProcessing"
             ]
         );
+    }
+
+    /**
+     * Method to set orderMeta in gateway input.
+     *
+     * @param Payment\Entity $payment
+     * @param array          $gatewayInput
+     */
+    protected function updateOrderMetaIfApplicable(Payment\Entity $payment, array &$gatewayInput)
+    {
+        /*
+         * Currently, there are no merchants live for this use-case.
+         * We are putting this check to avoid Database calls in If conditions.
+        */
+        if ($this->app->environment() === Environment::PRODUCTION)
+        {
+            return;
+        }
+
+        if ($payment->order->hasOrderMeta() === false)
+        {
+            return;
+        }
+
+        $formattedOrderMeta = (new Order\Core)->getFormattedOrderMeta($payment->order);
+
+        foreach ($formattedOrderMeta as $key => $value)
+        {
+            $gatewayInput['order'] = array_merge($gatewayInput['order'], [$key => $value]);
+        }
     }
 
     protected function updateTokenForEmandate(Payment\Entity $payment)

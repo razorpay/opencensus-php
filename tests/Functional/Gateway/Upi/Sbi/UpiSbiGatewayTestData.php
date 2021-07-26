@@ -295,4 +295,41 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testPaymentWithGstTaxInvoice' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'upi',
+                'tax_invoice'       => [
+                    'business_gstin'=> '123456789012345',
+                    'gst_amount'    =>  10000,
+                    'supply_type'   => 'intrastate',
+                    'cess_amount'   =>  12500,
+                    'customer_name' => 'Gaurav',
+                    'number'        => '1234',
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'tax_invoice'       => [
+                    'business_gstin'=> '123456789012345',
+                    'gst_amount'    =>  10000,
+                    'supply_type'   => 'intrastate',
+                    'cess_amount'   =>  12500,
+                    'customer_name' => 'Gaurav',
+                    'number'        => '1234',
+                ],
+            ],
+        ],
+    ],
 ];
+

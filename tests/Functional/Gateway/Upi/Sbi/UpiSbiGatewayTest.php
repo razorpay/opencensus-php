@@ -1154,6 +1154,113 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertSame($nrid($i), $entityE->getOriginal('npci_reference_id'));
     }
 
+    public function testPaymentWithGstTaxInvoice()
+    {
+        $this->ba->privateAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockServerRequestFunction(function (& $input, $action = 'authorize')
+        {
+            $this->assertCount(1, $input['order_meta']);
+        });
+
+        $order = $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+        $orderMeta = $this->getLastEntity('order_meta', true);
+
+        $this->assertNotNull($orderMeta);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['amount'] = $order['amount'];
+        $payment['order_id'] = $order['id'];
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $payment = $this->getDbLastPayment();
+        $upiEntity = $this->getDbLastEntity(Entity::UPI);
+
+        $this->assertSame(Payment\Status::CREATED, $payment->getStatus());
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity->toArray());
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        // We should have gotten a successful response
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('SUCCESS', $response['status']);
+
+        // The payment should now be authorized
+        $payment->refresh();
+        $upiEntity->refresh();
+
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment->getStatus());
+    }
+
+    public function testIntentPaymentWithGstTaxInvoice()
+    {
+        $this->sharedTerminal = $this->fixtures->create(Constants::SHARED_UPI_SBI_INTENT_TERMINAL);
+
+        $this->ba->privateAuth();
+
+        $data = $this->testData['testPaymentWithGstTaxInvoice'];
+
+        $this->mockServerRequestFunction(function (& $input, $action = 'authorize')
+        {
+            $this->assertCount(1, $input['order_meta']);
+        });
+
+        $order = $this->startTest($data);
+
+        $order = $this->getLastEntity('order', true);
+        $orderMeta = $this->getLastEntity('order_meta', true);
+
+        $this->assertNotNull($orderMeta);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['amount'] = $order['amount'];
+        $payment['order_id'] = $order['id'];
+
+        $payment['description'] = 'intentPayment';
+        unset($payment['vpa']);
+
+        $payment['_']['flow'] = 'intent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertSame("upi://pay?am=100.00&cu=INR&mc=5411&pa=some@sbi&pn=merchantname&tn=TestMerchantintentPayment&tr=pay_someid", $response['data']['intent_url']);
+
+        $paymentId = $response['payment_id'];
+
+        $payment = $this->getDbLastPayment();
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        // $this->assertTrue($asserted, '$asserted is false. Control did not reach MockRequest');
+        $upiEntity = $this->getDbLastEntity(Entity::UPI);
+
+        $this->assertSame(Payment\Status::CREATED, $payment->getStatus());
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity->toArray());
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        // We should have gotten a successful response
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('SUCCESS', $response['status']);
+
+        // The payment should now be authorized
+        $payment->refresh();
+        $upiEntity->refresh();
+
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment->getStatus());
+    }
+
     protected function makeDataCorrectionRequest($count, $filter = [])
     {
         $request = [

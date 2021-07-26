@@ -725,6 +725,11 @@ class Entity extends Base\PublicEntity
         return ($this->offers->isNotEmpty() === true);
     }
 
+    public function hasOrderMeta(): bool
+    {
+        return ($this->orderMetas->isNotEmpty() === true);
+    }
+
     public function isInternational(): bool
     {
         return ($this->getCurrency() !== Currency::INR);

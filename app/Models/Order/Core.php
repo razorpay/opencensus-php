@@ -118,6 +118,32 @@ class Core extends Base\Core
         return $order;
     }
 
+    /**
+     * Function to format ordermeta array as key-value format
+     * where key is type and value is the value array
+     *
+     * @param Entity $order
+     *
+     * @return array
+     */
+    public function getFormattedOrderMeta(Entity $order) : array
+    {
+        $orderMetas = $order->orderMetas;
+
+        $result = [];
+
+        if (($orderMetas !== null) and
+            (count($orderMetas) > 0))
+        {
+            foreach ($orderMetas as $orderMeta)
+            {
+                $result[$orderMeta->getType()] = $orderMeta->getValue();
+            }
+        }
+
+        return $result;
+    }
+
     private function createLateAuthConfigIfApplicable(&  $input, $order)
     {
         if (isset($input['payment']) === true)
