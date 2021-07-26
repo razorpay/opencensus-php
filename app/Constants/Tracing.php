@@ -32,6 +32,8 @@ class Tracing
             Route::$internalApps['capital_collections_client'],
             Route::$internalApps['pg_router'],
             Route::$internalApps['care'],
+            Route::$internalApps['admin_dashboard'],
+            Route::$internalApps['merchant_dashboard'],
             Route::$internalApps['account_service']
         );
 
