@@ -356,6 +356,7 @@ const entityDetailsMap = {
     component: SubmerchantDetails,
   },
   '/partners/submerchants/:id(acc_.+)': { component: SubmerchantDetails },
+  '/partners/submerchants/x/:id(acc_.+)': { component: SubmerchantDetails },
   '/partners/earnings/transactional/:id(comm_.+)': {
     component: EarningTransactionalDetails,
     additionalCondition: (user) => user.isAllowedView('earnings') && user.isHavingPartnerConfigs,

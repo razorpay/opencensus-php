@@ -1077,6 +1077,11 @@ export default class User {
     return this.getExpStatus('partner_app_store');
   }
 
+  get isPartnershipForXEnabled() {
+    const variant = getSplitzExperimentVariant('partnership_for_razorpayx');
+    return variant?.name === 'exposed';
+  }
+
   get canSkipPoiValidation() {
     return this.getExpStatus('bvs_personal_pan_validation');
   }

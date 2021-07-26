@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { fetchSubmerchant, resendInvite } from 'merchant/reducers/submerchant';
+import { fetchSubmerchantWithProduct, resendInvite } from 'merchant/reducers/submerchant';
 import { switchMerchant } from 'merchant/reducers/session';
 import { openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -11,6 +11,7 @@ import Details from 'merchant/views/PartnerDashboard/SubMerchant/components/Deta
 
 import InviteMerchant from './Invite';
 import { trackListEvents } from '../ga';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 @withRouter
 @connect(
@@ -18,7 +19,7 @@ import { trackListEvents } from '../ga';
     ...state.submerchant,
   }),
   {
-    fetchSubmerchant,
+    fetchSubmerchantWithProduct,
     resendInvite,
     switchMerchant,
     openModal,
@@ -26,8 +27,14 @@ import { trackListEvents } from '../ga';
   }
 )
 export default class SubmerchantDetailsContainer extends Component {
+  state={}
+
   componentWillMount() {
-    this.props.fetchSubmerchant(this.props.id, this.props.appId);
+    let product = PRODUCT_TYPE.PG;
+    if(this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
+      product = PRODUCT_TYPE.X;
+    }
+    this.props.fetchSubmerchantWithProduct(this.props.id, this.props.appId, product);
   }
 
   componentDidMount() {
@@ -37,11 +44,18 @@ export default class SubmerchantDetailsContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    let product = PRODUCT_TYPE.PG;
+    if(this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
+      product = PRODUCT_TYPE.X;
+    }
+    this.setState({
+      product
+    })
     if (
       nextProps.id !== this.props.id ||
       nextProps.appId !== this.props.appId
     ) {
-      this.props.fetchSubmerchant(nextProps.id, nextProps.appId);
+      this.props.fetchSubmerchantWithProduct(nextProps.id, nextProps.appId, product)
     }
   }
 
@@ -82,6 +96,7 @@ export default class SubmerchantDetailsContainer extends Component {
           switchMerchant={switchMerchant}
           onInviteMerchant={this.handleInviteClick}
           onResendInvite={this.handleResendInvite}
+          product={this.state.product}
         />
       </div>
     );

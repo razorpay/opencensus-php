@@ -139,6 +139,27 @@ export const SubmerchantSettlementStatusMap = {
   inactive: 'label-muted',
 };
 
+export const XSubmerchantCAStatusMap = {
+  'process started': 'label-info',
+  'request Cancelled': 'label-danger',
+  'unserviceable': 'label-danger',
+  'request rejected': 'label-danger',
+  'bank kyc in progress': 'label-pending',
+  'activation in progress': 'label-pending',
+  'request received': 'label-muted',
+  'active': 'label-success',
+  'inactive': 'label-muted',
+  'on hold': 'label-muted',
+};
+
+export const XSubmerchantVAStatusMap = {
+  activated: 'label-success',
+  activated_mcc_pending: 'label-success',
+  under_review: 'label-info',
+  rejected: 'label-danger',
+  needs_clarification: 'label-pending',
+};
+
 const entityMap = {
   payment: paymentStatusMap,
   refund: refundStatusMap,
@@ -174,5 +195,6 @@ export const RefundStatusLabel = StatusLabel(refundStatusMap);
 export const CommissionInvoiceStatusLabel = StatusLabel(commissionInvoiceStatusMap);
 export const SubmerchantSettlementLabel = StatusLabel(SubmerchantSettlementStatusMap);
 export const QRCodeStatusLabel = StatusLabel(qrCOdeStatusMap);
-
+export const XSubmerchantCAStatusLabel = StatusLabel(XSubmerchantCAStatusMap);
+export const XSubmerchantVAStatusLabel = StatusLabel(XSubmerchantVAStatusMap);
 export default (item) => StatusLabel(entityMap[item.entity])(item);

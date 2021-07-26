@@ -17,10 +17,15 @@ import ModalHeader from 'common/ui/ModalHeader';
 import InputField from 'common/ui/Forms/InputField';
 
 import { required } from 'common/utils/validators';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
+import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import BatchValidate from 'merchant/containers/BatchNew/Validate';
 
 import { trackAddNewMerchantEvents } from '../ga';
+import SelectBox from 'merchant/views/PartnerDashboard/SubMerchant/components/SelectBox';
+import Button from 'common/new-ui/Button';
+import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/components/SocialShareGroup';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 const gaEvents = setGaTrack('Dashboard - Partner Submerchant - BU');
 
@@ -36,29 +41,75 @@ const gaEvents = setGaTrack('Dashboard - Partner Submerchant - BU');
 })
 @RTracking(() => window.rzpQ.component('AddMerchant'))
 export default class AddMerchant extends Component {
-  state = {
-    file_id: '',
-    bulkMode: false,
-    bulkContactsCount: 0,
-  };
+
+  constructor(props) {
+    super(props);
+    let state = {
+      file_id: '',
+      bulkMode: false,
+      bulkContactsCount: 0,
+      step: 1,
+      merchantType: '',
+      merchantEmail: '',
+      referralUrl: '',
+    };
+    if(!props.user.isPartnershipForXEnabled) {
+      state.step = 2;
+      state.merchantType = PRODUCT_TYPE.PG
+    }
+    this.state = state;
+  }
 
   get sampleUrl() {
     return '/files/sample_submerchant_link.xlsx';
   }
 
+  getModalHeaderText = () => {
+    switch (this.state.step) {
+      case 1:
+        return 'Add New Merchants';
+      case 2:
+        return this.state.merchantType === PRODUCT_TYPE.X
+          ? 'Add New Merchants - RazorpayX'
+          : 'Add New Merchants - Razorpay Payments';
+      case 3:
+        return 'Merchant Added Successfully';
+      default:
+        return 'Add New Merchants';
+    }
+  };
+
+  fetchReferralURL = () => {
+    merchantFetch({
+      url: 'merchant/referral',
+      mode: 'live',
+      method: 'post',
+      data: {},
+    })
+      .then(({ data }) => {
+        this.setState({
+          referralUrl: data.url,
+        });
+      })
+      .catch(() => {});
+  }
+
   addNewMerchant = (params) => {
     const { user } = this.props;
+    this.fetchReferralURL();
     return this.props
-      .create(params)
+      .create({
+        ...params,
+        product: this.state.merchantType,
+      })
       .then((response) => {
         const { id } = response;
-        this.props.showNotification({
-          type: 'success',
-          message: 'Submerchant created successfully',
-        });
-        this.props.closeModal();
+        this.setState((prevState) => ({
+          step: prevState.step + 1,
+          merchantEmail: params.email,
+        }));
         this.props.tracking.trackEvent(
-          window.rzpQ.onbr().interaction('partnerships.add.submerchant', {
+          window.rzpQ.onbr().interaction('partnerships.submerchant.add.submerchant', {
             partnerID: user.id,
             mid: id,
           }),
@@ -67,7 +118,7 @@ export default class AddMerchant extends Component {
       })
       .catch(({ errors }) => {
         this.props.tracking.trackEvent(
-          window.rzpQ.onbr().interaction('partnerships.add.error', {
+          window.rzpQ.onbr().interaction('partnerships.submerchant.add.error', {
             partnerID: user.id,
             error: errors && errors[0],
           }),
@@ -83,7 +134,7 @@ export default class AddMerchant extends Component {
     const { user } = this.props;
     gaEvents.trackUploadBatch('Partner submerchant');
     this.props.tracking.trackEvent(
-      window.rzpQ.onbr().interaction('partnerships.add.multiple.upload.invite', {
+      window.rzpQ.onbr().interaction('partnerships.submerchant.add.multiple.upload.invite', {
         partnerID: user.id,
         contactsCount: this.state.bulkContactsCount,
       }),
@@ -91,6 +142,9 @@ export default class AddMerchant extends Component {
     return this.props
       .createBatch({
         file_id: this.state.file_id,
+        config: {
+          product: this.state.merchantType,
+        },
       })
       .then((response) => {
         this.props.showNotification({
@@ -116,7 +170,7 @@ export default class AddMerchant extends Component {
         bulkContactsCount: response.processable_count || 0,
       });
       this.props.tracking.trackEvent(
-        window.rzpQ.onbr().interaction('partnerships.add.multiple.upload.success', {
+        window.rzpQ.onbr().interaction('partnerships.submerchant.add.multiple.upload.success', {
           partnerID: user.id,
           contactsCount: response.processable_count || 0,
         }),
@@ -129,7 +183,7 @@ export default class AddMerchant extends Component {
   onValidationFail = (error) => {
     const { user } = this.props;
     this.props.tracking.trackEvent(
-      window.rzpQ.onbr().interaction('partnerships.add.multiple.upload.error', {
+      window.rzpQ.onbr().interaction('partnerships.submerchant.add.multiple.upload.error', {
         partnerID: user.id,
         error,
       }),
@@ -140,7 +194,7 @@ export default class AddMerchant extends Component {
     const { user } = this.props;
     if (mode === 'bulk') {
       this.props.tracking.trackEvent(
-        window.rzpQ.onbr().interaction('partnerships.add.multiple', {
+        window.rzpQ.onbr().interaction('partnerships.submerchant.add.multiple', {
           partnerID: user.id,
         }),
       );
@@ -148,6 +202,14 @@ export default class AddMerchant extends Component {
     } else {
       this.setState({ bulkMode: false });
     }
+  };
+
+  handleNextClick = () => {
+    this.setState({ step: this.state.step + 1 });
+  };
+
+  handleBackClick = () => {
+    this.setState({ step: this.state.step - 1 });
   };
 
   componentDidMount() {
@@ -161,98 +223,177 @@ export default class AddMerchant extends Component {
 
     return (
       <div class="partner-submerchant-modal">
-        <ModalHeader title="Add New Accounts" onCloseClick={this.props.closeModal} />
+        <ModalHeader title={this.getModalHeaderText()} onCloseClick={this.props.closeModal} />
         <div class="modal-body">
-          <ul class="tab-headers">
-            <li class={this.state.bulkMode ? '' : 'active'} onClick={this.handleModeChange}>
-              Add an Account
-            </li>
-            <li
-              class={this.state.bulkMode ? 'active' : ''}
-              onClick={() => this.handleModeChange('bulk')}
-            >
-              Add Multiple Accounts
-            </li>
-          </ul>
-          {/* Bulk start */}
-          <div style={{ display: this.state.bulkMode ? 'block' : 'none' }}>
-            <BatchValidate
-              onValidation={this.onValidation}
-              batchType={'partner_submerchant_invite'}
-              batchTypeText={'text'}
-              sampleUrl={this.sampleUrl}
-              gaEvents={gaEvents}
-              validateBatch={this.props.validateBatch}
-              maxRows={500}
-              maxFileSize={52428800}
-              onFileRemove={this.onValidation}
-              batchClass={'batch-upload-modal'}
-              onValidationFail={this.onValidationFail}
-            />
-            {this.state.file_id ? (
-              <div class="success-message">
-                <p>
-                  <img src="/dist/css/assets/check-round.svg" /> &nbsp;{' '}
-                  {this.state.bulkContactsCount} contacts have been identified.
-                </p>
-                <span>
-                  Email will be sent to {this.state.bulkContactsCount} identified contacts. Status
-                  of account creation will be sent to your email address within 2 hours.
-                </span>
-                <div style={{ textAlign: 'right' }}>
-                  <AsyncButton
-                    type="button"
-                    class={`btn btn-primary`}
-                    text={`Invite ${this.state.bulkContactsCount} contacts`}
-                    pendingText={`Inviting ${this.state.bulkContactsCount} contacts...`}
-                    onClick={this.handleBatchCreate}
+          <ShowWhen additionalCondition={() => this.state.step === 1}>
+            <div className="step">
+              <SelectBox
+                label={'Razorpay Payments'}
+                description={
+                  'Refer merchants to Razorpay Payment gateway and other products to receive payments'
+                }
+                onClick={() => this.setState({ merchantType: PRODUCT_TYPE.PG })}
+                checked={this.state.merchantType === PRODUCT_TYPE.PG}
+              />
+              <SelectBox
+                label={'RazorpayX'}
+                description={
+                  'Refer merchants to RazorpayX products like Current account to process payouts'
+                }
+                onClick={() => this.setState({ merchantType: PRODUCT_TYPE.X })}
+                checked={this.state.merchantType === PRODUCT_TYPE.X}
+              />
+              <div style={{ textAlign: 'right', marginTop: '25px' }}>
+                <Button.Primary
+                  onClick={this.handleNextClick}
+                  disabled={this.state.merchantType === ''}
+                  iconAfter={'arrow-forward'}
+                >
+                  Next
+                </Button.Primary>
+              </div>
+            </div>
+          </ShowWhen>
+          <ShowWhen additionalCondition={() => this.state.step === 2}>
+            <div className="step">
+              <ul class="tab-headers">
+                <li class={this.state.bulkMode ? '' : 'active'} onClick={this.handleModeChange}>
+                  Add an Account
+                </li>
+                <li
+                  class={this.state.bulkMode ? 'active' : ''}
+                  onClick={() => this.handleModeChange('bulk')}
+                >
+                  Add Multiple Accounts
+                </li>
+              </ul>
+              {/* Bulk start */}
+              <ShowWhen additionalCondition={() => this.state.bulkMode}>
+                <div>
+                  <BatchValidate
+                    onValidation={this.onValidation}
+                    batchType={'partner_submerchant_invite'}
+                    batchTypeText={'text'}
+                    sampleUrl={this.sampleUrl}
+                    gaEvents={gaEvents}
+                    validateBatch={this.props.validateBatch}
+                    maxRows={500}
+                    maxFileSize={52428800}
+                    onFileRemove={this.onValidation}
+                    batchClass={'batch-upload-modal'}
+                    onValidationFail={this.onValidationFail}
                   />
+                  {this.state.file_id ? (
+                    <div class="success-message">
+                      <p>
+                        <img src="/dist/css/assets/check-round.svg" /> &nbsp;{' '}
+                        {this.state.bulkContactsCount} contacts have been identified.
+                      </p>
+                      <span>
+                        Email will be sent to {this.state.bulkContactsCount} identified contacts.
+                        Status of account creation will be sent to your email address within 2
+                        hours.
+                      </span>
+                      <div style={{ textAlign: 'right' }}>
+                        <AsyncButton
+                          type="button"
+                          class={`btn btn-primary`}
+                          text={`Invite ${this.state.bulkContactsCount} contacts`}
+                          pendingText={`Inviting ${this.state.bulkContactsCount} contacts...`}
+                          onClick={this.handleBatchCreate}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </ShowWhen>
+
+              <ShowWhen additionalCondition={() => !this.state.bulkMode}>
+                <div class="add-single-block">
+                  {/* Merchant Name */}
+                  <div class="form-group">
+                    <label class="label-required">Account Name</label>
+                    <Field
+                      name="name"
+                      component={InputField}
+                      class="form-control"
+                      autoFocus
+                      validate={required()}
+                    />
+                  </div>
+
+                  {/* Merchant Email */}
+                  <div class="form-group">
+                    <label class={emailMandatory ? 'label-required' : ''}>Email Address</label>
+                    <Field
+                      name="email"
+                      component={InputField}
+                      validate={emailValidators}
+                      placeholder={emailMandatory ? '' : 'Optional'}
+                      class="form-control"
+                    />
+                    <span class="help-block">
+                      The Razorpay sign-up link will be sent to this email.
+                    </span>
+
+                    {!emailMandatory && (
+                      <span class="help-block">
+                        If no email is provided, your email will be mapped as the registered email
+                        ID of this merchant.
+                      </span>
+                    )}
+                  </div>
+
+                  <div class="Modal__Actions clearfix" style={{ textAlign: 'right' }}>
+                    <ShowWhen additionalCondition={(user) => user.isPartnershipForXEnabled}>
+                      <Button.Transparent
+                        onClick={this.handleBackClick}
+                        style={{ marginRight: '14px' }}
+                      >
+                        Back
+                      </Button.Transparent>
+                    </ShowWhen>
+                    <AsyncButton
+                      class="btn btn-primary"
+                      text="Send Invite"
+                      pendingText="Inviting..."
+                      onClick={handleSubmit(this.addNewMerchant)}
+                    />
+                  </div>
+                </div>
+              </ShowWhen>
+            </div>
+          </ShowWhen>
+          <ShowWhen additionalCondition={() => this.state.step === 3}>
+            <div className="step merchant-added-container">
+              <div className="success-container">
+                <div className="left-icon-container">
+                  <i className="i i-done ModeIndicator--live-icon" />
+                </div>
+                <div className="text-container">
+                  <div>
+                    <span className="success-text">
+                      A signup link has been sent to the following email
+                    </span>
+                  </div>
+                  <div>
+                    <span className="merchant-email">{this.state.merchantEmail}</span>
+                  </div>
                 </div>
               </div>
-            ) : null}
-          </div>
-          <div class="add-single-block" style={{ display: this.state.bulkMode ? 'none' : 'block' }}>
-            {/* Merchant Name */}
-            <div class="form-group">
-              <label class="label-required">Account Name</label>
-              <Field
-                name="name"
-                component={InputField}
-                class="form-control"
-                autoFocus
-                validate={required()}
-              />
+              <div className="social-share-container">
+                <div className="social-share-text">
+                  <span>You can also copy and share the link via other mediums</span>
+                </div>
+                <SocialShareGroup
+                  referralUrl={this.state.referralUrl}
+                  tracking={this.props.tracking}
+                  product={this.state.merchantType}
+                  partnerID={this.props.user.id}
+                />
+              </div>
             </div>
-
-            {/* Merchant Email */}
-            <div class="form-group">
-              <label class={emailMandatory ? 'label-required' : ''}>Email Address</label>
-              <Field
-                name="email"
-                component={InputField}
-                validate={emailValidators}
-                placeholder={emailMandatory ? '' : 'Optional'}
-                class="form-control"
-              />
-              <span class="help-block">The Razorpay sign-up link will be sent to this email.</span>
-
-              {!emailMandatory && (
-                <span class="help-block">
-                  If no email is provided, your email will be mapped as the registered email ID of
-                  this merchant.
-                </span>
-              )}
-            </div>
-
-            <div class="Modal__Actions clearfix">
-              <AsyncButton
-                class="btn btn-primary btn-block"
-                text="Send Invite"
-                pendingText="Inviting..."
-                onClick={handleSubmit(this.addNewMerchant)}
-              />
-            </div>
-          </div>
+          </ShowWhen>
         </div>
       </div>
     );

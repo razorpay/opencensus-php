@@ -23,6 +23,13 @@ export const fetchSubmerchant = (submerchantId, application_id) => {
   };
 };
 
+export const fetchSubmerchantWithProduct = (submerchantId, application_id, product) => {
+  return {
+    type: SUB_MERCHANT_FETCH_DETAILS,
+    payload: new Submerchant().fetch(submerchantId, { application_id, product }),
+  };
+};
+
 export const invite = (...args) => ({
   type: SUB_MERCHANT_INVITE,
   payload: new Submerchant().invite(...args),

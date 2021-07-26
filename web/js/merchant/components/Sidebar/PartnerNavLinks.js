@@ -7,7 +7,7 @@ export default function PartnerNavLinks() {
         label="Affiliate Accounts"
         icon="i i-account-balance text-success"
         to="/partners/submerchants"
-        additionalCondition={user => user.isAllowedView('submerchants')}
+        additionalCondition={(user) => user.isAllowedView('submerchants')}
         exact
       />
 
@@ -15,7 +15,7 @@ export default function PartnerNavLinks() {
         label="Earnings"
         icon="i i-earnings text-primary"
         to="/partners/earnings/daily"
-        additionalCondition={user =>
+        additionalCondition={(user) =>
           user.isAllowedView('earnings') && user.isHavingPartnerConfigs
         }
         exact
@@ -25,7 +25,7 @@ export default function PartnerNavLinks() {
         label="Subventions"
         icon="i i-earnings text-warning"
         to="/partners/subventions/daily"
-        additionalCondition={user =>
+        additionalCondition={(user) =>
           user.isAllowedView('earnings') && user.isHavingSubventionConfigs
         }
         exact
@@ -35,9 +35,8 @@ export default function PartnerNavLinks() {
         label="Settings"
         icon="i i-settings text-warning"
         to="/partners/settings"
-        additionalCondition={user =>
-          user.isAllowedView('partner_settings') &&
-          user.isPartner('aggregator', 'fully_managed')
+        additionalCondition={(user) =>
+          user.isAllowedView('partner_settings') && user.isPartner('aggregator', 'fully_managed')
         }
         exact
       />
@@ -46,9 +45,8 @@ export default function PartnerNavLinks() {
         label="Applications"
         icon="i i-settings text-warning"
         to="/partners/applications"
-        additionalCondition={user =>
-          user.isAllowedView('partner_applications') &&
-          user.isPartner('pure_platform')
+        additionalCondition={(user) =>
+          user.isAllowedView('partner_applications') && user.isPartner('pure_platform')
         }
         exact
       />
@@ -59,9 +57,7 @@ export default function PartnerNavLinks() {
         to="/partners/reports"
         isPending={false}
         // disabling for reseller partner not having partner configs
-        additionalCondition={user =>
-          !user.isPartner('reseller') || user.isHavingPartnerConfigs
-        }
+        additionalCondition={(user) => !user.isPartner('reseller') || user.isHavingPartnerConfigs}
       />
     </>
   );

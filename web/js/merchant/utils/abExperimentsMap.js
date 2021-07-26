@@ -53,6 +53,13 @@ export default {
     // prod experiment ids
     'H7UYFAJIqhQB0X',
   ],
+  partnership_for_razorpayx: [
+    // beta experiment ids
+    'HNHi7nieMQCDeh',
+
+    // prod experiment ids
+    'HbwBfwuYGuM2Xx',
+  ],
   whats_new_lazy_experiment: [
     // beta experiment ids
     'HPhSWihQaCQ2wJ',

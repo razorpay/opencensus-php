@@ -8,10 +8,16 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
 import AsyncButton from 'react-async-button';
 
-import { ActivationStatusLabel, SubmerchantSettlementLabel } from 'merchant/components/StatusLabel';
+import {
+  ActivationStatusLabel,
+  SubmerchantSettlementLabel,
+  XSubmerchantCAStatusLabel,
+  XSubmerchantVAStatusLabel,
+} from 'merchant/components/StatusLabel';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 export default (props) => {
-  const { submerchant, isLoading, error, onResendInvite } = props;
+  const { submerchant, isLoading, error, onResendInvite, product } = props;
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -50,21 +56,45 @@ export default (props) => {
                   <Time value={submerchant.created_at} format="LL" />
                 </EntityDetailRow>
 
-                {/* Status of Activation */}
-                <EntityDetailRow label="Activation Status">
-                  {submerchant.details && submerchant.details.activation_status ? (
-                    <ActivationStatusLabel status={submerchant.details.activation_status} />
-                  ) : (
-                    <span class="label status-label label-warning">Not Submitted</span>
-                  )}
-                </EntityDetailRow>
+                <ShowWhen additionalCondition={() => product === PRODUCT_TYPE.PG}>
+                  {/* Status of Activation */}
+                  <EntityDetailRow label="Activation Status">
+                    {submerchant.details && submerchant.details.activation_status ? (
+                      <ActivationStatusLabel status={submerchant.details.activation_status} />
+                    ) : (
+                      <span class="label status-label label-warning">Not Submitted</span>
+                    )}
+                  </EntityDetailRow>
 
-                {/* Status of Settlement */}
-                <EntityDetailRow label="Settlement Status">
-                  <SubmerchantSettlementLabel
-                    status={submerchant.hold_funds ? 'inactive' : 'active'}
-                  />
-                </EntityDetailRow>
+                  {/* Status of Settlement */}
+                  <EntityDetailRow label="Settlement Status">
+                    <SubmerchantSettlementLabel
+                      status={submerchant.hold_funds ? 'inactive' : 'active'}
+                    />
+                  </EntityDetailRow>
+                </ShowWhen>
+                
+                <ShowWhen additionalCondition={() => product === PRODUCT_TYPE.X}>
+                  <EntityDetailRow label="Virtual Account Status">
+                    <XSubmerchantVAStatusLabel
+                      status={
+                        submerchant.banking_account && submerchant.banking_account.va_status
+                          ? submerchant.banking_account.va_status.toLowerCase()
+                          : 'under_review'
+                      }
+                    />
+                  </EntityDetailRow>
+
+                  <EntityDetailRow label="Current Account Status">
+                    <XSubmerchantCAStatusLabel
+                      status={
+                        submerchant.banking_account && submerchant.banking_account.ca_status
+                          ? submerchant.banking_account.ca_status.toLowerCase()
+                          : 'inactive'
+                      }
+                    />
+                  </EntityDetailRow>
+                </ShowWhen>
 
                 {/* application details for pure platform partners */}
                 {submerchant.application && (
@@ -77,7 +107,9 @@ export default (props) => {
 
                 <ShowWhen
                   myRole="owner admin manager"
-                  additionalCondition={(user) => user.isPartner('aggregator')}
+                  additionalCondition={(user) =>
+                    user.isPartner('aggregator') && product === PRODUCT_TYPE.PG
+                  }
                 >
                   <div class="pair-group-item">
                     {submerchant.user ? (
