@@ -73,13 +73,14 @@ class UfhService extends BaseUfhClient
             array_except($requestData, [self::FILE]));
 
         return [
-            'id'         => self::MOCK_FILE_ID,
-            'type'       => $type,
-            'name'       => $storageFileName,
-            'created_at' => time(),
-            'mime'       => 'image/png',
-            'location'   => $storageFileName,
-            'size'       => 12345
+            'id'           => self::MOCK_FILE_ID,
+            'type'         => $type,
+            'name'         => $storageFileName,
+            'created_at'   => time(),
+            'mime'         => 'image/png',
+            'location'     => $storageFileName,
+            'size'         => 12345,
+            'display_name' => $requestData['display_name'],
         ];
     }
 

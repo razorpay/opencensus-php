@@ -1,0 +1,198 @@
+<?php
+
+namespace RZP\Models\Merchant\InternationalEnablement;
+
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+
+class Core extends Base\Core
+{
+    public function preview(): array
+    {
+        $detailEntity = (new Detail\Core)->getLatest();
+
+        $enablementProgress = Constants::NOT_STARTED;
+
+        $percentageCompletion = 0;
+
+        $lastUpdatedAt = NULL;
+
+        if (is_null($detailEntity) === false)
+        {
+            if ($detailEntity->isSubmitted() === true)
+            {
+                $enablementProgress = Constants::SUBMITTED;
+            }
+            else
+            {
+                $enablementProgress = Constants::IN_PROGRESS;
+            }
+
+            $percentageCompletion = $this->getPercentageCompletion($detailEntity);
+
+            $lastUpdatedAt = $detailEntity->getUpdatedAt();
+        }
+
+        $newFlow = $this->routeThroughNewFlow();
+
+        return [
+            Constants::ENABLEMENT_PROGRESS   => $enablementProgress,
+            Constants::PERCENTAGE_COMPLETION => $percentageCompletion,
+            Constants::NEW_FLOW              => $newFlow,
+            Constants::LAST_UPDATED_AT       => $lastUpdatedAt,
+        ];
+    }
+
+    public function get(): ?Detail\Entity
+    {
+        return (new Detail\Core)->getLatest();
+    }
+
+    public function upsert(array $input, string $action): Detail\Entity
+    {
+        $documents = [];
+
+        if (array_key_exists(Detail\Entity::DOCUMENTS, $input) === true)
+        {
+            $documents = $input[Detail\Entity::DOCUMENTS];
+        }
+
+        unset($input[Detail\Entity::DOCUMENTS]);
+
+        $newDetailEntity = $this->repo->transaction(function() use ($input, $documents, $action)
+        {
+            list($oldDetailEntity, $newDetailEntity) = 
+                (new Detail\Core)->upsert($input, $action);
+
+            if (is_null($documents) === true)
+            {
+                $documents = [];
+            }
+
+            (new Document\Core)->upsertBulk($oldDetailEntity, $newDetailEntity, $documents, $action);
+
+            return $newDetailEntity;
+        });
+
+        return $newDetailEntity;
+    }
+
+    public function discard()
+    {
+        $discardedEntity = $this->repo->transaction(function()
+        {
+            $detailEntity = (new Detail\Core)->getLatest();
+
+            if ((is_null($detailEntity) === true) or ($detailEntity->isSubmitted() === true))
+            {
+                return null;
+            }
+
+            $detailEntity->documents()->delete();
+
+            $detailEntity->delete();
+
+            return $detailEntity;
+        });
+
+        return $discardedEntity;
+    }
+
+    private function getPercentageCompletion(Detail\Entity $detailEntity)
+    {
+        $actualAttributesPresent = 0;
+
+        $requiredAttributesForCalculation = $this->convertToExternalFormat($detailEntity);
+
+        $documents = $requiredAttributesForCalculation[Detail\Entity::DOCUMENTS] ?? [];
+
+        unset($requiredAttributesForCalculation[Detail\Entity::DOCUMENTS]);
+
+        $removeAttributesForCalculation = [
+            Detail\Entity::CREATED_AT,
+            Detail\Entity::UPDATED_AT,
+            Detail\Entity::SUBMITTED_AT,
+            Detail\Entity::PRODUCTS,
+            Detail\Entity::IMPORT_EXPORT_CODE,
+            Detail\Entity::SOCIAL_MEDIA_PAGE_LINK,
+        ];
+
+        $goodsType = $requiredAttributesForCalculation[Detail\Entity::GOODS_TYPE] ?? '';
+
+        if ($goodsType === Detail\Constants::GOODS_TYPE_DIGITAL_SERVICES)
+        {
+            $removeAttributesForCalculation[] = Detail\Entity::LOGISTIC_PARTNERS;
+
+            $removeAttributesForCalculation[] = Detail\Entity::SHIPPING_POLICY_LINK;
+        }
+
+        // unset unwanted values
+        foreach ($removeAttributesForCalculation as $attr)
+        {
+            unset($requiredAttributesForCalculation[$attr]);
+        }
+
+        $totalAttributesForCalculation = count($requiredAttributesForCalculation);
+
+        // % calculation for details
+
+        foreach ($requiredAttributesForCalculation as $value)
+        {
+            if(is_null($value) === false)
+            {
+                ++$actualAttributesPresent;
+            }
+        }
+
+        // % calculation for documents
+
+        $acceptsIntlTxn = $requiredAttributesForCalculation[Detail\Entity::ACCEPTS_INTL_TXNS];
+
+        if ($acceptsIntlTxn === true)
+        {
+            $requiredDocs = Document\Constants::MANDATORY_DOCUMENT_TYPES;
+
+            $suppliedDocs = array_keys($documents);
+
+            $missingDocs = array_diff($requiredDocs, $suppliedDocs);
+
+            $actualAttributesPresent += count($requiredDocs) - count($missingDocs);
+
+            $totalAttributesForCalculation += count($requiredDocs);
+        }
+
+        return intval($actualAttributesPresent * 100 / $totalAttributesForCalculation);
+    }
+
+    private function routeThroughNewFlow(): bool
+    {
+        $mode = $this->app['rzp.mode'];
+
+        $merchantId = $this->merchant->getId();
+
+        $variant = $this->app->razorx->getTreatment($merchantId, Constants::IE_RAZORX_FEATURE, $mode);
+
+        $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_QUESTIONNAIRE_RAZORX_VARIANT, [
+            'merchant_id'     => $merchantId,
+            'razorx_variant'  => $variant,
+        ]);
+
+        return ($variant === Constants::RAZORX_VARIANT_NEW_FLOW);
+    }
+
+    public function convertToExternalFormat(Detail\Entity $detailEntity)
+    {
+        $publicAttributes = $detailEntity->toArrayPublic();
+
+        $documents = (new Document\Core)->convertDocObjectsToExternalFormat($detailEntity->documents);
+
+        if (empty($documents) === true)
+        {
+            $documents = null;
+        }
+
+        $publicAttributes['documents'] = $documents;
+
+        return $publicAttributes;
+    }
+}

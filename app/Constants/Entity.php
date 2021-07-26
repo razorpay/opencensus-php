@@ -481,6 +481,10 @@ class Entity
     const MERCHANT_REWARD   = 'merchant_reward';
     const REWARD_COUPON     = 'reward_coupon';
 
+    const MERCHANT_INTERNATIONAL_ENABLEMENT = 'merchant_international_enablement';
+    const INTERNATIONAL_ENABLEMENT_DETAIL   = 'international_enablement_detail';
+    const INTERNATIONAL_ENABLEMENT_DOCUMENT = 'international_enablement_document';
+
     // merchant auto kyc escalations
     const MERCHANT_AUTO_KYC_ESCALATIONS  = 'merchant_auto_kyc_escalations';
 
@@ -924,6 +928,10 @@ class Entity
         self::STAKEHOLDER       => \RZP\Models\Merchant\Stakeholder::class,
         self::MERCHANT_DOCUMENT => \RZP\Models\Merchant\Document::class,
         self::BVS_VALIDATION    => \RZP\Models\Merchant\BvsValidation::class,
+
+        self::MERCHANT_INTERNATIONAL_ENABLEMENT => \RZP\Models\Merchant\InternationalEnablement::class,
+        self::INTERNATIONAL_ENABLEMENT_DETAIL   => \RZP\Models\Merchant\InternationalEnablement\Detail::class,
+        self::INTERNATIONAL_ENABLEMENT_DOCUMENT => \RZP\Models\Merchant\InternationalEnablement\Document::class,
 
         self::REPAYMENT_BREAKUP => \RZP\Models\CapitalTransaction::class,
         self::INSTALLMENT       => \RZP\Models\CapitalTransaction::class,

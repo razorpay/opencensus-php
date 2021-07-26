@@ -5896,13 +5896,18 @@ class Service extends Base\Service
         return $batchAction;
     }
 
-    public function requestInternationalProduct(array $input): array
+    public function requestInternationalProduct(array $input, bool $draft = false): array
     {
         $validator = (new Validator);
 
         $validator->validateInput('request_international_product', $input);
 
         $validator->validateMerchantForProductInternational($this->merchant);
+
+        if ($draft === true)
+        {
+            return [];
+        }
 
         $merchant = $this->core()->requestInternationalProduct($input);
 

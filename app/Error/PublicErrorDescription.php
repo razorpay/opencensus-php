@@ -1281,6 +1281,8 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_STATUS_TRANSITION                                     = 'The status transition is invalid';
     const BAD_REQUEST_PRODUCT_INTERNATIONAL_REQUIRED                                = 'The product international field cant be empty';
     const BAD_REQUEST_INTERNATIONAL_ENABLEMENT_INVALID_STATUS                       = 'Invalid status for international enablement';
+    const BAD_REQUEST_INTERNATIONAL_ENABLEMENT_NO_ENTRY_FOUND                       = 'No previous activity found for international enablement.';
+    const BAD_REQUEST_INTERNATIONAL_ENABLEMENT_DISCARD                              = 'No In Progress activity found for international enablement.';
     const INVALID_DATA_PARSER                                                       = 'Invalid Data Parser Requested';
     const WORKFLOW_CREATION_FAILURE                                                 = 'Workflow Creation Failed';
     const BAD_REQUEST_INVALID_PERMISSION                                            = 'The permission for current workflow is invalid.';
@@ -1442,6 +1444,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYLATER_INSTRUMENT_INVALID                                   = 'Invalid paylater instrument code';
     const BAD_REQUEST_EMI_INSTRUMENT_INVALID                                        = 'Invalid emi instrument code';
     const BAD_REQUEST_PAYMENT_CUSTOMER_DROPPED_OFF                                  = 'Customer dropped off without completing the payment';
+    const BAD_REQUEST_INTERNATIONAL_ENABLEMENT_VALIDATION_FAILURE                   = 'International enablement details couldn\'t be captured due to validation failure.';
 
     // Upi Payment Service
     const SERVER_ERROR_UPI_PAYMENT_SERVICE_REQUEST_ERROR                            = 'The server encountered an error. The incident has been reported to admins.';

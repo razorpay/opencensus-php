@@ -2570,6 +2570,33 @@ class Route
             'MerchantRiskAlertController@identifyBlacklistCountryAlerts'
         ],
 
+        // international enablement
+        'merchant_international_enablement_preview' => [
+            'get',
+            'international_enablement/preview',
+            'MerchantInternationalEnablementController@preview',
+        ],
+        'merchant_international_enablement_get' => [
+            'get',
+            'international_enablement',
+            'MerchantInternationalEnablementController@get',
+        ],
+        'merchant_international_enablement_draft' => [
+            'post',
+            'international_enablement/draft',
+            'MerchantInternationalEnablementController@draft',
+        ],
+        'merchant_international_enablement_submit' => [
+            'post',
+            'international_enablement/submit',
+            'MerchantInternationalEnablementController@submit',
+        ],
+        'merchant_international_enablement_discard' => [
+            'delete',
+            'international_enablement',
+            'MerchantInternationalEnablementController@discard',
+        ],
+
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.
         'admin_tpv_create'                        => ['post',    'admin/tpv/create',                                        'BankingAccountTpvController@adminCreateTpv'                   ],
@@ -4186,6 +4213,12 @@ class Route
         // Sub Virtual Account routes
         'sub_virtual_account_list',
         'sub_virtual_account_transfer_with_otp',
+
+        'merchant_international_enablement_preview',
+        'merchant_international_enablement_get',
+        'merchant_international_enablement_draft',
+        'merchant_international_enablement_submit',
+        'merchant_international_enablement_discard',
     ];
 
     //
@@ -7502,6 +7535,11 @@ class Route
             'workflow_payout_amount_rules',
             'banking_account_service_routes',
             'banking_account_service_pincode_serviceability_check',
+            'merchant_international_enablement_preview',
+            'merchant_international_enablement_get',
+            'merchant_international_enablement_draft',
+            'merchant_international_enablement_submit',
+            'merchant_international_enablement_discard',
         ],
 
         'admin_dashboard' => [
@@ -9172,6 +9210,12 @@ class Route
 
             'merchant_risk_data',
             'oauth_application_update_admin',
+
+            'merchant_international_enablement_preview',
+            'merchant_international_enablement_get',
+            'merchant_international_enablement_draft',
+            'merchant_international_enablement_submit',
+            'merchant_international_enablement_discard',
 
             // metro
             'metro_project_create',

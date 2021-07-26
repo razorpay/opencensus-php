@@ -371,6 +371,10 @@ class Table
     const MERCHANT_PRODUCTS         = 'merchant_products';
     const MERCHANT_PRODUCT_REQUEST  = 'merchant_product_requests';
 
+    // International Enablement
+    const INTERNATIONAL_ENABLEMENT_DETAIL   = 'international_enablement_details';
+    const INTERNATIONAL_ENABLEMENT_DOCUMENT = 'international_enablement_documents';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,
         Entity::AXIS_GENIUS                        => self::MIGS,

@@ -5,21 +5,22 @@ namespace RZP\Models\GenericDocument;
 class ResponseHelper
 {
     const DOWNLOAD_FILE_RESPONSE_KEY_MAPPER = [
-        Constants::SIGNED_URL => Constants::URL,
-        Constants::CREATED_AT => Constants::CREATED_AT,
-        Constants::MIME       => Constants::MIME_TYPE,
-        Constants::TYPE       => Constants::PURPOSE,
-        Constants::CREATED_AT => Constants::CREATED_AT,
-        Constants::SIZE       => Constants::SIZE,
-        Constants::ID         => Constants::ID
+        Constants::SIGNED_URL   => Constants::URL,
+        Constants::CREATED_AT   => Constants::CREATED_AT,
+        Constants::MIME         => Constants::MIME_TYPE,
+        Constants::TYPE         => Constants::PURPOSE,
+        Constants::SIZE         => Constants::SIZE,
+        Constants::ID           => Constants::ID,
+        Constants::DISPLAY_NAME => Constants::DISPLAY_NAME,
     ];
 
     const UPLOAD_FILE_RESPONSE_KEY_MAPPER = [
-        Constants::MIME       => Constants::MIME_TYPE,
-        Constants::TYPE       => Constants::PURPOSE,
-        Constants::CREATED_AT => Constants::CREATED_AT,
-        Constants::SIZE       => Constants::SIZE,
-        Constants::ID         => Constants::ID
+        Constants::MIME         => Constants::MIME_TYPE,
+        Constants::TYPE         => Constants::PURPOSE,
+        Constants::CREATED_AT   => Constants::CREATED_AT,
+        Constants::SIZE         => Constants::SIZE,
+        Constants::ID           => Constants::ID,
+        Constants::DISPLAY_NAME => Constants::DISPLAY_NAME,
     ];
 
     public static function getDownloadFileResponse(array $data): array

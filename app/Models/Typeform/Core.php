@@ -62,6 +62,16 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
+    public function processInHouseQuestionnaire(Merchant $merchant, array $workflowData, array $input)
+    {
+        $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_WORKFLOW_TRIGGERED, [
+            'mid'           => $merchant->getId(),
+            'workflow_data' => $workflowData,
+        ]);
+
+        $this->createInternationalWorkflow($merchant, $workflowData, $input);
+    }
+
     /**
      * @param array $input
      *

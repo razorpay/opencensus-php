@@ -3811,6 +3811,20 @@ class AdminFetch
             Entity::CARE_CALLBACK_OPERATOR => [
 
             ],
+
+            Entity::INTERNATIONAL_ENABLEMENT_DETAIL => [
+                'merchant_id'  => [
+                    Fetch::LABEL => 'Merchant ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::INTERNATIONAL_ENABLEMENT_DOCUMENT => [
+                'international_enablement_detail_id'  => [
+                    Fetch::LABEL => 'International Enablement Detail ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
         ];
 
         //

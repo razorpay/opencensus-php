@@ -40,6 +40,7 @@ class Error extends Support\Fluent
         ErrorCode::BAD_REQUEST_USER_2FA_VALIDATION_REQUIRED,
         ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
         ErrorCode::BAD_REQUEST_USER_2FA_LOCKED,
+        ErrorCode::BAD_REQUEST_INTERNATIONAL_ENABLEMENT_VALIDATION_FAILURE,
     ];
 
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
