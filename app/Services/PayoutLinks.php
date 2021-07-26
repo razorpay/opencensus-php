@@ -636,7 +636,7 @@ class PayoutLinks
 
         $data['header'] = $header;
 
-        $data['input'] = json_encode($input, true);
+        $data['input'] = file_get_contents("php://input");
 
         /*$calculatedHmac = base64_encode(hash_hmac('sha256', json_encode($input, true), 'secret', true));*/
 
