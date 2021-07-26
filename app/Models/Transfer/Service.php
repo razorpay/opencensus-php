@@ -516,7 +516,9 @@ class Service extends Base\Service
                     ]
                 );
 
-                Jobs\TransferProcess::dispatch($this->mode, $paymentId, Transfer\Constant::PAYMENT);
+                $payment = $this->repo->payment->find($paymentId);
+
+                $this->core->dispatchForTransferProcessing(Constant::PAYMENT, $payment);
 
                 array_push($payments, $paymentId);
 
@@ -617,7 +619,7 @@ class Service extends Base\Service
                     ]
                 );
 
-                Jobs\TransferProcess::dispatch($this->mode, $payment->getId());
+                $this->core->dispatchForTransferProcessing(Constant::ORDER, $payment);
 
                 array_push($transferOrderIds, $orderId);
             }

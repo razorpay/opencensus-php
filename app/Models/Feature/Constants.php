@@ -740,6 +740,8 @@ class Constants
      */
     const DISPUTE_PRESENTMENT = 'dispute_presentment';
 
+    const ROUTE_KEY_MERCHANTS_QUEUE = 'route_key_merchants_queue';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1073,6 +1075,7 @@ class Constants
         self::SKIP_SUBM_ONBOARDING_COMM       => true,
         self::SKIP_CUSTOMER_ID_CHECKOUT       => true,
         self::DISPUTE_PRESENTMENT             => true,
+        self::ROUTE_KEY_MERCHANTS_QUEUE       => true,
     ];
 
     // Entity type constants
@@ -1580,6 +1583,11 @@ class Constants
             'display_name'  => 'Skip sending customer_id to checkout',
             'documentation' => '',
         ],
+        self::ROUTE_KEY_MERCHANTS_QUEUE => [
+            'feature'       => self::ROUTE_KEY_MERCHANTS_QUEUE,
+            'display_name'  => 'To use new transfer processing queue',
+            'documentation' => '',
+        ]
     ];
 
     /**
