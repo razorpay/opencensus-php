@@ -6559,6 +6559,7 @@ class Route
             'contact_update_internal',
             'contact_create_internal',
             'fund_account_get_internal',
+            'fund_account_list_internal',
             'payout_fetch_by_id_internal',
             'payout_create_internal',
             'user_fetch_internal',
