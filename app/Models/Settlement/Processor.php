@@ -57,6 +57,8 @@ class Processor extends Base\Core
 
     const MUTEX_SETTLEMENT_CREATE_TIMEOUT  = 900;
 
+    const NEGATIVE_BALANCE_ERROR_MESSAGE = 'Something very wrong is happening! Balance is going negative';
+
     public function __construct()
     {
         parent::__construct();
@@ -1128,6 +1130,20 @@ class Processor extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $errorMsg      = $e->getMessage();
+            $exceptionData = $e->getData();
+
+            if ($errorMsg === self::NEGATIVE_BALANCE_ERROR_MESSAGE)
+            {
+                $setlAmount = -1 * $exceptionData['amount'];
+
+                $balance = $exceptionData['balance']['balance'];
+
+                $prevBalance = $balance + $setlAmount;
+
+                $errorMsg .= " { balance : $prevBalance, setl_amount : $setlAmount }";
+            }
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
@@ -1140,7 +1156,7 @@ class Processor extends Base\Core
                 'transaction_id'                        => null,
                 'settlement_transfer_transaction_id'    => null,
                 'duplicate'                             => null,
-                'error'                                 => $e->getMessage(),
+                'error'                                 => $errorMsg,
             ];
         }
     }
