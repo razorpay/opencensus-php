@@ -21,6 +21,7 @@ import { DetailsDrawer } from './Modals/PaytmWallet/DetailsDrawer';
 import { bindActionCreators } from 'redux';
 import {
   ACTION_REQUIRED,
+  ACTIVATED_ACTION_REQUIRED,
   REQUESTED,
   PENDING,
   ACTIVATED,
@@ -286,7 +287,7 @@ class LeafListItem extends React.Component {
         'create-ticket',
         'ticket',
         () => {
-          rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+          rzpTicketSystem.setPrefill('#request', ['merchant', 'add-payment-methods']);
         },
         () => {
           setTimeout(() => {
@@ -314,15 +315,18 @@ class LeafListItem extends React.Component {
       pending: 'pending status',
       rejected: 'rejected status',
       action_required: 'action-required status',
+      activated_action_required: 'activated-action-required status',
       greyed: 'btn btn-primary disabled',
     };
 
     let getListClass = (status, path) => {
       if (
-        [ACTION_REQUIRED, REJECTED].includes(status) ||
+        [REJECTED, ACTION_REQUIRED].includes(status) ||
         (path === 'pg.cards.domestic.amex' && status === REQUESTABLE)
       ) {
         return 'action-required-list-item';
+      } else if (status === ACTIVATED_ACTION_REQUIRED) {
+        return 'activated-action-required-list-item';
       } else if (status === GREYED) {
         return 'list-item-disabled';
       } else if ((status === ACTIVATED && path === 'pg.wallet.paytm') || status === REQUESTED) {
@@ -340,6 +344,7 @@ class LeafListItem extends React.Component {
       pending: 'Your request has been forwarded for approval',
       rejected: 'Your request has been rejected',
       action_required: 'Action required on your end to complete the process',
+      activated_action_required: 'We need some more details regarding your request',
     };
     const displayName = (name) => {
       const displayTextStyle = {
@@ -409,6 +414,7 @@ class LeafListItem extends React.Component {
               ACTIVATED,
               REJECTED,
               ACTION_REQUIRED,
+              ACTIVATED_ACTION_REQUIRED,
               REQUESTABLE,
               GREYED,
               ACCOUNT_LINKABLE,
@@ -487,7 +493,9 @@ class LeafListItem extends React.Component {
                 <div className="flex-end">
                   <div class={ctaClass[instrument.status]}>
                     <>
-                      {instrument.status.replace('_', ' ')}
+                      {instrument.status === ACTIVATED_ACTION_REQUIRED
+                        ? 'activated'
+                        : instrument.status.replace('_', ' ')}
                       <Popover align="bottom" theme="dark">
                         <PopoverBody>
                           <div style={{ textAlign: 'left', textTransform: 'none' }}>
@@ -503,19 +511,10 @@ class LeafListItem extends React.Component {
         </div>
         {/* Requested state */}
         {instrument.status === REQUESTED && (
-          <div className="flex-end instrument-description">
-            <div
-              className="instrument-description-container"
-              style={{
-                display: 'flex',
-                flexGrow: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-evenly',
-              }}
-            >
+          <div className="instrument-description">
+            <div className="instrument-description-container requested-list-item">
               <i className="i i-info-outline"></i>
-              <p style={{ fontSize: '14px' }}>
+              <p>
                 Estimated date of enablement:{' '}
                 <strong>
                   {instrumentsTat &&
@@ -545,7 +544,7 @@ class LeafListItem extends React.Component {
               )}
           </div>
         )}
-        {(isAmex || [ACTION_REQUIRED, REJECTED].includes(instrument.status)) && (
+        {(isAmex || [REJECTED, ACTION_REQUIRED].includes(instrument.status)) && (
           <>
             <div class="comment" title={instrument.comment}>
               <i class="i i-info-outline" />
@@ -556,6 +555,34 @@ class LeafListItem extends React.Component {
               </p>
             </div>
           </>
+        )}
+        {instrument.status === ACTIVATED_ACTION_REQUIRED && (
+          <div className="comment">
+            <details className="description" open>
+              <summary className="title">
+                <div>
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/instrument-request/trending.png"
+                    alt="Boost Success Rate"
+                    width="15px"
+                    height="10px"
+                  />
+                  Boost Success Rate
+                </div>
+                <div className="toggle">
+                  <i className="i i-chevron-down"></i>
+                </div>
+              </summary>
+              <div className="description">
+                {isAmex
+                  ? 'Due to recent data localisation guidelines compliance issue, Amex has stopped onboarding merchants on their network. We will notify you when this option becomes available again.'
+                  : instrument.comment || 'No comments available'}
+              </div>
+              <div className="action">
+                <a onClick={this.handleRaiseRequest}>Raise Request</a> to know more.
+              </div>
+            </details>
+          </div>
         )}
       </li>
     );

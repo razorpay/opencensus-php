@@ -258,6 +258,42 @@ $checkout-modal-width = 400px
             font-size: 20px
           p
             margin: 5px 10px
+      li.activated-action-required-list-item
+        height: auto
+        padding: 15px
+        .comment
+          margin-top: 10px
+          background: rgba(205, 130, 20, 0.1);
+          details
+            padding: 0 10px
+            width: 100%
+            summary
+              display: flex
+              align-items: center
+              justify-content: space-between
+              font-weight: 400
+              font-size: 14px
+              line-height: 20px            
+              color: #CD8214
+              padding: 10px 0
+              cursor: pointer
+              img
+                margin-right: 10px
+            .description
+              padding-bottom: 10px
+            .action
+              padding-bottom: 10px
+          details[open]
+            .toggle
+              transform: rotate(180deg)
+            summary ~ * 
+              animation: sweep .5s ease-in-out
+
+          @keyframes sweep {
+            0%    {opacity: 0; transform: translateX(0)}
+            100%  {opacity: 1; transform: translateX(0)}
+          }
+
       li.list-item-has-description 
         height: auto
         padding: 10px 15px
@@ -265,6 +301,15 @@ $checkout-modal-width = 400px
           flex-wrap: wrap
         .detail
           padding: 0
+        .requested-list-item
+          width: 100%
+          display: flex
+          align-items: center
+          i
+            margin: 5px 10px 2px 0
+          p
+            font-size: 14px
+            margin: 5px 10px
       li.list-item-has-long-description
         min-height: 105px
         p
@@ -286,7 +331,7 @@ $checkout-modal-width = 400px
       border: none
       height: 25px
       user-select: none
-    .activated
+    .activated, .activated-action-required
       min-width: 80px
       color: #1F890E
       background: rgba(31, 137, 14, 0.1)

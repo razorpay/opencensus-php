@@ -877,7 +877,10 @@ export default function (state = initialState, action) {
       action.payload.data.forEach((s) => {
         let pathToFind = s.instrument.replace('pg.', '').split('.');
         let path = findPath(pathToFind, pg);
-        if (s.comment && ['action_required', 'rejected'].includes(s.status)) {
+        if (
+          s.comment &&
+          ['action_required', 'rejected', 'activated_action_required'].includes(s.status)
+        ) {
           let rootPath = path.split('.')[0];
           lodashset(stateClone, `${rootPath}.actionItems["${s.instrument}"]`, s.comment);
         }
@@ -889,7 +892,7 @@ export default function (state = initialState, action) {
         lodashset(stateClone, `${path}.path`, s.instrument);
         lodashset(stateClone, `${path}.status`, s.status);
         lodashset(stateClone, `${path}.created_at`, s.created_at);
-        if (['action_required', 'rejected'].includes(s.status)) {
+        if (['action_required', 'rejected', 'activated_action_required'].includes(s.status)) {
           lodashset(stateClone, `${path}.comment`, s.comment);
         }
         if (s.status === 'greyed') {
