@@ -543,6 +543,21 @@ final class FactoryData
                                                 ]
         );
 
+       $factory(\RZP\Models\Order\OrderMeta\Entity::class, [
+           'id'              => $faker->uniqueid,
+           'type'            => 'tax_invoice',
+           'value'           => [
+               'business_gstin' => '123456789012345',
+               'gst_amount'     =>  10000,
+               'supply_type'    => 'intrastate',
+               'cess_amount'    =>  12500,
+               'customer_name'  => 'Test Customer',
+               'number'         => '1234',
+               "date"           => "1589994898",
+           ],
+         ]
+       );
+
         $factory(\RZP\Models\Item\Entity::class, [
                                                    'id'            => '1000000000item',
                                                    'merchant_id'   => '10000000000000',

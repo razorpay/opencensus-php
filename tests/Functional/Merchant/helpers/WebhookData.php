@@ -74,6 +74,56 @@ return [
         ],
     ],
 
+    'testOrderPaidWebhookEventDataWithTaxInvoiceBlock' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'order.paid',
+            'contains' => ['payment', 'order'],
+            'payload' => [
+                'order' => [
+                    'entity' => [
+                        'entity'          => 'order',
+                        'amount'          => 50000,
+                        'amount_paid'     => 50000,
+                        'amount_due'      => 0,
+                        'receipt'         => 'random',
+                        'currency'        => 'INR',
+                        'status'          => 'paid',
+                        'attempts'        => 1,
+                        'notes'           => [],
+                        'tax_invoice'         => [
+                            'business_gstin'=> '123456789012345',
+                            'gst_amount'    =>  10000,
+                            'supply_type'   => 'intrastate',
+                            'cess_amount'   =>  12500,
+                            'customer_name' => 'Gaurav',
+                            'number'        => '1234',
+                            "date"          => "1589994898",
+                        ]
+                    ],
+                ],
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 50000,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => 'random description',
+                        'email'             => 'a@b.com',
+                        'contact'           => '+919918899029',
+                        'notes'             => ['merchant_order_id' => 'random order id'],
+                        'error_code'        => null,
+                        'error_description' => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testAppWebhookData' => [
         'url'     => 'http://webhook.com/v1/dummy/route',
         'method'  => 'post',

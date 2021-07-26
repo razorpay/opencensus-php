@@ -99,6 +99,25 @@ class Order extends Base
         return parent::create($attributes);
     }
 
+    /**
+     * @param array $taxInvoice
+     * @param array $attributes
+     *
+     * @return array|mixed
+     */
+    public function createOrderWithTaxInvoice(array $taxInvoice, array $attributes = [])
+    {
+        $order = parent::create($attributes);
+
+        $this->fixtures->create('order_meta', [
+            'order_id' => $order->getId(),
+            'type'     => 'tax_invoice',
+            'value'    => $taxInvoice,
+        ]);
+
+        return $order;
+    }
+
     public function createEmandateOrder(array $attributes = [])
     {
         $defaultValues = [

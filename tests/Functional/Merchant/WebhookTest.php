@@ -366,6 +366,31 @@ class WebhookTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
     }
 
+    public function testOrderPaidWebhookEventDataWithTaxInvoiceBlock()
+    {
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+
+        $this->expectWebhookEventWithContents('order.paid', $expectedEvent);
+
+        $taxInvoice = [
+            'business_gstin'=> '123456789012345',
+            'gst_amount'    =>  10000,
+            'supply_type'   => 'intrastate',
+            'cess_amount'   =>  12500,
+            'customer_name' => 'Gaurav',
+            'number'        => '1234',
+            "date"          => "1589994898",
+        ];
+
+        $order = $this->fixtures->order->createOrderWithTaxInvoice($taxInvoice, ['amount' => 50000, 'receipt' => 'random']);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
     public function testOrderPaidWebhookEventDataWithoutOrder()
     {
         $this->dontExpectWebhookEvent('order.paid');
