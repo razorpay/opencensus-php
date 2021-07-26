@@ -2,10 +2,18 @@
 
 namespace RZP\Models\Invitation;
 
+use Request;
+use ApiResponse;
+use Http\Discovery\Psr17FactoryDiscovery;
+use Http\Discovery\Psr18ClientDiscovery;
 use Mail;
 use Illuminate\Support\Collection;
 
+use OpenCensus\Trace\Propagator\ArrayHeaders;
+use Psr\Http\Message\RequestInterface;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
+use RZP\Http\Request\Requests;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Merchant;
@@ -14,6 +22,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 use RZP\Mail\Invitation\Razorpayx\Invite as RazorpayXInvitationMail;
+use RZP\Trace\Tracer;
 
 class Core extends Base\Core
 {
@@ -203,6 +212,8 @@ class Core extends Base\Core
             }
         }
 
+        $this->handleCallBacks($user, $invitation);
+
         $user = (new User\Core)->updateUserMerchantMapping($user, $updateParams);
 
         // We need to update the user in the invitation entity
@@ -214,7 +225,6 @@ class Core extends Base\Core
         if ($invitation->getUserId() === null)
         {
             $invitation->user()->associate($user);
-
             $this->repo->saveOrFail($invitation);
         }
 
@@ -291,4 +301,193 @@ class Core extends Base\Core
             Mail::queue($inviteMailer);
         }
     }
+
+    private function handleCallBacks(User\Entity $user, Entity $invitation) {
+        $product = $invitation[Entity::PRODUCT] ?? $this->app['basicauth']->getRequestOriginProduct();
+        $merchantId = $invitation[Entity::MERCHANT_ID];
+
+        if ($product === Product::BANKING)
+        {
+            $this->trace->info(
+                TraceCode::CAPITAL_CARDS_INVITATION_ACCEPT_REQUEST,
+                [
+                    'invitation' => $invitation->toArrayPublic(),
+                    'user'    => $user->toArrayPublic()
+                ]);
+
+            $this->invitationAcceptCallback($user->getId(), $user->getEmail(), $merchantId);
+
+            $this->trace->info(
+                TraceCode::CAPITAL_CARDS_INVITATION_ACCEPT_RESPONSE,
+                [
+                    'invitation' => $invitation->toArrayPublic(),
+                    'user'    => $user->toArrayPublic()
+                ]);
+        }
+    }
+
+    public function invitationAcceptCallback(string $userId, string $userEmail, string $merchantId) {
+        $url = 'v1/cardholders';
+        $method = 'put';
+        $request = Request::instance();
+        $body    = $request->all();
+        $body['user_id'] = $userId;
+        $body['email_id'] = $userEmail;
+        $headers = [
+            'X-Service-Name' => 'api',
+            'X-Auth-Type' => 'internal',
+            'x-merchant-id' => $merchantId
+        ];
+        $config = config('applications.capital_cards');
+        $retryCount = 3;
+
+        return $this->sendRequestAndParseResponse($url, $body, $headers, $method, $config, $retryCount, $retryCount);
+    }
+
+    private function sendRequestAndParseResponse(
+        string $url,
+        array $body,
+        array $headers,
+        string $method,
+        array $config,
+        int $retryOriginalCount,
+        int $retryCount,
+        array $options = [])
+    {
+        try
+        {
+            $baseUrl                 = $config['url'];
+            $username                = $config['username'];
+            $password                = $config['secret'];
+            $timeout                 = $config['timeout'];
+            $headers['Accept']       = 'application/json';
+            $headers['Content-Type'] = 'application/json';
+            $headers['X-Task-Id']    = $this->app['request']->getTaskId();
+            $headers['Authorization'] = 'Basic '. base64_encode($username . ':' . $password);
+
+            return $this->sendRequest($headers, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
+        }
+        catch (\Throwable $e)
+        {
+            if (($e instanceof \Requests_Exception) and
+                ($this->checkRequestTimeout($e) === true) and
+                ($retryCount > 0))
+            {
+                $this->trace->debug(TraceCode::CAPITAL_CARDS_INVITATION_ACCEPT_REQUEST, [
+                    'request' => $url,
+                ]);
+
+                $retryCount--;
+
+                return  $this->sendRequestAndParseResponse($url, $body, $headers, $method, $config, $retryOriginalCount, $retryCount);
+            }
+            {
+                unset($headers['Authorization']);
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::CAPITAL_CARDS_INVITATION_ACCEPT_REQUEST_FAILURE,
+                    [
+                        'body'       => $body,
+                        'headers'    => $headers,
+                        'retries'    => $retryOriginalCount - $retryCount
+                    ]);
+            }
+        }
+    }
+
+    private function newRequest(array $headers, string $url, string $method, string $reqBody, string $contentType):
+    RequestInterface
+    {
+        $requestFactory = Psr17FactoryDiscovery::findRequestFactory();
+
+        $streamFactory = Psr17FactoryDiscovery::findStreamFactory();
+
+        $body = $streamFactory->createStream($reqBody);
+
+        $req = $requestFactory->createRequest($method, $url);
+
+        foreach ($headers as $key => $value) {
+            $req = $req->withHeader($key, $value);
+        }
+
+        return $req
+            ->withBody($body)
+            ->withHeader('Accept', $contentType)
+            ->withHeader('Content-Type', $contentType);
+    }
+
+    private function sendRequest($headers, $url, $method, $body)
+    {
+        $this->trace->debug(TraceCode::CAPITAL_CARDS_INVITATION_ACCEPT_REQUEST, [
+            'url'     => $url,
+            'method'  => $method,
+        ]);
+
+        $span = Tracer::startSpan(Requests::getRequestSpanOptions($url));
+        $scope = Tracer::withSpan($span);
+        $span->addAttribute('http.method', $method);
+
+        $arrHeaders = new ArrayHeaders($headers);
+        Tracer::injectContext($arrHeaders);
+        $headers = $arrHeaders->toArray();
+
+        $req = $this->newRequest($headers, $url, $method, $body , 'application/json');
+
+        $httpClient = Psr18ClientDiscovery::find();
+
+        $resp = $httpClient->sendRequest($req);
+
+        $traceData = [
+            'status_code'   => $resp->getStatusCode(),
+        ];
+
+        if ($resp->getStatusCode() >= 400)
+        {
+            $traceData['body'] = $resp->getBody();
+        }
+
+        $this->trace->info(TraceCode::CAPITAL_CARDS_INVITATION_ACCEPT_RESPONSE, $traceData);
+
+        $span->addAttribute('http.status_code', $resp->getStatusCode());
+        if ($resp->getStatusCode() >= 400)
+        {
+            $span->addAttribute('error', 'true');
+        }
+
+        $scope->close();
+
+        return $this->parseResponse($resp->getStatusCode(), $resp->getBody());
+    }
+
+    private function parseResponse($code, $body)
+    {
+        $body = json_decode($body, true);
+
+        return ApiResponse::json($body, $code);
+    }
+
+    /**
+     * Checks whether the requests exception that we caught
+     * is actually because of timeout in the network call.
+     *
+     * @param Requests_Exception $e The caught requests exception
+     *
+     * @return boolean              true/false
+     */
+    protected function checkRequestTimeout(\Requests_Exception $e)
+    {
+        if ($e->getType() === 'curlerror')
+        {
+            $curlErrNo = curl_errno($e->getData());
+
+            if ($curlErrNo === 28)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
