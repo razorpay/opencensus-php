@@ -32,7 +32,7 @@ export default class CreateHostedMandateBatch extends Component {
             maxRows="50,000" 
             maxFileSize={11534336} // 11 MB
             batchType="payment_transfer"
-            docUrl="https://razorpay.com/docs/route/" 
+            docUrl="https://razorpay.com/docs/route/dashboard/batch-upload/" 
             sampleUrl="/files/sample_batch_payment_transfer.xlsx" 
             processingOptions={true}
         />
@@ -47,7 +47,7 @@ export default class CreateHostedMandateBatch extends Component {
             maxRows="50,000" 
             maxFileSize={11534336} // 11 MB
             batchType="linked_account_create"
-            docUrl="https://razorpay.com/docs/route/" 
+            docUrl="https://razorpay.com/docs/route/dashboard/batch-upload/" 
             sampleUrl="/files/sample_batch_linked_account.xlsx" 
             processingOptions={true}
         />

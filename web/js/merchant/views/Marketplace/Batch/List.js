@@ -53,7 +53,7 @@ export default class BatchListContainer extends Component {
     return (
       <BatchList
         form="batchListFilter"
-        docUrl="https://razorpay.com/docs/route/"
+        docUrl="https://razorpay.com/docs/route/dashboard/batch-upload/"
         gaEvents={gaEvents}
         ExtraFilterFields={BatchTypeFilterField}
         renderBatchOptions={renderBatchOptions}
