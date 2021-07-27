@@ -4,11 +4,11 @@ import {
   showForOrgs,
   isBusinessProofTypeDocFieldVisible,
   doesHaveAdditionalDocs,
-  isRegAutoKYCEnabled,
   isBusinessProofUrlVisible,
   isBusinessPanVisible,
   isPersonalPanVisible,
   isL1Submitted,
+  canShowAadharDoc,
 } from 'v2/merchant/onboarding/mobile/services/utils';
 import { CIN_BusinessTypes, LLPIN_BusinessTypes } from '../../mobile/Constants/OnboardingConstants';
 
@@ -45,10 +45,7 @@ const isVisible = (fieldName, context) => {
     case 'passport_back':
     case 'voter_id_front':
     case 'voter_id_back':
-      return (
-        isUnregisteredBusiness(context.business_overview.business_type.value) ||
-        isRegAutoKYCEnabled()
-      );
+      return canShowAadharDoc(context);
     case 'business_proof_url':
       return isBusinessProofUrlVisible(context);
     case 'business_pan_url':

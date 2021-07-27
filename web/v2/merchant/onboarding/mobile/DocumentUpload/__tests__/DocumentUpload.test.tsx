@@ -5,14 +5,23 @@ import DocumentUpload from '..';
 import useActivation from '../../hooks/useActivation';
 import * as ActivationDB from '../../services/data/ActivationDB';
 import { render, waitForElementToBeRemoved, screen, fireEvent, waitFor } from 'test-utils';
+
+afterEach(() => {
+  ActivationDB.reset();
+});
+
 const App: React.FC = () => {
   const { status } = useActivation();
   if (status === 'loading') return <div>Loading...</div>;
   return <DocumentUpload />;
 };
+
 const waitForLoadingToFinish = () => waitForElementToBeRemoved(screen.queryByText('Loading...'));
 
 test('should render all option available for Address ', async () => {
+  ActivationDB.update({
+    business_type: '4',
+  });
   render(<App />, {});
   await waitForLoadingToFinish();
   const proofTypeSlect = screen.getAllByPlaceholderText('SELECT PROOF TYPE')[0];
@@ -23,6 +32,9 @@ test('should render all option available for Address ', async () => {
 });
 
 test('should manage the uploaded state of all types individually', async () => {
+  ActivationDB.update({
+    business_type: '4',
+  });
   render(<App />, {});
   await waitForLoadingToFinish();
   const file = new File(['(⌐□_□)'], 'abc.png', { type: 'image/png' });

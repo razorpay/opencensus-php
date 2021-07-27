@@ -324,7 +324,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       >
         {(formikProps) => (
           <form>
-            {isVisible('address_proof', data) && shouldShowAddressProofField && (
+            {isVisible('address_proof', data) && (
               <FormSection title="Authorised Signatory's Address Proof">
                 <Field>
                   <Select

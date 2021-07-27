@@ -101,10 +101,6 @@ export function isUnregisteredBusiness(businessType): boolean {
   return !!UNREGISTERED_TYPES[Number(businessType)];
 }
 
-export function isRegAutoKYCEnabled() {
-  return true;
-}
-
 export function hasUploadedBusinessProofTypeDoc(documents): boolean {
   return Object.keys(BUSINESS_PROOF_TYPE_DOCS).some((key) => isPresent(documents[key].value));
 }
@@ -214,6 +210,23 @@ export function checkIfEAadharStepCompleted(data) {
 
   return isEAadharFieldFilled;
 }
+
+export const canShowAadharDoc = (context) => {
+  const shouldShowEsignFlow =
+    context.business_type === '11' ||
+    context.business_type === '1' ||
+    context.business_type === '3';
+
+  const shouldShowAddressProofField = !(
+    shouldShowEsignFlow &&
+    context.stakeholder &&
+    context.stakeholder.aadhaar_linked
+  );
+
+  return (
+    (shouldShowAddressProofField && checkIfEAadharStepCompleted(context)) || !shouldShowEsignFlow
+  );
+};
 
 export function isDocumentTabComplete(data, isGstinMandatory = false) {
   const tabData = { ...onScreenDocuments(data) };

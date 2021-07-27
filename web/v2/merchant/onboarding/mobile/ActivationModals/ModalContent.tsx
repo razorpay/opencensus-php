@@ -127,7 +127,7 @@ export const getModalContent = (
                   onClick={() => {
                     closeModal();
                     sendFormSegment();
-                    location.href = '/onboarding/steps';
+                    location.href = '/app/onboarding/steps';
                   }}
                 >
                   {Message.PAYMENT_ENABLE.secondryButtonText}
