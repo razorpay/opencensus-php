@@ -86,6 +86,19 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    public function findByUtr(string $utr, bool $useWritePdo = false)
+    {
+        $query =  $this->newQuery()
+                       ->where(Entity::UTR, '=', $utr);
+
+        if ($useWritePdo === true)
+        {
+            $query->useWritePdo();
+        }
+
+        return $query->first();
+    }
+
     public function findByNarration(string $narration, bool $useWritePdo = false)
     {
         $query = $this->newQuery()

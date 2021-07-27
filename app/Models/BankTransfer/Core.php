@@ -211,6 +211,10 @@ class Core extends Base\Core
 
         $bankTransfer = $this->create($bankTransferInput, $provider);
 
+        $requestSource = $bankTransferRequest->getRequestSource();
+
+        $bankTransfer->setRequestSource($requestSource);
+
         $processor = new Processor();
 
         $mutexKey = sprintf(self::MUTEX_KEY, $bankTransferInput[Entity::REQ_UTR], $bankTransferInput[Entity::PAYEE_ACCOUNT]);

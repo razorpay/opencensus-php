@@ -26,6 +26,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
 use RZP\Models\Feature\Constants;
+use RZP\Models\BankTransfer\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
@@ -91,21 +92,44 @@ class Processor extends VirtualAccount\Processor
                                     ->bank_transfer
                                     ->findByUtrAndPayeeAccount($utr, $payeeAccount, $useWritePdo = true);
 
-        if ($duplicateBankTransfer === null)
+        if ($duplicateBankTransfer !== null)
         {
-            return false;
+            $this->trace->error(
+                TraceCode::BANK_TRANSFER_PROCESS_DUPLICATE_UTR,
+                [
+                    'message'               => 'Duplicate UTR received',
+                    'existing_transfer'     => $duplicateBankTransfer->toArrayTrace(),
+                    'received_utr'          => $utr,
+                    Entity::GATEWAY         => $bankTransfer->getGateway(),
+                    Entity::REQUEST_SOURCE  => $bankTransfer->getRequestSource() ?? '',
+                ]
+            );
+
+            return true;
         }
 
-        $this->trace->error(
-            TraceCode::BANK_TRANSFER_PROCESS_DUPLICATE_UTR,
-            [
-                'message'           => 'Duplicate UTR received',
-                'existing_transfer' => $duplicateBankTransfer->toArrayTrace(),
-                'received_utr'      => $utr,
-            ]
-        );
+        // Since receiving a duplicate UTR with different Payee Account Number is a rare scenario,
+        // we can log it and alert concerned person which will help in identifying issue earlier
+        // in case of any wrong info received from bank.
+        $duplicateUtr = $this->repo
+                             ->bank_transfer
+                             ->findByUtr($utr, $useWritePdo = true);
 
-        return true;
+        if ($duplicateUtr !== null)
+        {
+            $this->trace->info(
+                TraceCode::BANK_TRANSFER_PROCESS_WITH_EXISTING_UTR,
+                [
+                    'message'               => 'Duplicate UTR received with different Payee Account Number',
+                    'existing_transfer'     => $duplicateUtr->toArrayTrace(),
+                    'received_utr'          => $utr,
+                    Entity::GATEWAY         => $bankTransfer->getGateway(),
+                    Entity::REQUEST_SOURCE  => $bankTransfer->getRequestSource() ?? '',
+                ]
+            );
+        }
+
+        return false;
     }
 
     /**
@@ -164,11 +188,12 @@ class Processor extends VirtualAccount\Processor
             // Logs to get the bank transfer id as well
             $this->trace->info(TraceCode::BANK_TRANSFER_CREATED,
                                [
-                                   'balance_type'       => $balanceType,
-                                   'virtual_account_id' => $this->virtualAccount->getId(),
-                                   'bank_transfer_id'   => $bankTransfer->getId(),
-                                   'utr'                => $bankTransfer->getUtr(),
-                                   'unexpected_reason'  => $bankTransfer->getUnexpectedReason()
+                                   'balance_type'           => $balanceType,
+                                   'virtual_account_id'     => $this->virtualAccount->getId(),
+                                   'bank_transfer_id'       => $bankTransfer->getId(),
+                                   'utr'                    => $bankTransfer->getUtr(),
+                                   'unexpected_reason'      => $bankTransfer->getUnexpectedReason(),
+                                   Entity::REQUEST_SOURCE   => $bankTransfer->getRequestSource() ?? '',
                                ]
             );
 
@@ -306,9 +331,10 @@ class Processor extends VirtualAccount\Processor
         $this->trace->info(
             TraceCode::BANK_TRANSFER_CREATE_TRANSACTION,
             [
-                'bank_transfer_id'   => $bankTransfer->getId(),
-                'virtual_account_id' => $this->virtualAccount->getId(),
-                Entity::UTR          => $bankTransfer->getUtr(),
+                'bank_transfer_id'      => $bankTransfer->getId(),
+                'virtual_account_id'    => $this->virtualAccount->getId(),
+                Entity::UTR             => $bankTransfer->getUtr(),
+                Entity::REQUEST_SOURCE  =>  $bankTransfer->getRequestSource() ?? '',
             ]);
 
         // Creates a transaction with bank transfer entity as source, merchant's banking balance gets credited.

@@ -10,16 +10,6 @@ class Core extends Base\Core
 {
     public function create(array $input, string $gateway, $requestPayload, array $requestSource = []) : Entity
     {
-        $this->trace->info(
-            TraceCode::BANK_TRANSFER_SAVE_REQUEST,
-            [
-                Entity::GATEWAY        => $gateway,
-                Entity::TRANSACTION_ID => $input[Entity::TRANSACTION_ID],
-            ]
-        );
-
-        $requestPayload = json_encode($requestPayload);
-
         $bankTransferRequest = new Entity();
 
         if (empty($requestSource) === false)
@@ -30,6 +20,19 @@ class Core extends Base\Core
         {
             $bankTransferRequest->findAndSetRequestSource();
         }
+
+        $requestSource = $bankTransferRequest->getRequestSource();
+
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_SAVE_REQUEST,
+            [
+                Entity::GATEWAY        => $gateway,
+                Entity::TRANSACTION_ID => $input[Entity::TRANSACTION_ID],
+                Entity::REQUEST_SOURCE => $requestSource,
+            ]
+        );
+
+        $requestPayload = json_encode($requestPayload);
 
         $input += [
             Entity::GATEWAY         => $gateway,
@@ -49,6 +52,7 @@ class Core extends Base\Core
                 [
                     Entity::GATEWAY        => $gateway,
                     Entity::TRANSACTION_ID => $input[Entity::TRANSACTION_ID],
+                    Entity::REQUEST_SOURCE => $requestSource,
                 ]
             );
 
@@ -67,6 +71,7 @@ class Core extends Base\Core
                 Entity::ID             => $bankTransferRequest->getPublicId(),
                 Entity::GATEWAY        => $gateway,
                 Entity::TRANSACTION_ID => $input[Entity::TRANSACTION_ID],
+                Entity::REQUEST_SOURCE => $requestSource,
             ]
         );
 

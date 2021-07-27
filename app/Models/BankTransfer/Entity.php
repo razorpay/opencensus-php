@@ -100,6 +100,14 @@ class Entity extends Base\PublicEntity
     const SPECIAL_IFSC_CODE             = 'RAZR0000001';
     const MAX_DESCRIPTION_LENGTH        = 255;
 
+    const REQUEST_SOURCE                = 'request_source';
+    const REQUEST_FROM                  = 'request_from';
+    const INPUT                         = 'input';
+    const FILE                          = 'file';
+    const CALLBACK                      = 'callback';
+    const SOURCE                        = 'source';
+
+    protected $requestSource;
 
     protected $fillable = [
         self::PAYER_NAME,
@@ -532,6 +540,11 @@ class Entity extends Base\PublicEntity
         return $this->pii;
     }
 
+    public function getRequestSource()
+    {
+        return $this->requestSource;
+    }
+
     // ----------------------- Setters -----------------------------------------
 
     public function setExpected(bool $expected)
@@ -567,6 +580,11 @@ class Entity extends Base\PublicEntity
     public function setGateway(string $gateway)
     {
         $this->setAttribute(self::GATEWAY, $gateway);
+    }
+
+    public function setRequestSource($requestSource)
+    {
+        $this->requestSource = $requestSource;
     }
 
     public function getRefundNarration()

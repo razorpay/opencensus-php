@@ -12,6 +12,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Constants\Timezone;
+use RZP\Models\BankTransfer\Entity;
 use RZP\Models\BankTransfer\HdfcEcms;
 use RZP\Models\BankTransfer\Validator;
 use RZP\Models\VirtualAccount\Provider;
@@ -52,6 +53,11 @@ class BankTransferController extends Controller
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
 
         $input = Request::all();
+
+        $this->trace->info(TraceCode::ICICI_VA_MIS, [
+            Entity::INPUT           => $input,
+            Entity::REQUEST_SOURCE  => Entity::FILE,
+        ]);
 
         $response = $this->service()->saveRequestAndProcess($input, Provider::ICICI, true, $input);
 
@@ -130,7 +136,10 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
-        $this->trace->info(TraceCode::ICICI_VA_CALLBACK, $input);
+        $this->trace->info(TraceCode::ICICI_VA_CALLBACK, [
+            Entity::INPUT          =>   $input,
+            Entity::REQUEST_SOURCE =>   Entity::CALLBACK,
+        ]);
 
         try
         {

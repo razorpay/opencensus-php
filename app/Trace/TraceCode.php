@@ -1387,6 +1387,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_SAVE_REQUEST                            = 'BANK_TRANSFER_SAVE_REQUEST';
     const BANK_TRANSFER_REQUEST_SAVED                           = 'BANK_TRANSFER_REQUEST_SAVED';
     const BANK_TRANSFER_SAVE_REQUEST_FAILED                     = 'BANK_TRANSFER_SAVE_REQUEST_FAILED';
+    const ICICI_VA_MIS                                          = 'ICICI_VA_MIS';
 
     const BANK_TRANSFER_PROCESS_SQS_PUSH_INIT                   = 'BANK_TRANSFER_PROCESS_SQS_PUSH_INIT';
     const BANK_TRANSFER_PROCESS_SQS_PUSH_FAILED                 = 'BANK_TRANSFER_PROCESS_SQS_PUSH_FAILED';
@@ -1399,6 +1400,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_PROCESSING_FAILED                       = 'BANK_TRANSFER_PROCESSING_FAILED';
     const BANK_TRANSFER_VIRTUAL_ACCOUNT_NOT_FOUND               = 'BANK_TRANSFER_VIRTUAL_ACCOUNT_NOT_FOUND';
     const BANK_TRANSFER_PROCESS_DUPLICATE_UTR                   = 'BANK_TRANSFER_PROCESS_DUPLICATE_UTR';
+
+    // Ideally BANK_TRANSFER_PROCESS_DUPLICATE_UTR should have named as BANK_TRANSFER_PROCESS_DUPLICATE_REQUEST
+    // or something on those lines. Since it has been in use already, don't want to rename it.
+    // BANK_TRANSFER_PROCESS_WITH_EXISTING_UTR is used to log info when UTR is duplicate but Payee Account Number
+    // is different.
+    const BANK_TRANSFER_PROCESS_WITH_EXISTING_UTR               = 'BANK_TRANSFER_PROCESS_WITH_EXISTING_UTR';
     const BANK_TRANSFER_MANUAL_PROCESS_REQUEST                  = 'BANK_TRANSFER_MANUAL_PROCESS_REQUEST';
     const BANK_TRANSFER_RESERVED_ACCOUNT                        = 'BANK_TRANSFER_RESERVED_ACCOUNT';
     const BANK_TRANSFER_NOTIFY_REQUEST                          = 'BANK_TRANSFER_NOTIFY_REQUEST';

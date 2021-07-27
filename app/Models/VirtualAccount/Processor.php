@@ -19,6 +19,7 @@ use RZP\Models\FundAccount\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
+use RZP\Models\BankTransfer\Entity as BankTransferEntity;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 abstract class Processor extends Base\Core
@@ -45,6 +46,9 @@ abstract class Processor extends Base\Core
     const VIRTUAL_ACCOUNT_MERCHANT_NOT_LIVE = 'VIRTUAL_ACCOUNT_MERCHANT_NOT_LIVE';
     const VIRTUAL_ACCOUNT_PAYMENT_TPV_FAILED = 'VIRTUAL_ACCOUNT_PAYMENT_TPV_FAILED';
     const VIRTUAL_ACCOUNT_PAYMENT_AMOUNT_DOES_NOT_MATCH_ORDER_AMOUNT = 'VIRTUAL_ACCOUNT_PAYMENT_AMOUNT_DOES_NOT_MATCH_ORDER_AMOUNT';
+
+    const REQUEST_FROM   = 'request_from';
+    const REQUEST_SOURCE = 'request_source';
 
     public function __construct()
     {
@@ -130,9 +134,28 @@ abstract class Processor extends Base\Core
             return null;
         }
 
+        if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
+            empty($entity->getRequestSource()) === false)
+        {
+            $requestSource = json_decode($entity->getRequestSource(), true);
+
+            $source = $requestSource[BankTransfer\Entity::SOURCE];
+
+            $requestFrom = $requestSource[BankTransferEntity::REQUEST_FROM];
+
+            $logData = array_merge($entity->toArrayTrace(), [
+                BankTransferEntity::REQUEST_SOURCE => $source,
+                BankTransferEntity::REQUEST_FROM   => $requestFrom,
+            ]);
+        }
+        else
+        {
+            $logData = $entity->toArrayTrace();
+        }
+
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_PAYMENT_SUCCESSFUL,
-            $entity->toArrayTrace()
+            $logData
         );
 
         return $entity;
@@ -346,7 +369,8 @@ abstract class Processor extends Base\Core
                 case Constants\Entity::BANK_TRANSFER:
                     {
                         $data = [
-                            'utr' => $entity->getUtr(),
+                            'utr'                               => $entity->getUtr(),
+                            BankTransfer\Entity::REQUEST_SOURCE => $entity->getRequestSource() ?? '',
                         ];
                     }
                     break;

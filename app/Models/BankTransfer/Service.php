@@ -539,6 +539,7 @@ class Service extends Base\Service
                     Entity::GATEWAY         => $bankTransferRequest->getGateway(),
                     Entity::REQ_UTR         => $bankTransferRequest->getUtr(),
                     'bankTransferRequestId' => $bankTransferRequest->getId(),
+                    Entity::REQUEST_SOURCE  => $bankTransferRequest->getRequestSource(),
                 ]
             );
 

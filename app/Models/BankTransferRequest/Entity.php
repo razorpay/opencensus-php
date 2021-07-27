@@ -167,6 +167,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UTR);
     }
 
+    public function getRequestSource()
+    {
+        return $this->getAttribute(self::REQUEST_SOURCE);
+    }
+
     public function getPayeeAccount()
     {
         return $this->getAttribute(self::PAYEE_ACCOUNT);
