@@ -826,4 +826,14 @@ return [
             'content' => []
         ]
     ],
+
+    'testReminderCallback'                        => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/tax-payments/reminders/tax_payments/txpy_1234',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

@@ -51,6 +51,7 @@ class Service
     const GET_TDS_CATEGORIES        = 'GetTdsCategories';
     const GET_INVALID_TAN_STATUS    = 'GetInvalidTanStatus';
     const GET_DOWNTIME_SCHEDULE     = 'GetDowntimeSchedule';
+    const ICICI_RETRY_CALLBACK      = 'IciciRetryCallback';
 
     // general constants
     const DATA             = 'data';
@@ -467,6 +468,17 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_DOWNTIME_SCHEDULE);
 
         return $this->makeRequest(null, $url, ['time'=> now()]);
+    }
+
+    public function reminderCallback(string $entityType, string $entityId)
+    {
+        $input['entity_id'] = $entityId;
+
+        $input['entity_type'] = $entityType;
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ICICI_RETRY_CALLBACK);
+
+        return $this->makeRequest(null, $url, $input);
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,

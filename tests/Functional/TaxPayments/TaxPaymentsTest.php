@@ -744,4 +744,19 @@ class TaxPaymentsTest extends TestCase
 
         $tpMock->shouldHaveReceived('getDowntimeSchedule');
     }
+
+    public function testReminderCallback()
+    {
+        $this->ba->appAuth('rzp_test', 'api');
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('reminderCallback')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('reminderCallback');
+    }
 }

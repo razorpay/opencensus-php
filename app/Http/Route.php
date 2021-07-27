@@ -1360,6 +1360,7 @@ class Route
         'tax_payments_get_all_settings'            => ['get',     'tax-payments/settings/',                          'TaxPaymentController@getAllSettings'                               ],
         'tax_payments_add_or_update_settings'      => ['post',    'tax-payments/settings/',                          'TaxPaymentController@addOrUpdateSettings'                          ],
         'tax_payments_list'                        => ['get',     'tax-payments/',                                   'TaxPaymentController@listTaxPayments'                              ],
+        'tax_payments_reminders_callback'          => ['get',     'tax-payments/reminders/{type}/{id}',              'TaxPaymentController@reminderCallback'                             ],
         'tax_payments_create'                      => ['post',    'tax-payments/',                                   'TaxPaymentController@create'                                       ],
         'tax_payments_get_by_id'                   => ['get',     'tax-payments/{id}',                               'TaxPaymentController@getTaxPayment'                                ],
         'tax_payments_mark_as_paid'                => ['post',    'tax-payments/mark-as-paid',                       'TaxPaymentController@markAsPaid'                                   ],
@@ -3584,6 +3585,9 @@ class Route
 
         'terminal_fill_enabled_wallets',
         'payment_update_reference6',
+
+        //Tax-payment route
+        'tax_payments_reminders_callback',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -9755,7 +9759,8 @@ class Route
 
         'reminders' => [
             'reminder_send',
-            'p2p_reminder_send'
+            'p2p_reminder_send',
+            'tax_payments_reminders_callback',
         ],
 
         'batch' => [
