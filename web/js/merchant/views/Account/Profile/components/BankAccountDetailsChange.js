@@ -13,9 +13,25 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import { isWebkit } from 'common/utils/rzp-utils';
+import { validateBankDetails } from '../../../../../common/utils/rzp-utils';
 
-const verifyAccountNumber = (value, allValues, props) => {
+const reVerifyAccountNumber = (value, allValues, props) => {
   return value !== allValues.account_number ? "Bank Number doesn't match" : undefined;
+};
+
+/* Method to validate weather the entered IFSC code is a valid one or not */
+const verifyIFSCCode = (value) => {
+  return validateBankDetails(value, 'ifsc') ? undefined : 'Enter a Valid IFSC code';
+}; 
+
+/* Method to Validate the account Number Entry by Pattern */
+const verifyAccountNumber = (value) => {
+  return validateBankDetails(value, 'accNo') ? undefined : 'Enter a Valid Account Number';
+};
+
+/* Method to validate the benificiary name */
+const validateBenificiaryName = (value) => {
+  return validateBankDetails(value, 'name') ? undefined : 'Enter a Valid Account Holder\'s Name';
 };
 
 const regText = 'Beneficiary name should be the same as a business name',
@@ -70,7 +86,7 @@ export default class BankAccountDetailsChange extends Component {
           <form class="form-horizontal" onSubmit={handleSubmit(this.handleSubmission)}>
             <Fieldset>
               <div class="form-group">
-                <label class="col-md-3 control-label label-required">Branch IFSC Code</label>
+                <label class="col-md-3 control-label label-required">Branch IFSC Code Here</label>
                 <div class="col-md-9">
                   <Field
                     name="ifsc_code"
@@ -78,7 +94,7 @@ export default class BankAccountDetailsChange extends Component {
                     class="form-control"
                     placeholder="IFSC Code of the Bank Branch"
                     autoFocus={true}
-                    validate={[required()]}
+                    validate={[required(), verifyIFSCCode]}
                   />
                 </div>
               </div>
@@ -93,7 +109,7 @@ export default class BankAccountDetailsChange extends Component {
                     placeholder="Bank Account Number"
                     type={isWebkit ? 'text' : 'password'}
                     autoComplete="off"
-                    validate={[required()]}
+                    validate={[required(), verifyAccountNumber]}
                   />
                 </div>
               </div>
@@ -108,7 +124,7 @@ export default class BankAccountDetailsChange extends Component {
                     component={InputField}
                     class="form-control"
                     placeholder="Re-enter your Bank Account Number"
-                    validate={[required(), verifyAccountNumber]}
+                    validate={[required(), reVerifyAccountNumber]}
                   />
                 </div>
               </div>
@@ -121,7 +137,7 @@ export default class BankAccountDetailsChange extends Component {
                     component={InputField}
                     class="form-control"
                     placeholder="Account Holder Name"
-                    validate={[required()]}
+                    validate={[required(), validateBenificiaryName]}
                   />
                   <small class="help-block">
                     <i class="i i-info-circle" />

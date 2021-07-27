@@ -290,8 +290,12 @@ export const autoPrefixUrls = (url: string) => {
 /*
  * Helper fn. to fetch IFSC bank details for IFSC code entered in field
  * */
-export function getDetailsForIFSC(ifscCode) {
+export function getDetailsForIFSC(ifscCode: string): any {
+  const IFSCCodeValidatorRegex = new RegExp(/^[A-Z]{4}0[A-Z0-9]{6}$/i);
   if (ifscCode.length !== 11) {
+    return null;
+  }
+  if (!IFSCCodeValidatorRegex.test(ifscCode)) {
     return null;
   }
 

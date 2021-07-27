@@ -1,4 +1,5 @@
 import moment from 'moment';
+import axios from 'axios';
 import { acronyms, shortenText } from './acronyms';
 
 moment.updateLocale('en', {
@@ -952,11 +953,15 @@ export const deepClone = (o) => {
  * Helper fn. to fetch IFSC bank details for IFSC code entered in field
  * */
 export function getDetailsForIFSC(ifscCode) {
+  const IFSCCodeValidatorRegex = new RegExp(/^[A-Z]{4}0[A-Z0-9]{6}$/i);
   if (ifscCode.length !== 11) {
     return null;
   }
+  if (!IFSCCodeValidatorRegex.test(ifscCode)) {
+    return null;
+  }
 
-  return axios('https://ifsc.razorpay.com/' + ifscCode).then((info) => {
+  return axios(`https://ifsc.razorpay.com/${ifscCode}`).then((info) => {
     info = info.data;
 
     if (info) {
@@ -1213,4 +1218,17 @@ export function getAttachmentExpiryTime(awsURL, defaultUnit, UNIT_TYPE) {
     // return default 2 hours
     return moment().add(defaultUnit, UNIT_TYPE);
   }
+}
+
+/* This Function is used to validate the bank details and respond back accordingly */
+export function validateBankDetails(value, type) {
+  const typeMapRegx = {
+    accNo: /^([a-zA-Z0-9]){5,35}$/i,
+    ifsc: /^[A-Z]{4}0[A-Z0-9]{6}$/i,
+    name: /^([a-zA-Z0-9\s-_()/.']){4,120}$/i,
+  };
+  if (value && type && typeMapRegx[type]) {
+    return new RegExp(typeMapRegx[type]).test(value);
+  }
+  return null;
 }
