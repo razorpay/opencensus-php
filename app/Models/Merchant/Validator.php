@@ -145,6 +145,7 @@ class Validator extends Base\Validator
         Entity::REFUND_CREDITS_THRESHOLD              => 'sometimes|integer|nullable',
         Entity::PARTNERSHIP_URL                       => 'sometimes|max:2000',
         'reset_methods'                               => 'sometimes|boolean',
+        Entity::PURPOSE_CODE                          => 'sometimes|string|max:5',
     ];
 
     protected static $editBillingLabelRules = [

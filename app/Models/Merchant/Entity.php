@@ -166,6 +166,9 @@ class Entity extends Base\PublicEntity
     // key used to pass external legal entity id when creating merchant
     const LEGAL_EXTERNAL_ID         = 'legal_external_id';
 
+    // key used to pass purpose code when creating merchant
+    const PURPOSE_CODE              = 'purpose_code';
+
     /**
      * Constants for merchant analytics keys
      */
@@ -350,6 +353,7 @@ class Entity extends Base\PublicEntity
         self::EXTERNAL_ID,
         self::SIGNUP_SOURCE,
         self::ACCOUNT_CODE,
+        self::PURPOSE_CODE,
     ];
 
     const CONFIG_LIST = [
@@ -443,6 +447,7 @@ class Entity extends Base\PublicEntity
         self::PRODUCT_INTERNATIONAL,
         self::SIGNUP_SOURCE,
         self::DCC_MARKUP_PERCENTAGE,
+        self::PURPOSE_CODE,
      ];
 
     protected $defaults = [
@@ -2969,5 +2974,10 @@ class Entity extends Base\PublicEntity
         $activatedAt = Carbon::createFromTimestamp($this->getActivatedAt());
 
         return Carbon::today()->diffInMonths($activatedAt) >= 4;
+    }
+
+    public function getPurposeCode()
+    {
+        return $this->getAttribute(self::PURPOSE_CODE);
     }
 }

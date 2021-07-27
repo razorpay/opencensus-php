@@ -217,6 +217,9 @@ class CreateMerchants extends Migration
             $table->string(Merchant::EXTERNAL_ID)
                   ->nullable();
 
+            $table->string(Merchant::PURPOSE_CODE,5)
+                ->nullable();
+
             $table->integer(Merchant::CREATED_AT);
 
             $table->integer(Merchant::UPDATED_AT);

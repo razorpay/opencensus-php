@@ -6317,3 +6317,6 @@ ALTER TABLE rewards
     ADD COLUMN unique_coupons_exist TINYINT(1) DEFAULT 0 NOT NULL
     ADD COLUMN unique_coupons_exhausted TINYINT(1) DEFAULT 0 NOT NULL
     MODIFY COLUMN coupon_code VARCHAR(255) COLLATE utf8_bin;
+
+ALTER TABLE merchants
+   ADD COLUMN purpose_code VARCHAR(5) DEFAULT NULL;
