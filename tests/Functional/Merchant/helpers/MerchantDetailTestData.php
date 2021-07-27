@@ -930,6 +930,29 @@ return [
         ],
     ],
 
+    'testPutPreSignupDetailsInXForUnregisteredBusiness' => [
+        'request' => [
+            'content' => [
+                'business_name' => 'test',
+                'business_type' => '11'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'business_name'      => 'test',
+                'business_type'      => '11',
+                'transaction_volume' => null,
+                'contact_mobile'     => null,
+                'role'               => null,
+            ],
+        ],
+    ],
+
     'testVaCreationTestModeInPreSignup' => [
         'request'  => [
             'content' => [

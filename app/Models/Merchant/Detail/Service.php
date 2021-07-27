@@ -948,7 +948,17 @@ class Service extends Base\Service
 
                 (new User\Validator)->validateInput('pre_signup', $userEditData);
 
-                (new User\Service)->edit($user->id, $userEditData);
+                /**
+                 * If a user signs up on PG as unregistered business
+                 * and switches to X, then during product switch,
+                 * we don't create a record in merchant_users table for unregistered business.
+                 * If this user fills presignup questions, then they get an exception since $user is null
+                 * JIRA ticket: https://jira.corp.razorpay.com/browse/RX-8249
+                 */
+                if (empty($user) === false)
+                {
+                    (new User\Service)->edit($user->id, $userEditData);
+                }
 
                 //Creating virtual account for a merchant in test mode.
                 //Handling within try catch to avoid any breaking of pre sign up flow.

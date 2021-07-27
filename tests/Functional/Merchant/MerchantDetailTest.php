@@ -1006,6 +1006,15 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testPutPreSignupDetailsInXForUnregisteredBusiness()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
     public function testVaCreationTestModeInPreSignup()
     {
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
