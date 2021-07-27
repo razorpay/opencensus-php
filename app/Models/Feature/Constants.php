@@ -772,6 +772,7 @@ class Constants
         self::CHECKOUT_DISABLE_I18N,
         self::CHECKOUT_DISABLE_CARDSCAN,
         self::PAYPAL_CC,
+        self::CRED_MERCHANT_CONSENT,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr

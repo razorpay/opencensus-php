@@ -582,6 +582,12 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->assertEquals(false, $response['methods']['upi_type']['intent']);
     }
+    public function testGetCheckoutPreferencesForCredConsent()
+    {
+        $this->fixtures->merchant->addFeatures(Constants::CRED_MERCHANT_CONSENT);
+        $response = $this->getPreferences();
+        $this->assertEquals($response['features']['cred_merchant_consent'],true);
+    }
 
     public function testGetCheckoutPreferencesWithForcedEmiSubventionOffer()
     {
@@ -1498,7 +1504,6 @@ class CheckoutPreferencesTest extends TestCase
         }
 
         $this->ba->publicAuth();
-
         return $this->makeRequestAndGetContent($request);
     }
 
