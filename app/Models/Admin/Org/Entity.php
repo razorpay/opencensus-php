@@ -56,6 +56,7 @@ class Entity extends Base\Entity
     const RAZORPAY_ORG_ID = '100000razorpay';
     const HDFC_ORG_ID     = '6dLbNSpv5XbCOG';
     const BOB_ORG_ID      = '7ia1ttoyqIL8sw';
+    const AXIS_ORG_ID     = 'CLTnQqDj9Si8bx';
 
     /**
      * Key used to send hostname of org for other services

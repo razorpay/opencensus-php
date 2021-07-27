@@ -1049,6 +1049,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function uploadMerchant()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->uploadMerchant($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function putEditMerchantDetailsAfterLockPartner($id)
     {
         $input = Request::all();
@@ -2075,6 +2084,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function handleReport()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->handleReport($input);
+    }
+    
     public function handleOnboardingEscalationsCron()
     {
         $input = Request::all();

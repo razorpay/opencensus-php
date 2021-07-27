@@ -255,15 +255,16 @@ class Service extends Base\Service
     }
 
     /**
-     * @param array  $merchantInputData
-     * @param array  $userData
-     * @param bool   $sendOtpEmail
+     * @param array $merchantInputData
+     * @param array $userData
      * @param string $referrer
      * @param array  $inputData
      *
+     * @param bool $sendOtpEmail
+     * @param bool $sendConfirmation
      * @return array
      */
-    protected function createMerchantFromUser(array $merchantInputData, array $userData, string $referrer = '', bool $sendOtpEmail = false, array $inputData = [])
+    public function createMerchantFromUser(array $merchantInputData, array $userData, string $referrer = '', bool $sendOtpEmail = false, array $inputData = [], bool $sendConfirmation = true)
     {
         $merchantData = $this->merchantService->create($merchantInputData);
 
@@ -288,7 +289,16 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantData['id']);
 
-        $data = $this->sendConfirmationMailIfApplicable($user, $merchant, $sendOtpEmail, $inputData);
+        $data = [];
+        $data['id']      = $merchant->getId();
+        $data['name']    = $merchant->getName();
+        $data['email']   = $user->getEmail();
+        $data['user_id'] = $user->getId();
+
+        if($sendConfirmation === true)
+        {
+            $data = $this->sendConfirmationMailIfApplicable($user, $merchant, $sendOtpEmail, $inputData);
+        }
 
         if ($this->auth->isProductBanking())
         {

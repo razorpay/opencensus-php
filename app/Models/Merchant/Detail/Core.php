@@ -12,6 +12,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Encryption;
 use RZP\Encryption\AESEncryption;
 use RZP\Exception;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -2215,6 +2216,11 @@ class Core extends Base\Core
             $validationFields = array_diff($validationFields, RequiredFields::BANK_ACCOUNT_FIELDS);
         }
 
+        if(self::shouldSkipKycDocuments($merchantDetails) === true)
+        {
+            $validationFields = array_diff($validationFields, RequiredFields::KYC_DOCUMENT_FIELDS);
+        }
+
         if($this->shouldSkipPOADocuments($merchantDetails) === true)
         {
             unset($validationSelectiveRequiredFields[SelectiveRequiredFields::POA_DOCUMENTS]);
@@ -2569,6 +2575,23 @@ class Core extends Base\Core
                 Metric::PREVIOUS_ACTIVATION_STATUS => $previous_status,
                 Metric::UPDATED_ACTIVATION_STATUS  => $updated_status
             ];
+    }
+
+    public static function shouldSkipKycDocuments(Entity $merchantDetails): bool
+    {
+        $orgId = $merchantDetails->merchant->getOrgId();
+
+        if(empty($orgId) === true)
+        {
+            return false;
+        }
+
+        if($orgId === ORG_ENTITY::AXIS_ORG_ID)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -3470,10 +3493,13 @@ class Core extends Base\Core
             }
         }
 
-        $this->calculateRequiredDocumentFields(
-            $validationSelectiveRequiredFields,
-            $documentsResponse,
-            $requiredFields);
+        if ($merchant->getOrgId() !== ORG_ENTITY::AXIS_ORG_ID)
+        {
+            $this->calculateRequiredDocumentFields(
+                $validationSelectiveRequiredFields,
+                $documentsResponse,
+                $requiredFields);
+        }
 
         if ($this->canSubmitActivationForm($merchantDetails, $merchant, $requiredFields) === false)
         {

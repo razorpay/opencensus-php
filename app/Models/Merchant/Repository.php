@@ -251,6 +251,25 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::SUSPENDED_AT);
     }
 
+    public function fetchMerchantsCreatedBetweenForOrg($from, $to, $orgId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::ORG_ID, $orgId)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->get()
+            ;
+    }
+
+    public function fetchMerchantsActivatedBetweenForOrg($from, $to, $orgId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::ORG_ID, $orgId)
+            ->whereBetween(Entity::ACTIVATED_AT, [$from, $to])
+            ->whereNull(Entity::SUSPENDED_AT)
+            ->get()
+            ->toArray();
+    }
+
     public function getFewMerchantsWithNoCorrespondingScheduleTasks()
     {
         $mercIds = $this->db->select(

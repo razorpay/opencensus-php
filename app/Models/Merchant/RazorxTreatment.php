@@ -202,6 +202,9 @@ final class RazorxTreatment
 
     const AADHAAR_WITH_PAN_VERIFICATION = 'aadhaar_with_pan_verification';
 
+    // experiment to enable axis wrapper feature
+    const AXIS_WRAPPER_ENABLED = "AXIS_WRAPPER_ENABLED";
+
     // experiment to enable dedupe functionality
     const DEDUPE_FUNCTIONALITY = 'DEDUPE_FUNCTIONALITY';
 

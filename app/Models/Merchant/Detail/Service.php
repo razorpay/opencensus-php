@@ -492,6 +492,11 @@ class Service extends Base\Service
         return $params;
     }
 
+    public function uploadMerchant(array $input)
+    {
+        return (new Upload\Core)->uploadMerchant($input);
+    }
+
     public function editMerchantDetails($id, array $input)
     {
         $slackAction = null;

@@ -18,13 +18,16 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
+use RZP\Mail\Merchant\AxisActivation;
 use RZP\Models\BankingAccountTpv;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Admin\Org\Hostname\Entity as HostNameEntity;
 use RZP\Mail\Merchant\RazorpayX\AccountActivationConfirmation;
 use RZP\Mail\Merchant\InstantActivation as InstantActivationMail;
@@ -432,6 +435,12 @@ class Activate extends Base\Core
      */
     public function sendActivationEmail($merchant)
     {
+        if($merchant->getOrgId() === OrgEntity::AXIS_ORG_ID)
+        {
+            $this->sendActivationEmailForAxisOrg($merchant);
+            return;
+        }
+
         //
         // In order to distinguish between RX merchant and PG Merchant, we cannot use getRequestOriginProduct, because
         // this activation happens from Admin Dashboard, in which case the OriginProduct will always be Primary.
@@ -460,7 +469,45 @@ class Activate extends Base\Core
                 Mail::queue(new AccountActivationConfirmation($merchant->getId()));
             }
         }
+    }
 
+    private function sendActivationEmailForAxisOrg($merchant)
+    {
+        $isAxisWrapperEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
+            RazorxTreatment::AXIS_WRAPPER_ENABLED);
+
+        if($isAxisWrapperEnabled === false)
+        {
+            return;
+        }
+
+        $org = $merchant->org;
+        $dashboardUrl = $this->app['config']->get('applications.dashboard.url');
+
+        $data = [
+            DEConstants::MERCHANT             => [
+                Merchant\Entity::NAME          => $merchant->getName(),
+                Merchant\Entity::BILLING_LABEL => $merchant->getBillingLabel(),
+                Merchant\Entity::EMAIL         => $merchant->getEmail(),
+                DEConstants::ORG               => [
+                    DEConstants::HOSTNAME => $org->getPrimaryHostName(),
+                    Merchant\Detail\Entity::BUSINESS_NAME => $org->getBusinessName()
+                ],
+                'dashboard_url'                => $dashboardUrl
+            ],
+        ];
+
+        $mail = new AxisActivation($data, $org->toArray());
+
+        Mail::queue($mail);
+
+        /*
+         * sending out password reset email to the merchants, since password was created by the system
+         */
+        $input = [
+            "email" => $merchant->getEmail()
+        ];
+        (new UserService)->postResetPassword($input);
     }
 
     /**

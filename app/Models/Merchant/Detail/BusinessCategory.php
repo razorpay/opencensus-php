@@ -578,4 +578,24 @@ class BusinessCategory
 
         return self::OTHERS;
     }
+
+    public static function getWhitelistedSubCategory(string $category)
+    {
+        if(isset(self::SUBCATEGORY_MAP[$category]) === true)
+        {
+            $subCategories = self::SUBCATEGORY_MAP[$category];
+
+            foreach ($subCategories as $subCategory)
+            {
+                $subCategoryMap = BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory];
+
+                if($subCategoryMap[Entity::ACTIVATION_FLOW] === ActivationFlow::WHITELIST)
+                {
+                    return $subCategory;
+                }
+            }
+        }
+
+        return null;
+    }
 }

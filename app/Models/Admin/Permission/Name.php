@@ -44,6 +44,7 @@ class Name
     const CREATE_EMI_PLAN                     = 'create_emi_plan';
     const CREATE_MERCHANT_LOCK                = 'create_merchant_lock';
     const CREATE_MERCHANT_UNLOCK              = 'create_merchant_unlock';
+    const UPLOAD_MERCHANT                     = 'upload_merchant';
     const EDIT_MERCHANT                       = 'edit_merchant';
     const EDIT_MERCHANT_TAGS                  = 'edit_merchant_tags';
     const EDIT_MERCHANT_FEATURES              = 'edit_merchant_features';

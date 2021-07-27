@@ -28,6 +28,11 @@ class RequiredFields
         Type::BUSINESS_PROOF_URL,
     ];
 
+    // KYC document fields
+    const KYC_DOCUMENT_FIELDS = [
+        Entity::BUSINESS_PAN_URL,
+        Type::BUSINESS_PROOF_URL,
+    ];
 
     //registered business default doc
     const REGISTERED_BUSINESS_FIELDS = [

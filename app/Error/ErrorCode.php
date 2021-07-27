@@ -2053,6 +2053,8 @@ class ErrorCode
 
     const BAD_REQUEST_INVALID_PERMISSION                                            = 'BAD_REQUEST_INVALID_PERMISSION';
 
+    const BAD_REQUEST_INVALID_ORG_ID                                                = 'BAD_REQUEST_INVALID_ORG_ID';
+    
     const SERVER_ERROR_PAYMENT_LINK_SERVICE_FAILURE                                 = 'SERVER_ERROR_PAYMENT_LINK_SERVICE_FAILURE';
     
     const BAD_REQUEST_INVALID_WEBSITE                                               = 'BAD_REQUEST_INVALID_WEBSITE';

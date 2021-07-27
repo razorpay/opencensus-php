@@ -62,6 +62,7 @@ class Route
         'merchant_autokyc_hard_limit'              => ['post',     'merchants/auto-kyc-cron/hard-limit',             'MerchantController@postHardLimitBreachOnAutoKYC'                 ],
         'merchant_autokyc_escalation'              => ['post',     'merchants/auto-kyc-cron/escalations',            'MerchantController@handleAutoKycEscalationCron'                  ],
 
+        'merchant_report'                          => ['post',     'merchants/admin/report',                         'MerchantController@handleReport'                          ],
         'merchant_onboarding_escalations'          => ['post',     'merchants/onboarding/escalations',               'MerchantController@handleOnboardingEscalationsCron'],
         'fetch_merchant_escalation'                => ['get',      'merchants/onboarding/escalations',               'MerchantController@fetchOnboardingEscalations'],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
@@ -583,6 +584,11 @@ class Route
         'merchant_activation_files'                => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_upload_file_admin'    => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'               => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
+
+
+        // Api for creating merchant using raw file
+        'merchant_upload'                          => ['post',     'merchant/upload',                                'MerchantController@uploadMerchant'                ],
+
         'merchant_activation_migrate'              => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'merchant_activation_archive'              => ['patch',    'merchant/activation/{id}/archive',               'MerchantController@updateActivationArchive'                        ],
         'merchant_activation_status'               => ['patch',    'merchant/activation/{id}/activation_status',     'MerchantController@updateActivationStatus'                         ],
@@ -3138,6 +3144,9 @@ class Route
         'merchant_autokyc_soft_limit',
         'merchant_autokyc_hard_limit',
         'merchant_autokyc_escalation',
+
+        // cron for generating merchant report
+        'merchant_report',
         'merchant_onboarding_escalations',
         'settlement_ondemand_process',
         'internal_balance_fetch_by_merchant_id',
@@ -4509,6 +4518,7 @@ class Route
         'iin_upload',
         'merchant_actions',
         'merchant_activation_update',
+        'merchant_upload',
         'merchant_activation_upload_file_admin',
         'merchant_beneficiary_file',
         'merchant_create',
@@ -5268,6 +5278,7 @@ class Route
         'admin_fetch_entity_by_id'                 => Permission::VIEW_ALL_ENTITY,
         'external_admin_fetch_entity_by_id'        => Permission::EXTERNAL_ADMIN_VIEW_ALL_ENTITY,
         'merchant_activation_update'               => Permission::EDIT_MERCHANT,
+        'merchant_upload'                          => Permission::UPLOAD_MERCHANT,
         'merchant_assign_pricing'                  => Permission::EDIT_MERCHANT_PRICING,
         'merchant_get_banks'                       => Permission::VIEW_MERCHANT_BANKS,
         'merchant_set_banks'                       => Permission::ASSIGN_MERCHANT_BANKS,
@@ -7557,6 +7568,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'merchant_upload',
             'rbl_current_account_serviceability_get_admin',
             'merchant_business_detail_fetch',
             'merchant_business_detail_save',
@@ -9341,6 +9353,10 @@ class Route
             'merchant_autokyc_soft_limit',
             'merchant_autokyc_hard_limit',
             'merchant_autokyc_escalation',
+
+            // cron for generating merchant report
+            'merchant_report',
+
             'merchant_onboarding_escalations',
             'setcronjob_webhook',
             // The rest are crons

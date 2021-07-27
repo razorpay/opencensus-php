@@ -6194,6 +6194,11 @@ class Service extends Base\Service
         return (new Escalations\Core())->handleEscalationsCron();
     }
 
+    public function handleReport(array $input)
+    {
+        return (new Detail\Report\Core)->sendReport($input);
+    }
+
     public function installAppOnAppStoreForMerchant(array $input)
     {
         //Validate input
