@@ -16,7 +16,7 @@ export default function Details({
   optOutConfirmation,
 }) {
   const [isPending, setPending] = useState(false);
-  const tiralPeriodEnd = '31-05-2021';
+  const trialPeriodEnd = '30-09-2021';
 
   const joinWaitlist = () => {
     setPending(true);
@@ -51,8 +51,8 @@ export default function Details({
             let increaseLineHeight = false;
             if (item.indexOf('{end-date}') != -1) {
               increaseLineHeight = true;
-              const endDate = moment(tiralPeriodEnd, 'DD-MM-YYYY').format('DD MMM YYYY');
-              const diff = moment(tiralPeriodEnd, 'DD-MM-YYYY').diff(moment(), 'days');
+              const endDate = moment(trialPeriodEnd, 'DD-MM-YYYY').format('DD MMM YYYY');
+              const diff = moment(trialPeriodEnd, 'DD-MM-YYYY').diff(moment(), 'days');
               children = (
                 <>
                   {item.replace('{end-date}', '')} <span className="trial-end-date">{endDate}</span>
