@@ -2054,7 +2054,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_PERMISSION                                            = 'BAD_REQUEST_INVALID_PERMISSION';
 
     const SERVER_ERROR_PAYMENT_LINK_SERVICE_FAILURE                                 = 'SERVER_ERROR_PAYMENT_LINK_SERVICE_FAILURE';
-
+    
     const BAD_REQUEST_INVALID_WEBSITE                                               = 'BAD_REQUEST_INVALID_WEBSITE';
 
     const BAD_REQUEST_PRODUCT_INTERNATIONAL_CANT_BE_ENABLED                         = 'BAD_REQUEST_PRODUCT_INTERNATIONAL_CANT_BE_ENABLED';

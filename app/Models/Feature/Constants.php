@@ -747,6 +747,8 @@ class Constants
 
     const ROUTE_KEY_MERCHANTS_QUEUE = 'route_key_merchants_queue';
 
+    const FEATURE_BBPS = 'feature_bbps';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1082,6 +1084,7 @@ class Constants
         self::SKIP_CUSTOMER_ID_CHECKOUT       => true,
         self::DISPUTE_PRESENTMENT             => true,
         self::ROUTE_KEY_MERCHANTS_QUEUE       => true,
+        self::FEATURE_BBPS                    => true,
     ];
 
     // Entity type constants
@@ -1593,7 +1596,12 @@ class Constants
             'feature'       => self::ROUTE_KEY_MERCHANTS_QUEUE,
             'display_name'  => 'To use new transfer processing queue',
             'documentation' => '',
-        ]
+        ],
+        self::FEATURE_BBPS => [
+            'feature'       => self::FEATURE_BBPS,
+            'display_name'  => 'Enable BBPS Product for the merchant',
+            'documentation' => '',
+        ],
     ];
 
     /**

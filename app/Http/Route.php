@@ -1021,6 +1021,9 @@ class Route
         'payment_links_switch_versions'            => ['post',     'payment_links_switch_versions',                  'InvoiceController@switchPlVersions'                                ],
         'payment_links_v2_admin'                   => ['post',     'payment_links_admin',                            'PlinkController@sendRequest'                                       ],
         // end of payment link service end points
+        // Setu Integration
+        'bbps_bill_payments'                       => ['get',      'bbps_bill_payments',                             'BbpsController@showBbpsDashboard'                                  ],
+
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                       => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -3694,6 +3697,7 @@ class Route
     ];
 
     public static $proxy = [
+        'bbps_bill_payments',
         'merchant_balance_fetch_by_id',
         'merchant_rtb_details_fetch',
         'merchant_fire_hubspot_event',
@@ -7544,6 +7548,7 @@ class Route
             'workflow_payout_amount_rules',
             'banking_account_service_routes',
             'banking_account_service_pincode_serviceability_check',
+            'bbps_bill_payments',
             'merchant_international_enablement_preview',
             'merchant_international_enablement_get',
             'merchant_international_enablement_draft',
@@ -10133,6 +10138,7 @@ class Route
         'merchant_gstin_self_serve_status'     => [Feature::GSTIN_SELF_SERVE],
         'merchant_gstin_self_serve_update'     => [Feature::GSTIN_SELF_SERVE],
         'get_dispute_document_types_metadata'  => [Feature::DISPUTE_PRESENTMENT],
+        'bbps_bill_payments'                   => [Feature::FEATURE_BBPS],
         'patch_dispute_contest_by_id'          => [Feature::DISPUTE_PRESENTMENT],
         'post_dispute_accept_by_id'            => [Feature::DISPUTE_PRESENTMENT],
     ];

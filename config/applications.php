@@ -1050,4 +1050,14 @@ return [
         'url'           => env('RECON_SERVICE_URL'),
     ],
 
+    'bbps' => [
+        'provider' => env('BBPS_PROVIDER', 'mock'),
+        'mock'   => [
+        ],
+        'setu'   => [
+            'client_id'              => env('SETU_CLIENT_ID'),
+            'client_secret'          => env('SETU_CLIENT_SECRET'),
+            'impersonate_iframe_url' => env('SETU_IMPERSONATE_IFRAME_URL')
+        ],
+    ],
 ];

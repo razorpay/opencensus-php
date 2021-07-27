@@ -391,6 +391,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new PaymentLinkService($app);
         });
 
+        $this->app->singleton('bbpsService', function($app)
+        {
+            return new Bbps\Service($app);
+        });
+
         $this->app->singleton('outbox', function ($app) {
             $encrypter = new AES256GCMEncrypt(env("OUTBOX_ENCRYPTION_KEY"));
             $encoder   = new JsonEncoder();
@@ -604,6 +609,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'cache.psr6',
             'ledger',
             'splitzService',
+            'bbpsService'
         ];
     }
 
