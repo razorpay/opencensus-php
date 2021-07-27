@@ -1055,6 +1055,10 @@ export default class User {
     return this.getExpStatus('dashboard_show_nps_survey');
   }
 
+  showCsmExperienceSurvey(){
+    return this.getExpStatus('csm_experience_survey');
+  }
+
   // CSAT Survey feature
   showCSATSurvey() {
     return this.getExpStatus('show_csat_survey');

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import moment from 'moment';
 import analyticsService from '@razorpay/commander-services/analytics';
-import { createSidetab } from '@typeform/embed';
+import { createSidetab, createPopup } from '@typeform/embed';
 
 import Loader from 'common/ui/Loader';
 
@@ -330,6 +330,17 @@ export default class App extends Component {
         },
       );
       this.state.NonGoLiveNPSEnableTypeForm = NonGoLiveNPSEnableTypeForm; // saving reference typeform
+      
+      if(((user.experiments || {})['csm_experience_survey'] || {}).result === 'on' && !LocalStorageService.getItem('csm_exp_survey_showed')){
+        LocalStorageService.setItem('csm_exp_survey_showed')
+        createPopup('uDHJcatl',{
+          hideHeaders: true,
+          hideFooters: true,
+          hidden: {
+            email: `${user.email}`,
+          }
+        }).open();
+      }
 
       const merchantsSettlementStatus = JSON.parse(
         LocalStorageService.getItem('merchantsSettlementStatus'),
