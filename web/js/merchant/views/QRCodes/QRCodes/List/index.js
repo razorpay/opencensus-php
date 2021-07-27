@@ -12,6 +12,7 @@ import { qrCodeId, description, qrUsage, amountReceived, createdAt } from 'commo
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 import List from 'merchant/views/Invoices/Invoices/components/List';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 
@@ -20,6 +21,11 @@ import EmptyList from 'merchant/components/EmptyList';
 
 import ListFilter from './Filter';
 import track from './track';
+
+const QR_CODE_CREATE_HOTJAR = {
+  trigger: 'QR_Creation',
+  tags: ['QR_Creation'],
+};
 
 @withRouter
 @connect((state) => ({ ...state.qr_codes, ...state.session }), {
@@ -43,6 +49,11 @@ export default class QRCodesListContainer extends ListContainer {
 
   onClearAnalytics = () => track.clear();
 
+  onCreateQRCode = () => {
+    triggerHotjarRecording(QR_CODE_CREATE_HOTJAR.trigger, QR_CODE_CREATE_HOTJAR.tags);
+    track.create();
+  };
+
   render() {
     return (
       <div class="QRCode--List content-wrapper">
@@ -57,7 +68,7 @@ export default class QRCodesListContainer extends ListContainer {
             <DocsLink url="https://razorpay.com/docs/qr-codes/" onClick={track.docs} />
 
             <ShowWhen additionalCondition={(user) => user.isAllowedEdit('qr_codes')}>
-              <NavLink class="btn btn-primary" to="/qr_codes/new" onClick={track.create}>
+              <NavLink class="btn btn-primary" to="/qr_codes/new" onClick={this.onCreateQRCode}>
                 <i class="i i-plus" />
                 Create QR Codes
               </NavLink>

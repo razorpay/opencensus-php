@@ -6,6 +6,7 @@ import RTracking from 'react-tracking';
 import QRCodeDetails from './Details';
 import * as VirtualAccountActions from 'merchant/reducers/virtualaccounts';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { fetchPayments, fetchDetails } from './model';
 import { fetchCustomersForAutocomplete } from 'merchant/reducers/customers';
@@ -14,6 +15,10 @@ import CreateTestPayment from './CreateTestPayment';
 import QRCodePreviewModal from '../components/QRPreviewModal';
 import track from './track';
 
+const QR_CODE_DETAILS_HOTJAR = {
+  trigger: 'QR_Details',
+  tags: ['QR_Details'],
+};
 @withRouter
 @connect(
   (state) => {
@@ -48,7 +53,7 @@ export default class QRCodeDetailsContainer extends React.Component {
     this.fetchQRCodeDetails(id);
     this.fetchPayments(id);
     this.props.fetchCustomersForAutocomplete();
-
+    triggerHotjarRecording(QR_CODE_DETAILS_HOTJAR.trigger, QR_CODE_DETAILS_HOTJAR.tags);
     track.init({
       track: this.props.tracking.trackEvent,
     });
