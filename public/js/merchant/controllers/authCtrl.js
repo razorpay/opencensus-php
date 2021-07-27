@@ -138,9 +138,13 @@ app
       $scope.emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
       // signup state container
+      var searchParams = new URLSearchParams(location.search);
       var email = $location.search().email;
       var role = $location.search().r;
-      var referral_code = $location.search().referral_code;
+      /* This logic can parse http://dashboard.razorpay.in/#/access/signup?referral_code=test - Pg
+         and http://dashboard.razorpay.in/?referral_code=test#/access/signup - X
+      */
+      var referral_code = searchParams.get('referral_code') || $location.search().referral_code;
       $scope.checkboxCaptcha = 'Faked';
       try {
         email = atob(decodeURIComponent(email));
@@ -3097,7 +3101,10 @@ app
       }
 
       function shouldRenderCouponCode() {
-        var coupon_code = $location.search().coupon_code;
+        /* This logic can parse http://dashboard.razorpay.in/#/access/signup?coupon_code=test - Pg
+           and http://dashboard.razorpay.in/?coupon_code=test#/access/signup - X
+        */
+        var coupon_code = searchParams.get('coupon_code') || $location.search().coupon_code;
         var shouldRender = false;
 
         if (!coupon_code && shouldAutoApplyOffer()) {
