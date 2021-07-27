@@ -195,6 +195,8 @@ class Core extends Base\Core
         //1 => successfully pushed to kafka
         $isPushedToKafka = 1;
 
+        $producerKey = $payment->getId();
+
         $topic = env('REGISTER_PAYMENT_SCHEDULER_EVENT', 'register-payment-scheduler-event');
 
         $data = [
@@ -214,7 +216,7 @@ class Core extends Base\Core
 
         try
         {
-            (new KafkaProducer($topic, stringify($message)))->Produce();
+            (new KafkaProducer($topic, stringify($message), $producerKey))->Produce();
 
             $this->trace->info(
                 TraceCode::PAYMENT_KAFKA_PUSH_SUCCESS,
