@@ -18,6 +18,7 @@ const International = ({
     showStatusLabel,
     maxPaymentAmount,
     isTogglerVisible,
+    questionnaireStatus,
     internationalEnabled,
     currentStatusOnHeader,
     isRequestAccessAllowed,
@@ -76,7 +77,11 @@ const International = ({
             onClick={onRequestAccessClick}
             disabled={!isKycComplete}
           >
-            Request
+            {questionnaireStatus &&
+            questionnaireStatus.new_flow &&
+            questionnaireStatus.enablement_progress === 'in_progress'
+              ? `Edit draft (${questionnaireStatus.percentage_completion}%)`
+              : 'Request'}
           </button>
         )}
         {currentStatusOnHeader && (
@@ -96,6 +101,7 @@ const International = ({
             transactionSize={maxPaymentAmount}
             status={productStatus['pg'].status}
             showRequestAccessBtn={productStatus['pg'].isRequested}
+            questionnaireStatus={questionnaireStatus}
             onRequestAccessClick={() => onRequestAccessClick({ triggerSource: 'pg' })}
           />
 
@@ -108,6 +114,7 @@ const International = ({
             transactionSize={maxPaymentAmount}
             title="Payment Pages, Links and Invoices"
             status={productStatus['otherProducts'].status}
+            questionnaireStatus={questionnaireStatus}
             showRequestAccessBtn={productStatus['otherProducts'].isRequested}
             onRequestAccessClick={() => onRequestAccessClick({ triggerSource: 'otherProducts' })}
           />
@@ -126,6 +133,7 @@ const ProductInfo = ({
   showStatusLabel,
   showRequestAccessBtn,
   onRequestAccessClick,
+  questionnaireStatus,
 }) => {
   let description;
   switch (status) {
@@ -135,7 +143,7 @@ const ProductInfo = ({
       break;
     case 'in_review':
       description =
-        'Request has been submitted. We are verifying your request. This would take roughly 5-7 days.';
+        'Request has been submitted. We are verifying your request. This would take roughly 3-5 days.';
       break;
     case 'no_action_received':
       description = `Raise a request to activate international card payments on ${
@@ -164,9 +172,14 @@ const ProductInfo = ({
         <strong>{title}</strong>
 
         {showRequestAccessBtn ? (
-          <button class="btn btn-primary ml-5" onClick={onRequestAccessClick}>
-            Request Access
-          </button>
+          <a role="button" class="ml-5" onClick={onRequestAccessClick}>
+            <strong>
+              {questionnaireStatus?.new_flow &&
+              questionnaireStatus.enablement_progress === 'in_progress'
+                ? `Edit draft (${questionnaireStatus.percentage_completion}%)`
+                : 'Request Access'}
+            </strong>
+          </a>
         ) : (
           showStatusLabel && <InternationalStatusLabel status={statusMap[status]} />
         )}

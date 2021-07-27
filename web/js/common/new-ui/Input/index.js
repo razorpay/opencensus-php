@@ -597,6 +597,7 @@ Field.File = (_) => {
           onCloseClick={_.onCloseClick}
           fileName={_.fileName}
           downloadUrl={_.downloadUrl}
+          showCloseBtn={_.showCloseBtn}
         />
         <Description text={description} />
       </div>

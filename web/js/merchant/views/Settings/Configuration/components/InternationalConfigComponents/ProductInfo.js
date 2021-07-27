@@ -9,6 +9,7 @@ const ProductAction = ({
   isKycComplete,
   showRequestAccessBtn,
   onRequestAccessClick,
+  questionnaireStatus,
 }) => {
   if (status === 'request_rejected') {
     return (
@@ -58,7 +59,9 @@ const ProductAction = ({
   if (showRequestAccessBtn) {
     return (
       <button onClick={onRequestAccessClick} class="btn-link">
-        Request Access
+        {questionnaireStatus?.new_flow && questionnaireStatus.enablement_progress === 'in_progress'
+          ? `Edit draft (${questionnaireStatus.percentage_completion}%)`
+          : 'Request Access'}
       </button>
     );
   }
@@ -76,6 +79,7 @@ const ProductInfo = ({
   isKycComplete,
   product,
   showStatusLabel,
+  questionnaireStatus,
 }) => {
   return (
     <div class="international__Product">
@@ -93,6 +97,7 @@ const ProductInfo = ({
           status={status}
           showRequestAccessBtn={showRequestAccessBtn}
           onRequestAccessClick={onRequestAccessClick}
+          questionnaireStatus={questionnaireStatus}
         />
         {showStatusLabel && <InternationalStatusLabel status={status} />}
       </div>

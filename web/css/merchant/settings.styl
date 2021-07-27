@@ -81,6 +81,7 @@
 
       .Button
         margin: 0
+        height: 34px
 
       .title
         vertical-align: middle
@@ -111,6 +112,16 @@
     .body
       .product-section
         margin: 8px 0 20px 0
+      .questionnaire-status
+        font-style: italic
+        font-weight: normal
+        font-size: 12px
+        line-height: 20px
+        color: rgba(22, 47, 86, 0.54)
+        opacity: 0.7
+        position: absolute
+        right: 20px
+        padding: 5px
 
   .footer-note
     margin: 60px -20px -20px -20px
@@ -364,8 +375,6 @@
         .InputGroup--inline
           width: 100%
 
-
-
 .international__Product
   margin: 15px 0
   display: flex
@@ -397,6 +406,238 @@
 .Modal__Request-initiate-modal .Input-desc
   margin-left: 25px
 
+.Modal-container--success
+  width: 328px
+  text-align: center
+  .header
+    color: white
+    padding: 20px
+    background: url('https://cdn.razorpay.com/static/assets/international-success-modal.png')
+    h4
+      font-weight: bold
+      margin: 10px
+  main
+    padding: 30px
+    p
+      margin: 10px 0
+    a
+      margin-top: 30px
+
+.Modal-container--save-draft
+  width: 328px
+  padding: 30px
+  footer
+    float: right
+
+.Modal-container--intl-questionnaire 
+  .pb-20
+    padding-bottom: 20px
+  .spacer
+    height: 10px
+  footer
+    .left
+      float: left;
+    .Loader
+      opacity: 0
+      transition: 1s opacity
+      &--visible
+        opacity: 1
+      .device--mobile
+        display: none
+      i, .spin-btn
+        margin-right: 4px
+        vertical-align: middle
+      .spin-btn
+        opacity: 1
+  .supporting-documents
+    .PowerSelect__Placeholder
+      color: #58666E
+
+  .Modal-content
+    width: 960px
+    height: 690px
+  .Wizard aside ul
+    li
+      &:last-child
+        margin-top: 20px
+  .form-container
+    left: 240px
+    position: absolute
+    top: 0
+    right: 0
+    bottom: 80px
+    padding: 30px
+    overflow: auto
+    background: #FAFAFA
+    .main-title
+      font-weight: bold
+      font-size: 18px
+      line-height: 22px
+      color: #58666E
+      margin-bottom: 10px
+    .sub-title
+      padding-bottom: 12px
+    .Accordion__title
+      color: #1281F6
+      border-bottom: 1px solid #EEEEEE
+      background: unset
+      padding-left: 0
+    .Accordion__content
+      ul
+        list-style: none
+        padding-left: 8px
+        li
+          text-indent: -12px
+          &::before
+            content: "• "
+            color: #979797
+            position: relative
+            left: -8px
+    .Input
+      textarea
+        overflow-y: scroll
+      .Input-label
+        width: 172px
+        text-align: right
+        float: left
+      .Input-content
+        &.Input-File
+          width: 320px
+        width: 280px
+        margin-left: 190px
+      &.error
+        .Input-error
+          display: block;
+        .PowerSelect
+          border-color: #f05050;
+    .Input.Input--checkbox
+      .Input-content
+        width: 100%
+        margin: 0
+        padding-right: 20px
+  footer
+    position absolute
+    left: 240px
+    background: #F6F6F6
+    padding: 20px
+    border-top: 1px solid #e0e0e0
+    bottom: 0
+    right: 0
+    text-align: right
+
+.Modal-container--enable_pg 
+  margin-top: 300px
+  .Modal-content
+    width: 325px
+    padding: 24px
+    h4
+      font-weight: bold
+      line-height: 24px
+      margin-bottom: 20px
+    .Input
+      margin: 8px 0
+      .Input-desc
+        margin-left: 24px
+    button
+      margin: 20px
+      float: right
+.PowerSelect__Options
+  .option
+      padding: 5px 10px
+      display: flex
+      align-items: center
+      justify-content: space-between
+      label
+        font-weight: normal
+    .currency, .symbol
+      font-weight: bold
+      color: #162F56
+    .symbol
+      padding-left: 5px
+    .name
+      color: rgba(22, 47, 86, 0.38)
+      padding-right: 5px
+
+.after-options
+  display: flex
+  justify-content: flex-end
+  padding: 10px
+
+.file
+  .remove-wrapper
+    position: relative
+    .remove
+      position: absolute
+      top: 0
+      right: 120px
+      padding: 7px
+      padding-top: 0
+      cursor: pointer
+  .add-another
+    margin-left: 190px;
+    cursor: pointer;
+
+
+.PowerSelectMultiple__SelectedOptions
+  margin: 0
+
+.PowerSelect__OptGroup__Label
+  font-weight: bold
+  color: rgba(22, 47, 86, 0.54)
+  padding: 10px 24px
+
+.PowerSelectMultiple
+  .trigger
+    position: relative
+    p
+      padding: 10px
+    i
+      position: absolute
+      top: 10px
+      right: 0
+      font-size: 20px
+
+.PowerSelect__Tether
+  width: 280px
+.currency-select__Tether
+  .option
+    height: 24px
+    padding: 20px 0
+    padding-right: 8px
+  .search
+    padding: 5px 14px
+    i
+      position: absolute
+      top: 15px
+      padding: 5px
+    input
+      border: none
+      border-bottom: 1px solid rgba(22, 47, 86, 0.1)
+      padding: 10px 24px
+      width: 100%
+  .PowerSelect__OptGroup__Label
+    padding: 10px 5px
+
+.PowerSelect__Menu
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
+  border: none;
+  .more-item
+    padding: 5px 15px
+    input
+      width: 100%
+      border: none
+      border-bottom: 1px solid #5D90E9
+    .btn-link
+      padding: 0
+    .add
+      position: absolute
+      right: 15px
+      padding: 0
+    .i-edit
+        float: right;
+        color: #2B83EA;
+        cursor: pointer;
+        padding: 5px;
 .label-primary-light
   color: #2A8CFF
   background-color: #EAF4FF

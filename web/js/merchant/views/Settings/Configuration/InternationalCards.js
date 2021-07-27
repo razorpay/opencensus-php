@@ -2,6 +2,7 @@ import React from 'react';
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
 import SwitchField from 'common/ui/Forms/SwitchField';
+import { formatFromNow } from 'common/utils/rzp-utils';
 import withInternationalConfig from './InternationalConfig';
 import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
 import ProductInfo from './components/InternationalConfigComponents/ProductInfo.js';
@@ -20,6 +21,7 @@ const InternationalCards = ({
     showStatusLabel,
     maxPaymentAmount,
     isTogglerVisible,
+    questionnaireStatus,
     internationalEnabled,
     currentStatusOnHeader,
     isRequestAccessAllowed,
@@ -46,7 +48,11 @@ const InternationalCards = ({
           onClick={onRequestAccessClick}
           disabled={isRequestButtonDisabled}
         >
-          Request Access
+          {questionnaireStatus &&
+          questionnaireStatus.new_flow &&
+          questionnaireStatus.enablement_progress === 'in_progress'
+            ? 'Edit Draft'
+            : 'Request Access'}
         </Button.Primary>
       );
     }
@@ -81,6 +87,7 @@ const InternationalCards = ({
           isKycComplete={isKycComplete}
           product="pg"
           showStatusLabel={showStatusLabel}
+          questionnaireStatus={questionnaireStatus}
         />
 
         <ProductInfo
@@ -95,6 +102,7 @@ const InternationalCards = ({
           isKycComplete={isKycComplete}
           product="otherProducts"
           showStatusLabel={showStatusLabel}
+          questionnaireStatus={questionnaireStatus}
         />
       </ul>
     );
@@ -132,6 +140,15 @@ const InternationalCards = ({
               {isInternationalPaymentsAllowed && (
                 <span>Card payments on payment gateway, payment pages, links & invoices</span>
               )}
+              {isRequestAccessAllowed &&
+                questionnaireStatus?.new_flow &&
+                questionnaireStatus.enablement_progress === 'in_progress' && (
+                  <span class="questionnaire-status">{`${
+                    questionnaireStatus.percentage_completion
+                  }% details are complete | ${formatFromNow(
+                    questionnaireStatus.last_updated_at,
+                  )}`}</span>
+                )}
             </div>
             <div>{description}</div>
           </div>

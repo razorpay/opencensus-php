@@ -18,7 +18,7 @@ const InternationalStatusLabel = ({ status }) => {
   let description;
   switch (status) {
     case 'under_review':
-      description = 'Usually takes 5-7 working days to review your request';
+      description = 'Usually takes 3-5 working days to review your request';
       break;
     case 'rejected':
       description = 'Please contact support for any queries';

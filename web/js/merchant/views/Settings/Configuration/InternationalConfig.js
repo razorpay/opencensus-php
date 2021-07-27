@@ -9,13 +9,15 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateSession } from 'merchant/reducers/session';
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import { fetchSchedule } from 'merchant/reducers/settlements/details';
-
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { isPresent } from 'common/utils/rzp-utils';
 import LocalStorageService from 'common/utils/localStorage';
 
 import RequestInitiateModal from './components/InternationalConfigComponents/RequestInitiateModal.js';
 import RequestSubmittedModal from './components/InternationalConfigComponents/RequestSubmittedModal.js';
+import Questionnaire from './Questionnaire';
 
 const NO_ACTION_RECEIVED = 'no_action_received';
 const IN_REVIEW = 'in_review';
@@ -49,6 +51,7 @@ function withInternationalConfig(WrappedComponent) {
         requestedAccessFrom: '',
         isWebsiteInWorkflow: null,
         showStatusLabel: props.user.international,
+        questionnaireStatus: null,
       };
       this.initializeTypeForm();
     }
@@ -64,11 +67,31 @@ function withInternationalConfig(WrappedComponent) {
       this.IntlEnableTypeForm = IntlEnableTypeForm; // saving reference typeform
     };
 
+    async getQuestionnaireCompletion() {
+      try {
+        const status = await merchantFetch({
+          url: 'international_enablement/preview',
+          mode: 'live',
+          method: 'GET',
+        });
+
+        if (status && status.success) {
+          this.setState({ questionnaireStatus: status.data });
+        }
+      } catch (err) {
+        this.props.showNotification({
+          type: 'error',
+          message: 'Could not fetch international questionnaire status!', // TODO: Fix appropriate message for questionnaire vs typeform
+        });
+      }
+    }
+
     async componentDidMount() {
       const currentMID = this.props.user.current;
       const isAccessRequested = LocalStorageService.getItem(
         `international-access-requested-${currentMID}`,
       );
+      this.getQuestionnaireCompletion();
 
       try {
         const fetchStatusRes = await merchantFetch({
@@ -148,7 +171,26 @@ function withInternationalConfig(WrappedComponent) {
     };
 
     openRequestInitiateModal = ({ triggerSource = '' }) => {
-      this.props.openModal({
+      const { questionnaireStatus } = this.state;
+
+      const objectName = questionnaireStatus?.new_flow ? 'intl enablement form' : 'intl typeform';
+      const actionName =
+        questionnaireStatus?.new_flow &&
+        ['in_progress', 'submitted'].includes(questionnaireStatus?.enablement_progress)
+          ? 'edit draft'
+          : 'request access';
+      analyticsTrack({
+        objectName,
+        actionName,
+        screen: 'payment methods',
+        properties: {
+          triggerSource,
+          timestamp: Date.now(),
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+
+      let modalOptions = {
         component: (
           <RequestInitiateModal
             closeModal={this.closeModal}
@@ -158,7 +200,21 @@ function withInternationalConfig(WrappedComponent) {
           />
         ),
         size: 'medium',
-      });
+      };
+
+      if (questionnaireStatus?.new_flow) {
+        modalOptions = {
+          component: (
+            <Questionnaire
+              closeModal={this.closeModal}
+              openModal={this.props.openModal}
+              triggerSource={triggerSource}
+            />
+          ),
+          overlayStyles: { display: 'flex', justifyContent: 'center', alignItems: 'center' },
+        };
+      }
+      this.props.openModal(modalOptions);
     };
 
     openTypeForm = (triggerSource) => {
@@ -437,6 +493,7 @@ function withInternationalConfig(WrappedComponent) {
         internationalEnabled: internationalEnabled,
         currentStatusOnHeader: this.currentStatusOnHeader,
         maxPaymentAmount: user.merchant.max_payment_amount,
+        questionnaireStatus: this.state.questionnaireStatus,
         isRequestAccessAllowed: this.isRequestAccessAllowed,
         isAnyProductIntlApproved: this.isAnyProductIntlApproved,
         isInternationalBlackList: this.isInternationalBlackList,
