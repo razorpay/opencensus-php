@@ -11,7 +11,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_VENDOR_PAYMENTS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::vendor_payments"
+                    "app.vendor_payments"
                 ]
             ],
             [
@@ -19,7 +19,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_VENDOR_PAYMENTS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::vendor_payments"
+                    "app.vendor_payments"
                 ]
             ]
         ]
@@ -32,7 +32,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_DASHBOARD'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::dashboard"
+                    "app.dashboard"
                 ]
             ],
             [
@@ -40,7 +40,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_DASHBOARD'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::dashboard"
+                    "app.dashboard"
                 ]
             ]
         ]
@@ -53,7 +53,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_MERCHANT_DASHBOARD'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::merchant_dashboard"
+                    "app.merchant_dashboard"
                 ]
             ],
             [
@@ -61,7 +61,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_MERCHANT_DASHBOARD'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::merchant_dashboard"
+                    "app.merchant_dashboard"
                 ]
             ]
         ]
@@ -74,7 +74,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_ADMIN_DASHBOARD'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::admin_dashboard"
+                    "app.admin_dashboard"
                 ]
             ],
             [
@@ -82,7 +82,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_ADMIN_DASHBOARD'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::admin_dashboard"
+                    "app.admin_dashboard"
                 ]
             ]
         ]
@@ -95,7 +95,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_FRONTEND_GRAPHQL'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::frontend_graphql"
+                    "app.frontend_graphql"
                 ]
             ],
             [
@@ -103,7 +103,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_FRONTEND_GRAPHQL'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::frontend_graphql"
+                    "app.frontend_graphql"
                 ]
             ]
         ]
@@ -116,7 +116,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_SALESFORCE'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::salesforce"
+                    "app.salesforce"
                 ]
             ],
             [
@@ -124,7 +124,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_SALESFORCE'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::salesforce"
+                    "app.salesforce"
                 ]
             ]
         ]
@@ -137,7 +137,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_MOCK_GATEWAYS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::mock_gateways"
+                    "app.mock_gateways"
                 ]
             ],
             [
@@ -145,7 +145,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_MOCK_GATEWAYS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::mock_gateways"
+                    "app.mock_gateways"
                 ]
             ]
         ]
@@ -158,7 +158,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_DASHBOARD_GUEST'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::dashboard_guest"
+                    "app.dashboard_guest"
                 ]
             ],
             [
@@ -166,7 +166,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_DASHBOARD_GUEST'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::dashboard_guest"
+                    "app.dashboard_guest"
                 ]
             ]
         ]
@@ -179,7 +179,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_DASHBOARD_INTERNAL'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::dashboard_internal"
+                    "app.dashboard_internal"
                 ]
             ],
             [
@@ -187,7 +187,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_DASHBOARD_INTERNAL'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::dashboard_internal"
+                    "app.dashboard_internal"
                 ]
             ]
         ]
@@ -200,7 +200,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_PAYOUT_LINKS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::payout_links"
+                    "app.payout_links"
                 ]
             ],
             [
@@ -208,7 +208,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_PAYOUT_LINKS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::payout_links"
+                    "app.payout_links"
                 ]
             ]
         ]
@@ -221,7 +221,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_EXPRESS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::express"
+                    "app.express"
                 ]
             ],
             [
@@ -229,7 +229,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_EXPRESS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::express"
+                    "app.express"
                 ]
             ]
         ]
@@ -242,7 +242,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_CRON'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::cron"
+                    "app.cron"
                 ]
             ],
             [
@@ -250,7 +250,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_CRON'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::cron"
+                    "app.cron"
                 ]
             ]
         ]
@@ -263,7 +263,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_SUBSCRIPTIONS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::subscriptions"
+                    "app.subscriptions"
                 ]
             ],
             [
@@ -271,7 +271,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_SUBSCRIPTIONS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::subscriptions"
+                    "app.subscriptions"
                 ]
             ]
         ]
@@ -284,7 +284,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_PAYMENT_LINKS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::payment_links"
+                    "app.payment_links"
                 ]
             ],
             [
@@ -292,7 +292,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_PAYMENT_LINKS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::payment_links"
+                    "app.payment_links"
                 ]
             ]
         ]
@@ -305,7 +305,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_MANDATE_HQ'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::mandate_hq"
+                    "app.mandate_hq"
                 ]
             ],
             [
@@ -313,7 +313,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_MANDATE_HQ'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::mandate_hq"
+                    "app.mandate_hq"
                 ]
             ]
         ]
@@ -326,7 +326,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_KOTAK'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::kotak"
+                    "app.kotak"
                 ]
             ],
             [
@@ -334,7 +334,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_KOTAK'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::kotak"
+                    "app.kotak"
                 ]
             ]
         ]
@@ -347,7 +347,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_YESBANK'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::yesbank"
+                    "app.yesbank"
                 ]
             ],
             [
@@ -355,7 +355,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_YESBANK'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::yesbank"
+                    "app.yesbank"
                 ]
             ]
         ]
@@ -368,7 +368,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_ICICI'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::icici"
+                    "app.icici"
                 ]
             ],
             [
@@ -376,7 +376,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_ICICI'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::icici"
+                    "app.icici"
                 ]
             ]
         ]
@@ -389,7 +389,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_HDFC_ECMS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::hdfc_ecms"
+                    "app.hdfc_ecms"
                 ]
             ],
             [
@@ -397,7 +397,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_HDFC_ECMS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::hdfc_ecms"
+                    "app.hdfc_ecms"
                 ]
             ]
         ]
@@ -410,7 +410,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_RBL'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::rbl"
+                    "app.rbl"
                 ]
             ],
             [
@@ -418,7 +418,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_RBL'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::rbl"
+                    "app.rbl"
                 ]
             ]
         ]
@@ -431,7 +431,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_ECOM'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::ecom"
+                    "app.ecom"
                 ]
             ],
             [
@@ -439,7 +439,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_ECOM'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::ecom"
+                    "app.ecom"
                 ]
             ]
         ]
@@ -452,7 +452,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_LOS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::los"
+                    "app.los"
                 ]
             ],
             [
@@ -460,7 +460,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_LOS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::los"
+                    "app.los"
                 ]
             ]
         ]
@@ -473,7 +473,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_CAPITAL_CARDS_M2P'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::capital_cards_m2p"
+                    "app.capital_cards_m2p"
                 ]
             ],
             [
@@ -481,7 +481,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_CAPITAL_CARDS_M2P'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::capital_cards_m2p"
+                    "app.capital_cards_m2p"
                 ]
             ]
         ]
@@ -494,7 +494,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_CAPITAL_CARDS_CLIENT'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::capital_cards_client"
+                    "app.capital_cards_client"
                 ]
             ],
             [
@@ -502,7 +502,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_CAPITAL_CARDS_CLIENT'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::capital_cards_client"
+                    "app.capital_cards_client"
                 ]
             ]
         ]
@@ -515,7 +515,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_CAPITAL_COLLECTIONS_CLIENT'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::capital_collections_client"
+                    "app.capital_collections_client"
                 ]
             ],
             [
@@ -523,7 +523,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_CAPITAL_COLLECTIONS_CLIENT'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::capital_collections_client"
+                    "app.capital_collections_client"
                 ]
             ]
         ]
@@ -536,7 +536,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_LOC'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::loc"
+                    "app.loc"
                 ]
             ],
             [
@@ -544,7 +544,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_LOC'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::loc"
+                    "app.loc"
                 ]
             ]
         ]
@@ -557,7 +557,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_LEEGALITY'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::leegality"
+                    "app.leegality"
                 ]
             ],
             [
@@ -565,7 +565,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_LEEGALITY'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::leegality"
+                    "app.leegality"
                 ]
             ]
         ]
@@ -578,7 +578,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_MAILGUN'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::mailgun"
+                    "app.mailgun"
                 ]
             ],
             [
@@ -586,7 +586,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_MAILGUN'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::mailgun"
+                    "app.mailgun"
                 ]
             ]
         ]
@@ -599,7 +599,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_RAVEN'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::raven"
+                    "app.raven"
                 ]
             ],
             [
@@ -607,7 +607,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_RAVEN'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::raven"
+                    "app.raven"
                 ]
             ]
         ]
@@ -620,7 +620,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_SCROOGE'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::scrooge"
+                    "app.scrooge"
                 ]
             ],
             [
@@ -628,7 +628,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_SCROOGE'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::scrooge"
+                    "app.scrooge"
                 ]
             ]
         ]
@@ -641,7 +641,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_THIRDWATCH_REPORTS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::thirdwatch_reports"
+                    "app.thirdwatch_reports"
                 ]
             ],
             [
@@ -649,7 +649,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_THIRDWATCH_REPORTS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::thirdwatch_reports"
+                    "app.thirdwatch_reports"
                 ]
             ]
         ]
@@ -662,7 +662,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_THIRDWATCH'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::thirdwatch"
+                    "app.thirdwatch"
                 ]
             ],
             [
@@ -670,7 +670,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_THIRDWATCH'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::thirdwatch"
+                    "app.thirdwatch"
                 ]
             ]
         ]
@@ -683,7 +683,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_XPAYROLL'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::xpayroll"
+                    "app.xpayroll"
                 ]
             ],
             [
@@ -691,7 +691,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_XPAYROLL'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::xpayroll"
+                    "app.xpayroll"
                 ]
             ]
         ]
@@ -704,7 +704,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_RAZORFLOW'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::razorflow"
+                    "app.razorflow"
                 ]
             ],
             [
@@ -712,7 +712,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_RAZORFLOW'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::razorflow"
+                    "app.razorflow"
                 ]
             ]
         ]
@@ -725,7 +725,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_HOSTED'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::hosted"
+                    "app.hosted"
                 ]
             ],
             [
@@ -733,7 +733,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_HOSTED'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::hosted"
+                    "app.hosted"
                 ]
             ]
         ]
@@ -746,7 +746,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_H2H'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::h2h"
+                    "app.h2h"
                 ]
             ],
             [
@@ -754,7 +754,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_H2H'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::h2h"
+                    "app.h2h"
                 ]
             ]
         ]
@@ -767,7 +767,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_MERCHANTS_RISK'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::merchants-risk"
+                    "app.merchants-risk"
                 ]
             ],
             [
@@ -775,7 +775,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_MERCHANTS_RISK'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::merchants-risk"
+                    "app.merchants-risk"
                 ]
             ]
         ]
@@ -788,7 +788,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_AUTH_SERVICE'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::auth_service"
+                    "app.auth_service"
                 ]
             ],
             [
@@ -796,7 +796,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_AUTH_SERVICE'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::auth_service"
+                    "app.auth_service"
                 ]
             ]
         ]
@@ -809,7 +809,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_REPORTING'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::reporting"
+                    "app.reporting"
                 ]
             ],
             [
@@ -817,7 +817,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_REPORTING'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::reporting"
+                    "app.reporting"
                 ]
             ]
         ]
@@ -830,7 +830,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_VAJRA'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::vajra"
+                    "app.vajra"
                 ]
             ],
             [
@@ -838,7 +838,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_VAJRA'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::vajra"
+                    "app.vajra"
                 ]
             ]
         ]
@@ -851,7 +851,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_FTS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::fts"
+                    "app.fts"
                 ]
             ],
             [
@@ -859,7 +859,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_FTS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::fts"
+                    "app.fts"
                 ]
             ]
         ]
@@ -872,7 +872,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_REMINDERS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::reminders"
+                    "app.reminders"
                 ]
             ],
             [
@@ -880,7 +880,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_REMINDERS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::reminders"
+                    "app.reminders"
                 ]
             ]
         ]
@@ -893,7 +893,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_BATCH'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::batch"
+                    "app.batch"
                 ]
             ],
             [
@@ -901,7 +901,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_BATCH'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::batch"
+                    "app.batch"
                 ]
             ]
         ]
@@ -914,7 +914,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_STORK'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::stork"
+                    "app.stork"
                 ]
             ],
             [
@@ -922,7 +922,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_STORK'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::stork"
+                    "app.stork"
                 ]
             ]
         ]
@@ -935,7 +935,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_MTU_LAMBDA'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::mtu_lambda"
+                    "app.mtu_lambda"
                 ]
             ],
             [
@@ -943,7 +943,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_MTU_LAMBDA'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::mtu_lambda"
+                    "app.mtu_lambda"
                 ]
             ]
         ]
@@ -956,7 +956,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_AUTOMATION'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::automation"
+                    "app.automation"
                 ]
             ],
             [
@@ -964,7 +964,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_AUTOMATION'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::automation"
+                    "app.automation"
                 ]
             ]
         ]
@@ -977,7 +977,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_PERFIOS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::perfios"
+                    "app.perfios"
                 ]
             ],
             [
@@ -985,7 +985,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_PERFIOS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::perfios"
+                    "app.perfios"
                 ]
             ]
         ]
@@ -998,7 +998,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_SETTLEMENTS_SERVICE'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::settlements_service"
+                    "app.settlements_service"
                 ]
             ],
             [
@@ -1006,7 +1006,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_SETTLEMENTS_SERVICE'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::settlements_service"
+                    "app.settlements_service"
                 ]
             ]
         ]
@@ -1019,7 +1019,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_TERMINALS_SERVICE'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::terminals_service"
+                    "app.terminals_service"
                 ]
             ],
             [
@@ -1027,7 +1027,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_TERMINALS_SERVICE'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::terminals_service"
+                    "app.terminals_service"
                 ]
             ]
         ]
@@ -1040,7 +1040,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_SPINNAKER'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::spinnaker"
+                    "app.spinnaker"
                 ]
             ],
             [
@@ -1048,7 +1048,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_SPINNAKER'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::spinnaker"
+                    "app.spinnaker"
                 ]
             ]
         ]
@@ -1061,7 +1061,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_MOZART'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::mozart"
+                    "app.mozart"
                 ]
             ],
             [
@@ -1069,7 +1069,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_MOZART'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::mozart"
+                    "app.mozart"
                 ]
             ]
         ]
@@ -1082,7 +1082,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_CARD_PAYMENT_SERVICE'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::card_payment_service"
+                    "app.card_payment_service"
                 ]
             ],
             [
@@ -1090,7 +1090,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_CARD_PAYMENT_SERVICE'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::card_payment_service"
+                    "app.card_payment_service"
                 ]
             ]
         ]
@@ -1103,7 +1103,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_WORKFLOWS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::workflows"
+                    "app.workflows"
                 ]
             ],
             [
@@ -1111,7 +1111,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_WORKFLOWS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::workflows"
+                    "app.workflows"
                 ]
             ]
         ]
@@ -1124,7 +1124,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_PG_ROUTER'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::pg_router"
+                    "app.pg_router"
                 ]
             ],
             [
@@ -1132,7 +1132,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_PG_ROUTER'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::pg_router"
+                    "app.pg_router"
                 ]
             ]
         ]
@@ -1145,7 +1145,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_FRESHDESK_WEBHOOK'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::freshdesk_webhook"
+                    "app.freshdesk_webhook"
                 ]
             ],
             [
@@ -1153,7 +1153,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_FRESHDESK_WEBHOOK'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::freshdesk_webhook"
+                    "app.freshdesk_webhook"
                 ]
             ]
         ]
@@ -1166,7 +1166,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_YELLOWMESSENGER'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::yellowmessenger"
+                    "app.yellowmessenger"
                 ]
             ],
             [
@@ -1174,7 +1174,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_YELLOWMESSENGER'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::yellowmessenger"
+                    "app.yellowmessenger"
                 ]
             ]
         ]
@@ -1187,7 +1187,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_SMART_ROUTING'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::smart_routing"
+                    "app.smart_routing"
                 ]
             ],
             [
@@ -1195,7 +1195,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_SMART_ROUTING'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::smart_routing"
+                    "app.smart_routing"
                 ]
             ]
         ]
@@ -1208,7 +1208,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_GUPSHUP'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::gupshup"
+                    "app.gupshup"
                 ]
             ],
             [
@@ -1216,7 +1216,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_GUPSHUP'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::gupshup"
+                    "app.gupshup"
                 ]
             ]
         ]
@@ -1229,7 +1229,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_BVS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::bvs"
+                    "app.bvs"
                 ]
             ],
             [
@@ -1237,7 +1237,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_BVS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::bvs"
+                    "app.bvs"
                 ]
             ]
         ]
@@ -1250,7 +1250,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_DOWNTIME_SERVICE'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::downtime_service"
+                    "app.downtime_service"
                 ]
             ],
             [
@@ -1258,7 +1258,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_DOWNTIME_SERVICE'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::downtime_service"
+                    "app.downtime_service"
                 ]
             ]
         ]
@@ -1271,7 +1271,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_SMS_SYNC'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::sms_sync"
+                    "app.sms_sync"
                 ]
             ],
             [
@@ -1279,7 +1279,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_SMS_SYNC'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::sms_sync"
+                    "app.sms_sync"
                 ]
             ]
         ]
@@ -1292,7 +1292,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_MERCHANT_RISK_ALERTS'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::merchant_risk_alerts"
+                    "app.merchant_risk_alerts"
                 ]
             ],
             [
@@ -1300,7 +1300,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_MERCHANT_RISK_ALERTS'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::merchant_risk_alerts"
+                    "app.merchant_risk_alerts"
                 ]
             ]
         ]
@@ -1313,7 +1313,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_CARE'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::care"
+                    "app.care"
                 ]
             ],
             [
@@ -1321,7 +1321,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_CARE'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::care"
+                    "app.care"
                 ]
             ]
         ]
@@ -1334,7 +1334,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_BANKING_ACCOUNT_SERVICE'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::banking_account_service"
+                    "app.banking_account_service"
                 ]
             ],
             [
@@ -1342,7 +1342,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_BANKING_ACCOUNT_SERVICE'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::banking_account_service"
+                    "app.banking_account_service"
                 ]
             ]
         ]
@@ -1355,7 +1355,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_MYOPERATOR'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::myoperator"
+                    "app.myoperator"
                 ]
             ],
             [
@@ -1363,7 +1363,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_MYOPERATOR'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::myoperator"
+                    "app.myoperator"
                 ]
             ]
         ]
@@ -1376,7 +1376,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_PAYOUTS_SERVICE'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::payouts_service"
+                    "app.payouts_service"
                 ]
             ],
             [
@@ -1384,7 +1384,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_PAYOUTS_SERVICE'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::payouts_service"
+                    "app.payouts_service"
                 ]
             ]
         ]
@@ -1397,7 +1397,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_LEDGER'),
                 "mode"     => "live",
                 "roles"    => [
-                    "app::ledger"
+                    "app.ledger"
                 ]
             ],
             [
@@ -1405,7 +1405,7 @@ return [
                 "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_LEDGER'),
                 "mode"     => "test",
                 "roles"    => [
-                    "app::ledger"
+                    "app.ledger"
                 ]
             ]
         ]
