@@ -93,7 +93,9 @@ const CurrencyMultiSelect = ({
             <div class="trigger">
               <p style={{ padding: '8px 12px' }}>
                 {selected.length
-                  ? `${selected.length} ${selected.length === 1 ? 'country' : 'countries'} selected`
+                  ? `${selected.length} ${
+                      selected.length === 1 ? 'currency' : 'currencies'
+                    } selected`
                   : placeholder}
               </p>
               <i class={`i ${select.isOpen ? 'i-arrow-up' : 'i-arrow-down'}`}></i>
