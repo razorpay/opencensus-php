@@ -720,6 +720,11 @@ class Constants
     const PAYMENT_SHOW_DCC_MARKUP   =   'payment_show_dcc_markup';
 
     /**
+     * Merchant feature used to control visibility of MOR details on frontend
+     */
+    const SHOW_MOR_TNC   =   'show_mor_tnc';
+
+    /**
      * Feature for HDFC VAS org. To enable customerfeeBearer surcharge cards gateway.
      */
     const ORG_HDFC_VAS_CARDS_SURCHARGE  =   'hdfc_vas_cards_surcharge';
@@ -772,6 +777,7 @@ class Constants
         self::CHECKOUT_DISABLE_I18N,
         self::CHECKOUT_DISABLE_CARDSCAN,
         self::PAYPAL_CC,
+        self::SHOW_MOR_TNC,
         self::CRED_MERCHANT_CONSENT,
     ];
 
@@ -1085,6 +1091,7 @@ class Constants
         self::SKIP_CUSTOMER_ID_CHECKOUT       => true,
         self::DISPUTE_PRESENTMENT             => true,
         self::ROUTE_KEY_MERCHANTS_QUEUE       => true,
+        self::SHOW_MOR_TNC                    => true,
         self::FEATURE_BBPS                    => true,
     ];
 

@@ -1486,6 +1486,16 @@ class CheckoutPreferencesTest extends TestCase
 
     }
 
+    public function testGetCheckoutPreferencesForMORdisplay()
+    {
+        $this->fixtures->merchant->addFeatures(Constants::SHOW_MOR_TNC);
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals($response['features']['show_mor_tnc'],true);
+    }
+
+
     protected function getPreferences($orderId = null, $currency = 'INR')
     {
         $request = [
