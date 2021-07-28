@@ -333,12 +333,10 @@ export default class App extends Component {
       
       if(((user.experiments || {})['csm_experience_survey'] || {}).result === 'on' && !LocalStorageService.getItem('csm_exp_survey_showed')){
         LocalStorageService.setItem('csm_exp_survey_showed')
-        createPopup('uDHJcatl',{
+        createPopup('Sl6YqLtE',{
           hideHeaders: true,
           hideFooters: true,
-          hidden: {
-            email: `${user.email}`,
-          }
+          hidden,
         }).open();
       }
 
