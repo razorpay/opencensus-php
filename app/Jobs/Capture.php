@@ -101,9 +101,9 @@ class Capture extends Job
 
         $this->addTraceData($payment);
 
-        // return if payment is already gateway captured or status is not authorized
+        // return if payment is already gateway captured or status is refunded
         if (($payment->isGatewayCaptured() === true) or
-            ($payment->getStatus() !== Payment\Status::AUTHORIZED))
+            ($payment->getStatus() === Payment\Status::REFUNDED))
         {
             return;
         }
