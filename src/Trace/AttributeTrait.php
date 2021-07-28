@@ -32,6 +32,12 @@ trait AttributeTrait
     public function addAttributes(array $attributes)
     {
         foreach ($attributes as $attribute => $value) {
+            if (is_array($value)) {
+                $value = implode(', ', $value);
+            } elseif (is_object($value)) {
+                continue;
+            }
+
             $this->addAttribute($attribute, $value);
         }
     }
