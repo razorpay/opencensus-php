@@ -1139,7 +1139,11 @@ class Service extends Base\Service
         {
             $this->user->getValidator()->validateVerifyEmailWithOtpOperation($input);
 
-            $this->core()->verifyEmailWithOtp($input, $this->merchant, $this->user);
+            $requestOriginProduct = $this->auth->getRequestOriginProduct();
+
+            $action = ($requestOriginProduct === Product::BANKING) ? 'x_verify_email' : 'verify_email';
+
+            $this->core()->verifyEmailWithOtp($input, $this->merchant, $this->user, $action);
         }
         $response['user'] = $this->user->toArrayPublic();
 

@@ -1537,10 +1537,11 @@ class Core extends Base\Core
      * @param array           $input
      * @param Merchant\Entity $merchant
      * @param Entity          $user
+     * @param string          $action
      */
-    public function verifyEmailWithOtp(array $input, Merchant\Entity $merchant, Entity $user)
+    public function verifyEmailWithOtp(array $input, Merchant\Entity $merchant, Entity $user, string $action = 'verify_email')
     {
-        $this->verifyOtp($input + ['action' => 'verify_email'], $merchant, $user);
+        $this->verifyOtp($input + ['action' => $action], $merchant, $user);
 
         $this->trace->info(
             TraceCode::USER_EMAIL_VERIFY_WITH_OTP,

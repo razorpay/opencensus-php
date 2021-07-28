@@ -2221,6 +2221,41 @@ class UserTest extends TestCase
         $this->assertNotEmpty($response['token']);
     }
 
+    public function testSendOtpForXSignupV2()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [UserEntity::CONFIRM_TOKEN => "testing123456789"]);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+
+        Mail::assertQueued(Otp::class, function ($mail)
+        {
+            $this->assertEquals('x_verify_email', $mail->input['action']);
+
+            $this->assertNotEmpty($mail->user);
+
+            $this->assertNotEmpty($mail->otp);
+
+            $this->assertEquals('emails.user.razorpayx.otp_email_verify', $mail->view);
+
+            $mailSubject = "Verify your Email for RazorpayX";
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('x.support@razorpay.com', $mail->from[0]['address']);
+
+            return true;
+        });
+    }
+
     public function testSendOtpWithContact()
     {
         $this->ba->proxyAuth();
@@ -2355,6 +2390,22 @@ class UserTest extends TestCase
                                       [UserEntity::CONFIRM_TOKEN => 'testing123456789', UserEntity::EMAIL => 'abc@rzp.com']);
 
         $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertTrue($user->getConfirmedAttribute());
+    }
+
+    public function testVerifyEmailWithOtpInX()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [UserEntity::CONFIRM_TOKEN => 'testing123456789', UserEntity::EMAIL => 'abc@rzp.com']);
 
         $this->ba->proxyAuth();
 

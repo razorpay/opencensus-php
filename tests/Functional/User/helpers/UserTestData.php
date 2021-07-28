@@ -1706,6 +1706,25 @@ return [
         ],
     ],
 
+    'testSendOtpForXSignupV2' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'action'         => 'x_verify_email',
+                'medium'         => 'email'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                // 'token' => 'BUIj3m2Nx2VvVj'
+            ],
+        ],
+    ],
+
     'testSendOtpWithContact' => [
         'request' => [
             'url'     => '/otp/send',
@@ -1935,6 +1954,29 @@ return [
             'content' => [
                 'otp'   => '0007',
                 'token' => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'user' => [
+                    'id'        => 'MerchantUser01',
+                    'email'     => 'abc@rzp.com',
+                    'confirmed' => true,
+                ]
+            ],
+        ],
+    ],
+
+    'testVerifyEmailWithOtpInX' => [
+        'request'  => [
+            'url'     => '/users/verify_email',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'BUIj3m2Nx2VvVj'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
             ],
         ],
         'response' => [

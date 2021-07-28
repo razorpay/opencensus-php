@@ -219,6 +219,7 @@ class Validator extends Base\Validator
         Entity::ACTION        => 'required|filled|in:'
                                  . 'verify_contact,'
                                  . 'verify_email,'
+                                 . 'x_verify_email,'
                                  . 'create_payout,'
                                  . 'sub_virtual_account_transfer,'
                                  . 'create_payout_link,'
@@ -681,13 +682,15 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException('Contact mobile is not verified');
         }
 
-        if (($action === 'verify_email') and
+        if (($action === 'verify_email' ||
+             $action === 'x_verify_email') and
             ($medium !== 'email'))
         {
             throw new BadRequestValidationFailureException('Email must be the medium for verifying Email');
         }
 
-        if (($action === 'verify_email') and
+        if (($action === 'verify_email' ||
+             $action === 'x_verify_email') and
             ($user->getConfirmedAttribute() === true))
         {
             throw new BadRequestValidationFailureException('Email is already verified');
@@ -700,7 +703,8 @@ class Validator extends Base\Validator
         }
 
         if (($medium === 'email') and
-            ($action !== 'verify_email') and
+            ($action !== 'verify_email' and
+             $action !== 'x_verify_email') and
             ($user->getConfirmedAttribute() === false))
         {
             throw new BadRequestValidationFailureException('Contact Email is not verified');
