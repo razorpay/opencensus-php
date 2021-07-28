@@ -3,7 +3,7 @@
     "failed": {
       "source": "business",
       "reason": "beneficiary_vpa_invalid",
-      "description": "Payout failed due to invalid beneficiary VPA/UPI address."
+      "description": "UPI validation failed. If the UPI ID is valid, please retry after sometime."
     }
   },
   "TXN_REJECTED_BENE_BANK": {
@@ -78,7 +78,7 @@
     "failed": {
       "source": "business",
       "reason": "beneficiary_vpa_invalid",
-      "description": "Payout failed due to invalid beneficiary VPA/UPI address."
+      "description": "UPI validation failed. If the UPI ID is valid, please retry after sometime."
     }
   },
   "AUTHORIZATION_FAILED": {
