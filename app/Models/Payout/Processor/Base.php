@@ -272,7 +272,7 @@ class Base extends BaseCore
             if (($payout->hasFundAccount() === true) and
                 ($payout->hasCustomer() === false) and
                 ($payout->isBalanceTypeBanking() === true) and
-                ($payout->merchant->isFeatureEnabled(Feature::PAYOUT_SYNC_FTS_TRANSFER) === true))
+                ($this->isPayoutToFtsSyncModeEnabled($payout) === true))
             {
                 // By setting this flag we can skip sending the request to queue and making a sync call.
                 $payout->setSyncFtsFundTransferFlag(true);
@@ -330,6 +330,33 @@ class Base extends BaseCore
         $this->fireEventForPayoutStatus($payout);
 
         return $payout;
+    }
+
+    // payouts to sync mode feature will be enabled based on razorx experiment with a fall back on feature flag.
+    protected function isPayoutToFtsSyncModeEnabled(Entity $payout)
+    {
+        $variant = $this->app->razorx->getTreatment($payout->merchant->getId(),
+                                                    Merchant\RazorxTreatment::PAYOUT_TO_FTS_SYNC_MODE,
+                                                    $payout->getMode());
+
+        if (strtolower($variant) === 'on')
+        {
+            $enabled = true;
+        }
+        else
+        {
+            $enabled = $payout->merchant->isFeatureEnabled(Feature::PAYOUT_SYNC_FTS_TRANSFER);
+        }
+
+        $this->trace->info(
+            TraceCode::SYNC_FTS_FUND_TRANSFER_ENABLED,
+            [
+                'payout_id'   => $payout->getId(),
+                'merchant_id' => $payout->merchant->getId(),
+                'enabled'     => $enabled,
+            ]);
+
+        return $enabled;
     }
 
     public function syncFTSFundTransfer(Entity $payout)

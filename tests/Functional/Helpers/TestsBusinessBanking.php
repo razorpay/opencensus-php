@@ -323,7 +323,8 @@ trait TestsBusinessBanking
                                            string $allowVAToVAPayouts = 'control',
                                            string $allowWalletAccountAmazonPay = 'on',
                                            string $fundAccountDuplicateViaUniqueHash = 'on',
-                                           string $enableQueuedPayoutsViaPayoutsService = 'control')
+                                           string $enableQueuedPayoutsViaPayoutsService = 'control',
+                                           string $payoutsToFtsSync = 'off')
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -352,7 +353,8 @@ trait TestsBusinessBanking
                     $allowVAToVAPayouts,
                     $allowWalletAccountAmazonPay,
                     $fundAccountDuplicateViaUniqueHash,
-                    $enableQueuedPayoutsViaPayoutsService
+                    $enableQueuedPayoutsViaPayoutsService,
+                    $payoutsToFtsSync
                 )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
@@ -418,6 +420,11 @@ trait TestsBusinessBanking
                     if ($feature === 'enable_queued_payouts_via_payouts_service')
                     {
                         return strtolower($enableQueuedPayoutsViaPayoutsService);
+                    }
+
+                    if ($feature === 'payout_to_fts_sync_mode')
+                    {
+                        return strtolower($payoutsToFtsSync);
                     }
 
                     return strtolower($defaultBehaviour);

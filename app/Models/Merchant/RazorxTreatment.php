@@ -99,6 +99,9 @@ final class RazorxTreatment
     // Onboard merchant on Ledger
     const LEDGER_ONBOARDING = 'ledger_onboarding';
 
+    // Fund transfer request from payout to fts in sync mode
+    const PAYOUT_TO_FTS_SYNC_MODE = 'payout_to_fts_sync_mode';
+
     // New user EmailVerify through OTP
     const EMAIL_VERIFICATION_USING_OTP = 'email_verification_using_otp';
 

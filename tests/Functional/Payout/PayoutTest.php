@@ -206,6 +206,45 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotNull($payout['transferred_at']);
     }
 
+    public function testCreatePayoutWithSyncFtsTransferCallBehindRazorx()
+    {
+        $this->mockRazorxTreatment('yesbank',
+                                   'on',
+                                   'off',
+                                   'off',
+                                   'off',
+                                   'on',
+                                   'on',
+                                   'off',
+                                   'on',
+                                   'on',
+                                   'off',
+                                   'on',
+                                   'on',
+                                   'on',
+                                   'control',
+                                   'on',
+                                   'off',
+                                   'off',
+                                   'on');
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive([
+                                 'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+                             ]);
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertNotNull($payout['transferred_at']);
+    }
+
     public function testCreatePayoutOnLiveMode(): array
     {
         $this->liveSetUp();
