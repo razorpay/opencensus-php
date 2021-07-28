@@ -127,7 +127,7 @@
     "react-test-renderer": "16.13.1",
     "source-map-loader": "1.0.0",
     "stylus": "0.54.7",
-    "stylus-loader": "3.0.2",
+    "stylus-loader": "4.3.3",
     "typescript": "3.9.5",
     "typescript-styled-plugin": "0.15.0",
     "webfonts-loader": "pcprashant/webfonts-loader.git#b10b816",
