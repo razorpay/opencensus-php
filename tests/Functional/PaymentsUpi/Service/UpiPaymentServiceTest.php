@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\PaymentsUpi\Service;
 
+use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Method;
@@ -43,7 +44,7 @@ class UpiPaymentServiceTest extends TestCase
      *
      * @return void
      */
-    public function testPaymentCreateSuccess()
+    public function testCollectPaymentCreateSuccess()
     {
         $payment = $this->payment;
 
@@ -68,5 +69,72 @@ class UpiPaymentServiceTest extends TestCase
         $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
 
         $this->assertNull($upiEntity);
+    }
+
+    /**
+     * Test Validation failure for collect payment
+     *
+     * @return void
+     */
+    public function testCollectPaymentCreateValidationFailure()
+    {
+        $payment = $this->payment;
+
+        $payment['description'] = 'validation_failure_collect_vpa';
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            },
+            Exception\BadRequestException::class,
+            'Vpa is required for UPI collect request');
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset(
+            [
+            Entity::STATUS              => 'failed',
+            Entity::GATEWAY             => 'upi_airtel',
+            Entity::TERMINAL_ID         => $this->terminal->getId(),
+            Entity::REFUND_AT           => null,
+            Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+            Entity::ERROR_CODE          => 'BAD_REQUEST_ERROR',
+            Entity::INTERNAL_ERROR_CODE => 'BAD_REQUEST_INPUT_VALIDATION_FAILURE'
+            ], $payment->toArray()
+        );
+    }
+
+    /**
+     * test UPS service failure
+     *
+     * @return void
+     */
+    public function testPaymentServiceFailure()
+    {
+        $payment = $this->payment;
+
+        $payment['description'] = 'service_failure';
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            },
+            Exception\ServerErrorException::class,
+            'internal server error');
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset(
+            [
+            Entity::STATUS              => 'failed',
+            Entity::GATEWAY             => 'upi_airtel',
+            Entity::TERMINAL_ID         => $this->terminal->getId(),
+            Entity::REFUND_AT           => null,
+            Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+            Entity::ERROR_CODE          => 'SERVER_ERROR',
+            Entity::INTERNAL_ERROR_CODE => 'SERVER_ERROR_UPI_PAYMENT_SERVICE_FAILURE'
+            ], $payment->toArray());
     }
 }

@@ -48,6 +48,27 @@ class Service extends UpiPaymentService
                 $code = 200;
 
                 break;
+
+            case 'validation_failure_collect_vpa':
+                $response = [
+                    'details' => [[
+                        'internal' => [
+                            'code'          => 'BAD_REQUEST_INPUT_VALIDATION_FAILURE',
+                            'description'   => 'Vpa is required for UPI collect request'
+                        ]
+                    ]]
+                ];
+                $code = 400;
+
+                break;
+
+            case 'service_failure':
+                $response = [
+                    'error' => 'internal server error',
+                ];
+                $code = 500;
+
+                break;
         }
 
         return [$response, $code];

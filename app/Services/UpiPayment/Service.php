@@ -53,6 +53,8 @@ class Service
 
     const MAX_RETRY = 2;
 
+    const METADATA = 'metadata';
+
     /**
      * Initiates the app container, trace and UPS config
      */
@@ -214,11 +216,11 @@ class Service
         $this->convertInputToArray($input);
 
         $content = [
-            Entity::PAYMENT    => $input[Entity::PAYMENT] ?? null,
-            Entity::UPI        => $input[Entity::UPI] ?? null,
-            Entity::TERMINAL   => $input[Entity::TERMINAL] ?? null,
-            Entity::MERCHANT   => $input[Entity::MERCHANT] ?? null,
-            Base\Entity::ACTION           => Payment\Action::AUTHORIZE,
+            Entity::PAYMENT     => $input[Entity::PAYMENT] ?? null,
+            self::METADATA      => $input[Entity::UPI] ?? null,
+            Entity::TERMINAL    => $input[Entity::TERMINAL] ?? null,
+            Entity::MERCHANT    => $input[Entity::MERCHANT] ?? null,
+            Base\Entity::ACTION => Payment\Action::AUTHORIZE,
         ];
 
         return $content;
@@ -256,7 +258,66 @@ class Service
     {
         // TODO : trace response, check for errors, process
         // action wise response
-        return $response;
+        $this->traceResponse($response);
+
+        $this->checkForErrors($response, $code);
+
+        switch ($this->action)
+        {
+            case Payment\Action::AUTHORIZE:
+                return $response;
+
+            default:
+                throw new Exception\LogicException(
+                    'No supported actions found for UPS',
+                    null,
+                    ['action' => $this->action]);
+        }
+    }
+
+    /**
+     * Check for response errors
+     *
+     * @param array $response
+     * @param integer $code
+     * @return void
+     */
+    protected function checkForErrors(array $response, int $code)
+    {
+        // TODO: Handle 200 failed responses, Ex: Failed Mozart Response
+        if ($code === 200)
+        {
+            return;
+        }
+
+        if ($code >= 400 and $code < 500)
+        {
+            $error = $response['details'][0];
+
+            throw new Exception\BadRequestException(
+                $error['internal']['code'],
+                null,
+                $error,
+                $error['internal']['description']);
+        }
+
+        if ($code >= 500)
+        {
+            throw new Exception\ServerErrorException(
+                $response['error'],
+                ErrorCode::SERVER_ERROR_UPI_PAYMENT_SERVICE_FAILURE);
+        }
+    }
+
+    /**
+     * Traces the response received from UPS
+     *
+     * @param mixed $response
+     * @return void
+     */
+    protected function traceResponse($response)
+    {
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_RESPONSE, $response);
     }
 
     /**
@@ -350,10 +411,11 @@ class Service
                 Payment\Entity::AMOUNT    => $content[Entity::PAYMENT][Payment\Entity::AMOUNT] ?? null,
                 Payment\Entity::CURRENCY  => $content[Entity::PAYMENT][Payment\Entity::CURRENCY] ?? null,
                 Payment\Entity::CPS_ROUTE => $content[Entity::PAYMENT][Payment\Entity::CPS_ROUTE] ?? null,
+                Payment\Entity::VPA       => $content[Entity::PAYMENT][Payment\Entity::VPA] ?? null,
             ],
             Entity::UPI   => [
-                UpiMetadata\Entity::FLOW      => $content[Entity::UPI][UpiMetadata\Entity::FLOW] ?? null,
-                UpiMetadata\Entity::TYPE      => $content[Entity::UPI][UpiMetadata\Entity::TYPE] ?? null,
+                UpiMetadata\Entity::FLOW      => $content[self::METADATA][UpiMetadata\Entity::FLOW] ?? null,
+                UpiMetadata\Entity::TYPE      => $content[self::METADATA][UpiMetadata\Entity::TYPE] ?? null,
             ],
             Entity::MERCHANT   => [
                 Merchant\Entity::BILLING_LABEL  => $content[Entity::MERCHANT][Merchant\Entity::BILLING_LABEL] ?? null,
