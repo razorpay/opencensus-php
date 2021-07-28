@@ -1,7 +1,7 @@
 import React from 'react';
 import RTracking from 'react-tracking';
 import { popSlider, emptySliderStack } from 'merchant_common/reducers/multiSlider';
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 import { classList } from 'common/utils/rzp-utils';
 import debounce from 'common/utils/debounce';
 import { connect } from 'react-redux';
@@ -33,6 +33,8 @@ const isWhatsNewSection = (id) => {
 )
 @RTracking(() => window.rzpQ.component('AnnouncementDetails'))
 export default class AnnouncementDetails extends React.Component {
+  lazy = this.props.lazy || this.props.location?.state?.lazy || false;
+
   state = {
     hasScrolledToEnd: false,
   };
@@ -47,7 +49,7 @@ export default class AnnouncementDetails extends React.Component {
       version_description: notification.version_description,
       target_product_feature: notification.target_product_feature,
       target_metric: notification.target_metric,
-      lazy: this.props.lazy || this.props.location?.state?.lazy || false,
+      lazy: this.lazy,
     };
   }
 
@@ -109,7 +111,7 @@ export default class AnnouncementDetails extends React.Component {
         }),
     );
 
-    if (!isExternal)
+    if (this.lazy && !isExternal)
       this.props.emptySliderStack();
     if (button.id) this.handleCTA({ id: button.id, url: urlPath });
     else window.open(urlPath, isExternal ? '_blank' : '_self');
@@ -158,8 +160,26 @@ export default class AnnouncementDetails extends React.Component {
     }
   }, 20);
 
+  getBackButton = () => {
+    const { closeUrl, popSlider } = this.props;
+
+    if (this.lazy)
+      return (
+        <i className="i i-chevron-left" onClick={() => {
+          this.handleBackButtonClick();
+          popSlider();
+        }}></i>
+      );
+    else if (closeUrl) 
+      return (
+        <Link to={closeUrl} onClick={this.handleBackButtonClick}>
+          <i className="i i-chevron-left"></i>
+        </Link>
+      );
+  }
+
   render() {
-    const { id: notificationId, popSlider } = this.props;
+    const { id: notificationId } = this.props;
     const { buttons, title, content } = window.notifications.find(
       (notification) => notification.id === notificationId,
     ).l2_content;
@@ -169,7 +189,7 @@ export default class AnnouncementDetails extends React.Component {
         <div className="panel panel-default SliderPanel announcement-details__container">
           <div className="panel-heading">
             <div className="heading-content">
-              <i className="i i-chevron-left" onClick={popSlider}></i>
+              {this.getBackButton()}
               <b>Announcements</b>
             </div>
           </div>
