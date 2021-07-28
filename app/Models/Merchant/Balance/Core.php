@@ -250,9 +250,9 @@ class Core extends Base\Core
      * This is of account_type=shared, and only one of these can exist (currently)
      *
      * @param Merchant\Entity $merchant
-     * @param null            $mode
+     * @param null $mode
      *
-     * @return Entity
+     * @return array
      */
     public function createOrFetchSharedBankingBalance(Merchant\Entity $merchant, $mode = null)
     {
@@ -271,9 +271,11 @@ class Core extends Base\Core
             ];
 
             $balance = $this->create($merchant, $input, $mode);
+
+            return [$balance, true];
         }
 
-        return $balance;
+        return [$balance, false];
     }
 
     /**

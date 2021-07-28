@@ -701,7 +701,7 @@ class Activate extends Base\Core
         if ($onboardMerchant === true)
         {
             // Create Banking Balance
-            $balance = (new Balance\Core)->createOrFetchSharedBankingBalance($merchant, $mode);
+            [$balance, $created] = (new Balance\Core)->createOrFetchSharedBankingBalance($merchant, $mode);
 
             // Create Virtual Account
             $virtualAccount = (new VirtualAccount\Core)->createOrFetchBankingVirtualAccount($merchant,
@@ -715,7 +715,8 @@ class Activate extends Base\Core
             // Flow will come here only if balance is created successfully in API DB.
             $ledgerExperimentActive = $this->onBoardMerchantOnLedger($merchant, $mode);
 
-            if ($ledgerExperimentActive === true)
+            // check if experiment is active and balance is created in this call
+            if (($ledgerExperimentActive === true) and ($created === true))
             {
                 (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAccount, $mode);
             }
