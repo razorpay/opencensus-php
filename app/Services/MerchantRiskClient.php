@@ -25,9 +25,10 @@ class MerchantRiskClient
 
     const REQUEST_CONNECT_TIMEOUT = 2000;
 
-    const CHECK_IMPERSONATION_PATH = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/Match";
-    const GET_IMPERSONATION_PATH   = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/GetDetails";
-    const ALERT_SERVICE_PATH       = "/twirp/rzp.merchant_risk_alerts.alert.v1.AlertService/Create";
+    const ENQUEUE_PROFANITY_CHECKER = "/twirp/rzp.merchants_risk.profanityChecker.v1.ProfanityCheckerService/EnqueueRequest";
+    const CHECK_IMPERSONATION_PATH  = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/Match";
+    const GET_IMPERSONATION_PATH    = "/twirp/rzp.merchants_risk.impersonation.v1.ImpersonationService/GetDetails";
+    const ALERT_SERVICE_PATH        = "/twirp/rzp.merchant_risk_alerts.alert.v1.AlertService/Create";
 
     /**
      * @var Requests_Session
@@ -172,6 +173,44 @@ class MerchantRiskClient
                     'path'      => ''
                 ]
             );
+        }
+    }
+
+    public function enqueueProfanityCheckerRequest(string $moderationType, string $entityType, string $entityId, string $target, string $caller = null): array
+    {
+        $this->init();
+
+        $requestPayload = [
+            'ModerationType' => $moderationType,
+            'EntityType'     => $entityType,
+            'EntityId'       => $entityId,
+            'Caller'         => $caller ?? $this->auth->getInternalApp(),
+        ];
+
+        if ($moderationType === 'text')
+        {
+            $requestPayload['Text'] = $target;
+        }
+        else if ($moderationType === 'image')
+        {
+            $requestPayload['URL'] = $target;
+        }
+
+        try
+        {
+            $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
+                'payload' => $requestPayload,
+                'service' => 'merchants-risk',
+                'path'    => self::ENQUEUE_PROFANITY_CHECKER,
+            ]);
+
+            return $this->requestAndGetParsedBody(self::ENQUEUE_PROFANITY_CHECKER, $requestPayload);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::DOWNSTREAM_SERVICE_REQUEST_FAILED);
+
+            return [];
         }
     }
 
