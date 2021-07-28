@@ -98,6 +98,58 @@ class UpiAxisGatewayTest extends TestCase
         return $payment;
     }
 
+    // Sanity test to check payment is successful using okhdfcbank handle.
+    public function testPaymentForCustomTimeout($status = 'created')
+    {
+        $this->payment['vpa'] = 'vishnu@okhdfcbank';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame('created', $payment->getStatus());
+
+        $upi = $this->getDBLastEntity('upi');
+
+        $this->assertNotNull($upi[Entity::NPCI_TXN_ID]);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        // We should have gotten a successful response
+        $this->assertEquals(
+            [
+                'callBackstatusCode'        => '00',
+                'callBackstatusDescription' => 'Success',
+                'callBacktxnId'             => 'AXIS00090439839'
+            ],
+            $response);
+
+        $payment->reload();
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals('collect', $upi['type']);
+
+        $this->assertEquals('vishnu@okhdfcbank', $upi['vpa']);
+
+        $this->assertNotNull($upi['status_code']);
+
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+
+        $this->assertEquals($payment['reference1'], $upi['npci_txn_id']);
+
+        $this->assertNotNull($payment['acquirer_data']['rrn']);
+
+        $this->assertNotNull($payment['acquirer_data']['upi_transaction_id']);
+    }
+
     public function testTpvPayment()
     {
         $this->fixtures->create('terminal:shared_upi_axis_tpv_terminal', ['tpv' => 3]);

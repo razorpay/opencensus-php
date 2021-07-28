@@ -99,7 +99,9 @@ class Gateway extends Base\Gateway
             'payment_id'        => $input['payment']['id'],
             'terminal_id'       => $input['terminal']['id'],
             'token'             => $token,
-        ]);
+            'flow'              => $input['upi']['flow'],
+            'vpa'               => mask_vpa($input['payment']['vpa']) ?? null,
+         ]);
 
         parent::action($input, Action::AUTHENTICATE);
 
@@ -162,6 +164,25 @@ class Gateway extends Base\Gateway
             true);
     }
 
+    /**
+     * For okhdfcbank handle, update the request timeout to 35 seconds. This is a temporary change
+     * and needs to be undone once single collect API is live.
+     *
+     * @param array $input
+     * @param       $request
+     */
+    private function setRequestTimeout(array $input, & $request)
+    {
+        $vpa = $input['payment']['vpa'];
+
+        $exploded = explode('@', $vpa);
+
+        if ($exploded[1] === 'okhdfcbank')
+        {
+            $request['options']['timeout'] = 35;
+        }
+    }
+
     /*
      * This method will only be used for collect payments, to generate a token that will be passed
      * in collect request.
@@ -175,6 +196,8 @@ class Gateway extends Base\Gateway
         $request['headers'] = [
             'Content-Type' => 'application/json',
         ];
+
+        $this->setRequestTimeout($input, $request);
 
         $response = $this->sendGatewayRequest($request);
 
