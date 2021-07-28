@@ -271,12 +271,7 @@ class Core extends Base\Core
 
             $validator->validateInput('fetch', $input);
 
-            if ($this->validateSourceBankAccount($input[self::CHANNEL], $input[self::SOURCE_ACCOUNT_NUMBER], self::PRIMARY_YESBANK_NODAL_ACC)) {
-                $type = self::TYPE_MERCHANT;
-            }
-            else if($this->validateSourceBankAccount($input[self::CHANNEL], $input[self::SOURCE_ACCOUNT_NUMBER], self::BANKING_YESBANK_NODAL_ACC)) {
-                $type = self::TYPE_CONTACT;
-            } else {
+            if (!$this->validateSourceBankAccount($input[self::CHANNEL], $input[self::SOURCE_ACCOUNT_NUMBER], self::PRIMARY_YESBANK_NODAL_ACC)) {
                 $this->trace->info(
                     TraceCode::FTS_FETCH_NODAL_BENEFICIARY_ATTEMPT_FAILED,
                     [
@@ -290,13 +285,9 @@ class Core extends Base\Core
                 ];
             }
 
-            $bankAccountId = $this->repo->nodal_beneficiary->fetchRegisteredBeneficiaryCodeForBeneDetails(
-                $input[self::BENEFICIARY_NAME],
-                $input[self::BENEFICIARY_IFSC_CODE],
-                $input[self::BENEFICIARY_ACCOUNT_NUMBER],
-                strtolower($input[self::CHANNEL]),
-                $type
-            );
+            $bankAccountId = $this->fetchbenedetails($input, self::TYPE_MERCHANT);
+            // if bank account is null for type merchant then we check for type contact
+            if ($bankAccountId == null) $bankAccountId = $this->fetchBeneDetails($input, self::TYPE_CONTACT);
 
             if ($bankAccountId != null)
             {
@@ -374,5 +365,26 @@ class Core extends Base\Core
              default:
                  return false;
          }
+    }
+
+    private function fetchBeneDetails(array $input, string $type) {
+        $bankAccountId = $this->repo->nodal_beneficiary->fetchRegisteredBeneficiaryCodeForBeneDetails(
+            $input[self::BENEFICIARY_NAME],
+            $input[self::BENEFICIARY_IFSC_CODE],
+            $input[self::BENEFICIARY_ACCOUNT_NUMBER],
+            strtolower($input[self::CHANNEL]),
+            $type
+        );
+        if ($bankAccountId != null) {
+            $this->trace->info(
+                TraceCode::FTS_FETCH_NODAL_BENEFICIARY_DEBUG,
+                [
+                    'message'  => 'bene found',
+                    'input'    => $input,
+                    'type'     => $type
+                ]
+            );
+        }
+        return $bankAccountId;
     }
 }
