@@ -180,6 +180,26 @@ return [
         ],
     ],
 
+    'testCreateTransferReversalBatch' => [
+        'request' => [
+            'url' => '/batches',
+            'method' => 'post',
+            'content' => [
+                'type'  => 'transfer_reversal',
+                'name'  => 'Reversal batch',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'batch',
+                'type'          => 'transfer_reversal',
+                'name'          => 'Reversal batch',
+                'status'        => 'created',
+                'total_count'   => 2,
+            ],
+        ],
+    ],
+
     'testBatchRawAPIGetAllBatches' => [
         'request' => [
             'url'     => '/service/batch/batch',

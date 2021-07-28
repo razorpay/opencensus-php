@@ -160,4 +160,13 @@ class TransferController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function createTransferReversalFromBatch($id)
+    {
+        $input = Request::all();
+
+        $reversal = $this->service()->createReversalFromBatch($id, $input);
+
+        return ApiResponse::json($reversal);
+    }
 }

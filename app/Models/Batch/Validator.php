@@ -753,6 +753,14 @@ class Validator extends Base\Validator
         Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
+    protected static $transferReversalCreateRules = [
+        Entity::TYPE                 => 'required|in:transfer_reversal',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
+
     protected static $payoutLinkBulkValidateRules = [
         Entity::TYPE        => 'required|in:payout_link_bulk',
         Entity::NAME        => 'filled|string|max:255',

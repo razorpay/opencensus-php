@@ -685,4 +685,18 @@ return [
             'content' => []
         ],
     ],
+
+    'testCreateReversalFromBatch' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [
+                'amount'    => 200,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'    => 200,
+            ],
+        ],
+    ],
 ];

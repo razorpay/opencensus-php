@@ -3598,23 +3598,7 @@ class Service extends Base\Service
 
     protected function parseAttributesForPaymentTransferBatch(array & $input)
     {
-        if(empty($input[Transfer\Entity::NOTES]) === false)
-        {
-            $input[Transfer\Entity::NOTES] = json_decode($input[Transfer\Entity::NOTES], true);
-        }
-        else
-        {
-            unset($input[Transfer\Entity::NOTES]);
-        }
-
-        if(empty($input[Transfer\Entity::LINKED_ACCOUNT_NOTES]) === false)
-        {
-            $input[Transfer\Entity::LINKED_ACCOUNT_NOTES] = json_decode($input[Transfer\Entity::LINKED_ACCOUNT_NOTES]);
-        }
-        else
-        {
-            unset($input[Transfer\Entity::LINKED_ACCOUNT_NOTES]);
-        }
+        (new Transfer\Core())->parseNotesForBatch($input);
 
         if(empty($input[Transfer\Entity::ON_HOLD]) === false)
         {

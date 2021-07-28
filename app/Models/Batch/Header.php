@@ -1100,6 +1100,11 @@ class Header
     const ON_HOLD_UNTIL         = 'on_hold_until';
     const SOURCE                = 'source';
     const RECIPIENT             = 'recipient';
+    const CREATED_AT_2          = 'created_at';
+
+    // Transfer Reversal Headers
+    const TRANSFER_ID_2         = 'transfer_id';
+    const REVERSAL_NOTES        = 'reversal_notes';
 
     // Bulk Payout Links Creation
     const PAYOUT_LINK_BULK_CONTACT_NAME        = 'Name of Contact';
@@ -3719,10 +3724,29 @@ class Header
                 self::LINKED_ACCOUNT_NOTES,
                 self::ON_HOLD,
                 self::ON_HOLD_UNTIL,
-                self::CREATED_AT,
+                self::CREATED_AT_2,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ]
+        ],
+
+        Type::TRANSFER_REVERSAL => [
+            self::INPUT => [
+                self::TRANSFER_ID_2,
+                self::AMOUNT_2,
+                self::REVERSAL_NOTES,
+                self::LINKED_ACCOUNT_NOTES,
+            ],
+            self::OUTPUT => [
+                self::ID,
+                self::TRANSFER_ID_2,
+                self::AMOUNT_2,
+                self::REVERSAL_NOTES,
+                self::LINKED_ACCOUNT_NOTES,
+                self::CREATED_AT_2,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
         ],
 
         Type::PAYOUT_LINK_BULK => [

@@ -164,6 +164,8 @@ class Type
 
     const PAYMENT_TRANSFER  = 'payment_transfer';
 
+    const TRANSFER_REVERSAL = 'transfer_reversal';
+
     const WEBSITE_CHECKER = 'website_checker';
 
     public static $disabledTypes = [
@@ -401,6 +403,7 @@ class Type
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
         self::PAYMENT_TRANSFER,
+        self::TRANSFER_REVERSAL,
         self::RECURRING_CHARGE_AXIS,
         self::EMANDATE_DEBIT_HDFC,
     ];
@@ -452,6 +455,7 @@ class Type
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
         self::PAYMENT_TRANSFER,
+        self::TRANSFER_REVERSAL,
         self::SUB_MERCHANT,
         self::RECURRING_CHARGE_AXIS,
         self::WEBSITE_CHECKER,

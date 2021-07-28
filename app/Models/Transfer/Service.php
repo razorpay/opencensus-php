@@ -876,6 +876,52 @@ class Service extends Base\Service
         return count($settlementIdsToQueue);
     }
 
+    public function createReversalFromBatch(string $transferId, array $input)
+    {
+        $this->trace->info(
+            TraceCode::TRANSFER_REVERSAL_REQUEST_VIA_BATCH,
+            [
+                'transfer_id'   => $transferId,
+                'input'         => $input,
+            ]
+        );
+
+        $this->core()->parseAttributesForTransferReversalBatch($input);
+
+        try
+        {
+            $reversal = $this->reverse($transferId, $input);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::TRANSFER_REVERSAL_VIA_BATCH_FAILED,
+                [
+                    'transfer_id'   => $transferId,
+                    'input'         => $input,
+                ]
+            );
+
+            (new Transfer\Metric())->pushReversalFailedMetrics($ex);
+
+            throw $ex;
+        }
+
+        (new Transfer\Metric())->pushReversalSuccessMetrics();
+
+        $this->trace->info(
+            TraceCode::TRANSFER_REVERSAL_VIA_BATCH_SUCCESSFUL,
+            [
+                'transfer_id'   => $transferId,
+                'reversal_id'   => $reversal[Reversal\Entity::ID],
+            ]
+        );
+
+        return $reversal;
+    }
+
     public function pushTransactionIdsIntoQueue(array $input)
     {
         $settlementIds = $input['settlement_ids'];

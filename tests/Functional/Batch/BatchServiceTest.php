@@ -141,6 +141,17 @@ class BatchServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateTransferReversalBatch()
+    {
+        $entries = $this->getFileEntriesForTransferReversalBatch();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testBatchRawAPIGetAllBatches()
     {
         $this->ba->adminAuth();
@@ -295,6 +306,24 @@ class BatchServiceTest extends TestCase
                 Header::LINKED_ACCOUNT_NOTES    => '["c"]',
                 Header::ON_HOLD                 => true,
                 Header::ON_HOLD_UNTIL           => 1617116116,
+            ],
+        ];
+    }
+
+    public function getFileEntriesForTransferReversalBatch()
+    {
+        return [
+            [
+                Header::TRANSFER_ID_2           => 'trf_abcdefg1234567',
+                Header::AMOUNT_2                => 1000,
+                Header::REVERSAL_NOTES          => '{"a":"A","b":"B"}',
+                Header::LINKED_ACCOUNT_NOTES    => null,
+            ],
+            [
+                Header::TRANSFER_ID_2           => 'trf_hijklmn7654321',
+                Header::AMOUNT_2                => 2500,
+                Header::REVERSAL_NOTES          => '{"c":"C","d":"D"}',
+                Header::LINKED_ACCOUNT_NOTES    => '["c"]',
             ],
         ];
     }

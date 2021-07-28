@@ -878,6 +878,54 @@ class Core extends Base\Core
         }
     }
 
+    public function parseAttributesForTransferReversalBatch(array & $input)
+    {
+        // If amount is not passed, we are supposed to reverse the entire transfer amount.
+        // In this case, if amount column is left empty in the file, batch service will
+        // pass empty string for amount. Hence we are unsetting the amount attribute here.
+        if($input['amount'] === "")
+        {
+            unset($input['amount']);
+        }
+
+        $this->parseNotesForBatch($input);
+    }
+
+    public function parseNotesForBatch(array & $input)
+    {
+        $this->jsonDecodeNotes($input, Entity::NOTES, true, TraceCode::NOTES_ATTRIBUTE_NOT_JSON);
+
+        $this->jsonDecodeNotes($input, Entity::LINKED_ACCOUNT_NOTES, false, TraceCode::LINKED_ACCOUNT_NOTES_ATTRIBUTE_NOT_ARRAY);
+    }
+
+    protected function jsonDecodeNotes(array & $input, string $key, bool $associative, string $traceCode)
+    {
+        if(empty($input[$key]) === false)
+        {
+            try
+            {
+                $input[$key] = json_decode($input[$key], $associative);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    $traceCode,
+                    [
+                        $key => $input[$key],
+                    ]
+                );
+
+                unset($input[$key]);
+            }
+        }
+        else
+        {
+            unset($input[$key]);
+        }
+    }
+
     public function dispatchForTransferProcessing(string $sourceType, Payment\Entity $payment)
     {
         $merchant = $payment->merchant;

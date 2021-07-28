@@ -1457,15 +1457,16 @@ class Route
         'fee_recovery_payout_schedule_task'        => ['post',     'schedules/tasks/fee_recovery',                   'ScheduleController@createFeeRecoveryScheduleTask'                  ],
         'fee_recovery_manual_update'               => ['post',     'payouts/fee_recovery/manual',                    'FeeRecoveryController@postManualRecovery'                          ],
         'fee_recovery_payout_manual_retry'         => ['post',     'payouts/fee_recovery_retry/manual',              'FeeRecoveryController@createRecoveryRetryPayoutManually'                        ],
+
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
-
         'transfer_pending_process'                 => ['post',     'transfers/process_pending',                      'TransferController@processPendingOrderTransfers'                   ],
-        'transfer_payment_pending_process'         => ['post',     'transfers/process_payment_pending',               'TransferController@processPendingPaymentTransfers'                ],
+        'transfer_payment_pending_process'         => ['post',     'transfers/process_payment_pending',              'TransferController@processPendingPaymentTransfers'                 ],
         'transfer_failed_process'                  => ['post',     'transfers/process_failed',                       'TransferController@processFailedOrderTransfers'                    ],
         'transfer_edit'                            => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                          => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                 => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
+        'transfer_create_reversal_batch'           => ['post',     'transfers/{id}/reversals/batch',                 'TransferController@createTransferReversalFromBatch'                ],
         'transfer_settlements_update'              => ['post',     'transfers/{id}/settelement',                     'TransferController@transferUpdateSettelements'                     ],
         'transfer_fetch_reversals'                 => ['get',      'transfers/{id}/reversals',                       'TransferController@getTransferReversals'                           ],
         'reversal_fetch'                           => ['get',      'reversals/{id}',                                 'ReversalController@getReversal'                                    ],
@@ -4191,6 +4192,7 @@ class Route
         'setl_fetch_source_details',
         'linked_account_create_batch',
         'payment_transfer_batch',
+        'transfer_create_reversal_batch',
         'reward_activate_or_deactivate',
         'reward_fetch',
         // merchant notification config
@@ -9827,6 +9829,7 @@ class Route
             'create_payment_config_bulk_via_batch',
             'linked_account_create_batch',
             'payment_transfer_batch',
+            'transfer_create_reversal_batch',
 
             'app_merchant_mapping_create',
             'app_merchant_mapping_update',

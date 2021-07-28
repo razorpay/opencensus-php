@@ -1142,6 +1142,42 @@ class TransferTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateReversalFromBatch()
+    {
+        $transferId = $this->createPaymentAndTransfer();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/transfers/' . $transferId . '/reversals/batch';
+
+        $this->ba->batchAuth();
+        $this->runRequestResponseFlow($testData);
+
+        $transfer = $this->getDbLastEntity('transfer');
+        $this->assertEquals('partially_reversed', $transfer['status']);
+        $this->assertEquals(200, $transfer['amount_reversed']);
+
+        $reversal = $this->getDbLastEntity('reversal');
+        $this->assertNotNull($reversal);
+        $this->assertEquals('transfer', $reversal['entity_type']);
+        $this->assertEquals($transferId, 'trf_' . $reversal['entity_id']);
+        $this->assertEquals(200, $reversal['amount']);
+
+        $testData['request']['content']['amount'] = null;
+        $testData['response']['content']['amount'] = 800;
+
+        $this->ba->batchAuth();
+        $this->runRequestResponseFlow($testData);
+
+        $transfer->reload();
+        $this->assertEquals('reversed', $transfer['status']);
+        $this->assertEquals(1000, $transfer['amount_reversed']);
+
+        $reversal = $this->getDbLastEntity('reversal');
+        $this->assertNotNull($reversal);
+        $this->assertEquals('transfer', $reversal['entity_type']);
+        $this->assertEquals($transferId, 'trf_' . $reversal['entity_id']);
+        $this->assertEquals(800, $reversal['amount']);
+    }
 
     // ---- Helpers -----
 
