@@ -10931,6 +10931,7 @@ class Route
         'merchant_activation_details'                       => HeartbeatLagChecker::MASTER,
         'user_fetch'                                        => HeartbeatLagChecker::MASTER,
         'invoice_fetch'                                     => HeartbeatLagChecker::MASTER,
+        'invoice_view_live'                                 => HeartbeatLagChecker::HEARTBEAT,
         'merchant_features_fetch'                           => HeartbeatLagChecker::MASTER,
         'customer_get_saved_status'                         => HeartbeatLagChecker::SLAVE,
         'payment_fetch_card_details'                        => HeartbeatLagChecker::MASTER,
@@ -10994,7 +10995,6 @@ class Route
      * Route specific config to move the read queries to replica connection.
      */
     public static $forceReplicaRoutes = [
-        'invoice_view_live',
         'pricing_get_merchant_plans',
         'payment_update_on_hold',
         'payment_page_get_details',
