@@ -17,7 +17,7 @@ export const HowToGetDetails = ({ providers, selectedProvider, closeModal }) => 
             target="_blank"
             rel="noopener noreferrer"
           >
-            {gatewayDetailsMapping[selectedProvider].dashboardUrl}
+            {gatewayDetailsMapping[selectedProvider].dashboardUrlLabel}
           </a>
         </div>
       </div>

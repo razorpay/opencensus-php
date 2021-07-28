@@ -42,7 +42,7 @@ export default class ProviderDetails extends Component {
             <div class="panel-heading">
               <div className="row">
                 <div className="col-xs-7">
-                  <b>{provider.Provider_name}</b>
+                  <b>{provider.Provider_name ? provider.Provider_name : provider.Gateway}</b>
                 </div>
                 <div className="col-xs-5">
                   <Link to={`/optimizer/update-provider/${provider.Terminal_id}`}>

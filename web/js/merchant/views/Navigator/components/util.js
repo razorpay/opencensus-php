@@ -849,6 +849,7 @@ export const gatewayDetailsMapping = {
   payu: {
     dashboardImg:
       'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/payu_dashboard.png',
-    dashboardUrl: 'onboarding.payu.in',
+    dashboardUrl: 'https://onboarding.payu.in',
+    dashboardUrlLabel: 'onboarding.payu.in',
   },
 };
