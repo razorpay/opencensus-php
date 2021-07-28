@@ -5,7 +5,7 @@ import Input, { Description, Label } from 'common/new-ui/Input';
 import { titleCase, deepClone } from 'common/utils/rzp-utils';
 import ClickOutside from './ClickOutside';
 import Field from 'common/new-ui/Input';
-import { SMART_ROUTER } from './util';
+import { SMART_ROUTER, gatewayLogos } from './util';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 @connect((state) => {
@@ -22,6 +22,7 @@ export default class Select extends React.Component {
       });
     }
     const VALUE = this.props.selected ? this.props.selected.map((s) => s.name) : null;
+    const IDS = ["upi_intent", "upi_collect", "BARB_R", "PUNB_R"];
     return (
       <ClickOutside
         onClickOutside={() => {
@@ -68,6 +69,13 @@ export default class Select extends React.Component {
                         <div>
                           <div className="row">
                             <div className="col-xs-10">
+                              {this.props.session.user.isAddProviderEnabled &&
+                                o.id != SMART_ROUTER && typeof o.id == 'string' && o.id.split("_").length === 2 &&
+                                IDS.indexOf(o.id) === -1 && (
+                                <div className="recommended-provider-img-block">
+                                  <img src={gatewayLogos[o.id.split("_")[0]]} />
+                                </div>
+                              )}
                               <b class="optn-text">{titleCase(o.name)}</b>
                               {o.id === SMART_ROUTER ? (
                                 <span className="recommended-provider">

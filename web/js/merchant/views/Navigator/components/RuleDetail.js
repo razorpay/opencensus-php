@@ -28,6 +28,7 @@ import {
   getRuleScore,
   total_live_rules,
   parameters,
+  createMappedProviders
 } from './util';
 import { deleteRule } from '../../../reducers/navigator/details';
 import { Redirect } from 'react-router-dom';
@@ -46,6 +47,8 @@ import DeactivateRule from './DeactivateRule';
       rules_loaded: state.navigator.rules_loaded,
       default_rule: state.navigator.default_rule,
       rule: state.navigator.rule,
+      providers: state.navigator.providers,
+      terminalProviders: state.navigator.terminalProviders,
     };
   },
   {
@@ -119,6 +122,9 @@ export default class RuleDetail extends Component {
     if (this.state.redirect) {
       return <Redirect to={this.state.redirect} />;
     }
+    const { user, providers, terminalProviders } = this.props;
+    const MAPPED_PROVIDERS = createMappedProviders(user.isAddProviderEnabled, providers, terminalProviders);
+
     const rules = deepClone(this.props.rules);
     rules.forEach((r) => {
       if (r.id == (this.props.rule && this.props.rule.id)) {
@@ -405,6 +411,7 @@ export default class RuleDetail extends Component {
                             return rules;
                           })()}
                           readonly={true}
+                          providers={MAPPED_PROVIDERS}
                         />
                       </div>
                     )}

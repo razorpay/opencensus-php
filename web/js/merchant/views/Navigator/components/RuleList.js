@@ -273,13 +273,30 @@ export default class RuleList extends React.Component {
                           },
                           {
                             title: 'Provider Used',
-                            value: (v) => (
-                              <div class="rule-table-overflow">
-                                {uniqueArray(
-                                  v.rules.map((i) => i.expression.operands[0].operands[1].value),
-                                ).join(', ')}
-                              </div>
-                            ),
+                            value: isAddProviderEnabled ?
+                              (v) => (
+                                <div class="rule-table-overflow">
+                                  {/*
+                                    for new self serve providers we pass gateway with terminal id to rule so we filter on ID
+                                    and show the name on the UI, just to be on safe side if filter fail then we show value direct
+                                    instead breaking the UI
+                                  */}
+                                  {uniqueArray(
+                                    v.rules.map((i) => terminalProviders.filter(
+                                      (p) => p.Terminal_id === i.expression.operands[0].operands[1].value.split("_")[1],
+                                    )[0] ? terminalProviders.filter(
+                                      (p) => p.Terminal_id === i.expression.operands[0].operands[1].value.split("_")[1],
+                                    )[0].Provider_name : i.expression.operands[0].operands[1].value),
+                                  ).join(', ')}
+                                </div>
+                              ) :
+                              (v) => (
+                                <div class="rule-table-overflow">
+                                  {uniqueArray(
+                                    v.rules.map((i) => i.expression.operands[0].operands[1].value),
+                                  ).join(', ')}
+                                </div>
+                              ),
                           },
                           {
                             title: 'Created At',

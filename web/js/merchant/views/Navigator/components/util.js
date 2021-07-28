@@ -853,3 +853,25 @@ export const gatewayDetailsMapping = {
     dashboardUrlLabel: 'onboarding.payu.in',
   },
 };
+
+export const createMappedProviders = (isAddProviderEnabled, providers, terminalProviders) => {
+  let MAPPED_PROVIDERS = [];
+  if (isAddProviderEnabled) {
+    MAPPED_PROVIDERS = terminalProviders.map((p) => {
+      return {
+        id: `${p.Gateway}_${p.Terminal_id}`,
+        name: p.Provider_name,
+        value: `${p.Gateway}_${p.Terminal_id}`,
+      };
+    });
+  } else {
+    MAPPED_PROVIDERS = providers.map((p) => {
+      return {
+        id: p.id,
+        name: p.id,
+        value: p.id,
+      };
+    });
+  }
+  return MAPPED_PROVIDERS;
+};

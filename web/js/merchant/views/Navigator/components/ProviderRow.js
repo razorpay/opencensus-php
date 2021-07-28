@@ -36,7 +36,17 @@ export default class ProviderRow extends React.Component {
             <div className="col-xs-12">
               <div class="expression-readonly-high">
                 Route <b>{additional_attribute[1] && additional_attribute[1].value}%</b> Payments
-                via <b>{this.props.rule.expression.operands[0].operands[1].value}</b>
+                via{' '}
+                <b>
+                  {/* filter the providers based on the value stored in rule and show the name instead of the value which contains ID */}
+                  {this.props.providers.filter(
+                    (p) => p.value === this.props.rule.expression.operands[0].operands[1].value,
+                  )[0]
+                    ? this.props.providers.filter(
+                        (p) => p.value === this.props.rule.expression.operands[0].operands[1].value,
+                      )[0].name
+                    : this.props.rule.expression.operands[0].operands[1].value}
+                </b>
               </div>
             </div>
           </div>

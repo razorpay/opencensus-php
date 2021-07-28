@@ -13,7 +13,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
-import { get_unique, SMART_ROUTER, parameters } from './util';
+import { get_unique, SMART_ROUTER, parameters, createMappedProviders } from './util';
 import PreconditionPopover from './PreconditionPopover';
 import { CSSTransition } from 'react-transition-group';
 
@@ -55,6 +55,8 @@ import FullPageCoverHeader from './FullPageCoverHeader';
       loading: state.navigator.create_rule_loading,
       // isLoading: true,
       providers: state.navigator.providers,
+      terminalProviders: state.navigator.terminalProviders,
+      user: state.session.user,
     };
   },
   {
@@ -434,15 +436,11 @@ export default class CreateRule extends React.Component {
       return <Redirect to={this.state.redirect} />;
     }
     let PARAMETERS = deepClone(parameters);
-    let PROVIDERS = this.props.providers;
     const rules = deepClone(this.props.rules);
-    let MAPPED_PROVIDERS = PROVIDERS.map((p) => {
-      return {
-        id: p.id,
-        name: p.id,
-        value: p.id,
-      };
-    });
+
+    const { user, providers, terminalProviders } = this.props;
+    let MAPPED_PROVIDERS = createMappedProviders(user.isAddProviderEnabled, providers, terminalProviders);
+
     let is_netbanking = false;
     let is_smart_router = false;
     if (this.state.rule.precondition) {
