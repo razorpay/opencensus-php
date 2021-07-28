@@ -158,6 +158,7 @@ export const XSubmerchantVAStatusMap = {
   under_review: 'label-info',
   rejected: 'label-danger',
   needs_clarification: 'label-pending',
+  inactive: 'label-muted',
 };
 
 const entityMap = {

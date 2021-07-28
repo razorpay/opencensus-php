@@ -16,7 +16,7 @@ import RTracking from 'react-tracking';
 import ModalHeader from 'common/ui/ModalHeader';
 import InputField from 'common/ui/Forms/InputField';
 
-import { required } from 'common/utils/validators';
+import { required, email, isEmail } from 'common/utils/validators';
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import BatchValidate from 'merchant/containers/BatchNew/Validate';
 
@@ -51,7 +51,9 @@ export default class AddMerchant extends Component {
       step: 1,
       merchantType: '',
       merchantEmail: '',
-      referralUrl: '',
+      merchantName: '',
+      referralData: '',
+      isFormValid: false
     };
     if(!props.user.isPartnershipForXEnabled) {
       state.step = 2;
@@ -80,18 +82,20 @@ export default class AddMerchant extends Component {
   };
 
   fetchReferralURL = () => {
-    merchantFetch({
-      url: 'merchant/referral',
-      mode: 'live',
-      method: 'post',
-      data: {},
-    })
-      .then(({ data }) => {
-        this.setState({
-          referralUrl: data.url,
-        });
+    if(this.state.referralData === '') {
+      merchantFetch({
+        url: 'merchant/referral',
+        mode: 'live',
+        method: 'post',
+        data: {},
       })
-      .catch(() => {});
+        .then(({ data }) => {
+          this.setState({
+            referralData: data.referrals,
+          });
+        })
+        .catch(() => {});
+    }
   }
 
   addNewMerchant = (params) => {
@@ -212,6 +216,28 @@ export default class AddMerchant extends Component {
     this.setState({ step: this.state.step - 1 });
   };
 
+  handleFormChange = (e) => {
+    let {merchantName, merchantEmail} = this.state;
+    const {name, value} = e.target;
+    switch(name) {
+      case 'name':
+        this.setState({
+          merchantName: value
+        });
+        merchantName = value;
+        break;
+      case 'email':
+        this.setState({
+          merchantEmail: value
+        });
+        merchantEmail = value;
+    }
+    const isFormValid = merchantName && merchantEmail && isEmail(merchantEmail);
+    this.setState({
+      isFormValid
+    })
+  }
+
   componentDidMount() {
     trackAddNewMerchantEvents('Open Form');
   }
@@ -219,7 +245,8 @@ export default class AddMerchant extends Component {
   render() {
     const { handleSubmit, user } = this.props;
     const emailMandatory = isEmailMandatory(user);
-    const emailValidators = emailMandatory ? [required()] : [];
+    const emailValidators = emailMandatory ? [required(), email()] : [];
+    const referralUrl = this.state.referralData ? this.state.referralData[this.state.merchantType]?.url : '';
 
     return (
       <div class="partner-submerchant-modal">
@@ -319,6 +346,7 @@ export default class AddMerchant extends Component {
                       class="form-control"
                       autoFocus
                       validate={required()}
+                      onChange={this.handleFormChange}
                     />
                   </div>
 
@@ -331,6 +359,7 @@ export default class AddMerchant extends Component {
                       validate={emailValidators}
                       placeholder={emailMandatory ? '' : 'Optional'}
                       class="form-control"
+                      onChange={this.handleFormChange}
                     />
                     <span class="help-block">
                       The Razorpay sign-up link will be sent to this email.
@@ -358,6 +387,7 @@ export default class AddMerchant extends Component {
                       text="Send Invite"
                       pendingText="Inviting..."
                       onClick={handleSubmit(this.addNewMerchant)}
+                      disabled={!this.state.isFormValid}
                     />
                   </div>
                 </div>
@@ -386,7 +416,7 @@ export default class AddMerchant extends Component {
                   <span>You can also copy and share the link via other mediums</span>
                 </div>
                 <SocialShareGroup
-                  referralUrl={this.state.referralUrl}
+                  referralUrl={referralUrl}
                   tracking={this.props.tracking}
                   product={this.state.merchantType}
                   partnerID={this.props.user.id}

@@ -36,6 +36,7 @@ import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { mediaWindowUrl } from './components/SocialShare';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import Loader from 'common/ui/Loader';
 
 const name = (isPurePlatform) => ({
   ...submerchantColumn,
@@ -142,7 +143,7 @@ const xVirtualAccountStatus = {
       status={
         submerchant.banking_account && submerchant.banking_account.va_status
           ? submerchant.banking_account.va_status.toLowerCase()
-          : 'under_review'
+          : 'inactive'
       }
     />
   ),
@@ -309,10 +310,14 @@ class ProductSubMerchantsList extends ListContainer {
   };
 
   render() {
-    const { user, product, referralData } = this.props;
+    const { user, product, referralData, location } = this.props;
     let appIdColumn = [];
     let switchMerchantColumn = [];
     const referralUrl = referralData ? referralData[product].url : '';
+    const isNonEmptyList = Array.isArray(this.props.items) && this.props.items.length > 0;
+    const isFilterSearchUsed = location.search !== '';
+    const shouldShowWelcomeScreen =
+      !isNonEmptyList && !isFilterSearchUsed && !user.isPartner('pure_platform');
 
     if (user.isPartner('pure_platform')) {
       appIdColumn = [appId];
@@ -327,12 +332,24 @@ class ProductSubMerchantsList extends ListContainer {
         component: <PartnerOnbr disableClose={true} />,
       });
     }
+
+    if (this.props.loading) {
+      return (
+        <tabbed-container>
+          <content>
+            <div class="sub-merchants-list">
+              <Loader />
+            </div>
+          </content>
+        </tabbed-container>
+      );
+    }
     return (
       <tabbed-container>
         <content>
           <div class="sub-merchants-list">
-            {Array.isArray(this.props.items) && this.props.items.length > 0 && (
-              <div class="content-wrapper">
+            <div className={`content-wrapper ${shouldShowWelcomeScreen ? 'partner-welcome' : ''}`}>
+              {!shouldShowWelcomeScreen && (
                 <div className="submerchant-filter-wrapper">
                   <ListFilter
                     form="SubmerchantListFilter"
@@ -358,49 +375,56 @@ class ProductSubMerchantsList extends ListContainer {
                     )}
                   </button>
                 </div>
-                {product === PRODUCT_TYPE.PG ? (
-                  <DataTable
-                    title="Sub Merchants"
-                    count={this.state.count}
-                    skip={this.state.skip}
-                    paginate={this.paginate}
-                    columns={[
-                      name(user.isPartner('pure_platform')),
-                      id,
-                      email,
-                      ...appIdColumn,
-                      addedOn,
-                      activationStatus,
-                      settlementStatus,
-                      ...switchMerchantColumn,
-                    ]}
-                    {...this.props}
-                  />
-                ) : (
-                  <DataTable
-                    title="Sub Merchants"
-                    count={this.state.count}
-                    skip={this.state.skip}
-                    paginate={this.paginate}
-                    columns={[
-                      xName(),
-                      id,
-                      email,
-                      ...appIdColumn,
-                      addedOn,
-                      xVirtualAccountStatus,
-                      xCurrentAccountStatus,
-                    ]}
-                    {...this.props}
-                  />
-                )}
-              </div>
-            )}
-            {Array.isArray(this.props.items) && this.props.items.length == 0 && (
-              <ShowWhen
-                additionalCondition={(user) => user.isPartner() && !user.isPartner('pure_platform')}
-              >
-                <div class="content-wrapper partner-welcome">
+              )}
+              {!isNonEmptyList && isFilterSearchUsed ? (
+                <div style={{ flex: 2, textAlign: 'center' }}>
+                  <div>
+                    <h3 class="sub-title">No Search results found</h3>
+                  </div>
+                </div>
+              ) : (
+                ''
+              )}
+              {isNonEmptyList && product === PRODUCT_TYPE.PG && (
+                <DataTable
+                  title="Sub Merchants"
+                  count={this.state.count}
+                  skip={this.state.skip}
+                  paginate={this.paginate}
+                  columns={[
+                    name(user.isPartner('pure_platform')),
+                    id,
+                    email,
+                    ...appIdColumn,
+                    addedOn,
+                    activationStatus,
+                    settlementStatus,
+                    ...switchMerchantColumn,
+                  ]}
+                  {...this.props}
+                />
+              )}
+              {isNonEmptyList && product === PRODUCT_TYPE.X && (
+                <DataTable
+                  title="Sub Merchants"
+                  count={this.state.count}
+                  skip={this.state.skip}
+                  paginate={this.paginate}
+                  columns={[
+                    xName(),
+                    id,
+                    email,
+                    ...appIdColumn,
+                    addedOn,
+                    xVirtualAccountStatus,
+                    xCurrentAccountStatus,
+                  ]}
+                  {...this.props}
+                />
+              )}
+
+              {shouldShowWelcomeScreen && (
+                <>
                   <div style={{ flex: 2, textAlign: 'center' }}>
                     <div>
                       <h1 class="main-title"> Welcome to Partner Dashboard</h1>
@@ -464,9 +488,9 @@ class ProductSubMerchantsList extends ListContainer {
                       </ShowWhen>
                     </div>
                   </div>
-                </div>
-              </ShowWhen>
-            )}
+                </>
+              )}
+            </div>
           </div>
         </content>
       </tabbed-container>

@@ -80,7 +80,7 @@ export default (props) => {
                       status={
                         submerchant.banking_account && submerchant.banking_account.va_status
                           ? submerchant.banking_account.va_status.toLowerCase()
-                          : 'under_review'
+                          : 'inactive'
                       }
                     />
                   </EntityDetailRow>
