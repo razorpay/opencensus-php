@@ -145,8 +145,14 @@ class Selector extends Base\Core
     {
         $payment = $this->input['payment'];
 
+        $allTerminals = [];
+
+        $verbose = false;
+
         // force_terminal_id is sent in the payment request in manual terminal testing flow, force_terminal_id is forcefully selected for payment inorder to test that terminal
         $forceTerminalId = $payment->getForceTerminalId();
+
+        $fetchApiTerminals = $this->shouldFetchApiTerminals($payment);
 
         if (empty($forceTerminalId) === false)
         {
@@ -161,7 +167,7 @@ class Selector extends Base\Core
 
             array_push($allTerminals, $this->repo->terminal->getById($forceTerminalId));
         }
-        else
+        else if ($fetchApiTerminals === true)
         {
             $allTerminals = $this->repo->useSlave(function ()
             {
@@ -210,24 +216,34 @@ class Selector extends Base\Core
 
                 if ($terminalSetReceivedFromSmartRouting !== null)
                 {
-                    // creating new sorted terminals using order received from smart routing
-                    foreach ($terminalSetReceivedFromSmartRouting as $terminal)
+                    if ($fetchApiTerminals === true) {
+                        // creating new sorted terminals using order received from smart routing
+                        foreach ($terminalSetReceivedFromSmartRouting as $terminal) {
+                            // populating terminalIds array for data link layer
+                            array_push($terminalIds, $terminal['id']);
+
+                            // populating newSortedTerminals array for the payment process
+                            array_push($newSelectedTerminals, $terminalSetSentToSmartRouting[$terminal['id']]);
+
+                        };
+                    }
+                    else
                     {
-                        // populating terminalIds array for data link layer
-                        array_push($terminalIds, $terminal['id']);
+                        $sortedTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($terminalSetReceivedFromSmartRouting);;
 
-                        // populating newSortedTerminals array for the payment process
-                        array_push($newSelectedTerminals, $terminalSetSentToSmartRouting[$terminal['id']]);
-
-                    };
-
+                        $this->trace->info(
+                            TraceCode::TERMINALS_SERVICE_PAYMENT_TERMINALS,
+                            [
+                                'data' => $sortedTerminals,
+                            ]);
+                    }
                 }
 
                 if (count($newSelectedTerminals) > 0)
                 {
                     $sortedTerminals = $newSelectedTerminals;
                 }
-                else if ($this->shouldFallback())
+                else if (($this->shouldFallback()) and ($fetchApiTerminals === true))
                 {
                     $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
 
@@ -282,7 +298,7 @@ class Selector extends Base\Core
 
                 $sortedTerminals = [];
 
-                if ($merchant->isFeatureEnabled(Features::RAAS) === false)
+                if (($merchant->isFeatureEnabled(Features::RAAS) === false) and ($fetchApiTerminals === true))
                 {
                     $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
                 }
@@ -1086,5 +1102,19 @@ class Selector extends Base\Core
                 'icon'      =>    ':x:'
             ]
         );
+    }
+
+    private function shouldFetchApiTerminals($payment): bool
+    {
+        $merchantId = $payment->getMerchantId();
+
+        $variantFlag = $this->app->razorx->getTreatment($merchantId, "API_ROUTER_NEW_CONTRACT_2",  $this->mode);
+
+        if ($variantFlag === 'proxy_ts')
+        {
+            return false;
+        }
+
+        return true;
     }
 }

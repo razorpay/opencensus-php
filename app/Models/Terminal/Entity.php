@@ -15,6 +15,8 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\TpvType;
 use RZP\Models\Currency\Currency;
+use RZP\Constants\Mode as RzpMode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Terminal\BankingType;
 use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Payment\Processor\PayLater;
@@ -23,6 +25,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Emi\Subvention as EmiSubvention;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Terminal\Status;
+use RZP\Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {
@@ -1410,14 +1413,53 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Admin\Org\Entity');
     }
 
-    public function toArrayWithPassword()
+    public function toArrayWithPassword(bool $proxy = true)
     {
         $terminal = $this->toArray();
+
+        $terminalId = $terminal['id'];
 
         $terminal[self::GATEWAY_TERMINAL_PASSWORD]  = $this->getGatewayTerminalPasswordAttribute();
         $terminal[self::GATEWAY_TERMINAL_PASSWORD2] = $this->getGatewayTerminalPassword2Attribute();
         $terminal[self::GATEWAY_SECURE_SECRET]      = $this->getGatewaySecureSecretAttribute();
         $terminal[self::GATEWAY_SECURE_SECRET2]      = $this->getGatewaySecureSecret2Attribute();
+
+        // get credential from terminal service
+        if ($proxy === true)
+        {
+            $app = App::getFacadeRoot();
+
+            $mode = $app['rzp.mode'] ?? RzpMode::LIVE;
+
+            $variantFlag = $app->razorx->getTreatment($terminal[Entity::MERCHANT_ID], "ROUTE_PROXY_TS_CREDENTIAL", $mode);
+
+            if ($variantFlag === 'terminal_credential_proxy')
+            {
+                try
+                {
+                    $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_FETCH_REQUEST, ["Id" => $terminalId]);
+
+                    $path = "v2/terminals/credentials/" . $terminal[Entity::ID];
+
+                    $response = $app['terminals_service']->proxyTerminalService("", "GET", $path, ['timeout' => 30]);
+
+                    $terminal[self::GATEWAY_TERMINAL_PASSWORD] = $response["terminal"]["secrets"][Entity::GATEWAY_TERMINAL_PASSWORD];
+                    $terminal[self::GATEWAY_TERMINAL_PASSWORD2] = $response["terminal"]["secrets"][Entity::GATEWAY_TERMINAL_PASSWORD2];
+                    $terminal[self::GATEWAY_SECURE_SECRET] = $response["terminal"]["secrets"][Entity::GATEWAY_SECURE_SECRET];
+                    $terminal[self::GATEWAY_SECURE_SECRET2] = $response["terminal"]["secrets"][Entity::GATEWAY_SECURE_SECRET2];
+                }
+                catch (\Throwable $ex)
+                {
+                    $app['trace']->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_FETCH_FAILED,
+                        [
+                            'Id' => $terminalId
+                        ]);
+                }
+            }
+        }
 
         return $terminal;
     }

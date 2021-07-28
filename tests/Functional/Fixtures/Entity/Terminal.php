@@ -884,8 +884,11 @@ class Terminal extends Base
             'gateway_merchant_id2'      => 'olamoney_auth_code',
             'gateway_terminal_id'       => 'olamoney_terminal',
             'gateway_terminal_password' => 'razorpay_password',
+            'gateway_terminal_password2'=> null,
             'gateway_access_code'       => 'random_access_code',
             'gateway_secure_secret'     => 'secret',
+            'gateway_secure_secret2'    => null,
+
         ];
 
         $attributes = array_merge($default, $attributes);

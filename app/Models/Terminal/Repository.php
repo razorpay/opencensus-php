@@ -1521,7 +1521,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getByTerminalIds(array $ids)
+    public function getByTerminalIds(array $ids, bool $proxy = true)
     {
         $apiTerminals = $this->newQuery()
             ->whereIn(Entity::ID, $ids)
@@ -1529,9 +1529,9 @@ class Repository extends Base\Repository
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-        $variantFlag = $this->app->razorx->getTreatment($ids[0], "ROUTE_PROXY_TS_5", $mode);
+        $variantFlag = $this->app->razorx->getTreatment($ids[0], "ROUTE_PROXY_TS_6", $mode);
 
-        if ($variantFlag === 'proxy')
+        if (($variantFlag === 'proxy') and ($proxy === true))
         {
             $data = ["function" => "getByTerminalIds", "ids" => $ids];
 

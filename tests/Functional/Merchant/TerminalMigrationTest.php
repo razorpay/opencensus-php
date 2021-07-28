@@ -2493,6 +2493,51 @@ class TerminalMigrationTest extends TestCase
         $this->startTest();
     }
 
+    public function testTerminalToArryPassword()
+    {
+        DB::table('terminals')->delete();
+        $terminal = $this->fixtures->create('terminal:shared_olamoney_terminal', ['type' => ['non_recurring' => '1', 'ivr' => '1']]);
+
+        $terminalId = $terminal->getId();
+
+        $this->razorxValue = 'terminal_credential_proxy';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminalId)  {
+            $response = new \Requests_Response;
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertEquals("v2/terminals/credentials/" . $terminalId, $path);
+
+            $data = [];
+            $data['terminal'] = [];
+            $data['terminal']['secrets'] = [];
+            $data['terminal']['secrets']['gateway_terminal_password'] = "123456789";
+            $data['terminal']['secrets']['gateway_terminal_password2'] = null;
+            $data['terminal']['secrets']['gateway_secure_secret'] = "aasdfghjkl";
+            $data['terminal']['secrets']['gateway_secure_secret2'] = null;
+
+            $body = json_encode(['data' => $data]);
+
+            $response->body = $body;
+
+            return $response;
+        }, 1);
+
+        $secrets = $terminal->toArrayWithPassword();
+
+        $expectedSecrets = [];
+        $expectedSecrets["gateway_terminal_password"] = "123456789";
+        $expectedSecrets["gateway_terminal_password2"] = null;
+        $expectedSecrets["gateway_secure_secret"] = "aasdfghjkl";
+        $expectedSecrets["gateway_secure_secret2"] = null;
+
+        $this->assertEquals($expectedSecrets["gateway_terminal_password"], $secrets["gateway_terminal_password"]);
+        $this->assertEquals($expectedSecrets["gateway_terminal_password2"], $secrets["gateway_terminal_password2"]);
+        $this->assertEquals($expectedSecrets["gateway_secure_secret"], $secrets["gateway_secure_secret"]);
+        $this->assertEquals($expectedSecrets["gateway_secure_secret2"], $secrets["gateway_secure_secret2"]);
+    }
+
     public function testFetchTerminalBanksAdminAuthProxy()
     {
         DB::table('terminals')->delete();

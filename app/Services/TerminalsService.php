@@ -150,7 +150,7 @@ class TerminalsService
 
     public function migrateTerminal(Terminal\Entity $terminal): array
     {
-        $content = json_encode($terminal->toArrayWithPassword());
+        $content = json_encode($terminal->toArrayWithPassword(false));
 
         $params = self::PARAMS[self::CREATE_TERMINAL];
 

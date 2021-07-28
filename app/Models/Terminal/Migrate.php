@@ -94,7 +94,7 @@ trait Migrate
         }
         else
         {
-            $originalTerminalArray = $terminal->toArrayWithPassword();
+            $originalTerminalArray = $terminal->toArrayWithPassword(false);
         }
 
         $ignoreAttributes = [
@@ -450,17 +450,33 @@ trait Migrate
 
         $terminal->setMerchantId($t["merchant_id"]);
 
-        $terminal->setEnabled($t["enabled"]);
-        $terminal->setStatus($t["status"]);
+        if (array_key_exists("enabled",$t) === true)
+        {
+            $terminal->setEnabled($t["enabled"]);
+        }
 
-        $terminal->setCreatedAt($t["created_at"]);
-        $terminal->setUpdatedAt($t["updated_at"]);
+        if (array_key_exists("status",$t) === true)
+        {
+            $terminal->setStatus($t["status"]);
+        }
 
-        if (empty($t["deleted_at"]) === false) {
+        if (array_key_exists("created_at",$t) === true)
+        {
+            $terminal->setCreatedAt($t["created_at"]);
+        }
+
+        if (array_key_exists("updated_at",$t) === true)
+        {
+            $terminal->setUpdatedAt($t["updated_at"]);
+        }
+
+        if (array_key_exists("deleted_at",$t) === true)
+        {
             $terminal->setDeletedAt($t["deleted_at"]);
         }
 
-        if (empty($t["direct"]) === false) {
+        if (array_key_exists("direct",$t) === true)
+        {
             $terminal->setDirectForMerchant($t["direct"]);
         }
 

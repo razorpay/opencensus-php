@@ -827,7 +827,7 @@ class Service extends Base\Service
         {
             $ids = $input["ids"];
 
-            $terminals = $this->repo->terminal->getByTerminalIds($ids);
+            $terminals = $this->repo->terminal->getByTerminalIds($ids, false);
         }
         else
         {
