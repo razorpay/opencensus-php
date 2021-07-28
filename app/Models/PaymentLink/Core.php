@@ -3,6 +3,7 @@
 namespace RZP\Models\PaymentLink;
 
 use Cache;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\User;
@@ -19,6 +20,7 @@ use RZP\Models\Settings;
 use RZP\Models\LineItem;
 use RZP\Models\FileStore;
 use Razorpay\Trace\Logger;
+use RZP\Constants\Timezone;
 use RZP\Services\UfhService;
 use RZP\Constants\Entity as E;
 use RZP\Models\Invoice\Entity as IE;
@@ -1497,6 +1499,23 @@ class Core extends Base\Core
                     $this->repo->saveOrFail($paymentLink);
                 }
             });
+
+        $this->traceForExpire($paymentLink);
+    }
+
+    /**
+     * Tracing for payment links expire action
+     * Traces count as well as histogram
+     *
+     * @param Entity         $paymentLink
+     */
+    protected function traceForExpire(Entity $paymentLink)
+    {
+        $now = Carbon::now(Timezone::IST)->timestamp;
+
+        $diffInTime = $now - $paymentLink->getExpireBy();
+
+        $this->trace->histogram(Metric::PAYMENT_PAGE_EXPIRED_SEC, $diffInTime, $paymentLink->getMetricDimensions());
 
         $this->trace->count(Metric::PAYMENT_PAGE_EXPIRED_TOTAL, $paymentLink->getMetricDimensions());
     }

@@ -20,4 +20,5 @@ final class Metric
     const PAYMENT_PAGE_SUBSCRIPTION_CREATED   = 'payment_page_subscription_created';
     const PAYMENT_PAGE_CREATED_TOTAL          = 'payment_page_created_total';
     const PAYMENT_PAGE_RISK_ALERT_COUNT       = 'payment_page_risk_alert_count';
+    const PAYMENT_PAGE_EXPIRED_SEC            = 'payment_page_expired_sec';
 }
