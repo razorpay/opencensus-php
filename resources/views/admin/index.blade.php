@@ -24,6 +24,10 @@
       }]);
     }
   </script>
+  <script type="text/javascript">
+    window.LUMBERJACK_API_KEY = "{{ env('ADMIN_LJ_KEY') }}";
+    window.LUMBERJACK_API_URL = "{{ env('LUMBERJACK_API_URL') }}";
+  </script>
 </head>
 <body>
 <div id="react-root" class="react-root"></div>

@@ -172,7 +172,7 @@
               propertyName: 'event_group',
               value: 'qrcode-dashboard'
             }
-          ]
+          ],
         });
 
 

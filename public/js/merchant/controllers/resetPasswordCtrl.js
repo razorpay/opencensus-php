@@ -10,7 +10,7 @@ app.controller('ResetPasswordCtrl', [
   'organization',
   'isHostedInBB',
   'appHost',
-  function(
+  function (
     $scope,
     $http,
     $state,
@@ -20,7 +20,7 @@ app.controller('ResetPasswordCtrl', [
     transformRequestAsFormPost,
     organization,
     isHostedInBB,
-    appHost
+    appHost,
   ) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
@@ -42,7 +42,7 @@ app.controller('ResetPasswordCtrl', [
         data: data,
       });
       request
-        .success(function(data) {
+        .success(function (data) {
           if (cb) {
             return cb(data);
           }
@@ -51,12 +51,12 @@ app.controller('ResetPasswordCtrl', [
           if (data.success) {
             $scope.success = true;
           } else {
-            angular.forEach(data.errors, function(error, key) {
+            angular.forEach(data.errors, function (error, key) {
               $scope.alerts.addAlert('danger', error);
             });
           }
         })
-        .error(function() {
+        .error(function () {
           if (cb) {
             return cb({ success: false });
           }
@@ -65,22 +65,29 @@ app.controller('ResetPasswordCtrl', [
         });
     }
 
-    $scope.submit = function($valid) {
+    $scope.submit = function ($valid) {
       if (!$valid) {
-        $scope.alerts.addAlert(
-          'danger',
-          'Please fill all the fields correctly',
-          true
-        );
+        $scope.alerts.addAlert('danger', 'Please fill all the fields correctly', true);
         return true;
+      }
+
+      if ($scope.isOrgAXIS && window.rzpQ) {
+        window.rzpQ.push(
+          window.rzpQ.now().onbr().success('merchant password changed', {
+            source_trigger: 'reset password',
+            session_id: window.session_id,
+            merchant_email: $scope.data.email,
+          }),
+        );
       }
       $scope.alerts.resetAlerts();
       submitData($scope.data);
     };
 
     // Change logo
-    organization.fetchCurrentOrg().then(function(data) {
+    organization.fetchCurrentOrg().then(function (data) {
       $scope.login_logo = data.login_logo_url || 'img/logo_black.png';
+      $scope.isOrgAXIS = data.custom_code === 'axis';
     });
 
     if (isHostedInBB) {
@@ -92,7 +99,7 @@ app.controller('ResetPasswordCtrl', [
             {
               name: 'submitForm',
               hasReply: true,
-              callback: function(password, passwordConfirmation, reply) {
+              callback: function (password, passwordConfirmation, reply) {
                 $scope.data.password = password;
                 $scope.data.password_confirmation = passwordConfirmation;
 
@@ -100,7 +107,7 @@ app.controller('ResetPasswordCtrl', [
               },
             },
           ],
-          'reset-pwd'
+          'reset-pwd',
         );
     }
   },

@@ -5,7 +5,7 @@
     <meta name="google" value="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Razorpay">
-    <link rel="shortcut icon" href="/img/favicon.png">
+    <link rel="shortcut icon" href="https://dashboard.razorpay.com/img/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />   
     <title>Terms and Condition</title>
     <meta name="robots" content="noindex">
