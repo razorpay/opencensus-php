@@ -57,6 +57,9 @@ const Customers = lazy(() =>
 const Marketplace = lazy(() =>
   import(/* webpackChunkName: "Marketplace" */ 'merchant/views/Marketplace/Index'),
 );
+const BBPS = lazy(() =>
+  import(/* webpackChunkName: "BBPS" */ 'merchant/views/BBPS'),
+);
 const PaymentButton = lazy(() =>
   import(/* webpackChunkName: "PaymentButton" */ 'merchant/views/PaymentButton'),
 );
@@ -446,6 +449,12 @@ export default class Content extends Component {
             path="/route"
             component={Marketplace}
             additionalCondition={(user) => user.isAllowedView('marketplace')}
+          />
+
+          <ShowWhenRoute
+            path="/bbps"
+            component={BBPS}
+            additionalCondition={(user) => user.isAllowedView('bbps') && user.isBbpsEnabled} 
           />
 
           <ShowWhenRoute

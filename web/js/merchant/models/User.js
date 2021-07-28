@@ -970,6 +970,10 @@ export default class User {
     return this.isFeatureEnabled('pl_batch_upload_feature');
   }
 
+  get isBbpsEnabled() {
+    return this.isFeatureEnabled('feature_bbps');
+  }
+
   get isAppSwitcherEnabled() {
     return this.getExpStatus('app_switcher');
   }

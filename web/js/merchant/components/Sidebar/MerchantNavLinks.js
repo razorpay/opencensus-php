@@ -117,6 +117,14 @@ export default function MerchantNavLinks(props) {
         additionalCondition={(user) => user.isAllowedView('virtual_accounts')}
       />
 
+      <MainNavLink
+        label="BBPS"
+        type="product"  
+        image="/dist/css/assets/bbps.png"
+        to={routes.bbps}
+        additionalCondition={(user) => user.isAllowedView('bbps') && user.isBbpsEnabled}
+      />
+
       <ShowWhen featureEnabled="raas">
         <MainNavLink
           label="Optimizer"

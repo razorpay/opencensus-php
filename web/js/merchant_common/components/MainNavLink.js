@@ -111,6 +111,7 @@ export default class MainNavLink extends Component {
       apiFeatureEnabled,
       additionalCondition,
       icon,
+      image,
       label,
       type,
       isNew,
@@ -128,7 +129,7 @@ export default class MainNavLink extends Component {
       ...linkProps
     } = this.props;
 
-    let tag, loader;
+    let tag, loader, logo;
 
     if (isBeta) {
       tag = <span class="badge bg-primary-fuse pull-right hidden-xs">beta</span>;
@@ -151,6 +152,12 @@ export default class MainNavLink extends Component {
       loader = <span class="spin-loader pull-right  hidden-xs" />;
     }
 
+    if(image) {
+      logo = <img src={image} alt={`${label} icon`} />;
+    } else if (icon) {
+      logo = <i class={icon} />;
+    } 
+
     return (
       <ShowWhen
         notMyRole={notMyRole}
@@ -165,7 +172,7 @@ export default class MainNavLink extends Component {
           onClick={this.handleClick}
           class="NavLink"
         >
-          <i class={icon} />
+          {logo}
           {label}
           {tag}
           {loader}
