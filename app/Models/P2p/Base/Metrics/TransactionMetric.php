@@ -7,7 +7,7 @@ use RZP\Models\P2p\Transaction\Entity;
 class TransactionMetric extends Metric
 {
     // Name of the metric
-    const PSP_TRANSACTION_TOTAL         = 'PSP_TRANSACTION_TOTAL';
+    const PSP_TRANSACTION_TOTAL         = 'psp_transaction_total';
 
     // DIMENSIONS
     const DIMENSION_MODE                = 'mode';
