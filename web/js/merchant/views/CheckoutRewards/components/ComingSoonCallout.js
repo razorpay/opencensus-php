@@ -13,16 +13,7 @@ export default function Details({
         {isJoinedWaitlist ? (
           <>
             <div className="description">
-              We are happy to have you in our waitlist! If you would like to speak with us about
-              Checkout Rewards please{' '}
-              <a
-                className="early-access-form"
-                href="https://forms.gle/j4zMUSw5vKBrjQge8"
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                Click here
-              </a>
+            Thank you for joining our waitlist. We have recorded your interest and will be in touch soon!
             </div>
             <Button className="btn btn-waitlist callout-joined-button">
               Joined the waitlist
