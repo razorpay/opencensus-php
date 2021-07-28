@@ -99,7 +99,7 @@ return [
                 'description' => 'List all the merchant pricing plans',
                 'assignable'  => true,
             ],
-            Permission::TERMINAL_BUY_PRICING_PLANS => [
+            Permission::PAYMENT_TERMINAL_BUY_PRICING_PLANS => [
                 'description' => 'List all the terminal buy pricing plans',
                 'assignable'  => true,
             ],
@@ -663,7 +663,7 @@ return [
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::CREATE_BUY_PRICING_PLAN       => [
+            Permission::PAYMENT_CREATE_BUY_PRICING_PLAN       => [
                 'description' => 'create buy pricing plan',
                 'assignable'  => true,
                 'workflow'    => true
@@ -673,7 +673,7 @@ return [
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::UPDATE_BUY_PRICING_PLAN       => [
+            Permission::PAYMENT_UPDATE_BUY_PRICING_PLAN       => [
                 'description' => 'update buy pricing plan',
                 'assignable'  => true,
                 'workflow'    => true
