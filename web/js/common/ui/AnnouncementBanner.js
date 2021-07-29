@@ -1,5 +1,6 @@
 import React, { Fragment, Component } from 'react';
 import PropTypes from 'prop-types';
+import RTracking from 'react-tracking';
 
 export const BANNER_THEMES = {
   primary: {
@@ -39,6 +40,7 @@ export const BANNER_THEMES = {
   },
 };
 
+@RTracking(() => window.rzpQ.component('DashboardBanner'))
 export default class Announcement extends Component {
   constructor(props) {
     super(props);
@@ -54,6 +56,16 @@ export default class Announcement extends Component {
     this.handleClose = this.handleClose.bind(this);
   }
 
+  trackBannerClose = () => {
+    const { title, card_id, tracking } = this.props;
+    tracking.trackEvent(
+      window.rzpQ?.merchantActions().success('merchant_dashboard.banner_close', {
+        title,
+        card_id,
+      }),
+    );
+  }
+
   handleClose() {
     if (!this.isPure) {
       return this.setState(
@@ -61,11 +73,13 @@ export default class Announcement extends Component {
           hidden: true,
         },
         () => {
+          this.trackBannerClose();
           return this.props.onClose && this.props.onClose();
         },
       );
     }
 
+    this.trackBannerClose();
     return this.props.onClose && this.props.onClose();
   }
 
