@@ -359,6 +359,7 @@ class EdgeThrottleController extends Controller
      *
      * @return string
      * @throws BadRequestException
+     * @throws BadRequestHttpException
      */
     protected function rulePathPrefix(): string
     {
@@ -370,7 +371,8 @@ class EdgeThrottleController extends Controller
         }
         else if (isset($input['service_id']) === true)
         {
-            return '/services/' . $input['service_id'];
+//            disabling all service level rule operations
+//            return '/services/' . $input['service_id'];
         }
 
         throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARAMETERS);
