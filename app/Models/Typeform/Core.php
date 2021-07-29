@@ -19,6 +19,7 @@ use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Payment\Method as PaymentMethod;
+use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 
@@ -614,8 +615,8 @@ class Core extends Base\Core
                 'priority'        => 1,
                 'email'           => $merchantEmail,
                 'tags'            => $tags,
-                'group_id'        => (int) $this->freshdeskConfig['group_ids']['merchant_risk'],
-                'email_config_id' => (int) $this->freshdeskConfig['email_config_ids']['risk_notification'],
+                'group_id'        => (int) $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                'email_config_id' => (int) $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
                 'custom_fields' => [
                     'cf_ticket_queue' => 'Merchant',
                     'cf_category'     => 'Risk Report_Merchant',
@@ -624,7 +625,8 @@ class Core extends Base\Core
                 ],
             ];
 
-            $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest);
+            $this->app['freshdesk_client']->sendOutboundEmail(
+                $fdOutboundEmailRequest, FreshdeskConstants::URLIND);
 
             $this->app['trace']->info(
                 TraceCode::INTERNATIONAL_ENABLEMENT_EMAIL_SENT,

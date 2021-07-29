@@ -17,6 +17,7 @@ use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Org;
 use RZP\Models\Dispute\Phase;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 
 // TODO: add traces
 
@@ -380,8 +381,8 @@ class Service extends Base\Service
                     'priority'        => 1,
                     'email'           => $merchantEmail,
                     'tags'            => $fdTags,
-                    'group_id'        => (int) $this->freshdeskConfig['group_ids']['merchant_risk'],
-                    'email_config_id' => (int) $this->freshdeskConfig['email_config_ids']['risk_notification'],
+                    'group_id'        => (int) $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                    'email_config_id' => (int) $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
                     'custom_fields' => [
                         'cf_ticket_queue' => 'Merchant',
                         'cf_category'     => 'Risk Report_Merchant',
@@ -390,7 +391,8 @@ class Service extends Base\Service
                     ],
                 ];
 
-                $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest);
+                $response = $this->app['freshdesk_client']->sendOutboundEmail(
+                    $fdOutboundEmailRequest, FreshdeskConstants::URLIND);
 
                 $fdTicketId = $response['id'] ?? null;
             }

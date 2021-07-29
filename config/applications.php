@@ -415,10 +415,16 @@ return [
 
         'group_ids' => [
             'merchant_risk' => env('FRESHDESK_GROUP_MERCHANT_RISK_ID'),
+            'rzpind' => [
+                'merchant_risk' => env('FRESHDESK_IND_GROUP_MERCHANT_RISK_ID'),
+            ]
         ],
 
         'email_config_ids' => [
             'risk_notification' => env('FRESHDESK_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
+            'rzpind' => [
+                'risk_notification' => env('FRESHDESK_IND_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
+            ]
         ],
     ],
 
