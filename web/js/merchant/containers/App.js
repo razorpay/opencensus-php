@@ -577,16 +577,18 @@ export default class App extends Component {
           });
         }
 
-        window.rzpAnalytics({
-          name: 'set_dimensions',
-          dimensions: {
-            dimension1: currentMode, // Mode
-            dimension2: user.name, // Merchant Name
-            dimension3: user.id, // Merchant ID
-            dimension4: user.user.email, // Logged User Email
-            dimension5: user.role, // Logged User Role
-          },
-        });
+        if (window.rzpAnalytics) {
+          window.rzpAnalytics({
+            name: 'set_dimensions',
+            dimensions: {
+              dimension1: currentMode, // Mode
+              dimension2: user.name, // Merchant Name
+              dimension3: user.id, // Merchant ID
+              dimension4: user.user.email, // Logged User Email
+              dimension5: user.role, // Logged User Role
+            },
+          });
+        }
 
         window.trackHubs({
           name: 'identify',

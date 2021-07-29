@@ -50,7 +50,7 @@ export class AsyncBtn extends React.PureComponent {
     prevent(e);
 
     if (!this.state.isPending) {
-      let returnValue = this.props.onClick(e);
+      let returnValue = this.props.onClick && this.props.onClick(e);
 
       if (returnValue instanceof Promise) {
         this.setState({ isPending: true });

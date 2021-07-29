@@ -1119,7 +1119,7 @@ export default class ActivationWizard extends React.Component {
             ]?.activation_flow;
         }
 
-        if (data.data.sumitted) {
+        if (data?.data?.sumitted) {
           window.criteo_q = window.criteo_q || [];
           var deviceType = /iPad/.test(navigator.userAgent)
             ? 't'
@@ -1723,13 +1723,11 @@ export default class ActivationWizard extends React.Component {
     const { title, subtitle } = getBankTabHeader(
       Number(this.state.dirty.business_type || this.props.data.business_type),
     );
-    return subtitle ? (
+    return (
       <>
         {title}
         <div className="onboarding-tab-subtitle">{subtitle}</div>
       </>
-    ) : (
-      tabHeader
     );
   }
 
