@@ -2351,7 +2351,8 @@ class Core extends Base\Core
             $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
                 $payout->getId(),
                 Status::FAILED,
-                $ftaFailureReason);
+                $ftaFailureReason,
+                $ftaBankStatusCode);
         }
         else
         {
@@ -3418,7 +3419,8 @@ class Core extends Base\Core
                 Entity::REMARKS                     => $ftaData[Attempt\Constants::REMARKS] ?? null,
                 Attempt\Entity::FUND_TRANSFER_ID    => (int)$payout->getFTSTransferId(),
                 Attempt\Constants::BENEFICIARY_NAME => $ftaData[Attempt\Constants::BENEFICIARY_NAME] ?? null,
-                Attempt\Entity::BANK_STATUS_CODE    => $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null
+                Attempt\Entity::BANK_STATUS_CODE    => $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null,
+                Attempt\Constants::FTA_STATUS       => $ftaData[Attempt\Constants::FTA_STATUS] ?? null
             ];
 
             //
