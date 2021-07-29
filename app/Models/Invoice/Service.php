@@ -33,6 +33,8 @@ class Service extends Base\Service
     protected $userId   = null;
     protected $userRole = null;
 
+    const RAZORX_BLOCK_PDF_DOWNLOAD_URL = 'razorx_block_pdf_download_url';
+
     public function __construct()
     {
         parent::__construct();
@@ -553,6 +555,20 @@ class Service extends Base\Service
                             $this->merchant,
                             $this->userId,
                             $this->userRole);
+
+        $mode = $this->app['basicauth']->getMode() ?? Mode::LIVE;
+
+        $variant = $this->app->razorx->getTreatment(
+            $invoice->getMerchantId(),
+            self::RAZORX_BLOCK_PDF_DOWNLOAD_URL,
+            $mode
+        );
+
+        if ($variant === 'on')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
 
         $pdf = $this->core->getFreshInvoicePdf($invoice);
 
