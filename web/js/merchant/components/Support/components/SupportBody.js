@@ -226,7 +226,6 @@ class SupportBody extends Component {
         </header>
         <ul class="support-list">
           <ShowWhen
-            myRole="owner admin"
             additionalCondition={(user) => !user.isNewGrievanceFlowEnabled}
           >
             <li
@@ -250,7 +249,6 @@ class SupportBody extends Component {
             </li>
           </ShowWhen>
           <ShowWhen
-            myRole="owner admin"
             additionalCondition={(user) => user.isNewGrievanceFlowEnabled}
           >
             <li
