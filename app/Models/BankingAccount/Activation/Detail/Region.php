@@ -12,6 +12,7 @@ class Region
     const Assam              = 'Assam';
     const Bihar              = 'Bihar';
     const Chhattisgarh       = 'Chhattisgarh';
+    const Chattisgarh        = 'Chattisgarh'; // Indian Pincode finder returns this
     const Goa                = 'Goa';
     const Gujarat            = 'Gujarat';
     const Haryana            = 'Haryana';
@@ -56,6 +57,7 @@ class Region
          self::Assam              => self::EAST,
          self::Bihar              => self::NORTH,
          self::Chhattisgarh       => self::CENTRAL,
+         self::Chattisgarh        => self::CENTRAL,
          self::Goa                => self::WEST,
          self::Gujarat            => self::WEST,
          self::Haryana            => self::NORTH,

@@ -6,6 +6,7 @@ use Mockery;
 use RZP\Tests\TestCase;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankingAccount\Service;
+use RZP\Models\BankingAccount\Activation\Detail\Region;
 
 class BankingAccountServiceTest extends TestCase
 {
@@ -59,5 +60,12 @@ class BankingAccountServiceTest extends TestCase
         $response = (new Service($this->app['pincodesearch']))->CheckServiceableByRBL($content);
 
         $this->assertTrue($response['serviceability']);
+    }
+
+    public function testStateToRegionMapping($state = Region::Chattisgarh, $expectedRegion = Region::CENTRAL)
+    {
+        $region = (new Region)->getRegionFromState($state);
+
+        $this->assertEquals($expectedRegion, $region);
     }
 }
