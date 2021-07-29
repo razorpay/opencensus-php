@@ -626,6 +626,10 @@ return [
             Permission::VIEW_SALESFORCE_OPPORTUNITY_DETAIL => [
                 'assignable' => true,
             ],
+            Permission::REFUNDS_BANK_FILE_UPLOAD => [
+                'description' => 'Upload Banks Refund File',
+                'assignable' => true,
+            ],
         ],
 
         PermissionCategory::SETTLEMENT => [

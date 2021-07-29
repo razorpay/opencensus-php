@@ -333,6 +333,7 @@ class Name
     const DOWNLOAD_CREDIT_BUREAU_REPORTS      = 'download_credit_bureau_reports';
     const CAPITAL_DEVELOPER                   = 'capital_developer';
     const RETRY_REFUNDS_WITH_APPENDED_ID      = 'retry_refunds_with_appended_id';
+    const REFUNDS_BANK_FILE_UPLOAD            = 'refunds_bank_file_upload';
 
     // Sub VA constants
     const ADMIN_SUB_VIRTUAL_ACCOUNT             = 'admin_sub_virtual_account';
