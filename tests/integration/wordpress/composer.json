@@ -5,14 +5,12 @@
         "ext-opencensus": "*"
     },
     "require-dev": {
-        "wp-cli/wp-cli": "~1.1",
+        "wp-cli/wp-cli": "2.5.0",
         "phpunit/phpunit": "^7.0",
         "guzzlehttp/guzzle": "~6.0"
     },
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/razorpay/opencensus-php"
-        }
-    ]
+    "repositories": [{
+        "type": "git",
+        "url": "https://github.com/razorpay/opencensus-php"
+    }]
 }

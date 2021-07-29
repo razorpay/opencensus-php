@@ -7,7 +7,7 @@
     "require": {
         "php": ">=7.0.0",
         "fideloper/proxy": "~3.3",
-        "laravel/framework": "5.5.*",
+        "laravel/framework": "6.20.26",
         "laravel/tinker": "~1.0",
         "opencensus/opencensus": "dev-master",
         "google/cloud-trace": "^0.3"
@@ -34,8 +34,7 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": [
-            ]
+            "dont-discover": []
         }
     },
     "scripts": {
@@ -55,10 +54,8 @@
         "sort-packages": true,
         "optimize-autoloader": true
     },
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/census-instrumentation/opencensus-php"
-        }
-    ]
+    "repositories": [{
+        "type": "git",
+        "url": "https://github.com/census-instrumentation/opencensus-php"
+    }]
 }
