@@ -7466,10 +7466,18 @@ trait Authorize
 
         if ($methods->isSubTypeEnabled($subtype) === false)
         {
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CARD_SUBTYPE_BUSINESS_NOT_SUPPORTED;
+
+            if ($subtype === Card\SubType::CONSUMER)
+            {
+                $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CARD_SUBTYPE_CONSUMER_NOT_SUPPORTED;
+            }
+
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_SUBTYPE_NOT_SUPPORTED,
+                $errorCode,
                 null,
                 [
+                    'method'   => Method::CARD,
                     'sub_type' => $subtype,
                     'iin'      => $card->getIin()
                 ]);
