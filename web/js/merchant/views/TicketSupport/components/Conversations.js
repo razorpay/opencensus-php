@@ -54,6 +54,7 @@ export default class Conversations extends React.Component {
     loadingTicket: true,
     size: MAX_CONVERSATION,
     current_page: 1,
+    isReplyAdded: false,
   };
 
   goNext = (page) => {
@@ -212,9 +213,13 @@ export default class Conversations extends React.Component {
       <h3 class="fsz-14">
         This query is open and our team is working on it.{' '}
         {!has_callback ? (
-          <span>
-            You can expect reply within <b>8 working hours</b>.
-          </span>
+          <>
+            <span>You can</span>
+            <br />
+            <span>
+              expect reply within <b>8 working hours</b>.
+            </span>
+          </>
         ) : null}
       </h3>
     );
@@ -285,8 +290,7 @@ export default class Conversations extends React.Component {
       }
     }
 
-    const isScheduleCallbackEnabled = this.props.user.isScheduleCallbackEnabled;
-   
+    const isScheduleCallbackEnabled = this.props.user.isScheduleCallbackEnabled; 
 
     return (
       <Fragment>
@@ -303,7 +307,7 @@ export default class Conversations extends React.Component {
                   <div className="panel-body" style={{ padding: 0 }}>
                     <h3>
                       {' '}
-                      <div className="row" style={{ marginBottom: '20px' }}>
+                      <div className="row" style={{ marginBottom: '20px', marginLeft: 0 }}>
                         <div className="col-xs-12">
                           <span>
                             <Link
@@ -328,6 +332,7 @@ export default class Conversations extends React.Component {
                       ticket={this.state.ticket}
                       totalConversations={total_conversations}
                       ticketID={TICKET_ID}
+                      isReplyAdded={this.state.isReplyAdded}
                     />
                     <div>
                       <div class="ticket-replies-container">
@@ -350,34 +355,37 @@ export default class Conversations extends React.Component {
                                     <i className="i i-caret-down chev-down"></i>
                                   ) : null}
                                 </button>
-      
-                                <span>
-                                  <button
-                                    className={`btn btn-outline grievance-related-btn ${is_escalated ? 'btn-warning' : ''
-                                      } ${!can_be_escalated ? 'disabled-style' : ''}`}
-                                    onClick={() => {
-                                      if (can_be_escalated) {
-                                        this.openGrievanceFlow(this.state.ticket);
-                                      }
-                                    }}
-                                  >
-                                    <i className="i i-followup"></i>{' '}
-                                    {is_escalated ? 'Requested follow-up' : 'Request follow-up'}
-                                  </button>
-                                  {!can_be_escalated ? (
-                                    <Popover align="bottom" theme="dark">
-                                      <PopoverBody>
-                                        {has_callback
-                                          ? is_escalated
-                                            ? `You can expect reply before: ${responseFormatTime}`
-                                            : `We will resolve this query over call`
-                                          : is_escalated
-                                            ? `You can expect reply before: ${responseFormatTime}`
-                                            : `You can expect reply within 8 working hours.`}
-                                      </PopoverBody>
-                                    </Popover>
-                                  ) : null}
-                                </span>
+                                {
+                                  (moment().diff(this.state.ticket?.fr_due_by, 'hours') > 0 || is_escalated)&& (
+                                    <span>
+                                      <button
+                                        className={`btn btn-outline grievance-related-btn ${is_escalated ? 'btn-warning' : ''
+                                          } ${!can_be_escalated ? 'disabled-style' : ''}`}
+                                        onClick={() => {
+                                          if (can_be_escalated) {
+                                            this.openGrievanceFlow(this.state.ticket);
+                                          }
+                                        }}
+                                      >
+                                        <i className="i i-followup"></i>{' '}
+                                        {is_escalated ? 'Requested follow-up' : 'Request follow-up'}
+                                      </button>
+                                      {!can_be_escalated ? (
+                                        <Popover align="bottom" theme="dark">
+                                          <PopoverBody>
+                                            {has_callback
+                                              ? is_escalated
+                                                ? `You can expect reply before: ${responseFormatTime}`
+                                                : `We will resolve this query over call`
+                                              : is_escalated
+                                                ? `You can expect reply before: ${responseFormatTime}`
+                                                : `You can expect reply within 8 working hours.`}
+                                          </PopoverBody>
+                                        </Popover>
+                                      ) : null}
+                                    </span>
+                                  )
+                                }
                                 {!has_callback ? (
                                   this.props.scheduleCallConfig.is_eligible ? <button
                                     onClick={() => {
@@ -437,11 +445,6 @@ export default class Conversations extends React.Component {
                                 data[last].push(reply);
                               }
                               this.setState({ data });
-                              this.props.showNotification({
-                                type: 'success',
-                                message: 'Reply has been sent',
-                                closeTimeout: 5000,
-                              });
                             }}
                           />
                         ) : null}

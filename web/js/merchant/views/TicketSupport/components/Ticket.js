@@ -38,7 +38,7 @@ export default class Ticket extends React.Component {
     const { ticket, user } = this.props;
     const { ticketID } = this.props;
     let img = this.props.logo_url ? (
-      <img class="img-round user-image" src={this.props.logo_url} />
+      <img height="56px" class="img-round user-image" src={this.props.logo_url} />
     ) : (
       <i className="i i-user-circle reply-user-circle" />
     );

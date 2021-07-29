@@ -1059,7 +1059,7 @@ export default class User {
     return this.getExpStatus('dashboard_show_nps_survey');
   }
 
-  showCsmExperienceSurvey(){
+  showCsmExperienceSurvey() {
     return this.getExpStatus('csm_experience_survey');
   }
 

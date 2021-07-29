@@ -83,7 +83,7 @@ export default class Reply extends React.Component {
       .replyToConversation(this.props.ticketID, bodyFormData)
       .then((response) => {
         this.setState({ loading: false, body: null });
-
+        
         this.replyRef.current.value = null;
         this.setState({
           attachments: [],
@@ -105,6 +105,7 @@ export default class Reply extends React.Component {
         } else {
           this.track('reply undelivered', 'Tickets | Status: Failed');
         }
+        this.props.onClose();
       })
       .catch((e) => {
         this.setState({ loading: false });

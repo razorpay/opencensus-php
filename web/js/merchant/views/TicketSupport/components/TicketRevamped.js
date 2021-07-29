@@ -20,6 +20,8 @@ export default class Ticket extends React.Component {
     this.state = {
       detailsVisible: false,
       showMoreConversation: false,
+      expandLastReply: false,
+      showFullMessage: false,
     };
   }
 
@@ -33,9 +35,20 @@ export default class Ticket extends React.Component {
     });
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps?.totalConversations?.length !== this.props?.totalConversations?.length) {
+      this.setState({ expandLastReply: true });
+    }
+  };
+
   showDetails = () => {
     this.setState({ detailsVisible: true });
   };
+
+  toggleFullReply = () => {
+    const { showFullMessage } = this.state;
+    this.setState({ showFullMessage: !showFullMessage });
+  }
 
   render() {
     const { ticket, user, totalConversations } = this.props;
@@ -55,7 +68,7 @@ export default class Ticket extends React.Component {
     const category = ticket?.custom_fields?.cf_requestor_subcategory;
     const subCategory = ticket?.custom_fields?.cf_requester_item;
     const ticketConversationsLength = totalConversations?.length;
-
+    
     if (ticket) {
       return (
         <Fragment>
@@ -80,21 +93,30 @@ export default class Ticket extends React.Component {
                 </div>
             </div>
             <div className="user-details-container">
-              <div className="user-section">
+              <div className="user-section" onClick={this.toggleFullReply}>
                 <div className="user-image">
                   {img}
                 </div>
                 <div className="user-details">
                   <p className="user">{user?.name}</p>
-                  <p className="lh-18"> {ticket?.description_text}</p>
+                  {
+                    this.state.showFullMessage && (
+                      <p className="message-to">To: Razorpay Account</p>
+                    )
+                  }
+                  <p className={`lh-18 ${this.state.showFullMessage ? '' : 'truncated'}`}> {ticket?.description_text}</p>
                 </div>
                 <p className="created-time">{moment(ticket.created_at).fromNow()}</p>
               </div>
-              <div className="attachment-container">
-                {ticket?.attachments?.map((file, index) => (
-                  <Attachment key={file.id} file={file} />
-                ))}
-              </div>  
+              {
+                ticket?.attachments?.length > 0 && (
+                  <div className="attachment-container">
+                    {ticket?.attachments?.map((file, index) => (
+                      <Attachment key={file.id} file={file} />
+                    ))}
+                  </div>  
+                )
+              }
             </div>
             
             {
@@ -137,6 +159,7 @@ export default class Ticket extends React.Component {
                       return (
                         <>
                           <Message
+                            showExpandedReply={this.state.expandLastReply && i == totalConversations.length - 1}
                             last={i == totalConversations.length - 1}
                             ticket={ticket}
                             key={i}
@@ -166,6 +189,7 @@ export default class Ticket extends React.Component {
                       <div className="solid-divider">
                       </div>
                       <Message
+                        showExpandedReply={this.state.expandLastReply}
                         last={true}
                         ticket={ticket}
                         key={4}
@@ -175,7 +199,7 @@ export default class Ticket extends React.Component {
                   )
                 }
             </div>
-            {user.isNewGrievanceFlowEnabled && <Banner ticket={ticket} />}
+            {/* {user.isNewGrievanceFlowEnabled && <Banner ticket={ticket} />} */}
           </div>
         </Fragment>
       );

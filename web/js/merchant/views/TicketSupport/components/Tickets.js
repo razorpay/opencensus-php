@@ -127,7 +127,7 @@ export default class Tickets extends React.Component {
       <div>
         {OPEN_TICKETS.length !== 0 && (
           <h1 className="tickets-section-title">Open queries ({OPEN_TICKETS.length})
-            <button onClick={createTicket} className="btn btn-outline pull-right">
+            <button onClick={createTicket} className="btn btn-outline pull-right raise-new-query-btn">
               <i className="i i-plus"></i> Raise New Query
             </button>
           </h1>
@@ -192,13 +192,6 @@ export default class Tickets extends React.Component {
     return (
       <Fragment>
         <div class="content-wrapper content-sm ticket-support">
-          <HeaderAction>
-            <div class="btn-toolbar pull-right">
-              <button onClick={this.raiseTicket} className="btn btn-primary pull-right">
-                Write to us
-              </button>
-            </div>
-          </HeaderAction>
           <div className="row">
             <div className="col-xs-12">
               <div className="tickets-container">

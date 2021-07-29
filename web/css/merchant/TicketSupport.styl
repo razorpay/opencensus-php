@@ -2,7 +2,7 @@
     .mt-0 {
         margin-top: 0px;
     }
-    
+
     .mb-0 {
         margin-bottom: 0px;
     }
@@ -30,7 +30,6 @@
     .flex {
         display: flex;
     }
-    
 
     .mt-20 {
         margin-top: 20px;
@@ -57,11 +56,11 @@
     }
 
     .border-solid {
-        border: 1px solid rgba(22,47,86,0.1) !important;
+        border: 1px solid rgba(22, 47, 86, 0.1) !important;
     }
 
     .border-bottom-solid {
-        border-bottom: 1px solid rgba(22,47,86,0.1) !important
+        border-bottom: 1px solid rgba(22, 47, 86, 0.1) !important;
     }
 
     padding: 30px 20px;
@@ -87,11 +86,12 @@
         width: 60px;
         height: 60px;
         background: rgba(22, 47, 86, 0.05);
-        border-radius: 56px;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         background: rgba(22, 47, 86, 0.05);
+
         .i-ticket-user {
             font-size: 20px;
         }
@@ -110,9 +110,9 @@
         &.row-container {
             display: flex;
             flex-direction: column;
-            line-height: 20px; 
+            line-height: 20px;
         }
-            
+
         .to-account {
             font-size: 13px;
             line-height: 18px;
@@ -141,7 +141,6 @@
     .reply-message-container {
         padding-left: 0;
 
-
         .title-container {
             margin-bottom: 0px;
             margin-top: 0px;
@@ -161,14 +160,20 @@
     }
 
     .message-body {
-
         margin-top: 20px;
 
         &.revamped {
             margin-top: 6px;
             line-height: 18px;
         }
-        
+
+        &.truncated {
+            white-space: pre-wrap;
+            max-height: 35px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         margin-top: 6px;
         line-height: 18px;
 
@@ -207,17 +212,18 @@
         &.ticket-row-panel {
             border: 0;
             padding: 0 24px;
-            padding-left:0;
+            padding-left: 0;
         }
 
-        &.revamped.ticket-row-panel{
-            padding-left:24px;
-            &:hover{
-                padding-left:24px;
-                border:0;
-                background:transparent;
+        &.revamped.ticket-row-panel {
+            padding-left: 24px;
 
+            &:hover {
+                padding-left: 24px;
+                border: 0;
+                background: transparent;
             }
+            
         }
 
         .reply-ticket-panel {
@@ -267,10 +273,12 @@
         color: rgba(22, 47, 86, 0.87);
         font-weight: 700;
         margin-bottom: 5px;
+        font-size: 15px;
     }
 
     .ticket-short-details {
         color: rgba(81, 89, 120, 0.72);
+        font-size: 13px;
     }
 
     .ticket-conv-body {
@@ -319,22 +327,29 @@
         border-bottom: 0;
         cursor: pointer;
         padding-left: 0;
+
         .min-ht-56 {
             min-height: 56px;
         }
 
         &.revamped {
-            margin-bottom: 20px;
             border-bottom: 1px solid rgba(22, 47, 86, 0.1);
             border-radius: 3px;
-            // padding-left: 24px !important;
+
+            .panel {
+                border-radius: 3px;
+            }
+
+            .panel:hover {
+                background: #FAFCFF;
+                border-radius: 3px;
+            }
         }
 
         &.revamped:hover {
             background: rgba(11, 112, 231, 0.05);
             border: 1px solid #4B95ED;
-            border-radius: 0;
-            // padding-left:0 !important;
+            background-color: #FAFCFF;
         }
 
         .ticket-brief-desc-text {
@@ -356,7 +371,8 @@
         .ticket-detail-separator {
             padding: 0 9px;
         }
-        padding-left:0;
+
+        padding-left: 0;
     }
 
     .ticket-reply-btn {
@@ -392,6 +408,16 @@
         line-height: 24px;
         font-weight: bold;
         margin: 0 0 22px;
+
+        .raise-new-query-btn {
+            font-weight: bold;
+            color: #2B83EA;
+
+            &:hover {
+                background: rgba(11, 112, 231, 0.05);
+                color: #2B83EA;
+            }
+        }
 
         .section-collapse {
             color: rgba(22, 47, 86, 0.54);
@@ -453,6 +479,7 @@
 
     .q-open {
         margin-bottom: 25px;
+
         i.chev-down {
             position: absolute;
             top: 37px;
@@ -752,7 +779,6 @@
             font-size: 13px;
             line-height: 18px;
             color: rgba(22, 47, 86, 0.54);
-
         }
     }
 
@@ -762,25 +788,25 @@
         height: 1px;
         margin: 0px 24px;
     }
+
     .user-details-container {
         padding: 24px;
 
         .user-section {
             display: flex;
             justify-content: flex-start;
-            
 
             .user-image {
                 width: 60px;
                 height: 60px;
                 background: rgba(22, 47, 86, 0.05);
-                border-radius: 56px;
+                border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 background: rgba(22, 47, 86, 0.05);
                 margin-right: 15px;
-                
+
                 .img-round {
                     display: block;
                     margin: auto;
@@ -795,7 +821,8 @@
             }
 
             .user-details {
-                width: 73%;
+                width: 78%;
+                margin-top: 6px;
                 .user {
                     font-family: Lato;
                     font-style: normal;
@@ -805,12 +832,24 @@
                     color: rgba(22, 47, 86, 0.87);
                     margin-bottom: 6px;
                 }
+                .message-to {
+                    margin-top: 8px;
+                    color: rgba(22, 47, 86, 0.54);
+                    margin-bottom: 24px;
+                }
+
+                .truncated {
+                    white-space: pre-wrap;
+                    max-height: 35px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
             }
 
             .created-time {
                 color: rgba(22, 47, 86, 0.54);
                 text-align: right;
-                width: 100%;
+                margin-top: 6px;
             }
         }
 
@@ -818,7 +857,7 @@
             margin-top: 10px;
             margin-left: 71px;
         }
-        
+
         .file-attachment {
             display: inline-block;
             color: #162F56;
@@ -841,6 +880,7 @@
             }
         }
     }
+
     .show-more-container {
         display: flex;
         justify-content: center;
@@ -880,6 +920,6 @@
     }
 }
 
-.failed-loading-tickets-container{
-    width:48%;
+.failed-loading-tickets-container {
+    width: 48%;
 }
