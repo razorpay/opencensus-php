@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 use RZP\Diag\EventCode;
+use RZP\Http\Middleware\EventTracker;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -166,6 +167,23 @@ class UpdateMerchantContext extends Job
                     ]);
                 }
             }
+
+            $this->sendSegmentEvents();
+        }
+    }
+
+    protected function sendSegmentEvents()
+    {
+        try
+        {
+            $app = App::getFacadeRoot();
+            $app['segment-analytics']->buildRequestAndSend();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, null,
+                TraceCode::SEGMENT_EVENT_PUSH_FAILURE
+            );
         }
     }
 

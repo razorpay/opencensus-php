@@ -2,6 +2,8 @@
 
 namespace RZP\Jobs\Kafka;
 
+use App;
+use RZP\Http\Middleware\EventTracker;
 use RZP\Models\Merchant\BvsValidation\Core as BvsCore;
 use RZP\Trace\TraceCode;
 

@@ -99,6 +99,8 @@ class DefaultStatusUpdater extends BaseStatusUpdater
         $this->updateMerchantContext();
 
         $this->sendConsumedValidationResultEvent();
+
+        $this->app['segment-analytics']->buildRequestAndSend();
     }
 
     protected function instantlyActivateMerchantIfApplicable($merchant, Detail\Entity $merchantDetails)
