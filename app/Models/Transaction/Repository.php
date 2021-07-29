@@ -2420,7 +2420,7 @@ class Repository extends Base\Repository
             $transactionBalanceColumn,
         ];
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
             ->select($selectColumn)
             ->leftjoin(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceIdColumn)
             // To fetch only banking transaction until pg use cases are onboarded

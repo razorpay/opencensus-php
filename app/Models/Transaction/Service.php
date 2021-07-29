@@ -431,12 +431,14 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::LEDGER_TRANSACTIONS_FETCH_REQUEST,
             [
-                count($input[Entity::MERCHANT_ID]),
-                $input['from'],
-                $input['to'],
-                $input['count'],
-                $input['skip']
+                'merchant_id_count' => count($input[Entity::MERCHANT_ID]),
+                'start_time'        => $input['from'],
+                'end_time'          => $input['to'],
+                'limit'             => $input['count'],
+                'offset'            => $input['skip']
             ]);
+
+        $startTimeMs = round(microtime(true) * 1000);
 
         $txn = $this->repo->transaction->fetchBankingTransactionsForLedgerRecon(
             $input[Entity::MERCHANT_ID],
@@ -445,6 +447,16 @@ class Service extends Base\Service
             $input['count'],
             $input['skip']
         );
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        // this will help us to know the query running time
+        $this->trace->info(
+            TraceCode::LEDGER_TRANSACTIONS_FETCH_RESPONSE,
+            [
+                'query_execution_time_ms' => $endTimeMs - $startTimeMs,
+                'response_count'          => count($txn),
+            ]);
 
         // This is because $txn->toArrayPublic() is unsetting the required fields from response
         $resp[Entity::ENTITY] = 'collection';
