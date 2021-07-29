@@ -232,7 +232,13 @@ export default class AddMerchant extends Component {
         });
         merchantEmail = value;
     }
-    const isFormValid = merchantName && merchantEmail && isEmail(merchantEmail);
+    let isEmailValid;
+    if(isEmailMandatory(this.props.user)) {
+      isEmailValid = merchantEmail && isEmail(merchantEmail)
+    } else {
+      isEmailValid = true;
+    }
+    const isFormValid = merchantName && isEmailValid;
     this.setState({
       isFormValid
     })
