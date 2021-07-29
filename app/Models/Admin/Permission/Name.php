@@ -689,6 +689,9 @@ class Name
     // Retry payouts on payout service
     const RETRY_PAYOUTS_ON_SERVICE  = 'retry_payouts_on_service';
 
+    const CALLBACK_SLOT_CONFIG_VIEW                    = 'callback_slot_config_view';
+    const CALLBACK_SLOT_CONFIG_EDIT                    = 'callback_slot_config_edit';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

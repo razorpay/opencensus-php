@@ -22,6 +22,7 @@ class CareServiceTest extends TestCase
     const ACTUAL_CARE_SERVICE_RESPONSE_STATUS = 'actual_care_service_response_status';
     const API_REQUEST_BODY                    = 'API_REQUEST_BODY';
     const METHOD                              = 'method';
+    const PERMISSIONS                         = 'permissions';
 
     use WorkflowTrait;
     use RequestResponseFlowTrait;
@@ -244,13 +245,79 @@ class CareServiceTest extends TestCase
                 self::API_ROUTE                           => '/care_service/myoperator_webhook/twirp/rzp.care.callback.v1.CallbackService/InCallWebhook',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/InCallWebhook',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
-                        'myoperator'    =>  "{ \"users\": [ \"918586848544\" ], \"client_ref_id\": \"fdfdfdf\"}",
-                    ],
-                self::API_REQUEST_BODY                     => [
-                    'myoperator'    =>  "{ \"users\": [ \"918586848544\" ], \"client_ref_id\": \"fdfdfdf\"}",
+                    'myoperator' => "{ \"users\": [ \"918586848544\" ], \"client_ref_id\": \"fdfdfdf\"}",
+                ],
+                self::API_REQUEST_BODY                    => [
+                    'myoperator' => "{ \"users\": [ \"918586848544\" ], \"client_ref_id\": \"fdfdfdf\"}",
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
                 ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.admin.v1.CallbackConfigService/getDateSlotConfig',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.admin.v1.CallbackConfigService/getDateSlotConfig',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ],
+                ],
+                self::API_REQUEST_BODY                    => [],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['callback_slot_config_view'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.admin.v1.CallbackConfigService/getWeekSlotConfig',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.admin.v1.CallbackConfigService/getWeekSlotConfig',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ],
+                ],
+                self::API_REQUEST_BODY                    => [],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['callback_slot_config_view'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.admin.v1.CallbackConfigService/editDateSlotConfig',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.admin.v1.CallbackConfigService/editDateSlotConfig',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['callback_slot_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.admin.v1.CallbackConfigService/editWeekSlotConfig',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.admin.v1.CallbackConfigService/editWeekSlotConfig',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['callback_slot_config_edit'],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
             ],
             [
@@ -258,10 +325,10 @@ class CareServiceTest extends TestCase
                 self::API_ROUTE                           => '/care_service/myoperator_webhook/twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
-                    'myoperator'    =>  "{ \"_cri\": \"fdfdfdfd\", \"_ld\": [{\"_rst\": \"2020-07-17 07:12:28\", \"_su\": \"1\", \"_ac\": \"received\"}] }"
+                    'myoperator' => "{ \"_cri\": \"fdfdfdfd\", \"_ld\": [{\"_rst\": \"2020-07-17 07:12:28\", \"_su\": \"1\", \"_ac\": \"received\"}] }"
                 ],
-                self::API_REQUEST_BODY                     => [
-                    'myoperator'    =>  "{ \"_cri\": \"fdfdfdfd\", \"_ld\": [{\"_rst\": \"2020-07-17 07:12:28\", \"_su\": \"1\", \"_ac\": \"received\"}] }"
+                self::API_REQUEST_BODY                    => [
+                    'myoperator' => "{ \"_cri\": \"fdfdfdfd\", \"_ld\": [{\"_rst\": \"2020-07-17 07:12:28\", \"_su\": \"1\", \"_ac\": \"received\"}] }"
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
                 ],
@@ -278,7 +345,7 @@ class CareServiceTest extends TestCase
                 $testCase[self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS]
             );
 
-            if(empty($testCase[self::API_REQUEST_BODY]) === false)
+            if (isset($testCase[self::API_REQUEST_BODY]) === true)
             {
                 $this->testData[__FUNCTION__]['request']['content'] = $testCase[self::API_REQUEST_BODY];
             }
@@ -305,6 +372,19 @@ class CareServiceTest extends TestCase
                     break;
                 case 'admin':
                     $this->ba->adminAuth();
+            }
+
+            if (empty($testCase[self::PERMISSIONS]) === false)
+            {
+                foreach ($testCase[self::PERMISSIONS] as $permissonName)
+                {
+                    $hasPerm = $this->ba->getAdmin()->hasPermission($permissonName);
+
+                    if ($hasPerm === false)
+                    {
+                        $this->addPermissionToBaAdmin($permissonName);
+                    }
+                }
             }
 
             $this->app['trace']->info(TraceCode::MISC_TRACE_CODE, $this->testData[__FUNCTION__]);
@@ -360,6 +440,13 @@ class CareServiceTest extends TestCase
             ],
             500
         );
+
+        $this->startTest();
+    }
+
+    public function testInvalidPermission()
+    {
+        $this->ba->adminAuth();
 
         $this->startTest();
     }

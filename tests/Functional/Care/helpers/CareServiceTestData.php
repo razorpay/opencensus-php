@@ -102,6 +102,25 @@ return [
         ],
     ],
 
+    'testInvalidPermission' => [
+        'request'   => [
+            'method' => 'POST',
+            'url'    => '/care_service/admin/twirp/rzp.care.admin.v1.CallbackConfigService/editWeekSlotConfig',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED
+        ],
+    ],
+
     'testInternalMerchantGetRejectionReasons' => [
         'request'  => [
             'method' => 'GET',

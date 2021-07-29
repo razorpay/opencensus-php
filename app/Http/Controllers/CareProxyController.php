@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Permission\Name;
 use RZP\Exception\BadRequestException;
 
 class CareProxyController extends Controller
@@ -22,16 +23,28 @@ class CareProxyController extends Controller
     const PUSH_CALLBACK_TO_QUEUE = 'twirp/rzp.care.callback.v1.CallbackService/PushCallbacksToQueue';
 
     //MyOperator
-    const IN_CALL       = 'twirp/rzp.care.callback.v1.CallbackService/InCallWebhook';
-    const AFTER_CALL    = 'twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook';
+    const IN_CALL    = 'twirp/rzp.care.callback.v1.CallbackService/InCallWebhook';
+    const AFTER_CALL = 'twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook';
 
     //admin
     const UPSERT_OPERATOR = 'twirp/rzp.care.callback.v1.CallbackService/UpsertOperator';
 
     //chat
-    const CHAT_GET_MERCHANT   = 'twirp/rzp.care.chat.v1.ChatService/GetMerchant';
-    const CHAT_FETCH_TICKETS  = 'twirp/rzp.care.chat.v1.ChatService/FetchTickets';
+    const CHAT_GET_MERCHANT  = 'twirp/rzp.care.chat.v1.ChatService/GetMerchant';
+    const CHAT_FETCH_TICKETS = 'twirp/rzp.care.chat.v1.ChatService/FetchTickets';
 
+    const CALLBACK_GET_DATE_CONFIG = 'twirp/rzp.care.admin.v1.CallbackConfigService/getDateSlotConfig';
+    const CALLBACK_GET_WEEK_CONFIG = 'twirp/rzp.care.admin.v1.CallbackConfigService/getWeekSlotConfig';
+
+    const CALLBACK_EDIT_DATE_CONFIG = 'twirp/rzp.care.admin.v1.CallbackConfigService/editDateSlotConfig';
+    const CALLBACK_EDIT_WEEK_CONFIG = 'twirp/rzp.care.admin.v1.CallbackConfigService/editWeekSlotConfig';
+
+    const ROUTE_VS_PERMISSION = [
+        self::CALLBACK_GET_DATE_CONFIG  => Name::CALLBACK_SLOT_CONFIG_VIEW,
+        self::CALLBACK_EDIT_DATE_CONFIG => Name::CALLBACK_SLOT_CONFIG_EDIT,
+        self::CALLBACK_GET_WEEK_CONFIG  => Name::CALLBACK_SLOT_CONFIG_VIEW,
+        self::CALLBACK_EDIT_WEEK_CONFIG => Name::CALLBACK_SLOT_CONFIG_EDIT,
+    ];
 
     const MERCHANT_ROUTES = [
         self::CHECK_ELIGIBILITY,
@@ -53,6 +66,10 @@ class CareProxyController extends Controller
 
     const ADMIN_ROUTES = [
         self::UPSERT_OPERATOR,
+        self::CALLBACK_GET_DATE_CONFIG,
+        self::CALLBACK_EDIT_DATE_CONFIG,
+        self::CALLBACK_GET_WEEK_CONFIG,
+        self::CALLBACK_EDIT_WEEK_CONFIG,
     ];
 
     const CHAT_ROUTES = [
@@ -97,6 +114,8 @@ class CareProxyController extends Controller
     {
         $this->validatePathForRequest(self::ADMIN_ROUTES, $path);
 
+        $this->validatePermissionForRequest($path);
+
         $input = Request::all();
 
         $response = $this->app['care_service']->adminProxyRequest($path, $input);
@@ -120,6 +139,15 @@ class CareProxyController extends Controller
         if (in_array($path, $routes) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+    }
+
+    protected function validatePermissionForRequest($path)
+    {
+        if (in_array($path, array_keys(self::ROUTE_VS_PERMISSION)) === true)
+        {
+             $this->ba->getAdmin()->hasPermissionOrFail(self::ROUTE_VS_PERMISSION[$path]);
+
         }
     }
 }
