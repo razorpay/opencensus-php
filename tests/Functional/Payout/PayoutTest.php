@@ -9309,6 +9309,33 @@ class PayoutTest extends OAuthTestCase
         $this->assertArraySelectiveEquals($sourceDetails, $response);
     }
 
+    public function testTrueSkipWorkflowForXPayrollPayouts()
+    {
+        $this->liveSetUp();
+
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::SKIP_WF_FOR_PAYROLL,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->setupWorkflowForLiveMode();
+        $this->disableWorkflowMocks();
+
+        $this->ba->appAuthLive($this->config['applications.xpayroll.secret']);
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout->getSourceDetails()->toArray()];
+
+        $this->assertEquals(WorkflowFeature::WORKFLOW_FEATURES[Feature\Constants::SKIP_WF_FOR_PAYROLL],
+            $payout[Payout\Entity::WORKFLOW_FEATURE]);
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response);
+    }
+
     public function testEnableWorkflowForInternalContactPayoutCreatedByVendorPayments()
     {
         $this->liveSetUp();

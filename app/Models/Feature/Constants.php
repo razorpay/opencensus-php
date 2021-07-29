@@ -365,6 +365,12 @@ class Constants
     const SKIP_WORKFLOWS_FOR_API        = 'skip_workflow_for_api';
 
     /**
+     * Skips workflow for Payroll requests for creating payouts for Business Banking (RazorpayX)
+     * Please check WorkflowFeature.php before modifying this value
+     */
+    const SKIP_WF_FOR_PAYROLL           = 'skip_wf_for_payroll';
+
+    /**
      * Skips workflow payout specific requests for creating payouts for Business Banking (RazorpayX)
      * Please check WorkflowFeature.php before modifying this value
      */
@@ -971,6 +977,7 @@ class Constants
         self::OFFLINE_PAYMENTS                => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
         self::SKIP_WORKFLOWS_FOR_API          => true,
+        self::SKIP_WF_FOR_PAYROLL             => true,
         self::SKIP_WF_AT_PAYOUTS              => true,
         self::NEW_BANKING_ERROR               => true,
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
@@ -1324,6 +1331,11 @@ class Constants
             'display_name'  => 'Razorpay X - Skip workflows for API requests',
             'documentation' => '',
         ],
+        self::SKIP_WF_FOR_PAYROLL         => [
+            'feature'       => self::SKIP_WF_FOR_PAYROLL,
+            'display_name'  => 'Razorpay X - Skip workflows for Payroll requests',
+            'documentation' => '',
+        ],
         self::SKIP_WF_AT_PAYOUTS             => [
             'feature'       => self::SKIP_WF_AT_PAYOUTS,
             'display_name'  => 'Razorpay X - Skip workflows payout specific',
@@ -1650,6 +1662,7 @@ class Constants
         self::ES_AUTOMATIC,
         self::SHOW_CREDIT_SCORE,
         self::SKIP_WORKFLOWS_FOR_API,
+        self::SKIP_WF_FOR_PAYROLL,
         self::SKIP_WF_AT_PAYOUTS,
         self::NEW_BANKING_ERROR,
         self::LOC_STAGE_2,

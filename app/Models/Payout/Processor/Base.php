@@ -1321,6 +1321,16 @@ class Base extends BaseCore
             return false;
         }
 
+        $hasSkipWorkflowForPayroll = $this->merchant->isFeatureEnabled(Features::SKIP_WF_FOR_PAYROLL);
+
+        if(($hasSkipWorkflowForPayroll === true) and
+           ((new Payout\Service())->isXPayrollApp() === true))
+        {
+            $this->workflowFeature = Features::SKIP_WF_FOR_PAYROLL;
+
+            return false;
+        }
+
         return true;
     }
 
