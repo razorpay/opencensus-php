@@ -54,6 +54,7 @@ export default class extends React.PureComponent {
   componentDidMount() {
     this.loadStep++;
 
+
     if (window.Quill) {
       this.loadStep++;
     }
@@ -64,7 +65,13 @@ export default class extends React.PureComponent {
   safeInitDescription() {
     // If Quill not present, then initDescription, only after both DOM and quill are loaded.
     if (this.loadStep === 2) {
-      setTimeout(() => this.initDescription(), 50);
+      
+      try {
+        this.initDescription();
+      } catch(error) {
+        // if quill throws error due to delay in DOM container rendering, executing again with significant delay
+        setTimeout(() => this.initDescription(), 500);
+      } 
     }
   }
 
