@@ -43,6 +43,7 @@ use RZP\Reconciliator\Hitachi\SubReconciliator\RefundReconciliate as HitachiRefu
 use RZP\Reconciliator\VirtualAccRbl\SubReconciliator\PaymentReconciliate as VirtualAccRbl;
 use RZP\Reconciliator\BillDesk\SubReconciliator\RefundReconciliate as BilldeskRefundRecon;
 use RZP\Reconciliator\Hitachi\SubReconciliator\PaymentReconciliate as HitachiPaymentRecon;
+use RZP\Reconciliator\Fulcrum\SubReconciliator\PaymentReconciliate as FulcrumPaymentRecon;
 use RZP\Reconciliator\VasAxis\SubReconciliator\PaymentReconciliate as VasAxisPaymentRecon;
 use RZP\Reconciliator\BillDesk\SubReconciliator\PaymentReconciliate as BilldeskPaymentRecon;
 use RZP\Reconciliator\VirtualAccIcici\SubReconciliator\ReconciliationFields as VirtualAccIcici;
@@ -242,7 +243,7 @@ class ReconciliationFileTest extends TestCase
     public function testFirstdataCombinedReconFileViaBatchServiceRoute()
     {
         $this->markTestSkipped('Skipping this right now as it fails intermittently and affects other deverlopers. Will have to fix this soon.');
-        
+
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->fixtures->create('terminal:shared_first_data_terminal');
         $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
@@ -2401,6 +2402,18 @@ class ReconciliationFileTest extends TestCase
         return array_merge($facade, $forceOverride);
     }
 
+    private function overrideFulcrumPayment(array $payment, array $forceOverride = [])
+    {
+        $facade = $this->testData['facades']['fulcrum'];
+        $facade[FulcrumPaymentRecon::COLUMN_PAYMENT_ID]     = '00';
+        $facade[FulcrumPaymentRecon::COLUMN_PAYMENT_AMOUNT] = intval($payment['amount'] / 100);
+        $facade[FulcrumPaymentRecon::COLUMN_AUTH_CODE]      = $payment['pAuthID'];
+        $facade[FulcrumPaymentRecon::COLUMN_ARN]            = str_random(24);
+        $facade[FulcrumPaymentRecon::COLUMN_CURRENCY_CODE]  = '356';
+
+        return array_merge($facade, $forceOverride);
+    }
+
     // Needed for Batch service recon flow test, where we get raw
     // row data, with un-normalized headers
     private function overrideHitachiPaymentUnnormalized(array $payment, array $forceOverride = [])
@@ -2437,6 +2450,16 @@ class ReconciliationFileTest extends TestCase
         $facade['message_type'] = '0220';
         $facade['transaction_type'] = '20';
         $facade[HitachiRefundRecon::COLUMN_REFUND_ID] = $payment['refund_id'];
+
+        return $facade;
+    }
+
+    private function overrideFulcrumRefund(array $payment, array $forceOverride = [])
+    {
+        $facade = $this->overrideFulcrumPayment($payment, $forceOverride);
+
+        $facade['message_type'] = '0220';
+        $facade['transaction_type'] = '20';
 
         return $facade;
     }
@@ -2731,6 +2754,141 @@ class ReconciliationFileTest extends TestCase
                               }
                               return 'off';
                           }));
+    }
+
+    public function testFulcrumPaymentRecon()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'gateway_acquirer' => 'ratn']);
+
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $payment1 = $this->getNewPaymentEntity(false,true);
+
+        $gatewayPayment1 = $this->getLastEntity('hitachi', true);
+
+        $this->fixtures->edit('payment', $gatewayPayment1['payment_id'],
+            [
+                'gateway'   => 'fulcrum',
+                'cps_route' => 2
+            ]);
+
+        $entries[] = $this->overrideFulcrumPayment($gatewayPayment1, ['auth_id' => $payment1['reference2']]);
+
+        $file = $this->writeToExcelFile($entries, 'Fulcrum');
+
+        $cpsResponse = [
+                $entries[0][FulcrumPaymentRecon::COLUMN_RRN] => [
+                    'authorization' => [
+                        'payment_id' => $gatewayPayment1['payment_id']
+                    ]
+                ]
+        ];
+
+        $cpsMock = $this->getMockBuilder(CardPaymentService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['fetchPaymentIdFromCapsPIDs'])
+            ->getMock();
+
+        $this->app->instance('card.payments', $cpsMock);
+
+        $this->app['card.payments']->method('fetchPaymentIdFromCapsPIDs')->willReturn($cpsResponse);
+
+        $this->runForFiles([$file], 'Fulcrum');
+
+        $updatedPayment1 = $this->getEntityById('payment', $payment1['id'], true);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+
+        $this->assertEquals($entries[0][FulcrumPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
+        $this->assertEquals($entries[0][FulcrumPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
+
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testFulcrumRefundRecon()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'gateway_acquirer' => 'ratn']);
+
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $refund1 = $this->getNewRefundEntity(true);
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('hitachi');
+
+        $this->assertNull($refund1['reference1']);
+
+        $this->fixtures->edit('payment', $gatewayPayment1['payment_id'],
+            [
+                'gateway'   => 'fulcrum',
+                'cps_route' => 2
+            ]);
+
+        $entries[] = $this->overrideFulcrumRefund($gatewayPayment1);
+
+        $file = $this->writeToExcelFile($entries, 'Fulcrum');
+
+        $scroogeResponse = [
+            'body' => [
+                'data' => [
+                    $entries[0][FulcrumPaymentRecon::COLUMN_RRN] => [
+                        'payment_id'     => $gatewayPayment1['payment_id'],
+                        'refund_id'      => PublicEntity::stripDefaultSign($refund1['id'])
+                    ]
+                ]
+            ]
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getRefundsFromPaymentIdAndGatewayId'])
+            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getRefundsFromPaymentIdAndGatewayId')->willReturn($scroogeResponse);
+
+        $cpsResponse = [
+            $entries[0][FulcrumPaymentRecon::COLUMN_RRN] => [
+                'authorization' => [
+                    'payment_id' => $gatewayPayment1['payment_id']
+                ]
+            ]
+        ];
+
+        $cpsMock = $this->getMockBuilder(CardPaymentService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['fetchPaymentIdFromCapsPIDs'])
+            ->getMock();
+
+        $this->app->instance('card.payments', $cpsMock);
+
+        $this->app['card.payments']->method('fetchPaymentIdFromCapsPIDs')->willReturn($cpsResponse);
+
+        $this->runForFiles([$file], 'Fulcrum');
+
+        $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
+
+        $this->assertEquals($entries[0][FulcrumPaymentRecon::COLUMN_ARN], $updatedRefund1['reference1']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testHitachiReconPaymentFile()
