@@ -1601,6 +1601,7 @@ return [
             'content' => [
                 'gateway'                   => 'isg',
                 'gateway_merchant_id'       => 'some_random_val',
+                'gateway_merchant_id2'      => 'some_random2',
                 'gateway_access_code'       => 'oxymoron',
                 'mode'                      => Terminal\Mode::PURCHASE,
                 'card'                      => 1,
@@ -2103,6 +2104,7 @@ return [
             'content' => [
                 'gateway'                   => 'isg',
                 'gateway_merchant_id'       => 'random',
+                'gateway_merchant_id2'      => 'random3',
                 'gateway_terminal_id'       => '12345678',
                 'mc_mpan'                   => '1234567880123456',
                 'visa_mpan'                 => '1234567890123456',
@@ -2133,6 +2135,7 @@ return [
             'content' => [
                 'gateway'                   => 'isg',
                 'gateway_merchant_id'       => 'random',
+                'gateway_merchant_id2'      => 'random2',
                 'gateway_terminal_id'       => '12345678',
                 'mc_mpan'                   => '1234567880123456',
                 'visa_mpan'                 => '1234567890123456',
@@ -3903,8 +3906,9 @@ return [
         'request' => [
             'content' => [
                 'gateway' => 'isg',
-                'gateway_merchant_id' => '123452112',
-                'gateway_terminal_id' => '12345679',
+                'gateway_merchant_id'  => '123452112',
+                'gateway_merchant_id2' => '123452134',
+                'gateway_terminal_id'  => '12345679',
                 "type" => [
                     "non_recurring" => "1",
                     "bharat_qr" => "1",

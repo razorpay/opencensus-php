@@ -359,6 +359,7 @@ class Validator extends Base\Validator
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::GATEWAY                    => 'required|in:isg',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string|max:15',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string|max:15',
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|size:8',
         Entity::TYPE                       => 'required|array',
         Entity::TYPE . '.bharat_qr'        => 'sometimes|in:1',
