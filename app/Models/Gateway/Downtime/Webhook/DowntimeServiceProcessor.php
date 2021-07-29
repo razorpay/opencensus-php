@@ -159,7 +159,7 @@ class DowntimeServiceProcessor implements ProcessorInterface
 
         $mutexKey .= isset($data[Entity::ISSUER]) ? $data[Entity::ISSUER] : "nullissuer";
 
-        $mutexKey .= isset($data[Entity::MERCHANT_ID]) ? $data[Entity::MERCHANT_ID] : "platform";
+        $mutexKey .= isset($data[Entity::VPA_HANDLE]) ? $data[Entity::VPA_HANDLE] : "nullvpahandle";
 
         $this->trace->info(
             TraceCode::GATEWAY_DOWNTIME_SERVICE_MUTEX_KEY,
