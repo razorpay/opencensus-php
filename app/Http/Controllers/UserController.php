@@ -91,7 +91,7 @@ class UserController extends Controller
 
         $data['newAuthFlow'] = false;
 
-        if (empty($currentRouteName) === false and $currentRouteName === "signup")
+        if (empty($currentRouteName) === false and ($currentRouteName === "signup" || $currentRouteName === "signin"))
         {
             $data['newAuthFlow'] = true; // new pre-signup flow
         }
