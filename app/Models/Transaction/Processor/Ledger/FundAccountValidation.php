@@ -18,7 +18,7 @@ class FundAccountValidation extends Base
     const FAV_FAILED    = "fav_failed";
     const FAV_REVERSED  = "fav_reversed";
 
-    public function pushTransactionToLedger(Entity $entity,
+    public function pushTransactionToLedger(Entity $fundAccountValidation,
                                             string $transactorType,
                                             int $transactorDate)
     {
@@ -38,15 +38,15 @@ class FundAccountValidation extends Base
                     TraceCode::LEDGER_JOURNAL_TRANSACTOR_TYPE_NOT_REGISTERED,
                     [
                         self::TRANSACTOR_TYPE => $transactorType,
-                        self::ENTITY          => $entity,
+                        self::ENTITY          => $fundAccountValidation,
                     ]);
 
                 return;
             }
 
             $notes = [
-                self::BALANCE_ID     => BalanceEntity::getSignedIdOrNull($entity->getBalanceId()),
-                self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($entity->getTransactionId())
+                self::BALANCE_ID     => BalanceEntity::getSignedIdOrNull($fundAccountValidation->getBalanceId()),
+                self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($fundAccountValidation->getTransactionId())
             ];
 
             $optionalPayload = [];
@@ -54,7 +54,7 @@ class FundAccountValidation extends Base
             switch ($transactorType)
             {
                 case self::FAV_INITIATED:
-                    $transactorDate = $entity->getCreatedAt();
+                    $transactorDate = $fundAccountValidation->getCreatedAt();
                     break;
 
                 case self::FAV_FAILED:
@@ -74,14 +74,14 @@ class FundAccountValidation extends Base
                 self::TRANSACTOR       => self::X,
                 self::MODE             => $this->mode,
                 self::IDEMPOTENCY_KEY  => gen_uuid(self::UUID_FORMAT),
-                self::MERCHANT_ID      => $entity->getMerchantId(),
-                self::CURRENCY         => $entity->getCurrency(),
-                self::AMOUNT           => (string) $entity->getAmount(),
-                self::BASE_AMOUNT      => (string) $entity->getBaseAmount(),
-                self::COMMISSION       => (string) $entity->getFee(),
-                self::TAX              => (string) $entity->getTax(),
+                self::MERCHANT_ID      => $fundAccountValidation->getMerchantId(),
+                self::CURRENCY         => $fundAccountValidation->getCurrency(),
+                self::AMOUNT           => (string) $fundAccountValidation->getAmount(),
+                self::BASE_AMOUNT      => (string) $fundAccountValidation->getBaseAmount(),
+                self::COMMISSION       => (string) $fundAccountValidation->getFee(),
+                self::TAX              => (string) $fundAccountValidation->getTax(),
                 self::NOTES            => json_encode($notes),
-                self::TRANSACTOR_ID    => $entity->getPublicId(),
+                self::TRANSACTOR_ID    => $fundAccountValidation->getPublicId(),
                 self::TRANSACTOR_TYPE  => $transactorType,
                 self::TRANSACTION_DATE => $transactorDate,
             ];
@@ -97,7 +97,7 @@ class FundAccountValidation extends Base
                 Trace::ERROR,
                 TraceCode::LEDGER_JOURNAL_FAV_PAYLOAD_ERROR,
                 [
-                    self::TRANSACTOR_ID   => $entity->getPublicId(),
+                    self::TRANSACTOR_ID   => $fundAccountValidation->getPublicId(),
                     self::TRANSACTOR_TYPE => $transactorType,
                 ]);
         }

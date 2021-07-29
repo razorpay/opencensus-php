@@ -14,7 +14,7 @@ class FundLoading extends Base
     // Events
     const FUND_LOADING_PROCESSED = "fund_loading_processed";
 
-    public function pushTransactionToLedger(Entity $entity,
+    public function pushTransactionToLedger(Entity $bankTransfer,
                                             string $transactorType,
                                             string $terminalId,
                                             $terminalAccountType)
@@ -34,15 +34,15 @@ class FundLoading extends Base
                     TraceCode::LEDGER_JOURNAL_TRANSACTOR_TYPE_NOT_REGISTERED,
                     [
                         self::TRANSACTOR_TYPE => $transactorType,
-                        self::ENTITY          => $entity,
+                        self::ENTITY          => $bankTransfer,
                     ]);
 
                 return;
             }
 
             $notes = [
-                self::BALANCE_ID     => BalanceEntity::getSignedIdOrNull($entity->getBalanceId()),
-                self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($entity->getTransactionId())
+                self::BALANCE_ID     => BalanceEntity::getSignedIdOrNull($bankTransfer->getBalanceId()),
+                self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($bankTransfer->getTransactionId())
             ];
 
             $terminalAccountType = $terminalAccountType ?? self::DEFAULT_TERMINAL_ACCOUNT_TYPE;
@@ -51,18 +51,18 @@ class FundLoading extends Base
                 self::TRANSACTOR            => self::X,
                 self::MODE                  => $this->mode,
                 self::IDEMPOTENCY_KEY       => gen_uuid(self::UUID_FORMAT),
-                self::MERCHANT_ID           => $entity->getMerchantId(),
-                self::CURRENCY              => $entity->getTransactionCurrency(),
-                self::AMOUNT                => (string) $entity->getAmount(),
-                self::BASE_AMOUNT           => (string) $entity->getAmount(),
-                self::COMMISSION            => (string) $entity->getTransactionFee(),
-                self::TAX                   => (string) $entity->getTransactionTax(),
+                self::MERCHANT_ID           => $bankTransfer->getMerchantId(),
+                self::CURRENCY              => $bankTransfer->getTransactionCurrency(),
+                self::AMOUNT                => (string) $bankTransfer->getAmount(),
+                self::BASE_AMOUNT           => (string) $bankTransfer->getAmount(),
+                self::COMMISSION            => (string) $bankTransfer->getTransactionFee(),
+                self::TAX                   => (string) $bankTransfer->getTransactionTax(),
                 self::NOTES                 => json_encode($notes),
                 self::TERMINAL_ID           => $terminalId,
                 self::TERMINAL_ACCOUNT_TYPE => $terminalAccountType,
-                self::TRANSACTOR_ID         => $entity->getPublicId(),
+                self::TRANSACTOR_ID         => $bankTransfer->getPublicId(),
                 self::TRANSACTOR_TYPE       => $transactorType,
-                self::TRANSACTION_DATE      => $entity->getCreatedAt(),
+                self::TRANSACTION_DATE      => $bankTransfer->getCreatedAt(),
             ];
 
             $this->pushToLedgerSns($payload);
@@ -74,7 +74,7 @@ class FundLoading extends Base
                 Trace::ERROR,
                 TraceCode::LEDGER_JOURNAL_FUND_LOADING_PAYLOAD_ERROR,
                 [
-                    self::TRANSACTOR_ID   => $entity->getPublicId(),
+                    self::TRANSACTOR_ID   => $bankTransfer->getPublicId(),
                     self::TRANSACTOR_TYPE => $transactorType,
                 ]);
         }

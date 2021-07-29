@@ -36,10 +36,15 @@ class Base extends Core
 
     const TIME_TAKEN = 'time_taken';
 
-    const DEFAULT_EVENT                 = "default_event";
-    const DEFAULT_FTS_FUND_ACCOUNT_ID   = '100000000';
-    const DEFAULT_FTS_FUND_ACCOUNT_TYPE = 'nodal';
-    const DEFAULT_TERMINAL_ACCOUNT_TYPE = 'nodal';
+    const DEFAULT_EVENT                            = "default_event";
+    const DEFAULT_FTS_FUND_ACCOUNT_ID              = '100000000';
+    const DEFAULT_AMAZON_PAY_FTS_FUND_ACCOUNT_ID   = '100000001';
+    const DEFAULT_M2P_FTS_FUND_ACCOUNT_ID          = '100000002';
+    const DEFAULT_FTS_FUND_ACCOUNT_TYPE            = 'nodal';
+    const DEFAULT_AMAZON_PAY_FTS_FUND_ACCOUNT_TYPE = 'amazonpay';
+    const DEFAULT_M2P_FTS_FUND_ACCOUNT_TYPE        = 'm2p';
+    const DEFAULT_TERMINAL_ACCOUNT_TYPE            = 'nodal';
+
 
     const X = 'X';
 

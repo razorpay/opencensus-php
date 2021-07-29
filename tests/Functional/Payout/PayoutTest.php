@@ -10676,6 +10676,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutViaAmazonPay()
     {
+        $this->mockLedgerSns(1, 'payout_initiated');
+
         $contact = $this->getDbLastEntity('contact');
 
         $this->fixtures->create('fund_account:wallet_account', [
@@ -12126,6 +12128,8 @@ class PayoutTest extends OAuthTestCase
     // We need to make changes to the test sample data to pass them
     public function testCreateM2PPayoutForDebitCardWithUpperCaseCardMode()
     {
+        $this->mockLedgerSns(1, 'payout_initiated');
+
         $this->fixtures->create('iin', [
             'iin'     => 340169,
             'network' => Network::$fullName[Network::MC],
