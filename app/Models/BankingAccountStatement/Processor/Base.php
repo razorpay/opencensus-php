@@ -22,6 +22,8 @@ abstract class Base extends BaseCore
 
     protected $source;
 
+    protected $version;
+
     protected $channel;
 
     abstract public function checkForDuplicateTransactions(array $bankTransactions,
@@ -47,6 +49,13 @@ abstract class Base extends BaseCore
         return $this;
     }
 
+    public function setVersion($version)
+    {
+        $this->version = $version;
+
+        return $this;
+    }
+
     public function fetchAccountStatementDetails(array $input)
     {
         $this->trace->info(
@@ -54,6 +63,7 @@ abstract class Base extends BaseCore
             [
                 'input'     => $input,
                 'source'    => $this->source,
+                'version'   => $this->version
             ]);
 
         if ($this->source === Source::FETCH_API)

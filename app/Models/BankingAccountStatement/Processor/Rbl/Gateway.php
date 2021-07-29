@@ -32,11 +32,15 @@ class Gateway extends BaseProcessor
 
     const STATEMENT_START_TIME_DATE_FORMAT = 'Y-m-d';
 
-    const DEFAULT_RBL_STATEMENT_FETCH_ATTEMPT_LIMIT = 3;
+    const STATEMENT_START_TIME_DATE_FORMAT_V2 = 'd-m-Y';
+
+    const DEFAULT_RBL_STATEMENT_FETCH_ATTEMPT_LIMIT = 10;
 
     const RBL_ACCOUNT_STATEMENT_DISPATCH_DELAY = 120;
 
     const DEFAULT_RBL_STATEMENT_FETCH_RETRY_LIMIT = 3;
+
+    const ACCOUNT_STATEMENT_V2_BANK_RESPONSE_HEADER_LINE = 'TRAN_ID,PTSN_NUM,TRAN_DATE,PSTD_DATE,TRAN_TYPE,C/D,TRAN_PARTICULAR,TRAN_AMT,TRAN_BALANCE';
 
     const RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE_DEFAULT = 200;
 
@@ -58,13 +62,29 @@ class Gateway extends BaseProcessor
     /** @var BasDetails\Entity */
     protected $basDetails;
 
-    public function __construct(string $channel, string $accountNumber, BasDetails\Entity $basDetails)
+    public function __construct(string $channel,
+                                string $accountNumber,
+                                BasDetails\Entity $basDetails,
+                                $version)
     {
         $this->setSource(Source::FETCH_API);
 
         $this->basDetails = $basDetails;
 
+        $this->setVersion($version);
+
         parent::__construct($channel, $accountNumber);
+    }
+
+    protected function sendRequestAndGetResponse(array  $input)
+    {
+        switch ($this->version){
+            case Entity::ACCOUNT_STATEMENT_FETCH_API_VERSION_2:
+                return $this->sendRequestAndGetResponseV2($input);
+
+            default :
+                return $this->sendRequestAndGetResponseV1($input);
+        }
     }
 
     public function checkForDuplicateTransactions(array $bankTransactions, string $channel, string $accountNumber)
@@ -156,7 +176,7 @@ class Gateway extends BaseProcessor
         return $bankTransactions;
     }
 
-    protected function sendRequestAndGetResponse(array $input)
+    protected function sendRequestAndGetResponseV1(array $input)
     {
         //
         // Since there could be a lot of data, currently, we are fetching only
@@ -173,54 +193,7 @@ class Gateway extends BaseProcessor
         // this is being used for pagination on RBL side.
         $lastBankTransaction = $this->getLastBankTransaction() ? $this->getLastBankTransaction()->toArray() : [];
 
-        if (array_key_exists(Entity::MERCHANT_ID, $lastBankTransaction) === true)
-        {
-            $merchantId = $lastBankTransaction[Entity::MERCHANT_ID];
-        }
-        else
-        {
-            $merchantId = "";
-        }
-
-        // TODO: This whole thing needs to be re-looked at. How we fetch the details.
-
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_SPECIAL_ATTEMPT_LIMIT,
-            $this->mode
-        );
-
-        if ($variant === 'on')
-        {
-            $attemptLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT]);
-        }
-
-        if (empty($attemptLimit) === true)
-        {
-            $attemptLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT]);
-        }
-
-        if (empty($attemptLimit) === true)
-        {
-            $attemptLimit = self::DEFAULT_RBL_STATEMENT_FETCH_ATTEMPT_LIMIT;
-        }
-
-        $statementRetryLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_RETRY_LIMIT]);
-
-        if (empty($statementRetryLimit) === true)
-        {
-            $statementRetryLimit = self::DEFAULT_RBL_STATEMENT_FETCH_RETRY_LIMIT;
-        }
-
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_STATEMENT_ATTEMPT_AND_RETRY_LIMITS,
-            [
-                'merchant_id'         => $merchantId,
-                'channel'             => $this->channel,
-                'account_number'      => $this->accountNumber,
-                'attempt_limit'       => $attemptLimit,
-                'retry_limit'         => $statementRetryLimit,
-            ]);
+        list($attemptLimit, $statementRetryLimit) = $this->setAttemptLimitAndRetryLimit();
 
         $recordNumber = 1;
 
@@ -326,9 +299,320 @@ class Gateway extends BaseProcessor
         }
     }
 
+    protected function setAttemptLimitAndRetryLimit()
+    {
+        $merchantId = $this->basDetails->getMerchantId();
+
+        // TODO: This whole thing needs to be re-looked at. How we fetch the details.
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_SPECIAL_ATTEMPT_LIMIT,
+            $this->mode
+        );
+
+        if ($variant === 'on')
+        {
+            $attemptLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT]);
+        }
+
+        if (empty($attemptLimit) === true)
+        {
+            $attemptLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT]);
+        }
+
+        if (empty($attemptLimit) === true)
+        {
+            $attemptLimit = self::DEFAULT_RBL_STATEMENT_FETCH_ATTEMPT_LIMIT;
+        }
+
+        $statementRetryLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_RETRY_LIMIT]);
+
+        if (empty($statementRetryLimit) === true)
+        {
+            $statementRetryLimit = self::DEFAULT_RBL_STATEMENT_FETCH_RETRY_LIMIT;
+        }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_ATTEMPT_AND_RETRY_LIMITS,
+            [
+                'merchant_id'         => $merchantId,
+                'channel'             => $this->channel,
+                'account_number'      => $this->accountNumber,
+                'attempt_limit'       => $attemptLimit,
+                'retry_limit'         => $statementRetryLimit,
+            ]);
+
+        return [$attemptLimit, $statementRetryLimit];
+    }
+
+    protected function sendRequestAndGetResponseV2(array $input)
+    {
+        //
+        // Since there could be a lot of data, currently, we are fetching only
+        // 3 times and let the remaining run in the next run. Should fix this logic.
+        //
+        $attemptCount = 0;
+
+        // Retry logic is placed to retry when gateway exceptions are caught. Retry limit is in place for upper bound.
+        $statementRetry = 0;
+
+        $isRetry = false;
+
+        $formattedResponse = [];
+
+        $finalFormattedResponse = [];
+
+        // TODO: This whole thing needs to be re-looked at. How we fetch the details.
+
+        // request obtained before while loop. Apart from from_date, to_date, bucket_number all other request data is constant.
+        $requestData = $this->getRequestDataForMozartV2($input);
+
+        list($attemptLimit, $statementRetryLimit) = $this->setAttemptLimitAndRetryLimit();
+
+        $paginationKey = $this->basDetails->getPaginationKey();
+
+        do
+        {
+            $paginationKey = last($formattedResponse) ? last($formattedResponse)[BasDetails\Entity::PAGINATION_KEY]: $paginationKey;
+
+            // Rbl api supports 2 formats of requests.
+            //     1. using from_date and to_date in api request
+            //     2. using next_key in api request.
+            // If for a merchant pagination key is not available, we use 1st format else 2nd format is used.
+            // Bank will be returning next_key in every successful api call.
+            $this->selectApiAndModifyRequest($requestData, $paginationKey, $isRetry);
+
+            try
+            {
+                $bankResponse = $this->app->mozart->sendMozartRequest(self::MOZART_NAMESPACE,
+                                                                      $this->getChannel(),
+                                                                      self::MOZART_ACTION,
+                                                                      $requestData,
+                                                                      $this->version);
+
+                $this->modifyBankResponseV2($bankResponse);
+
+                $this->validateMozartResponseV2($bankResponse);
+            }
+            catch (\Throwable $ex)
+            {
+                if ($ex instanceof Exception\GatewayErrorException)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED_V2,
+                        [
+                            Entity::ACCOUNT_NUMBER      => $this->accountNumber,
+                            Entity::CHANNEL             => $this->channel,
+                        ]);
+
+                    $statementRetry++ ;
+
+                    if ($statementRetry <= $statementRetryLimit )
+                    {
+                        $isRetry = true;
+
+                        $fetchMore = true;
+
+                        continue;
+                    }
+                }
+                if ($ex instanceof Exception\BadRequestValidationFailureException)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::BANKING_ACCOUNT_STATEMENT_INVALID_MOZART_RESPONSE_V2,
+                        [
+                            Entity::ACCOUNT_NUMBER      => $this->accountNumber,
+                            Entity::CHANNEL             => $this->channel,
+                            RequestResponseFields::DATA => $bankResponse ?? [],
+                        ]);
+                }
+
+                throw $ex;
+            }
+
+            $isRetry = false;
+
+            $formattedResponse = $this->getFormattedResponseV2($bankResponse[Fields::DATA]);
+
+            if (count($formattedResponse) > 0)
+            {
+                $formattedResponse[count($formattedResponse) - 1][BasDetails\Entity::PAGINATION_KEY] =
+                    $bankResponse[Fields::DATA][Fields::FETCH_ACCOUNT_STATEMENT_RESPONSE][Fields::HEADER][Fields::NEXT_KEY];
+            }
+
+            $finalFormattedResponse = array_merge($finalFormattedResponse, $formattedResponse);
+
+            $attemptCount++;
+
+            $fetchMore = $this->hasMoreDataV2(count($formattedResponse), $requestData);
+
+        } while (($fetchMore === true) and ($attemptCount < $attemptLimit));
+
+        // Adding a dispatch delay of 120 seconds as account statement process takes
+        // around 1 min for processing and save.
+        if (count($formattedResponse) == 5000)
+        {
+            $delay = self::RBL_ACCOUNT_STATEMENT_DISPATCH_DELAY;
+
+            (new BankingAccountStatementCore)->dispatchBankingAccountStatementJob($this->channel, $this->accountNumber, $delay);
+        }
+
+        return $finalFormattedResponse;
+    }
+
+    protected function hasMoreDataV2(int $numberTransactions, array $request)
+    {
+        if ($numberTransactions == 5000)
+        {
+            return true;
+        }
+
+        if (array_key_exists(Fields::NEXT_KEY, $request[Fields::ATTEMPT]) === false)
+        {
+            $previousStatementEndTime = $this->getTimestampFromDateString($request[Fields::ATTEMPT][Fields::TO_DATE]);
+
+            if ($previousStatementEndTime < Carbon::today(Timezone::IST)->getTimestamp())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Rbl V2 api supports 2 formats of requests.
+    //     1. using from_date and to_date in api request
+    //     2. using next_key in api request.
+    // If for a merchant pagination key is not available, we use 1st format else 2nd format is used.
+    // Bank will be returning next_key in every successful api call.
+    protected function selectApiAndModifyRequest(array & $request, $paginationKey, bool $isRetry = false)
+    {
+        // $isRetry is set when a request fails and we want to retry the same request. In such scenario same request is returned.
+        if ($isRetry === true)
+        {
+            return;
+        }
+
+        if (empty($paginationKey) === false)
+        {
+            $request[Fields::ATTEMPT][Fields::NEXT_KEY] = $paginationKey;
+
+            unset($request[Fields::ATTEMPT][Fields::TO_DATE]);
+
+            unset($request[Fields::ATTEMPT][Fields::FROM_DATE]);
+
+            return;
+        }
+
+        $secondsPerDay = Carbon::HOURS_PER_DAY * Carbon::MINUTES_PER_HOUR * Carbon::SECONDS_PER_MINUTE;
+
+        // Bank has kept a constraint that max difference between from_date and to_date can be 365 days.
+        $allowedDateDiff = 365 * $secondsPerDay;
+
+        $statementEndTime = Carbon::now()->getTimestamp();
+
+        // created at of bas details table will be used in case of newly onboarded merchant.
+        // In such a case fetching statement from 2 months before to ensure we get all data.
+        $statementStartTime = $this->basDetails->getCreatedAt() - 60 * $secondsPerDay;
+
+        if (array_key_exists(Fields::TO_DATE, $request[Fields::ATTEMPT]) === true)
+        {
+            $statementStartTime = $this->getTimestampFromDateString($request[Fields::ATTEMPT][Fields::TO_DATE]) + $secondsPerDay;
+        }
+        else
+        {
+            $bankTransaction = $this->getLastBankTransaction();
+
+            if (empty($bankTransaction) === false)
+            {
+                $statementStartTime = $bankTransaction->getTransactionDate();
+
+                // from date should be one day before the txn date of the last record.
+                // This came up in rbl incident: https://razorpay.slack.com/archives/CM9230B5Y/p1615457898201700
+                $statementStartTime -= $secondsPerDay;
+            }
+        }
+
+        $request[Fields::ATTEMPT][Fields::FROM_DATE] = $this->getDateTimeStringFromTimestamp(
+            $statementStartTime,
+            self::STATEMENT_START_TIME_DATE_FORMAT_V2);
+
+        $request[Fields::ATTEMPT][Fields::TO_DATE] = $this->getDateTimeStringFromTimestamp(
+            min($statementEndTime, $statementStartTime + $allowedDateDiff),
+            self::STATEMENT_START_TIME_DATE_FORMAT_V2);
+    }
+
+    protected function modifyBankResponseV2(array & $response)
+    {
+        $encodedTxnDetails = $response[Fields::DATA][Fields::FETCH_ACCOUNT_STATEMENT_RESPONSE]
+                               [Fields::ACCOUNT_STATEMENT_DATA][Fields::FILE_DATA];
+
+        $decodedTxnDetails = [];
+
+        // when no records are found, the file data field is empty.
+        if ($encodedTxnDetails === null)
+        {
+            $response[Fields::DATA][Fields::FETCH_ACCOUNT_STATEMENT_RESPONSE]
+                     [Fields::ACCOUNT_STATEMENT_DATA][Fields::FILE_DATA] = $decodedTxnDetails;
+            return;
+        }
+
+        // bank sends base64 encoded data of transactions.
+        $decodedTxnDetailsString = base64_decode($encodedTxnDetails);
+
+        $transactionsData = explode("\n",$decodedTxnDetailsString);
+
+        // always first line is list of fields, hence removing that from further processing.
+        if($transactionsData[0] === self::ACCOUNT_STATEMENT_V2_BANK_RESPONSE_HEADER_LINE)
+        {
+            unset($transactionsData[0]);
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException("response header line incorrect", null, $transactionsData[0]);
+        }
+
+        foreach ($transactionsData as $transactionData)
+        {
+            $decodedTransaction = explode("," , $transactionData);
+
+            //there should be 9 fields for every transaction.
+            if (sizeof($decodedTransaction) !== 9)
+            {
+                throw new Exception\BadRequestValidationFailureException("number of fields in a statement row not equal to 9", null, $transactionData);
+            }
+
+            // mapping from field names rbl use to that used in rzp.
+            $transactionDetail[Fields::TRANSACTION_ID_RESPONSE]   = $decodedTransaction[0];    // TRAN_ID
+            $transactionDetail[Fields::TRANSACTION_SERIAL_NUMBER] = $decodedTransaction[1];    // PTSN_NUM
+            $transactionDetail[Fields::TRANSACTION_DATE]          = $decodedTransaction[2];    // TRAN_DATE
+            $transactionDetail[Fields::TRANSACTION_POSTED_DATE]   = $decodedTransaction[3];    // PSTD_DATE
+            $transactionDetail[Fields::TRANSACTION_CATEGORY]      = $decodedTransaction[4];    // TRAN_TYPE
+            $transactionDetail[Fields::TRANSACTION_TYPE]          = $decodedTransaction[5];    // C/D
+            $transactionDetail[Fields::TRANSACTION_DESCRIPTION]   = $decodedTransaction[6];    // TRAN_PARTICULAR
+            $transactionDetail[Fields::TRANSACTION_AMOUNT]        = $decodedTransaction[7];    // TRAN_AMT
+            $transactionDetail[Fields::TRANSACTION_BALANCE]       = $decodedTransaction[8];    // TRAN_BALANCE
+
+            array_push($decodedTxnDetails , $transactionDetail);
+        }
+
+        $response[Fields::DATA][Fields::FETCH_ACCOUNT_STATEMENT_RESPONSE]
+                 [Fields::ACCOUNT_STATEMENT_DATA][Fields::FILE_DATA] = $decodedTxnDetails;
+    }
+
     protected function validateMozartResponse(array $response)
     {
         (new Validator)->validateInput('rbl_response', $response['data']);
+    }
+
+    protected function validateMozartResponseV2(array $response)
+    {
+        (new Validator)->validateInput('rbl_statement_fetch_response_v2', $response['data']);
     }
 
     protected function getRequestDataForMozart(array $input, array $lastTransaction)
@@ -359,7 +643,29 @@ class Gateway extends BaseProcessor
 
         return $data;
     }
+    protected function getRequestDataForMozartV2(array $input)
+    {
+        /** @var BankingAccountEntity $bankingAccount */
+        $bankingAccount = $this->repo->banking_account->findByAccountNumberAndChannel($this->accountNumber,
+            $this->channel);
 
+        return [
+            Fields::ATTEMPT => [
+                Fields::ID                          => (string) Carbon::now()->timestamp,
+                Fields::TRANSACTION_TYPE            => TransactionType::BOTH,
+            ],
+            Fields::SOURCE_ACCOUNT => [
+                Fields::ACCOUNT_NUMBER              => $this->accountNumber,
+                Fields::CREDENTIALS => [
+                    Fields::AUTH_USERNAME           => $bankingAccount->getUsername(),
+                    Fields::AUTH_PASSWORD           => $bankingAccount->getPassword(),
+                    Fields::CLIENT_ID               => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_ID),
+                    Fields::CLIENT_SECRET           => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_SECRET),
+                    Fields::CORP_ID                 => $bankingAccount->getReference1(),
+                ]
+            ]
+        ];
+    }
     /**
      * Check last txn in BankingAccountStatement
      * If found, fetch lastTxn timestamp
@@ -387,6 +693,8 @@ class Gateway extends BaseProcessor
             // This came up in rbl incident: https://razorpay.slack.com/archives/CM9230B5Y/p1615457898201700
             $startTime -= $secondsInDay;
         }
+
+//        $startTime = 1606312668;
 
         $startTime = $this->getDateTimeStringFromTimestamp($startTime, self::STATEMENT_START_TIME_DATE_FORMAT);
 
@@ -548,6 +856,102 @@ class Gateway extends BaseProcessor
         }
 
         return $transactions;
+    }
+
+    public function getFormattedResponseV2(array $responseData)
+    {
+        $responseBody = $responseData[Fields::FETCH_ACCOUNT_STATEMENT_RESPONSE][Fields::ACCOUNT_STATEMENT_DATA];
+
+        $transactionsData = $responseBody[Fields::FILE_DATA] ?? [];
+
+        $transactions = [];
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_RESPONSE_COUNT_V2,
+            [
+                Entity::ACCOUNT_NUMBER => $this->accountNumber,
+                Entity::CHANNEL        => $this->channel,
+                'txn_count'            => count($transactionsData),
+            ]);
+
+        foreach ($transactionsData as $transactionData)
+        {
+            //
+            // Logging it here even though it's logged in Mozart Service since that
+            // log is most probably going to be truncated due to large amount of data.
+            //
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_TRANSACTION_DATA_V2, $transactionData);
+
+            $transactions[] = [
+                Entity::CHANNEL             => $this->getChannel(),
+                Entity::ACCOUNT_NUMBER      => $this->accountNumber,
+                Entity::BANK_TRANSACTION_ID => $this->getBankTransactionIdFromResponse($transactionData),
+                Entity::BANK_SERIAL_NUMBER  => $this->getSerialNumberFromResponse($transactionData),
+                Entity::AMOUNT              => $this->getAmountFromResponseV2($transactionData),
+                Entity::CURRENCY            => Currency::INR,
+                Entity::TYPE                => $this->getTypeFromResponseV2($transactionData),
+                Entity::DESCRIPTION         => $this->getDescriptionFromResponseV2($transactionData),
+                Entity::CATEGORY            => $this->getCategoryFromResponse($transactionData),
+                Entity::BALANCE             => $this->getBalanceFromResponseV2($transactionData),
+                Entity::BALANCE_CURRENCY    => Currency::INR,
+                Entity::POSTED_DATE         => $this->getPostedDateFromResponse($transactionData),
+                Entity::TRANSACTION_DATE    => $this->getTransactionDateFromResponseV2($transactionData),
+            ];
+        }
+
+        return $transactions;
+    }
+
+    protected function getAmountFromResponseV2(array $transaction): int
+    {
+        $amount = $transaction[Fields::TRANSACTION_AMOUNT];
+
+        $amount = intval(number_format($amount * 100, 0, '.', ''));
+
+        return $amount;
+    }
+
+    public function getTypeFromResponseV2(array $transaction): string
+    {
+        $type = $transaction[Fields::TRANSACTION_TYPE];
+
+        if ($type === TransactionType::CREDIT)
+        {
+            return Type::CREDIT;
+        }
+        else if ($type === TransactionType::DEBIT)
+        {
+            return Type::DEBIT;
+        }
+
+        throw new Exception\IntegrationException(
+            "Invalid txnType found as $type",
+            null,
+            [
+                'bank_ref_no'   => $transaction[Fields::TRANSACTION_ID_RESPONSE],
+            ]);
+    }
+
+    protected function getDescriptionFromResponseV2($transaction)
+    {
+        return $transaction[Fields::TRANSACTION_DESCRIPTION];
+    }
+
+    protected function getBalanceFromResponseV2(array $transaction): int
+    {
+        $amount = $transaction[Fields::TRANSACTION_BALANCE];
+
+        $amount = intval(number_format($amount * 100, 0, '.', ''));
+
+        return $amount;
+    }
+
+    protected function getTransactionDateFromResponseV2(array $transaction)
+    {
+        $timestamp = $this->getTimestampFromDateString(
+            $transaction[Fields::TRANSACTION_DATE]);
+
+        return $timestamp;
     }
 
     protected function allowRecordToSave(Carbon $requestTime, int $offset, array $transactionData)

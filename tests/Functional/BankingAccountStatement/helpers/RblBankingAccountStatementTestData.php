@@ -144,6 +144,95 @@ return [
         ],
     ],
 
+
+    'testRblAccountStatementV2ApiCase1' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'account_number' => '2224440041626905',
+                'channel'        => 'rbl'
+            ],
+        ],
+    ],
+
+    'testRblAccountStatementV2ApiIncorrectRequestDetails' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR,
+        ],
+    ],
+
+    'testRblAccountStatementV2ApiEmptyFieldInResponse' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'message'             => 'The FetchAccStmtRes.AccStmtData.File_Data.0.pstdDate field is required.'
+        ],
+    ],
+
+    'testRblAccountStatementV2ApiMissingFieldInResponse' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'message'             => 'number of fields in a statement row not equal to 9'
+        ],
+    ],
+
     'testRblAccountStatementCase6' => [
         'request'  => [
             'method'  => 'POST',

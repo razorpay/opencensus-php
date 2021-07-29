@@ -78,11 +78,16 @@ class Gateway extends BaseProcessor
     /** @var BasDetails\Entity */
     protected $basDetails;
 
-    public function __construct(string $channel, string $accountNumber, BasDetails\Entity $basDetails)
+    public function __construct(string $channel,
+                                string $accountNumber,
+                                BasDetails\Entity $basDetails,
+                                $version)
     {
         $this->setSource(Source::FETCH_API);
 
         $this->basDetails = $basDetails;
+
+        $this->setVersion($version);
 
         parent::__construct($channel, $accountNumber);
     }

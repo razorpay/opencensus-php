@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccountStatement\Processor\Rbl;
 
 use RZP\Base;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccountStatement\Processor\Rbl\RequestResponseFields as F;
 
 class Validator extends Base\Validator
@@ -43,4 +44,65 @@ class Validator extends Base\Validator
         self::AMOUNT. '.' . F::CURRENCY_CODE                => 'required|string|in:INR',
         self::AMOUNT . '.' . F::AMOUNT_VALUE                => 'required|numeric|min:0',
     ];
+
+    const RESPONSE_HEADER        = F::FETCH_ACCOUNT_STATEMENT_RESPONSE . '.' . F::HEADER;
+    const ACCOUNT_STATEMENT_DATA = F::FETCH_ACCOUNT_STATEMENT_RESPONSE . '.' . F::ACCOUNT_STATEMENT_DATA;
+    const FILE_DATA              = self::ACCOUNT_STATEMENT_DATA . '.' . F::FILE_DATA;
+
+    protected static $rblStatementFetchResponseV2Rules = [
+        F::FETCH_ACCOUNT_STATEMENT_RESPONSE                    => 'required',
+
+        self::RESPONSE_HEADER                                  => 'required|array',
+        self::RESPONSE_HEADER . '.' . F::STATUS                => 'required|string|in:Success,Failure',
+        self::RESPONSE_HEADER . '.' . F::STATUS_DESCRIPTION    => 'sometimes|string',
+
+        self::ACCOUNT_STATEMENT_DATA                           => 'required|array',
+
+        self::FILE_DATA                                        => 'present|array',
+        self::FILE_DATA . '.*.' . F::TRANSACTION_ID_RESPONSE   => 'required|string',
+        self::FILE_DATA . '.*.' . F::TRANSACTION_SERIAL_NUMBER => 'required|integer',
+        self::FILE_DATA . '.*.' . F::TRANSACTION_DATE          => 'required',
+        self::FILE_DATA . '.*.' . F::TRANSACTION_POSTED_DATE   => 'required|filled|string',
+        self::FILE_DATA . '.*.' . F::TRANSACTION_CATEGORY      => 'required|string',
+        self::FILE_DATA . '.*.' . F::TRANSACTION_TYPE          => 'required|alpha|max:1',
+        self::FILE_DATA . '.*.' . F::TRANSACTION_DESCRIPTION   => 'required|string',
+        self::FILE_DATA . '.*.' . F::TRANSACTION_AMOUNT        => 'required|numeric|min:0',
+        self::FILE_DATA . '.*.' . F::TRANSACTION_BALANCE       => 'required|numeric',
+    ];
+
+    protected static $rblStatementFetchResponseValidators = [
+        'next_key'
+    ];
+
+    protected function validateNextKey(array $input)
+    {
+        $header = $input[F::FETCH_ACCOUNT_STATEMENT_RESPONSE][F::HEADER];
+
+        // Next key is sent in response by Mozart as mandatory field.
+        // If bank doesn't send next key, then we get null value for this field.
+        if (array_key_exists(F::NEXT_KEY, $header) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                "Next Key doesn't exist",
+                F::NEXT_KEY,
+                $header
+            );
+        }
+
+        if (is_string($header[F::NEXT_KEY]) === false)
+        {
+            // Next key can be null in case of no records found.
+            if ((array_key_exists(F::STATUS_DESCRIPTION, $header) === true) and
+                ($header[F::STATUS_DESCRIPTION] === "No Records Found"))
+            {
+                return;
+            }
+
+            throw new BadRequestValidationFailureException(
+                'Next Key is invalid',
+                F::NEXT_KEY,
+                $header
+            );
+        }
+    }
 }

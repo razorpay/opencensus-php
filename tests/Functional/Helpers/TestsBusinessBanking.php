@@ -323,6 +323,7 @@ trait TestsBusinessBanking
                                            string $allowVAToVAPayouts = 'control',
                                            string $allowWalletAccountAmazonPay = 'on',
                                            string $fundAccountDuplicateViaUniqueHash = 'on',
+                                           string $rblBASFetchV2 = 'off',
                                            string $enableQueuedPayoutsViaPayoutsService = 'control',
                                            string $payoutsToFtsSync = 'off')
     {
@@ -353,6 +354,7 @@ trait TestsBusinessBanking
                     $allowVAToVAPayouts,
                     $allowWalletAccountAmazonPay,
                     $fundAccountDuplicateViaUniqueHash,
+                    $rblBASFetchV2,
                     $enableQueuedPayoutsViaPayoutsService,
                     $payoutsToFtsSync
                 )
@@ -415,6 +417,11 @@ trait TestsBusinessBanking
                     if ($feature === 'fund_account_duplicate_check_via_unique_hash')
                     {
                         return strtolower($fundAccountDuplicateViaUniqueHash);
+                    }
+
+                    if ($feature === 'rbl_v2_bas_api_integration')
+                    {
+                        return strtolower($rblBASFetchV2);
                     }
 
                     if ($feature === 'enable_queued_payouts_via_payouts_service')

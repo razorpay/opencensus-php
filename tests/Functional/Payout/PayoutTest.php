@@ -226,6 +226,7 @@ class PayoutTest extends OAuthTestCase
                                    'on',
                                    'off',
                                    'off',
+                                   'control',
                                    'on');
 
         $this->app['rzp.mode'] = EnvMode::TEST;

@@ -142,19 +142,22 @@ class Core extends Base\Core
 
                     $this->repo->saveOrFail($bankingAccount);
 
+                    /** @var BASDetails\Entity $basDetailEntity */
                     $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
 
                     $basDetailEntity->setLastStatementAttemptAt();
 
                     $this->repo->saveOrFail($basDetailEntity);
 
-                    $merchant = $bankingAccount->merchant;
+                    $merchant = $basDetailEntity->merchant;
 
-                    $processor = $this->getProcessor($channel, $accountNumber, $basDetailEntity);
+                    $accountStatementApiVersion = $this->getAccountStatementApiVersion($basDetailEntity);
+
+                    $processor = $this->getProcessor($channel, $accountNumber, $basDetailEntity, $accountStatementApiVersion);
 
                     $accountStatementDetails = $processor->fetchAccountStatementDetails($input);
 
-                    $this->processAccountStatement($accountStatementDetails, $accountNumber, $merchant, $processor, $channel);
+                    $this->processAccountStatement($accountStatementDetails, $processor, $basDetailEntity);
 
                     $bankingAccount->balance->updateLastFetchedAt();
                 },
@@ -185,6 +188,29 @@ class Core extends Base\Core
         return ['channel' => $channel, 'account_number' => $accountNumber];
     }
 
+    // Select account statement api's version. This will be passed to gateway in constructor to choose required api.
+    public function getAccountStatementApiVersion(BASDetails\Entity $basDetails)
+    {
+        $accountStatementApiVersion = Entity::ACCOUNT_STATEMENT_FETCH_API_VERSION_1;
+
+        if ($basDetails->getchannel() === Channel::RBL)
+        {
+            // razorx experiment to decide the statement fetch flow to be old or new.
+            $accStmtVariant = $this->app->razorx->getTreatment(
+                $basDetails->merchant->getId(),
+                Merchant\RazorxTreatment::RBL_V2_BAS_API_INTEGRATION,
+                $this->mode
+            );
+
+            if (strtolower($accStmtVariant) === "on")
+            {
+                $accountStatementApiVersion = Entity::ACCOUNT_STATEMENT_FETCH_API_VERSION_2;
+            }
+        }
+
+        return $accountStatementApiVersion;
+    }
+
     public function fetchAccountStatementV2(array $input)
     {
         $channel = array_pull($input, Entity::CHANNEL);
@@ -212,13 +238,15 @@ class Core extends Base\Core
 
                     $merchant = $basDetailEntity->merchant;
 
-                    $processor = $this->getProcessor($channel, $accountNumber, $basDetailEntity);
+                    $accountStatementApiVersion = $this->getAccountStatementApiVersion($basDetailEntity);
+
+                    $processor = $this->getProcessor($channel, $accountNumber, $basDetailEntity, $accountStatementApiVersion);
 
                     $input[Entity::MERCHANT_ID] = $merchant->getId();
 
                     $bankTransactions = $processor->fetchAccountStatementDetails($input);
 
-                    $this->saveAccountStatementDetails($bankTransactions, $merchant, $channel, $accountNumber, $processor);
+                    $this->saveAccountStatementDetails($bankTransactions, $merchant, $channel, $accountNumber, $processor, $basDetailEntity);
 
                     $basDetailEntity->balance->updateLastFetchedAt();
                 },
@@ -339,7 +367,11 @@ class Core extends Base\Core
      * @throws Exception\BadRequestException
      * We will be saving the records in bulk and with a limit of 200 records in 1 go
      */
-    public function saveAccountStatementDetails(array $bankTransactions, $merchant, string $channel, string $accountNumber, Processor\Base $processor)
+    public function saveAccountStatementDetails(array $bankTransactions,
+                                                $merchant, string $channel,
+                                                string $accountNumber,
+                                                Processor\Base $processor,
+                                                BASDetails\Entity  $basDetails)
     {
         $bankTransactions = $processor->checkForDuplicateTransactions(
                                         $bankTransactions,
@@ -351,11 +383,19 @@ class Core extends Base\Core
         $previousClosingBalance = $lastBankTxn == null ? 0 : $lastBankTxn->getBalance();
 
         $basEntitiesToSave = [];
+        $paginationKeysBankTransactions = [];
         $totalRecordCount = 0;
         $initialOffset = 0;
 
         foreach ($bankTransactions as $bankTransaction)
         {
+            if (array_key_exists(BASDetails\Entity::PAGINATION_KEY, $bankTransaction) === true)
+            {
+                $paginationKeysBankTransactions[$totalRecordCount] = $bankTransaction;
+
+                unset($bankTransaction[BASDetails\Entity::PAGINATION_KEY]);
+            }
+
             $basEntity = (new Entity)->build($bankTransaction);
 
             if (empty($basEntity->getUtr()) === true)
@@ -425,7 +465,15 @@ class Core extends Base\Core
             $limit = self::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE_DEFAULT;
         }
 
-        $this->repo->transaction(function() use ($initialOffset, $totalRecordCount, $basEntitiesToSave, $limit, $accountNumber) {
+        $this->repo->transaction(function() use (
+            $initialOffset,
+            $totalRecordCount,
+            $basEntitiesToSave,
+            $limit,
+            $accountNumber,
+            $paginationKeysBankTransactions,
+            $basDetails)
+        {
             while ($initialOffset < $totalRecordCount)
             {
                 $startTime = microtime(true);
@@ -446,6 +494,39 @@ class Core extends Base\Core
                     ]);
 
                 $initialOffset += $limit;
+
+                $paginationKeyTxnDetails = [];
+
+                foreach ($paginationKeysBankTransactions as $key => $paginationKeysBankTransaction)
+                {
+                    if ($key < $initialOffset)
+                    {
+                        $paginationKeyTxnDetails = $paginationKeysBankTransaction;
+
+                        unset($paginationKeysBankTransactions[$key]);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if (empty($paginationKeyTxnDetails) === false)
+                {
+                    $basDetails->setPaginationKey($paginationKeyTxnDetails[BASDetails\Entity::PAGINATION_KEY]);
+
+                    $this->repo->saveOrFail($basDetails);
+
+                    $this->trace->info(
+                        TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_UPDATE_PAGINATION_KEY,
+                        [
+                            BASDetails\Entity::PAGINATION_KEY => $basDetails->getPaginationKey(),
+                            BASDetails\Entity::ACCOUNT_NUMBER => $basDetails->getAccountNumber(),
+                            Entity::BANK_TRANSACTION_ID       => $paginationKeysBankTransaction[Entity::BANK_TRANSACTION_ID],
+                            Entity::BANK_SERIAL_NUMBER        => $paginationKeysBankTransaction[Entity::BANK_SERIAL_NUMBER],
+                            Entity::POSTED_DATE               => $paginationKeysBankTransaction[Entity::POSTED_DATE],
+                        ]);
+                }
             }
         });
 
@@ -648,33 +729,32 @@ class Core extends Base\Core
         return new $statementGenerator($accountNumber, $channel, $fromDate, $toDate);
     }
 
-    protected function getProcessor(string $channel, string $accountNumber, BASDetails\Entity $basDetailEntity = null): Processor\Base
+    protected function getProcessor(string $channel, string $accountNumber, BASDetails\Entity $basDetailEntity = null, string $version = "v1"): Processor\Base
     {
         $processor = __NAMESPACE__ . '\\' . 'Processor';
 
         $processor .= '\\' . studly_case($channel) . '\\' . 'Gateway';
 
-        return new $processor($channel, $accountNumber, $basDetailEntity);
+        return new $processor($channel, $accountNumber, $basDetailEntity, $version);
     }
 
     /**
-     * @param array           $bankTransactions
-     * @param string          $accountNumber
-     * @param Merchant\Entity $merchant
+     * @param array             $bankTransactions
      *
      * $processor is gateway depending on channel.
-     * @param                 $processor
-     * @param string          $channel
+     * @param                   $processor
+     * @param BASDetails\Entity $basDetails
      *
      * @throws Exception\BadRequestException
      */
     protected function processAccountStatement(
         array $bankTransactions,
-        string $accountNumber,
-        Merchant\Entity $merchant,
         $processor,
-        string $channel)
+        BASDetails\Entity $basDetails)
     {
+        $merchant = $basDetails->merchant;
+        $accountNumber = $basDetails->getAccountNumber();
+
         $bankTxnCount = count($bankTransactions);
         $skippedCount = 0;
 
@@ -689,6 +769,7 @@ class Core extends Base\Core
             $bankTxnDate    = $bankTransaction[Entity::TRANSACTION_DATE];
             $bankTxnChannel = $bankTransaction[Entity::CHANNEL];
 
+            // TODO: add check on serial number also before go live
             $txnExists = $this->repo->banking_account_statement->bankTransactionExists(
                 $bankTxnId,
                 $accountNumber,
@@ -713,7 +794,31 @@ class Core extends Base\Core
                 continue;
             }
 
+            $paginationKey = null;
+
+            if (array_key_exists(BASDetails\Entity::PAGINATION_KEY, $bankTransaction) === true)
+            {
+                $paginationKey = array_pull($bankTransaction, BASDetails\Entity::PAGINATION_KEY);
+            }
+
             $this->saveAccountStatement($bankTransaction, $merchant, $processor);
+
+            if ($paginationKey !== null)
+            {
+                $basDetails->setPaginationKey($paginationKey);
+
+                $this->repo->saveOrFail($basDetails);
+
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_UPDATE_PAGINATION_KEY,
+                    [
+                        BASDetails\Entity::PAGINATION_KEY => $basDetails->getPaginationKey(),
+                        BASDetails\Entity::ACCOUNT_NUMBER => $basDetails->getAccountNumber(),
+                        Entity::BANK_TRANSACTION_ID       => $bankTxnId,
+                        Entity::BANK_SERIAL_NUMBER        => $bankTxnSrlNo,
+                        Entity::TRANSACTION_DATE          => $bankTxnDate,
+                    ]);
+            }
 
             $closingBalance = $bankTransaction[Entity::BALANCE];
         }

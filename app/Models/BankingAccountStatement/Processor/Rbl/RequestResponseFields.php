@@ -26,6 +26,7 @@ class RequestResponseFields
     const TRANSACTION_ID                    = 'transaction_id';
     const SERIAL_NUMBER                     = 'serial_number';
     const BALANCE                           = 'balance';
+    const NEXT_KEY                          = 'next_key';
 
     const DATA                              = 'data';
     const HEADER                            = 'Header';
@@ -47,4 +48,11 @@ class RequestResponseFields
     const TRANSACTION_SERIAL_NUMBER         = 'txnSrlNo';
     const INSTRUMENT_ID                     = 'instrumentId';
     const TRANSACTION_CATEGORY              = 'txnCat';
+
+    const FETCH_ACCOUNT_STATEMENT_RESPONSE  = 'FetchAccStmtRes';
+    const FILE_DATA                         = 'File_Data';
+    const ACCOUNT_STATEMENT_DATA            = 'AccStmtData';
+    const TOTAL_BUCKET_NUMBER               = 'total_bucket';
+    const STATUS_DESCRIPTION                = 'Status_Desc';
+
 }

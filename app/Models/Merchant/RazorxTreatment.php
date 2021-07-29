@@ -247,6 +247,8 @@ final class RazorxTreatment
 
     const API_EMAILS_MAILGUN_DRIVER = 'api_emails_mailgun_driver';
 
+    const RBL_V2_BAS_API_INTEGRATION = 'rbl_v2_bas_api_integration';
+
     // This is to be used to block VA to VA payouts
     const RX_ALLOW_VA_TO_VA_PAYOUTS = 'rx_allow_va_to_va_payouts';
 

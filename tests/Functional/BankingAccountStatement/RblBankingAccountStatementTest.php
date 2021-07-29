@@ -200,6 +200,29 @@ class RblBankingAccountStatementTest extends TestCase
         Queue::assertPushed(BankingAccountStatementJob::class, 1);
     }
 
+    protected function setRazorxMockForBankingAccountStatementV2Api()
+    {
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'off',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'control',
+            'control',
+            'control',
+            'on'
+        );
+    }
     /**
      * Case where the response from RBL is success
      */
@@ -505,6 +528,420 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertNotNull($bas);
 
         $this->assertEquals(21450, $bas->getBalance());
+    }
+
+    /**
+     * Case where the response from RBL is success.
+     *
+     * Rbl api supports 2 formats of requests.
+     * 1. using from_date and to_date in api request
+     * 2. using next_key in api request.
+     *
+     * This test case uses 1st format.
+     */
+    public function testRblAccountStatementV2ApiCase1()
+    {
+        $this->setRazorxMockForBankingAccountStatementV2Api();
+
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($this->convertRblV1ResponseToV2Response($mockedResponse));
+
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->ba->cronAuth();
+
+        $this->setupForRblAccountStatement();
+
+        $this->startTest();
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $externalActual = $this->getLastEntity(EntityConstants::EXTERNAL, true);
+
+        $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
+
+        $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
+
+        $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
+
+        $txnActual = $this->txnEntity->toArray();
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
+
+        $basExpected = [
+            BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
+            BasEntity::BANK_TRANSACTION_ID   => 'S807068',
+            BasEntity::TYPE                  => 'debit',
+            BasEntity::AMOUNT                => 10095,
+            BasEntity::BALANCE               => 11355,
+            BasEntity::POSTED_DATE           => 1451937993,
+            BasEntity::TRANSACTION_DATE      => 1451932200,
+            BasEntity::DESCRIPTION           => '123456-Z',
+            BasEntity::CHANNEL               => 'rbl',
+            BasEntity::ENTITY_ID             => $externalId,
+            BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],
+            BasEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($basExpected, $basActual, true);
+
+        $externalExpected = [
+            BasEntity::MERCHANT_ID                => $basActual[BasEntity::MERCHANT_ID],
+            ExternalEntity::BALANCE_ID            => $this->balance->getId(),
+            ExternalEntity::BANK_REFERENCE_NUMBER => $basActual[BasEntity::BANK_TRANSACTION_ID],
+            ExternalEntity::TYPE                  => $basActual[BasEntity::TYPE],
+            ExternalEntity::AMOUNT                => $basActual[BasEntity::AMOUNT],
+            ExternalEntity::CHANNEL               => $basActual[BasEntity::CHANNEL],
+            ExternalEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($externalExpected, $externalActual, true);
+
+        $txnExpected = [
+            TransactionEntity::ID               => $externalTxnId,
+            TransactionEntity::ENTITY_ID        => $externalId,
+            TransactionEntity::TYPE             => 'external',
+            TransactionEntity::DEBIT            => $externalActual[ExternalEntity::AMOUNT],
+            TransactionEntity::CREDIT           => 0,
+            TransactionEntity::AMOUNT           => $externalActual[ExternalEntity::AMOUNT],
+            TransactionEntity::FEE              => 0,
+            TransactionEntity::TAX              => 0,
+            TransactionEntity::PRICING_RULE_ID  => null,
+            TransactionEntity::ON_HOLD          => false,
+            TransactionEntity::SETTLED          => false,
+            TransactionEntity::SETTLED_AT       => null,
+            TransactionEntity::SETTLEMENT_ID    => null,
+        ];
+
+        $this->assertArraySubset($txnExpected, $txnActual, true);
+    }
+
+    /**
+     * Case where the response from RBL is success.
+     *
+     * Rbl api supports 2 formats of requests.
+     * 1. using from_date and to_date in api request
+     * 2. using next_key in api request.
+     *
+     * This test case uses 2nd format.
+     */
+    public function testRblAccountStatementV2ApiUsingNextKey()
+    {
+        $this->setRazorxMockForBankingAccountStatementV2Api();
+
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($this->convertRblV1ResponseToV2Response($mockedResponse));
+
+        $basDetailsBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basDetailsBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+                              $basDetailsBeforeTest[BasDetails\Entity::ID],
+                              [BasDetails\Entity::PAGINATION_KEY => 'initial_pagination_key']);
+
+        $this->ba->cronAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testRblAccountStatementV2ApiCase1'];
+
+        $this->setupForRblAccountStatement();
+
+        $this->startTest();
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $externalActual = $this->getLastEntity(EntityConstants::EXTERNAL, true);
+
+        $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
+
+        $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
+
+        $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
+
+        $txnActual = $this->txnEntity->toArray();
+
+        $basDetailsAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNotNull($basDetailsAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->assertEquals('random_next_key', $basDetailsAfterTest[BasDetails\Entity::PAGINATION_KEY]);
+
+        $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
+
+        $basExpected = [
+            BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
+            BasEntity::BANK_TRANSACTION_ID   => 'S807068',
+            BasEntity::TYPE                  => 'debit',
+            BasEntity::AMOUNT                => 10095,
+            BasEntity::BALANCE               => 11355,
+            BasEntity::POSTED_DATE           => 1451937993,
+            BasEntity::TRANSACTION_DATE      => 1451932200,
+            BasEntity::DESCRIPTION           => '123456-Z',
+            BasEntity::CHANNEL               => 'rbl',
+            BasEntity::ENTITY_ID             => $externalId,
+            BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],
+            BasEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($basExpected, $basActual, true);
+
+        $externalExpected = [
+            BasEntity::MERCHANT_ID                => $basActual[BasEntity::MERCHANT_ID],
+            ExternalEntity::BALANCE_ID            => $this->balance->getId(),
+            ExternalEntity::BANK_REFERENCE_NUMBER => $basActual[BasEntity::BANK_TRANSACTION_ID],
+            ExternalEntity::TYPE                  => $basActual[BasEntity::TYPE],
+            ExternalEntity::AMOUNT                => $basActual[BasEntity::AMOUNT],
+            ExternalEntity::CHANNEL               => $basActual[BasEntity::CHANNEL],
+            ExternalEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($externalExpected, $externalActual, true);
+
+        $txnExpected = [
+            TransactionEntity::ID               => $externalTxnId,
+            TransactionEntity::ENTITY_ID        => $externalId,
+            TransactionEntity::TYPE             => 'external',
+            TransactionEntity::DEBIT            => $externalActual[ExternalEntity::AMOUNT],
+            TransactionEntity::CREDIT           => 0,
+            TransactionEntity::AMOUNT           => $externalActual[ExternalEntity::AMOUNT],
+            TransactionEntity::FEE              => 0,
+            TransactionEntity::TAX              => 0,
+            TransactionEntity::PRICING_RULE_ID  => null,
+            TransactionEntity::ON_HOLD          => false,
+            TransactionEntity::SETTLED          => false,
+            TransactionEntity::SETTLED_AT       => null,
+            TransactionEntity::SETTLEMENT_ID    => null,
+        ];
+
+        $this->assertArraySubset($txnExpected, $txnActual, true);
+    }
+
+    /**
+     * Case where the response from RBL is success.
+     *
+     * Rbl api supports 2 formats of requests.
+     * 1. using from_date and to_date in api request
+     * 2. using next_key in api request.
+     *
+     * This test case uses both the formats successively.
+     */
+    public function testRblAccountStatementV2ApiUsingDatesApiAndNextKeySuccessively()
+    {
+        $this->setRazorxMockForBankingAccountStatementV2Api();
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive('sendRawRequest')
+             ->andReturnUsing(function(array $request) {
+
+                 $requestData = json_decode($request['content'], true);
+
+                 if (array_key_exists('from_date',$requestData['entities']['attempt']) === true)
+                 {
+                     $mockRblResponse =  $this->getRblDataResponse();
+
+                     unset($mockRblResponse['data']['PayGenRes']['Body']['transactionDetails'][1]);
+
+                     return json_encode($this->convertRblV1ResponseToV2Response($mockRblResponse));
+                 }
+
+                 $mockRblResponse =  $this->getRblDataResponse();
+
+                 unset($mockRblResponse['data']['PayGenRes']['Body']['transactionDetails'][0]);
+
+                 $mockRblResponse = $this->convertRblV1ResponseToV2Response($mockRblResponse);
+
+                 $mockRblResponse['data']['FetchAccStmtRes']['Header']['next_key'] = 'too_random_next_key';
+
+                 return json_encode($mockRblResponse);
+             });
+
+        $this->app->instance('mozart', $mock);
+
+        $basDetailsBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basDetailsBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+                              $basDetailsBeforeTest[BasDetails\Entity::ID],
+                              [BasDetails\Entity::CREATED_AT => 1523781340]);
+
+        $this->ba->cronAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testRblAccountStatementV2ApiCase1'];
+
+        $this->setupForRblAccountStatement();
+
+        $this->startTest();
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $externalActual = $this->getLastEntity(EntityConstants::EXTERNAL, true);
+
+        $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
+
+        $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
+
+        $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
+
+        $txnActual = $this->txnEntity->toArray();
+
+        $basDetailsAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNotNull($basDetailsAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->assertEquals('too_random_next_key', $basDetailsAfterTest[BasDetails\Entity::PAGINATION_KEY]);
+
+        $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
+
+        $basExpected = [
+            BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
+            BasEntity::BANK_TRANSACTION_ID   => 'S807068',
+            BasEntity::TYPE                  => 'debit',
+            BasEntity::AMOUNT                => 10095,
+            BasEntity::BALANCE               => 11355,
+            BasEntity::POSTED_DATE           => 1451937993,
+            BasEntity::TRANSACTION_DATE      => 1451932200,
+            BasEntity::DESCRIPTION           => '123456-Z',
+            BasEntity::CHANNEL               => 'rbl',
+            BasEntity::ENTITY_ID             => $externalId,
+            BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],
+            BasEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($basExpected, $basActual, true);
+
+        $externalExpected = [
+            BasEntity::MERCHANT_ID                => $basActual[BasEntity::MERCHANT_ID],
+            ExternalEntity::BALANCE_ID            => $this->balance->getId(),
+            ExternalEntity::BANK_REFERENCE_NUMBER => $basActual[BasEntity::BANK_TRANSACTION_ID],
+            ExternalEntity::TYPE                  => $basActual[BasEntity::TYPE],
+            ExternalEntity::AMOUNT                => $basActual[BasEntity::AMOUNT],
+            ExternalEntity::CHANNEL               => $basActual[BasEntity::CHANNEL],
+            ExternalEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($externalExpected, $externalActual, true);
+
+        $txnExpected = [
+            TransactionEntity::ID               => $externalTxnId,
+            TransactionEntity::ENTITY_ID        => $externalId,
+            TransactionEntity::TYPE             => 'external',
+            TransactionEntity::DEBIT            => $externalActual[ExternalEntity::AMOUNT],
+            TransactionEntity::CREDIT           => 0,
+            TransactionEntity::AMOUNT           => $externalActual[ExternalEntity::AMOUNT],
+            TransactionEntity::FEE              => 0,
+            TransactionEntity::TAX              => 0,
+            TransactionEntity::PRICING_RULE_ID  => null,
+            TransactionEntity::ON_HOLD          => false,
+            TransactionEntity::SETTLED          => false,
+            TransactionEntity::SETTLED_AT       => null,
+            TransactionEntity::SETTLEMENT_ID    => null,
+        ];
+
+        $this->assertArraySubset($txnExpected, $txnActual, true);
+    }
+
+    /**
+     * Case where the no more data is received from RBL
+     **/
+    public function testRblAccountStatementV2ApiNoRecordsFound()
+    {
+        $this->setRazorxMockForBankingAccountStatementV2Api();
+
+        $mockedResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+        $mockedResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $basBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->ba->cronAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testRblAccountStatementV2ApiCase1'];
+
+        $this->startTest();
+
+        $basAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $this->assertEquals($basBeforeTest[BasEntity::ID], $basAfterTest[BasEntity::ID]);
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+    }
+
+    /**
+     * Case where request details are incorrect to RBL
+     */
+    public function testRblAccountStatementV2ApiIncorrectRequestDetails()
+    {
+        $this->setRazorxMockForBankingAccountStatementV2Api();
+
+        $mockedResponse = $this->getRblInvalidDetailsResponse();
+
+        $this->setMozartMockResponse($this->convertRblV1ResponseToV2Response($mockedResponse));
+
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+    }
+
+    /**
+     * Case where a field in base64 encoded response is empty
+     */
+    public function testRblAccountStatementV2ApiEmptyFieldInResponse()
+    {
+        $mockedResponse = $response = $this->getRblDataResponse();
+
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['pstdDate'] = '';
+
+        $this->setRazorxMockForBankingAccountStatementV2Api();
+
+        $this->setMozartMockResponse($this->convertRblV1ResponseToV2Response($mockedResponse));
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Case where a field is missing in base64 encoded response
+     */
+    public function testRblAccountStatementV2ApiMissingFieldInResponse()
+    {
+        $this->setRazorxMockForBankingAccountStatementV2Api();
+
+        $mockedResponse = $this->getRblMissingFieldMalFormedDataV2ApiResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
     }
 
     protected function verifyGeneratedXlsxFile($currentTime)
@@ -3227,6 +3664,53 @@ class RblBankingAccountStatementTest extends TestCase
         $this->makeRequestAndGetContent($request);
     }
 
+    protected function convertRblV1ResponseToV2Response(array $response)
+    {
+        $transactions = array_key_exists('Body', $response['data']['PayGenRes']) ? $response['data']['PayGenRes']['Body']['transactionDetails'] : [];
+
+        $header = $response['data']['PayGenRes']['Header'];
+
+        $header2['Code'] = 200;
+        $header2['next_key'] = null;
+        $header2['TranID'] = $header['TranID'];
+        $header2['Corp_ID'] = $header['Corp_ID'];
+        $header2['Status'] = ucwords(strtolower($header['Status']));
+
+        $transactionHeaderString = 'TRAN_ID,PTSN_NUM,TRAN_DATE,PSTD_DATE,TRAN_TYPE,C/D,TRAN_PARTICULAR,TRAN_AMT,TRAN_BALANCE';
+        $transactionsString = '';
+
+        foreach ($transactions as $transaction)
+        {
+            $transactionsString .= "\n";
+
+            $transactionsString .= $transaction['txnId'] . ',';
+            $transactionsString .= $transaction['txnSrlNo'] . ',';
+            $transactionsString .= $transaction['transactionSummary']['txnDate'] . ',';
+            $transactionsString .= $transaction['pstdDate'] . ',';
+            $transactionsString .= $transaction['txnCat'] . ',';
+            $transactionsString .= $transaction['transactionSummary']['txnType'] . ',';
+            $transactionsString .= $transaction['transactionSummary']['txnDesc'] . ',';
+            $transactionsString .= $transaction['transactionSummary']['txnAmt']['amountValue'] . ',';
+            $transactionsString .= $transaction['txnBalance']['amountValue'];
+        }
+
+        $fileData = null;
+
+        if (empty(trim($transactionsString)) === false)
+        {
+            $fileData = base64_encode($transactionHeaderString . $transactionsString);
+
+            $header2['next_key'] =  'random_next_key';
+        }
+
+        $response['data']['FetchAccStmtRes']['AccStmtData']['File_Data'] = $fileData;
+        $response['data']['FetchAccStmtRes']['Header'] = $header2;
+
+        unset($response['data']['PayGenRes']);
+
+        return $response;
+    }
+
     protected function getRblDataResponse()
     {
         $response = [
@@ -3289,6 +3773,38 @@ class RblBankingAccountStatementTest extends TestCase
                     ],
                     'Signature' => [
                         'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
+    protected function getRblMissingFieldMalFormedDataV2ApiResponse()
+    {
+        $response = [
+            'data' => [
+                'FetchAccStmtRes' => [
+                    'AccStmtData' => [
+                        'File_Data' => "VFJBTl9JRCxQVFNOX05VTSxUUkFOX0RBVEUsUFNURF9EQVRFLFRSQU5fVFlQRSxDL0QsVFJBTl9QQVJUSUNVTEFSLFRSQU5fQU1ULFRSQU5fQkFMQU5DRQogIFM0Mjk2NTUsIDEsMjAxNS0xMi0yOSxUQkksQyxERUJJVCBDQVJEIEFOTlVBTCBGRUUgMjYzNSwxMTQuNTAsMjE0LjUwCiAgUzgwNzA2OCwgMiwyMDE2LTAxLTA1LDIwMTYtMDEtMDUgMDE6MzY6MzMuMDAwLFRDSSxELDEyMzQ1Ni1aLDEwMC45NSwxMTMuNTU==",
+                    ],
+                    'Header' => [
+                        'Corp_ID' => 'RAZORPAY',
+                        'Code' => 200,
+                        'Status' => 'Success',
+                        'TranID' => '1',
+                        'account_no' => "409000768239",
+                        'bucket_no' => 1,
+                        'from_date' => "25-11-2020",
+                        'to_date' =>  "26-11-2020",
+                        'total_bucket' =>  1
+
                     ]
                 ],
             ],
@@ -5363,15 +5879,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->ba->cronAuth();
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
+        $this->mockRazorxTreatment('yesbank', 'off', 'off', 'off', 'on');
 
         $this->dontExpectWebhookEvent('transaction.created');
 

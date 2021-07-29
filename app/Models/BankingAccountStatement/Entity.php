@@ -64,6 +64,10 @@ class Entity extends Base\PublicEntity
     // sample UPI- UPI/120310176379/Test transfer RAZORPAY/razorpayx.
     const UPI_DEBIT_REGEX = '/^(UPI\/)(.*?)(\/)/';
 
+    const ACCOUNT_STATEMENT_FETCH_API_VERSION_1 = 'v1';
+
+    const ACCOUNT_STATEMENT_FETCH_API_VERSION_2 = 'v2';
+
     protected static $sign = 'bas';
 
     protected $entity = 'banking_account_statement';

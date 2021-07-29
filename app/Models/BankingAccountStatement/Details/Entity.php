@@ -29,6 +29,7 @@ class Entity extends Base\PublicEntity
     const STATEMENT_CLOSING_BALANCE_CHANGE_AT = 'statement_closing_balance_change_at';
     const LAST_STATEMENT_ATTEMPT_AT           = 'last_statement_attempt_at';
     const BALANCE_LAST_FETCHED_AT             = 'balance_last_fetched_at';
+    const PAGINATION_KEY                      = 'pagination_key';
 
     const ACCOUNT_NUMBER_LENGTH = 40;
 
@@ -54,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::STATEMENT_CLOSING_BALANCE_CHANGE_AT,
         self::LAST_STATEMENT_ATTEMPT_AT,
         self::BALANCE_LAST_FETCHED_AT,
+        self::PAGINATION_KEY,
     ];
 
     protected $visible = [
@@ -69,6 +71,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_BALANCE_CHANGE_AT,
         self::LAST_STATEMENT_ATTEMPT_AT,
         self::BALANCE_LAST_FETCHED_AT,
+        self::PAGINATION_KEY,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -153,6 +156,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BALANCE_LAST_FETCHED_AT);
     }
 
+    public function getPaginationKey()
+    {
+        return $this->getAttribute(self::PAGINATION_KEY);
+    }
+
     // ============================= END GETTERS ===========================
 
     // ============================= SETTERS ===========================
@@ -182,6 +190,11 @@ class Entity extends Base\PublicEntity
     public function setBalanceLastFetchedAt(int $currentTime)
     {
         $this->setAttribute(self::BALANCE_LAST_FETCHED_AT, $currentTime);
+    }
+
+    public function setPaginationKey($paginationKey)
+    {
+        $this->setAttribute(self::PAGINATION_KEY, $paginationKey);
     }
 
     // ============================= END SETTERS ===========================
