@@ -88,4 +88,12 @@ export default {
     'HW1CwITu2o0hdO', // Kolhapur
     'HWP22TCyDAfcRG', // Test account prod
   ],
+
+  nitro_form_ab_experiment: [
+    //prod
+    'Hc1t1p85dJkRkp',
+
+    // beta
+    'Hb3p41OFV4RKzs',
+  ],
 };

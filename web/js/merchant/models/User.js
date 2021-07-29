@@ -401,6 +401,10 @@ export default class User {
     return getSplitzExperimentVariant('whats_new_lazy_experiment')?.variables?.result === 'on';
   }
 
+  get isNitroFormFillEnabled() {
+    return getSplitzExperimentVariant('nitro_form_ab_experiment')?.variables?.result === 'on';
+  }
+
   get isChargeAtWillEnabled() {
     return this.findTag('Charge_at_will');
   }

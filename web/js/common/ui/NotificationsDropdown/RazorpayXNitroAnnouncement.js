@@ -12,6 +12,11 @@ import LocalStorageService from 'common/utils/localStorage';
 import { caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 import isEmpty from '@universe/utils/isEmpty';
+import { Field, reduxForm, formValueSelector } from 'redux-form';
+import { email as validateEmail, phone as validatePhone } from 'common/utils/validators';
+import { RadioGroup } from 'common/ui/Forms/RadioGroup';
+import InputField from 'common/ui/Forms/InputField';
+import Textarea from 'common/ui/Forms/AutoResizeTextarea';
 
 const BENEFITS = {
   other: [
@@ -31,6 +36,25 @@ const BENEFITS = {
     'Payouts via NEFT/IMPS/RTGS',
   ],
 };
+
+const NAME = 'full_name';
+const PHONE = 'phone';
+const EMAIL = 'email';
+const CHALLENGES = 'what_are_the_biggest_challenges_you_face_with_your_current_account_today_';
+const VENDORS = 'how_do_you_pay_your_vendors_customers_';
+const MONTHLY_PAYMENTS__GIVEN = 'how_many_outward_payments_do_you_make_in_a_month_';
+const RAZORPAYX_SWITCH = 'how_soon_can_you_switch_to_a_razorpayx_current_account_';
+const MONTHLY_PAYMENTS_RECEIVED = 'how_many_payments_do_you_receive_every_month_';
+const fields = [
+  NAME,
+  PHONE,
+  EMAIL,
+  CHALLENGES,
+  VENDORS,
+  MONTHLY_PAYMENTS__GIVEN,
+  RAZORPAYX_SWITCH,
+  MONTHLY_PAYMENTS_RECEIVED,
+];
 
 export const nitroCampaignId = () => {
   const map = {
@@ -282,6 +306,214 @@ export const nitroCampaignId = () => {
   };
 };
 
+const selector = formValueSelector('customerDetails');
+
+@connect(
+  (state) => ({
+    user: state.session.user,
+    ...fields.reduce(
+      (acc, element) => ({
+        ...acc,
+        [element]: selector(state, element),
+      }),
+      {},
+    ),
+    initialValues: {
+      [VENDORS]: '',
+      [NAME]: (state.session.user.user || {}).name,
+      [EMAIL]: (state.session.user.user || {}).email,
+      [PHONE]: (state.session.user.user || {}).contact_mobile,
+      ['country_code']: '+91 - ',
+    },
+  }),
+  {
+    showNotification,
+  },
+)
+@reduxForm({
+  form: 'customerDetails',
+})
+class InfoForm extends React.Component {
+  render() {
+    const { handleSubmit, change } = this.props;
+    const shouldSubmitBeDisabled = fields.some((field) => isEmpty(this.props[field]));
+
+    return (
+      <form autoComplete="off">
+        <div className="left-section">
+          <img className="rx-logo" src="/dist/css/assets/razorpay-x-logo-white.svg" alt="rx-logo" />
+          <div className="row">
+            <div class="form-group">
+              <label className="control-label label-required">Name</label>
+              <div>
+                <Field
+                  name={NAME}
+                  placeholder="Full Name"
+                  component={InputField}
+                  class="form-control"
+                  autoFocus
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row">
+            <div class="form-group">
+              <label className="control-label label-required">Email ID</label>
+              <div>
+                <Field
+                  name={EMAIL}
+                  placeholder="Work email"
+                  component={InputField}
+                  class="form-control"
+                  validate={validateEmail('Please provide a valid email')}
+                  onBlur={this.props.onBlur}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row">
+            <div class="form-group">
+              <label className="control-label label-required">Phone number</label>
+              <div className="phone-field">
+                <Field name="country_code" component={InputField} class="form-control" readOnly />
+                <Field
+                  name={PHONE}
+                  placeholder="Phone number"
+                  component={InputField}
+                  class="form-control"
+                  onBlur={this.props.onBlur}
+                  validate={validatePhone('Please provide a valid phone')}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row">
+            <div class="form-group">
+              <label className="control-label label-required">
+                What are the biggest challenges with your Current Account today?
+              </label>
+              <div>
+                <Field
+                  name={CHALLENGES}
+                  placeholder="Tell us about your challenges here"
+                  component={Textarea}
+                  class="form-control"
+                  onBlur={this.props.onBlur}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="right-section">
+          <div className="title">Help us understand your business</div>
+          <div className="row">
+            <div className="form-group">
+              <label className="control-label label-required">
+                How do you pay your vendors/customers?
+              </label>
+              <div className="checkbox-row">
+                {['Cash', 'Cheque', 'NEFT', 'RTGS'].map((mode, index) => (
+                  <label key={mode} htmlFor={`vendors[${index}]`}>
+                    <Field
+                      id={`vendors[${index}]`}
+                      name={`vendors[${index}]`}
+                      component="input"
+                      required
+                      type="checkbox"
+                      onChange={(e) => {
+                        let optionsSelected = !isEmpty(this.props[VENDORS])
+                          ? this.props[VENDORS].split(';')
+                          : [];
+
+                        if (!e.target.value) {
+                          optionsSelected.push(mode);
+                        } else if (optionsSelected.includes(mode)) {
+                          optionsSelected = optionsSelected.filter((option) => option !== mode);
+                        }
+
+                        change(VENDORS, optionsSelected.join(';'));
+                      }}
+                    />
+                    {mode}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="row">
+            <div className="form-group">
+              <label className="control-label label-required">
+                How many outward payments do you do every month?
+              </label>
+              <Field
+                component={RadioGroup}
+                name={MONTHLY_PAYMENTS__GIVEN}
+                required
+                options={[
+                  { title: 'Less than 50', value: 'Less than 50' },
+                  { title: '51 to 100', value: '51 to 100' },
+                  { title: '101 to 250', value: '101 to 250' },
+                  { title: '251 to 500', value: '251 to 500' },
+                  { title: '500+', value: '500+' },
+                ]}
+              />
+            </div>
+          </div>
+          <div className="row">
+            <div className="form-group">
+              <label className="control-label label-required">
+                How many payments do you receive every month?
+              </label>
+              <Field
+                component={RadioGroup}
+                name={MONTHLY_PAYMENTS_RECEIVED}
+                required
+                options={[
+                  { title: 'Less than 50', value: 'Less than 50' },
+                  { title: '51 to 100', value: '51 to 100' },
+                  { title: '101 to 250', value: '101 to 250' },
+                  { title: '251 to 500', value: '251 to 500' },
+                  { title: '500+', value: '500+' },
+                ]}
+              />
+            </div>
+          </div>
+          <div className="row">
+            <div className="form-group">
+              <label className="control-label label-required">
+                How soon can you switch to RazorpayX Current Account?
+              </label>
+              <Field
+                component={RadioGroup}
+                name={RAZORPAYX_SWITCH}
+                required
+                options={[
+                  { title: 'Immediately', value: 'Immediately' },
+                  { title: 'After 2 weeks', value: 'After 2 weeks' },
+                  { title: 'After 4 weeks', value: 'After 4 weeks' },
+                  { title: 'After 6 weeks', value: 'After 6 weeks' },
+                ]}
+              />
+            </div>
+          </div>
+          <AsyncBtn.Primary
+            type="submit"
+            class="btn btn-primary submit-btn"
+            disabled={shouldSubmitBeDisabled}
+            onClick={handleSubmit(this.props.save)}
+          >
+            Request for a Current Account
+          </AsyncBtn.Primary>
+        </div>
+      </form>
+    );
+  }
+}
+
 const SubmissionSuccessfull = ({ handleClose }) => {
   return (
     <div className="rxca-submit-finish-modal">
@@ -321,6 +553,10 @@ const SubmissionSuccessfull = ({ handleClose }) => {
   },
 )
 class DetailView extends React.Component {
+  state = {
+    showNitroFormFields: false,
+  };
+
   trackCTAClick = (status) => {
     this.props.tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
@@ -328,6 +564,7 @@ class DetailView extends React.Component {
         pageUrl: window.location.href,
         formId: 'NitroV1-Bangalore-v1',
         status,
+        form_version: this.props.user.isNitroFormFillEnabled ? 'with_fields' : 'without_fields',
         ...nitroCampaignId(),
       }),
     );
@@ -348,30 +585,46 @@ class DetailView extends React.Component {
     LocalStorageService.setItem('offers_for_you_state', 'hasAppliedCA');
   };
 
-  sendDataToHubspot = () => {
+  sendDataToHubspot = (formData) => {
+    let formValues = [],
+      formID = '';
     const { user } = this.props;
+
+    if (user.isNitroFormFillEnabled) {
+      formValues = [
+        ...fields.map((field) => ({
+          name: field,
+          value: formData[field],
+        })),
+      ];
+      formID = 'e591bdcd-2304-458e-bc4c-72d3f41a75b8';
+    } else {
+      formValues = [
+        {
+          name: 'phone',
+          value: user?.user?.contact_mobile,
+        },
+        {
+          name: 'email',
+          value: user?.user?.email,
+        },
+        {
+          name: 'merchant_id__c',
+          value: user?.current,
+        },
+      ];
+      formID = '0ef8b5a3-f35f-48c4-be29-98b207699192';
+    }
 
     return axios({
       method: 'post',
-      baseURL:
-        'https://api.hsforms.com/submissions/v3/integration/submit/5558946/0ef8b5a3-f35f-48c4-be29-98b207699192',
+      baseURL: `https://api.hsforms.com/submissions/v3/integration/submit/5558946/${formID}`,
       headers: {
         'Content-Type': 'application/json',
       },
       data: {
         fields: [
-          {
-            name: 'phone',
-            value: user?.user?.contact_mobile,
-          },
-          {
-            name: 'email',
-            value: user?.user?.email,
-          },
-          {
-            name: 'merchant_id__c',
-            value: user?.current,
-          },
+          ...formValues,
           {
             name: 'campaignid',
             value: user.isProjectNitroCorporateCard
@@ -388,8 +641,37 @@ class DetailView extends React.Component {
     });
   };
 
-  sendDataToSalesForce = () => {
+  sendDataToSalesForce = (formData) => {
+    let formValues = [];
+    const SF_CHALLENGES =
+      'what_are_the_biggest_challenges_you_face_with_your_current_account_today';
+    const SF_VENDORS = 'how_do_you_pay_your_vendors_customers';
+    const SF_MONTHLY_PAYMENTS__GIVEN = 'how_many_outward_payments_do_you_make_in_a_month';
+    const SF_RAZORPAYX_SWITCH = 'how_soon_can_you_switch_to_a_razorpayx_current_account';
+    const SF_MONTHLY_PAYMENTS_RECEIVED = 'how_many_payments_do_you_receive_every_month';
     const { user } = this.props;
+
+    if (user.isNitroFormFillEnabled)
+      formValues = {
+        contact_name: formData[NAME],
+        business_name: formData[NAME],
+        contact_email: formData[EMAIL],
+        contact_mobile: formData[PHONE],
+        [SF_CHALLENGES]: formData[CHALLENGES],
+        [SF_VENDORS]: formData[VENDORS],
+        [SF_MONTHLY_PAYMENTS__GIVEN]: formData[MONTHLY_PAYMENTS__GIVEN],
+        [SF_MONTHLY_PAYMENTS_RECEIVED]: formData[MONTHLY_PAYMENTS_RECEIVED],
+        [SF_RAZORPAYX_SWITCH]: formData[RAZORPAYX_SWITCH],
+        pin_code: null,
+        average_monthly_balance: null,
+        current_ca: null,
+        use_case: null,
+      };
+    else
+      formValues = {
+        contact_email: user?.user?.email,
+        contact_mobile: user?.user?.contact_mobile,
+      };
 
     const payload = {
       event_type: caReqEventType,
@@ -400,8 +682,8 @@ class DetailView extends React.Component {
         Campaign_ID: user.isProjectNitroCorporateCard
           ? 'Nitro_Capital'
           : nitroCampaignId(user).version,
-        contact_email: user?.user?.email,
-        contact_mobile: user?.user?.contact_mobile,
+        form_version: user.isNitroFormFillEnabled ? 'with_fields' : 'without_fields',
+        ...formValues,
       },
     };
 
@@ -444,8 +726,11 @@ class DetailView extends React.Component {
   };
 
   render() {
-    const { isProjectNitroCorporateCard } = this.props.user;
+    const showNitroFormFields = this.state.showNitroFormFields;
+    const { isProjectNitroCorporateCard, isNitroFormFillEnabled } = this.props.user;
     const content = isProjectNitroCorporateCard ? BENEFITS.corporateCards : BENEFITS.other;
+
+    if (showNitroFormFields) return <InfoForm save={this.save} tracking={this.props.tracking} />;
 
     return (
       <div className="razorpayx-announcement-details">
@@ -477,7 +762,14 @@ class DetailView extends React.Component {
               ))}
             </ul>
             <div className="btn-wrapper">
-              <AsyncBtn.Primary type="submit" class="btn btn-primary" onClick={this.save}>
+              <AsyncBtn.Primary
+                type="submit"
+                class="btn btn-primary"
+                onClick={() => {
+                  if (isNitroFormFillEnabled) this.setState({ showNitroFormFields: true });
+                  else return this.save();
+                }}
+              >
                 Apply For Current Account
               </AsyncBtn.Primary>
             </div>
