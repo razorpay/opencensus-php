@@ -70,8 +70,8 @@ export default class Select extends React.Component {
                           <div className="row">
                             <div className="col-xs-10">
                               {this.props.session.user.isAddProviderEnabled &&
-                                o.id != SMART_ROUTER && typeof o.id == 'string' && o.id.split("_").length === 2 &&
-                                IDS.indexOf(o.id) === -1 && (
+                                ((o.id != SMART_ROUTER && typeof o.id == 'string' && o.id.split("_").length === 2 &&
+                                IDS.indexOf(o.id) === -1) || o.id === 'razorpay') && (
                                 <div className="recommended-provider-img-block">
                                   <img src={gatewayLogos[o.id.split("_")[0]]} />
                                 </div>

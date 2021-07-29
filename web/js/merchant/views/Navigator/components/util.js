@@ -858,6 +858,13 @@ export const createMappedProviders = (isAddProviderEnabled, providers, terminalP
   let MAPPED_PROVIDERS = [];
   if (isAddProviderEnabled) {
     MAPPED_PROVIDERS = terminalProviders.map((p) => {
+      if (p.Gateway === 'razorpay') {
+        return {
+          id: p.Gateway,
+          name: p.Provider_name,
+          value: p.Gateway,
+        };
+      }
       return {
         id: `${p.Gateway}_${p.Terminal_id}`,
         name: p.Provider_name,
