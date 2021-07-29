@@ -317,26 +317,75 @@ class Repository extends Base\Repository
 
         $expands = $this->getExpandsForQueryFromInput($params);
 
-        $app = App::getFacadeRoot();
+        $connection = $this->getSlaveConnection();
 
-        $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(), 'payment_fetch_tidb_or_replica', $app['basicauth']->getMode() ?? Mode::LIVE);
+        if (!is_null($merchantId) &&
+            count(array_diff(array_keys($params), ["skip", "count", "from", "to"])) === 0) {
+            $app = App::getFacadeRoot();
 
-        $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_TIDB_EXPERIMENT_VARIANT, [
-            'variant' => $variant,
-        ]);
+            $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
+                'payment_fetch_tidb_or_replica', $app['basicauth']->getMode() ?? Mode::LIVE);
 
-        if (($variant === 'on') or
-            (!is_null($merchantId) &&
-                count(array_diff(array_keys($params), ["skip", "count", "from", "to"])) === 0))
-        {
-            $connection = $this->getDataWarehouseConnection();
+            $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_TIDB_EXPERIMENT_VARIANT, [
+                'variant' => $variant,
+            ]);
+
+            if (($variant === 'on') or
+                (app()->isEnvironmentProduction() === false))
+            {
+                $connection = $this->getDataWarehouseConnection();
+
+                $query = $this->newQueryWithConnection($connection);
+            }
+            else
+            {
+                try
+                {
+                    $paymentIds = (new EsRepository('payment'))->buildQueryAndSearch($params, $merchantId);
+
+                    $paymentIdsFiltered = array_map(
+                        function ($res) {
+                            return $res[ES::_SOURCE] ?? [Common::ID => $res[ES::_ID]];
+                        },
+                        $paymentIds[ES::HITS][ES::HITS]);
+
+                    if (count($paymentIdsFiltered) > 0) {
+                        $connection = $this->getSlaveConnection();
+
+                        $result = $this->newQueryWithConnection($connection)
+                            ->whereIn(Entity::ID, $paymentIdsFiltered)
+                            ->where(Entity::MERCHANT_ID, $merchantId)
+                            ->with($expands)
+                            ->orderBy(Entity::CREATED_AT, 'desc')
+                            ->get();
+
+                        $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, $connection, true);
+
+                        return $result;
+                    }
+
+                    $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, $connection, true);
+
+                    return (new Base\PublicCollection());
+                } catch (\Exception $e)
+                {
+                    $this->trace->error(TraceCode::PAYMENT_FETCH_MULTIPLE_ES_FAILURE, [
+                        'error' => $e->getMessage(),
+                        'code' => $e->getCode(),
+                    ]);
+
+                    $connection = $this->getPaymentFetchReplicaConnection();
+
+                    $query = $this->newQueryWithConnection($connection);
+                }
+            }
         }
         else
         {
             $connection = $this->getSlaveConnection();
-        }
 
-        $query = $this->newQueryWithConnection($connection);
+            $query = $this->newQueryWithConnection($connection);
+        }
 
         $query = $query->with($expands);
 
