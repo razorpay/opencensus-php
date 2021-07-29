@@ -86,7 +86,7 @@ export const ACTIVATION_STATUS_ACTIVATED_MCC_PENDING = {
 export const PAYMENT_ACTIVATED = {
   title: 'Just few more steps away from enabling settlements',
   description:
-    'Submit your KYC for review to extend the payments limit and receive money in your bank account',
+    'Congratulations! You are now all set and can start receiving payments from your customers up to INR 15,000. Complete your KYC Details to enable benefits like settlements and to extend this limit further!',
   limit_breach_desc:
     'Complete your KYC form to extend payment limits. Please note that your payments have been temporarily paused until you finish your KYC.',
 };

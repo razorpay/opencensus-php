@@ -148,8 +148,9 @@ export default class InstantActivationAnnouncements extends Component {
             content = (
               <div class="announcement-container">
                 <div class="announcement-info">
-                  You can use our products to accept payments upto ₹15000 right away. Your
-                  settlements will only be enabled after your KYC details are reviewed and approved.{' '}
+                  Congratulations! You are now all set and can start receiving payments from your
+                  customers up to INR 15,000. Complete your KYC Details to enable benefits like
+                  settlements and to extend this limit further!{' '}
                 </div>
                 <div className="big-circle-seprator" />
                 <button
