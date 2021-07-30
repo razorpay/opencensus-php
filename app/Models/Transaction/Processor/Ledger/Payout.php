@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
 use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
+use RZP\Models\Merchant\Credits;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Transaction\Entity as TransactionEntity;
@@ -107,6 +108,8 @@ class Payout extends Base
 
             $this->updatePayloadForPrePaidSourceAccounts($payload, $payout);
 
+            $this->updatePayloadForFeeCredits($payload, $payout);
+
             $this->pushToLedgerSns($payload);
         }
         catch (\Throwable $e)
@@ -151,6 +154,15 @@ class Payout extends Base
             $payload[self::FTS_FUND_ACCOUNT_ID] = self::DEFAULT_M2P_FTS_FUND_ACCOUNT_ID;
             $payload[self::FTS_ACCOUNT_TYPE]    = self::DEFAULT_M2P_FTS_FUND_ACCOUNT_TYPE;
 
+        }
+    }
+
+    protected function updatePayloadForFeeCredits(array &$payload,
+                                                  Entity $payout)
+    {
+        if ($payout->getFeeType() === Credits\Balance\Type::REWARD_FEE)
+        {
+            $payload[self::FEE_ACCOUNTING] = self::REWARD;
         }
     }
 }

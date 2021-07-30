@@ -32,6 +32,10 @@ class Base extends Core
     const ENTITY                = 'entity';
     const IDEMPOTENCY_KEY       = 'idempotency_key';
 
+    // For Fee Credit accounting
+    const FEE_ACCOUNTING        = 'fee_accounting';
+    const REWARD                = 'reward';
+
     const UUID_FORMAT = '%04x%04x-%04x-%04x-%04x-%04x%04x%04x';
 
     const TIME_TAKEN = 'time_taken';
