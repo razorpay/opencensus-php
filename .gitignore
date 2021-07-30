@@ -4,6 +4,7 @@
 .env.*
 .idea/*
 .vscode/*
+.devspace/*
 !environment/.env.wercker
 !environment/.env.drone
 !environment/.env.defaults

@@ -308,4 +308,7 @@ final class RazorxTreatment
 
     // Experiment to block customer prefill on checkout
     const BLOCK_CUSTOMER_PREFILL = 'block_customer_prefill';
+
+    //Experiment to allow mtu coupon code application
+    const MTU_COUPON_CODE = 'mtu_coupon_code';
 }

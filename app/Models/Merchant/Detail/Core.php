@@ -2355,7 +2355,17 @@ class Core extends Base\Core
         $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
         $response['isHardLimitReached']                         = empty($hardEscalationLevel4) ? false : true;
         $response['activationStatusChangeLogs']                 = $this->getStatusChangeLogs($merchant);
-        $response[Entity::MERCHANT_BUSINESS_DETAIL]              = $merchantDetails->businessDetail;
+        $response[Entity::MERCHANT_BUSINESS_DETAIL]             = $merchantDetails->businessDetail;
+
+        $isMtuCouponExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::MTU_COUPON_CODE);
+
+        if ($isMtuCouponExperimentEnabled === true)
+        {
+            $response['isMtuCouponApplied'] = (new Coupon\Core)->isCouponApplied($merchant, Coupon\Constants::MTU_COUPON);
+        }
+
         if ($this->isMerchantTncApplicable($merchant) === true)
         {
             $response[Entity::MERCHANT_TNC] = (new Merchant\Tnc\Core)->getTncDetails($merchantDetails->tnc);

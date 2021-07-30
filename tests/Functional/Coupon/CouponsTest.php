@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Exception;
 use RZP\Constants\Product;
+use RZP\Models\Coupon\Constants;
 use RZP\Models\Schedule\Period;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -31,6 +33,19 @@ class CouponsTest extends TestCase
         $this->app->make(Factory::class)->load($factoryPath);
 
         $this->ba->adminAuth();
+    }
+
+    protected function mockRazorxTreatment()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
     }
 
     public function createCoupon(array $attributes = [])
@@ -636,6 +651,21 @@ class CouponsTest extends TestCase
         return $response;
     }
 
+    public function applyMtuCouponOnMerchant()
+    {
+        $request = [
+            'url'     => '/coupons/apply/mtu',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     public function checkCouponOnMerchant(array $content, string $product = Product::PRIMARY)
     {
         $request = [
@@ -690,6 +720,72 @@ class CouponsTest extends TestCase
         $credit = $this->getLastEntity('credits', true);
 
         $this->assertNull($credit['expired_at']);
+    }
+
+    public function testApplyMtuCoupon()
+    {
+        $this->mockRazorxTreatment();
+
+        $promotion = $this->fixtures->create('promotion:onetime');
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
+            'code'        => Constants::MTU_COUPON
+        ];
+
+        $this->fixtures->create('coupon', $couponAttributes);
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id'       => '10000000000000',
+            'business_type'     => '2',
+        ]);
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->ba->proxyAuth();
+
+        $response = $this->applyMtuCouponOnMerchant();
+
+        $this->checkValidResponse($response);
+
+        $credit = $this->getLastEntity('credits', true);
+
+        $this->assertNull($credit['expired_at']);
+
+        $this->assertTrue($response['success']);
+    }
+
+    public function testApplyMtuCouponExptOff()
+    {
+        $promotion = $this->fixtures->create('promotion:onetime');
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
+            'code'        => Constants::MTU_COUPON
+        ];
+
+        $this->fixtures->create('coupon', $couponAttributes);
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id'       => '10000000000000',
+            'business_type'     => '2',
+        ]);
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->ba->proxyAuth();
+
+        $response = $this->applyMtuCouponOnMerchant();
+
+        $this->assertNotNull($response['error']);
+
+        $this->assertFalse($response['success']);
     }
 
     public function testApplyRecurringCoupon()

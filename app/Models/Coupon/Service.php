@@ -115,7 +115,7 @@ class Service extends Base\Service
 
         $merchant = null;
 
-        if (app('basicauth')->isAdminAuth() === false )
+        if (app('basicauth')->isAdminAuth() === false)
         {
             $merchant = app('basicauth')->getMerchant();
         }
@@ -129,5 +129,30 @@ class Service extends Base\Service
         $result = $this->core()->apply($merchant, $input);
 
         return $result;
+    }
+
+    public function applyMtuCoupon(array $input)
+    {
+        $input[Entity::CODE] = Constants::MTU_COUPON;
+
+        $this->trace->info(TraceCode::COUPON_APPLY_REQUEST, $input);
+
+        $merchant = app('basicauth')->getMerchant();
+
+        try
+        {
+            $response = $this->core()->apply($merchant, $input);
+
+            $response['success'] = true;
+
+            return $response;
+        }
+        catch (\Exception $ex)
+        {
+            return [
+                'error' => $ex->getMessage(),
+                'success' => false
+            ];
+        }
     }
 }

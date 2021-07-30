@@ -109,9 +109,39 @@ class Core extends Base\Core
         return $coupon;
     }
 
+    public function isRazorxExperimentEnable(string $merchantId, string $experimentName): bool
+    {
+        $mode = $this->mode ?? Mode::LIVE;
+
+        $variant = $this->app->razorx->getTreatment($merchantId,
+            $experimentName,
+            $mode);
+
+        return ($variant === Merchant\Constants::RAZORX_EXPERIMENT_ON);
+    }
+
     public function apply(Merchant\Entity $merchant, array $input): array
     {
         $couponCode = $input[Entity::CODE] ?? '';
+
+        if (isset(Constants::COUPON_CONFIG[$couponCode]) === true)
+        {
+            $config = Constants::COUPON_CONFIG[$couponCode];
+
+            $exptName = $config[Constants::EXPERIMENT_NAME];
+
+            if ($this->isRazorxExperimentEnable($merchant->getId(), $exptName) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE,
+                    null,
+                    $input);
+            }
+        }
+        else
+        {
+            $config = Constants::COUPON_CONFIG['default'];
+        }
 
         try
         {
@@ -121,16 +151,19 @@ class Core extends Base\Core
         }
         catch (\Throwable $exception)
         {
-            $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_APPLY_COUPON_CODE_FAILED, $merchant, $exception, [Entity::COUPON_CODE => $couponCode]);
+            $this->app['diag']->trackOnboardingEvent($config[Constants::FAILED_EVENT_CODE], $merchant, $exception, [Entity::COUPON_CODE => $couponCode]);
 
             throw $exception;
         }
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_APPLY_COUPON_CODE_SUCCESS, $merchant, null, [Entity::COUPON_CODE => $couponCode]);
+        $this->app['diag']->trackOnboardingEvent($config[Constants::SUCCESS_EVENT_CODE], $merchant, null, [Entity::COUPON_CODE => $couponCode]);
 
         $hubspotInput = [Entity::COUPON_CODE => $couponCode];
 
-        $this->app->hubspot->trackPreSignupEvent($hubspotInput, $merchant);
+        if ($couponCode !== Constants::MTU_COUPON)
+        {
+            $this->app->hubspot->trackPreSignupEvent($hubspotInput, $merchant);
+        }
 
         $this->app->salesforce->sendCouponInfo($merchant, $hubspotInput);
 
@@ -210,6 +243,29 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::MERCHANT_PROMOTION_CREATED);
         });
+    }
+
+    public function isCouponApplied(Merchant\Entity $merchant, $couponCode): bool
+    {
+        try
+        {
+            $coupon = $this->getCouponByCode($merchant, [Entity::CODE => $couponCode]);
+        }
+        catch (\Exception $ex)
+        {
+            return false;
+        }
+
+        $promotion = $coupon->source;
+
+        $merchantPromotion = $this->repo
+            ->merchant_promotion
+            ->findByMerchantAndPromotionId(
+                $merchant->getId(),
+                $promotion->getId()
+            );
+
+        return $merchantPromotion !== null;
     }
 
     protected function applyPromotionPricing(Merchant\Entity $merchant, Promotion\Entity $promotion)

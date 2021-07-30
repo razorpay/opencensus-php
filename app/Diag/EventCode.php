@@ -444,6 +444,16 @@ class EventCode
         'name'  => 'signup.apply_coupon_code.failed',
     ];
 
+    const APPLY_COUPON_CODE_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'mtu.apply_coupon_code.success',
+    ];
+
+    const APPLY_COUPON_CODE_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'mtu.apply_coupon_code.failed',
+    ];
+
     const SIGNUP_FINISH_SIGNUP_SUCCESS = [
         'group' => 'onboarding',
         'name'  => 'signup.finish_signup.success',

@@ -325,7 +325,10 @@ return [
                 'code'  => 'RANDOM'
             ],
             'url'    => '/coupons/apply',
-            'method' => 'POST'
+            'method' => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ]
         ],
         'response' => [
             'content' => [

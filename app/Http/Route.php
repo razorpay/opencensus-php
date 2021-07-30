@@ -1564,7 +1564,7 @@ class Route
 
         // Promotion routes
         'promotion_create'                         => ['post',     'promotions',                                     'PromotionController@create'                                        ],
-        'promotion_create_for_event'               => ['post',     'event_promotions',                               'PromotionController@createPromotionForEvent'                                        ],
+        'promotion_create_for_event'               => ['post',     'event_promotions',                               'PromotionController@createPromotionForEvent'                       ],
         'promotion_update'                         => ['patch',    'promotions/{id}',                                'PromotionController@update'                                        ],
         'promotion_deactivate'                     => ['patch',    'promotions/{id}/deactivate',                     'PromotionController@deactivatePromotion'                           ],
 
@@ -1574,6 +1574,7 @@ class Route
         'coupon_delete'                            => ['delete',   'coupons/{id}',                                   'CouponController@delete'                                           ],
         'coupon_update'                            => ['patch',    'coupons/{id}',                                   'CouponController@update'                                           ],
         'coupon_validate'                          => ['post',     'coupons/validate',                               'CouponController@validateCoupon'                                   ],
+        'mtu_coupon_apply'                         => ['post',     'coupons/apply/mtu',                              'CouponController@applyMtuCoupon'                                   ],
 
         // Merchant invitation routes
         'invitation_create'                        => ['post',     'invitations',                                    'InvitationController@create'                                       ],
@@ -3877,6 +3878,7 @@ class Route
         'feature_onboarding_fetch_responses',
         'merchant_pre_signup_details',
         'merchant_edit_pre_signup_details',
+        'mtu_coupon_apply',
         'coupon_validate',
         'create_submerchant_user',
         'user_merchant_mapping_action',
@@ -6265,6 +6267,7 @@ class Route
         'banking_accounts_list'                        => '*',
         'merchant_fetch_config'                        => '*',
         'merchant_edit_pre_signup_details'             => '*',
+        'mtu_coupon_apply'                             => Permission::CREATE_PROMOTION_COUPON,
         'merchant_gst_fetch'                           => Permission::VIEW_MERCHANT,
         'batch_fetch_multiple'                         => '*',
         'batch_fetch_by_id'                            => '*',
@@ -6983,6 +6986,7 @@ class Route
             'merchant_edit_config_logo',
             'merchant_edit_email_la',
             'merchant_edit_pre_signup_details',
+            'mtu_coupon_apply',
             'merchant_features_fetch',
             'merchant_features_update',
             'merchant_fetch_config',
@@ -8270,6 +8274,7 @@ class Route
             'merchant_edit_email_la',
             'merchant_edit_free_credits',
             'merchant_edit_pre_signup_details',
+            'mtu_coupon_apply',
             'merchant_edit_risk_attributes',
             'merchant_features_fetch',
             'merchant_features_update',
