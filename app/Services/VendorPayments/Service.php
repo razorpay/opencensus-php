@@ -5,7 +5,6 @@ namespace RZP\Services\VendorPayments;
 use Mail;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Error\Twirp\ErrorCodeMap;
 use RZP\Trace\TraceCode;
 use RZP\Models\User\Entity;
 use RZP\Http\Request\Requests;
@@ -14,6 +13,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Mail\VendorPayments\GenericVendorPaymentEmail;
+
 
 /**
  * This class will be the main file that will talk to
@@ -56,6 +56,7 @@ class Service
     const GET_QUICK_FILTER_AMOUNTS    = 'GetQuickFilterAmounts';
     const RECEIVE_EMAIL               = 'ReceiveVPEmailMessage';
     const GET_MERCHANT_EMAIL_ADDRESS  = 'GetMerchantEmailAddress';
+    const FUND_ACCOUNT_LINKING        = 'FundAccountCreated';
 
     const BASE_PATH                   = 'twirp/vendorpayments.Vendorpayments';
 
@@ -99,8 +100,6 @@ class Service
 
         $this->repo =  $app['repo'];
     }
-
-
 
     public function sendMail(array $input)
     {
@@ -567,6 +566,13 @@ class Service
         return $this->makeRequest($merchant, $url);
     }
 
+    public function pushFundAccountDetails(array $data, string $mode)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::FUND_ACCOUNT_LINKING);
+
+        return $this->makeRequest(null, $url, $data, [], 'POST', $mode);
+    }
+
     protected function makeRequest(MerchantEntity $merchant = null,
                                    string $url = '',
                                    array $data = [],
@@ -613,7 +619,7 @@ class Service
 
         if ($response->status_code !== StatusCode::SUCCESS)
         {
-            $description = "";
+            $description = '';
 
             if ($responseBody !== null)
             {
@@ -621,7 +627,7 @@ class Service
             }
             else
             {
-                $description = "received empty response";
+                $description = 'received empty response';
             }
 
             throw new BadRequestException(ErrorCode::BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED,

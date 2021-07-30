@@ -2544,6 +2544,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_VALIDATION_METRIC_PUSH_EXCEPTION         = 'FUND_ACCOUNT_VALIDATION_METRIC_PUSH_EXCEPTION';
     const FUND_ACCOUNT_VALIDATION_CREATE_METRIC_PUSHED          = 'FUND_ACCOUNT_VALIDATION_CREATE_METRIC_PUSHED';
 
+    // Trace codes for Fund Account Details Propagator
+    const FUND_ACCOUNT_DETAILS_PROPAGATOR_JOB                   = 'FUND_ACCOUNT_DETAILS_PROPAGATOR_JOB';
+    const FUND_ACCOUNT_DETAILS_PROPAGATOR_JOB_FAILED            = 'FUND_ACCOUNT_DETAILS_PROPAGATOR_JOB_FAILED';
+    const FUND_ACCOUNT_DETAILS_PROPAGATOR_JOB_RELEASE           = 'FUND_ACCOUNT_DETAILS_PROPAGATOR_JOB_RELEASE';
+    const FUND_ACCOUNT_DETAILS_PROPAGATOR_JOB_PROCESSING        = 'FUND_ACCOUNT_DETAILS_PROPAGATOR_JOB_PROCESSING';
+    const FUND_ACCOUNT_DETAILS_PROPAGATOR_JOB_ERROR             = 'FUND_ACCOUNT_DETAILS_PROPAGATOR_JOB_ERROR';
+    const FAILED_TO_PUSH_TO_FA_DETAILS_PROPAGATOR_JOB_QUEUE     = 'FAILED_TO_PUSH_TO_FA_DETAILS_PROPAGATOR_JOB_QUEUE';
+    const FUND_ACCOUNT_DETAILS_PROPAGATOR_QUEUE_PUSH            = 'FUND_ACCOUNT_DETAILS_PROPAGATOR_QUEUE_PUSH';
+
     // Trace codes for Post FTA Processing
     const UPDATE_STATUS_AFTER_FTA_RECON                         = 'UPDATE_STATUS_AFTER_FTA_RECON';
     const UPDATE_STATUS_AFTER_FTA_INITIATED                     = 'UPDATE_STATUS_AFTER_FTA_INITIATED';
@@ -5239,7 +5248,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
      */
     public static function getMessage($code)
     {
-        if (isset(self::$messages[$code]) === false) {
+        if (isset(self::$messages[$code]) === false)
+        {
             return null;
         }
 
@@ -5248,7 +5258,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     public static function checkCode($code)
     {
-        if (defined(TraceCode::class.'::'.$code) === false) {
+        if (defined(TraceCode::class.'::'.$code) === false)
+        {
             throw new InvalidArgumentException(
                 TraceCode::class.'::'.$code.' not defined'
             );

@@ -27,6 +27,7 @@ use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\WalletAccount\Validator as WalletAccountValidator;
+use RZP\Models\FundAccount\DetailsPropagator\Core as DetailsPropagator;
 
 /**
  * Class Core
@@ -137,7 +138,6 @@ class Core extends Base\Core
                                                     $this->mode,
                                                     Entity::FUND_ACCOUNT_RX_RETRY_COUNT);
 
-
         if(strtolower($variant) === 'on')
         {
             $uniqueHash = $this->generateUniqueHashForFundAccount($input[Entity::ACCOUNT_TYPE],
@@ -222,6 +222,10 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($fundAccount);
+
+        $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
+
+        DetailsPropagator::dispatchToQueue($mode, $fundAccount->getPublicId());
 
         $this->createFTSAccountForFundAccount($input, $fundAccount, $source);
 

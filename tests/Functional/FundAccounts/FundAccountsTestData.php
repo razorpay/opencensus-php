@@ -3746,4 +3746,32 @@ return [
             'status_code' => 201
         ],
     ],
+    'testFundAccountDetailsPushedToQueue' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                'account_type' => 'wallet',
+                'contact_id'   => 'cont_1000000contact',
+                'wallet'       => [
+                    'phone'         => '+919988776655',
+                    'provider'      => 'amazonpay',
+                    'email'         => 'test@gmail.com',
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'            => 'fund_account',
+                'account_type' => 'wallet',
+                'contact_id'   => 'cont_1000000contact',
+                'wallet'       => [
+                    'phone'         => '+919988776655',
+                    'provider'      => 'amazonpay',
+                    'email'         => 'test@gmail.com',
+                ],
+            ],
+            'status_code' => 201
+        ]
+    ]
 ];

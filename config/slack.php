@@ -167,7 +167,7 @@ return array(
         // operations
         'operations'             => 'C0KUX9WSE',
         // Fund Account Validation logs
-        'fav_logs'               =>  'CFQFNH3S7',
+        'fav_logs'               => 'CFQFNH3S7',
         //FTS logs
         'fts_alerts'             => 'CGJA83JUW',
         // tech_alerts channel
@@ -198,6 +198,9 @@ return array(
 
         //payout alerts
         'x-payouts-core-alerts'  => 'C01B8T2HUM7',
+
+        // x alerts channel
+        'x-alerts'               => 'CJD6RKF5Z'
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

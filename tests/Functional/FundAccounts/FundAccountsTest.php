@@ -14,6 +14,7 @@ use RZP\Models\Contact\Type;
 use RZP\Services\RazorXClient;
 use RZP\Jobs\FTS\CreateAccount;
 use RZP\Tests\Functional\TestCase;
+use RZP\Jobs\FundAccountDetailsPropagatorJob;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -1991,5 +1992,18 @@ class FundAccountsTest extends TestCase
 
         // Assert that merchant_disabled field is not set in the response
         $this->assertArrayNotHasKey('merchant_disabled', $response);
+    }
+
+    public function testFundAccountDetailsPushedToQueue()
+    {
+        Queue::fake();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+
+        Queue::assertPushed(FundAccountDetailsPropagatorJob::class,1);
     }
 }

@@ -291,6 +291,10 @@ return [
         'test'       => env('AWS_PAYOUT_SOURCE_UPDATER_TEST_QUEUE'),
         'live'       => env('AWS_PAYOUT_SOURCE_UPDATER_LIVE_QUEUE'),
     ],
+    'fund_account_details_propagator' => [
+        'test'       => env('AWS_FUND_ACCOUNT_DETAILS_PROPAGATOR_TEST_QUEUE'),
+        'live'       => env('AWS_FUND_ACCOUNT_DETAILS_PROPAGATOR_LIVE_QUEUE'),
+    ],
     'payment_nbplus_api_reconciliation' => [
         'test'       =>  env('AWS_PAYMENT_NBPLUS_API_RECONCILIATION_TEST_QUEUE'),
         'live'       =>  env('AWS_PAYMENT_NBPLUS_API_RECONCILIATION_LIVE_QUEUE'),
