@@ -337,7 +337,7 @@ class Base extends BaseCore
     {
         $variant = $this->app->razorx->getTreatment($payout->merchant->getId(),
                                                     Merchant\RazorxTreatment::PAYOUT_TO_FTS_SYNC_MODE,
-                                                    $payout->getMode());
+                                                    $this->mode);
 
         if (strtolower($variant) === 'on')
         {
