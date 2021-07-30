@@ -57,7 +57,7 @@ export default class BatchListContainer extends Component {
     return (
       <BatchList
         form="batchListFilter"
-        docUrl="https://razorpay.com/docs/recurring-payments/"
+        docUrl="https://razorpay.com/docs/recurring-payments/dashboard-operations/batch-operations/"
         gaEvents={gaEvents}
         renderBatchOptions={renderBatchOptions}
         extraColumns={[typeColumn]}

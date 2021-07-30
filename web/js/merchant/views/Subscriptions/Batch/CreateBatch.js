@@ -37,7 +37,7 @@ export default class CreateHostedMandateBatch extends Component {
       maxRows="5,00,000"
       maxFileSize={57671680} // 55 MB
       batchType="recurring_charge"
-      docUrl="https://razorpay.com/docs/recurring-payments/"
+      docUrl="https://razorpay.com/docs/recurring-payments/dashboard-operations/batch-operations/"
       sampleUrl="https://cdn.razorpay.com/dashboard/sample_recurring_payments.csv"
       processingOptions={true}
     />
@@ -52,7 +52,7 @@ export default class CreateHostedMandateBatch extends Component {
       maxRows="5,00,000"
       maxFileSize={57671680} // 55 MB
       batchType="recurring_charge_axis"
-      docUrl="https://razorpay.com/docs/recurring-payments/"
+      docUrl="https://razorpay.com/docs/recurring-payments/dashboard-operations/batch-operations/"
       processingOptions={true}
     />
   );
@@ -68,7 +68,7 @@ export default class CreateHostedMandateBatch extends Component {
       batchType="auth_link"
       batchTypeText="Registration Link"
       renderBatchCreationForm={RegistrationLinksBatchForm}
-      docUrl="https://razorpay.com/docs/recurring-payments/"
+      docUrl="https://razorpay.com/docs/recurring-payments/dashboard-operations/batch-operations/"
       sampleUrl="https://cdn.razorpay.com/dashboard/sample_authorization_links.csv"
     />
   );
