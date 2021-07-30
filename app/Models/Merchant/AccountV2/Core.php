@@ -12,6 +12,7 @@ use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\Account\Entity;
 use RZP\Models\Merchant\Account\Constants;
 use RZP\Models\Merchant\Detail\NeedsClarification;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 
 class Core extends Merchant\Core
@@ -110,7 +111,7 @@ class Core extends Merchant\Core
         $subMerchantCreateInput = InputHelper::getSubMerchantCreateInput($input);
 
         // this creates only test balance
-        $subMerchantArray = (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner);
+        $subMerchantArray = (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner, PartnerConstants::ADD_ACCOUNT, true);
         $subMerchantId    = Entity::verifyIdAndStripSign($subMerchantArray[Entity::ID]);
 
         $subMerchant = $this->fillSubMerchant($subMerchantId, $input);

@@ -68,6 +68,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Workflow\Action as WorkflowAction;
+use RZP\Jobs\MerchantSupportingEntitiesCreateJob;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Validator as PartnerValidator;
@@ -240,7 +241,8 @@ class Core extends Base\Core
         array $input,
         Entity $aggregatorMerchant,
         bool $linkedAccount = true,
-        bool $accountEntity = false)
+        bool $accountEntity = false,
+        bool $optimizeCreationFlow = false)
     {
         $this->validateCodeIfPresent($input, $aggregatorMerchant, $linkedAccount);
 
@@ -326,7 +328,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($subMerchant);
 
-        $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant);
+        $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant, $optimizeCreationFlow);
 
         $this->syncHeimdallRelatedEntities($subMerchant, $input);
 
@@ -376,23 +378,31 @@ class Core extends Base\Core
         $subMerchant->setPricingPlan($pricingPlan);
     }
 
-    protected function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null)
+    public function addMerchantSupportingEntitiesAsync(Entity $merchant, Entity $aggregatorMerchant = null)
     {
-        $merchantBalance = $this->createBalance($merchant, Mode::TEST);
+        $this->repo->transactionOnLiveAndTest(function() use($merchant, $aggregatorMerchant) {
 
-        $this->createBalanceConfig($merchantBalance, Mode::TEST);
+            $merchantBalance = $this->createBalance($merchant, Mode::TEST);
 
-        (new BankAccount\Core)->createTestBankAccount($merchant);
+            $this->createBalanceConfig($merchantBalance, Mode::TEST);
 
-        (new Methods\Core)->setDefaultMethods($merchant, $aggregatorMerchant);
+            (new BankAccount\Core)->createTestBankAccount($merchant);
 
+            (new Methods\Core)->setDefaultMethods($merchant, $aggregatorMerchant);
+
+            (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
+
+            $this->setDefaultFeatureForMerchant($merchant);
+
+            $this->setPaymentLinkServiceDefaultForMerchant($merchant);
+        });
+    }
+
+    protected function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null, bool $optimizeCreationFlow = false)
+    {
         (new Detail\Core)->createMerchantDetails($merchant);
 
-        (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
-
-        $this->setDefaultFeatureForMerchant($merchant);
-
-        $this->setPaymentLinkServiceDefaultForMerchant($merchant);
+        $this->addMerchantSupportingEntitiesAsync($merchant, $aggregatorMerchant);
     }
 
     protected function setDefaultFeatureForMerchant(Entity $merchant)

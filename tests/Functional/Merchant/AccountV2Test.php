@@ -77,6 +77,10 @@ class AccountV2Test extends TestCase
         $stakeholders = $this->getDbEntities('stakeholder', ['merchant_id' => $accountId])->toArray();
 
         $this->assertEmpty($stakeholders);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
+
+        $this->assertNotNull($merchant);
     }
 
     public function testEditAccountV2ProfileAddress()

@@ -263,7 +263,7 @@ class Service extends Base\Service
      * @return array
      * @throws BadRequestException
      */
-    public function createSubMerchant(array $input, Entity $merchant = null, string $source = PartnerConstants::ADD_ACCOUNT): array
+    public function createSubMerchant(array $input, Entity $merchant = null, string $source = PartnerConstants::ADD_ACCOUNT, bool $optimizeCreationFlow = false): array
     {
         $merchant = $merchant ?? $this->merchant;
 
@@ -293,7 +293,7 @@ class Service extends Base\Service
             }
         }
 
-        $output =  $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input);
+        $output =  $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input, $optimizeCreationFlow);
 
         $data = [
             'status'       => 'success',
@@ -4395,7 +4395,75 @@ class Service extends Base\Service
         return ['variant' => $variant];
     }
 
-    protected function createSubMerchantAndSetRelations(Entity $merchant, bool $isLinkedAccount, array $input)
+    protected function createSubMerchantAndSetRelationsInternal($input,
+                                                                $merchant,
+                                                                $isLinkedAccount,
+                                                                $ownerId,
+                                                                $product,
+                                                                $optimizeCreationFlow = false)
+    {
+        $enableDashboardAccess = (bool) ($input['dashboard_access'] ?? false);
+
+        $allowReversals = (bool) ($input['allow_reversals'] ?? false);
+
+        $this->checkDashboardAccessForAllowReversals($enableDashboardAccess, $allowReversals);
+
+        unset($input['dashboard_access']);
+
+        unset($input['allow_reversals']);
+
+        /** @var  Core */
+        $merchantCore = $this->core();
+
+        /** @var Entity */
+        $subMerchant = $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount, false, $optimizeCreationFlow);
+
+        $newUser = null;
+
+        $createdNew = false;
+
+        if ($isLinkedAccount === false)
+        {
+            $merchantCore->addSubMerchantReferral($merchant, $subMerchant);
+
+            $this->attachSubMerchantOwnerIfApplicable($ownerId, $subMerchant, $merchant, $product);
+
+            // Partner and sub-merchant are connected via partner's app,
+            // this connect is used for multiple validity checks, web-hooks, etc
+            $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
+        }
+
+        // Users will be created and given access to the account in partners flow, irrespective of enable
+        // dashboard access. users will be created and given access in linked accounts case only when enable
+        // dashboard access is true.
+        if ((($enableDashboardAccess === true) and ($isLinkedAccount === true)) or ($isLinkedAccount === false))
+        {
+            list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant, $product);
+        }
+
+        $this->repo->saveOrFail($subMerchant);
+
+        if (($allowReversals === true) and ($isLinkedAccount === true))
+        {
+            $featureParams = [
+                Feature\Entity::ENTITY_ID    => $subMerchant->getId(),
+                Feature\Entity::ENTITY_TYPE  => CE::MERCHANT,
+                Feature\Entity::NAME         => Feature\Constants::ALLOW_REVERSALS_FROM_LA
+            ];
+
+            (new Feature\Core)->create($featureParams, true);
+        }
+
+        $subMerchantAdditionType = ($isLinkedAccount === true) ? Metric::MARKETPLACE : Metric::PARTNER;
+
+        $dimensions = [Metric::SUB_MERCHANT_ADD_TYPE => $subMerchantAdditionType];
+
+        $this->trace->count(Metric::ADD_SUB_MERCHANT, $dimensions);
+
+        return [$subMerchant, $newUser, $createdNew];
+    }
+
+    protected function createSubMerchantAndSetRelations(Entity $merchant, bool $isLinkedAccount, array $input, bool $optimizeCreationFlow = false)
     {
         $ownerId = $merchant->primaryOwner()->getId();
 
@@ -4406,74 +4474,22 @@ class Service extends Base\Service
 
         $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
 
-        list($subMerchant, $newUser, $createdNew) = $this->repo->transactionOnLiveAndTest(function () use (
-            $input,
-            $merchant,
-            $isLinkedAccount,
-            $ownerId,
-            $product
-        )
+        if($optimizeCreationFlow === false)
         {
-            $enableDashboardAccess = (bool) ($input['dashboard_access'] ?? false);
-
-            $allowReversals = (bool) ($input['allow_reversals'] ?? false);
-
-            $this->checkDashboardAccessForAllowReversals($enableDashboardAccess, $allowReversals);
-
-            unset($input['dashboard_access']);
-
-            unset($input['allow_reversals']);
-
-            /** @var  Core */
-            $merchantCore = $this->core();
-
-            /** @var Entity */
-            $subMerchant = $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount);
-
-            $newUser = null;
-
-            $createdNew = false;
-
-            if ($isLinkedAccount === false)
-            {
-                $merchantCore->addSubMerchantReferral($merchant, $subMerchant);
-
-                $this->attachSubMerchantOwnerIfApplicable($ownerId, $subMerchant, $merchant, $product);
-
-                // Partner and sub-merchant are connected via partner's app,
-                // this connect is used for multiple validity checks, web-hooks, etc
-                $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
-            }
-
-            // Users will be created and given access to the account in partners flow, irrespective of enable
-            // dashboard access. users will be created and given access in linked accounts case only when enable
-            // dashboard access is true.
-            if ((($enableDashboardAccess === true) and ($isLinkedAccount === true)) or ($isLinkedAccount === false))
-            {
-                list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant, $product);
-            }
-
-            $this->repo->saveOrFail($subMerchant);
-
-            if (($allowReversals === true) and ($isLinkedAccount === true))
-            {
-                $featureParams = [
-                    Feature\Entity::ENTITY_ID    => $subMerchant->getId(),
-                    Feature\Entity::ENTITY_TYPE  => CE::MERCHANT,
-                    Feature\Entity::NAME         => Feature\Constants::ALLOW_REVERSALS_FROM_LA
-                ];
-
-                (new Feature\Core)->create($featureParams, true);
-            }
-
-            $subMerchantAdditionType = ($isLinkedAccount === true) ? Metric::MARKETPLACE : Metric::PARTNER;
-
-            $dimensions = [Metric::SUB_MERCHANT_ADD_TYPE => $subMerchantAdditionType];
-
-            $this->trace->count(Metric::ADD_SUB_MERCHANT, $dimensions);
-
-            return [$subMerchant, $newUser, $createdNew];
-        });
+            list($subMerchant, $newUser, $createdNew) = $this->repo->transactionOnLiveAndTest(function() use (
+                $input,
+                $merchant,
+                $isLinkedAccount,
+                $ownerId,
+                $product
+            ) {
+                return $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $isLinkedAccount, $ownerId, $product, false);
+            });
+        }
+        else
+        {
+            list($subMerchant, $newUser, $createdNew) = $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $isLinkedAccount, $ownerId, $product, true);
+        }
 
         if ($merchant->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
         {
