@@ -160,7 +160,7 @@ export default class SubscriptionsController extends React.Component {
               <NavLink to="/plans">Plans</NavLink>
               <ShowWhen additionalCondition={(user) => !user.isChargeAtWillEnabled}>
                 <NavLink to="/subscriptions/settings">
-                  Settings <span class="badge bg-success">new</span>
+                  Settings
                 </NavLink>
               </ShowWhen>
             </ShowWhen>

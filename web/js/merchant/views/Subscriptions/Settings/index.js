@@ -101,11 +101,8 @@ export default class SubscriptionsSettings extends React.Component {
               <div class="panel-heading">
                 <span class="title">Payment Methods</span>{' '}
                 <DocsLink
-                  url={
-                    org.custom_code === 'axis'
-                      ? 'https://razorpay.com/subscriptions/dashboard/settings/'
-                      : 'https://www.razorpay.com/docs/Payment-Subscription-Payment-method-Emandate-new/razorpay/subscriptions/dashboard/settings/#steps'
-                  }
+                  title="Know More"
+                  url="https://razorpay.com/docs/subscriptions/dashboard/settings/#steps"
                 />
               </div>
               <div class="panel-body">
