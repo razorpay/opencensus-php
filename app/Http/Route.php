@@ -5952,8 +5952,8 @@ class Route
 
         // Instrument requests
         'get_internal_instrument_request_by_id'       => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
-        'get_templates'                               => Permission::PAYMENT_TERMINAL_BUY_PRICING_PLANS,
-        'get_method_templates'                        => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
+        'get_templates'                               => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
+        'get_method_templates'                        => Permission::PAYMENT_TERMINAL_BUY_PRICING_PLANS,
         'patch_internal_instrument_request_by_id'     => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
         'bulk_copy_internal_instrument_request'       => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
         'delete_internal_instrument_request_by_id'    => Permission::DELETE_INTERNAL_INSTRUMENT_REQUEST,
