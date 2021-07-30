@@ -11,6 +11,7 @@ const LOCALE_SAVE = 'CONFIG_LOCALE_SAVE';
 const FEATURES_FETCH = 'FEATURES_FETCH';
 const MERCHANT_LOGO_UPLOADED = 'MERCHANT_LOGO_UPLOADED';
 const CONFIG_SAVE = 'CONFIG_SAVE';
+const CONFIG_SAVE_EMAIL = 'CONFIG_SAVE_EMAIL';
 const FEATURES_SAVE = 'FEATURES_SAVE';
 const FETCH_LATE_AUTH_CONFIG = 'FETCH_LATE_AUTH_CONFIG';
 const CREATE_LATE_AUTH_CONFIG = 'CREATE_LATE_AUTH_CONFIG';
@@ -385,6 +386,21 @@ export const fetchInternationalProductsStatus = () => {
   };
 };
 
+// start updateEmailSettings
+export const updateEmailSettings = (data) => {
+  return {
+    type: CONFIG_SAVE_EMAIL,
+    payload: merchantFetch({
+      url: 'account/config/email',
+      method: 'post',
+      data,
+    }),
+  };
+};
+
+// end updateEmailSettings
+
+
 let initialState = {
   loading: true,
   error: null,
@@ -506,6 +522,7 @@ export default function (state = initialState, action) {
 
     case `${CONFIG_FETCH}::SUCCESS`:
     case `${CONFIG_SAVE}::SUCCESS`:
+    case `${CONFIG_SAVE_EMAIL}::SUCCESS`:
     case `${MERCHANT_LOGO_UPLOADED}::SUCCESS`:
       return set(state, 'config', normalizeConfig(action.payload.data));
     case `${REMOVE_LOGO}::SUCCESS`:
