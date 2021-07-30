@@ -51,6 +51,7 @@ class Fields
     const RESPONSE_MESSAGE              = 'responseMessage';
     const GATEWAY_RESPONSE_CODE         = 'gatewayResponseCode';
     const GATEWAY_RESPONSE_MESSAGE      = 'gatewayResponseMessage';
+    const GATEWAY_RESPONSE_STATUS       = 'gatewayResponseStatus';
 
     // ------------------ BANK ACCOUNT --------------- //
     const BANK_CODE                     = 'bankCode';
@@ -112,6 +113,34 @@ class Fields
     const QUERIES                       = 'queries';
     const LIMIT                         = 'limit';
     const OFFSET                        = 'offset';
+
+    // ------------------- MANDATE -------------------- //
+    const AMOUNT_RULE                   = 'amountRule';
+    const BLOCK_FUND                    = 'blockFund';
+    const INITIATED_BY                  = 'initiatedBy';
+    const GATEWAY_MANDATE_ID            = 'gatewayMandateId';
+    const MANDATE_CUSTOMER_ID           = 'mandateCustomerId';
+    const MANDATE_NAME                  = 'mandateName';
+    const MANDATE_TIMESTAMP             = 'mandateTimestamp';
+    const MANDATE_TYPE                  = 'mandateType';
+    const REQUEST_TYPE                  = 'requestType';
+    const MANDATE_APPROVAL_TIMESTAMP    = 'mandateApprovalTimestamp';
+    const MANDATE_REQUEST_ID            = 'mandateRequestId';
+    const ORG_MANDATE_ID                = 'orgMandateId';
+    const PAYER_REVOCABLE               = 'payerRevocable';
+    const RECURRENCE_PATTERN            = 'recurrencePattern';
+    const RECURRENCE_RULE               = 'recurrenceRule';
+    const RECURRENCE_VALUE              = 'recurrenceValue';
+    const ROLE                          = 'role';
+    const SHARE_TO_PAYEE                = 'shareToPayee';
+    const TRANSACTION_TYPE              = 'transactionType';
+    const SEQ_NUMBER                    = 'seqNumber';
+    const NEXT_EXECUTION                = 'nextExecution';
+    const UMN                           = 'umn';
+    const VALIDITY_START                = 'validityStart';
+    const VALIDITY_END                  = 'validityEnd';
+    const PAUSE_START                   = 'pauseStart';
+    const PAUSE_END                     = 'pauseEnd';
 
     // ------------- OPTIONAL VALUES IN TRANSACTION FLOW ---------//
     const REF_URL                       = 'refUrl';

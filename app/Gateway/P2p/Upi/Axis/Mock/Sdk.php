@@ -242,6 +242,263 @@ class Sdk
         return $response;
     }
 
+    public function sdkAuthorizeMandate()
+    {
+        $response = [
+            Fields::ACCOUNT_REFERENCE_ID        => $this->input[Fields::ACCOUNT_REFERENCE_ID],
+            Fields::AMOUNT                      => 100,
+            Fields::AMOUNT_RULE                 => 'EXACT',
+            Fields::BLOCK_FUND                  => false,
+            Fields::EXPIRY                      => $this->formattedTime(30),
+            Fields::GATEWAY_MANDATE_ID          => $this->input[Fields::MANDATE_REQUEST_ID],
+            Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+            Fields::GATEWAY_RESPONSE_CODE       => '00',
+            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Mandate is successfully approved',
+            Fields::GATEWAY_RESPONSE_STATUS     => 'SUCCESS',
+            Fields::INITIATED_BY                => 'payer',
+            Fields::MANDATE_APPROVAL_TIMESTAMP  => Carbon::now()->toIso8601String(),
+            Fields::MANDATE_NAME                => 'Sample mandate test',
+            Fields::MANDATE_TIMESTAMP           => Carbon::now()->toIso8601String(),
+            Fields::MANDATA_TYPE                => ($this->input[Fields::REQUEST_TYPE] === 'UPDATE') ?? 'CREATE',
+            Fields::MERCHANT_CUSTOMER_ID        => $this->input[Fields::MERCHANT_CUSTOMER_ID],
+            Fields::MERCHANT_REQUEST_ID         => $this->input[Fields::MERCHANT_REQUEST_ID],
+            Fields::ORG_MANDATE_ID              => str_random(35),
+            Fields::PAYEE_MCC                   => '2222',
+            Fields::PAYEE_NAME                  => 'Payee Name',
+            Fields::PAYEE_VPA                   => 'test@razoraxis',
+            Fields::PAYER_NAME                  => 'Payer name',
+            Fields::PAYER_REVOCABLE             => true,
+            Fields::PAYER_VPA                   => 'customer@razoraxis',
+            Fields::RECURRENCE_PATTERN          => 'WEEKLY',
+            Fields::RECURRENCE_RULE             => 'BEFORE',
+            Fields::RECURRENCE_VALUE            => '2',
+            Fields::REF_URL                     => 'https::example.com',
+            Fields::REMARKS                     => 'sample remarks',
+            Fields::ROLE                        => 'PAYER',
+            Fields::SHARE_TO_PAYEE              => true,
+            Fields::TRANSACTION_TYPE            => 'UPI_MANDATE',
+            Fields::UDF_PARAMETERS              => '{}',
+            Fields::UMN                         => str_random(10).'@bajaj',
+            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
+            Fields::VALIDITY_END                => Carbon::now()->addYears(10)->toDateString(),
+        ];
+
+        $this->content($response, $this->action);
+
+        $sign = $this->signContent(implode($response, ''));
+
+        $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
+
+        $response[Fields::STATUS] = 'SUCCESS';
+
+        return $response;
+    }
+
+    public function sdkRejectMandate()
+    {
+        $response = [
+            Fields::AMOUNT                      => 100,
+            Fields::AMOUNT_RULE                 => 'EXACT',
+            Fields::BLOCK_FUND                  => false,
+            Fields::EXPIRY                      => $this->formattedTime(30),
+            Fields::GATEWAY_MANDATE_ID          => $this->input[Fields::MANDATE_REQUEST_ID],
+            Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+            Fields::GATEWAY_RESPONSE_CODE       => ($this->input[Fields::REQUEST_TYPE] === 'UPDATE') ? 'QT' : 'ZA',
+            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Mandate is declined',
+            Fields::GATEWAY_RESPONSE_STATUS     => 'DECLINED',
+            Fields::INITIATED_BY                => 'payer',
+            Fields::MANDATE_NAME                => 'Sample mandate test',
+            Fields::MANDATE_TIMESTAMP           => Carbon::now()->toIso8601String(),
+            Fields::MANDATA_TYPE                => ($this->input[Fields::REQUEST_TYPE] === 'UPDATE') ?? 'CREATE',
+            Fields::MERCHANT_CUSTOMER_ID        => $this->input[Fields::MERCHANT_CUSTOMER_ID],
+            Fields::MERCHANT_REQUEST_ID         => $this->input[Fields::MERCHANT_REQUEST_ID],
+            Fields::ORG_MANDATE_ID              => str_random(35),
+            Fields::PAYEE_MCC                   => '2222',
+            Fields::PAYEE_NAME                  => 'Payee Name',
+            Fields::PAYEE_VPA                   => 'test@razoraxis',
+            Fields::PAYER_NAME                  => 'Payer name',
+            Fields::PAYER_REVOCABLE             => true,
+            Fields::PAYER_VPA                   => 'customer@razoraxis',
+            Fields::RECURRENCE_PATTERN          => 'WEEKLY',
+            Fields::RECURRENCE_RULE             => 'BEFORE',
+            Fields::RECURRENCE_VALUE            => '2',
+            Fields::REF_URL                     => 'https::example.com',
+            Fields::REMARKS                     => 'sample remarks',
+            Fields::ROLE                        => 'PAYER',
+            Fields::SHARE_TO_PAYEE              => true,
+            Fields::TRANSACTION_TYPE            => 'UPI_MANDATE',
+            Fields::UDF_PARAMETERS              => '{}',
+            Fields::UMN                         => str_random(10).'@bajaj',
+            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
+            Fields::VALIDITY_END                => Carbon::now()->addYears(10)->toDateString(),
+        ];
+
+        $this->content($response, $this->action);
+
+        $sign = $this->signContent(implode($response, ''));
+
+        $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
+
+        $response[Fields::STATUS] = 'SUCCESS';
+
+        return $response;
+    }
+
+    public function sdkPauseMandate()
+    {
+        $response = [
+            Fields::ACCOUNT_REFERENCE_ID        => $this->input[Fields::ACCOUNT_REFERENCE_ID],
+            Fields::AMOUNT                      => 100,
+            Fields::AMOUNT_RULE                 => 'EXACT',
+            Fields::BLOCK_FUND                  => false,
+            Fields::EXPIRY                      => $this->formattedTime(30),
+            Fields::GATEWAY_MANDATE_ID          => $this->input[Fields::UPI_REQUEST_ID],
+            Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+            Fields::GATEWAY_RESPONSE_CODE       => '00',
+            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Mandate is paused',
+            Fields::GATEWAY_RESPONSE_STATUS     => 'SUCCESS',
+            Fields::INITIATED_BY                => 'payer',
+            Fields::MANDATE_NAME                => 'Sample mandate test',
+            Fields::MANDATE_TIMESTAMP           => Carbon::now()->toIso8601String(),
+            Fields::MANDATA_TYPE                => $this->input[Fields::REQUEST_TYPE],
+            Fields::MERCHANT_CUSTOMER_ID        => $this->input[Fields::MERCHANT_CUSTOMER_ID],
+            Fields::MERCHANT_REQUEST_ID         => $this->input[Fields::MERCHANT_REQUEST_ID],
+            Fields::ORG_MANDATE_ID              => $this->input[Fields::ORG_MANDATE_ID],
+            Fields::PAUSE_END                   => $this->input[Fields::PAUSE_END] ,
+            Fields::PAUSE_START                 => $this->input[Fields::PAUSE_START] ,
+            Fields::PAYEE_MCC                   => '2222',
+            Fields::PAYEE_NAME                  => 'Payee Name',
+            Fields::PAYEE_VPA                   => 'test@razoraxis',
+            Fields::PAYER_NAME                  => 'Payer name',
+            Fields::PAYER_REVOCABLE             => true,
+            Fields::PAYER_VPA                   => 'customer@razoraxis',
+            Fields::RECURRENCE_PATTERN          => 'WEEKLY',
+            Fields::RECURRENCE_RULE             => 'BEFORE',
+            Fields::RECURRENCE_VALUE            => '2',
+            Fields::REF_URL                     => 'https::example.com',
+            Fields::REMARKS                     => $this->input[Fields::REMARKS],
+            Fields::ROLE                        => 'PAYER',
+            Fields::SHARE_TO_PAYEE              => true,
+            Fields::TRANSACTION_TYPE            => 'UPI_MANDATE',
+            Fields::UDF_PARAMETERS              => '{}',
+            Fields::UMN                         => str_random(10).'@bajaj',
+            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
+            Fields::VALIDITY_END                => Carbon::now()->addYears(10)->toDateString(),
+        ];
+
+        $this->content($response, $this->action);
+
+        $sign = $this->signContent(implode($response, ''));
+
+        $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
+
+        $response[Fields::STATUS] = 'SUCCESS';
+
+        return $response;
+    }
+
+    public function sdkUnpauseMandate()
+    {
+        $response = [
+            Fields::ACCOUNT_REFERENCE_ID        => $this->input[Fields::ACCOUNT_REFERENCE_ID],
+            Fields::AMOUNT                      => 100,
+            Fields::AMOUNT_RULE                 => 'EXACT',
+            Fields::BLOCK_FUND                  => false,
+            Fields::EXPIRY                      => $this->formattedTime(30),
+            Fields::GATEWAY_MANDATE_ID          => $this->input[Fields::UPI_REQUEST_ID],
+            Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+            Fields::GATEWAY_RESPONSE_CODE       => '00',
+            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Mandate is successfully unpaused',
+            Fields::GATEWAY_RESPONSE_STATUS     => 'SUCCESS',
+            Fields::INITIATED_BY                => 'payer',
+            Fields::MANDATE_NAME                => 'Sample mandate test',
+            Fields::MANDATE_TIMESTAMP           => Carbon::now()->toIso8601String(),
+            Fields::MANDATA_TYPE                => $this->input[Fields::REQUEST_TYPE],
+            Fields::MERCHANT_CUSTOMER_ID        => $this->input[Fields::MERCHANT_CUSTOMER_ID],
+            Fields::MERCHANT_REQUEST_ID         => $this->input[Fields::MERCHANT_REQUEST_ID],
+            Fields::ORG_MANDATE_ID              => $this->input[Fields::ORG_MANDATE_ID],
+            Fields::PAYEE_MCC                   => '2222',
+            Fields::PAYEE_NAME                  => 'Payee Name',
+            Fields::PAYEE_VPA                   => 'test@razoraxis',
+            Fields::PAYER_NAME                  => 'Payer name',
+            Fields::PAYER_REVOCABLE             => true,
+            Fields::PAYER_VPA                   => 'customer@razoraxis',
+            Fields::RECURRENCE_PATTERN          => 'WEEKLY',
+            Fields::RECURRENCE_RULE             => 'BEFORE',
+            Fields::RECURRENCE_VALUE            => '2',
+            Fields::REF_URL                     => 'https::example.com',
+            Fields::REMARKS                     => $this->input[Fields::REMARKS],
+            Fields::ROLE                        => 'PAYER',
+            Fields::SHARE_TO_PAYEE              => true,
+            Fields::TRANSACTION_TYPE            => 'UPI_MANDATE',
+            Fields::UDF_PARAMETERS              => '{}',
+            Fields::UMN                         => str_random(10).'@bajaj',
+            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
+            Fields::VALIDITY_END                => Carbon::now()->addYears(10)->toDateString(),
+        ];
+
+        $this->content($response, $this->action);
+
+        $sign = $this->signContent(implode($response, ''));
+
+        $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
+
+        $response[Fields::STATUS] = 'SUCCESS';
+
+        return $response;
+    }
+
+    public function sdkRevokeMandate()
+    {
+        $response = [
+            Fields::ACCOUNT_REFERENCE_ID        => $this->input[Fields::ACCOUNT_REFERENCE_ID],
+            Fields::AMOUNT                      => 100,
+            Fields::AMOUNT_RULE                 => 'EXACT',
+            Fields::BLOCK_FUND                  => false,
+            Fields::EXPIRY                      => $this->formattedTime(30),
+            Fields::GATEWAY_MANDATE_ID          => $this->input[Fields::UPI_REQUEST_ID],
+            Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+            Fields::GATEWAY_RESPONSE_CODE       => '00',
+            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Mandate is successfully approved',
+            Fields::GATEWAY_RESPONSE_STATUS     => 'SUCCESS',
+            Fields::INITIATED_BY                => 'payer',
+            Fields::MANDATE_NAME                => 'Sample mandate test',
+            Fields::MANDATE_TIMESTAMP           => Carbon::now()->toIso8601String(),
+            Fields::MANDATA_TYPE                => $this->input[Fields::REQUEST_TYPE],
+            Fields::MERCHANT_CUSTOMER_ID        => $this->input[Fields::MERCHANT_CUSTOMER_ID],
+            Fields::MERCHANT_REQUEST_ID         => $this->input[Fields::MERCHANT_REQUEST_ID],
+            Fields::ORG_MANDATE_ID              => str_random(35),
+            Fields::PAYEE_MCC                   => '2222',
+            Fields::PAYEE_NAME                  => 'Payee Name',
+            Fields::PAYEE_VPA                   => 'test@razoraxis',
+            Fields::PAYER_NAME                  => 'Payer name',
+            Fields::PAYER_REVOCABLE             => true,
+            Fields::PAYER_VPA                   => 'customer@razoraxis',
+            Fields::RECURRENCE_PATTERN          => 'WEEKLY',
+            Fields::RECURRENCE_RULE             => 'BEFORE',
+            Fields::RECURRENCE_VALUE            => '2',
+            Fields::REF_URL                     => 'https::example.com',
+            Fields::REMARKS                     => 'sample remarks',
+            Fields::ROLE                        => 'PAYER',
+            Fields::SHARE_TO_PAYEE              => true,
+            Fields::TRANSACTION_TYPE            => 'UPI_MANDATE',
+            Fields::UDF_PARAMETERS              => '{}',
+            Fields::UMN                         => str_random(10).'@bajaj',
+            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
+            Fields::VALIDITY_END                => Carbon::now()->addYears(10)->toDateString(),
+        ];
+
+        $this->content($response, $this->action);
+
+        $sign = $this->signContent(implode($response, ''));
+
+        $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
+
+        $response[Fields::STATUS] = 'SUCCESS';
+
+        return $response;
+    }
+
     public function callback()
     {
         $content = json_encode(array_pop($this->callbacks));
@@ -258,6 +515,7 @@ class Sdk
     {
         $successCode = '00';
         $successMessage = 'Your transaction is approved';
+        $recurrencePattern = ['ONETIME', 'DAILY', 'ASPRESENTED'];
 
         switch ($type)
         {
@@ -364,6 +622,142 @@ class Sdk
                     unset($callback[Fields::MERCHANT_REQUEST_ID]);
                 }
 
+                break;
+
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED:
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_UPDATE_REQUEST_RECEIVED:
+                $callback = [
+                    Fields::AMOUNT                      => $input[Fields::AMOUNT],
+                    Fields::AMOUNT_RULE                 => $input[Fields::AMOUNT_RULE],
+                    Fields::BLOCK_FUND                  => $input[Fields::BLOCK_FUND] ?? false,
+                    Fields::EXPIRY                      => $input[Fields::EXPIRY] ?? $this->formattedTime(30),
+                    Fields::GATEWAY_MANDATE_ID          => $input[Fields::GATEWAY_MANDATE_ID] ?? str_random(35),
+                    Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+                    Fields::INITIATED_BY                => $input[Fields::INITIATED_BY] ?? 'PAYER',
+                    Fields::MANDATE_NAME                => 'Sample mandate test',
+                    Fields::MANDATE_TIMESTAMP           => $input[Fields::MANDATE_TIMESTAMP] ??
+                                                           Carbon::now()->toIso8601String(),
+                    Fields::MERCHANT_CUSTOMER_ID        => $this->input[Fields::MERCHANT_CUSTOMER_ID],
+                    Fields::MERCHANT_ID                 => 'MERCHANT',
+                    Fields::ORG_MANDATE_ID              => $input[Fields::ORG_MANDATE_ID] ?? str_random(35),
+                    Fields::PAYEE_MCC                   => '2222',
+                    Fields::PAYEE_NAME                  => 'Payee Name',
+                    Fields::PAYEE_VPA                   => $input[Fields::PAYEE_VPA] ?? 'test@razoraxis',
+                    Fields::PAYER_REVOCABLE             => $input[Fields::PAYER_REVOCABLE] ?? true,
+                    Fields::PAYER_VPA                   => $input[Fields::PAYER_VPA] ?? 'customer@razoraxis',
+                    Fields::RECURRENCE_PATTERN          => $input[Fields::RECURRENCE_PATTERN] ?? 'WEEKLY',
+                    Fields::REF_URL                     => 'https::example.com',
+                    Fields::ROLE                        => $input[Fields::ROLE] ?? 'PAYER',
+                    Fields::SHARE_TO_PAYEE              => $input[Fields::SHARE_TO_PAYEE] ?? true,
+                    Fields::TRANSACTION_TYPE            => $input[Fields::TRANSACTION_TYPE] ?? 'UPI_MANDATE',
+                    Fields::TYPE                        => $type,
+                    Fields::UMN                         => $input[Fields::UMN] ?? str_random(10).'@bajaj',
+                    Fields::VALIDITY_START              => $input[Fields::VALIDITY_START] ??
+                                                           Carbon::now()->toDateString(),
+                    Fields::VALIDITY_END                => $input[Fields::VALIDITY_END] ??
+                                                           Carbon::now()->addYears(10)->toDateString(),
+                ];
+
+                if(in_array($callback[Fields::RECURRENCE_PATTERN], $recurrencePattern, true) === false)
+                {
+                    $callback[Fields::RECURRENCE_RULE]  = $input[Fields::RECURRENCE_RULE] ?? 'BEFORE';
+                    $callback[Fields::RECURRENCE_VALUE] = $input[Fields::RECURRENCE_VALUE] ?? '2';
+                }
+
+                if($input[Fields::MANDATE_TYPE] == 'UPDATE')
+                {
+                    $callback[Fields::ACCOUNT_REFERENCE_ID] = $input[Fields::ACCOUNT_REFERENCE_ID];
+                    $callback[Fields::MANDATE_TYPE]         = $input[Fields::MANDATE_TYPE];
+                }
+
+                break;
+
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_CREATED:
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_UPDATED:
+            case UpiAction::MANDATE_STATUS_UPDATE:
+            case UpiAction::CUSTOMER_OUTGOING_MANDATE_PAUSED:
+                $callback = [
+                    Fields::ACCOUNT_REFERENCE_ID        => $input[Fields::ACCOUNT_REFERENCE_ID],
+                    Fields::AMOUNT                      => $input[Fields::AMOUNT],
+                    Fields::AMOUNT_RULE                 => $input[Fields::AMOUNT_RULE],
+                    Fields::BLOCK_FUND                  => $input[Fields::BLOCK_FUND] ?? false,
+                    Fields::EXPIRY                      => $input[Fields::EXPIRY] ?? $this->formattedTime(30),
+                    Fields::GATEWAY_MANDATE_ID          => $input[Fields::GATEWAY_MANDATE_ID] ?? str_random(35),
+                    Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+                    Fields::GATEWAY_RESPONSE_CODE       => $input[Fields::GATEWAY_RESPONSE_CODE] ?? $successCode,
+                    Fields::GATEWAY_RESPONSE_MESSAGE    => $input[Fields::GATEWAY_RESPONSE_MESSAGE] ??
+                                                           'Mandate is successfully created',
+                    Fields::GATEWAY_RESPONSE_STATUS     => 'SUCCESS',
+                    Fields::INITIATED_BY                => $input[Fields::INITIATED_BY] ?? 'PAYER',
+                    Fields::MANDATE_NAME                => 'Sample mandate test',
+                    Fields::MANDATE_TIMESTAMP           => $input[Fields::MANDATE_TIMESTAMP] ??
+                                                           Carbon::now()->toIso8601String(),
+                    Fields::MERCHANT_CUSTOMER_ID        => $this->input[Fields::MERCHANT_CUSTOMER_ID],
+                    Fields::MERCHANT_ID                 => 'MERCHANT',
+                    Fields::MERCHANT_REQUEST_ID         => $input[Fields::MERCHANT_REQUEST_ID] ?? null,
+                    Fields::ORG_MANDATE_ID              => $input[Fields::ORG_MANDATE_ID] ?? str_random(35),
+                    Fields::PAYEE_MCC                   => '2222',
+                    Fields::PAYEE_NAME                  => 'Payee Name',
+                    Fields::PAYEE_VPA                   => $input[Fields::PAYEE_VPA] ?? 'test@razoraxis',
+                    Fields::PAYER_NAME                  => 'Payer Name',
+                    Fields::PAYER_REVOCABLE             => $input[Fields::PAYER_REVOCABLE] ?? true,
+                    Fields::PAYER_VPA                   => $input[Fields::PAYER_VPA] ?? 'customer@razoraxis',
+                    Fields::RECURRENCE_PATTERN          => $input[Fields::RECURRENCE_PATTERN] ?? 'WEEKLY',
+                    Fields::REF_URL                     => 'https::example.com',
+                    Fields::ROLE                        => $input[Fields::ROLE] ?? 'PAYER',
+                    Fields::SHARE_TO_PAYEE              => $input[Fields::SHARE_TO_PAYEE] ?? true,
+                    Fields::TRANSACTION_TYPE            => $input[Fields::TRANSACTION_TYPE] ?? 'UPI_MANDATE',
+                    Fields::TYPE                        => $type,
+                    Fields::UMN                         => $input[Fields::UMN] ?? str_random(10).'@bajaj',
+                    Fields::VALIDITY_START              => $input[Fields::VALIDITY_START] ??
+                                                           Carbon::now()->toDateString(),
+                    Fields::VALIDITY_END                => $input[Fields::VALIDITY_END] ??
+                                                           Carbon::now()->addYears(10)->toDateString(),
+                ];
+
+                if(in_array($callback[Fields::RECURRENCE_PATTERN], $recurrencePattern, true) === false)
+                {
+                    $callback[Fields::RECURRENCE_RULE]  = $input[Fields::RECURRENCE_RULE] ?? 'BEFORE';
+                    $callback[Fields::RECURRENCE_VALUE] = $input[Fields::RECURRENCE_VALUE] ?? '2';
+                }
+
+                if (($callback[Fields::GATEWAY_RESPONSE_CODE]) === 'JPMP' or
+                    ($input[Fields::MANDATE_TYPE] == 'PAUSE'))
+                {
+                    $callback[Fields::PAUSE_START]      = $input[Fields::PAUSE_START] ??
+                                                          Carbon::now()->toDateString();
+                    $callback[Fields::PAUSE_END]        = $input[Fields::PAUSE_END] ??
+                                                          Carbon::now()->addYears(10)->toDateString();
+                }
+                if(empty($input[Fields::MANDATE_TYPE]) === false)
+                {
+                    $callback[Fields::MANDATE_TYPE] = $input[Fields::MANDATE_TYPE];
+                }
+                // mandate approval timestamp should be set for approval request
+                if(isset($input[Fields::MANDATE_APPROVAL_TIMESTAMP]) === true)
+                {
+                    $callback[Fields::MANDATE_APPROVAL_TIMESTAMP]  = $input[Fields::MANDATE_APPROVAL_TIMESTAMP];
+                }
+                break;
+
+            case UpiAction::CUSTOMER_INCOMING_PRE_PAYMENT_NOTIFICATION_MANDATE_RECEIVED:
+                $callback = [
+                    Fields::AMOUNT                      => $input[Fields::AMOUNT],
+                    Fields::GATEWAY_MANDATE_ID          => $input[Fields::GATEWAY_MANDATE_ID],
+                    Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+                    Fields::GATEWAY_RESPONSE_CODE       => $input[Fields::GATEWAY_RESPONSE_CODE] ?? $successCode,
+                    Fields::GATEWAY_RESPONSE_MESSAGE    => $input[Fields::GATEWAY_RESPONSE_MESSAGE] ??
+                                                           'Mandate Notification Received Successfully',
+                    Fields::GATEWAY_RESPONSE_STATUS     => 'SUCCESS',
+                    Fields::MERCHANT_CUSTOMER_ID        => $input[Fields::MERCHANT_CUSTOMER_ID],
+                    Fields::MERCHANT_REQUEST_ID         => $input[Fields::MERCHANT_REQUEST_ID] ?? null,
+                    Fields::NEXT_EXECUTION              => $input[Fields::NEXT_EXECUTION] ??
+                                                           Carbon::now()->addDays(1)->toIso8601String(),
+                    Fields::ORG_MANDATE_ID              => $input[Fields::ORG_MANDATE_ID] ?? str_random(35),
+                    Fields::SEQ_NUMBER                  => $input[Fields::SEQ_NUMBER] ?? '1',
+                    Fields::TYPE                        => $type,
+                    Fields::UMN                         => $input[Fields::UMN],
+                ];
                 break;
 
             default:
