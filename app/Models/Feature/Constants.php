@@ -760,6 +760,10 @@ class Constants
 
     const FEATURE_BBPS = 'feature_bbps';
 
+    const ORG_AXIS_PAYPAL = 'axis_paypal';
+
+    const AXIS_PAYPAL_ENABLE = 'axis_paypal_enable';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1100,6 +1104,8 @@ class Constants
         self::ROUTE_KEY_MERCHANTS_QUEUE       => true,
         self::SHOW_MOR_TNC                    => true,
         self::FEATURE_BBPS                    => true,
+        self::ORG_AXIS_PAYPAL                 => true,
+        self::AXIS_PAYPAL_ENABLE              => true,
     ];
 
     // Entity type constants
