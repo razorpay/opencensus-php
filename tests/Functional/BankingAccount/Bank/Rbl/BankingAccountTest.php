@@ -4199,6 +4199,29 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
+    public function testUpdateActivationDetailWithRmNameAndPhoneNumber(RZP\Models\BankingAccount\Entity $bankingAccount = null)
+    {
+        $bankingAccount = $this->testCreateActivationDetail(null, $bankingAccount);
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        if(str_contains($bankingAccount['id'], Entity::getIdPrefix()) === false)
+        {
+            $bankingAccountId = $bankingAccount->getPublicId();
+        }
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details',
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
     public function prepareActivationDetail(array $input = null)
     {
         $bankingAccountEntity = $this->getDbLastEntity('banking_account');

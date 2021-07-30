@@ -2532,6 +2532,35 @@ return [
         ],
     ],
 
+    'testUpdateActivationDetailWithRmNameAndPhoneNumber' => [
+        'request'  => [
+            'url'     => '/banking_accounts/activation/{id}/details',
+            'method'  => 'POST',
+            'content' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_phone_number' => '9876543210',
+                'expected_monthly_gmv' => '100000',
+                'business_category' => 'partnership',
+                'account_type' => 'zero_balance',
+                'is_documents_walkthrough_complete' => true,
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'rm_name' => 'Razorpay test',
+                'rm_phone_number' => '9234567891'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_phone_number' => '9876543210',
+                'expected_monthly_gmv' => '100000',
+                'account_type' => 'zero_balance',
+                "is_documents_walkthrough_complete" => '1',
+                'rm_name' => 'Razorpay test',
+                'rm_phone_number' => '9234567891'
+            ],
+        ],
+    ],
+
     'testCreateBankingAccountActivationCommentAndUpdateStatusViaBatch' => [
         'request' => [
             'url'     => '/banking_accounts/activation/details/batch',

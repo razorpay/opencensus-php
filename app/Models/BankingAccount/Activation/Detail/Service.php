@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccount\State;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
@@ -142,11 +143,13 @@ class Service extends Base\Service
 
             $isBusinessNameEdit = $this->checkIfBusinessNameEdit($activationDetail, $input);
 
+            $isRmNotAssigned = $this->isRmNotAssigned($activationDetail, $input);
+
             $activationDetail = $this->core->update($activationDetail, $input);
 
             $this->initiatePanVerification($activationDetail, $bankingAccount, $isBusinessNameEdit, $isMerchantPocNameEdit, $isPanEdit);
 
-            $this->checkAndPushEventForRmAssigned($bankingAccount, $input);
+            $this->checkAndPushEventForRmAssigned($bankingAccount, $input, $activationDetail, $isRmNotAssigned);
 
             if ($activationDetail->isAssigneeTeamUpdated() === true)
             {
@@ -221,16 +224,16 @@ class Service extends Base\Service
         }
     }
 
-    private function checkAndPushEventForRmAssigned(BankingAccount\Entity $bankingAccount, array $activationDetail)
+    private function checkAndPushEventForRmAssigned(BankingAccount\Entity $bankingAccount, array $activationDetail, Entity $activationDetailDbEntity, bool $isRmNotAssigned)
     {
         $bankingAccountService = new BankingAccount\Service();
 
-        if (isset($activationDetail[Entity::RM_NAME]) === true and $bankingAccountService->isNeoStoneExperiment($bankingAccount) === true)
+        if (isset($activationDetail[Entity::RM_NAME]) === true)
         {
             $rmNameInLowerCaseWithTrimApplied = strtolower(trim($activationDetail[Entity::RM_NAME]));
 
-            // If RM Name is not any of the possible missing strings
-            if (in_array($rmNameInLowerCaseWithTrimApplied, BankingAccount\Entity::$rm_name_missing_possibilities) === false)
+            // If Neo-stone experiment and RM Name is not any of the possible missing strings
+            if($this->isValidCaseForNotifyingCustomerThroughEmailOnRmAssign($bankingAccountService, $bankingAccount, $rmNameInLowerCaseWithTrimApplied))
             {
                 $payload = [
                     'ca_rm_name'          => $activationDetail[Entity::RM_NAME],
@@ -239,6 +242,44 @@ class Service extends Base\Service
 
                 $this->notifier->notify($bankingAccount, Event::RM_ASSIGNED, Event::INFO, $payload);
             }
+
+            if($this->isValidCaseForNotifyingCustomerThroughSmsOnRmAssign($activationDetailDbEntity, $activationDetail, $rmNameInLowerCaseWithTrimApplied, $isRmNotAssigned))
+            {
+                $payload = [
+                    'receiver' => $activationDetailDbEntity[Entity::MERCHANT_POC_PHONE_NUMBER],
+                    'source'   => "api",
+                    'template' => 'sms.account.rm_assigned_banking_ca',
+                    'sender'   => "RZPAYX",
+                    'params'   => [
+                        'rm_name'         => $activationDetail[Entity::RM_NAME],
+                        'rm_phone_number' => $activationDetail[Entity::RM_PHONE_NUMBER]
+                    ],
+                ];
+
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_SMS_RM_ASSIGNED_FOR_CA,
+                    [
+                        'merchant_id'     => $bankingAccount->getMerchantId(),
+                        'rm_name'         => $activationDetail[Entity::RM_NAME],
+                        'rm_phone_number' => $activationDetail[Entity::RM_PHONE_NUMBER]
+                    ]);
+
+                try
+                {
+                    $this->app->raven->sendSms($payload);
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::BANKING_ACCOUNT_SMS_RM_ASSIGNED_FOR_CA_FAILED,
+                        [
+                            'merchant_id' => $bankingAccount->getMerchantId(),
+                        ]);
+                }
+            }
+
         }
     }
 
@@ -308,5 +349,36 @@ class Service extends Base\Service
         }
 
         return ($input[Entity::BUSINESS_NAME] !== $activationDetail->getBusinessName());
+    }
+
+    /**
+     * @param Entity $activationDetailEntity
+     * @param array $activationDetail
+     * @param string $rmNameInLowerCaseWithTrimApplied
+     * @param bool $isRmNotAssigned
+     * @return bool
+     * return true - If merchant poc phone number is not empty and RM Phone number is not empty and RM Name is not any of the possible missing strings.
+     */
+    private function isValidCaseForNotifyingCustomerThroughSmsOnRmAssign(Entity $activationDetailEntity, array $activationDetail, string $rmNameInLowerCaseWithTrimApplied, bool $isRmNotAssigned)
+    {
+        return empty($activationDetailEntity[Entity::MERCHANT_POC_PHONE_NUMBER]) === false && empty($activationDetail[Entity::RM_PHONE_NUMBER]) === false
+            && in_array($rmNameInLowerCaseWithTrimApplied, BankingAccount\Entity::$rm_name_missing_possibilities) === false && $isRmNotAssigned === true;
+    }
+
+    /**
+     * @param BankingAccount\Service $bankingAccountService
+     * @param BankingAccount\Entity $bankingAccount
+     * @param string $rmNameInLowerCaseWithTrimApplied
+     * @return bool
+     * return true - If its neostone experiment enabled for this merchant and RM Name is not any of the possible missing strings.
+     */
+    private function isValidCaseForNotifyingCustomerThroughEmailOnRmAssign(BankingAccount\Service $bankingAccountService, BankingAccount\Entity $bankingAccount, string $rmNameInLowerCaseWithTrimApplied): bool
+    {
+        return $bankingAccountService->isNeoStoneExperiment($bankingAccount) === true && in_array($rmNameInLowerCaseWithTrimApplied, BankingAccount\Entity::$rm_name_missing_possibilities) === false;
+    }
+
+    private function isRmNotAssigned(Entity $activationDetail, array $input)
+    {
+        return empty($input[Entity::RM_NAME]) === false && empty($activationDetail[Entity::RM_NAME]) === true;
     }
 }
