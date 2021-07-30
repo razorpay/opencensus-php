@@ -10,7 +10,7 @@ use RZP\Models\Settlement\Bucket\Core;
 
 class TransactionMigrationBatch extends Job
 {
-    const MUTEX_RESOURCE = 'SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_%s_%s';
+    const MUTEX_RESOURCE = 'SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_%s_%s_%s';
 
     const MUTEX_LOCK_TIMEOUT = 3600;
     /**
@@ -76,7 +76,7 @@ class TransactionMigrationBatch extends Job
                 return;
             }
 
-            $resource = sprintf(self::MUTEX_RESOURCE, $this->merchantId, $this->mode);
+            $resource = sprintf(self::MUTEX_RESOURCE, $this->merchantId, $this->opt['balance_type'], $this->mode);
 
             $details = $this->mutex->acquireAndRelease(
                 $resource,
