@@ -531,6 +531,12 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
 
     public function fetchTicketById(string $ticketId, $urlKey = 'url')
     {
+        if (($urlKey == 'urlind') and
+            ($ticketId !== "3331"))
+        {
+            return [];
+        }
+
         switch ($ticketId)
         {
             case 3328:
@@ -543,6 +549,47 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
                     'status' => 3,
                     'subject' => '',
                     'id' => 3328,
+                    'type' => null,
+                    'due_by' => '2020-11-02T11:02:50Z',
+                    'fr_due_by' => '2020-10-29T11:02:50Z',
+                    'is_escalated' => false,
+                    'custom_fields' => [
+                        'cf_category' => null,
+                        'cf_merchant_id' => 'CCOhinUeUsT8HN',
+                        'cf_source' => null,
+                        'cf_transaction_id' => 'pay_FrTYsVAuCrW8Fm',
+                        'cf_payment_method' => null,
+                        'cf_product' => null,
+                        'cf_escalation_reason' => null,
+                        'cf_platform' => null,
+                        'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
+                        'cf_refund_id' => null,
+                        'cf_order_id' => null,
+                        'cf_payment_email' => 'moulikak@razorpay.com',
+                        'cf_payment_phone' => ''
+                    ],
+                    'requester' => [
+                        'id' => 42020620300,
+                        'name' => 'Some name',
+                        'email' => 'thatemail@razorpay.com',
+                        'mobile' => null,
+                        'phone' => null
+                    ],
+                    'created_at' => '2020-10-28T11:02:50Z',
+                    'updated_at' => '2020-10-28T11:02:51Z'
+                ];
+            case 3331:
+                if ($urlKey !== 'urlind') {
+                    return [];
+                }
+                return [
+                    'priority' => 1,
+                    'requester_id' => 42020620300,
+                    'source' => 2,
+                    'company_id' => null,
+                    'status' => 3,
+                    'subject' => '',
+                    'id' => 3331,
                     'type' => null,
                     'due_by' => '2020-11-02T11:02:50Z',
                     'fr_due_by' => '2020-10-29T11:02:50Z',
@@ -626,6 +673,38 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
                     'status' => 2,
                     'subject' => '',
                     'id' => 3328,
+                    'description' => 'some description',
+                    'type' => null,
+                    'due_by' => '2020-11-02T11:02:50Z',
+                    'fr_due_by' => '2020-10-29T11:02:50Z',
+                    'is_escalated' => false,
+                    'custom_fields' => [
+                        'cf_category' => null,
+                        'cf_merchant_id' => 'CCOhinUeUsT8HN',
+                        'cf_source' => null,
+                        'cf_transaction_id' => 'pay_FrTYsVAuCrW8Fm',
+                        'cf_payment_method' => null,
+                        'cf_product' => null,
+                        'cf_escalation_reason' => null,
+                        'cf_platform' => null,
+                        'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
+                        'cf_refund_id' => null,
+                        'cf_order_id' => null,
+                        'cf_payment_email' => 'moulikak@razorpay.com',
+                        'cf_payment_phone' => ''
+                    ],
+                    'created_at' => '2020-10-28T11:02:50Z',
+                    'updated_at' => '2020-10-28T11:02:51Z'
+                ];
+            case 3331:
+                return [
+                    'priority' => 4,
+                    'requester_id' => 42020620300,
+                    'source' => 2,
+                    'company_id' => null,
+                    'status' => 2,
+                    'subject' => '',
+                    'id' => 3331,
                     'description' => 'some description',
                     'type' => null,
                     'due_by' => '2020-11-02T11:02:50Z',

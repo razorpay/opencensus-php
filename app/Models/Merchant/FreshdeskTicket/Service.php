@@ -260,13 +260,32 @@ class Service extends Base\Service
 
         $email = $input['email'];
 
-        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
+        $fdInstances = [Constants::RZPIND, Constants::RZP];
 
-        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
+        $urls = [self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstances[0]],
+                self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstances[1]]];
 
-        $ticket = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId, $url);
+        $ticketFound = false;
 
-        if (isset($ticket['id']) === false)
+        foreach ($urls as $key => $value)
+        {
+            $currentTicket = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId, $value);
+
+            if (isset($currentTicket['id']) === true)
+            {
+                $ticket = $currentTicket;
+
+                $url = $value;
+
+                $ticketFound = true;
+
+                $input['group_id'] = $this->app['config']->get('applications.freshdesk.activation')[$fdInstances[$key]]['groupIdGrievance'];
+
+                break;
+            }
+        }
+
+        if ($ticketFound === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
         }

@@ -396,12 +396,14 @@ return [
 
         'activation'  => [
             'rzp'   =>   [
-                'agentId'   =>  env('WORKFLOW_ACTIVATION_RZP_AGENT_ID'),
-                'groupId'   =>  env('WORKFLOW_ACTIVATION_RZP_GROUP_ID'),
+                'agentId'          =>  env('WORKFLOW_ACTIVATION_RZP_AGENT_ID'),
+                'groupId'          =>  env('WORKFLOW_ACTIVATION_RZP_GROUP_ID'),
+                'groupIdGrievance' =>  env('FRESHDESK_CUSTOMER_GRIEVANCE_GROUP_ID_RZP'),
             ],
             'rzpind' => [
-                'agentId'   =>  env('WORKFLOW_ACTIVATION_RZP_IND_AGENT_ID'),
-                'groupId'   =>  env('WORKFLOW_ACTIVATION_RZP_IND_GROUP_ID'),
+                'agentId'          =>  env('WORKFLOW_ACTIVATION_RZP_IND_AGENT_ID'),
+                'groupId'          =>  env('WORKFLOW_ACTIVATION_RZP_IND_GROUP_ID'),
+                'groupIdGrievance' =>  env('FRESHDESK_CUSTOMER_GRIEVANCE_GROUP_ID_RZP_IND'),
             ],
         ],
 

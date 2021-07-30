@@ -254,6 +254,17 @@ class FreshdeskTicketTest extends TestCase
         }
     }
 
+    public function testRaiseGrievanceAgainstTicketFdIndiaInstance()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->directAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['description'] = 'some description';
+
+        $this->startTest();
+    }
+
     public function testRaiseGrievanceAgainstTicketUpdateFailure()
     {
         $this->app['config']->set('applications.freshdesk.mock', true);

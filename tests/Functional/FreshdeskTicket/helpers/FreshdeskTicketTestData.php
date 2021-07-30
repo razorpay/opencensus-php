@@ -453,6 +453,38 @@ return [
         ],
     ],
 
+    'testRaiseGrievanceAgainstTicketFdIndiaInstance' => [
+        'request' => [
+            'url'     => '/freshdesk/grievance',
+            'method'  => 'POST',
+            'content' => [
+                'id'          => 3331,
+                'group_id'    => '123',
+                'email'       => 'thatemail@razorpay.com',
+                'custom_fields' => [
+                    'cf_requester_category' => 'Customer',
+                    'cf_transaction_id' => ''
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'number'            => 3331,
+                'status'            => 'Processing',
+                'subject'           => '',
+                'source'            => 2,
+                'type'              => null,
+                'payment_id'        => 'FrTYsVAuCrW8Fm',
+                'refund_id'         => null,
+                'order_id'          => null,
+                'transaction_id'    => 'pay_FrTYsVAuCrW8Fm',
+                'created_at'        => '2020-10-28T11:02:50Z',
+                'updated_at'        => '2020-10-28T11:02:51Z',
+            ],
+        ],
+    ],
+
     'testPostTicketPartnerSuccess' => [
         'request' => [
             'url' => '/freshdesk/tickets',
