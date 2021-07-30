@@ -186,7 +186,7 @@
                                                                 Become a RazorpayX merchant in just 3 steps:
                                                             </div>
                                                             <div class="para margin-bottom-24" style="margin: 0 0 4px;">
-                                                                1. First, click on the button below to created your account. You will be prompted to set your password
+                                                                1. First, click on the button below to create your account. You will be prompted to set your password
                                                             </div>
                                                             <div class="para margin-bottom-24" style="margin: 0 0 4px;">
                                                                 2. Next, you will have to fill in your KYC for using RazorpayX with a virtual account or current account set up
@@ -279,10 +279,10 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="footer-text" style="font-size: 12px; line-height: 1; color: #9195A6; text-align: center; padding: 8px 0;">
+                                                    <div class="footer-text" style="font-size: 12px; line-height: 1; color: #9195A6; text-align: center; padding: 0px 0;">
                                                         If you have any issues with services from
                                                     </div>
-                                                    <div class="footer-text" style="font-size: 12px; line-height: 0; color: #9195A6; text-align: center; padding: 2px 0;">
+                                                    <div class="footer-text" style="font-size: 12px; line-height: 0; color: #9195A6; text-align: center; padding: 8px 0;">
                                                         RazorpayX, Please raise your request&nbsp;<a class="link" href="{{ $support_url }}" target="_blank" style="text-decoration: none; color: #528FF0;">here.</a>
                                                     </div>
                                                 </div>

@@ -90,7 +90,7 @@
 
 <h3>Activation Timeline</h3>
 
-<p>As soon as the Activation Process in completed by you, depending on the business segment, we will take you live in the upcoming {{{ $activationDuration}}}.</p>
+<p>As soon as the Activation Process is completed by you, depending on the business segment, we will take you live in the upcoming {{{ $activationDuration}}}.</p>
 
 @if($token)
 <u>Integration: Start accepting Payments</u>

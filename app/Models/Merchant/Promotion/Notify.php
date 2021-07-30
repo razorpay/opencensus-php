@@ -21,7 +21,7 @@ class Notify
         // This logic of figuring out event based emails can be more
         // generic once we have more use cases of events. For now
         // simply calling signUp email
-        if ($promotion->event->getName() === Promotion\Event\Constants::SIGN_UP)
+        if ($promotion->event !== null and $promotion->event->getName() === Promotion\Event\Constants::SIGN_UP)
         {
             $this->sendEmailForSignUp($promotion, $credit, $merchant);
         }

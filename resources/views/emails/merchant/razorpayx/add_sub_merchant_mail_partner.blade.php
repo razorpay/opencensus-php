@@ -184,11 +184,11 @@
                                                         <div class="font-size-medium para-dark" style="color: #9195A6; font-size: 14px; line-height: 1.5;"><div class="para margin-bottom-8" style="margin: 0; margin-bottom: 28px;"> {{$subMerchant['name']}} has been successfully added to your account. <br> We have sent an invite mail to {{$subMerchant['email']}} for setting up their RazorpayX account password.</div>
                                                             <div class="para margin-bottom-24" style="margin: 0 0 5px;">
                                                                 <h3 style="margin: 0 0 3px;line-height: 0.5;">Activation Process</h3>
-                                                                <p>The first step for your affiliate account involves filling up the activation form on their <a href="{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)}}" style="color: #24bbea; text-decoration: none !important;">RazorpayX Dashboard</a>. The list of documents and details required for us to take the account live can be found then in the Activation panel on the dashboard. All requirements have a basic explanation alongside to help you through the process.</p>
+                                                                <p>The first step for your affiliate account involves filling up the activation form on their <a href="{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)}}" style="color: #24bbea; text-decoration: none !important;">RazorpayX Dashboard</a>. The list of documents and details required for us to take the account live can be found in the Activation panel on the dashboard. All requirements have a basic explanation alongside to help you through the process.</p>
                                                                 <p style="margin: 0 0 28px;">This process is crucial as we share the same KYC with our partner banks who do their own due diligence.</p>
 
                                                                 <h3 style="margin: 0 0 3px;line-height: 0.5;">Activation Timeline</h3>
-                                                                <p>As soon as the Activation Process in completed, depending on the business segment, we will take the account live in the upcoming {{{ $activationDuration}}}.</p>
+                                                                <p>As soon as the Activation Process is completed, depending on the business segment, we will take the account live in the upcoming {{{ $activationDuration}}}.</p>
 
                                                                 <p>
                                                                     Cheers,
@@ -269,10 +269,10 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="footer-text" style="font-size: 12px; line-height: 1; color: #9195A6; text-align: center; padding: 8px 0;">
+                                                    <div class="footer-text" style="font-size: 12px; line-height: 1; color: #9195A6; text-align: center; padding: 0px 0;">
                                                         If you have any issues with services from
                                                     </div>
-                                                    <div class="footer-text" style="font-size: 12px; line-height: 0; color: #9195A6; text-align: center; padding: 2px 0;">
+                                                    <div class="footer-text" style="font-size: 12px; line-height: 0; color: #9195A6; text-align: center; padding: 8px 0;">
                                                         RazorpayX, Please raise your request&nbsp;<a class="link" href="{{ $support_url }}" target="_blank" style="text-decoration: none; color: #528FF0;">here.</a>
                                                     </div>
                                                 </div>
