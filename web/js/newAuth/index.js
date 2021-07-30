@@ -23,7 +23,7 @@ const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <Size height="100%">
-        {authType === ROUTES.SIGNUP ? (
+        {authType.includes(ROUTES.SIGNUP) ? (
           <SignUp onRouteChange={handleRouteChange} />
         ) : (
           <SignIn onRouteChange={handleRouteChange} />
