@@ -3,6 +3,7 @@
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Payout\QueuedReasons;
 
 return [
     'testCreatePayoutEntry' => [
@@ -46,8 +47,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'status' => 'created',
-                'error'  => null
+                'status'        => 'created',
+                'error'         => null,
+                "queued_reason" => null,
             ],
         ],
     ],
@@ -426,6 +428,24 @@ return [
         'exception' => [
             'class'               => Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
+    'testCreateLedgerForQueuedPayoutCreatedViaService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/create_ledger',
+            'content' => [
+                "id"                   => "Gg7sgBZgvYjlSB",
+                "queue_if_low_balance" => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'        => 'queued',
+                'error'         => null,
+                "queued_reason" => QueuedReasons::LOW_BALANCE,
+            ],
         ],
     ],
 ];

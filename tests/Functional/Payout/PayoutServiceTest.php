@@ -1179,4 +1179,34 @@ class PayoutServiceTest extends TestCase
 
         return $balance;
     }
+
+    public function testCreateLedgerForQueuedPayoutCreatedViaService()
+    {
+        $this->testCreatePayoutEntry();
+
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number'   => '2224440041626905',
+                                        ], 'live')->first();
+
+        $this->fixtures->on('live')->edit(
+            'balance',
+            $balance->getId(),
+            [
+                'balance' => 0
+            ]
+        );
+
+        $this->ba->appAuthLive();
+
+        $countOfTransactionsBefore = count($this->getDbEntities('transaction', [], 'live'));
+
+        $response = $this->startTest();
+
+        $countOfTransactionsAfter = count($this->getDbEntities('transaction', [], 'live'));
+
+        $this->assertEquals($countOfTransactionsBefore, $countOfTransactionsAfter);
+
+        $this->assertEquals(null, $response['transaction_id']);
+    }
 }
