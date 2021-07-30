@@ -275,28 +275,53 @@
     </table>
 
     <div class="foot-note text-left">
-        <div class="bank-details">
-            <div>
-                <span class="text-black-o-40 font-bold">Bank Details</span>
-            </div>
-            <div>
-                <span class="font-weight-600">Account Name</span>
-                <span class="text-black-o-80 font-weight-600">Razorpay Pvt. Ltd</span>
-            </div>
-            <div>
-                <span class="font-weight-600">Account No.</span>
-                <span>1234 1234 1234 1245</span>
+        @if($seller_entity === 'RSPL')
+            <div class="bank-details">
+                <div>
+                    <span class="text-black-o-40 font-bold">Bank Details</span>
+                </div>
+                <div>
+                    <span class="font-weight-600">Account Name</span>
+                    <span class="text-black-o-80 font-weight-600">Razorpay Pvt. Ltd</span>
+                </div>
+                <div>
+                    <span class="font-weight-600">Account No.</span>
+                    <span>1234 1234 1234 1245</span>
 
+                </div>
+                <div>
+                    <span class="font-weight-600">Bank Name</span>
+                    <span >HDFC Koramangala</span>
+                </div>
+                <div>
+                    <span class="font-weight-600">IFSC</span>
+                    <span>HDFC12341245</span>
+                </div>
             </div>
-            <div>
-                <span class="font-weight-600">Bank Name</span>
-                <span >HDFC Koramangala</span>
+        @else
+            <div class="bank-details">
+                <div>
+                    <span class="text-black-o-40 font-bold">Bank Details</span>
+                </div>
+                <div>
+                    <span class="font-weight-600">Account Name</span>
+                    <span class="text-black-o-80 font-weight-600">RZPX PRIVATE LIMITED</span>
+                </div>
+                <div>
+                    <span class="font-weight-600">Account No.</span>
+                    <span>5020 0053 6761 16</span>
+
+                </div>
+                <div>
+                    <span class="font-weight-600">Bank Name</span>
+                    <span >HDFC Koramangala</span>
+                </div>
+                <div>
+                    <span class="font-weight-600">IFSC</span>
+                    <span>HDFC0000053</span>
+                </div>
             </div>
-            <div>
-                <span class="font-weight-600">IFSC</span>
-                <span>HDFC12341245</span>
-            </div>
-        </div>
+        @endif
         <br>
         <span class="text-black-o-80 font-weight-600">Notes</span>
         <ol>

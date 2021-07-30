@@ -143,6 +143,7 @@ class MerchantBankingInvoiceTest extends TestCase
                 'fee_type'          =>      'free_credits',
                 'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
             ]);
+
         return $x['id'];
     }
 
