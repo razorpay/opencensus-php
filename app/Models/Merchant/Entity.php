@@ -2980,4 +2980,15 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::PURPOSE_CODE);
     }
+
+    public function getMerchantProperties()
+    {
+         return([
+                'id'        => $this->getId(),
+                'name'      => $this->getBillingLabel(),
+                'mcc'       => $this->getCategory(),
+                'category'  => $this->getCategory2(),
+         ]);
+
+    }
 }

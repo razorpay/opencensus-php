@@ -617,7 +617,14 @@ class Processor
 
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions, $payment);
 
-            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e, $meta);
+            $properties = [];
+
+            if ($payment === null)
+            {
+                $properties['merchant'] = $this->merchant->getMerchantProperties();
+            }
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e, $meta, $properties);
 
             throw $e;
         }

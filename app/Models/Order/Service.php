@@ -67,6 +67,8 @@ class Service extends Base\Service
         }
         catch (\Throwable $ex)
         {
+            $properties['merchant'] = $this->merchant->getMerchantProperties();
+
             $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, null, $ex, $properties);
 
             throw $ex;
@@ -397,7 +399,11 @@ class Service extends Base\Service
         }
         catch (\Throwable $ex)
         {
-            $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, null, $ex);
+            $properties = [];
+
+            $properties['merchant'] = $this->merchant->getMerchantProperties();
+
+            $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, null, $ex, $properties);
 
             throw $ex;
         }
