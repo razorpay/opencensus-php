@@ -23,7 +23,8 @@ class DowntimeServiceProcessor implements ProcessorInterface
 {
     const STATUS_RESOLVE = 'RESOLVE';
 
-    const STATUS_CREATE = 'CREATE';
+    const STATUS_CREATE                      = 'CREATE';
+    const RAZORX_DUPLICATE_PLATFORM_DOWNTIME = 'RAZORX_DUPLICATE_PLATFORM_DOWNTIME';
 
     protected $app;
 
@@ -153,13 +154,15 @@ class DowntimeServiceProcessor implements ProcessorInterface
     {
         $mutexKey = $data[Entity::METHOD];
 
-        $mutexKey .= isset($data[Entity::GATEWAY]) ? $data[Entity::GATEWAY] : $data[Entity::ALL];
+        $mutexKey .= isset($data[Entity::GATEWAY]) ? $data[Entity::GATEWAY] : "nullGateway";
 
         $mutexKey .= isset($data[Entity::NETWORK]) ? $data[Entity::NETWORK] : "nullnetwork";
 
         $mutexKey .= isset($data[Entity::ISSUER]) ? $data[Entity::ISSUER] : "nullissuer";
 
         $mutexKey .= isset($data[Entity::VPA_HANDLE]) ? $data[Entity::VPA_HANDLE] : "nullvpahandle";
+
+        $mutexKey .= isset($data[Entity::MERCHANT_ID]) ? $data[Entity::MERCHANT_ID] : "platform";
 
         $this->trace->info(
             TraceCode::GATEWAY_DOWNTIME_SERVICE_MUTEX_KEY,
@@ -186,6 +189,11 @@ class DowntimeServiceProcessor implements ProcessorInterface
 
     protected function createDowntime(array $data)
     {
+        if(isset($data[Entity::MERCHANT_ID]) === true)
+        {
+            $this->checkOngoingPlatformDowntime($data);
+        }
+
         $downtime = $this->core->fetchMostRecentActive($data, DowntimeService::UNIQUE_KEYS);
 
         if (is_null($downtime) === false)
@@ -382,6 +390,25 @@ class DowntimeServiceProcessor implements ProcessorInterface
 
             throw new Exception\BadRequestValidationFailureException(
                 'Downtime Service invalid network present : ' . $input[Entity::NETWORK]);
+        }
+    }
+
+    private function checkOngoingPlatformDowntime(array $data)
+    {
+        $platformDowntimeCheck = $this->app->razorx->getTreatment("platform_downtime", self::RAZORX_DUPLICATE_PLATFORM_DOWNTIME, $this->mode);
+        if($platformDowntimeCheck === 'enabled')
+        {
+            $platformDowntime = $this->core->fetchMostRecentActive($data, DowntimeService::PLATFORM_DOWNTIME_UNIQUE_KEYS);
+            if(is_null($platformDowntime)===false)
+            {
+                throw new Exception\LogicException(
+                    'Creating merchant downtime during ongoing Platform downtime',
+                    null,
+                    [
+                        'DowntimeData' => $data,
+                    ]
+                );
+            }
         }
     }
 }

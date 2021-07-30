@@ -24,4 +24,13 @@ class DowntimeService
         Entity::VPA_HANDLE,
         Entity::MERCHANT_ID,
     ];
+
+    const PLATFORM_DOWNTIME_UNIQUE_KEYS = [
+        Entity::GATEWAY,
+        Entity::ISSUER,
+        Entity::METHOD,
+        Entity::SOURCE,
+        Entity::NETWORK,
+        Entity::VPA_HANDLE
+    ];
 }

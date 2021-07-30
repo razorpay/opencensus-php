@@ -134,9 +134,9 @@ class Service extends Base\Service
 
         $processor->validate($input);
 
-        $this->notifyOnSlack($input);
-
         $data = $processor->process($input);
+
+        $this->notifyOnSlack($input);
 
         return $data;
     }
