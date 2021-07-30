@@ -149,14 +149,19 @@ class Core extends Base\Core
                     [
                         UpiMandate\Entity::MAX_AMOUNT      => $maxAmount,
                         UpiMandate\Entity::FREQUENCY       => $frequency,
-                        UpiMandate\Entity::RECURRING_TYPE  => UpiMandate\RecurringType::BEFORE,
-                        UpiMandate\Entity::RECURRING_VALUE => UpiMandate\Frequency::$frequencyToRecurringValueMap[$frequency],
                         UpiMandate\Entity::START_TIME      => Carbon::now()->addDay(1)->getTimestamp(),
                         UpiMandate\Entity::END_TIME        => isset($input[Constants\Entity::SUBSCRIPTION_REGISTRATION]['end_time'])
                                                                 ? $input[Constants\Entity::SUBSCRIPTION_REGISTRATION]['end_time']
                                                                 : Carbon::now()->addYear(10)->getTimestamp(),
                     ]
             ];
+
+        if (array_key_exists($frequency, UpiMandate\Frequency::$frequencyToRecurringValueMap) === true)
+        {
+            $orderPayLoad[Order\Entity::TOKEN][UpiMandate\Entity::RECURRING_TYPE]   = UpiMandate\RecurringType::BEFORE;
+            $orderPayLoad[Order\Entity::TOKEN][UpiMandate\Entity::RECURRING_VALUE]  =
+                UpiMandate\Frequency::$frequencyToRecurringValueMap[$frequency];
+        }
 
         // Add TPV Bank Details, if present in payload
         if (isset($input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::BANK_ACCOUNT]) === true)

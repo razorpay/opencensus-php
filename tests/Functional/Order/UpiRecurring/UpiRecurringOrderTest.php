@@ -140,6 +140,25 @@ class UpiRecurringOrderTest extends TestCase
         $this->assertEquals(null, $upiMandate['recurring_value']);
     }
 
+    public function testCreateOrderWithAsPresentedFrequency()
+    {
+        $this->startTest();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->assertNotNull($upiMandate);
+
+        $this->assertNotNull($order);
+
+        $this->assertNotNull($upiMandate['start_time']);
+
+        $this->assertNotNull($upiMandate['end_time']);
+
+        $this->assertEquals(null, $upiMandate['recurring_value']);
+    }
+
     public function testCreateOrderWithoutStartAndEndTime()
     {
         $this->startTest();

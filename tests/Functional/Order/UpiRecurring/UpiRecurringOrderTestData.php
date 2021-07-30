@@ -315,6 +315,31 @@ return [
             ],
         ],
     ],
+
+    'testCreateOrderWithAsPresentedFrequency' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'method'          => 'upi',
+                'customer_id'     => 'cust_100000customer',
+                'payment_capture' => 1,
+                'token'           => [
+                    'max_amount'      => 150000,
+                    'frequency'       => 'as_presented',
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+            ],
+        ],
+    ],
+
     'testPreferencesForUpiRecurringOrder' => [
         'request' => [
             'content' => [],
