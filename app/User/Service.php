@@ -1495,6 +1495,7 @@ class Service extends Base\Service
             'show_schedule_callback',
             'ticket_creation_flow_revamp',
             'ticket_creation_flow_revamp_dashboard',
+            'hide_call_slots_10_12_2',
             'settlement_ux_revamp_p2',
             'rx_scheduled_payouts_rollout',
             'validate_user_2fa_status',

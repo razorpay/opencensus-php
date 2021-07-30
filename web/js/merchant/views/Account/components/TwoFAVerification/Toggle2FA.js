@@ -79,17 +79,6 @@ class Toggle2FA extends Component {
       })
       .catch(({ errors }) => {
         const error = (errors || [])[0];
-        analyticsTrack({
-          objectName: `2fa switch`,
-          actionName: 'result',
-          screen: 'my account',
-          properties: {
-            type: second_factor_auth ? 'Enable 2FA' : 'Disable 2FA',
-            status: 'failure',
-            failureReason: error,
-            ...getCommonAnalyticsProperties(window.rzp_user),
-          },
-        });
         if (error === 'User 2FA setup is required') {
           // this is for restricted mode merchants
           // when all team members don't have a verified mobile number
