@@ -14,10 +14,13 @@ import { getCustomURL } from 'merchant/components/DocsLink'
  * Container:  Switches between validation or creation of batch.
  */
 
+const ROUTE_SUCCESS_MESSAGE = 'You can download the output file from batch details view to check the items which were generated. For the items that could not be generated due to some issues, please upload a new batch file.';
+
 const successMessageMap = {
   refund: ' You can download the batch file report to check the final state of each refund request.',
-  payment_transfer: 'You can download the output file from batch details view to check the items which were generated. For the items that could not be generated due to some issues, please upload a new batch file.',
-  linked_account_create: 'You can download the output file from batch details view to check the items which were generated. For the items that could not be generated due to some issues, please upload a new batch file.',
+  payment_transfer: ROUTE_SUCCESS_MESSAGE,
+  linked_account_create: ROUTE_SUCCESS_MESSAGE,
+  transfer_reversal: ROUTE_SUCCESS_MESSAGE,
 }
 @connect(null, { closeModal, openModal, luminateRow })
 export default class BatchUpload extends Component {

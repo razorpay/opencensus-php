@@ -37,7 +37,7 @@ const BatchTypeFilterField = () => (
     <Field name="type" component="select" class="form-control input-sm">
       <option value="">All</option>
       <option value="payment_transfer">Transfers</option>
-      {/* <option value="transfer_reversal">Reversals</option> */}
+      <option value="transfer_reversal">Reversals</option>
       <option value="linked_account_create">Linked accounts</option>
     </Field>
   </div>

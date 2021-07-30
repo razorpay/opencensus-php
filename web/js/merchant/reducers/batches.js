@@ -395,11 +395,13 @@ export const validateRecurringChargeAxisBatch = validateBatch('recurring_charge_
 export const fetchHostedMandateBatchDetails = fetchBatchDetails();
 
 /* batches for route */
-export const fetchAllRouteBatches = fetchBatches(['payment_transfer', 'linked_account_create']);
+export const fetchAllRouteBatches = fetchBatches(['payment_transfer', 'linked_account_create', 'transfer_reversal']);
 export const createTransferBatch = createBatch('payment_transfer');
 export const validateTransferBatch = validateBatch('payment_transfer');
 export const createLinkedAccountBatch = createBatch('linked_account_create');
 export const validateLinkedAccountBatch = validateBatch('linked_account_create');
+export const createReversalsBatch = createBatch('transfer_reversal');
+export const validateReversalsBatch = validateBatch('transfer_reversal');
 export const fetchRouteBatchDetails = fetchBatchDetails();
 
 /* reducers */

@@ -9,6 +9,8 @@ import {
     validateTransferBatch,
     createLinkedAccountBatch,
     validateLinkedAccountBatch,
+    createReversalsBatch,
+    validateReversalsBatch,
 } from 'merchant/reducers/batches';
 import { closeModal } from 'merchant_common/reducers/modals';
 
@@ -20,6 +22,8 @@ const gaEvents = setGaTrack('Dashboard - Route - BU');
     validateTransferBatch,
     createLinkedAccountBatch,
     validateLinkedAccountBatch,
+    createReversalsBatch,
+    validateReversalsBatch,
     closeModal,
 })
 export default class CreateHostedMandateBatch extends Component {
@@ -53,6 +57,21 @@ export default class CreateHostedMandateBatch extends Component {
         />
     );
 
+    renderReversalsModal = () => (
+        <BatchUpload
+            acceptFileInfo={['csv', 'xlsx']} 
+            createBatch={this.props.createReversalsBatch}
+            validateBatch={this.props.validateReversalsBatch}
+            gaEvents={gaEvents}
+            maxRows="50,000" 
+            maxFileSize={11534336} // 11 MB
+            batchType="transfer_reversal"
+            docUrl="https://razorpay.com/docs/route/dashboard/batch-upload/" 
+            sampleUrl="/files/sample_batch_reversals.xlsx" 
+            processingOptions={true}
+        />
+    );
+
     render() {
         const { openUploadModal, user } = this.props;
 
@@ -69,6 +88,21 @@ export default class CreateHostedMandateBatch extends Component {
                                 <strong>Transfers</strong>
                             </div>
                             <div>Create transfers in batch</div>
+                        </div>
+                        <i class="i-chevron-right pull-right text-primary" />
+                    </div>
+                </div>
+                <div
+                    class="panel panel-default"
+                    onClick={openUploadModal(this.renderReversalsModal)}
+                >
+                    <div class="panel-body">
+                        <img src="/dist/css/assets/marketplace/reversals.svg" />
+                        <div class="description">
+                            <div class="text-primary">
+                                <strong>Reversals</strong>
+                            </div>
+                            <div>Create reversals in batch</div>
                         </div>
                         <i class="i-chevron-right pull-right text-primary" />
                     </div>

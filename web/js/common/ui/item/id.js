@@ -32,6 +32,7 @@ const batchBaseUrls = {
   linked_account_reversal: 'reversals',
   payment_transfer: 'route',
   linked_account_create: 'route',
+  transfer_reversal: 'route',
 };
 
 const commissionBase = {

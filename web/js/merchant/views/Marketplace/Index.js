@@ -142,7 +142,7 @@ export default class MarketplaceContainer extends React.Component {
             <NavLink to="/route/reversals">Reversals</NavLink>
             <NavLink to="/route/accounts">Accounts</NavLink>
             <ShowWhen additionalCondition={user => user.isRouteBatchUploadEnabled} >
-              <NavLink to="/route/batchuploads">Batch Upload</NavLink>
+              <NavLink to="/route/batchuploads">Batch Upload <span class="badge bg-success">NEW</span></NavLink>
             </ShowWhen>
           </header>
 
