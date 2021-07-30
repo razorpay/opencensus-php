@@ -251,8 +251,7 @@ class Core extends Base\Core
            }
         }
 
-        $migrationDone = false;
-        if($migrationDone and ($input['month'] >= 5 and $input['year'] >= 2021))
+        if(($input['month'] >= 7 and $input['year'] >= 2021) or ($input['year'] >= 2022))
         {
             foreach($data[BankingInvoiceReport::ROWS] as $type => $lineItem)
             {
@@ -279,6 +278,7 @@ class Core extends Base\Core
                         }
                     }
                 }
+
                 if($rblAccountInvoiceAmount > 0)
                 {
                     if($virtualAccountInvoiceAmount === 0){

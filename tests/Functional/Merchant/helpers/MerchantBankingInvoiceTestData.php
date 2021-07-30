@@ -352,7 +352,7 @@ return [
             'method'  => 'POST',
             'url'     => '/reports/invoice/banking',
             'content' => [
-                "month"          => 5,
+                "month"          => 7,
                 "year"           => 2021,
             ],
         ],

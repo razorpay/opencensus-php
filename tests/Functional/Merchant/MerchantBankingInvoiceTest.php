@@ -1989,9 +1989,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
     public function testBankingInvoiceDownloadFromMerchantDashboardForCARbl()
     {
-        //skipped because changes not added for May 2021 month
-        $this->markTestSkipped("test not needed");
-        $oldDateTime = Carbon::create(2021, 6, 21, 12, 23, 41, Timezone::IST);
+        $oldDateTime = Carbon::create(2021, 7, 21, 12, 23, 41, Timezone::IST);
 
         Carbon::setTestNow($oldDateTime);
 
