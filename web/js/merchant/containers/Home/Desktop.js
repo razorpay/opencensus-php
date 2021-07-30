@@ -45,7 +45,6 @@ import SettleNowButton from 'merchant/views/Settlements/Settlements/components/S
 import { showKYCStatusModal } from 'merchant/reducers/home';
 import { isDedupe, getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import NCModal from 'merchant/components/Activation/NCModal';
-import FamPay from 'merchant/components/Announcements/FamPay';
 import DedupeModal from 'merchant/components/Home/DedupeModal';
 import { fetchEscalations } from 'merchant/reducers/home';
 
@@ -313,7 +312,6 @@ class AnalyticsDesktop extends Component {
             !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
           }`}
         >
-          <FamPay user={user} />
 
           {/* nps banner */}
           {user.isAccepted && <NPSAnnouncement user={user} />}
