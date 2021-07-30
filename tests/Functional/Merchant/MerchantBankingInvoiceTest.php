@@ -551,10 +551,7 @@ class MerchantBankingInvoiceTest extends TestCase
         $this->assertEquals(7, $eInvoiceEntities['month']);
         $this->assertEquals(2021, $eInvoiceEntities['year']);
         $this->assertEquals('BANKING', $eInvoiceEntities['type']);
-        //Changed this expected status to "failed" from "created" as all the invoices will be "RSPL" and month is "7".
-        // So, in an attempt to register this on e-invoice portal the status will be a failure
-        // as we are trying to register a future e-invoice
-        $this->assertEquals('failed', $eInvoiceEntities['status']);
+        $this->assertEquals('created', $eInvoiceEntities['status']);
 
         Carbon::setTestNow();
     }
@@ -621,7 +618,6 @@ class MerchantBankingInvoiceTest extends TestCase
 
     public function testBankingInvoiceEntityCreateWithEInvoiceForFebruaryMonth()
     {
-        $this->markTestSkipped("Removed RZPL entity");
         $oldDateTime = Carbon::create(2021, 2, 21, 12, 23, 41, Timezone::IST);
 
         Carbon::setTestNow($oldDateTime);
@@ -667,9 +663,7 @@ class MerchantBankingInvoiceTest extends TestCase
         $this->assertEquals(2, $eInvoiceEntities['month']);
         $this->assertEquals(2021, $eInvoiceEntities['year']);
         $this->assertEquals('BANKING', $eInvoiceEntities['type']);
-        //Changed this expected status to "generated" from "created" as all the invoices will be "RSPL" and hence, they all will be generated on einvoice portal
-        $this->assertEquals('generated', $eInvoiceEntities['status']);
-
+        $this->assertEquals('created', $eInvoiceEntities['status']);
 
         Carbon::setTestNow();
     }

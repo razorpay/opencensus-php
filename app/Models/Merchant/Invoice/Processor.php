@@ -153,9 +153,7 @@ class Processor extends Base\Core
 
                       $mismatchingSellerEntity = $this->isMismatchingSellerEntity($data);
 
-                      $override = true;
-
-                      if($override === true || $mismatchingSellerEntity === false)
+                      if($mismatchingSellerEntity === false)
                       {
                           $this->checkIfCreditNoteAmountGreaterThanInvoiceAmount($data);
 

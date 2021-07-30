@@ -226,6 +226,6 @@ class XEInvoice extends Job
                 }
             }
         }
-        return EInvoice\Constants::RSPL;
+        return EInvoice\Constants::RZPL;
     }
 }
