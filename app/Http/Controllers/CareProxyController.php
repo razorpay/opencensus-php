@@ -44,6 +44,7 @@ class CareProxyController extends Controller
         self::CALLBACK_EDIT_DATE_CONFIG => Name::CALLBACK_SLOT_CONFIG_EDIT,
         self::CALLBACK_GET_WEEK_CONFIG  => Name::CALLBACK_SLOT_CONFIG_VIEW,
         self::CALLBACK_EDIT_WEEK_CONFIG => Name::CALLBACK_SLOT_CONFIG_EDIT,
+        self::UPSERT_OPERATOR           => Name::MANAGE_CARE_SERVICE_CALLBACK,
     ];
 
     const MERCHANT_ROUTES = [
@@ -144,10 +145,6 @@ class CareProxyController extends Controller
 
     protected function validatePermissionForRequest($path)
     {
-        if (in_array($path, array_keys(self::ROUTE_VS_PERMISSION)) === true)
-        {
-             $this->ba->getAdmin()->hasPermissionOrFail(self::ROUTE_VS_PERMISSION[$path]);
-
-        }
+        $this->ba->getAdmin()->hasPermissionOrFail(self::ROUTE_VS_PERMISSION[$path]);
     }
 }
