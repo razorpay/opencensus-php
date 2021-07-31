@@ -253,4 +253,36 @@ class Repository extends Base\Repository
             ->distinct()
             ->count(Entity::PAYMENT_ID);
     }
+
+    protected function addQueryParamInternalRespondByFrom($query, $params)
+    {
+        $dbColumn = $this->dbColumn(Entity::INTERNAL_RESPOND_BY);
+
+        $param = $params[Entity::INTERNAL_RESPOND_BY_FROM];
+
+        $query->where($dbColumn, '>=', $param);
+    }
+
+    protected function addQueryParamInternalRespondByTo($query, $params)
+    {
+        $dbColumn = $this->dbColumn(Entity::INTERNAL_RESPOND_BY);
+
+        $param = $params[Entity::INTERNAL_RESPOND_BY_TO];
+
+        $query->where($dbColumn, '<=', $param);
+    }
+
+    protected function addQueryParamOrderByInternalRespond($query, $params)
+    {
+        $dbColumn = $this->dbColumn(Entity::INTERNAL_RESPOND_BY);
+
+        $param = $params[Entity::ORDER_BY_INTERNAL_RESPOND] ?? false;
+
+        if ((bool)$param === false)
+        {
+            return;
+        }
+
+        $query->orderBy(Entity::INTERNAL_RESPOND_BY, 'asc');
+    }
 }

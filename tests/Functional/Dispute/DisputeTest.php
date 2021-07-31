@@ -779,9 +779,14 @@ class DisputeTest extends TestCase
 
         $content = $this->runRequestResponseFlow($testData);
 
-        $this->assertArrayNotHasKey('deduction_source_type', $content);
-
-        $this->assertArrayNotHasKey('deduction_source_id', $content);
+        foreach (['deduction_source_type',
+                  'deduction_source_id',
+                  'internal_status',
+                  'internal_respond_by',
+                 ] as $keysNotVisibleToMerchant)
+        {
+            $this->assertArrayNotHasKey($keysNotVisibleToMerchant, $content);
+        }
 
         $adjustment = $this->getLastEntity('adjustment', true);
 
@@ -812,6 +817,46 @@ class DisputeTest extends TestCase
         $this->ba->adminAuth();
 
         $this->fixtures->times(2)->create('dispute');
+
+        $testData = $this->updateFetchTestData();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testDisputeFetchForAdminInternalStatusParam()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('dispute', ['internal_status' => 'open']);
+
+        $this->fixtures->create('dispute', ['internal_status' => 'closed']);
+
+        $testData = $this->updateFetchTestData();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testDisputeFetchForAdminInternalRespondByParam()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('dispute', ['internal_respond_by' => 1600000000]);
+
+        $this->fixtures->create('dispute', ['internal_respond_by' => 1500000000]);
+
+
+        $testData = $this->updateFetchTestData();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testDisputeFetchForAdminInternalRespondByPrioritize()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('dispute', ['internal_respond_by' => 1600000000, 'created_at' => 1400000000]);
+
+        $this->fixtures->create('dispute', ['internal_respond_by' => 1500000000, 'created_at' => 1400000000]);
 
         $testData = $this->updateFetchTestData();
 

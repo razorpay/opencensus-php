@@ -6316,6 +6316,10 @@ ALTER TABLE disputes
     ADD COLUMN deduction_source_type varchar(30) DEFAULT NULL,
     ADD COLUMN deduction_source_id char(14) DEFAULT NULL;
 
+ALTER TABLE disputes
+    ADD COLUMN internal_status varchar(50) DEFAULT 'open',
+    ADD COLUMN internal_respond_by int DEFAULT NULL;
+
 ALTER TABLE rewards
     ADD COLUMN unique_coupons_exist TINYINT(1) DEFAULT 0 NOT NULL
     ADD COLUMN unique_coupons_exhausted TINYINT(1) DEFAULT 0 NOT NULL

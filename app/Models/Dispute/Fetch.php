@@ -16,6 +16,12 @@ class Fetch extends BaseFetch
             Entity::MERCHANT_ID        => 'sometimes|alpha_num',
             self::EXPAND_EACH          => 'filled|string|in:payment,transaction.settlement',
         ],
+        AuthType::ADMIN_AUTH => [
+            Entity::INTERNAL_STATUS             => 'sometimes|string',
+            Entity::INTERNAL_RESPOND_BY_FROM    => 'sometimes|epoch',
+            Entity::INTERNAL_RESPOND_BY_TO      => 'sometimes|epoch',
+            Entity::ORDER_BY_INTERNAL_RESPOND   => 'sometimes|boolean',
+        ],
     ];
 
     const ACCESSES = [
@@ -30,6 +36,10 @@ class Fetch extends BaseFetch
         ],
         AuthType::ADMIN_AUTH => [
             self::EXPAND_EACH,
+            Entity::INTERNAL_STATUS,
+            Entity::INTERNAL_RESPOND_BY_FROM,
+            Entity::INTERNAL_RESPOND_BY_TO,
+            Entity::ORDER_BY_INTERNAL_RESPOND,
         ],
         AuthType::PROXY_AUTH => [
             self::EXPAND_EACH,

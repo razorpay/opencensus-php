@@ -2,6 +2,7 @@
 
 use RZP\Constants\Table;
 use RZP\Models\Dispute\Status;
+use RZP\Models\Dispute\InternalStatus;
 use RZP\Models\Dispute\Entity as Dispute;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
@@ -86,6 +87,12 @@ class CreateDisputesTable extends Migration
             $table->string(Dispute::STATUS, 50)
                   ->default(Status::OPEN);
 
+            $table->string(Dispute::INTERNAL_STATUS, 50)
+                  ->default(InternalStatus::OPEN);
+
+            $table->integer(Dispute::INTERNAL_RESPOND_BY)
+                  ->nullable();
+
             $table->text(Dispute::COMMENTS)
                   ->nullable();
 
@@ -121,6 +128,7 @@ class CreateDisputesTable extends Migration
             $table->index(Dispute::RESOLVED_AT);
             $table->index(Dispute::AMOUNT);
             $table->index([Dispute::EXPIRES_ON, Dispute::EMAIL_NOTIFICATION_STATUS]);
+            $table->index(Dispute::INTERNAL_RESPOND_BY);
 
             $table->foreign(Dispute::MERCHANT_ID)
                   ->references(Merchant::ID)

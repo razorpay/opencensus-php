@@ -2022,6 +2022,18 @@ class AdminFetch
                         Dispute\Status::CLOSED,
                     ],
                 ],
+                Dispute\Entity::INTERNAL_STATUS => [
+                    Fetch::LABEL        => 'Internal Status',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        Dispute\InternalStatus::OPEN,
+                        Dispute\InternalStatus::REPRESENTED,
+                        Dispute\InternalStatus::CONTESTED,
+                        Dispute\InternalStatus::WON,
+                        Dispute\InternalStatus::LOST,
+                        Dispute\InternalStatus::CLOSED,
+                    ],
+                ],
                 Dispute\Entity::PHASE           => [
                     Fetch::LABEL        => 'Phase',
                     Fetch::TYPE         => Fetch::TYPE_ARRAY,
@@ -2037,6 +2049,19 @@ class AdminFetch
                     Fetch::LABEL        => 'Amount',
                     Fetch::TYPE         => Fetch::TYPE_STRING,
                 ],
+                Dispute\Entity::INTERNAL_RESPOND_BY_TO          => [
+                    Fetch::LABEL        => 'Internal Respond By To',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                Dispute\Entity::INTERNAL_RESPOND_BY_FROM         => [
+                    Fetch::LABEL        => 'Internal Respond By From',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                Dispute\Entity::ORDER_BY_INTERNAL_RESPOND         => [
+                    Fetch::LABEL        => 'Prioritize on Internal Respond By Disputes',
+                    Fetch::TYPE         => Fetch::TYPE_BOOLEAN,
+                ],
+
             ],
 
             Entity::DISPUTE_EVIDENCE => [

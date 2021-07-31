@@ -35,6 +35,8 @@ class Entity extends Base\PublicEntity
     const RAISED_ON               = 'raised_on';
     const EXPIRES_ON              = 'expires_on';
     const STATUS                  = 'status';
+    const INTERNAL_STATUS         = 'internal_status';
+    const INTERNAL_RESPOND_BY     = 'internal_respond_by';
     const PHASE                   = 'phase';
     const COMMENTS                = 'comments';
     const CREATED_AT              = 'created_at';
@@ -55,6 +57,11 @@ class Entity extends Base\PublicEntity
     const GATEWAY_AMOUNT          = 'gateway_amount';
     const GATEWAY_CURRENCY        = 'gateway_currency';
     const CONVERSION_RATE         = 'conversion_rate';
+
+    // Filter params constants
+    const INTERNAL_RESPOND_BY_FROM = 'internal_respond_by_from';
+    const INTERNAL_RESPOND_BY_TO   = 'internal_respond_by_to';
+    const ORDER_BY_INTERNAL_RESPOND= 'order_by_internal_respond';
 
     /**
      *  Field for edit input, when accepted chargeback amount
@@ -110,6 +117,8 @@ class Entity extends Base\PublicEntity
         self::RAISED_ON,
         self::EXPIRES_ON,
         self::STATUS,
+        self::INTERNAL_STATUS,
+        self::INTERNAL_RESPOND_BY,
         self::PHASE,
         self::AMOUNT_DEDUCTED,
         self::AMOUNT_REVERSED,
@@ -144,6 +153,8 @@ class Entity extends Base\PublicEntity
         self::RAISED_ON,
         self::EXPIRES_ON,
         self::STATUS,
+        self::INTERNAL_STATUS,
+        self::INTERNAL_RESPOND_BY,
         self::PHASE,
         self::COMMENTS,
         self::EMAIL_NOTIFICATION_STATUS,
@@ -202,10 +213,12 @@ class Entity extends Base\PublicEntity
         self::RAISED_ON,
         self::EXPIRES_ON,
         self::RESPOND_BY,
+        self::INTERNAL_RESPOND_BY,
     ];
 
     protected $defaults = [
         self::STATUS                => Status::OPEN,
+        self::INTERNAL_STATUS       => InternalStatus::OPEN,
         self::DEDUCT_AT_ONSET       => false,
         self::AMOUNT_DEDUCTED       => 0,
         self::AMOUNT_REVERSED       => 0,
@@ -420,7 +433,6 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        // todo: clarify this behavior
         $attributes[self::EVIDENCE] = $this->evidence->toArrayPublic();
     }
 

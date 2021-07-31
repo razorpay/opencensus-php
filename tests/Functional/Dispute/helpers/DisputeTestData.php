@@ -1167,23 +1167,27 @@ return [
                 'count'         => 2,
                 'items'         => [
                     [
-                        'amount'            => 1000000,
-                        'currency'          => 'INR',
-                        'reason_code'       => 'SOMETHING_BAD',
-                        'status'            => 'open',
-                        'phase'             => 'chargeback',
-                        'payment'           => [
+                        'amount'              => 1000000,
+                        'currency'            => 'INR',
+                        'reason_code'         => 'SOMETHING_BAD',
+                        'status'              => 'open',
+                        'internal_status'     => 'open',
+                        'internal_respond_by' => null,
+                        'phase'               => 'chargeback',
+                        'payment'             => [
                             'status'          => 'captured',
                             'amount_refunded' => 0,
                         ],
                     ],
                     [
-                        'amount'            => 1000000,
-                        'currency'          => 'INR',
-                        'reason_code'       => 'SOMETHING_BAD',
-                        'status'            => 'open',
-                        'phase'             => 'chargeback',
-                        'payment'           => [
+                        'amount'              => 1000000,
+                        'currency'            => 'INR',
+                        'reason_code'         => 'SOMETHING_BAD',
+                        'status'              => 'open',
+                        'internal_status'     => 'open',
+                        'internal_respond_by' => null,
+                        'phase'               => 'chargeback',
+                        'payment'             => [
                             'status'          => 'captured',
                             'amount_refunded' => 0,
                         ],
@@ -1192,6 +1196,61 @@ return [
             ],
         ],
     ],
+
+    'testDisputeFetchForAdminInternalStatusParam'    => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/admin/dispute?internal_status=open',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 1,
+                'items'         => [
+                    [
+                        'internal_status'     => 'open',
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testDisputeFetchForAdminInternalRespondByPrioritize'    => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/admin/dispute?order_by_internal_respond=1',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 2,
+                'items'         => [
+                    [
+                        'internal_respond_by' => 1500000000,
+                    ],
+                    [
+                        'internal_respond_by' => 1600000000,
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testDisputeFetchForAdminInternalRespondByParam'    => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/admin/dispute?internal_respond_by_from=1550000000&internal_respond_by_to=1650000000',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 1,
+                'items'         => [
+                    [
+                        'internal_status'     => 'open',
+                    ],
+                ]
+            ],
+        ],
+    ],
+
 
     'testDisputeFetchForAdminRestricted'    => [
         'request'   => [

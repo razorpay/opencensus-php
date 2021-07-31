@@ -45,6 +45,8 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::GATEWAY_DISPUTE_STATUS => 'sometimes|string',
         Entity::STATUS                 => 'sometimes|string|custom',
+        Entity::INTERNAL_STATUS        => 'sometimes|string|custom',
+        Entity::INTERNAL_RESPOND_BY    => 'sometimes|epoch',
         Entity::EXPIRES_ON             => 'sometimes|epoch',
         Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
         Entity::SKIP_DEDUCTION         => 'sometimes|boolean',
