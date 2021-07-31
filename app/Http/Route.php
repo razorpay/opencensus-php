@@ -1063,6 +1063,8 @@ class Route
         'gateway_file_create'                      => ['post',     'gateway/files',                                  'GatewayFileController@createGatewayFile'                           ],
         'gateway_file_retry'                       => ['post',     'gateway/files/{id}/retry',                       'GatewayFileController@retryGatewayFile'                            ],
         'gateway_file_acknowledge'                 => ['post',     'gateway/files/{id}/acknowledge',                 'GatewayFileController@acknowledgeGatewayFile'                      ],
+        //Below route is for uploading bank refund file through admin dashboard
+        'gateway_file_bank_refunds_upload'         => ['post',     'gateway/files/bank/refunds/upload',              'GatewayFileController@uploadBankRefundFile'                        ],
         'scorecard'                                => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'banking_scorecard'                        => ['post',     'banking_scorecard',                              'AdminController@generateBankingScorecard'                          ],
         'billdesk_reconcile_cancelled'             => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
@@ -3398,6 +3400,7 @@ class Route
         'refund_scrooge_fetch_fee',
         'refund_scrooge_payment_update',
         'refund_scrooge_transaction_create',
+        'gateway_file_bank_refunds_upload',
 
         // account service routes
         'account_service_details_fetch',
@@ -4653,6 +4656,9 @@ class Route
         'partner_activation_status',
         'partner_activation_update',
         'partner_actions',
+
+        //  Uploading bank refund file
+        'gateway_file_bank_refunds_upload',
 
         // Scrooge - ODS Dashboard
         'scrooge_dashboard_init',
@@ -5940,6 +5946,7 @@ class Route
         'fund_account_validate_bulk_patch_status'   => Permission::BULK_PATCH_FUND_ACCOUNT_VALIDATION,
 
         'fee_recovery_manual_update'                => Permission::PROCESS_FEE_RECOVERY,
+        'gateway_file_bank_refunds_upload'          => Permission::REFUNDS_BANK_FILE_UPLOAD,
 
         //payout downtime
         'create_payout_downtime'                   => Permission::MANAGE_PAYOUT_DOWNTIME,
@@ -9231,6 +9238,7 @@ class Route
             'workflow_payout_amount_rules_edit',
             'workflow_payout_amount_rules_get_admin',
             'workflow_update',
+            'gateway_file_bank_refunds_upload',
 
             // ledger service
             'create_ledger_account',

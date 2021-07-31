@@ -320,4 +320,19 @@ class Constants
     const ASYNC_GATEWAYS = [
         self::SBIN
     ];
+
+    // Upload Refund file for SBI related changes
+    const MANUAL_FILE_SUPPORTED_GATEWAYS = [
+        self::UPI_SBI
+    ];
+
+    const ID                 = 'id';
+    const FILE_ID            = 'file_id';
+    const GATEWAY            = 'gateway';
+    const FILE               = 'file';
+    const MANUAL_REFUND_FILE = 'manual_refund_file';
+    const STORAGE_FILE_PATH  = [
+        self::UPI_SBI => 'sbi/sbi_upi_refund/outgoing'
+    ];
+    const SUCCESS            = 'success';
 }

@@ -6,10 +6,23 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Services\UfhService;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Models\Gateway\File\Constants as GatewayConstants;
 
 class Service extends Base\Service
 {
+    protected $ufh;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->ufh = (new UfhService($this->app));
+    }
+
     public function create(array $input)
     {
         $input = $this->formatInput($input);
@@ -80,4 +93,57 @@ class Service extends Base\Service
 
         $input[Entity::END] = Carbon::today(Timezone::IST)->getTimestamp() - 1;
     }
+
+    /**
+     * Send Upload file request to Ufh Service
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws BadRequestException
+     */
+    public function uploadBankRefundFile(array $input)
+    {
+        $gateway = $input[GatewayConstants::GATEWAY];
+
+        if (in_array($gateway, GatewayConstants::MANUAL_FILE_SUPPORTED_GATEWAYS, true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_GATEWAY,
+                'gateway',
+                $gateway
+            );
+        }
+
+        $file            = $input[GatewayConstants::FILE];
+        $fileName        = $file->getClientOriginalName();
+        $storageFileName = GatewayConstants::STORAGE_FILE_PATH[$gateway] . '/' . $fileName;
+
+        return $this->uploadFileToUfh($file, $storageFileName, GatewayConstants::MANUAL_REFUND_FILE);
+    }
+
+    /**
+     * @param UploadedFile $file
+     * @param string       $storageFileName
+     * @param string       $type
+     *
+     * @return array
+     * @throws Exception\ServerErrorException
+     */
+    protected function uploadFileToUfh(UploadedFile $file, string $storageFileName, string $type): array
+    {
+        $response = $this->ufh->uploadFileAndGetResponse($file, $storageFileName, $type, null);
+
+        $this->trace->info(
+            TraceCode::UFH_FILE_UPLOAD, [
+            'response' => $response,
+        ]);
+
+        return [
+            GatewayConstants::FILE_ID => $response[GatewayConstants::ID],
+            GatewayConstants::SUCCESS => isset($response[GatewayConstants::ID]),
+
+        ];
+    }
+
 }

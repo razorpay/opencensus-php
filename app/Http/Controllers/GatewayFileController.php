@@ -32,4 +32,13 @@ class GatewayFileController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function uploadBankRefundFile()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::GATEWAY_FILE)->uploadBankRefundFile($input);
+
+        return ApiResponse::json($response);
+    }
 }
