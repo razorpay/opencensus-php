@@ -60,6 +60,7 @@ use RZP\Models\Settlement\Bucket;
 use RZP\Models\Admin as MainAdmin;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Services\SalesForceClient;
+use RZP\Jobs\SubMerchantTaggingJob;
 use RZP\Error\PublicErrorDescription;
 use RZP\Jobs\CallBackFillReferredApp;
 use RZP\Mail\Merchant\EsEnabledNotify;
@@ -4424,7 +4425,14 @@ class Service extends Base\Service
 
         if ($isLinkedAccount === false)
         {
-            $merchantCore->addSubMerchantReferral($merchant, $subMerchant);
+            if($optimizeCreationFlow === true)
+            {
+                SubMerchantTaggingJob::dispatch($merchant->getId(), $subMerchant->getId());
+            }
+            else
+            {
+                $merchantCore->addSubMerchantReferral($merchant, $subMerchant);
+            }
 
             $this->attachSubMerchantOwnerIfApplicable($ownerId, $subMerchant, $merchant, $product);
 

@@ -3,6 +3,7 @@
 namespace Functional\Merchant;
 
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Service;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\AccountV2\Metric;
@@ -35,7 +36,11 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $accountId = $response['id'];
+
+        $this->validateSubMerchantTagging($accountId, '10000000000000');
 
     }
 
@@ -94,7 +99,6 @@ class AccountV2Test extends TestCase
         $metricCaptured = false;
 
         $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_EDIT_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
-
 
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
@@ -170,7 +174,7 @@ class AccountV2Test extends TestCase
 
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
-        $result = $this->runRequestResponseFlow($testData);
+        $result    = $this->runRequestResponseFlow($testData);
         $accountId = $result['id'];
 
         $testData = $this->testData['testDeleteAccountV2'];
@@ -183,7 +187,7 @@ class AccountV2Test extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/v2/accounts/' .$accountId;
+        $testData['request']['url'] = '/v2/accounts/' . $accountId;
 
         $this->startTest($testData);
     }
@@ -194,5 +198,13 @@ class AccountV2Test extends TestCase
             'partner_type'              => 'aggregator',
             'submerchant_business_type' => 'individual'
         ];
+    }
+
+    private function validateSubMerchantTagging(string $merchantId, string $partnerId)
+    {
+        $tagName = 'Ref-' . $partnerId;
+        Account\Entity::verifyIdAndSilentlyStripSign($merchantId);
+        $tags = (new Service())->getTags($merchantId);
+        $this->assertTrue(in_array($tagName, $tags));
     }
 }

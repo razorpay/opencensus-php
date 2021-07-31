@@ -2440,7 +2440,14 @@ class Core extends Base\Core
 
     public function addSubMerchantReferral($aggregratorMerchant, $account)
     {
+        $existingTags = $account->tagNames();
+
         $refTag = 'ref-' . $aggregratorMerchant->getId();
+
+        if (in_array(strtolower($refTag), array_map('strtolower', $existingTags)) === true)
+        {
+            return;
+        }
 
         $this->appendTag($account, $refTag);
     }
