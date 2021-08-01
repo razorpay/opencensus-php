@@ -24,7 +24,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_MULTIPLE_BALANCE_REQUEST                        = 'FETCH_MULTIPLE_BALANCE_REQUEST';
 
     const GATEWAY_HEALTH_CHECK_REQUEST                          = 'GATEWAY_HEALTH_CHECK_REQUEST';
-    const PAYMENT_CREATION_INITIATED                            = 'PAYMENT_CREATION_INITIATED';
+    const PAYMENT_CREATION_STARTED                              = 'PAYMENT_CREATION_STARTED';
     const PAYMENT_NEW_REQUEST                                   = 'PAYMENT_NEW_REQUEST';
     const PAYMENT_CREATED                                       = 'PAYMENT_CREATED';
     const PAYMENT_UPDATED_WITH_CPS_RESPONSE                     = 'PAYMENT_UPDATED_WITH_CPS_RESPONSE';
