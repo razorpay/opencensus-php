@@ -21,4 +21,14 @@ class Util
 
         return $balance;
     }
+
+    public static function convertAmountInPaiseToINR($balance)
+    {
+        $balance = stringify($balance);
+
+        $len = strlen($balance);
+        $balance = self::stringInsert($balance, ".", $len-2);
+
+        return $balance;
+    }
 }

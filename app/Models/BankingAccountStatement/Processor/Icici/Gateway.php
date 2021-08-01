@@ -403,6 +403,10 @@ class Gateway extends BaseProcessor
             {
                 $balanceInSomeNotation = Util::convertAmountInPaiseToScientificNotation($balance);
             }
+            else
+            {
+                $balanceInSomeNotation = Util::convertAmountInPaiseToINR($balance);
+            }
 
             $lasttrid_constructed = '1|' .
                                     $lastTransaction[Entity::BANK_TRANSACTION_ID] .
