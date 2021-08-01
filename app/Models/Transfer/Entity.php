@@ -51,6 +51,7 @@ class Entity extends Base\PublicEntity
     const ATTEMPTS                  = 'attempts';
     const ACCOUNT_CODE              = 'account_code';
     const ACCOUNT_CODE_USED         = 'account_code_used';
+    const ERROR_CODE                = 'error_code';
 
     // Report fields
     const SETTLEMENT_INITIATED_ON = 'settlement_initiated_on';

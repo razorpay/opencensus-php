@@ -34,6 +34,10 @@ class CreateTransfers extends Migration
             $table->char(Entity::STATUS, 255)
                   ->default(Transfer\Status::PROCESSED);
 
+            $table->string(Entity::SETTLEMENT_STATUS, 30)
+                  ->nullable()
+                  ->default(null);
+
             $table->char(Entity::TO_ID, Entity::ID_LENGTH);
 
             $table->string(Entity::TO_TYPE, 50);
@@ -74,6 +78,10 @@ class CreateTransfers extends Migration
                   ->nullable();
 
             $table->char(Entity::MESSAGE, 255)
+                  ->nullable()
+                  ->default(null);
+
+            $table->string(Entity::ERROR_CODE, 150)
                   ->nullable()
                   ->default(null);
 
