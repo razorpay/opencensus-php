@@ -33,6 +33,8 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Workflow\Action\Checker;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
+use RZP\Models\Workflow\Service\StateMap\Entity as WorkflowStateMap;
+use RZP\Models\Workflow\Service\EntityMap\Entity as WorkflowEntityMap;
 
 class Repository extends Base\Repository
 {
@@ -1167,7 +1169,7 @@ class Repository extends Base\Repository
      * @param BuilderEx $query
      * @param array $roleIds
      */
-    protected function joinQueryWorkflowServiceEntities(BuilderEx $query, array $roleIds)
+    protected function joinQueryWorkflowServiceEntities(BuilderEx $query, array $roleIds, $status = 'created')
     {
         $entityMapTable         = $this->repo->workflow_entity_map->getTableName();
         $workflowStateMapTable  = $this->repo->workflow_state_map->getTableName();
@@ -1192,7 +1194,7 @@ class Repository extends Base\Repository
 
         $query->join(
             $workflowStateMapTable,
-            function(JoinClause $join) use ($roleIds)
+            function(JoinClause $join) use ($roleIds, $status)
             {
                 $entityMapWorkflowIdColumn = $this->repo->workflow_entity_map->dbColumn(Workflow\Service\EntityMap\Entity::WORKFLOW_ID);
 
@@ -1200,9 +1202,12 @@ class Repository extends Base\Repository
                 $statusColumn = $this->repo->workflow_state_map->dbColumn(Workflow\Service\StateMap\Entity::STATUS);
                 $workflowIdColumn = $this->repo->workflow_state_map->dbColumn(Workflow\Service\StateMap\Entity::WORKFLOW_ID);
 
-                $join->on($entityMapWorkflowIdColumn, $workflowIdColumn)
-                     ->where($statusColumn, '=', 'created')
-                     ->whereIn($roleColumn, $roleIds);
+                $query = $join->on($entityMapWorkflowIdColumn, $workflowIdColumn)
+                     ->where($statusColumn, '=', $status);
+                if(empty($roleIds) === false)
+                {
+                    $query->whereIn($roleColumn, $roleIds);
+                }
             });
     }
 
@@ -1747,5 +1752,77 @@ class Repository extends Base\Repository
                       ->where($createdAtColumn, '>=', Carbon::now()->startOfDay()->timestamp);
 
         return $query->count();
+    }
+
+    public function fetchPendingPayoutsByApprover()
+    {
+        /*
+select users.id, users.name, users.email, pa.merchant_id as pmid, ba.account_number, min(pa.updated_at),
+count(pa.id) as payout_count,
+sum(pa.amount) as payout_total
+from payouts pa
+join balance ba on pa.balance_id = ba.id
+join workflow_entity_map we on pa.id = we.entity_id
+join workflow_state_map ws on we.workflow_id = ws.workflow_id
+join merchant_users mu on ws.merchant_id = mu.merchant_id
+join users on mu.user_id = users.id
+where
+ws.actor_type_value = mu.role and
+pa.status = 'pending' and
+we.entity_type = 'payout' and
+mu.product = 'banking'
+group by users.id, pmid, ba.account_number;
+*/
+
+        $workflowEntityMapEntityType             = $this->repo->workflow_entity_map->dbColumn(WorkflowEntityMap::ENTITY_TYPE);
+
+        $workflowStateMapMerchantId               = $this->repo->workflow_state_map->dbColumn(WorkflowStateMap::MERCHANT_ID);
+        $workflowStateMapActorTypeValue           = $this->repo->workflow_state_map->dbColumn(WorkflowStateMap::ACTOR_TYPE_VALUE);
+
+        $userIdColumn               = $this->repo->user->dbColumn(User\Entity::ID);
+        $userNameColumn             = $this->repo->user->dbColumn(User\Entity::NAME);
+        $userEmailColumn            = $this->repo->user->dbColumn(User\Entity::EMAIL);
+
+        $merchantUserUserIdColumn            = $this->repo->merchant_user->dbColumn(Merchant\MerchantUser\Entity::USER_ID);
+        $merchantUserMerchantIdColumn        = $this->repo->merchant_user->dbColumn(Merchant\MerchantUser\Entity::MERCHANT_ID);
+        $merchantUserProductColumn           = $this->repo->merchant_user->dbColumn(Merchant\MerchantUser\Entity::PRODUCT);
+        $merchantUserRoleColumn              = $this->repo->merchant_user->dbColumn(Merchant\MerchantUser\Entity::ROLE);
+
+        $merchantIdColumn           = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantNameColumn         = $this->repo->merchant->dbColumn(Merchant\Entity::NAME);
+
+        $balanceAccountNumberColumn          = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_NUMBER);
+
+        $userAttrs = [
+            $merchantUserUserIdColumn,
+            $userNameColumn,
+            $userEmailColumn,
+            $merchantNameColumn.' AS business_name',
+            $merchantUserMerchantIdColumn,
+            $balanceAccountNumberColumn.' AS bank_account_number',
+        ];
+
+        $query = $this->newQuery()
+                ->select($this->getTableName() . '.*')
+                ->select($userAttrs)
+                ->selectRaw('COUNT( payouts.' . Entity::ID . ') AS payout_count,
+                                SUM( payouts.' . Entity::AMOUNT . ') AS payout_total,
+                                MIN( payouts.' . Entity::UPDATED_AT . ') AS first_payout_pending_since')
+                ->with(['balance', 'merchant']);
+
+        $this->joinQueryBalance($query);
+
+        $this->joinQueryWorkflowServiceEntities($query, [],Status::PENDING);
+
+        $query->where($workflowEntityMapEntityType,Entity::PAYOUT)
+                ->whereColumn($merchantUserRoleColumn, '=', $workflowStateMapActorTypeValue);
+
+        $query->join(Table::MERCHANT_USER, $workflowStateMapMerchantId, '=', $merchantUserMerchantIdColumn)
+                ->join(Table::MERCHANT, $merchantUserMerchantIdColumn, '=', $merchantIdColumn)
+                ->join(Table::USER, $merchantUserUserIdColumn, '=', $userIdColumn)
+                ->where($merchantUserProductColumn, Merchant\Balance\Type::BANKING)
+                ->groupBy($merchantUserUserIdColumn, $merchantUserMerchantIdColumn, $balanceAccountNumberColumn);
+
+        return $query->get();
     }
 }

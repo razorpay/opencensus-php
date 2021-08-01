@@ -4507,6 +4507,18 @@ return [
         ],
     ],
 
+    'testEmailNotificationForPayoutPendingOnApproval' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/pending-payouts-approval-email',
+        ],
+        'response' => [
+            'content' => [
+                    'Queued email count' => 2
+            ],
+        ],
+    ],
+
     'testDashboardSummary' => [
         'request'  => [
             'method'  => 'GET',

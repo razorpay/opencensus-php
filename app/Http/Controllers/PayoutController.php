@@ -167,6 +167,27 @@ class PayoutController extends Controller
         }
     }
 
+    /**
+     * TODO:
+     */
+    public function pendingPayoutApprovalEmail()
+    {
+        try
+        {
+            $response = $this->service()->sendPendingPayoutApprovalEmails();
+
+            return ApiResponse::json($response);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PENDING_PAYOUT_APPROVAL_EMAILS_FAILED
+                );
+        }
+    }
+
     public function bulkRejectFundAccountPayouts()
     {
         $response = $this->service()->bulkRejectFundAccountPayout($this->input);

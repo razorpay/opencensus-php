@@ -1291,6 +1291,7 @@ class Route
         'payout_workflow_retry_admin_bulk'         => ['post',     'admin/payouts/workflow_retry',                   'PayoutController@bulkRetryWorkflowOnPayout'                        ],
         'payout_approve_internal'                  => ['post',     'payouts_internal/{id}/approve',                  'PayoutController@postApproveFundAccountPayoutInternal'             ],
         'payout_reject_internal'                   => ['post',     'payouts_internal/{id}/reject',                   'PayoutController@postRejectFundAccountPayoutInternal'              ],
+        'payout_send_pending_approval_email'       => ['post',     'payouts/pending-payouts-approval-email',         'PayoutController@pendingPayoutApprovalEmail'                       ],
 
         //Routes related to workflows microservice
         'wfs_config_create'                       => ['post',    'wf-service/configs',                               'WorkflowServiceController@createConfig'                            ],
@@ -3599,6 +3600,9 @@ class Route
 
         // merchant risk alert crons
         'merchant_risk_identify_blacklist_country_alerts',
+
+        // cron to send emails about pending payouts
+        'payout_send_pending_approval_email',
 
         'terminal_fill_enabled_wallets',
         'payment_update_reference6',
@@ -9540,6 +9544,7 @@ class Route
             'banking_account_service_cron_routes',
             'merchant_action_notification_cron',
             'merchant_risk_identify_blacklist_country_alerts',
+            'payout_send_pending_approval_email',
             'terminal_fill_enabled_wallets',
         ],
 

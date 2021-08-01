@@ -36,6 +36,7 @@ use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\OnHoldPayoutsProcess;
 use RZP\Tests\Traits\TestsMetrics;
+use RZP\Mail\Payout\PendingApprovals;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Jobs\PayoutPostCreateProcess;
@@ -987,6 +988,120 @@ class PayoutTest extends OAuthTestCase
         $completeSummary = $this->startTest();
 
         return $completeSummary;
+    }
+
+    public function testEmailNotificationForPayoutPendingOnApproval()
+    {
+        Mail::fake();
+
+        $this->liveSetUp();
+
+        $secondBankingBalance = $this->createDirectBankingBalance();
+
+        // Creating 2 banking accounts. First for the existing bankingBalance and second for the secondBankingBalance
+
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626998',
+            'balance_id'            =>  $this->bankingBalance->getId(),
+            'account_type'          =>  'nodal',
+        ];
+
+        $bankingAccount = $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $secondBankingAccountAttributes = [
+            'id'                    =>  'DEcba4321DEcba',
+            'account_number'        =>  '2224440041626999',
+            'balance_id'            =>  $secondBankingBalance->getId(),
+            'account_type'          =>  'current',
+        ];
+
+        $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes, 'live');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $p = $this->createPayoutWithWorkflow(
+            [
+                'account_number'        =>  '2224440041626905',
+                'amount'                =>  54321,
+            ],
+            'rzp_live_TheLiveAuthKey');
+
+        $we = $this->fixtures->on('live')->create('workflow_entity_map', ['entity_id' => substr($p['id'], 5), 'workflow_id' => 'FXMwu4HMK7ZT0A', 'entity_type' => 'payout', ])->toArray();
+
+        $ws = $this->fixtures->on('live')->create('workflow_state_map', ['workflow_id' => $we['workflow_id'], 'actor_type_value' => 'owner', 'status' => 'pending' ])->toArray();
+
+        $p = $this->createPayoutWithWorkflow(
+            [
+                'account_number'        =>  '2224440041626906',
+                'amount'                =>  12345,
+            ],
+            'rzp_live_TheLiveAuthKey');
+
+        $we = $this->fixtures->on('live')->create('workflow_entity_map', ['entity_id' => substr($p['id'], 5), 'workflow_id' => 'FXMwu4HMK7ZT0B', 'entity_type' => 'payout', ])->toArray();
+
+        $ws = $this->fixtures->on('live')->create('workflow_state_map', ['workflow_id' => $we['workflow_id'], 'actor_type_value' => 'owner', 'status' => 'pending'])->toArray();
+
+        $p = $this->createPayoutWithWorkflow(
+            [
+                'account_number'        =>  '2224440041626906',
+                'amount'                =>  11111,
+            ],
+            'rzp_live_TheLiveAuthKey');
+
+        $we = $this->fixtures->on('live')->create('workflow_entity_map', ['entity_id' => substr($p['id'], 5), 'workflow_id' => 'FXMwu4HMK7ZT0C', 'entity_type' => 'payout', ])->toArray();
+
+        $ws = $this->fixtures->on('live')->create('workflow_state_map', ['workflow_id' => $we['workflow_id'], 'actor_type_value' => 'owner', 'status' => 'pending'])->toArray();
+
+        $this->ba->cronAuth('live');
+
+        $this->startTest();
+
+        Mail::assertQueued(PendingApprovals::class, function ($mail)
+        {
+            $this->assertArrayHasKey('user_id', $mail->viewData);
+
+            $this->assertArrayHasKey('merchant_id', $mail->viewData);
+
+            $this->assertArrayHasKey('email', $mail->viewData);
+
+            $this->assertArrayHasKey('data', $mail->viewData);
+
+            $mail->hasTo('merchantuser01@razorpay.com');
+
+            $data = [
+                [
+                    'account_number' => 'XXXXXXXXXXXX6906',
+                    'payout_count' => 2,
+                    'payout_total' => '23456',
+                ],
+                [
+                    'account_number' => 'XXXXXXXXXXXX6905',
+                    'payout_count' => 1,
+                    'payout_total' => '54321',
+                ]
+            ];
+
+            $account  = array_column($data, 'account_number');
+            array_multisort($account, SORT_DESC, $data);
+
+            $account  = array_column($mail->viewData['data'], 'account_number');
+            array_multisort($account, SORT_DESC, $mail->viewData['data']);
+
+            $this->assertEquals($mail->viewData['data'][0]['account_number'], $data[0]['account_number']);
+            $this->assertEquals($mail->viewData['data'][0]['payout_count'], $data[0]['payout_count']);
+            $this->assertEquals($mail->viewData['data'][0]['payout_total'], $data[0]['payout_total']);
+
+            $this->assertEquals($mail->viewData['data'][1]['account_number'], $data[1]['account_number']);
+            $this->assertEquals($mail->viewData['data'][1]['payout_count'], $data[1]['payout_count']);
+            $this->assertEquals($mail->viewData['data'][1]['payout_total'], $data[1]['payout_total']);
+
+            $this->assertEquals($mail->viewData['amount_total'], ($data[1]['payout_total']+$data[0]['payout_total']));
+            $this->assertEquals($mail->viewData['total_count'], ($data[1]['payout_count']+$data[0]['payout_count']));
+
+            return true;
+        });
+
     }
 
     public function testDashboardSummary()
