@@ -829,7 +829,7 @@ return [
 
     'testReminderCallback'                        => [
         'request'  => [
-            'method' => 'GET',
+            'method' => 'POST',
             'url'    => '/tax-payments/reminders/tax_payments/txpy_1234',
         ],
         'response' => [
