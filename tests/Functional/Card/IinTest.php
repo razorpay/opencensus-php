@@ -83,6 +83,23 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddIinWithMandateHub()
+    {
+        $this->startTest();
+    }
+
+    public function testAddIinWithInvalidMandateHub()
+    {
+        $this->startTest();
+    }
+
+    public function testEditIinWithMandateHub()
+    {
+        $this->testAddIinWithMandateHub();
+
+        $this->startTest();
+    }
+
     public function testEditIinFailedInvalidMessageType()
     {
         $this->testAddIin();
@@ -684,6 +701,50 @@ class IinTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $this->startTest();
+    }
+
+    public function testBulkMandateHubUpdateEnable()
+    {
+        $mandateHubs = [
+            'mandate_hq'     => '0',
+            'billdesk_sihub' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401200, ['mandate_hubs' => $mandateHubs]);
+
+        $mandateHubs = [
+            'mandate_hq'     => '1',
+            'billdesk_sihub' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401201, ['mandate_hubs' => $mandateHubs]);
+
+        $this->ba->adminAuth();
+
+        // Enable otp flow for both and assert that it appears in response
+        $this->startTest();
+    }
+
+    public function testBulkMandateHubUpdateDisable()
+    {
+        $mandateHubs = [
+            'mandate_hq'     => '0',
+            'billdesk_sihub' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401200, ['mandate_hubs' => $mandateHubs]);
+
+        $mandateHubs = [
+            'mandate_hq'     => '1',
+            'billdesk_sihub' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401201, ['mandate_hubs' => $mandateHubs]);
+
+        $this->ba->adminAuth();
+
+        // Enable otp flow for both and assert that it appears in response
         $this->startTest();
     }
 

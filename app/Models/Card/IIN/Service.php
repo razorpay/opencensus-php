@@ -491,21 +491,41 @@ class Service extends Base\Service
 
     protected function formatEditInput(Entity $iin, array & $input)
     {
-        if (isset($input[Entity::FLOWS]) === false)
+        foreach ($iin->getEditFormattableKeys() as $key)
         {
-            return;
+            if (isset($input[$key]) === true)
+            {
+                $existingValues = [];
+
+                foreach ($this->getExistingMutatorValues($key, $iin) as $value)
+                {
+                    $existingValues[$value] = '1';
+                }
+
+                $mergedValues = array_merge($existingValues, $input[$key]);
+
+                $input[$key] = $mergedValues;
+            }
         }
+    }
 
-        $existingFlows = [];
-
-        foreach (Flow::getEnabledFlows($iin->getFlows()) as $flow)
+    /**
+     * @param $mutatorKey
+     * @param Entity $iin
+     * @return array
+     * @throws Exception\LogicException
+     */
+    protected function getExistingMutatorValues($mutatorKey, Entity $iin) : array
+    {
+        switch ($mutatorKey)
         {
-            $existingFlows[$flow] = '1';
+            case Entity::FLOWS:
+                return Flow::getEnabledFlows($iin->getFlows());
+            case Entity::MANDATE_HUBS:
+                return MandateHub::getEnabledMandateHubs($iin->getMandateHubs());
+            default:
+                throw new Exception\LogicException('Unknown mutator key : ' . $mutatorKey);
         }
-
-        $mergedValues = array_merge($existingFlows, $input[Entity::FLOWS]);
-
-        $input[Entity::FLOWS] = $mergedValues;
     }
 
     protected function getBasicDetails(Entity $iin)

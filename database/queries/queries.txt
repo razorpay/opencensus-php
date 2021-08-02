@@ -6331,3 +6331,6 @@ ALTER TABLE rewards
 
 ALTER TABLE merchants
    ADD COLUMN purpose_code VARCHAR(5) DEFAULT NULL;
+   
+ALTER TABLE iins
+    ADD COLUMN mandate_hubs INTEGER UNSIGNED DEFAULT 0;

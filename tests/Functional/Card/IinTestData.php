@@ -162,6 +162,82 @@ return [
         ],
     ],
 
+    'testAddIinWithMandateHub' => [
+        'request' => [
+            'url' => '/iins',
+            'method' => 'post',
+            'content' => [
+                'iin'          => 112333,
+                'network'      => 'RuPay',
+                'type'         => 'debit',
+                'mandate_hubs' => [
+                    'mandate_hq' => '1',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'iin'       => '112333',
+                'network'   => 'RuPay',
+                'type'      => 'debit',
+                'recurring' => false,
+                'mandate_hubs' => [
+                    'mandate_hq'
+                ],
+            ],
+        ],
+    ],
+
+    'testAddIinWithInvalidMandateHub' => [
+        'request' => [
+            'url' => '/iins',
+            'method' => 'post',
+            'content' => [
+                'iin'          => 112333,
+                'network'      => 'RuPay',
+                'type'         => 'debit',
+                'mandate_hubs' => [
+                    'invalid_hub' => '1',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid mandate_hub in input: invalid_hub',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testEditIinWithMandateHub' => [
+        'request' => [
+            'url' => '/iins/112333',
+            'method' => 'put',
+            'content' => [
+                'mandate_hubs'      => [
+                    'billdesk_sihub' => '1',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'iin'       => '112333',
+                'network'   => 'RuPay',
+                'mandate_hubs'      => [
+                    'mandate_hq',
+                    'billdesk_sihub',
+                ],
+            ],
+        ],
+    ],
+
     'testEditIinWithoutCategory' => [
         'request' => [
             'url' => '/iins/112333',
@@ -1097,6 +1173,64 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testBulkMandateHubUpdateEnable' => [
+        'request' => [
+            'url'     => '/iins/bulk',
+            'method'  => 'PATCH',
+            'content' => [
+                'iins'   => ['401200', '401201'],
+                'payload' => [
+                    'mandate_hubs' => [
+                        'mandate_hq' => '1',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                '401200' => [
+                    'mandate_hubs' => [
+                        'mandate_hq',
+                        'billdesk_sihub',
+                    ],
+                ],
+                '401201' => [
+                    'mandate_hubs' => [
+                        'mandate_hq',
+                        'billdesk_sihub',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testBulkMandateHubUpdateDisable' => [
+        'request' => [
+            'url'     => '/iins/bulk',
+            'method'  => 'PATCH',
+            'content' => [
+                'iins'   => ['401200', '401201'],
+                'payload' => [
+                    'mandate_hubs' => [
+                        'billdesk_sihub' => '0',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                '401200' => [
+                    'mandate_hubs' => [],
+                ],
+                '401201' => [
+                    'mandate_hubs' => [
+                        'mandate_hq',
+                    ],
+                ],
+            ],
         ],
     ],
 

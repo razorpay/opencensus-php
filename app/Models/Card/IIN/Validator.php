@@ -25,6 +25,7 @@ class Validator extends Base\Validator
         Entity::FLOWS          => 'sometimes|array|custom',
         Entity::MESSAGE_TYPE   => 'sometimes|string|custom',
         Entity::RECURRING      => 'sometimes|integer|in:0,1',
+        Entity::MANDATE_HUBS   => 'sometimes|array|custom',
     );
 
     protected static $editRules = array(
@@ -43,6 +44,7 @@ class Validator extends Base\Validator
         Entity::LOCKED         => 'sometimes|integer|in:0,1',
         Entity::MESSAGE_TYPE   => 'sometimes|string|custom',
         Entity::RECURRING      => 'sometimes|integer|in:0,1',
+        Entity::MANDATE_HUBS   => 'sometimes|array|filled|custom',
     );
 
     protected static $editBulkRules = [
@@ -193,6 +195,20 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Invalid flow in input: ' . $flow);
+            }
+        }
+    }
+
+    protected function validateMandateHubs($attribute, $mandateHubs)
+    {
+        $validMandateHubs = MandateHub::getValid();
+
+        foreach ($mandateHubs as $mandateHub => $_value)
+        {
+            if (in_array($mandateHub, $validMandateHubs) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid mandate_hub in input: ' . $mandateHub);
             }
         }
     }

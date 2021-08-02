@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const ENABLED       = 'enabled';
     const LOCKED        = 'locked';
     const NUMBER        = 'number';
+    const MANDATE_HUBS  = 'mandate_hubs';
 
     const INTERNATIONAL = 'international';
     const MESSAGE_TYPE  = 'message_type';
@@ -83,7 +84,8 @@ class Entity extends Base\PublicEntity
         self::FLOWS,
         self::LOCKED,
         self::MESSAGE_TYPE,
-        self::RECURRING
+        self::RECURRING,
+        self::MANDATE_HUBS,
     ];
 
     protected $visible = [
@@ -105,6 +107,7 @@ class Entity extends Base\PublicEntity
         self::LOCKED,
         self::MESSAGE_TYPE,
         self::RECURRING,
+        self::MANDATE_HUBS,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -124,6 +127,7 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::FLOWS,
+        self::MANDATE_HUBS,
     ];
 
     protected $defaults = [
@@ -137,7 +141,8 @@ class Entity extends Base\PublicEntity
         self::SUBTYPE        => Card\SubType::CONSUMER,
         self::CATEGORY       => null,
         self::ISSUER         => null,
-        self::PRODUCT_CODE     => null,
+        self::PRODUCT_CODE   => null,
+        self::MANDATE_HUBS   => [],
     ];
 
     protected $casts = [
@@ -149,6 +154,11 @@ class Entity extends Base\PublicEntity
 
     protected $issuerEnabledForCardMandate = [
         IFSC::RATN, // RBL
+    ];
+
+    protected $editFormatKeys = [
+        self::FLOWS,
+        self::MANDATE_HUBS,
     ];
 
     public function supports($flows): bool
@@ -298,6 +308,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECURRING);
     }
 
+    public function getMandateHubs()
+    {
+        return $this->getAttribute(self::MANDATE_HUBS);
+    }
+
     public function isCardMandateApplicable(Merchant\Entity $merchant)
     {
         $app = App::getFacadeRoot();
@@ -362,6 +377,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::OTP_READ, $flag);
     }
 
+    public function setMandateHubs($bitmap)
+    {
+        $this->setAttribute(self::MANDATE_HUBS, $bitmap);
+    }
+
     public function setFlows($bitmap)
     {
         $this->setAttribute(self::FLOWS, $bitmap);
@@ -410,9 +430,22 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function setPublicMandateHubsAttribute(array &$array)
+    {
+        if (isset($array[self::MANDATE_HUBS]) === true)
+        {
+            $array[self::MANDATE_HUBS] = MandateHub::getEnabledMandateHubs($array[self::MANDATE_HUBS]);
+        }
+    }
+
     protected function setFlowsAttribute($flows)
     {
         $this->attributes[self::FLOWS] = Flow::getHexValue($flows);
+    }
+
+    protected function setMandateHubsAttribute($mandateHubs)
+    {
+        $this->attributes[self::MANDATE_HUBS] = MandateHub::getHexValue($mandateHubs);
     }
 
     protected function generateIssuerName($input)
@@ -459,5 +492,10 @@ class Entity extends Base\PublicEntity
     public function getIinCurrency()
     {
         return ($this->getCountry() !== null) ? Currency::getCurrencyForCountry($this->getCountry()) : null;
+    }
+
+    public function getEditFormattableKeys()
+    {
+        return $this->editFormatKeys;
     }
 }
