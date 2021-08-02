@@ -9,8 +9,9 @@ use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\AccountV2\Metric;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Partner\PartnerTrait;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+
 
 class AccountV2Test extends TestCase
 {
@@ -42,6 +43,7 @@ class AccountV2Test extends TestCase
 
         $this->validateSubMerchantTagging($accountId, '10000000000000');
 
+        $this->validateSupportingEntitiesCreation($accountId);
     }
 
     public function testCreateAccountV2ForCompletelyFilledRequest()
@@ -174,7 +176,7 @@ class AccountV2Test extends TestCase
 
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
-        $result    = $this->runRequestResponseFlow($testData);
+        $result = $this->runRequestResponseFlow($testData);
         $accountId = $result['id'];
 
         $testData = $this->testData['testDeleteAccountV2'];
@@ -198,6 +200,19 @@ class AccountV2Test extends TestCase
             'partner_type'              => 'aggregator',
             'submerchant_business_type' => 'individual'
         ];
+    }
+
+    private function validateSupportingEntitiesCreation(string $accountId)
+    {
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+        $balance = $this->getDbEntity('balance', ['merchant_id' => $accountId]);
+        $this->assertNotNull($balance);
+        $balanceConfig = $this->getDbEntity('balance_config', ['balance_id' => $balance->getId()]);
+        $this->assertNotNull($balanceConfig);
+        $bankAccount = $this->getDbEntity('bank_account', ['merchant_id' => $accountId]);
+        $this->assertNotNull($bankAccount);
+        $paymentLinkFeature = $this->getDbEntity('feature', ['entity_id' => $accountId, 'name' => 'paymentlinks_v2']);
+        $this->assertNotNull($paymentLinkFeature);
     }
 
     private function validateSubMerchantTagging(string $merchantId, string $partnerId)

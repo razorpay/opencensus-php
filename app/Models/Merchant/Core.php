@@ -233,9 +233,11 @@ class Core extends Base\Core
      * @param Entity $aggregatorMerchant
      * @param bool   $linkedAccount
      * @param bool   $accountEntity
+     * @param bool   $optimizeCreationFlow
      *
      * @return Account\Entity|Entity
      * @throws BadRequestException
+     * @throws Exception\LogicException
      */
     public function createSubMerchant(
         array $input,
@@ -392,17 +394,42 @@ class Core extends Base\Core
 
             (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
 
-            $this->setDefaultFeatureForMerchant($merchant);
+            $this->addDefaultFeatures($merchant);
 
-            $this->setPaymentLinkServiceDefaultForMerchant($merchant);
         });
     }
 
-    protected function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null, bool $optimizeCreationFlow = false)
+    private function addDefaultFeatures(Entity $merchant)
+    {
+        $defaultFeatures = [Feature\Constants::OTP_AUTH_DEFAULT, Feature\Constants::PAYMENTLINKS_V2];
+
+        if($merchant->isRazorpayOrgId() === false)
+        {
+            array_push($defaultFeatures, Feature\Constants::DISABLE_NATIVE_CURRENCY);
+        }
+
+        $featuresEnabled = $this->repo->feature->findMerchantWithFeatures($merchant->getId(), $defaultFeatures);
+
+        if(count($featuresEnabled) !== count($defaultFeatures))
+        {
+            $this->setDefaultFeatureForMerchant($merchant);
+
+            $this->setPaymentLinkServiceDefaultForMerchant($merchant);
+        }
+    }
+
+    public function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null, bool $optimizeCreationFlow = false)
     {
         (new Detail\Core)->createMerchantDetails($merchant);
 
-        $this->addMerchantSupportingEntitiesAsync($merchant, $aggregatorMerchant);
+        if ($optimizeCreationFlow === true)
+        {
+            MerchantSupportingEntitiesCreateJob::dispatch($merchant->getId(), $aggregatorMerchant->getId());
+        }
+        else
+        {
+            $this->addMerchantSupportingEntitiesAsync($merchant, $aggregatorMerchant);
+        }
     }
 
     protected function setDefaultFeatureForMerchant(Entity $merchant)
@@ -942,6 +969,13 @@ class Core extends Base\Core
 
     public function createBalanceConfig($merchantBalance, $mode)
     {
+        $balanceConfig = $this->repo->balance_config->connection($mode)->getBalanceConfigsForBalanceIds([$merchantBalance->getId()]);
+
+        if(count($balanceConfig) > 0)
+        {
+            return $balanceConfig->get(0);
+        }
+
         $balanceConfig = Merchant\Balance\BalanceConfig\Entity::buildFromBalance($merchantBalance);
 
         $balanceConfig->setConnection($mode);

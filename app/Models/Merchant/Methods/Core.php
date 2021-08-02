@@ -447,6 +447,15 @@ class Core extends Base\Core
 
     public function setDefaultMethods($merchant, Merchant\Entity $aggregatorMerchant = null)
     {
+        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+
+        if($methods !== null)
+        {
+            $methods->merchant()->associate($merchant);
+
+            return $methods;
+        }
+
         $methods = (new Methods\Entity)->build();
 
         $methods->merchant()->associate($merchant);

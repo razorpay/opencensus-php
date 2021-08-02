@@ -1,0 +1,89 @@
+<?php
+
+namespace RZP\Jobs;
+
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Metric;
+use Razorpay\Trace\Logger as Trace;
+
+class MerchantSupportingEntitiesCreateJob extends Job
+{
+    const RETRY_INTERVAL = 300;
+
+    const MAX_RETRY_ATTEMPT = 5;
+
+    /**
+     * @var string
+     */
+    protected $queueConfigKey = 'commission';
+
+    protected $merchantId;
+
+    protected $partnerId;
+
+
+    public function __construct(string $merchantId, $partnerId)
+    {
+        parent::__construct();
+        $this->merchantId = $merchantId;
+        $this->partnerId  = $partnerId;
+    }
+
+    public function handle()
+    {
+        parent::handle();
+
+        $this->trace->info(
+            TraceCode::MERCHANT_SUPPORTING_ENTITIES_ASYNC_JOB,
+            [
+                'merchant_id' => $this->merchantId,
+                'partner_id'  => $this->partnerId
+            ]
+        );
+
+        try
+        {
+            $merchant = $this->repoManager->merchant->findOrFailPublic($this->merchantId);
+            $partner  = $this->repoManager->merchant->findOrFailPublic($this->partnerId);
+            (new Merchant\Core())->addMerchantSupportingEntitiesAsync($merchant, $partner);
+
+            $this->delete();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MERCHANT_SUPPORTING_ENTITIES_ASYNC_JOB_FAILED,
+                [
+                    'merchant_id' => $this->merchantId,
+                    'partner_id'  => $this->partnerId,
+                ]
+            );
+
+            $this->checkRetry();
+        }
+    }
+
+    protected function checkRetry()
+    {
+        if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
+        {
+            $this->trace->error(TraceCode::MERCHANT_SUPPORTING_ENTITIES_ASYNC_JOB_MESSAGE_DELETE, [
+                'merchant_id'  => $this->merchantId,
+                'partner_id'   => $this->partnerId,
+                'job_attempts' => $this->attempts(),
+                'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
+            ]);
+
+            $this->trace->count(Metric::MERCHANT_SUPPORT_ENTITIES_CREATION_FAILURE_TOTAL, []);
+
+            $this->delete();
+        }
+        else
+        {
+            $this->release(self::RETRY_INTERVAL);
+        }
+    }
+}
