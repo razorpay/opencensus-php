@@ -109,10 +109,25 @@ class CareServiceTest extends TestCase
     {
         $testCases = [
             [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/dark/admin',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-dark-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/GetCallback',
+                self::API_REQUEST_BODY                    => [
+                    'path' => 'twirp/rzp.care.callback.v1.CallbackService/GetCallback',
+                    'body' => ['key' => 'value'],
+                ],
+                self::EXPECTED_CARE_SERVICE_REQUEST       => ['key' => 'value'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+                self::PERMISSIONS                         => ['manager_care_service_callback'],
+            ],
+            [
 
                 self::AUTH                                => 'yellowmessenger',
                 self::API_ROUTE                           => '/care_service/chat/twirp/rzp.care.chat.v1.ChatService/GetMerchant',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.chat.v1.ChatService/GetMerchant',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/GetMerchant',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -123,7 +138,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'yellowmessenger',
                 self::API_ROUTE                           => '/care_service/chat/twirp/rzp.care.chat.v1.ChatService/FetchTickets',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.chat.v1.ChatService/FetchTickets',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/FetchTickets',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -134,7 +149,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'proxy',
                 self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.chat.v1.ChatService/Init',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.chat.v1.ChatService/Init',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/Init',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'merchant' => [
                         'id' => '10000000000000',
@@ -149,7 +164,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'admin',
                 self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.callback.v1.CallbackService/UpsertOperator',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/UpsertOperator',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/UpsertOperator',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'admin' => [
                         'id' => 'RzrpySprAdmnId',
@@ -163,7 +178,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'proxy',
                 self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'merchant' => [
                         'id' => '10000000000000',
@@ -178,7 +193,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'cron',
                 self::API_ROUTE                           => '/care_service/cron/twirp/rzp.care.callback.v1.CallbackService/InitSlots',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/InitSlots',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/InitSlots',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
                     'key' => 'value',
@@ -188,7 +203,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'cron',
                 self::API_ROUTE                           => '/care_service/cron/twirp/rzp.care.callback.v1.CallbackService/PushCallbacksToQueue',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/PushCallbacksToQueue',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/PushCallbacksToQueue',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
                     'key' => 'value',
@@ -198,7 +213,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'proxy',
                 self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/GetSlots',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/GetSlots',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/GetSlots',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'merchant' => [
                         'id' => '10000000000000',
@@ -213,7 +228,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'proxy',
                 self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CreateCallback',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/CreateCallback',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/CreateCallback',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'merchant' => [
                         'id' => '10000000000000',
@@ -228,7 +243,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'proxy',
                 self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/GetCallback',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/GetCallback',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/GetCallback',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'merchant' => [
                         'id' => '10000000000000',
@@ -243,7 +258,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'myoperator',
                 self::API_ROUTE                           => '/care_service/myoperator_webhook/twirp/rzp.care.callback.v1.CallbackService/InCallWebhook',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/InCallWebhook',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/InCallWebhook',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'myoperator' => "{ \"users\": [ \"918586848544\" ], \"client_ref_id\": \"fdfdfdf\"}",
                 ],
@@ -257,7 +272,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'admin',
                 self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.admin.v1.CallbackConfigService/getDateSlotConfig',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.admin.v1.CallbackConfigService/getDateSlotConfig',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.admin.v1.CallbackConfigService/getDateSlotConfig',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'admin' => [
                         'id' => 'RzrpySprAdmnId',
@@ -273,7 +288,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'admin',
                 self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.admin.v1.CallbackConfigService/getWeekSlotConfig',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.admin.v1.CallbackConfigService/getWeekSlotConfig',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.admin.v1.CallbackConfigService/getWeekSlotConfig',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'admin' => [
                         'id' => 'RzrpySprAdmnId',
@@ -289,7 +304,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'admin',
                 self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.admin.v1.CallbackConfigService/editDateSlotConfig',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.admin.v1.CallbackConfigService/editDateSlotConfig',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.admin.v1.CallbackConfigService/editDateSlotConfig',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'key'   => 'value',
                     'admin' => [
@@ -306,7 +321,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'admin',
                 self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.admin.v1.CallbackConfigService/editWeekSlotConfig',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.admin.v1.CallbackConfigService/editWeekSlotConfig',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.admin.v1.CallbackConfigService/editWeekSlotConfig',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'key'   => 'value',
                     'admin' => [
@@ -323,7 +338,7 @@ class CareServiceTest extends TestCase
             [
                 self::AUTH                                => 'myoperator',
                 self::API_ROUTE                           => '/care_service/myoperator_webhook/twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'myoperator' => "{ \"_cri\": \"fdfdfdfd\", \"_ld\": [{\"_rst\": \"2020-07-17 07:12:28\", \"_su\": \"1\", \"_ac\": \"received\"}] }"
                 ],
@@ -348,6 +363,10 @@ class CareServiceTest extends TestCase
             if (isset($testCase[self::API_REQUEST_BODY]) === true)
             {
                 $this->testData[__FUNCTION__]['request']['content'] = $testCase[self::API_REQUEST_BODY];
+            }
+            else
+            {
+                $this->testData[__FUNCTION__]['request']['content'] = [];
             }
 
             $this->testData[__FUNCTION__]['request']['url'] = $testCase[self::API_ROUTE];
@@ -405,7 +424,7 @@ class CareServiceTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->expectCareServiceRequestAndRespondWith(
-            'twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
+            'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
             [
                 'merchant' => [
                     'id' => '10000000000000',
@@ -427,7 +446,7 @@ class CareServiceTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->expectCareServiceRequestAndRespondWith(
-            'twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
+            'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
             [
                 'merchant' => [
                     'id' => '10000000000000',

@@ -2627,6 +2627,7 @@ class Route
         'care_service_cron_proxy'                 => ['post',    'care_service/cron/{path?}',                               'CareProxyController@postCronProxyRequest'                     ],
         'care_service_admin_proxy'                => ['post',    'care_service/admin/{path?}',                              'CareProxyController@postAdminProxyRequest',                   ],
         'care_service_chat_proxy'                 => ['post',    'care_service/chat/{path?}',                               'CareProxyController@postChatProxyRequest',                   ],
+        'care_service_dark_proxy'                 => ['post',    'care_service/dark/admin',                                 'CareProxyController@postDarkProxyRequest',                   ],
 
         'myoperator_v1_proxy_get'                 => ['get',     'myoperator/{path?}',                                      'MyOperatorController@getProxyCallToMyOperatorV1'              ],
         'myoperator_v2_proxy_post'                => ['post',    'myoperator/campaign/{path?}',                             'MyOperatorController@postProxyCallToMyOperatorV2'              ],
@@ -5104,6 +5105,7 @@ class Route
 
         // Care service
         'care_service_admin_proxy',
+        'care_service_dark_proxy',
 
         'freshchat_put_chat_timings_config',
         'freshchat_get_chat_timings_config',
@@ -6073,7 +6075,7 @@ class Route
         'currency_fetch_all_proxy'                            => Permission::CURRENCY_FETCH_RATES,
 
         'care_service_admin_proxy'                            => Permission::MANAGE_CARE_SERVICE_CALLBACK, // todo: have more fine grained permissions at route level
-
+        'care_service_dark_proxy'                             => Permission::MANAGE_CARE_SERVICE_CALLBACK,
         'freshchat_put_chat_timings_config'                   => Permission::MANAGE_FRESHCHAT,
         'freshchat_get_chat_timings_config'                   => Permission::MANAGE_FRESHCHAT,
         'freshchat_put_chat_holidays_config'                  => Permission::MANAGE_FRESHCHAT,
@@ -7776,6 +7778,7 @@ class Route
             'card_issuer_validate',
             'care_service_dashboard_proxy',
             'care_service_admin_proxy',
+            'care_service_dark_proxy',
             'channel_health_check',
             'checkout',
             'checkout_embedded',

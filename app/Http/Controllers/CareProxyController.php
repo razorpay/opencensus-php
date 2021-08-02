@@ -135,6 +135,15 @@ class CareProxyController extends Controller
         return ApiResponse::json($respponse);
     }
 
+    public function postDarkProxyRequest()
+    {
+        $input = Request::all();
+
+        $response = $this->app['care_service']->darkProxyRequest($input['path'], $input['body']);
+
+        return ApiResponse::json($response);
+    }
+
     protected function validatePathForRequest($routes, $path)
     {
         if (in_array($path, $routes) === false)

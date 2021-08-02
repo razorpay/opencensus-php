@@ -1019,6 +1019,7 @@ return [
     'care'  => [
         'secret'       => env('CARE_SERVICE_API_SECRET'),
         'host'         => env('CARE_SERVICE_HOST'),
+        'dark-host'    => env('CARE_SERVICE_DARK_HOST'),
         'password'     => env('CARE_SERVICE_PASSWORD'),
     ],
 

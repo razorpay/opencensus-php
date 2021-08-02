@@ -76,12 +76,21 @@ class CareServiceClient
     {
         $input = $this->addMerchantDetails($input);
 
-        return $this->sendRequestAndProcessResponse($path, Requests::POST, $input);
+        return $this->sendRequestAndProcessResponse($this->getBaseUrl() .$path, Requests::POST, $input);
     }
 
     public function cronProxyRequest($path, $input)
     {
-        return $this->sendRequestAndProcessResponse($path, Requests::POST, $input);
+        return $this->sendRequestAndProcessResponse($this->getBaseUrl() .$path, Requests::POST, $input);
+    }
+
+    public function darkProxyRequest($path, $input)
+    {
+        $this->app['trace']->info(TraceCode::CARE_DARK_PATH, [
+            'path'       => $path,
+        ]);
+
+        return $this->sendRequestAndProcessResponse($this->getDarkBaseUrl() .$path, Requests::POST, $input);
     }
 
     public function myOperatorWebhookProxyRequest($path, $input)
@@ -90,19 +99,19 @@ class CareServiceClient
             'path'       => $path,
         ]);
 
-        return $this->sendRequestAndProcessResponse($path, Requests::POST, $input);
+        return $this->sendRequestAndProcessResponse($this->getBaseUrl() .$path, Requests::POST, $input);
     }
 
     public function adminProxyRequest($path, $input)
     {
         $input = $this->addAdminDetails($input);
 
-        return $this->sendRequestAndProcessResponse($path, Requests::POST, $input);
+        return $this->sendRequestAndProcessResponse($this->getBaseUrl() .$path, Requests::POST, $input);
     }
 
     public function chatProxyRequest($path, $input)
     {
-        return $this->sendRequestAndProcessResponse($path, Requests::POST, $input);
+        return $this->sendRequestAndProcessResponse($this->getBaseUrl() .$path, Requests::POST, $input);
     }
 
     protected function sendRequestAndProcessResponse($path, $method, $content)
@@ -121,10 +130,8 @@ class CareServiceClient
         return $this->processResponse($response);
     }
 
-    public function sendRequest($path, $method, $content, $headers = [], $options = [])
+    public function sendRequest($url, $method, $content, $headers = [], $options = [])
     {
-        $url = $this->getBaseUrl() . $path;
-
         $headers = array_merge($headers, $this->getHeaders());
 
         $options = array_merge($options, $this->getOptions());
@@ -173,6 +180,11 @@ class CareServiceClient
     protected function getBaseUrl()
     {
         return $this->config['host'];
+    }
+
+    protected function getDarkBaseUrl()
+    {
+        return $this->config['dark-host'];
     }
 
     protected function getHeaders()
