@@ -1,0 +1,191 @@
+.pl-catalyst-modal
+  color: black
+  background-color: white
+  text-align: center
+  background: linear-gradient(147.12deg, rgba(153, 255, 218, 0.38) 28.42%, rgba(127, 101, 202, 0.38) 103.51%)
+
+  @media(max-width: 768px)
+    background: linear-gradient(57.12deg, rgba(153,255,218,0.38) 32.42%, rgba(127,101,202,0.48) 104.51%)
+
+  button.close
+    position: absolute
+    right: 20px
+    top: 20px
+    z-index: 1
+    opacity: 0.6
+  
+  .pl-bullet
+    vertical-align: baseline
+    margin-right: 6px
+  
+  .modal-body
+    padding: 57px 97px 10px
+
+    @media(max-width: 768px)
+      padding: 24px 20px
+
+  .heading, .sub-heading
+    font-weight: 700
+
+  .heading
+    margin-bottom: 23px
+  
+  .sub-heading
+    margin-bottom: 34px
+
+    @media(max-width: 768px)
+      font-size: 20px
+
+  .section
+    display: flex
+    justify-content: space-between
+
+    .left-section
+      text-align: left
+      display: flex
+      flex-direction: column
+      justify-content: space-between
+
+      ul
+        list-style: none
+        padding: 0
+        margin: 0
+      
+      li 
+        padding-left: 0.6em 
+        text-indent: -.7em
+        line-height: 300%
+
+        &:before 
+          content: "• "
+          color: #72FDCB
+      
+      .modal-cta
+        .btn.btn-primary
+          width: fit-content
+        
+        @media(max-width: 768px)
+          text-align: center
+          margin-top: 30px
+    
+    .right-section
+      .x-dashboard-view
+        width: 485px
+        height: 297px
+        background: #292F4F
+        border-radius: 10px
+        padding: 10px 9px
+      
+        .tab-section
+          text-align: left
+
+          .dot
+            height: 6px
+            width: 6px
+            background-color: #bbb
+            border-radius: 50%
+            display: inline-block
+            opacity: .7
+            margin-bottom: 7px
+            margin-right: 4px
+          
+            &#red
+              background: #f54444
+              margin-left: 10px
+
+            &#orange
+              background: #F69901
+
+            &#green
+              background: #00FFB6
+        
+        img
+          width: 100%
+    
+    @media(max-width: 768px)
+      justify-content: center
+      margin-top: 100px
+  
+  .footer
+    margin-top: 34px
+
+    .title
+      font-size: 12px
+
+    .company-list
+      margin-top: 8px
+      display: flex
+      justify-content: center
+
+      .company-group
+        display: flex
+
+        .logo
+          margin-left: 10px
+          margin-right: 10px
+
+          img
+            vertical-align: -webkit-baseline-middle
+          
+          @media(max-width: 768px)
+            margin-left: 3px
+            margin-right: 3px
+      
+      @media(max-width: 410px)
+        flex-direction: column
+        align-items: center
+    
+    @media(max-width: 768px)
+      margin-top: 30px
+  
+  .pl-planes-group
+    position: relative
+
+  .pl-plane
+    position: absolute
+
+    &__rel
+      position: relative
+
+  #green-top-left
+    top: 25px
+    left: 30px
+
+  #green-bottom-right
+    right: 28px
+    bottom: 16px
+    transform: scale(0.8)
+  
+  #purple-top-left
+    top: 100px
+    left: 3px
+  
+  #purple-mob-top
+    left: 52px
+
+  #green-mob-middle
+    top: 55px
+    left: -8px
+    transform: scale(1.5)
+  
+  #purple-mob-bottom
+    top: 80px
+    right: 40px
+    transform: scale(0.7)
+
+.white-circle
+  background: white
+  width: 1491px
+  height: 1491px
+  position: absolute
+  border-radius: 50%
+  z-index: 0
+  top: -75%
+  left: -63%
+
+  @media(max-width: 768px)
+    width: 635px
+    height: 635px
+    top: 30%
+    left: 50%
+    transform: translateX(-50%)

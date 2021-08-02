@@ -95,6 +95,11 @@ export default {
     'HWP22TCyDAfcRG', // Test account prod
   ],
 
+  catalyst_campaign_experiment: [
+    'HYimXrRKRI0V7y', // Prod
+    'HYiqGXEBQX3oo8', // Beta
+  ],
+  
   nitro_form_ab_experiment: [
     //prod
     'Hc1t1p85dJkRkp',

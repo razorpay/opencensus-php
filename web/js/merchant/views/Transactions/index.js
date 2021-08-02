@@ -21,6 +21,7 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import Time from 'common/ui/Time';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
+import CatalystCampaignBanner from 'merchant/components/Announcements/CatalystCampaignBanner';
 import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { isMobileDevice } from 'merchant/components/Home/data';
@@ -122,6 +123,7 @@ export default class TransactionsContainer extends Component {
               />
             </AnnouncementBanner>
           </ShowWhen>
+          <CatalystCampaignBanner />
         </div>
         <tabbed-container>
           <header id="transactions-header">
