@@ -134,6 +134,16 @@ class SalesForceClient
         );
     }
 
+    public function sendNeostoneFlag($data)
+    {
+        $url = $this->generateUrlForMerchantUpsert();
+
+        $this->dispatchRequestJob($url, $data, TraceCode::SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_REQUEST,
+                                  TraceCode::SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_RESPONSE,
+                                  TraceCode::SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_ERROR
+        );
+    }
+
     public function sendPartnerInfo(Merchant\Entity $partner)
     {
         if ($partner->isPartner() === false)

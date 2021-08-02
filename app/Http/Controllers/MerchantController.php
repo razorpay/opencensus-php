@@ -2090,7 +2090,7 @@ class MerchantController extends Controller
 
         $response = $this->service()->handleReport($input);
     }
-    
+
     public function handleOnboardingEscalationsCron()
     {
         $input = Request::all();
@@ -2283,6 +2283,13 @@ class MerchantController extends Controller
         $input = Request::all();
 
         return $this->service()->fireHubspotEventFromDashboard($input);
+    }
+
+    public function createSalesforceLeadFromDashboard()
+    {
+        $input = Request::all();
+
+        return $this->service()->createSalesforceLeadFromDashboard($input);
     }
 
     public function handleMerchantActionNotificationCron()

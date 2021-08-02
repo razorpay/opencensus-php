@@ -11021,6 +11021,23 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testNeostoneSendFlagToSalesforce()
+    {
+        $this->ba->proxyAuth();
+
+        $methodName = 'sendNeostoneFlag';
+
+        $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
+                                     ->setConstructorArgs([$this->app])
+                                     ->getMock();
+
+        $this->app->instance('salesforce', $salesforceClientMock);
+
+        $salesforceClientMock->expects($this->exactly(1))->method($methodName);
+
+        $this->startTest();
+    }
+
     public function testEditBulkMerchantActionCronFOH()
     {
         $this->createMerchant([

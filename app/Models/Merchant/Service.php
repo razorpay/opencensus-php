@@ -6717,4 +6717,29 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
+
+    public function createSalesforceLeadFromDashboard(array $input): array
+    {
+        try
+        {
+            $this->app->salesforce->sendNeostoneFlag($input);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SALESFORCE_FAILED_TO_DISPATCH_JOB);
+
+            return ['success' => false];
+        }
+
+        $this->trace->info(
+            TraceCode::CREATED_LEAD_ON_SALESFORCE,
+            [
+                'payload'        => $input
+            ]);
+
+        return ['success' => true];
+    }
 }

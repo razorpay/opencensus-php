@@ -8530,6 +8530,23 @@ return [
         ],
     ],
 
+    'testNeostoneSendFlagToSalesforce' => [
+        'request'       => [
+            'url'     => '/merchants/lead_to_salesforce',
+            'method'  => \Requests::POST,
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'x_onboarding_category'   => 'self_serve'
+            ],
+        ],
+
+        'response'    => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
     'testMerchantActionNotificationCronFOH'  =>  [
         'request'       => [
             'url'     => '/merchants/action/notification',

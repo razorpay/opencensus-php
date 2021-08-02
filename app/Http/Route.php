@@ -304,6 +304,7 @@ class Route
         'merchant_edit_config_la'                  => ['post',     'la-merchants/config',                            'MerchantController@updateLinkedAccountConfig'                      ],
         'merchant_fetch_multiple'                  => ['get',      'merchants',                                      'MerchantController@getMerchants'                                   ],
         'merchant_fire_hubspot_event'              => ['post',     'merchants/fire_hubspot_event',                   'MerchantController@fireHubspotEventFromDashboard'                  ],
+        'merchant_create_lead_to_salesforce'       => ['post',     'merchants/lead_to_salesforce',                   'MerchantController@createSalesforceLeadFromDashboard'              ],
         'merchant_assign_pricing'                  => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
         'merchant_get_pricing'                     => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
         'proxy_merchant_get_pricing'               => ['get',      'proxy/merchants/pricing',                        'MerchantController@proxyGetPricingPlan'                            ],
@@ -3719,6 +3720,7 @@ class Route
         'merchant_balance_fetch_by_id',
         'merchant_rtb_details_fetch',
         'merchant_fire_hubspot_event',
+        'merchant_create_lead_to_salesforce',
         'freshchat_get_chat_timings_config_proxy',
         'freshchat_get_chat_holidays_config_proxy',
         'recon_service_request_proxy',
@@ -6107,6 +6109,7 @@ class Route
 
     public static $bankingRoutePermissions = [
         'merchant_fire_hubspot_event'                  => '*',
+        'merchant_create_lead_to_salesforce'           => '*',
         'accounting_payouts_integration_status'        => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_payouts_integration_app_get_url'   => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_payouts_integration_app_initiate'  => Permission::CREATE_ACCOUNTING_INTEGRATION,
@@ -6628,6 +6631,7 @@ class Route
             'merchant_edit_email_self_serve',
             'email_user_status_for_email_update',
             'merchant_fire_hubspot_event',
+            'merchant_create_lead_to_salesforce',
             'rbl_current_account_serviceability_get',
             'account',
             'account_action',
