@@ -17,19 +17,23 @@ use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\CompanySearchBaseResponse;
 
 class Core extends Base\Core
 {
-    public function fetchValidationDetails(string $merchantId, array $input)
+    public function fetchValidationDetails(string $merchantId, array $input, $validationId = null)
     {
-        $validationObj = (new BvsValidation\Core)->getLatestArtefactValidation(
-            $merchantId, $input[Constant::ARTEFACT_TYPE], $input[Constant::VALIDATION_UNIT]);
-
-        if(empty($validationObj) === true)
+        if (is_null($validationId) === true)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            $validationObj = (new BvsValidation\Core)->getLatestArtefactValidation(
+                $merchantId, $input[Constant::ARTEFACT_TYPE], $input[Constant::VALIDATION_UNIT]);
+
+            if (empty($validationObj) === true) {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            }
+
+            $validationId = $validationObj->getValidationId();
         }
 
         $processor = (new Factory())->getProcessor($input);
 
-        $response = $processor->FetchDetails($validationObj->getValidationId());
+        $response = $processor->FetchDetails($validationId);
 
         return $response->getResponseData();
     }

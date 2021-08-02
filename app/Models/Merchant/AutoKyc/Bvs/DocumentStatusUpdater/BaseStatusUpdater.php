@@ -175,7 +175,7 @@ abstract class BaseStatusUpdater implements StatusUpdater
      * @return null|string
      * @throws LogicException
      */
-    protected function getDocumentValidationStatus(Validation $validation): ?string
+    public function getDocumentValidationStatus(Validation $validation): ?string
     {
         if ($validation->getValidationStatus() === Constants::SUCCESS)
         {

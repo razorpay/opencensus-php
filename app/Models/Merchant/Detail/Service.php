@@ -1721,9 +1721,13 @@ class Service extends Base\Service
     }
 
     /**
+     * @param string $merchantId
+     * @param string $validationArtefact
+     * @param null $validationId
+     * @return
      * @throws Exception\LogicException
      */
-    public function getBvsValidationArtefactDetails(string $merchantId, string $validationArtefact)
+    public function getBvsValidationArtefactDetails(string $merchantId, string $validationArtefact, $validationId = null)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
@@ -1732,6 +1736,6 @@ class Service extends Base\Service
         $requestDispatcher =  $factory->getBvsRequestDispatcherForArtefact(
             $validationArtefact, $merchant, $merchant->merchantDetail);
 
-        return $requestDispatcher->fetchValidationDetails();
+        return $requestDispatcher->fetchValidationDetails($validationId);
     }
 }

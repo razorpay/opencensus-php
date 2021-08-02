@@ -13,6 +13,7 @@ use RZP\Services\Mock;
 use RZP\Models\Base\EsDao;
 use RZP\Services\UfhService;
 use RZP\Error\PublicErrorCode;
+use Functional\Helpers\BvsTrait;
 use Illuminate\Http\UploadedFile;
 use RZP\Jobs\FundAccountValidation;
 use Illuminate\Hashing\BcryptHasher;
@@ -119,6 +120,7 @@ class MerchantTest extends TestCase
     use CustomBrandingTrait;
     use MocksRedisTrait;
     use FreshdeskTrait;
+    use BvsTrait;
 
     const CAPITAL_SUPPORT_EMAIL = 'capital.support@razorpay.com';
 
@@ -2855,6 +2857,8 @@ class MerchantTest extends TestCase
 
     protected function runBankAccountUpdateRequestTestInAdminProxyAuthAndAssert($merchantId)
     {
+        Config(['services.bvs.mock' => true]);
+
         $beforeCount = $this->getBankAccountsCount($merchantId);
 
         $admin = $this->ba->getAdmin();
@@ -2873,31 +2877,6 @@ class MerchantTest extends TestCase
             'method'  => 'POST'
         ]);
 
-        $fav = $this->getLastEntity('fund_account_validation', true);
-
-        $fundAccount = $this->getEntityById('fund_account', $fav['fund_account_id'], true);
-
-        $fundAccountBankAccount = $fundAccount['bank_account'];
-
-        $this->assertNotNull($fav);
-
-        $this->assertEquals('bank_account_update', $fav['notes']['penny_testing_reason']);
-
-        $this->assertNull($fav['results']['account_status']);
-
-        $this->assertNull($fav['results']['registered_name']);
-
-
-        $this->assertEquals('0000009999999999999', $fundAccountBankAccount['account_number']);
-        $this->assertEquals('ICIC0001206', $fundAccountBankAccount['ifsc']);
-        $this->assertEquals('Test R4zorpay:', $fundAccountBankAccount['name']);
-
-        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
-
-        $this->assertEquals('initiated', $merchantDetails->getBankDetailsVerificationStatus());
-
-        $this->assertEquals(Validation\Entity::stripDefaultSign($fav['id']), $merchantDetails->getFundAccountValidationId());
-
         $this->assertBankAccountForMerchant($merchantId, [
             'entity'            => 'bank_account',
             'ifsc'              => 'RZPB0000000',
@@ -2913,6 +2892,51 @@ class MerchantTest extends TestCase
         $this->assertEquals($beforeCount, $afterCount);
 
         $this->assertTrue($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    public function testBankAccountUpdateAdminProxyAuthCreateWorkflow()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
+
+        Config(['services.bvs.mock' => true]);
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true, [
+            'promoter_pan_name' => 'pan_name'
+        ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth($merchantId, 'rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'failed', 'NO_PROVIDER_ERROR');
+
+        $this->processBvsResponse($bvsResponse);
+
+        // as a workflow is created, assert bank account is not changed for the merchant still
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'            => 'bank_account',
+            'ifsc'              => 'RZPB0000000',
+            'account_number'    => '10010101011',
+        ]);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+            substr($workflowAction['id'], 9))[0]['_source'];
+
+        $this->assertEquals($admin->getId(), $action['maker_id']);
+        $this->assertEquals('admin', $action['maker_type']);
+        $this->assertEquals($admin->toArray()['name'], $action['maker']);
     }
 
     public function testUpdateBankAccountWithAddressProof()
@@ -2942,35 +2966,13 @@ class MerchantTest extends TestCase
 
     public function testUpdateBankAccountViaPennyTesting()
     {
+        Config(['services.bvs.mock' => true]);
+
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
 
         $beforeCount = $this->getBankAccountsCount($merchantId);
 
         $this->startTest();
-
-        $fav = $this->getLastEntity('fund_account_validation', true);
-
-        $fundAccount = $this->getEntityById('fund_account', $fav['fund_account_id'], true);
-        $fundAccountBankAccount = $fundAccount['bank_account'];
-
-        $this->assertNotNull($fav);
-
-        $this->assertEquals('bank_account_update', $fav['notes']['penny_testing_reason']);
-
-        $this->assertNull($fav['results']['account_status']);
-
-        $this->assertNull($fav['results']['registered_name']);
-
-
-        $this->assertEquals('0000009999999999999', $fundAccountBankAccount['account_number']);
-        $this->assertEquals('ICIC0001206', $fundAccountBankAccount['ifsc']);
-        $this->assertEquals('Test R4zorpay:', $fundAccountBankAccount['name']);
-
-        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
-
-        $this->assertEquals('initiated', $merchantDetails->getBankDetailsVerificationStatus());
-
-        $this->assertEquals(Validation\Entity::stripDefaultSign($fav['id']), $merchantDetails->getFundAccountValidationId());
 
         $this->assertBankAccountForMerchant($merchantId, [
             'entity'            => 'bank_account',
@@ -3026,6 +3028,7 @@ class MerchantTest extends TestCase
 
     public function testUpdateBankAccountPennyTestingEvent()
     {
+        Config(['services.bvs.mock' => true]);
 
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
 
@@ -3037,20 +3040,13 @@ class MerchantTest extends TestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
 
-
         $this->startTest();
 
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
 
-        $fav = $this->getLastEntity('fund_account_validation', true);
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'success');
 
-        $this->fixtures->edit('fund_account_validation', $fav['id'], [
-           'status'             => 'processed',
-           'account_status'     => 'active',
-           'registered_name'    => 'testhello',
-
-        ]);
-
-        FundAccountValidation::dispatch('test', $fav['id']);
+        $this->processBvsResponse($bvsResponse);
 
         $this->assertBankAccountForMerchant($merchantId, [
             'ifsc'             => 'ICIC0001206',
@@ -3091,6 +3087,8 @@ class MerchantTest extends TestCase
 
     public function testUpdateBankAccountPennyTestingEventAccountChangeMailsForCustomBrandinOrg()
     {
+        Config(['services.bvs.mock' => true]);
+
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
 
         $org = $this->createCustomBrandingOrgAndAssignMerchant($merchantId);
@@ -3099,16 +3097,11 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        $fav = $this->getLastEntity('fund_account_validation', true);
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
 
-        $this->fixtures->edit('fund_account_validation', $fav['id'], [
-            'status'             => 'processed',
-            'account_status'     => 'active',
-            'registered_name'    => 'testhello',
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'success');
 
-        ]);
-
-        FundAccountValidation::dispatch('test', $fav['id']);
+        $this->processBvsResponse($bvsResponse);
 
         $this->assertBankAccountForMerchant($merchantId, [
             'ifsc'             => 'ICIC0001206',
@@ -3138,6 +3131,8 @@ class MerchantTest extends TestCase
 
     public function testUpdateBankAccountPennyTestingEventNameMismatch()
     {
+        Config(['services.bvs.mock' => true]);
+
         $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
 
         $this->setupWorkflowForBankAccountUpdate();
@@ -3148,22 +3143,13 @@ class MerchantTest extends TestCase
 
         $oldBankAccount = $this->getDbLastEntity('bank_account', 'test')->toArrayAdmin();
 
-
-
         $this->startTest();
 
-        $fav = $this->getDbLastEntity('fund_account_validation', 'test');
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
 
-        $this->fixtures->edit('fund_account_validation', $fav['id'], [
-            'status'            => 'processed',
-            'account_status'    => 'active',
-            'registered_name'   => 'invalid name',
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'failed', 'RULE_EXECUTION_FAILED');
 
-        ]);
-
-
-
-        FundAccountValidation::dispatch('test', $fav['id']);
+        $this->processBvsResponse($bvsResponse);
 
         // as a workflow is created, assert bank account is not changed for the merchant still
         $this->assertBankAccountForMerchant($merchantId, [
@@ -3182,7 +3168,6 @@ class MerchantTest extends TestCase
 
         $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
             substr($workflowAction['id'], 9))[0]['_source'];
-
 
 
         // see comments in setupWorkflowForBankAccountUpdate for why we are asserting maker id
@@ -3252,12 +3237,13 @@ class MerchantTest extends TestCase
         Mail::assertQueued(MerchantMail\AccountChangePennyTestingFailure::class, function($mail) {
             return true;
         });
-
     }
 
     public function testAddCommentForBankAccountUpdateWorkflow()
     {
         $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
+
+        Config(['services.bvs.mock' => true]);
 
         $this->setupWorkflowForBankAccountUpdate();
 
@@ -3271,16 +3257,11 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        $fav = $this->getDbLastEntity('fund_account_validation', 'test');
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
 
-        // account status is active, but registered name will not match with pan name : workflow will be created
-        $this->fixtures->edit('fund_account_validation', $fav['id'], [
-            'status'            => 'processed',
-            'account_status'    => 'active',
-            'registered_name'   => 'invalid name',
-        ]);
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'failed', 'NO_PROVIDER_ERROR');
 
-        FundAccountValidation::dispatch('test', $fav['id']);
+        $this->processBvsResponse($bvsResponse);
 
         // as a workflow is created, assert bank account is not changed for the merchant still
         $this->assertBankAccountForMerchant($merchantId, [
@@ -3290,6 +3271,7 @@ class MerchantTest extends TestCase
         ]);
 
         $workflowAction = $this->getLastEntity('workflow_action', true);
+
         // get workflow action details in Admin Auth
         $this->ba->adminAuth('test');
 
@@ -3305,7 +3287,9 @@ class MerchantTest extends TestCase
 
         $this->assertEquals($res['id'], $workflowAction['id']);
 
-        $expectedComment1 = 'penny_test_result : passed, registered_name : invalid name, is_name_matched : false';
+        $expectedComment1 = 'verification_status : failed, account_status : active, account_holder_names : name 1,name 2';
+
+        $this->assertEquals($res['comments'][0]['comment'], $expectedComment1);
 
         $expectedComment2 = 'dedupe_status: true, matchedMIDs = {10000000000}';
 
@@ -3317,6 +3301,8 @@ class MerchantTest extends TestCase
 
     public function testUpdateBankAccountPennyTestingFailWorkflowApprove()
     {
+        Config(['services.bvs.mock' => true]);
+
         $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
 
         $this->setupWorkflowForBankAccountUpdate();
@@ -3325,19 +3311,13 @@ class MerchantTest extends TestCase
 
         $beforeCount = $this->getBankAccountsCount($merchantId);
 
-
         $this->startTest();
 
-        $fav = $this->getLastEntity('fund_account_validation', true);
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
 
-        $this->fixtures->edit('fund_account_validation', $fav['id'], [
-            'status'            => 'processed',
-            'account_status'    => 'active',
-            'registered_name'   => 'invalid name',
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'failed', 'NO_PROVIDER_ERROR');
 
-        ]);
-
-        FundAccountValidation::dispatch('test', $fav['id']);
+        $this->processBvsResponse($bvsResponse);
 
         $workflowAction = $this->getLastEntity('workflow_action', true);
 
@@ -3373,6 +3353,8 @@ class MerchantTest extends TestCase
 
     public function testUpdateBankAccountPennyTestingFailMailForCustomBrandingOrg()
     {
+        Config(['services.bvs.mock' => true]);
+
         $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
 
         $this->setupWorkflowForBankAccountUpdate();
@@ -3383,16 +3365,11 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        $fav = $this->getLastEntity('fund_account_validation', true);
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
 
-        $this->fixtures->edit('fund_account_validation', $fav['id'], [
-            'status'            => 'processed',
-            'account_status'    => 'active',
-            'registered_name'   => 'invalid name',
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'failed', 'NO_PROVIDER_ERROR');
 
-        ]);
-
-        FundAccountValidation::dispatch('test', $fav['id']);
+        $this->processBvsResponse($bvsResponse);
 
         Mail::assertQueued(MerchantMail\AccountChangePennyTestingFailure::class, function ($mail) use ($org)
         {
@@ -3406,6 +3383,8 @@ class MerchantTest extends TestCase
 
     public function testUpdateBankAccountPennyTestingFailWorkflowReject()
     {
+        Config(['services.bvs.mock' => true]);
+
         $this->setupWorkflowForBankAccountUpdate();
 
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
@@ -3416,16 +3395,11 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        $fav = $this->getLastEntity('fund_account_validation', true);
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
 
-        $this->fixtures->edit('fund_account_validation', $fav['id'], [
-            'status'            => 'processed',
-            'account_status'    => 'active',
-            'registered_name'   => 'invalid name',
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'failed', 'NO_PROVIDER_ERROR');
 
-        ]);
-
-        FundAccountValidation::dispatch('test', $fav['id']);
+        $this->processBvsResponse($bvsResponse);
 
         $workflowAction = $this->getLastEntity('workflow_action', true);
 

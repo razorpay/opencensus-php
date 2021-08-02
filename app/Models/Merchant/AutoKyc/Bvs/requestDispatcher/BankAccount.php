@@ -43,7 +43,7 @@ class BankAccount extends Base
         ];
     }
 
-    protected function getConfigName()
+    public function getConfigName()
     {
         if ($this->merchantDetails->isUnregisteredBusiness() === true) {
             return Constant::BANK_ACCOUNT_WITH_PERSONAL_PAN;

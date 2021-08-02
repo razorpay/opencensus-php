@@ -621,7 +621,7 @@ class PennyTesting extends Base\Core
      * @param Entity $merchantDetails
      * @param        $bankDetailsVerificationStatus
      */
-    protected function setBankDetailsVerificationStatusAndUpdatedAt(Entity $merchantDetails, $bankDetailsVerificationStatus)
+    public function setBankDetailsVerificationStatusAndUpdatedAt(Entity $merchantDetails, $bankDetailsVerificationStatus)
     {
         $merchantDetails->setBankDetailsVerificationStatus($bankDetailsVerificationStatus);
 

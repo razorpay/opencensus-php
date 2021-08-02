@@ -46,7 +46,7 @@ class DefaultProcessorMock extends DefaultProcessor
                 $validationResponse->setErrorCode("BAD_REQUEST_VALIDATION_ERROR");
 
                 $validationResponse->setErrorDescription("merchant type is not supported");
-                
+
                 break;
 
             default:
@@ -55,6 +55,37 @@ class DefaultProcessorMock extends DefaultProcessor
         }
 
         return new BaseResponse\ValidationBaseResponse($validationResponse);
+    }
+
+    public function FetchDetails(string $validationId): Response
+    {
+        $data = [
+            'validation_id' => $validationId,
+            'status'        => 'success',
+            'enrichment_details' => get_Protobuf_Struct([
+                'online_provider' => [
+                    'details' => [
+                        'account_holder_names' => [
+                            [
+                                'score'  => 0,
+                                'value'  => 'name 1'
+                            ],
+                            [
+                                'score'  => 0,
+                                'value'  => 'name 2'
+                            ]
+                        ],
+                        'account_status' => [
+                            'value' => 'active',
+                        ]
+                    ]
+                ]
+            ])
+        ];
+
+        $validationResponse = new ValidationResponse($data);
+
+        return new BaseResponse\ValidationDetailsResponse($validationResponse);
     }
 
     public function setMockStatus(string $mockStatus)

@@ -19,11 +19,13 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Settlement\Bucket;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Merchant\Document\FileHandler;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;
 use RZP\Models\Settlement\SettlementServiceMigration;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
@@ -31,12 +33,17 @@ use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\Merchant\Detail\DeDupe\Core as DedupeCore;
 use RZP\Models\Contact\Validator as fundAccountValidator;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstant;
+use RZP\Models\Merchant\Detail\PennyTesting as DetailsPennyTesting;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater\BankAccount as BankAccountStatusUpdater;
+use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\BankAccount as BankAccountRequestDispatcher;
 
 class Core extends Base\Core
 {
     use TrimSpace;
 
-    const BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT = 'penny_test_result : %s, registered_name : %s, is_name_matched : %s';
+    const BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT = 'verification_status : %s, account_status : %s, account_holder_names : %s';
 
     const BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT_FOR_DEDUPE = 'dedupe_status: true, matchedMIDs = {%s}';
 
@@ -608,19 +615,19 @@ class Core extends Base\Core
 
         $this->validateNotLaxmiVilasBank($newBankAccount);
 
-        (new Detail\PennyTesting())
-            ->setBankAccount($newBankAccount)
-            ->triggerPennyTesting($merchant->merchantDetail, Detail\Constants::PENNY_TESTING_REASON_BANK_ACCOUNT_UPDATE);
+        $validationId = $this->triggerBankAccountBvsValidation($input, $merchant);
 
         $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
 
-        $data = $this->makeBankAccountUpdatePennyTestingData($input, $newBankAccount);
+        $data = $this->makeBankAccountUpdatePennyTestingData($input, $newBankAccount, $validationId);
 
         $this->saveBankAccountUpdatePennyTestingData($merchant, $data);
 
         $this->sendBankAccountChangeEmail($newBankAccount, $merchant, Constants::BANK_ACCOUNT_CHANGE_REQUEST_EMAIL);
 
-        $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_INITIATED, []);
+        $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_INITIATED, [
+            Merchant\BvsValidation\Entity::VALIDATION_ID => $validationId
+        ]);
 
         return $newBankAccount;
     }
@@ -633,72 +640,164 @@ class Core extends Base\Core
 
         $this->app['cache']->delete($cacheKey);
 
-
         switch ($status)
         {
             case Detail\BankDetailsVerificationStatus::VERIFIED:
             {
-                $this->createOrChangeBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false, false);
-
-                $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_SUCCESS, []);
+                $this->handleBankAccountUpdateCallbackSuccess($merchant, $data);
 
                 break;
             }
             default:
             {
-                $newBankAccountArray = $data[Constants::NEW_BANK_ACCOUNT_ARRAY];
-                $oldBankAccountArray = $data[Constants::OLD_BANK_ACCOUNT_ARRAY];
+                $this->createWorkflowForBankAccountUpdate($merchant, $data);
+            }
+        }
+    }
+
+    protected function triggerBankAccountBvsValidation($input, $merchant)
+    {
+        $payload = $this->getBankAccountUpdateBvsPayload($input, $merchant);
+
+        $validation = (new BvsCore)->verify($this->merchant->getId(), $payload);
+
+        if ($validation === null)
+        {
+            throw new Exception\ServerErrorException('', ErrorCode::SERVER_ERROR);
+        }
+
+        return $validation->getValidationId();
+    }
+
+    /**
+     * @param $input
+     * @param $merchant
+     * @return array
+     */
+    protected function getBankAccountUpdateBvsPayload($input, $merchant): array
+    {
+        $merchantAttributesForFuzzyMatch = (new DetailsPennyTesting())->getAllowedMerchantAttributesDetails($merchant->merchantDetail);
+
+        $accountHolderNames = array_values($merchantAttributesForFuzzyMatch);
+
+        return [
+            BvsConstant::CUSTOM_CALLBACK_HANDLER  => Constants::BANK_ACCOUNT_UPDATE_CALLBACK_HANDLER_BVS,
+            BvsConstant::ARTEFACT_TYPE            => BvsConstant::BANK_ACCOUNT,
+            BvsConstant::CONFIG_NAME              => (new BankAccountRequestDispatcher($merchant, $merchant->merchantDetail))->getConfigName(),
+            BvsConstant::VALIDATION_UNIT          => BvsValidationConstants::IDENTIFIER,
+            BvsConstant::DETAILS                  => [
+                BvsConstant::ACCOUNT_NUMBER       => $input[BvsConstant::ACCOUNT_NUMBER],
+                BvsConstant::IFSC                 => $input[Entity::IFSC_CODE],
+                BvsConstant::BENEFICIARY_NAME     => $input[BvsConstant::BENEFICIARY_NAME],
+                BvsConstant::ACCOUNT_HOLDER_NAMES => $accountHolderNames,
+            ],
+        ];
+    }
+
+    public function handleBankAccountUpdateCallback($merchant, $validation)
+    {
+        $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_BVS_CALLBACK_RECEIVED, $validation->toArrayPublic());
+
+        $data = $this->getBankAccountUpdatePennyTestingData($merchant);
+
+        $cacheKey = $this->getBankAccountUpdatePennyTestingCacheKey($merchant);
+
+        $this->app['cache']->delete($cacheKey);
+
+        $status = (new BankAccountStatusUpdater($merchant, $validation))->getDocumentValidationStatus($validation);
+
+        switch ($validation->getValidationStatus())
+        {
+            case BvsConstant::SUCCESS:
+                $this->handleBankAccountUpdateCallbackSuccess($merchant, $data, $status);
+                break;
+            default:
+                $this->handleBankAccountUpdateCallbackFailure($merchant, $data, $status);
+        }
+    }
+
+    protected function handleBankAccountUpdateCallbackSuccess($merchant, $data, $status)
+    {
+        (new DetailsPennyTesting())->setBankDetailsVerificationStatusAndUpdatedAt($merchant->merchantDetail, $status);
+
+        $this->createOrChangeBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false, false);
+
+        $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_SUCCESS, []);
+    }
+
+    protected function handleBankAccountUpdateCallbackFailure($merchant, $data, $status)
+    {
+        $this->createWorkflowForBankAccountUpdate($merchant, $data);
+
+        $this->addCommentsForBankAccountUpdateWorkFlow($merchant, $status, $data);
+    }
+
+    protected function createWorkflowForBankAccountUpdate($merchant, $data)
+    {
+        $newBankAccountArray = $data[Constants::NEW_BANK_ACCOUNT_ARRAY];
+        $oldBankAccountArray = $data[Constants::OLD_BANK_ACCOUNT_ARRAY];
 
 
-                // here we are rolling back the transaction as there is no need to save the new bank account
-                // if penny testing suceeds, we will create it at that time
-                // we just need a bank account entity (in memory) to trigger penny testing/for sending mail
-                $newBankAccount = $this->repo->beginTransactionAndRollback(function () use ($data, $merchant) {
-                    return $this->createBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, $this->mode);
-                });
+        // here we are rolling back the transaction as there is no need to save the new bank account
+        // if penny testing suceeds, we will create it at that time
+        // we just need a bank account entity (in memory) to trigger penny testing/for sending mail
+        $newBankAccount = $this->repo->beginTransactionAndRollback(function () use ($data, $merchant) {
+            return $this->createBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, $this->mode);
+        });
 
-                $this->sendBankAccountChangeEmail($newBankAccount, $merchant, Constants::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE_EMAIL);
+        $this->sendBankAccountChangeEmail($newBankAccount, $merchant, Constants::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE_EMAIL);
 
-                try
-                {
-                    $oldBankAccount = $this->repo->bank_account->getBankAccount($this->merchant);
+        try
+        {
+            $oldBankAccount = $this->repo->bank_account->getBankAccount($this->merchant);
 
-                    $this->app['workflow']
-                        ->setPermission(Permission\Name::EDIT_MERCHANT_BANK_DETAIL)
-                        ->setRouteName(Constants::BANK_ACCOUNT_UPDATE_POST_PENNY_TESTING_ROUTE_NAME)
-                        ->setRouteParams([])
-                        ->setInput($data)
-                        ->setController(Constants::BANK_ACCOUNT_UPDATE_POST_PENNY_TESTING_CONTROLLER)
-                        ->setMethod('POST')
-                        ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
-                        ->handle($oldBankAccountArray, $newBankAccountArray);
-
-                }
-                catch (Exception\EarlyWorkflowResponse $exception)
-                {
-                    $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_WORKFLOW_CREATED, []);
-                }
-
-                $this->addCommentForBankAccountUpdateWorkFlow($pennyTestAndFuzzyMatchResult, $newBankAccountArray, $merchant);
+            if (is_null($data[Constants::ADMIN_EMAIL]) === false)
+            {
+                $maker = $this->repo->admin->findByEmail($data[Constants::ADMIN_EMAIL]);
 
                 $this->app['workflow']
-                    ->setInput(null)
-                    ->setPermission(null)
-                    ->setRouteName(null)
-                    ->setRouteParams(null)
-                    ->setController(null);
-                }
+                    ->setWorkflowMaker($maker)
+                    ->setWorkflowMakerType(MakerType::ADMIN)
+                    ->setMakerFromAuth(false);
+            }
+
+            $this->app['workflow']
+                ->setPermission(Permission\Name::EDIT_MERCHANT_BANK_DETAIL)
+                ->setRouteName(Constants::BANK_ACCOUNT_UPDATE_POST_PENNY_TESTING_ROUTE_NAME)
+                ->setRouteParams([])
+                ->setInput($data)
+                ->setController(Constants::BANK_ACCOUNT_UPDATE_POST_PENNY_TESTING_CONTROLLER)
+                ->setMethod('POST')
+                ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
+                ->handle($oldBankAccountArray, $newBankAccountArray);
+
         }
+        catch (Exception\EarlyWorkflowResponse $exception)
+        {
+            $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_WORKFLOW_CREATED, []);
+        }
+
+        $this->app['workflow']
+            ->setInput(null)
+            ->setPermission(null)
+            ->setRouteName(null)
+            ->setRouteParams(null)
+            ->setController(null)
+            ->setWorkflowMaker(null)
+            ->setWorkflowMakerType(null)
+            ->setMakerFromAuth(true);
     }
 
     /**
      * Adds a comment for bank account update workflow
-     * @param $pennyTestAndFuzzyMatchResult
-     * @param $newBankAccountArray
      * @param $merchant
+     * @param $status
+     * @param $data
      */
-    protected function addCommentForBankAccountUpdateWorkFlow($pennyTestAndFuzzyMatchResult, $newBankAccountArray, $merchant)
+    protected function addCommentsForBankAccountUpdateWorkFlow($merchant, $status, $data)
     {
+        $validationID = $data['validation_id'];
+
         $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
 
         $workFlowAction = (new WorkFlowActionCore())->fetchOpenActionOnEntityOperation($oldBankAccount->getId(),
@@ -714,78 +813,140 @@ class Core extends Base\Core
         }
         else
         {
-            $commentEntity1 = (new CommentCore())->create([
-                'comment' => $this->getCommentForBankAccountUpdateWorkFlow($pennyTestAndFuzzyMatchResult),
-            ]);
+            $this->addBvsValidationCommentForBankAccountUpdate($status, $merchant, $validationID, $workFlowAction);
 
-            $commentEntity2 = (new CommentCore())->create([
-                'comment' => $this->getDedupeStatusCommentForBankAccountUpdateWorkflow($newBankAccountArray, $merchant),
-            ]);
-
-            $commentEntity1->entity()->associate($workFlowAction);
-
-            $commentEntity2->entity()->associate($workFlowAction);
-
-            $this->repo->saveOrFail($commentEntity1);
-
-            $this->repo->saveOrFail($commentEntity2);
+            $this->addDedupeStatusCommentForBankAccountUpdate($merchant, $workFlowAction, $data[Constants::NEW_BANK_ACCOUNT_ARRAY]);
         }
+    }
+
+    protected function addBvsValidationCommentForBankAccountUpdate($status, $merchant, $validationID, $workFlowAction)
+    {
+        try
+        {
+            $comment = $this->getCommentForBankAccountUpdateWorkFlow($status, $merchant->getId(), $validationID);
+        }
+        catch (\Throwable $e)
+        {
+            $comment = Constants::WORKFLOW_COMMENT_ERROR_ADDING_VALIDATION_RESULT;
+
+            $this->app['trace']->error(TraceCode::BANK_ACCOUNT_UPDATE_VALIDATION_WORKFLOW_COMMENT, [
+                Constants::ERROR_MESSAGE => $e->getMessage(),
+            ]);
+        }
+
+        $commentEntity = (new CommentCore())->create([
+            'comment' => $comment,
+        ]);
+
+        $commentEntity->entity()->associate($workFlowAction);
+
+        $this->repo->saveOrFail($commentEntity);
+    }
+
+    protected function addDedupeStatusCommentForBankAccountUpdate($merchant, $workFlowAction, $newBankAccountArray)
+    {
+        try
+        {
+            $comment = $this->getDedupeStatusCommentForBankAccountUpdateWorkflow($newBankAccountArray, $merchant);
+        }
+        catch (\Throwable $e)
+        {
+            $comment = Constants::WORKFLOW_COMMENT_ERROR_ADDING_DEDUPE_RESULT;
+
+            $this->app['trace']->error(TraceCode::BANK_ACCOUNT_UPDATE_DEDUPE_WORKFLOW_COMMENT, [
+                Constants::ERROR_MESSAGE => $comment,
+            ]);
+        }
+
+        $commentEntity = (new CommentCore())->create([
+            Constants::COMMENT => $comment,
+        ]);
+
+        $commentEntity->entity()->associate($workFlowAction);
+
+        $this->repo->saveOrFail($commentEntity);
     }
 
     /**
      * format the comment using penny test, fuzzy match result and dedupe status of merchant
-     * @param $pennyTestAndFuzzyMatchResult
-     * @param $newBankAccountArray
-     * @param $merchant
+     * @param $status
+     * @param $merchantId
+     * @param $validationID
      * @return string
      */
-    protected function getCommentForBankAccountUpdateWorkFlow($pennyTestAndFuzzyMatchResult)
+    protected function getCommentForBankAccountUpdateWorkFlow($status, $merchantId, $validationID)
     {
-        $pennyTestResult = 'failed';
+        $verificationDetails = $this->getBankAccountVerificationDetailsFromBvs($merchantId, $validationID);
 
-        if ((is_null($pennyTestAndFuzzyMatchResult[Constants::ACCOUNT_STATUS]) === false) and
-            ($pennyTestAndFuzzyMatchResult[Constants::ACCOUNT_STATUS] === Constants::ACTIVE))
-        {
-            $pennyTestResult = 'passed';
-        }
+        $comment = sprintf(self::BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT,
+            $status,
+            $verificationDetails[Constants::ACCOUNT_STATUS],
+            $verificationDetails[BvsConstant::ACCOUNT_HOLDER_NAMES]
+        );
 
-        $isNameMatched = $pennyTestAndFuzzyMatchResult[Constants::IS_NAME_MATCHED] ? 'true' : 'false';
-
-        $registeredName  = $pennyTestAndFuzzyMatchResult[Constants::REGISTERED_NAME];
-
-        $comment = sprintf(self::BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT, $pennyTestResult, $registeredName, $isNameMatched);
-
-        $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT, [
-            'comment' => $comment,
+        $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VALIDATION_WORKFLOW_COMMENT, [
+            Constants::COMMENT => $comment,
         ]);
 
         return $comment;
+    }
+
+
+    protected function getBankAccountVerificationDetailsFromBvs($merchantId, $validationID)
+    {
+        $verificationDetails = (new Detail\Service())->getBvsValidationArtefactDetails($merchantId, BvsConstant::BANK_ACCOUNT, $validationID);
+
+        $accountHolderNames = $this->getAccountHolderNamesFromEnrichmentDetailsForBankAccountUpdate(
+            $verificationDetails[BvsConstant::ENRICHMENT_DETAIL_FIELDS]);
+
+        return [
+            BvsConstant::ACCOUNT_HOLDER_NAMES => implode(',', $accountHolderNames),
+            Constants::ACCOUNT_STATUS         => $verificationDetails[BvsConstant::ENRICHMENT_DETAIL_FIELDS]->online_provider->details->account_status->value,
+        ];
+    }
+
+    protected function getAccountHolderNamesFromEnrichmentDetailsForBankAccountUpdate($enrichmentDetails)
+    {
+
+        $accountHolderNames = $enrichmentDetails->online_provider->details->account_holder_names;
+
+        $names = [];
+
+        foreach ($accountHolderNames as $accountHolderName)
+        {
+            array_push($names, $accountHolderName->value);
+        }
+
+        return $names;
     }
 
     protected function getDedupeStatusCommentForBankAccountUpdateWorkflow($newBankAccountArray, $merchant)
     {
         [$status, $matchedMIDs] = $this->getDedupeStatusForBankAccountUpdate($newBankAccountArray, $merchant);
 
-        if ($status === false)
+        $comment = Constants::DEDUPE_FALSE_COMMENT;
+
+        if ($status === true)
         {
-            return "dedupe_status: false";
+            $comment = sprintf(self::BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT_FOR_DEDUPE, implode(', ', $matchedMIDs));
         }
 
-        return sprintf(self::BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT_FOR_DEDUPE, implode(', ', $matchedMIDs));
+        $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_DEDUPE_WORKFLOW_COMMENT, [
+            Constants::COMMENT => $comment,
+        ]);
 
+        return $comment;
     }
 
     protected function getDedupeStatusForBankAccountUpdate($newBankAccountArray, $merchant)
     {
         // store old bank detail from merchantDetail Entity
         $oldDetail = [
-            Detail\Entity::BANK_BRANCH_IFSC          => $merchant->merchantDetail->getBankBranchIfsc(),
             Detail\Entity::BANK_ACCOUNT_NUMBER       => $merchant->merchantDetail->getBankAccountNumber(),
             Detail\Entity::BANK_ACCOUNT_NAME         => $merchant->merchantDetail->getBankAccountName(),
         ];
 
         $newDetail = [
-            Detail\Entity::BANK_BRANCH_IFSC          => $newBankAccountArray[Entity::IFSC],
             Detail\Entity::BANK_ACCOUNT_NUMBER       => $newBankAccountArray[Entity::ACCOUNT_NUMBER],
             Detail\Entity::BANK_ACCOUNT_NAME         => $newBankAccountArray[Entity::NAME],
         ];
@@ -885,7 +1046,7 @@ class Core extends Base\Core
     }
 
 
-    protected function makeBankAccountUpdatePennyTestingData(array $input, BankAccount\Entity  $newBankAccount)
+    protected function makeBankAccountUpdatePennyTestingData(array $input, BankAccount\Entity  $newBankAccount, $validationId)
     {
         $oldBankAccountArray = (new Service())->getOwnBankAccount();
 
@@ -893,14 +1054,21 @@ class Core extends Base\Core
 
         $this->fillAddressProofUrl($input, $this->merchant, $newBankAccountArray, $oldBankAccountArray);
 
-        $data = [
+        $adminEmail = null;
+
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $adminEmail = $this->app['basicauth']->getAdmin()->getEmail();
+        }
+
+        return [
             Constants::BANK_ACCOUNT_UPDATE_INPUT => $input,
             Merchant\Entity::MERCHANT_ID         => $newBankAccount->merchant->getId(),
             Constants::OLD_BANK_ACCOUNT_ARRAY    => $oldBankAccountArray,
             Constants::NEW_BANK_ACCOUNT_ARRAY    => $newBankAccountArray,
+            BvsConstant::VALIDATION_ID           => $validationId,
+            Constants::ADMIN_EMAIL               => $adminEmail,
         ];
-
-        return $data;
     }
 
     protected function validateNotLaxmiVilasBank($newBankAccount): void

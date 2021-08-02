@@ -21,4 +21,11 @@ class Constants
     const REGISTERED_NAME                                   = 'registered_name';
     const IS_NAME_MATCHED                                   = 'is_name_matched';
     const ACTIVE                                            = 'active';
+    const BANK_ACCOUNT_UPDATE_CALLBACK_HANDLER_BVS          = 'bank_account_update_callback_handler';
+    const ADMIN_EMAIL                                       = 'admin_email';
+    const WORKFLOW_COMMENT_ERROR_ADDING_VALIDATION_RESULT   = 'Error adding penny testing and fuzzy match details';
+    const WORKFLOW_COMMENT_ERROR_ADDING_DEDUPE_RESULT       = 'Error adding dedupe result';
+    const COMMENT                                           = 'comment';
+    const ERROR_MESSAGE                                     = 'error_message';
+    const DEDUPE_FALSE_COMMENT                              = 'dedupe_status: false';
 }

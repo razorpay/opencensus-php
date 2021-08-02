@@ -11,6 +11,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\BankAccount\Core as BankAccountCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\BvsValidation\Entity as ValidationEntity;
 use RZP\Models\BankingAccount\Activation\Detail\Entity as BankingAccountActivationEntity;
@@ -213,6 +214,13 @@ class Core extends Base\Core
         $service = (new Merchant\Detail\Service());
 
         $service->handleGstinSelfServeCallback($merchantDetails, $validation);
+    }
+
+    protected function BankAccountUpdateCallbackHandler(string $merchantId, Entity $validation): void
+    {
+        [$merchant, $merchantDetails] = (New Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+
+        (new BankAccountCore())->handleBankAccountUpdateCallback($merchant, $validation);
     }
 
     /**
