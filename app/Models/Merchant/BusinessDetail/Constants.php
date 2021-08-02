@@ -17,4 +17,7 @@ class Constants
     const CANCELLATION    = 'cancellation';
     const COMMENTS        = 'comments';
 
+    //app_urls
+    const PLAYSTORE_URL    = 'playstore_url';
+    const APPSTORE_URL     = 'appstore_url';
 }

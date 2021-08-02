@@ -3510,6 +3510,32 @@ return [
         'status_code' => 200,
     ],
 
+    'testAddAppUrls' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                "playstore_url"=> "https://play.google.com/store/apps/details?id=com.cricbuzz.android.vernacular"
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'merchant_business_detail' => [
+                    "merchant_id"=> "10000000000000",
+                    "app_urls" => [
+                        "appstore_url"=> null,
+                        "playstore_url"=> "https://play.google.com/store/apps/details?id=com.cricbuzz.android.vernacular"
+                    ],
+                ],
+                "playstore_url"=> "https://play.google.com/store/apps/details?id=com.cricbuzz.android.vernacular"
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     'testInstantActivationWithInvalidActivationFormMilestone' => [
         'request'     => [
             'method'  => 'POST',

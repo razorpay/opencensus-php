@@ -12,8 +12,10 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Encryption;
 use RZP\Encryption\AESEncryption;
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Base;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\State;
@@ -73,6 +75,8 @@ use SplFileInfo;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\Merchant\AvgOrderValue;
+use RZP\Models\Merchant\BusinessDetail\Service;
+use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 
 class Core extends Base\Core
 {
@@ -125,6 +129,29 @@ class Core extends Base\Core
         return true;
     }
 
+    public function checkForCorrectAppUrls($appUrls)
+    {
+        //check For valid playStore Url
+        if (empty($appUrls['playstore_url']) === false)
+        {
+            $playstoreUrl = $appUrls['playstore_url'];
+            if (str_starts_with($playstoreUrl, 'https://play.google.com/store/apps/details') === false)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PLAYSTORE_URL);
+            }
+        }
+
+        //check For valid appStore Url
+        if (empty($appUrls['appstore_url']) === false)
+        {
+            $appstoreUrl = $appUrls['appstore_url'];
+            if (str_starts_with($appstoreUrl, 'https://apps.apple.com') === false)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_APPSTORE_URL);
+            }
+        }
+    }
+
     public function saveMerchantDetails(array $input,
                                         Merchant\Entity $merchant,
                                         string $originProduct = Product::PRIMARY)
@@ -149,6 +176,28 @@ class Core extends Base\Core
         $merchantDetails->getValidator()->validateCommonFieldsWithPartnerActivation($input, $oldMerchantDetails);
 
         $activationFormMilestone = $input[Entity::ACTIVATION_FORM_MILESTONE] ?? null;
+
+        //isolating business details
+        $businessDetailsInput = [];
+
+        $urlsInput = ['playstore_url', 'appstore_url'];
+
+        foreach ($urlsInput as $url){
+            if(isset($input[$url]) === true)
+            {
+                $businessDetailsInput[BusinessDetailEntity::APP_URLS][$url] = $input[$url];
+                unset($input[$url]);
+            }
+        }
+
+        if(empty($businessDetailsInput[BusinessDetailEntity::APP_URLS]) === false)
+        {
+            $this->checkForCorrectAppUrls($businessDetailsInput[BusinessDetailEntity::APP_URLS]);
+        }
+
+        //save Business Detail For Merchant i.e website and AppId details
+        $businessDetailService = new Service();
+        $businessDetails = $businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $businessDetailsInput);
 
         unset($input[Entity::ACTIVATION_FORM_MILESTONE]);
 
@@ -207,6 +256,7 @@ class Core extends Base\Core
                     {
                         $response = $this->updateActivationProgress($merchant);
                     }
+
                     return $response;
                 });
             },
@@ -2296,6 +2346,7 @@ class Core extends Base\Core
         $merchantDetails->load('businessDetail');
 
         $merchant = $merchantDetails->merchant;
+        $merchantBusinessDetails = $merchantDetails->businessDetail;
 
         if ($merchant->isLinkedAccount() === true)
         {
@@ -2355,7 +2406,13 @@ class Core extends Base\Core
         $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
         $response['isHardLimitReached']                         = empty($hardEscalationLevel4) ? false : true;
         $response['activationStatusChangeLogs']                 = $this->getStatusChangeLogs($merchant);
-        $response[Entity::MERCHANT_BUSINESS_DETAIL]             = $merchantDetails->businessDetail;
+        $response[Entity::MERCHANT_BUSINESS_DETAIL]             = $merchantBusinessDetails;
+
+        $appUrls = ['playstore_url', 'appstore_url'];
+
+        foreach ($appUrls as $url){
+            $response[$url] = $merchantBusinessDetails[BusinessDetailEntity::APP_URLS][$url] ?? '';
+        }
 
         $isMtuCouponExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable(
             $merchant->getId(),

@@ -17,7 +17,10 @@ class Validator extends Base\Validator
         Entity::WEBSITE_DETAILS . '.' . Constants::PRICING      => 'sometimes|active_url|max:255|nullable',
         Entity::WEBSITE_DETAILS . '.' . Constants::LOGIN        => 'sometimes|active_url|max:255|nullable',
         Entity::WEBSITE_DETAILS . '.' . Constants::CANCELLATION => 'sometimes|active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::COMMENTS     => 'sometimes|string|nullable'
+        Entity::WEBSITE_DETAILS . '.' . Constants::COMMENTS     => 'sometimes|string|nullable',
+        Entity::APP_URLS                                        => 'sometimes|array',
+        Entity::APP_URLS.'.'.Constants::PLAYSTORE_URL           => 'sometimes|active_url|max:255|nullable',
+        Entity::APP_URLS.'.'.Constants::APPSTORE_URL            => 'sometimes|active_url|max:255|nullable'
     ];
 
     protected static $editRules   = [
@@ -30,6 +33,9 @@ class Validator extends Base\Validator
         Entity::WEBSITE_DETAILS . '.' . Constants::PRICING      => 'sometimes|active_url|max:255|nullable',
         Entity::WEBSITE_DETAILS . '.' . Constants::LOGIN        => 'sometimes|active_url|max:255|nullable',
         Entity::WEBSITE_DETAILS . '.' . Constants::CANCELLATION => 'sometimes|active_url|max:255|nullable',
-        Entity::WEBSITE_DETAILS . '.' . Constants::COMMENTS     => 'sometimes|string|nullable'
+        Entity::WEBSITE_DETAILS . '.' . Constants::COMMENTS     => 'sometimes|string|nullable',
+        Entity::APP_URLS                                        => 'sometimes|array',
+        Entity::APP_URLS.'.'.Constants::PLAYSTORE_URL           => 'sometimes|active_url|max:255|nullable',
+        Entity::APP_URLS.'.'.Constants::APPSTORE_URL            => 'sometimes|active_url|max:255|nullable'
     ];
 }

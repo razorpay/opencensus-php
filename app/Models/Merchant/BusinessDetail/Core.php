@@ -35,7 +35,15 @@ class Core extends Base\Core
                 function() use ($merchantDetails, $input) {
                     $businessDetail = $merchantDetails->businessDetail;
 
-                    $input[BusinessDetailEntity::WEBSITE_DETAILS] = $this->mergeJson($businessDetail->getWebsiteDetails(), $input[BusinessDetailEntity::WEBSITE_DETAILS]);
+                    if (empty($input[BusinessDetailEntity::WEBSITE_DETAILS]) === false)
+                    {
+                        $input[BusinessDetailEntity::WEBSITE_DETAILS] = $this->mergeJson($businessDetail->getWebsiteDetails(), $input[BusinessDetailEntity::WEBSITE_DETAILS]);
+                    }
+
+                    if (empty($input[BusinessDetailEntity::APP_URLS]) === false)
+                    {
+                        $input[BusinessDetailEntity::APP_URLS] = $this->mergeJson($businessDetail->getAppUrls(), $input[BusinessDetailEntity::APP_URLS]);
+                    }
 
                     $businessDetail->edit($input, MerchantConstants::EDIT);
 
@@ -86,7 +94,17 @@ class Core extends Base\Core
                                        [
                                            MerchantConstants::INPUT => $input
                                        ]);
-                    $input[BusinessDetailEntity::WEBSITE_DETAILS] = $this->mergeJson(BusinessDetailEntity::getDefaultWebsiteDetails(), $input[BusinessDetailEntity::WEBSITE_DETAILS]);
+
+                    if (empty($input[BusinessDetailEntity::WEBSITE_DETAILS]) === false)
+                    {
+                        $input[BusinessDetailEntity::WEBSITE_DETAILS] = $this->mergeJson(BusinessDetailEntity::getDefaultWebsiteDetails(), $input[BusinessDetailEntity::WEBSITE_DETAILS]);
+                    }
+
+                    if (empty($input[BusinessDetailEntity::APP_URLS]) === false)
+                    {
+                        $input[BusinessDetailEntity::APP_URLS] = $this->mergeJson(BusinessDetailEntity::getDefaultAppUrls(), $input[BusinessDetailEntity::APP_URLS]);
+                    }
+
                     $businessDetail->build($input);
 
                     $this->repo->merchant_business_detail->saveOrFail($businessDetail);

@@ -21,36 +21,62 @@ class Entity extends Base\PublicEntity
     const ID              = 'id';
     const MERCHANT_ID     = 'merchant_id';
     const WEBSITE_DETAILS = 'website_details';
+    const APP_URLS        = 'app_urls';
     const CREATED_AT      = 'created_at';
     const UPDATED_AT      = 'updated_at';
 
-    protected $entity             = 'merchant_business_detail';
+    protected $entity     = 'merchant_business_detail';
 
     protected $generateIdOnCreate = true;
 
     protected $fillable           = [
         self::MERCHANT_ID,
-        self::WEBSITE_DETAILS
+        self::WEBSITE_DETAILS,
+        self::APP_URLS
     ];
 
     protected $public             = [
         self::MERCHANT_ID,
         self::WEBSITE_DETAILS,
+        self::APP_URLS,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
 
     protected $casts              = [
         self::WEBSITE_DETAILS => 'array',
+        self::APP_URLS        => 'array',
     ];
 
     protected $defaults           = [
         self::WEBSITE_DETAILS => [],
+        self::APP_URLS        => [],
     ];
 
     public function getId()
     {
         return $this->getMerchantId();
+    }
+
+    public function getAppUrls()
+    {
+        return $this->getAttribute(self::APP_URLS);
+    }
+
+    public static function getDefaultAppUrls()
+    {
+        return [
+            BusinessDetailConstant::PLAYSTORE_URL    => null,
+            BusinessDetailConstant::APPSTORE_URL     => null,
+        ];
+    }
+
+    public function getPlaystoreUrl(){
+        return $this->getAppUrls()[BusinessDetailConstant::PLAYSTORE_URL] ?? null;
+    }
+
+    public function getAppstoreUrl(){
+        return $this->getAppUrls()[BusinessDetailConstant::APPSTORE_URL] ?? null;
     }
 
     public function getWebsiteDetails()

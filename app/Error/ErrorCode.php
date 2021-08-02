@@ -2036,6 +2036,10 @@ class ErrorCode
 
     //typeform Error codes
 
+    const BAD_REQUEST_INVALID_PLAYSTORE_URL                                         = 'BAD_REQUEST_INVALID_PLAYSTORE_URL';
+
+    const BAD_REQUEST_INVALID_APPSTORE_URL                                          = 'BAD_REQUEST_INVALID_APPSTORE_URL';
+
     const BAD_REQUEST_MERCHANT_ID_NOT_PRESENT                                       = 'BAD_REQUEST_MERCHANT_ID_NOT_PRESENT';
 
     const BAD_REQUEST_INVALID_PRODUCT_NAME                                          = 'BAD_REQUEST_INVALID_PRODUCT_NAME';

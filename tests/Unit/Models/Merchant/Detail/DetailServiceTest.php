@@ -17,6 +17,7 @@ class DetailServiceTest extends TestCase
     protected $userEntityMock;
     protected $deviceEntityMock;
     protected $merchantDetailEntityMock;
+    protected $merchantBusinessDetailEntityMock;
     protected $stakeholderEntityMock;
     protected $merchantRepoMock;
     protected $merchantMethodsMock;
@@ -107,6 +108,14 @@ class DetailServiceTest extends TestCase
         'role'                  => 'manager',
         'action'                => 'edit'];
 
+        $this->getDriverAsMerchantMock();
+
+        $this->repoMock->shouldReceive('driver')->with('merchant_business_detail')->andReturn($this->merchantBusinessDetailEntityMock);
+
+        $this->merchantDetailEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
+
+        $this->getFindOrFailPublic();
+
         $this->createMerchantTestDependencyMocks();
 
         $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn([]);
@@ -129,6 +138,10 @@ class DetailServiceTest extends TestCase
             'action'                => 'edit'];
 
         $this->getDriverAsMerchantMock();
+
+        $this->repoMock->shouldReceive('driver')->with('merchant_business_detail')->andReturn($this->merchantBusinessDetailEntityMock);
+
+        $this->merchantDetailEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
 
         $this->getFindOrFailPublic();
 
@@ -578,6 +591,8 @@ class DetailServiceTest extends TestCase
 
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('stakeholder')->andReturn($this->stakeholderEntityMock);
 
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('businessDetail')->andReturn($this->merchantBusinessDetailEntityMock);
+
         $this->merchantDetailEntityMock->shouldReceive('getValidator')->andReturn($this->merchantDetailValidator);
 
         $this->merchantDetailValidator->shouldReceive('validateIsNotLocked')->andReturn();
@@ -619,6 +634,9 @@ class DetailServiceTest extends TestCase
 
         // Merchant Mocking
         $this->merchantDetailEntityMock = Mockery::mock('RZP\Models\Merchant\Detail\Entity');
+
+        // Merchant Business details Mocking
+        $this->merchantBusinessDetailEntityMock = Mockery::mock('RZP\Models\Merchant\BusinessDetail\Entity');
 
         // Stakeholder Mocking
         $this->stakeholderEntityMock = Mockery::mock('RZP\Models\Merchant\Stakeholder\Entity');
