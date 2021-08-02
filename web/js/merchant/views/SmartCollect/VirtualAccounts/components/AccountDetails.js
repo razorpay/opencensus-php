@@ -1,11 +1,7 @@
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { classList } from 'common/utils/rzp-utils';
 
-export default function VirtualAccountDetails({
-  bankAccount1,
-  bankAccount2,
-  upiAddress,
-}) {
+export default function VirtualAccountDetails({ bankAccount1, bankAccount2, upiAddress }) {
   return (
     <React.Fragment>
       {bankAccount1 && (
@@ -42,8 +38,7 @@ export default function VirtualAccountDetails({
         </>
       )}
 
-      {(bankAccount1 || bankAccount2) &&
-        upiAddress && <div class="divider--dotted" />}
+      {(bankAccount1 || bankAccount2) && upiAddress && <div class="divider--dotted" />}
 
       {upiAddress && (
         <EntityDetailRow label="UPI Address">
@@ -55,13 +50,9 @@ export default function VirtualAccountDetails({
 }
 
 /*
-* Separates bankAccount and upiAddress
-* */
-export function getVirtualAccountDetailsToCopy({
-  bankAccount1,
-  bankAccount2,
-  upiAddress,
-}) {
+ * Separates bankAccount and upiAddress
+ * */
+export function getVirtualAccountDetailsToCopy({ bankAccount1, bankAccount2, upiAddress }) {
   let valueToCopy = [];
 
   // If both bankAccount1 and bankAccount2 exists, then one of them must be YES Bank. Don't add this one in Clipboard.
@@ -69,9 +60,7 @@ export function getVirtualAccountDetailsToCopy({
   const divider = '---------------------------------';
 
   if (bankAccount1) {
-    const bankAccountDetails = `Account Number: ${
-      bankAccount1.account_number
-    }\nBeneficiary Name: ${bankAccount1.name}\nIFSC: ${bankAccount1.ifsc}`;
+    const bankAccountDetails = `Account Number: ${bankAccount1.account_number}\nBeneficiary Name: ${bankAccount1.name}\nIFSC: ${bankAccount1.ifsc}`;
     valueToCopy.push(bankAccountDetails);
   }
 
@@ -80,9 +69,7 @@ export function getVirtualAccountDetailsToCopy({
   }
 
   if (bankAccount2) {
-    const bankAccountDetails = `Account Number: ${
-      bankAccount2.account_number
-    }\nBeneficiary Name: ${bankAccount2.name}\nIFSC: ${bankAccount2.ifsc}`;
+    const bankAccountDetails = `Account Number: ${bankAccount2.account_number}\nBeneficiary Name: ${bankAccount2.name}\nIFSC: ${bankAccount2.ifsc}`;
     valueToCopy.push(bankAccountDetails);
   }
 
@@ -101,21 +88,22 @@ export function getVirtualAccountDetailsToCopy({
 }
 
 /*
-* Separates bankAccount and upiAddress
-* */
+ * Separates bankAccount and upiAddress
+ * */
 export function getVirtualAccountDetails(virtualaccount) {
   let bankAccount1, bankAccount2, upiAddress;
 
   virtualaccount.receivers &&
     virtualaccount.receivers.length &&
-    virtualaccount.receivers.forEach(vaItem => {
+    virtualaccount.receivers.forEach((vaItem) => {
       if (vaItem.entity === 'bank_account') {
         if (!bankAccount1) {
           bankAccount1 = vaItem;
         } else {
           bankAccount2 = vaItem;
         }
-      } else {
+      }
+      if (vaItem.entity === 'vpa') {
         upiAddress = vaItem;
       }
     });
