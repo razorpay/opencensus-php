@@ -1,0 +1,92 @@
+$line-top = 0px
+$trapezoid-top = -18px
+$info-top = 8px
+
+$payment-pages-offset = 50px
+
+@keyframes fadein
+  from
+    opacity 0
+  to
+    opacity 1
+
+.highlight-test-mode-container
+  z-index 9999999
+  position absolute
+  width 100%
+  animation fadein 2s
+
+  .horizontal-line
+    background-color #F9D328
+    width 100%
+    height 5px
+    position fixed
+    top $line-top
+
+    &.shift-line
+      top $line-top + 45px
+
+  .content
+    width 100%
+    display flex
+    justify-content center
+
+    .trapezoid
+      height 55px
+      width 213px
+      position fixed
+      top $trapezoid-top
+      background-color #F9D328
+      clip-path polygon(5% 97%, 95% 97%, 100% 41%, 0 40%)
+      border-radius 25px
+      text-align center
+      padding-top 27px
+      padding-left 15px
+      color #2D3242
+      font-size 12px
+
+      &.shift-trapezoid
+        top $trapezoid-top + 45px
+
+    .info
+      position fixed
+      top $info-top
+      padding-right 130px
+
+      &.shift-info
+        top $info-top + 45px
+
+      i
+        vertical-align middle
+        color #2D3242
+
+    .info-content
+      width 210px
+      position fixed
+      top 50px
+      padding 10px
+      background-color #515461
+      color #FFFFFF
+      font-size 12px
+      border-radius 4px
+      animation fadein 1s
+
+      &.shift-info-content
+        top 95px
+
+      .clickable
+        padding-top 20px
+        font-size 13px
+        cursor pointer
+
+      &::after
+        content ''
+        position absolute
+        width 0
+        height 0
+        border-left 15px solid transparent
+        border-right 15px solid transparent
+        border-bottom 15px solid #515461
+        top -10px
+        left 25px
+

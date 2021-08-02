@@ -1,12 +1,11 @@
 import React from 'react';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked }) => {
   const dropdownDisabled = mode === 'live' && !!isTestModeBlocked;
+
   return (
     <Dropdown disabled={dropdownDisabled}>
       <DropdownTrigger class="dropdown-toggle switch-modes-toggle">
@@ -26,18 +25,6 @@ const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked }) =>
           {mode === 'test' ? (
             <>
               <i class="i i-info-circle ModeIndicator--test" /> {modeFormatted} Mode
-              <Popover
-                align="bottom"
-                theme="dark"
-                followPointer={true}
-                className="test-mode-popover"
-              >
-                <PopoverBody>
-                  <div>All the transactions done in Test mode are sample</div>
-                  <div>transactions and there will not be any real money</div>
-                  <div>debited/credited in your account.</div>
-                </PopoverBody>
-              </Popover>
             </>
           ) : (
             <>

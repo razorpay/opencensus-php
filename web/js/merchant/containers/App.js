@@ -4,9 +4,7 @@ import { withRouter } from 'react-router';
 import moment from 'moment';
 import analyticsService from '@razorpay/commander-services/analytics';
 import { createSidetab, createPopup } from '@typeform/embed';
-
 import Loader from 'common/ui/Loader';
-
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ModalDialog from 'common/ui/ModalDialog';
 import { analyticsTrack, initAnalytics } from 'common/utils/analytics';
@@ -16,6 +14,7 @@ import LocalStorageService from 'common/utils/localStorage';
 import debounce from 'common/utils/debounce';
 import Sidebar from 'merchant/components/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
+import HighlightTestMode from 'merchant/components/HighlightTestMode';
 import Content from 'merchant/routes/Content';
 import Footer from 'merchant/components/Footer';
 import ActivationRequiredModal from 'merchant/components/ActivationRequiredModal';
@@ -35,10 +34,8 @@ import { resizeWindow, updateMerchantLiveTransactionFlag } from 'merchant/reduce
 import { matchFullPageView } from 'merchant/routes';
 import { classList, isPresent } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
-
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-
 import initChat from 'merchant/components/Support/chat';
 import RTracking from 'react-tracking';
 import qs from 'query-string';
@@ -47,84 +44,10 @@ import { fetchActiveTickets } from 'merchant/reducers/config.js';
 import LogoutDialog from 'merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { fetchInstantSettlements } from 'merchant/reducers/collection';
-@withRouter
-@connect(
-  (state) => ({
-    ...state.session,
-    baseLocation: state.app.baseLocation,
-    config: state.config,
-    windowWidth: state.app.windowWidth,
-    merchant_gst: state.profile.merchant_gst,
-  }),
-  {
-    ...ModalActions,
-    ...SessionActions,
-    ...ConfigActions,
-    ...NotificationActions,
-    updateTwoFactorVerified,
-    fetchGST,
-    fetchActiveTickets: fetchActiveTickets,
-    resizeWindow,
-    openModal,
-    closeModal,
-    fetchInstantSettlements,
-  },
-)
-@RTracking(
-  ({ user, mode }) => {
-    let utm = null;
-    let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
-    let browser_details = {};
-    const query = qs.parse(window.location.search);
-    let source = 'pg';
-    let u = {};
-    if (user && user.user) {
-      const device_type = isMobileDevice() ? 'mweb' : 'dweb';
-      u = {
-        email_id: user.user.email,
-        user_id: user.user.id,
-        mid: user.current,
-        user_role: user.role,
-        business_type: user.business_type,
-        activation_status: user.activated,
-        is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
-        is_instant_activation_enabled: user.isInstantActivationEnabled,
-        is_aadhar_ekyc_mandatory: user.isAadharEkycMandatory,
-        is_gstin_mandatory: user.isGstinMandatory,
-        user_business_category: user.business_category,
-        user_business_sub_category: user.business_subcategory,
-        device_type,
-      };
-    }
-    if (query.merchant) {
-      source = query.merchant;
-    }
-    if (typeof window.razorpayAnalytics !== 'undefined') {
-      utm = razorpayAnalytics.utils.getLandingParams();
-      gclid = razorpayAnalytics.utils.getCookie('gclid');
-      if (typeof razorpayAnalytics.utils.getBrowserDetails !== 'undefined') {
-        browser_details = razorpayAnalytics.utils.getBrowserDetails();
-      }
-    }
-    return window.rzpQ.component('Home', {
-      ...u,
-      utm_params: utm,
-      gclid,
-      mode: 'live',
-      rzp_mode: mode,
-      source,
-      reffering_url: document.referrer,
-      url: document.location.href,
-      ...browser_details,
-    });
-  },
-  {
-    dispatch: (data) => {
-      window.rzpQ.push(data);
-    },
-  },
-)
-export default class App extends Component {
+import { bindActionCreators, compose } from 'redux';
+
+@RTracking()
+class App extends Component {
   pendingRequests = [];
 
   constructor(props) {
@@ -195,7 +118,7 @@ export default class App extends Component {
           kycStatus,
           merchantId: user.current,
           businessCategory: user.businessCategory,
-          phone: '+91' + user.contact_mobile
+          phone: '+91' + user.contact_mobile,
         });
       }
     });
@@ -330,10 +253,13 @@ export default class App extends Component {
         },
       );
       this.state.NonGoLiveNPSEnableTypeForm = NonGoLiveNPSEnableTypeForm; // saving reference typeform
-      
-      if(((user.experiments || {})['csm_experience_survey'] || {}).result === 'on' && !LocalStorageService.getItem('csm_exp_survey_showed')){
-        LocalStorageService.setItem('csm_exp_survey_showed')
-        createPopup('Sl6YqLtE',{
+
+      if (
+        ((user.experiments || {})['csm_experience_survey'] || {}).result === 'on' &&
+        !LocalStorageService.getItem('csm_exp_survey_showed')
+      ) {
+        LocalStorageService.setItem('csm_exp_survey_showed');
+        createPopup('Sl6YqLtE', {
           hideHeaders: true,
           hideFooters: true,
           hidden,
@@ -827,6 +753,11 @@ export default class App extends Component {
             <Notifications />
           </TwoFactorVerificationProvider>
         </div>
+        {mode === 'test' && (
+          <div style={{ position: 'relative' }}>
+            <HighlightTestMode />
+          </div>
+        )}
       </Wrapper>
     );
   }
@@ -838,3 +769,91 @@ function removeSplashLoader() {
     $splash.parentElement.removeChild($splash);
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    ...state.session,
+    baseLocation: state.app.baseLocation,
+    config: state.config,
+    windowWidth: state.app.windowWidth,
+    merchant_gst: state.profile.merchant_gst,
+  };
+};
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      ...ModalActions,
+      ...SessionActions,
+      ...ConfigActions,
+      ...NotificationActions,
+      updateTwoFactorVerified,
+      fetchGST,
+      fetchActiveTickets,
+      resizeWindow,
+      openModal,
+      closeModal,
+      fetchInstantSettlements,
+    },
+    dispatch,
+  );
+
+export default compose(
+  withRouter,
+  connect(mapStateToProps, mapDispatchToProps),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(
+    ({ user, mode }) => {
+      let utm = null;
+      let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
+      let browser_details = {};
+      const query = qs.parse(window.location.search);
+      let source = 'pg';
+      let u = {};
+      if (user && user.user) {
+        const device_type = isMobileDevice() ? 'mweb' : 'dweb';
+        u = {
+          email_id: user.user.email,
+          user_id: user.user.id,
+          mid: user.current,
+          user_role: user.role,
+          business_type: user.business_type,
+          activation_status: user.activated,
+          is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
+          is_instant_activation_enabled: user.isInstantActivationEnabled,
+          is_aadhar_ekyc_mandatory: user.isAadharEkycMandatory,
+          is_gstin_mandatory: user.isGstinMandatory,
+          user_business_category: user.business_category,
+          user_business_sub_category: user.business_subcategory,
+          device_type,
+        };
+      }
+      if (query.merchant) {
+        source = query.merchant;
+      }
+      if (typeof window.razorpayAnalytics !== 'undefined') {
+        utm = window.razorpayAnalytics.utils.getLandingParams();
+        gclid = window.razorpayAnalytics.utils.getCookie('gclid');
+        if (typeof window.razorpayAnalytics.utils.getBrowserDetails !== 'undefined') {
+          browser_details = window.razorpayAnalytics.utils.getBrowserDetails();
+        }
+      }
+      return window.rzpQ.component('Home', {
+        ...u,
+        utm_params: utm,
+        gclid,
+        mode: 'live',
+        rzp_mode: mode,
+        source,
+        reffering_url: document.referrer,
+        url: document.location.href,
+        ...browser_details,
+      });
+    },
+    {
+      dispatch: (data) => {
+        window.rzpQ.push(data);
+      },
+    },
+  ),
+)(App);

@@ -13,6 +13,8 @@ const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
 const SHOW_HIDE_TOUR = 'SHOW_HIDE_TOUR';
 
+const UPDATE_HIGHLIGHT_MODE = 'UPDATE_HIGHLIGHT_MODE';
+
 export const updateSession = (payload) => {
   return {
     type: UPDATE_SESSION,
@@ -89,11 +91,19 @@ export const showOrHideTour = (toShowTour) => {
   };
 };
 
+export const showOrHideHighlightMode = (value) => {
+  return {
+    type: UPDATE_HIGHLIGHT_MODE,
+    payload: value,
+  };
+};
+
 let initialState = {
   user: new User(),
   org: {},
   mode: 'test',
   modeFormatted: 'Test',
+  highlightMode: true,
   isTourVisible: false,
 };
 
@@ -114,6 +124,11 @@ export default function (state = initialState, action) {
 
     case UPDATE_USER_FEATURES:
       return onUpdateUserFeatures(state, action.data);
+
+    case UPDATE_HIGHLIGHT_MODE:
+      return merge(state, {
+        highlightMode: action.payload,
+      });
 
     case `${USER_FETCH}::SUCCESS`:
       return set(state, 'user', action.payload.data);

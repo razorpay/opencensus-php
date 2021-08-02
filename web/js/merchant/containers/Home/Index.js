@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
-
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { customRangeText } from 'common/ui/DateRangePicker';
 import {
@@ -18,17 +17,14 @@ import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-
 import * as HomeActions from 'merchant/reducers/home';
 import { fetch } from 'merchant/reducers/pokedex';
 import { fetchPayments } from 'merchant/reducers/collection';
 import { fetchOndemandRestrictions, hideTnC } from 'merchant/reducers/home';
 import { fetchLateAuthConfig } from 'merchant/reducers/config';
-
 import { API_ERROR, API_INVALID_RESP, isMobileDevice } from 'merchant/components/Home/data';
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 import LakshmiVilasBankBanner from 'merchant/components/Announcements/LakshmiVilasBankBanner';
-
 import InstantActivationSuccess from 'merchant/components/Home/InstantActivationSuccess';
 import PANVerificationStatusModal from 'merchant/components/Home/PANVerificationStatusModal';
 import KYCStatusModal from 'merchant/components/Home/KYCStatusModal';
@@ -38,7 +34,6 @@ import FraudDetectionModal from 'merchant/components/Home/FraudDetectionModal';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
-
 import {
   trackError,
   trackDatesChange,
@@ -49,7 +44,6 @@ import {
   iaActivations,
   trackSupportDetailPopupDisplay,
 } from './ga';
-
 import Banner from 'common/ui/Banner';
 import Desktop from './Desktop';
 import Mobile from './Mobile';
@@ -61,6 +55,7 @@ import CardPaymentsBlockedModal from 'merchant/views/Subscriptions/components/Ca
 import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
 import TnCModal from 'merchant/components/Home/TnCModal';
 import { fetchSupportDetail } from 'merchant/reducers/support_detail';
+import { showOrHideHighlightMode } from 'merchant/reducers/session';
 
 const dateRangePresets = [
     ['Past 7 Days', -7, 'days'],
@@ -120,6 +115,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
     fetchSupportDetail,
     fetchOndemandRestrictions,
     hideTnC,
+    showOrHideHighlightMode,
   },
 )
 @RTracking(() => window.rzpQ.component('HomeContainer'))
@@ -259,6 +255,7 @@ export default class HomeContainer extends Component {
 
         if (this.state.showOnboardingBannerFirstStep) {
           LocalStorageService.setItem(this.firstStepToken, 'true');
+          this.props.showOrHideHighlightMode(false);
         }
       } else if (mode !== 'live') {
         this.props.fetchPayments({ mode: 'live' }).then((data) => {
@@ -590,6 +587,7 @@ export default class HomeContainer extends Component {
   }
 
   onFirstStepClose() {
+    this.props.showOrHideHighlightMode(true);
     this.setState(
       {
         showOnboardingBannerFirstStep: false,
