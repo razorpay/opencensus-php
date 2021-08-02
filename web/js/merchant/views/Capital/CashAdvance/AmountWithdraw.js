@@ -25,8 +25,6 @@ import {
   COLLECTIONS_PRODUCT_TYPES,
   COLLECTIONS_PAYMENT_REFERENCE_TYPE,
   COLLECTIONS_BALANCE_TYPE,
-  PAYMENT_MODES,
-  REPAYMENT_STATUES,
 } from './constants';
 import CreditSummary from './CreditSummary';
 import WithdrawnAmountSummary from './WithdrawnAmountSummary';
@@ -763,9 +761,7 @@ export default class AmountWithdraw extends React.Component {
 
     const { comments: { reason = '' } = {}, status } = withdrawalConfigurationDetails;
 
-    const isWithdrawalDisabled =
-      status === 'ONHOLD' &&
-      (reason === 'cld_risk_policy' || reason === 'end_of_credit_line_tenure');
+    const isWithdrawalDisabled = status === 'ONHOLD' && reason === 'end_of_credit_line_tenure';
     const canWithdraw = this.canWithdraw() && !isWithdrawalDisabled;
     const { withdrawalErrorConfig = {} } = this.state;
     const showReasonCTA =
@@ -792,8 +788,7 @@ export default class AmountWithdraw extends React.Component {
             {isWithdrawalDisabled && (
               <Popover align="top" parentQuerySelector=".withdrawals__top-summary" theme="dark">
                 <PopoverBody>
-                  Your Cash Advance has been disabled due to perceived risk of decrease in payments
-                  volume. Your line will be enabled once your payments volume increase
+                  Your credit line has been disabled as it has reached the end of tenure.
                 </PopoverBody>
               </Popover>
             )}
@@ -950,6 +945,71 @@ export default class AmountWithdraw extends React.Component {
     );
   };
 
+  withdrawOnholdReasonSection = (reason) => {
+    const isReasonCldRiskPolicy = reason === 'cld_risk_policy';
+
+    const resonLabels = {
+      cld_risk_policy: (
+        <>
+          Sorry, your withdrawals are temporarily on hold due to the perceived risk of a decrease in
+          payments volume. <br />
+          Withdrawals will be enabled once your payments volume is back on track.
+        </>
+      ),
+      non_repayment: (
+        <>
+          Sorry, Your withdrawals are temporarily blocked due to missed repayments. Please repay to
+          continue <br /> using your credit line.
+        </>
+      ),
+    };
+
+    const renderBottomSection = () => {
+      return (
+        <div className="flex outstanding__wrapper">
+          {isReasonCldRiskPolicy ? (
+            <div>
+              <i className="i i-info-outline withdrawals__onhold-icon bottom-section-icon" />
+              Keep using the payments gateway for your business needs to keep the payments volume
+              high.
+            </div>
+          ) : (
+            <>
+              <div>
+                <div className="outstanding-title">Outstanding Repayment</div>
+                <strong className="outstanding-amount">
+                  <Amount
+                    value={this.state.outstandingRepayment.amount}
+                    parentQuerySelector=".withdrawals__top-summary"
+                  />
+                </strong>
+              </div>
+              <button
+                className="btn btn-primary outstanding-paybutton"
+                onClick={this.handlePayNowClick}
+              >
+                Pay Now
+              </button>
+            </>
+          )}
+        </div>
+      );
+    };
+
+    return (
+      <div className="flex onhold-reason-container">
+        <div>
+          <div className="flex end-align">
+            <i className="i i-error withdrawals__onhold-icon" />
+            <h3 className="withdrawals__onhold-title text--secondary">Withdrawals are on hold!</h3>
+          </div>
+          <p className="withdrawals__onhold-summary">{resonLabels[reason]}</p>
+        </div>
+        {renderBottomSection()}
+      </div>
+    );
+  };
+
   withdrawableSection = () => {
     const {
       withdrawalAmount,
@@ -973,8 +1033,7 @@ export default class AmountWithdraw extends React.Component {
       merchantGromorEsignDetails: { loading, data: { due_at = '' } = {} } = {},
     } = this.props;
 
-    const isApplicationAtHold =
-      status === 'ONHOLD' && reason !== 'cld_risk_policy' && reason !== 'end_of_credit_line_tenure';
+    const isApplicationAtHold = status === 'ONHOLD' && reason !== 'end_of_credit_line_tenure';
 
     const hasDueDateAndWithdrawnAmount = selectedDueDate && withdrawalAmount;
     const { principle = 0, interest = 0 } = hasDueDateAndWithdrawnAmount
@@ -1037,35 +1096,7 @@ export default class AmountWithdraw extends React.Component {
             ) : latestRepaymentDone ? (
               this.repaymentSuccessfull(isRepaymentLoading)
             ) : (
-              <div>
-                <div className="flex end-align">
-                  <i className="i i-error withdrawals__onhold-icon" />
-                  <h3 className="withdrawals__onhold-title text--secondary">
-                    Withdrawals are on hold!
-                  </h3>
-                </div>
-                <p className="withdrawals__onhold-summary">
-                  Sorry, Your withdrawals are temporarily blocked due to missed repayments. Please
-                  repay to continue <br /> using your credit line.
-                </p>
-                <div className="flex outstanding__wrapper">
-                  <div>
-                    <div className="outstanding-title">Outstanding Repayment</div>
-                    <strong className="outstanding-amount">
-                      <Amount
-                        value={this.state.outstandingRepayment.amount}
-                        parentQuerySelector=".withdrawals__top-summary"
-                      />
-                    </strong>
-                  </div>
-                  <button
-                    className="btn btn-primary outstanding-paybutton"
-                    onClick={this.handlePayNowClick}
-                  >
-                    Pay Now
-                  </button>
-                </div>
-              </div>
+              this.withdrawOnholdReasonSection(reason)
             )
           ) : (
             <div>
@@ -1477,15 +1508,15 @@ export default class AmountWithdraw extends React.Component {
       haveWithdrawals = false,
       withdrawalConfigurationDetails: { data: { status, comments: { reason = '' } = {} } } = {},
     } = this.props;
-    const isWithdrawalDisabled =
-      status === 'ONHOLD' &&
-      (reason === 'cld_risk_policy' || reason === 'end_of_credit_line_tenure');
+    const isWithdrawalOnhold = status === 'ONHOLD';
 
     switch (currentView) {
       case VIEWS.WITHDRAW:
       case VIEWS.WITHDRAW_FAIL:
         if (!withdrawalConfigurationDetails || withdrawConfigLoading || seedData.loading)
-          return <CreditSummary loading={true} isWithdrawalDisabled={isWithdrawalDisabled} />;
+          return (
+            <CreditSummary loading={true} isWithdrawalOnhold={isWithdrawalOnhold} reason={reason} />
+          );
         else {
           return (
             <CreditSummary
@@ -1495,7 +1526,8 @@ export default class AmountWithdraw extends React.Component {
               user={user}
               history={history}
               haveWithdrawals={haveWithdrawals}
-              isWithdrawalDisabled={isWithdrawalDisabled}
+              isWithdrawalOnhold={isWithdrawalOnhold}
+              reason={reason}
             />
           );
         }
