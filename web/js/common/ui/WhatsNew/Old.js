@@ -55,7 +55,11 @@ export default class WhatsNewOld extends Component {
       notifications = notifications.sort((first, second) => {
         if (first.id === 'projectNitro')
           return -1;
+        if (first.id === 'whats-new-JUL21-RXCC-ULTRA' && second.id !== 'projectNitro') 
+          return -1;
         if (second.id === 'projectNitro')
+          return 1;
+        if (second.id === 'whats-new-JUL21-RXCC-ULTRA')
           return 1;
         return second.start_ts - first.start_ts;
       });
@@ -206,8 +210,25 @@ export default class WhatsNewOld extends Component {
       });
   };
 
-  createSalesforceOpportunity = (url) => {
-    sendDataToSalesForce('LOC-Cross-sell-V1', this.props.user);
+  createSalesforceOpportunity = (id, url) => {
+    let event = '';
+
+    switch (id) {
+      case 'cash-advance-cta-1': {
+        event = 'LOC-Cross-sell-V1';
+        break;
+      }
+      case 'whats-new-JUN21-RXCC-GROWTH-cta1': {
+        event = 'capital-whats-new';
+        break;
+      }
+      case 'ultra-campaign-announcement-cta-1': {
+        event = 'ultra-campaign';
+        break;
+      }
+    }
+
+    sendDataToSalesForce(event, this.props.user);
 
     this.props.history.push(url);
   };
@@ -228,7 +249,8 @@ export default class WhatsNewOld extends Component {
         this.props.showAcceptPaymentsModal();
         break;
       case 'cash-advance-cta-1':
-        this.createSalesforceOpportunity(url);
+      case 'ultra-campaign-announcement-cta-1':
+        this.createSalesforceOpportunity(id, url);
         break;
       case 'announcement-May21-PLMApp-GTM':
         this.onMobileAppCampaignCTAClick();
@@ -450,6 +472,7 @@ export default class WhatsNewOld extends Component {
       'JUL21-CC-FEATURELAUNCH',
       'JUN21-SELFSERVE-CR&BL',
       'May21-PLMApp-GTM',
+      'whats-new-JUL21-RXCC-ULTRA',
     ];
 
     let cardsList = this.state.notifications.map((card, idx) => (

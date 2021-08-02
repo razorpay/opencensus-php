@@ -77,6 +77,10 @@ export default class AnnouncementDetails extends React.Component {
         event = 'capital-whats-new';
         break;
       }
+      case 'ultra-campaign-announcement-cta-1': {
+        event = 'ultra-campaign';
+        break;
+      }
     }
 
     sendDataToSalesForce(event, this.props.user);
@@ -87,6 +91,7 @@ export default class AnnouncementDetails extends React.Component {
     switch (id) {
       case 'cash-advance-cta-1':
       case 'whats-new-JUN21-RXCC-GROWTH-cta1':
+      case 'ultra-campaign-announcement-cta-1':
         this.createSalesforceOpportunity(id, url);
         break;
     }
@@ -113,7 +118,7 @@ export default class AnnouncementDetails extends React.Component {
 
     if (this.lazy && !isExternal)
       this.props.emptySliderStack();
-    if (button.id) this.handleCTA({ id: button.id, url: urlPath });
+    if (button.id) this.handleCTA({ id: button.id, url: URL });
     else window.open(urlPath, isExternal ? '_blank' : '_self');
   };
 

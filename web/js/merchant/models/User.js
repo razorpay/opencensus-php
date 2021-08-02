@@ -401,6 +401,10 @@ export default class User {
     return getSplitzExperimentVariant('whats_new_lazy_experiment')?.variables?.result === 'on';
   }
 
+  get isUltraCampaignBannerEnabled() {
+    return getSplitzExperimentVariant('ultra_campaign_banner_experiment')?.variables?.result === 'on';
+  }
+  
   get isNitroFormFillEnabled() {
     return getSplitzExperimentVariant('nitro_form_ab_experiment')?.variables?.result === 'on';
   }

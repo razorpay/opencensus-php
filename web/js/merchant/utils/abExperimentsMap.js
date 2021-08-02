@@ -66,6 +66,12 @@ export default {
     // prod experiment ids
     'HQqeKAnGRYPO4S',
   ],
+  ultra_campaign_banner_experiment: [
+    // beta experiment ids
+    'HeLTdHr7f8YNOs',
+    // prod experiment ids
+    'Hf48AFfhZIa1cH',
+  ],
   nitro_corporate_cards: [
     // beta experiment ids
     'HVcXIX8S1cokqB', // Hyderabad

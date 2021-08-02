@@ -5,27 +5,30 @@ const payload = {
   event_properties: {},
 };
 
-export const sendDataToSalesForce = (data, user, mode = 'live') => {
+export const sendDataToSalesForce = (data, user = { }, mode = 'live') => {
+  const userDetails = {
+    merchant_id: user.current,
+    name: user.name,
+    email: user.contact_email,
+    contact_mobile: user.contact_mobile,
+  };
+
   const eventPropertiesMap = {
     'LOC-Cross-sell-V1': {
-      merchant_id: user.current,
-      name: user.name,
-      email: user.contact_email,
-      contact_mobile: user.contact_mobile,
       Campaign_ID: 'LOC-Cross-sell-V1',
       product_name: 'LOC',
     },
     'capital-whats-new': {
-      merchant_id: user.current,
-      name: user.name,
-      email: user.contact_email,
-      contact_mobile: user.contact_mobile,
       Campaign_ID: 'capital-whats-new',
       product_name: 'CARDS',
     },
+    'ultra-campaign': {
+      Campaign_ID: 'Ultra-CC',
+      product_name: 'Cards',
+    },
   };
 
-  if (typeof data === 'string') payload.event_properties = eventPropertiesMap[data] || {};
+  if (typeof data === 'string') payload.event_properties = { ...userDetails, ...eventPropertiesMap[data], } || {};
   else if (typeof data === 'object' && data !== null) payload.event_properties = data;
 
   return merchantFetch({

@@ -988,6 +988,42 @@ class Constants
             ],
         ],
         [
+            'id'          => 'whats-new-JUL21-RXCC-ULTRA',
+            'title'       => 'Qualified for Corporate Cards!',
+            'description' => 'Simplify and save when doing recurring spends and international payments for marketing, subscriptions, cloud infra and much more.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/corporate-cards.svg',
+            'start_ts'    => 1627453800,
+            'end_ts'      => 1638081000,
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Get your card',
+                    'url'   => '/capital/corporate-cards/',
+                    'id'    => 'ultra-campaign-announcement-cta-1',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know more',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/whats-new-JUL21-RXCC-ULTRA/'
+                ],
+            ],
+            'filters' => [
+                'splitz_experiments' => ['ULTRA_CAMPAIGN_ANNOUNCEMENT_SPLITZ'],
+            ],
+            'l2_content'  => [
+                'content'     => "<div><div class='paragraph'>Grow your business with a universal credit card with no requirement of fixed deposit and up to 50 days of the free credit period. It is also exclusively available at a ZERO joining fee for qualified Razorpay users.</div> <div class='image' style='padding: 10px 0;'><img src='https://cdn.razorpay.com/static/assets/whats-new/corporate-cards.png'></div><div class='paragraph'><b>Made for growing businesses: </b>Stop using your personal cards to avoid compliance and audit hassles. Use a universally accepted Visa Card for your business expenses with no personal liability. </div><div><b>Value for money on your spending: </b>0.4% Cashback on timely repayments and access to 100+ Visa Business Platinum rewards in addition to a low 1.99% foreign currency transaction fee. </div><div class='paragraph'><b>Smart dashboard and budgeting: </b>Get complete visibility and effortless reports. Set custom limits and permissions for add-on cards and dispute transactions or cancel subscriptions with a click.</div> </div>",
+                'buttons'     => [
+                    [
+                        'type'  => 'button',
+                        'label' => 'Apply now',
+                        'url'   => '/capital/corporate-cards/',
+                        'id'    => 'ultra-campaign-announcement-cta-1',
+                    ],
+                ],
+            ],
+        ],
+        [
             'id'          => 'july-ssl-certificate-update',
             'title'       => 'SSL Certificate Update for Razorpay API',
             'description' => 'We’re updating the SSL certificate for api.razorpay.com on 15th July, 2021. To understand if this update affects you, click on the link below.',
