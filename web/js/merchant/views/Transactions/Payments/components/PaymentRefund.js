@@ -42,7 +42,7 @@ const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
   columns.splice(1, 0, refundSpeed);
   columns.push(refundStatus);
 
-  return (
+  return refunds && refunds?.items?.length > 0 ? (
     <ContentToggler
       onToggleClick={() => {
         onToggleClick(refunds.items[0]?.speed_requested);
@@ -62,7 +62,7 @@ const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
         />
       </div>
     </ContentToggler>
-  );
+  ) : null;
 };
 
 export default ({ payment, refunds, openRefundModal, onToggleClick = () => {} }) => {
