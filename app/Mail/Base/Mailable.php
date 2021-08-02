@@ -207,6 +207,11 @@ class Mailable extends BaseMailable
                     $rewardEventProperties['reward_ids'][] = $reward['id'];
                 }
 
+                if(isset($this->data['email_variant']))
+                {
+                    $rewardEventProperties['email_variant'] = $this->data['email_variant'];
+                }
+
                 $app['diag']->trackEmailEvent(EventCode::EMAIL_REWARD_SENT, $rewardEventProperties);
             }
 

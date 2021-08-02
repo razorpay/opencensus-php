@@ -645,6 +645,13 @@ class Notify
 
                     if(isset($couponCode))
                     {
+                        if($this->payment->isCustomerMailAbsent() === false)
+                        {
+                            $data['email_variant'] = $this->getRewardsEmailVariant();
+                        } else {
+                            $data['email_variant'] = 'none';
+                        }
+
                         $eventProperties = [
                             'reward_id'     => $reward->getId(),
                             'coupon_code'   => $couponCode,
@@ -652,6 +659,7 @@ class Notify
                             'brand_name'    => $reward->getBrandName(),
                             'payment_id'    => $this->payment->getId(),
                             'publisher_id'  => $this->merchant->getId(),
+                            'email_variant' => $data['email_variant'] ?? ''
                         ];
 
                         (new RewardCouponCore())->triggerRewardCouponDistributedEvent($eventProperties);
@@ -861,5 +869,34 @@ class Notify
             return 'RZP\\Mail\\Invoice\\Payment\\' . $event;
         }
         return 'RZP\\Mail\\Payment\\' . studly_case($event);
+    }
+
+    protected function getRewardsEmailVariant()
+    {
+        try
+        {
+            $properties = [
+                'id'            => $this->payment->getId(),
+                'experiment_id' => 'HdZP6KSxRaFEyb', //Production splitz experiment id
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = 'control';
+
+            if(isset($response['response']) and isset($response['response']['variant']))
+            {
+                $variant = $response['response']['variant']['name'];
+            }
+
+            return $variant;
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::REWARD_SUBJECT_SPLITZ_REQUEST_ERROR);
+
+            return 'control';
+        }
+
     }
 }

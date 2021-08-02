@@ -75,7 +75,8 @@
                                 payment_id: paymentId,
                                 reward_id: "{{$data['reward']['id']}}",
                                 coupon_code: "{{$data['reward']['coupon_code']}}",
-                                merchant_id: "{{$data['merchant_id']}}"
+                                merchant_id: "{{$data['merchant_id']}}",
+                                email_variant: "{{$data['email_variant'] ?? ''}}"
                             }
                         )
                     );
@@ -244,8 +245,11 @@
         function handleOfferNameClick(e){
             triggerAnalytics('offer_name_clicked');
         }
-        
+
         function triggerAnalytics(event) {
+            const urlArr = window.location.href.split("/");
+            const paymentId = urlArr[urlArr.length-2];
+
             if(window.rzpQ && window.rzpQ.push){
             window.rzpQ.push(
                         window.rzpQ.now().merchantActions().success(
@@ -254,7 +258,9 @@
                                 payment_id: paymentId,
                                 reward_id: "{{$data['reward']['id']}}",
                                 coupon_code: "{{$data['reward']['coupon_code']}}",
-                                merchant_id: "{{$data['merchant_id']}}",                            }
+                                merchant_id: "{{$data['merchant_id']}}",
+                                email_variant: "{{$data['email_variant'] ?? ''}}"
+                            }
                         )
                     );
            }

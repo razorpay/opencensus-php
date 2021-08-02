@@ -79,6 +79,11 @@ class RewardController extends Controller
             $data['reward']['coupon_code'] = $input['coupon_code'];
         }
 
+        if(isset($input['email_variant']))
+        {
+            $data['email_variant'] = $input['email_variant'];
+        }
+
         return View::make('reward.terms')->with('data', $data);
     }
 
@@ -86,7 +91,9 @@ class RewardController extends Controller
     // current event types: coupon / icon
     public function getRewardMetrics($id, $paymentId, $eventType)
     {
-        $data = $this->service()->getRewardMetrics($id, $paymentId, $eventType);
+        $input = Request::All();
+
+        $data = $this->service()->getRewardMetrics($id, $paymentId, $eventType, $input);
 
         if (isset($data) === false)
         {

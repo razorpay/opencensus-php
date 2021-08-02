@@ -296,7 +296,7 @@ class Service extends Base\Service
     }
 
     // generic function to instrument all events by with redirection to merchant redirect url happens.
-    public function getRewardMetrics($id, $paymentId, $eventType)
+    public function getRewardMetrics($id, $paymentId, $eventType, $input)
     {
         (new RewardValidator())->validateEventType($eventType);
 
@@ -332,6 +332,11 @@ class Service extends Base\Service
                     $properties['publisher merchant_id'] = $payment->getMerchantId();
 
                     $properties['contact_number'] =  $payment->getContact();
+
+                    if(isset($input['email_variant']))
+                    {
+                        $properties['email_variant'] = $input['email_variant'];
+                    }
 
                     $this->app['diag']->trackRewardEvent($eventTracker[$eventType], null, null, $properties);
 
@@ -373,6 +378,11 @@ class Service extends Base\Service
                     $properties['publisher merchant_id'] = $payment->getMerchantId();
 
                     $properties['contact_number'] =  $payment->getContact();
+
+                    if(isset($input['email_variant']))
+                    {
+                        $properties['email_variant'] = $input['email_variant'];
+                    }
 
                     $this->app['diag']->trackRewardEvent($eventTracker[$eventType], null, null, $properties);
 

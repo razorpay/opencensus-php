@@ -84,6 +84,27 @@ class Base extends Mailable
         if (isset($this->data['rewards']) === true)
         {
             $subject = "Your payment for $label is successful. Here’s your checkout reward 🎁";
+
+            if(isset($this->data['email_variant']))
+            {
+                $variant = $this->data['email_variant'];
+
+                $brand = $this->data['rewards'][0]['brand_name'] ?? '';
+
+                if($variant === 'variant_1')
+                {
+                    $subject = "Exciting reward from $brand inside 🎁. Your payment for $label was successful";
+                }
+                elseif($variant === 'variant_2')
+                {
+                    $subject = "Payment successful for $label. Exciting reward inside 🎁";
+                }
+                elseif($variant === 'variant_3')
+                {
+                    $subject = "Payment for $label successful. Exciting reward from $brand inside 🎁";
+                }
+            }
+
         }
 
         if ($this->isMerchantEmail === true)
