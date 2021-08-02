@@ -90,7 +90,7 @@ export default class NewInvitation extends Component {
           properties: {
             location: 'manage team',
             status: 'failure',
-            failureReason: err.errors[0],
+            failureReason: err?.errors[0],
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });

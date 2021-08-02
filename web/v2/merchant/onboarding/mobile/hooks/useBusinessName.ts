@@ -22,7 +22,9 @@ export default function useBusinessName(query: string): any {
       retry: false,
       refetchOnWindowFocus: false,
       staleTime: Infinity,
-      onError: (err: any) => snackbar.error(err?.response?.errors[0]),
+      onError: (err: any) => {
+        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+      },
     },
   );
   return [status, data];

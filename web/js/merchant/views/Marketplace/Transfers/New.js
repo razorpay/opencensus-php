@@ -221,7 +221,7 @@ export default class TransferNew extends Component {
     setTimeout(() => {
       const val = target.value;
 
-      if (val.length < 2) {
+      if (val && val.length < 2) {
         this.setState({ accountsList: null });
         return;
       }

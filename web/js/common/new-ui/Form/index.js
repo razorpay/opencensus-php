@@ -73,7 +73,7 @@ export default class Form extends React.PureComponent {
   }
 
   submit(data) {
-    let returnPromise = this.props.onSubmit(data);
+    let returnPromise = this.props.onSubmit && this.props.onSubmit(data);
     if (returnPromise instanceof Promise) {
       this.setState({
         pending: true,

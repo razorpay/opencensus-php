@@ -36,9 +36,9 @@ const InvoiceListItem = props => {
       <td>{invoice.receipt}</td>
       <td>
         {getCustomerDisplayName({
-          name: customer.customer_name,
-          contact: customer.customer_contact,
-          email: customer.customer_email,
+          name: customer?.customer_name,
+          contact: customer?.customer_contact,
+          email: customer?.customer_email,
         })}
       </td>
       <td>

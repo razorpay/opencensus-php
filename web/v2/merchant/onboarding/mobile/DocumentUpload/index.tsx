@@ -130,7 +130,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
     const isComplete = isDocumentTabComplete(
       {
         ...data,
-        documents: { ...documents, ...response.documents },
+        documents: { ...documents, ...response?.documents },
         addressDoc,
         businessDoc,
         bankDoc,
@@ -150,7 +150,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       setProgress(0);
       const isComplete = isDocumentTabComplete({
         ...data,
-        documents: { ...documents, ...response.documents },
+        documents: { ...documents, ...response?.documents },
         addressDoc,
         businessDoc,
         bankDoc,

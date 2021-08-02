@@ -14,7 +14,9 @@ export default function useBusinessCategory(query: string): any {
     },
     {
       staleTime: Infinity,
-      onError: (err: any) => snackbar.error(err?.response?.errors[0]),
+      onError: (err: any) => {
+        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+      },
     },
   );
   return [status, data];

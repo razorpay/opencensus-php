@@ -45,7 +45,7 @@ const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
   return (
     <ContentToggler
       onToggleClick={() => {
-        onToggleClick(refunds.items[0].speed_requested);
+        onToggleClick(refunds.items[0]?.speed_requested);
       }}
     >
       <span>Refund Details</span>

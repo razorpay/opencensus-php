@@ -2754,7 +2754,7 @@ app
             (hj.q = hj.q || []).push(arguments);
           };
         setTimeout(function () {
-          if (document.getElementById('email').value === '') {
+          if (document.getElementById('email') && document.getElementById('email').value === '') {
             window.hj('trigger', 'signup-no-email-survey');
           }
         }, 4500);
