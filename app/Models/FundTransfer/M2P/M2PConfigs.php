@@ -34,6 +34,7 @@ class M2PConfigs
                 ]
             ],
         ],
+
         Issuer::MAHB => [
             Network::VISA => [
                 CardType::DEBIT => [
@@ -44,6 +45,7 @@ class M2PConfigs
                 ]
             ],
         ],
+
         Issuer::CNRB => [
             Network::VISA => [
                 CardType::DEBIT => [
@@ -54,6 +56,7 @@ class M2PConfigs
                 ]
             ],
         ],
+
         Issuer::DCBL => [
             Network::VISA => [
                 CardType::DEBIT => [
@@ -64,6 +67,7 @@ class M2PConfigs
                 ]
             ],
         ],
+
         Issuer::CBIN => [
             Network::VISA => [
                 CardType::DEBIT => [
@@ -74,6 +78,7 @@ class M2PConfigs
                 ]
             ],
         ],
+
         Issuer::ICIC => [
             Network::VISA => [
                 CardType::DEBIT => [
@@ -84,6 +89,7 @@ class M2PConfigs
                 ]
             ],
         ],
+
         Issuer::IBKL => [
             Network::VISA => [
                 CardType::DEBIT => [
@@ -94,6 +100,7 @@ class M2PConfigs
                 ]
             ],
         ],
+
         Issuer::IDFB => [
             Network::VISA => [
                 CardType::DEBIT => [
@@ -104,6 +111,7 @@ class M2PConfigs
                 ]
             ],
         ],
+
         Issuer::INDB => [
             Network::VISA => [
                 CardType::DEBIT => [
@@ -113,7 +121,16 @@ class M2PConfigs
                     ],
                 ]
             ],
+            Network::MC   => [
+                CardType::CREDIT => [
+                    self::DEFAULT_IIN => [
+                        Mode::CHANNEL => Mode::M2P,
+                        Mode::MODES   => [Mode::CT]
+                    ],
+                ]
+            ],
         ],
+
         Issuer::ORBC => [
             Network::VISA => [
                 CardType::DEBIT => [
@@ -124,6 +141,7 @@ class M2PConfigs
                 ]
             ],
         ],
+
         Issuer::SCBL => [
             Network::VISA => [
                 CardType::DEBIT => [
@@ -134,9 +152,24 @@ class M2PConfigs
                 ]
             ],
         ],
+
         Issuer::SBIN => [
             Network::VISA => [
-                CardType::DEBIT => [
+                CardType::DEBIT  => [
+                    self::DEFAULT_IIN => [
+                        Mode::CHANNEL => Mode::M2P,
+                        Mode::MODES   => [Mode::CT]
+                    ],
+                ],
+                CardType::CREDIT => [
+                    self::DEFAULT_IIN => [
+                        Mode::CHANNEL => Mode::M2P,
+                        Mode::MODES   => [Mode::CT]
+                    ],
+                ]
+            ],
+            Network::MC   => [
+                CardType::CREDIT => [
                     self::DEFAULT_IIN => [
                         Mode::CHANNEL => Mode::M2P,
                         Mode::MODES   => [Mode::CT]
@@ -144,6 +177,7 @@ class M2PConfigs
                 ]
             ],
         ],
+
         Issuer::FDRL => [
             Network::VISA => [
                 CardType::DEBIT => [
@@ -154,6 +188,7 @@ class M2PConfigs
                 ]
             ],
         ],
+
         Issuer::SIBL => [
             Network::VISA => [
                 CardType::DEBIT => [
@@ -164,6 +199,7 @@ class M2PConfigs
                 ]
             ],
         ],
+
         Issuer::UTIB => [
             Network::VISA => [
                 CardType::DEBIT => [
@@ -173,7 +209,16 @@ class M2PConfigs
                     ],
                 ]
             ],
+            Network::MC   => [
+                CardType::CREDIT => [
+                    self::DEFAULT_IIN => [
+                        Mode::CHANNEL => Mode::M2P,
+                        Mode::MODES   => [Mode::CT]
+                    ],
+                ]
+            ],
         ],
+
         Issuer::KKBK => [
             Network::VISA => [
                 CardType::DEBIT => [
@@ -184,7 +229,8 @@ class M2PConfigs
                 ]
             ],
         ],
-        Issuer::CORP => [
+
+        Issuer::CORP         => [
             Network::VISA => [
                 CardType::DEBIT => [
                     self::DEFAULT_IIN => [
@@ -1748,13 +1794,20 @@ class M2PConfigs
                 ]
             ],
         ],
+
         Issuer::YESB => [
             Network::MC   => [
-                CardType::DEBIT => [
+                CardType::DEBIT  => [
                     self::DEFAULT_IIN => [
                         Mode::CHANNEL => Mode::M2P,
                         Mode::MODES   => [Mode::CT]
                     ]
+                ],
+                CardType::CREDIT => [
+                    self::DEFAULT_IIN => [
+                        Mode::CHANNEL => Mode::M2P,
+                        Mode::MODES   => [Mode::CT]
+                    ],
                 ]
             ],
             Network::MAES => [
@@ -1763,6 +1816,39 @@ class M2PConfigs
                         Mode::CHANNEL => Mode::M2P,
                         Mode::MODES   => [Mode::CT]
                     ]
+                ]
+            ],
+        ],
+
+        Issuer::RATN => [
+            Network::MC => [
+                CardType::CREDIT => [
+                    self::DEFAULT_IIN => [
+                        Mode::CHANNEL => Mode::M2P,
+                        Mode::MODES   => [Mode::CT]
+                    ],
+                ]
+            ],
+        ],
+
+        Issuer::HSBC => [
+            Network::MC => [
+                CardType::CREDIT => [
+                    self::DEFAULT_IIN => [
+                        Mode::CHANNEL => Mode::M2P,
+                        Mode::MODES   => [Mode::CT]
+                    ],
+                ]
+            ],
+        ],
+
+        Issuer::JAKA => [
+            Network::MC => [
+                CardType::CREDIT => [
+                    self::DEFAULT_IIN => [
+                        Mode::CHANNEL => Mode::M2P,
+                        Mode::MODES   => [Mode::CT]
+                    ],
                 ]
             ],
         ],
