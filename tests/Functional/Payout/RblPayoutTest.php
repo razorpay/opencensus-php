@@ -931,7 +931,8 @@ class RblPayoutTest extends TestCase
                  $requestData = json_decode($request['content'], true);
 
                  if ((array_key_exists('url',$requestData['entities']) === true) and
-                     (array_key_exists('version', $requestData['entities']['url']) === true))
+                     (array_key_exists('version', $requestData['entities']['url']) === true) and
+                     ($requestData['entities']['url']['version'] === 'v2'))
                  {
                      $mockResponse =  $this->getMozartServiceSuccessResponse();
                  }

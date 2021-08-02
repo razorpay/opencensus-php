@@ -355,16 +355,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function appendUrlVersion(array & $request)
     {
-        $newBalanceApiUrl = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::BALANCE_FETCH_URL_V2]);
-
-        if (in_array($request[Fields::SOURCE_ACCOUNT][Fields::SOURCE_ACCOUNT_NUMBER], $newBalanceApiUrl) === true)
-        {
-            $request['url']['version'] = 'v2';
-        }
-        else
-        {
-            $request['url']['version'] = 'v1';
-        }
+        $request['url']['version'] = 'v2';
     }
 
     protected function verifyCredentials(BankingAccount\Entity $bankingAccount)
