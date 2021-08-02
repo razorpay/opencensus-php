@@ -6165,6 +6165,9 @@ ALTER TABLE merchant_documents
     ADD COLUMN entity_id CHAR(14) DEFAULT NULL,
     ADD INDEX `merchant_documents_entity_id_index` (`entity_id`);
 
+ALTER TABLE merchant_details
+    ADD COLUMN fraud_type VARCHAR(100) DEFAULT NULL;
+
 ALTER TABLE stakeholders
     ADD COLUMN aadhaar_esign_status VARCHAR(30) DEFAULT NULL,
     ADD COLUMN aadhaar_pin VARCHAR(30) DEFAULT NULL,
@@ -6227,8 +6230,7 @@ ALTER TABLE banking_account_tpvs
     ADD UNIQUE INDEX banking_account_tpvs_merchant_id_account_number_uq_index (merchant_id, trimmed_payer_account_number);
 
 ALTER TABLE merchant_details
- ADD COLUMN bas_business_id VARCHAR(14) DEFAULT NULL;
-
+    ADD COLUMN bas_business_id VARCHAR(14) DEFAULT NULL;
 
 ALTER TABLE card_mandates
 	ADD mandate_card_id varchar(20),

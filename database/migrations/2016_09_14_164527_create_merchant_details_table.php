@@ -372,6 +372,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::SHOP_ESTABLISHMENT_VERIFICATION_STATUS, 30)
                   ->nullable();
 
+            $table->string(MerchantDetail::FRAUD_TYPE, 100)
+                  ->nullable();
+
             $table->char(MerchantDetail::BAS_BUSINESS_ID, MerchantDetail::ID_LENGTH)
                   ->nullable();
 
