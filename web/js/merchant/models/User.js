@@ -1113,6 +1113,10 @@ export default class User {
   get isRecurringMoreAccountType() {
     return this.getExpStatus('recurring_more_account_type');
   }
+
+  get isOnboardingCouponEnabled() {
+    return this.getExpStatus('mtu_coupon_code');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

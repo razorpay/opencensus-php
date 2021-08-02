@@ -1588,6 +1588,7 @@ class Service extends Base\Service
             'mandatory_gstin_input',
             'recurring_more_account_type',
             'optimizer_add_provider',
+            'mtu_coupon_code',
             'csm_experince_survey'
         ];
 

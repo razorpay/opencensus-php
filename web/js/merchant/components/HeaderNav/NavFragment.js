@@ -1,17 +1,16 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import storage from 'common/utils/localStorage';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
 import ShowWhen from 'merchant/components/ShowWhen';
-
 import ModesDropdown from './SwitchMode';
 import SwitchMerchant from './SwitchMerchant';
 import OffersForYou from 'common/ui/OffersForYou';
+import SuccessFullCreditModal from 'common/ui/OnboardingCoupons/SuccessFullCreditModal';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { daysFromToday, paiseToRupees } from 'common/utils/rzp-utils';
+
+const FIRST_TRANSACTION_TIMESTAMP = 1627842637; //from 2nd aug,2021
+const POST_INSTANTLY_ACTIVATED_DAYS_TO_SHOW_OFFER = 3; //offer allowed to show post payment activated
 
 class NavFragment extends Component {
   constructor(props) {
@@ -23,8 +22,21 @@ class NavFragment extends Component {
     const hideSwitchModeTooltip = storage.getItem(hideModePopoverToken),
       showSwitchModeTooltip = storage.getItem(showModePopoverToken);
 
+    const { user } = props;
+    //number of day when payment get activated date to current date
+    const numberOfDaysPaymentActivated =
+      (user.activated_at && Math.abs(daysFromToday(user.activated_at))) || 0;
+
+    this.canShowOnboardingOffers =
+      user.activated &&
+      numberOfDaysPaymentActivated > POST_INSTANTLY_ACTIVATED_DAYS_TO_SHOW_OFFER &&
+      !user.isMtuCouponApplied &&
+      user.isOnboardingCouponEnabled;
+
     this.state = {
       showSwitchModeTooltip: !hideSwitchModeTooltip && showSwitchModeTooltip,
+      transactionAmount: 0,
+      isSuccessfullyCouponApplied: false,
     };
 
     if (hideSwitchModeTooltip && showSwitchModeTooltip) {
@@ -43,19 +55,68 @@ class NavFragment extends Component {
     storage.removeItem(this.showModePopoverToken);
   }
 
-  render() {
-    const { user, mode, showGSTModal, modeFormatted, onSwitchMode, onSwitchMerchant } = this.props;
+  redeemOnboardingCoupon = () => {
+    merchantFetch({
+      url: 'coupons/apply/mtu',
+      method: 'POST',
+      data: JSON.stringify({}),
+    }).then((response) => {
+      if (response?.data?.success) {
+        this.setState({ isSuccessfullyCouponApplied: true });
+      }
+    });
+  };
 
-    const { showSwitchModeTooltip } = this.state;
+  componentDidMount() {
+    const { mode } = this.props;
+
+    if (this.canShowOnboardingOffers) {
+      merchantFetch({
+        url: 'merchant/analytics',
+        method: 'post',
+        data: {
+          filters: {
+            default: [
+              { created_at: { gte: FIRST_TRANSACTION_TIMESTAMP, lte: new Date().getTime() } },
+            ],
+          },
+          aggregations: {
+            transactionVolume: {
+              agg_type: 'sum',
+              details: { index: 'payments', column: 'base_amount', mode },
+            },
+          },
+        },
+      }).then((response) => {
+        if (response?.data?.transactionVolume) {
+          const payment = response.data.transactionVolume?.result[0].value;
+          this.setState({
+            transactionAmount: paiseToRupees(payment),
+          });
+          if (paiseToRupees(payment) > 0) {
+            this.redeemOnboardingCoupon();
+          }
+        }
+      });
+    }
+  }
+
+  render() {
+    const { user, mode, modeFormatted, onSwitchMode, onSwitchMerchant } = this.props;
+    const { showSwitchModeTooltip, transactionAmount, isSuccessfullyCouponApplied } = this.state;
+
+    const canShowOnboardingOffers = this.canShowOnboardingOffers && transactionAmount <= 0;
 
     return (
       <React.Fragment>
         <ShowWhen
           additionalCondition={(user) =>
-            user.isProjectNitroEnabled || user.isProjectNitroCorporateCard
+            canShowOnboardingOffers ||
+            user.isProjectNitroEnabled ||
+            user.isProjectNitroCorporateCard
           }
         >
-          <OffersForYou />
+          <OffersForYou canShowOnboardingOffers={canShowOnboardingOffers} />
         </ShowWhen>
         <li>
           <ModesDropdown
@@ -82,6 +143,11 @@ class NavFragment extends Component {
             <SwitchMerchant user={user} onSwitchMerchant={onSwitchMerchant} />
           </li>
         ) : null}
+        {isSuccessfullyCouponApplied && (
+          <SuccessFullCreditModal
+            onCloseModal={() => this.setState({ isSuccessfullyCouponApplied: false })}
+          />
+        )}
       </React.Fragment>
     );
   }
