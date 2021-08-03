@@ -44,6 +44,8 @@ class Gateway extends BaseProcessor
 
     const RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE_DEFAULT = 200;
 
+    const DEFAULT_RBL_ACCOUNT_STATEMENT_V2_MAX_NUMBER_OF_RECORDS = 5000;
+
     // regex to fetch utr from description
     const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|UPI\/|R\/UPI\/|R-)(.*?)(\/|-)/';
 
@@ -61,6 +63,8 @@ class Gateway extends BaseProcessor
 
     /** @var BasDetails\Entity */
     protected $basDetails;
+
+    protected $rblAccountStatementV2MaxNumberOfRecords;
 
     public function __construct(string $channel,
                                 string $accountNumber,
@@ -372,6 +376,13 @@ class Gateway extends BaseProcessor
 
         $paginationKey = $this->basDetails->getPaginationKey();
 
+        $this->rblAccountStatementV2MaxNumberOfRecords = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS]);
+
+        if (empty($this->rblAccountStatementV2MaxNumberOfRecords) === true)
+        {
+            $this->rblAccountStatementV2MaxNumberOfRecords = self::DEFAULT_RBL_ACCOUNT_STATEMENT_V2_MAX_NUMBER_OF_RECORDS;
+        }
+
         do
         {
             $paginationKey = last($formattedResponse) ? last($formattedResponse)[BasDetails\Entity::PAGINATION_KEY]: $paginationKey;
@@ -455,7 +466,7 @@ class Gateway extends BaseProcessor
 
         // Adding a dispatch delay of 120 seconds as account statement process takes
         // around 1 min for processing and save.
-        if (count($formattedResponse) == 5000)
+        if (count($formattedResponse) == $this->rblAccountStatementV2MaxNumberOfRecords)
         {
             $delay = self::RBL_ACCOUNT_STATEMENT_DISPATCH_DELAY;
 
@@ -467,7 +478,7 @@ class Gateway extends BaseProcessor
 
     protected function hasMoreDataV2(int $numberTransactions, array $request)
     {
-        if ($numberTransactions == 5000)
+        if ($numberTransactions >= $this->rblAccountStatementV2MaxNumberOfRecords)
         {
             return true;
         }

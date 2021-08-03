@@ -754,14 +754,37 @@ class RblBankingAccountStatementTest extends TestCase
 
                      return json_encode($this->convertRblV1ResponseToV2Response($mockRblResponse));
                  }
+                 else if ($requestData['entities']['attempt']['next_key'] == 'random_next_key')
+                 {
+                     $mockRblResponse =  $this->getRblDataResponse();
 
-                 $mockRblResponse =  $this->getRblDataResponse();
+                     unset($mockRblResponse['data']['PayGenRes']['Body']['transactionDetails'][0]);
 
-                 unset($mockRblResponse['data']['PayGenRes']['Body']['transactionDetails'][0]);
+                     $mockRblResponse = $this->convertRblV1ResponseToV2Response($mockRblResponse);
 
-                 $mockRblResponse = $this->convertRblV1ResponseToV2Response($mockRblResponse);
+                     $mockRblResponse['data']['FetchAccStmtRes']['Header']['next_key'] = 'too_random_next_key';
 
-                 $mockRblResponse['data']['FetchAccStmtRes']['Header']['next_key'] = 'too_random_next_key';
+                     return json_encode($mockRblResponse);
+                 }
+                 else if ($requestData['entities']['attempt']['next_key'] == 'too_random_next_key')
+                 {
+                     $mockRblResponse =  $this->getRblDataResponse();
+
+                     $mockRblResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['txnBalance']['amountValue'] = '228.05';
+                     $mockRblResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['txnId'] = 'S444';
+
+                     unset($mockRblResponse['data']['PayGenRes']['Body']['transactionDetails'][1]);
+
+                     $mockRblResponse = $this->convertRblV1ResponseToV2Response($mockRblResponse);
+
+                     $mockRblResponse['data']['FetchAccStmtRes']['Header']['next_key'] = 'too_much_random_next_key';
+
+                     return json_encode($mockRblResponse);
+                 }
+
+                 $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+                 $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
 
                  return json_encode($mockRblResponse);
              });
@@ -782,25 +805,29 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setupForRblAccountStatement();
 
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS => 1]);
+
         $this->startTest();
 
-        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+        $basEntities = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT);
 
-        $externalActual = $this->getLastEntity(EntityConstants::EXTERNAL, true);
+        $this->assertEquals(3, count($basEntities));
+
+        $basActual = $basEntities[1]->toArray();
+
+        $externalActual = $this->getDbEntityById(EntityConstants::EXTERNAL, $basActual[BasEntity::ENTITY_ID])->toArray();
 
         $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
 
         $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
 
-        $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
-
-        $txnActual = $this->txnEntity->toArray();
+        $txnActual = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId)->toArray();
 
         $basDetailsAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
         $this->assertNotNull($basDetailsAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
 
-        $this->assertEquals('too_random_next_key', $basDetailsAfterTest[BasDetails\Entity::PAGINATION_KEY]);
+        $this->assertEquals('too_much_random_next_key', $basDetailsAfterTest[BasDetails\Entity::PAGINATION_KEY]);
 
         $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
 
@@ -815,7 +842,7 @@ class RblBankingAccountStatementTest extends TestCase
             BasEntity::DESCRIPTION           => '123456-Z',
             BasEntity::CHANNEL               => 'rbl',
             BasEntity::ENTITY_ID             => $externalId,
-            BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],
+            BasEntity::ENTITY_TYPE           => EntityConstants::EXTERNAL,
             BasEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
         ];
 

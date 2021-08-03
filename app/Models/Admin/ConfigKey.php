@@ -143,6 +143,8 @@ class ConfigKey
 
     const ICICI_STATEMENT_FETCH_WINDOW_LENGTH   = self::PREFIX . 'icici_statement_fetch_window_length';
 
+    const RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS         = self::PREFIX . 'rbl_statement_fetch_v2_api_max_records';
+
     const RBL_STATEMENT_FETCH_RATE_LIMIT                 = self::PREFIX . 'rbl_statement_fetch_rate_limit';
 
     const RBL_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY   = self::PREFIX . 'rbl_statement_fetch_rate_limit_release_delay';
@@ -359,6 +361,7 @@ class ConfigKey
         self::MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1,
         self::RX_FUND_LOADING_REFUNDS_VIA_X,
         self::PAYMENT_SHOW_DCC_MARKUP,
+        self::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS,
     ];
 
     const REDIS_CONFIG_MAP = [

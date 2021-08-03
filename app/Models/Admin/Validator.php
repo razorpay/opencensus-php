@@ -130,7 +130,8 @@ class Validator extends Base\Validator
         ConfigKey::RBL_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY   => 'filled|integer',
         ConfigKey::ICICI_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY => 'filled|integer',
         ConfigKey::RBL_ENABLE_RATE_LIMIT_FLOW                     => 'filled|integer',
-        ConfigKey::ICICI_ENABLE_RATE_LIMIT_FLOW                     => 'filled|integer',
+        ConfigKey::ICICI_ENABLE_RATE_LIMIT_FLOW                   => 'filled|integer',
+        ConfigKey::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS         => 'filled|integer',
 
 
         ConfigKey::CREDIT_CARD_REGEX_FOR_REDACTING    => 'filled|string',
