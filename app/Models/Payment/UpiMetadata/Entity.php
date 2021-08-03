@@ -202,6 +202,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REMIND_AT);
     }
 
+    public function getApp()
+    {
+        return $this->getAttribute(self::APP);
+    }
+
     // --------------  END GETTERS ----------------
 
     // -------------- SETTERS --------------------

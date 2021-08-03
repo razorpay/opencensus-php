@@ -296,14 +296,19 @@ class Metric extends Base\Core
     {
         $vpa = $upi->getVpa();
 
-        if (isset($vpa) === false)
+        if (isset($vpa) === true)
         {
-            return null;
+            return ProviderCode::getPspForVpa($vpa);
         }
 
-        $psp = ProviderCode::getPspForVpa($vpa);
+        $appName = $upi->getApp();
 
-        return $psp;
+        if (isset($appName) === true)
+        {
+            return ProviderCode::getPspForAppName($appName);
+        }
+
+        return null;
     }
 
     protected function getDefaultExceptionDimensions(\Throwable $e): array

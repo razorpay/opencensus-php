@@ -328,6 +328,19 @@ class ProviderCode
     ];
 
     /**
+     * @var array App to PSP Mapping
+     */
+    protected static $appToPsp = [
+        ProviderApp::GOOGLE_PAY        => ProviderPsp::GOOGLE_PAY,
+        ProviderApp::GOOGLE_PAY_APP    => ProviderPsp::GOOGLE_PAY,
+        ProviderApp::PHONEPE           => ProviderPsp::PHONEPE,
+        ProviderApp::PHONEPE_APP       => ProviderPsp::PHONEPE,
+        ProviderApp::PAYTM             => ProviderPsp::PAYTM,
+        ProviderApp::PAYTM_APP         => ProviderPsp::PAYTM,
+        ProviderApp::BHIM_APP          => ProviderPsp::BHIM,
+    ];
+
+    /**
      * @see https://www.npci.org.in/upi-live-ipo
      * @var array Provider which support one time  feature.
      */
@@ -376,6 +389,19 @@ class ProviderCode
         $code = substr($vpa, (strpos($vpa, '@') + 1));
 
         return self::getPsp(strtolower($code));
+    }
+
+    /**
+     * Returns the PSP corresponding to the provided app name
+     *
+     * @param   string $appName
+     * @return  string
+     */
+    public static function getPspForAppName(string $appName)
+    {
+        $appName = strtolower($appName);
+
+        return self::$appToPsp[$appName] ?? ProviderApp::OTHER;
     }
 
     public static function validate(string $provider)

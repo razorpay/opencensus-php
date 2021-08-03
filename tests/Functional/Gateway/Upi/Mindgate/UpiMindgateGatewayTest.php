@@ -19,6 +19,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Payment\Metric as PaymentMetric;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\Helpers\MocksMetricTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -1769,5 +1770,46 @@ class UpiMindgateGatewayTest extends TestCase
             },
             RuntimeException::class,
             'No terminal found');
+    }
+
+    public function testPaymentMetricForIntentPayment()
+    {
+        $metricDriver = $this->mockMetricDriver('mock');
+
+        $this->fixtures->create('terminal:shared_upi_mindgate_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+        $this->payment['_']['app']  = 'com.phonepe.app';
+
+        $response   = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $paymentId  = $response['payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity  = $this->getLastEntity('upi_mindgate', true);
+        $payment    = $this->getEntityById('payment', $paymentId, true);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'callback')
+            {
+                $content[8] = 'user@hdfcbank';
+            }
+        });
+
+        $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $this->assertArraySubset([
+            [
+                PaymentMetric::LABEL_PAYMENT_GATEWAY    => 'upi_mindgate',
+                PaymentMetric::LABEL_UPI_FLOW           => 'intent',
+                PaymentMetric::LABEL_UPI_PSP            => 'phonepe',
+            ],
+        ], $metricDriver->metric(PaymentMetric::PAYMENT_AUTHORIZED, 'histogram'));
     }
 }
