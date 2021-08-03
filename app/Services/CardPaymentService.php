@@ -519,7 +519,7 @@ class CardPaymentService
 
             foreach ($traceMap as $key => $srcPath)
             {
-                $value = Arr::get($request, $srcPath);
+                $value = Arr::get($request, $srcPath, null);
 
                 if (is_null($value) === false)
                 {
@@ -532,7 +532,8 @@ class CardPaymentService
         catch (\Throwable $e)
         {
             $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_REQUEST_ERROR, [
-                $e->getMessage()
+                'message' => $e->getMessage(),
+                'trace'   => $e->getTrace(),
             ]);
         }
     }
