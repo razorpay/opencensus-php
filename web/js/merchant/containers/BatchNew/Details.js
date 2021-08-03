@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
@@ -27,8 +28,12 @@ import BatchDetails from 'merchant/components/BatchNew/BatchDetails';
     ...NotificationsActions,
   }
 )
+@RTracking(() => window.rzpQ.component('BatchDetails'))
 export default class BatchDetailsContainer extends Component {
   handleDownload = id => {
+    this.props.tracking.trackEvent(
+      window.rzpQ.chargeAtWill().interaction(`download.details.initiate`),
+    );
     this.props
       .batchDownload(id)
       .then(response => {

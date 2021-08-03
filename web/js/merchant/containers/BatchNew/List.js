@@ -53,6 +53,9 @@ export default class BatchList extends ListContainer {
   handleDownloadClick = id => {
     this.props.gaEvents.trackDownloadProcessedBatchReport();
 
+    this.props.tracking.trackEvent(
+      window.rzpQ.chargeAtWill().interaction(`download.list.initiate`),
+    );
     const batchDownload =
       this.props.extraPropBatchDownload || this.props.batchDownload;
 
