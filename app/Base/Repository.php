@@ -57,7 +57,6 @@ class Repository extends \Razorpay\Spine\Repository
     // Data Warehouse
     const ADMIN_FETCH         = "data_warehouse_admin_fetch";
     const MERCHANT_FETCH      = "data_warehouse_merchant_fetch";
-    const ASYNC_PROCESS_FETCH = "data_warehouse_async_process_fetch";
 
     protected $app;
 
@@ -1075,18 +1074,6 @@ class Repository extends \Razorpay\Spine\Repository
         $connection = ($mode === Mode::TEST) ? Connection::DATA_WAREHOUSE_TEST : Connection::DATA_WAREHOUSE_LIVE;
 
         return $connection;
-    }
-
-    protected function getDataWarehouseConnectionWithReplicationLagCheck()
-    {
-        if ($this->useDataWarehouseConnection(self::ASYNC_PROCESS_FETCH) === true)
-        {
-            return $this->getDataWarehouseConnection();
-        }
-        else
-        {
-            return Config::get('database.default');
-        }
     }
 
     public function getSlaveConnection(string $mode = null)
