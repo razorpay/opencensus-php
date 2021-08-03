@@ -830,7 +830,7 @@ return [
     'testReminderCallback'                        => [
         'request'  => [
             'method' => 'POST',
-            'url'    => '/tax-payments/reminders/tax_payments/txpy_1234',
+            'url'    => '/tax-payments/reminders/live/tax_payments/txpy_1234',
         ],
         'response' => [
             'content' => []

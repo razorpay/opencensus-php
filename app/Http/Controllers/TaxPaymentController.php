@@ -227,8 +227,9 @@ class TaxPaymentController extends Controller
         return $this->service->getDowntimeSchedule();
     }
 
-    public function reminderCallback(string $type, string $entityId){
-        return $this->service->reminderCallback($type, $entityId);
+    public function reminderCallback(string $mode, string $type, string $entityId)
+    {
+        return $this->service->reminderCallback($mode, $type, $entityId);
     }
 
 }

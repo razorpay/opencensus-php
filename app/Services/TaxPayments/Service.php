@@ -470,7 +470,7 @@ class Service
         return $this->makeRequest(null, $url, ['time'=> now()]);
     }
 
-    public function reminderCallback(string $entityType, string $entityId)
+    public function reminderCallback(string $mode, string $entityType, string $entityId)
     {
         $input['entity_id'] = $entityId;
 
@@ -478,14 +478,15 @@ class Service
 
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ICICI_RETRY_CALLBACK);
 
-        return $this->makeRequest(null, $url, $input);
+        return $this->makeRequest(null, $url, $input,[],'POST', $mode);
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,
                                    string $url = '',
                                    array $data = [],
                                    array $headers = [],
-                                   string $method = 'POST')
+                                   string $method = 'POST',
+                                   string $mode = '')
     {
         if ($merchant !== null)
         {
@@ -501,12 +502,20 @@ class Service
             'timeout' => $this->config['timeout']
         ];
 
-        $rzpMode = array_get($this->app, 'rzp.mode', null);
-
-        if ($rzpMode)
+        if ($mode !== '')
         {
-            $headers[self::X_APP_MODE] = $this->app['rzp.mode'] ? $this->app['rzp.mode'] : Mode::LIVE;
+            $headers[self::X_APP_MODE] = $mode;
+        }else
+        {
+            $rzpMode = array_get($this->app, 'rzp.mode', null);
+
+            if ($rzpMode)
+            {
+                $headers[self::X_APP_MODE] = $this->app['rzp.mode'] ? $this->app['rzp.mode'] : Mode::LIVE;
+            }
         }
+
+
 
         $this->trace->info(TraceCode::TAX_PAYMENT_REQUEST,
                            [
