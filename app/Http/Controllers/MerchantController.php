@@ -2298,4 +2298,20 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getPurposeCodeDetails()
+    {
+        $data = $this->service()->getPurposeCodeDetails();
+
+        return ApiResponse::json($data);
+    }
+
+    public function patchMerchantPurposeCode()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->patchMerchantPurposeCode($input);
+
+        return ApiResponse::json($response);
+    }
 }

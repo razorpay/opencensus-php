@@ -82,6 +82,7 @@ use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
@@ -6742,4 +6743,30 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
+
+    public function getPurposeCodeDetails(): array
+    {
+        $data = [];
+
+        $data = PurposeCodeList::PURPOSE_CODE_LIST;
+
+        return array_values($data);
+    }
+
+    public function patchMerchantPurposeCode(array $input)
+    {
+        $dba[Merchant\Entity::PURPOSE_CODE] = $input['purpose_code'];
+
+        $this->merchant->edit($dba);
+
+        $this->repo->merchant->saveOrFail($this->merchant);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT, [
+            Entity::ID => $this->merchant->getId(),
+            Entity::PURPOSE_CODE => $this->merchant->getPurposeCode(),
+        ]);
+        return ['success' => true];
+    }
+
 }

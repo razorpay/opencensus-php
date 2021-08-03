@@ -3256,6 +3256,8 @@ class UserTest extends TestCase
                             'name'              => $merchant->getName(),
                             'description'       => NULL,
                             'billing_label'     => $merchant->getBillingLabelNotName(),
+                            'purpose_code'      => $merchant->getPurposeCode(),
+                            'purpose_code_desc' => $merchant->getPurposeCodeDescription(),
                         ],
                     ],
                 ],
@@ -3427,5 +3429,51 @@ class UserTest extends TestCase
         $this->startTest();
 
         $this->assertEquals('primary', $this->app['basicauth']->getRequestOriginProduct());
+    }
+
+    public function testUserPurposeCodeDetails()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $user->primaryMerchants()->first();
+
+        // check the data for default test merchant
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'GET',
+                'url'       => '/users/purpose/code?email='.$user['email'],
+            ],
+            'response' => [
+                'content' => [
+                    'name'                      => $user->getName(),
+                    'email'                     => $user->getEmail(),
+                    'contact_mobile'            => NULL,
+                    'contact_mobile_verified'   => FALSE,
+                    'account_locked'            => FALSE,
+                    'confirmed'                 => TRUE,
+                    'merchants' => [
+                        [
+                            'gstin'             => NULL,
+                            'pan'               => NULL,
+                            'billing_address'   => NULL,
+                            'id'                => $merchant->getId(),
+                            'activated'         => FALSE,
+                            'website'           => $merchant->getWebsite(),
+                            'name'              => $merchant->getName(),
+                            'description'       => NULL,
+                            'billing_label'     => $merchant->getBillingLabelNotName(),
+                            'purpose_code'      => $merchant->getPurposeCode(),
+                            'purpose_code_desc' => $merchant->getPurposeCodeDescription(),
+                        ],
+                    ],
+                ],
+            ]
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
     }
 }

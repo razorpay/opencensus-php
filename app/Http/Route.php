@@ -1595,6 +1595,11 @@ class Route
         'customer_flagging_post_grievance'         => ['post',     'customer_flagging/post_customer_grievance',      'RiskController@postCustomerGrievance'                              ],
         'customer_flagging_post_grievance_options' => ['options',  'customer_flagging/post_customer_grievance',      'RiskController@allowCors'                                          ],
 
+        //PurposeCode Route
+        'purpose_code_fetch'                       => ['get',      'purposecode',                                    'MerchantController@getPurposeCodeDetails'                          ],
+        'merchant_patch_purpose_code'              => ['patch',    'merchants/purpose/code',                         'MerchantController@patchMerchantPurposeCode'                       ],
+        'user_fetch_purpose_code'                  => ['get',      'users/purpose/code',                             'UserController@getUserDetails'                                     ],
+
         // Shield routes
         'shield_rules_get_multiple' => [
             'get',
@@ -3833,6 +3838,9 @@ class Route
         'subscription_fetch_due_addons',
         'merchant_billing_label_suggestions',
         'merchant_billing_label_update',
+        'purpose_code_fetch',
+        'merchant_patch_purpose_code',
+        'user_fetch_purpose_code',
         'merchant_features_fetch',
         'merchant_features_update',
         'merchant_create_key',
@@ -6991,6 +6999,9 @@ class Route
             'merchant_bank_account_update',
             'merchant_billing_label_suggestions',
             'merchant_billing_label_update',
+            'purpose_code_fetch',
+            'merchant_patch_purpose_code',
+            'user_fetch_purpose_code',
             'merchant_checkout_preferences',
             'merchant_create_key',
             'merchant_credits_balance_fetch',

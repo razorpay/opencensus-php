@@ -2269,6 +2269,8 @@ class Core extends Base\Core
             'website'           => $merchant->getWebsite(),
             'name'              => $merchant->getName(),
             'billing_label'     => $merchant->getBillingLabelNotName(),
+            'purpose_code'      => $merchant->getPurposeCode(),
+            'purpose_code_desc' => $merchant->getPurposeCodeDescription(),
         ];
 
         return [$merchantDetails];

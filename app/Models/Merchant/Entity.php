@@ -31,6 +31,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Payment\Event;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
@@ -2989,6 +2990,14 @@ class Entity extends Base\PublicEntity
                 'mcc'       => $this->getCategory(),
                 'category'  => $this->getCategory2(),
          ]);
+    }
 
+    public function getPurposeCodeDescription()
+    {
+        if (empty($this->getPurposeCode()) === false) {
+            return PurposeCodeList::getPurposeCodeDescDescription($this->getPurposeCode());
+        }
+
+        return null;
     }
 }
