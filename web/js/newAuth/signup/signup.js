@@ -53,7 +53,7 @@ const SignUp = ({ onRouteChange }) => {
       eventAction: 'Click - Login',
     });
 
-    onRouteChange(ROUTES.SIGNIN);
+    window.location.href = '/#/access/signin';
   };
 
   return (
