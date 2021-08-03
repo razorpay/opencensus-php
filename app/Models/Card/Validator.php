@@ -17,6 +17,7 @@ class Validator extends Base\Validator
         Entity::VAULT              => 'sometimes|string|in:tokenex,rzpvault,rzpencryption',
         Entity::INTERNATIONAL      => 'sometimes',
         Entity::IS_CVV_OPTIONAL    => 'sometimes|boolean',
+        Entity::IS_TOKENIZED_CARD  => 'sometimes|boolean',
     ];
 
     protected static $createCpsRequestRules = [

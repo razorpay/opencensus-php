@@ -58,6 +58,7 @@ class Entity extends Base\PublicEntity
     const NUMBER = 'number';
     const CVV    = 'cvv';
     const IS_CVV_OPTIONAL = 'is_cvv_optional';
+    const IS_TOKENIZED_CARD = 'is_tokenized_card';
 
     const COUNTRY_LENGTH = 2;
 
@@ -240,6 +241,13 @@ class Entity extends Base\PublicEntity
     protected function generateIin($input)
     {
         $iin = substr($input['number'], 0, 6);
+
+        if ((empty($input[self::IS_TOKENIZED_CARD]) === false) and
+            ($input[self::IS_TOKENIZED_CARD] === true))
+        {
+            $tokenizedRange = substr($input['number'], 0, 9);
+            $iin = Card\IIN\IIN::getTransactingIinforRange($tokenizedRange) ?? $iin;
+        }
 
         $this->setAttribute(self::IIN, $iin);
     }

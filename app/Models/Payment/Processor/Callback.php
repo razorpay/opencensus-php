@@ -967,6 +967,7 @@ trait Callback
             Card\Entity::EXPIRY_YEAR  => $expirationYear,
             Card\Entity::CVV          => Card\Entity::DUMMY_CVV,
             Card\Entity::NAME         => Card\Entity::DUMMY_NAME,
+            Card\Entity::IS_TOKENIZED_CARD  => true,
         ];
 
         $this->repo->transaction(function() use ($cardInput, $payment, $merchant, $cardType, $cardNetwork)
