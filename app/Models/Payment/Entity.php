@@ -2870,6 +2870,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 return [$method, Processor\CardlessEmi::getName($this->getWallet())];
             case Method::PAYLATER:
                 return [$method, Processor\PayLater::getName($this->getWallet())];
+            case Method::APP:
+                return [$method, Processor\App::getName($this->getWallet())];
         }
     }
 
