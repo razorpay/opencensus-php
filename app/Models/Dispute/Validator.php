@@ -2,13 +2,17 @@
 
 namespace RZP\Models\Dispute;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Models\Admin\File;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Base\UniqueIdEntity;
+use PhpParser\Node\Expr\AssignOp\Mod;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -40,6 +44,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_EMAILS . '.*' => 'filled|email',
         Entity::SKIP_EMAIL             => 'sometimes|boolean',
         Entity::BACKFILL               => 'sometimes|boolean',
+        Entity::INTERNAL_RESPOND_BY    => 'sometimes|epoch',
     ];
 
     protected static $editRules = [
@@ -66,6 +71,7 @@ class Validator extends Base\Validator
 
     protected static $editValidators = [
         'non_transactional_disputes_closure',
+        'internal_status_transition',
     ];
 
     protected static $merchantEditRules = [
@@ -241,6 +247,38 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    protected function validateInternalStatusTransition($input)
+    {
+        if (isset($input[Entity::INTERNAL_STATUS]) === false)
+        {
+            return;
+        }
+
+        $shouldThrowException = $this->shouldThrowExceptionOnInvalidInternalStatusTransition($input);
+
+        $currentInternalStatus = $this->entity->getInternalStatus();
+
+        $nextInternalStatus = $input[Entity::INTERNAL_STATUS];
+
+        try
+        {
+            InternalStatus::validateNextInternalStatusForCurrentInternalStatus($currentInternalStatus, $nextInternalStatus);
+        }
+        catch (BadRequestValidationFailureException $exception)
+        {
+            if ($shouldThrowException === true)
+            {
+                throw  $exception;
+            }
+
+            $this->getTrace()->traceException($exception);
+        }
+
+    }
+
     public function validateAmount(array $input)
     {
         if ((isset($input['amount']) === true) and
@@ -328,5 +366,26 @@ class Validator extends Base\Validator
                     'Dispute gateway amount cannot exceed payment amount');
             }
         }
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    protected function validateInternalStatus($attribute, $value)
+    {
+        InternalStatus::validate($value);
+    }
+
+    protected function shouldThrowExceptionOnInvalidInternalStatusTransition($input): bool
+    {
+        $app = App::getFacadeRoot();
+
+        $mode = $app['basicauth']->getMode() ?? Mode::LIVE;
+
+        $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
+            'THROW_EXCEPTION_INVALID_INTERNAL_STATUS_TRANSITION', $mode);
+
+
+        return ($variant !== 'control');
     }
 }

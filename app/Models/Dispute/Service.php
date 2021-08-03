@@ -46,6 +46,7 @@ class Service extends Base\Service
         Entity::EXPIRES_ON,
         Entity::AMOUNT,
         Entity::SKIP_EMAIL,
+        Entity::INTERNAL_RESPOND_BY,
     ];
 
     const BULK_CREATE_DISPUTES_COLUMNS_NEW = [
@@ -60,6 +61,7 @@ class Service extends Base\Service
         Entity::GATEWAY_AMOUNT,
         Entity::GATEWAY_CURRENCY,
         Entity::SKIP_EMAIL,
+        Entity::INTERNAL_RESPOND_BY,
     ];
 
     const BULK_EDIT_DISPUTES_COLUMNS = [
@@ -68,6 +70,8 @@ class Service extends Base\Service
         Entity::STATUS,
         Entity::SKIP_DEDUCTION,
         Entity::COMMENTS,
+        Entity::INTERNAL_RESPOND_BY,
+        Entity::INTERNAL_STATUS,
     ];
 
     // The 3 bulk dispute column name constants defined below BULK_CREATE_DISPUTES_COLUMNS_SILENT,
@@ -86,6 +90,7 @@ class Service extends Base\Service
         Entity::AMOUNT,
         Entity::SKIP_EMAIL,
         Entity::BACKFILL,
+        Entity::INTERNAL_RESPOND_BY,
     ];
 
     const BULK_CREATE_DISPUTES_COLUMNS_NEW_SILENT = [
@@ -101,6 +106,7 @@ class Service extends Base\Service
         Entity::GATEWAY_CURRENCY,
         Entity::SKIP_EMAIL,
         Entity::BACKFILL,
+        Entity::INTERNAL_RESPOND_BY,
     ];
 
     const BULK_EDIT_DISPUTES_COLUMNS_SILENT = [
@@ -110,6 +116,8 @@ class Service extends Base\Service
         Entity::SKIP_DEDUCTION,
         Entity::COMMENTS,
         Entity::BACKFILL,
+        Entity::INTERNAL_RESPOND_BY,
+        Entity::INTERNAL_STATUS,
     ];
 
     // mapping of bulk action to file header values
@@ -709,6 +717,30 @@ class Service extends Base\Service
             );
         }
 
+        return $res;
+    }
+
+    public function formatValueInternalRespondBy($res, array &$input, array &$fileInput)
+    {
+        if (empty($res) === true)
+        {
+            return $res;
+        }
+
+        //At the end of the day IST
+        $res .= ' 23:59:59';
+
+        try
+        {
+            $res = Carbon::createFromFormat(self::BULK_DISPUTE_CREATE_DATE_FORMAT, $res, Timezone::IST)->getTimestamp();
+        }
+        catch (\Exception $ex)
+        {
+            // Because default message thrown is incomprehensible
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid expires_on date. Please provide in d/m/Y format'
+            );
+        }
         return $res;
     }
 

@@ -3,6 +3,7 @@
 namespace RZP\Models\Dispute;
 
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Status
 {
@@ -68,5 +69,18 @@ class Status
     public static function getMerchantAcceptedStatuses(): array
     {
         return self::$merchantAcceptedStatuses;
+    }
+
+    public static function validate(string $status)
+    {
+        if (self::exists($status) === true)
+        {
+            return;
+        }
+
+        $message = "Not a valid dispute status: {$status}";
+
+        throw new BadRequestValidationFailureException($message);
+
     }
 }

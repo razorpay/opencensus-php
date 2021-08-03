@@ -113,6 +113,8 @@ class Core extends Base\Core
             $payment->getId(),
             function() use ($payment, $reason, $input)
             {
+                $input = $this->preProcessInputForCreate($input);
+
                 (new Validator)->validatePaymentForDispute($input, $payment);
 
                 $parent = $this->checkAndGetParent($input);
@@ -177,6 +179,13 @@ class Core extends Base\Core
         $dispute->setBackfill($input[Entity::BACKFILL]);
 
         $paymentId = $dispute->getPaymentId();
+
+        $input = $this->preProcessInputForUpdate($dispute, $input);
+
+        $this->trace->info(
+            TraceCode::DISPUTE_PREPROCESSED_EDIT_REQUEST,
+            array_merge($input, [Entity::ID => $dispute->getId()])
+        );
 
         return $this->mutex->acquireAndRelease(
             $paymentId,
@@ -1355,5 +1364,54 @@ class Core extends Base\Core
         $dispute->setDeductionSourceType($entityType);
 
         $dispute->setDeductionSourceId($entityId);
+    }
+
+    protected function preProcessInputForCreate(array $input) : array
+    {
+        $input[Entity::INTERNAL_RESPOND_BY] = $input[Entity::INTERNAL_RESPOND_BY] ?? time() + DisputeConstants::DEFAULT_INTERNAL_RESPOND_BY_IN_SECONDS;
+
+        return $input;
+    }
+
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function preProcessInputForUpdate(Entity $dispute, array $input): array
+    {
+       return $this->preProcessInputForUpdateStatusAndInternalStatusAttributes($dispute, $input);
+    }
+
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function preProcessInputForUpdateStatusAndInternalStatusAttributes(Entity $dispute, array $input): array
+    {
+        if ((isset($input[Entity::STATUS]) === false) and
+            (isset($input[Entity::INTERNAL_STATUS]) === false))
+        {
+            return $input;
+        }
+
+        if ((isset($input[Entity::STATUS]) === true) and
+            (isset($input[Entity::INTERNAL_STATUS]) === false))
+        {
+            $newStatus = $input[Entity::STATUS];
+
+            $input[Entity::INTERNAL_STATUS] = InternalStatus::getInternalStatusCorrespondingToStatus($newStatus);
+
+            return $input;
+        }
+
+        if ((isset($input[Entity::STATUS]) === false) and
+            (isset($input[Entity::INTERNAL_STATUS]) === true))
+        {
+            $newInternalStatus = $input[Entity::INTERNAL_STATUS];
+
+            $input[Entity::STATUS] = InternalStatus::getStatusCorrespondingToInternalStatus($newInternalStatus);
+
+            return $input;
+        }
+
+        return $input;
     }
 }

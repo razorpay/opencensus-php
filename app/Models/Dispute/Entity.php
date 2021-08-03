@@ -530,6 +530,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getInternalStatus()
+    {
+        return $this->getAttribute(self::INTERNAL_STATUS);
+    }
+
     public function getPhase()
     {
         return $this->getAttribute(self::PHASE);

@@ -29,6 +29,26 @@ return [
         ],
     ],
 
+    'testDisputeCreateWithInternalRespondBy' => [
+        'request'  => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'  => '4342frf34r',
+                'raised_on'           => '946684800',
+                'expires_on'          => '1912162918',
+                'amount'              => 100,
+                'deduct_at_onset'     => 0,
+                'phase'               => 'chargeback',
+                'internal_respond_by' => 1600000000,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'internal_respond_by' => 1600000000,
+            ],
+        ],
+    ],
+
     'testDomesticDisputeCreateWithExcessGatewayAmount' => [
         'request' => [
             'method'  => 'post',
@@ -1473,6 +1493,54 @@ return [
         ],
     ],
 
+    'testDisputeEditInternalRespondBy' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+               'internal_respond_by' => '1700000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'internal_respond_by' => 1700000000,
+            ],
+        ],
+    ],
+
+    'testDisputeEditWithStatusAndInternalStatusValidCombinations' => [
+        'request'  => [
+            'method'  => 'post',
+            'content' => [
+                'status' => 'under_review',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'          => 'under_review',
+                'internal_status' => 'under_review',
+            ],
+        ],
+    ],
+
+    'testDisputeEditWithStatusAndInternalStatusInvalidCombinations' => [
+        'request'  => [
+            'method'  => 'post',
+            'content' => [
+                'status' => 'under_review',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testDisputeEditLostWithoutDeduction' => [
         'request' => [
             'method'  => 'post',
@@ -1532,6 +1600,17 @@ return [
     'testBulkDisputeNewFormat' => [
         'request' => [
             'url' => '/disputes/bulk-create',
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testBulkDisputeEdit' => [
+        'request' => [
+            'url' => '/disputes/bulk-edit',
             'method' => 'post',
             'files' => [],
         ],

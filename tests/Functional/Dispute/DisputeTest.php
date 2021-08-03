@@ -2,41 +2,42 @@
 
 namespace RZP\Tests\Functional\Dispute;
 
-use Mockery;
 use Mail;
 use Cache;
+use Mockery;
 use Carbon\Carbon;
-use Illuminate\Http\UploadedFile;
-
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Dispute\Phase;
 use RZP\Models\Dispute\Entity;
-use RZP\Models\Dispute\Repository;
 use RZP\Services\RazorXClient;
+use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Dispute\EmailNotificationStatus;
 use RZP\Models\Dispute\Reason\Network;
-use RZP\Models\Dispute\Reason\Entity as DisputeReasonEntity;
 use RZP\Services\FreshdeskTicketClient;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Dispute\Entity as DisputeEntity;
+use RZP\Models\Dispute\EmailNotificationStatus;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Dispute\File\Service as DisputeFileService;
 use RZP\Models\Dispute\Customer\FreshdeskTicket\ReasonCode;
 use RZP\Models\Dispute\Customer\FreshdeskTicket\Subcategory;
 use RZP\Mail\Dispute\BulkCreation as DisputeBulkCreationMail;
 use RZP\Mail\Dispute\Admin\AcceptedAdmin as DisputeAcceptedForAdminMail;
-use RZP\Models\Dispute\Customer\FreshdeskTicket\Constants as FreshdeskConstants;
 use RZP\Mail\Dispute\Admin\SubmittedAdmin as DisputeSubmittedForAdminMail;
+use RZP\Models\Dispute\Customer\FreshdeskTicket\Constants as FreshdeskConstants;
 
 class DisputeTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
     use TestsWebhookEvents;
+
+    const SECONDS_IN_DAY = 24 * 60 * 60;
 
     protected $payment = null;
 
@@ -53,6 +54,19 @@ class DisputeTest extends TestCase
         $this->ba->adminAuth();
     }
 
+    protected function mockRazorxTreatment(string $returnValue = 'On')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn($returnValue);
+    }
+
     public function testDisputeCreate()
     {
         $testData = $this->updateCreateTestData();
@@ -67,7 +81,12 @@ class DisputeTest extends TestCase
 
         $dispute = $this->getLastEntity('dispute', true);
 
-        $this->assertEquals(0, $dispute['amount_deducted']);
+        $this->assertArraySelectiveEquals([
+            'amount_deducted'   => 0,
+            'internal_status'   => 'open',
+        ], $dispute);
+
+        $this->assertEqualsWithDelta($dispute['created_at'] + self::SECONDS_IN_DAY * 10, $dispute['internal_respond_by'], 5);
 
         $txn = $this->getLastEntity('transaction', true);
 
@@ -138,6 +157,14 @@ class DisputeTest extends TestCase
 
         $this->startTest($testData);
     }
+
+    public function testDisputeCreateWithInternalRespondBy()
+    {
+        $testData = $this->updateCreateTestData();
+
+        $this->startTest($testData);
+    }
+
 
     public function testLostInternationalDispute()
     {
@@ -1040,6 +1067,63 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
+    public function testDisputeEditInternalRespondBy()
+    {
+        $this->updateEditTestData();
+
+        $this->startTest();
+    }
+
+    public function testDisputeEditWithStatusAndInternalStatusValidCombinations()
+    {
+        $this->updateEditTestData();
+
+        $disputeID = $this->getDbLastEntity('dispute')->getId();
+
+        $testcases = $this->getTestCasesForDisputeEditWithStatusInternalStatusValidCombinations();
+
+        foreach ($testcases as $testcase)
+        {
+            $seedData = $testcase['seed'];
+
+            $this->fixtures->edit('dispute', $disputeID, $seedData);
+
+            $this->testData[__FUNCTION__]['request']['content'] = $testcase['request'];;
+
+            $this->testData[__FUNCTION__]['response']['content'] = $testcase['response'];
+
+            $this->startTest();
+        }
+    }
+
+    public function testDisputeEditWithStatusAndInternalStatusInvalidCombinations()
+    {
+        $this->mockRazorxTreatment('on');
+
+        $this->updateEditTestData();
+
+        $disputeID = $this->getDbLastEntity('dispute')->getId();
+
+        $testcases = $this->getTestCasesForDisputeEditWithStatusInternalStatusInvalidCombinations();
+
+        $errorFormatString = "'internal_status' of dispute cannot move from '%s' to '%s'";
+
+        foreach ($testcases as $testcase)
+        {
+            $seedData = $testcase['seed'];
+
+            $this->fixtures->edit('dispute', $disputeID, $seedData);
+
+            $this->testData[__FUNCTION__]['request']['content'] = $testcase['request'];;
+
+            $description = sprintf($errorFormatString, $testcase['seed']['internal_status'], $testcase['request']['internal_status']);
+
+            $this->testData[__FUNCTION__]['response']['content']['error']['description'] = $description;
+
+            $this->startTest();
+        }
+    }
+
     public function testDisputeEditLostWithoutDeduction()
     {
         $data = $this->updateEditTestData();
@@ -1301,6 +1385,7 @@ class DisputeTest extends TestCase
             'gateway_amount'         => 100,
             'gateway_currency'       => 'USD',
             'skip_email'             => 'N',
+            'internal_respond_by'    => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
         ];
 
         $fileData[] = $row;
@@ -1312,6 +1397,44 @@ class DisputeTest extends TestCase
         $testData['request']['files'][DisputeFileCore::FILE] = $uploadedFile;
 
         $this->startTest($testData);
+    }
+
+    public function testBulkDisputeEdit()
+    {
+        $dispute = $this->fixtures->create('dispute', [
+            'internal_respond_by' => 1300000000,
+            'status'              => 'open',
+            'internal_status'     => 'open',
+        ]);
+
+        $fileData = [
+              [
+                   'id'                     => $dispute->getId(),
+                   'gateway_dispute_status' => 'open',
+                   'skip_deduction'         => 'Y',
+                   'comments'               => 'test comment',
+                   'status'                 => 'under_review',
+                   'internal_status'        => 'contested',
+                   'internal_respond_by'    => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
+              ],
+        ];
+
+        $uploadedFile = $this->getBulkDisputeUploadedXLSXFileFromFileData($fileData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['files'][DisputeFileCore::FILE] = $uploadedFile;
+
+        $this->startTest($testData);
+
+        $disputeArray = $this->getEntityById('dispute', $dispute->getId(), true);
+
+        $this->assertArraySelectiveEquals([
+            'internal_status' => 'contested',
+            'status'          => 'under_review',
+        ], $disputeArray);
+
+        $this->assertNotEquals(1300000000, $disputeArray['internal_respond_by']);
     }
 
     public function testDisputeReasonFetch()
@@ -2090,6 +2213,7 @@ class DisputeTest extends TestCase
             'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
             'amount'                 => 10000,
             'skip_email'             => 'N',
+            'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
         ];
 
         $fileData[] = $row;
@@ -2120,6 +2244,7 @@ class DisputeTest extends TestCase
             'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
             'amount'                 => 30000,
             'skip_email'             => 'N',
+            'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
         ];
 
         $fileData[] = $row;
@@ -2150,6 +2275,7 @@ class DisputeTest extends TestCase
             'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
             'amount'                 => 50000,
             'skip_email'             => 'N',
+            'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
         ];
 
         $fileData[] = $row;
@@ -2254,4 +2380,302 @@ class DisputeTest extends TestCase
                 return sprintf('Razorpay | Fraud Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
         }
     }
+
+
+    protected function getTestCasesForDisputeEditWithStatusInternalStatusValidCombinations() : array
+    {
+        return [
+            [
+                'seed'     => [
+                    'status' => 'open',
+                ],
+                'request'  => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'response' => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status' => 'open',
+                ],
+                'request'  => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'response' => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status' => 'open',
+                ],
+                'request'  => [
+                    'internal_status' => 'contested',
+                ],
+                'response' => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'request'  => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'represented',
+                ],
+                'response' => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'represented',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'request'  => [
+                    'internal_status' => 'represented',
+                ],
+                'response' => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'represented',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'request'  => [
+                    'status'          => 'lost',
+                    'internal_status' => 'lost',
+                ],
+                'response' => [
+                    'status'          => 'lost',
+                    'internal_status' => 'lost',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'request'  => [
+                    'status'          => 'lost',
+                ],
+                'response' => [
+                    'status'          => 'lost',
+                    'internal_status' => 'lost',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'request'  => [
+                    'internal_status' => 'lost',
+                ],
+                'response' => [
+                    'status'          => 'lost',
+                    'internal_status' => 'lost',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'request'  => [
+                    'status'          => 'closed',
+                    'internal_status' => 'closed',
+                ],
+                'response' => [
+                    'status'          => 'closed',
+                    'internal_status' => 'closed',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'request'  => [
+                    'status'          => 'closed',
+                ],
+                'response' => [
+                    'status'          => 'closed',
+                    'internal_status' => 'closed',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'request'  => [
+                    'internal_status' => 'closed',
+                ],
+                'response' => [
+                    'status'          => 'closed',
+                    'internal_status' => 'closed',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'request'  => [
+                    'status'          => 'open',
+                    'internal_status' => 'open',
+                ],
+                'response' => [
+                    'status'          => 'open',
+                    'internal_status' => 'open',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'request'  => [
+                    'status'          => 'open',
+                ],
+                'response' => [
+                    'status'          => 'open',
+                    'internal_status' => 'open',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'request'  => [
+                    'internal_status' => 'open',
+                ],
+                'response' => [
+                    'status'          => 'open',
+                    'internal_status' => 'open',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'represented',
+                ],
+                'request'  => [
+                    'status'          => 'won',
+                    'internal_status' => 'won',
+                ],
+                'response' => [
+                    'status'          => 'won',
+                    'internal_status' => 'won',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'represented',
+                ],
+                'request'  => [
+                    'internal_status' => 'won',
+                ],
+                'response' => [
+                    'status'          => 'won',
+                    'internal_status' => 'won',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'represented',
+                ],
+                'request'  => [
+                    'status'          => 'won',
+                ],
+                'response' => [
+                    'status'          => 'won',
+                    'internal_status' => 'won',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'represented',
+                ],
+                'request'  => [
+                    'status'          => 'closed',
+                    'internal_status' => 'closed',
+                ],
+                'response' => [
+                    'status'          => 'closed',
+                    'internal_status' => 'closed',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'represented',
+                ],
+                'request'  => [
+                    'internal_status' => 'closed',
+                ],
+                'response' => [
+                    'status'          => 'closed',
+                    'internal_status' => 'closed',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'represented',
+                ],
+                'request'  => [
+                    'status'          => 'closed',
+                ],
+                'response' => [
+                    'status'          => 'closed',
+                    'internal_status' => 'closed',
+                ],
+            ],
+        ];
+    }
+
+    protected function getTestCasesForDisputeEditWithStatusInternalStatusInvalidCombinations() : array
+    {
+        return [
+            [
+                'seed'    => [
+                    'status' => 'open',
+                    'internal_status' => 'open',
+                ],
+                'request' => [
+                    'status'          => 'won',
+                    'internal_status' => 'won',
+                ],
+            ],
+            [
+                'seed'    => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'request' => [
+                    'internal_status' => 'won',
+                ],
+            ],
+        ];
+    }
+
 }
