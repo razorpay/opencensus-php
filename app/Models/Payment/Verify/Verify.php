@@ -1399,6 +1399,11 @@ class Verify extends Base\Core
 
         $merchant = $payment->merchant;
 
+        $payment->setIsGooglePayMethodChangeApplicable();
+
+        // Change method from unselected to UPI before verify call
+        $payment->updateGooglePayPaymentMethodIfApplicable(Payment\Method::UPI);
+
         //
         // Exception is thrown when the there's a mismatch
         // between payment status and status returned by gateway.
@@ -1410,6 +1415,9 @@ class Verify extends Base\Core
             $this->processor($merchant)->verifyNewRoute($payment, 'verify/new_cron', $gatewayData);
 
             $this->updateVerifyBucket($payment, $filter, self::NEXT);
+
+            // Change method to unselected, as payment is not authorized
+            $payment->updateGooglePayPaymentMethodIfApplicable(Payment\Method::UNSELECTED);
         }
         catch (Exception\PaymentVerificationException $e)
         {
@@ -1421,6 +1429,9 @@ class Verify extends Base\Core
         }
         catch (\Throwable $e)
         {
+            // Change method to unselected, as payment is not authorized
+            $payment->updateGooglePayPaymentMethodIfApplicable(Payment\Method::UNSELECTED);
+
             $this->updateVerifyBucket($payment, $filter, self::NEXT);
 
             // @note: If payment verification fails due to any reason
@@ -1440,6 +1451,9 @@ class Verify extends Base\Core
     protected function handlePaymentVerificationException(Payment\Entity $payment, string $filter,
                                                           Exception\PaymentVerificationException $e)
     {
+        // Change method back to unselected, for the cases where payment is not getting authorized
+        $payment->updateGooglePayPaymentMethodIfApplicable(Payment\Method::UNSELECTED);
+
         $merchant = $payment->merchant;
 
         $action = $e->getAction();
@@ -1478,12 +1492,18 @@ class Verify extends Base\Core
             default:
                 $this->updateVerifyBucket($payment, $filter, self::NEXT);
 
+                // Change method from unselected to UPI before verify call
+                $payment->updateGooglePayPaymentMethodIfApplicable(Payment\Method::UPI);
+
                 try
                 {
                     $result = $this->authorizePayment($merchant, $payment, $e);
                 }
                 catch (\Throwable $e)
                 {
+                    // Change method to unselected, as payment is not authorized
+                    $payment->updateGooglePayPaymentMethodIfApplicable(Payment\Method::UNSELECTED);
+
                     $this->trace->traceException(
                         $e,
                         Trace::ERROR,
@@ -1504,6 +1524,9 @@ class Verify extends Base\Core
     protected function handleGatewayRequestException(Payment\Entity $payment, string $filter,
                                                      \Exception $e)
     {
+        // Change method to unselected, as payment is not authorized
+        $payment->updateGooglePayPaymentMethodIfApplicable(Payment\Method::UNSELECTED);
+
         $result = Result::REQUEST_ERROR;
 
         if ($e instanceof Exception\GatewayTimeoutException)

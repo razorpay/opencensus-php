@@ -5045,6 +5045,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRIGGER_WEBHOOK_NOTIFICATIONS                                 = 'TRIGGER_WEBHOOK_NOTIFICATIONS';
     const MERCHANT_DOWNTIME_CREATION                                    = 'MERCHANT_DOWNTIME_CREATION';
 
+    // GooglePay payment
+    const GOOGLEPAY_PAYMENT_METHOD_UPDATE                       = 'GOOGLEPAY_PAYMENT_METHOD_UPDATE';
+
     // FTS Update Source Account
     const FTS_UPDATE_EXISTING_SOURCE_ACCOUNT                           = 'FTS_UPDATE_EXISTING_SOURCE_ACCOUNT';
     const FTS_PROCESS_REQUEST_TO_UPDATE_SOURCE_ACCOUNT_GRACEFULLY      = 'FTS_PROCESS_REQUEST_TO_UPDATE_SOURCE_ACCOUNT_GRACEFULLY';

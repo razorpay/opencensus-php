@@ -19,6 +19,7 @@ class Method
     const PAYLATER              = 'paylater';
     const NACH                  = 'nach';
     const APP                   = 'app';
+    const UNSELECTED            = 'unselected';
 
     protected static $methods = [
         self::CARD                  => 'Card',

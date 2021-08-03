@@ -1468,6 +1468,111 @@ class VerifyTest extends TestCase
         $this->assertEquals('attempted', $order['status']);
     }
 
+    public function testLateAuthGooglePayPaymentVerifyAfterTimeout()
+    {
+        $this->setMockGatewayTrue();
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $configArr = [
+            "capture"=> 'automatic',
+            "capture_options"=> [
+                "manual_expiry_period"=> 14,
+                "automatic_expiry_period"=> 13,
+                "refund_speed"=> "normal"
+            ]
+        ];
+
+        $payments = $this->createFailedPaymentWithOrderWithConfig($data, $configArr);
+
+        $verifyAt = Carbon::now(Timezone::IST)->addMinutes(11)->getTimestamp();
+
+        // Changing payment to GooglePay payment, by setting method and authentication_gateway
+        $this->fixtures->edit('payment', $payments[0], [
+            'verify_at' => $verifyAt,
+            'method' => Payment\Method::UNSELECTED,
+            'authentication_gateway' => Payment\Entity::GOOGLE_PAY
+        ]);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/new_cron',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(15);
+
+        Carbon::setTestNow($time);
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        // Payment is authorized in verify call
+        $this->assertEquals('authorized', $payment['status']);
+
+        // Payment method has changed to UPI in successful authorization
+        $this->assertEquals(Payment\Method::UPI, $payment['method']);
+
+        $order = $this->getDbLastEntityPublic('order');
+
+        $this->assertEquals('attempted', $order['status']);
+    }
+
+    public function testLateAuthGooglePayPaymentVerifyFailed()
+    {
+        $this->setMockGatewayTrue();
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $configArr = [
+            "capture"=> 'automatic',
+            "capture_options"=> [
+                "manual_expiry_period"=> 14,
+                "automatic_expiry_period"=> 13,
+                "refund_speed"=> "normal"
+            ]
+        ];
+
+        $payments = $this->createFailedPaymentWithOrderWithConfig($data, $configArr);
+
+        $this->mockVerifyFailed();
+
+        $verifyAt = Carbon::now(Timezone::IST)->addMinutes(11)->getTimestamp();
+
+        // Changing payment to GooglePay payment, by setting method and authentication_gateway
+        $this->fixtures->edit('payment', $payments[0], [
+            'verify_at' => $verifyAt,
+            'method' => Payment\Method::UNSELECTED,
+            'authentication_gateway' => Payment\Entity::GOOGLE_PAY
+        ]);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/new_cron',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(15);
+
+        Carbon::setTestNow($time);
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        $this->assertEquals(Payment\Status::FAILED, $payment['status']);
+
+        // Payment method has not changed because no authorization happened.
+        $this->assertEquals(Payment\Method::UNSELECTED, $payment['method']);
+    }
+
     public function testVerifyBlockGatewayRoute()
     {
         $redisMock = $this->setupRedisMockWithOptions();

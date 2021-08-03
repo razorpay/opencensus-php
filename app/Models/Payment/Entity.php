@@ -261,6 +261,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     // To identify GPay Card Payments
     protected $application                  = null;
 
+    // To identify GPay payments in verify flow
+    protected $isGooglePayMethodChangeApplicable = false;
+
     const ACCOUNT_ID                        = 'account_id';
 
     const CHARGE_ACCOUNT                    = 'charge_account';
@@ -276,6 +279,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const FOREX_RATE_APPLIED                = 'forex_rate_applied';
 
     const FORCE_TERMINAL_ID                 = 'force_terminal_id';
+    const GOOGLE_PAY                        = 'google_pay';
 
     const FILE        = 'file';
     const SIGNED_FORM = 'signed_form';
@@ -1380,6 +1384,24 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setApplication(string $applicationName)
     {
         $this->application = $applicationName;
+    }
+
+    /**
+     * Sets isGooglePayMethodChangeApplicable property true, when Payment method
+     * is unselected and authentication gateway is google_pay.
+     * Property is set to false otherwise.
+     *
+     */
+    public function setIsGooglePayMethodChangeApplicable()
+    {
+        if ($this->isMethodlessGooglePay() !== true)
+        {
+            $this->isGooglePayMethodChangeApplicable = false;
+
+            return;
+        }
+
+        $this->isGooglePayMethodChangeApplicable = true;
     }
 
     public function setAuthType($authType)
@@ -2670,6 +2692,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getApplication()
     {
         return $this->application;
+    }
+
+    public function getIsGooglePayMethodChangeApplicable()
+    {
+        return $this->isGooglePayMethodChangeApplicable;
     }
 
     public function getTwoFactorAuth()
@@ -4769,5 +4796,34 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $discountRatio = $this->getDiscountRatioIfApplicable();
 
         return ($amount - (int)(round($amount * $discountRatio)));
+    }
+
+    public function isMethodlessGooglePay()
+    {
+        return ($this->getMethod() === Payment\Method::UNSELECTED) and
+            ($this->getAuthenticationGateway() === self::GOOGLE_PAY);
+    }
+
+    public function updateGooglePayPaymentMethodIfApplicable($methodToUpdate)
+    {
+        if ($this->getIsGooglePayMethodChangeApplicable() !== true)
+        {
+            return;
+        }
+
+        $oldPaymentMethod = $this->getMethod();
+
+        $this->setMethod($methodToUpdate);
+
+        $this->setApplication(self::GOOGLE_PAY);
+
+        $this->saveOrFail();
+
+        $app = \App::getFacadeRoot();
+        $app['trace']->info(TraceCode::GOOGLEPAY_PAYMENT_METHOD_UPDATE,[
+            'payment_id'                => $this->getPublicId(),
+            'old_payment_method'        => $oldPaymentMethod,
+            'updated_payment_method'    => $this->getMethod(),
+        ]);
     }
 }
