@@ -18,6 +18,8 @@ class ThrottleTest extends TestCase
     use TestsThrottle { setUp as baseSetUp; }
     use RequestResponseFlowTrait;
 
+    const API_PRODUCTION_HOST = 'api.razorpay.com';
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/ThrottleTestData.php';
@@ -398,5 +400,7 @@ class ThrottleTest extends TestCase
         $this->assertArrayHasKey('http_requests_total', $actualData);
 
         $this->assertEquals('payments_care', $actualData['http_requests_total']['rzp_team']);
+
+        $this->assertEquals(self::API_PRODUCTION_HOST, $actualData['http_requests_total']['host']);
     }
 }

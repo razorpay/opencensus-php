@@ -13,6 +13,8 @@ use RZP\Http\BasicAuth\BasicAuth;
 
 final class Throttle
 {
+    const API_HOST_COOKIE_KEY = 'rzp_api_host';
+
     /**
      * Handles http request:
      * - Inits request context
@@ -77,6 +79,7 @@ final class Throttle
             Metric::LABEL_HAS_PASSPORT          => $request->headers->has(Passport::PASSPORT_JWT_V1),
             Metric::LABEL_RZP_PRODUCT           => optional($basicAuth)->getProduct(), // optional because not sure basicAuth is initialized in all flows
             Metric::LABEL_RZP_TEAM              => RouteTeamMap::getTeamNamesForRoute($request->route()->getName()),
+            Metric::LABEL_HOST                  => $request->getHttpHost() ?? Metric::LABEL_NONE_VALUE,
         ];
     }
 }

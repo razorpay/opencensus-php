@@ -66,6 +66,7 @@ class Metric
     const LABEL_HAS_PASSPORT                    = 'has_passport';
     const LABEL_ENTITY_NAME                     = 'entity';
     const LABEL_EVENT_NAME                      = 'event_name';
+    const LABEL_HOST                            = 'host';
 
     // Default label values
     const LABEL_DEFAULT_VALUE                   = 'other';
