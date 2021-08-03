@@ -10,6 +10,7 @@ use RZP\Services\RazorXClient;
 use RZP\Services\SalesForceClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -58,6 +59,14 @@ class MerchantAttributeTest extends TestCase
             ],
             'live');
 
+        $featuresArray = $this->getDbEntity('feature',
+                                            [
+                                                'entity_id' => '10000000000000',
+                                                'entity_type' => 'merchant'
+                                            ])->pluck('name')->toArray();
+
+        $this->assertNotContains(Features::NEW_BANKING_ERROR, $featuresArray);
+
         $this->assertNull($liveBankingAccount);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
@@ -67,6 +76,14 @@ class MerchantAttributeTest extends TestCase
         $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $this->startTest();
+
+        $featuresArray = $this->getDbEntity('feature',
+                                            [
+                                                'entity_id' => '10000000000000',
+                                                'entity_type' => 'merchant'
+                                            ])->pluck('name')->toArray();
+
+        $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
     }
 
     public function testSignupScenario()

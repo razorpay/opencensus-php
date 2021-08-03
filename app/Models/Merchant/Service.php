@@ -5379,6 +5379,8 @@ class Service extends Base\Service
             if ($wasBankingEnabledNow === true)
             {
                 $this->captureEventOfInterestOfPrimaryMerchantInBanking($merchant);
+
+                $this->addNewBankingErrorFeature($merchant);
             }
 
             $config = (new MainAdmin\Service)->getConfigKey(['key' => MainAdmin\ConfigKey::BLOCK_X_REGISTRATION]) ?? false;
@@ -5626,6 +5628,23 @@ class Service extends Base\Service
             return true;
         }
         return false;
+    }
+
+    protected function addNewBankingErrorFeature(Entity $merchant)
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::NEW_BANKING_ERROR) === true)
+        {
+            return;
+        }
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => $merchant->getId(),
+            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Feature\Entity::NAMES       => [Feature\Constants::NEW_BANKING_ERROR],
+            Feature\Entity::SHOULD_SYNC => true
+        ];
+
+        (new Feature\Service)->addFeatures($featureParams);
     }
 
     /**

@@ -26,6 +26,7 @@ use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Workflow\Action\Differ\Entity;
 use RZP\Models\User\Constants as UserConstants;
 use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
@@ -7494,7 +7495,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->edit('merchant',
                               '10000000000000',
-                              ['activated' => true, 'business_banking' => true, 'category2' => $category2]);
+                              ['activated' => true, 'business_banking' => false, 'category2' => $category2]);
 
         $this->fixtures->create('merchant_detail',
                                 [
@@ -7590,6 +7591,9 @@ class MerchantTest extends TestCase
 
         $this->assertContains('skip_hold_funds_on_payout', $testFeaturesArray);
         $this->assertContains('skip_hold_funds_on_payout', $liveFeaturesArray);
+
+        $this->assertContains(Features::NEW_BANKING_ERROR, $testFeaturesArray);
+        $this->assertContains(Features::NEW_BANKING_ERROR, $liveFeaturesArray);
     }
 
     /**
@@ -7906,22 +7910,6 @@ class MerchantTest extends TestCase
         $this->assertEquals(count($merchants), 2);
 
         $this->assertArrayHasKey('banking', $merchants);
-
-        $testFeaturesArray = $this->getDbEntity('feature',
-            [
-                'entity_id' => '10000000000000',
-                'entity_type' => 'merchant'
-            ]);
-
-        $liveFeaturesArray = $this->getDbEntity('feature',
-            [
-                'entity_id' => '10000000000000',
-                'entity_type' => 'merchant'
-            ],
-            'live');
-
-        $this->assertNull($testFeaturesArray);
-        $this->assertNull($liveFeaturesArray);
     }
 
     /**

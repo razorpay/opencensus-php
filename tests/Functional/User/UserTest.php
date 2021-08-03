@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Redis;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Mail\User\AccountVerification;
@@ -162,6 +163,14 @@ class UserTest extends TestCase
             ],
             $merchantAttribute->toArrayPublic()
         );
+
+        $featuresArray = $this->getDbEntity('feature',
+                                                [
+                                                    'entity_id' => $merchantAttribute->getMerchantId(),
+                                                    'entity_type' => 'merchant'
+                                                ])->pluck('name')->toArray();
+
+        $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
     }
 
     public function testPreSignupSourceInfoStoredForWebsiteAfterRegistrationForBanking()
@@ -180,6 +189,14 @@ class UserTest extends TestCase
         $this->startTest($testDataToReplace);
 
         $merchantAttribute = $this->getDbEntity('merchant_attribute');
+
+        $featuresArray = $this->getDbEntity('feature',
+                                            [
+                                                'entity_id' => $merchantAttribute->getMerchantId(),
+                                                'entity_type' => 'merchant'
+                                            ])->pluck('name')->toArray();
+
+        $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
 
         $this->assertArraySelectiveEquals(
             [
@@ -290,6 +307,14 @@ class UserTest extends TestCase
         $response = $this->startTest();
 
         $merchant = $this->getLastEntity('merchant', true);
+
+        $featuresArray = $this->getDbEntity('feature',
+                                            [
+                                                'entity_id' => $merchant['id'],
+                                                'entity_type' => 'merchant'
+                                            ])->pluck('name')->toArray();
+
+        $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
 
         $row = DB::table('merchant_map')
             ->where('merchant_id', '=', $merchant['id'])
