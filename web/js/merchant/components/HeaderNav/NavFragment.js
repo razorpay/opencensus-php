@@ -9,7 +9,7 @@ import SuccessFullCreditModal from 'common/ui/OnboardingCoupons/SuccessFullCredi
 import { merchantFetch } from 'merchant/utils/ajax';
 import { daysFromToday, paiseToRupees } from 'common/utils/rzp-utils';
 
-const FIRST_TRANSACTION_TIMESTAMP = 1627842637; //from 2nd aug,2021
+const TRANSACTION_TIMESTAMP = 1627842637; // 2nd aug,2021
 const POST_INSTANTLY_ACTIVATED_DAYS_TO_SHOW_OFFER = 3; //offer allowed to show post payment activated
 
 class NavFragment extends Component {
@@ -32,6 +32,8 @@ class NavFragment extends Component {
       numberOfDaysPaymentActivated > POST_INSTANTLY_ACTIVATED_DAYS_TO_SHOW_OFFER &&
       !user.isMtuCouponApplied &&
       user.isOnboardingCouponEnabled;
+
+    this.isNewMerchantPostMTUCouponLive = user.created_at > TRANSACTION_TIMESTAMP;
 
     this.state = {
       showSwitchModeTooltip: !hideSwitchModeTooltip && showSwitchModeTooltip,
@@ -67,18 +69,15 @@ class NavFragment extends Component {
     });
   };
 
-  componentDidMount() {
-    const { mode } = this.props;
-
-    if (this.canShowOnboardingOffers) {
-      merchantFetch({
+  isMerchantAlreadyMTU = async () => {
+    const { user, mode } = this.props;
+    if (!this.isNewMerchantPostMTUCouponLive) {
+      const response = await merchantFetch({
         url: 'merchant/analytics',
         method: 'post',
         data: {
           filters: {
-            default: [
-              { created_at: { gte: FIRST_TRANSACTION_TIMESTAMP, lte: new Date().getTime() } },
-            ],
+            default: [{ created_at: { gte: user.created_at, lte: TRANSACTION_TIMESTAMP } }],
           },
           aggregations: {
             transactionVolume: {
@@ -87,17 +86,57 @@ class NavFragment extends Component {
             },
           },
         },
-      }).then((response) => {
-        if (response?.data?.transactionVolume) {
-          const payment = response.data.transactionVolume?.result[0].value;
+      });
+      const amount =
+        response?.data?.transactionVolume &&
+        paiseToRupees(response.data.transactionVolume?.result[0].value);
+      this.setState({
+        transactionAmount: amount,
+      });
+      return amount > 0;
+    }
+    return false;
+  };
+
+  applyMTUCoupon = async () => {
+    const { user, mode } = this.props;
+    const isMerchantAlreadyMTU = await this.isMerchantAlreadyMTU();
+
+    if (!isMerchantAlreadyMTU && this.canShowOnboardingOffers) {
+      const from = this.isNewMerchantPostMTUCouponLive ? user.created_at : TRANSACTION_TIMESTAMP;
+
+      merchantFetch({
+        url: 'merchant/analytics',
+        method: 'post',
+        data: {
+          filters: {
+            default: [{ created_at: { gte: from, lte: new Date().getTime() } }],
+          },
+          aggregations: {
+            transactionVolume: {
+              agg_type: 'sum',
+              details: { index: 'payments', column: 'base_amount', mode },
+            },
+          },
+        },
+      }).then((res) => {
+        if (res?.data?.transactionVolume) {
+          const payment = paiseToRupees(res.data.transactionVolume?.result[0].value);
           this.setState({
-            transactionAmount: paiseToRupees(payment),
+            transactionAmount: payment,
           });
-          if (paiseToRupees(payment) > 0) {
+          if (payment > 0) {
             this.redeemOnboardingCoupon();
           }
         }
       });
+    }
+  };
+
+  componentDidMount() {
+    const { user } = this.props;
+    if (user.activated && !user.isMtuCouponApplied && user.isOnboardingCouponEnabled) {
+      this.applyMTUCoupon();
     }
   }
 
