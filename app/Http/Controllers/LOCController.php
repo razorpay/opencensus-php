@@ -53,6 +53,7 @@ class LOCController extends Controller
     const GET_MERCHANT_DETAILS                   = 'GET_MERCHANT_DETAILS';
     const UPDATE_MERCHANT_DETAILS                = 'UPDATE_MERCHANT_DETAILS';
     const GET_ONHOLD_STATUS_REASONS              = 'GET_ONHOLD_STATUS_REASONS';
+    const SCHEDULE_LATE_REPAYMENT_NOTIFICATION   = 'SCHEDULE_LATE_REPAYMENT_NOTIFICATION';
 
     const ROUTES_URL_MAP = [
         self::SEED_DATA_REGEX                        => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/SeedData',
@@ -82,6 +83,7 @@ class LOCController extends Controller
         self::GET_MERCHANT_DETAILS                   => 'twirp/rzp.capital.loc.migration.v1.MerchantDetailsAPI/GetMerchantDetails',
         self::UPDATE_MERCHANT_DETAILS                => 'twirp/rzp.capital.loc.migration.v1.MerchantDetailsAPI/UpdateMerchantDetails',
         self::GET_ONHOLD_STATUS_REASONS              => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/GetOnholdStatusReasons',
+        self::SCHEDULE_LATE_REPAYMENT_NOTIFICATION   => 'twirp/rzp.capital.loc.withdrawal.v1.RepaymentAPI/ScheduleLateRepaymentNotificationToPartnerCron',
     ];
 
     const CRON_URL_MAP = [
