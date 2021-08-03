@@ -950,6 +950,20 @@ class Service extends Base\Service
             }
         }
 
+        // This is to stop leads assigning to sales poc on salesforce
+        if ($data['pre_signup_complete'] === false and array_key_exists('rx_ca_self_serve_flow_neo', $data['experiments']) === true)
+        {
+            if ($data['experiments']['rx_ca_self_serve_flow_neo'] === ['result' => 'on'])
+            {
+                $payload = [
+                    'merchant_id' => $currentMerchantId,
+                    'x_onboarding_category'   => 'self_serve'
+                ];
+
+                $this->createLeadToSalesforce($payload, $currentMerchantId);
+            }
+        }
+
         $this->traceMerchantActivatedTruthyValue($data, __LINE__);
 
         if (isset($data['activated']) === true)
@@ -1847,6 +1861,28 @@ class Service extends Base\Service
             }
         }
         return false;
+    }
+
+    private function createLeadToSalesforce(array $payload, string $merchantId)
+    {
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
+
+        list($error, $data) = $request->processInput($payload)->send("merchants/lead_to_salesforce", "POST");
+
+        if (empty($error) === false)
+        {
+            $this->trace->error(TraceCode::PUSHED_SALESFORCE_LEAD_TO_API_FAILED, [
+                'error'                 => $error,
+                'merchant_id'           => $merchantId,
+            ]);
+
+            return;
+        }
+
+        $this->trace->info(TraceCode::PUSHED_SALESFORCE_LEAD_TO_API, [
+            'merchant_id'           => $merchantId,
+            'payload'               => $payload
+        ]);
     }
 
     /**
