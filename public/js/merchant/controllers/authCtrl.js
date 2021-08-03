@@ -1801,9 +1801,12 @@ app
         );
 
         if ($scope.signup.settings.partner_intent) {
+          const businessTypeName =
+            $scope.signup.merchantData.business_type == 11 ? 'Unregistered' : 'Registered';
+          const fbEventSuffix = businessTypeName === 'Unregistered' ? 'unreg' : 'reg';
           window.rzpAnalytics({
             name: 'facebook',
-            event: 'partner_signup_complete',
+            event: `partner_signup_complete_${fbEventSuffix}`,
           });
 
           window.rzpAnalytics({
@@ -1816,7 +1819,7 @@ app
           window.rzpAnalytics({
             eventCategory: 'Partner Onboarding',
             eventAction: 'Contact Details',
-            eventLabel: 'Partner Onboarding | Fill & Finish',
+            eventLabel: `Partner Onboarding | Fill & Finish | ${businessTypeName}`,
           });
         }
       };

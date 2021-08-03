@@ -45,6 +45,8 @@ export default class BaseScreen extends React.Component {
       role: null,
       lpVariant: landingPageVariantInfo ? landingPageVariantInfo.lpVariant : null,
       lpFold: landingPageVariantInfo ? landingPageVariantInfo.lpFold : null,
+      businessTypeName:this.props.user.isUnregisteredBusiness ? 'Unregistered' : 'Registered',
+      fbBusinessTypeSuffix: this.props.user.isUnregisteredBusiness ? 'unreg' : 'reg',
     };
   }
 
@@ -81,6 +83,15 @@ export default class BaseScreen extends React.Component {
       data: {
         partner_type_selection: role,
       },
+    });
+
+    
+    fireAnalyticsEvents({
+      fbData: `partner_partnertype_${role}_${this.state.fbBusinessTypeSuffix}`,
+    });
+    track({
+      eventAction: 'Select - Type',
+      eventLabel: `Partner Onboarding | ${role} | ${this.state.businessTypeName}`,
     });
   };
 
@@ -141,12 +152,12 @@ export default class BaseScreen extends React.Component {
 
   onCompleteClick = () => {
     fireAnalyticsEvents({
-      fbData: 'partner_activation_complete',
+      fbData: `partner_activation_complete_${this.state.fbBusinessTypeSuffix}`,
       liData: 1668324,
     });
     track({
       eventAction: 'T&C Page',
-      eventLabel: 'Partner Onboarding | Accept T&C',
+      eventLabel: `Partner Onboarding | Accept T&C | ${this.state.businessTypeName}`,
     });
 
     this.closeTransaction('merchant/partner_type', {
@@ -164,12 +175,12 @@ export default class BaseScreen extends React.Component {
 
   handleNewUserGetStarted = () => {
     fireAnalyticsEvents({
-      fbData: 'partner_activation_started',
+      fbData: `partner_activation_started_${this.state.fbBusinessTypeSuffix}`,
       liData: 1668340,
     });
     track({
       eventAction: 'New User 1st Screen',
-      eventLabel: 'Partner Onboarding | Next',
+      eventLabel: `Partner Onboarding | Next | ${this.state.businessTypeName}`,
     });
   };
 
