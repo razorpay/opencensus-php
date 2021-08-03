@@ -31,6 +31,7 @@ import { openModal } from 'merchant_common/reducers/modals';
 import EmailSelfServeModal from 'merchant/views/Settings/EmailSelfServe/EmailInput';
 
 import User2FASettings from './components/User2FASettings';
+import PurposeCode from './components/PurposeCode';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 import UpdateBillingLabel from './components/UpdateBillingLabel';
 import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
@@ -56,7 +57,7 @@ import { SUPPORT_DETAILS, UPDATE_BANK_ACC, SETTELEMENT_CYCLE } from './deeplink-
     updateBillingLabel,
     updateSession,
     fetchSettlementAmount,
-    openModal
+    openModal,
   },
 )
 @RTracking(() => window.rzpQ.component('Profile'))
@@ -450,6 +451,31 @@ export default class Profile extends Component {
     });
   };
 
+  editPurposeCodeHandler = () => {
+    this.raiseTicket();
+  };
+
+  raiseTicket = () => {
+    if (window.rzpTicketSystem) {
+      const rzpTicketSystem = window.rzpTicketSystem;
+      rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+
+      let options = {};
+      if (this.props.user.isNewGrievanceFlowEnabled) {
+        options = {
+          screens: 'dashboardRequest',
+          email: window.rzp_user ? window.rzp_user.email : '',
+        };
+      }
+
+      rzpTicketSystem.openModal('#ticket', options);
+
+      setTimeout(() => {
+        rzpTicketSystem.modal.next();
+      }, 0);
+    }
+  };
+
   render() {
     let { user, profile, settlement_amount } = this.props;
     let { bankAccount } = profile;
@@ -513,7 +539,9 @@ export default class Profile extends Component {
             </IntoView>
           ) : null}
 
-          {this.state.loggedInUserRole==='owner' || this.state.merchantCount > 1 || this.state.loggedInUser.email !== user.email ? (
+          {this.state.loggedInUserRole === rolesList.OWNER ||
+          this.state.merchantCount > 1 ||
+          this.state.loggedInUser.email !== user.email ? (
             <LoggedInUserDetails
               loggedInUser={this.state.loggedInUser}
               loggedInUserRole={this.state.loggedInUserRole}
@@ -536,6 +564,10 @@ export default class Profile extends Component {
               <SettlementDetails />
             </IntoView>
           }
+
+          {user.international && (
+            <PurposeCode onEditClick={this.editPurposeCodeHandler} user={user} />
+          )}
         </div>
       </div>
     );

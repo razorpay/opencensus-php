@@ -9,6 +9,19 @@ $light-blue-color = #2B83EA;
     padding-bottom: 10px;
   }
 
+  .background-highlight {
+    background-color: rgba(11, 112, 231, 0.05);
+    color: #5B666D;
+  }
+
+  .text-bold {
+    font-weight: bold;
+  }
+
+  .text-danger {
+    color: red;
+  }
+
   .list-group-item .i-notes {
     padding: 8px 8px 4px;
     margin-left: 8px;
@@ -219,3 +232,152 @@ $light-blue-color = #2B83EA;
       font-weight 500
       cursor pointer
     }
+
+// Purpose Code styles
+.purpose-code-header {
+  background: #FAFAFA;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);  
+}
+
+.purpose-code-modal-heading {
+  color: #0D2366
+}
+
+.purpose-code-search-container {
+  padding: 24px  
+  position: relative
+  
+  .purpose-code-search-input {
+    height: 40px  
+    padding-left: 35px
+  }
+}
+
+.purpose-code-search-container > .purpose-code-search-close {
+  position: absolute
+  top: 40px
+  right: 40px
+  cursor: pointer
+}
+
+.purpose-code-search-container > .purpose-code-search-icon {
+  position: absolute
+  top: 37px
+  left: 35px
+}
+
+.purpose-code-accordion-item {
+  margin-top: 0px !important  
+  border-top: 1px solid rgba(228, 228, 228, 1)
+}
+
+.purpose-code-item {
+  padding: 10px 24px 10px 24px
+  color: #5B666D
+  cursor: pointer
+}
+
+.purpose-code-item:hover {
+  background-color: #E0E4F93D;
+}
+
+.tick-icon-contain {
+  position: relative
+  left: 320px
+  top: -30px
+  width: 14px
+  height: 0px
+}
+
+.purpose-code-desc {
+  padding: 0px 10px 0px 0px  
+}
+
+.scroll-codes {
+  overflow-y: scroll  
+  max-height: 350px
+  min-height: 350px
+}
+
+.scroll-codes::-webkit-scrollbar {
+    display: none 
+}
+
+.purpose-code-accordion-content {
+  padding: 8px 0px 10px 0px !important  
+}
+
+.purpose-code-no-results {
+  padding: 16px 24px 16px 24px
+  align-items: center
+  justify-content: center
+  display: flex
+}
+
+.purpose-code-category {
+  color: #515978
+  background-color: #FAFAFA !important
+  padding: 12px 24px 12px 24px !important
+  margin-right: 16px
+}
+
+.select-purpose-code-button-contain {
+  padding: 24px
+  border: 1px solid rgba(173, 188, 201, 0.47)
+  background: rgba(241, 241, 241, 1)
+}
+
+.select-purpose-code-button-disabled {
+  background: rgba(66, 131, 247, 0.54)
+  box-shadow: 1px 3px 6px rgba(58, 69, 103, 0.12)
+  border-radius: 2px
+  border: 2px solid transparent !important
+  font-weight: bold 
+  height: 38px
+}
+
+.select-purpose-code-button {
+  background: #4283F7
+  box-shadow: 1px 3px 6px rgba(58, 69, 103, 0.12)
+  border: 2px solid transparent !important
+  font-weight: bold 
+  height: 38px
+}
+
+.purpose-code-confirmation-form {
+  margin-top: 200px  
+}
+
+.purpose-code-confirmation-content {
+  padding: 26px  
+  color: rgba(22, 47, 86, 0.74)
+
+  .purpose-code-confirmation-text {
+    margin-top: 15px 
+  }
+}
+
+.purpose-code-confirmation-button-contain {
+  padding: 0px 24px 24px 24px
+
+  .purpose-code-confirmation-select-button {
+    background: #528FF0
+    border: 2px solid transparent
+    font-weight: bold
+    text-align: center
+    color: #FFFFFF
+    height: 38px
+    width: 250px
+  }
+
+  .purpose-code-confirmation-back-button {
+    margin-left: 30px
+    color: #528FF0
+    cursor: pointer
+  }
+}
+
+.purpose-code-edit-button {
+  margin-left: 15px
+  cursor: pointer
+}

@@ -229,6 +229,31 @@ export function upload80gSignatoryImage(file) {
   });
 }
 
+export const getPurposeCodes = () => {
+  return merchantFetch({
+    url: 'purposecode',
+    method: 'get',
+  });
+};
+
+export const fetchPurposeCode = (userEmail) => {
+  return merchantFetch({
+    url: `users/purpose/code`,
+    method: 'get',
+    data: {
+      email: userEmail,
+    },
+  });
+};
+
+export const updatePurposeCode = (data) => {
+  return merchantFetch({
+    url: 'merchants/purpose/code',
+    method: 'patch',
+    data,
+  });
+};
+
 let initialState = {
   invitations: [],
   rzp_gst: {

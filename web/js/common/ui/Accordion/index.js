@@ -6,11 +6,11 @@ export default class Accordion extends Component {
     items: {},
   };
 
-  handleClick = e => {
+  handleClick = (e) => {
     let items = { ...this.state.items };
     const key = e.target.dataset.uuid;
 
-    Object.keys(items).forEach(currKey => {
+    Object.keys(items).forEach((currKey) => {
       if (currKey !== key) items[currKey] = false;
     });
 
@@ -53,7 +53,7 @@ export default class Accordion extends Component {
             uuid: index,
             onClick: this.handleClick,
             expanded: this.state.items[index],
-          })
+          }),
         )}
       </div>
     );
@@ -83,13 +83,7 @@ export const AccordionItem = ({
   );
 };
 
-export const AccordionItemTitle = ({
-  className = '',
-  children,
-  onClick,
-  cantBeOpened,
-  uuid,
-}) => {
+export const AccordionItemTitle = ({ className = '', children, onClick, cantBeOpened, uuid }) => {
   const props = {
     className: `Accordion__title ${className}`,
     'data-uuid': uuid,
@@ -106,12 +100,6 @@ export const AccordionItemTitle = ({
     </div>
   );
 };
-export const AccordionItemContent = ({
-  className = '',
-  cantBeOpened,
-  children,
-}) => {
-  return cantBeOpened ? null : (
-    <div class={`Accordion__content ${className}`}>{children}</div>
-  );
+export const AccordionItemContent = ({ className = '', cantBeOpened, children }) => {
+  return cantBeOpened ? null : <div class={`Accordion__content ${className}`}>{children}</div>;
 };
