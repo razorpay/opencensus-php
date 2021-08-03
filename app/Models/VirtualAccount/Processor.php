@@ -190,23 +190,23 @@ abstract class Processor extends Base\Core
 
     protected function refundOrCapturePayment(Base\PublicEntity $entity)
     {
-        try 
+        try
         {
             // For business banking flow there exists no payment, hence no refund/capture.
-            if ($this->virtualAccount->isBalanceTypeBanking() === true) 
+            if ($this->virtualAccount->isBalanceTypeBanking() === true)
             {
                 return;
             }
 
             $paymentProcessor = $this->getPaymentProcessor();
 
-            if ($entity->isExpected() === true) 
+            if ($entity->isExpected() === true)
             {
-                if ($this->shouldRefundOrderPayment($entity) === true) 
+                if ($this->shouldRefundOrderPayment($entity) === true)
                 {
                     $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment());
-                } 
-                else if ($this->verifyPayerUsingTpv($entity) === false) 
+                }
+                else if ($this->verifyPayerUsingTpv($entity) === false)
                 {
                     $refundNotes = [
                         'notes' => [
@@ -215,8 +215,8 @@ abstract class Processor extends Base\Core
                     ];
 
                     $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment(), $refundNotes);
-                } 
-                else if ($entity->payment->hasBeenCaptured() === false) 
+                }
+                else if ($entity->payment->hasBeenCaptured() === false)
                 {
                     $paymentProcessor->autoCapturePayment($paymentProcessor->getPayment());
                 }
@@ -370,7 +370,8 @@ abstract class Processor extends Base\Core
                     {
                         $data = [
                             'utr'                               => $entity->getUtr(),
-                            BankTransfer\Entity::REQUEST_SOURCE => $entity->getRequestSource() ?? '',
+                            BankTransferEntity::REQUEST_SOURCE  => $entity->getRequestSource() ?? '',
+                            BankTransferEntity::GATEWAY         => $entity->getGateway() ?? '',
                         ];
                     }
                     break;

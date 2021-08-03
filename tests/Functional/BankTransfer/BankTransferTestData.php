@@ -1165,12 +1165,12 @@ return [
         ],
     ],
 
-    'testBankTransferProcessWithPayeeAccountLessThanFiveDigits' => [
+    'testBankTransferProcessWithIncorrectPayeeAccountLength' => [
         'request'  => [
             'url'     => '/ecollect/validate/icici/internal',
             'method'  => 'post',
             'content' => [
-                'payee_account'  => null,
+                'payee_account'  => 1234,
                 'payee_ifsc'     => null,
                 'payer_name'     => 'Name of account holder',
                 'payer_account'  => '9876543210123456789',
@@ -1774,7 +1774,7 @@ return [
             ],
         ],
     ],
-    
+
     'testAdminTestBankTransferPayment' => [
             'url' => '/ecollect/validate/test',
             'method' => 'post',

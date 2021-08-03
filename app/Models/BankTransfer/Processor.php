@@ -32,6 +32,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\InvalidArgumentException;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
 use RZP\Models\Payment\Processor\TerminalProcessor;
@@ -117,16 +118,25 @@ class Processor extends VirtualAccount\Processor
 
         if ($duplicateUtr !== null)
         {
+            $traceInfo = [
+                'message'               => 'Duplicate UTR received with different Payee Account Number',
+                'existing_transfer'     => $duplicateUtr->toArrayTrace(),
+                'received_utr'          => $utr,
+                Entity::GATEWAY         => $bankTransfer->getGateway(),
+                Entity::REQUEST_SOURCE  => $bankTransfer->getRequestSource() ?? '',
+            ];
+
             $this->trace->info(
                 TraceCode::BANK_TRANSFER_PROCESS_WITH_EXISTING_UTR,
-                [
-                    'message'               => 'Duplicate UTR received with different Payee Account Number',
-                    'existing_transfer'     => $duplicateUtr->toArrayTrace(),
-                    'received_utr'          => $utr,
-                    Entity::GATEWAY         => $bankTransfer->getGateway(),
-                    Entity::REQUEST_SOURCE  => $bankTransfer->getRequestSource() ?? '',
-                ]
+                $traceInfo
             );
+
+            (new SlackNotification)->send(
+                'Possible money loss, please evaluate.',
+                $traceInfo,
+                null,
+                1,
+                'x-finops');
         }
 
         return false;
@@ -193,6 +203,7 @@ class Processor extends VirtualAccount\Processor
                                    'bank_transfer_id'       => $bankTransfer->getId(),
                                    'utr'                    => $bankTransfer->getUtr(),
                                    'unexpected_reason'      => $bankTransfer->getUnexpectedReason(),
+                                   Entity::GATEWAY          => $bankTransfer->getGateway(),
                                    Entity::REQUEST_SOURCE   => $bankTransfer->getRequestSource() ?? '',
                                ]
             );
@@ -334,7 +345,8 @@ class Processor extends VirtualAccount\Processor
                 'bank_transfer_id'      => $bankTransfer->getId(),
                 'virtual_account_id'    => $this->virtualAccount->getId(),
                 Entity::UTR             => $bankTransfer->getUtr(),
-                Entity::REQUEST_SOURCE  =>  $bankTransfer->getRequestSource() ?? '',
+                Entity::GATEWAY         => $bankTransfer->getGateway(),
+                Entity::REQUEST_SOURCE  => $bankTransfer->getRequestSource() ?? '',
             ]);
 
         // Creates a transaction with bank transfer entity as source, merchant's banking balance gets credited.

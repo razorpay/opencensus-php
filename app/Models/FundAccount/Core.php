@@ -72,9 +72,9 @@ class Core extends Base\Core
     {
         $traceRequest = $this->unsetSensitiveCardDetails($input);
 
-        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $traceRequest);
-
         $input = $this->trimSpaces($input);
+
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $traceRequest);
 
         if ((isset($input[Entity::ACCOUNT_TYPE]) === true) and
             (strtolower($input[Entity::ACCOUNT_TYPE]) ===  Entity::WALLET))

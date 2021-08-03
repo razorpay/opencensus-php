@@ -57,6 +57,7 @@ class BankTransferController extends Controller
         $this->trace->info(TraceCode::ICICI_VA_MIS, [
             Entity::INPUT           => $input,
             Entity::REQUEST_SOURCE  => Entity::FILE,
+            Entity::GATEWAY         => Provider::ICICI,
         ]);
 
         $response = $this->service()->saveRequestAndProcess($input, Provider::ICICI, true, $input);
@@ -139,6 +140,7 @@ class BankTransferController extends Controller
         $this->trace->info(TraceCode::ICICI_VA_CALLBACK, [
             Entity::INPUT          =>   $input,
             Entity::REQUEST_SOURCE =>   Entity::CALLBACK,
+            Entity::GATEWAY        =>   Provider::ICICI,
         ]);
 
         try

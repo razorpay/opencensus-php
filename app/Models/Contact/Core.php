@@ -45,9 +45,9 @@ class Core extends Base\Core
         bool $createDuplicate = false,
         bool $allowRZPFeesContactCreation = false): Entity
     {
-        $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);
-
         $input = $this->trimSpaces($input);
+
+        $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);
 
         (new Validator)->validateInput('create', $input);
 
