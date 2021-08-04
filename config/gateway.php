@@ -125,6 +125,8 @@ return [
         'netbanking_dlb',
         'fulcrum',
         'checkout_dot_com',
+        'billdesk_sihub',
+        'mandate_hq',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),

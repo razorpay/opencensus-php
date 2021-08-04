@@ -1921,6 +1921,44 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedBilldeskSihubTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::BILLDESK_SIHUB_RAZORPAY_TERMINAL;
+
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => $termId,
+            'merchant_id'           => $sharedMerchantAccount,
+            'gateway'               => 'billdesk_sihub',
+            'gateway_merchant_id'   => 'rand_bd_sihub',
+            'card'                  => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedMandateHqTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::MANDATE_HQ_RAZORPAY_TERMINAL;
+
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => $termId,
+            'merchant_id'           => $sharedMerchantAccount,
+            'gateway'               => 'mandate_hq',
+            'gateway_merchant_id'   => 'rand_mandate_hq',
+            'card'                  => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedAxisGeniusTerminal()
     {
         $termId = \RZP\Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;

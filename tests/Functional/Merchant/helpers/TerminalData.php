@@ -939,6 +939,42 @@ return [
         'status_code'   => 200,
     ],
 
+    'testCreateTerminalBilldeskSiHub' =>  [
+        'request' => [
+            'content' => [
+                'gateway' => 'billdesk_sihub',
+                'card' => '1',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway' => 'billdesk_sihub',
+                'enabled' => true,
+                'status'  => 'activated',
+            ]
+        ],
+        'status_code' => 200,
+    ],
+
+    'testCreateTerminalMandateHq' =>  [
+        'request' => [
+            'content' => [
+                'gateway' => 'mandate_hq',
+                'card' => '1',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway' => 'mandate_hq',
+                'enabled' => true,
+                'status'  => 'activated',
+            ]
+        ],
+        'status_code' => 200,
+    ],
+
     'testCreateTerminalWithPendingStatus' => [
         'request' => [
             'content' => [

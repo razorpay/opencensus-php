@@ -447,6 +447,58 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateTerminalBilldeskSiHub()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditBilldeskSiHubTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_billdesk_sihub_terminal');
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'gateway_access_code' => 'random'
+        ];
+
+        $this->editTerminal($tid, $data);
+
+        $terminal = $this->getEntityById('terminal', $tid, true);
+
+        $this->assertEquals('random', $terminal['gateway_access_code']);
+    }
+
+    public function testCreateTerminalMandateHq()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditMandateHqTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'gateway_access_code' => 'random'
+        ];
+
+        $this->editTerminal($tid, $data);
+
+        $terminal = $this->getEntityById('terminal', $tid, true);
+
+        $this->assertEquals('random', $terminal['gateway_access_code']);
+    }
+
     public function testCreateTerminalWithInvalidNetworkCategory()
     {
         $url = '/merchants/100000Razorpay/terminals';
