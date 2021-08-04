@@ -58,6 +58,12 @@ class Validator extends Base\Validator
 
         Entity::DEBIT_EMI_PROVIDERS      => 'sometimes|array',
         Entity::DEBIT_EMI_PROVIDERS.'.*' => 'sometimes|boolean',
+        Entity::ADDITIONAL_WALLETS => 'sometimes|array',
+        Entity::ITZCASH            => 'sometimes|boolean',
+        Entity::OXIGEN             => 'sometimes|boolean',
+        Entity::AMEXEASYCLICK      => 'sometimes|boolean',
+        Entity::PAYCASH            => 'sometimes|boolean',
+        Entity::CITIBANKREWARDS => 'sometimes|boolean',
     ];
 
     protected static $setMethodsValidators = [

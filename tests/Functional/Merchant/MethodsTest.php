@@ -755,4 +755,159 @@ class MethodsTest extends TestCase
         $this->assertTrue(isset($response['custom_text']['cred']));
         $this->assertEquals('discount of 10% with CRED coins', $response['custom_text']['cred']);
     }
+
+    public function testEnableItzcash()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'itzcash' => 1,
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        // Skipping this, since we're not allowing enablement of AMEX
+        // $this->assertTrue($merchantMethods->isCardNetworkEnabled(Network::AMEX));
+
+        $this->assertTrue($merchantMethods->isItzcashEnabled());
+
+    }
+
+    public function testEnableOxigen()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'oxigen' => 1,
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        // Skipping this, since we're not allowing enablement of AMEX
+        // $this->assertTrue($merchantMethods->isCardNetworkEnabled(Network::AMEX));
+
+        $this->assertTrue($merchantMethods->isOxigenEnabled());
+
+    }
+
+    public function testEnablePaycash()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'paycash' => 1,
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        // Skipping this, since we're not allowing enablement of AMEX
+        // $this->assertTrue($merchantMethods->isCardNetworkEnabled(Network::AMEX));
+
+        $this->assertTrue($merchantMethods->isPaycashEnabled());
+
+    }
+
+    public function testEnableAmexeasyclick()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'amexeasyclick' => 1,
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        // Skipping this, since we're not allowing enablement of AMEX
+        // $this->assertTrue($merchantMethods->isCardNetworkEnabled(Network::AMEX));
+
+        $this->assertTrue($merchantMethods->isAmexeasyclickEnabled());
+
+    }
+
+    public function testEnableCitibankrewards()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'citibankrewards' => 1,
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        // Skipping this, since we're not allowing enablement of AMEX
+        // $this->assertTrue($merchantMethods->isCardNetworkEnabled(Network::AMEX));
+
+        $this->assertTrue($merchantMethods->isCitibankrewardsEnabled());
+
+    }
 }

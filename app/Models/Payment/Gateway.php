@@ -2616,7 +2616,7 @@ class Gateway
         ],
         self::PAYU  =>  [
             Wallet::ITZCASH, Wallet::AIRTELMONEY, Wallet::FREECHARGE, Wallet::OXIGEN, Wallet::PAYZAPP, Wallet::AMEXEASYCLICK,
-            Wallet::OLAMONEY, Wallet::PAYCASH, Wallet::JIOMONEY, Wallet::AMAZONPAY, Wallet::CITIBANKREWARDPOINTS, Wallet::PAYTM, Wallet::PHONEPE
+            Wallet::OLAMONEY, Wallet::PAYCASH, Wallet::JIOMONEY, Wallet::AMAZONPAY, Wallet::CITIBANKREWARDS, Wallet::PAYTM, Wallet::PHONEPE
         ],
         self::CCAVENUE  =>  [
             Wallet::FREECHARGE, Wallet::ITZCASH, Wallet::JIOMONEY, Wallet::MOBIKWIK, Wallet::PAYTM

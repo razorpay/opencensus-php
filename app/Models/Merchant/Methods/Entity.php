@@ -62,6 +62,15 @@ class Entity extends Base\PublicEntity
 
     const METHODS           = 'methods';
 
+    const ADDITIONAL_WALLETS = 'additional_wallets';
+
+    //new wallets
+    const ITZCASH = 'itzcash';
+    const OXIGEN  = 'oxigen';
+    const AMEXEASYCLICK = 'amexeasyclick';
+    const PAYCASH = 'paycash';
+    const CITIBANKREWARDS = 'citibankrewards';
+
     protected $primaryKey = self::MERCHANT_ID;
 
     // Table name has been renamed to 'merchant_banks'
@@ -106,7 +115,7 @@ class Entity extends Base\PublicEntity
         self::PAYPAL,
         self::APPS,
         self::DEBIT_EMI_PROVIDERS,
-
+        self::ADDITIONAL_WALLETS,
     ];
 
     protected $visible = [
@@ -146,6 +155,11 @@ class Entity extends Base\PublicEntity
         self::PAYPAL,
         self::APPS,
         self::DEBIT_EMI_PROVIDERS,
+        self::ITZCASH,
+        self::OXIGEN,
+        self::AMEXEASYCLICK,
+        self::PAYCASH,
+        self::CITIBANKREWARDS,
     ];
 
     protected $public = [
@@ -186,7 +200,21 @@ class Entity extends Base\PublicEntity
         self::PAYPAL,
         self::APPS,
         self::DEBIT_EMI_PROVIDERS,
+        self::ITZCASH,
+        self::OXIGEN,
+        self::AMEXEASYCLICK,
+        self::PAYCASH,
+        self::CITIBANKREWARDS,
     ];
+
+    protected $appends = [
+        self::ITZCASH,
+        self::OXIGEN,
+        self::AMEXEASYCLICK,
+        self::PAYCASH,
+        self::CITIBANKREWARDS,
+    ];
+
 
     //
     // If adding any default methods here, also add
@@ -227,8 +255,8 @@ class Entity extends Base\PublicEntity
         self::PHONEPE_SWITCH => false,
         self::PAYPAL         => false,
         self::APPS           => AppMethod::DEFAULT_APPS,
-
-        self::DEBIT_EMI_PROVIDERS => DebitProvider::DEFAULT_DEBIT_EMI_PROVIDERS
+        self::DEBIT_EMI_PROVIDERS => DebitProvider::DEFAULT_DEBIT_EMI_PROVIDERS,
+        self::ADDITIONAL_WALLETS => [],
     );
 
     public static $defaultPaymentMethodsForSubmerchantByPartner = array(
@@ -262,6 +290,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE        => false,
         self::PHONEPE_SWITCH => false,
         self::PAYPAL         => false,
+        self::ADDITIONAL_WALLETS => [],
     );
 
     protected $wallets = array(
@@ -279,7 +308,20 @@ class Entity extends Base\PublicEntity
         self::MPESA,
         self::PHONEPE,
         self::PAYPAL,
+        self::ITZCASH,
+        self::OXIGEN,
+        self::AMEXEASYCLICK,
+        self::PAYCASH,
+        self::CITIBANKREWARDS,
     );
+
+    protected static $additional_wallet_names = [
+        self::ITZCASH,
+        self::OXIGEN,
+        self::AMEXEASYCLICK,
+        self::PAYCASH,
+        self::CITIBANKREWARDS,
+    ];
 
     protected static $methods = [
         self::CARD,
@@ -549,6 +591,31 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isItzcashEnabled()
+    {
+        return $this->getItzcash();
+    }
+
+    public function isOxigenEnabled()
+    {
+        return $this->getOxigen();
+    }
+
+    public function isAmexeasyclickEnabled()
+    {
+        return $this->getAmexeasyclick();
+    }
+
+    public function isPaycashEnabled()
+    {
+        return $this->getPaycash();
+    }
+
+    public function isCitibankrewardsEnabled()
+    {
+        return $this->getCitibankrewards();
+    }
+
     public function isEmiEnabled()
     {
         return ($this->isCreditEmiEnabled() || $this->isDebitEmiEnabled());
@@ -730,6 +797,36 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SBIBUDDY);
     }
 
+    public function getItzcash()
+    {
+        $additional_wallets = $this->getAttribute(self::ADDITIONAL_WALLETS);
+        return in_array(self::ITZCASH,$additional_wallets);
+    }
+
+    public function getOxigen()
+    {
+        $additional_wallets = $this->getAttribute(self::ADDITIONAL_WALLETS);
+        return in_array(self::OXIGEN,$additional_wallets);
+    }
+
+    public function getAmexeasyclick()
+    {
+        $additional_wallets = $this->getAttribute(self::ADDITIONAL_WALLETS);
+        return in_array(self::AMEXEASYCLICK,$additional_wallets);
+    }
+
+    public function getPaycash()
+    {
+        $additional_wallets = $this->getAttribute(self::ADDITIONAL_WALLETS);
+        return in_array(self::PAYCASH,$additional_wallets);
+    }
+
+    public function getCitibankrewards()
+    {
+        $additional_wallets = $this->getAttribute(self::ADDITIONAL_WALLETS);
+        return in_array(self::CITIBANKREWARDS,$additional_wallets);
+    }
+
     public function getOpenwallet()
     {
         return $this->getAttribute(self::OPENWALLET);
@@ -761,13 +858,51 @@ class Entity extends Base\PublicEntity
         return self::$methods;
     }
 
+    public static function getAllAdditionalWalletNames()
+    {
+        return self::$additional_wallet_names;
+    }
+
     // ----------------------- Getters End -----------------------------------------
 
     // ----------------------- Setters --------------------------------------------
 
     public function setMethods(array $input = array())
     {
+        $this->transformAdditionalWallets($input);
         $this->edit($input, 'setMethods');
+    }
+
+    /**
+     * @param array $input
+     *
+     * Transforms all additional wallets passed in input to additional wallets array
+     *
+     * So if the input is [ "itzcash" : true ] , then "itzcash" will be added to "additional_wallets"     *
+     *
+     */
+    protected function transformAdditionalWallets(array &$input)
+    {
+        $additional_wallet_names = Entity::getAllAdditionalWalletNames();
+        // Get existing additional wallets
+        $additional_wallets = $this->getAttribute(self::ADDITIONAL_WALLETS);
+        foreach ($additional_wallet_names as $wallet_name) {
+            if (isset($input[$wallet_name]) === true) {
+                if (((bool)$input[$wallet_name] === true) && !in_array($wallet_name, $additional_wallets)) {
+                    array_push($additional_wallets, $wallet_name);
+                }
+                if (((bool)$input[$wallet_name] === false) && in_array($wallet_name, $additional_wallets)) {
+                    $index = array_search($wallet_name, $additional_wallets);
+                    array_splice($additional_wallets,$index,1);
+                }
+                // here we are not deleting "itzcash" field in input, and allowing it to pass through validation
+            }
+        }
+        if (isset($input['additional_wallets']) === true) {
+            // ignore "additional_wallets" attribute sent in request body
+            unset($input['additional_wallets']);
+        }
+        $input['additional_wallets'] = $additional_wallets;
     }
 
     public function setDisabledBanks(array $banks)
@@ -1076,6 +1211,40 @@ class Entity extends Base\PublicEntity
         return json_decode($this->attributes[self::DISABLED_BANKS], true);
     }
 
+    protected function getAdditionalWalletsAttribute()
+    {
+        if (empty($this->attributes[self::ADDITIONAL_WALLETS]) === true)
+        {
+            return [];
+        }
+        return json_decode($this->attributes[self::ADDITIONAL_WALLETS], true);
+    }
+
+    protected function getItzcashAttribute()
+    {
+        return $this->getItzcash();
+    }
+
+    protected function getOxigenAttribute()
+    {
+        return $this->getOxigen();
+    }
+
+    protected function getAmexeasyclickAttribute()
+    {
+        return $this->getAmexeasyclick();
+    }
+
+    protected function getPaycashAttribute()
+    {
+        return $this->getPaycash();
+    }
+
+    protected function getCitibankrewardsAttribute()
+    {
+        return $this->getCitibankrewards();
+    }
+
     // ----------------------- Accessors End ----------------------------------------
 
     // ----------------------- Mutators --------------------------------------------
@@ -1182,6 +1351,11 @@ class Entity extends Base\PublicEntity
     protected function setDisabledBanksAttribute(array $banks)
     {
         $this->attributes[self::DISABLED_BANKS] = json_encode(array_values($banks));
+    }
+
+    protected function setAdditionalWalletsAttribute(array $additional_wallets)
+    {
+        $this->attributes[self::ADDITIONAL_WALLETS] = json_encode(array_values($additional_wallets));
     }
 
     // TODO: Remove this once Amex column is removed

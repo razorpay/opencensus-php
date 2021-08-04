@@ -132,6 +132,9 @@ class CreateMerchantBanks extends Migration
             $table->unsignedSmallInteger(Methods::DEBIT_EMI_PROVIDERS)
                   ->default(DebitProvider::DEFAULT_DEBIT_EMI_PROVIDERS);
 
+            $table->json(Methods::ADDITIONAL_WALLETS)
+                  ->nullable();
+
             $table->integer(Methods::CREATED_AT);
 
             $table->integer(Methods::UPDATED_AT);

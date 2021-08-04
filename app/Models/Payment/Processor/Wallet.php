@@ -30,7 +30,7 @@ class Wallet
     const OXIGEN               = 'oxigen';
     const AMEXEASYCLICK        = "amexeasyclick";
     const PAYCASH              = "paycash";
-    const CITIBANKREWARDPOINTS = "citibankrewardpoints";
+    const CITIBANKREWARDS = "citibankrewards";
 
     public static $fullName = array(
         self::MOBIKWIK          => 'Mobikwik',
@@ -48,6 +48,11 @@ class Wallet
         self::PHONEPE           => 'PhonePe',
         self::PAYPAL            => 'PayPal',
         self::PHONEPE_SWITCH    => 'PhonePe Switch',
+        self::ITZCASH           => 'Itzcash',
+        self::OXIGEN            => 'Oxigen',
+        self::AMEXEASYCLICK     => 'Amex Easy Click',
+        self::PAYCASH           => 'Paycash',
+        self::CITIBANKREWARDS => 'Citibank Reward Points',
     );
 
     public static $emailRequiredWallets = array(

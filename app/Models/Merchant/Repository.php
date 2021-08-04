@@ -311,7 +311,18 @@ class Repository extends Base\Repository
                     // Filter can accept 'true'/'false' along with 0/1 & true/false
                     $queryValue = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
-                    $join->where($method, '=', $queryValue);
+                    if (in_array($method,Methods\Entity::getAllAdditionalWalletNames()))
+                    {
+                        if ((bool)$queryValue) {
+                            $join->where(Methods\Entity::ADDITIONAL_WALLETS, 'like', '%'.$method.'%');
+                        } else
+                        {
+                            $join->where(Methods\Entity::ADDITIONAL_WALLETS, 'not like', '%'.$method.'%');
+                        }
+                    } else
+                    {
+                        $join->where($method, '=', $queryValue);
+                    }
                 }
             });
 

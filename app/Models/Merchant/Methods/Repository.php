@@ -32,6 +32,11 @@ class Repository extends Base\Repository
         Entity::CARD_NETWORKS       => 'sometimes|numeric',
         Entity::UPI_TYPE            => 'sometimes|numeric',
         Entity::DEBIT_EMI_PROVIDERS => 'sometimes|numeric',
+        Entity::ITZCASH             => 'sometimes|in:0,1',
+        Entity::OXIGEN              => 'sometimes|in:0,1',
+        Entity::AMEXEASYCLICK       => 'sometimes|in:0,1',
+        Entity::PAYCASH             => 'sometimes|in:0,1',
+        Entity::CITIBANKREWARDS => 'sometimes|in:0,1',
     );
 
     public function getMethodsForMerchant(Merchant\Entity $merchant)
@@ -51,5 +56,42 @@ class Repository extends Base\Repository
     protected function addQueryOrder($query)
     {
         $query->orderBy(Entity::MERCHANT_ID, 'desc');
+    }
+
+    protected function addQueryParamItzcash($query,$params)
+    {
+        $this->queryParamForAdditionalWallets($query,Entity::ITZCASH,$params[Entity::ITZCASH]);
+    }
+
+    protected function addQueryParamOxigen($query,$params)
+    {
+        $this->queryParamForAdditionalWallets($query,Entity::OXIGEN,$params[Entity::OXIGEN]);
+    }
+
+    protected function addQueryParamAmexeasyclick($query,$params)
+    {
+        $this->queryParamForAdditionalWallets($query,Entity::AMEXEASYCLICK,$params[Entity::AMEXEASYCLICK]);
+    }
+
+    protected function addQueryParamPaycash($query,$params)
+    {
+        $this->queryParamForAdditionalWallets($query,Entity::PAYCASH,$params[Entity::PAYCASH]);
+    }
+
+    protected function addQueryParamCitibankrewards($query,$params)
+    {
+        $this->queryParamForAdditionalWallets($query,Entity::CITIBANKREWARDS,$params[Entity::CITIBANKREWARDS]);
+    }
+
+    protected function queryParamForAdditionalWallets(&$query,$wallet,$value)
+    {
+        $additional_wallets = $this->dbColumn(Entity::ADDITIONAL_WALLETS);
+        if((bool)$value)
+        {
+            $query->where($additional_wallets,'like','%'.$wallet.'%');
+        } else
+        {
+            $query->where($additional_wallets,'not like','%'.$wallet.'%');
+        }
     }
 }

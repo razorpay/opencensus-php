@@ -2505,6 +2505,26 @@ class AdminFetch
                     Fetch::LABEL  => 'Live',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
+                'methods.itzcash' => [
+                    Fetch::LABEL  => 'Itzcash',
+                    Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
+                'methods.oxigen' => [
+                    Fetch::LABEL  => 'Oxigen',
+                    Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
+                'methods.amexeasyclick' => [
+                    Fetch::LABEL  => 'Amex Easy Click',
+                    Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
+                'methods.paycash' => [
+                    Fetch::LABEL  => 'Paycash',
+                    Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
+                'methods.citibankrewards' => [
+                    Fetch::LABEL  => 'Citibank Reward Points',
+                    Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
                 'methods.mobikwik' => [
                     Fetch::LABEL  => 'Mobikwik',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
@@ -2623,6 +2643,26 @@ class AdminFetch
                 ],
                 'emi' => [
                     Fetch::LABEL  => 'Emi',
+                    Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
+                'itzcash' => [
+                    Fetch::LABEL  => 'Itzcash',
+                    Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
+                'oxigen' => [
+                    Fetch::LABEL  => 'Oxigen',
+                    Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
+                'amexeasyclick' => [
+                    Fetch::LABEL  => 'Amex Easy Click',
+                    Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
+                'paycash' => [
+                    Fetch::LABEL  => 'Paycash',
+                    Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
+                'citibankrewards' => [
+                    Fetch::LABEL  => 'Citibank Reward Points',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
                 'mobikwik' => [
