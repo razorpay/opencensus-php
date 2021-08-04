@@ -9,7 +9,7 @@ import SuccessFullCreditModal from 'common/ui/OnboardingCoupons/SuccessFullCredi
 import { merchantFetch } from 'merchant/utils/ajax';
 import { daysFromToday, paiseToRupees } from 'common/utils/rzp-utils';
 
-const TRANSACTION_TIMESTAMP = 1627842637; // 2nd aug,2021
+const TRANSACTION_TIMESTAMP = 1628015429; // 4th aug,2021
 const POST_INSTANTLY_ACTIVATED_DAYS_TO_SHOW_OFFER = 3; //offer allowed to show post payment activated
 
 class NavFragment extends Component {
@@ -22,22 +22,24 @@ class NavFragment extends Component {
     const hideSwitchModeTooltip = storage.getItem(hideModePopoverToken),
       showSwitchModeTooltip = storage.getItem(showModePopoverToken);
 
-    const { user } = props;
+    const { user, mode } = props;
     //number of day when payment get activated date to current date
     const numberOfDaysPaymentActivated =
       (user.activated_at && Math.abs(daysFromToday(user.activated_at))) || 0;
 
     this.canShowOnboardingOffers =
       user.activated &&
+      mode === 'live' &&
       numberOfDaysPaymentActivated > POST_INSTANTLY_ACTIVATED_DAYS_TO_SHOW_OFFER &&
       !user.isMtuCouponApplied &&
       user.isOnboardingCouponEnabled;
 
     this.isNewMerchantPostMTUCouponLive = user.created_at > TRANSACTION_TIMESTAMP;
+    this.isMtuOfferShowed = storage.getItem(`showed_popup--${user.current}`);
 
     this.state = {
       showSwitchModeTooltip: !hideSwitchModeTooltip && showSwitchModeTooltip,
-      transactionAmount: 0,
+      transactionAmount: null,
       isSuccessfullyCouponApplied: false,
     };
 
@@ -70,7 +72,7 @@ class NavFragment extends Component {
   };
 
   isMerchantAlreadyMTU = async () => {
-    const { user, mode } = this.props;
+    const { user } = this.props;
     if (!this.isNewMerchantPostMTUCouponLive) {
       const response = await merchantFetch({
         url: 'merchant/analytics',
@@ -82,7 +84,7 @@ class NavFragment extends Component {
           aggregations: {
             transactionVolume: {
               agg_type: 'sum',
-              details: { index: 'payments', column: 'base_amount', mode },
+              details: { index: 'payments', column: 'base_amount', mode: 'live' },
             },
           },
         },
@@ -99,7 +101,7 @@ class NavFragment extends Component {
   };
 
   applyMTUCoupon = async () => {
-    const { user, mode } = this.props;
+    const { user } = this.props;
     const isMerchantAlreadyMTU = await this.isMerchantAlreadyMTU();
 
     if (!isMerchantAlreadyMTU && this.canShowOnboardingOffers) {
@@ -115,7 +117,7 @@ class NavFragment extends Component {
           aggregations: {
             transactionVolume: {
               agg_type: 'sum',
-              details: { index: 'payments', column: 'base_amount', mode },
+              details: { index: 'payments', column: 'base_amount', mode: 'live' },
             },
           },
         },
@@ -125,7 +127,7 @@ class NavFragment extends Component {
           this.setState({
             transactionAmount: payment,
           });
-          if (payment > 0) {
+          if (payment > 0 && this.isMtuOfferShowed === 'visited') {
             this.redeemOnboardingCoupon();
           }
         }
@@ -134,8 +136,7 @@ class NavFragment extends Component {
   };
 
   componentDidMount() {
-    const { user } = this.props;
-    if (user.activated && !user.isMtuCouponApplied && user.isOnboardingCouponEnabled) {
+    if (this.canShowOnboardingOffers) {
       this.applyMTUCoupon();
     }
   }
@@ -144,7 +145,7 @@ class NavFragment extends Component {
     const { user, mode, modeFormatted, onSwitchMode, onSwitchMerchant } = this.props;
     const { showSwitchModeTooltip, transactionAmount, isSuccessfullyCouponApplied } = this.state;
 
-    const canShowOnboardingOffers = this.canShowOnboardingOffers && transactionAmount <= 0;
+    const canShowOnboardingOffers = this.canShowOnboardingOffers && transactionAmount == 0;
 
     return (
       <React.Fragment>

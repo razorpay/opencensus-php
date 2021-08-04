@@ -26,9 +26,9 @@ const OffersForYou = ({ closeModals, openModals, tracking, canShowOnboardingOffe
           ID: nitroCampaignId().version,
         }),
       );
-      if (!(offersForYouState === 'animationShown' || offersForYouState === 'hasAppliedCA'))
-        LocalStorageService.setItem('offers_for_you_state', 'animationShown');
     }
+    if (!(offersForYouState === 'animationShown' || offersForYouState === 'hasAppliedCA'))
+      LocalStorageService.setItem('offers_for_you_state', 'animationShown');
   }, []);
 
   const handleClick = () => {
@@ -37,6 +37,7 @@ const OffersForYou = ({ closeModals, openModals, tracking, canShowOnboardingOffe
         component: <OnboardingCoupons closeModal={closeModals} />,
         size: 'xlarge',
       });
+      LocalStorageService.setItem(`showed_popup--${window.rzp_user.current}`, 'visited');
       analyticsTrack({
         objectName: 'Exclusive Offer',
         actionName: 'clicked',
