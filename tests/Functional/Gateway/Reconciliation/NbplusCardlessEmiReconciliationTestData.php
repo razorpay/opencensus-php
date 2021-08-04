@@ -7,7 +7,7 @@ return [
         'Merchant Name'                 => 'Merchant name',
         'Merchant Id'                   => 'Merchant Id',
         'Date of txn'                   => Carbon::today()->format("Ymd"),
-        'Purchase Amount'               => '500.00',
+        'Purchased or Cancelled Amount' => '500.00',
         'Txn Type'                      => 'Disbursal',
         'UTR'                           => 'UTR',
         'RZP Txn ID'                    => '',

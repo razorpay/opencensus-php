@@ -8,7 +8,7 @@ use RZP\Reconciliator\Walnut369\Reconciliate;
 class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const BLACKLISTED_COLUMNS   = [];
-    const COLUMN_PAYMENT_AMOUNT = Reconciliate::PURCHASE_AMOUNT;
+    const COLUMN_PAYMENT_AMOUNT = Reconciliate::PURCHASE_OR_CANCELLED_AMOUNT;
 
     protected function getPaymentId(array $row)
     {
