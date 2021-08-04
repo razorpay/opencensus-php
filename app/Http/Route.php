@@ -6083,7 +6083,7 @@ class Route
         'currency_fetch_all_proxy'                            => Permission::CURRENCY_FETCH_RATES,
 
         'care_service_admin_proxy'                            => Permission::MANAGE_CARE_SERVICE_CALLBACK, // todo: have more fine grained permissions at route level
-        'care_service_dark_proxy'                             => Permission::MANAGE_CARE_SERVICE_CALLBACK,
+        'care_service_dark_proxy'                             => Permission::CARE_SERVICE_DARK_PROXY,
         'freshchat_put_chat_timings_config'                   => Permission::MANAGE_FRESHCHAT,
         'freshchat_get_chat_timings_config'                   => Permission::MANAGE_FRESHCHAT,
         'freshchat_put_chat_holidays_config'                  => Permission::MANAGE_FRESHCHAT,

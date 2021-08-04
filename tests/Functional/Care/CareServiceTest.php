@@ -121,7 +121,7 @@ class CareServiceTest extends TestCase
                     'key' => 'value',
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
-                self::PERMISSIONS                         => ['manager_care_service_callback'],
+                self::PERMISSIONS                         => ['care_service_dark_proxy'],
             ],
             [
 
@@ -194,6 +194,16 @@ class CareServiceTest extends TestCase
                 self::AUTH                                => 'cron',
                 self::API_ROUTE                           => '/care_service/cron/twirp/rzp.care.callback.v1.CallbackService/InitSlots',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/InitSlots',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'cron',
+                self::API_ROUTE                           => '/care_service/cron/twirp/rzp.care.callback.v1.CallbackService/HandleChangeInVisibleSlotSize',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/HandleChangeInVisibleSlotSize',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
                     'key' => 'value',

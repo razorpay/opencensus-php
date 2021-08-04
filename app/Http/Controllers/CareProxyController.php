@@ -21,6 +21,7 @@ class CareProxyController extends Controller
     //cron
     const INIT_SLOTS             = 'twirp/rzp.care.callback.v1.CallbackService/InitSlots';
     const PUSH_CALLBACK_TO_QUEUE = 'twirp/rzp.care.callback.v1.CallbackService/PushCallbacksToQueue';
+    const HANDLE_CHANGE_VISIBLE_SLOT_SIZE  = 'twirp/rzp.care.callback.v1.CallbackService/HandleChangeInVisibleSlotSize';
 
     //MyOperator
     const IN_CALL    = 'twirp/rzp.care.callback.v1.CallbackService/InCallWebhook';
@@ -58,6 +59,7 @@ class CareProxyController extends Controller
     const CRON_ROUTES = [
         self::INIT_SLOTS,
         self::PUSH_CALLBACK_TO_QUEUE,
+        self::HANDLE_CHANGE_VISIBLE_SLOT_SIZE,
     ];
 
     const MYOPERATOR_ROUTES = [
