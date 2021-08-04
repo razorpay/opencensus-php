@@ -99,7 +99,7 @@ return [
                 'description' => 'List all the merchant pricing plans',
                 'assignable'  => true,
             ],
-            Permission::PAYMENT_TERMINAL_BUY_PRICING_PLANS => [
+            Permission::PAYMENTS_TERMINAL_BUY_PRICING_PLANS => [
                 'description' => 'List all the terminal buy pricing plans',
                 'assignable'  => true,
             ],
@@ -401,6 +401,10 @@ return [
             Permission::GET_IRCTC_SETTLEMENT_FILE           => '',
             Permission::DELETE_TERMINAL                     => '',
             Permission::EDIT_TERMINAL                       => '',
+            Permission::PAYMENTS_BATCH_CREATE_TERMINALS_BULK => [
+                'description' => 'create terminals in bulk',
+                'assignable'  => true,
+            ],
             Permission::CREATE_SETTLEMENTS_RECONCILE        => '',
             Permission::DEACTIVATE_PROMOTION                 => [
                 'assignable' => true,
@@ -667,7 +671,7 @@ return [
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::PAYMENT_CREATE_BUY_PRICING_PLAN       => [
+            Permission::PAYMENTS_CREATE_BUY_PRICING_PLAN       => [
                 'description' => 'create buy pricing plan',
                 'assignable'  => true,
                 'workflow'    => true
@@ -677,7 +681,7 @@ return [
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::PAYMENT_UPDATE_BUY_PRICING_PLAN       => [
+            Permission::PAYMENTS_UPDATE_BUY_PRICING_PLAN       => [
                 'description' => 'update buy pricing plan',
                 'assignable'  => true,
                 'workflow'    => true

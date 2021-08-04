@@ -475,6 +475,9 @@ class Type
         self::CREDIT                        => Name::CREDITS_BATCH_UPLOAD,
         self::LOC_WITHDRAWAL                => Name::LOC_WITHDRAWAL_EDIT,
         self::RETRY_REFUNDS_TO_BA           => Name::BULK_RETRY_REFUNDS_VIA_FTA,
+        self::BUY_PRICING_RULE              => Name::PAYMENTS_CREATE_BUY_PRICING_PLAN,
+        self::BUY_PRICING_ASSIGN            => Name::EDIT_TERMINAL,
+        self::TERMINAL_CREATION             => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
     ];
 
     public static $workflowApplicableBatchTypes = [

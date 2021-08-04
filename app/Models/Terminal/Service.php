@@ -728,16 +728,14 @@ class Service extends Base\Service
     {
         $idempotencyKeys = [];
 
-        collect($input)->groupBy(function ($row)
-        {
-            return $row[Batch\Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID];
-        })->map(function ($rows) use (& $idempotencyKeys)
-        {
-            if (count($rows->unique(Batch\Header::TERMINAL_CREATION_PLAN_NAME)) > 1)
+        collect($input)->groupBy(Batch\Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID)
+            ->map(function ($rows) use (& $idempotencyKeys)
             {
-                $idempotencyKeys = array_merge($idempotencyKeys, $rows->pluck(Constants::IDEMPOTENCY_KEY)->toArray());
-            }
-        });
+                if (count($rows->unique(Batch\Header::TERMINAL_CREATION_PLAN_NAME)) > 1)
+                {
+                    $idempotencyKeys = array_merge($idempotencyKeys, $rows->pluck(Constants::IDEMPOTENCY_KEY)->toArray());
+                }
+            });
 
         foreach ($input as & $item)
         {

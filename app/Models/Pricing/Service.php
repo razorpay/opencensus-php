@@ -250,8 +250,8 @@ class Service extends Base\Service
                 'request body' => $this->redactBulkInput($input),
             ]);
 
-        // grouping pricing rules by MAI and Plan Name.
-        $groupedRules = (new Entity)->groupBuyPricingRules($input);
+        // grouping pricing rules by Plan Name.
+        $groupedRules = collect($input)->groupBy(Entity::PLAN_NAME);
 
         $buyPricingRules = new PublicCollection();
 
@@ -360,10 +360,9 @@ class Service extends Base\Service
 
                     (new Pricing\Core)->create($item, '100000razorpay');
                 }
-                // Add new group of rules on MAI to plan.
                 else
                 {
-                    $this->addPlanRule($existingPlan->getId(), $item, $existingPlan->getOrgId(), true);
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
                 }
             });
         },
