@@ -37,6 +37,7 @@ module.exports = ({ config, project }) => {
   config.resolve.extensions.push('.ts', '.tsx');
   config.resolve.alias = {
     v2: path.resolve(__dirname, './v2'),
+    react: path.resolve(__dirname, './node_modules/react'),
   };
   config.module.rules[0].test = /(\.ts(x?)|\.m?js)$/; //babel loader to support typescript
 
