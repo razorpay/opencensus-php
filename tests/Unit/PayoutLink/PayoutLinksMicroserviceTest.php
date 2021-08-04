@@ -713,7 +713,92 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
         $this->assertEquals('t***', $data['user_name'], "contact name not masked");
+        //for processed payout link, the description will be masked
         $this->assertEquals('te*****', $data['description'], "description not masked");
+    }
+
+    public function testNonMaskedDescriptionForGetHostedPageForIssuedPayoutLink()
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $response = $this->mockGetHostedResponseForIssuedPL();
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($response);
+        $mock->method('allowUpi')->willReturn(false);
+        $mock->method('allowAmazonPay')->willReturn(false);
+        $mock->method('getEnvironment')->willReturn(Environment::TESTING);
+
+        $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
+        //for issued payout link, the description will not be masked
+        $this->assertEquals('testing', $data['description'], "description incorrect");
+    }
+
+    public function testMaskedDescriptionForGetHostedPageForCancelledPayoutLink()
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $response = $this->mockGetHostedResponseForCancelledPL();
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($response);
+        $mock->method('allowUpi')->willReturn(false);
+        $mock->method('allowAmazonPay')->willReturn(false);
+        $mock->method('getEnvironment')->willReturn(Environment::TESTING);
+
+        $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
+        //for cancelled payout link, the description will be masked
+        $this->assertEquals('te*****', $data['description'], "description not masked");
+    }
+
+    public function testDescriptionMaskingForGetHostedPageForIssuedPayoutLinkEmptyDescription()
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $response = $this->mockGetHostedResponseForIssuedPLEmptyDescription();
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($response);
+        $mock->method('allowUpi')->willReturn(false);
+        $mock->method('allowAmazonPay')->willReturn(false);
+        $mock->method('getEnvironment')->willReturn(Environment::TESTING);
+
+        $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
+        //checking that the utility method mask_by_percentage works fine for empty string
+        $this->assertEquals('', $data['description'], "description not empty");
+    }
+
+    public function testDescriptionMaskingForGetHostedPageForIssuedPayoutLinkNullDescription()
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $response = $this->mockGetHostedResponseForIssuedPLNullDescription();
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($response);
+        $mock->method('allowUpi')->willReturn(false);
+        $mock->method('allowAmazonPay')->willReturn(false);
+        $mock->method('getEnvironment')->willReturn(Environment::TESTING);
+
+        $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
+        //checking that the utility method mask_by_percentage works fine for null string
+        $this->assertEquals(null, $data['description'], "description not null");
     }
 
     private function mockGetHostedResponseForProcessedPL(string $faId)
@@ -742,6 +827,69 @@ class PayoutLinkMicroserviceTest extends TestCase
         $response['payout_link_response']['contact']['email'] = 'test@gmail.com';
         $response['payout_link_response']['contact']['contact'] = '+919090990909';
         $response['payout_link_response']['payouts'] = $payoutCollection;
+        return $response;
+    }
+
+    private function mockGetHostedResponseForIssuedPL()
+    {
+        $mode['AMAZONPAY'] = 1;
+        $mode['UPI'] = 1;
+        $response['settings'] = ['mode' => $mode];
+        $response['payout_link_response']['amount'] = 1000;
+        $response['payout_link_response']['id'] = 'poutlk_123456';
+        $response['payout_link_response']['status'] = 'issued';
+        $response['payout_link_response']['currency'] = 'INR';
+        $response['payout_link_response']['description'] = 'testing';
+        $response['payout_link_response']['contact']['name'] = 'test';
+        $response['payout_link_response']['contact']['email'] = 'test@gmail.com';
+        $response['payout_link_response']['contact']['contact'] = '+919090990909';
+        return $response;
+    }
+
+    private function mockGetHostedResponseForCancelledPL()
+    {
+        $mode['AMAZONPAY'] = 1;
+        $mode['UPI'] = 1;
+        $response['settings'] = ['mode' => $mode];
+        $response['payout_link_response']['amount'] = 1000;
+        $response['payout_link_response']['id'] = 'poutlk_123456';
+        $response['payout_link_response']['status'] = 'cancelled';
+        $response['payout_link_response']['currency'] = 'INR';
+        $response['payout_link_response']['description'] = 'testing';
+        $response['payout_link_response']['contact']['name'] = 'test';
+        $response['payout_link_response']['contact']['email'] = 'test@gmail.com';
+        $response['payout_link_response']['contact']['contact'] = '+919090990909';
+        return $response;
+    }
+
+    private function mockGetHostedResponseForIssuedPLEmptyDescription()
+    {
+        $mode['AMAZONPAY'] = 1;
+        $mode['UPI'] = 1;
+        $response['settings'] = ['mode' => $mode];
+        $response['payout_link_response']['amount'] = 1000;
+        $response['payout_link_response']['id'] = 'poutlk_123456';
+        $response['payout_link_response']['status'] = 'issued';
+        $response['payout_link_response']['currency'] = 'INR';
+        $response['payout_link_response']['description'] = '';
+        $response['payout_link_response']['contact']['name'] = 'test';
+        $response['payout_link_response']['contact']['email'] = 'test@gmail.com';
+        $response['payout_link_response']['contact']['contact'] = '+919090990909';
+        return $response;
+    }
+
+    private function mockGetHostedResponseForIssuedPLNullDescription()
+    {
+        $mode['AMAZONPAY'] = 1;
+        $mode['UPI'] = 1;
+        $response['settings'] = ['mode' => $mode];
+        $response['payout_link_response']['amount'] = 1000;
+        $response['payout_link_response']['id'] = 'poutlk_123456';
+        $response['payout_link_response']['status'] = 'issued';
+        $response['payout_link_response']['currency'] = 'INR';
+        $response['payout_link_response']['contact']['name'] = 'test';
+        $response['payout_link_response']['contact']['email'] = 'test@gmail.com';
+        $response['payout_link_response']['contact']['contact'] = '+919090990909';
         return $response;
     }
 

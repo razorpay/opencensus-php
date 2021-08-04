@@ -46,9 +46,14 @@ class PayoutLinks
 {
     const KEY                                      = 'api';
     const SOURCE                                   = 'source';
+    const STATUS                                   = 'status';
+    const CONTACT                                  = 'contact';
     const BATCH_ID                                 = 'batch_id';
+    const DESCRIPTION                              = 'description';
     const MERCHANT_ID                              = 'merchant_id';
     const PAYOUT_LINK_ID                           = 'payout_link_id';
+    const STATUS_PROCESSED                         = 'processed';
+    const STATUS_CANCELLED                         = 'cancelled';
     const INTEGRATION_INFO                         = 'integration_info';
     const SOURCE_IDENTIFIER                        = 'source_identifier';
     const IS_CORRECT_MERCHANT                      = 'is_correct_merchant';
@@ -419,7 +424,19 @@ class PayoutLinks
 
         $fundAccountDetails = $this->extractFundAccountDetails($payoutLinkInfo, $merchant);
 
-        $contact = $payoutLinkInfo['contact'];
+        $contact = $payoutLinkInfo[self::CONTACT];
+
+        $description =  $payoutLinkInfo[self::DESCRIPTION] ?? null;
+
+        $plStatus = $payoutLinkInfo[self::STATUS];
+
+        // if the payout link is processed/cancelled, description should be masked
+        if(empty($description) == false
+            and empty($plStatus) == false
+            and ($plStatus == self::STATUS_PROCESSED or $plStatus == self::STATUS_CANCELLED))
+        {
+            $description = mask_by_percentage($description);
+        }
 
         $data = [
             'api_host'                    => $this->config['url.api.production'],
@@ -427,7 +444,7 @@ class PayoutLinks
             'payout_link_status'          => $payoutLinkInfo['status'],
             'amount'                      => $payoutLinkInfo['amount'],
             'currency'                    => $payoutLinkInfo['currency'],
-            'description'                 => mask_by_percentage($payoutLinkInfo['description'] ?? null),
+            'description'                 => $description,
             'user_name'                   => mask_by_percentage($contact['name'] ?? null),
             'user_email'                  => mask_email($contact['email'] ?? null),
             'user_phone'                  => mask_phone($contact['contact'] ?? null),
