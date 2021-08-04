@@ -1910,6 +1910,8 @@ class Route
         'stakeholder_fetch_all_v2'                 => ['GET',     'accounts/{id}/stakeholders',                      'StakeholderController@fetchAll'                                    ],
 
         'account_service_details_fetch'            => ['GET',     'account_service/accounts/{accountId}',            'MerchantController@getMerchantDetailsForAccountService'            ],
+        'account_service_trigger_sync'             => ['POST',    'account_service/trigger_sync',                    'AcsController@triggerSync'                                         ],
+        'account_service_trigger_full_sync'        => ['POST',    'account_service/trigger_full_sync',               'AcsController@triggerFullSync'                                     ],
 
         'account_create_v2'                        => ['post',     'accounts',                                       'AccountControllerV2@createAccount'                                 ],
         'account_fetch_v2'                         => ['get',      'accounts/{id}',                                  'AccountControllerV2@fetchAccount'                                  ],
@@ -4617,6 +4619,10 @@ class Route
         'setl_ledger_inconsistency_debug_admin',
         'setl_service_migration_admin',
 
+        // acs routes
+        'account_service_trigger_sync',
+        'account_service_trigger_full_sync',
+
         // Sub VA Routes
         'sub_virtual_account_create',
         'sub_virtual_account_list_admin',
@@ -5704,6 +5710,8 @@ class Route
         'merchant_sync_stakeholder'                => Permission::ADMIN_MANAGE_PARTNERS,
         'oauth_application_create_clients'         => Permission::ADMIN_MANAGE_PARTNERS,
         'oauth_application_delete_client'          => Permission::ADMIN_MANAGE_PARTNERS,
+        'account_service_trigger_full_sync'        => Permission::ADMIN_MANAGE_PARTNERS,
+        'account_service_trigger_sync'             => Permission::ADMIN_MANAGE_PARTNERS,
         'oauth_application_update_admin'           => Permission::MANAGE_BULK_FEATURE_MAPPING,
         'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'terminal_get_banks'                       => Permission::VIEW_TERMINAL,
