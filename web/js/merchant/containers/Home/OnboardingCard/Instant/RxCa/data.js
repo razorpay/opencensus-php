@@ -54,7 +54,7 @@ export const FAQ_DATA_NITRO = [
 
 const validCoupons = ['NEORZP'];
 
-export const hasNeoCouponCode = (coupons) => {
+export const hasNeoCouponCode = (coupons = []) => {
   return validCoupons.some((validCoupon) => coupons.includes(validCoupon));
 };
 
