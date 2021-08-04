@@ -759,6 +759,10 @@ class Constants
      */
     const DISPUTE_PRESENTMENT = 'dispute_presentment';
 
+    const ORG_TPV_DISABLE    = 'axis_tpv';
+
+    const AXIS_TPV_ENABLE   = 'axis_tpv_enable';
+
     const ROUTE_KEY_MERCHANTS_QUEUE = 'route_key_merchants_queue';
 
     const FEATURE_BBPS = 'feature_bbps';
@@ -1106,6 +1110,8 @@ class Constants
         self::SKIP_SUBM_ONBOARDING_COMM       => true,
         self::SKIP_CUSTOMER_ID_CHECKOUT       => true,
         self::DISPUTE_PRESENTMENT             => true,
+        self::ORG_TPV_DISABLE                 => true,
+        self::AXIS_TPV_ENABLE                 => true,
         self::ROUTE_KEY_MERCHANTS_QUEUE       => true,
         self::SHOW_MOR_TNC                    => true,
         self::FEATURE_BBPS                    => true,
