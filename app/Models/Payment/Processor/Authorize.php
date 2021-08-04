@@ -306,6 +306,8 @@ trait Authorize
         //
         $this->setSelectedTerminals($payment, $gatewayInput);
 
+        $this->setSelectedTerminalsForApplicationMethodsIfApplicable($payment);
+
         // we are doing this after terminal selection since we might reject payemnt if there are no terminals found
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_PROCESSED, $payment);
 
@@ -359,6 +361,8 @@ trait Authorize
         else
         {
             $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
+
+            $request = $this->callAuthenticationGatewayBasedOnApplicationIfApplicable($payment, $input, $request, $gatewayInput);
 
             $this->trace->info(
                 TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
@@ -668,6 +672,104 @@ trait Authorize
         }
 
         return $request;
+    }
+
+    protected function separateMethodSpecificTerminalsForGooglePay()
+    {
+        $selectedTerminals = $this->selectedTerminals;
+        $googlePayPaymentMethods = $this->payment->getGooglePayMethods();
+        $terminals = [];
+
+        foreach ($googlePayPaymentMethods as $method)
+        {
+            $terminals[$method] = [];
+
+            foreach ($selectedTerminals as $currentTerminal)
+            {
+                if ($currentTerminal[$method] === true)
+                {
+                    array_push($terminals[$method], $currentTerminal);
+                }
+            }
+
+            // unset Gpay method in case no terminal found for that method
+            if (empty($terminals[$method]))
+            {
+                $this->payment->unsetGooglePayMethod($method);
+            }
+        }
+        return $terminals;
+    }
+
+    /**
+     * List of networks supported on Gpay
+     * Fetches the result by intersection of
+     * networks supported on a list of gateways with
+     * merchant methods enabled
+     * @param $terminals
+     * @return array
+     */
+    protected function fetchCardNetworksSupportedForGooglePay($terminals)
+    {
+        $gatewaySupportedCardNetworks = $this->fetchGatewaySupportedCardNetworks($terminals);
+
+        $merchantSupportedCardNetworks = $this->fetchMerchantSupportedCardNetworks();
+
+        $googlePaySupportedCardNetworks = array_intersect($gatewaySupportedCardNetworks, $merchantSupportedCardNetworks);
+
+        $this->trace->info(
+            TraceCode::GOOGLE_PAY_SUPPORTED_CARD_NETWORKS,
+            [
+                'gateway_supported_card_networks'       => $gatewaySupportedCardNetworks,
+                'merchant_supported_card_networks'      => $merchantSupportedCardNetworks,
+                'google_pay_card_networks'              => $googlePaySupportedCardNetworks,
+            ]);
+
+        return $googlePaySupportedCardNetworks;
+    }
+
+
+    /** Fetches a unique list of networks supported on a list of gateways
+     *
+     * @param $terminals
+     * @return array
+     */
+    protected function fetchGatewaySupportedCardNetworks($terminals)
+    {
+        $cardNetworksSupported = [];
+
+        foreach ($terminals as $terminal)
+        {
+            $gateway = $terminal[Terminal\Entity::GATEWAY];
+            if (array_key_exists($gateway, Payment\Gateway::$cardNetworkMap) === true)
+            {
+                $gatewayNetworksSupported = Payment\Gateway::$cardNetworkMap[$gateway];
+                $cardNetworksSupported = array_unique(array_merge($gatewayNetworksSupported, $cardNetworksSupported));
+            }
+        }
+
+        return $cardNetworksSupported;
+    }
+
+    /**
+     * Fetches the list of card networks enabled on the merchant methods
+     * @return array
+     */
+    protected function fetchMerchantSupportedCardNetworks()
+    {
+        $merchantMethods = $this->payment->merchant->methods;
+        $merchantCardNetworksSupported = $merchantMethods->getCardNetworks();
+        $merchantCardNwsEnabled = [];
+
+        foreach ($merchantCardNetworksSupported as $key => $value)
+        {
+            if($value === 1)
+            {
+                array_push($merchantCardNwsEnabled, $key);
+            }
+        }
+
+        return $merchantCardNwsEnabled;
     }
 
     protected function returnSpawnCoprotoIfContactRequired($payment, $input)
@@ -1131,7 +1233,7 @@ trait Authorize
         return $response;
     }
 
-    protected function getGooglePayCardPaymentCreatedResponse($request, $payment)
+    protected function getGooglePayPaymentCreatedResponse($request, $payment)
     {
         $this->repo->saveOrFail($payment);
 
@@ -1144,7 +1246,7 @@ trait Authorize
             'type'                  => 'application',
             'application_name'      => 'google_pay',
             'payment_id'            => $payment->getPublicId(),
-            'gateway'               => $this->getEncryptedGatewayText($payment->getGateway()),
+            'redirect'              => $this->checkIfRedirectRoute(),
             'request'               => $request,
         ];
 
@@ -1388,6 +1490,8 @@ trait Authorize
 
             $this->validateApplicationIfApplicable($payment, $input);
 
+            $this->validateProviderIfApplicable($payment, $input);
+
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
         }
         catch (\Throwable $ex)
@@ -1463,6 +1567,23 @@ trait Authorize
                         throw new Exception\BadRequestValidationFailureException(
                             'VisaSafeClick not enabled for merchant.');
                     }
+            }
+        }
+    }
+
+
+    protected function validateProviderIfApplicable(Payment\Entity $payment, $input)
+    {
+        if (isset($input['provider']) === true)
+        {
+            switch($input['provider'])
+            {
+                case 'google_pay':
+                    if ($payment->isGooglePay() and $payment->merchant->isGooglePayEnabled() === false)
+                    {
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_GOOGLE_PAY_NOT_ENABLED);
+                    }
+                    break;
             }
         }
     }
@@ -2354,11 +2475,14 @@ trait Authorize
             ]
         );
 
-        $this->eventPaymentCreated();
+        if (empty($payment->getGooglePayMethods()) === true)
+        {
+            $this->eventPaymentCreated();
 
-        $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
+            $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
-        $this->segment->trackPayment($payment, TraceCode::PAYMENT_CREATED);
+            $this->segment->trackPayment($payment, TraceCode::PAYMENT_CREATED);
+        }
 
         //
         // Call gateway input
@@ -3671,7 +3795,10 @@ trait Authorize
             }
         }
 
-        if ($payment->isUpi() === true)
+        // in case of google_pay, payment will be methodless
+        // so adding this condition to run this block,
+        // if upi method supported on Gpay
+        if ($payment->isUpi() === true or ($payment->isGooglePayMethodSupported(Method::UPI)))
         {
             $this->setGatewayInputForUpi($input, $gatewayInput);
 
@@ -3681,7 +3808,7 @@ trait Authorize
                 $input[Method::UPI][UpiMetadata\Entity::EXPIRY_TIME] = $gatewayInput[Method::UPI][UpiMetadata\Entity::EXPIRY_TIME];
             }
 
-            if ($this->isFlowIntent($input) === false)
+            if ($this->isFlowIntent($gatewayInput) === false)
             {
                 if (empty($payment->getVpa()) === true)
                 {
@@ -4182,7 +4309,13 @@ trait Authorize
     {
         $gatewayInput['upi']['flow'] = $this->getUpiFlow($input) ?? null;
 
-        if ($this->isFlowIntent($input) === false)
+        // For Gpay UPI flow will behave like intent
+        if ($this->payment->isGooglePay())
+        {
+            $gatewayInput['upi']['flow'] = Payment\Flow::INTENT;
+        }
+
+        if ($this->isFlowIntent($gatewayInput) === false)
         {
             $gatewayInput['upi']['expiry_time'] = $this->getUpiExpiryTime($input) ?? Processor::UPI_COLLECT_EXPIRY;
         }
@@ -4990,63 +5123,34 @@ trait Authorize
 
     protected function verifyPaymentMethodEnabled(Payment\Entity $payment)
     {
-        $paymentMethod = $payment->getMethod();
+        $paymentMethods = $payment->fetchPaymentMethods();
 
-        switch ($paymentMethod)
+        foreach ($paymentMethods as $paymentMethod)
         {
-            case Payment\Method::CARD:
-                $this->verifyCardEnabledInLive($payment);
-                break;
+            $this->coreVerifyPaymentMethodEnabled($paymentMethod, $payment);
+        }
 
-            case Payment\Method::NETBANKING:
-                $this->verifyBankEnabled($payment);
-                break;
+        $this->validateGooglePayMethods($payment);
+    }
 
-            case Payment\Method::WALLET:
-                $this->verifyWalletEnabled($payment);
-                break;
+    private function validateGooglePayMethods(Payment\Entity $payment)
+    {
+        if($payment->isGooglePay())
+        {
+            $googlePayMethods = $payment->getGooglePayMethods();
 
-            case Payment\Method::EMI:
-                $this->verifyEmiEnabled($payment);
-                break;
+            $this->trace->info(
+                TraceCode::GOOGLE_PAY_SUPPORTED_METHODS,
+                [
+                    'payment'          => $payment->getId(),
+                    'googlePayMethods' => $googlePayMethods
+                ]);
 
-            case Payment\Method::UPI:
-                $this->verifyUpiEnabled($payment);
-                break;
-
-            case Payment\Method::BANK_TRANSFER:
-                $this->verifyBankTransferEnabled();
-                break;
-
-            case Payment\Method::AEPS:
-                $this->verifyAepsEnabled();
-                break;
-
-            case Payment\Method::EMANDATE:
-                $this->verifyEmandateEnabled();
-                break;
-
-            case Payment\Method::CARDLESS_EMI:
-                $this->verifyCardlessEmiEnabled();
-                break;
-
-            case Payment\Method::PAYLATER:
-                $this->verifyPayLaterEnabled();
-                break;
-
-            case Payment\Method::NACH:
-                $this->verifyNachEnabled();
-                break;
-
-            case Payment\Method::APP:
-                $this->verifyAppEnabled($payment);
-                break;
-
-            default:
-                throw new Exception\LogicException(
-                    'Should not reach here.',
-                    null,
-                    ['payment_method' => $paymentMethod]);
+            if(empty($googlePayMethods))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_GOOGLE_PAY_METHODS_NOT_ENABLED_FOR_MERCHANT);
+            }
         }
     }
 
@@ -5179,9 +5283,9 @@ trait Authorize
 
                 return $this->getOtpPaymentCreatedResponse($request, $payment);
 
-            case $this->canRunGooglePayCardPaymentFlow($payment):
+            case $this->canRunGooglePayPaymentFlow($payment):
 
-                return $this->getGooglePayCardPaymentCreatedResponse($request, $payment);
+                return $this->getGooglePayPaymentCreatedResponse($request, $payment);
 
             default:
 
@@ -6526,7 +6630,7 @@ trait Authorize
     protected function canRunOtpPaymentFlow(Payment\Entity $payment, array $gatewayInput = []): bool
     {
         // All the IVR terminal use Otp payment flow regardless of their method
-        if ($payment->terminal->isIvr() === true)
+        if ($payment->hasTerminal() === true and $payment->terminal->isIvr() === true)
         {
             if ($payment->getAuthType() === Payment\AuthType::_3DS)
             {
@@ -6797,9 +6901,9 @@ trait Authorize
         return false;
     }
 
-    protected function canRunGooglePayCardPaymentFlow($payment)
+    protected function canRunGooglePayPaymentFlow($payment)
     {
-        if ($payment->isGooglePayCard() === true)
+        if ($payment->isGooglePayCard() === true or $payment->isGooglePay() === true)
         {
             return true;
         }
@@ -7101,6 +7205,13 @@ trait Authorize
         if (($merchantMethods === null) or
             ($merchantMethods->isUPIEnabled() === false))
         {
+            if ($payment->isGooglePay() === true)
+            {
+                $payment->unsetGooglePayMethod(Method::UPI);
+
+                return;
+            }
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT);
         }
@@ -7117,9 +7228,24 @@ trait Authorize
 
         if (($isIntentType === true) && ($methods->isUpiIntentEnabled() === false) && (in_array($upiProvider, Payment\UpiProvider::$omnichannelProviders) === false))
         {
+            // unsetting upi method here as for gpay,
+            // upi payment processed as intent flow
+            if ($payment->isGooglePay() === true)
+            {
+                $payment->unsetGooglePayMethod(Method::UPI);
+
+                return;
+            }
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INTENT_NOT_ENABLED_FOR_MERCHANT);
         }
+
+        if ($payment->isGooglePay() === true)
+        {
+            return;
+        }
+
         else if (!$isIntentType && ($methods->isUpiCollectEnabled() === false))
         {
             throw new Exception\BadRequestException(
@@ -7231,11 +7357,18 @@ trait Authorize
 
         if ($merchantMethods->isCardEnabled() === false)
         {
+            if ($payment->isGooglePay() === true)
+            {
+                $payment->unsetGooglePayMethod(Method::CARD);
+
+                return;
+            }
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENABLED_FOR_MERCHANT);
         }
 
-        if ($payment->isGooglePayCard() === true)
+        if ($payment->isGooglePayCard() === true || $payment->isGooglePay() === true)
         {
             return;
         }
@@ -7402,6 +7535,13 @@ trait Authorize
     {
         if ($payment->merchant->isFeatureEnabled(Feature\Constants::DISABLE_UPI_INTENT) === true)
         {
+            if ($payment->isGooglePay())
+            {
+                $payment->unsetGooglePayMethod(Payment\Method::UPI);
+
+                return;
+            }
+
             throw new Exception\BadRequestValidationFailureException(
                 'UPI intent is not enabled for the merchant');
         }
@@ -8087,6 +8227,11 @@ trait Authorize
             return false;
         }
 
+        if (empty($payment->getGooglePayMethods()) === false)
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -8105,6 +8250,7 @@ trait Authorize
          * 6. BharathQR payment
          * 7. Payment receiver is VPA
          * 8. Payment is of Google pay cards
+         * 9. Payment is of Google pay provider
          */
         if (($this->isJsonRoute === false) or
             ($payment->isRecurringTypeAuto() === true) or
@@ -8115,7 +8261,8 @@ trait Authorize
             ($payment->isAppCred() === true) or
             ($payment->isVisaSafeClickPayment() === true) or
             ($payment->isNach() === true) or
-            ($payment->isGooglePayCard() === true))
+            ($payment->isGooglePayCard() === true) or
+            (empty($payment->getGooglePayMethods()) === false))
         {
             return false;
         }
@@ -8977,5 +9124,255 @@ trait Authorize
         }
 
         return false;
+    }
+
+    /**
+     * This function is currently supported for Gpay only
+     * Used to select terminals for the supported application methods
+     * @param Payment\Entity $payment
+     *
+     * @throws Exception\RuntimeException
+     */
+    protected function setSelectedTerminalsForApplicationMethodsIfApplicable(Payment\Entity $payment)
+    {
+        $application = $payment->getApplication();
+
+        if (isset($application) === false)
+        {
+            return;
+        }
+
+        switch ($application)
+        {
+            case Payment\Entity::GOOGLE_PAY:
+
+                if ($payment->isGooglePay() === false)
+                {
+                    return ;
+                }
+
+                $methodTerminals = $this->separateMethodSpecificTerminalsForGooglePay();
+
+                if (isset($methodTerminals[Method::CARD]))
+                {
+                    $this->selectedTerminals = [];
+
+                    $cardNetworks = $this->fetchCardNetworksSupportedForGooglePay($methodTerminals[Method::CARD]);
+
+                    $payment->setGooglePayCardNetworks($cardNetworks);
+                }
+
+                if (isset($methodTerminals[Method::UPI]))
+                {
+                    $this->selectedTerminals = $methodTerminals[Method::UPI];
+                    // setting method as UPI here as this is required for aggregator gateway call
+                    $this->payment->setMethod(Method::UPI);
+                }
+
+                $googlePayMethods = $payment->getGooglePayMethods();
+
+                $this->trace->info(
+                    TraceCode::GOOGLE_PAY_SUPPORTED_METHODS,
+                    [
+                        'payment'          => $payment->getId(),
+                        'googlePayMethods' => $googlePayMethods
+                    ]);
+
+                if(empty($googlePayMethods))
+                {
+                    throw new Exception\RuntimeException(
+                        'No terminal found.',
+                        ['payment' => $this->payment->toArrayAdmin()],
+                        null,
+                        ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND);
+                }
+
+                break;
+        }
+    }
+
+    /**
+     * @param Payment\Entity $payment
+     * @param array $input
+     * @param $request
+     * @param array $gatewayInput
+     * @return mixed
+     */
+    protected function callAuthenticationGatewayBasedOnApplicationIfApplicable(Payment\Entity $payment, array $input, $request, array & $gatewayInput)
+    {
+        $application = $payment->getApplication();
+
+        if (isset($application) === false)
+        {
+            return $request;
+        }
+
+        switch ($application)
+        {
+            case Payment\Entity::GOOGLE_PAY:
+
+                return $this->callGooglePayAuthenticationGateway($payment, $request, $input, $gatewayInput);
+        }
+
+        return $request;
+    }
+
+    /**
+     * @param Payment\Entity $payment
+     * @param $gatewayInput
+     * @param array $input
+     * @param $request
+     */
+    protected function updateInputWithUpiParamsIfApplicable(Payment\Entity $payment, $gatewayInput, array & $input, $request)
+    {
+        if ($payment->isGooglePayMethodSupported(Method::UPI) and
+            isset($request['data']) and
+            isset($request['data']['intent_url']))
+        {
+            $input['upi'] = $gatewayInput['upi'];
+            parse_str(str_replace('upi://pay?', '', $request['data']['intent_url']), $params);
+            $input['upi']['params'] = $params;
+            $input['upi']['params']['url'] = $request['data']['intent_url'];
+        }
+    }
+
+    /**
+     * @param $paymentMethod
+     * @param Payment\Entity $payment
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
+     */
+    protected function coreVerifyPaymentMethodEnabled($paymentMethod, Payment\Entity $payment): void
+    {
+        switch ($paymentMethod)
+        {
+            case Payment\Method::CARD:
+                $this->verifyCardEnabledInLive($payment);
+                break;
+
+            case Payment\Method::NETBANKING:
+                $this->verifyBankEnabled($payment);
+                break;
+
+            case Payment\Method::WALLET:
+                $this->verifyWalletEnabled($payment);
+                break;
+
+            case Payment\Method::EMI:
+                $this->verifyEmiEnabled($payment);
+                break;
+
+            case Payment\Method::UPI:
+                $this->verifyUpiEnabled($payment);
+                break;
+
+            case Payment\Method::BANK_TRANSFER:
+                $this->verifyBankTransferEnabled();
+                break;
+
+            case Payment\Method::AEPS:
+                $this->verifyAepsEnabled();
+                break;
+
+            case Payment\Method::EMANDATE:
+                $this->verifyEmandateEnabled();
+                break;
+
+            case Payment\Method::CARDLESS_EMI:
+                $this->verifyCardlessEmiEnabled();
+                break;
+
+            case Payment\Method::PAYLATER:
+                $this->verifyPayLaterEnabled();
+                break;
+
+            case Payment\Method::NACH:
+                $this->verifyNachEnabled();
+                break;
+
+            case Payment\Method::APP:
+                $this->verifyAppEnabled($payment);
+                break;
+
+            default:
+                throw new Exception\LogicException(
+                    'Should not reach here.',
+                    null,
+                    ['payment_method' => $paymentMethod]);
+        }
+    }
+
+    /**
+     * @param Payment\Entity $payment
+     * @param $request
+     * @param array $input
+     * @param array $gatewayInput
+     * @return mixed
+     */
+    protected function callGooglePayAuthenticationGateway(Payment\Entity $payment, $request, array $input, array $gatewayInput)
+    {
+        if (empty($payment->getGooglePayMethods()) === true)
+        {
+            return $request;
+        }
+
+        $input['payment'] = $payment;
+
+        // Pushing to kafka here in case not pushed earlier
+        // This can happen in case only cards method is enabled for
+        // google_pay payment
+        if ($payment->getIsPushedToKafka() === null)
+        {
+            $isPushedToKafka = $this->pushPaymentToKafkaForVerify($this->payment);
+
+            $payment->setIsPushedToKafka($isPushedToKafka);
+        }
+
+        $this->updateAndSavePaymentFields($payment);
+
+        $this->tracePaymentAndPushEvents($payment);
+
+        $this->updateInputWithUpiParamsIfApplicable($payment, $gatewayInput, $input, $request);
+
+        return $this->app['gateway']->call(Gateway::GOOGLE_PAY, GatewayAction::AUTHENTICATE, $input, $this->mode);
+    }
+
+    /**
+     * @param Payment\Entity $payment
+     */
+    protected function updateAndSavePaymentFields(Payment\Entity $payment): void
+    {
+        // Resetting method here as it was set to 'upi' during upi gateway call
+        $payment->setMethod(Method::UNSELECTED);
+
+        $payment->setAuthenticationGateway(Gateway::GOOGLE_PAY);
+
+        $payment->saveOrFail();
+    }
+
+    /**
+     * @return bool
+     */
+    protected function checkIfRedirectRoute(): bool
+    {
+        $routeName = $this->app['request.ctx']->getRoute();
+
+        $this->isJsonRoute = $this->app['api.route']->isJsonRoute($routeName);
+
+        return (($this->app['basicauth']->isPrivateAuth() === true) and
+            ($this->app['api.route']->isJsonRoute($routeName) === false));
+    }
+
+    /**
+     * @param Payment\Entity $payment
+     */
+    protected function tracePaymentAndPushEvents(Payment\Entity $payment): void
+    {
+            $this->eventPaymentCreated();
+
+            $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
+
+            $this->segment->trackPayment($payment, TraceCode::PAYMENT_CREATED);
     }
 }

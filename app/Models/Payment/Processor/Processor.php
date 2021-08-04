@@ -1553,6 +1553,14 @@ class Processor
             return;
         }
 
+        // For google_pay, if method not received in the request,
+        // payment creation happens with 'unselected' method.
+        if (!isset($input[Payment\Entity::METHOD]) and (isset($input[Payment\Entity::PROVIDER]) and $input[Payment\Entity::PROVIDER] === E::GOOGLE_PAY))
+        {
+            $input[Payment\Entity::METHOD] = Payment\Method::UNSELECTED;
+            return;
+        }
+
         if ((isset($input[Payment\Entity::TOKEN]) === true) and
             (isset($input[Payment\Entity::CUSTOMER_ID]) === true))
         {
@@ -1664,6 +1672,7 @@ class Processor
 
         if ((in_array($method, $cpsEnabledMethods, true) === false) or
             ($payment->isGooglePayCard() === true) or
+            (empty($payment->getGooglePayMethods()) === false) or
             ($payment->isAppCred() === true))
         {
             $payment->disableCpsRoute();
@@ -3193,6 +3202,8 @@ class Processor
 
         $this->setApplicationIfApplicable($payment, $input);
 
+        $this->setGooglePayMethodsIfApplicable($payment, $input);
+
         $this->setForceTerminalIdIfApplicable($payment, $input);
 
         $metadata = $payment->getMetadata();
@@ -3832,6 +3843,21 @@ class Processor
         if (isset($input['application']) === true)
         {
             $payment->setApplication($input['application']);
+        }
+
+        if (isset($input['provider']) and
+           $input['provider'] === E::GOOGLE_PAY and
+           $input['method'] === Payment\Method::UNSELECTED)
+        {
+            $payment->setApplication($input['provider']);
+        }
+    }
+
+    protected function setGooglePayMethodsIfApplicable(Payment\Entity $payment, $input)
+    {
+        if($payment->isGooglePay())
+        {
+            $payment->setGooglePayMethods(Payment\Method::GOOGLE_PAY_SUPPORTED_METHODS);
         }
     }
 
@@ -5040,8 +5066,14 @@ class Processor
 
         $gateway = $payment->getGateway();
 
-        if (($gateway !== null) and
-            (array_search($gateway, Payment\Gateway::$verifyDisabled) === false))
+        if (empty($payment->getGooglePayMethods()) === false)
+        {
+            $gateway = Payment\Entity::GOOGLE_PAY;
+        }
+
+        if ((($gateway !== null) and
+            (array_search($gateway, Payment\Gateway::$verifyDisabled) === false)))
+
         {
             $variant = $this->app->razorx->getTreatment(
                 $gateway,
@@ -5049,7 +5081,10 @@ class Processor
                 $this->mode
             );
 
-            if ((str_starts_with($variant, 'on') === true) and
+            // for Gpay, we have to push to kafka always
+            // irrespective of the experiment variant
+            if (((str_starts_with($variant, 'on') === true) or
+                ($gateway === Payment\Entity::GOOGLE_PAY)) and
                 ($this->app->runningUnitTests() === false))
             {
                 $isVerifyNewFlow = true;

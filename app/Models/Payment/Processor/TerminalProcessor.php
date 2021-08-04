@@ -421,7 +421,8 @@ class TerminalProcessor extends Base\Core
     {
         $options = new Terminal\Options;
 
-        if ($this->payment->isMethodCardOrEmi() === true)
+        if (($this->payment->isMethodCardOrEmi() === true) or
+            ($this->payment->isGooglePay() and in_array(Payment\Method::CARD, $this->payment->getGooglePayMethods())))
         {
             $failedTerminalIds = $this->getFailedTerminalIds();
 

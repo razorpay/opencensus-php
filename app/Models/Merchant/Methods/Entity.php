@@ -53,6 +53,7 @@ class Entity extends Base\PublicEntity
     const PHONEPE_SWITCH    = 'phonepeswitch';
     const PAYPAL            = 'paypal';
     const GOOGLE_PAY_CARDS  = 'google_pay_cards';
+    const GPAY              = 'gpay';
     const APPS              = 'apps';
     const HDFC_DEBIT_EMI    = 'hdfc_debit_emi';
 

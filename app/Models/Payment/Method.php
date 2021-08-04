@@ -42,6 +42,10 @@ class Method
         self::BANK_TRANSFER => 'Bank Transfer',
     ];
 
+    protected static $preAuthorizeGooglePayMethods = [
+        self::UNSELECTED   => 'unselected',
+    ];
+
     public static $bankMethods = [
         self::NETBANKING,
         self::AEPS,
@@ -85,6 +89,11 @@ class Method
         self::NETBANKING,
     ];
 
+    const GOOGLE_PAY_SUPPORTED_METHODS = [
+        self::CARD,
+        self::UPI,
+    ];
+
     public static function formatted($method)
     {
         return self::$methods[$method];
@@ -93,6 +102,11 @@ class Method
     public static function getAllPaymentMethods()
     {
         return array_keys(self::$methods);
+    }
+
+    public static function getPreAuthorizeGooglePayMethods()
+    {
+        return array_keys(self::$preAuthorizeGooglePayMethods);
     }
 
     public static function getNonEsPaymentMethods()
@@ -109,6 +123,11 @@ class Method
     {
         return ((in_array($method, self::getNonEsPaymentMethods(), true) === false) and
                 (in_array($method, self::getAllPaymentMethods(), true) === true));
+    }
+
+    public static function isValidPreAuthorizeGooglePayMethod($method)
+    {
+        return in_array($method, self::getPreAuthorizeGooglePayMethods(), true);
     }
 
     public static function validateMethod($method)

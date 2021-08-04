@@ -70,7 +70,9 @@ class Payment extends Validator
     {
         $isValid = Method::isValid($value);
 
-        if ($isValid === false)
+        $googlePayMethod = Method::isValidPreAuthorizeGooglePayMethod($value);
+
+        if ($isValid === false and $googlePayMethod === false)
         {
             throw new Exception\BadRequestValidationFailureException('The selected method is invalid.');
         }

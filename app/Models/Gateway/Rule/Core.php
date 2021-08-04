@@ -237,7 +237,7 @@ class Core extends Base\Core
         $params = [
             Entity::MERCHANT_ID   => $merchant->getId(),
             Entity::ORG_ID        => $merchant->getOrgId(),
-            Entity::METHOD        => $payment->getMethod(),
+            Entity::METHOD        => $input['payment']['method'],
             Entity::INTERNATIONAL => false,
             Entity::CATEGORY      => $merchant->getCategory(),
             Entity::CATEGORY2     => $merchant->getCategory2(),

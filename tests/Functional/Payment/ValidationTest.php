@@ -78,6 +78,18 @@ class PaymentValidationTest extends TestCase
         });
     }
 
+    public function testInvalidMethod()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'unselected';
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
     public function testDescriptionMissing()
     {
         $payment = $this->getDefaultPaymentArray();

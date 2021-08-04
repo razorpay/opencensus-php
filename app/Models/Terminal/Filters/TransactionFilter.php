@@ -426,7 +426,8 @@ class TransactionFilter extends Terminal\Filter
                 }
             }
             // Flow is intent for UPI QR on VA and direct payments
-            else if ($flow === 'intent')
+            // also for Gpay Upi flow will be intent
+            else if ($flow === 'intent' or $payment->isGooglePayMethodSupported(Method::UPI))
             {
                 $gateway = $terminal->getGateway();
 
@@ -1090,7 +1091,11 @@ class TransactionFilter extends Terminal\Filter
         switch ($application)
         {
             case 'google_pay':
-                return ($terminal->isTokenizationSupported() === true);
+                if ($payment['method'] === Method::CARD)
+                {
+                    return ($terminal->isTokenizationSupported() === true);
+                }
+                return true;
             case 'visasafeclick_stepup':
                 return ($terminal->isGateway(Gateway::CYBERSOURCE) === true);
             default:

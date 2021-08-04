@@ -2243,6 +2243,10 @@ class Service extends Base\Service
 
         $allMethods = Payment\Method::getAllPaymentMethods();
 
+        $preAuthorizeGooglePayMethods = Payment\Method::getPreAuthorizeGooglePayMethods();
+
+        $allMethods = array_merge($allMethods, $preAuthorizeGooglePayMethods);
+
         if (isset($input['methods']) === true)
         {
             $allMethods = $input['methods'] ;

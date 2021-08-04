@@ -191,6 +191,7 @@ class Core extends Base\Core
             Payment\Method::PAYLATER     => [],
             Entity::GOOGLE_PAY_CARDS     => false,
             Payment\Method::APP          => [],
+            Entity::GPAY                 => false,
             Entity::EMI_TYPES            => [],
             Entity::DEBIT_EMI_PROVIDERS  => [],
         ];
@@ -276,6 +277,11 @@ class Core extends Base\Core
         if ($merchant->isFeatureEnabled(Constants::GOOGLE_PAY_CARDS) === true)
         {
             $data[Entity::GOOGLE_PAY_CARDS] = true;
+        }
+
+        if ($merchant->isGooglePayEnabled())
+        {
+            $data[Entity::GPAY] = true;
         }
 
         return $data;

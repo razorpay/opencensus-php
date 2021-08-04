@@ -298,6 +298,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     protected $forceTerminalId    = null;
 
+    protected $googlePayMethods   = [];
+
+    protected $googlePayCardNetworks   = [];
+
     protected $fillable = [
         self::ID,
         self::AMOUNT,
@@ -1387,7 +1391,43 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     }
 
     /**
-     * Sets isGooglePayMethodChangeApplicable property true, when Payment method
+     * Set Gpay supported methods
+     *
+     * @param $googlePayMethods
+     */
+    public function setGooglePayMethods(array $googlePayMethods)
+    {
+        $this->googlePayMethods = $googlePayMethods;
+    }
+
+    /**
+     * Sets the value of GPay card networks supported for a particular payment
+     * This value is required in Gpay Card coproto response
+     *
+     * @param $googlePayCardNetworks
+     */
+    public function setGooglePayCardNetworks(array $googlePayCardNetworks)
+    {
+        $this->googlePayCardNetworks = $googlePayCardNetworks;
+    }
+
+    /**
+     * Used to unset any Gpay supported method from googlePayMethods array
+     * basis various conditions,
+     * for eg. method not enabled on the merchant can be one such
+     * condition. Finally whatever methods remain in this array
+     * becomes a part of Gpay coproto response
+     *
+     * @param $googlePayMethod
+     */
+    public function unsetGooglePayMethod($googlePayMethod)
+    {
+        if (($key = array_search($googlePayMethod, $this->googlePayMethods)) !== false) {
+            unset($this->googlePayMethods[$key]);
+        }
+    }
+
+     /* Sets isGooglePayMethodChangeApplicable property true, when Payment method
      * is unselected and authentication gateway is google_pay.
      * Property is set to false otherwise.
      *
@@ -2237,6 +2277,34 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($this->application === 'google_pay'));
     }
 
+    /**
+     * This purpose of this function is to identify Gpay payments
+     * For Gpay payments, method will not be set
+     */
+    public function isGooglePay()
+    {
+        return (($this->getMethod() === Method::UNSELECTED) and
+                ($this->application === self::GOOGLE_PAY));
+    }
+
+    /**
+     * We can have multiple methods supported for GPay
+     * Returns true if a particular method is enabled for Gpay payments
+     *
+     * @param $method
+     * @return bool
+     */
+    public function isGooglePayMethodSupported($method)
+    {
+        if (($this->isGooglePay() === false) or
+             empty($this->getGooglePayMethods()) === true)
+        {
+            return false;
+        }
+
+        return (in_array($method, $this->getGooglePayMethods()) === true);
+    }
+
     public function isBharatQr()
     {
         return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
@@ -2244,6 +2312,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isFlowIntent(): bool
     {
+        if ($this->isGooglePayMethodSupported(Method::UPI))
+        {
+            return true;
+        }
+
         return ($this->getMetadata('flow') === Flow::INTENT);
     }
 
@@ -2694,6 +2767,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->application;
     }
 
+    public function getGooglePayMethods()
+    {
+        return $this->googlePayMethods;
+    }
+
+    public function getGooglePayCardNetworks()
+    {
+        return $this->googlePayCardNetworks;
+    }
+
     public function getIsGooglePayMethodChangeApplicable()
     {
         return $this->isGooglePayMethodChangeApplicable;
@@ -2847,6 +2930,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function getMethodWithDetail()
     {
+        // Gpay payment initially would have method set as unselected
+        // which won't be there in our list of supported payment methods
+        if (($this->getAuthenticationGateway() === self::GOOGLE_PAY) and
+            ($this->getMethod() === Method::UNSELECTED))
+        {
+            return [$this->getMethod(), ''];
+        }
+
         $method = Method::formatted($this->getMethod());
 
         switch($this->getMethod())
@@ -4776,6 +4867,31 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $allowedMerchantsForDeficit = config()->get('app.amount_difference_allowed_authorized');
 
         return in_array($this->getMerchantId(), $allowedMerchantsForDeficit, true);
+    }
+    /*
+   * Fetch methods supported for a payment
+   * For Gpay, we fetch all Gpay supported methods
+   * For non Gpay payments, simply push the method field
+   * to an array and return
+
+    * @return array of methods
+   *
+   */
+    public function fetchPaymentMethods()
+    {
+        $paymentMethods = [];
+
+        if ($this->isGooglePay())
+        {
+            $paymentMethods = $this->getGooglePayMethods();
+        }
+
+        else
+        {
+            array_push($paymentMethods, $this->getMethod());
+        }
+
+        return $paymentMethods;
     }
 
     public function getDiscountRatioIfApplicable()

@@ -5,9 +5,11 @@ namespace RZP\Gateway\GooglePay;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Upi\Base\IntentParams;
 
 class Gateway extends Base\Gateway
 {
@@ -19,7 +21,7 @@ class Gateway extends Base\Gateway
     const PAYMENT_TYPE            = 'CARD';
     const PAYMENT_TOKEN_TYPE      = 'PAYMENT_GATEWAY';
     const PRICE_STATUS            = 'FINAL';
-    const SUPPORTED_CARD_NETWORKS = ['VISA', 'MASTERCARD'];
+    const SUPPORTED_CARD_NETWORKS = [Network::VISA, Network::MC];
 
     protected $map = [
         'data'      => Entity::RAW,
@@ -32,9 +34,7 @@ class Gateway extends Base\Gateway
 
     public function authenticate(array $input)
     {
-        $payment = $input['payment'];
-
-        return $this->googlePayCardCoprotoData($payment);
+        return $this->googlePayCoprotoData($input);
     }
 
     public function omniPay(array $input)
@@ -299,9 +299,11 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
-    protected function googlePayCardCoprotoData($payment)
+    protected function googlePayCoprotoData($input)
     {
-        $bundle = $this->getGooglePayBundle($payment);
+        $bundle = $this->getGooglePayBundle($input);
+
+        $this->logBundle($bundle);
 
         $data['method']  = 'sdk';
         $data['content'] = [ $bundle ];
@@ -381,23 +383,24 @@ class Gateway extends Base\Gateway
             ]);
     }
 
-    protected function getGooglePayBundle($payment)
+    protected function getGooglePayBundle($input)
     {
-        $gatewayParameters = [
-            'gateway'              => self::GATEWAY_NAME,
-            'gatewayMerchantId'    => $payment[Payment\Entity::MERCHANT_ID],
-            'gatewayTransactionId' => $payment[Payment\Entity::PUBLIC_ID],
-        ];
+        $payment = $input['payment'];
 
-        $paymentDetail = [];
-        $paymentDetail['type'] = self::PAYMENT_TYPE;
-        $paymentDetail['parameters'] = [
-            'allowedCardNetworks' => self::SUPPORTED_CARD_NETWORKS,
-        ];
-        $paymentDetail['tokenizationSpecification'] = [
-            'type'       => self::PAYMENT_TOKEN_TYPE,
-            'parameters' => $gatewayParameters,
-        ];
+        $paymentDetails = [];
+
+        $methods = $this->fetchMethod($payment);
+
+        foreach ($methods as $method)
+        {
+            $paymentDetail = [
+                'type'                          => strtoupper($method),
+                'parameters'                    => $this->fetchMethodParameters($method, $input),
+                'tokenizationSpecification'     => $this->fetchTokenizationSpecifications($method, $payment),
+            ];
+
+            array_push($paymentDetails, $paymentDetail);
+        }
 
         $transactionInfo = [
             'currencyCode'     => $payment[Payment\Entity::CURRENCY],
@@ -409,10 +412,120 @@ class Gateway extends Base\Gateway
         return [
                 'apiVersion'            => 2,
                 'apiVersionMinor'       => 0,
-                'allowedPaymentMethods' => [
-                    $paymentDetail
-                ],
+                'allowedPaymentMethods' => $paymentDetails,
                 'transactionInfo'       => $transactionInfo,
             ];
+    }
+
+    protected function fetchMethodParameters($method, $input)
+    {
+        $payment = $input['payment'];
+
+        $parameters = [];
+
+        switch ($method)
+        {
+            case Payment\Method::UPI:
+
+                $upiParams = $input['upi']['params'];
+
+                $parameters = [
+                    'payeeVpa'                  =>  $upiParams[IntentParams::PAYEE_ADDRESS],
+                    'payeeName'                 =>  $upiParams[IntentParams::PAYEE_NAME],
+                    'referenceUrl'              =>  $payment->merchant->getWebsite(),
+                    'mcc'                       =>  $upiParams[IntentParams::MCC],
+                    'transactionReferenceId'    =>  $upiParams[IntentParams::TXN_REF_ID],
+                ];
+
+                break;
+
+            case Payment\Method::CARD:
+
+                $parameters = [
+                    'allowedCardNetworks'       =>  $this->fetchAllowedCardNetworks($payment),
+                ];
+
+                break;
+        }
+
+        return $parameters;
+    }
+
+    protected function fetchTokenizationSpecifications($method, $payment)
+    {
+        $tokenizationSpecifications = [];
+
+        switch ($method)
+        {
+            case Payment\Method::UPI:
+
+                $tokenizationSpecifications = [
+                    'type'                      =>  "DIRECT"
+                ];
+
+                break;
+
+            case Payment\Method::CARD:
+
+                $gatewayParameters = [
+                    'gateway'              => self::GATEWAY_NAME,
+                    'gatewayMerchantId'    => $payment[Payment\Entity::MERCHANT_ID],
+                    'gatewayTransactionId' => $payment[Payment\Entity::ID],
+                ];
+
+                $tokenizationSpecifications = [
+                    'type'                      =>  self::PAYMENT_TOKEN_TYPE,
+                    'parameters'                =>  $gatewayParameters,
+                ];
+
+                break;
+        }
+
+        return $tokenizationSpecifications;
+    }
+
+    protected function fetchMethod($payment)
+    {
+        $methods = [];
+
+        if ($payment['method'] === Payment\Method::UNSELECTED)
+        {
+            $methods = $payment->fetchPaymentMethods();
+        }
+        else
+        {
+            array_push($methods, $payment['method']);
+        }
+
+        return $methods;
+    }
+
+    /**
+     * @param $payment
+     * @return array
+     */
+    protected function fetchAllowedCardNetworks($payment): array
+    {
+        $supportedCardNetworkNames = Network::getFullNames(self::SUPPORTED_CARD_NETWORKS);
+
+        if ($payment['method'] === Payment\Method::UNSELECTED)
+        {
+            $googlePayCardNetworkNames = Network::getFullNames($payment->getGooglePayCardNetworks());
+
+            $supportedCardNetworkNames = array_intersect($googlePayCardNetworkNames, $supportedCardNetworkNames);
+        }
+
+        $supportedCardNetworkNames = array_map( 'strtoupper', $supportedCardNetworkNames);
+
+        return $supportedCardNetworkNames;
+    }
+
+    protected function logBundle($bundle)
+    {
+        $this->trace->info(
+            TraceCode::GOOGLE_PAY_BUNDLE,
+            [
+                'bundle'    => $bundle,
+            ]);
     }
 }

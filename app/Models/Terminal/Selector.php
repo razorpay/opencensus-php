@@ -193,6 +193,10 @@ class Selector extends Base\Core
 
         $sortedTerminals = [];
 
+        $methods = $payment->fetchPaymentMethods();
+
+        $isGooglePay = $payment->isGooglePay();
+
         // checking filtered terminals and razorX experiment for smart routing
         if ($this->shouldHitRoutingService($payment->getId()) === true)
         {
@@ -206,15 +210,27 @@ class Selector extends Base\Core
                     $terminalSetSentToSmartRouting[$terminal['id']] = $terminal;
                 }
 
-                // calling the smart routing service for sorted terminals set
-                $terminalSetReceivedFromSmartRouting = $this->sendParametersToSmartRoutingService($payment,
-                    $this->input['merchant'], $allTerminals, $sortedTerminals);
+                $terminalSetReceivedFromSmartRouting = [];
+
+                foreach ($methods as $method)
+                {
+                    $payment->setMethod($method);
+
+                    // calling the smart routing service for sorted terminals set
+                    $methodTerminalSetReceivedFromSmartRouting = $this->sendParametersToSmartRoutingService($payment,
+                        $this->input['merchant'], $allTerminals, $sortedTerminals);
+
+                    if($methodTerminalSetReceivedFromSmartRouting !== null)
+                    {
+                        $terminalSetReceivedFromSmartRouting = array_merge($terminalSetReceivedFromSmartRouting, $methodTerminalSetReceivedFromSmartRouting);
+                    }
+                }
 
                 $terminalIds = [];
 
                 $newSelectedTerminals = [];
 
-                if ($terminalSetReceivedFromSmartRouting !== null)
+                if (empty($terminalSetReceivedFromSmartRouting) === false)
                 {
                     if ($fetchApiTerminals === true) {
                         // creating new sorted terminals using order received from smart routing
@@ -314,9 +330,25 @@ class Selector extends Base\Core
         }
         else
         {
-            $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
+            $sortedTerminals =[];
+
+            foreach ($methods as $method)
+            {
+                $payment->setMethod($method);
+
+                $sortedMethodTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
+
+                if (empty($sortedMethodTerminals) === false)
+                {
+                    $sortedTerminals = array_merge($sortedTerminals, $sortedMethodTerminals);
+                }
+            }
         }
 
+        if($isGooglePay === true)
+        {
+            $payment->setMethod(Method::UNSELECTED);
+        }
 
         if (empty($sortedTerminals) === true)
         {

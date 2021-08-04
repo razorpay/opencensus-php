@@ -710,6 +710,28 @@ class AuthorizeTest extends TestCase
         $this->assertEquals(3, $content['count']);
     }
 
+    public function testTimeoutOldGooglePayPayment()
+    {
+        $payment = $this->fixtures->create('payment:status_created',
+            [
+                'created_at' => time() - (60 * 100),
+                'authentication_gateway' => 'google_pay',
+                'method' => 'unselected'
+            ]);
+
+        $content = $this->timeoutOldPayment();
+
+        $this->assertEquals($content['count'], 1);
+
+        $testData = $this->testData['testTimeoutOldPayment'];
+
+        $testData['request']['url'] = '/payments/' . $payment['public_id'];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testTimeoutOldPaymentWithErrorRetention()
     {
         $payment = $this->fixtures->create('payment:status_created', [

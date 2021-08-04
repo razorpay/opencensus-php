@@ -55,7 +55,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         'amount'                        => 'required|integer',
         'currency'                      => 'required|string|size:3|custom',
-        'method'                        => 'required|string|custom',
+        'method'                        => 'required|string',
         'vpa'                           => 'sometimes_if:method,upi|string|filled|max:100|custom',
         'aadhaar'                       => 'required_if:method,aeps|array',
         'aadhaar.number'                => 'required_if:method,aeps|size:12|string',
@@ -302,6 +302,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
+        'method',
         'card_key',
         'amount',
         'bank',
@@ -535,8 +536,22 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateMethod($attribute, $method)
+    protected function validateMethod(array $input)
     {
+        $method = $input[Entity::METHOD];
+
+        if (isset($input[Entity::PROVIDER]) and $input[Entity::PROVIDER] === Entity::GOOGLE_PAY)
+        {
+            if ($method === Method::UNSELECTED)
+            {
+                return;
+            }
+
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid payment method given: ' . $method .
+                '. Method should not be passed for payments where provider is google_pay');
+        }
+
         if (Method::isValid($method) === false)
         {
             throw new Exception\BadRequestValidationFailureException(

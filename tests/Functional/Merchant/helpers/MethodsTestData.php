@@ -307,6 +307,17 @@ return [
         ],
     ],
 
+    'testFetchGooglePayMethod' => [
+        'request' => [
+            'url' => '/merchant/methods',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testEnableCreditEmi' => [
         'request' => [
             'url' => '/merchant/methods',

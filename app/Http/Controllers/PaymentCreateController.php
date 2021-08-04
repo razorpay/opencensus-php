@@ -1006,6 +1006,11 @@ class PaymentCreateController extends Controller
                 if ((isset($data['application_name']) === true) and
                     ($data['application_name'] === 'google_pay'))
                 {
+                    if ($data['redirect'] === true)
+                    {
+                        return $this->generateApplicationRedirectResponse($data);
+                    }
+
                     return $data;
                 }
             }
@@ -1044,6 +1049,11 @@ class PaymentCreateController extends Controller
                     ($data['type'] === 'async'))
             {
                 return $this->generateUpiJson($data);
+            }
+
+            elseif ($data['type'] === 'application')
+            {
+                return $this->generateApplicationJson($data);
             }
         }
 
@@ -1181,6 +1191,111 @@ class PaymentCreateController extends Controller
         if (empty($data[$metadata]) === false)
         {
             $response[$metadata] = $data[$metadata];
+        }
+
+        return $response;
+    }
+
+    protected function generateApplicationJson($data)
+    {
+        $response = [];
+
+        $response['razorpay_payment_id'] = $data['payment_id'];
+
+        $next = [];
+
+        if ((isset($data['application_name']) === false))
+        {
+            return ;
+        }
+
+        if ($data['application_name'] === 'google_pay')
+        {
+            $next = $this->generateGooglePayNextActionList($data);
+        }
+
+        $response['next'] = $next;
+
+        return $response;
+    }
+
+    protected function generateGooglePayNextActionList($data)
+    {
+        $request = $data['request'];
+
+        $next = [];
+
+        if(isset($request['method']) && $request['method'] === 'sdk')
+        {
+            array_push($next,
+                [
+                    "action"       => "invoke_sdk",
+                    "provider"     => "google_pay",
+                    "data"         => $this->generateGooglePayS2sData($request['content'][0]['allowedPaymentMethods']),
+                ],
+                [
+                    "action"       => "poll",
+                    "url"          => $this->route->getUrl('payment_fetch_by_id', ['id' => $data['payment_id']]),
+                ]
+            );
+        }
+
+        return $next;
+    }
+
+    protected function generateGooglePayS2sData(array $methodsData)
+    {
+        $data = [];
+
+        foreach ($methodsData as $methodData)
+        {
+            $type                           = strtolower($methodData['type']);
+            $parameters                     = $methodData['parameters'];
+            $tokenizationSpecification      = $methodData['tokenizationSpecification'];
+
+            $typeData = [];
+
+            switch ($type)
+            {
+                case Method::CARD:
+                    $typeData = [
+                        'supported_networks'            => $parameters['allowedCardNetworks'],
+                        'gateway_reference_id'          => $tokenizationSpecification['parameters']['gatewayTransactionId'],
+                    ];
+
+                    break;
+
+                case Method::UPI:
+                    $typeData = [
+                        'payee_vpa'                     => $parameters['payeeVpa'],
+                        'mcc'                           => $parameters['mcc'],
+                        'gateway_reference_id'          => $parameters['transactionReferenceId'],
+                    ];
+
+                    break;
+            }
+
+            $data = array_add($data, $type, $typeData);
+        }
+
+        $googlePayData['google_pay'] = $data;
+
+        return $googlePayData;
+    }
+
+    protected function generateApplicationRedirectResponse($data)
+    {
+        $request = $data['request'];
+
+        $response = [];
+
+        if(isset($request['method']) && $request['method'] === 'sdk')
+        {
+            $response = [
+                'razorpay_payment_id'   => $data['payment_id'],
+                'provider'              => $data['application_name'],
+                'data'                  => $this->generateGooglePayS2sData($request['content'][0]['allowedPaymentMethods']),
+            ];
         }
 
         return $response;

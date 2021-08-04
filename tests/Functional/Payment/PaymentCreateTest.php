@@ -288,14 +288,22 @@ class PaymentCreateTest extends TestCase
 
         $response = $this->doS2SPrivateAuthJsonPayment($payment);
 
-        $this->assertEquals($response['type'], 'application');
-        $this->assertEquals($response['application_name'], 'google_pay');
-        $this->assertEquals($response['request']['method'], 'sdk');
+        $this->assertArrayHasKey('next', $response);
+
+        $this->assertEquals('invoke_sdk', $response['next'][0]['action']);
+
+        $this->assertEquals('google_pay', $response['next'][0]['provider']);
+
+        $this->assertArrayHasKey('card', $response['next'][0]['data']['google_pay']);
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['authentication_gateway'], 'google_pay');
+
+        $this->assertEquals($payment['method'], 'card');
+
         $this->assertEquals($payment['cps_route'], 0);
+
         $this->checkPaymentStatus($payment['id'], 'created');
     }
 
@@ -363,15 +371,19 @@ class PaymentCreateTest extends TestCase
 
         $response = $this->doS2SPrivateAuthPayment($googlePayPaymentCreateRequestData);
 
-        $this->assertEquals($response['type'], 'application');
+        $this->assertEquals('google_pay', $response['provider']);
 
-        $this->assertEquals($response['application_name'], 'google_pay');
+        $this->assertArrayHasKey('card', $response['data']['google_pay']);
 
-        $this->assertEquals($response['request']['method'], 'sdk');
+        $this->assertEquals(['VISA', 'MASTERCARD'], $response['data']['google_pay']['card']['supported_networks']);
+
+        $this->assertArrayHasKey('gateway_reference_id', $response['data']['google_pay']['card']);
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['authentication_gateway'], 'google_pay');
+
+        $this->assertEquals($payment['method'], 'card');
     }
 
     public function testCreateAutoRecurringPayment()

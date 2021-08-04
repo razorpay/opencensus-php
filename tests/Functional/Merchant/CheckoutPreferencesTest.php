@@ -502,6 +502,15 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertArrayHasKey('intent', $response['methods']['upi_type']);
     }
 
+    public function testGetCheckoutPreferencesForGpay()
+    {
+        $this->fixtures->merchant->addFeatures(Feature\Constants::GPAY);
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals(true, $response['methods']['gpay']);
+    }
+
     public function testGetCheckoutPreferencesForCardlessEmiTestMode()
     {
         $this->fixtures->merchant->enableCardlessEmi('10000000000000');

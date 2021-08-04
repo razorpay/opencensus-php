@@ -366,6 +366,21 @@ class MethodsTest extends TestCase
         $this->assertTrue($response[MerchantMethods::GOOGLE_PAY_CARDS]);
     }
 
+    public function testFetchGooglePayMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertFalse($response[MerchantMethods::GPAY]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::GPAY]);
+
+        $response = $this->startTest();
+
+        $this->assertTrue($response[MerchantMethods::GPAY]);
+    }
+
     public function testEnableCreditEmi()
     {
         $this->ba->proxyAuth();

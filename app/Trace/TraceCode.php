@@ -3399,6 +3399,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SELECTED_TERMINAL_IDS                                 = 'SELECTED_TERMINAL_IDS';
 
+    // Google Pay tracecodes
+    const GOOGLE_PAY_SUPPORTED_CARD_NETWORKS                    = 'GOOGLE_PAY_SUPPORTED_CARD_NETWORKS';
+    const GOOGLE_PAY_BUNDLE                                     = 'GOOGLE_PAY_BUNDLE';
+    const GOOGLE_PAY_SUPPORTED_METHODS                          = 'GOOGLE_PAY_SUPPORTED_METHODS';
+
     const PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR              = 'PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR';
 
     // PG Router Service Tracecodes

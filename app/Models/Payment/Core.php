@@ -199,8 +199,18 @@ class Core extends Base\Core
 
         $topic = env('REGISTER_PAYMENT_SCHEDULER_EVENT', 'register-payment-scheduler-event');
 
+        // for gpay, namespace would be provider_action
+        if (empty($payment->getGooglePayMethods()) === false)
+        {
+            $namespace = Payment\Entity::GOOGLE_PAY . '_verify';
+        }
+        else
+        {
+            $namespace = $payment->getMethod() . '_' . $payment->getGateway() . '_verify';
+        }
+
         $data = [
-            Constants::NAMESPACE    => $payment->getMethod() . '_' . $payment->getGateway() . '_verify',
+            Constants::NAMESPACE    => $namespace,
             Constants::ENTITY_ID    => $payment->getId(),
             Constants::ENTITY_TYPE  => 'payments',
             Constants::REMINDER_DATA => [

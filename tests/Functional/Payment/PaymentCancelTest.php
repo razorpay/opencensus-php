@@ -129,4 +129,33 @@ class PaymentCancelTest extends TestCase
 
         $this->assertEquals($content, $content2);
     }
+
+    public function testCancelPaymentWithUnselectedMethod()
+    {
+        $order = $this->createOrder(['payment_capture' => '1']);
+
+        $this->fixtures->merchant->addFeatures(['gpay']);
+
+        $this->fixtures->create(
+            'terminal',
+            [
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'cybersource',
+            ]
+        );
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['provider'] = 'google_pay';
+        unset($payment['method']);
+
+        $content = $this->doAuthPayment($payment);
+
+        $data = $this->testData['testCancelPaymentWithReason'];
+
+        $this->runRequestResponseFlow($data, function() use ($content)
+        {
+            $this->cancelPayment($content['payment_id']);
+        });
+    }
 }

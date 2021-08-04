@@ -151,6 +151,7 @@ class Constants
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const EXPOSE_SETTLED_BY               = 'expose_settled_by';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
+    const GPAY                            = 'gpay';
     const PAYPAL_CC                       = 'paypal_cc';
 
     const WALLET                          = 'wallet';
@@ -968,6 +969,7 @@ class Constants
         self::EXPOSE_FA_VALIDATION_UTR        => true,
         self::PARTNER_ACTIVATE_MERCHANT       => true,
         self::GOOGLE_PAY_CARDS                => true,
+        self::GPAY                            => true,
         self::FORCE_GREYLIST_INTERNAT         => true,
         self::SKIP_WEBSITE_INTERNAT           => true,
         self::SHOW_CREDIT_SCORE               => true,
