@@ -40,5 +40,5 @@ export const ruleOperatorMap = {
   '<': 'less than',
   '===': 'equal to',
   belongsTo: 'belongs to',
-  doesNotBelongsTo: "doesn't belongs to",
+  doesNotBelongTo: "doesn't belong to",
 };

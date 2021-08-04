@@ -561,7 +561,7 @@ class AddEditExperiment extends React.Component {
                         });
                       }}
                     />
-                    {['belongsTo', 'doesNotBelongsTo'].includes(rule.operator) ? (
+                    {['belongsTo', 'doesNotBelongTo'].includes(rule.operator) ? (
                       <SearchableSelectField
                         name=""
                         optionComponent={({ option }) => (

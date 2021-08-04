@@ -410,7 +410,7 @@ class ExperimentDetails extends React.Component {
                       <div>
                         <b>&nbsp;{experimentHelpers.ruleOperatorMap[rule.operator]}&nbsp;</b>
                       </div>
-                      {['belongsTo', 'doesNotBelongsTo'].includes(rule.operator) ? (
+                      {['belongsTo', 'doesNotBelongTo'].includes(rule.operator) ? (
                         <div
                           className="link"
                           style={{ marginTop: '3px' }}
