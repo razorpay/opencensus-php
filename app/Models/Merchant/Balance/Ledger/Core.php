@@ -13,8 +13,8 @@ use RZP\Models\BankingAccount\Entity as BankingAccount;
 class Core extends Base\Core
 {
     const LEDGER_ACCOUNT_ONBOARDING = 'ledger_account_onboarding';
-    const DIRECT_ACCOUNT_ONBOARDING = 'direct_account_onboarding';
-    const SHARED_ACCOUNT_ONBOARDING = 'shared_account_onboarding';
+    const DIRECT_MERCHANT_ONBOARDING = 'direct_merchant_onboarding';
+    const SHARED_MERCHANT_ONBOARDING = 'shared_merchant_onboarding';
 
     const MODE                  = 'mode';
     const TRANSACTOR            = 'transactor';
@@ -35,8 +35,8 @@ class Core extends Base\Core
     const DIRECT = 'direct';
 
     protected $eventDescription = [
-        self::DIRECT_ACCOUNT_ONBOARDING  => 'Event for onboarding of merchant on direct account',
-        self::SHARED_ACCOUNT_ONBOARDING  => 'Event for onboarding of merchant on shared account',
+        self::DIRECT_MERCHANT_ONBOARDING  => 'Event for onboarding of merchant on direct account',
+        self::SHARED_MERCHANT_ONBOARDING  => 'Event for onboarding of merchant on shared account',
     ];
 
     /***
@@ -49,7 +49,7 @@ class Core extends Base\Core
     public function createXLedgerAccount(Merchant $merchant, BankingAccount $bankingAccount,
                                          string $mode, $accountType = self::SHARED)
     {
-        $event = $accountType == self::SHARED ? self::SHARED_ACCOUNT_ONBOARDING : self::DIRECT_ACCOUNT_ONBOARDING;
+        $event = $accountType == self::SHARED ? self::SHARED_MERCHANT_ONBOARDING : self::DIRECT_MERCHANT_ONBOARDING;
 
         $payload = [
             self::TRANSACTOR        => self::X,
