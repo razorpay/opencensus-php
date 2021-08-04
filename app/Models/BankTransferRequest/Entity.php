@@ -162,6 +162,11 @@ class Entity extends Base\PublicEntity
 
     // -------------------- Getters --------------------
 
+    public function getErrorMessage()
+    {
+        return $this->getAttribute(self::ERROR_MESSAGE);
+    }
+
     public function getUtr()
     {
         return $this->getAttribute(self::UTR);

@@ -6,6 +6,7 @@ use App;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\BankTransfer;
+use RZP\Error\PublicErrorDescription;
 
 class BankTransferCreateProcess extends Job
 {
@@ -23,6 +24,8 @@ class BankTransferCreateProcess extends Job
     public function handle()
     {
         parent::handle();
+
+        $isDeleteFromQueue = true;
 
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PROCESS_QUEUE_INITIATED,
@@ -42,6 +45,10 @@ class BankTransferCreateProcess extends Job
 
             (new BankTransfer\Service())->processBankTransfer($bankTransferRequest);
 
+            if ($bankTransferRequest->getErrorMessage() === PublicErrorDescription::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS)
+            {
+                $isDeleteFromQueue = false;
+            }
             $this->trace->info(
                 TraceCode::BANK_TRANSFER_PROCESS_QUEUE_COMPLETED,
                 [
@@ -64,7 +71,10 @@ class BankTransferCreateProcess extends Job
         }
         finally
         {
-            $this->delete();
+            if ($isDeleteFromQueue === true)
+            {
+                $this->delete();
+            }
         }
     }
 
