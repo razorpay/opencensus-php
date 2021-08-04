@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\Admin;
 use DB;
-use Illuminate\Http\Request;
+use Trace;
+use App\Lib\Util;
+use App\Trace\TraceCode;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\UserProvider;
@@ -41,13 +43,35 @@ class ApiGuard implements Guard
         // every call to this method because that would be tremendously slow.
         if (! is_null($this->user))
         {
+            if((new Util)->debugLogsEnable()=== true)
+            {
+                Trace::info(TraceCode::ADMIN_LOGIN_DEBUG, [
+                    'type' => "g1",
+                    'user' => "exists",
+                ]);
+            }
             return $this->user;
         }
 
         if (! is_null($userData = $this->app['session']->get($this->sessionKey)))
         {
+            if((new Util)->debugLogsEnable()=== true)
+            {
+                Trace::info(TraceCode::ADMIN_LOGIN_DEBUG, [
+                    'type' => "g2",
+                    'sessionKey' => "exists",
+                ]);
+            }
+
             if (isset($userData['token']))
             {
+                if((new Util)->debugLogsEnable()=== true)
+                {
+                    Trace::info(TraceCode::ADMIN_LOGIN_DEBUG, [
+                        'type' => "g3",
+                        'token' => "exists",
+                    ]);
+                }
                 $user = $this->provider->getGenericUser($userData);
 
                 $this->setUser($user);

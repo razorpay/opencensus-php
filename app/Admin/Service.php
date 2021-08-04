@@ -22,6 +22,7 @@ use App\User;
 use App\Admin;
 use App\Generic;
 use App\Merchant;
+use App\Lib\Util;
 use App\Schedules;
 use App\Providers;
 use App\Transaction;
@@ -100,6 +101,14 @@ class Service extends Base\Service
             list($error, $data) = $request->processInput($input)->send('admin/authenticate', 'POST');
 
             Session::put(config('auth.guards.api.session_key'), $data);
+
+            if((new Util)->debugLogsEnable()=== true)
+            {
+                $this->app['trace']->info(TraceCode::ADMIN_LOGIN_DEBUG, [
+                    'type' => "s2",
+                    'session_id' => Session::getId(),
+                ]);
+            }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {

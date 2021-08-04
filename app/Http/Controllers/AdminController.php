@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App;
 use Auth;
 use View;
+use Trace;
 use Input;
 use Cache;
 use Config;
@@ -13,7 +14,9 @@ use Redirect;
 use App\Admin;
 use OAuthFacade;
 use App\Merchant;
+use App\Lib\Util;
 use App\Admin\Entity;
+use App\Trace\TraceCode;
 use App\Http\AppResponse;
 use App\Http\SlackResponse;
 use Razorpay\Api\Request as ApiRequest;
@@ -46,6 +49,14 @@ class AdminController extends Controller
      */
     public function getIndex()
     {
+        if((new Util)->debugLogsEnable()=== true)
+        {
+            $this->app['trace']->info(TraceCode::ADMIN_LOGIN_DEBUG, [
+                'type' => "a1",
+                'session_id' => Session::getId(),
+            ]);
+        }
+
         $org = $this->getOrg()->getData(true);
 
         if ($org['success'])
@@ -59,10 +70,29 @@ class AdminController extends Controller
 
         $currentRouteName = \Route::currentRouteName();
 
+        if((new Util)->debugLogsEnable()=== true)
+        {
+            $this->app['trace']->info(TraceCode::ADMIN_LOGIN_DEBUG, [
+                'type' => "a2",
+                'Auth::guard()->check()' => Auth::guard('api')->check(),
+                'currentRouteName' => $currentRouteName,
+                'session_id' => Session::getId(),
+            ]);
+        }
+
         // If already logged in
         if (Auth::guard('api')->check())
         {
             $admin = $this->getAdmin()->getData(true);
+
+            if((new Util)->debugLogsEnable() === true)
+            {
+                $this->app['trace']->info(TraceCode::ADMIN_LOGIN_DEBUG, [
+                    'type' => "a3",
+                    'admin' => $admin,
+                    'session_id' => Session::getId(),
+                ]);
+            }
 
             if (empty($admin['data']) === false)
             {
@@ -167,6 +197,19 @@ class AdminController extends Controller
         if (! empty($error))
         {
             return AppResponse::jsonResponse($error, []);
+        }
+
+        if((new Util)->debugLogsEnable()=== true)
+        {
+            $sessionData = Session::get(config('auth.guards.api.session_key'));
+            $adminEmail = $sessionData['email'] ?? null;
+
+            $this->app['trace']->info(TraceCode::ADMIN_LOGIN_DEBUG, [
+                'type' => "s1",
+                'Auth::guard()->check()' => Auth::guard('api')->check(),
+                'session_id' => Session::getId(),
+                'admin_email' => $adminEmail,
+            ]);
         }
 
         if (Auth::guard('api')->check())

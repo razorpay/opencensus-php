@@ -2,6 +2,8 @@
 
 namespace App\Lib;
 
+use App\Http\ApiUrl;
+
 class Util
 {
     public static function random_alpha_string($length = 1)
@@ -43,5 +45,29 @@ class Util
         }
 
         return $aReturn;
+    }
+
+    public function debugLogsEnable()
+    {
+        $baseUrl = ApiUrl::getApiBaseUrl();
+
+        $env = \App::environment();
+
+        $allowedHosts = [
+            'dev'        => '*',
+            'dev_docker' => '*',
+            'beta'       => [
+                'https://beta-api.razorpay.in/v1/',
+                'https://beta-api.stage.razorpay.in/v1/',
+            ],
+            'production' => [
+                'https://api-dark.razorpay.com/v1/',
+            ],
+        ];
+
+        $allowedHostsEnv = $allowedHosts[$env] ?? [];
+
+        return (($allowedHostsEnv === '*') or
+            (in_array($baseUrl, $allowedHostsEnv, true) === true));
     }
 }

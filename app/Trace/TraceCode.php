@@ -30,6 +30,8 @@ class TraceCode
     const API_SLOW_RESPONSE_CALL                    = 'API_SLOW_RESPONSE_CALL';
     const API_RESPONSE_METRIC                       = 'API_RESPONSE_METRIC';
 
+    const ADMIN_LOGIN_DEBUG                         = 'ADMIN_LOGIN_DEBUG';
+
     const USER_LOGIN                                = 'USER_LOGIN';
     const USER_LOGIN_DURATION                       = 'USER_LOGIN_DURATION';
     const USER_LOGIN_KEYS                           = 'USER_LOGIN_KEYS';
