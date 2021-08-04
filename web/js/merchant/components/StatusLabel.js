@@ -110,7 +110,7 @@ export const activationStatusMap = {
 export const disputeStatusMap = {
   open: 'label-danger',
   won: 'label-success',
-  under_review: 'label-warning',
+  under_review: 'label-review',
   closed: 'label-muted',
   lost: 'label-lost',
 };
@@ -142,13 +142,13 @@ export const SubmerchantSettlementStatusMap = {
 export const XSubmerchantCAStatusMap = {
   'process started': 'label-info',
   'request Cancelled': 'label-danger',
-  'unserviceable': 'label-danger',
+  unserviceable: 'label-danger',
   'request rejected': 'label-danger',
   'bank kyc in progress': 'label-pending',
   'activation in progress': 'label-pending',
   'request received': 'label-muted',
-  'active': 'label-success',
-  'inactive': 'label-muted',
+  active: 'label-success',
+  inactive: 'label-muted',
   'on hold': 'label-muted',
 };
 

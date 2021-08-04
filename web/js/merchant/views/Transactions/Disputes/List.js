@@ -1,12 +1,11 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 
 import DisputeListFilter from 'merchant/views/Transactions/Disputes/components/DisputeListFilter';
-import { daysLeftInExpiry } from 'merchant/views/Transactions/Disputes/components/Details';
 import { fetchDisputes as fetchAll } from 'merchant/reducers/collection';
 import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';
-import { titleCase } from 'common/utils/rzp-utils';
+import { titleCase, daysFromToday } from 'common/utils/rzp-utils';
 import { getTime } from 'common/ui/item';
 import ListContainer from 'merchant/containers/ListContainer';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -20,6 +19,19 @@ import {
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getCustomURL } from '../../../components/DocsLink';
+
+const daysLeftInExpiry = (expiresOn) => {
+  const daysLeft = daysFromToday(expiresOn);
+  if (daysLeft < 0) {
+    return <span class="text-muted">Passed</span>;
+  } else if (daysLeft === 0) {
+    return <strong class="text-danger">Today</strong>;
+  } else if (daysLeft === 1) {
+    return <strong class="text-danger">Tomorrow</strong>;
+  } else {
+    return <strong class="text-danger">{getTime('expiresOn', 'll')({ expiresOn })}</strong>;
+  }
+};
 
 const type = {
   title: 'Type',
@@ -52,7 +64,11 @@ export default class Dispute extends ListContainer {
           <ShowWhen
             additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
           >
-            <a class="btn btn-link" href={getCustomURL("https://razorpay.com/docs/payments/disputes/")} target="_blank">
+            <a
+              class="btn btn-link"
+              href={getCustomURL('https://razorpay.com/docs/payments/disputes/')}
+              target="_blank"
+            >
               Guide to Dispute
             </a>
           </ShowWhen>
