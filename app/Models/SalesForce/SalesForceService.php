@@ -30,6 +30,7 @@ class SalesForceService {
                                                              SalesForceEventRequestDTO $salesForceEventRequestDTO,
                                                              Entity $merchant) {
         switch ($salesForceEventRequestType->getValue()) {
+            case 'LOS_NEW_APPLICATION':
             case 'CURRENT_ACCOUNT_INTEREST':
                 $DATE_FORMAT = 'Y-m-d';
                 $eventPayload = [
