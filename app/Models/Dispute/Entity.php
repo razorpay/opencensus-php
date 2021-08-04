@@ -403,6 +403,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EXPIRES_ON, $time);
     }
 
+    public function setInternalStatus(string $internalStatus)
+    {
+        $this->setAttribute(self::INTERNAL_STATUS, $internalStatus);
+    }
+
     public function setPublicPaymentIdAttribute(array &$attributes)
     {
         $attributes[self::PAYMENT_ID] =

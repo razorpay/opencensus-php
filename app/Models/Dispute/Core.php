@@ -456,6 +456,8 @@ class Core extends Base\Core
                     $dispute->getAmountDeducted() - $acceptedDisputeAmount);
             }
         }
+
+        $dispute->setInternalStatus(InternalStatus::LOST_MERCHANT_DEBITED);
     }
 
     protected function shouldReverse(Entity $dispute): bool
@@ -485,6 +487,8 @@ class Core extends Base\Core
         $refundId = (new Payment\Service)->refund(Payment\Entity::getSignedId($dispute->getPaymentId()), $refundCreateInput)[Refund\Entity::ID];
 
         $dispute->setAmountDeducted($dispute->getBaseAmount());
+
+        $dispute->setInternalStatus(InternalStatus::LOST_MERCHANT_DEBITED);
 
         $this->updateDeductionSourceTypeAndId($dispute,
             EntityConstants::REFUND,

@@ -2025,14 +2025,7 @@ class AdminFetch
                 Dispute\Entity::INTERNAL_STATUS => [
                     Fetch::LABEL        => 'Internal Status',
                     Fetch::TYPE         => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES       => [
-                        Dispute\InternalStatus::OPEN,
-                        Dispute\InternalStatus::REPRESENTED,
-                        Dispute\InternalStatus::CONTESTED,
-                        Dispute\InternalStatus::WON,
-                        Dispute\InternalStatus::LOST,
-                        Dispute\InternalStatus::CLOSED,
-                    ],
+                    Fetch::VALUES       => Dispute\InternalStatus::getInternalStatuses(),
                 ],
                 Dispute\Entity::PHASE           => [
                     Fetch::LABEL        => 'Phase',

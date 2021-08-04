@@ -1555,7 +1555,27 @@ return [
                 'amount_deducted' => 0,
                 'currency'        => 'INR',
                 'phase'           => 'chargeback',
-                'status'          => 'lost'
+                'status'          => 'lost',
+                'internal_status' => 'lost_merchant_not_debited',
+            ],
+        ],
+    ],
+
+    'testDisputeEditLostWithDeduction' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'status'         => 'lost',
+                'skip_deduction' => false,
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+                'currency'        => 'INR',
+                'phase'           => 'chargeback',
+                'status'          => 'lost',
+                'internal_status' => 'lost_merchant_debited',
             ],
         ],
     ],

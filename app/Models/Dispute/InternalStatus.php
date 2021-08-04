@@ -7,21 +7,32 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class InternalStatus
 {
-    const OPEN         = 'open';
-    const CONTESTED    = 'contested';
-    const REPRESENTED  = 'represented';
-    const LOST         = 'lost';
-    const WON          = 'won';
-    const CLOSED       = 'closed';
+    const OPEN                      = 'open';
+    const CONTESTED                 = 'contested';
+    const REPRESENTED               = 'represented';
+    const LOST_MERCHANT_DEBITED     = 'lost_merchant_debited';
+    const LOST_MERCHANT_NOT_DEBITED = 'lost_merchant_not_debited';
+    const WON                       = 'won';
+    const CLOSED                    = 'closed';
 
-
-    protected static $closedStatuses = [
+    protected static $internalStatuses = [
+        self::OPEN,
+        self::CONTESTED,
+        self::REPRESENTED,
+        self::LOST_MERCHANT_DEBITED,
+        self::LOST_MERCHANT_NOT_DEBITED,
         self::WON,
-        self::LOST,
         self::CLOSED,
     ];
 
-    protected static $openStatuses = [
+    protected static $closedInternalStatuses = [
+        self::WON,
+        self::LOST_MERCHANT_DEBITED,
+        self::LOST_MERCHANT_NOT_DEBITED,
+        self::CLOSED,
+    ];
+
+    protected static $openInternalStatuses = [
         self::OPEN,
         self::CONTESTED,
         self::REPRESENTED,
@@ -30,7 +41,7 @@ class InternalStatus
     protected static $allowedInternalStatusesForStatus = [
         Status::OPEN         => [self::OPEN],
         Status::UNDER_REVIEW => [self::CONTESTED, self::REPRESENTED],
-        Status::LOST         => [self::LOST],
+        Status::LOST         => [self::LOST_MERCHANT_DEBITED, self::LOST_MERCHANT_NOT_DEBITED,],
         Status::WON          => [self::WON],
         Status::CLOSED       => [self::CLOSED],
     ];
@@ -38,27 +49,29 @@ class InternalStatus
     protected static $defaultInternalStatusForStatus = [
         Status::OPEN         => self::OPEN,
         Status::UNDER_REVIEW => self::CONTESTED,
-        Status::LOST         => self::LOST,
+        Status::LOST         => self::LOST_MERCHANT_NOT_DEBITED,
         Status::WON          => self::WON,
         Status::CLOSED       => self::CLOSED,
     ];
 
     protected static $internalStatusToStatusMap = [
-        self::OPEN        => Status::OPEN,
-        self::CONTESTED   => Status::UNDER_REVIEW,
-        self::REPRESENTED => Status::UNDER_REVIEW,
-        self::LOST        => Status::LOST,
-        self::WON         => Status::WON,
-        self::CLOSED      => Status::CLOSED,
+        self::OPEN                      => Status::OPEN,
+        self::CONTESTED                 => Status::UNDER_REVIEW,
+        self::REPRESENTED               => Status::UNDER_REVIEW,
+        self::LOST_MERCHANT_NOT_DEBITED => Status::LOST,
+        self::LOST_MERCHANT_DEBITED     => Status::LOST,
+        self::WON                       => Status::WON,
+        self::CLOSED                    => Status::CLOSED,
     ];
 
     protected static $internalStatusValidNextInternalStatuses = [
-        self::OPEN        => [self::CONTESTED, self::LOST],
-        self::CONTESTED   => [self::OPEN, self::LOST, self::CLOSED, self::REPRESENTED],
-        self::REPRESENTED => [self::WON, self::LOST, self::CLOSED],
-        self::LOST        => [],
-        self::WON         => [],
-        self::CLOSED      => [],
+        self::OPEN                      => [self::CONTESTED, self::LOST_MERCHANT_NOT_DEBITED, self::LOST_MERCHANT_DEBITED],
+        self::CONTESTED                 => [self::OPEN, self::LOST_MERCHANT_NOT_DEBITED, self::LOST_MERCHANT_DEBITED, self::CLOSED, self::REPRESENTED],
+        self::REPRESENTED               => [self::WON, self::LOST_MERCHANT_NOT_DEBITED, self::LOST_MERCHANT_DEBITED, self::CLOSED],
+        self::LOST_MERCHANT_NOT_DEBITED => [],
+        self::LOST_MERCHANT_DEBITED     => [],
+        self::WON                       => [],
+        self::CLOSED                    => [],
     ];
 
     /**
@@ -117,5 +130,10 @@ class InternalStatus
     public static function exists(string $status): bool
     {
         return defined(get_class() . '::' . strtoupper($status));
+    }
+
+    public static function getInternalStatuses()
+    {
+        return self::$internalStatuses;
     }
 }

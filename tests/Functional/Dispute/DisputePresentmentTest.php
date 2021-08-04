@@ -80,7 +80,6 @@ class DisputePresentmentTest extends TestCase
         $this->fixtures->create('dispute', $disputeAttributes);
     }
 
-
     public function testGetDisputeDocumentTypesMetadata()
     {
         $this->setUpForInitiateDraftEvidenceTest();
@@ -392,7 +391,6 @@ class DisputePresentmentTest extends TestCase
         $this->assertArrayNotHasKey('evidence', $response);
     }
 
-
     public function testAcceptDisputeWithoutFeatureEnabled()
     {
         $this->setUpForInitiateDraftEvidenceTest();
@@ -636,6 +634,7 @@ class DisputePresentmentTest extends TestCase
             'status'                => 'lost',
             'deduction_source_type' => 'adjustment',
             'deduction_source_id'   => Adjustment\Entity::verifyIdAndSilentlyStripSign($adjustment['id']),
+            'internal_status'       => 'lost_merchant_debited',
         ], $disputeAfter);
 
 
@@ -677,6 +676,7 @@ class DisputePresentmentTest extends TestCase
         $this->assertArraySelectiveEquals([
             'amount_deducted' => 0,
             'status'          => 'lost',
+            'internal_status' => 'lost_merchant_not_debited',
         ], $disputeAfter);
 
         $this->assertNull($adjustment);
@@ -696,7 +696,6 @@ class DisputePresentmentTest extends TestCase
             return true;
         });
     }
-
 
     public function testAcceptDisputeRecoveryViaRefundWithNoPreExistingRefunds()
     {
@@ -759,6 +758,7 @@ class DisputePresentmentTest extends TestCase
             'status'                => 'lost',
             'deduction_source_type' => 'refund',
             'deduction_source_id'   => Refund\Entity::verifyIdAndSilentlyStripSign($refundAfter['id']),
+            'internal_status'       => 'lost_merchant_debited',
         ], $disputeAfter);
 
         Mail::assertNotQueued(DisputePresentmentRiskOpsReview::class);
@@ -822,6 +822,7 @@ class DisputePresentmentTest extends TestCase
             'status'                => 'lost',
             'deduction_source_type' => null,
             'deduction_source_id'   => null,
+            'internal_status'       => 'lost_merchant_not_debited',
         ], $disputeAfter);
 
 
@@ -885,6 +886,7 @@ class DisputePresentmentTest extends TestCase
             'status'                => 'lost',
             'deduction_source_type' => 'refund',
             'deduction_source_id'   => Refund\Entity::verifyIdAndSilentlyStripSign($refundAfter['id']),
+            'internal_status'       => 'lost_merchant_debited',
         ], $disputeAfter);
 
         $this->assertArraySelectiveEquals([
@@ -950,6 +952,7 @@ class DisputePresentmentTest extends TestCase
             'status'                => 'lost',
             'deduction_source_type' => 'refund',
             'deduction_source_id'   => Refund\Entity::verifyIdAndSilentlyStripSign($refundAfter['id']),
+            'internal_status'       => 'lost_merchant_debited',
         ], $disputeAfter);
 
         $this->assertArraySelectiveEquals([
@@ -991,7 +994,7 @@ class DisputePresentmentTest extends TestCase
 
         $this->assertArrayKeysExist($disputeEvidence, ['id', 'summary', 'amount', 'currency', 'rejection_reason', 'source', 'created_at', 'updated_at', 'submitted_at', 'admin']);
 
-        $this->assertArrayKeysExist($disputeEvidenceDocument, ['id', 'dispute_id', 'type', 'custom_type', 'document_id', 'created_at', 'updated_at',  'admin', 'entity']);
+        $this->assertArrayKeysExist($disputeEvidenceDocument, ['id', 'dispute_id', 'type', 'custom_type', 'document_id', 'created_at', 'updated_at', 'admin', 'entity']);
     }
 
     protected function expectDisputeWebhook(string $event)

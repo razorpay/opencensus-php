@@ -1139,6 +1139,17 @@ class DisputeTest extends TestCase
         $this->assertEquals(false, $payment['disputed']);
     }
 
+    public function testDisputeEditLostWithDeduction()
+    {
+        $data = $this->updateEditTestData();
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(false, $payment['disputed']);
+    }
+
     public function testPhaseBasedBulkCreateDisputes()
     {
         $fileData = $this->getBulkDisputeUploadedFileData();
@@ -1402,7 +1413,6 @@ class DisputeTest extends TestCase
     public function testBulkDisputeEdit()
     {
         $dispute = $this->fixtures->create('dispute', [
-            'internal_respond_by' => 1300000000,
             'status'              => 'open',
             'internal_status'     => 'open',
         ]);
@@ -1415,7 +1425,6 @@ class DisputeTest extends TestCase
                    'comments'               => 'test comment',
                    'status'                 => 'under_review',
                    'internal_status'        => 'contested',
-                   'internal_respond_by'    => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
               ],
         ];
 
@@ -2457,11 +2466,11 @@ class DisputeTest extends TestCase
                 ],
                 'request'  => [
                     'status'          => 'lost',
-                    'internal_status' => 'lost',
+                    'internal_status' => 'lost_merchant_debited',
                 ],
                 'response' => [
                     'status'          => 'lost',
-                    'internal_status' => 'lost',
+                    'internal_status' => 'lost_merchant_debited',
                 ],
             ],
             [
@@ -2471,23 +2480,11 @@ class DisputeTest extends TestCase
                 ],
                 'request'  => [
                     'status'          => 'lost',
+                    'skip_deduction'  => true,
                 ],
                 'response' => [
                     'status'          => 'lost',
-                    'internal_status' => 'lost',
-                ],
-            ],
-            [
-                'seed'     => [
-                    'status'          => 'under_review',
-                    'internal_status' => 'contested',
-                ],
-                'request'  => [
-                    'internal_status' => 'lost',
-                ],
-                'response' => [
-                    'status'          => 'lost',
-                    'internal_status' => 'lost',
+                    'internal_status' => 'lost_merchant_not_debited',
                 ],
             ],
             [

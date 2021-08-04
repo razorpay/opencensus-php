@@ -70,7 +70,6 @@ class Service extends Base\Service
         Entity::STATUS,
         Entity::SKIP_DEDUCTION,
         Entity::COMMENTS,
-        Entity::INTERNAL_RESPOND_BY,
         Entity::INTERNAL_STATUS,
     ];
 
@@ -116,7 +115,6 @@ class Service extends Base\Service
         Entity::SKIP_DEDUCTION,
         Entity::COMMENTS,
         Entity::BACKFILL,
-        Entity::INTERNAL_RESPOND_BY,
         Entity::INTERNAL_STATUS,
     ];
 

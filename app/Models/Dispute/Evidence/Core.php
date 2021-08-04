@@ -411,8 +411,9 @@ class Core extends Base\Core
     protected function recoverAmountFromMerchantOnDisputeAcceptViaAdjustment(Dispute\Entity $dispute)
     {
         (new Dispute\Core)->update($dispute, [
-            Dispute\Entity::BACKFILL => false,
-            Dispute\Entity::STATUS   => Dispute\Status::LOST,
+            Dispute\Entity::BACKFILL        => false,
+            Dispute\Entity::STATUS          => Dispute\Status::LOST,
+            Dispute\Entity::INTERNAL_STATUS => Dispute\InternalStatus::LOST_MERCHANT_DEBITED,
         ]);
     }
 
@@ -432,6 +433,7 @@ class Core extends Base\Core
             Dispute\Entity::BACKFILL       => false,
             Dispute\Entity::STATUS         => Dispute\Status::LOST,
             Dispute\Entity::SKIP_DEDUCTION => true,
+            Dispute\Entity::INTERNAL_STATUS=> Dispute\InternalStatus::LOST_MERCHANT_DEBITED,
         ]);
     }
 
@@ -444,9 +446,10 @@ class Core extends Base\Core
         if ($dispute->isLost() === false)
         {
             (new Dispute\Core)->update($dispute, [
-                Dispute\Entity::BACKFILL       => false,
-                Dispute\Entity::SKIP_DEDUCTION => true,
-                Dispute\Entity::STATUS         => Dispute\Status::LOST,
+                Dispute\Entity::BACKFILL        => false,
+                Dispute\Entity::SKIP_DEDUCTION  => true,
+                Dispute\Entity::STATUS          => Dispute\Status::LOST,
+                Dispute\Entity::INTERNAL_STATUS => Dispute\InternalStatus::LOST_MERCHANT_NOT_DEBITED,
             ]);
         }
 
