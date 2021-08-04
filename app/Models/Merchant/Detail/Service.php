@@ -60,6 +60,8 @@ class Service extends Base\Service
 
     protected $accountCore;
 
+    protected $ba;
+
     public function __construct(Core $core = null, Validator  $validator = null, Account\Core $accountCore = null)
     {
         parent::__construct();
@@ -69,6 +71,8 @@ class Service extends Base\Service
         $this->validator = $validator ?? new Validator();
 
         $this->accountCore = $accountCore ?? new Account\Core();
+
+        $this->ba=$this->app['basicauth'];
 
     }
 
@@ -773,9 +777,14 @@ class Service extends Base\Service
     public function getNeedsClarificationReasons()
     {
         $needsClarificationReasonsMap = NeedsClarificationMetaData::REASON_MAPPING;
+        $needsClarificationMerchantReasonsMap = NeedsClarificationMetaData::MERCHANT_REASON_MAPPING;
         $reasonDetails                = NeedsClarificationReasonsList::REASON_DETAILS;
         $response                     = [];
 
+        if($this->ba->isAdminAuth()===false)
+        {
+            $needsClarificationReasonsMap=array_merge_recursive($needsClarificationReasonsMap,$needsClarificationMerchantReasonsMap);
+        }
         foreach ($needsClarificationReasonsMap as $field => $reasons)
         {
             $reasonList = [];

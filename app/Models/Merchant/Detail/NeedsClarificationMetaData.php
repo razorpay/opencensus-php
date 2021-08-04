@@ -82,6 +82,19 @@ class NeedsClarificationMetaData
         DocumentType::MEMORANDUM_OF_ASSOCIATION => [ReasonList::AUTHORIZED_SIGNATORY_MISMATCH,
                                                     ReasonList::PROVIDE_AUTHORIZED_SIGNATORY_SIGNED_AND_SEALED_DOCUMENT]
     ];
+    const MERCHANT_REASON_MAPPING = [
+        Entity::BANK_ACCOUNT_NUMBER             => [ReasonList::UNABLE_TO_VALIDATE_ACC_NUMBER,],
+
+        Entity::BANK_ACCOUNT_NAME               => [ReasonList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PROP_NGO_TRUST,
+                                                    ReasonList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_UNREGISTERED,
+                                                    ReasonList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PVT_PUBLIC_LLP,
+                                                    ReasonList::UNABLE_TO_VALIDATE_BENEFICIARY_NAME],
+
+        Entity::BANK_BRANCH_IFSC                => [ReasonList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PROP_NGO_TRUST,
+                                                    ReasonList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_UNREGISTERED,
+                                                    ReasonList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PVT_PUBLIC_LLP,
+                                                    ReasonList::UNABLE_TO_VALIDATE_IFSC]
+        ];
 
     const BUSINESS_TYPE_REASON_CODE_MAPPING=[
         BusinessType::PROPRIETORSHIP            => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PROP_NGO_TRUST,
