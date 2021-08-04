@@ -412,6 +412,11 @@ return [
                 'automation_agent_id'       => env('FRESHDESK_AUTOMATION_AGENT_ID'),
                 'automation_group_id'       => env('FRESHDESK_AUTOMATION_GROUP_ID'),
                 'customer_support_group_id' => env('FRESHDESK_CUSTOMER_SUPPORT_GROUP_ID'),
+                'rzpind' => [
+                    'automation_agent_id'       => env('FRESHDESK_IND_AUTOMATION_AGENT_ID'),
+                    'automation_group_id'       => env('FRESHDESK_IND_AUTOMATION_GROUP_ID'),
+                    'customer_support_group_id' => env('FRESHDESK_IND_CUSTOMER_SUPPORT_GROUP_ID'),
+                ],
             ],
         ],
 

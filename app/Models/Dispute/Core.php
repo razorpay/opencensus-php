@@ -28,6 +28,7 @@ use RZP\Models\Dispute\File\Core as DisputeFileCore;
 use RZP\Models\{Base, Payment, Merchant, Adjustment, Currency};
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use RZP\Models\Merchant\{Email as MerchantEmail, Entity as MerchantEntity};
+use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 
 class Core extends Base\Core
 {
@@ -927,7 +928,10 @@ class Core extends Base\Core
 
         $customerSupportTicketID = substr($dispute->getGatewayDisputeId(), 7);
 
-        $response = $this->app['freshdesk_client']->fetchTicketById($customerSupportTicketID);
+        $fdInstance = $this->getFreshdeskInstance($dispute);
+
+        $response = $this->app['freshdesk_client']->fetchTicketById(
+            $customerSupportTicketID, $fdInstance);
 
         $ticketTags = $response['tags'] ?? [];
 
@@ -939,7 +943,8 @@ class Core extends Base\Core
             'responder_id' => null,
         ];
 
-        $this->app['freshdesk_client']->updateTicketV2($customerSupportTicketID, $updateTicketContent);
+        $this->app['freshdesk_client']->updateTicketV2(
+            $customerSupportTicketID, $updateTicketContent, $fdInstance);
     }
 
     // https://razorpay.slack.com/archives/C9AKQB8BH/p1609309054496000
@@ -1364,6 +1369,18 @@ class Core extends Base\Core
         $dispute->setDeductionSourceType($entityType);
 
         $dispute->setDeductionSourceId($entityId);
+    }
+
+    protected function getFreshdeskInstance(Entity $dispute)
+    {
+        $fdInstance = FreshdeskConstants::URL;
+
+        if (Constants::FD_IND_INSTANCE_ROLLOUT_TS > $dispute->getCreatedAt())
+        {
+            $fdInstance = FreshdeskConstants::URLIND;
+        }
+
+        return $fdInstance;
     }
 
     protected function preProcessInputForCreate(array $input) : array

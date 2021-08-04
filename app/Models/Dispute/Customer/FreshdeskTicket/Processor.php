@@ -43,7 +43,7 @@ class Processor
 
     	$this->freshdeskTicket = $freshdeskTicket;
 
-        $this->freshdeskCustomerDisputeConfig = $this->app['config']->get('applications.freshdesk.customer.dispute');
+        $this->freshdeskCustomerDisputeConfig = $this->app['config']->get('applications.freshdesk.customer.dispute.rzpind');
     }
 
     public function process()

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Dispute\Customer\FreshdeskTicket;
 
+use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
+
 trait Ticket
 {
 	private function assignAutomationAgentToTicket() : array
@@ -17,7 +19,7 @@ trait Ticket
 
         $ticketId = strval($this->freshdeskTicket->getTicketId());
 
-        return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content);
+        return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content, FreshdeskConstants::URLIND);
     }
 
     private function changeTicketGroupToCspWithRelevantTags(int $status, array $tags) : array
@@ -41,7 +43,7 @@ trait Ticket
 
         $ticketId = strval($this->freshdeskTicket->getTicketId());
 
-        return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content);
+        return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content, FreshdeskConstants::URLIND);
     }
 
 	private function changeTicketGroupToCustomerSupport() : array
@@ -55,7 +57,7 @@ trait Ticket
 
         $ticketId = strval($this->freshdeskTicket->getTicketId());
 
-        return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content);
+        return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content, FreshdeskConstants::URLIND);
     }
 
 	private function closeTicket() : array
@@ -73,13 +75,14 @@ trait Ticket
 
         $ticketId = strval($this->freshdeskTicket->getTicketId());
 
-        return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content);
+        return $this->app['freshdesk_client']->updateTicketV2($ticketId, $content, FreshdeskConstants::URLIND);
     }
 
 	private function replyToTicket(string $renderedBody) : array
     {
         $ticketId = strval($this->freshdeskTicket->getTicketId());
 
-        return $this->app['freshdesk_client']->postTicketReply($ticketId, ['body' => $renderedBody]);
+        return $this->app['freshdesk_client']->postTicketReply(
+            $ticketId, ['body' => $renderedBody], FreshdeskConstants::URLIND);
     }
 }

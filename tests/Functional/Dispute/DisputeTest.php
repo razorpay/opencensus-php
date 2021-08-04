@@ -1949,13 +1949,13 @@ class DisputeTest extends TestCase
 
         if ($needAutomationGroupConst)
         {
-            $this->app['config']->set('applications.freshdesk.customer.dispute.automation_agent_id', $automationAgentId);
-            $this->app['config']->set('applications.freshdesk.customer.dispute.automation_group_id', $automationGroupId);
+            $this->app['config']->set('applications.freshdesk.customer.dispute.rzpind.automation_agent_id', $automationAgentId);
+            $this->app['config']->set('applications.freshdesk.customer.dispute.rzpind.automation_group_id', $automationGroupId);
         }
 
         if ($needCustomerSupportGroupConst)
         {
-            $this->app['config']->set('applications.freshdesk.customer.dispute.customer_support_group_id', $customerSupportGroupId);
+            $this->app['config']->set('applications.freshdesk.customer.dispute.rzpind.customer_support_group_id', $customerSupportGroupId);
         }
 
         $this->enableRazorXTreatmentForFreshdeskWebhookDisputeAutomation();
