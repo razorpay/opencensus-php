@@ -2239,7 +2239,8 @@ class Base extends BaseCore
                         Entity::ERROR           => $payout->getFailureReason(),
                         Entity::FEE_TYPE        => $payout->getFeeType(),
                         Entity::PRICING_RULE_ID => $payout->getPricingRuleId(),
-                        Entity::QUEUED_REASON   => $payout->getQueuedReason()
+                        Entity::QUEUED_REASON   => $payout->getQueuedReason(),
+                        Entity::STATUS_CODE     => $payout->getStatusCode()
                     ];
 
                     $this->trace->info(TraceCode::TRANSACTION_RESPONSE_FOR_MICROSERVICE,

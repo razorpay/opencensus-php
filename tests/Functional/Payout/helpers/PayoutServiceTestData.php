@@ -49,7 +49,8 @@ return [
             'content' => [
                 'status'        => 'created',
                 'error'         => null,
-                "queued_reason" => null,
+                'queued_reason' => null,
+                'status_code'   => null
             ],
         ],
     ],
@@ -445,6 +446,24 @@ return [
                 'status'        => 'queued',
                 'error'         => null,
                 "queued_reason" => QueuedReasons::LOW_BALANCE,
+            ],
+        ],
+    ],
+
+    'testCreateLedgerForStatusCodeValueFowLowBalance' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/create_ledger',
+            'content' => [
+                "id"                   => "Gg7sgBZgvYjlSB",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'        => 'failed',
+                'error'         => 'Insufficient balance to process payout',
+                'queued_reason' => null,
+                'status_code'   => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING
             ],
         ],
     ],
