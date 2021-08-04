@@ -29,7 +29,6 @@ export function getTicketStatus(ticket) {
 
 export function getResponseArrivalType(ticket) {
   const STATUS = statuses[ticket.status] && statuses[ticket.status].name;
-
   if (STATUS === 'Active' || STATUS === 'Work In Progress') {
     const today = new Date();
     // const dueDate = new Date(ticket.fr_due_by);

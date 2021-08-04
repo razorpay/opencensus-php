@@ -201,7 +201,7 @@ export default class Conversations extends React.Component {
     });
     let scheduleCallbackReason = this.props.scheduleCallConfig.reason;
     total_conversations = total_conversations.filter(this.shouldBeVisible);
-    let message;
+    let message,popup;
     let MESSAGE = getResponseArrivalType(this.state.ticket);
     const STATUS = getTicketStatus(this.state.ticket);
     const responseFormatTime = moment(this.state.ticket.fr_due_by).format('DD MMM');
@@ -245,6 +245,7 @@ export default class Conversations extends React.Component {
     }
     if (MESSAGE === 'waiting-for-customer') {
       message = <h3 class="fsz-14">This query is open and our team is waiting for your reply.</h3>;
+      popup = `Support agent is waiting for your reply`;
     }
 
     if (MESSAGE === 'Closed') {
@@ -272,7 +273,7 @@ export default class Conversations extends React.Component {
     }
 
     const isNewSupportDashboard = this.props.user.isTicketRevampFlowEnabled;
-    
+
 
     if ((this.state?.ticket?.status === 5 && MESSAGE !== 'Closed') && isNewSupportDashboard) {
       if (this.state.toggleReply) {
@@ -290,7 +291,7 @@ export default class Conversations extends React.Component {
       }
     }
 
-    const isScheduleCallbackEnabled = this.props.user.isScheduleCallbackEnabled; 
+    const isScheduleCallbackEnabled = this.props.user.isScheduleCallbackEnabled;
 
     return (
       <Fragment>
@@ -373,13 +374,16 @@ export default class Conversations extends React.Component {
                                       {!can_be_escalated ? (
                                         <Popover align="bottom" theme="dark">
                                           <PopoverBody>
-                                            {has_callback
-                                              ? is_escalated
-                                                ? `You can expect reply before: ${responseFormatTime}`
-                                                : `We will resolve this query over call`
-                                              : is_escalated
-                                                ? `You can expect reply before: ${responseFormatTime}`
-                                                : `You can expect reply within 8 working hours.`}
+                                          {popup ? popup : <span>
+                                                {has_callback
+                                                  ? is_escalated
+                                                    ? `You can expect reply before: ${responseFormatTime}`
+                                                    : `We will resolve this query over call`
+                                                  : is_escalated
+                                                    ? `You can expect reply before: ${responseFormatTime}`
+                                                    : `You can expect reply    working hours.`}
+
+                                              </span>}
                                           </PopoverBody>
                                         </Popover>
                                       ) : null}
@@ -419,8 +423,8 @@ export default class Conversations extends React.Component {
                               </div>
                             ) : null}
                           </div>
-                        ) : null} 
-      
+                        ) : null}
+
                         {this.state.conversations.loading || this.state.loadingTicket ? (
                           <div className="ticket-cont-spinner">
                             <Spinner />

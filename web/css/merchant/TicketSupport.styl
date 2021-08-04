@@ -66,8 +66,9 @@
     padding: 30px 20px;
 
     .grievance-related-btn {
-        .disabled-style {
+        &.disabled-style {
             cursor: not-allowed;
+            filter: opacity(0.5);
         }
     }
 
@@ -223,7 +224,6 @@
                 border: 0;
                 background: transparent;
             }
-            
         }
 
         .reply-ticket-panel {
@@ -823,6 +823,7 @@
             .user-details {
                 width: 78%;
                 margin-top: 6px;
+
                 .user {
                     font-family: Lato;
                     font-style: normal;
@@ -832,6 +833,7 @@
                     color: rgba(22, 47, 86, 0.87);
                     margin-bottom: 6px;
                 }
+
                 .message-to {
                     margin-top: 8px;
                     color: rgba(22, 47, 86, 0.54);
