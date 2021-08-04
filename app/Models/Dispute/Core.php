@@ -1379,7 +1379,7 @@ class Core extends Base\Core
     {
         $fdInstance = FreshdeskConstants::URL;
 
-        if (Constants::FD_IND_INSTANCE_ROLLOUT_TS > $dispute->getCreatedAt())
+        if ($dispute->getCreatedAt() > DisputeConstants::FD_IND_INSTANCE_ROLLOUT_TS)
         {
             $fdInstance = FreshdeskConstants::URLIND;
         }
