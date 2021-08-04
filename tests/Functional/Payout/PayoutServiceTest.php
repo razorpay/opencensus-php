@@ -876,7 +876,7 @@ class PayoutServiceTest extends TestCase
 
         $queuedPayout = $this->getDbLastEntity('payout', 'live');
 
-        $queuedPayout->SetStatus(Status::QUEUED);
+        $this->fixtures->on('live')->edit('payout', $queuedPayout->getId(), ['status' => Status::QUEUED]);
 
         $cancellationUser = $this->getDbEntityById('user', 'MerchantUser01', 'live')->toArrayPublic();
 
@@ -908,7 +908,7 @@ class PayoutServiceTest extends TestCase
 
         $queuedPayout = $this->getDbLastEntity('payout', 'live');
 
-        $queuedPayout->SetStatus(Status::QUEUED);
+        $this->fixtures->on('live')->edit('payout', $queuedPayout->getId(), ['status' => Status::QUEUED]);
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
@@ -1210,6 +1210,28 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals(null, $response['transaction_id']);
     }
 
+    public function testServiceCancelFailure()
+    {
+        $this->mockPayoutServiceCancel(true);
+
+        $this->testCreatePayout();
+
+        $queuedPayout = $this->getDbLastEntity('payout', 'live');
+
+        $this->fixtures->on('live')->edit('payout', $queuedPayout->getId(), ['status' => Status::QUEUED]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $queuedPayout->reload();
+
+        $this->assertEquals(Status::QUEUED, $queuedPayout['status']);
+    }
+  
     public function testCreateLedgerForStatusCodeValueFowLowBalance()
     {
         $this->testCreatePayoutEntry();

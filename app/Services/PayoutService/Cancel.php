@@ -5,6 +5,7 @@ namespace RZP\Services\PayoutService;
 use Requests;
 use Razorpay\Edge\Passport\Passport;
 
+use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 
 class Cancel extends Base
@@ -15,14 +16,17 @@ class Cancel extends Base
     const PAYOUT_SERVICE_CANCEL = 'payout_service_cancel';
 
     /**
-     * @param array  $input
-     * @param string $merchantId
-     * @param string $payoutId
+     * @param string      $payoutId
+     * @param string|null $remarks
      *
      * @return array
      */
-    public function cancelPayoutViaMicroservice(array $input, string $merchantId, string $payoutId)
+    public function cancelPayoutViaMicroservice(string $payoutId, string $remarks = null)
     {
+        $input = [
+            Payout\Entity::REMARKS => $remarks
+        ];
+
         $this->trace->info(TraceCode::PAYOUT_CANCEL_VIA_MICROSERVICE_REQUEST,
             [
                 'input' => $input,
@@ -30,13 +34,11 @@ class Cancel extends Base
 
         $headers = [Passport::PASSPORT_JWT_V1 => $this->app['basicauth']->getPassportJwt($this->baseUrl)];
 
-        $response = $this->makeRequestAndGetContent(
+        return $this->makeRequestAndGetContent(
             $input,
             self::CANCEL_PAYOUT_SERVICE_URI . $payoutId,
             Requests::POST,
             $headers
         );
-
-        return $response;
     }
 }

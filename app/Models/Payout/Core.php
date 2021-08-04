@@ -99,12 +99,24 @@ class Core extends Base\Core
      */
     protected $mutex;
 
+    /**
+     * @var PayoutService\Status
+     */
     protected $payoutStatusServiceClient;
 
+    /**
+     * @var PayoutService\Details
+     */
     protected $payoutDetailsServiceClient;
 
+    /**
+     * @var PayoutService\Cancel
+     */
     protected $payoutCancelServiceClient;
 
+    /**
+     * @var PayoutService\Schedule
+     */
     protected $payoutScheduledServiceClient;
 
     /**
@@ -1010,6 +1022,11 @@ class Core extends Base\Core
     public function cancelPayout(Entity $payout,
                                  string $remarks = null): Entity
     {
+        if ($payout->getIsPayoutService() === true)
+        {
+            $this->payoutCancelServiceClient->cancelPayoutViaMicroservice($payout->getId(), $remarks);
+        }
+
         // If Payout has purpose 'rzp_fees' we won't allow merchant to cancel that
         if ((Purpose::isInInternal($payout->getPurpose()) === true)
             and
@@ -1032,32 +1049,6 @@ class Core extends Base\Core
                 $payout->setStatus(Status::CANCELLED);
 
                 $payout->setRemarks($remarks);
-
-                $cancellationUser = app('basicauth')->getUser();
-
-                $cancellationUserId = (empty($cancellationUser) === false) ? $cancellationUser->getId() : null;
-
-                $payout->setCancellationUserId($cancellationUserId);
-
-                $this->repo->saveOrFail($payout);
-
-                return $payout;
-            },
-            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
-    }
-
-    public function cancelPayoutViaPayoutService(array $input, Entity $payout): Entity
-    {
-        $this->payoutCancelServiceClient->cancelPayoutViaMicroservice($input, $payout->getMerchantId(), $payout->getId());
-
-        return $this->mutex->acquireAndRelease(
-            $payout->getId(),
-            function() use ($payout, $input)
-            {
-                $payout->setStatus(Status::CANCELLED);
-
-                $payout->setRemarks($input[Entity::REMARKS] ?? null);
 
                 $cancellationUser = app('basicauth')->getUser();
 

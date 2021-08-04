@@ -450,6 +450,25 @@ return [
         ],
     ],
 
+    'testServiceCancelFailure' => [
+        'request'  => [
+            'method' => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Service Failure',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
     'testCreateLedgerForStatusCodeValueFowLowBalance' => [
         'request'  => [
             'method'  => 'POST',
