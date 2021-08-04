@@ -147,14 +147,7 @@ class IciciPayoutTest extends TestCase
     {
         $currentBalance = $this->getDbLastEntity('balance');
 
-        $bankingAccountAttributes = [
-            'id'                    =>  'ABCde1234ABCde',
-            'account_number'        =>  '2224440041626998',
-            'balance_id'            =>  $this->bankingBalance->getId(),
-            'account_type'          =>  'nodal',
-        ];
-
-        $bankingAccount = $this->createBankingAccount($bankingAccountAttributes);
+        $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $response = $this->startTest();
 

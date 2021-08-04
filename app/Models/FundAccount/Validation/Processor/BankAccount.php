@@ -9,6 +9,7 @@ use Monolog\Logger;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
+use RZP\Models\Transaction;
 use RZP\Jobs\FavQueueForFTS;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
@@ -324,7 +325,12 @@ class BankAccount extends Base
             // This will only happen when FAV is already in it's final state, i.e., FAILED or COMPLETED.
             if (Attempt\Status::REVERSED === $status)
             {
-                (new Core)->processLedgerFav($this->validation, Attempt\Status::REVERSED);
+                $ftsSourceAccountInformation = [
+                    Transaction\Processor\Ledger\Base::FTS_FUND_ACCOUNT_ID => $input[Attempt\Entity::SOURCE_ACCOUNT_ID] ?? null,
+                    Transaction\Processor\Ledger\Base::FTS_ACCOUNT_TYPE    => $input[Attempt\Entity::BANK_ACCOUNT_TYPE] ?? null
+                ];
+
+                (new Core)->processLedgerFav($this->validation, Attempt\Status::REVERSED, $ftsSourceAccountInformation);
             }
 
             return;
@@ -383,7 +389,12 @@ class BankAccount extends Base
             $this->trace->warn(TraceCode::BENEFICIARY_NAME_NOT_PRESENT, $traceArray);
         }
 
-        (new Core)->processLedgerFav($this->validation);
+        $ftsSourceAccountInformation = [
+            Transaction\Processor\Ledger\Base::FTS_FUND_ACCOUNT_ID => $input[Attempt\Entity::SOURCE_ACCOUNT_ID] ?? null,
+            Transaction\Processor\Ledger\Base::FTS_ACCOUNT_TYPE    => $input[Attempt\Entity::BANK_ACCOUNT_TYPE] ?? null
+        ];
+
+        (new Core)->processLedgerFav($this->validation, null, $ftsSourceAccountInformation);
     }
 
     /**

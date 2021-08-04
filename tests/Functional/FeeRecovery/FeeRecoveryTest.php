@@ -70,7 +70,11 @@ class FeeRecoveryTest extends TestCase
 
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
 
-        $this->bankingAccount = $this->fixtures->create('banking_account', [
+        $bankingAccount = $this->getDbEntity('banking_account', ['balance_id' => $this->balance['id']]);
+
+        // Update the banking account we created to make it a RBL CA Banking Account
+        $this->bankingAccount = $this->fixtures->edit('banking_account', $bankingAccount['id'],
+        [
             'account_number'        => '2224440041626905',
             'account_type'          => 'current',
             'merchant_id'           => '10000000000000',

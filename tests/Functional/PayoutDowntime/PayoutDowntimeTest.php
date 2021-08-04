@@ -213,21 +213,6 @@ class PayoutDowntimeTest extends TestCase
 
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
 
-        $balanceId = $this->balance->getId();
-
-        $this->fixtures->create('banking_account', [
-            'id'                    => 'xba00000000001',
-            'account_number'        => '2224440041626905',
-            'account_type'          => 'current',
-            'merchant_id'           => '10000000000000',
-            'channel'               => 'rbl',
-            'pincode'               => '1',
-            'bank_reference_number' => '',
-            'account_ifsc'          => 'RATN0000156',
-            'balance_id'            => $balanceId,
-            'status'                => 'activated'
-        ]);
-
         $attributes1 = [
             'status'           => 'Enabled',
             'channel'          => 'RBL',
@@ -296,21 +281,6 @@ class PayoutDowntimeTest extends TestCase
             Channel::RBL);
 
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
-
-        $balanceId = $this->balance->getId();
-
-        $this->fixtures->create('banking_account', [
-            'id'                    => 'xba00000000001',
-            'account_number'        => '2224440041626905',
-            'account_type'          => 'current',
-            'merchant_id'           => '10000000000000',
-            'channel'               => 'rbl',
-            'pincode'               => '1',
-            'bank_reference_number' => '',
-            'account_ifsc'          => 'RATN0000156',
-            'balance_id'            => $balanceId,
-            'status'                => 'activated'
-        ]);
 
         $userAttributes = [
             'id'       => '20000000000000',
@@ -456,21 +426,6 @@ class PayoutDowntimeTest extends TestCase
             Channel::RBL);
 
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
-
-        $balanceId = $this->balance->getId();
-
-        $this->fixtures->create('banking_account', [
-            'id'                    => 'xba00000000001',
-            'account_number'        => '2224440041626905',
-            'account_type'          => 'current',
-            'merchant_id'           => '10000000000000',
-            'channel'               => 'rbl',
-            'pincode'               => '1',
-            'bank_reference_number' => '',
-            'account_ifsc'          => 'RATN0000156',
-            'balance_id'            => $balanceId,
-            'status'                => 'activated'
-        ]);
 
         $userAttributes = [
             'id'       => '20000000000000',

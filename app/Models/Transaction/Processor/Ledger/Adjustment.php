@@ -45,19 +45,21 @@ class Adjustment extends Base
             ];
 
             $payload = [
-                self::TRANSACTOR       => self::X,
-                self::MODE             => $this->mode,
-                self::IDEMPOTENCY_KEY  => gen_uuid(self::UUID_FORMAT),
-                self::MERCHANT_ID      => $adjustment->getMerchantId(),
-                self::CURRENCY         => $adjustment->getCurrency(),
-                self::AMOUNT           => (string) abs($adjustment->getAmount()),
-                self::BASE_AMOUNT      => (string) abs($adjustment->getAmount()),
-                self::COMMISSION       => (string) $adjustment->transaction->getFee(),
-                self::TAX              => (string) $adjustment->transaction->getTax(),
-                self::TRANSACTOR_ID    => $adjustment->getPublicId(),
-                self::NOTES            => json_encode($notes),
-                self::TRANSACTOR_TYPE  => $transactorType,
-                self::TRANSACTION_DATE => $adjustment->getCreatedAt(),
+                self::TRANSACTOR         => self::X,
+                self::MODE               => $this->mode,
+                self::IDEMPOTENCY_KEY    => gen_uuid(self::UUID_FORMAT),
+                self::MERCHANT_ID        => $adjustment->getMerchantId(),
+                self::CURRENCY           => $adjustment->getCurrency(),
+                self::AMOUNT             => (string) abs($adjustment->getAmount()),
+                self::BASE_AMOUNT        => (string) abs($adjustment->getAmount()),
+                self::COMMISSION         => (string) $adjustment->transaction->getFee(),
+                self::TAX                => (string) $adjustment->transaction->getTax(),
+                self::TRANSACTOR_ID      => $adjustment->getPublicId(),
+                self::NOTES              => json_encode($notes),
+                self::TRANSACTOR_TYPE    => $transactorType,
+                self::TRANSACTION_DATE   => $adjustment->getCreatedAt(),
+                self::BANKING_ACCOUNT_ID => $adjustment->balance->bankingAccount->getPublicId(),
+                self::API_TRANSACTION_ID => $adjustment->getTransactionId(),
             ];
 
             $this->pushToLedgerSns($payload);

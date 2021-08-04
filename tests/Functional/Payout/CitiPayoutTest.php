@@ -636,14 +636,7 @@ class CitiPayoutTest extends TestCase
     {
         $currentBalance = $this->getDbLastEntity('balance');
 
-        $bankingAccountAttributes = [
-            'id'                    =>  'ABCde1234ABCde',
-            'account_number'        =>  '2224440041626998',
-            'balance_id'            =>  $this->bankingBalance->getId(),
-            'account_type'          =>  'nodal',
-        ];
-
-        $bankingAccount = $this->createBankingAccount($bankingAccountAttributes);
+        $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $response = $this->startTest();
 
@@ -707,18 +700,11 @@ class CitiPayoutTest extends TestCase
 
         $balance = $this->getLastEntity('balance', true);
 
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
         $balanceBefore = $balance['balance'];
 
         $currentBalance = $this->getDbLastEntity('balance');
-
-        $bankingAccountAttributes = [
-            'id'                    =>  'ABCde1234ABCde',
-            'account_number'        =>  '2224440041626998',
-            'balance_id'            =>  $this->bankingBalance->getId(),
-            'account_type'          =>  'nodal',
-        ];
-
-        $bankingAccount = $this->createBankingAccount($bankingAccountAttributes);
 
         $this->ba->privateAuth();
 
@@ -792,14 +778,7 @@ class CitiPayoutTest extends TestCase
 
         $currentBalance = $this->getDbLastEntity('balance');
 
-        $bankingAccountAttributes = [
-            'id'                    =>  'ABCde1234ABCde',
-            'account_number'        =>  '2224440041626998',
-            'balance_id'            =>  $this->bankingBalance->getId(),
-            'account_type'          =>  'nodal',
-        ];
-
-        $bankingAccount = $this->createBankingAccount($bankingAccountAttributes);
+        $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->ba->privateAuth();
 

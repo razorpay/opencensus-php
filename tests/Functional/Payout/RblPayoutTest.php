@@ -67,17 +67,19 @@ class RblPayoutTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 10000000, 'direct', 'rbl');
 
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
         $bankingAccountParams = [
             'id'             => 'xba00000000000',
             'merchant_id'    => '10000000000000',
             'account_ifsc'   => 'RATN0000088',
             'account_number' => '2224440041626905',
-            'status'         => 'active',
+            'status'         => 'activated',
             'channel'        => 'rbl',
             'balance_id'     => $this->bankingBalance->getId(),
         ];
 
-        $this->createBankingAccount($bankingAccountParams);
+        $this->fixtures->edit('banking_account', $bankingAccount['id'], $bankingAccountParams);
 
         $this->fixtures->create('banking_account_statement_details',[
             Details\Entity::ID             => 'xbas0000000002',

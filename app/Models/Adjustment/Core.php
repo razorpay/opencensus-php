@@ -5,6 +5,7 @@ namespace RZP\Models\Adjustment;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Dispute;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -446,12 +447,17 @@ class Core extends Base\Core
 
     protected function processLedgerAdjustment(Entity $adjustment)
     {
-        // In case env variable ledger.enabled is false or it's live mode, return.
+        // In case env variable ledger.enabled is false, return.
         // We shall also skip the ledger creation
-        // Currently onboarding for test mode only.
         if (($this->app['config']->get('applications.ledger.enabled') === false) or
-            ($adjustment->balance->isTypeBanking() === false) or
-            ($this->isLiveMode()))
+            ($adjustment->balance->isTypeBanking() === false))
+        {
+            return;
+        }
+
+        // If the mode is live but the merchant does not have the ledger journal write feature, we return.
+        if (($this->isLiveMode()) and
+            ($adjustment->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES) === false))
         {
             return;
         }

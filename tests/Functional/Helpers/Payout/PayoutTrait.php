@@ -675,9 +675,9 @@ trait PayoutTrait
         $this->makeRequestAndGetContent($request);
     }
 
-    protected function updateFtaAndSource($payout_id, $status, $utr = '928337183')
+    protected function updateFtaAndSource($payout_id, $status, $utr = '928337183', $mode = 'test')
     {
-        $this->ba->ftsAuth();
+        $this->ba->ftsAuth($mode);
 
         $request = [
             'method'  => 'POST',
@@ -698,7 +698,9 @@ trait PayoutTrait
                 'source_id'           => $payout_id,
                 'source_type'         => 'payout',
                 'status'              => $status,
-                'utr'                 => $utr
+                'utr'                 => $utr,
+                'source_account_id'   => '111111111',
+                'bank_account_type'   => 'current'
             ],
         ];
 

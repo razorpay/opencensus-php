@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Adjustment;
 
 use Mail;
 
+use RZP\Models\Feature;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Transaction\Adjustment;
@@ -15,13 +16,15 @@ use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\NegativeBalanceThresholdAlert;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Mail\Merchant\ReserveBalanceActivate as ReserveBalanceActivateMail;
 
 class AdjustmentTest extends TestCase
 {
-    use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
+    use TestsBusinessBanking;
+    use RequestResponseFlowTrait;
 
     protected function setUp(): void
     {
@@ -466,9 +469,11 @@ class AdjustmentTest extends TestCase
         $this->ba->adminProxyAuth($merchantId, 'rzp_test_'.$merchantId);
     }
 
-    public function testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalance()
+    public function testTransactionCreatedWebhookAndLedgerSnsAndMailOnAdjustmentCreateForBankingBalance()
     {
-        $this->mockLedgerSns(1, 'positive_adjustment_processed');
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
 
         Mail::fake();
 
@@ -493,6 +498,18 @@ class AdjustmentTest extends TestCase
                                     'merchant_id'    => '100abc000abc00',
                                     'balance'        => 30000
                                 ]);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes);
 
         // Create merchant user mapping
         $this->fixtures->on('live')->user->createUserMerchantMapping([
@@ -570,11 +587,32 @@ class AdjustmentTest extends TestCase
 
             return true;
         });
+
+        $adjustmentsCreated = $this->getDbEntities('adjustment');
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($adjustmentsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('100abc000abc00', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('0', $ledgerRequestPayload['commission']);
+            $this->assertEquals('0', $ledgerRequestPayload['tax']);
+            $this->assertEquals('positive_adjustment_processed', $ledgerRequestPayload['transactor_type']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+        }
     }
 
-    public function testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalance()
+    public function testTransactionCreatedWebhookAndLedgerSnsAndMailOnNegativeAdjustmentCreateForBankingBalance()
     {
-        $this->mockLedgerSns(1, 'negative_adjustment_processed');
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
 
         Mail::fake();
 
@@ -599,6 +637,18 @@ class AdjustmentTest extends TestCase
                                     'merchant_id'    => '100abc000abc00',
                                     'balance'        => 280000
                                 ]);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes);
 
         // Create merchant user mapping
         $this->fixtures->on('live')->user->createUserMerchantMapping([
@@ -676,6 +726,25 @@ class AdjustmentTest extends TestCase
 
             return true;
         });
+
+        $adjustmentsCreated = $this->getDbEntities('adjustment');
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($adjustmentsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('100abc000abc00', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('0', $ledgerRequestPayload['commission']);
+            $this->assertEquals('0', $ledgerRequestPayload['tax']);
+            $this->assertEquals('negative_adjustment_processed', $ledgerRequestPayload['transactor_type']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+        }
     }
 
     public function testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalanceRazorxControl()
@@ -884,6 +953,181 @@ class AdjustmentTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testLedgerSnsForPositiveAdjustmentCreationOnLiveMode()
+    {
+        // No Ledger SNS call because the feature isn't enabled
+        $this->mockLedgerSns(0);
+
+        $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->fixtures->on('live')->create('balance',
+                                            [
+                                                'type'           => 'banking',
+                                                'account_type'   => 'shared',
+                                                'account_number' => 'ABC123PQR',
+                                                'merchant_id'    => '10000000000000',
+                                                'balance'        => 280000
+                                            ]);
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $countOfAdjustmentsAfterTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
+    }
+
+
+    public function testLedgerSnsForPositiveAdjustmentCreationOnLiveModeWhenLedgerFeatureEnabled()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
+
+        $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->fixtures->on('live')->create('balance',
+                                            [
+                                                'type'           => 'banking',
+                                                'account_type'   => 'shared',
+                                                'account_number' => 'ABC123PQR',
+                                                'merchant_id'    => '10000000000000',
+                                                'balance'        => 280000
+                                            ]);
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->ba->adminAuth('live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testLedgerSnsForPositiveAdjustmentCreationOnLiveMode'];
+
+        $this->startTest();
+
+        $adjustmentsCreated = $this->getDbEntities('adjustment', [], 'live');
+
+        $countOfAdjustmentsAfterTest = count($adjustmentsCreated);
+
+        $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('live', $ledgerRequestPayload['mode']);
+            $this->assertEquals($adjustmentsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('0', $ledgerRequestPayload['commission']);
+            $this->assertEquals('0', $ledgerRequestPayload['tax']);
+            $this->assertEquals('positive_adjustment_processed', $ledgerRequestPayload['transactor_type']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+        }
+    }
+
+
+    public function testLedgerSnsForNegativeAdjustmentCreationOnLiveMode()
+    {
+        // No Ledger SNS call because the feature isn't enabled
+        $this->mockLedgerSns(0);
+
+        $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->fixtures->on('live')->create('balance',
+                                            [
+                                                'type'           => 'banking',
+                                                'account_type'   => 'shared',
+                                                'account_number' => 'ABC123PQR',
+                                                'merchant_id'    => '10000000000000',
+                                                'balance'        => 280000
+                                            ]);
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $countOfAdjustmentsAfterTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
+    }
+
+
+    public function testLedgerSnsForNegativeAdjustmentCreationOnLiveModeWhenLedgerFeatureEnabled()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
+
+        $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->fixtures->on('live')->create('balance',
+                                            [
+                                                'type'           => 'banking',
+                                                'account_type'   => 'shared',
+                                                'account_number' => 'ABC123PQR',
+                                                'merchant_id'    => '10000000000000',
+                                                'balance'        => 280000
+                                            ]);
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->ba->adminAuth('live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testLedgerSnsForNegativeAdjustmentCreationOnLiveMode'];
+
+        $this->startTest();
+
+        $adjustmentsCreated = $this->getDbEntities('adjustment', [], 'live');
+
+        $countOfAdjustmentsAfterTest = count($adjustmentsCreated);
+
+        $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('live', $ledgerRequestPayload['mode']);
+            $this->assertEquals($adjustmentsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('0', $ledgerRequestPayload['commission']);
+            $this->assertEquals('0', $ledgerRequestPayload['tax']);
+            $this->assertEquals('negative_adjustment_processed', $ledgerRequestPayload['transactor_type']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+        }
     }
 
     public function testAddAdjustmentOnCapitalBalance()

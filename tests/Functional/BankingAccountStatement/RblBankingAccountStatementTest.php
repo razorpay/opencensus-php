@@ -96,7 +96,9 @@ class RblBankingAccountStatementTest extends TestCase
 
         $balanceId = $this->balance->getId();
 
-        $this->fixtures->create('banking_account', [
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->fixtures->edit('banking_account', $bankingAccount['id'], [
             'id'                    => 'xba00000000001',
             'account_number'        => '2224440041626905',
             'account_type'          => 'current',

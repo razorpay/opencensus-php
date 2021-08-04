@@ -1011,12 +1011,17 @@ class Processor extends VirtualAccount\Processor
      */
     protected function processLedgerFundLoading(Entity $bankTransfer, string $terminalId, $terminalAccountType)
     {
-        // In case env variable ledger.enabled is false or it's live mode, return.
-        // Currently onboarding for test mode only.
-        if (($this->app['config']->get('applications.ledger.enabled') === false) or
-            ($this->isLiveMode()))
+        // In case env variable ledger.enabled is false, return.
+        if ($this->app['config']->get('applications.ledger.enabled') === false)
         {
            return;
+        }
+
+        // If the mode is live but the merchant does not have the ledger journal write feature, we return.
+        if (($this->isLiveMode()) and
+            ($bankTransfer->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES) === false))
+        {
+            return;
         }
 
         (new LedgerFundLoading)->pushTransactionToLedger($bankTransfer,

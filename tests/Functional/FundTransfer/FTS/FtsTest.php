@@ -53,7 +53,7 @@ class FtsTest extends TestCase
                 'id'             => '1000000lcustba',
                 'account_type'   => AccountType::DIRECT,
                 'merchant_id'    => '10000000000000',
-                'account_number' => '2224440041626905',
+                'account_number' => '2224440041626906',
                 'account_ifsc'   => 'RAZRB000000',
                 'status'         => 'activated'
             ]);

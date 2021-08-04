@@ -14,6 +14,7 @@ use RZP\Models\Admin;
 use RZP\Models\State;
 use DeepCopy\DeepCopy;
 use RZP\Models\Counter;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Services\Mutex;
@@ -416,18 +417,23 @@ class Core extends Base\Core
         $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
         $ftaBankStatusCode = $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null;
 
+        $ftsSourceAccountInformation = [
+            Transaction\Processor\Ledger\Base::FTS_FUND_ACCOUNT_ID => $ftaData[Attempt\Entity::SOURCE_ACCOUNT_ID] ?? null,
+            Transaction\Processor\Ledger\Base::FTS_ACCOUNT_TYPE    => $ftaData[Attempt\Entity::BANK_ACCOUNT_TYPE] ?? null
+        ];
+
         switch ($status)
         {
             case Status::PROCESSED:
-                $this->handlePayoutProcessed($payout);
+                $this->handlePayoutProcessed($payout, null, $ftsSourceAccountInformation);
                 break;
 
             case Status::REVERSED:
-                $this->handlePayoutReversed($payout, $ftaFailureReason, $ftaBankStatusCode);
+                $this->handlePayoutReversed($payout, $ftaFailureReason, $ftaBankStatusCode, null, $ftsSourceAccountInformation);
                 break;
 
             case Status::FAILED:
-                $this->handlePayoutFailed($payout, $ftaFailureReason, $ftaBankStatusCode);
+                $this->handlePayoutFailed($payout, $ftaFailureReason, $ftaBankStatusCode, $ftsSourceAccountInformation);
                 break;
 
             case Status::CREATED:
@@ -1778,7 +1784,7 @@ class Core extends Base\Core
         return $payoutInput;
     }
 
-    public function handlePayoutProcessed(Entity $payout, $debit_bas = null)
+    public function handlePayoutProcessed(Entity $payout, $debit_bas = null, array $ftsSourceAccountInformation = [])
     {
         if ($payout->isStatusReversed() === true)
         {
@@ -1813,30 +1819,53 @@ class Core extends Base\Core
             $this->app->events->dispatch('api.payout.processed', [$payout]);
         }
 
-        $this->processLedgerPayout($payout);
+        $this->processLedgerPayout($payout, null, $ftsSourceAccountInformation);
     }
 
     /**
-     * @param Entity $payout
+     * @param Entity               $payout
      * @param Reversal\Entity|null $reversal
+     * @param array|null           $ftsSourceAccountInformation
      * Push to ledger sns when a payout status is changed. This will create this payout in ledger DB.
      * Since ledger keeps different records for all payout states, these events are triggered.
      */
-    protected function processLedgerPayout(Entity $payout, Reversal\Entity $reversal = null)
+    protected function processLedgerPayout(Entity $payout,
+                                           Reversal\Entity $reversal = null,
+                                           array $ftsSourceAccountInformation = [],
+                                           string $previousStatus = null)
     {
         // Currently only shared fundAccount payout is pushed to ledger. So in case of direct, return.
-        // In case env variable ledger.enabled is false or it's live mode, return.
-        // Currently onboarding for test mode only.
+        // In case env variable ledger.enabled is false, return.
         if (($this->app['config']->get('applications.ledger.enabled') === false) or
-            ($payout->getBalanceAccountType() === AccountType::DIRECT) or
-            ($this->isLiveMode()))
+            ($payout->getBalanceAccountType() === AccountType::DIRECT))
         {
             return;
         }
 
+        // If the mode is live but the merchant does not have the ledger journal write feature, we return.
+        if (($this->isLiveMode()) and
+            ($payout->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES) === false))
+        {
+            return;
+        }
+
+        // If a payout goes from initiated to reversed, we wish to move the status
+        // from initiated -> processed -> reversed, hence we are forcing a call to ledger with processed status
+        if (($payout->getStatus() === Status::REVERSED) and
+            ($previousStatus === Status::INITIATED or $previousStatus === Status::CREATED))
+        {
+            $clonedPayout = clone $payout;
+
+            $clonedPayout->setStatus(Status::PROCESSED);
+
+            $event = Status::getLedgerEventFromPayoutStatus($clonedPayout->getStatus());
+
+            (new Transaction\Processor\Ledger\Payout)->pushTransactionToLedger($clonedPayout, $event, $reversal, $ftsSourceAccountInformation);
+        }
+
         $event = Status::getLedgerEventFromPayoutStatus($payout->getStatus());
 
-        (new Transaction\Processor\Ledger\Payout)->pushTransactionToLedger($payout, $event, $reversal);
+        (new Transaction\Processor\Ledger\Payout)->pushTransactionToLedger($payout, $event, $reversal, $ftsSourceAccountInformation);
     }
 
     /**
@@ -2253,11 +2282,14 @@ class Core extends Base\Core
     }
 
     public function handlePayoutReversed(Entity $payout,
-                                            string $ftaFailureReason = null,
-                                            string $ftaBankStatusCode = null,
-                                            $credit_bas = null)
+                                         string $ftaFailureReason = null,
+                                         string $ftaBankStatusCode = null,
+                                         $credit_bas = null,
+                                         array $ftsSourceAccountInformation = [])
     {
         $reversal = null;
+
+        $previousStatus = $payout->getStatus();
 
         // check using service
         if ($payout->getIsPayoutService() === true)
@@ -2274,12 +2306,13 @@ class Core extends Base\Core
             $this->app->events->dispatch('api.payout.reversed', [$payout]);
         }
 
-        $this->processLedgerPayout($payout, $reversal);
+        $this->processLedgerPayout($payout, $reversal, $ftsSourceAccountInformation, $previousStatus);
     }
 
     protected function handlePayoutFailed(Entity $payout,
                                           string $ftaFailureReason = null,
-                                          string $ftaBankStatusCode = null)
+                                          string $ftaBankStatusCode = null,
+                                          array $ftsSourceAccountInformation = [])
     {
         // will be removed after new error object is released.
         $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);

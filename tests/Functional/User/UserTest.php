@@ -2834,7 +2834,7 @@ class UserTest extends TestCase
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
         $bankingAccountAttributes = [
-            'id'                    =>  'ABCde1234ABCde',
+            'id'                    =>  'ABCde1234ABCdE',
             'account_number'        =>  '2224440041626998',
             'balance_id'            =>  $this->bankingBalance->getId(),
             'account_type'          =>  'nodal',
@@ -2864,7 +2864,7 @@ class UserTest extends TestCase
         Channel::RBL);
 
         $bankingAccountAttributes = [
-            'id'                    =>  'ABCde1234ABCde',
+            'id'                    =>  'ABCde1234ABCdE',
             'account_number'        =>  '2224440041626998',
             'balance_id'            =>  $this->bankingBalance->getId(),
             'account_type'          =>  'nodal',

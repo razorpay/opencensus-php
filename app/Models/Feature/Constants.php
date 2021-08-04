@@ -772,6 +772,11 @@ class Constants
 
     const FEATURE_BBPS = 'feature_bbps';
 
+    /**
+     * All Ledger Features for RX release
+     */
+    const LEDGER_JOURNAL_WRITES = 'ledger_journal_writes';
+
     const ORG_AXIS_PAYPAL = 'axis_paypal';
 
     const AXIS_PAYPAL_ENABLE = 'axis_paypal_enable';
@@ -1121,6 +1126,7 @@ class Constants
         self::ROUTE_KEY_MERCHANTS_QUEUE       => true,
         self::SHOW_MOR_TNC                    => true,
         self::FEATURE_BBPS                    => true,
+        self::LEDGER_JOURNAL_WRITES           => true,
         self::ORG_AXIS_PAYPAL                 => true,
         self::AXIS_PAYPAL_ENABLE              => true,
     ];

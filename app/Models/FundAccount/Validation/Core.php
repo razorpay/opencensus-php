@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Services\FTS;
 use RZP\Models\Admin;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -519,8 +520,9 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Entity $fundAccountValidation
+     * @param Entity      $fundAccountValidation
      * @param string|null $status
+     * @param array       $ftsSourceAccountInformation
      * Push to ledger sns when Fund Account Validation status is changed.
      * Since ledger keeps different records for all fav states, these events are triggered.
      * Status is sent only in case of reversed. Since FAV doesn't have reversed status, it is sent explicitly
@@ -528,18 +530,27 @@ class Core extends Base\Core
      *
      * TODO: In case of fav reversal, recon updates FTA to reversed and not FAV. So once FTA gets deprecated, have to check FAV_REVERSAL flow.
      */
-    public function processLedgerFav(Entity $fundAccountValidation, string $status = null)
+    public function processLedgerFav(Entity $fundAccountValidation,
+                                     string $status = null,
+                                     array $ftsSourceAccountInformation = [])
     {
-        // In case env variable ledger.enabled is false or it's live mode, return.
-        // Currently onboarding for test mode only.
-        if (($this->app['config']->get('applications.ledger.enabled') === false) or ($this->isLiveMode()))
+        // In case env variable ledger.enabled is false, or balance type is not banking, return.
+        if (($this->app['config']->get('applications.ledger.enabled') === false) or
+            ($fundAccountValidation->isBalanceTypeBanking() === false))
         {
            return;
         }
 
+        // If the mode is live but the merchant does not have the ledger journal write feature, we return.
+        if (($this->isLiveMode()) and
+            ($fundAccountValidation->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES) === false))
+        {
+            return;
+        }
+
         // Since FAV does not maintain time when it gets processed or failed, defining current time
         // which will be used as time when that particular FAV event is created in ledger.
-        $transactorDate = time();
+        $transactorDate = Carbon::now(Timezone::IST)->getTimestamp();
 
         if ($status === null)
         {
@@ -548,7 +559,7 @@ class Core extends Base\Core
 
         $event = Status::getLedgerEventFromFavStatus($status);
 
-        (new Ledger\FundAccountValidation)->pushTransactionToLedger($fundAccountValidation, $event, $transactorDate);
+        (new Ledger\FundAccountValidation)->pushTransactionToLedger($fundAccountValidation, $event, $transactorDate, $ftsSourceAccountInformation);
     }
 
     /**
@@ -790,11 +801,13 @@ class Core extends Base\Core
             $extraInfo = $input['extra_info'] ?? [];
 
             $mapping = [
-                Entity::STATUS                 => $input[FtsConstants::STATUS],
-                Entity::UTR                    => $input[FtsConstants::UTR],
-                FtsConstants::BANK_STATUS_CODE => $input[FtsConstants::BANK_STATUS_CODE],
-                Entity::ID                     => $input[FtsConstants::SOURCE_ID],
-                Entity::FTS_TRANSFER_ID        => $input[FtsConstants::FUND_TRANSFER_ID],
+                Entity::STATUS                    => $input[FtsConstants::STATUS],
+                Entity::UTR                       => $input[FtsConstants::UTR],
+                FtsConstants::BANK_STATUS_CODE    => $input[FtsConstants::BANK_STATUS_CODE],
+                Entity::ID                        => $input[FtsConstants::SOURCE_ID],
+                Entity::FTS_TRANSFER_ID           => $input[FtsConstants::FUND_TRANSFER_ID],
+                Attempt\Entity::BANK_ACCOUNT_TYPE => $input[Attempt\Entity::BANK_ACCOUNT_TYPE] ?? null,
+                Attempt\Entity::SOURCE_ACCOUNT_ID => $input[Attempt\Entity::SOURCE_ACCOUNT_ID] ?? null,
             ] + $extraInfo;
 
             $this->updateFav($mapping);

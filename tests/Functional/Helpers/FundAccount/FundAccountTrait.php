@@ -43,9 +43,9 @@ trait FundAccountTrait
         return $request;
     }
 
-    protected function createFundAccountBankAccount($key = null)
+    protected function createFundAccountBankAccount($key = null, $mode = 'test')
     {
-        $this->fixtures->create('contact', ['id' => '1000000contact']);
+        $this->fixtures->on($mode)->create('contact', ['id' => '1000000contact']);
 
         $request = $this->buildFundAccountRequest(Type::BANK_ACCOUNT);
 

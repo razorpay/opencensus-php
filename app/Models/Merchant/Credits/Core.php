@@ -7,12 +7,14 @@ use Mail;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Promotion;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Models\Admin\Action;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForKycUsers;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForChurnedUsers;
 
@@ -207,7 +209,7 @@ class Core extends Base\Core
         $creditsLog->getValidator()->validateBalanceCredits(
             $creditsLog->getValue(), $currentMerchantCredits, $creditsLog->getType());
 
-        return $this->repo->transaction(function() use ($merchant, $creditsLog, $creditBalance)
+        $creditsLog = $this->repo->transaction(function() use ($merchant, $creditsLog, $creditBalance)
         {
             $this->repo->saveOrFail($creditsLog);
 
@@ -215,6 +217,10 @@ class Core extends Base\Core
 
             return $creditsLog;
         });
+
+        $this->processLedgerForCreditAddition($creditsLog);
+
+        return $creditsLog;
     }
 
     public function checkMerchantStateAndSendCreditEmail($merchant, $credit)
@@ -282,5 +288,26 @@ class Core extends Base\Core
         $formattedAmount = number_format($amount / 100, 2, '.', '');
 
         return $formattedAmount;
+    }
+
+    protected function processLedgerForCreditAddition(Entity $creditLogs)
+    {
+        if (($this->app['config']->get('applications.ledger.enabled') === false) or
+            ($creditLogs->getProduct() !== Balance\Product::BANKING))
+        {
+            return;
+        }
+
+        $ledgerJournalWritesEnabled = $creditLogs->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES);
+
+        if ($ledgerJournalWritesEnabled === false)
+        {
+            return;
+        }
+
+        $event = Ledger\Rewards::FUND_LOADING_PROCESSED;
+
+        (new Ledger\Rewards)->pushTransactionToLedger($creditLogs,
+                                                      $event);
     }
 }

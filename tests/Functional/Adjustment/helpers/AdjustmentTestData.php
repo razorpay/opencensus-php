@@ -240,7 +240,7 @@ return [
         ]
     ],
 
-    'testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalance' => [
+    'testTransactionCreatedWebhookAndLedgerSnsAndMailOnAdjustmentCreateForBankingBalance' => [
         'request' => [
             'url' => '/adjustments',
             'method' => 'POST',
@@ -280,7 +280,7 @@ return [
         ],
     ],
 
-    'testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalance' => [
+    'testTransactionCreatedWebhookAndLedgerSnsAndMailOnNegativeAdjustmentCreateForBankingBalance' => [
         'request' => [
             'url' => '/adjustments',
             'method' => 'POST',
@@ -398,5 +398,49 @@ return [
                 ],
             ],
         ],
+    ],
+
+    'testLedgerSnsForPositiveAdjustmentCreationOnLiveMode' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  250000,
+                'type'          =>  'banking',
+                'merchant_id'   =>  '10000000000000',
+                'currency'      =>  'INR',
+                'description'   =>  'Account: ABC123, Bank: ICICI'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => 250000,
+                'currency'      => 'INR',
+                'description'   => 'Account: ABC123, Bank: ICICI',
+            ],
+        ]
+    ],
+
+    'testLedgerSnsForNegativeAdjustmentCreationOnLiveMode' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  -250000,
+                'type'          =>  'banking',
+                'merchant_id'   =>  '10000000000000',
+                'currency'      =>  'INR',
+                'description'   =>  'Account: ABC123, Bank: ICICI'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => -250000,
+                'currency'      => 'INR',
+                'description'   => 'Account: ABC123, Bank: ICICI',
+            ],
+        ]
     ],
 ];

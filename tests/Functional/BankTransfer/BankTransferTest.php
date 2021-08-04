@@ -2579,9 +2579,11 @@ class BankTransferTest extends TestCase
     {
         Mail::fake();
 
+        $ledgerSnsPayloadArray = [];
+
         // During fund loading, there has been push to SNS topic for creating this transaction in Ledger service.
         // Mocking ledger sns because call to ledger is currently async via SNS. Once it is in sync, this will be removed.
-        $this->mockLedgerSns(1, 'fund_loading_processed');
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
 
         $balance = $this->getDbEntity('balance',
                                       [
@@ -2591,6 +2593,16 @@ class BankTransferTest extends TestCase
         $this->fixtures->edit('balance', $balance->getId(), [
             'type' => 'banking',
         ]);
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  $balance['account_number'],
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes);
 
         $this->fixtures->create('merchant_detail', [
             'merchant_id'   => '10000000000000',
@@ -2618,10 +2630,35 @@ class BankTransferTest extends TestCase
         // Since this was a test mode fund loading, it shall always pass and thus we will not send Fund loading failed
         // mail.
         Mail::assertNotQueued(FundLoadingFailed::class);
+
+        $bankTransfersCreated = $this->getDbEntities('bank_transfer');
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($bankTransfersCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('0', $ledgerRequestPayload['commission']);
+            $this->assertEquals('0', $ledgerRequestPayload['tax']);
+            $this->assertEquals('fund_loading_processed', $ledgerRequestPayload['transactor_type']);
+            $this->assertEquals('term_SHRDBANKACC3DS', $ledgerRequestPayload['terminal_id']);
+            $this->assertEquals('nodal', $ledgerRequestPayload['terminal_account_type']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+        }
     }
 
     public function testBankTransferProcessWithFieldsOnLiveMode()
     {
+        // 0 Ledger SNS calls because even though the request is to live mode,
+        // the ledger journal write feature isn't present.
+        $this->mockLedgerSns(0);
+
         Mail::fake();
 
         $this->ba->yesbankAuth('live');
@@ -2666,6 +2703,94 @@ class BankTransferTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testBankTransferProcessWithFieldsOnLiveModeWithLedgerSns()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
+
+        Mail::fake();
+
+        $this->ba->yesbankAuth('live');
+
+        $balance1 = $this->getDbEntity('balance',
+                                       [
+                                           'merchant_id' => '10000000000000',
+                                       ], 'live');
+
+        $this->fixtures->on('live')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => '2224440041626905',
+        ]);
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance1['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $ba = $this->fixtures->on('live')->create('bank_account',
+                                                  [
+                                                      'merchant_id'    => '10000000000000',
+                                                      'entity_id'      => 'ShrdVirtualAcc',
+                                                      'type'           => 'virtual_account',
+                                                      'account_number' => '2224440041626905',
+                                                  ]);
+
+        $this->fixtures->on('live')->create('virtual_account',
+                                            [
+                                                'id'              => 'ShrdVirtualAcc',
+                                                'merchant_id'     => '10000000000000',
+                                                'status'          => 'active',
+                                                'bank_account_id' => $ba->getId(),
+                                                'balance_id'      => $balance1->getId(),
+                                            ]);
+
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferProcessWithFieldsOnLiveMode'];
+
+        $this->testData[__FUNCTION__]['request']['content']['payee_account'] = $accountNumber;
+
+        $this->startTest();
+
+        Mail::assertQueued(BankTransfer::class, function($mail) {
+            $this->assertEquals('transaction.created', $mail->viewData['event']);
+            $this->assertEquals('2224440041626905', $mail->viewData['balance']['account_number']);
+            $this->assertEquals('Your RazorpayX A/C XX6905 is credited with INR 50,000.00', $mail->subject);
+
+            return true;
+        });
+
+
+        $bankTransfersCreated = $this->getDbEntities('bank_transfer', [], 'live');
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('live', $ledgerRequestPayload['mode']);
+            $this->assertEquals($bankTransfersCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('0', $ledgerRequestPayload['commission']);
+            $this->assertEquals('0', $ledgerRequestPayload['tax']);
+            $this->assertEquals('fund_loading_processed', $ledgerRequestPayload['transactor_type']);
+            $this->assertEquals('term_SHRDBANKACC3DS', $ledgerRequestPayload['terminal_id']);
+            $this->assertEquals('nodal', $ledgerRequestPayload['terminal_account_type']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload);
+            $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload);
+        }
     }
 
     public function testBankTransferProcessWithIncorrectPayeeAccountLength()

@@ -31,6 +31,8 @@ class Base extends Core
     const TRANSACTION_CONFIG_ID = 'transaction_config_id';
     const ENTITY                = 'entity';
     const IDEMPOTENCY_KEY       = 'idempotency_key';
+    const BANKING_ACCOUNT_ID    = 'banking_account_id';
+    const API_TRANSACTION_ID    = 'api_transaction_id';
 
     // For Fee Credit accounting
     const FEE_ACCOUNTING        = 'fee_accounting';
@@ -48,7 +50,6 @@ class Base extends Core
     const DEFAULT_AMAZON_PAY_FTS_FUND_ACCOUNT_TYPE = 'amazonpay';
     const DEFAULT_M2P_FTS_FUND_ACCOUNT_TYPE        = 'm2p';
     const DEFAULT_TERMINAL_ACCOUNT_TYPE            = 'nodal';
-
 
     const X = 'X';
 

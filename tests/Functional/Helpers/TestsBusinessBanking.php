@@ -71,6 +71,17 @@ trait TestsBusinessBanking
         $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
             $balance, '10000000000000',$balanceType, $channel);
 
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  $bankingBalance['account_number'],
+            'balance_id'            =>  $bankingBalance['id'],
+            'account_type'          =>  'current',
+            'channel'               =>  $bankingBalance['channel'],
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes);
+
         // Creates virtual account, its bank account receiver on new banking balance.
         $virtualAccount = $this->fixtures->create('virtual_account');
         $bankAccount    = $this->fixtures->create(
@@ -287,7 +298,7 @@ trait TestsBusinessBanking
         return $this->fixtures->fund_account->createVpa($attributes);
     }
 
-    protected function createFAVBankingPricingPlan()
+    protected function createFAVBankingPricingPlan($mode = 'test')
     {
         $pricingPlan = [
             'plan_name'           => 'FAV Plan',
@@ -302,7 +313,7 @@ trait TestsBusinessBanking
             'account_type'        => 'shared'
         ];
 
-        $this->fixtures->create('pricing', $pricingPlan);
+        $this->fixtures->on($mode)->create('pricing', $pricingPlan);
     }
 
     // TODO: Remove all the params and take an array of key value pair of features and their expected values instead

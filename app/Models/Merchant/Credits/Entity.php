@@ -219,6 +219,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::EXPIRED_AT);
     }
+
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
+    }
 // --------------------- End Getters -----------------------------------------
 
 // --------------------- Modifiers -------------------------------------------

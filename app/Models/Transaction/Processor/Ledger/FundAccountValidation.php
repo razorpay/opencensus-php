@@ -20,7 +20,8 @@ class FundAccountValidation extends Base
 
     public function pushTransactionToLedger(Entity $fundAccountValidation,
                                             string $transactorType,
-                                            int $transactorDate)
+                                            int $transactorDate,
+                                            array $ftsSourceAccountInformation = [])
     {
         $startTime = millitime();
 
@@ -49,7 +50,7 @@ class FundAccountValidation extends Base
                 self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($fundAccountValidation->getTransactionId())
             ];
 
-            $optionalPayload = [];
+            $ftsSourceAccountData = [];
 
             switch ($transactorType)
             {
@@ -60,10 +61,8 @@ class FundAccountValidation extends Base
                 case self::FAV_FAILED:
                 case self::FAV_REVERSED:
                 case self::FAV_PROCESSED:
-                    $optionalPayload = [
-                        self::FTS_FUND_ACCOUNT_ID => self::DEFAULT_FTS_FUND_ACCOUNT_ID,
-                        self::FTS_ACCOUNT_TYPE    => self::DEFAULT_FTS_FUND_ACCOUNT_TYPE,
-                    ];
+                    $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
+
                     break;
 
                 default:
@@ -71,22 +70,24 @@ class FundAccountValidation extends Base
             }
 
             $payload = [
-                self::TRANSACTOR       => self::X,
-                self::MODE             => $this->mode,
-                self::IDEMPOTENCY_KEY  => gen_uuid(self::UUID_FORMAT),
-                self::MERCHANT_ID      => $fundAccountValidation->getMerchantId(),
-                self::CURRENCY         => $fundAccountValidation->getCurrency(),
-                self::AMOUNT           => (string) $fundAccountValidation->getAmount(),
-                self::BASE_AMOUNT      => (string) $fundAccountValidation->getBaseAmount(),
-                self::COMMISSION       => (string) $fundAccountValidation->getFee(),
-                self::TAX              => (string) $fundAccountValidation->getTax(),
-                self::NOTES            => json_encode($notes),
-                self::TRANSACTOR_ID    => $fundAccountValidation->getPublicId(),
-                self::TRANSACTOR_TYPE  => $transactorType,
-                self::TRANSACTION_DATE => $transactorDate,
+                self::TRANSACTOR         => self::X,
+                self::MODE               => $this->mode,
+                self::IDEMPOTENCY_KEY    => gen_uuid(self::UUID_FORMAT),
+                self::MERCHANT_ID        => $fundAccountValidation->getMerchantId(),
+                self::CURRENCY           => $fundAccountValidation->getCurrency(),
+                self::AMOUNT             => (string) $fundAccountValidation->getAmount(),
+                self::BASE_AMOUNT        => (string) $fundAccountValidation->getBaseAmount(),
+                self::COMMISSION         => (string) $fundAccountValidation->getFee(),
+                self::TAX                => (string) $fundAccountValidation->getTax(),
+                self::NOTES              => json_encode($notes),
+                self::TRANSACTOR_ID      => $fundAccountValidation->getPublicId(),
+                self::TRANSACTOR_TYPE    => $transactorType,
+                self::TRANSACTION_DATE   => $transactorDate,
+                self::BANKING_ACCOUNT_ID => $fundAccountValidation->balance->bankingAccount->getPublicId(),
+                self::API_TRANSACTION_ID => $fundAccountValidation->getTransactionId()
             ];
 
-            $payload = array_merge($payload, $optionalPayload);
+            $payload = array_merge($payload, $ftsSourceAccountData);
 
             $this->pushToLedgerSns($payload);
         }
@@ -109,5 +110,19 @@ class FundAccountValidation extends Base
                     self::TIME_TAKEN => millitime() - $startTime,
                 ]);
         }
+    }
+
+    protected function getFtsSourceAccountData(array $ftsSourceAccountInformation = [])
+    {
+        // For Test Mode, we shall send default hardcoded data
+        if ($this->mode === \RZP\Constants\Mode::TEST)
+        {
+            return [
+                self::FTS_FUND_ACCOUNT_ID => self::DEFAULT_FTS_FUND_ACCOUNT_ID,
+                self::FTS_ACCOUNT_TYPE    => self::DEFAULT_FTS_FUND_ACCOUNT_TYPE,
+            ];
+        }
+
+        return $ftsSourceAccountInformation;
     }
 }

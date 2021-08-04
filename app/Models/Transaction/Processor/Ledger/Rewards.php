@@ -2,22 +2,22 @@
 
 namespace RZP\Models\Transaction\Processor\Ledger;
 
+use RZP\Trace\TraceCode;
+use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Trace\TraceCode;
-use RZP\Models\BankTransfer\Entity;
-use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
+use RZP\Models\Merchant\Credits\Entity;
 use RZP\Models\Transaction\Entity as TransactionEntity;
+use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
-class FundLoading extends Base
+class Rewards extends Base
 {
-    // Events
+    // The event remains `fund_loading_processed` similar to normal fund loading
+    // but here, we are loading funds into the rewards balance
     const FUND_LOADING_PROCESSED = "fund_loading_processed";
 
-    public function pushTransactionToLedger(Entity $bankTransfer,
-                                            string $transactorType,
-                                            string $terminalId,
-                                            $terminalAccountType)
+    public function pushTransactionToLedger(Entity $credits,
+                                            string $transactorType)
     {
         $startTime = millitime();
 
@@ -34,37 +34,33 @@ class FundLoading extends Base
                     TraceCode::LEDGER_JOURNAL_TRANSACTOR_TYPE_NOT_REGISTERED,
                     [
                         self::TRANSACTOR_TYPE => $transactorType,
-                        self::ENTITY          => $bankTransfer,
+                        self::ENTITY          => $credits,
                     ]);
 
                 return;
             }
 
             $notes = [
-                self::BALANCE_ID     => BalanceEntity::getSignedIdOrNull($bankTransfer->getBalanceId()),
-                self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($bankTransfer->getTransactionId())
+                self::BALANCE_ID     => BalanceEntity::getSignedIdOrNull($credits->getBalanceId()),
             ];
-
-            $terminalAccountType = $terminalAccountType ?? self::DEFAULT_TERMINAL_ACCOUNT_TYPE;
 
             $payload = [
                 self::TRANSACTOR            => self::X,
                 self::MODE                  => $this->mode,
                 self::IDEMPOTENCY_KEY       => gen_uuid(self::UUID_FORMAT),
-                self::MERCHANT_ID           => $bankTransfer->getMerchantId(),
-                self::CURRENCY              => $bankTransfer->getTransactionCurrency(),
-                self::AMOUNT                => (string) $bankTransfer->getAmount(),
-                self::BASE_AMOUNT           => (string) $bankTransfer->getAmount(),
-                self::COMMISSION            => (string) $bankTransfer->getTransactionFee(),
-                self::TAX                   => (string) $bankTransfer->getTransactionTax(),
+                self::MERCHANT_ID           => $credits->getMerchantId(),
+                self::CURRENCY              => Currency::INR,
+                self::AMOUNT                => (string) $credits->getValue(),
+                self::BASE_AMOUNT           => (string) $credits->getValue(),
+                // Fees and tax is always zero when loading reward credits to the merchant's balance.
+                self::COMMISSION            => '0',
+                self::TAX                   => '0',
                 self::NOTES                 => json_encode($notes),
-                self::TERMINAL_ID           => $terminalId,
-                self::TERMINAL_ACCOUNT_TYPE => $terminalAccountType,
-                self::TRANSACTOR_ID         => $bankTransfer->getPublicId(),
+                self::TRANSACTOR_ID         => $credits->getPublicId(),
                 self::TRANSACTOR_TYPE       => $transactorType,
-                self::TRANSACTION_DATE      => $bankTransfer->getCreatedAt(),
-                self::BANKING_ACCOUNT_ID    => $bankTransfer->balance->bankingAccount->getPublicId(),
-                self::API_TRANSACTION_ID    => $bankTransfer->getTransactionId(),
+                self::FEE_ACCOUNTING        => self::REWARD,
+                self::TRANSACTION_DATE      => $credits->getCreatedAt(),
+                self::BANKING_ACCOUNT_ID    => $credits->merchant->sharedBankingBalance->bankingAccount->getPublicId(),
             ];
 
             $this->pushToLedgerSns($payload);
@@ -76,7 +72,7 @@ class FundLoading extends Base
                 Trace::ERROR,
                 TraceCode::LEDGER_JOURNAL_FUND_LOADING_PAYLOAD_ERROR,
                 [
-                    self::TRANSACTOR_ID   => $bankTransfer->getPublicId(),
+                    self::TRANSACTOR_ID   => $credits->getPublicId(),
                     self::TRANSACTOR_TYPE => $transactorType,
                 ]);
         }

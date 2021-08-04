@@ -230,7 +230,7 @@ class TestCase extends ParentTestCase
         return $connector;
     }
 
-    protected function mockLedgerSns($count, $transactorType, $transactor = 'X', $mode = 'test')
+    protected function mockLedgerSns($count, & $snsPayloadArray = [])
     {
         $sns = \Mockery::mock('RZP\Services\Aws\Sns');
 
@@ -240,15 +240,13 @@ class TestCase extends ParentTestCase
 
         $sns->shouldReceive('publish')
             ->times($count)
-            ->with(\Mockery::on(function (string $input) use ($mode, $transactor, $transactorType)
+            ->with(\Mockery::on(function (string $input) use (& $snsPayloadArray)
             {
-                $json_decoded_input = json_decode($input, true);
+                $jsonDecodedInput = json_decode($input, true);
 
-                $modeAssert = $mode === $json_decoded_input['mode'];
-                $transactorAssert = $transactor === $json_decoded_input['transactor'];
-                $transactorTypeAssert = $transactorType === $json_decoded_input['transactor_type'];
+                array_push($snsPayloadArray, $jsonDecodedInput);
 
-                return $modeAssert && $transactorAssert && $transactorTypeAssert;
+                return true;
 
             }), \Mockery::type('string'));
     }

@@ -66,8 +66,12 @@ trait FundAccountValidationTrait
      * @param string $favId
      * @param string $status
      * @param array  $attributes
+     * @param string $mode
      */
-    protected function triggerFlowToUpdateFavWithNewState(string $favId, $status = 'FAILED', $attributes = [])
+    protected function triggerFlowToUpdateFavWithNewState(string $favId,
+                                                          $status = 'FAILED',
+                                                          $attributes = [],
+                                                          $mode = 'test')
     {
         // Remove sign from the entity ID
         if (strpos($favId, 'fav_') !== false)
@@ -103,6 +107,8 @@ trait FundAccountValidationTrait
             'status'              => ($status === 'COMPLETED') ? 'PROCESSED' : $status,
             'remarks'             => ($status === 'COMPLETED') ? 'Transaction Successful' : 'Invalid Bene/Mobile number',
             'utr'                 => str_shuffle('111917301337'),
+            'source_account_id'   => '1111111',
+            'bank_account_type'   => 'current',
         ];
 
         // Merge extra_info from attributes to input first
@@ -124,11 +130,11 @@ trait FundAccountValidationTrait
             ];
         }
 
-        // Create the webhook payload as per defauts and the custom attributes array passed to the function
+        // Create the webhook payload as per defaults and the custom attributes array passed to the function
         $input = array_merge($input, $attributes);
 
         // Make the webhook calls
-        $this->ba->ftsAuth();
+        $this->ba->ftsAuth($mode);
 
         $request = [
             'method'  => 'POST',

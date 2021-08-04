@@ -23,7 +23,8 @@ class Payout extends Base
 
     public function pushTransactionToLedger(Entity $payout,
                                             string $transactorType,
-                                            Reversal\Entity $reversal = null)
+                                            Reversal\Entity $reversal = null,
+                                            array $ftsSourceAccountInformation = [])
     {
         $startTime = millitime();
 
@@ -46,37 +47,37 @@ class Payout extends Base
                 return;
             }
 
+            $payload = $this->getDefaultPayload($payout);
+
             $transactorId = $payout->getPublicId();
             $transactionId = $payout->getTransactionId();
             $transactorDate = null;
-            $optionalPayload = [];
+            $ftsSourceAccountData = [];
+            $apiTransactionId = null;
 
             switch ($transactorType)
             {
                 case self::PAYOUT_INITIATED:
                     $transactorDate = $payout->getInitiatedAt();
+                    $apiTransactionId = $payout->getTransactionId();
                     break;
 
                 case self::PAYOUT_PROCESSED:
                     $transactorDate = $payout->getProcessedAt();
+                    $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
 
-                    $optionalPayload = [
-                        self::FTS_FUND_ACCOUNT_ID => self::DEFAULT_FTS_FUND_ACCOUNT_ID,
-                        self::FTS_ACCOUNT_TYPE    => self::DEFAULT_FTS_FUND_ACCOUNT_TYPE,
-                    ];
                     break;
 
                 case self::PAYOUT_REVERSED:
-                    if ($reversal !== null) {
+                    if ($reversal !== null){
                         $transactorDate = $reversal->getCreatedAt();
                         $transactorId = $reversal->getPublicId();
                         $transactionId = $reversal->getTransactionId();
+                        $apiTransactionId = $reversal->getTransactionId();
                     }
 
-                    $optionalPayload = [
-                        self::FTS_FUND_ACCOUNT_ID => self::DEFAULT_FTS_FUND_ACCOUNT_ID,
-                        self::FTS_ACCOUNT_TYPE    => self::DEFAULT_FTS_FUND_ACCOUNT_TYPE,
-                    ];
+                    $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
+
                     break;
 
                 default:
@@ -88,23 +89,19 @@ class Payout extends Base
                 self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($transactionId),
             ];
 
-            $payload = [
-                self::TRANSACTOR          => self::X,
-                self::MODE                => $this->mode,
-                self::IDEMPOTENCY_KEY     => gen_uuid(self::UUID_FORMAT),
-                self::MERCHANT_ID         => $payout->getMerchantId(),
-                self::CURRENCY            => $payout->getCurrency(),
-                self::AMOUNT              => (string) $payout->getAmount(),
-                self::BASE_AMOUNT         => (string) $payout->getBaseAmount(),
-                self::COMMISSION          => (string) $payout->getFee(),
-                self::TAX                 => (string) $payout->getTax(),
-                self::NOTES               => json_encode($notes),
-                self::TRANSACTOR_ID       => $transactorId,
-                self::TRANSACTOR_TYPE     => $transactorType,
-                self::TRANSACTION_DATE    => $transactorDate,
-            ];
+            $payload[self::NOTES]              = json_encode($notes);
+            $payload[self::TRANSACTOR_ID]      = $transactorId;
+            $payload[self::TRANSACTOR_TYPE]    = $transactorType;
+            $payload[self::TRANSACTION_DATE]   = $transactorDate;
 
-            $payload = array_merge($payload, $optionalPayload);
+            // Only sending api_transaction ID in case of initiated and reversed
+            // This remains null for payout_processed event
+            if (empty($apiTransactionId) === false)
+            {
+                $payload[self::API_TRANSACTION_ID] = $apiTransactionId;
+            }
+
+            $payload = array_merge($payload, $ftsSourceAccountData);
 
             $this->updatePayloadForPrePaidSourceAccounts($payload, $payout);
 
@@ -136,25 +133,61 @@ class Payout extends Base
     protected function updatePayloadForPrePaidSourceAccounts(array &$payload,
                                                              Entity $payout)
     {
-        // If the FTS fund account Id key does not exist, return.
-        // Will happen in the case of `payout_initiated` event
-        if (array_key_exists(self::FTS_FUND_ACCOUNT_ID, $payload) === false)
+        // We are not supposed to send and fts_fund_account_id or account_type for payout initiated
+        if ($payload[self::TRANSACTOR_TYPE] === self::PAYOUT_INITIATED)
         {
             return;
         }
 
         if ($payout->getMode() === Mode::AMAZONPAY)
         {
-            $payload[self::FTS_FUND_ACCOUNT_ID] = self::DEFAULT_AMAZON_PAY_FTS_FUND_ACCOUNT_ID;
-            $payload[self::FTS_ACCOUNT_TYPE]    = self::DEFAULT_AMAZON_PAY_FTS_FUND_ACCOUNT_TYPE;
+            $payload[self::FTS_ACCOUNT_TYPE] = self::DEFAULT_AMAZON_PAY_FTS_FUND_ACCOUNT_TYPE;
+
+            if ($this->mode === \RZP\Constants\Mode::TEST)
+            {
+                $payload[self::FTS_FUND_ACCOUNT_ID] = self::DEFAULT_AMAZON_PAY_FTS_FUND_ACCOUNT_ID;
+            }
         }
 
         if ($payout->getChannel() === Channel::M2P)
         {
-            $payload[self::FTS_FUND_ACCOUNT_ID] = self::DEFAULT_M2P_FTS_FUND_ACCOUNT_ID;
-            $payload[self::FTS_ACCOUNT_TYPE]    = self::DEFAULT_M2P_FTS_FUND_ACCOUNT_TYPE;
+            $payload[self::FTS_ACCOUNT_TYPE] = self::DEFAULT_M2P_FTS_FUND_ACCOUNT_TYPE;
 
+            if ($this->mode === \RZP\Constants\Mode::TEST)
+            {
+                $payload[self::FTS_FUND_ACCOUNT_ID] = self::DEFAULT_M2P_FTS_FUND_ACCOUNT_ID;
+            }
         }
+    }
+
+    protected function getDefaultPayload(Entity $payout)
+    {
+        return [
+            self::TRANSACTOR          => self::X,
+            self::MODE                => $this->mode,
+            self::IDEMPOTENCY_KEY     => gen_uuid(self::UUID_FORMAT),
+            self::MERCHANT_ID         => $payout->getMerchantId(),
+            self::CURRENCY            => $payout->getCurrency(),
+            self::AMOUNT              => (string) $payout->getAmount(),
+            self::BASE_AMOUNT         => (string) $payout->getBaseAmount(),
+            self::COMMISSION          => (string) $payout->getFee(),
+            self::TAX                 => (string) $payout->getTax(),
+            self::BANKING_ACCOUNT_ID  => (string) $payout->bankingAccount->getPublicId(),
+        ];
+    }
+
+    protected function getFtsSourceAccountData(array $ftsSourceAccountInformation = [])
+    {
+        // For Test Mode, we shall send default hardcoded data
+        if ($this->mode === \RZP\Constants\Mode::TEST)
+        {
+            return [
+                self::FTS_FUND_ACCOUNT_ID => self::DEFAULT_FTS_FUND_ACCOUNT_ID,
+                self::FTS_ACCOUNT_TYPE    => self::DEFAULT_FTS_FUND_ACCOUNT_TYPE,
+            ];
+        }
+
+        return $ftsSourceAccountInformation;
     }
 
     protected function updatePayloadForFeeCredits(array &$payload,
