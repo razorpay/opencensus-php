@@ -2020,18 +2020,17 @@ return [
                 'business_registered_pin'     => '560030',
             ],
         ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_UPDATE_COMMON_FIELDS,
-                ]
+        'response'    => [
+            'content' => [
+                'contact_name'        => 'test',
+                'contact_mobile'      => '9123456789',
+                'promoter_pan'        => 'ABCPE0000Z',
+                'bank_account_number' => '123456789012345',
+                'bank_branch_ifsc'    => 'ICIC0000001',
+                'can_submit'          => false,
             ],
-            'status_code' => 400
         ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_CANNOT_UPDATE_COMMON_FIELDS,
-        ]
+        'status_code' => 200,
     ],
 
     'testSaveUncommonMerchantDetailsWhenPartnerActivationLocked' => [
@@ -2051,10 +2050,10 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCPE0000Z',
+                'promoter_pan'        => 'ABCPE0000Z',
                 'bank_account_number' => '123456789012345',
                 'bank_branch_ifsc'    => 'ICIC0000001',
-                'can_submit'           => false,
+                'can_submit'          => false,
             ],
         ],
         'status_code' => 200,

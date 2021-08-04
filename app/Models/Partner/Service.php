@@ -96,7 +96,7 @@ class Service extends Base\Service
         $merchantDetails = $merchant->merchantDetail;
 
         // partner can submit the form even merchant activation is locked.
-        if($merchantDetails->isLocked() === true and $isPartnerFormSubmit == false)
+        if($merchantDetails->isLocked() === true and $isPartnerFormSubmit === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
         }

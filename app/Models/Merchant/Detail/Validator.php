@@ -1268,7 +1268,9 @@ class Validator extends Base\Validator
 
         $partnerActivation = (new PartnerCore())->getPartnerActivation($merchant);
 
-        if ($partnerActivation === null or $partnerActivation->isLocked() === false)
+        // TODO: Skip this validation if merchant form is unlocked for now. But when partner onboarding feature goes live,
+        //  we may not allow common fields to be updated if partner activation form is locked
+        if ($partnerActivation === null or $partnerActivation->isLocked() === false or $merchantDetails->isLocked() === false)
         {
             return;
         }
