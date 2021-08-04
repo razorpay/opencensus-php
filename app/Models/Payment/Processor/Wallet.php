@@ -30,7 +30,7 @@ class Wallet
     const OXIGEN               = 'oxigen';
     const AMEXEASYCLICK        = "amexeasyclick";
     const PAYCASH              = "paycash";
-    const CITIBANKREWARDS = "citibankrewards";
+    const CITIBANKREWARDS = "citibankrewardpoints";
 
     public static $fullName = array(
         self::MOBIKWIK          => 'Mobikwik',
