@@ -346,6 +346,14 @@ const businessModel = [
       //   isL1Completed(activation) && isPresent(activation.props.data.business_website),
     },
     {
+      fieldLabel: 'Accept payments on Website',
+      _cmp: Input.Check,
+      _name: 'app_website_url',
+      className: 'Input--vTop Input--website',
+      value: 1,
+      _when: (activation) => activation.state.has_url === '1',
+    },
+    {
       label: '',
       name: 'business_website',
       placeholder: 'Enter URL',
@@ -356,6 +364,31 @@ const businessModel = [
           return 'Please enter a valid url';
         }
       },
+      info: 'Payments will be enabled for the website/App after KYC approval.',
+      _when: (activation) =>
+        activation.state.app_website_url === '1' && activation.state.has_url === '1',
+      // _disabledWhen: (activation) =>
+      //   isL1Completed(activation) && isPresent(activation.props.data.business_website),
+    },
+    {
+      fieldLabel: 'Accept payments on app',
+      _cmp: Input.Check,
+      _name: 'app_url',
+      className: 'Input--vTop Input--app',
+      _when: (activation) => activation.state.has_url === '1',
+    },
+    {
+      label: '',
+      name: 'playstore_url',
+      placeholder: 'Enter App Link',
+      type: 'url',
+      className: 'Input--App-Url',
+      info:
+        'Your app url would look something like this “https://play.google.com/store/apps/details?id=<package_name>&launch=true” Provide just the play store url in case you operate in multiple stores or any one url in case you don’t have a play store url',
+      _when: (activation) => activation.state.app_url === '1' && activation.state.has_url === '1',
+    },
+    {
+      className: 'only-content',
       description: (
         <React.Fragment>
           We need to verify your website/app to provide you the live API keys. It should contain:
@@ -394,7 +427,6 @@ const businessModel = [
           </div>
         </React.Fragment>
       ),
-      info: 'Payments will be enabled for the website/App after KYC approval.',
       _when: (activation) => activation.state.has_url === '1',
       _disabledWhen: (activation) =>
         activation.props.user.isInstantActivationEnabled &&

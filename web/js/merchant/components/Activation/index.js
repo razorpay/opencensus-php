@@ -150,7 +150,9 @@ export default class ActivationWizard extends React.Component {
       this.props.data.business_operation_pin == this.props.data.business_registered_pin
         ? '1'
         : '0', // '1' => checkbox ticked
-    has_url: this.props.data && this.props.data.business_website === '' ? '0' : '1', // '0' => 0th radio button, value exists
+    has_url: this.props.data && this.props.data.business_website === '' && this.props.data.playstore_url === '' ? '0' : '1', // '0' => 0th radio button, value exists
+    app_website_url: this.props.data && this.props.data.business_website === '' ? '0' : '1',
+    app_url: this.props.data && this.props.data.playstore_url === '' ? '0' : '1',
     has_gstin: this.props.data && this.props.data.gstin === '' ? '1' : '0', // '0' => 0th radio button, value exists
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
@@ -667,7 +669,7 @@ export default class ActivationWizard extends React.Component {
         reqData[name] = fieldVal;
 
         // For business website empty string => user don't have website. null => user didn't attempt the field.
-        const allowEmptyString = ['business_website', 'gstin', 'shop_establishment_number'];
+        const allowEmptyString = ['business_website','playstore_url', 'gstin', 'shop_establishment_number'];
         if (allowEmptyString.indexOf(name) === -1) {
           reqData[name] = reqData[name] === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
         }
@@ -1070,7 +1072,7 @@ export default class ActivationWizard extends React.Component {
     reqData[name] = fieldVal;
 
     // For business website empty string => user don't have website. null => user didn't attempt the field.
-    const allowEmptyString = ['business_website', 'gstin'];
+    const allowEmptyString = ['business_website', 'gstin', 'playstore_url'];
     if (allowEmptyString.indexOf(name) === -1) {
       reqData[name] = reqData[name] === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
     }
@@ -1370,6 +1372,11 @@ export default class ActivationWizard extends React.Component {
       sideEffectFieldsToUpdate.gstin = '';
     } else if (stateName === 'has_url' && fieldValue === '0') {
       sideEffectFieldsToUpdate.business_website = '';
+      sideEffectFieldsToUpdate.playstore_url = '';
+    } else if (stateName === 'app_website_url' && fieldValue === '0') {
+      sideEffectFieldsToUpdate.business_website = '';
+    } else if (stateName === 'app_url' && fieldValue === '0') {
+      sideEffectFieldsToUpdate.playstore_url = '';
     }
 
     /* Step 3: If same_address is already ticked and any of business_registered fields are changed, then mark operational fields dirty;'.*/
