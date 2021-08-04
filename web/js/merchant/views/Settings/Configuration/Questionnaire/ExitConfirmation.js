@@ -3,14 +3,36 @@ import { connect } from 'react-redux';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+
+const SCREEN = window.location.pathname.includes('payment-methods') ? 'payment methods' : 'config';
 
 const ExitConfirmation = ({ closeModal, saveFormData, showNotification }) => {
   const saveDraft = () => {
     saveFormData();
     closeModal();
+    analyticsTrack({
+      objectName: 'intl enablement form',
+      actionName: `click close Save as draft`,
+      screen: SCREEN,
+      properties: {
+        timestamp: Date.now(),
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
   };
 
   const discardData = () => {
+    analyticsTrack({
+      objectName: 'intl enablement form',
+      actionName: `click close Discard form data`,
+      screen: SCREEN,
+      properties: {
+        timestamp: Date.now(),
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     merchantFetch({
       url: 'international_enablement',
       method: 'delete',

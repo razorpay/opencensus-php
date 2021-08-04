@@ -25,6 +25,8 @@ import {
   modelFormDataBeforeSave,
 } from './Questionnaire/utils';
 
+const SCREEN = window.location.pathname.includes('payment-methods') ? 'payment methods' : 'config';
+
 const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { activeTab, isLoading, isSavingForm, initialValues, tabsValidity } = state;
@@ -59,7 +61,7 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
     analyticsTrack({
       objectName: 'intl enablement form',
       actionName: 'open',
-      screen: 'payment methods',
+      screen: SCREEN,
       properties: {
         timestamp: Date.now(),
         ...getCommonAnalyticsProperties(window.rzp_user),
@@ -187,7 +189,7 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
     analyticsTrack({
       objectName: 'intl enablement form',
       actionName: 'submit',
-      screen: 'payment methods',
+      screen: SCREEN,
       properties: {
         timestamp: Date.now(),
         ...getCommonAnalyticsProperties(window.rzp_user),
@@ -198,7 +200,7 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
         analyticsTrack({
           objectName: 'intl enablement form',
           actionName: 'submit success',
-          screen: 'payment methods',
+          screen: SCREEN,
           properties: {
             timestamp: Date.now(),
             ...getCommonAnalyticsProperties(window.rzp_user),
@@ -302,6 +304,15 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
   };
 
   const handleNext = (formikProps) => {
+    analyticsTrack({
+      objectName: 'intl enablement form',
+      actionName: `click Save & Next on ${tabsData[activeTab]?.name}`,
+      screen: SCREEN,
+      properties: {
+        timestamp: Date.now(),
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     validateTab(formikProps, false, activeTab);
     if (activeTab < tabsData.length - 1) dispatch({ type: 'NEXT_TAB' });
     saveFormData(formikProps);
@@ -320,19 +331,29 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
 
   const closeQuestionnaire = (formikProps) => {
     closeModal();
-    formikProps.dirty
-      ? openModal({
-          component: (
-            <ExitConfirmation
-              closeModal={closeModal}
-              saveFormData={() => {
-                saveFormData(formikProps);
-              }}
-            />
-          ),
-          size: 'small',
-        })
-      : null;
+    if (formikProps.dirty) {
+      openModal({
+        component: (
+          <ExitConfirmation
+            closeModal={closeModal}
+            saveFormData={() => {
+              saveFormData(formikProps);
+            }}
+          />
+        ),
+        size: 'small',
+      });
+    } else {
+      analyticsTrack({
+        objectName: 'intl enablement form',
+        actionName: `click close`,
+        screen: SCREEN,
+        properties: {
+          timestamp: Date.now(),
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
   };
 
   return (
@@ -376,7 +397,18 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
                       <div class="left">
                         <Button.Primary
                           type="button"
-                          onClick={() => saveFormData(formikProps)}
+                          onClick={() => {
+                            analyticsTrack({
+                              objectName: 'intl enablement form',
+                              actionName: 'save as draft',
+                              screen: SCREEN,
+                              properties: {
+                                timestamp: Date.now(),
+                                ...getCommonAnalyticsProperties(window.rzp_user),
+                              },
+                            });
+                            saveFormData(formikProps);
+                          }}
                           disabled={!formikProps.dirty || isDisabled}
                         >
                           Save

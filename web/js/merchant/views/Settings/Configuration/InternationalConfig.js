@@ -23,6 +23,7 @@ const NO_ACTION_RECEIVED = 'no_action_received';
 const IN_REVIEW = 'in_review';
 const APPROVED = 'approved';
 const REJECTED = 'rejected';
+const SCREEN = window.location.pathname.includes('payment-methods') ? 'payment methods' : 'config';
 
 function withInternationalConfig(WrappedComponent) {
   @connect(
@@ -182,7 +183,7 @@ function withInternationalConfig(WrappedComponent) {
       analyticsTrack({
         objectName,
         actionName,
-        screen: 'payment methods',
+        screen: SCREEN,
         properties: {
           triggerSource,
           timestamp: Date.now(),
@@ -253,6 +254,15 @@ function withInternationalConfig(WrappedComponent) {
     };
 
     openRequestSubmittedModal = () => {
+      analyticsTrack({
+        objectName: 'intl typeform',
+        actionName: 'submit',
+        screen: SCREEN,
+        properties: {
+          timestamp: Date.now(),
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
       this.props.openModal({
         component: <RequestSubmittedModal closeModal={this.closeModal} />,
         size: 'medium',
