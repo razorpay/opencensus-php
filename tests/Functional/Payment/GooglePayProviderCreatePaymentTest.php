@@ -51,6 +51,20 @@ class GooglePayProviderCreatePaymentTest extends TestCase
         });
     }
 
+    public function testCreateGooglePaymentWithAmountGreaterThanMaxAmount()
+    {
+        $payment = $this->createGpayRequest();
+
+        $payment['amount'] = '50000000';
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testCreateGooglePayPaymentSuccess()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');

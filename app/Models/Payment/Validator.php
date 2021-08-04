@@ -857,6 +857,15 @@ class Validator extends Base\Validator
 
         $receiverType = null;
 
+        $isGooglePayPayment = false;
+
+        if ((isset($input[Entity::PROVIDER]) and
+            ($input[Entity::PROVIDER] === Entity::GOOGLE_PAY) and
+            ($method === Method::UNSELECTED)))
+        {
+            $isGooglePayPayment = true;
+        }
+
         // No limit on amount for payments of method defined in Method::$methodsWithoutAmountValidation
         if (in_array($method, Method::$methodsWithoutAmountValidation, true) === true)
         {
@@ -897,10 +906,16 @@ class Validator extends Base\Validator
             $this->validateInputValues('min_amount_check', $input);
         }
 
-        if ($method === Payment\Method::UPI)
+        if (($method === Payment\Method::UPI) or ($isGooglePayPayment === true))
         {
             if ($amount > 20000000)
             {
+                if ($isGooglePayPayment === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Amount cannot be greater than ₹200000.00');
+                }
+
                 throw new Exception\BadRequestValidationFailureException(
                     'Amount for UPI payment cannot be greater than ₹200000.00');
             }

@@ -54,6 +54,22 @@ return [
         ],
     ],
 
+    'testCreateGooglePaymentWithAmountGreaterThanMaxAmount' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Amount cannot be greater than ₹200000.00',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testCreateGooglePaymentNoTerminal' => [
         'response'  => [
             'content'     => [
