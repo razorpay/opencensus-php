@@ -43,7 +43,12 @@ import {
 )
 @RTracking(() => window.rzpQ.component('CongfigurationContainer'))
 export default class CongfigurationContainer extends Component {
-  state = { isLoading: false };
+
+
+  state = { 
+    isLoading: false,
+    showAxisPaypal: false 
+  };
 
   componentWillMount() {
     this.props.fetchFeatures(this.props.user.current).catch((err) => {
@@ -53,6 +58,35 @@ export default class CongfigurationContainer extends Component {
       });
     });
   }
+
+  componentDidMount(){
+    if(this.props.org.custom_code === 'axis'){
+      // check paypal org feature
+      if(this.props.org.features.indexOf("axis_paypal") > -1 ){
+        // check paypal MID feature
+            this.props
+            .fetchFeatureStatus(this.props.user.id, 'axis_paypal_enable')
+            .then((fetchFeatureStatusResp) => {
+              if(fetchFeatureStatusResp["data"]["status"]){
+                this.setState(
+                  {
+                    showAxisPaypal: true,
+                  }
+                );
+              }
+            })
+            .catch((err) => {
+              if (err) {
+                this.props.showNotification({
+                  type: 'error',
+                  message: err.errors[0],
+                });
+              }
+            });
+          }
+        }
+  }
+
   is_hash_loaded_once = false;
   saveConfig = ({ brand_color, transaction_report_email }, config) => {
     let data = {
@@ -264,6 +298,9 @@ export default class CongfigurationContainer extends Component {
     } = this.props;
     let showInternationalPaymentsCard = false;
     if (mode === 'live') {
+      if(this.props.org.custom_code === 'axis'){
+        showInternationalPaymentsCard = this.state.showAxisPaypal;
+     }else{
       if (user.activated_at < 1614105000) {
         // Show international payments card if merchant was activated before 24 February 2021 12:00:00 AM GMT+05:30
         showInternationalPaymentsCard = true;
@@ -274,6 +311,7 @@ export default class CongfigurationContainer extends Component {
         }
       }
     }
+    } 
 
     return (
       <div class="content-wrapper content-sm" id="settings-content">

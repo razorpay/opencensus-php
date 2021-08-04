@@ -27,6 +27,7 @@ const FETCH_ACTIVE_TICKETS = 'FETCH_ACTIVE_TICKETS';
 const FETCH_CALL_SLOTS = 'FETCH_CALL_SLOTS';
 const CALLBACK_SERVICE = 'rzp.care.callback.v1.CallbackService';
 const REMOVE_LOGO = 'REMOVE_LOGO';
+const FETCH_FEATURE_STATUS = 'FETCH_FEATURE_STATUS';
 export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
 
 const DEFAULT_CALL_BACK_SCHEDULE_RESPONSE = {
@@ -375,6 +376,14 @@ export const createLateAuthConfig = (payload, method) => {
   };
 };
 
+
+export const fetchFeatureStatus = (currentUserId, featureName) => {
+  return {
+    type: FETCH_FEATURE_STATUS,
+    payload: merchantFetch(`feature/merchant/${currentUserId}/${featureName}`),
+  };
+};
+
 export const fetchInternationalProductsStatus = () => {
   return {
     type: FETCH_INTERNATIONAL_PRODUCTS_STATUS,
@@ -507,6 +516,22 @@ export default function (state = initialState, action) {
         data: {},
         error: action.payload.errors,
       });
+
+    case `${FETCH_FEATURE_STATUS}::SUCCESS`: {
+
+        return set(state, 'lateAuthConfig', {
+          loading: false,
+          data: action.payload.data,
+          error: null,
+        });
+      }
+
+    case `${FETCH_FEATURE_STATUS}::ERROR`:
+        return set(state, 'lateAuthConfig', {
+          loading: false,
+          data: {},
+          error: action.payload.errors,
+        });
 
     case `${CREATE_LATE_AUTH_CONFIG}::SUCCESS`:
       return set(state, 'createdLateAuthConfig', {
