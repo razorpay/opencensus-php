@@ -193,15 +193,13 @@ class GatewayController extends Controller
 
         if ($gatewayDriver === Gateway::GOOGLE_PAY)
         {
-            $mode = $paymentRepo->determineLiveOrTestModeForEntityWithNotNullGateway($paymentId, $gatewayDriver);
+            $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
             $this->app['basicauth']->setModeAndDbConnection($mode);
 
             $payment = $paymentRepo->find($paymentId);
 
             $gateway->validateCallbackRequest($input, $payment);
-
-            $gatewayDriver = $payment->getGateway();
         }
         else
         {

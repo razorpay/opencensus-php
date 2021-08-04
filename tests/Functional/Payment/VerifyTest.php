@@ -844,7 +844,7 @@ class VerifyTest extends TestCase
             'url'     => '/gateway/google_pay/verify',
             'method'  => 'post',
             'content' => [
-                'pgTransactionRefId' => 'pay_' . $payment['id']
+                'pgTransactionRefId' => $payment['id']
             ],
         );
 
@@ -868,7 +868,7 @@ class VerifyTest extends TestCase
             'url'     => '/gateway/google_pay/verify',
             'method'  => 'post',
             'content' => [
-                'pgTransactionRefId' => 'pay_' . $payment['id']
+                'pgTransactionRefId' => $payment['id']
             ],
         );
 
@@ -891,7 +891,7 @@ class VerifyTest extends TestCase
             'url'     => '/gateway/google_pay/verify',
             'method'  => 'post',
             'content' => [
-                'pgTransactionRefId' => 'pay_10000000000000',
+                'pgTransactionRefId' => '10000000000000',
             ],
         );
 
@@ -917,7 +917,7 @@ class VerifyTest extends TestCase
             'url'     => '/gateway/google_pay/verify',
             'method'  => 'post',
             'content' => [
-                'pgTransactionRefId' => 'pay_' . $payment['id'],
+                'pgTransactionRefId' => $payment['id'],
             ],
         );
 

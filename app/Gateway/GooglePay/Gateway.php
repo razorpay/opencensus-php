@@ -9,6 +9,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Method;
 use RZP\Gateway\Upi\Base\IntentParams;
 
 class Gateway extends Base\Gateway
@@ -223,9 +224,7 @@ class Gateway extends Base\Gateway
 
         (new Validator)->internalInputValidation('google_pay_card_verification', $input);
 
-        $publicPaymentId = $input[RequestFields::PAYMENT_ID];
-
-        $paymentId = $this->getUnsignedId($publicPaymentId);
+        $paymentId = $input[RequestFields::PAYMENT_ID];
 
         $paymentRepo = $this->app['repo']->payment;
 
@@ -318,7 +317,7 @@ class Gateway extends Base\Gateway
         {
             $id = $input[RequestFields::PAYMENT_ID];
 
-            return $this->getUnsignedId($id);
+            return $id;
         }
 
         return null;
@@ -365,7 +364,7 @@ class Gateway extends Base\Gateway
 
     public function postProcessServerCallback($input)
     {
-        $id = $this->getUnsignedId($input['gateway'][RequestFields::PAYMENT_ID]);
+        $id = ($input['gateway'][RequestFields::PAYMENT_ID]);
 
         $payment = (new Payment\Repository())->findOrFail($id);
 
@@ -417,6 +416,26 @@ class Gateway extends Base\Gateway
             ];
     }
 
+    public function fetchPaymentMethod($data, $callbackGateway)
+    {
+        if(isset($data) === false)
+        {
+            return;
+        }
+
+        if (isset($data[RequestFields::CARD_TYPE]) === true and
+            isset($data[RequestFields::CARD_NETWORK]) === true)
+        {
+            return Method::CARD;
+        }
+        // If callback payload is not for cards, and callback gateway is UPI intent supported,
+        // payment method will be UPI.
+        elseif (Payment\Gateway::isUpiIntentFlowSupported($callbackGateway) === true)
+        {
+            return Method::UPI;
+        }
+    }
+  
     protected function fetchMethodParameters($method, $input)
     {
         $payment = $input['payment'];

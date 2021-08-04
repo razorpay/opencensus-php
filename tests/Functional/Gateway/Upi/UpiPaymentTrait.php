@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Upi;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Exception\RuntimeException;
+use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\UpiMetadata\Flow;
@@ -143,6 +144,37 @@ trait UpiPaymentTrait
         ], $upiEntity->toArray());
 
         $this->assertNotNull($upiEntity->getStatusCode());
+    }
+
+    public function testGooglePayUpiCallbackSuccess()
+    {
+        $this->testUpiIntentPaymentCreateSuccess();
+
+        $payment = $this->getDbLastpayment();
+
+        $upiEntity = $this->getDbLastUpi();
+
+        // make the payment as GooglePay payment
+        $payment->setMethod('unselected');
+        $payment->setAuthenticationGateway("google_pay");
+        $payment->saveOrFail();
+
+        // Method is unselected before callback
+        $payment->reload();
+        $this->assertEquals('unselected', $payment->getMethod());
+
+        $request = $this->mockServer()->getCallback($upiEntity->toArray(), $payment->toArray());
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(['success' => true], $response);
+
+        $payment->reload();
+
+        // Method is updated to UPI after callback
+        $this->assertEquals(Method::UPI, $payment->getMethod());
+
+        $this->assertEquals(Status::AUTHORIZED, $payment->getStatus());
     }
 
     public function testUpiPaymentCallbackFailed()

@@ -379,6 +379,19 @@ class Server extends Base\Mock\Server
         return base64_encode($encrypted);
     }
 
+    public function getFailedAsyncCallbackContent(array $upiEntity, array $payment)
+    {
+        $response = $this->getCallbackFailureContentArray($upiEntity,$payment);
+
+        $this->content($response);
+
+        $json = json_encode($response, JSON_PRETTY_PRINT);
+
+        $encrypted = $this->encrypt($json);
+
+        return base64_encode($encrypted);
+    }
+
     protected function S2SRequestContent(array $upiEntity, array $payment)
     {
         // Format is 20160830152240
@@ -450,6 +463,31 @@ class Server extends Base\Mock\Server
             'PayerVA'           => $upiEntity['vpa'],
             'PayerAmount'       => number_format($payment['amount'] / 100, 2, '.', ''),
             'TxnStatus'         => 'SUCCESS',
+            'TxnInitDate'       => $initDate->format('Ymdhis'),
+            'TxnCompletionDate' => $completeDate->format('Ymdhis'),
+            'originalBankRRN'   => $payment['status'] === 'created' ? null : '12345678987654321',
+        ];
+
+        return $content;
+    }
+
+    protected function getCallbackFailureContentArray(array $upiEntity, array $payment): array
+    {
+        // Format is 20160830152240
+        $initDate = Carbon::createFromTimestampUTC($upiEntity['created_at']);
+        $completeDate = $initDate->copy()->addMinutes(1);
+
+        $content = [
+            'merchantId'        => $upiEntity['gateway_merchant_id'],
+            'subMerchantId'     => '1234',
+            'terminalId'        => '1234',
+            'BankRRN'           => $upiEntity['gateway_payment_id'] ?? '12345678987654321',
+            'merchantTranId'    => $upiEntity['payment_id'],
+            'PayerName'         => 'payer name not available',
+            'PayerMobile'       => $payment['contact'],
+            'PayerVA'           => $upiEntity['vpa'],
+            'PayerAmount'       => number_format($payment['amount'] / 100, 2, '.', ''),
+            'TxnStatus'         => 'FAILURE',
             'TxnInitDate'       => $initDate->format('Ymdhis'),
             'TxnCompletionDate' => $completeDate->format('Ymdhis'),
             'originalBankRRN'   => $payment['status'] === 'created' ? null : '12345678987654321',

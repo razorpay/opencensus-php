@@ -128,6 +128,8 @@ trait Callback
 
         $this->setPayment($payment);
 
+        $this->performSkippedValidations($gatewayInput, $payment);
+
         $gateway = $payment->getGateway();
 
         if (in_array($gateway, Payment\Gateway::$s2sCallbackGateways, true) === false)
@@ -140,8 +142,6 @@ trait Callback
                     'gateway'       => $gateway
                 ]);
         }
-
-        $this->performSkippedValidations($gatewayInput, $payment);
 
         $this->mutex->acquireAndRelease(
             $this->getCallbackMutexResource($payment),
@@ -909,11 +909,34 @@ trait Callback
         if ((isset($payment['authentication_gateway']) === true) and
             ($payment['authentication_gateway'] === 'google_pay'))
         {
-            $this->createAndAssociateCard($data, $payment);
+            $this->performMethodRelatedChecksAndUpdates($data, $payment);
+        }
+    }
 
-            $this->runInternationalChecks($payment);
+    protected function performMethodRelatedChecksAndUpdates($data, $payment)
+    {
 
-            $this->runFraudChecksIfApplicable($payment);
+        $method = (new GooglePay\Gateway())->fetchPaymentMethod($data, $payment->getGateway());
+
+        switch ($method)
+        {
+            case Payment\Method::CARD:
+
+                $this->createAndAssociateCard($data, $payment);
+
+                $this->createAndAssociateTerminal($payment);
+
+                $this->runInternationalChecks($payment);
+
+                $this->runFraudChecksIfApplicable($payment);
+
+                break;
+
+            case Payment\Method::UPI:
+
+                $this->updateGooglePayUpiPayment($payment);
+
+                break;
         }
     }
 
@@ -951,7 +974,7 @@ trait Callback
 
     protected function createAndAssociateCard($data, $payment)
     {
-        $cardType           = $data[GooglePay\RequestFields::CARD_TYPE];
+        $cardType           = strtolower($data[GooglePay\RequestFields::CARD_TYPE]);
         $cardNetwork        = $data[GooglePay\RequestFields::CARD_NETWORK];
 
         $cardNumber         = $data[GooglePay\RequestFields::TOKEN][GooglePay\RequestFields::METHOD_DETAILS][GooglePay\RequestFields::CARD_NUMBER];
@@ -978,7 +1001,26 @@ trait Callback
             $this->repo->saveOrFail($card);
 
             $this->payment->card()->associate($card);
+            $this->payment->setMethod(Payment\Method::CARD);
             $this->repo->saveOrFail($payment);
         });
+    }
+
+    /**
+     * @param $payment
+     */
+    protected function createAndAssociateTerminal($payment): void
+    {
+        $payment->setApplication(Payment\Gateway::GOOGLE_PAY);
+        $terminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+        $payment->associateTerminal($terminals[0]);
+        $this->repo->saveOrFail($payment);
+    }
+
+    protected function updateGooglePayUpiPayment($payment)
+    {
+        $payment->setMethod(Payment\Method::UPI);
+
+        $payment->saveOrFail();
     }
 }

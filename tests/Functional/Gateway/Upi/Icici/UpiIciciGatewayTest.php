@@ -9,6 +9,7 @@ use phpDocumentor\Reflection\Types\Boolean;
 use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Models\Payment\Method;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Tests\Functional\TestCase;
@@ -548,6 +549,128 @@ class UpiIciciGatewayTest extends TestCase
         $this->assertEquals('icici', $upi['provider']);
         $this->assertSame('12345678987654321', $upi['npci_reference_id']);
         $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+    }
+
+    public function testGPayIntentPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['upi']['flow'] = 'intent';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'user@icici';
+            }
+        });
+
+        // Not removing method in authorization for now,
+        // because methodless payments are not handled in authorization yet.
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        // Changing payment to methodless payment for testing callback flow.
+        $payment = $this->getDbLastPayment();
+        $payment->setMethod('unselected');
+        $payment->setAuthenticationGateway('google_pay');
+        $payment->saveOrFail();
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        // before callback, method must be empty
+        $this->assertEquals('unselected', $payment['method']);
+
+        $this->assertEquals('1UpiIntICICTml', $payment['terminal_id']);
+        $this->assertNull($payment['vpa']);
+        $this->assertNull($upiEntity['npci_reference_id']);
+
+        $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->assertTrue($response['success']);
+
+        $upi     = $this->getEntityById('upi', $upiEntity['id'], true);
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        // Payment method changed to UPI after callback
+        $this->assertEquals(Method::UPI, $payment['method']);
+
+        $this->assertEquals($payment['vpa'], 'user@icici');
+        $this->assertEquals('ICIC', $upi['bank']);
+        $this->assertEquals('icici', $upi['acquirer']);
+        $this->assertEquals('icici', $upi['provider']);
+        $this->assertSame('12345678987654321', $upi['npci_reference_id']);
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+    }
+
+    public function testGPayIntentPaymentFailure()
+    {
+        $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['upi']['flow'] = 'intent';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+        });
+
+        // Not removing method in authorization for now,
+        // because methodless payments are not handled in authorization yet.
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $paymentId = $response['payment_id'];
+
+        // Changing payment to methodless payment for testing callback flow.
+        $payment = $this->getDbLastPayment();
+        $payment->setMethod('unselected');
+        $payment->setAuthenticationGateway('google_pay');
+        $payment->saveOrFail();
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        // before callback, method must be empty
+        $this->assertEquals('unselected', $payment['method']);
+
+        $content = $this->getMockServer()->getFailedAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->assertEquals($response, ['success' => false]);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        // Payment method changed to UPI after callback
+        $this->assertEquals(Method::UPI, $payment['method']);
+
+        $this->assertEquals('failed', $payment['status']);
     }
 
     public function testPaymentWithExpiryPublicAuth()
