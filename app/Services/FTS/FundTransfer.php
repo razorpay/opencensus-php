@@ -28,6 +28,7 @@ use RZP\Models\FundTransfer\Holidays as TransferHoliday;
 use RZP\Models\Settlement\Holidays as SettlementHoliday;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\Payout as Payout;
+use Razorpay\IFSC\IFSC as BankIFSC;
 
 class FundTransfer extends Base
 {
@@ -347,6 +348,16 @@ class FundTransfer extends Base
                     ];
                 }
             }
+
+            /**
+             * Putting this behind feature flag for 2 reasons
+             * 1. Safety check, as this is only required for ICICI OPGSP international export settlement flow
+             * 2. Since preferred channel is not being passed, fts will rely on validating request notes if key is present.
+             */
+            if ($this->fta->merchant->isFTSRequestNotesEnabled() === true)
+            {
+                $this->addRequestMetaToTransferBlock($request, $source);
+            }
         }
 
         if (method_exists($source, 'hasBatch'))
@@ -357,6 +368,40 @@ class FundTransfer extends Base
         }
 
         return $request;
+    }
+
+    protected function addRequestMetaToTransferBlock(array & $request, Payout\Entity $payout) {
+
+        if($payout === null)
+        {
+            return;
+        }
+
+        $contactNotes = [];
+
+        if(($payout->fundAccount !== null) and
+            ($payout->fundAccount->getSourceType() === \RZP\Models\FundAccount\Entity::CONTACT) and
+            (empty($payout->fundAccount->getSourceId()) === false))
+        {
+            /** @var $contact \RZP\Models\Contact\Entity */
+            $contact = $payout->fundAccount->contact;
+
+            $contactNotes += $contact->getNotes();
+        }
+
+        if ($this->fta->bankAccount !== null)
+        {
+            $contactNotes += [
+                Constants::BENEFICIARY_BANK_NAME => BankIFSC::getBankName(substr($this->fta->bankAccount->getIfscCode(), 0, 4))
+            ];
+        }
+
+        $request[Constants::TRANSFER] += [
+            Constants::REQUEST_META => [
+                Constants::CONTACT_NOTES => $contactNotes,
+                Constants::PAYOUT_NOTES  => $payout->getNotes()
+            ]
+        ];
     }
 
     /**

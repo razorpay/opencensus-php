@@ -196,6 +196,14 @@ final class Constants
 
     const BANK_ACCOUNT_TYPE              = 'bank_account_type';
 
+    const REQUEST_META                   = "request_meta";
+
+    const PAYOUT_NOTES                   = "payout_notes";
+
+    const CONTACT_NOTES                  = "contact_notes";
+
+    const BENEFICIARY_BANK_NAME          = "beneficiary_bank_name";
+
     public static function getProducts(): array
     {
         return [

@@ -922,6 +922,11 @@ class Entity extends Base\PublicEntity
        return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_EXPIRY) === true);
     }
 
+    public function isFTSRequestNotesEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::FTS_REQUEST_NOTES) === true);
+    }
+
     public function isDCCEnabled(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::DISABLE_NATIVE_CURRENCY) === false);

@@ -164,6 +164,8 @@ class Constants
 
     const OFFLINE_PAYMENTS                = 'offline_payments';
 
+    const FTS_REQUEST_NOTES               = 'fts_request_notes';
+
     const DISABLE_NATIVE_CURRENCY         = 'disable_native_currency';
 
     const ENABLE_DCC_S2S                  = 'enable_dcc_s2s';
@@ -1085,6 +1087,7 @@ class Constants
         self::ORG_SUB_MERCHANT_CREATE         => true,
         self::PAYOUT_PROCESS_ASYNC_LP         => true,
         self::PAYOUT_PROCESS_ASYNC            => true,
+        self::FTS_REQUEST_NOTES               => true,
         self::RBL_CA_UPI                      => true,
         self::FAV_FTA_DPRCN_FWD               => true,
         self::FAV_FTA_DPRCN_BCK               => true,
