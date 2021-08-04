@@ -2569,6 +2569,7 @@ trait Refund
             'payment_created_at'        => $payment->getCreatedAt(),
             'payment_base_amount'       => $payment->getBaseAmount(),
             'payment_authorized_at'     => $payment->getAuthorizeTimestamp(),
+            'payment_captured_at'       => $payment->getCaptureTimestamp(),
             'payment_service_route'     => $payment->getCpsRoute(),
             'sequence_no'               => $refund->getReference3(),
             'payment_gateway_captured'  => $payment->getGatewayCaptured(),
