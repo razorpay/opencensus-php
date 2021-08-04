@@ -11,6 +11,7 @@ use RZP\Http\Request\Requests;
 class SmartRouting
 {
     const X_RAZORPAY_TASKID         = 'X-Razorpay-TaskId';
+    const X_RAZORPAY_MODE           = 'X-Razorpay-Mode';
 
     const REQUEST_TIMEOUT           = 1.5;
     const REQUEST_TIMEOUT_ASYNC     = 0.1;
@@ -32,6 +33,8 @@ class SmartRouting
     protected $request;
 
     protected $app;
+
+    protected $mode;
 
     const CREATE_GATEWAY_RULE  = [
         'url'       =>  "/rule",
@@ -69,6 +72,8 @@ class SmartRouting
         $this->baseUrl = $this->config['url'];
 
         $this->request = $app['request'];
+
+        $this->mode = $this->app['rzp.mode'];
     }
 
     public function sendPaymentData($data)
@@ -127,6 +132,8 @@ class SmartRouting
 
         $headers[self::X_RAZORPAY_TASKID] = $this->request->getTaskId();
 
+        $headers[self::X_RAZORPAY_MODE] = $this->mode;
+
         $username = $this->app['config']->get('applications.smart_routing.username');
 
         $password = $this->app['config']->get('applications.smart_routing.password');
@@ -151,6 +158,8 @@ class SmartRouting
             $headers['Accept'] = 'application/json';
 
             $headers[self::X_RAZORPAY_TASKID] = $this->request->getTaskId();
+
+            $headers[self::X_RAZORPAY_MODE] = $this->mode;
 
             $authentication = [
                 $this->app['config']->get('applications.smart_routing.username'),
