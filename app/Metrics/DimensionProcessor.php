@@ -10,6 +10,9 @@ class DimensionProcessor implements Processor
     {
         $defaultLabelValue = config('metrics.default_label_value');
 
+        // Adds instance type label e.g. production, canary, etc.
+        $dimensions['instance_type'] = env('INSTANCE_TYPE');
+
         foreach ($dimensions as $label => $value)
         {
             if (empty($value) === true)
