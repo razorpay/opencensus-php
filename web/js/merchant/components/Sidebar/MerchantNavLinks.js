@@ -1,18 +1,39 @@
 import { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
+import QueryString from 'query-string';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'common/utils/localStorage';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
+
+const RECOMMANDED_PRODUCT_LIST = [
+  'payment_gateway',
+  'payment_page',
+  'payment_link',
+  'payment_button',
+  'smart_collect',
+  'route',
+  'subscriptions',
+];
 
 export default function MerchantNavLinks(props) {
   const { routes, isReportsPending, isChargeAtWillEnabled, isSettlementEnabled, user } = props;
   const showMyAccountCutomBadge = !LocalStorageService.getItem('rtb_page_visited');
   const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
   const [settlementExists, setSettlementExists] = useState(true);
+  const getLandingProduct = LocalStorageService.getItem('merchant_landing_page');
+
+  const isRecommendProduct = RECOMMANDED_PRODUCT_LIST.includes(getLandingProduct);
 
   useEffect(() => {
     checkIfFirstEverSettlement();
+  }, []);
+
+  useEffect(() => {
+    //set recommmend product to localstorage.
+    const query = QueryString.parse(window.location.search);
+    if (query?.recommended_product) {
+      localStorage.setItem('merchant_landing_page', query.recommended_product);
+    }
   }, []);
 
   const checkIfFirstEverSettlement = () => {
@@ -40,12 +61,12 @@ export default function MerchantNavLinks(props) {
         additionalCondition={(user) => user.isAllowedMultiple('payments orders refunds')}
       />
       <MainNavLink
-        isNew={!settlementExists && esOndemandSettlementEnabled}
+        isNew={!settlementExists && esOndemandSettlementEnabled && !isRecommendProduct}
         label="Settlements"
         icon="i i-done-all text-success"
         type="general"
         to="/settlements"
-        isSettlementEnabled={isSettlementEnabled}
+        isSettlementEnabled={isSettlementEnabled && !isRecommendProduct}
         additionalCondition={(user) => user.isAllowedView('settlements')}
       />
 
@@ -64,6 +85,7 @@ export default function MerchantNavLinks(props) {
         icon="i i-link text-primary"
         to={routes.paymentlinks}
         additionalCondition={(user) => user.isAllowedView('payment_links')}
+        customBadge={getLandingProduct === 'payment_link' ? 'try' : false}
       />
       <MainNavLink
         label="Payment Pages"
@@ -71,6 +93,7 @@ export default function MerchantNavLinks(props) {
         icon="i i-payment-pages text-warm temp-icon-style"
         to={routes.paymentpages}
         additionalCondition={(user) => user.isAllowedView('payment_pages')}
+        customBadge={getLandingProduct === 'payment_page' ? 'try' : false}
       />
       <MainNavLink
         type="product"
@@ -83,6 +106,7 @@ export default function MerchantNavLinks(props) {
           user.isAllowedMultiple('payment_buttons subscription_buttons') &&
           (user.isPaymentButtonEnabledByRazorX || user.isSubscriptionButtonEnabled)
         }
+        customBadge={getLandingProduct === 'payment_button' ? 'try' : false}
       />
       <MainNavLink
         label="Route"
@@ -90,6 +114,7 @@ export default function MerchantNavLinks(props) {
         to={routes.marketplace}
         icon="i i-route text-success"
         additionalCondition={(user) => user.isAllowedView('marketplace')}
+        customBadge={getLandingProduct === 'route' ? 'try' : false}
       />
       <MainNavLink
         label="Subscriptions"
@@ -97,6 +122,7 @@ export default function MerchantNavLinks(props) {
         icon="i i-refresh text-info"
         additionalCondition={(user) => user.isAllowedView('subscriptions')}
         to={routes[isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions']}
+        customBadge={getLandingProduct === 'subscriptions' ? 'try' : false}
       />
 
       <MainNavLink
@@ -105,8 +131,10 @@ export default function MerchantNavLinks(props) {
         icon="i i-qr-code text-warm"
         additionalCondition={(user) => user.isAllowedView('qr_codes') && user.isQRCodesEnabled}
         to={routes.qrCodes}
-        isNew={user.isQRCodeProductEnabled}
-        isComingSoon={user.isQRCodeComingSoonExpEnabled && !user.isQRCodeProductEnabled}
+        isNew={user.isQRCodeProductEnabled && !isRecommendProduct}
+        isComingSoon={
+          user.isQRCodeComingSoonExpEnabled && !user.isQRCodeProductEnabled && !isRecommendProduct
+        }
       />
 
       <MainNavLink
@@ -115,11 +143,12 @@ export default function MerchantNavLinks(props) {
         icon="i i-account-balance text-danger"
         to={routes.smartCollect}
         additionalCondition={(user) => user.isAllowedView('virtual_accounts')}
+        customBadge={getLandingProduct === 'smart_collect' ? 'try' : false}
       />
 
       <MainNavLink
         label="BBPS"
-        type="product"  
+        type="product"
         image="/dist/css/assets/bbps.png"
         to={routes.bbps}
         additionalCondition={(user) => user.isAllowedView('bbps') && user.isBbpsEnabled}
@@ -155,14 +184,14 @@ export default function MerchantNavLinks(props) {
         icon="i i-rewards text-danger"
         to="/checkout-rewards"
         additionalCondition={(user) => user.isAllowedView('checkoutrewards')}
-        isNew
+        isNew={!isRecommendProduct}
       />
 
       <MainNavLink
         label="Loans"
         icon="i fa fa-inr text-warm"
         to="/capital/loans/apply"
-        isNew={true}
+        isNew={!isRecommendProduct}
         additionalCondition={(user) => user.isAllowedView('loans') && user.isLoansEnabled}
       />
 
@@ -170,7 +199,7 @@ export default function MerchantNavLinks(props) {
         label="Cash Advance"
         icon="i fa fa-star text-warning"
         to="/capital/cash-advance/"
-        isNew={true}
+        isNew={!isRecommendProduct}
         additionalCondition={(user) =>
           user.isAllowedView('cash_advance') &&
           (user.isLOCEnabled || user.isCashAdvanceStage2Enabled || user.isWithdrawFeatureEnabled)
@@ -181,7 +210,7 @@ export default function MerchantNavLinks(props) {
         label="Corporate Cards"
         icon="i fa fa-credit-card text-warm"
         to="/capital/corporate-cards/"
-        isNew={true}
+        isNew={!isRecommendProduct}
         additionalCondition={(user) => user.isCardsLOSEnabled}
       />
 
@@ -204,10 +233,12 @@ export default function MerchantNavLinks(props) {
         }
         to={routes.account}
         customBadge={
-          showMyAccountCutomBadge ? (
+          showMyAccountCutomBadge && !isRecommendProduct ? (
             <>
               NEW <i className="i i-rtb_new" />
             </>
+          ) : getLandingProduct === 'payment_gateway' ? (
+            'try'
           ) : (
             false
           )

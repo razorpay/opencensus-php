@@ -269,14 +269,14 @@ traffic-responsive() {
 
   .Modal-container--welcome-modal {
     width: 90%;
-    max-width: 850px;
-    background-image: url('assets/welcome-illustration.png');
+    max-width: 900px;
+    background-image: url('https://cdn.razorpay.com/static/assets/onboarding/welcome-illustration.png');
     background-position: top right;
     background-repeat: no-repeat;
     background-size: contain;
 
     .welcome-modal-content {
-      padding: 56px 50% 56px 56px;
+      padding: 50px 50% 56px 56px;
       position: relative;
 
       .welcome-title {
@@ -298,6 +298,91 @@ traffic-responsive() {
 
         @media (max-width: 604px) {
           margin-left: 10px;
+        }
+      }
+
+      .prd-title {
+        max-width: 90%;
+        color: #515978;
+        line-height: 28px;
+        padding-top: 5px;
+      }
+      
+      .product-desc {
+        margin-top: 24px;
+        color: #4A4A4A;
+        max-width: 82%;
+      }
+  
+      .slideshow_wrapper{
+        overflow: hidden;
+        width: 470px;
+        margin-top: 40px;
+
+        .product-recommendation {
+          position: relative;
+          height: 50px;
+          display: flex;
+          width: 1900px;
+          animation: 6s autoplay2 infinite ease-in-out;
+
+          @keyframes autoplay2 {
+            0%, 17% {
+              right: 0%;
+            }
+            27%,  45% {
+              right: 100%;
+            }
+            55%,  73% {
+              right: 200%;
+            }
+            83%, 100% {
+              right: 300%;
+            }
+          }
+
+          .payment-product {
+            display: flex;
+            overflow: hidden;
+            width: 470px;
+
+            .prd-icon {
+              height: 40px;
+            }
+
+            .active-product {
+              margin-left: 12px;
+              width: 280px;
+
+              .title {
+                color: #102562;
+                font-size: 16px;
+                font-weight: 700;
+                line-height: 24px;
+              }
+
+              .subtitle {
+                color: #7C8297;
+                line-height: 24px;
+              }
+            }
+
+            .next-product {
+              position: relative;
+
+              .second-icon {
+                position: absolute;
+                left: 25px;
+                z-index: -1;
+              }
+
+              .third-icon {
+                position: absolute;
+                left: 50px;
+                z-index: -2;
+              }
+            }
+          }
         }
       }
 

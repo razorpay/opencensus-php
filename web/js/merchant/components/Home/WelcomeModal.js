@@ -4,8 +4,23 @@ import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import LocalStorageService from 'common/utils/localStorage';
+
+const RECOMMANDED_PRODUCT_LIST = [
+  'payment_gateway',
+  'payment_page',
+  'payment_link',
+  'payment_button',
+  'smart_collect',
+  'route',
+  'subscriptions',
+];
 
 const WelcomeModal = ({ onActivate, onClose, tracking, isFestive, isOnboardingV2Enabled }) => {
+  const getLandingProduct = LocalStorageService.getItem('merchant_landing_page');
+
+  const isRecommendProduct = RECOMMANDED_PRODUCT_LIST.includes(getLandingProduct);
+
   const handleActivationClick = () => {
     onActivate();
     analyticsTrack({
@@ -80,6 +95,116 @@ const WelcomeModal = ({ onActivate, onClose, tracking, isFestive, isOnboardingV2
             <span className="gold-highlight">accept payments for ₹2,00,000 for free.</span>
           </p>
           <p class="welcome-para">Activate your account to continue.</p>
+        </React.Fragment>
+      ) : isRecommendProduct ? (
+        <React.Fragment>
+          <h4 style={{ fontSize: '16px' }}>Welcome to Razorpay</h4>
+          <h1 className="welcome-title prd-title">
+            You are just one step away from accepting payments
+          </h1>
+          <p className="product-desc">
+            Activate your account and find the right product for your business needs
+          </p>
+          <div className="slideshow_wrapper">
+            <div className="product-recommendation">
+              <div className="payment-product">
+                <img
+                  src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-geteway.svg"
+                  className="prd-icon active"
+                />
+                <div className="active-product">
+                  <div className="title">Payment Gateway</div>
+                  <div className="subtitle">Add payments to your website or app</div>
+                </div>
+                <div className="next-product">
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-page.svg"
+                    className="prd-icon"
+                  />
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-button.svg"
+                    className="prd-icon second-icon"
+                  />
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-link.svg"
+                    className="prd-icon third-icon"
+                  />
+                </div>
+              </div>
+              <div className="payment-product">
+                <img
+                  src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-page.svg"
+                  className="prd-icon active"
+                />
+                <div className="active-product">
+                  <div className="title">Payment Pages</div>
+                  <div className="subtitle">Info about Payment Pages</div>
+                </div>
+                <div className="next-product">
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-button.svg"
+                    className="prd-icon"
+                  />
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-link.svg"
+                    className="prd-icon second-icon"
+                  />
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-geteway.svg"
+                    className="prd-icon third-icon"
+                  />
+                </div>
+              </div>
+              <div className="payment-product">
+                <img
+                  src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-button.svg"
+                  className="prd-icon active"
+                />
+                <div className="active-product">
+                  <div className="title">Payment Buttons</div>
+                  <div className="subtitle">Info about Payment Buttons</div>
+                </div>
+                <div className="next-product">
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-link.svg"
+                    className="prd-icon"
+                  />
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-geteway.svg"
+                    className="prd-icon second-icon"
+                  />
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-page.svg"
+                    className="prd-icon third-icon"
+                  />
+                </div>
+              </div>
+              <div className="payment-product">
+                <img
+                  src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-link.svg"
+                  className="prd-icon active"
+                />
+                <div className="active-product">
+                  <div className="title">Payment Link</div>
+                  <div className="subtitle">Info about Payment Link</div>
+                </div>
+                <div className="next-product">
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-geteway.svg"
+                    className="prd-icon"
+                  />
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-page.svg"
+                    className="prd-icon second-icon"
+                  />
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-button.svg"
+                    className="prd-icon third-icon"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </React.Fragment>
       ) : (
         <React.Fragment>

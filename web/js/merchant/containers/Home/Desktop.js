@@ -10,6 +10,7 @@ import DateRangePicker from 'common/ui/DateRangePicker';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
+import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
@@ -312,7 +313,6 @@ class AnalyticsDesktop extends Component {
             !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
           }`}
         >
-
           {/* nps banner */}
           {user.isAccepted && <NPSAnnouncement user={user} />}
           {/* onboarding banner */}
@@ -463,6 +463,10 @@ class AnalyticsDesktop extends Component {
               />
             )}
           </div>
+
+          {/* Recommended product widget */}
+          <ProductRecommendationnCard user={user} mode={mode} />
+
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
               <PersonaliseBanner track={trackPersonaliseBanner} />

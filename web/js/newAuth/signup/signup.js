@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from 'styled-components';
+import QueryString from 'query-string';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
 import Auth from '@razorpay/commander-shield/src/bootstrap/SignUpWrapper';
 import Size from '@razorpay/blade-old/src/atoms/Size';
@@ -32,6 +33,14 @@ const SignUp = ({ onRouteChange }) => {
       clearInterval(oneTapInfoInterval);
     };
   }, [setOneTapInfo]);
+
+  useEffect(() => {
+    //set recommmend product to localstorage.
+    const query = QueryString.parse(window.location.search);
+    if (query?.recommended_product) {
+      localStorage.setItem('merchant_landing_page', query.recommended_product);
+    }
+  }, []);
 
   const handleContactUsClick = () => {
     window.rzpQ.push(
