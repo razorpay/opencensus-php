@@ -35,6 +35,9 @@ class Gateway extends Base\Gateway
 
     const MAX_RETRY_COUNT = 5;
 
+    // Razorx Features for migrating to axis single collect api
+    const GATEWAY_AXIS_SINGLE_COLLECT_RAZORX_PREFIX = 'gateway_axis_single_collect';
+
     /**
      * @var AESCrypto
      */
@@ -89,25 +92,53 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
-        $token = $this->fetchToken($input, Action::COLLECT);
+        /**
+         * The first digit of variant is used for non-TPV and second is used for TPV
+         * digit 0 tells to use old (fetch token + collect) flow
+         * digit 1 tells to use the new (single collect) flow
+         * "00" - use old flow for non-TPV and TPV, "01" - Use old flow if it is non-TPV and new flow if it is a TPV
+         * "10" - use new flow if non-TPV and old flow if TPV, "11" - Use new flow for both tpv and non-tpv
+         */
+        $variant = $this->app->razorx->getTreatment(
+            $this->request->getTaskId(),
+            self::GATEWAY_AXIS_SINGLE_COLLECT_RAZORX_PREFIX,
+            $this->getMode());
 
-        // Putting token to input as we want to maintain consistency in collect request
-        $input['gateway']['token'] = $token;
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+            'razorx_variant' => $variant,
+            'gateway'        => $this->gateway,
+            'payment_id'     => $input['payment']['id'],
+        ]);
 
-        $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST, [
-            'gateway'           => $this->gateway,
-            'payment_id'        => $input['payment']['id'],
-            'terminal_id'       => $input['terminal']['id'],
-            'token'             => $token,
-            'flow'              => $input['upi']['flow'],
-            'vpa'               => mask_vpa($input['payment']['vpa']) ?? null,
-         ]);
+        $isTpv = $input['merchant']->isTPVRequired() === true;
 
-        parent::action($input, Action::AUTHENTICATE);
+        if (($isTpv and $variant[1] === "1") or
+            (!$isTpv and $variant[0] === "1"))
+        {
+            $request = $this->getAuthorizeRequestArray($input);
+        }
+        else
+        {
+            $token = $this->fetchToken($input, Action::COLLECT);
+
+            // Putting token to input as we want to maintain consistency in collect request
+            $input['gateway']['token'] = $token;
+
+            $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST, [
+                'gateway'     => $this->gateway,
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+                'token'       => $token,
+                'flow'        => $input['upi']['flow'],
+                'vpa'         => mask_vpa($input['payment']['vpa']) ?? null,
+            ]);
+
+            parent::action($input, Action::AUTHENTICATE);
+
+            $request = $this->getCollectRequestArray($input);
+        }
 
         $this->disableRetryForAction();
-
-        $request = $this->getCollectRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -556,6 +587,69 @@ class Gateway extends Base\Gateway
                 'gateway'           => $this->gateway,
                 'payment_id'        => $payment['id'],
                 'terminal_id'       => $input['terminal']['id'],
+            ]);
+
+        return $request;
+    }
+
+    /**
+     * This method is responsible to generate request array for authorize action for
+     * collect payments.
+     * The request body is different for tpv and non tpv authorize requests.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    protected function getAuthorizeRequestArray(array $input): array
+    {
+        $payment = $input['payment'];
+
+        // callbackUrl field is mandatory but it is not actually used by the gateway for sending the callback
+        $callbackUrl = route('gateway_payment_callback_post', ["gateway" => $this->gateway], true);
+
+        $data = [
+            strtolower(Fields::MERCH_ID)      => $this->getMerchantId(),
+            strtolower(Fields::MERCH_CHAN_ID) => $this->getMerchantId2(),
+            strtolower(Fields::UNQ_TXN_ID)    => $payment['id'],
+            strtolower(Fields::UNQ_CUST_ID)   => $payment['id'],
+            Fields::AMOUNT                    => $this->formatAmount($payment['amount']),
+            strtolower(Fields::TXN_DTL)       => $this->getPaymentRemark($input),
+            Fields::CURRENCY                  => Currency::INR,
+            strtolower(Fields::ORDER_ID)      => $payment['id'],
+            strtolower(Fields::CUSTOMER_VPA)  => $payment['vpa'],
+            Fields::EXPIRY                    => (string) $input['upi']['expiry_time'],
+            Fields::CALLBACK_URL              => $callbackUrl,
+        ];
+
+        $dataStr = implode('', $data);
+
+        $checksum = $this->encrypt($dataStr);
+
+        $data[strtolower(Fields::CHECKSUM)] = bin2hex($checksum);
+
+        if ($input['merchant']->isTPVRequired() === true)
+        {
+            $data[Fields::ACCOUNT_NUM] = bin2hex($this->encrypt($input['order']['account_number']));
+
+            $data[Fields::IFSC_CODE_TPV] = substr($input['order']['bank'], 0, 4);
+        }
+
+        $content = json_encode($data);
+
+        // To use single collect url fetch the url from AUTHENTICATE_V2 constant
+        $type = $this->action . "_v2";
+
+        $request = $this->getStandardRequestArray($content, 'post', $type);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'content'     => $data,
+                'gateway'     => $this->gateway,
+                'payment_id'  => $payment['id'],
+                'terminal_id' => $input['terminal']['id'],
+                'action'      => $type,
             ]);
 
         return $request;

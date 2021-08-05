@@ -60,4 +60,5 @@ class Fields
     const CALLBACK_STATUS_CODE         = 'callBackstatusCode';
     const CALLBACK_STATUS_DESCRIPTION  = 'callBackstatusDescription';
     const CALLBACK_TXN_ID              = 'callBacktxnId';
+    const CALLBACK_URL                 = 'callBackUrl';
 }

@@ -3,9 +3,11 @@
 namespace RZP\Tests\Functional\Gateway\Upi\Axis;
 
 use RZP\Gateway\Upi\Axis\Url;
+use RZP\Services\RazorXClient;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Axis\Fields;
 use RZP\Gateway\Upi\Axis\Status;
+use RZP\Gateway\Upi\Axis\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Account;
 use RZP\Exception\GatewayErrorException;
@@ -1147,6 +1149,80 @@ class UpiAxisGatewayTest extends TestCase
         $payment = $this->getDbLastPayment();
 
         $this->assertSame('GATEWAY_ERROR_INVALID_RESPONSE', $payment->getInternalErrorCode());
+    }
+
+    public function testPaymentSingleCollect()
+    {
+        $this->mockRazorx(Gateway::GATEWAY_AXIS_SINGLE_COLLECT_RAZORX_PREFIX, '11', $called);
+
+        $gatewayHitCount = 0;
+
+        $this->mockServerContentFunction(
+            function($content, $action = null) use (& $gatewayHitCount)
+            {
+                $this->assertSame('authorize', $action);
+
+                $gatewayHitCount++;
+            }
+        );
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame('created', $payment->getStatus());
+
+        $upi = $this->getDBLastEntity('upi');
+
+        $this->assertNotNull($upi[Entity::NPCI_TXN_ID]);
+
+        $this->assertSame(1, $gatewayHitCount);
+    }
+
+    public function testPaymentSingleCollectTpv()
+    {
+        $this->mockRazorx(Gateway::GATEWAY_AXIS_SINGLE_COLLECT_RAZORX_PREFIX, '11', $called);
+
+        $gatewayHitCount = 0;
+
+        $this->mockServerContentFunction(
+            function($content, $action = null) use (& $gatewayHitCount)
+            {
+                $this->assertSame('authorize', $action);
+
+                $gatewayHitCount++;
+            }
+        );
+
+        $this->testTpvPayment();
+
+        $this->assertSame(1, $gatewayHitCount);
+    }
+
+    protected function mockRazorx($param, $value, &$called)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function($mid, $feature, $mode) use ($param, $value, &$called) {
+                                  if ($feature === $param)
+                                  {
+                                      $called = true;
+
+                                      return $value;
+                                  }
+
+                                  return 'control';
+                              }));
     }
 
     protected function unexpectedPaymentContent(string $id, string $status = '00', string $result = 'Success')

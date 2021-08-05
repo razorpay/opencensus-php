@@ -10,6 +10,8 @@ class Url
 
     const AUTHENTICATE      = '/WebPaymentS2S/Merchant/requestCollect/';
 
+    const AUTHENTICATE_V2   = '/WebPaymentV2/Merchant/SingleCollectRequest';
+
     const FETCH_TOKEN       = '/WebPaymentS2S/Merchant/MerchantToken';
 
     const FETCH_TOKEN_TPV   = '/WebPaymentS2S/Merchant/MerchantTokenEncryption';
