@@ -206,6 +206,12 @@ class Entity extends Base\PublicEntity
         return $this->getInternationalAttribute();
     }
 
+    public function isAVSSupportedIIN()
+    {
+        return ( (Country::isAVSSupportedCountry($this->getCountry())) &&
+            (Card\Network::isAVSSupportedNetwork($this->getNetworkCode())));
+    }
+
     public function getIin()
     {
         return $this->getAttribute(self::IIN);

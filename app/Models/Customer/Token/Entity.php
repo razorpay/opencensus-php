@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer\Token;
 
+use App;
 use Crypt;
 use Carbon\Carbon;
 use RZP\Base\BuilderEx;
@@ -16,6 +17,7 @@ use RZP\Models\UpiMandate;
 use RZP\Constants\Entity as E;
 use RZP\Models\PaymentsUpi\Vpa;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Address;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\SubscriptionRegistration\SubscriptionRegistrationConstants;
 
@@ -112,6 +114,8 @@ class Entity extends Base\PublicEntity
     const DEFAULT_EXPIRY_YEARS  = 10;
 
     const DCC_ENABLED           = 'dcc_enabled';
+
+    const BILLING_ADDRESS       = 'billing_address';
 
     protected static $sign      = 'token';
 
@@ -801,11 +805,26 @@ class Entity extends Base\PublicEntity
         return $this->hasCard() and (new Payment\Service)->isDccEnabledIIN($this->card->iinRelation);
     }
 
+    public function getBillingAddress()
+    {
+        if($this->hasCard() === true)
+        {
+            $app = App::getFacadeRoot();
+
+            return $app['repo']->address->fetchPrimaryAddressOfEntityOfType($this, Address\Type::BILLING_ADDRESS);
+        }
+
+        return null;
+    }
+
     public function toArrayPublic()
     {
         $publicArray = parent::toArrayPublic();
 
         $publicArray[self::DCC_ENABLED] = $this->isDCCEnabled();
+
+        $billingAddress = $this->getBillingAddress();
+        $publicArray[self::BILLING_ADDRESS] = $billingAddress!==null?$billingAddress->getBillingAddress():null;
 
         // For upi recurring tokens, we are not storing max amount, end time in token entity. These are being
         // stored in mandate entity. So, fetching these details from mandate entity.

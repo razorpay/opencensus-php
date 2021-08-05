@@ -11,7 +11,7 @@ class Shield extends BaseShield
     {
     }
 
-    public function getRiskAssessment(Payment $payment)
+    public function getRiskAssessment(Payment $payment, $input = [])
     {
         return null;
     }

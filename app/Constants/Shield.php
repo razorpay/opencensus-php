@@ -103,6 +103,13 @@ final class Shield
     const RULE_CODE                     = 'rule_code';
     const RULE_DESCRIPTION              = 'rule_description';
 
+    const BILLING_ADDRESS_LINE_1      = "billing_address_line_1";
+    const BILLING_ADDRESS_LINE_2      = "billing_address_line_2";
+    const BILLING_ADDRESS_CITY        = "billing_address_city";
+    const BILLING_ADDRESS_STATE       = "billing_address_state";
+    const BILLING_ADDRESS_COUNTRY     = "billing_address_country";
+    const BILLING_ADDRESS_POSTAL_CODE = "billing_address_postal_code";
+
     // Response constants
     const ACTION_KEY              = 'action';
     const ACTION_ALLOW            = 'allow';

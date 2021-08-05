@@ -149,6 +149,48 @@ class Entity extends Base\PublicEntity
         return $name !== null ? ucwords($name) : null;
     }
 
+    public function getLine1()
+    {
+        return $this->getAttribute(self::LINE1);
+    }
+
+    public function getLine2()
+    {
+        return $this->getAttribute(self::LINE2);
+    }
+
+    public function getZipcode()
+    {
+        return $this->getAttribute(self::ZIPCODE);
+    }
+
+    public function getCity()
+    {
+        return $this->getAttribute(self::CITY);
+    }
+
+    public function getState()
+    {
+        return $this->getAttribute(self::STATE);
+    }
+
+    public function getCountry()
+    {
+        return $this->getAttribute(self::COUNTRY);
+    }
+
+    public function getBillingAddress()
+    {
+        return [
+            'line1'         => $this->getLine1(),
+            'line2'         => $this->getLine2(),
+            'city'          => $this->getCity(),
+            'state'         => $this->getState(),
+            'country'       => $this->getCountry(),
+            'postal_code'   => $this->getZipcode(),
+        ];
+    }
+
     // ----------------------------------- END GETTERS -----------------------------------
 
     // ----------------------------------- SETTERS -----------------------------------
@@ -163,6 +205,36 @@ class Entity extends Base\PublicEntity
     public function setPrimary($primary)
     {
         $this->setAttribute(self::PRIMARY, $primary);
+    }
+
+    public function setLine1($line1)
+    {
+        $this->setAttribute(self::LINE1, $line1);
+    }
+
+    public function setLine2($line2)
+    {
+        return $this->setAttribute(self::LINE2, $line2);
+    }
+
+    public function setZipcode($zipCode)
+    {
+        return $this->setAttribute(self::ZIPCODE, $zipCode);
+    }
+
+    public function setCity($city)
+    {
+        return $this->setAttribute(self::CITY, $city);
+    }
+
+    public function setState($state)
+    {
+        return $this->setAttribute(self::STATE, $state);
+    }
+
+    public function setCountry($country)
+    {
+        return $this->setAttribute(self::COUNTRY, $country);
     }
 
     // ----------------------------------- END SETTERS -----------------------------------

@@ -2413,13 +2413,13 @@ trait PaymentTrait
         return $mozart;
     }
 
-    protected function mockShield()
+    protected function mockShield($shouldAssertBillingAddress = false)
     {
         $shield = Mockery::mock('RZP\Services\Mock\Shield')->makePartial();
 
         $shield->shouldReceive('getRiskAssessment')
-                ->with(Mockery::type('RZP\Models\Payment\Entity'))
-                ->andReturnUsing(function ($payment)
+                ->with(Mockery::type('RZP\Models\Payment\Entity'),  Mockery::type('array'))
+                ->andReturnUsing(function ($payment, $input) use ($shouldAssertBillingAddress)
                 {
                     $bin = $payment->card->getIin();
 
@@ -2478,6 +2478,11 @@ trait PaymentTrait
                             $riskData[Risk\Entity::RISK_SCORE] = $riskScore;
 
                             break;
+                    }
+
+                    if ($shouldAssertBillingAddress === true)
+                    {
+                        $this->assertNotNull($input['billing_address']);
                     }
 
                     return $riskData;
@@ -2786,16 +2791,32 @@ trait PaymentTrait
         }
     }
 
-    protected function getDefaultBillingAddressArray()
+    protected function getDefaultBillingAddressArray($international = false)
     {
-        $address = [
-            'line1'         => 'Razorpay Software, 1st Floor, 22, SJR Cyber',
-            'line2'         => 'Hosur Main Road, Adugodi',
-            'city'          => 'Bengaluru',
-            'state'         => 'Karnataka',
-            'country'       => 'in',
-            'postal_code'   => '560030',
-        ];
+        $address = [];
+
+        if ($international === false)
+        {
+            $address = [
+                'line1' => 'Razorpay Software, 1st Floor, 22, SJR Cyber',
+                'line2' => 'Hosur Main Road, Adugodi',
+                'city' => 'Bengaluru',
+                'state' => 'Karnataka',
+                'country' => 'in',
+                'postal_code' => '560030',
+            ];
+        }
+
+        else{
+            $address = [
+                'line1' => '21 Applegate Appartment',
+                'line2' => 'Rockledge Street',
+                'city' => 'New York',
+                'state' => 'New York',
+                'country' => 'us',
+                'postal_code' => '11561',
+            ];
+        }
 
         return $address;
     }

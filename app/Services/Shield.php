@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use Carbon\Carbon;
+use RZP\Models\Address;
 use RZP\Exception\BadRequestException;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
@@ -43,7 +44,7 @@ class Shield
 
     }
 
-    public function getRiskAssessment(Payment\Entity $payment)
+    public function getRiskAssessment(Payment\Entity $payment, $input = [])
     {
         $this->trace->info(
             TraceCode::FRAUD_DETECTION_STARTED,
@@ -53,7 +54,7 @@ class Shield
 
         try
         {
-            $shieldPayload = $this->generateShieldPayload($payment);
+            $shieldPayload = $this->generateShieldPayload($payment, $input);
 
             $response = $this->shieldClient->evaluateRules($shieldPayload);
 
@@ -117,13 +118,13 @@ class Shield
 
     }
 
-    protected function generateShieldPayload(Payment\Entity $payment)
+    protected function generateShieldPayload(Payment\Entity $payment, $input = [])
     {
         $payloadDetails = [];
 
         $this->populateMerchantDetails($payment->merchant, $payloadDetails);
 
-        $this->populatePaymentDetails($payment, $payloadDetails);
+        $this->populatePaymentDetails($payment, $payloadDetails, $input);
 
         $this->populatePaymentRequestDetails($payment, $payloadDetails);
 
@@ -150,7 +151,12 @@ class Shield
         $payloadDetails[ShieldConstants::MERCHANT_CATEGORY]       = $merchant->getCategory2();
         $payloadDetails[ShieldConstants::MERCHANT_CATEGORY_CODE]  = (string) $merchant->getCategory();
         $payloadDetails[ShieldConstants::MERCHANT_RISK_THRESHOLD] = $merchant->getRiskThreshold();
-        $payloadDetails[ShieldConstants::MERCHANT_WEBSITE]        = $merchant->merchantDetail->getWebsite();
+
+        if (isset($merchant->merchantDetail) === true)
+        {
+            $payloadDetails[ShieldConstants::MERCHANT_WEBSITE]    = $merchant->merchantDetail->getWebsite();
+        }
+
         $payloadDetails[ShieldConstants::MERCHANT_CREATED_AT]     = $merchant->getCreatedAt();
         $payloadDetails[ShieldConstants::MERCHANT_ACTIVATED_AT]   = $merchant->getActivatedAt();
         $payloadDetails[ShieldConstants::MERCHANT_PROMOTER_PAN]   = strtoupper($merchant->merchantDetail->getPromoterPan() ?? '');
@@ -165,7 +171,7 @@ class Shield
 
     }
 
-    protected function populatePaymentDetails(Payment\Entity $payment, array & $payloadDetails)
+    protected function populatePaymentDetails(Payment\Entity $payment, array & $payloadDetails, $input = [])
     {
         $payloadDetails[ShieldConstants::ID]            = $payment->getId();
         $payloadDetails[ShieldConstants::AMOUNT]        = $payment->getAmount();
@@ -201,6 +207,30 @@ class Shield
 
         // add payment method details
         $payloadDetails[ShieldConstants::METHOD] = $payment->getMethod();
+
+        if (isset($input[Payment\Entity::BILLING_ADDRESS]) === true)
+        {
+            $billingAddress = $input[Address\Type::BILLING_ADDRESS];
+
+            $payloadDetails[ShieldConstants::BILLING_ADDRESS_LINE_1]      = isset($billingAddress[Address\Entity::LINE1]) ? $billingAddress[Address\Entity::LINE1] : null;
+            $payloadDetails[ShieldConstants::BILLING_ADDRESS_LINE_2]      = isset($billingAddress[Address\Entity::LINE2]) ? $billingAddress[Address\Entity::LINE2] : null ;
+            $payloadDetails[ShieldConstants::BILLING_ADDRESS_CITY]        = isset($billingAddress[Address\Entity::CITY])  ? $billingAddress[Address\Entity::CITY] : null ;
+            $payloadDetails[ShieldConstants::BILLING_ADDRESS_POSTAL_CODE] = isset($billingAddress['postal_code']) ? $billingAddress['postal_code'] : null ;
+
+            $billingState = isset($billingAddress[Address\Entity::STATE]) ? $billingAddress[Address\Entity::STATE] : null;
+
+            if (strlen($billingState) <= 4)
+            {
+                $payloadDetails[ShieldConstants::BILLING_ADDRESS_STATE] = strtoupper($billingState);
+            }
+
+            $billingCountry = isset($billingAddress[Address\Entity::COUNTRY]) ? $billingAddress[Address\Entity::COUNTRY] : null ;
+
+            if (strlen($billingCountry) === 2)
+            {
+                $payloadDetails[ShieldConstants::BILLING_ADDRESS_COUNTRY] = strtoupper($billingCountry);
+            }
+        }
 
         switch ($payloadDetails[ShieldConstants::METHOD])
         {

@@ -766,8 +766,19 @@ class Country
         self::AX,
     ];
 
+    const AVS_COUNTRY_LIST =[
+        self::US,
+        self::GB,
+        self::CA,
+    ];
+
     public static function isValid(string $type):bool
     {
         return (in_array($type, self::COUNTRY_LIST, true) === true);
+    }
+
+    public static function isAVSSupportedCountry(string $country):bool
+    {
+        return (in_array($country, self::AVS_COUNTRY_LIST, true) === true);
     }
 }

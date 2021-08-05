@@ -3873,6 +3873,22 @@ class MerchantTest extends TestCase
         $this->assertEquals(isset($response['options']['customer']), false);
     }
 
+    public function testGetCheckoutRouteWithCustomerTokenNoBillingAddress()
+    {
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['customer']['tokens']);
+
+        $items = $response['customer']['tokens']['items'];
+
+        foreach ($items as $item)
+        {
+            $this->assertNull($item['billing_address']);
+        }
+    }
+
     public function testGetCheckoutRouteWithAndroidMetadataNoSession()
     {
         $this->ba->publicAuth();
@@ -4008,13 +4024,21 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->activate('10000000000000');
 
+        $this->fixtures->merchant->disableInternational();
+
         $this->fixtures->merchant->addFeatures(['google_pay']);
 
-        $this->fixtures->merchant->disableInternational();
+        $this->fixtures->merchant->addFeatures(['google_pay_omnichannel', 'phonepe_intent', 'avs']);
 
         $response = $this->makePreferencesRouteRequest();
 
         $this->assertNotNull($response['features']['google_pay']);
+
+        $this->assertNotNull($response['features']['google_pay_omnichannel']);
+
+        $this->assertNotNull($response['features']['phonepe_intent']);
+
+        $this->assertArrayNotHasKey('avs',$response['features']);
 
         $this->assertArrayNotHasKey('dcc', $response['features']);
     }

@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Factory;
 
 use Requests_Response;
 use RZP\Exception;
+use RZP\Models\Address\Repository;
+use RZP\Models\Address\Type;
 use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
@@ -1097,6 +1099,117 @@ class CardPaymentServiceTest extends TestCase
         $this->disbaleCpsConfig();
     }
 
+    public function testAuthorizeWithAVSBillingAddressParam()
+    {
+        $this->enableCpsConfig();
+
+        $this->fixtures->merchant->addFeatures(['avs']);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $paymentArray = $this->getAVSPaymentArray();
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $this->assertSatisfied = false;
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal, $paymentArray) {
+
+                $this->assertEquals('authorize', $url);
+                $this->assertEquals('POST', $method);
+                $this->assertEquals($paymentArray['billing_address'], $input['input']['payment']['billing_address']);
+
+                $this->assertSatisfied = true;
+
+                return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test'
+                        ],
+                        'avs_result' => 'B'
+                    ],
+                    'payment' => [
+                        'terminal_id' => $terminal->getId(),
+                        'auth_type' => null,
+                        'authentication_gateway' => 'mpi_blade'
+                    ],
+                ];
+            });
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment->getCpsRoute());
+
+        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+
+        $this->assertTrue($this->assertSatisfied);
+    }
+
+    public function testAuthorizeWithoutAVSBillingAddressParam()
+    {
+        $this->enableCpsConfig();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $this->assertSatisfied = false;
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal, $paymentArray) {
+
+                $this->assertEquals('authorize', $url);
+                $this->assertEquals('POST', $method);
+                $this->assertArrayNotHasKey('billing_address', $input['input']['payment']);
+
+                $this->assertSatisfied = true;
+
+                return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test'
+                        ]
+                    ],
+                    'payment' => [
+                        'terminal_id' => $terminal->getId(),
+                        'auth_type' => null,
+                        'authentication_gateway' => 'mpi_blade'
+                    ],
+                ];
+            });
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment->getCpsRoute());
+
+        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+
+        $this->assertTrue($this->assertSatisfied);
+    }
+
     public function testFetchAuthenticationEntity()
     {
         $this->mockCps(null, 'entity_fetch');
@@ -2092,6 +2205,23 @@ class CardPaymentServiceTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('authorized', $payment['status']);
+    }
 
+     /**
+     * @return array
+     */
+    protected function getAVSPaymentArray(): array
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['card']['number'] = '4012010000000007';
+
+        $paymentArray['customer_id'] = 'cust_100000customer';
+
+        $paymentArray['billing_address'] = $this->getDefaultBillingAddressArray(true);
+
+        $paymentArray['save'] = 1;
+
+        return $paymentArray;
     }
 }

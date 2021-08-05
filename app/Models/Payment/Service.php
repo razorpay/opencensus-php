@@ -1737,6 +1737,8 @@ class Service extends Base\Service
 
         $this->updateDccDataIfApplicable($input, $iinEntity, $merchant,$data);
 
+        $data['avs_required'] = $this->isAddressRequired($iinEntity, $merchant);
+
         $this->updateCurrencyWrapperIfApplicable($input, $merchant, $data);
 
         if (isset($input['order_id']) === true)
@@ -3849,5 +3851,25 @@ class Service extends Base\Service
         $response['reference6_updated'] = $isReference6Updated;
 
         return $response;
+    }
+
+    /**
+     * Used in two places [GetFlows , PaymentCreate]
+     * @param $iinEntity
+     * @param Merchant\Entity $merchant
+     * @return bool
+     */
+    public function isAddressRequired($iinEntity, Merchant\Entity $merchant):bool
+    {
+        if (($merchant !== null) and ($merchant->isInternational() === true)
+            and ($merchant->isAddressRequiredEnabled() === true))
+        {
+            if (($iinEntity !== null) and ($iinEntity->isInternational() === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

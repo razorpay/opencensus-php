@@ -3,11 +3,13 @@
 namespace RZP\Models\Address;
 
 use RZP\Exception;
+use RZP\Constants\Entity;
 
 class Type
 {
     const CUSTOMER          = 'customer';
     const PAYMENT           = 'payment';
+    const TOKEN             = 'token';
     const STAKEHOLDER       = 'stakeholder';
 
     const SHIPPING_ADDRESS  = 'shipping_address';
@@ -17,6 +19,7 @@ class Type
     protected static $validEntityTypes = [
         self::CUSTOMER,
         self::PAYMENT,
+        self::TOKEN,
         self::STAKEHOLDER,
     ];
 
@@ -26,6 +29,9 @@ class Type
             self::BILLING_ADDRESS,
         ],
         self::PAYMENT  => [
+            self::BILLING_ADDRESS,
+        ],
+        self::TOKEN  => [
             self::BILLING_ADDRESS,
         ],
         self::STAKEHOLDER => [
@@ -60,7 +66,9 @@ class Type
     {
         self::validateEntityType($entityType);
 
-        $entity = 'RZP\\Models\\' . ucfirst($entityType) . '\\Entity';
+        //$entity = 'RZP\\Models\\' . ucfirst($entityType) . '\\Entity';
+
+        $entity = Entity::getEntityClass($entityType);
 
         return $entity;
     }

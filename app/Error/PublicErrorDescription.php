@@ -1383,6 +1383,8 @@ class PublicErrorDescription
     const BAD_REQUEST_LAXMI_VILAS_BANK_PAYMENT_DISABLED                             = 'We are unable to complete this transaction due to the restrictions on Laxmi Vilas Bank\'s operations by RBI (Gazette notification (S.O. 4127(E)) dated 17th November 2020';
     const BAD_REQUEST_INVALID_EMAIL_TYPE                                            = 'Invalid email type.';
 
+    const BAD_REQUEST_PAYMENT_FAILED_BY_AVS                                         = 'Payment failed as it did not pass all risk checks. Please try again or use another card.';
+
     // Accounts/ stakeholder V2 document upload error descriptions
     const BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS                         = 'Document upload already in progress';
     const BAD_REQUEST_INVALID_FILE_ACCESS                                           = 'Invalid file id provided or merchant is unauthorized to access the fileId(s) provided';

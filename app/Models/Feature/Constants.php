@@ -168,6 +168,8 @@ class Constants
 
     const DISABLE_NATIVE_CURRENCY         = 'disable_native_currency';
 
+    const AVS                             = 'avs';
+
     const ENABLE_DCC_S2S                  = 'enable_dcc_s2s';
 
     const COVID                           = 'covid';
@@ -773,6 +775,11 @@ class Constants
     const FEATURE_BBPS = 'feature_bbps';
 
     /**
+     * Feature flag to collect address from customers
+     */
+    const ADDRESS_REQUIRED = 'address_required';
+
+    /**
      * All Ledger Features for RX release
      */
     const LEDGER_JOURNAL_WRITES = 'ledger_journal_writes';
@@ -1126,9 +1133,11 @@ class Constants
         self::ROUTE_KEY_MERCHANTS_QUEUE       => true,
         self::SHOW_MOR_TNC                    => true,
         self::FEATURE_BBPS                    => true,
+        self::ADDRESS_REQUIRED                => true,
         self::LEDGER_JOURNAL_WRITES           => true,
         self::ORG_AXIS_PAYPAL                 => true,
         self::AXIS_PAYPAL_ENABLE              => true,
+        self::AVS                             => true,
     ];
 
     // Entity type constants

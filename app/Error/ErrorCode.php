@@ -2158,6 +2158,8 @@ class ErrorCode
 
     const BAD_REQUEST_CALLBACK_URL_INCORRECT                                        = 'BAD_REQUEST_CALLBACK_URL_INCORRECT';
 
+    const BAD_REQUEST_PAYMENT_FAILED_BY_AVS                                         = 'BAD_REQUEST_PAYMENT_FAILED_BY_AVS';
+
     const BAD_REQUEST_INVALID_START_TIME                                            = 'BAD_REQUEST_INVALID_START_TIME';
 
     const BAD_REQUEST_INVALID_REWARD                                                = 'BAD_REQUEST_INVALID_REWARD';

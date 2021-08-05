@@ -932,6 +932,21 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::DISABLE_NATIVE_CURRENCY) === false);
     }
 
+    public function isAddressRequiredEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::ADDRESS_REQUIRED) === true);
+    }
+
+    public function isAVSEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::AVS) === true);
+    }
+
+    public function isAVSEnabledInternationalMerchant(): bool
+    {
+        return ($this->isInternational() && $this->isAVSEnabled());
+    }
+
     public function isDCCEnabledInternationalMerchant(): bool
     {
         return($this->isDCCEnabled() === true && $this->isInternational() === true);

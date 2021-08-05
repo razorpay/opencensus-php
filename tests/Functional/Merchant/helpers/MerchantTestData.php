@@ -5035,6 +5035,26 @@ return [
         ],
     ],
 
+    'testGetCheckoutRouteWithCustomerTokenNoBillingAddress' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'currency' => 'INR',
+                'amount'   => 100,
+                '_' => [
+                    'library' => 'checkoutjs',
+                    'platform' => 'browser',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetCheckoutRouteWithAndroidMetadataNoSession' => [
         'request' => [
             'url' => '/preferences',

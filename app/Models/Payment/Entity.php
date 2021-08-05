@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants\Procurer;
 use RZP\Mail\Payment\Failed;
+use RZP\Models\Address\Type;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\Network;
 use RZP\Trace\TraceCode;
@@ -191,7 +192,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const EMI_PLAN              = 'emi_plan';
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
-    const BILLING_ADDRESS       = 'billing_address';
     const REFUNDS               = 'refunds';
     const TRANSACTION           = 'transaction';
     const OFFERS                = 'offers';
@@ -200,6 +200,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const RECURRING_TYPE        = 'recurring_type';
 
     const METADATA              = 'metadata';
+    const BILLING_ADDRESS       = 'billing_address';
 
     const RECEIVER              = 'receiver';
     const AADHAAR               = 'aadhaar';
@@ -293,6 +294,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     protected $entity           = 'payment';
 
     protected $metadata         = [];
+
+    protected $billingAddress = [];
 
     protected $generateIdOnCreate = true;
 
@@ -574,6 +577,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::METADATA,
         self::VERIFY_AT,
         self::WALLET,
+        self::BILLING_ADDRESS,
     ];
 
     protected $dates = [
@@ -1001,6 +1005,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             ($input[Entity::METHOD] === Method::APP))
         {
             $this->setAttribute(self::WALLET, $input[self::PROVIDER]);
+        }
+    }
+
+    protected function generateBillingAddress($input)
+    {
+        if (isset($input[self::BILLING_ADDRESS]))
+        {
+            $this->billingAddress = $input[self::BILLING_ADDRESS];
         }
     }
 
@@ -2812,6 +2824,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::VERIFY_AT);
     }
 
+    public function getBillingAddress()
+    {
+        return $this->billingAddress;
+    }
+
     public function getTerminalId()
     {
         return $this->getAttribute(self::TERMINAL_ID);
@@ -3739,6 +3756,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $data['amount'] = $this->getGatewayAmount();
             $data['currency'] = $this->getGatewayCurrency();
+
+            if ($this->isAVSSupportedForPayment() === true)
+            {
+                $billingAddressFromDb = $this->fetchBillingAddress();
+
+                $data['billing_address'] = ($billingAddressFromDb !== null) ?
+                    $billingAddressFromDb->getBillingAddress() : $this->getBillingAddress();
+            }
         }
 
         if ($this->getGateway() === Gateway::WALLET_PAYPAL)
@@ -4829,6 +4854,52 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return $currentPaymentStatus;
+    }
+
+    public function fetchBillingAddress()
+    {
+        $billingAddress = $this->fetchBillingAddressFromCustomerToken();
+
+        if($billingAddress === null)
+        {
+            $billingAddress = $this->fetchBillingAddressFromPayment();
+        }
+
+        return $billingAddress;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function fetchBillingAddressFromCustomerToken()
+    {
+        $tokenEntity = $this->getGlobalOrLocalTokenEntity();
+
+        if($tokenEntity !== null)
+        {
+            return $tokenEntity->getBillingAddress();
+        }
+        return null;
+    }
+
+    public function fetchBillingAddressFromPayment()
+    {
+        $app = \App::getFacadeRoot();
+
+        return $app['repo']->address->fetchPrimaryAddressOfEntityOfType($this, Type::BILLING_ADDRESS);
+    }
+
+    public function isAVSSupportedForPayment(): bool
+    {
+        if(($this->isCard() === true) and ($this->hasCard() === true))
+        {
+            if(empty($this->card->iinRelation) === false)
+            {
+                return ( ($this->merchant->isAVSEnabledInternationalMerchant())
+                    && ($this->card->iinRelation->isAVSSupportedIIN()) );
+            }
+        }
+        return false;
     }
 
     /**

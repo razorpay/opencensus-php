@@ -149,6 +149,15 @@ class Gateway extends Base\Gateway
 
         if ($this->isEnrolled($content) === false)
         {
+            $data = [];
+
+            $this->addAvsResponseIfApplicable($input, $data);
+
+            if (empty($data) === false)
+            {
+                return $data;
+            }
+
             return;
         }
 
@@ -480,6 +489,8 @@ class Gateway extends Base\Gateway
         $acquirerData = $this->getAcquirerData($input, null);
 
         $this->addRecurringDataIfApplicable($input, $acquirerData);
+
+        $this->addAvsResponseIfApplicable($input, $acquirerData);
 
         if ($this->isUpiRecurringCreateRequest($input) === true)
         {
@@ -934,6 +945,56 @@ class Gateway extends Base\Gateway
         }
 
         return $recurringData;
+    }
+
+    protected function addAvsResponseIfApplicable(array $input, array & $acquirerData)
+    {
+        if (isset($input['payment']['billing_address']))
+        {
+            $validAddresses = [$this->getBillingAddressArray(), $this->getBillingAddressArray(true)];
+
+            if(in_array($billingAddress = $input['payment']['billing_address'], $validAddresses))
+            {
+                $avsResponse['avs_result'] = 'B';
+            }
+
+            else
+            {
+                $avsResponse['avs_result'] = 'A';
+            }
+
+            $acquirerData = array_merge($acquirerData, $avsResponse);
+        }
+    }
+
+    protected function getBillingAddressArray($international = false)
+    {
+        $address = [];
+
+        if ($international === false)
+        {
+            $address = [
+                'line1' => 'Razorpay Software, 1st Floor, 22, SJR Cyber',
+                'line2' => 'Hosur Main Road, Adugodi',
+                'city' => 'Bengaluru',
+                'state' => 'Karnataka',
+                'country' => 'in',
+                'postal_code' => '560030',
+            ];
+        }
+
+        else{
+            $address = [
+                'line1' => '21 Applegate Appartment',
+                'line2' => 'Rockledge Street',
+                'city' => 'New York',
+                'state' => 'New York',
+                'country' => 'us',
+                'postal_code' => '11561',
+            ];
+        }
+
+        return $address;
     }
 
     public function verifyRefund(array $input)

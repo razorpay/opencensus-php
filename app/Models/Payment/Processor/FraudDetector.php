@@ -111,7 +111,7 @@ trait FraudDetector
         }
     }
 
-    protected function validateFraudDetectionV2(Payment\Entity $payment, Merchant\Entity $merchant)
+    protected function validateFraudDetectionV2(Payment\Entity $payment, Merchant\Entity $merchant, $input)
     {
         if (($this->app['config']->get('app.env') === Environment::PRODUCTION) and
             ($this->mode === Mode::TEST))
@@ -139,7 +139,7 @@ trait FraudDetector
 
         $riskEngine = ($variant !== 'v2') ? Metadata::SHIELD : Metadata::SHIELD_V2;
 
-        $riskData = $this->app['shield.service']->getRiskAssessment($payment);
+        $riskData = $this->app['shield.service']->getRiskAssessment($payment, $input);
 
         $triggeredRules = $riskData[Shield::TRIGGERED_RULES] ?? [];
 

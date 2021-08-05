@@ -204,22 +204,29 @@ trait Authorize
 
         // For those payments which does auth in a single step, we need to store the acquirer data
         // If `request` is set from gateway response, we should not
-        if ((isset($ret['request']) === false) AND
-            (isset($ret['acquirer']) === true))
+        if (isset($ret['request']) === false)
         {
-            $data['acquirer'] = $ret['acquirer'];
-            unset($ret['acquirer']);
+            if (isset($ret['acquirer']) === true)
+            {
+                $data['acquirer'] = $ret['acquirer'];
+                unset($ret['acquirer']);
 
-            // UPI Auto recurring will also send UPI block along with acquirer
-            $data['upi'] = $ret['upi'] ?? null;
-            unset($ret['upi']);
+                // UPI Auto recurring will also send UPI block along with acquirer
+                $data['upi'] = $ret['upi'] ?? null;
+                unset($ret['upi']);
+            }
+
+            if (isset($ret['avs_result']) === true)
+            {
+                $data['avs_result'] = $ret['avs_result'];
+                unset($ret['avs_result']);
+            }
 
             // To set ret to null instead of keeping it as an empty array
-            if (empty($ret) === true)
-            {
+            if (empty($ret) === true) {
                 $ret = null;
             }
-        }
+       }
 
         if (($ret !== null) and
              ($payment->isCardMandateCreateApplicable() === false))
@@ -402,7 +409,8 @@ trait Authorize
             // We DO NOT support both coproto and setting acquirer data together in auth response from
             // gateway as of now.
             //
-            if (isset($request['acquirer']) === true)
+            // In case request contains avs_result also,  we do not need corpoto here
+            if (isset($request['acquirer']) === true || isset($request['avs_result']) === true)
             {
                 return $request;
             }
@@ -674,6 +682,31 @@ trait Authorize
         return $request;
     }
 
+    /**
+     * @param $gatewayResponse
+     * @throws Exception\BadRequestException
+     */
+    protected function validateAvsResponseAndRemoveBillingAddressIfRequired(Payment\Entity $payment, $gatewayResponse): void
+    {
+        if ($payment->isAVSSupportedForPayment()) {
+            $failureAvsResponses = ["A", "N"];
+
+            if (isset($gatewayResponse) === false ||
+                isset($gatewayResponse['avs_result']) === false ||
+                in_array($gatewayResponse['avs_result'], $failureAvsResponses) === false) {
+                return;
+            }
+
+            $this->deleteBillingAddressIfExists($payment);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BY_AVS,
+                null,
+                [
+                    'method' => Method::CARD
+                ]);
+        }
+    }
     protected function separateMethodSpecificTerminalsForGooglePay()
     {
         $selectedTerminals = $this->selectedTerminals;
@@ -1466,6 +1499,8 @@ trait Authorize
 
             $this->validateCardAndCvv($payment, $input);
 
+            $this->validateAddressIfPresent($payment, $input);
+
             $this->validateRecurringIfApplicable($payment, $input);
 
             $this->validateCardAuthenticationIfApplicable($payment, $input);
@@ -1480,7 +1515,7 @@ trait Authorize
 
             $this->runInternationalChecks($payment);
 
-            $this->runFraudChecksIfApplicable($payment);
+            $this->runFraudChecksIfApplicable($payment, $input);
 
             $this->validateOfferIfApplicable($payment, $input);
 
@@ -2960,7 +2995,7 @@ trait Authorize
         $this->validateInternationalRecurringPaymentsAllowed($payment);
     }
 
-    protected function runFraudChecksIfApplicable(Payment\Entity $payment)
+    protected function runFraudChecksIfApplicable(Payment\Entity $payment, $input = [])
     {
 
         // We need to disable fraud checks for redirection payments before redirection hence this check. This will
@@ -3014,7 +3049,7 @@ trait Authorize
 
                 try
                 {
-                    $this->validateFraudDetectionV2($payment, $this->merchant);
+                    $this->validateFraudDetectionV2($payment, $this->merchant, $input);
                 }
                 catch (Exception\IntegrationException $exception)
                 {
@@ -5715,6 +5750,8 @@ trait Authorize
             return;
         }
 
+        $this->validateAvsResponseAndRemoveBillingAddressIfRequired($this->payment, $data);
+
         // Updates payment entity to authorized and adds a transaction.
         $updated = $this->updatePaymentAuthorized($data, $wasFailed);
 
@@ -7872,6 +7909,9 @@ trait Authorize
 
         // We will be updating the details in upi_mandate too.
         $this->updateRecurringEntitiesForUpiIfApplicable($payment, $data);
+
+        // store billing_address for AVS
+        $this->validateAndSaveBillingAddressForAVSIfApplicable($payment);
     }
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
@@ -9016,6 +9056,45 @@ trait Authorize
         return $returnData;
     }
 
+    protected function validateAndSaveBillingAddressForAVSIfApplicable(Payment\Entity $payment)
+    {
+        if($payment->isAVSSupportedForPayment() === false)
+        {
+            return;
+        }
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if(($token === null) || (empty($token->getBillingAddress()) === false))
+        {
+            return;
+        }
+
+        $paymentBillingAddress = $payment->fetchBillingAddressFromPayment();
+
+        if($paymentBillingAddress === null)
+        {
+            return;
+        }
+
+        $billingAddressToSave = $paymentBillingAddress->getBillingAddress();
+
+        $billingAddressToSave['type'] = Address\Type::BILLING_ADDRESS;
+
+        if (isset($billingAddressToSave['postal_code']) === true)
+        {
+            // address entity stores zip code as "zipcode"
+            // in input, we get zip code as "postal_code"
+            $billingAddressToSave['zipcode'] = $billingAddressToSave['postal_code'];
+
+            unset($billingAddressToSave['postal_code']);
+        }
+
+        (new Address\Core)->create($token, Address\Type::TOKEN, $billingAddressToSave);
+    }
+
+
+
     /**
      * @param Payment\Entity $payment
      * @param $input
@@ -9081,6 +9160,18 @@ trait Authorize
         }
     }
 
+    /**
+     * @param $payment
+     */
+    protected function deleteBillingAddressIfExists(Payment\Entity $payment): void
+    {
+        $billingAddress = $payment->fetchBillingAddressFromCustomerToken();
+
+        if (isset($billingAddress)) {
+            (new Address\Core)->delete($billingAddress);
+        }
+    }
+
     protected function setIsCVVOptionalFlagIfApplicable(array &$cardInput, $input)
     {
         if ($this->payment->isVisaSafeClickStepUpPayment() === true)
@@ -9124,6 +9215,32 @@ trait Authorize
         }
 
         return false;
+    }
+
+    protected function validateAddressIfPresent(Payment\Entity $payment, array $input)
+    {
+        $addressRequired = false;
+
+        if ($payment->isInternational() === true)
+        {
+            if (($payment->isCard() === true) and ($payment->card !== null))
+            {
+                $addressRequired = (new Payment\Service)->isAddressRequired($payment->card->iinRelation, $payment->merchant);
+            }
+        }
+
+        if ($addressRequired === true)
+        {
+            //TODO : Validate Address fields as well
+            if(isset($input[Payment\Entity::BILLING_ADDRESS]) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
+                    null,
+                    null,
+                    "Billing Address is Empty");
+            }
+        }
     }
 
     /**
