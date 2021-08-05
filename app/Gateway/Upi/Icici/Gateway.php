@@ -844,13 +844,7 @@ class Gateway extends Base\Gateway
     {
         $content = $this->transformRequestArrayToContent($data);
 
-        $request = $this->getStandardRequestArray($content);
-
-        $request['headers'] = [
-            'Content-Type' => 'text/plain'
-        ];
-
-        return $request;
+        return $this->getStandardRequestArray($content);
     }
 
     protected function checkResponseAndThrowExceptionIfRequired(Verify $verify)
@@ -1471,6 +1465,11 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function getExternalMockUrl(string $type)
+    {
+        return  env('EXTERNAL_MOCK_GO_GATEWAY_DOMAIN') . $this->getRelativeUrl($type);
+    }
+
     protected function getRefundRequest(array $input)
     {
         $payment = $input['payment'];
@@ -1637,9 +1636,7 @@ class Gateway extends Base\Gateway
 
         $request = parent::getStandardRequestArray($content, $method, $type);
 
-        $request['headers'] = [
-            'Content-Type' => 'text/plain'
-        ];
+        $request['headers']['Content-Type'] = 'text/plain';
 
         return $request;
     }
