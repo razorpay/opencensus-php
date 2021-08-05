@@ -473,6 +473,7 @@ export default class WhatsNewOld extends Component {
       'JUN21-SELFSERVE-CR&BL',
       'May21-PLMApp-GTM',
       'whats-new-JUL21-RXCC-ULTRA',
+      'June21-QR-GTM',
     ];
 
     let cardsList = this.state.notifications.map((card, idx) => (
