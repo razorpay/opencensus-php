@@ -1130,6 +1130,8 @@ class Gateway extends Base\Gateway
         $gatewayMetric = new Metric();
 
         $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway);
+
+        $gatewayMetric->pushOptimiserGatewayDimensions($action,$input,$status,$this->gateway);
     }
 
     public function verifyRefund(array $input)

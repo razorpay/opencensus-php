@@ -23,6 +23,9 @@ class Metric
     // Counter type metric names only for gateway api calls
     const GATEWAY_REQUEST_COUNT_V3       = 'gateway_request_count_v3';
 
+    //Optimiser Downtime metric name
+    const GATEWAY_REQUEST_COUNT_OPTIMISER_V1      = 'gateway_request_count_optimiser_v1';
+
     //histogram for gateway request time
     const GATEWAY_REQUEST_TIME           = 'gateway_request_total_time_v2_ms';
 
@@ -52,6 +55,8 @@ class Metric
     const DIMENSION_TERMINAL_ID          = 'terminal_id';
     const DIMENSION_MERCHANT_CATEGORY    = 'merchant_category';
     const DIMENSION_ERROR                = 'curl_error_no';
+    const DIMENSION_PROCURER             = 'procurer';
+    const DIMENSION_MERCHANT_ID          = 'merchant_id';
 
     // Actions array for which we need to push data to prometheus
     const ACTIONS_TO_ALLOW  = [
@@ -70,6 +75,15 @@ class Metric
         // Payment\Action::DEBIT,
         // Payment\Action::OTP_RESEND,
     ];
+
+    // Optimiser action list
+    const ACTIONS_TO_ALLOW_FOR_OPTIMISER  = [
+        Payment\Action::AUTHORIZE,
+        Payment\Action::CALLBACK
+    ];
+
+    // Optimiser procurer
+    const OPTIMISER_PROCURER    = 'merchant';
 
     protected $trace;
 
@@ -140,6 +154,43 @@ class Metric
         $dimensions[Metric::DIMENSION_ERROR] = $excData;
 
         return $dimensions;
+    }
+
+    public function getOptimiserDimensions($action, $input, $gateway = 'none', $excData = 'none')
+    {
+        $dimensions = $this->getDimensions($action, $input, $gateway);
+
+        $dimensions[Metric::DIMENSION_PROCURER] = $this->getProcurer($input) ;
+
+        $dimensions[Metric::DIMENSION_MERCHANT_ID] = $this->getMerchantId($input) ;
+
+        $dimensions[Metric::DIMENSION_ERROR] = $excData;
+
+        return $dimensions;
+    }
+
+    protected function getProcurer($input)
+    {
+        $procurer = 'none';
+
+        if ( empty($input[Entity::TERMINAL][\RZP\Models\Terminal\Entity::PROCURER]) === false )
+        {
+             $procurer = $input[Entity::TERMINAL][\RZP\Models\Terminal\Entity::PROCURER] ;
+        }
+
+        return $procurer;
+    }
+
+    protected function getMerchantId($input)
+    {
+        $merchantId = 'none';
+
+        if (empty($input[Entity::TERMINAL][\RZP\Models\Terminal\Entity::MERCHANT_ID]) === false)
+        {
+            $merchantId = $input[Entity::TERMINAL][\RZP\Models\Terminal\Entity::MERCHANT_ID];
+        }
+
+        return $merchantId;
     }
 
     protected function getInstrumentType($input, $method, $gateway)
@@ -316,6 +367,36 @@ class Metric
                 $exc,
                 Trace::ERROR,
                 TraceCode::GATEWAY_METRIC_DIMENSION_PUSH_FAILED,
+                [
+                    'action'    => $action ?? 'none',
+                    'gateway'   => $gateway ?? 'none',
+                ]);
+        }
+    }
+    public function pushOptimiserGatewayDimensions($action, $input, $status, $gateway = 'none', $excData = 'none', $statusCode = 'none')
+    {
+        try {
+                $procurer = $this->getProcurer($input);
+
+                if (in_array($action, self::ACTIONS_TO_ALLOW_FOR_OPTIMISER, true) === true && ($procurer === Metric::OPTIMISER_PROCURER))
+                {
+                    $metricDimension = $this->getOptimiserDimensions($action, $input, $gateway, $excData);
+
+                    $metricDimension[Metric::DIMENSION_STATUS] = $status;
+
+                    $metricDimension[Metric::DIMENSION_STATUS_CODE] = $statusCode;
+
+                    $gatewayMetrics = app('trace')->metricsDriver(self::DOGSTATSD_DRIVER);
+
+                    $gatewayMetrics->count(Metric::GATEWAY_REQUEST_COUNT_OPTIMISER_V1, 1, $metricDimension);
+                }
+        }
+        catch (\Throwable $exc)
+        {
+            $this->trace->traceException(
+                $exc,
+                Trace::ERROR,
+                TraceCode::OPTIMISER_GATEWAY_METRIC_DIMENSION_PUSH_FAILED,
                 [
                     'action'    => $action ?? 'none',
                     'gateway'   => $gateway ?? 'none',

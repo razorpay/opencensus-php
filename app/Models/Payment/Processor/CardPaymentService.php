@@ -144,6 +144,8 @@ trait CardPaymentService
         $gatewayMetric = new Metric;
 
         $gatewayMetric->pushGatewayDimensions($action, $input, $status, $gateway, $excData, $statusCode);
+
+        $gatewayMetric->pushOptimiserGatewayDimensions($action,$input,$status,$gateway,$excData,$statusCode);
     }
 
     protected function callCpsAuthorizeAcrossTerminals(Payment\Entity $payment, array $data)

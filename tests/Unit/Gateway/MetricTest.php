@@ -92,4 +92,65 @@ class MetricTest extends TestCase
 
         $this->assertArraySubset($expected, $dimensions);
     }
+
+    public function optimiserDowntime()
+    {
+        $cases = [];
+
+        $case = 'collectWithUpi';
+        $expected = [
+            'action'    => 'authorize',
+            'procurer'   => 'razorpay'
+        ];
+        $payment = [
+            'method' => 'upi',
+        ];
+        $cases[$case] = ['authorize', $payment, 'payu', null, $expected,'upi'];
+
+        $case = 'collectWithNetbanking';
+        $expected = [
+            'action'    => 'authorize',
+            'procurer'   => 'razorpay'
+        ];
+        $payment = [
+            'method' => 'netbanking'
+        ];
+        $cases[$case] = ['authorize', $payment, 'payu', null, $expected,'netbanking'];
+
+        return $cases;
+    }
+
+    /**
+     * @dataProvider optimiserDowntime
+     */
+    public function testOptimiserDowntime($action, $input, $gateway, $excData, $expected,$method)
+    {
+        $metric = new Base\Metric();
+
+             $payment=[];
+
+            switch($method)
+            {
+                case 'upi':
+                     $payment = $this->fixtures->create('payment:upi_authorized', $input);
+                     break;
+                case 'card':
+                    $payment = $this->fixtures->create('payment:card_authorized', $input);
+                    break;
+                case 'netbanking':
+                    $payment = $this->fixtures->create('payment:netbanking_authorized', $input);
+                    break;
+            }
+            $input = [
+                'payment'   => $payment,
+            ];
+
+        $input['merchant'] = $this->getDbEntityById('merchant', Merchant\Account::TEST_ACCOUNT);
+
+        $input['terminal'] = $this->getDbEntityById('terminal', '1n25f6uN5S1Z5a');
+
+        $dimensions = $metric->getOptimiserDimensions($action, $input, $gateway, $excData);
+
+        $this->assertArraySubset($expected, $dimensions);
+    }
 }

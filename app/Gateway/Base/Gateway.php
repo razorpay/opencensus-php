@@ -1737,6 +1737,8 @@ class Gateway
         }
 
         $gatewayMetric->pushGatewayDimensions($action, $input, $status, $gateway, $excData, $statusCode);
+
+        $gatewayMetric->pushOptimiserGatewayDimensions($action,$input,$status,$gateway,$excData,$statusCode);
     }
 
     protected function isDuplicateUnexpectedPayment($callbackData)
