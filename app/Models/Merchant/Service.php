@@ -5336,20 +5336,8 @@ class Service extends Base\Service
         if (($isMerchantBankingEnabled === false) and
             ($isProductBanking === true))
         {
-            $config = (new MainAdmin\Service)->getConfigKey(['key' => MainAdmin\ConfigKey::BLOCK_X_REGISTRATION]) ?? false;
-
-            if (boolval($config) === true)
-            {
-                $this->trace->info(
-                    TraceCode::BLOCKING_RX_PRODUCT_SWITCH_TEMPORARILY,
-                    [
-                        'product'           => $product,
-                        'business_banking'  => false,
-                        'config'            => $config
-                    ]);
-
-                return;
-            }
+            // Commenting this call since YesBank Moratorium is done.
+            // $this->isXRegistrationBlocked(false, true);
 
             if ($this->isAllowedForBusinessBanking($merchantId) === false)
             {
@@ -5383,13 +5371,14 @@ class Service extends Base\Service
                 $this->addNewBankingErrorFeature($merchant);
             }
 
-            $config = (new MainAdmin\Service)->getConfigKey(['key' => MainAdmin\ConfigKey::BLOCK_X_REGISTRATION]) ?? false;
+            // Commenting this call since YesBank Moratorium is done.
 
-            if ((boolval($config) === true) and
-                ($currentlyEnabled === true))
-            {
-                return;
-            }
+            // $isXRegistrationBlocked = $this->isXRegistrationBlocked($currentlyEnabled, false);
+
+            // if ($isXRegistrationBlocked === true)
+            // {
+            //     return;
+            // }
 
             (new Activate)->activateBusinessBankingIfApplicable($merchant, $wasBankingEnabledNow);
 
@@ -5412,6 +5401,29 @@ class Service extends Base\Service
             $this->postProductSwitchActions($wasSwitchToPG, $wasBankingEnabledNow, $merchant);
         }
 
+    }
+
+    private function isXRegistrationBlocked(bool $currentlyEnabled = false, bool $trace = false) :bool
+    {
+        $config = (new MainAdmin\Service)->getConfigKey(['key' => MainAdmin\ConfigKey::BLOCK_X_REGISTRATION]) ?? false;
+
+
+        if (boolval($config) === true)
+        {
+            if ($trace === true)
+            {
+                $this->trace->info(
+                    TraceCode::BLOCKING_RX_PRODUCT_SWITCH_TEMPORARILY,
+                    [
+                        'product'           => Product::BANKING,
+                        'business_banking'  => false,
+                        'config'            => $config
+                    ]);
+            }
+            return $currentlyEnabled;
+        }
+
+        return false;
     }
 
     private function postProductSwitchActions(bool $wasSwitchtoPG, bool  $wasBankingEnabledNow, Merchant\Entity $merchant){

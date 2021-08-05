@@ -808,7 +808,9 @@ class Activate extends Base\Core
 
     protected function onBoardMerchantOnRazorpayxInLiveMode(Entity $merchant)
     {
-        return (($merchant->isActivated() === true) and ($this->blockRxActivationIfApplicable($merchant) === false));
+        return ($merchant->isActivated() === true);
+        // This was done for YesBank moratorium. Not required now.
+        // and ($this->blockRxActivationIfApplicable($merchant) === false));
     }
 
     protected function onBoardMerchantOnRazorpayxInTestMode(Entity $merchant)
