@@ -546,7 +546,7 @@ class Entity
     const SEGMENTATION = 'segmentation';
 
     // Merchant Fraud
-    const MERCHANT_WEBSITE_CHECKER = 'merchant_website_checker';
+    const MERCHANT_HEALTH_CHECKER = 'merchant_health_checker';
 
     /**
      * Defines a map of entites which are currently
@@ -991,7 +991,7 @@ class Entity
 
         self::SEGMENTATION   => \RZP\Models\Segmentation::class,
 
-        self::MERCHANT_WEBSITE_CHECKER   => \RZP\Models\Merchant\Fraud\WebsiteChecker::class,
+        self::MERCHANT_HEALTH_CHECKER   => \RZP\Models\Merchant\Fraud\HealthChecker::class,
     ];
 
     protected static $repository = [

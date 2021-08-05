@@ -2650,12 +2650,12 @@ class Route
         'merchant_rtb_details_fetch'              => ['get',     'badge_details',                                           'MerchantController@getRZPTrustedBadgeDetails'                 ],
         'payment_verify_new'                      => ['post',    'payments/{id}/verify_new',                                'PaymentController@postVerifyNew'                              ],
         // Merchant Fraud
-        'website_checker'                         => ['post',    'merchant/website/checker',                                'MerchantController@websiteChecker'                            ],
-        'website_checker_periodic_cron'           => ['post',    'merchant/website/checker/cron',                           'MerchantController@websiteCheckerPeriodicCron'                ],
-        'website_checker_milestone_cron'          => ['post',    'merchant/website/checker/milestone/cron',                 'MerchantController@websiteCheckerMilestoneCron'               ],
-        'website_checker_risk_score_cron'         => ['post',    'merchant/website/checker/risk/score/cron',                'MerchantController@websiteCheckerRiskScoreCron'               ],
-        'website_checker_retry_cron'              => ['post',    'merchant/website/checker/retry/cron',                     'MerchantController@websiteCheckerRetryCron'                   ],
-        'website_checker_reminder_cron'           => ['post',    'merchant/website/checker/reminder/cron',                  'MerchantController@websiteCheckerReminderCron'                ],
+        'health_checker'                         => ['post',    'merchant/{checker_type}/checker',                                'MerchantController@healthChecker'                            ],
+        'health_checker_periodic_cron'           => ['post',    'merchant/{checker_type}/checker/cron',                           'MerchantController@healthCheckerPeriodicCron'                ],
+        'health_checker_milestone_cron'          => ['post',    'merchant/{checker_type}/checker/milestone/cron',                 'MerchantController@healthCheckerMilestoneCron'               ],
+        'health_checker_risk_score_cron'         => ['post',    'merchant/{checker_type}/checker/risk/score/cron',                'MerchantController@healthCheckerRiskScoreCron'               ],
+        'health_checker_retry_cron'              => ['post',    'merchant/{checker_type}/checker/retry/cron',                     'MerchantController@healthCheckerRetryCron'                   ],
+        'health_checker_reminder_cron'           => ['post',    'merchant/{checker_type}/checker/reminder/cron',                  'MerchantController@healthCheckerReminderCron'                ],
 
         // Payout service url's
         'create_payout_entry'                     => ['post',     'payouts_service/create',                                 'PayoutController@createPayoutEntry'                           ],
@@ -3584,12 +3584,12 @@ class Route
         'user_fetch_entity',
         'bulk_submerchant_assign',
         // Merchant Fraud
-        'website_checker',
-        'website_checker_periodic_cron',
-        'website_checker_milestone_cron',
-        'website_checker_risk_score_cron',
-        'website_checker_retry_cron',
-        'website_checker_reminder_cron',
+        'health_checker',
+        'health_checker_periodic_cron',
+        'health_checker_milestone_cron',
+        'health_checker_risk_score_cron',
+        'health_checker_retry_cron',
+        'health_checker_reminder_cron',
 
         // payout service
         'create_payout_entry',
@@ -9568,11 +9568,11 @@ class Route
             'los_cron',
             'care_service_cron_proxy',
             'p2p_retrieve_banks_cron',
-            'website_checker_periodic_cron',
-            'website_checker_milestone_cron',
-            'website_checker_risk_score_cron',
-            'website_checker_retry_cron',
-            'website_checker_reminder_cron',
+            'health_checker_periodic_cron',
+            'health_checker_milestone_cron',
+            'health_checker_risk_score_cron',
+            'health_checker_retry_cron',
+            'health_checker_reminder_cron',
             'payment_analytics_partition_cron',
             'banking_account_service_cron_routes',
             'merchant_action_notification_cron',
@@ -9892,7 +9892,7 @@ class Route
             'payout_links_batch_process',
             'nach_batch_process',
             'emandate_batch_process',
-            'website_checker',
+            'health_checker',
         ],
 
         'stork' => [

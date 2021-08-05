@@ -2213,11 +2213,11 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function websiteChecker()
+    public function healthChecker($checkerType)
     {
         $input = Request::all();
 
-        $response = $this->service(E::MERCHANT_WEBSITE_CHECKER)->isLive($input);
+        $response = $this->service(E::MERCHANT_HEALTH_CHECKER)->isLive($input, $checkerType);
 
         return ApiResponse::json($response);
     }
@@ -2233,47 +2233,37 @@ class MerchantController extends Controller
         return ApiResponse::json($response, $statusCode);
     }
 
-    public function websiteCheckerPeriodicCron()
+    public function healthCheckerPeriodicCron($checkerType)
     {
-        $input = Request::all();
-
-        $response = $this->service(E::MERCHANT_WEBSITE_CHECKER)->periodicCron($input);
+        $response = $this->service(E::MERCHANT_HEALTH_CHECKER)->periodicCron($checkerType);
 
         return ApiResponse::json($response);
     }
 
-    public function websiteCheckerMilestoneCron()
+    public function healthCheckerMilestoneCron($checkerType)
     {
-        $input = Request::all();
-
-        $response = $this->service(E::MERCHANT_WEBSITE_CHECKER)->milestoneCron($input);
+        $response = $this->service(E::MERCHANT_HEALTH_CHECKER)->milestoneCron($checkerType);
 
         return ApiResponse::json($response);
     }
 
-    public function websiteCheckerRiskScoreCron()
+    public function healthCheckerRiskScoreCron($checkerType)
     {
-        $input = Request::all();
-
-        $response = $this->service(E::MERCHANT_WEBSITE_CHECKER)->riskScoreCron($input);
+        $response = $this->service(E::MERCHANT_HEALTH_CHECKER)->riskScoreCron($checkerType);
 
         return ApiResponse::json($response);
     }
 
-    public function websiteCheckerRetryCron()
+    public function healthCheckerRetryCron($checkerType)
     {
-        $input = Request::all();
-
-        $response = $this->service(E::MERCHANT_WEBSITE_CHECKER)->retryCron($input);
+        $response = $this->service(E::MERCHANT_HEALTH_CHECKER)->retryCron($checkerType);
 
         return ApiResponse::json($response);
     }
 
-    public function websiteCheckerReminderCron()
+    public function healthCheckerReminderCron($checkerType)
     {
-        $input = Request::all();
-
-        $response = $this->service(E::MERCHANT_WEBSITE_CHECKER)->reminderCron($input);
+        $response = $this->service(E::MERCHANT_HEALTH_CHECKER)->reminderCron($checkerType);
 
         return ApiResponse::json($response);
     }

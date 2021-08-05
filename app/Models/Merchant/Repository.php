@@ -18,11 +18,13 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Group;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\Partner\Activation;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
 
 class Repository extends Base\Repository
 {
@@ -1256,6 +1258,23 @@ class Repository extends Base\Repository
         return $query->orderBy($merchantIdColumn, 'asc')->get()->pluck(Entity::ID)->toArray();
     }
 
+    public function getMerchantListForPeriodicHealthCheck($checkerType)
+    {
+        $merchantList = [];
+        switch ($checkerType)
+        {
+            case HealthChecker\Constants::WEBSITE_CHECKER:
+                $merchantList = $this->getMerchantListForWebsiteCheckerPeriodic($checkerType);
+                break;
+            case HealthChecker\Constants::APP_CHECKER:
+                $merchantList = $this->getMerchantListForAppCheckerPeriodic($checkerType);
+                break;
+            default:
+                break;
+        }
+        return $merchantList;
+    }
+
     public function getMerchantListForWebsiteCheckerPeriodic()
     {
         $query = $this->newQuery()
@@ -1267,6 +1286,18 @@ class Repository extends Base\Repository
             ->whereNotNull(Detail\Entity::BUSINESS_WEBSITE)
             ->whereRaw('DATEDIFF(current_date(), from_unixtime(activated_at)) % 30 = 1');
 
+        return $query->get();
+    }
+
+    public function getMerchantListForAppCheckerPeriodic()
+    {
+        $query = $this->newQuery()
+            ->leftJoin(Table::MERCHANT_BUSINESS_DETAIL, Table::MERCHANT . '.' . Entity::ID, BusinessDetail\Entity::MERCHANT_ID)
+            ->select(Table::MERCHANT . '.' . Entity::ID)
+            ->where(Entity::HOLD_FUNDS, '=', 0)
+            ->where(Entity::ACTIVATED, '=', 1)
+            ->whereNotNull(BusinessDetail\Entity::APP_URLS)
+            ->whereRaw('DATEDIFF(current_date(), from_unixtime(activated_at)) % 30 = 1');
         return $query->get();
     }
 }

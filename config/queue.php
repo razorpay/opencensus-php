@@ -392,6 +392,11 @@ return [
         'live'       => env('AWS_RISK_WEBSITE_CHECKER_LIVE_QUEUE'),
     ],
 
+    'risk_app_checker' => [
+        'test'       => env('AWS_RISK_APP_CHECKER_TEST_QUEUE'),
+        'live'       => env('AWS_RISK_APP_CHECKER_LIVE_QUEUE'),
+    ],
+
     'rbl_banking_account_statement_fetch' => [
         'test'       => env('AWS_RBL_BANKING_ACCOUNT_STATEMENT_FETCH_TEST_QUEUE'),
         'live'       => env('AWS_RBL_BANKING_ACCOUNT_STATEMENT_FETCH_LIVE_QUEUE'),

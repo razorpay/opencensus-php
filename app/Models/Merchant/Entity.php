@@ -1397,6 +1397,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne(Detail\Entity::class, self::MERCHANT_ID, self::ID);
     }
 
+    public function merchantBusinessDetail()
+    {
+        return $this->hasOne(BusinessDetail\Entity::class, self::MERCHANT_ID, self::ID);
+    }
+
     public function dccPaymentConfig()
     {
         return $this->hasMany(PaymentConfig\Entity::class, PaymentConfig\Entity::MERCHANT_ID, Entity::ID)

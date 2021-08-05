@@ -17,6 +17,7 @@ use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Org;
 use RZP\Models\Dispute\Phase;
 use RZP\Exception\BadRequestValidationFailureException;
+use \RZP\Models\Merchant\FreshdeskTicket\Processor\WebsiteCheckerReply as WebsiteCheckerReply;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 
 // TODO: add traces
@@ -106,9 +107,13 @@ class Service extends Base\Service
 
             $this->sendNotificationsIfApplicable($merchant, $input, Constants::FOH_CONFIRMATION_NOTIFICATION);
 
-            // remove website checker scheduled reminder
+            // remove website checker or app checker scheduled reminder
             // firing this action irrespective of the trigger category
-            $this->app['cache']->connection()->hdel(Constants::REDIS_WESBITE_CHECKER_REMINDER_MAP_NAME, $merchantId);
+
+            foreach (Constants::REDIS_REMINDER_MAP_NAME as $redisMap)
+            {
+                $this->app['cache']->connection()->hdel($redisMap, $merchantId);
+            }
         }
     }
 
@@ -431,8 +436,10 @@ class Service extends Base\Service
 
         $this->app['merchant_risk_alerts']->notifyNonRiskyMerchant($merchantId);
 
-        // remove website checker scheduled reminder
-        $this->app['cache']->connection()->hdel(Constants::REDIS_WESBITE_CHECKER_REMINDER_MAP_NAME, $merchantId);
+        foreach (Constants::REDIS_REMINDER_MAP_NAME as $redisMap)
+        {
+            $this->app['cache']->connection()->hdel($redisMap, $merchantId);
+        }
     }
 
     private function getWorkflowTagsFromInput(array $input)
@@ -523,32 +530,32 @@ class Service extends Base\Service
 
         if ($notificationType === Constants::FOH_NC_NOTIFICATION)
         {
-            if ($rasTriggerReason !== Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER)
+            if ($this->isHealthCheckTriggerReason($rasTriggerReason) === false)
             {
                 throw new Exception\LogicException('Need clarification notification not enabled');
             }
 
             $fdSubcategory = Constants::FD_SUB_CATEGORY_NEED_CLARIFICATION;
 
-            $subject = Constants::FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_MAIL_SUBJECT;
+            $subject = Constants::FOH_HEALTH_CHECKER_NEEDS_CLARIFICATION_MAIL_SUBJECT[$rasTriggerReason];
 
-            $viewTemplate = Constants::FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_MAIL_TPL;
+            $viewTemplate = Constants::FOH_HEALTH_CHECKER_NEEDS_CLARIFICATION_MAIL_TPL[$rasTriggerReason];
 
             $data = [
                 'merchant_id'   => $merchant->getId(),
                 'merchant_name' => $merchant->getName(),
-                'days_to_foh'   => $input['days_to_foh'] ?? Constants::WEBSITE_CHECKER_NC_DAYS_TO_FOH,
+                'days_to_foh'   => $input['days_to_foh'] ?? Constants::HEALTH_CHECKER_NC_DAYS_TO_FOH,
             ];
         }
         else
         {
             $fdSubcategory = Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD;
 
-            if ($rasTriggerReason === Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER)
+            if ($this->isHealthCheckTriggerReason($rasTriggerReason) === true)
             {
-                $subject = Constants::FOH_WEBSITE_CHECKER_CONFIRMATION_MAIL_SUBJECT;
+                $subject = Constants::FOH_GENERIC_CONFIRMATION_MAIL_SUBJECT;
 
-                $viewTemplate = Constants::FOH_WEBSITE_CHECKER_CONFIRMATION_MAIL_TPL;
+                $viewTemplate = Constants::FOH_HEALTH_CHECKER_CONFIRMATION_MAIL_TPL[$rasTriggerReason];
 
                 $data = [
                     'merchant_id'   => $merchant->getId(),
@@ -578,13 +585,13 @@ class Service extends Base\Service
 
         if ($notificationType === Constants::FOH_NC_NOTIFICATION)
         {
-            if ($rasTriggerReason !== Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER)
+            if ($this->isHealthCheckTriggerReason($rasTriggerReason) === false)
             {
                 throw new Exception\LogicException('Need clarification notification not enabled');
             }
 
-            $template = Constants::FOH_SMS_WEBSITE_CHECKER_NEEDS_CLARIFICATION_TEMPLATE;
-            
+            $template = Constants::FOH_SMS_HEALTH_CHECKER_NEEDS_CLARIFICATION_TEMPLATE[$rasTriggerReason];
+
             $data = [
                 'merchantId'   => $merchant->getId(),
                 'merchantName' => $merchant->getName(),
@@ -592,10 +599,10 @@ class Service extends Base\Service
         }
         else
         {
-            if ($rasTriggerReason === Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER)
+            if ($this->isHealthCheckTriggerReason($rasTriggerReason) === true)
             {
-                $template = Constants::FOH_SMS_WEBSITE_CHECKER_CONFIRMATION_TEMPLATE;
-            
+                $template = Constants::FOH_SMS_HEALTH_CHECKER_CONFIRMATION_TEMPLATE[$rasTriggerReason];
+
                 $data = [
                     'merchantId'   => $merchant->getId(),
                     'merchantName' => $merchant->getName(),
@@ -604,7 +611,7 @@ class Service extends Base\Service
             else
             {
                 $template = Constants::FOH_SMS_GENERIC_CONFIRMATION_TEMPLATE;
-            
+
                 $data = [
                     'merchantName' => $merchant->getName(),
                 ];
@@ -622,15 +629,15 @@ class Service extends Base\Service
 
         if ($notificationType === Constants::FOH_NC_NOTIFICATION)
         {
-            if ($rasTriggerReason !== Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER)
+            if ($this->isHealthCheckTriggerReason($rasTriggerReason) === false)
             {
                 throw new Exception\LogicException('Need clarification notification not enabled');
             }
 
-            $templateName = Constants::FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_NAME;
+            $templateName = Constants::FOH_HEALTH_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_NAME[$rasTriggerReason];
 
-            $template = Constants::FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE;
-            
+            $template = Constants::FOH_HEALTH_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE[[$rasTriggerReason]];
+
             $data = [
                 'merchantId'   => $merchant->getId(),
                 'merchantName' => $merchant->getName(),
@@ -638,12 +645,12 @@ class Service extends Base\Service
         }
         else
         {
-            if ($rasTriggerReason === Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER)
+            if ($this->isHealthCheckTriggerReason($rasTriggerReason) === true)
             {
-                $templateName = Constants::FOH_WEBSITE_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE_NAME;
+                $templateName = Constants::FOH_HEALTH_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE_NAME[$rasTriggerReason];
 
-                $template = Constants::FOH_WEBSITE_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE;
-            
+                $template = Constants::FOH_HEALTH_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE[$rasTriggerReason];
+
                 $data = [
                     'merchantId'   => $merchant->getId(),
                     'merchantName' => $merchant->getName(),
@@ -683,10 +690,15 @@ class Service extends Base\Service
         return $rasTriggerReason;
     }
 
+    private function isHealthCheckTriggerReason($rasTriggerReason): bool
+    {
+        return in_array($rasTriggerReason, Constants::RAS_TRIGGER_REASONS_HEALTH_CHECKER);
+    }
+
     private function canSendNotification(string $notificationType, string $rasTriggerReason)
     {
         if (($notificationType === Constants::FOH_NC_NOTIFICATION) &&
-            ($rasTriggerReason !== Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER))
+            ($this->isHealthCheckTriggerReason($rasTriggerReason) === false))
         {
             return false;
         }
@@ -702,14 +714,14 @@ class Service extends Base\Service
 
             $rasTriggerReason = $this->getRasTriggerReasonFromPayload($workflowActionInput);
 
-            if ($rasTriggerReason === Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER)
+            if ($this->isHealthCheckTriggerReason($rasTriggerReason) === true)
             {
                 $fdTicketId = $additionalData[Constants::FD_TICKET_ID_KEY] ?? null;
 
                 $workflowActionId = Action\Entity::verifyIdAndStripSign($workflowActionId);
 
                 $workflowAction = $this->repo->workflow_action->findOrFailPublic($workflowActionId);
-                
+
                 if (is_null($fdTicketId) === false)
                 {
                     $fdTag = sprintf(Constants::RAS_FD_TICKET_ID_TAG_FMT, $rasTriggerReason, $fdTicketId);
@@ -718,12 +730,15 @@ class Service extends Base\Service
                 }
 
                 $this->app['cache']->connection()->hset(
-                    Constants::REDIS_WESBITE_CHECKER_REMINDER_MAP_NAME, $workflowAction->getEntityId(), now()->timestamp);
+                    Constants::REDIS_REMINDER_MAP_NAME[$rasTriggerReason],
+                    $workflowAction->getEntityId(),
+                    now()->timestamp
+                );
             }
         }
         catch(\Throwable $ex)
         {
-            $this->app['trace']->traceException($e,
+            $this->app['trace']->traceException($ex,
                 Trace::CRITICAL,
                 TraceCode::MERCHANT_RISK_ALERT_FOH_REMINDER_ENQUEUE_FAILED,
                 [
