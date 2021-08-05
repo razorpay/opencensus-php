@@ -1315,6 +1315,7 @@ class Processor
         // `content` and `missing` attributes completely before returning
         //
         if (($payment->merchant->isPhoneOptional() === true) and
+            (Wallet::isPhoneRequired($payment->getWallet()) === true) and
             ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
         {
             $coproto = $coproto ?: $this->getCoprotoDefaultArrayForWallet($input);

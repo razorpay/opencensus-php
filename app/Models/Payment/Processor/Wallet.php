@@ -69,6 +69,10 @@ class Wallet
         self::MPESA,
     );
 
+    public static $phoneNotRequiredWallets = array(
+        self::PAYPAL,
+    );
+
     public static $indianContactWallets = array(
         self::AIRTELMONEY,
         self::AMAZONPAY,
@@ -104,6 +108,11 @@ class Wallet
     public static function isEmailRequired(string $wallet)
     {
         return (in_array($wallet, self::$emailRequiredWallets) === true);
+    }
+
+    public static function isPhoneRequired(string $wallet)
+    {
+        return (in_array($wallet, self::$phoneNotRequiredWallets) === false);
     }
 
     public static function getWalletNetworkNamesMap()
