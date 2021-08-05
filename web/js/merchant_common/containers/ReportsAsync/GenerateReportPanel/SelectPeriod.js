@@ -60,9 +60,9 @@ export default class SelectPeriod extends React.Component {
     );
   };
 
-  onDateTimeChange = (value, name) => {
+  onDateTimeChange = (value, name = 'selectedPeriod') => {
     const timeFieldSuffix = 'Time';
-    if (name && name.endsWith(timeFieldSuffix)) {
+    if (name.endsWith(timeFieldSuffix)) {
       name = name.substring(0, name.indexOf(timeFieldSuffix));
 
       const dateValue = this.state.values[name].clone().startOf('day');
