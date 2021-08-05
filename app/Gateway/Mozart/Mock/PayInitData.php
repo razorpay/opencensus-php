@@ -181,6 +181,7 @@ class PayInitData extends Base\Mock\Server
                         'trackingID' => $entities['payment']['id'],
                         'gatewayTransactionId' => '123ase!234',
                         'status' => 'CREATED',
+                        'checkout_mode' => 'intent',
                         '_raw' => '{"response": {"tracking_id": "","reference_id": "34","state": "CREATED","checkout_mode": "INTENT","intent_url": "<URL>","expiry_time": "<TIME_IN_EPOCH>"},"status": "200","error_code": "","error_message": "","error_description": ""}',
                     ],
                 'error' => NULL,
@@ -201,26 +202,50 @@ class PayInitData extends Base\Mock\Server
         if ((empty($entities['cred']['app_present']) === true) or
             ($entities['cred']['app_present'] === false));
         {
-            $response = [
-                'data' =>
-                    [
-                        'trackingID' => $entities['payment']['id'],
-                        'gatewayTransactionId' => '123ase!234',
-                        'status' => 'CREATED',
-                        '_raw' => '{"response": {"tracking_id": "","reference_id": "34","state": "CREATED","checkout_mode": "COLLECT","intent_url": "<URL>","expiry_time": "<TIME_IN_EPOCH>"},"status": "200","error_code": "","error_message": "","error_description": ""}',
+            if ($entities['cred']['device'] === 'mobile')
+            {
+                $response = [
+                    'data' =>
+                        [
+                            'trackingID' => $entities['payment']['id'],
+                            'gatewayTransactionId' => '123ase!234',
+                            'status' => 'CREATED',
+                            'checkout_mode' => 'collect',
+                            '_raw' => '{"response": {"tracking_id": "","reference_id": "34","state": "CREATED","checkout_mode": "COLLECT","intent_url": "<URL>","expiry_time": "<TIME_IN_EPOCH>"},"status": "200","error_code": "","error_message": "","error_description": ""}',
+                        ],
+                    'error' => NULL,
+                    'external_trace_id' => 'DUMMY_REQUEST_ID',
+                    'mozart_id' => 'DUMMY_MOZART_ID',
+                    'next' => [],
+                    'success' => true,
+                ];
+            } else {
+                $response = [
+                    'data' =>
+                        [
+                            'trackingID' => $entities['payment']['id'],
+                            'gatewayTransactionId' => '123ase!234',
+                            'status' => 'CREATED',
+                            'checkout_mode' => 'web',
+                            '_raw' => '{"response": {"tracking_id": "","reference_id": "34","state": "CREATED","checkout_mode": "WEB","web_url": "<URL>","expiry_time": "<TIME_IN_EPOCH>"},"status": "200","error_code": "","error_message": "","error_description": ""}',
+                        ],
+                    'error' => NULL,
+                    'external_trace_id' => 'DUMMY_REQUEST_ID',
+                    'mozart_id' => 'DUMMY_MOZART_ID',
+                    'next' => [
+                        'redirect' => [
+                            'method' => 'post',
+                            'content' => [],
+                            "url" => "cred://pay?am=". $entities['payment']['amount'] . "&cu=INRPAISE&mc=5411"
+                        ]
                     ],
-                'error' => NULL,
-                'external_trace_id' => 'DUMMY_REQUEST_ID',
-                'mozart_id' => 'DUMMY_MOZART_ID',
-                'next' => [],
-                'success' => true,
-            ];
+                    'success' => true,
+                ];
+            }
 
             return $response;
         }
 
-
-        return $response;
     }
 
     public function wallet_phonepe($entities)

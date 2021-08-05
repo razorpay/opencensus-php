@@ -164,8 +164,6 @@ class CredTest extends TestCase
         $this->assertEquals(82300, $transaction['credit']);
     }
 
-
-
     public function testCredPaymentCreateResponseCollectFlowWithOrder()
     {
         $order = $this->createOrder(['app_offer' => true, 'amount' =>100000]);
@@ -345,5 +343,59 @@ class CredTest extends TestCase
         $this->assertEquals(400, $response['acquirer_data']['discount']);
         $this->assertEquals(1600, $response['acquirer_data']['amount']);
 
+    }
+
+    public function testCredPaymentCreateResponseUnregisteredUserFlow()
+    {
+        $payment = $this->getDefaultCredPayment();
+
+        $payment['_']['device'] = 'web';
+        $payment['app_present'] = false;
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $payment
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $payment = $this->getLastPayment('payment', 'true');
+
+        $this->assertEquals('first', $response['type']);
+
+        $this->assertEquals('cred', $payment['gateway']);
+
+        $this->assertEquals('created', $payment['status']);
+
+        $this->assertEquals('100DiCreDTrmnl', $payment['terminal_id']);
+
+        $payment = $this->getLastPayment('payment', true);
+
+        $content = $this->getMockServer()->getAsyncCallbackContentCred($payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'cred');
+
+        $payment = $this->getLastPayment('payment', 'true');
+
+        $this->assertEquals('cred', $payment['gateway']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($payment['gateway_captured']);
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastPayment('payment', 'true');
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(17700, $transaction['fee']);
+
+        $this->assertEquals(82300, $transaction['credit']);
     }
 }

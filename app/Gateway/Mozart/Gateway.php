@@ -208,7 +208,9 @@ class Gateway extends Base\Gateway
         {
             if (($this->isUpiIntent($input) === true) or
                 (($this->getGateway($input) === Payment\Gateway::CRED) and
-                (empty($response['next']['redirect']['url']) === false)))
+                (empty($response['next']['redirect']['url']) === false) and
+                (empty($response['data']['checkout_mode']) === false) and
+                ($response['data']['checkout_mode'] !== 'web')))
             {
                 $data = [
                     'intent_url' => $response['next']['redirect']['url'],
@@ -225,7 +227,9 @@ class Gateway extends Base\Gateway
 
         if (($input['payment']['method'] === 'upi') or
             (($input['payment']['method'] === Payment\Method::APP) and
-             ($input['payment']['wallet'] === AppMethod::CRED)))
+             ($input['payment']['wallet'] === AppMethod::CRED) and
+             (empty($response['data']['checkout_mode']) === false) and
+             ($response['data']['checkout_mode'] !== 'web')))
         {
             $merchantId = ($input['payment']['method'] === Payment\Method::APP) ? $input['terminal']['gateway_merchant_id'] :
             $input['terminal']['gateway_merchant_id2'];

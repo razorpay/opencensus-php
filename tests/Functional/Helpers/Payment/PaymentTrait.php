@@ -1823,6 +1823,7 @@ trait PaymentTrait
         $payment['amount'] = 100000;
         $payment['provider'] = 'cred';
         $payment['app_present'] = true;
+        $payment['_']['device'] = 'mobile';
 
         return $payment;
     }

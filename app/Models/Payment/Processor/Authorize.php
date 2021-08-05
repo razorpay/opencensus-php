@@ -6906,7 +6906,8 @@ trait Authorize
     {
         if (($payment->isAppCred() === true) and
             ($payment->getGateway() === Payment\Gateway::CRED) and
-            (empty($request['data']['intent_url']) === true))
+            (empty($request['data']['intent_url']) === true) and
+            (empty($request['data']['vpa']) === false))
         {
             return true;
         }
@@ -8237,7 +8238,8 @@ trait Authorize
             }
         }
 
-        if (($payment->isMethodCardOrEmi() === false) or
+        if ((($payment->isMethodCardOrEmi() === false) and
+                ($payment->isAppCred() === false)) or
             ($payment->isRecurring() === true) or
             ($payment->isPushPaymentMethod() === true))
         {
@@ -8253,11 +8255,6 @@ trait Authorize
         }
 
         if ($payment->isGooglePayCard() === true)
-        {
-            return false;
-        }
-
-        if ($payment->isAppCred() === true)
         {
             return false;
         }
