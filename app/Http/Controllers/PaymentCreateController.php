@@ -370,7 +370,9 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $this->logPaymentRequestEvent($input);
+        // Adding extra param to segregate payment_create events from calculate fees events
+
+        $this->logPaymentRequestEvent($input, true);
 
         $this->setMerchantCallbackUrlIfApplicable($input);
 
@@ -392,7 +394,9 @@ class PaymentCreateController extends Controller
             unset($input['view']);
         }
 
-        $this->logPaymentRequestEvent($input);
+        // Adding extra param to segregate payment_create events from calculate fees events
+
+        $this->logPaymentRequestEvent($input, true);
 
         $this->setMerchantCallbackUrlIfApplicable($input);
 
@@ -412,8 +416,6 @@ class PaymentCreateController extends Controller
 
             unset($input['view']);
         }
-
-        $this->logPaymentRequestEvent($input);
 
         $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
 
@@ -1543,7 +1545,7 @@ class PaymentCreateController extends Controller
         return false;
     }
 
-    protected function logPaymentRequestEvent(array $input)
+    protected function logPaymentRequestEvent(array $input, bool $customerFeeBearer = false)
     {
         $merchant = $this->app['basicauth']->getMerchant();
 
@@ -1554,8 +1556,13 @@ class PaymentCreateController extends Controller
                 'name'      => $merchant->getBillingLabel(),
                 'mcc'       => $merchant->getCategory(),
                 'category'  => $merchant->getCategory2(),
-            ]
+            ],
         ];
+
+        if($customerFeeBearer === true)
+        {
+            $properties['customer_fee_bearer'] = true;
+        }
 
         $metaDetails =[
             'metadata'  => $properties,
