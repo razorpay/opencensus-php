@@ -2951,6 +2951,44 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesAfterFilterForMinimumAmountOnHomeCreditCardlessEmi' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+                'amount'   => '49900'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'mode'  => 'test'
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithAmountGreaterForHomeCreditCardlessEmi' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+                'amount'   => '50000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'mode'  => 'test',
+                'methods' =>[
+                    'cardless_emi' => [
+                        'zestmoney' => true,
+                        'hcin' => true,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testPreferencesAfterFilterForMinimumAmountWithOrderAmountLess' => [
         'request'  => [
             'url'    => '/preferences',

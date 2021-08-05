@@ -882,6 +882,38 @@ class CheckoutPreferencesTest extends TestCase
 
     }
 
+    public function testGetCheckoutPreferencesAfterFilterForMinimumAmountOnHomeCreditCardlessEmi()
+    {
+        $this->fixtures->merchant->enableCardlessEmi();
+
+        $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
+        $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('hcin', $response['methods']['cardless_emi']);
+        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
+
+    }
+
+    public function testGetCheckoutPreferencesWithAmountGreaterForHomeCreditCardlessEmi()
+    {
+        $this->fixtures->merchant->enableCardlessEmi();
+        $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
+
+        $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('hcin', $response['methods']['cardless_emi']);
+        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
+
+    }
+
     public function testGetCheckoutPreferencesWithAmountGreaterForCardlessEmi()
     {
         $this->fixtures->merchant->enableCardlessEmi();
