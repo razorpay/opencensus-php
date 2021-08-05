@@ -186,7 +186,12 @@ class Preferences
     const MID_AMAZING_KART             = 'G7mPROV5i51GJt';
     const MID_BHARTI_AIRTEL            = 'Fwwnzcx3FaqF4X';
 
-    const MID_ADITYA_BIRLA_HEALTH   = 'F0sFCmi0LOeeGc';
+    const MID_ADITYA_BIRLA_HEALTH     = 'F0sFCmi0LOeeGc';
+    const MID_ADITYA_BIRLA_HEALTH_1   = 'EuxJCz8cZV9V63';
+    const MID_ADITYA_BIRLA_HEALTH_2   = 'ExO4eKBgjHgbNd';
+    const MID_ADITYA_BIRLA_HEALTH_3   = 'F40u24NuYoOvib';
+    const MID_ADITYA_BIRLA_HEALTH_4   = 'FeME1n6GwlEifd';
+    const MID_ADITYA_BIRLA_HEALTH_5   = 'FYAgmcCOAfGASp';
 
     const MID_KARNATAKA_UDYOG_MITRA = 'El3yN2k0PWFCWs';
 

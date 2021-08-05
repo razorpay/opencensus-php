@@ -1133,19 +1133,22 @@ class Notifier extends Base\Core
 
                 break;
 
-            /*
             case Preferences::MID_ADITYA_BIRLA_HEALTH:
+            case Preferences::MID_ADITYA_BIRLA_HEALTH_1:
+            case Preferences::MID_ADITYA_BIRLA_HEALTH_2:
+            case Preferences::MID_ADITYA_BIRLA_HEALTH_3:
+            case Preferences::MID_ADITYA_BIRLA_HEALTH_4:
+            case Preferences::MID_ADITYA_BIRLA_HEALTH_5:
 
-                $sender = 'ABCPRO';
+                $sender = 'ABCABH';
                 $template = 'sms.custom_invoice.adityabirla_health';
                 $params   = [
-                    'first_name'    => $this->invoice->getCustomerName() ?? 'Customer',
-                    'policy_number' => $receipt,
+                    // 'first_name'    => $this->invoice->getCustomerName() ?? 'Customer',
+                    // 'policy_number' => $receipt,
                     'invoice_link'  => $invoiceLink,
                 ];
 
                 break;
-            */
         }
 
         return ['template' => $template, 'params' => $params, 'sender' => $sender];
