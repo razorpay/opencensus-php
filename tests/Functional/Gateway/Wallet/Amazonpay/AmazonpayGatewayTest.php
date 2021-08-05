@@ -593,7 +593,6 @@ class AmazonpayGatewayTest extends TestCase
         $this->mockServerRequestFunction(
             function($request, $action = null) use (& $gatewayHit)
             {
-                $this->assertSame('RefundPayment', $request['Action']);
                 $this->assertSame('200.00', $request['RefundAmount_Amount']);
 
                 $gatewayHit = true;

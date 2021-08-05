@@ -11,7 +11,10 @@ use RZP\Gateway\Wallet\Amazonpay\RequestFields;
 
 /**
  * This class was taken from Amazon Pay's SDK and modified to suit our requirements.
+ * Initial SDK
  * @see https://drive.google.com/open?id=1ZqBYMgqNs0F5q-PB_7yZV5AsS0E4v9iM
+ * Upgraded SDK
+ * @see https://drive.google.com/file/d/1YrIHN0IYWKuPmZ6ls1R5fpC6bYcAC4C8/view?usp=sharing
  * Class PWAINBackendSDK
  * @package RZP\Gateway\Wallet\Amazonpay\Sdk
  */
@@ -59,6 +62,16 @@ final class PWAINBackendSDK
         Config::APPLICATION_VERSION => null,
         Config::HANDLE_THROTTLE     => true
     ];
+
+    /**
+     * New Endpoint as per upgraded SDK
+     * @var array
+     */
+    private $api_path = array(
+        'RefundPayment' => '/v2/payments/refund',
+        'GetRefundDetails' => '/v2/payments/refund/details',
+        'ListOrderReference' => '/v2/payments/orderReference',
+    );
 
     /**
      * @var bool
@@ -192,11 +205,12 @@ final class PWAINBackendSDK
      */
     public function verifyMockGatewayS2sSignature(array $parameters = [])
     {
-        $this->createServiceUrl();
+        $this->createServiceUrl("ListOrderReference");
 
         $actualSignature = $parameters[RequestFields::SIGNATURE];
 
         unset($parameters[RequestFields::SIGNATURE]);
+        unset($parameters[RequestFields::IS_SANDBOX]);
 
         $parameters = $this->signParameters($parameters);
 
@@ -276,7 +290,6 @@ final class PWAINBackendSDK
     public function listOrderReference($requestParameters = [])
     {
         $parameters['Action'] = 'ListOrderReference';
-        $parameters['Version'] = '2013-01-01';
 
         return $this->setParametersAndReturnUrl($parameters, $requestParameters);
     }
@@ -545,11 +558,15 @@ final class PWAINBackendSDK
     {
         $parameters['Timestamp'] = $this->getFormattedTimestamp();
 
-        $this->createServiceUrl();
+        $this->createServiceUrl($parameters['Action']);
+
+        unset($parameters['Action']);
 
         $parameters = $this->signParameters($parameters);
 
         $parameters['Signature'] = $this->urlEncode($parameters['Signature'], false);
+
+        $parameters['isSandbox'] = $this->config[Config::SANDBOX];
 
         $parameters = $this->getParametersAsString($parameters);
 
@@ -557,17 +574,13 @@ final class PWAINBackendSDK
     }
 
     /* Create MWS service URL and the Endpoint path */
-    private function createServiceUrl()
+    private function createServiceUrl($action)
     {
-        $this->modePath = strtolower($this->config['sandbox']) ? 'OffAmazonPayments_Sandbox' : 'OffAmazonPayments';
+        $this->modePath = $this->api_path[$action];
 
-        $this->serviceUrl  = 'mws.amazonservices.in';
+        //$this->serviceUrl  = 'mws.amazonservices.in';
 
-        $this->mwsServiceUrl   = 'https://' . $this->serviceUrl . '/' . $this->modePath . '/2013-01-01';
-
-        $this->path = '/' . $this->modePath . '/2013-01-01';
-
-        $this->urlScheme = 'GET';
+        $this->mwsServiceUrl   = 'https://' . $this->serviceUrl . $this->modePath;
     }
 
     private function getFormattedTimestamp()

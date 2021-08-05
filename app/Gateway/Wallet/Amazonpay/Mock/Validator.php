@@ -30,7 +30,6 @@ final class Validator extends Base\Validator
 
     protected static $verifyRules = [
         RequestFields::AWS_ACCESS_KEY_ID => 'required|string',
-        RequestFields::ACTION            => 'required|string|in:ListOrderReference',
         RequestFields::PAYMENT_DOMAIN    => 'required|string|in:IN_INR',
         RequestFields::QUERY_ID          => 'required|string|size:14',
         RequestFields::QUERY_ID_TYPE     => 'required|string|in:SellerOrderId',
@@ -38,15 +37,14 @@ final class Validator extends Base\Validator
         RequestFields::SIGNATURE_METHOD  => 'required|string|in:HmacSHA256',
         RequestFields::SIGNATURE_VERSION => 'required|string|in:2',
         RequestFields::TIMESTAMP         => 'required|string|date_format:Y-m-d\TH:i:s.\\0\\0\\0\\Z',
-        RequestFields::VERSION           => 'required|string|in:2013-01-01',
         RequestFields::SIGNATURE         => 'required|string|size:44',
         'CreatedTimeRange_StartTime'     => 'required|string|date',
         'CreatedTimeRange_EndTime'       => 'required|string|date',
+        RequestFields::IS_SANDBOX        => 'required|string|in:true,false',
     ];
 
     protected static $refundRules = [
         RequestFields::AWS_ACCESS_KEY_ID => 'required|string',
-        RequestFields::ACTION            => 'required|string|in:RefundPayment',
         RequestFields::AMAZON_TRAN_ID    => 'required|string|size:19',
         RequestFields::AMAZON_TRAN_TYPE  => 'required|string|in:OrderReferenceId',
         'RefundAmount_Amount'            => 'required|string',
@@ -57,16 +55,17 @@ final class Validator extends Base\Validator
         RequestFields::SIGNATURE_VERSION => 'required|string|in:2',
         RequestFields::TIMESTAMP         => 'required|string|date_format:Y-m-d\TH:i:s.\\0\\0\\0\\Z',
         RequestFields::SIGNATURE         => 'required|string|size:44',
+        RequestFields::IS_SANDBOX        => 'required|string|in:true,false',
     ];
 
     protected static $verifyRefundRules = [
         RequestFields::AWS_ACCESS_KEY_ID => 'required|string',
-        RequestFields::ACTION            => 'required|string|in:GetRefundDetails',
         'AmazonRefundId'                 => 'required|string',
         RequestFields::UC_SELLER_ID      => 'required|string',
         RequestFields::SIGNATURE_METHOD  => 'required|string|in:HmacSHA256',
         RequestFields::SIGNATURE_VERSION => 'required|string|in:2',
         RequestFields::TIMESTAMP         => 'required|string|date_format:Y-m-d\TH:i:s.\\0\\0\\0\\Z',
         RequestFields::SIGNATURE         => 'required|string|size:44',
+        RequestFields::IS_SANDBOX        => 'required|string|in:true,false',
     ];
 }

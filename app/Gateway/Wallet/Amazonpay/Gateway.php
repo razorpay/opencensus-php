@@ -791,10 +791,10 @@ class Gateway extends Base\Gateway
 
             // Amazon puts default time span of 3 days if we do set it explicitly
             RequestFields::VERIFY_START_TIME    => Carbon::createFromTimestamp($input['payment']['created_at'])
-                                                         ->subMinute(1)
-                                                         ->toIso8601String(),
+                                                        ->subMinute(1)
+                                                        ->toISOString(),
             RequestFields::VERIFY_END_TIME      => Carbon::now()
-                                                         ->toIso8601String(),
+                                                        ->toISOString(),
         ];
 
         return [
@@ -870,7 +870,7 @@ class Gateway extends Base\Gateway
             Config::ACCESS_KEY  => $this->getAccessCode(),
             Config::SECRET_KEY  => $this->getSecret(),
             Config::BASE_URL    => $this->getUrlDomain(),
-            Config::SANDBOX     => $this->isSandbox(),
+            Config::SANDBOX     => $this->isSandbox() ? 'true' : 'false',
         ];
     }
 
