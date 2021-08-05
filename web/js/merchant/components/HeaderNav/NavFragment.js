@@ -104,7 +104,10 @@ class NavFragment extends Component {
     const { user } = this.props;
     const isMerchantAlreadyMTU = await this.isMerchantAlreadyMTU();
 
-    if (!isMerchantAlreadyMTU && this.canShowOnboardingOffers) {
+    if (
+      (!isMerchantAlreadyMTU || this.isMtuOfferShowed === 'visited') &&
+      this.canShowOnboardingOffers
+    ) {
       const from = this.isNewMerchantPostMTUCouponLive ? user.created_at : TRANSACTION_TIMESTAMP;
 
       merchantFetch({
