@@ -6738,6 +6738,24 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
+    public function completeSubmerchantOnboarding($submerchantId, $input)
+    {
+        $input['submerchant_id'] = $submerchantId;
+
+        (new Validator)->validateInput('complete_submerchant_onboarding', $input);
+
+        $partnerId     = $input['partner_merchant_id'];
+
+        $submerchant = $this->repo->merchant->findOrFailPublic($submerchantId);
+        $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+
+        $this->validateAggregatorSubMerchantRelation($submerchant, $partner);
+
+        $this->core()->addMerchantSupportingEntitiesAsync($submerchant, $partner);
+
+        return ['success' => true];
+    }
+
     public function createSalesforceLeadFromDashboard(array $input): array
     {
         try

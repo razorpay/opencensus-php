@@ -2695,6 +2695,9 @@ class Route
         'metro_project_create'                    => ['post',       'metro/projects',                                       'EdgeProxyController@proxy'                                    ],
         'metro_project_credentials_create'        => ['post',       'metro/projects/{id}/credentials',                      'EdgeProxyController@proxy'                                    ],
         'metro_project_topic_update'              => ['put',        'metro/projects/{id}/topics/{name}',                    'EdgeProxyController@proxy'                                    ],
+
+        // Onboarding APIs
+        'complete_submerchant_onboarding'         => ['post',       'submerchants/{id}/onboard',                             'MerchantController@completeSubmerchantOnboarding'],
     ];
 
     public static $public = [
@@ -5144,6 +5147,7 @@ class Route
         'fetch_filter_ledger',
 
         'merchant_risk_data',
+        'complete_submerchant_onboarding',
 
         // Metro
         'metro_project_create',
@@ -6122,6 +6126,8 @@ class Route
         'metro_project_topic_update'                      => Permission::METRO_PROJECT_TOPIC_UPDATE,
 
         'retry_payouts_on_service'                        => Permission::RETRY_PAYOUTS_ON_SERVICE,
+
+        'complete_submerchant_onboarding'                 => Permission::MERCHANT_ACTIONS,
     ];
 
     public static $bankingRoutePermissions = [
@@ -9281,6 +9287,8 @@ class Route
 
             'merchant_risk_data',
             'oauth_application_update_admin',
+
+            'complete_submerchant_onboarding',
 
             'merchant_international_enablement_preview',
             'merchant_international_enablement_get',

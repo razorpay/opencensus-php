@@ -482,6 +482,11 @@ class Validator extends Base\Validator
         Entity::CODE            => 'sometimes|string|min:3|max:20|regex:"^([0-9A-Za-z-._])+$"',
     ];
 
+    protected static $completeSubmerchantOnboardingRules = [
+        'submerchant_id'            => 'required|string',
+        'partner_merchant_id'       => 'required|string',
+    ];
+
     public function validateMerchantForProductInternational(Entity $merchant)
     {
         $merchant = $merchant?: $this->entity;

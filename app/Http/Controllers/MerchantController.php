@@ -2299,6 +2299,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function completeSubmerchantOnboarding($submerchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->completeSubmerchantOnboarding($submerchantId, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getPurposeCodeDetails()
     {
         $data = $this->service()->getPurposeCodeDetails();
