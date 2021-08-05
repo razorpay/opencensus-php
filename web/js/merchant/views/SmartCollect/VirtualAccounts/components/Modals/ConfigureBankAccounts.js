@@ -6,7 +6,7 @@ import Button from 'common/new-ui/Button';
 
 import { closeModal } from 'merchant_common/reducers/modals';
 
-const MAX_ACCOUNTS = 5;
+const MAX_ACCOUNTS = 10;
 const IFSC_LENGTH = 11;
 const ACC_MIN_LENGTH = 5;
 const ACC_MAX_LENGTH = 35;
