@@ -144,6 +144,8 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Partner\Activation\Repository                  $partner_activation;
  * @property Models\Merchant\Product\Repository                    $merchant_product;
  * @property Models\Merchant\Product\Request\Repository            $merchant_product_request;
+ * @property Models\Merchant\Product\TncMap\Repository             $tnc_map;
+ * @property Models\Merchant\Product\TncMap\Acceptance\Repository  $merchant_tnc_acceptance;
  * @property Models\Settlement\Repository                          $settlement
  * @property Gateway\Enach\Base\Repository                         $enach
  * @property Models\SubVirtualAccount\Repository                   $sub_virtual_account

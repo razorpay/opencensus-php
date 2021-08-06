@@ -41,4 +41,5 @@ class Status
     const ACCOUNT_SOURCE        = 'account';
     const PRODUCT_CONFIG_SOURCE = 'product_config';
     const STAKEHOLDER_SOURCE    = 'stakeholder';
+    const TNC_SOURCE            = 'tnc';
 }

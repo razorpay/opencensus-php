@@ -1928,6 +1928,17 @@ class Route
         'product_config_update_v2'                 => ['patch',    'accounts/{id}/products/{merchantProductId}',     'ProductConfigController@updateConfigForMerchant'                   ],
         'product_config_create_v2'                 => ['post',     'accounts/{id}/products/',                        'ProductConfigController@createConfigForMerchant'                   ],
 
+        // product_tnc
+        'product_config_tnc_fetch_v2'              => ['get',       'accounts/{id}/tnc',                             'ProductTncController@fetchTncForMerchantProduct'                   ],
+        'product_config_tnc_accept_v2'             => ['post',      'accounts/{id}/tnc',                             'ProductTncController@acceptTncForMerchantProduct'                  ],
+
+
+        //tnc map
+        'product_tnc_map_create'                   => ['post',       'products/tnc',                                  'TncMapController@create'                                          ],
+        'product_tnc_map_fetch'                    => ['get',        'products/tnc/{id}',                             'TncMapController@get'                                             ],
+        'product_tnc_map_fetch_all'                => ['get',        'products/tnc',                                  'TncMapController@list'                                            ],
+        'product_tnc_map_update'                   => ['patch',      'products/tnc/{id}',                             'TncMapController@update'                                          ],
+
         // Pincode Service
         'pincode_get'                              => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
         'cities_get'                               => ['get',      'cities',                                         'CityController@getCities'                                          ],
@@ -3144,6 +3155,8 @@ class Route
         'product_config_fetch_v2',
         'product_config_update_v2',
         'product_config_create_v2',
+        'product_config_tnc_fetch_v2',
+        'product_config_tnc_accept_v2',
     ];
 
     // Only routes defined in internalApps go here
@@ -3699,6 +3712,9 @@ class Route
         'product_config_fetch_v2' ,
         'product_config_update_v2',
         'product_config_create_v2',
+
+        'product_config_tnc_fetch_v2',
+        'product_config_tnc_accept_v2',
 
         'onboarding_webhook_create',
         'onboarding_webhook_fetch',
@@ -5149,6 +5165,11 @@ class Route
         'merchant_risk_data',
         'complete_submerchant_onboarding',
 
+        'product_tnc_map_create',
+        'product_tnc_map_fetch',
+        'product_tnc_map_fetch_all',
+        'product_tnc_map_update',
+
         // Metro
         'metro_project_create',
         'metro_project_credentials_create',
@@ -5711,6 +5732,10 @@ class Route
         'fetch_merchant_products'                  => Permission::VIEW_PARTNERS,
         'backfill_merchant_applications'           => Permission::ADMIN_MANAGE_PARTNERS,
         'backfill_referred_application'            => Permission::ADMIN_MANAGE_PARTNERS,
+        'product_tnc_map_create'                   => Permission::ADMIN_MANAGE_PARTNERS,
+        'product_tnc_map_fetch'                    => Permission::ADMIN_MANAGE_PARTNERS,
+        'product_tnc_map_fetch_all'                => Permission::ADMIN_MANAGE_PARTNERS,
+        'product_tnc_map_update'                   => Permission::ADMIN_MANAGE_PARTNERS,
         'merchant_sync_stakeholder'                => Permission::ADMIN_MANAGE_PARTNERS,
         'oauth_application_create_clients'         => Permission::ADMIN_MANAGE_PARTNERS,
         'oauth_application_delete_client'          => Permission::ADMIN_MANAGE_PARTNERS,
@@ -9294,6 +9319,11 @@ class Route
             'merchant_risk_data',
             'oauth_application_update_admin',
 
+            'product_tnc_map_create',
+            'product_tnc_map_fetch',
+            'product_tnc_map_fetch_all',
+            'product_tnc_map_update',
+
             'complete_submerchant_onboarding',
 
             'merchant_international_enablement_preview',
@@ -10726,6 +10756,8 @@ class Route
         'product_config_fetch_v2',
         'product_config_update_v2',
         'product_config_create_v2',
+        'product_config_tnc_fetch_v2',
+        'product_config_tnc_accept_v2',
         'onboarding_webhook_create',
         'onboarding_webhook_fetch',
         'onboarding_webhook_fetch_all',

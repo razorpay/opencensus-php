@@ -16,6 +16,7 @@ use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\Detail\NeedsClarification;
+use RZP\Models\Merchant\Product\TncMap\Acceptance as TncAcceptance;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields as SelectiveRequiredFields;
 
 class PaymentProductsBaseService extends Base\Service
@@ -31,6 +32,8 @@ class PaymentProductsBaseService extends Base\Service
      * @var Document\Core
      */
     private $documentCore;
+
+    private $tncCore;
 
     /**
      * @var Detail\NeedsClarification\Core
@@ -48,6 +51,8 @@ class PaymentProductsBaseService extends Base\Service
         $this->clarificationCore = new Detail\NeedsClarification\Core();
 
         $this->validationFields = [];
+
+        $this->tncCore = new TncAcceptance\Core();
 
     }
 
@@ -181,13 +186,20 @@ class PaymentProductsBaseService extends Base\Service
 
         $verificationResponse = [];
 
+        $tncRequirement = $this->getTncRequirements($merchant);
+
+        if (empty($tncRequirement) === false)
+        {
+            array_push($requirements, $tncRequirement);
+        }
+
         if ($merchantDetails->isSubmitted() === false)
         {
             $verificationResponse = $this->merchantDetailCore->setVerificationDetails($merchantDetails, $merchant, $verificationResponse, true);
 
             if ($verificationResponse['can_submit'] === true)
             {
-                return [];
+                return $requirements;
             }
             else
             {
@@ -226,6 +238,26 @@ class PaymentProductsBaseService extends Base\Service
         }
 
         return $requirements;
+    }
+
+    protected function getTncRequirements(Merchant\Entity $merchant): array
+    {
+        $hasPendingTnc = $this->tncCore->hasPendingTnc($merchant, Product\Name::ALL);
+
+        $requirement = [];
+
+        if ($hasPendingTnc === true)
+        {
+            $requirement[Constants::FIELD_REFERENCE] = Constants::ACCEPTED;
+
+            $requirement[Constants::RESOLUTION_URL] = Constants::ACCOUNT_TNC_ACCEPTANCE_RESOLUTION_URL;
+
+            $requirement[Constants::STATUS] = Constants::REQUIRED;
+
+            $requirement[Constants::REASON_CODE] = Constants::FIELD_MISSING;
+        }
+
+        return $requirement;
     }
 
     private function getFormattedNonAcknowledgedNCFields(array $nonRespondedFields, Detail\Entity $merchantDetails): array

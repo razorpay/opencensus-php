@@ -2208,6 +2208,8 @@ class ErrorCode
 
     const BAD_REQUEST_IIN_NOT_EXISTS                                                = 'BAD_REQUEST_IIN_NOT_EXISTS';
 
+    const BAD_REQUEST_TNC_STATUS_INVALID                                            = 'BAD_REQUEST_TNC_STATUS_INVALID';
+
     // Aadhar E-sign error codes
     const BAD_REQUEST_INVALID_SESSION_ID        = "BAD_REQUEST_INVALID_SESSION_ID";
 

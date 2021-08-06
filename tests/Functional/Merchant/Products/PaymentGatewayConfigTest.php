@@ -41,6 +41,9 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->terminalsServiceMock = $this->getTerminalsServiceMock();
 
+        $this->fixtures->connection('test')->create('tnc_map', ['product_name' => 'all', 'content' => ['terms' => 'https://www.terms.com']]);
+        $this->fixtures->connection('live')->create('tnc_map', ['product_name' => 'all', 'content' => ['terms' => 'https://www.terms.com']]);
+
         $this->mockStorkService();
     }
 
@@ -269,6 +272,12 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->runRequestResponseFlow($testData);
 
+        $testData = $this->testData['acceptAccountTnc'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/tnc';
+
+        $this->runRequestResponseFlow($testData);
+
         $testData = $this->testData['testEmptyRequirements'];
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
@@ -382,6 +391,12 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $testData = $this->testData['testPostBusinessPanDocument'];
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['acceptAccountTnc'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/tnc';
 
         $this->runRequestResponseFlow($testData);
 
@@ -600,6 +615,25 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
 
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testTncAcceptance()
+    {
+        $this->setupPrivateAuthForPartner();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData                   = $this->testData['fetchAccountTnc'];
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/tnc';
+        $this->runRequestResponseFlow($testData);
+
+        $testData                   = $this->testData['acceptAccountTnc'];
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/tnc';
         $this->runRequestResponseFlow($testData);
     }
 

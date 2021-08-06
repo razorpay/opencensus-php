@@ -108,6 +108,16 @@ final class FactoryData
                                                          ]
         );
 
+        $factory(\RZP\Models\Merchant\Product\TncMap\Entity::class, [
+                                                             'id'                       => $faker->uniqueid,
+                                                             'product_name'             => 'all',
+                                                             'status'                   => 'active',
+                                                             'created_at'               => $faker->timestamp,
+                                                             'updated_at'               => $faker->timestamp,
+                                                         ]
+        );
+
+
         $factory(\RZP\Models\Merchant\FreshdeskTicket\Entity::class, [
                                                                        'id'            => $faker->uniqueid,
                                                                        'merchant_id'   => '10000000000000',

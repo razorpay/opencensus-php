@@ -12,15 +12,16 @@ use RZP\Models\Merchant\Stakeholder\Entity;
 
 class Constants
 {
-    const ACCOUNT_DOCUMENTS_RESOLUTION_URL     = '/accounts/{accountId}/documents';
-    const STAKEHOLDER_DOCUMENTS_RESOLUTION_URL = '/accounts/{accountId}/stakeholders/{stakeholderId}/documents';
-    const ACCOUNTS_RESOLUTION_URL              = '/accounts/{accountId}';
-    const STAKEHOLDER_UPDATE_RESOLUTION_URL    = '/accounts/{accountId}/stakeholders/{stakeholderId}';
-    const STAKEHOLDER_CREATE_RESOLUTION_URL    = '/accounts/{accountId}/stakeholders';
-    const PAYMENT_CONFIG_RESOLUTION_URL        = '/accounts/{accountId}/products/{merchantProductConfigId}';
-    const STAKEHOLDER_ID_PLACEHOLDER           = '{stakeholderId}';
-    const ACCOUNT_ID_PLACEHOLDER               = '{accountId}';
-    const MERCHANT_PRODUCT_ID_PLACEHOLDER      = '{merchantProductConfigId}';
+    const ACCOUNT_DOCUMENTS_RESOLUTION_URL      = '/accounts/{accountId}/documents';
+    const ACCOUNT_TNC_ACCEPTANCE_RESOLUTION_URL = '/accounts/{accountId}/tnc';
+    const STAKEHOLDER_DOCUMENTS_RESOLUTION_URL  = '/accounts/{accountId}/stakeholders/{stakeholderId}/documents';
+    const ACCOUNTS_RESOLUTION_URL               = '/accounts/{accountId}';
+    const STAKEHOLDER_UPDATE_RESOLUTION_URL     = '/accounts/{accountId}/stakeholders/{stakeholderId}';
+    const STAKEHOLDER_CREATE_RESOLUTION_URL     = '/accounts/{accountId}/stakeholders';
+    const PAYMENT_CONFIG_RESOLUTION_URL         = '/accounts/{accountId}/products/{merchantProductConfigId}';
+    const STAKEHOLDER_ID_PLACEHOLDER            = '{stakeholderId}';
+    const ACCOUNT_ID_PLACEHOLDER                = '{accountId}';
+    const MERCHANT_PRODUCT_ID_PLACEHOLDER       = '{merchantProductConfigId}';
 
 
     const ENTITY_RESOLUTION_URL_MAPPING = [
@@ -69,6 +70,7 @@ class Constants
     const FIELD           = 'field';
     const DOCUMENT        = 'document';
     const DESCRIPTION     = 'description';
+    const ACCEPTED        = 'accepted';
 
     //Reason codes
     const FIELD_MISSING             = 'field_missing';

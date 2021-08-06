@@ -288,6 +288,12 @@ return [
             'content' => [
                 'requirements' => [
                     [
+                        'field_reference' => 'accepted',
+                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'individual_proof_of_address',
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
                         'status'          => 'required',
@@ -322,7 +328,7 @@ return [
                         'resolution_url'  => '/accounts/{accountId}/stakeholders',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
-                    ]
+                    ],
                 ]
             ]
         ]
@@ -366,6 +372,12 @@ return [
                 ],
                 'requirements'         => [
                     [
+                        'field_reference' => 'accepted',
+                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'individual_proof_of_address',
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
                         'status'          => 'required',
@@ -382,7 +394,7 @@ return [
                         'resolution_url'  => '/accounts/{accountId}/stakeholders',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
-                    ]
+                    ],
                 ]
             ],
         ],
@@ -426,6 +438,12 @@ return [
                 ],
                 'requirements'         => [
                     [
+                        'field_reference' => 'accepted',
+                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'business_proof_of_identification.business_pan_url',
                         'resolution_url'  => '/accounts/{accountId}/documents',
                         'status'          => 'required',
@@ -454,7 +472,19 @@ return [
                         'resolution_url'  => '/accounts/{accountId}/stakeholders',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
-                    ]
+                    ],
+                    [
+                        'field_reference' => 'legal_info.pan',
+                        'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'legal_info.cin',
+                        'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
                 ]
             ],
         ],
@@ -516,11 +546,18 @@ return [
             'content' => [
                 'requirements' => [
                     [
+                        'field_reference' => 'accepted',
+                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'individual_proof_of_address',
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
                         'status'          => 'required',
                         'reason_code'     => 'document_missing'
-                    ]
+                    ],
+
                 ]
             ]
         ]
@@ -761,6 +798,12 @@ return [
             'content' => [
                 'requirements' => [
                     [
+                        'field_reference' => 'accepted',
+                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'business_proof_of_identification.business_pan_url',
                         'resolution_url'  => '/accounts/{accountId}/documents',
                         'status'          => 'required',
@@ -819,7 +862,8 @@ return [
                         'resolution_url'  => '/accounts/{accountId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
-                    ]
+                    ],
+
                 ]
             ]
         ]
@@ -833,6 +877,12 @@ return [
         'response' => [
             'content' => [
                 'requirements' => [
+                    [
+                        'field_reference' => 'accepted',
+                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
                     [
                         'field_reference' => 'business_proof_of_identification.business_pan_url',
                         'resolution_url'  => '/accounts/{accountId}/documents',
@@ -862,7 +912,7 @@ return [
                         'resolution_url'  => '/accounts/{accountId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
-                    ]
+                    ],
                 ]
             ]
         ]
@@ -876,6 +926,12 @@ return [
         'response' => [
             'content' => [
                 'requirements' => [
+                    [
+                        'field_reference' => 'accepted',
+                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
                     [
                         'field_reference' => 'business_proof_of_identification.business_pan_url',
                         'resolution_url'  => '/accounts/{accountId}/documents',
@@ -899,7 +955,7 @@ return [
                         'resolution_url'  => '/accounts/{accountId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
-                    ]
+                    ],
                 ]
             ]
         ]
@@ -984,6 +1040,12 @@ return [
         'response' => [
             'content' => [
                 'requirements' => [
+                    [
+                        'field_reference' => 'accepted',
+                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
                     [
                         'field_reference' => 'individual_proof_of_address.aadhar_front',
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
@@ -1140,5 +1202,41 @@ return [
                 ],
             ]
         ]
-    ]
+    ],
+
+    'fetchAccountTnc' => [
+        'request'  => [
+            'url'    => '/v2/accounts/{id}/tnc',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'status'   => 'active',
+                'content'  => [
+                    'terms' => 'https://www.terms.com'
+                ],
+                'accepted' => false
+            ],
+
+        ]
+    ],
+
+    'acceptAccountTnc' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{id}/tnc',
+            'method'  => 'POST',
+            'content' => [
+                'accepted' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'   => 'active',
+                'content'  => [
+                    'terms' => 'https://www.terms.com'
+                ],
+                'accepted' => true
+            ]
+        ]
+    ],
 ];

@@ -370,6 +370,8 @@ class Table
     // Account management & config
     const MERCHANT_PRODUCTS         = 'merchant_products';
     const MERCHANT_PRODUCT_REQUEST  = 'merchant_product_requests';
+    const TNC_MAP                   = 'tnc_map';
+    const MERCHANT_TNC_ACCEPTANCE   = 'merchant_tnc_acceptance';
 
     // International Enablement
     const INTERNATIONAL_ENABLEMENT_DETAIL   = 'international_enablement_details';
