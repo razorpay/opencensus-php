@@ -22,9 +22,9 @@ class SubMerchantTaggingJob extends Job
 
     protected $subMerchantId;
 
-    public function __construct(string $partnerId, string $subMerchantId)
+    public function __construct($mode, string $partnerId, string $subMerchantId)
     {
-        parent::__construct();
+        parent::__construct($mode);
         $this->subMerchantId = $subMerchantId;
         $this->partnerId     = $partnerId;
     }

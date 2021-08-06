@@ -6,6 +6,7 @@ use Mail;
 use Event;
 use RZP\Constants\Mode;
 use RZP\Models\User\Role;
+use RZP\Models\Merchant\Methods;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\Product\Metric;
@@ -79,6 +80,10 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->validateMerchantProductRequest($merchantProduct, $merchantProductRequest);
 
+        $merchant = $this->getDbEntity('merchant', ['id' => $merchantProduct->getMerchantId()]);
+
+        // The below function call is idempotent
+        (new Methods\Core())->setDefaultMethods($merchant);
     }
 
     public function testCreateProductConfigInvalidInput()

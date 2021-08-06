@@ -4428,7 +4428,7 @@ class Service extends Base\Service
         {
             if($optimizeCreationFlow === true)
             {
-                SubMerchantTaggingJob::dispatch($merchant->getId(), $subMerchant->getId());
+                SubMerchantTaggingJob::dispatch($this->mode, $merchant->getId(), $subMerchant->getId());
             }
             else
             {

@@ -424,7 +424,7 @@ class Core extends Base\Core
 
         if ($optimizeCreationFlow === true)
         {
-            MerchantSupportingEntitiesCreateJob::dispatch($merchant->getId(), $aggregatorMerchant->getId());
+            MerchantSupportingEntitiesCreateJob::dispatch($this->mode, $merchant->getId(), $aggregatorMerchant->getId());
         }
         else
         {

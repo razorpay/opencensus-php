@@ -23,9 +23,9 @@ class MerchantSupportingEntitiesCreateJob extends Job
     protected $partnerId;
 
 
-    public function __construct(string $merchantId, $partnerId)
+    public function __construct($mode, string $merchantId, $partnerId)
     {
-        parent::__construct();
+        parent::__construct($mode);
         $this->merchantId = $merchantId;
         $this->partnerId  = $partnerId;
     }

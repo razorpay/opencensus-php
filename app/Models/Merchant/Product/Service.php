@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Methods;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Product\Config;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
@@ -21,7 +22,7 @@ class Service extends Base\Service
     {
         $timeStarted = microtime(true);
 
-        $merchant = $this->validateAndSetMerchantContext($merchantId);
+        list($merchant, $partner) = $this->validateAndSetMerchantContext($merchantId);
 
         Entity::verifyIdAndStripSign($merchantProductConfigId);
 
@@ -38,7 +39,7 @@ class Service extends Base\Service
 
     public function updateConfig(string $merchantId, string $merchantProductConfigId, array $request)
     {
-        $merchant = $this->validateAndSetMerchantContext($merchantId);
+        list($merchant, $partner) = $this->validateAndSetMerchantContext($merchantId);
 
         Entity::verifyIdAndStripSign($merchantProductConfigId);
 
@@ -57,7 +58,7 @@ class Service extends Base\Service
 
     public function createConfig(string $merchantId, array $payload): array
     {
-        $merchant = $this->validateAndSetMerchantContext($merchantId);
+        list($merchant, $partner) = $this->validateAndSetMerchantContext($merchantId);
 
         $merchantProductInput = $this->getMerchantProductInput($payload);
 
@@ -80,6 +81,8 @@ class Service extends Base\Service
             $payload = $this->getProductConfigPayload($payload, $productName);
 
             $merchantProduct = (new Entity)->generateId();
+
+            (new Methods\Core())->setDefaultMethods($merchant, $partner);
 
             $response = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantProduct, $payload, $productName) {
 
@@ -156,7 +159,7 @@ class Service extends Base\Service
         return $payload;
     }
 
-    private function validateAndSetMerchantContext(string & $merchantId): Merchant\Entity
+    private function validateAndSetMerchantContext(string & $merchantId): array
     {
         $this->app = App::getFacadeRoot();
 
@@ -164,9 +167,12 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+        $partner = null;
         // This means auth can be private auth of partner or partner auth of partner without X-Account-Id
         if($this->merchant->getId() !== $merchantId)
         {
+            $partner = $this->merchant;
+
             (new Account\Core)->validatePartnerAccess($this->merchant, $merchantId);
 
             $this->app['basicauth']->setPartnerMerchantId($this->merchant->getId());
@@ -175,7 +181,7 @@ class Service extends Base\Service
 
         $this->app['basicauth']->setMerchant($merchant);
 
-        return $merchant;
+        return [$merchant, $partner];
     }
 
     private function validateAndGetMerchantProduct(string $merchantId, string $merchantProductConfigId): Entity
