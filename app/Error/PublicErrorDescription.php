@@ -795,6 +795,8 @@ class PublicErrorDescription
     const BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT                        = 'Token absent for recurring payment';
     const BAD_REQUEST_TOKEN_NOT_FOUND                                           = 'Token not found.';
     const BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED                        = 'Multiple or no accounts associated with this contact mobile.';
+    const BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED                               = 'The contact mobile is not verified.';
+    const BAD_REQUEST_EMAIL_NOT_VERIFIED                                        = 'The email address is not verified.';
 
     const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                    = 'User already has a verified mobile number associated with the account';
     const BAD_REQUEST_LOCKED_USER_LOGIN                                         = 'User cannot login. User account is locked.';

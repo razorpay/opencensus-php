@@ -124,6 +124,24 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function loginUserWithOtp()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->loginWithOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function verifyLoginOtp()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyLoginOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function checkUserAccess()
     {
         $input = Request::all();

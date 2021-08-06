@@ -94,6 +94,10 @@ class Otp extends Mailable
             case 'verify_email':
                 $subject = "Razorpay | OTP to {$this->getFormattedAction()}";
                 break;
+
+            case 'login_otp':
+                $subject = "Razorpay | OTP to login";
+                break;
             case 'x_verify_email':
                 $subject = "Verify your Email for RazorpayX";
                 break;
@@ -150,6 +154,9 @@ class Otp extends Mailable
                 break;
             case 'create_bulk_payout_link':
                 $view = 'emails.user.otp_create_bulk_payout_link';
+                break;
+            case 'login_otp':
+                $view = 'emails.user.otp_login';
                 break;
             case 'x_verify_email':
                 $view = 'emails.user.razorpayx.otp_email_verify';

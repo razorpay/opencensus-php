@@ -106,6 +106,19 @@ class Validator extends Base\Validator
         Entity::APP             => 'sometimes|string',
     ];
 
+    protected static $loginOtpRules = [
+        Entity::CONTACT_MOBILE  => 'required_without:email|max:15|contact_syntax',
+        Entity::EMAIL           => 'required_without:contact_mobile|email',
+        Entity::TOKEN           => 'sometimes|string',
+    ];
+
+    protected static $verifyLoginOtpRules = [
+        Entity::CONTACT_MOBILE  => 'required_without:email|max:15|contact_syntax',
+        Entity::EMAIL           => 'required_without:contact_mobile|email',
+        Entity::TOKEN           => 'required|string',
+        Entity::OTP             => 'required|string|between:4,6'
+    ];
+
     protected static $loginOauthRules = [
         Entity::EMAIL           => 'required|email',
         Entity::OAUTH_PROVIDER  => 'required|string|custom',

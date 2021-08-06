@@ -1505,6 +1505,8 @@ class Route
         'user_oauth_register'                      => ['post',     'users/oauth-register',                           'UserController@oAuthSignup'                                        ],
         'user_create'                              => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                               => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
+        'user_otp_login'                           => ['post',     'users/login/otp',                                'UserController@loginUserWithOtp'                                   ],
+        'verify_user_otp_login'                    => ['post',     'users/login/otp/verify',                         'UserController@verifyLoginOtp'                                     ],
         'user_confirm_by_data'                     => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
         'user_change_password'                     => ['put',      'users/password',                                 'UserController@changeUserPassword'                                 ],
         'user_edit_self'                           => ['patch',    'users',                                          'UserController@editSelf'                                           ],
@@ -3331,6 +3333,8 @@ class Route
         'user_access',
         'user_fetch',
         'user_login',
+        'user_otp_login',
+        'verify_user_otp_login',
         'user_login_2fa_setup_mobile',
         'user_login_2fa_setup_verify_mobile',
         'user_merchant_upgrade',
@@ -9363,6 +9367,8 @@ class Route
         // won't have any merchant or admin in context.
         'dashboard_guest' => [
             'user_login',
+            'user_otp_login',
+            'verify_user_otp_login',
             'user_login_2fa_setup_mobile',
             'user_login_2fa_setup_verify_mobile',
             'user_register',
@@ -10448,6 +10454,7 @@ class Route
         'merchant_tnc_save',
         'merchant_document_upload',
         'user_login',
+        'verify_user_otp_login',
         'user_reset_password_create',
     ];
 

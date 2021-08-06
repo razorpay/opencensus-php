@@ -539,6 +539,20 @@ class Service extends Base\Service
         }
     }
 
+    public function loginWithOtp(array $input): array
+    {
+        $data = $this->core->loginWithOtp($input);
+
+        return $data;
+    }
+
+    public function verifyLoginOtp(array $input): array
+    {
+        $user = $this->core->verifyLoginOtp($input);
+
+        return $user;
+    }
+
     public function checkUserAccess(array $input)
     {
         if (empty($input['merchant_id']) === true)
