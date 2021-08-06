@@ -17,7 +17,10 @@ import ListFilter from './components/ListFilter';
 
 const method = {
   title: 'Method',
-  value: item => titleCase(item.method),
+  value: item => {
+    if(['upi', 'nach'].includes(item.method)) return item.method.toUpperCase();
+    return titleCase(item.method)
+  },
 };
 
 const email = {
