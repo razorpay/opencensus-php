@@ -210,9 +210,9 @@ const RuleDetail = lazy(() =>
 );
 
 const ProviderDetails = lazy(() =>
-    import(
-      /* webpackChunkName: "componentsProviderDetails" */ 'merchant/views/Navigator/components/ProviderDetails'
-    ),
+  import(
+    /* webpackChunkName: "componentsProviderDetails" */ 'merchant/views/Navigator/components/ProviderDetails'
+  ),
 );
 
 const ActivationSteps = lazy(() =>
@@ -251,7 +251,7 @@ const GenerateTnC = lazy(() =>
  * */
 
 const entityDetailsMap = {
-  '/payments/:id(pay_.+)/:entity_name(transfers)/new': {
+  '/payments/:id(pay_.+)/:entity_name(transfers|disputes)/:entity_id': {
     component: PaymentsDetails,
     additionalCondition: (user) => user.isAllowedEdit('payments'),
   },
@@ -379,6 +379,10 @@ const entityDetailsMap = {
       user.isAllowedView('earnings') &&
       user.isCommissionInvoicesEnabled &&
       user.isHavingPartnerConfigs,
+  },
+  '/disputes/:id(disp_.+)/:entity_name(payments)/:entity_id': {
+    component: DisputeDetails,
+    additionalCondition: (user) => user.isAllowedView('payments'),
   },
   '/disputes/:id(disp_.+)': {
     component: DisputeDetails,

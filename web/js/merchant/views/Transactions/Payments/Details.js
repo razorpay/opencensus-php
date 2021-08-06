@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
+import { compose } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import { findDOMNode } from 'react-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import Amount from 'common/ui/Amount';
 import PaymentDetails from 'merchant/views/Transactions/Payments/components/PaymentDetails';
+import DisputeDetails from 'merchant/views/Transactions/Disputes/Details';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import * as PaymentActions from 'merchant/reducers/payments/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -20,27 +21,9 @@ import PaymentTransferNew from 'merchant/views/Marketplace/Transfers/New';
 import { getKeysSeparatedByPipe, getEventCategoryFromPath } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import DualDetailView, { PrimaryView, SecondaryView } from 'common/new-ui/DualDetailView';
 
-@withRouter
-@connect(
-  (state) => {
-    return {
-      ...state.payment,
-      user: state.session.user,
-      config: state.config.config,
-      settlement_amount: state.home.settlement_amount,
-    };
-  },
-  {
-    fetchSettlementAmount,
-    expandSlider,
-    compactSlider,
-    ...ModalActions,
-    ...PaymentActions,
-    ...NotificationsActions,
-  },
-)
-export default class PaymentDetailsContainer extends Component {
+class PaymentDetailsContainer extends Component {
   state = {};
 
   static contextTypes = {
@@ -66,26 +49,6 @@ export default class PaymentDetailsContainer extends Component {
       }
     });
   };
-
-  checkSecView(props) {
-    if (!props.entity_name) {
-      this.props.compactSlider();
-
-      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
-      if (this.transfersView && findDOMNode(this.transfersView)) {
-        findDOMNode(this.transfersView).classList.add('toggle-slider');
-      }
-    } else {
-      this.props.expandSlider();
-      this.setState({
-        secView: 'new_transfer',
-      });
-      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
-      if (this.transfersView && findDOMNode(this.transfersView)) {
-        findDOMNode(this.transfersView).classList.remove('toggle-slider');
-      }
-    }
-  }
 
   componentDidMount() {
     const { closeUrl, id } = this.props,
@@ -113,7 +76,6 @@ export default class PaymentDetailsContainer extends Component {
 
   componentWillMount() {
     this.fetchData(this.props.id);
-    this.checkSecView(this.props);
     this.props.fetchSettlementAmount();
   }
 
@@ -121,27 +83,19 @@ export default class PaymentDetailsContainer extends Component {
     if (this.props.id !== nextProps.id) {
       this.fetchData(nextProps.id);
     }
-
-    if (
-      nextProps.entity_name !== this.props.entity_name ||
-      nextProps.transfer_id !== this.props.entity_id
-    ) {
-      this.checkSecView(nextProps);
-    }
   }
 
   fetchCardDetails = (payment) => {
     return this.props.fetchCardDetails(payment);
   };
 
-  goToLink = () => {
-    if (!this.props.entity_name) {
-      // Don't do anything if dual view already opened
-      this.props.history.push(`/payments/${this.props.payment.id}/transfers/new`);
-
-      if (this.transfersView && findDOMNode(this.transfersView)) {
-        findDOMNode(this.transfersView).classList.toggle('toggle-slider');
-      }
+  goToLink = (link) => {
+    if (this.props.isOpenedInDualMode && link !== 'transfers/new') {
+      this.props.history.push(`/${link}`);
+    }
+    // Don't do anything if dual view already opened
+    else if (!this.props.entity_name) {
+      this.props.history.push(`/payments/${this.props.payment.id}/${link}`);
     }
   };
 
@@ -233,13 +187,8 @@ export default class PaymentDetailsContainer extends Component {
   };
 
   secClose = (closeTransferDetails) => {
-    let { compactSlider, history, location } = this.props;
+    let { history, location } = this.props;
 
-    if (this.transfersView) {
-      findDOMNode(this.transfersView).classList.toggle('toggle-slider');
-    }
-
-    compactSlider();
     history.push(
       location.pathname.replace(
         !closeTransferDetails ? /\/[^\/]+\/[^\/]+\/?$/ : /\/[^\/]+\/?$/,
@@ -346,6 +295,7 @@ export default class PaymentDetailsContainer extends Component {
       bankTransfer,
       upiTransfer,
       config,
+      entity_name,
       merchantManualAction,
     } = this.props;
     let statusMsg = {};
@@ -360,35 +310,40 @@ export default class PaymentDetailsContainer extends Component {
     }
 
     return (
-      <div class={`${this.state.secView ? 'multi-content' : ''}`}>
-        <PaymentDetails
-          payment={payment}
-          card={card}
-          bankTransfer={bankTransfer}
-          upiTransfer={upiTransfer}
-          refunds={refunds}
-          transfers={transfers}
-          isLoading={loading}
-          statusMsg={statusMsg}
-          onToggleCardDetails={this.fetchCardDetails}
-          confirmCapture={this.confirmCapture}
-          goToLink={this.goToLink}
-          openRefundModal={this.openRefundModal}
-          onRefundDetailsToggleClick={this.onRefundDetailsToggleClick}
-          onUpdateReferenceId={this.onUpdateReferenceId}
-          isRoleAllowedEdit={this.props.user.isAllowedEdit('payments')}
-          viewSettlementOverview={this.viewSettlementOverview}
-          config={config}
-          user={this.props.user}
-          merchantManualAction={merchantManualAction}
-          settlement_amount={this.props.settlement_amount}
-        />
-
-        <ShowWhen
-          apiFeatureEnabled="Marketplace"
-          additionalCondition={(user) => user.isAllowedView('payments')}
-        >
-          {this.state.secView ? (
+      <DualDetailView secondaryView={entity_name}>
+        <PrimaryView>
+          <PaymentDetails
+            payment={payment}
+            card={card}
+            bankTransfer={bankTransfer}
+            upiTransfer={upiTransfer}
+            refunds={refunds}
+            transfers={transfers}
+            isLoading={loading}
+            statusMsg={statusMsg}
+            onToggleCardDetails={this.fetchCardDetails}
+            confirmCapture={this.confirmCapture}
+            goToLink={this.goToLink}
+            openRefundModal={this.openRefundModal}
+            onRefundDetailsToggleClick={this.onRefundDetailsToggleClick}
+            onUpdateReferenceId={this.onUpdateReferenceId}
+            isRoleAllowedEdit={this.props.user.isAllowedEdit('payments')}
+            viewSettlementOverview={this.viewSettlementOverview}
+            config={config}
+            user={this.props.user}
+            onClose={this.props.onCloseSecView}
+            merchantManualAction={merchantManualAction}
+            settlement_amount={this.props.settlement_amount}
+          />
+        </PrimaryView>
+        <SecondaryView entityName="disputes">
+          <DisputeDetails id={this.props.entity_id} onCloseSecView={() => this.secClose(null)} />
+        </SecondaryView>
+        <SecondaryView entityName="transfers">
+          <ShowWhen
+            apiFeatureEnabled="Marketplace"
+            additionalCondition={(user) => user.isAllowedView('payments')}
+          >
             <PaymentTransferNew
               paymentId={payment && payment.id}
               onClose={() => this.secClose(null)}
@@ -396,9 +351,31 @@ export default class PaymentDetailsContainer extends Component {
               ref={(c) => (this.transfersView = c)}
               isDirectTransferEnabled={this.props.user.isDirectTransferEnabled}
             />
-          ) : null}
-        </ShowWhen>
-      </div>
+          </ShowWhen>
+        </SecondaryView>
+      </DualDetailView>
     );
   }
 }
+
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        ...state.payment,
+        user: state.session.user,
+        config: state.config.config,
+        settlement_amount: state.home.settlement_amount,
+      };
+    },
+    {
+      fetchSettlementAmount,
+      expandSlider,
+      compactSlider,
+      ...ModalActions,
+      ...PaymentActions,
+      ...NotificationsActions,
+    },
+  ),
+)(PaymentDetailsContainer);

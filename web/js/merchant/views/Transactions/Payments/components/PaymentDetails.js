@@ -176,7 +176,7 @@ export default (props) => {
                     <PaymentTransfers
                       payment={payment}
                       transfers={transfers}
-                      onCreateTransfer={props.goToLink}
+                      onCreateTransfer={() => props.goToLink('transfers/new')}
                     />
                   </EntityDetailRow>
                 </ShowWhen>
@@ -219,7 +219,10 @@ export default (props) => {
 
                 <EntityDetailRow label="Disputes">
                   {payment.disputes && payment.disputes.count ? (
-                    <PaymentDisputes disputes={payment.disputes.items} />
+                    <PaymentDisputes
+                      disputes={payment.disputes.items}
+                      onDisputeClick={props.goToLink}
+                    />
                   ) : (
                     '--'
                   )}

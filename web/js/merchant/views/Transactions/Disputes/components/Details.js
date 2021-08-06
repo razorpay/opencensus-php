@@ -1,5 +1,4 @@
-import moment from 'moment';
-import { Link } from 'react-router-dom';
+import React from 'react';
 import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
@@ -10,17 +9,25 @@ import { DisputeStatusLabel } from 'merchant/components/StatusLabel';
 import { titleCase, daysFromToday } from 'common/utils/rzp-utils';
 import { ShowWhen } from 'merchant/components/ShowWhen';
 
-export default (props) => {
-  const { dispute, isLoading, error } = props;
+const DisputeDetails = (props) => {
+  const { dispute, isLoading, error, onCloseSecView, goToLink } = props;
   return (
-    <div class="content-wrapper content-sm txn-details">
+    <div class="content-wrapper content-sm txn-details dispute-details">
       {isLoading ? (
         <div class="page-spinner-container">
           <Spinner />
         </div>
       ) : (
         <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">{dispute.id}</div>
+          <div class="panel-heading">
+            {onCloseSecView && (
+              <button type="button" class="close close-secondary" onClick={onCloseSecView}>
+                <i class="i i-arrow-back" />
+                <i class="i i-close" />
+              </button>
+            )}
+            Dispute Id: <strong>{dispute.id}</strong>
+          </div>
           <Alert type="error" message={error} />
           <div class="SliderPanel__Body">
             {dispute.status === 'open' && (
@@ -104,9 +111,9 @@ export default (props) => {
 
               {/* payment */}
               <EntityDetailRow label="Payment">
-                <Link to={`/payments/${dispute.payment_id}`}>
+                <a onClick={() => goToLink(`payments/${dispute.payment_id}`)}>
                   <code>{dispute.payment_id}</code>
-                </Link>
+                </a>
               </EntityDetailRow>
 
               {/* comment */}
@@ -135,3 +142,4 @@ export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
     return `${prefixForDays}${daysLeft} day${daysLeft > 1 ? 's' : ''}`;
   }
 };
+export default DisputeDetails;

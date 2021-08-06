@@ -4,17 +4,18 @@ import Amount from 'common/ui/Amount';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import Definition from 'common/ui/Definition';
 import Time from 'common/ui/Time';
-import { dispute as disputeId } from 'common/ui/item/id';
 import { DisputeStatusLabel as StatusLabel } from 'merchant/components/StatusLabel';
 
-const PaymentDisputes = ({ disputes }) => {
+const PaymentDisputes = ({ disputes, onDisputeClick }) => {
   const showContent = Boolean(disputes?.filter((d) => d.status === 'open').length);
   return (
     <ContentToggler show={showContent}>
       <span>{disputes.length} Disputes raised</span>
       {disputes.map((dispute) => (
         <Definition allowEmptyTitle={true} key={dispute.id} customClass="m-t payment-dispute">
-          {disputeId(dispute)}
+          <a onClick={() => onDisputeClick(`disputes/${dispute.id}`)}>
+            <code>{dispute.id}</code>
+          </a>
           <div class="m-t">
             <Amount value={dispute.amount} currency={dispute.currency} className="p-r m-r" />
             <StatusLabel status={dispute.status} />
