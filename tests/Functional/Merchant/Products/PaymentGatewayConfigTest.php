@@ -175,6 +175,9 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->runRequestResponseFlow($testData);
 
+        //This helps in validating graceful handling of flash_checkout feature.
+        $this->runRequestResponseFlow($testData);
+
         $this->assertTrue($metricCaptured);
     }
 

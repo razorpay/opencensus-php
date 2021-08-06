@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Product\Config;
 
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Payment\Config;
@@ -250,9 +251,23 @@ class PaymentsGeneralConfig extends Base\Service
         {
             $flashCheckoutPayload = $input[Util\Constants::FLASH_CHECKOUT];
 
+            $noFlashCheckoutFeatureValue = $flashCheckoutPayload[Util\Constants::FEATURES][Feature\Constants::NOFLASHCHECKOUT];
+
             unset($input[Util\Constants::FLASH_CHECKOUT]);
 
-            $this->merchantService->addOrRemoveMerchantFeatures($flashCheckoutPayload);
+            $featuresEnabled = $this->repo->feature->findMerchantWithFeatures($merchant->getId(), [Feature\Constants::NOFLASHCHECKOUT]);
+
+            $existingNoFlashCheckoutFeatureValue = false;
+
+            if (count($featuresEnabled) > 0)
+            {
+                $existingNoFlashCheckoutFeatureValue = true;
+            }
+
+            if ($existingNoFlashCheckoutFeatureValue !== $noFlashCheckoutFeatureValue)
+            {
+                $this->merchantService->addOrRemoveMerchantFeatures($flashCheckoutPayload);
+            }
         }
 
         $this->merchantService->editConfig($input);
