@@ -680,7 +680,7 @@ class Validator extends Base\Validator
             $traceData[self::VALIDATION_STATUS] = self::PASSED;
 
             $this->getTrace()->info(
-                TraceCode::MERCHANT_BILLING_LABEL_UPDATE,
+                TraceCode::MERCHANT_BILLING_LABEL_UPDATE_VALIDATION,
                 $traceData
             );
 
