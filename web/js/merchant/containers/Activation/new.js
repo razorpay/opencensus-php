@@ -261,6 +261,10 @@ export default class ActivationContainer extends React.Component {
             localStorage.setItem(`rzp_mode--${this.props.user.current}`, 'live');
             this.props.updateSession({ mode: 'live' });
           }
+          //if recommand product payment gateway and business_website avilable
+          if (response?.data?.business_website) {
+            localStorage.setItem('merchant_landing_page', 'payment_gateway');
+          }
 
           this.updateSession(response.data);
           this.postSubmitStep(response);

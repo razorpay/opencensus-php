@@ -114,21 +114,7 @@ const WelcomeModal = ({ onActivate, onClose, tracking, isFestive, isOnboardingV2
                 />
                 <div className="active-product">
                   <div className="title">Payment Gateway</div>
-                  <div className="subtitle">Add payments to your website or app</div>
-                </div>
-                <div className="next-product">
-                  <img
-                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-page.svg"
-                    className="prd-icon"
-                  />
-                  <img
-                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-button.svg"
-                    className="prd-icon second-icon"
-                  />
-                  <img
-                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-link.svg"
-                    className="prd-icon third-icon"
-                  />
+                  <div className="subtitle">Accept payments through your website or app</div>
                 </div>
               </div>
               <div className="payment-product">
@@ -138,21 +124,7 @@ const WelcomeModal = ({ onActivate, onClose, tracking, isFestive, isOnboardingV2
                 />
                 <div className="active-product">
                   <div className="title">Payment Pages</div>
-                  <div className="subtitle">Info about Payment Pages</div>
-                </div>
-                <div className="next-product">
-                  <img
-                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-button.svg"
-                    className="prd-icon"
-                  />
-                  <img
-                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-link.svg"
-                    className="prd-icon second-icon"
-                  />
-                  <img
-                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-geteway.svg"
-                    className="prd-icon third-icon"
-                  />
+                  <div className="subtitle">Create no-code online pages to accept payments</div>
                 </div>
               </div>
               <div className="payment-product">
@@ -162,21 +134,7 @@ const WelcomeModal = ({ onActivate, onClose, tracking, isFestive, isOnboardingV2
                 />
                 <div className="active-product">
                   <div className="title">Payment Buttons</div>
-                  <div className="subtitle">Info about Payment Buttons</div>
-                </div>
-                <div className="next-product">
-                  <img
-                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-link.svg"
-                    className="prd-icon"
-                  />
-                  <img
-                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-geteway.svg"
-                    className="prd-icon second-icon"
-                  />
-                  <img
-                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-page.svg"
-                    className="prd-icon third-icon"
-                  />
+                  <div className="subtitle">Add payment button directly on your website</div>
                 </div>
               </div>
               <div className="payment-product">
@@ -186,21 +144,7 @@ const WelcomeModal = ({ onActivate, onClose, tracking, isFestive, isOnboardingV2
                 />
                 <div className="active-product">
                   <div className="title">Payment Link</div>
-                  <div className="subtitle">Info about Payment Link</div>
-                </div>
-                <div className="next-product">
-                  <img
-                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-geteway.svg"
-                    className="prd-icon"
-                  />
-                  <img
-                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-page.svg"
-                    className="prd-icon second-icon"
-                  />
-                  <img
-                    src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-button.svg"
-                    className="prd-icon third-icon"
-                  />
+                  <div className="subtitle">Accept payments through SMS, whatsapp, email</div>
                 </div>
               </div>
             </div>

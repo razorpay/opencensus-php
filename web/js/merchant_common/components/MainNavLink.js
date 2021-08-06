@@ -142,7 +142,7 @@ export default class MainNavLink extends Component {
       );
     } else if (isNew) {
       tag = <span class="badge bg-success pull-right hidden-xs">new</span>;
-    } else if (customBadge) {
+    } else if (!!customBadge) {
       tag = <span class="badge bg-success pull-right hidden-xs">{customBadge}</span>;
     } else if (isComingSoon) {
       tag = <span class="badge pull-right hidden-xs coming-soon-badge">Coming Soon!</span>;
@@ -152,11 +152,11 @@ export default class MainNavLink extends Component {
       loader = <span class="spin-loader pull-right  hidden-xs" />;
     }
 
-    if(image) {
+    if (image) {
       logo = <img src={image} alt={`${label} icon`} />;
     } else if (icon) {
       logo = <i class={icon} />;
-    } 
+    }
 
     return (
       <ShowWhen

@@ -306,12 +306,18 @@ traffic-responsive() {
         color: #515978;
         line-height: 28px;
         padding-top: 5px;
+        @media (max-width: 375px) {
+          max-width: 100%;
+        }
       }
       
       .product-desc {
-        margin-top: 24px;
+        margin-top: 24px !important;
         color: #4A4A4A;
         max-width: 82%;
+        @media (max-width: 375px) {
+          max-width: 100%;
+        }
       }
   
       .slideshow_wrapper{
@@ -353,6 +359,7 @@ traffic-responsive() {
             .active-product {
               margin-left: 12px;
               width: 280px;
+              text-align: left;
 
               .title {
                 color: #102562;
@@ -364,22 +371,6 @@ traffic-responsive() {
               .subtitle {
                 color: #7C8297;
                 line-height: 24px;
-              }
-            }
-
-            .next-product {
-              position: relative;
-
-              .second-icon {
-                position: absolute;
-                left: 25px;
-                z-index: -1;
-              }
-
-              .third-icon {
-                position: absolute;
-                left: 50px;
-                z-index: -2;
               }
             }
           }

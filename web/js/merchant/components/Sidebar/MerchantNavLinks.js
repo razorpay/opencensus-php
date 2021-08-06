@@ -85,7 +85,7 @@ export default function MerchantNavLinks(props) {
         icon="i i-link text-primary"
         to={routes.paymentlinks}
         additionalCondition={(user) => user.isAllowedView('payment_links')}
-        customBadge={getLandingProduct === 'payment_link' ? 'try' : false}
+        customBadge={getLandingProduct === 'payment_link' ? 'try' : ''}
       />
       <MainNavLink
         label="Payment Pages"
@@ -93,7 +93,7 @@ export default function MerchantNavLinks(props) {
         icon="i i-payment-pages text-warm temp-icon-style"
         to={routes.paymentpages}
         additionalCondition={(user) => user.isAllowedView('payment_pages')}
-        customBadge={getLandingProduct === 'payment_page' ? 'try' : false}
+        customBadge={getLandingProduct === 'payment_page' ? 'try' : ''}
       />
       <MainNavLink
         type="product"
@@ -106,7 +106,7 @@ export default function MerchantNavLinks(props) {
           user.isAllowedMultiple('payment_buttons subscription_buttons') &&
           (user.isPaymentButtonEnabledByRazorX || user.isSubscriptionButtonEnabled)
         }
-        customBadge={getLandingProduct === 'payment_button' ? 'try' : false}
+        customBadge={['payment_button', 'payment_gateway'].includes(getLandingProduct) ? 'try' : ''}
       />
       <MainNavLink
         label="Route"
@@ -114,7 +114,7 @@ export default function MerchantNavLinks(props) {
         to={routes.marketplace}
         icon="i i-route text-success"
         additionalCondition={(user) => user.isAllowedView('marketplace')}
-        customBadge={getLandingProduct === 'route' ? 'try' : false}
+        customBadge={getLandingProduct === 'route' ? 'try' : ''}
       />
       <MainNavLink
         label="Subscriptions"
@@ -122,7 +122,7 @@ export default function MerchantNavLinks(props) {
         icon="i i-refresh text-info"
         additionalCondition={(user) => user.isAllowedView('subscriptions')}
         to={routes[isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions']}
-        customBadge={getLandingProduct === 'subscriptions' ? 'try' : false}
+        customBadge={getLandingProduct === 'subscriptions' ? 'try' : ''}
       />
 
       <MainNavLink
@@ -143,7 +143,7 @@ export default function MerchantNavLinks(props) {
         icon="i i-account-balance text-danger"
         to={routes.smartCollect}
         additionalCondition={(user) => user.isAllowedView('virtual_accounts')}
-        customBadge={getLandingProduct === 'smart_collect' ? 'try' : false}
+        customBadge={getLandingProduct === 'smart_collect' ? 'try' : ''}
       />
 
       <MainNavLink
@@ -237,10 +237,8 @@ export default function MerchantNavLinks(props) {
             <>
               NEW <i className="i i-rtb_new" />
             </>
-          ) : getLandingProduct === 'payment_gateway' ? (
-            'try'
           ) : (
-            false
+            ''
           )
         }
       />
