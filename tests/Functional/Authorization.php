@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 
+
 class Authorization
 {
     protected $test;
@@ -90,6 +91,21 @@ class Authorization
         $this->type = 'app';
 
         $this->addAppAuthHeaders($hostName);
+    }
+
+    public function appBasicAuth($user = null, $pwd = null)
+    {
+        if ($user === null) {
+            $user = $this->defaultKey;
+        }
+
+        if ($pwd === null) {
+            $pwd = $this->defaultSecret;
+        }
+
+        $this->basicAuth($user, $pwd);
+
+        $this->type = 'app';
     }
 
     public function terminalsAuth($mode = 'test')

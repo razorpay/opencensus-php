@@ -1701,10 +1701,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // New Basic auth flow for app auth using passport
     const APP_AUTHENTICATION_FROM_JWT_PASSED                    = 'APP_AUTHENTICATION_FROM_JWT_PASSED';
     const NO_PASSPORT_FOUND                                     = 'NO_PASSPORT_FOUND';
+    const PASSPORT_NOT_SET                                      = 'PASSPORT_NOT_SET';
     const APP_NAME_NOT_SET                                      = 'APP_NAME_NOT_SET';
     const APP_IDENTIFICATION_FAILED                             = 'APP_IDENTIFICATION_FAILED';
     const APP_AUTHENTICATION_FAILED                             = 'APP_AUTHENTICATION_FAILED';
     const INVALID_APP_PASSPORT_CLAIMS                           = 'INVALID_APP_PASSPORT_CLAIMS';
+    const NO_APP_CONFIG                                         = 'NO_APP_CONFIG';
     const INVALID_APP_CONFIG                                    = 'INVALID_APP_CONFIG';
 
     const NODAL_INTEGRATION_ERROR                               = 'NODAL_INTEGRATION_ERROR';

@@ -458,6 +458,64 @@ return [
         ],
     ],
 
+    'testAppAuthNewFlowWithoutPassport' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/merchants',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testAppAuthNewFlowWithPassportForCron' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payments/timeout',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testAppAuthNewFlowWithWrongPassportForCron' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payments/timeout',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testAppAuthNewFlowWithWrongAppForCron' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payments/timeout',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testPrivateAuthOnAppRoute' => [
         'request' => [
             'method' => 'POST',

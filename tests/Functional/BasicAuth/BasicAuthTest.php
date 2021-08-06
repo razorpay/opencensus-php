@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\BasicAuth;
 
 use Carbon\Carbon;
+use Lcobucci\JWT\Builder;
 use Razorpay\Edge\Passport\Kid;
 use Razorpay\Edge\Passport\Passport;
 use Illuminate\Database\Eloquent\Factory;
@@ -18,16 +19,26 @@ use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use Razorpay\Edge\Passport\Tests\GeneratesTestPassportJwts;
 
 class BasicAuthTest extends TestCase
 {
     use PartnerTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use GeneratesTestPassportJwts;
+
+    /**
+     * @var string passport public key
+     */
+    protected $publicKey;
 
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/BasicAuthData.php';
+
+        $publicKeyStr = file_get_contents(__DIR__.'/helpers/edge-passport-apiv1-public.key');
+        $this->publicKey = str_replace('\n', PHP_EOL, $publicKeyStr);
 
         parent::setUp();
 
@@ -302,10 +313,9 @@ class BasicAuthTest extends TestCase
 
         $internalRoutes = $this->app['api.route']->getApiRouteInCategory('internal');
 
-        foreach ($internalRoutes as $routeName => $routeInfo)
-        {
+        foreach ($internalRoutes as $routeName => $routeInfo) {
             $testData['request']['method'] = ($routeInfo[0] === 'any' ? 'post' : $routeInfo[0]);
-            $testData['request']['url']    = $routeInfo[1];
+            $testData['request']['url'] = $routeInfo[1];
 
             $this->startTest($testData);
         }
@@ -326,7 +336,7 @@ class BasicAuthTest extends TestCase
         $this->markTestIncomplete();
 
         $request = [
-            'url'    => '/payments/create/jsonp?keyid=rzp_test_TheTestAuthKey',
+            'url' => '/payments/create/jsonp?keyid=rzp_test_TheTestAuthKey',
             'method' => 'GET',
         ];
 
@@ -351,6 +361,77 @@ class BasicAuthTest extends TestCase
         $this->assertPassport();
 
         $this->assertEquals(Product::PRIMARY, $this->app['basicauth']->getProduct());
+    }
+
+    public function testAppAuthNewFlowWithoutPassport()
+    {
+        $this->ba->appBasicAuth();
+
+        $this->startTest();
+    }
+
+    public function testAppAuthNewFlowWithPassportForCron()
+    {
+
+        $this->ba->appBasicAuth(env('APP_V2_CREDENTIAL_USERNAME_LIVE_CRON'), env('APP_V2_CREDENTIAL_PASSWORD_LIVE_CRON'));
+
+        // overriding public key for test case
+        $oldKey = app('config')->get('passport')['public_key'];
+        app('config')->get('passport')['public_key'] = $this->publicKey;
+
+        $this->startTest([
+            'request' => [
+                'server' => [
+                    'HTTP_X-Passport-JWT-V1' => $this->sampleConsumerPassportJwtBuilder(env('APP_V2_ID_CRON'), 'application')
+                ]
+            ]
+        ]);
+
+        // resetting old key back
+        app('config')->get('passport')['public_key'] = $oldKey;
+    }
+
+    public function testAppAuthNewFlowWithWrongPassportForCron()
+    {
+
+        $this->ba->appBasicAuth(env('APP_V2_CREDENTIAL_USERNAME_LIVE_CRON'), env('APP_V2_CREDENTIAL_PASSWORD_LIVE_CRON'));
+
+        // overriding public key for test case
+        $oldKey = app('config')->get('passport')['public_key'];
+        app('config')->get('passport')['public_key'] = $this->publicKey;
+
+        $this->startTest([
+            'request' => [
+                'server' => [
+                    'HTTP_X-Passport-JWT-V1' => $this->sampleConsumerPassportJwtBuilder(env('APP_V2_ID_CRON'), 'application', 'live', false)
+                ]
+            ]
+        ]);
+
+        // resetting old key back
+        app('config')->get('passport')['public_key'] = $oldKey;
+
+    }
+
+    public function testAppAuthNewFlowWithWrongAppForCron()
+    {
+
+        $this->ba->appBasicAuth(env('APP_V2_CREDENTIAL_USERNAME_LIVE_CRON'), env('APP_V2_CREDENTIAL_PASSWORD_LIVE_CRON'));
+
+        // overriding public key for test case
+        $oldKey = app('config')->get('passport')['public_key'];
+        app('config')->get('passport')['public_key'] = $this->publicKey;
+
+        $this->startTest([
+            'request' => [
+                'server' => [
+                    'HTTP_X-Passport-JWT-V1' => $this->sampleConsumerPassportJwtBuilder('unknown-id', 'application')
+                ]
+            ]
+        ]);
+
+        // resetting old key back
+        app('config')->get('passport')['public_key'] = $oldKey;
     }
 
     public function testAppAuthForCronWithXHeader()
@@ -884,5 +965,26 @@ class BasicAuthTest extends TestCase
                     return $feature === $featureUnderTest ? $value : 'control';
                 }
             ));
+    }
+
+    private function sampleConsumerPassportJwtBuilder(string $consumer_id = '', string $consumer_type = 'merchant',
+                                                      string $mode = 'live', bool $identified = true,
+                                                      bool $authenticated = true): string
+    {
+        $builder = (new Builder)
+            // Reserved/standard claims follows.
+            ->issuedBy('https://edge.razorpay.com')
+            ->permittedFor('https://api.razorpay.com')
+            ->identifiedBy('per-req-uuid', true)
+            ->issuedAt(time())
+            ->canOnlyBeUsedAfter(time())
+            ->expiresAt(time() + 15)
+            ->withHeader('kid', 'edgev1')
+            // Custom claims follows.
+            ->withClaim('identified', $identified)
+            ->withClaim('authenticated', $authenticated)
+            ->withClaim('mode', $mode)
+            ->withClaim('consumer', ['id' => $consumer_id, 'type' => $consumer_type]);
+        return $this->samplePassportJwt($builder);
     }
 }

@@ -970,6 +970,8 @@ class BasicAuth
                 "flow" => "basic_auth",
                 "app"  => $this->getInternalApp()
             ]);
+
+            return null;
         }
 
         // Say invalid route for whenever
@@ -1314,11 +1316,17 @@ class BasicAuth
      */
     protected function isValidPassportForAppAuth()
     {
-        $passport = $this->reqCtx->passport;
-
         // No passport attached to request
         if (!$this->reqCtx->hasPassportJwt) {
             $this->trace->error(TraceCode::NO_PASSPORT_FOUND);
+            return false;
+        }
+
+        $passport = $this->reqCtx->passport;
+
+        // Can happen when wrong public key used for passport
+        if ($passport === null) {
+            $this->trace->error(TraceCode::PASSPORT_NOT_SET);
             return false;
         }
 
@@ -1345,9 +1353,15 @@ class BasicAuth
             return false;
         }
 
-        $config = $this->internalBasicAuthAppConfigs[$appId];
         // No app config present for the given application_id
-        if (!is_array($config) or !is_string($config['name']) or empty($config['name'])) {
+        if (!array_key_exists($appId, $this->internalBasicAuthAppConfigs)) {
+            $this->trace->error(TraceCode::NO_APP_CONFIG, ['app_id' => $appId]);
+            return false;
+        }
+
+        $config = $this->internalBasicAuthAppConfigs[$appId];
+        if (!is_array($config) or !array_key_exists('name', $config) or
+            !is_string($config['name']) or empty($config['name'])) {
             $this->trace->error(TraceCode::INVALID_APP_CONFIG, ['app_id' => $appId]);
             return false;
         }

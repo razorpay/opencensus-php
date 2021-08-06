@@ -666,21 +666,25 @@ final class RequestContext
         $hasPassportJwt = $this->app['request.ctx.v2']->hasPassportJwt;
         $passport = $this->app['request.ctx.v2']->passport;
 
-        if (!$hasPassportJwt or !$passport->consumer or !$passport->consumer->id
+        if (!$hasPassportJwt or !$passport or !$passport->consumer or !$passport->consumer->id
             or $passport->consumer->type !== BasicAuth::PASSPORT_CONSUMER_TYPE_APPLICATION)
         {
             return;
         }
 
         $appId = $passport->consumer->id;
-        $config = $this->baApplications[$appId];
-
         // No app config present for the given application_id
-        if (!is_array($config) or !is_string($config->name) or empty($config->name)) {
+        if (!array_key_exists($appId, $this->baApplications)) {
             return;
         }
 
-        $this->internalAppName = $config->name;
+        $config = $this->baApplications[$appId];
+        if (!is_array($config) or !array_key_exists('name', $config) or
+            !is_string($config['name']) or empty($config['name'])) {
+            return;
+        }
+
+        $this->internalAppName = $config['name'];
     }
 
     /**
