@@ -74,9 +74,8 @@ module.exports = ({ config, project }) => {
           loader: 'stylus-loader',
           options: {
             stylusOptions: {
-              include: [
-                path.join(__dirname, 'node_modules/bootstrap-styl'),
-              ],
+              include: [path.join(__dirname, 'node_modules/bootstrap-styl')],
+              resolveURL: false,
             },
           },
         },
