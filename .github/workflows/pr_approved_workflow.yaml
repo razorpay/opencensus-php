@@ -169,6 +169,12 @@ jobs:
             })
             const latestCommit = response.data.head.sha
             return String(latestCommit)
+    - name: Check For Only Ignore Files
+      id: only-ignore-files
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        echo "ONLY_IGNORE_FILES=$(sh ./.github/actions/checkIfPRHasOnlyIgnoreFiles.sh)" >> $GITHUB_ENV
     - name: Run bvt suite if PR submitted as approved
       # checking if the commit_id post backmerge is same then run BVT on it. Otherwise it invoke PR_workflow and run BVT
       if: env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id && startsWith(github.event.pull_request.head.ref,'beta_') != true
@@ -178,6 +184,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
         HOTFIX: ${{ steps.hotfix.outputs.flag }}
         REVERT: ${{ steps.revert.outputs.flag }}
+        ONLY_IGNORE_FILES: ${{ env.ONLY_IGNORE_FILES }}
         ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
         GIT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
       run: |

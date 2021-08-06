@@ -120,6 +120,13 @@ jobs:
           **Conflict Error Please rebase manually**
           allow-repeats: true
       # Fetch the latest commit of the Roast Repo
+    - name: Check For Only Ignore Files
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        echo "ONLY_IGNORE_FILES=$(sh ./.github/actions/checkIfPRHasOnlyIgnoreFiles.sh)" >> $GITHUB_ENV
+    - name: Check Only Ignore Files
+      run: echo $ONLY_IGNORE_FILES
     - name: Fetch latest Commit of the PR in Roast after rebase
       id: latest-commit
       if: |
@@ -163,6 +170,7 @@ jobs:
         HOTFIX: ${{ steps.hotfix.outputs.flag }}
         REVERT: ${{ steps.revert.outputs.flag }}
         ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
+        ONLY_IGNORE_FILES: ${{ env.ONLY_IGNORE_FILES }}
         GIT_TOKEN :  ${{ secrets.CI_BOT_TOKEN }}
       run: |
         sh ./.github/actions/triggerBvtSuite.sh

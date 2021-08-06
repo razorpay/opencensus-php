@@ -156,3 +156,5 @@ tests/Functional/Gateway/                              @razorpay/TechPgIntegrati
 composer.lock                                           nemo@razorpay.com
 wercker.yml                                             @razorpay/security                                      @razorpay/devops
 phpunit.xml                                             vivek.kumar@razorpay.com                                praveen.patlola@razorpay.com
+
+.github/actions/                                        @razorpay/ZeroTouchWarriors
