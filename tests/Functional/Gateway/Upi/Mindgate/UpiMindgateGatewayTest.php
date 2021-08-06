@@ -1005,6 +1005,11 @@ class UpiMindgateGatewayTest extends TestCase
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
+        $callbackAmount = explode('|', $data['meRes'])[2];
+
+        // Asserting that conversion to int has not changed amount
+        $this->assertEquals(($callbackAmount), $paymentEntity['amount']/100);
+
         $authorizeUpiEntity = $this->getLastEntity('upi', true);
 
         $paymentTransactionEntity = $this->getLastEntity('transaction', true);

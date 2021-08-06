@@ -1377,7 +1377,7 @@ class Gateway extends Base\Gateway
     {
         $payment = [
             'method'   => 'upi',
-            'amount'   => (int) ($callbackData[ResponseFields::AMOUNT] * 100),
+            'amount'   => $this->getIntegerFormattedAmount($callbackData[ResponseFields::AMOUNT]),
             'currency' => 'INR',
             'vpa'      => $callbackData[ResponseFields::PAYER_VA],
             'contact'  => '+919999999999',
@@ -1416,7 +1416,7 @@ class Gateway extends Base\Gateway
             'payment' => [
                 'id'     => $paymentId,
                 'vpa'    => $callbackData[ResponseFields::PAYER_VA],
-                'amount' => (int) ($callbackData[ResponseFields::AMOUNT] * 100),
+                'amount' => $this->getIntegerFormattedAmount($callbackData[ResponseFields::AMOUNT]),
             ],
             'upi'     => [
                 'expiry_time' => 1, // dummy value
