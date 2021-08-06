@@ -545,7 +545,7 @@ export default class ActivationContainer extends React.Component {
   render() {
     const accountId = this.props.accountId; // If accountId present, then Welcome screen and Success screen are not required.
 
-    let { data, categories, aovRange } = this.props;
+    let { data, categories, aovRange, clarificationReasons } = this.props;
     let content, modalClass;
 
     if (!accountId && this.state.showSuccessScreen) {
@@ -569,6 +569,7 @@ export default class ActivationContainer extends React.Component {
         <ActivationWizard
           accountId={this.props.accountId}
           data={data}
+          clarificationReasons={clarificationReasons}
           ref={(refId) => (this.wizard = refId)}
           categories={categories}
           isFormTouched={this.state.isFormTouched}

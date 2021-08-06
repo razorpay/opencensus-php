@@ -33,6 +33,7 @@ export default class ActivationContainer extends Component {
       categories: null,
       additionalModalClass: null,
       aovRange: null,
+      clarificationReasons: null,
     };
 
     this.fetchActivationDetails = this.fetchActivationDetails.bind(this);
@@ -120,17 +121,20 @@ export default class ActivationContainer extends Component {
         mode: !!accountId ? this.props.session.mode : 'live',
         accountId,
       }),
+      merchantFetch('merchant/activation/clarification_reasons'),
       !accountId && merchantFetch('merchant/activation/business_categories'),
       !this.isSourceRX && merchantFetch('merchant/aov-config'),
-    ]).then(([data, categories, aov_list]) => {
+    ]).then(([data, clarification_reasons, categories, aov_list]) => {
       data = data.data;
       categories = categories && categories.data;
       aov_list = aov_list && aov_list.data;
+      clarification_reasons = clarification_reasons && clarification_reasons.data;
 
       this.setState({
         data,
         categories,
         aovRange: aov_list,
+        clarificationReasons: clarification_reasons,
       });
 
       return [data, categories];
@@ -208,13 +212,20 @@ export default class ActivationContainer extends Component {
   };
 
   render() {
-    const { data, categories, additionalModalClass, aovRange } = this.state;
+    const {
+      data,
+      categories,
+      additionalModalClass,
+      aovRange,
+      clarificationReasons,
+    } = this.state;
     const { user } = this.props;
     const commonProps = {
       accountId: this.props.accountId,
       fetchActivationDetails: this.fetchActivationDetails,
       updateActivationData: this.updateActivationData,
       data,
+      clarificationReasons,
       categories,
       handleUIUpdate: this.handleUIUpdate,
       rpc: this.rpc,
