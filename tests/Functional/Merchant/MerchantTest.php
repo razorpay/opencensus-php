@@ -2856,6 +2856,20 @@ class MerchantTest extends TestCase
         $this->runBankAccountUpdateRequestTestInAdminProxyAuthAndAssert($merchantId);
     }
 
+    public function testUpdateBankAccountViaPennyTestingInAdminProxyAuthOrgBlockedRoutePass()
+    {
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        // create feature for org to block route access
+        $this->fixtures->create('feature', [
+            'name'        => 'bank_account_update_ss',
+            'entity_id'   => '100000razorpay',
+            'entity_type' => 'org'
+        ]);
+
+        $this->runBankAccountUpdateRequestTestInAdminProxyAuthAndAssert($merchantId);
+    }
+
     protected function runBankAccountUpdateRequestTestInAdminProxyAuthAndAssert($merchantId)
     {
         Config(['services.bvs.mock' => true]);

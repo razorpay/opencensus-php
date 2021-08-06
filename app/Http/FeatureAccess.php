@@ -42,6 +42,8 @@ class FeatureAccess
      */
     protected $route;
 
+    const IS_ADMIN_AUTH = 'is_admin_auth';
+
     /**
      * Access constructor.
      */
@@ -155,9 +157,12 @@ class FeatureAccess
             Entity::MERCHANT_ID => $this->merchant->getId(),
         ]);
 
-        if ($this->app['basicauth']->isAdminLoggedInAsMerchantOnDashboard() === true)
+        if (($this->app['basicauth']->isAdminLoggedInAsMerchantOnDashboard() === true) or
+            ($this->app['basicauth']->isAdminAuth() === true))
         {
-            $this->trace->info(TraceCode::ALLOW_ROUTE_ACCESS_FOR_LOGIN_AS_MERCHANT, []);
+            $this->trace->info(TraceCode::ALLOW_ROUTE_ACCESS_FOR_ADMIN_OR_LOGIN_AS_MERCHANT, [
+                self::IS_ADMIN_AUTH => $this->app['basicauth']->isAdminAuth(),
+            ]);
 
             return null;
         }
