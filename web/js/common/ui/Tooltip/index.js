@@ -8,8 +8,8 @@ import PropTypes from 'prop-types';
 
 import debounce from 'common/utils/debounce';
 
-const DEFAULT_OFFSET = 10,
-  TOOLTIP_DELAY = 200;
+const DEFAULT_OFFSET = 10;
+const TOOLTIP_DELAY = 200;
 
 class Tooltip extends Component {
   constructor(props) {
@@ -30,17 +30,17 @@ class Tooltip extends Component {
   }
 
   getDimensions(data) {
-    let { screenX, screenY } = data;
+    const { screenX, screenY } = data;
 
-    const node = this.node,
-      parent = node.parentElement,
-      align = data.align || this.props.align,
-      offset = this.props.offset;
+    const node = this.node;
+    const parent = node.parentElement;
+    const align = data.align || this.props.align;
+    const offset = this.props.offset;
 
-    let parentWidth = 0,
-      parentHeight = 0,
-      parentLeft = 0,
-      parentTop = 0;
+    let parentWidth = 0;
+    let parentHeight = 0;
+    let parentLeft = 0;
+    let parentTop = 0;
 
     const boundingRect = parent.getBoundingClientRect();
 
@@ -54,17 +54,15 @@ class Tooltip extends Component {
       parentTop = screenY;
     }
 
-    let tooltipWidth =
-        this.nodeWidth || (this.nodeWidth = this.node.clientWidth),
-      tooltipHeight =
-        this.nodeHeight || (this.nodeHeight = this.node.clientHeight);
+    const tooltipWidth = this.nodeWidth || (this.nodeWidth = this.node.clientWidth);
+    const tooltipHeight = this.nodeHeight || (this.nodeHeight = this.node.clientHeight);
 
-    let tooltipLeft = 0,
-      tooltipTop = 0,
-      paddingTop = 0,
-      paddingLeft = 0,
-      paddingBottom = 0,
-      paddingRight = 0;
+    let tooltipLeft = 0;
+    let tooltipTop = 0;
+    let paddingTop = 0;
+    let paddingLeft = 0;
+    let paddingBottom = 0;
+    let paddingRight = 0;
 
     if (align === 'bottom' || align === 'top') {
       tooltipLeft = parentLeft + parentWidth / 2 - tooltipWidth / 2;
@@ -105,17 +103,16 @@ class Tooltip extends Component {
   }
 
   showTooltip(data = {}) {
-    const node = this.node,
-      align = data.align || this.props.align;
+    const node = this.node;
+    const align = data.align || this.props.align;
 
-    const screenTop = 0,
-      screenLeft = 0,
-      screenRight = window.innerWidth,
-      screenBottom = window.innerHeight;
+    const screenTop = 0;
+    const screenLeft = 0;
+    const screenRight = window.innerWidth;
+    const screenBottom = window.innerHeight;
 
-    let {
-      tooltipTop,
-      tooltipLeft,
+    let { tooltipTop, tooltipLeft } = this.getDimensions(data);
+    const {
       tooltipWidth,
       tooltipHeight,
       paddingLeft,
@@ -124,9 +121,8 @@ class Tooltip extends Component {
       paddingBottom,
     } = this.getDimensions(data);
 
-    let horizontalAdjustment = 0,
-      verticalAdjustment = 0;
-
+    let horizontalAdjustment = 0;
+    let verticalAdjustment = 0;
     if (tooltipLeft < screenLeft) {
       horizontalAdjustment = screenLeft - tooltipLeft;
     } else if (tooltipLeft + tooltipWidth > screenRight) {
@@ -139,8 +135,6 @@ class Tooltip extends Component {
       verticalAdjustment = -(tooltipTop + tooltipHeight - screenBottom);
     }
 
-    let adjustedAlignment = null;
-
     if (horizontalAdjustment || verticalAdjustment) {
       if (align === 'left' || align === 'right') {
         tooltipTop += verticalAdjustment;
@@ -148,19 +142,19 @@ class Tooltip extends Component {
         if (horizontalAdjustment) {
           const isLeftAdjustment = horizontalAdjustment > 0;
 
-          let { tooltipLeft: tooltipLeftOnRightAlignment } = this.getDimensions(
-            { ...data, align: 'right' }
-          );
+          const { tooltipLeft: tooltipLeftOnRightAlignment } = this.getDimensions({
+            ...data,
+            align: 'right',
+          });
 
           if (
             isLeftAdjustment &&
-            horizontalAdjustment + tooltipLeftOnRightAlignment + tooltipWidth <=
-              screenRight
+            horizontalAdjustment + tooltipLeftOnRightAlignment + tooltipWidth <= screenRight
           ) {
             return this.changeAlignment(data, 'right');
           }
 
-          let { tooltipLeft: tooltipLeftOnLeftAlignment } = this.getDimensions({
+          const { tooltipLeft: tooltipLeftOnLeftAlignment } = this.getDimensions({
             ...data,
             align: 'left',
           });
@@ -178,28 +172,24 @@ class Tooltip extends Component {
         if (verticalAdjustment) {
           const isTopAdjustment = verticalAdjustment > 0;
 
-          let { tooltipTop: tooltipTopOnBottomAlignment } = this.getDimensions({
+          const { tooltipTop: tooltipTopOnBottomAlignment } = this.getDimensions({
             ...data,
             align: 'bottom',
           });
 
           if (
             isTopAdjustment &&
-            verticalAdjustment + tooltipTopOnBottomAlignment + tooltipHeight <=
-              screenBottom
+            verticalAdjustment + tooltipTopOnBottomAlignment + tooltipHeight <= screenBottom
           ) {
             return this.changeAlignment(data, 'bottom');
           }
 
-          let { tooltipTop: tooltipTopOnTopAlignment } = this.getDimensions({
+          const { tooltipTop: tooltipTopOnTopAlignment } = this.getDimensions({
             ...data,
             align: 'top',
           });
 
-          if (
-            !isTopAdjustment &&
-            verticalAdjustment + tooltipTopOnTopAlignment >= screenTop
-          ) {
+          if (!isTopAdjustment && verticalAdjustment + tooltipTopOnTopAlignment >= screenTop) {
             return this.changeAlignment(data, 'top');
           }
         }
@@ -212,7 +202,7 @@ class Tooltip extends Component {
 
     const ele = document.querySelector(this.props.parentQuerySelector);
 
-    let parentAdjustment = { top: 0, left: 0 };
+    const parentAdjustment = { top: 0, left: 0 };
     if (ele && this.props.parentQuerySelector) {
       // Relative height of parent wrt to window
       const viewportOffset = ele.getBoundingClientRect();
@@ -226,29 +216,26 @@ class Tooltip extends Component {
     if (!this.props.followPointer) {
       // when paddingBottom is present, top needs to be adjusted as
       // the box grows down
-      node.style.top = tooltipTop - parentAdjustment.top - paddingBottom + 'px';
-      node.style.left = tooltipLeft - parentAdjustment.left + 'px';
-      node.style.paddingLeft = paddingLeft + 'px';
-      node.style.paddingTop = paddingTop + 'px';
-      node.style.paddingBottom = paddingBottom + 'px';
-      node.style.paddingRight = paddingRight + 'px';
+      node.style.top = `${tooltipTop - parentAdjustment.top - paddingBottom}px`;
+      node.style.left = `${tooltipLeft - parentAdjustment.left}px`;
+      node.style.paddingLeft = `${paddingLeft}px`;
+      node.style.paddingTop = `${paddingTop}px`;
+      node.style.paddingBottom = `${paddingBottom}px`;
+      node.style.paddingRight = `${paddingRight}px`;
     } else {
-      node.style.top = tooltipTop + paddingTop - paddingBottom + 'px';
-      node.style.left = tooltipLeft + paddingLeft - paddingRight + 'px';
+      node.style.top = `${tooltipTop + paddingTop - paddingBottom}px`;
+      node.style.left = `${tooltipLeft + paddingLeft - paddingRight}px`;
     }
 
     this.setState({
       show: true,
     });
+    return null;
   }
 
   changeAlignment(data, resultantAlignment) {
     this.showTooltip({ align: resultantAlignment });
-
-    return (
-      this.props.onAlignmentChange &&
-      this.props.onAlignmentChange(resultantAlignment)
-    );
+    return this.props.onAlignmentChange && this.props.onAlignmentChange(resultantAlignment);
   }
 
   hideTooltip() {
@@ -261,14 +248,11 @@ class Tooltip extends Component {
     });
 
     // reset alignment adjustment
-    return this.props.onAlignmentChange && this.props.onAlignmentChange();
+    if (this.props.onAlignmentChange) this.props.onAlignmentChange();
   }
 
   onShowTooltip() {
-    this.showTooltipTimer = window.setTimeout(
-      this.showTooltip,
-      this.props.delay
-    );
+    this.showTooltipTimer = window.setTimeout(this.showTooltip, this.props.delay);
   }
 
   onHideTooltip() {
@@ -297,8 +281,8 @@ class Tooltip extends Component {
   }
 
   bindEvents() {
-    const { followPointer } = this.props,
-      parent = this.node.parentElement;
+    const { followPointer } = this.props;
+    const parent = this.node.parentElement;
 
     if (!followPointer) {
       parent.addEventListener('mouseenter', this.handleMouseEnter, {
@@ -322,8 +306,8 @@ class Tooltip extends Component {
       return;
     }
 
-    const { followPointer } = this.props,
-      parent = this.node.parentElement;
+    const { followPointer } = this.props;
+    const parent = this.node.parentElement;
 
     if (!followPointer) {
       parent.removeEventListener('mouseenter', this.handleMouseEnter);
@@ -347,7 +331,11 @@ class Tooltip extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.persistent !== this.props.persistent) {
-      nextProps.persistent ? this.showTooltip() : this.hideTooltip();
+      if (nextProps.persistent) {
+        this.showTooltip();
+      } else {
+        this.hideTooltip();
+      }
     }
 
     if (this.props.align !== nextProps.align) {
@@ -360,27 +348,27 @@ class Tooltip extends Component {
   }
 
   render() {
-    const { show } = this.state,
-      {
-        children,
-        align,
-        delay,
-        offset,
-        followPointer,
-        persistent,
-        onAdjustment,
-        onAlignmentChange,
-        theme,
-        parentQuerySelector,
-        ...otherProps
-      } = this.props;
+    const { show } = this.state;
+    const {
+      children,
+      align,
+      delay,
+      offset,
+      followPointer,
+      persistent,
+      onAdjustment,
+      onAlignmentChange,
+      theme,
+      parentQuerySelector,
+      ...otherProps
+    } = this.props;
 
-    otherProps.className = `${
-      otherProps.className ? otherProps.className + ' ' : ''
-    }rzp-tooltip${show ? ' show' : ''} theme-${theme}`;
+    otherProps.className = `${otherProps.className ? `${otherProps.className} ` : ''}rzp-tooltip${
+      show ? ' show' : ''
+    } theme-${theme}`;
 
     return (
-      <div {...otherProps} ref={node => (this.node = node)}>
+      <div {...otherProps} ref={(node) => (this.node = node)}>
         <div className="rzp-tooltip-inner">{children}</div>
       </div>
     );

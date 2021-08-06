@@ -169,15 +169,17 @@ export default class AddFundsContainer extends Component {
         },
         () => {
           setTimeout(() => {
-            rzpTicketSystem.modal.next();
+            rzpTicketSystem.modal?.next();
           }, 0);
         },
       );
 
-      setTimeout(() => {
-        document.getElementsByName('request-description')[0].value =
-          'Please activate reserve balance and share VA details';
-      }, 1000);
+      if (document.getElementsByName('request-description')?.length > 0) {
+        setTimeout(() => {
+          document.getElementsByName('request-description')[0].value =
+            'Please activate reserve balance and share VA details';
+        }, 1000);
+      }
     }
   };
 
@@ -213,7 +215,7 @@ export default class AddFundsContainer extends Component {
         },
         () => {
           setTimeout(() => {
-            rzpTicketSystem.modal.next();
+            rzpTicketSystem.modal?.next();
           }, 0);
         },
       );
@@ -232,7 +234,9 @@ export default class AddFundsContainer extends Component {
           <span>Note: Standard TDR charges applies on adding funds</span>
           <span class="text-primary">
             <a
-              href={getCustomURL("https://razorpay.com/docs/payment-gateway/dashboard-guide/balances/")}
+              href={getCustomURL(
+                'https://razorpay.com/docs/payment-gateway/dashboard-guide/balances/',
+              )}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => {
