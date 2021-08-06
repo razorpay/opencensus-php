@@ -10,12 +10,22 @@ import { ContentContainer } from '../commonStyles';
 import { AbsoluteView, RelativeView, Container } from './styles';
 import Header from './components/Header';
 import InfoContainer from './components/InfoContainer';
+import { getURLQueryParams } from 'common/utils/rzp-utils';
+import { setCookie } from 'common/utils/cookies';
 
 const SignUp = ({ onRouteChange }) => {
   const [oneTapInfo, setOneTapInfo] = useState({
     isExpOn: true,
     isScriptFailed: window.isOneTapScriptFailed,
   });
+  const { auth_source } = getURLQueryParams(window.location.search);
+  const isSignUpFromWebsite = auth_source && auth_source === 'website';
+
+  useEffect(() => {
+    if (isSignUpFromWebsite) {
+      setCookie('auth_source', auth_source);
+    }
+  }, []);
 
   useEffect(() => {
     // check if Google Onetap script has successfully loaded or failed to load
@@ -72,7 +82,10 @@ const SignUp = ({ onRouteChange }) => {
           <Size maxWidth="830px" height="100%">
             <Flex flexDirection="column">
               <ContentContainer>
-                <Header handleOnClick={handleLoginClick} />
+                <Header
+                  handleOnClick={handleLoginClick}
+                  isSignUpFromWebsite={isSignUpFromWebsite}
+                />
                 <RelativeView>
                   <AbsoluteView>
                     <Auth

@@ -43,6 +43,10 @@ const getCommonProperties = ({ screen, properties, user }) => {
     new_onboarding_flow: 'yes',
     mode: 'live',
     rzp_mode: getMode(user.id) || '',
+    experiment_ID:
+      window.razorpayAnalytics?.utils?.getCookie('auth_source') === 'website'
+        ? 'Signup_experiment_1'
+        : 'none',
     ...browser_details,
     ...properties,
   };

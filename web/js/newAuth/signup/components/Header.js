@@ -13,7 +13,7 @@ import {
   CustomSecondaryButton,
 } from '../../commonStyles';
 
-const Header = ({ handleOnClick }) => {
+const Header = ({ handleOnClick, isSignUpFromWebsite = false }) => {
   return (
     <>
       <DesktopOnlyView>
@@ -36,22 +36,24 @@ const Header = ({ handleOnClick }) => {
         </Flex>
       </DesktopOnlyView>
 
-      <MobileOnlyView>
-        <HeaderView>
-          <FullHeightFlex justifyContent="space-around" alignItems="center">
-            <View>
-              <Size maxWidth="120px">
-                <img src="/img/logo_full.png" alt="Razorpay" />
-              </Size>
-              <Space margin={[3, 0, 0, 8]}>
-                <CustomSecondaryButton size="small" onClick={handleOnClick}>
-                  Sign up
-                </CustomSecondaryButton>
-              </Space>
-            </View>
-          </FullHeightFlex>
-        </HeaderView>
-      </MobileOnlyView>
+      {!isSignUpFromWebsite && (
+        <MobileOnlyView>
+          <HeaderView>
+            <FullHeightFlex justifyContent="space-around" alignItems="center">
+              <View>
+                <Size maxWidth="120px">
+                  <img src="/img/logo_full.png" alt="Razorpay" />
+                </Size>
+                <Space margin={[3, 0, 0, 8]}>
+                  <CustomSecondaryButton size="small" onClick={handleOnClick}>
+                    Sign up
+                  </CustomSecondaryButton>
+                </Space>
+              </View>
+            </FullHeightFlex>
+          </HeaderView>
+        </MobileOnlyView>
+      )}
     </>
   );
 };

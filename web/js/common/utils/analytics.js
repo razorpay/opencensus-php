@@ -1,4 +1,5 @@
 import { titleCase } from './rzp-utils';
+import { getCookie } from 'common/utils/cookies';
 
 const sendToLumberjack = ({ eventName, properties = {} }) => {
   const body = {
@@ -140,6 +141,7 @@ export const analyticsTrack = ({
       ...properties,
       screen,
       eventTimestamp,
+      experiment_ID: getCookie('auth_source') === 'website' ? 'Signup_experiment_1' : 'none',
     });
   }
 
