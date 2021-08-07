@@ -560,7 +560,12 @@ class BatchMicroService
 
         if ($merchant != null)
         {
+            // this is part of query param when we hit route on batch service. route = /batch
             $queryParams['entityId'] = $merchant->getId();
+
+            // this is part headers as the referred route does not accept query params
+            //when we hit route on batch service. route = /batch/{id}
+            $options['X-Entity-Id'] = $merchant->getId();
         }
 
         $relativeUrl = ($batchId != null) ? self::BATCH_URLS['batch'] . '/' . Batch\Entity::verifyIdAndStripSign($batchId)
