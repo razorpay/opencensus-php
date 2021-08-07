@@ -152,6 +152,11 @@ class Mutex
          */
         if ($response !== null)
         {
+            $this->trace->info(TraceCode::MUTEX_REDIS_RESPONSE_NOT_NULL,
+                [
+                    'response' => $response
+            ]);
+
             return true;
         }
 
@@ -287,10 +292,20 @@ class Mutex
     {
         $ret = null;
 
+        $startTime = microtime(true);
+
         try
         {
             $acquired = $this->acquire(
                 $resource, $ttl, $retryCount, $minRetryDelay, $maxRetryDelay, $strict);
+
+            $this->trace->info(TraceCode::MUTEX_REDIS_TIME_TAKEN_TO_ACQUIRE,
+                [
+                    'resource' => $resource,
+                    'acquired' => $acquired,
+                    'step_time_taken'  => ( microtime(true) - $startTime) * 1000
+                ]
+            );
 
             if ($acquired === false)
             {
@@ -300,18 +315,38 @@ class Mutex
                     $errorCode, null, $data);
             }
 
+            $callbackStartTime = microtime(true);
+
             $ret = call_user_func($callback);
+
+            $this->trace->info(TraceCode::MUTEX_REDIS_TIME_TAKEN_TO_RETURN,
+                [
+                    'resource' => $resource,
+                    'time_taken'  => ( microtime(true) - $startTime) * 1000,
+                    'step_time_taken'   => ( microtime(true) - $callbackStartTime) * 1000,
+                ]
+            );
 
             return $ret;
         }
         finally
         {
+            $releaseStartTime = microtime(true);
+
             $released = $this->release($resource);
 
             if ($released === false)
             {
                 $this->trace->error(TraceCode::MUTEX_LOCK_ALREADY_RELEASED);
             }
+
+            $this->trace->info(TraceCode::MUTEX_REDIS_TIME_TAKEN_TO_RELEASE,
+                [
+                    'resource' => $resource,
+                    'time_taken'  => ( microtime(true) - $startTime) * 1000,
+                    'step_time_taken'   => ( microtime(true) - $releaseStartTime) * 1000
+                ]
+            );
         }
     }
 

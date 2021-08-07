@@ -164,6 +164,7 @@ class Tracing
             'payout_create_with_otp',
 
             'payment_fetch_multiple',
+            'reconciliate_via_batch_service',
     ]);
     }
 
