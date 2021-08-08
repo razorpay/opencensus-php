@@ -2947,15 +2947,26 @@ class Core extends Base\Core
 
     protected function verifyBusinessVerificationCondition(Entity $merchantDetails, string $key, array $in)
     {
-        $isExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                                                                             RazorxTreatment::SHOP_ESTABLISHMENT_DOC_VERIFICATION);
+        [$type, $identifier] = explode('|', $key);
+
+        $isExperimentEnabled=true;
+
+        if ($type === 'shop_establishment')
+        {
+            $isExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
+                                                                                 RazorxTreatment::SHOP_ESTABLISHMENT_DOC_VERIFICATION);
+        }
+
+        elseif($type === 'gstin')
+        {
+            $isExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
+                                                                                 RazorxTreatment::GST_IN_DOC_VERIFICATION);
+        }
 
         if ($isExperimentEnabled === false)
         {
             return false;
         }
-
-        [$type, $identifier] = explode('|', $key);
 
         $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
             $merchantDetails->getMerchantId(),

@@ -50,6 +50,20 @@ class CoreTest extends TestCase
         $shouldPerformOCR = $documentCore->shouldPerfomOcrOnDocumentUpload($document, $merchantDetail->merchant, $merchantDetail);
         $this->assertTrue($shouldPerformOCR);
     }
+    public function testShouldPerformOcrForGstCertificateDocumentTypeAndExperimentIsEnabled()
+    {
+
+        $merchantDetail = $this->getMerchantDetailFixture(1);
+        $document = $this->fixtures->create('merchant_document', [
+            'document_type' => Type::GST_CERTIFICATE,
+            'file_store_id' => '123123',
+            'merchant_id'   => $merchantDetail->getMerchantId(),
+        ]);
+
+        $documentCore = new DocumentCore();
+        $shouldPerformOCR = $documentCore->shouldPerfomOcrOnDocumentUpload($document, $merchantDetail->merchant, $merchantDetail);
+        $this->assertTrue($shouldPerformOCR);
+    }
     public function testShouldPerformOcrForMsmeDocumentTypeAndExperimentIsEnabled()
     {
         $mocks = $this->createAndFetchMocks(true);

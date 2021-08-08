@@ -52,7 +52,7 @@ class Constant
     // Config names
     const PERSONAL_PAN_OCR           = 'personal_pan_ocr';
     const BUSINESS_PAN_OCR           = 'business_pan_ocr';
-
+    const GST_CERTIFICATE_OCR_CONFIG = 'gst_in_ocr';
     const MSME_OCR                   = 'msme_ocr';
     const SHOP_ESTABLISHMENT_OCR     = 'shop_establishment_ocr';
 
@@ -63,7 +63,7 @@ class Constant
     const BANK_ACCOUNT_WITH_PERSONAL_PAN                = "bank_account_with_personal_pan";
     const BANK_ACCOUNT_WITH_BUSINESS_PAN                = "bank_account_with_business_pan";
     const BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN    = "bank_account_with_business_or_promoter_pan";
-    const AADHAR_BACK                                   ="aadhar_back";
+    const AADHAR_BACK                                   = "aadhar_back";
     const AADHAAR_WITH_PAN                              = 'aadhaar_with_pan';
     //
     // Response fields
@@ -84,6 +84,7 @@ class Constant
     const LLP_DEED           = 'llp_deed';
     const BUSINESS_PAN       = 'business_pan';
     const SHOP_ESTABLISHMENT = 'shop_establishment';
+    const GST_CERTIFICATE    = 'gst_certificate';
     const MSME               = 'msme';
 
     //
@@ -107,7 +108,7 @@ class Constant
     const BANKING_ACCOUNT = 'banking_account';
 
     const BAS_DOCUMENT = 'bas_document';
-    const MERCHANT        = 'merchant';
+    const MERCHANT     = 'merchant';
 
     const ARTEFACT_TYPE                   = 'artefact_type';
     const SUCCESS                         = 'success';
@@ -115,7 +116,13 @@ class Constant
     const RAZORX_EXPERIMENT               = 'razorx_experiment';
     const AADHAR_ESIGN_SESSION_KEY_PREFIX = "aadhar_esign_session";
     const CUSTOM_CALLBACK_HANDLER         = 'custom_callback_handler';
-    const FIELD_ARTEFACT_DETAILS_MAP = [
+    const FIELD_ARTEFACT_DETAILS_MAP      = [
+        Type::GST_CERTIFICATE             => [
+            self::ARTEFACT_TYPE   => self::GSTIN,
+            self::PROOF_INDEX     => '1',
+            self::VALIDATION_UNIT => Constants::PROOF,
+            self::CONFIG_NAME     => self::GST_CERTIFICATE_OCR_CONFIG
+        ],
         Type::AADHAR_FRONT                => [
             self::ARTEFACT_TYPE   => self::AADHAAR,
             self::PROOF_INDEX     => '3',

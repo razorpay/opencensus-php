@@ -80,6 +80,7 @@ class Constants
             'REMOTE_RECORDS_INCONSISTENT',
             'DATA_CROSS_CHECK_ERROR',
             'NOT_SUPPORTED',
+            'INVALID_DOCUMENT_ERROR'
         ],
 
         self::NOT_MATCHED => [

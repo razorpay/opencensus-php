@@ -200,6 +200,9 @@ final class RazorxTreatment
     // experiment to enable shop estb doc verification through OCR;
     const SHOP_ESTABLISHMENT_DOC_VERIFICATION = 'shop_establishment_doc_verification';
 
+    // experiment to enable gst in doc verification through OCR;
+    const GST_IN_DOC_VERIFICATION = 'gst_in_doc_verification';
+
     // experiment to skip poa documents if aadhaar esign is done
     const SKIP_POA_DOCUMENT_FUNCTIONALITY = "SKIP_POA_DOCUMENT_FUNCTIONALITY";
 

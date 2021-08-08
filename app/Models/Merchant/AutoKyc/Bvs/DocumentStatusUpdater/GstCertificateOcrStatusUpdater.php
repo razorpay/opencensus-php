@@ -12,13 +12,14 @@ use RZP\Models\Merchant\BvsValidation\Entity;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\AutoKyc\Bvs\Config\Gstin;
 
 /**
  * Class DocumentStatusUpdater
  *
  * @package RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater
  */
-class ShopEstbStatusUpdater extends BaseStatusUpdater
+class GstCertificateOcrStatusUpdater extends BaseStatusUpdater
 {
     protected $entity;
 
@@ -53,7 +54,7 @@ class ShopEstbStatusUpdater extends BaseStatusUpdater
 
             $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
                 $this->merchant->getId(),
-                MVD\Constants::SHOP_ESTABLISHMENT,
+                Constant::GSTIN,
                 MVD\Constants::DOC
             );
 
@@ -82,8 +83,6 @@ class ShopEstbStatusUpdater extends BaseStatusUpdater
             ]);
         }
 
-//        $this->updateMerchantContext();
-
         $this->sendConsumedValidationResultEvent();
     }
 
@@ -91,7 +90,7 @@ class ShopEstbStatusUpdater extends BaseStatusUpdater
     {
         $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
             $this->merchant->getId(),
-            MVD\Constants::SHOP_ESTABLISHMENT,
+            Constant::GSTIN,
             MVD\Constants::DOC
         );
 

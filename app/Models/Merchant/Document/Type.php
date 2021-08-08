@@ -199,6 +199,7 @@ class Type
         self::VOTER_ID_FRONT,
         self::MSME_CERTIFICATE,
         self::SHOP_ESTABLISHMENT_CERTIFICATE,
+        self::GST_CERTIFICATE
     ];
 
     protected static $poaDocuments = [

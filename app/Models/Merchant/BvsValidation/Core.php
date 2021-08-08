@@ -276,7 +276,7 @@ class Core extends Base\Core
 
             $statusUpdater = $statusUpdateFactory->getInstance($merchant, $validation);
 
-            if ($statusUpdater instanceof DocumentStatusUpdater\ShopEstbStatusUpdater)
+            if ($statusUpdater->canUpdateMerchantContext())
             {
                 $this->trace->info(TraceCode::MERCHANT_STATUS_UPDATER_TRY, [
                     'merchant_id'   => $merchantId,
@@ -291,7 +291,6 @@ class Core extends Base\Core
             $errorContext = [
                 'merchant_id'              => $merchantId,
                 'validation_id'            => $validationId,
-                'shop_estb_status_updater' => $statusUpdater instanceof DocumentStatusUpdater\ShopEstbStatusUpdater,
                 'message'                  => $e->getMessage(),
             ];
 

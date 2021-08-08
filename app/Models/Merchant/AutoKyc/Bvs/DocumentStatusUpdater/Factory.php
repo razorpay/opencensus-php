@@ -42,10 +42,7 @@ class Factory
 
             case Constant::GSTIN:
 
-                return new DefaultStatusUpdater(
-                    $merchant,
-                    Entity::GSTIN_VERIFICATION_STATUS,
-                    $validation);
+                return $this->getStatusUpdaterForGSTIN($merchant, $validation);
 
             case Constant::BUSINESS_PAN :
 
@@ -87,7 +84,6 @@ class Factory
                 return new DefaultStatusUpdater(
                     $merchant, Entity::MSME_DOC_VERIFICATION_STATUS,
                     $validation);
-
             default :
 
                 throw new LogicException(
@@ -97,7 +93,26 @@ class Factory
 
         }
     }
+    /**
+     * @param MerchantEntity   $merchant
+     * @param ValidationEntity $validation
+     *
+     * @return StatusUpdater
+     */
+    public function getStatusUpdaterForGSTIN(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
+    {
+        if ($validation->getValidationUnit() === Constants::PROOF)
+        {
+            return new GstCertificateOcrStatusUpdater(
+                $merchant,
+                $validation);
+        }
 
+        return new DefaultStatusUpdater(
+            $merchant,
+            Entity::GSTIN_VERIFICATION_STATUS,
+            $validation);
+    }
     /**
      * @param MerchantEntity   $merchant
      * @param ValidationEntity $validation
@@ -179,4 +194,5 @@ class Factory
             Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
             $validation);
     }
+
 }

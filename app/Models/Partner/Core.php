@@ -576,6 +576,8 @@ class Core extends Detail\Core
                     return in_array($merchantDetails->getAttribute($key), $in, true);
                 case E::STAKEHOLDER:
                     return $this->verifyStakeHolderCondition($merchantDetails, $key, $in);
+                case E::MERCHANT_VERIFICATION_DETAIL:
+                    return $this->verifyBusinessVerificationCondition($merchantDetails, $key, $in);
             }
         });
     }

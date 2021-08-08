@@ -41,6 +41,9 @@ class Factory
             case Type::AADHAR_BACK:
                 return new AadharBackOcr($merchant, $merchantDetails, $document);
 
+            case Type::GST_CERTIFICATE:
+                return new GSTCertificateOcr($merchant, $merchantDetails, $document);
+
             default:
                 throw new Exception\LogicException('document type not supported in this flow: ' . $document->getDocumentType());
         }

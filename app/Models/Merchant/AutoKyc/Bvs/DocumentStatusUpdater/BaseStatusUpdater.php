@@ -231,6 +231,10 @@ abstract class BaseStatusUpdater implements StatusUpdater
         );
 
     }
+    public function canUpdateMerchantContext(): bool
+    {
+        return false;
+    }
 
     /**
      * @throws LogicException
