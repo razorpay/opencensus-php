@@ -4,6 +4,8 @@
 namespace RZP\Models\Merchant\AutoKyc\Escalations\Types;
 
 
+use RZP\Diag\Event\EmailEvent;
+use RZP\Models\Merchant\AutoKyc\Escalations\Utils;
 use RZP\Models\Merchant\AutoKyc\Escalations\Constants;
 
 class Factory
@@ -12,7 +14,7 @@ class Factory
      * Returns an instance of appropriate escalation type based on type and level
      * @param string $type
      * @param int $level
-     * @return Email|Workflow
+     * @return Email|Workflow|EscalationV2
      */
     public static function getInstance(string $type, int $level)
     {
@@ -24,6 +26,8 @@ class Factory
                 return (new Workflow);
             case Constants::EMAIL:
                 return (new Email);
+            case Constants::ESCALATION_V2:
+                return (new EscalationV2);
         }
     }
 

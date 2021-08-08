@@ -5,8 +5,13 @@ namespace Unit\Models\Merchant\Detail;
 
 
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant\Escalations;
 use RZP\Services\RazorXClient;
+use Illuminate\Support\Facades\Mail;
+use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
@@ -450,6 +455,56 @@ class CoreTest extends TestCase
         $this->mockRazorxTreatment();
 
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testActivatedMccPendingActivationStatus()
+    {
+        Mail::fake();
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'          => 'under_review',
+            'submitted'=>true,
+            'business_Website'=> null
+        ]);
+
+        $this->mockRazorxTreatment();
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED_MCC_PENDING,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant,$activationStatusData,$merchantDetails->merchant);
+        //verify email has been sent
+        $expectedEmails=['emails.merchant.onboarding.activated_mcc_pending_success',
+                         'emails.merchant.onboarding.activated_mcc_pending_action_required'];
+        $queuedEmails =Mail::queued(MerchantOnboardingEmail::class);
+        $this->assertCount(2,$queuedEmails);
+        $this->assertContains($queuedEmails->get(0)->getTemplate(),$expectedEmails);
+        $this->assertContains($queuedEmails->get(1)->getTemplate(),$expectedEmails);
+
+
     }
 
     protected function mockRazorxTreatment(string $returnValue = 'on')

@@ -24,6 +24,11 @@ class MerchantOnboardingEmail extends Mailable
         $this->template = $template;
     }
 
+    public function getTemplate()
+    {
+        return $this->template;
+    }
+
     protected function addRecipients()
     {
         $this->to($this->data['merchant']['email']);

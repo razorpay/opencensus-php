@@ -16,7 +16,7 @@ use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 
 class Workflow extends BaseEscalationType
 {
-    public function triggerEscalation($merchants, string $type, int $level)
+    public function triggerEscalation($merchants,$merchantsGmvList, string $type, int $level)
     {
         foreach ($merchants as $merchant)
         {
@@ -24,20 +24,20 @@ class Workflow extends BaseEscalationType
             {
                 $entity = $this->triggerWorkflow($merchant);
                 $workflowId = null;
-
                 if(empty($entity) === false)
                 {
                     $workflowId = $entity['id'];
                     WfActionEntity::verifyIdAndSilentlyStripSign($workflowId);
                 }
 
+
                 $escalation = (new Entity)->build([
-                    Entity::MERCHANT_ID         => $merchant->getId(),
-                    Entity::ESCALATION_TYPE     => $type,
-                    Entity::ESCALATION_METHOD   => Constants::WORKFLOW,
-                    Entity::ESCALATION_LEVEL    => $level,
-                    Entity::WORKFLOW_ID         => $workflowId
-                ]);
+                                                      Entity::MERCHANT_ID         => $merchant->getId(),
+                                                      Entity::ESCALATION_TYPE     => $type,
+                                                      Entity::ESCALATION_METHOD   => Constants::WORKFLOW,
+                                                      Entity::ESCALATION_LEVEL    => $level,
+                                                      Entity::WORKFLOW_ID         => $workflowId
+                                                  ]);
                 $this->repo->merchant_auto_kyc_escalations->saveOrFail($escalation);
 
                 $this->app['trace']->info(TraceCode::SELF_SERVE_ESCALATION_SUCCESS, [
@@ -57,6 +57,7 @@ class Workflow extends BaseEscalationType
                 ]);
             }
         }
+        (new EscalationV2())->send($merchants,$merchantsGmvList,$type,$level);
     }
 
     private function triggerWorkflow($merchant)

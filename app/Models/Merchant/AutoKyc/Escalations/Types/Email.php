@@ -19,29 +19,14 @@ class Email extends BaseEscalationType
 {
     const ESCALATION_MAIL_SUBJECT_TEMPLATE = 'Self Serve Escalation: {type} | Level: {level}';
 
-    public function triggerEscalation($merchants, string $type, int $level)
+    public function triggerEscalation($merchants,$merchantsGmvList, string $type, int $level)
     {
-        $this->sendEscalationEmail($type, $level, $merchants);
+        $this->createEscalationsV1($merchants, $type, $level,Constants::EMAIL);
 
-        foreach ($merchants as $merchant)
-        {
-            $escalation = (new Entity)->build([
-                Entity::MERCHANT_ID         => $merchant->getId(),
-                Entity::ESCALATION_TYPE     => $type,
-                Entity::ESCALATION_METHOD   => Constants::EMAIL,
-                Entity::ESCALATION_LEVEL    => $level
-            ]);
-            $this->repo->merchant_auto_kyc_escalations->saveOrFail($escalation);
-
-            $this->app['trace']->info(TraceCode::SELF_SERVE_ESCALATION_SUCCESS, [
-                'type'          => $type,
-                'level'         => $level,
-                'merchant_id'   => $merchant->getId()
-            ]);
-        }
+        $this->sendEscalationEmail($merchants, $type, $level);
     }
 
-    private function sendEscalationEmail(string $type, string $level, $merchants)
+    private function sendEscalationEmail($merchants,string $type, string $level)
     {
         $actions = (new ActionCore())->fetchOpenActionOnEntityListOperation(
             Utils::getMerchantIdList($merchants),

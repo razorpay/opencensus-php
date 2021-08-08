@@ -1,0 +1,1 @@
+Dear {{{$merchantName}}}, as part of the next step of your onboarding, our compliance team is currently reviewing your business details and has reached out for some clarifications via your https://dashboard.razorpay.com/. Please respond to our queries within 48 hours to continue receiving customer payments in your bank account.

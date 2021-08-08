@@ -11,6 +11,7 @@ use RZP\Models\Merchant\AutoKyc\Escalations\Types\Email;
 use RZP\Models\Merchant\AutoKyc\Escalations\Types\Factory;
 use RZP\Models\Merchant\AutoKyc\Escalations\Types\Workflow;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\AutoKyc\Escalations\Types\BaseEscalationType;
 
 class Handler
 {
@@ -48,17 +49,19 @@ class Handler
      * - Identifies which escalation method to use for trigger escalation
      * - Triggers escalation
      * - Saves entry in the database (merchant_auto_kyc_escalations)
-     * @param $merchants
+     *
+     * @param        $merchants
+     * @param        $merchantsGmvList
      * @param string $type
-     * @param int $level
+     * @param int    $level
      */
-    public function handleEscalations($merchants, string $type, int $level)
+    public function handleEscalations($merchants,$merchantsGmvList, string $type, int $level)
     {
         try
         {
             $instance = Factory::getInstance($type, $level);
 
-            $instance->triggerEscalation($merchants, $type, $level);
+            $instance->triggerEscalation($merchants,$merchantsGmvList, $type, $level);
         }
         catch (\Exception $e)
         {

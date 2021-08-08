@@ -51,7 +51,6 @@ class CoreTest extends TestCase
         // Verify no escalation is triggered for the merchant
         $this->assertEmpty($escalation);
     }
-
     /**
      * Scenario:
      * -1 merchant is moved to activated mcc pending state
@@ -76,7 +75,7 @@ class CoreTest extends TestCase
 
         $this->assertFalse($triggered);
     }
-
+    
     public function testEscalation_5K_milestone_L1()
     {
         $this->app->instance("rzp.mode", Mode::LIVE);

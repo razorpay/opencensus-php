@@ -11,8 +11,6 @@ use RZP\Base\RepositoryManager;
 use Razorpay\Trace\Logger as Trace;
 use RZP\lib\ConditionParser\Parser;
 use Illuminate\Foundation\Application;
-use RZP\Jobs\MerchantEscalationAction;
-
 class Handler
 {
     /**
@@ -86,7 +84,9 @@ class Handler
             {
                 $escalationConfig = array_values($possibleEscalations)[0];
 
-                if($this->canTriggerEscalation($merchantDetails, $escalationConfig) === true)
+                $isEnabled = $escalationConfig[Constants::ENABLE] ?? true;
+
+                if($this->canTriggerEscalation($merchantDetails, $escalationConfig) === true and $isEnabled === true)
                 {
                     return [$threshold, $escalationConfig];
                 }
@@ -96,12 +96,20 @@ class Handler
         return [null, null];
     }
 
-    private function canTriggerEscalation($merchantDetails, $escalationConfig): bool
+    public function canTriggerEscalation($merchantDetails, $escalationConfig): bool
     {
         $conditions = $escalationConfig[Constants::CONDITIONS];
 
         return (new Parser)->parse($conditions, function ($key, $value) use ($merchantDetails){
-            if(is_array($value) === true)
+            if($value === Constants::IS_NOT_NULL)
+            {
+                return empty($merchantDetails->getAttribute($key))===false and is_null($merchantDetails->getAttribute($key))===false;
+            }
+            else if($value === Constants::IS_NULL)
+            {
+                return empty($merchantDetails->getAttribute($key))===true or is_null($merchantDetails->getAttribute($key))===true;
+            }
+            else if(is_array($value) === true)
             {
                 return in_array($merchantDetails->getAttribute($key), $value, true);
             }

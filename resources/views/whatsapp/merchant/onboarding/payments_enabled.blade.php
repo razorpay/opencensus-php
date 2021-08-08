@@ -1,2 +1,1 @@
-Congratulations {{{$merchantName}}}, you can now start accepting payments upto 15000 by visiting your Razorpay Dashboard. Your settlements will be enabled, once your account is activated
-https://dashboard.razorpay.com
+Congratulations {{{$merchantName}}}! You are now all set to start receiving payments from your customers up to INR 15,000. Complete your KYC Details to enable benefits like settlements and to extend this limit further! Visit your Razorpay dashboard now at https://dashboard.razorpay.com

@@ -1,0 +1,1 @@
+Dear {{{$merchantName}}}, as part of the next step of your onboarding, our compliance team is currently reviewing your business details and will reach out to you via your https://dashboard.razorpay.com/ in the next few days in case of any clarifications. Please check your registered email for more details and respond to our queries at the earliest.

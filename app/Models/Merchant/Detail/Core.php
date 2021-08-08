@@ -1808,8 +1808,8 @@ class Core extends Base\Core
                             $input[Entity::ACTIVATION_STATUS]);
 
         $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS, [
-            'input'         => $input,
-            'merchant_id'   => $merchant->getId()
+            'input'       => $input,
+            'merchant_id' => $merchant->getId()
         ]);
 
         $rejectionReasons = [];
@@ -1829,7 +1829,7 @@ class Core extends Base\Core
 
         $newMerchantDetails = clone $merchantDetails;
 
-        $this->repo->transactionOnLiveAndTest(function () use ($input, $merchant){
+        $this->repo->transactionOnLiveAndTest(function() use ($input, $merchant) {
             switch ($input[Entity::ACTIVATION_STATUS])
             {
                 case Status::ACTIVATED:
@@ -1863,8 +1863,8 @@ class Core extends Base\Core
             $input,
             $rejectionReasons,
             $maker, $merchant,
-            $shouldSave)
-        {
+            $shouldSave
+        ) {
             if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED) and
                 ($merchant->isLinkedAccount() === false))
             {
@@ -1929,7 +1929,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::MERCHANT_ACTIVATION_LOGS,
                 [
-                    'text' => 'before saving merchant',
+                    'text'     => 'before saving merchant',
                     'merchant' => $merchant
                 ]
             );
@@ -1941,7 +1941,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::MERCHANT_ACTIVATION_LOGS,
                 [
-                    'text' => 'after saving merchant',
+                    'text'     => 'after saving merchant',
                     'merchant' => $merchant
                 ]
             );
@@ -1996,21 +1996,11 @@ class Core extends Base\Core
                 $merchantDetails->getActivationStatus(),
                 $currentActivationStatus));
 
-        $isWhatsappEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
-                                                                             RazorxTreatment::WHATSAPP_NOTIFICATIONS);
-
-        if ($isWhatsappEnabled === true)
-        {
-            $args = [
-                'activationStatus'  => $currentActivationStatus,
-                'merchant'          => $merchant
-            ];
-            (new OnboardingNotificationHandler($args))->send();
-        }
-        else
-        {
-            $this->sendSmsBasedOnMilestones($currentActivationStatus, $merchantDetails);
-        }
+        $args = [
+            'activationStatus' => $currentActivationStatus,
+            'merchant'         => $merchant
+        ];
+        (new OnboardingNotificationHandler($args))->send();
 
         (new Activation\Core())->autoActivatePartnerIfApplicable($merchant, $merchantDetails);
 

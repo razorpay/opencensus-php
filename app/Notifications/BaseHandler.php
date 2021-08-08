@@ -2,21 +2,41 @@
 
 namespace RZP\Notifications;
 
+use App;
+use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
+use Illuminate\Foundation\Application;
 
 abstract class BaseHandler
 {
     protected $args;
-
+    /**
+     * The application instance.
+     *
+     * @var Application
+     */
+    protected $app;
+    /**
+    * Trace instance used for tracing
+    * @var Trace
+    */
+    protected $trace;
     public function __construct(array $args)
     {
         $this->args = $args;
+        $this->app = App::getFacadeRoot();
+        $this->trace = $this->app['trace'];
+
     }
 
     /**
      * This method is responsible for sending notification through various channels
      * depending on the event.
+     *
      * @param string $event
-     * @throws \RZP\Exception\LogicException
+     *
+     * @throws LogicException
      */
     public function sendForEvent(string $event)
     {
@@ -27,24 +47,34 @@ abstract class BaseHandler
             $serviceInstance = Factory::getInstance($channel, $event, $this->getNamespace(), $this->args);
 
             $serviceInstance->send();
+
+            $this->trace->info(TraceCode::SEND_NOTIFICATION, [
+                'merchant' => $this->args,
+                'type'     => 'sendForEvent',
+                'channel'  => $channel
+            ]);
         }
     }
 
     /**
      * This method is responsible to provide the list of supported channels
      * for the given event
+     *
      * @param string $event
+     *
      * @return mixed
      */
     protected abstract function getSupportedchannels(string $event);
 
     /**
      * Utility method to provide namespace of current class
+     *
      * @return false|string
      */
     protected function getNamespace()
     {
         $clazz = get_called_class();
+
         return substr($clazz, 0, strrpos($clazz, "\\"));
     }
 }

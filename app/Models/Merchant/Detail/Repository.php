@@ -79,9 +79,9 @@ class Repository extends Base\Repository
 
     public function findMerchantsWithoutStakeholders($limit, $afterId = null)
     {
-        $detailsMerchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
+        $detailsMerchantIdCol     = $this->dbColumn(Entity::MERCHANT_ID);
         $stakeholderMerchantIdCol = $this->repo->stakeholder->dbColumn(Stakeholder\Entity::MERCHANT_ID);
-        $stakeholderDeletedAtCol = $this->repo->stakeholder->dbColumn(Stakeholder\Entity::DELETED_AT);
+        $stakeholderDeletedAtCol  = $this->repo->stakeholder->dbColumn(Stakeholder\Entity::DELETED_AT);
 
         $query = $this->newQuery()->select($detailsMerchantIdCol)
                       ->leftJoin(Table::STAKEHOLDER, $detailsMerchantIdCol, '=', $stakeholderMerchantIdCol)
@@ -128,11 +128,11 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @deprecated by getFeatureOnboardingRequests()
-     *
      * @param string $status
      *
      * @return array
+     * @deprecated by getFeatureOnboardingRequests()
+     *
      */
     public function getFeatureOnboardingRequestsByStatus(string $status): array
     {
@@ -215,9 +215,9 @@ class Repository extends Base\Repository
                 //
                 $unionQueryElement = $this->newQueryWithConnection(Mode::LIVE)
                                           ->select(
-                                                Entity::MERCHANT_ID,
-                                                DB::raw("'" . $product . "' as product"),
-                                                DB::raw($productActivationStatus . " as 'status'"));
+                                              Entity::MERCHANT_ID,
+                                              DB::raw("'" . $product . "' as product"),
+                                              DB::raw($productActivationStatus . " as 'status'"));
 
                 // Filter with status
                 if ($statusFilter === null)
@@ -302,17 +302,17 @@ class Repository extends Base\Repository
 
     public function fetchMerchantIdsByActivationStatus(array $activationStatusList, int $createdAt = null): array
     {
-        $detailMerchantIdColumn        = $this->dbColumn(Entity::MERCHANT_ID);
-        $merchantIdColumn              = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
-        $merchantOrgIdColumn           = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
-        $merchantParentIdColumn        = $this->repo->merchant->dbColumn(Merchant\Entity::PARENT_ID);
+        $detailMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantIdColumn       = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantOrgIdColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
+        $merchantParentIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::PARENT_ID);
 
         $query = $this->newQuery()
-                    ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
-                    ->where($merchantOrgIdColumn, '=',  Org\Entity::RAZORPAY_ORG_ID)
-                    ->where($merchantParentIdColumn, '=', null)
-                    ->select(Entity::MERCHANT_ID)
-                    ->whereIn(Entity::ACTIVATION_STATUS, $activationStatusList);
+                      ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
+                      ->where($merchantOrgIdColumn, '=', Org\Entity::RAZORPAY_ORG_ID)
+                      ->where($merchantParentIdColumn, '=', null)
+                      ->select(Entity::MERCHANT_ID)
+                      ->whereIn(Entity::ACTIVATION_STATUS, $activationStatusList);
 
         if (empty($createdAt) === false)
         {
@@ -320,19 +320,31 @@ class Repository extends Base\Repository
         }
 
         return $query->get()
-            ->pluck(Entity::MERCHANT_ID)
-            ->toArray();
+                     ->pluck(Entity::MERCHANT_ID)
+                     ->toArray();
     }
 
     public function filterMerchantIdsByActivationStatus(array $mids, array $activationStatusList): array
     {
         return $this->newQuery()
-            ->select(Entity::MERCHANT_ID)
-            ->whereIn(Entity::MERCHANT_ID, $mids)
-            ->whereIn(Entity::ACTIVATION_STATUS, $activationStatusList)
-            ->get()
-            ->pluck(Entity::MERCHANT_ID)
-            ->toArray();
+                    ->select(Entity::MERCHANT_ID)
+                    ->whereIn(Entity::MERCHANT_ID, $mids)
+                    ->whereIn(Entity::ACTIVATION_STATUS, $activationStatusList)
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
+
+    public function filterActivationNotStartedMerchantIds(int $from, int $to): array
+    {
+
+        return $this->newQuery()
+                    ->select(Entity::MERCHANT_ID)
+                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->WhereNull(Entity::ACTIVATION_FORM_MILESTONE)
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
     }
 
 }

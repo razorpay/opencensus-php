@@ -73,4 +73,20 @@ class Utils
 
         return $merchantIdList;
     }
+    /**
+     * Method to determine what is the milestone for give level and the given type
+     * - Reads from config
+     * @param string $type
+     * @param int $level
+     * @return string|null
+     */
+    public static function getEscalationMilestone(string $type, int $level)
+    {
+        if(isset(Constants::ESCALATION_CONFIG[$type][$level]) === true and isset(Constants::ESCALATION_CONFIG[$type][$level]['milestone'])===true)
+        {
+            return Constants::ESCALATION_CONFIG[$type][$level]['milestone'];
+        }
+
+        return null;
+    }
 }

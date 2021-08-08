@@ -8,6 +8,8 @@ use RZP\Exception;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+
+use RZP\Models\Merchant\Detail\Entity as DEEntity;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Notifications\BaseNotificationService;
@@ -18,11 +20,12 @@ class EmailNotificationService extends BaseNotificationService
 
     public function send(): void
     {
-        $payload = $this->getPayload();
+        $payload  = $this->getPayload();
         $merchant = $this->args['merchant'];
-        $org = $this->getOrg($merchant);
+        $org      = $this->getOrg($merchant);
 
-        try {
+        try
+        {
             $emailInstance = new MerchantOnboardingEmail(
                 $payload, $org->toArray(),
                 $this->getTemplateMessage(),
@@ -34,19 +37,19 @@ class EmailNotificationService extends BaseNotificationService
             $this->trace->info(
                 TraceCode::MERCHANT_ONBOARDING_EMAIL_SENT,
                 [
-                    'merchant_id'   => $merchant->getMerchantId(),
-                    'template'      => $this->getTemplateMessage()
+                    'merchant_id' => $merchant->getMerchantId(),
+                    'template'    => $this->getTemplateMessage()
                 ]);
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException($e,
-                Trace::CRITICAL,
-                TraceCode::MERCHANT_ONBOARDING_EMAIL_FAILED,
-                [
-                    'merchant_id'   => $merchant->getMerchantId(),
-                    'template'      => $this->getTemplateMessage()
-                ]
+                                         Trace::CRITICAL,
+                                         TraceCode::MERCHANT_ONBOARDING_EMAIL_FAILED,
+                                         [
+                                             'merchant_id' => $merchant->getMerchantId(),
+                                             'template'    => $this->getTemplateMessage()
+                                         ]
             );
         }
     }
@@ -61,22 +64,24 @@ class EmailNotificationService extends BaseNotificationService
     protected function getPayload()
     {
         $merchant = $this->args['merchant'];
-        $org = $this->getOrg($merchant);
+        $org      = $this->getOrg($merchant);
         $hostname = '';
 
-        if(empty($org->hostnames()->first()) === false)
+        if (empty($org->hostnames()->first()) === false)
         {
             $hostname = $org->getPrimaryHostName();
         }
+        $merchantDetails = $merchant->merchantDetail;
 
         $data = [
-            DEConstants::MERCHANT             => [
+            DEConstants::MERCHANT => [
                 MerchantEntity::NAME          => $merchant->getName(),
                 MerchantEntity::BILLING_LABEL => $merchant->getBillingLabel(),
                 MerchantEntity::EMAIL         => $merchant->getEmail(),
                 DEConstants::ORG              => [
-                    DEConstants::HOSTNAME     => $hostname,
-                ]
+                    DEConstants::HOSTNAME => $hostname,
+                ],
+                DEEntity::BUSINESS_WEBSITE    => $merchantDetails->getAttribute(DEEntity::BUSINESS_WEBSITE)
             ],
         ];
 

@@ -4,7 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use DB;
 use App;
-use Mail;
+use Illuminate\Support\Facades\Mail;
 use Queue;
 use Config;
 use Mockery;
@@ -14,6 +14,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Base\EsDao;
 use RZP\Models\Card\Network;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
@@ -29,6 +30,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
+use RZP\Mail\Admin\NotifyActivationSubmission;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -1569,15 +1571,7 @@ class ActivationTest extends OAuthTestCase
         $testData = $this->testData['submitKyc'];
 
         $this->startTest($testData);
-
-        Mail::assertQueued(\RZP\Mail\Admin\NotifyActivationSubmission::class, function($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertEquals('emails.admin.notify_activation_submission', $mail->view);
-
-            return $this->assertRazorpayOrgMailData($viewData['merchant_details']);
-        });
+        Mail::assertQueued(NotifyActivationSubmission::class);
     }
 
     public function testKycSubmissionForInstantlyActivatedMerchantForCustomOrg()
@@ -1595,15 +1589,7 @@ class ActivationTest extends OAuthTestCase
         $testData = $this->testData['submitKyc'];
 
         $this->startTest($testData);
-
-        Mail::assertQueued(\RZP\Mail\Admin\NotifyActivationSubmission::class, function($mail) use ($org)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertEquals('emails.admin.notify_activation_submission', $mail->view);
-
-            return $this->assertCustomBrandingMailViewData($org, $viewData['merchant_details']);
-        });
+        Mail::assertQueued(NotifyActivationSubmission::class);
 
     }
 
@@ -3602,7 +3588,8 @@ class ActivationTest extends OAuthTestCase
         $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
 
         $data = [
-            'activation_status'     => 'activated_mcc_pending'
+            'activation_status' => 'activated_mcc_pending',
+            'business_website'           => null
         ];
 
         $this->fixtures->on('live')->edit('merchant_detail', $merchantId, $data);
@@ -3611,12 +3598,16 @@ class ActivationTest extends OAuthTestCase
         $createdAt = Carbon::now()->subDays(5)->getTimestamp();
 
         $this->fixtures->on('live')->create('merchant_auto_kyc_escalations', [
-            'merchant_id'       =>  $merchantId,
-            'escalation_level'  =>  3,
-            'escalation_type'   =>  'hard_limit',
-           'created_at'     => $createdAt,
+            'merchant_id'      => $merchantId,
+            'escalation_level' => 3,
+            'escalation_type'  => 'hard_limit',
+            'created_at'       => $createdAt,
         ]);
-
+        $transaction = $this->fixtures->on('live')->create('transaction', [
+            'type'        => 'payment',
+            'amount'      => 1500000,   // in paisa
+            'merchant_id' => $merchantId
+        ]);
         $this->ba->cronAuth('live');
 
         $testData = [
@@ -3627,20 +3618,20 @@ class ActivationTest extends OAuthTestCase
             ],
         ];
 
-        $this->fixtures->create('org_hostname', [
-            'org_id'    => self::RZP_ORG,
-            'hostname'  => 'dashboard.razorpay.com'
+        $this->fixtures->on('live')->create('org_hostname', [
+            'org_id'   => self::RZP_ORG,
+            'hostname' => 'dashboard.razorpay.com'
         ]);
 
         $this->makeRequestAndGetContent($testData);
 
-        Mail::assertQueued(\RZP\Mail\Merchant\HardLimitLevelThreeEmail::class, function ($mail) {
-            $viewData = $mail->viewData;
-
-            $this->assertEquals('emails.merchant.hard_limit_reached', $mail->view);
+        //verify email has been sent
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('emails.merchant.onboarding.funds_on_hold', $mail->getTemplate());
 
             return true;
         });
+
     }
 
     public function testHardLimitEmailNotSent()
@@ -3666,7 +3657,6 @@ class ActivationTest extends OAuthTestCase
             'escalation_type'   =>  'hard_limit',
             'created_at'     => $createdAt,
         ]);
-
         $this->ba->cronAuth('live');
 
         $testData = [
@@ -3700,7 +3690,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->makeRequestAndGetContent($testData);
 
-        Mail::assertNotQueued(\RZP\Mail\Merchant\HardLimitLevelThreeEmail::class);
+        Mail::assertNotQueued(\RZP\Mail\Merchant\MerchantOnboardingEmail::class);
     }
 
     public function testKycSubmissionForInstantlyActivatedMerchantWithL2Milestone()
@@ -3713,14 +3703,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->startTest();
 
-        Mail::assertQueued(\RZP\Mail\Admin\NotifyActivationSubmission::class, function($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertEquals('emails.admin.notify_activation_submission', $mail->view);
-
-            return $this->assertRazorpayOrgMailData($viewData['merchant_details']);
-        });
+        Mail::assertQueued(NotifyActivationSubmission::class);
     }
 
     public function testMerchantActivationWithEmptyBusinessCategoryInX()

@@ -69,7 +69,6 @@ class Service
      * @var bool
      */
     protected $skipWorkflow = false;
-
     /**
      * @var BasicAuth
      */

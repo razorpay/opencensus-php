@@ -6,35 +6,42 @@ namespace RZP\Notifications\Onboarding;
 
 class Events
 {
-    const UNREGISTERED_PAYMENTS_ENABLED     = 'UNREGISTERED_PAYMENTS_ENABLED';
-
-    const UNREGISTERED_SETTLEMENTS_ENABLED  = 'UNREGISTERED_SETTLEMENTS_ENABLED';
-
-    const REGISTERED_PAYMENTS_ENABLED       = 'REGISTERED_PAYMENTS_ENABLED';
-
-    const REGISTERED_SETTLEMENTS_ENABLED    = 'REGISTERED_SETTLEMENTS_ENABLED';
-
-    const PENNY_TESTING_FAILURE             = 'PENNY_TESTING_FAILURE';
-
-    const NEEDS_CLARIFICATION               = 'NEEDS_CLARIFICATION';
-
-    const ACTIVATED_MCC_PENDING             = 'ACTIVATED_MCC_PENDING';
-
-    const PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION = 'PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION';
-    const PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED   = 'PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED';
+    const PAYMENTS_ENABLED     = 'PAYMENTS_ENABLED';
+    const UNREGISTERED_PAYMENTS_ENABLED               = 'UNREGISTERED_PAYMENTS_ENABLED';
+    const UNREGISTERED_SETTLEMENTS_ENABLED            = 'UNREGISTERED_SETTLEMENTS_ENABLED';
+    const REGISTERED_PAYMENTS_ENABLED                 = 'REGISTERED_PAYMENTS_ENABLED';
+    const REGISTERED_SETTLEMENTS_ENABLED              = 'REGISTERED_SETTLEMENTS_ENABLED';
+    const PENNY_TESTING_FAILURE                       = 'PENNY_TESTING_FAILURE';
+    const NEEDS_CLARIFICATION                         = 'NEEDS_CLARIFICATION';
+    const PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   = 'PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION';
+    const PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED = 'PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED';
+    const L1_ACTIVATION_NOT_STARTED_IN_1_DAY          = 'L1_ACTIVATION_NOT_STARTED_IN_1_DAY';
+    const ACTIVATED_MCC_PENDING                       = "ACTIVATED_MCC_PENDING";
+    const FUNDS_ON_HOLD                               = 'FUNDS_ON_HOLD';
+    const FUNDS_ON_HOLD_REMINDER                      = 'FUNDS_ON_HOLD_REMINDER';
+    const ACTIVATED_MCC_PENDING_SOFT_LIMIT_BREACH     = 'ACTIVATED_MCC_PENDING_SOFT_LIMIT_BREACH';
+    const ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     = 'ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH';
+    const ACTIVATED_MCC_PENDING_SUCCESS               = 'ACTIVATED_MCC_PENDING_SUCCESS';
+    const ACTIVATED_MCC_PENDING_ACTION_REQUIRED       = 'ACTIVATED_MCC_PENDING_ACTION_REQUIRED';
 
     const SMS_TEMPLATES = [
-        self::NEEDS_CLARIFICATION              => 'sms.onboarding.needs_clarification',
-        self::UNREGISTERED_PAYMENTS_ENABLED    => 'sms.onboarding.unregistered.payments_enabled',
-        self::UNREGISTERED_SETTLEMENTS_ENABLED => 'sms.onboarding.unregistered.settlements_enabled',
-        self::REGISTERED_PAYMENTS_ENABLED      => 'sms.onboarding.registered.payments_enabled',
-        self::REGISTERED_SETTLEMENTS_ENABLED   => 'sms.onboarding.registered.settlements_enabled',
-        self::PENNY_TESTING_FAILURE            => 'sms.onboarding.penny_test_failure',
-        self::ACTIVATED_MCC_PENDING            => 'sms.onboarding.activated_mcc_pending',
+        self::PAYMENTS_ENABLED                 => 'sms.onboarding.payments_enabled',
+        self::NEEDS_CLARIFICATION                         => 'sms.onboarding.needs_clarification',
+        self::UNREGISTERED_PAYMENTS_ENABLED               => 'sms.onboarding.unregistered.payments_enabled',
+        self::UNREGISTERED_SETTLEMENTS_ENABLED            => 'sms.onboarding.unregistered.settlements_enabled',
+        self::REGISTERED_PAYMENTS_ENABLED                 => 'sms.onboarding.registered.payments_enabled',
+        self::REGISTERED_SETTLEMENTS_ENABLED              => 'sms.onboarding.registered.settlements_enabled',
+        self::PENNY_TESTING_FAILURE                       => 'sms.onboarding.penny_test_failure',
+        self::ACTIVATED_MCC_PENDING                       => 'sms.onboarding.activated_mcc_pending',
+        self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => 'sms.onboarding.escalation.payments_limit_breach',
+        self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => 'sms.onboarding.escalation.payments_breach_blocked',
+        self::ACTIVATED_MCC_PENDING_SUCCESS               => 'sms.onboarding.activated_mcc_pending_success',
+        self::ACTIVATED_MCC_PENDING_SOFT_LIMIT_BREACH     => 'sms.onboarding.activated_mcc_pending_soft_limit_breach',
+        self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => 'sms.onboarding.activated_mcc_pending_hard_limit_breach',
+        self::FUNDS_ON_HOLD                               => 'sms.onboarding.funds_on_hold',
+        self::FUNDS_ON_HOLD_REMINDER                      => 'sms.onboarding.funds_on_hold_reminder',
+        self::L1_ACTIVATION_NOT_STARTED_IN_1_DAY   => 'sms.onboarding.l1_activation_not_started_in_1_day'];
 
-        self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION => 'sms.onboarding.escalation.payments_limit_breach',
-        self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED   => 'sms.onboarding.escalation.payments_breach_blocked',
-    ];
 
     const WHATSAPP_TEMPLATES = [
         self::NEEDS_CLARIFICATION              => 'Hi {merchantName}, we need more clarifications on your KYC, please visit your dashboard and make the necessary changes at {dashboardUrl}',
@@ -46,19 +53,41 @@ class Events
 
     // blade templates
     const WHATSAPP_TEMPLATES_NEW = [
-        self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION     => 'whatsapp.merchant.onboarding.payments_limit_breach',
-        self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED   => 'whatsapp.merchant.onboarding.payments_breach_blocked',
-        self::UNREGISTERED_PAYMENTS_ENABLED                 => 'whatsapp.merchant.onboarding.payments_enabled',
-        self::REGISTERED_PAYMENTS_ENABLED                   => 'whatsapp.merchant.onboarding.payments_enabled',
+        self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => 'whatsapp.merchant.onboarding.payments_limit_breach',
+        self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => 'whatsapp.merchant.onboarding.payments_breach_blocked',
+        self::UNREGISTERED_PAYMENTS_ENABLED               => 'whatsapp.merchant.onboarding.payments_enabled',
+        self::REGISTERED_PAYMENTS_ENABLED                 => 'whatsapp.merchant.onboarding.payments_enabled',
+        self::ACTIVATED_MCC_PENDING_SUCCESS               => 'whatsapp.merchant.onboarding.activated_mcc_pending_success',
+        self::ACTIVATED_MCC_PENDING_SOFT_LIMIT_BREACH     => 'whatsapp.merchant.onboarding.activated_mcc_pending_soft_limit_breach',
+        self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => 'whatsapp.merchant.onboarding.activated_mcc_pending_hard_limit_breach',
+        self::FUNDS_ON_HOLD                               => 'whatsapp.merchant.onboarding.funds_on_hold',
+        self::FUNDS_ON_HOLD_REMINDER                      => 'whatsapp.merchant.onboarding.funds_on_hold_reminder',
+        self::L1_ACTIVATION_NOT_STARTED_IN_1_DAY   => 'whatsapp.merchant.onboarding.l1_activation_not_started_in_1_day',
+        self::PAYMENTS_ENABLED                              => 'whatsapp.merchant.onboarding.payments_enabled',
+
     ];
 
     const EMAIL_TEMPLATES = [
-        self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION => 'emails.merchant.onboarding.payments_limit_breach',
-        self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED   => 'emails.merchant.onboarding.payments_breach_blocked',
+        self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => 'emails.merchant.onboarding.payments_limit_breach',
+        self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => 'emails.merchant.onboarding.payments_breach_blocked',
+        self::ACTIVATED_MCC_PENDING_SUCCESS               => 'emails.merchant.onboarding.activated_mcc_pending_success',
+        self::ACTIVATED_MCC_PENDING_ACTION_REQUIRED       => 'emails.merchant.onboarding.activated_mcc_pending_action_required',
+        self::ACTIVATED_MCC_PENDING_SOFT_LIMIT_BREACH     => 'emails.merchant.onboarding.activated_mcc_pending_soft_limit_breach',
+        self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => 'emails.merchant.onboarding.activated_mcc_pending_hard_limit_breach',
+        self::FUNDS_ON_HOLD                               => 'emails.merchant.onboarding.funds_on_hold',
+        self::FUNDS_ON_HOLD_REMINDER                      => 'emails.merchant.onboarding.funds_on_hold_reminder',
+
     ];
 
     const EMAIL_SUBJECTS = [
-        self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION => 'Razorpay Reminder: Update your KYC details to continue accepting payments',
-        self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED   => 'Razorpay Alert: Your payments are paused, submit KYC details to resume payments',
+        self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => 'Razorpay Reminder: Update your KYC details to continue accepting payments',
+        self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => 'Razorpay Alert: Your payments are paused, submit KYC details to resume payments',
+        self::ACTIVATED_MCC_PENDING_SUCCESS               => 'Congratulations! You can now receive payments in your bank account with Razorpay',
+        self::ACTIVATED_MCC_PENDING_ACTION_REQUIRED       => '[Important] Action needed for continuity of your Razorpay account',
+        self::ACTIVATED_MCC_PENDING_SOFT_LIMIT_BREACH     => '[Important] Action needed for continuity of your Razorpay account',
+        self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => '[Urgent] Clarifications needed for continuity of your Razorpay account',
+        self::FUNDS_ON_HOLD                               => '[Urgent] Settlements have been paused for your Razorpay account',
+        self::FUNDS_ON_HOLD_REMINDER                      => '[Urgent] Settlements have been paused for your Razorpay account',
+
     ];
 }

@@ -21,9 +21,9 @@ class Core extends Base\Core
         $this->cache = $this->app['cache'];
     }
 
-    public function getEscalationConfigForThresholdAndMilestone($threshold, $milestone)
+    public function getEscalationConfigForThresholdAndMilestone($merchantDetails, $threshold, $milestone)
     {
-        if(isset(Constants::PAYMENTS_ESCALATION_MATRIX[$threshold]) === false)
+        if (isset(Constants::PAYMENTS_ESCALATION_MATRIX[$threshold]) === false)
         {
             return null;
         }
@@ -32,9 +32,12 @@ class Core extends Base\Core
 
         foreach ($configs as $config)
         {
-            if($config[Constants::MILESTONE] === $milestone)
+            if ($config[Constants::MILESTONE] === $milestone)
             {
-                return $config;
+                if ((new Handler)->canTriggerEscalation($merchantDetails, $config) === true)
+                {
+                    return $config;
+                }
             }
         }
 

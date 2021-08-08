@@ -1,0 +1,1 @@
+Dear {{{$merchantName}}}, congratulations! You can now start receiving your customer payments in your bank account from Razorpay! Please note that your activation is subject to periodic compliance reviews. Please check your registered email for more details. Start transacting now: https://dashboard.razorpay.com/

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -16,13 +17,14 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Escalations as NewEscalation;
+use RZP\Models\Transaction\Entity as TEntity;
 
 class Core extends Base\Core
 {
     private function filterMerchantIdsNotEscalatedToType($merchantIdList, string $type)
     {
         $escalations = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchants($merchantIdList, $type);
-        $excludeIds = [];
+        $excludeIds  = [];
 
         foreach ($escalations as $escalation)
         {
@@ -41,7 +43,9 @@ class Core extends Base\Core
      *   mid1 => Escalation1,
      *   mid2 => Escalation2
      * ]
+     *
      * @param $escalations
+     *
      * @return array
      */
     private function getLatestEscalations($escalations)
@@ -51,7 +55,7 @@ class Core extends Base\Core
         foreach ($escalations as $escalation)
         {
             $mid = $escalation->getMerchantId();
-            if(isset($latestEscalationsMap[$mid]) === false)
+            if (isset($latestEscalationsMap[$mid]) === false)
             {
                 // since escalations are in desc order of created_at...
                 $latestEscalationsMap[$mid] = $escalation;
@@ -60,6 +64,7 @@ class Core extends Base\Core
 
         return $latestEscalationsMap;
     }
+
 
     /**
      * Main method that triggers SOFT_LIMIT breach level 1 escalations for all merchants
@@ -70,7 +75,6 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::SELF_SERVE_CRON, [
             'type' => Constants::SOFT_LIMIT
         ]);
-
         // fetch all the merchants who are in activated_mcc_pending state
         $merchantIdList = $this->repo->merchant_detail->fetchMerchantIdsByActivationStatus(
             [DetailStatus::ACTIVATED_MCC_PENDING]
@@ -83,24 +87,22 @@ class Core extends Base\Core
         $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
             $merchantIdList, 'payment', env(Constants::SOFT_LIMIT_MCC_PENDING_THRESHOLD));
 
-        $merchantIdList = array_map(function($element)
-        {
+        $merchantIdList = array_map(function($element) {
             return $element[Entity::MERCHANT_ID];
         }, $merchantsGmvList);
 
-        if(empty($merchantIdList) === true)
+        if (empty($merchantIdList) === true)
         {
             $this->trace->info(TraceCode::SELF_SERVE_CRON_FAILURE, [
-                'type'      => Constants::SOFT_LIMIT,
-                'reason'    => 'no merchants to run the cron'
+                'type'   => Constants::SOFT_LIMIT,
+                'reason' => 'no merchants to run the cron'
             ]);
+
             return;
         }
-
         $merchants = $this->repo->merchant->findManyByPublicIds($merchantIdList);
-
         // finally raise escalations
-        (new Handler)->handleEscalations($merchants, Constants::SOFT_LIMIT, 1);
+        (new Handler)->handleEscalations($merchants, $merchantsGmvList, Constants::SOFT_LIMIT, 1);
     }
 
     /**
@@ -121,7 +123,7 @@ class Core extends Base\Core
         // merchants who crossed soft limit, may get rejected, activated upon manual review
         // so filter only those who are in NC, under review, mcc pending
         $merchantIdList = $this->repo->merchant_detail->filterMerchantIdsByActivationStatus(
-            $merchantIdList,[
+            $merchantIdList, [
             DetailStatus::NEEDS_CLARIFICATION,
             DetailStatus::UNDER_REVIEW,
             DetailStatus::ACTIVATED_MCC_PENDING
@@ -131,29 +133,23 @@ class Core extends Base\Core
         $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
             $merchantIdList, 'payment', env(Constants::HARD_LIMIT_MCC_PENDING_THRESHOLD));
 
-        $merchantIdList = array_map(function($element)
-        {
+        $merchantIdList = array_map(function($element) {
             return $element[Entity::MERCHANT_ID];
         }, $merchantsGmvList);
-
         if (empty($merchantIdList) === true)
         {
             $this->trace->info(TraceCode::SELF_SERVE_CRON_FAILURE, [
-                'type'      => Constants::HARD_LIMIT,
-                'reason'    => 'no merchants to run the cron',
-                'count'     => count($merchantIdList),
+                'type'   => Constants::HARD_LIMIT,
+                'reason' => 'no merchants to run the cron',
+                'count'  => count($merchantIdList),
             ]);
+
             return;
         }
-
         $merchants = $this->repo->merchant->findManyByPublicIds($merchantIdList);
-
         // finally raise escalations
-        (new Handler)->handleEscalations($merchants, Constants::HARD_LIMIT, 1);
+        (new Handler)->handleEscalations($merchants, $merchantsGmvList, Constants::HARD_LIMIT, 1);
 
-        // save these escalations to new escalation entity (v2) as well
-        // TODO: in future we should move everything to V2
-        $this->saveEscalationToV2($merchantsGmvList, "hard_limit_level_1");
     }
 
     /**
@@ -165,7 +161,7 @@ class Core extends Base\Core
     public function handleEscalationsCron()
     {
         $this->trace->info(TraceCode::SELF_SERVE_CRON, [
-                'type' => 'escalation_cron'
+            'type' => 'escalation_cron'
         ]);
 
         $this->handleEscalationsForType(Constants::SOFT_LIMIT);
@@ -174,10 +170,13 @@ class Core extends Base\Core
 
     /**
      * Method to trigger Escalations for a given Type
+     *
      * @param string $type
      */
     private function handleEscalationsForType(string $type)
     {
+        $threshold = ($type == Constants::SOFT_LIMIT) ? env(Constants::SOFT_LIMIT_MCC_PENDING_THRESHOLD) : env(Constants::HARD_LIMIT_MCC_PENDING_THRESHOLD);
+
         // fetch all escalations for type
         $escalations = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForType($type);
 
@@ -199,9 +198,10 @@ class Core extends Base\Core
         if (empty($merchantIdList) === true)
         {
             $this->trace->info(TraceCode::SELF_SERVE_CRON_FAILURE, [
-                'type'      => 'escalation '.$type,
-                'reason'    => 'no merchants to run the cron'
+                'type'   => 'escalation ' . $type,
+                'reason' => 'no merchants to run the cron'
             ]);
+
             return;
         }
 
@@ -214,12 +214,21 @@ class Core extends Base\Core
         foreach ($escalationLevelMap as $level => $merchants)
         {
             $this->trace->info(TraceCode::SELF_SERVE_ESCALATION_ATTEMPT, [
-                'type'         => 'escalation '.$type,
-                'level'        => $level,
-                'merchants'    => array_map(function($merchant) {return $merchant->getId();}, $merchants)
+                'type'      => 'escalation ' . $type,
+                'level'     => $level,
+                'merchants' => array_map(function($merchant) {
+                    return $merchant->getId();
+                }, $merchants)
             ]);
 
-            (new Handler)->handleEscalations($merchants, $type, $level);
+            $merchantIdList = array_map(function($merchant) {
+                return $merchant->getId();
+            }, $merchants);
+
+            $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
+                $merchantIdList, 'payment', $threshold);
+
+            (new Handler)->handleEscalations($merchants, $merchantsGmvList, $type, $level);
 
             if ($type === Constants::HARD_LIMIT and $level === 4)
             {
@@ -228,21 +237,9 @@ class Core extends Base\Core
                 {
                     $merchant->setHoldFunds(true);
                     $merchant->setHoldFundsReason('GMV hard limit breached for the merchant.');
-                    $this->sendMailToInformHardLimitReached($merchant);
                     $this->repo->merchant->saveOrFail($merchant);
                 }
 
-                // save these escalations to new escalation entity (v2) as well
-                // TODO: in future we should move everything to V2
-                $merchantIdList = array_map(function($merchant)
-                {
-                    return $merchant->getId();
-                }, $merchants);
-
-                $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
-                    $merchantIdList, 'payment', env(Constants::HARD_LIMIT_MCC_PENDING_THRESHOLD));
-
-                $this->saveEscalationToV2($merchantsGmvList, "hard_limit_level_4");
             }
         }
     }
@@ -250,6 +247,7 @@ class Core extends Base\Core
     /**
      * This method is just to save V1 triggered escalations to V2 escalation entity
      * In future we'll move everything from V1 to V2.
+     *
      * @param $merchantsList array of total settled amonut to a merchant
      * @param $milestone
      */
@@ -258,13 +256,13 @@ class Core extends Base\Core
         foreach ($merchantsList as $data)
         {
             $merchantId = $data[Entity::MERCHANT_ID];
-            $amount = $data['total'];
-            $threshold = env(Constants::HARD_LIMIT_MCC_PENDING_THRESHOLD);
+            $amount     = $data['total'];
+            $threshold  = env(Constants::HARD_LIMIT_MCC_PENDING_THRESHOLD);
 
             $isExperimentEnabled = (new MerchantCore())->isRazorxExperimentEnable($merchantId,
-                RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
+                                                                                  RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
 
-            if($isExperimentEnabled === true)
+            if ($isExperimentEnabled === true)
             {
                 (new NewEscalation\Handler)->triggerEscalation(
                     $merchantId, $amount, $threshold,
@@ -282,14 +280,16 @@ class Core extends Base\Core
      *      1 => [Merchant1, Merchant2..],
      *      2 => [Merchant3, ....]
      * ]
+     *
      * @param $merchants
      * @param $type
      * @param $latestEscalationsForMerchant
+     *
      * @return array -> map
      */
     private function fetchEscalationLevelMapForMerchants($merchants, $type, $latestEscalationsForMerchant)
     {
-        $cronTime = Carbon::now(Timezone::IST)->getTimestamp();
+        $cronTime           = Carbon::now(Timezone::IST)->getTimestamp();
         $escalationLevelMap = [];
 
         foreach ($merchants as $merchant)
@@ -297,10 +297,10 @@ class Core extends Base\Core
             $escalation = $latestEscalationsForMerchant[$merchant->getId()];
 
             // fetch whats the next level for the type and see if that's possible based on time diff from now (cronTime)
-            $nextLevel = Utils::getNextEscalationLevel($type, $escalation->getLevel());
+            $nextLevel          = Utils::getNextEscalationLevel($type, $escalation->getLevel());
             $escalationPossible = Utils::isEscalationPossible($escalation, $cronTime, $type, $nextLevel);
 
-            if($escalationPossible)
+            if ($escalationPossible)
             {
                 // utility method that helps create the map: $escalationLevelMap
                 Utils::appendValueToKey($merchant, $nextLevel, $escalationLevelMap);
@@ -322,12 +322,12 @@ class Core extends Base\Core
         $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
         $data = [
-            DEConstants::MERCHANT             => [
+            DEConstants::MERCHANT => [
                 MerchantEntity::NAME          => $merchant->getName(),
                 MerchantEntity::BILLING_LABEL => $merchant->getBillingLabel(),
                 MerchantEntity::EMAIL         => $merchant->getEmail(),
                 DEConstants::ORG              => [
-                    DEConstants::HOSTNAME     => $org->getPrimaryHostName(),
+                    DEConstants::HOSTNAME => $org->getPrimaryHostName(),
                 ]
             ],
         ];
