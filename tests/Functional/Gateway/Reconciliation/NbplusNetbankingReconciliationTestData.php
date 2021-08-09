@@ -165,4 +165,17 @@ return [
         'RESPONSEMSG'   => '',
         'BANKREFNO'     => '1234',
     ],
+
+    'testHdfcSuccessRecon'  =>  [
+        'merchant_code'         => 'RAZORPAY',
+        'customer_email'        => 'RAZORPAY123',
+        'currency'              => 'INR',
+        'transaction_amount'    => '500.00',
+        'fee'                   => '0.00',
+        'payment_id'            => '',
+        'error_code'            => '0',
+        'bank_payment_id'       => '12345678',
+        'transaction_date'      => Carbon::today()->format("Y-m-d H:i:s"),
+        'error_description'     => '-'
+    ]
 ];

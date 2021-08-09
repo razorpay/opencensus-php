@@ -2,6 +2,10 @@
 
 namespace RZP\Reconciliator\NetbankingHdfc\SubReconciliator;
 
+use App;
+
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
@@ -9,7 +13,7 @@ use RZP\Models\Payment\Status;
 use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Reconciliator\NetbankingHdfc\Constants;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const BLACKLISTED_COLUMNS = [
         Constants::COLUMN_CUSTOMER_EMAIL,
@@ -44,12 +48,30 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
         catch (DBQueryException $ex)
         {
-            // Just trace the exception and Do nothing.
-            // This try-catch is needed, just to suppress the exception,
-            // Else recon process gets terminated here and rows after this
-            // current row do not get processed.
-            //
-            $this->trace->traceException($ex);
+            /**
+             * In case the payment is not found in api DB due to incorrect payment id in file
+             * Then fetch from nbplus using bank_transaction_id field
+             */
+            $request = [
+                'fields'                 => ['payment_id'],
+                'bank_transaction_ids'   => [$row[Constants::BANK_PAYMENT_ID]]
+            ];
+
+            $response = App::getFacadeRoot()['nbplus.payments']->fetchNbplusData($request, 'netbanking');
+
+            if ((isset($response['count']) === true) and ($response['count'] > 0))
+            {
+                return $response['items'][$row[Constants::BANK_PAYMENT_ID]]['payment_id'];
+            }
+            else
+            {
+                // Just trace the exception and Do nothing.
+                // This try-catch is needed, just to suppress the exception,
+                // Else recon process gets terminated here and rows after this
+                // current row do not get processed.
+                //
+                $this->trace->traceException($ex);
+            }
         }
 
         if ($this->gatewayPayment === null)

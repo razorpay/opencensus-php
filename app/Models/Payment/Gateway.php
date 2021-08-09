@@ -3516,6 +3516,7 @@ class Gateway
             self::NETBANKING_KVB,
             self::NETBANKING_INDUSIND,
             self::NETBANKING_ICICI,
+            self::NETBANKING_HDFC,
             self::NETBANKING_JSB,
             self::BILLDESK,
             self::NETBANKING_YESB,

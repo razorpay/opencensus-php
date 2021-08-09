@@ -70,7 +70,7 @@ class Netbanking extends NetbankingBase
                 ];
             }
         }
-        else
+        else if (array_key_exists('verification_ids', $request))
         {
             foreach ($request['verification_ids'] as $verificationId)
             {
@@ -86,6 +86,25 @@ class Netbanking extends NetbankingBase
                     ],
                     'gateway_status'         => 'SUC',
                     'verification_id'        => $verificationId,
+                    'payment_id'             => $paymentEntity['id'],
+                ];
+            }
+        }
+        else
+        {
+            foreach ($request['bank_transaction_ids'] as $bankTransactionId)
+            {
+                $paymentEntity = $this->getDbLastPayment();
+
+                $response['items'][$bankTransactionId] = [
+                    'gateway_transaction_id' => str_random(),
+                    'bank_transaction_id'    => str_random(),
+                    'bank_account_number'    => str_random(),
+                    'additional_data'        => [
+                        'customer_id'            => str_random(),
+                        'credit_account_number'  => str_random()
+                    ],
+                    'gateway_status'         => 'SUC',
                     'payment_id'             => $paymentEntity['id'],
                 ];
             }
