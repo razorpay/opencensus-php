@@ -5604,7 +5604,6 @@ class BankTransferTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        // Appending 1 at the end so that we get a non existent account number
         $request['content']['payee_account'] = '3434111122229999';
 
         $request['content']['payee_ifsc'] = 'ICIC0000104';
@@ -5713,7 +5712,6 @@ class BankTransferTest extends TestCase
 
         $request = &$this->testData[__FUNCTION__]['request'];
 
-        // Appending 1 at the end so that we get a non existent account number
         $request['content']['payee_account'] = '3434111122229999';
 
         $request['content']['payee_ifsc'] = 'ICIC0000104';

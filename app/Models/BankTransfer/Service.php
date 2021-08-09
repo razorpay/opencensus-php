@@ -621,7 +621,7 @@ class Service extends Base\Service
         // Validation for ICICI (We are keeping this based on the route).
         if ($routeName === 'bank_transfer_process_icici_internal')
         {
-            if (strlen(trim($bankTransferRequest->getPayeeAccount())) !== 16)
+            if (strlen(trim($bankTransferRequest->getPayeeAccount())) <= 6)
             {
                 $this->trace->info(TraceCode::BANK_TRANSFER_REQUEST_ICICI_INCORRECT_PAYEE_ACCOUNT_NUMBER,
                                    [
