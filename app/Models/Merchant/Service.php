@@ -67,6 +67,7 @@ use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Partner\RateLimitBatch;
 use RZP\Jobs\CallBackFillMerchantApps;
+use RZP\Models\Merchant\BusinessDetail;
 use RZP\Mail\InstrumentRequest\StatusNotify;
 use RZP\Models\Settlement\SettlementTrait;
 use RZP\Models\Batch\Header as BatchHeader;
@@ -3724,6 +3725,10 @@ class Service extends Base\Service
 
         $data[EntityConstants::MERCHANT][EntityConstants::FEATURE] = $merchant->getEnabledFeatures();
         $data[EntityConstants::MERCHANT][EntityConstants::METHODS] = $this->repo->methods->getMethodsForMerchant($merchant);
+
+        $businessDetails = (new BusinessDetail\Service())->fetchBusinessDetailsForMerchant($merchantId);
+
+        $data[BusinessDetail\Entity::WEBSITE_DETAILS] = $businessDetails->getWebsiteDetails();
 
         return $data;
     }

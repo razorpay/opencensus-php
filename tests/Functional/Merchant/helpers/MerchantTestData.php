@@ -7040,6 +7040,11 @@ return [
                 ],
                 'merchant_detail' => [
                     'contact_email' => 'test@gmail.com'
+                ],
+                'website_details' => [
+                    'about' => null,
+                    'pricing' => null,
+                    'privacy' => null,
                 ]
             ],
             'status_code'   =>  200
