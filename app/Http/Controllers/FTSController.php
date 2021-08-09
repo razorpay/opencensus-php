@@ -41,6 +41,14 @@ class FTSController extends Controller
         return ApiResponse::json($response);
     }
 
+
+    public function createSourceAccountCopy()
+    {
+        $response = $this->app['fts_fund_transfer']->createSourceAccountCopy($this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function deleteSourceAccount()
     {
         $response = $this->app['fts_create_account']->deleteSourceAccount($this->input);
@@ -93,6 +101,20 @@ class FTSController extends Controller
     public function createSourceAccountMappings()
     {
         $response = $this->app['fts_fund_transfer']->createSourceAccountMappings($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createDirectAccountRoutingRules()
+    {
+        $response = $this->app['fts_fund_transfer']->createDirectAccountRoutingRules($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteDirectAccountRoutingRules()
+    {
+        $response = $this->app['fts_fund_transfer']->deleteDirectAccountRoutingRules($this->input);
 
         return ApiResponse::json($response);
     }

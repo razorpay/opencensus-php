@@ -22,6 +22,8 @@ class FtsAdminClient extends Base
 
     const SOURCE_ACCOUNT_MAPPINGS = "source_account_mappings";
 
+    const DIRECT_ACCOUNT_ROUTING_RULES = 'direct_account_routing_rules';
+
     const PREFERRED_ROUTING_WEIGHTS = "preferred_routing_weights";
 
     const ACCOUNT_TYPE_MAPPINGS = "account_type_mappings";
@@ -94,6 +96,14 @@ class FtsAdminClient extends Base
             parent::SOURCE_ACCOUNT_MAPPING,
             Requests::GET,
             $input)['body'][self::SOURCE_ACCOUNT_MAPPINGS];
+    }
+
+    public function getDirectAccountRoutingRules(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::DIRECT_ACCOUNT_ROUTING_RULES,
+            Requests::GET,
+            $input)['body'][self::DIRECT_ACCOUNT_ROUTING_RULES];
     }
 
     public function getPreferredRoutingWeights(array $input)

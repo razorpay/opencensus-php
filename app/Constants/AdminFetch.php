@@ -1321,6 +1321,26 @@ class AdminFetch
                     Fetch::VALUES => FundTransfer\Mode::getAllFTSModes(),
                 ],
             ],
+            Entity::FTS_DIRECT_ACCOUNT_ROUTING_RULES => [
+                'source_account_id' => [
+                    Fetch::LABEL    => 'Source Account Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'product' => [
+                    Fetch::LABEL    => 'Product',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => FtsConstants::getProducts(),
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL    => 'Merchant Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'mode' => [
+                    Fetch::LABEL    => 'Transfer Mode',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => FundTransfer\Mode::getAllFTSModes(),
+                ],
+            ],
             Entity::FTS_PREFERRED_ROUTING_WEIGHTS => [
                 'source_account_id' => [
                     Fetch::LABEL    => 'Source Account Id',

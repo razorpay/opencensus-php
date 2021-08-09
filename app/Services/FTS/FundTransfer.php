@@ -1236,6 +1236,34 @@ class FundTransfer extends Base
             $input);
     }
 
+    public function createDirectAccountRoutingRules(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::DIRECT_ACCOUNT_ROUTING_RULES,
+            Requests::POST,
+            $input);
+    }
+
+    public function deleteDirectAccountRoutingRules(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::DIRECT_ACCOUNT_ROUTING_RULES,
+            Requests::DELETE,
+            $input);
+    }
+
+    public function createSourceAccountCopy(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::SOURCE_ACCOUNT_COPY,
+            Requests::POST,
+            $input);
+    }
+
     public function createPreferredRoutingWeights(array $input)
     {
         $this->setAdminHeader();

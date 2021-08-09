@@ -54,6 +54,8 @@ class Base
     // Source Account related URIs
     const SOURCE_ACCOUNT_CREATE_URI = '/source_account';
 
+    const SOURCE_ACCOUNT_COPY = '/source_account/copy';
+
     const SOURCE_ACCOUNT_DELETE_URI = '/source_account';
 
     const BULK_SOURCE_ACCOUNT_UPDATE_URI = '/source_accounts/update';
@@ -89,6 +91,8 @@ class Base
     const FTS_CHANNEL_HEALTH_EVENT_STATS = '/channel_health_events/stats';
 
     const SOURCE_ACCOUNT_MAPPING = '/source_account_mappings';
+
+    const DIRECT_ACCOUNT_ROUTING_RULES = '/direct_account_routing_rules';
 
     const PREFERRED_ROUTING_WEIGHT = '/preferred_routing_weights';
 
@@ -338,6 +342,10 @@ class Base
         {
             return $this->mockCreateFundTransferResponse();
         }
+        if ($endpoint === self::DIRECT_ACCOUNT_ROUTING_RULES)
+        {
+            return $this->mockDirectRoutingRuleGetResponse();
+        }
         if ($endpoint === self::BULK_SOURCE_ACCOUNT_UPDATE_URI)
         {
             return $this->mockUpdateSourceAccountResponse();
@@ -358,6 +366,44 @@ class Base
         ]);
 
         $response->body = $content;
+
+        return $response;
+    }
+
+    public function mockDirectRoutingRuleGetResponse()
+    {
+        $response = new Requests_Response();
+        $response->status_code = 200;
+        $response -> body= json_encode([
+            "direct_account_routing_rules"=> [
+                '0' => [
+                    "channel"=> "ICICI",
+                    "created_at"=> 1624607325,
+                    "deleted_at"=> null,
+                    "deleted_by"=> null,
+                    "id"=> 1,
+                    "mode"=> "IMPS",
+                    "mozart_identifier"=>"V2",
+                    "product"=> "PAYOUT",
+                    "source_account_id"=> 1,
+                    "updated_at"=> 1624607325,
+                    "merchant_id"=>100000000000
+                ],
+                '1'=>[
+                    "channel"=> "YESBANK",
+                    "created_at"=> 1624607325,
+                    "deleted_at"=> null,
+                    "deleted_by"=> null,
+                    "id"=> 2,
+                    "mode"=> "IMPS",
+                    "mozart_identifier"=>"V2",
+                    "product"=> "PAYOUT",
+                    "source_account_id"=> 1,
+                    "updated_at"=> 1624607325,
+                    "merchant_id"=>100000000000
+                ]
+            ]
+            ]);
 
         return $response;
     }
