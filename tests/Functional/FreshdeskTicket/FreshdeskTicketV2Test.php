@@ -387,12 +387,14 @@ class FreshdeskTicketV2Test extends TestCase
         $this->assertEquals('rzp', $fdInstance);
     }
 
-    public function testCreateTicketRzpWithHtmlTags()
+    public function testCreateTicketRzpWithHtmlTagsAndNoMerchantName()
     {
         $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_HTML_TAGS);
 
         $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
             $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['name' => null]);
 
         $this->startTest();
     }

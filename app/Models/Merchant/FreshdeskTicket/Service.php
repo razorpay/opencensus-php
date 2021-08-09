@@ -1481,7 +1481,7 @@ class Service extends Base\Service
     {
         $input['email'] = $this->merchant->getEmail();
 
-        $input['name'] = $this->merchant->getName();
+        $input['name'] = $this->merchant->getName() ?? '';
 
         $input['phone'] = $this->merchant->merchantDetail->getContactMobile();
 

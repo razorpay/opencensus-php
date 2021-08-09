@@ -374,7 +374,7 @@ return [
         ],
     ],
 
-    'testCreateTicketRzpWithHtmlTags' => [
+    'testCreateTicketRzpWithHtmlTagsAndNoMerchantName' => [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket/',
             'method'  => 'POST',
