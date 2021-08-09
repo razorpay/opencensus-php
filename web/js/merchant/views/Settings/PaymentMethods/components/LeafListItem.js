@@ -320,10 +320,7 @@ class LeafListItem extends React.Component {
     };
 
     let getListClass = (status, path) => {
-      if (
-        [REJECTED, ACTION_REQUIRED].includes(status) ||
-        (path === 'pg.cards.domestic.amex' && status === REQUESTABLE)
-      ) {
+      if ([REJECTED, ACTION_REQUIRED].includes(status)) {
         return 'action-required-list-item';
       } else if (status === ACTIVATED_ACTION_REQUIRED) {
         return 'activated-action-required-list-item';
@@ -363,8 +360,6 @@ class LeafListItem extends React.Component {
         return <p style={displayTextStyle}>{name}</p>;
       }
     };
-    const isAmex =
-      instrument.status === REQUESTABLE && instrument.path === 'pg.cards.domestic.amex';
     return (
       <li class={getListClass(instrument.status, instrument.path)}>
         <div>
@@ -464,15 +459,11 @@ class LeafListItem extends React.Component {
                 </button>
               </div>
             )}
-            {(isAmex || [REQUESTABLE, CANCELLED, GREYED].includes(instrument.status)) && (
+            {[REQUESTABLE, CANCELLED, GREYED].includes(instrument.status) && (
               <div className="flex-end">
                 <button
                   class={`${ctaClass[instrument.status]} ml-5`}
-                  disabled={
-                    this.state.loading ||
-                    instrument.path === 'pg.cards.domestic.amex' ||
-                    instrument.status === GREYED
-                  }
+                  disabled={this.state.loading || instrument.status === GREYED}
                   onClick={this.handleCreateRequest}
                 >
                   {this.state.loading ? 'Requesting..' : 'Request'}
@@ -544,15 +535,11 @@ class LeafListItem extends React.Component {
               )}
           </div>
         )}
-        {(isAmex || [REJECTED, ACTION_REQUIRED].includes(instrument.status)) && (
+        {[REJECTED, ACTION_REQUIRED].includes(instrument.status) && (
           <>
             <div class="comment" title={instrument.comment}>
               <i class="i i-info-outline" />
-              <p>
-                {isAmex
-                  ? 'Due to recent data localisation guidelines compliance issue, Amex has stopped onboarding merchants on their network. We will notify you when this option becomes available again.'
-                  : instrument.comment || 'No comments available'}
-              </p>
+              <p>{instrument.comment || 'No comments available'}</p>
             </div>
           </>
         )}
@@ -573,11 +560,7 @@ class LeafListItem extends React.Component {
                   <i className="i i-chevron-down"></i>
                 </div>
               </summary>
-              <div className="description">
-                {isAmex
-                  ? 'Due to recent data localisation guidelines compliance issue, Amex has stopped onboarding merchants on their network. We will notify you when this option becomes available again.'
-                  : instrument.comment || 'No comments available'}
-              </div>
+              <div className="description">{instrument.comment || 'No comments available'}</div>
               <div className="action">
                 <a onClick={this.handleRaiseRequest}>Raise Request</a> to know more.
               </div>
