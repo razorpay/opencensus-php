@@ -37,7 +37,6 @@ export default class DateRangePickerField extends Component {
       },
       () => {
         if (
-          !this.state.focused &&
           dates.startDate &&
           dates.endDate &&
           this.props.onDatesChange
