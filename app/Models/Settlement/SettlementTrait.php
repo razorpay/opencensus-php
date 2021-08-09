@@ -424,6 +424,23 @@ trait SettlementTrait
                 continue;
             }
 
+            $skipForNewSettlementService = (new Bucket\Core())->shouldProcessViaNewService($txn->getMerchantId());
+
+            if ($skipForNewSettlementService === true)
+            {
+                $transactionSkipCount++;
+
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant_id' => $txn->getMerchantId(),
+                        'txn_id'      => $txn->getId(),
+                        'reason'      => 'settlement will be processed via new settlement service',
+                    ]);
+
+                continue;
+            }
+
             $skipForDsp = $this->skipForDsp($txn);
 
             if ($skipForDsp === true)
