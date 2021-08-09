@@ -325,6 +325,7 @@ class Netbanking
                 IFSC::SIBL,
                 IFSC::STBP,
                 IFSC::UTIB,
+                IFSC::SRCB,
                 self::LAVB_R,
             ],
         ],
