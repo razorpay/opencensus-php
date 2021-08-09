@@ -83,7 +83,7 @@ const RecommendationWidget = ({ user, history }) => {
             <div className="name">
               <span>{recommandedProduct[0].name}</span>
             </div>
-            <div>{recommandedProduct[0].description}</div>
+            <div className="desc">{recommandedProduct[0].description}</div>
             <div className="explore">
               <span onClick={exploreProducts}>
                 {user.activated ? '+ Accept Payments' : 'Explore Now'}
@@ -118,7 +118,7 @@ const RecommendationWidget = ({ user, history }) => {
                 </span>{' '}
                 &gt;
               </div>
-              <span>{recommandedProduct[1].description}</span>
+              <span className="desc">{recommandedProduct[1].description}</span>
             </div>
           </div>
           <div className="prd-two">
@@ -143,7 +143,7 @@ const RecommendationWidget = ({ user, history }) => {
                 </span>{' '}
                 &gt;
               </div>
-              <span>{recommandedProduct[2].description}</span>
+              <span className="desc">{recommandedProduct[2].description}</span>
             </div>
           </div>
         </div>
