@@ -465,7 +465,7 @@ class AnalyticsDesktop extends Component {
           </div>
 
           {/* Recommended product widget */}
-          <ProductRecommendationnCard user={user} />
+          {user.isProductRecommendationEnabled && <ProductRecommendationnCard user={user} />}
 
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">

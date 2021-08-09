@@ -16,10 +16,18 @@ const RECOMMANDED_PRODUCT_LIST = [
   'subscriptions',
 ];
 
-const WelcomeModal = ({ onActivate, onClose, tracking, isFestive, isOnboardingV2Enabled }) => {
+const WelcomeModal = ({
+  onActivate,
+  onClose,
+  tracking,
+  isFestive,
+  isOnboardingV2Enabled,
+  isProductRecommendationEnabled,
+}) => {
   const getLandingProduct = LocalStorageService.getItem('merchant_landing_page');
 
-  const isRecommendProduct = RECOMMANDED_PRODUCT_LIST.includes(getLandingProduct);
+  const isRecommendProduct =
+    RECOMMANDED_PRODUCT_LIST.includes(getLandingProduct) && isProductRecommendationEnabled;
 
   const handleActivationClick = () => {
     onActivate();

@@ -22,7 +22,8 @@ export default function MerchantNavLinks(props) {
   const [settlementExists, setSettlementExists] = useState(true);
   const getLandingProduct = LocalStorageService.getItem('merchant_landing_page');
 
-  const isRecommendProduct = RECOMMANDED_PRODUCT_LIST.includes(getLandingProduct);
+  const isRecommendProduct =
+    RECOMMANDED_PRODUCT_LIST.includes(getLandingProduct) && user.isProductRecommendationEnabled;
 
   useEffect(() => {
     checkIfFirstEverSettlement();
@@ -31,7 +32,7 @@ export default function MerchantNavLinks(props) {
   useEffect(() => {
     //set recommmend product to localstorage.
     const query = QueryString.parse(window.location.search);
-    if (query?.recommended_product) {
+    if (query?.recommended_product && user.isProductRecommendationEnabled) {
       localStorage.setItem('merchant_landing_page', query.recommended_product);
     }
   }, []);
@@ -85,7 +86,9 @@ export default function MerchantNavLinks(props) {
         icon="i i-link text-primary"
         to={routes.paymentlinks}
         additionalCondition={(user) => user.isAllowedView('payment_links')}
-        customBadge={getLandingProduct === 'payment_link' ? 'try' : ''}
+        customBadge={
+          getLandingProduct === 'payment_link' && user.isProductRecommendationEnabled ? 'try' : ''
+        }
       />
       <MainNavLink
         label="Payment Pages"
@@ -93,7 +96,9 @@ export default function MerchantNavLinks(props) {
         icon="i i-payment-pages text-warm temp-icon-style"
         to={routes.paymentpages}
         additionalCondition={(user) => user.isAllowedView('payment_pages')}
-        customBadge={getLandingProduct === 'payment_page' ? 'try' : ''}
+        customBadge={
+          getLandingProduct === 'payment_page' && user.isProductRecommendationEnabled ? 'try' : ''
+        }
       />
       <MainNavLink
         type="product"
@@ -106,7 +111,12 @@ export default function MerchantNavLinks(props) {
           user.isAllowedMultiple('payment_buttons subscription_buttons') &&
           (user.isPaymentButtonEnabledByRazorX || user.isSubscriptionButtonEnabled)
         }
-        customBadge={['payment_button', 'payment_gateway'].includes(getLandingProduct) ? 'try' : ''}
+        customBadge={
+          ['payment_button', 'payment_gateway'].includes(getLandingProduct) &&
+          user.isProductRecommendationEnabled
+            ? 'try'
+            : ''
+        }
       />
       <MainNavLink
         label="Route"
@@ -114,7 +124,9 @@ export default function MerchantNavLinks(props) {
         to={routes.marketplace}
         icon="i i-route text-success"
         additionalCondition={(user) => user.isAllowedView('marketplace')}
-        customBadge={getLandingProduct === 'route' ? 'try' : ''}
+        customBadge={
+          getLandingProduct === 'route' && user.isProductRecommendationEnabled ? 'try' : ''
+        }
       />
       <MainNavLink
         label="Subscriptions"
@@ -122,7 +134,9 @@ export default function MerchantNavLinks(props) {
         icon="i i-refresh text-info"
         additionalCondition={(user) => user.isAllowedView('subscriptions')}
         to={routes[isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions']}
-        customBadge={getLandingProduct === 'subscriptions' ? 'try' : ''}
+        customBadge={
+          getLandingProduct === 'subscriptions' && user.isProductRecommendationEnabled ? 'try' : ''
+        }
       />
 
       <MainNavLink
@@ -143,7 +157,9 @@ export default function MerchantNavLinks(props) {
         icon="i i-account-balance text-danger"
         to={routes.smartCollect}
         additionalCondition={(user) => user.isAllowedView('virtual_accounts')}
-        customBadge={getLandingProduct === 'smart_collect' ? 'try' : ''}
+        customBadge={
+          getLandingProduct === 'smart_collect' && user.isProductRecommendationEnabled ? 'try' : ''
+        }
       />
 
       <MainNavLink

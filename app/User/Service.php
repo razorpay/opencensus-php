@@ -1603,6 +1603,7 @@ class Service extends Base\Service
             'recurring_more_account_type',
             'optimizer_add_provider',
             'mtu_coupon_code',
+            'product_recommendation',
             'csm_experince_survey'
         ];
 

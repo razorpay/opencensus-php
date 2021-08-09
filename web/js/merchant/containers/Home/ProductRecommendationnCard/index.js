@@ -81,7 +81,7 @@ const RecommendationWidget = ({ user, history }) => {
           <img src={recommandedProduct[0].imageCdn} />
           <div className="active-product__container">
             <div className="name">
-              <span>{recommandedProduct[0].name}</span>
+              <span onClick={exploreProducts}>{recommandedProduct[0].name}</span>
             </div>
             <div className="desc">{recommandedProduct[0].description}</div>
             <div className="explore">

@@ -404,11 +404,13 @@ export default class User {
   get isCatalystCampaignEnabled() {
     return getSplitzExperimentVariant('catalyst_campaign_experiment')?.variables?.result === 'on';
   }
-  
+
   get isUltraCampaignBannerEnabled() {
-    return getSplitzExperimentVariant('ultra_campaign_banner_experiment')?.variables?.result === 'on';
+    return (
+      getSplitzExperimentVariant('ultra_campaign_banner_experiment')?.variables?.result === 'on'
+    );
   }
-  
+
   get isNitroFormFillEnabled() {
     return getSplitzExperimentVariant('nitro_form_ab_experiment')?.variables?.result === 'on';
   }
@@ -1124,6 +1126,10 @@ export default class User {
 
   get isOnboardingCouponEnabled() {
     return this.getExpStatus('mtu_coupon_code');
+  }
+
+  get isProductRecommendationEnabled() {
+    return this.getExpStatus('product_recommendation');
   }
 }
 

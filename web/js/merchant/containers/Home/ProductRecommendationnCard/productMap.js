@@ -1,6 +1,6 @@
 const productMap = {
   '1': {
-    name: 'Payment link',
+    name: 'Payment Links',
     description:
       'Start sharing payment links via an email, SMS, chatbot etc. and get paid immediatly.',
     imageCdn: 'https://cdn.razorpay.com/static/assets/product-recommendation/payment-link.svg',
