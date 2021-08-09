@@ -474,6 +474,7 @@ class CardPaymentService
                 'payment.auth_type'                 => 'content.input.payment.auth_type',
                 'payment.notes'                     => 'content.input.payment.notes',
                 'payment.gateway'                   => 'content.input.payment.gateway',
+                'payment.billing_address'           => 'content.input.payment.billing_address',
                 'merchant.id'                       => 'content.input.merchant.id',
                 'merchant.name'                     => 'content.input.merchant.name',
                 'merchant.features'                 => 'content.input.merchant.features',
