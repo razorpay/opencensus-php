@@ -931,11 +931,7 @@ class Core extends Base\Core
                                     ($feature->getEntityType() === Constants::MERCHANT) &&
                                     ($this->app['basicauth']->isBatchApp() === false));
 
-        $automaticEsInvalidAuth = (($feature->getName() === Feature::ES_AUTOMATIC) &&
-                                   ($feature->getEntityType() === Constants::MERCHANT) &&
-                                   ($this->app['basicauth']->isProxyAuth() === false));
-
-        if ($restrictedEsInvalidAuth or $automaticEsInvalidAuth)
+        if ($restrictedEsInvalidAuth)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
