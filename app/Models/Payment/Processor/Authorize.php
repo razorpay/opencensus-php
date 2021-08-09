@@ -3622,12 +3622,12 @@ trait Authorize
         $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency);
 
         // if gateway is doing currency conversions, actual rate used by gateway
-        // will use lower than current rates hence we also use 1 percentage lower
+        // will use lower than current rates hence we also use 1.2 percentage lower
         // values
         if ($payment->getConvertCurrency() === false ||
             ($currency !== Currency\Currency::INR && $payment->getConvertCurrency() === null))
         {
-            $baseAmount = (int) ceil($baseAmount * 0.99);
+            $baseAmount = (int) ceil($baseAmount * 0.988);
         }
 
         $payment->setBaseAmount($baseAmount);
