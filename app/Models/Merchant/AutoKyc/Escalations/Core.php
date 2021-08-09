@@ -13,6 +13,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Mail\Merchant\HardLimitLevelThreeEmail;
+use RZP\Models\Merchant\Constants as MConstants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
@@ -85,7 +86,7 @@ class Core extends Base\Core
 
         // filter merchants who have crossed settlements above threshold
         $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
-            $merchantIdList, 'payment', env(Constants::SOFT_LIMIT_MCC_PENDING_THRESHOLD));
+            $merchantIdList, MConstants::PAYMENT, env(Constants::SOFT_LIMIT_MCC_PENDING_THRESHOLD));
 
         $merchantIdList = array_map(function($element) {
             return $element[Entity::MERCHANT_ID];
@@ -131,7 +132,7 @@ class Core extends Base\Core
 
         // filter merchants who have crossed payments above threshold
         $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
-            $merchantIdList, 'payment', env(Constants::HARD_LIMIT_MCC_PENDING_THRESHOLD));
+            $merchantIdList, MConstants::PAYMENT, env(Constants::HARD_LIMIT_MCC_PENDING_THRESHOLD));
 
         $merchantIdList = array_map(function($element) {
             return $element[Entity::MERCHANT_ID];
@@ -226,7 +227,7 @@ class Core extends Base\Core
             }, $merchants);
 
             $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
-                $merchantIdList, 'payment', $threshold);
+                $merchantIdList, MConstants::PAYMENT, $threshold);
 
             (new Handler)->handleEscalations($merchants, $merchantsGmvList, $type, $level);
 

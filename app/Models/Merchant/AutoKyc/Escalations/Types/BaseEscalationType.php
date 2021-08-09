@@ -6,6 +6,7 @@ use App;
 use RZP\Trace\TraceCode;
 use RZP\Base\RepositoryManager;
 use Illuminate\Foundation\Application;
+use RZP\Models\Merchant\Constants as MConstants;
 use RZP\Models\Merchant\AutoKyc\Escalations\Entity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\AutoKyc\Escalations\Constants;
@@ -31,7 +32,7 @@ abstract class BaseEscalationType
     {
         $this->app = App::getFacadeRoot();
 
-        $this->repo = $this->app['repo'];
+        $this->repo = $this->app[MConstants::REPO];
     }
 
     public abstract function triggerEscalation($merchants, $merchantsGmvList, string $type, int $level);
@@ -50,7 +51,7 @@ abstract class BaseEscalationType
                                                   ]);
                 $this->repo->merchant_auto_kyc_escalations->saveOrFail($escalation);
 
-                $this->app['trace']->info(TraceCode::SELF_SERVE_ESCALATION_SUCCESS, [
+                $this->app[MConstants::TRACE]->info(TraceCode::SELF_SERVE_ESCALATION_SUCCESS, [
                     'type'        => $type,
                     'level'       => $level,
                     'merchant_id' => $merchant->getId()
@@ -58,7 +59,7 @@ abstract class BaseEscalationType
             }
             catch (\Exception $e)
             {
-                $this->app['trace']->info(TraceCode::SELF_SERVE_ESCALATION_FAILURE, [
+                $this->app[MConstants::TRACE]->info(TraceCode::SELF_SERVE_ESCALATION_FAILURE, [
                     'type'        => $type,
                     'level'       => $level,
                     'reason'      => 'something went wrong while handling escalation',

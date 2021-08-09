@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Workflow\Action\MakerType;
+use RZP\Models\Merchant\Constants as MConstants;
 use RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Models\Merchant\AutoKyc\Escalations\Constants;
 use RZP\Models\Merchant\AutoKyc\Escalations\Entity;
@@ -26,7 +27,7 @@ class Workflow extends BaseEscalationType
                 $workflowId = null;
                 if(empty($entity) === false)
                 {
-                    $workflowId = $entity['id'];
+                    $workflowId = $entity[MConstants::ID];
                     WfActionEntity::verifyIdAndSilentlyStripSign($workflowId);
                 }
 
@@ -40,7 +41,7 @@ class Workflow extends BaseEscalationType
                                                   ]);
                 $this->repo->merchant_auto_kyc_escalations->saveOrFail($escalation);
 
-                $this->app['trace']->info(TraceCode::SELF_SERVE_ESCALATION_SUCCESS, [
+                $this->app[MConstants::TRACE]->info(TraceCode::SELF_SERVE_ESCALATION_SUCCESS, [
                     'type'          => $type,
                     'level'         => $level,
                     'merchant_id'   => $merchant->getId()
@@ -48,7 +49,7 @@ class Workflow extends BaseEscalationType
             }
             catch (\Exception $e)
             {
-                $this->app['trace']->info(TraceCode::SELF_SERVE_ESCALATION_FAILURE, [
+                $this->app[MConstants::TRACE]->info(TraceCode::SELF_SERVE_ESCALATION_FAILURE, [
                     'type'          => $type,
                     'level'         => $level,
                     'reason'        => 'something went wrong while handling escalation',
@@ -96,7 +97,7 @@ class Workflow extends BaseEscalationType
 
         // The reason routeName and Controller is set here because
         // the workflow being triggered is associated with the different route.
-        $this->app['workflow']
+        $this->app[MConstants::WORKFLOW]
             ->setPermission($permissionName)
             ->setRouteName(DetailConstants::ACTIVATION_ROUTE_NAME)
             ->setController(DetailConstants::ACTIVATION_CONTROLLER)
@@ -111,13 +112,13 @@ class Workflow extends BaseEscalationType
             ->setDirty($merchant->merchantDetail);
         try
         {
-            $this->app['workflow']->handle();
+            $this->app[MConstants::WORKFLOW]->handle();
         }
         catch(Exception\EarlyWorkflowResponse $e)
         {
             // Catching exception because we do not want to abort the code flow
             $workflowActionData = json_decode($e->getMessage(), true);
-            return $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
+            return $this->app[MConstants::WORKFLOW]->saveActionIfTransactionFailed($workflowActionData);
         }
     }
 }

@@ -26,8 +26,31 @@ final class Constants
     const UNSUSPEND                               = 'unsuspend';
     const PAYMENT_TIMEOUT_WINDOW                  = 'payment_timeout_window';
     const MERCHANT                                = 'merchant';
-
-
+    const PARAMS                                  = 'params';
+    const REPO                                    = 'repo';
+    const RECEIVER                                = 'receiver';
+    const TEMPLATE                                = 'template';
+    const OWNER_TYPE                              = 'ownerType';
+    const TEMPLATE_NAME                           = 'template_name';
+    const MERCHANT_NAME                           = 'merchantName';
+    const DASHBOARD_URL                           = 'dashboardUrl';
+    const CONFIG                                  = 'config';
+    const OWNER_ID                                = 'ownerId';
+    const APPLICATIONS_DASHBOARD_URL              = 'applications.dashboard.url';
+    const SOURCE                                  = 'source';
+    const TOTAL                                   = 'total';
+    const MILESTONE                               = 'milestone';
+    const PAYMENT                                 = 'payment';
+    const RECIPIENTS                              = 'recipients';
+    const MERCHANTS                               = 'merchants';
+    const MERCHANTID                              = 'merchantId';
+    const ACTIVATION_STATUS                       = 'activationStatus';
+    const WORKFLOW_URL                            = 'workflowUrl';
+    const BUSINESS_TYPE                           = 'businessType';
+    const TYPE                                    = 'type';
+    const LEVEL                                   = 'level';
+    const WORKFLOW                                = 'workflow';
+    const ID                                      = 'id';
     // Used for pagination in submerchant listing for partners
     const TO                                      = 'to';
     const FROM                                    = 'from';

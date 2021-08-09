@@ -4,6 +4,8 @@
 namespace RZP\Models\Merchant\AutoKyc\Escalations;
 
 
+use RZP\Models\Merchant\Constants as MConstants;
+
 class Utils
 {
     /**
@@ -82,9 +84,9 @@ class Utils
      */
     public static function getEscalationMilestone(string $type, int $level)
     {
-        if(isset(Constants::ESCALATION_CONFIG[$type][$level]) === true and isset(Constants::ESCALATION_CONFIG[$type][$level]['milestone'])===true)
+        if(isset(Constants::ESCALATION_CONFIG[$type][$level]) === true and isset(Constants::ESCALATION_CONFIG[$type][$level][MConstants::MILESTONE])===true)
         {
-            return Constants::ESCALATION_CONFIG[$type][$level]['milestone'];
+            return Constants::ESCALATION_CONFIG[$type][$level][MConstants::MILESTONE];
         }
 
         return null;

@@ -11,6 +11,7 @@ use RZP\Models\Merchant\AutoKyc\Escalations\Utils;
 use RZP\Models\Merchant\Escalations as NewEscalation;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\AutoKyc\Escalations\Constants;
+use RZP\Models\Merchant\Constants as MConstants;
 
 class EscalationV2 extends BaseEscalationType
 {
@@ -19,14 +20,14 @@ class EscalationV2 extends BaseEscalationType
     {
 
         $merchantsGmvMap = collect($merchantsGmvList)->mapToDictionary(function($item, $key) {
-            return [$item[DetailEntity::MERCHANT_ID] => $item['total']];
+            return [$item[DetailEntity::MERCHANT_ID] => $item[MConstants::TOTAL]];
         });
         foreach ($merchants as $merchant)
         {
             try
             {
                 $this->saveEscalationForMerchantToV2($merchant, $merchantsGmvMap[$merchant->getId()][0], $type, $level);
-                $this->app['trace']->info(TraceCode::ESCALATION_V2_SUCCESS, [
+                $this->app[MConstants::TRACE]->info(TraceCode::ESCALATION_V2_SUCCESS, [
                     'type'        => $type,
                     'level'       => $level,
                     'merchant_id' => $merchant->getId()
@@ -34,7 +35,7 @@ class EscalationV2 extends BaseEscalationType
             }
             catch (\Exception $e)
             {
-                $this->app['trace']->info(TraceCode::ESCALATION_V2_FAILURE, [
+                $this->app[MConstants::TRACE]->info(TraceCode::ESCALATION_V2_FAILURE, [
                     'type'        => $type,
                     'level'       => $level,
                     'reason'      => 'something went wrong while handling v2 escalation',
@@ -65,7 +66,7 @@ class EscalationV2 extends BaseEscalationType
                     (new NewEscalation\Handler)->triggerEscalation(
                         $merchantId, $amount, $threshold, $escalationConfig, NewEscalation\Constants::PAYMENT_BREACH
                     );
-                    $this->app['trace']->info(TraceCode::SELF_SERVE_ESCALATION_SUCCESS, [
+                    $this->app[MConstants::TRACE]->info(TraceCode::SELF_SERVE_ESCALATION_SUCCESS, [
                         'type'        => $type,
                         'level'       => $level,
                         'merchant_id' => $merchant->getId(),

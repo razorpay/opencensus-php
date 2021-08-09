@@ -5,6 +5,7 @@ namespace RZP\Notifications\Onboarding;
 
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Constants;
 use RZP\Notifications\BaseNotificationService;
 
 class SmsNotificationService extends BaseNotificationService
@@ -13,10 +14,11 @@ class SmsNotificationService extends BaseNotificationService
 
     public function send(): void
     {
-        $payload = $this->getPayload();
-        $merchant = $this->args['merchant'];
+        $payload  = $this->getPayload();
+        $merchant = $this->args[Constants::MERCHANT];
 
-        try {
+        try
+        {
             $this->app->raven->sendSms($payload);
 
             $this->trace->info(
@@ -29,37 +31,39 @@ class SmsNotificationService extends BaseNotificationService
         catch (\Throwable $e)
         {
             $this->trace->traceException($e,
-                Trace::CRITICAL,
-                TraceCode::MERCHANT_ONBOARDING_SMS_FAILED,
-                [
-                    'mid'      => $merchant->getMerchantId(),
-                    'template' => $this->getTemplateMessage()
-                ]
+                                         Trace::CRITICAL,
+                                         TraceCode::MERCHANT_ONBOARDING_SMS_FAILED,
+                                         [
+                                             'mid'      => $merchant->getMerchantId(),
+                                             'template' => $this->getTemplateMessage()
+                                         ]
             );
         }
     }
 
     protected function getPayload()
     {
-        $merchant = $this->args['merchant'];
+        $merchant = $this->args[Constants::MERCHANT];
 
         $payload = [
-            'receiver' => $this->getPhone(),
-            'template' => $this->getTemplateMessage(),
-            'source'   => self::ONBOARDING_SOURCE,
-            'params'   => [
-                'merchantName' => $merchant->getName(),
-                'dashboardUrl' => $this->app['config']->get('applications.dashboard.url')
+            Constants::RECEIVER => $this->getPhone(),
+            Constants::TEMPLATE => $this->getTemplateMessage(),
+            Constants::SOURCE   => self::ONBOARDING_SOURCE,
+            Constants::PARAMS   => [
+                Constants::MERCHANT_NAME => $merchant->getName(),
+                Constants::DASHBOARD_URL => $this->app[Constants::CONFIG]->get(Constants::APPLICATIONS_DASHBOARD_URL)
             ]
         ];
 
-        $payload['params'] = array_merge($payload['params'], $this->args['params'] ?? []);
+        $payload[Constants::PARAMS] = array_merge($payload[Constants::PARAMS], $this->args[Constants::PARAMS] ?? []);
+
         return $payload;
     }
 
     private function getPhone()
     {
-        $merchant = $this->args['merchant'];
+        $merchant = $this->args[Constants::MERCHANT];
+
         return $merchant->merchantDetail->getContactMobile();
     }
 

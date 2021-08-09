@@ -5,6 +5,7 @@ namespace RZP\Notifications\Onboarding;
 
 use Mail;
 use RZP\Exception;
+use RZP\Models\Merchant\Constants;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -21,7 +22,7 @@ class EmailNotificationService extends BaseNotificationService
     public function send(): void
     {
         $payload  = $this->getPayload();
-        $merchant = $this->args['merchant'];
+        $merchant = $this->args[Constants::MERCHANT];
         $org      = $this->getOrg($merchant);
 
         try
@@ -38,7 +39,8 @@ class EmailNotificationService extends BaseNotificationService
                 TraceCode::MERCHANT_ONBOARDING_EMAIL_SENT,
                 [
                     'merchant_id' => $merchant->getMerchantId(),
-                    'template'    => $this->getTemplateMessage()
+                    'template'    => $this->getTemplateMessage(),
+                    'payload'     => $payload
                 ]);
         }
         catch (\Throwable $e)
@@ -56,14 +58,14 @@ class EmailNotificationService extends BaseNotificationService
 
     private function getOrg($merchant)
     {
-        $org = $merchant->org ?: $this->app['repo']->org->getRazorpayOrg();
+        $org = $merchant->org ?: $this->app[Constants::REPO]->org->getRazorpayOrg();
 
         return $org;
     }
 
     protected function getPayload()
     {
-        $merchant = $this->args['merchant'];
+        $merchant = $this->args[Constants::MERCHANT];
         $org      = $this->getOrg($merchant);
         $hostname = '';
 
@@ -73,6 +75,8 @@ class EmailNotificationService extends BaseNotificationService
         }
         $merchantDetails = $merchant->merchantDetail;
 
+        $business_website=empty($merchantDetails->getAttribute(DEEntity::BUSINESS_WEBSITE))?null:$merchantDetails->getAttribute(DEEntity::BUSINESS_WEBSITE);
+
         $data = [
             DEConstants::MERCHANT => [
                 MerchantEntity::NAME          => $merchant->getName(),
@@ -81,11 +85,11 @@ class EmailNotificationService extends BaseNotificationService
                 DEConstants::ORG              => [
                     DEConstants::HOSTNAME => $hostname,
                 ],
-                DEEntity::BUSINESS_WEBSITE    => $merchantDetails->getAttribute(DEEntity::BUSINESS_WEBSITE)
+                DEEntity::BUSINESS_WEBSITE    => $business_website
             ],
         ];
 
-        $extraData = $this->args['params'] ?? [];
+        $extraData = $this->args[Constants::PARAMS] ?? [];
 
         return array_merge($data, $extraData);
     }

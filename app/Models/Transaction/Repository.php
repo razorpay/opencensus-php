@@ -511,7 +511,6 @@ class Repository extends Base\Repository
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
     }
-
     public function fetchTransactedMerchants(string $type, int $createdAt, bool $regularMerchantsOnly = true)
     {
         $transactionsMerchantIdColumn  = $this->dbColumn(Entity::MERCHANT_ID);

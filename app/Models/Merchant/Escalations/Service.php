@@ -11,10 +11,11 @@ class Service extends Base\Service
     public function handleOnboardingEscalationsCron($input)
     {
         $timeBound = $input[Constants::TIME_BOUND] ?? false;
+        $core=(new Core);
 
         try
         {
-            (new Core)->handleMtuSegmentEvent();
+            $core->handleMtuSegmentEvent();
         }
         catch(\Exception $e)
         {
@@ -23,8 +24,28 @@ class Service extends Base\Service
                 'error' => $e->getMessage()
             ]);
         }
-
-        (new Core)->triggerPaymentEscalations($timeBound);
+        try
+        {
+            $core->triggerPaymentEscalations($timeBound);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
+                'type'  => 'PaymentEscalations',
+                'error' => $e->getMessage()
+            ]);
+        }
+        try
+        {
+            $core->sendNotifications($input);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
+                'type'  => 'sendNotifications',
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
     public function fetchOnboardingEscalations()

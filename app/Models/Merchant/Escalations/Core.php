@@ -5,10 +5,15 @@ namespace RZP\Models\Merchant\Escalations;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Escalations\Actions\Entity as ActionEntity;
-use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
+use Illuminate\Support\Facades\DB;
+use RZP\Models\Merchant\Detail\Entity;
+use RZP\Notifications\Onboarding\Events;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
+use RZP\Models\Merchant\Escalations\Actions\Entity as ActionEntity;
+use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 
 class Core extends Base\Core
 {
@@ -52,10 +57,16 @@ class Core extends Base\Core
 
         $limitData['settlement'] = 1500000;
 
-        if ($milestone === 'L1') {
+        if ($milestone === 'L1')
+        {
             $limitData['payment'] = 1500000;
-        } else if ($milestone === 'L2') {
-            $limitData['payment'] = 1000000000;
+        }
+        else
+        {
+            if ($milestone === 'L2')
+            {
+                $limitData['payment'] = 1000000000;
+            }
         }
 
         return $limitData;
@@ -67,16 +78,16 @@ class Core extends Base\Core
 
         $escalation = $this->repo->merchant_onboarding_escalations->fetchLatestEscalation($merchant->getId());
 
-        if(empty($escalation) === false)
+        if (empty($escalation) === false)
         {
             $action = $this->repo->onboarding_escalation_actions->fetchActionForEscalation($escalation->getId());
 
             $response = $escalation->toArray();
 
-            if(empty($action) === false)
+            if (empty($action) === false)
             {
                 $response['action'] = [
-                    ActionEntity::STATUS    => $action->getAttribute(ActionEntity::STATUS)
+                    ActionEntity::STATUS => $action->getAttribute(ActionEntity::STATUS)
                 ];
             }
         }
@@ -96,7 +107,7 @@ class Core extends Base\Core
         {
             $mid = $escalation[Entity::MERCHANT_ID];
 
-            if(isset($escalationMap[$mid]) === false)
+            if (isset($escalationMap[$mid]) === false)
             {
                 $escalationMap[$mid] = [];
             }
@@ -111,9 +122,9 @@ class Core extends Base\Core
     {
         $lastCronTime = $this->cache->get($cacheKey);
 
-        if(empty($lastCronTime))
+        if (empty($lastCronTime))
         {
-            if($cacheKey === Constants::SEGMENT_MTU_CACHE_KEY)
+            if ($cacheKey === Constants::SEGMENT_MTU_CACHE_KEY)
             {
                 /*
                  * since ESCALATION_CACHE_KEY is the default one and we are currently using it
@@ -128,7 +139,7 @@ class Core extends Base\Core
         return $lastCronTime;
     }
 
-    private function updateLastCronTime(string $cacheKey = Constants::ESCALATION_CACHE_KEY)
+    private function updateLastCronTime(string $cacheKey)
     {
         $this->cache->put($cacheKey, Carbon::now()->getTimestamp());
     }
@@ -148,13 +159,13 @@ class Core extends Base\Core
             'payment', $lastCronTime, false);
 
         $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
-            'last_cron_time'    => $lastCronTime,
-            'type'              => 'segment_mtu_init',
-            'merchants_count'   => count($transactedMerchants),
+            'last_cron_time'  => $lastCronTime,
+            'type'            => 'segment_mtu_init',
+            'merchants_count' => count($transactedMerchants),
         ]);
 
         $merchantIdChunks = array_chunk($transactedMerchants, 100);
-        $merchantIdList = [];
+        $merchantIdList   = [];
 
         foreach ($merchantIdChunks as $merchantIdChunk)
         {
@@ -162,13 +173,13 @@ class Core extends Base\Core
                 $merchantIdChunk, $lastCronTime);
 
             $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
-                'last_cron_time'    => $lastCronTime,
-                'type'              => 'segment_mtu',
-                'merchants_count'   => count($filteredMerchants),
-                'merchants'         => $filteredMerchants
+                'last_cron_time'  => $lastCronTime,
+                'type'            => 'segment_mtu',
+                'merchants_count' => count($filteredMerchants),
+                'merchants'       => $filteredMerchants
             ]);
 
-            if(empty($filteredMerchants) === false)
+            if (empty($filteredMerchants) === false)
             {
                 $merchantIdList = array_merge($merchantIdList, $filteredMerchants);
             }
@@ -179,8 +190,8 @@ class Core extends Base\Core
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
             $properties = [
-                'mtu'                           => true,
-                'first_transaction_timestamp'   => Carbon::now()->getTimestamp()
+                'mtu'                         => true,
+                'first_transaction_timestamp' => Carbon::now()->getTimestamp()
             ];
 
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
@@ -196,19 +207,20 @@ class Core extends Base\Core
      * - fetch all merchants which are not in end states. If timeBound is true, only merchants that are created in
      *   last 3 months are fetched (This is done to avoid heavy queries that fetches all merchants)
      * - fetch GMV of these merchants who've breached the lowest payment threshold (as of now its 1000 Rs)
+     *
      * @param false $timeBound
      */
     public function triggerPaymentEscalations($timeBound = false)
     {
-        if($timeBound === true)
+        if ($timeBound === true)
         {
             $lastCronTime = $this->getLastCronTime();
 
             $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
-                'last_cron_time'    => $lastCronTime,
-                'type'              => 'payments_escalation',
+                'last_cron_time' => $lastCronTime,
+                'type'           => 'payments_escalation',
             ]);
-
+            $this->updateLastCronTime(Constants::ESCALATION_CACHE_KEY);
             $merchantIdList = $this->repo->transaction->fetchTransactedMerchants('payment', $lastCronTime);
 
             $merchantIdList = $this->repo->merchant_detail->filterMerchantIdsByActivationStatus(
@@ -227,22 +239,22 @@ class Core extends Base\Core
         );
 
         $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
-            'merchants_count'   => count($merchantsGMVList),
-            'type'              => 'payments_escalation'
+            'merchants_count' => count($merchantsGMVList),
+            'type'            => 'payments_escalation'
         ]);
 
-        if(empty($merchantsGMVList) === true)
+        if (empty($merchantsGMVList) === true)
         {
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
-                'merchants_count'   => count($merchantsGMVList),
-                'type'              => 'payments_escalation',
-                'reason'            => 'no merchants found'
+                'merchants_count' => count($merchantsGMVList),
+                'type'            => 'payments_escalation',
+                'reason'          => 'no merchants found'
             ]);
+
             return;
         }
 
-        $merchantIdList = array_map(function($element)
-        {
+        $merchantIdList = array_map(function($element) {
             return $element[Entity::MERCHANT_ID];
         }, $merchantsGMVList);
 
@@ -261,33 +273,94 @@ class Core extends Base\Core
                     $merchantId, $merchantData['total'], $escalations[$merchantId] ?? []
                 );
 
-                if($triggered === false)
+                if ($triggered === false)
                 {
                     $skippedMerchants[] = [
-                        'merchant_id'   => $merchantId,
-                        'reason'        => $reason
+                        'merchant_id' => $merchantId,
+                        'reason'      => $reason
                     ];
                 }
             }
             catch (\Exception $e)
             {
                 $this->trace->error(TraceCode::ESCALATION_ATTEMPT_FAILED, [
-                    'merchant_id'   => $merchantId,
-                    'type'          => 'payments_escalation',
-                    'exception'     => $e->getMessage()
+                    'merchant_id' => $merchantId,
+                    'type'        => 'payments_escalation',
+                    'exception'   => $e->getMessage()
                 ]);
             }
         }
 
-        if(empty($skippedMerchants) === false)
+        if (empty($skippedMerchants) === false)
         {
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
-                'skippedMerchants'   => $skippedMerchants,
-                'type'          => 'payments_escalation',
+                'skippedMerchants' => $skippedMerchants,
+                'type'             => 'payments_escalation',
             ]);
         }
+    }
 
-        // update last cron time
-        $this->updateLastCronTime();
+    /**
+     * send notification to merchants
+     *
+     * @param $input
+     */
+    public function sendNotifications($input)
+    {
+
+        //L1_ACTIVATION_NOT_STARTED_IN_1_DAY
+        if (empty($input[Constants::START_TIME]) === true)
+        {
+            $lastCronTime = Carbon::createFromTimestamp(
+                $this->getLastCronTime(Constants::L1_ACTIVATION_NOT_STARTED_IN_1_DAY_CACHE_KEY), Timezone::IST);
+
+            $this->updateLastCronTime(Constants::L1_ACTIVATION_NOT_STARTED_IN_1_DAY_CACHE_KEY);
+
+            $to = Carbon::now()->subDays(1)->getTimestamp();
+
+            $from = $lastCronTime->subDays(1)->getTimestamp();
+        }
+        else
+        {
+            // if we have to send communications for merchants created in a specific time frame.
+            // Not sent from cron to be sent when called manually
+            $to = $input[Constants::END_TIME];
+
+            $from = $input[Constants::START_TIME];
+        }
+
+        //Logged in but didnt start activation (L1) within 1 day
+        //since cron job runs every hour query to get merchants with created date in 1 hr duration prev day and activation mile stone is null
+
+        $merchantIdList = $this->repo->merchant_detail->filterActivationNotStartedMerchantIds(
+            $from, $to);
+
+        $this->trace->info(TraceCode::SEND_NOTIFICATION, [
+            'merchants_count' => count($merchantIdList),
+            'type'            => 'sendNotification',
+            'to'              => $to,
+            'from'            => $from
+        ]);
+
+        if (empty($merchantIdList) === true)
+        {
+            $this->trace->info(TraceCode::SEND_NOTIFICATION_ATTEMPT_SKIPPED, [
+                'merchants_count' => count($merchantIdList),
+                'type'            => 'sendNotification',
+                'reason'          => 'no merchants found'
+            ]);
+
+            return;
+        }
+        foreach ($merchantIdList as $merchantId)
+        {
+            $args = [
+                Constants::MERCHANT => $this->repo->merchant->findOrFailPublic($merchantId)
+            ];
+
+            (new OnboardingNotificationHandler($args))
+                ->sendEventNotificationForMerchant($merchantId, Events::L1_ACTIVATION_NOT_STARTED_IN_1_DAY);
+
+        }
     }
 }

@@ -7,6 +7,7 @@ use Mail;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\lib\TemplateEngine;
 use RZP\Mail\Merchant\SelfServeEscalationEmail;
+use RZP\Models\Merchant\Constants as MConstants;
 use RZP\Models\Merchant\AutoKyc\Escalations\Constants;
 use RZP\Models\Merchant\AutoKyc\Escalations\Entity;
 use RZP\Models\Merchant\AutoKyc\Escalations\Utils;
@@ -48,8 +49,8 @@ class Email extends BaseEscalationType
         }
 
         $data = [
-            'recipients'    => $this->getEmailRecipientsForEscalation($type, $level),
-            'merchants'     => $merchantData
+            MConstants::RECIPIENTS    => $this->getEmailRecipientsForEscalation($type, $level),
+            MConstants::MERCHANTS     => $merchantData
         ];
 
         $email = new SelfServeEscalationEmail($this->getSubject($type, $level), $data);
@@ -59,26 +60,27 @@ class Email extends BaseEscalationType
 
     private function getDataForMerchant($merchant, $merchantActionMap)
     {
-        $dashboardUrl = $this->app['config']->get('applications.dashboard.url');
-        $url = '';
-        $merchantId = $merchant->getId();
+        $dashboardUrl = $this->app[MConstants::CONFIG]->get(MConstants::APPLICATIONS_DASHBOARD_URL);
+        $url          = '';
+        $merchantId   = $merchant->getId();
         if (isset($merchantActionMap[$merchantId]))
         {
             $url = $dashboardUrl . "admin/requests/w_action_" . $merchantActionMap[$merchantId]->getId();
         }
+
         return [
-            'merchantId'    => $merchantId,
-            'activationStatus' => $merchant->merchantDetail->getActivationStatus(),
-            'workflowUrl'   => $url,
-            'businessType' => $merchant->merchantDetail->getBusinessType()
+            MConstants::MERCHANTID       => $merchantId,
+            MConstants::ACTIVATION_STATUS => $merchant->merchantDetail->getActivationStatus(),
+            MConstants::WORKFLOW_URL      => $url,
+            MConstants::BUSINESS_TYPE     => $merchant->merchantDetail->getBusinessType()
         ];
     }
 
     private function getSubject(string $type, int $level)
     {
         return (new TemplateEngine)->render(self::ESCALATION_MAIL_SUBJECT_TEMPLATE, [
-            'type'  => $type,
-            'level' => $level
+            MConstants::TYPE  => $type,
+            MConstants::LEVEL => $level
         ]);
     }
 

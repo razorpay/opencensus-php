@@ -62,8 +62,8 @@ class Events
         self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => 'whatsapp.merchant.onboarding.activated_mcc_pending_hard_limit_breach',
         self::FUNDS_ON_HOLD                               => 'whatsapp.merchant.onboarding.funds_on_hold',
         self::FUNDS_ON_HOLD_REMINDER                      => 'whatsapp.merchant.onboarding.funds_on_hold_reminder',
-        self::L1_ACTIVATION_NOT_STARTED_IN_1_DAY   => 'whatsapp.merchant.onboarding.l1_activation_not_started_in_1_day',
-        self::PAYMENTS_ENABLED                              => 'whatsapp.merchant.onboarding.payments_enabled',
+        self::L1_ACTIVATION_NOT_STARTED_IN_1_DAY          => 'whatsapp.merchant.onboarding.l1_activation_not_started_in_1_day',
+        self::PAYMENTS_ENABLED                            => 'whatsapp.merchant.onboarding.payments_enabled',
 
     ];
 
