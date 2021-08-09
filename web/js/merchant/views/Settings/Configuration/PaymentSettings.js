@@ -18,6 +18,8 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CaptureMode from './CaptureSettingsComponents/CaptureMode';
 import { getCustomURL } from 'merchant/components/DocsLink';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+
 import { parseTimeoutValues } from './CaptureSettingsComponents/data';
 import { renderTimeoutAsString } from './PaymentCaptureComponents/util';
 import { CAPTURE_SETTINGS } from './deeplink-constants';
@@ -600,7 +602,7 @@ export default class PaymentSettings extends Component {
                   <button
                     class="btn btn-primary capture-change-btn"
                     onClick={this.changeSettings}
-                    disabled={role !== 'owner' ? true : false}
+                    disabled={[rolesList.OWNER,rolesList.ADMIN,rolesList.MANAGER].indexOf(role)===-1}
                   >
                     Change
                   </button>
