@@ -19,6 +19,7 @@ app/Reconciliator/                                     gaurav.k@razorpay.com
 #
 
 app/Gateway/                                           @razorpay/TechPgIntegrations
+app/Gateway/Upi                                        @razorpay/techupicore
 
 #
 # Models
@@ -147,6 +148,12 @@ tests/Functional/Transfer/                             baljeet.kumar@razorpay.co
 tests/Functional/User/                                 pankaj.kumar@razorpay.com
 tests/Functional/VirtualAccount/                       @razorpay/TechVirtualAccounts
 tests/Functional/Gateway/                              @razorpay/TechPgIntegrations
+
+#
+# Services
+#
+
+app/Services/UpiPayment/                               @razorpay/techupicore
 
 
 #
