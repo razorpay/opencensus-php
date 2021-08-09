@@ -450,15 +450,15 @@ final class Constants
     const TAGS = 'tags';
 
     //cron tag names
-    const MERCHANT_RISK_FOH_CRON_TAG            = 'Merchant_risk_cron_tag_foh';
-    const MERCHANT_RISK_SUSPEND_CRON_TAG        = 'Merchant_risk_cron_tag_suspend';
-    const MERCHANT_RISK_DISABLE_LIVE_CRON_TAG   = 'Merchant_risk_cron_tag_disable_live';
+    const MERCHANT_RISK_FOH_CRON_TAG            = 'Bulk_cron_tag_foh';
+    const MERCHANT_RISK_SUSPEND_CRON_TAG        = 'Bulk_cron_tag_suspend';
+    const MERCHANT_RISK_DISABLE_LIVE_CRON_TAG   = 'Bulk_cron_tag_disable_live';
 
     //FOH Notification templates
     const FOH_SMS_TEMPLATE           = 'sms.merchant_risk.generic.funds_on_hold.confirmation';
     const FOH_WHATSAPP_TEMPLATE_NAME = 'whatsapp.merchant_risk_actions.funds_on_hold';
     const FOH_WHATSAPP_TEMPLATE      = 'Hi {merchantName}, we regret to inform you that your settlements are under review due to risk alert for non-compliance with regulatory guidelines as set by our partner banks. Please check your email ID registered with Razorpay and help us with clarification to re-enable settlements';
-    const FOH_DASHBOARD_TEMPLATE_TAG = 'merchant_risk_action_foh';
+    const FOH_DASHBOARD_TEMPLATE_TAG = 'mra_foh';
 
     //Suspend Notification templates
     const SUSPEND_ACCOUNT_SMS_TEMPLATE           = 'sms.merchant_risk_actions.suspend';
@@ -469,7 +469,7 @@ final class Constants
     const DISABLE_LIVE_SMS_TEMPLATE           = 'sms.merchant_risk_actions.disable_live';
     const DISABLE_LIVE_WHATSAPP_TEMPLATE_NAME = 'whatsapp.merchant_risk_actions.disable_live';
     const DISABLE_LIVE_WHATSAPP_TEMPLATE      = 'We have disabled your account as we observed suspicious account activity on your account - {merchant_id} in the name of M/s. {business_name} held with Razorpay.  Please check your registered email for an email with subject Razorpay Account disabled: {merchant_name} | {merchant_id} for more details';
-    const DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG = 'merchant_risk_action_disabled';
+    const DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG = 'mra_disabled';
 
     const MERCHANT_RISK_ACTION_CRON_ADD_TAG_MAP = [
         Action::SUSPEND         => self::MERCHANT_RISK_SUSPEND_CRON_TAG,
