@@ -433,8 +433,10 @@ const makeCSVData = (data, bankNames, groupTitleMap) => {
 
   rows.sort((item1, item2) => (item1[0] <= item2[0] ? -1 : 1));
 
-  rows.forEach((row, index) => {
-    row.push((row[row.length - 1] / total * 100).toFixed(2) + '%');
+  rows.forEach((row) => {
+    if (row?.length > 0) {
+      row.push(`${((row[row.length - 1] / total) * 100).toFixed(2)}%`);
+    }
   });
 
   rows.unshift(csvHeader);
@@ -451,7 +453,7 @@ export default function renderTreemap(
   onShowTooltip,
   onHideTooltip,
   groupTitleMap,
-  bankNames
+  bankNames,
 ) {
   if (!d3 || !bankNames || !node) {
     return {};
@@ -461,12 +463,9 @@ export default function renderTreemap(
 
   const csvUrl = makeCSVData(res, bankNames, groupTitleMap);
 
-  res = d3
-    .nest()
-    .key(getGroupingFactor('method'))
-    .entries(res);
+  res = d3.nest().key(getGroupingFactor('method')).entries(res);
 
-  res.forEach(item => {
+  res.forEach((item) => {
     const key = item.key,
       nester = d3.nest();
 
@@ -495,7 +494,7 @@ export default function renderTreemap(
     onTransition,
     onShowTooltip,
     onHideTooltip,
-    groupTitleMap || {}
+    groupTitleMap || {},
   );
 
   treemapApi.csv = csvUrl;
