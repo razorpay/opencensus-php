@@ -423,7 +423,9 @@ class FundAccountValidationTest extends TestCase
 
         $this->assertEquals('failed', $payout->getStatus());
 
-        $fundAccountValidationCreated = $this->getDbLastEntity('fund_account_validation');
+        $favCreated = $this->getDbLastEntity('fund_account_validation');
+
+        $reversalCreated = $this->getDbLastEntity('reversal');
 
         // Since there are multiple events within the flow,
         // following is a list of events in the order in which they occur in the test flow
@@ -432,13 +434,20 @@ class FundAccountValidationTest extends TestCase
             'fav_failed',
         ];
 
+        // Since there are multiple events within the flow,
+        // following is a list of transactor Ids for which these events occured
+        $transactorIdArray = [
+            $favCreated->getPublicId(),
+            $reversalCreated->getPublicId(),
+        ];
+
         for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
-            $this->assertEquals($fundAccountValidationCreated->getPublicId(), $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
             $this->assertEquals('INR', $ledgerRequestPayload['currency']);
             $this->assertEquals('3', $ledgerRequestPayload['commission']);
@@ -454,10 +463,14 @@ class FundAccountValidationTest extends TestCase
         // Not passed in fund account validation initiated payload
         $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]);
         $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]);
+        $this->assertEquals($favCreated->transaction->getId(), $ledgerSnsPayloadArray[0]['api_transaction_id']);
+        $this->assertEquals('bacc_ABCde1234ABCde', $ledgerSnsPayloadArray[0]['banking_account_id']);
 
         // Passed in fund account validation failed payload
         $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['fts_fund_account_id']);
         $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['fts_account_type']);
+        $this->assertEquals($reversalCreated->transaction->getId(), $ledgerSnsPayloadArray[1]['api_transaction_id']);
+        $this->assertEquals('bacc_ABCde1234ABCde', $ledgerSnsPayloadArray[1]['banking_account_id']);
     }
 
     public function testIfFundAccountValidationAlreadyInFinalStateBeforeFTAUpdate()

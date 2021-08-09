@@ -4,6 +4,7 @@ namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Reversal;
 use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundAccount\Entity as FundAccount;
@@ -14,6 +15,8 @@ use RZP\Models\FundAccount\Entity as FundAccountEntity;
 /**
  * @property FundAccount fundAccount
  * @property mixed merchant
+ * @property Reversal\Entity reversal
+ *
  */
 class Entity extends Base\PublicEntity
 {
@@ -372,5 +375,12 @@ class Entity extends Base\PublicEntity
     public function isStatusFailed()
     {
         return ($this->getAccountStatus() === AccountStatus::INVALID);
+    }
+
+    // ------------- Relations ---------------
+
+    public function reversal()
+    {
+        return $this->belongsTo(Reversal\Entity::class, self::ID, Reversal\Entity::ENTITY_ID);
     }
 }

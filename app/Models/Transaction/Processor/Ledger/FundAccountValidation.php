@@ -51,17 +51,29 @@ class FundAccountValidation extends Base
             ];
 
             $ftsSourceAccountData = [];
+            $apiTransactionId = null;
+            $transactorId = null;
 
             switch ($transactorType)
             {
                 case self::FAV_INITIATED:
                     $transactorDate = $fundAccountValidation->getCreatedAt();
+                    $apiTransactionId = $fundAccountValidation->getTransactionId();
+                    $transactorId = $fundAccountValidation->getPublicId();
                     break;
 
-                case self::FAV_FAILED:
                 case self::FAV_REVERSED:
                 case self::FAV_PROCESSED:
                     $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
+                    $transactorId = $fundAccountValidation->getPublicId();
+
+                    break;
+
+                case self::FAV_FAILED:
+                    $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
+                    $apiTransactionId = $fundAccountValidation->reversal->getTransactionId();
+                    $transactorId = $fundAccountValidation->reversal->getPublicId();
+                    $transactorDate = $fundAccountValidation->reversal->getCreatedAt();
 
                     break;
 
@@ -80,12 +92,16 @@ class FundAccountValidation extends Base
                 self::COMMISSION         => (string) $fundAccountValidation->getFee(),
                 self::TAX                => (string) $fundAccountValidation->getTax(),
                 self::NOTES              => json_encode($notes),
-                self::TRANSACTOR_ID      => $fundAccountValidation->getPublicId(),
+                self::TRANSACTOR_ID      => $transactorId,
                 self::TRANSACTOR_TYPE    => $transactorType,
                 self::TRANSACTION_DATE   => $transactorDate,
                 self::BANKING_ACCOUNT_ID => $fundAccountValidation->balance->bankingAccount->getPublicId(),
-                self::API_TRANSACTION_ID => $fundAccountValidation->getTransactionId()
             ];
+
+            if (empty($apiTransactionId) === false)
+            {
+                $payload[self::API_TRANSACTION_ID] = $apiTransactionId;
+            }
 
             $payload = array_merge($payload, $ftsSourceAccountData);
 
