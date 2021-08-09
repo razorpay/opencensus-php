@@ -2466,16 +2466,6 @@ class Service extends Base\Service
             }
         }
 
-        if ($finalSchedulePricing->getPercentRate() === 0)
-        {
-            throw new Exception\LogicException(
-                'Invalid ES pricing was assigned to the merchant.',
-                ErrorCode::SERVER_ERROR_INVALID_ES_PRICING,
-                [
-                    'plan_id' => $scheduledPricings->getId()
-                ]);
-        }
-
         $this->trace->info(
             TraceCode::ES_PRICING_SHOWN_TO_MERCHANT,
             [
