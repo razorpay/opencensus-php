@@ -193,11 +193,11 @@ class Core extends Base\Core
         if(empty($businessDetailsInput[BusinessDetailEntity::APP_URLS]) === false)
         {
             $this->checkForCorrectAppUrls($businessDetailsInput[BusinessDetailEntity::APP_URLS]);
+            
+            //save App Urls Details
+            $businessDetailService = new Service();
+            $businessDetails = $businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $businessDetailsInput);
         }
-
-        //save Business Detail For Merchant i.e website and AppId details
-        $businessDetailService = new Service();
-        $businessDetails = $businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $businessDetailsInput);
 
         unset($input[Entity::ACTIVATION_FORM_MILESTONE]);
 
