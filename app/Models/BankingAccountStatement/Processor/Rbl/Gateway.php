@@ -374,8 +374,6 @@ class Gateway extends BaseProcessor
 
         list($attemptLimit, $statementRetryLimit) = $this->setAttemptLimitAndRetryLimit();
 
-        $paginationKey = $this->basDetails->getPaginationKey();
-
         $this->rblAccountStatementV2MaxNumberOfRecords = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS]);
 
         if (empty($this->rblAccountStatementV2MaxNumberOfRecords) === true)
@@ -385,7 +383,7 @@ class Gateway extends BaseProcessor
 
         do
         {
-            $paginationKey = last($formattedResponse) ? last($formattedResponse)[BasDetails\Entity::PAGINATION_KEY]: $paginationKey;
+            $paginationKey = $this->basDetails->getPaginationKey();
 
             // Rbl api supports 2 formats of requests.
             //     1. using from_date and to_date in api request
@@ -452,8 +450,7 @@ class Gateway extends BaseProcessor
 
             if (count($formattedResponse) > 0)
             {
-                $formattedResponse[count($formattedResponse) - 1][BasDetails\Entity::PAGINATION_KEY] =
-                    $bankResponse[Fields::DATA][Fields::FETCH_ACCOUNT_STATEMENT_RESPONSE][Fields::HEADER][Fields::NEXT_KEY];
+                $this->basDetails->setPaginationKey($bankResponse[Fields::DATA][Fields::FETCH_ACCOUNT_STATEMENT_RESPONSE][Fields::HEADER][Fields::NEXT_KEY]);
             }
 
             $finalFormattedResponse = array_merge($finalFormattedResponse, $formattedResponse);
@@ -907,6 +904,7 @@ class Gateway extends BaseProcessor
                 Entity::BALANCE_CURRENCY    => Currency::INR,
                 Entity::POSTED_DATE         => $this->getPostedDateFromResponse($transactionData),
                 Entity::TRANSACTION_DATE    => $this->getTransactionDateFromResponseV2($transactionData),
+                Entity::BANK_INSTRUMENT_ID  => ""
             ];
         }
 

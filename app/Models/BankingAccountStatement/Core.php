@@ -383,19 +383,11 @@ class Core extends Base\Core
         $previousClosingBalance = $lastBankTxn == null ? 0 : $lastBankTxn->getBalance();
 
         $basEntitiesToSave = [];
-        $paginationKeysBankTransactions = [];
         $totalRecordCount = 0;
         $initialOffset = 0;
 
         foreach ($bankTransactions as $bankTransaction)
         {
-            if (array_key_exists(BASDetails\Entity::PAGINATION_KEY, $bankTransaction) === true)
-            {
-                $paginationKeysBankTransactions[$totalRecordCount] = $bankTransaction;
-
-                unset($bankTransaction[BASDetails\Entity::PAGINATION_KEY]);
-            }
-
             $basEntity = (new Entity)->build($bankTransaction);
 
             if (empty($basEntity->getUtr()) === true)
@@ -471,7 +463,6 @@ class Core extends Base\Core
             $basEntitiesToSave,
             $limit,
             $accountNumber,
-            $paginationKeysBankTransactions,
             $basDetails)
         {
             while ($initialOffset < $totalRecordCount)
@@ -494,41 +485,20 @@ class Core extends Base\Core
                     ]);
 
                 $initialOffset += $limit;
-
-                $paginationKeyTxnDetails = [];
-
-                foreach ($paginationKeysBankTransactions as $key => $paginationKeysBankTransaction)
-                {
-                    if ($key < $initialOffset)
-                    {
-                        $paginationKeyTxnDetails = $paginationKeysBankTransaction;
-
-                        unset($paginationKeysBankTransactions[$key]);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                if (empty($paginationKeyTxnDetails) === false)
-                {
-                    $basDetails->setPaginationKey($paginationKeyTxnDetails[BASDetails\Entity::PAGINATION_KEY]);
-
-                    $this->repo->saveOrFail($basDetails);
-
-                    $this->trace->info(
-                        TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_UPDATE_PAGINATION_KEY,
-                        [
-                            BASDetails\Entity::PAGINATION_KEY => $basDetails->getPaginationKey(),
-                            BASDetails\Entity::ACCOUNT_NUMBER => $basDetails->getAccountNumber(),
-                            Entity::BANK_TRANSACTION_ID       => $paginationKeysBankTransaction[Entity::BANK_TRANSACTION_ID],
-                            Entity::BANK_SERIAL_NUMBER        => $paginationKeysBankTransaction[Entity::BANK_SERIAL_NUMBER],
-                            Entity::POSTED_DATE               => $paginationKeysBankTransaction[Entity::POSTED_DATE],
-                        ]);
-                }
             }
         });
+
+        if ($totalRecordCount > 0)
+        {
+            $this->repo->saveOrFail($basDetails);
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_UPDATE_PAGINATION_KEY,
+                [
+                    BASDetails\Entity::PAGINATION_KEY => $basDetails->getPaginationKey(),
+                    BASDetails\Entity::ACCOUNT_NUMBER => $basDetails->getAccountNumber(),
+                ]);
+        }
 
         // This data will be required to create an entry in BAS Details table.
         // Once statement is fetched, closing balance has to be updated in BAS Details table as well.
@@ -794,31 +764,7 @@ class Core extends Base\Core
                 continue;
             }
 
-            $paginationKey = null;
-
-            if (array_key_exists(BASDetails\Entity::PAGINATION_KEY, $bankTransaction) === true)
-            {
-                $paginationKey = array_pull($bankTransaction, BASDetails\Entity::PAGINATION_KEY);
-            }
-
             $this->saveAccountStatement($bankTransaction, $merchant, $processor);
-
-            if ($paginationKey !== null)
-            {
-                $basDetails->setPaginationKey($paginationKey);
-
-                $this->repo->saveOrFail($basDetails);
-
-                $this->trace->info(
-                    TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_UPDATE_PAGINATION_KEY,
-                    [
-                        BASDetails\Entity::PAGINATION_KEY => $basDetails->getPaginationKey(),
-                        BASDetails\Entity::ACCOUNT_NUMBER => $basDetails->getAccountNumber(),
-                        Entity::BANK_TRANSACTION_ID       => $bankTxnId,
-                        Entity::BANK_SERIAL_NUMBER        => $bankTxnSrlNo,
-                        Entity::TRANSACTION_DATE          => $bankTxnDate,
-                    ]);
-            }
 
             $closingBalance = $bankTransaction[Entity::BALANCE];
         }
@@ -832,6 +778,18 @@ class Core extends Base\Core
                 'skipped'   => $skippedCount,
                 'processed' => $processedCount,
             ]);
+
+        if ($processedCount > 0)
+        {
+            $this->repo->saveOrFail($basDetails);
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_UPDATE_PAGINATION_KEY,
+                [
+                    BASDetails\Entity::PAGINATION_KEY => $basDetails->getPaginationKey(),
+                    BASDetails\Entity::ACCOUNT_NUMBER => $basDetails->getAccountNumber(),
+                ]);
+        }
 
         $this->checkAndTraceForStaleResponse($bankTxnCount, $processedCount, $accountNumber);
 
