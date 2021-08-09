@@ -15,7 +15,8 @@ use RZP\Notifications\Onboarding\Events;
 
 class Constants
 {
-    const ESCALATION_CACHE_KEY = 'onboarding_escalation_timestamp';
+    const ESCALATION_CACHE_KEY      = 'onboarding_escalation_timestamp';
+    const SEGMENT_MTU_CACHE_KEY     = 'onboarding_segment_mtu_timestamp';
 
     // request payload constants
     const TIME_BOUND = 'time_bound';

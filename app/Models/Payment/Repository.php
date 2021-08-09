@@ -2557,6 +2557,7 @@ class Repository extends Base\Repository
     {
         return $this->newQueryWithConnection($this->getDataWarehouseConnection())
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+            ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
             ->groupBy(Entity::MERCHANT_ID)
             ->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
             ->having('first_created_at', '>=', $timestamp)

@@ -107,33 +107,49 @@ class Core extends Base\Core
         return $escalationMap;
     }
 
-    private function getLastCronTime()
+    private function getLastCronTime(string $cacheKey = Constants::ESCALATION_CACHE_KEY)
     {
-        $lastCronTime = $this->cache->get(Constants::ESCALATION_CACHE_KEY);
+        $lastCronTime = $this->cache->get($cacheKey);
 
         if(empty($lastCronTime))
         {
+            if($cacheKey === Constants::SEGMENT_MTU_CACHE_KEY)
+            {
+                /*
+                 * since ESCALATION_CACHE_KEY is the default one and we are currently using it
+                 * we can override SEGMENT_MTU_CACHE_KEY with its value;
+                 */
+                return $this->getLastCronTime();
+            }
+
             return Carbon::now()->subDays(Constants::TIME_BOUND_THRESHOLD)->getTimestamp();
         }
 
         return $lastCronTime;
     }
 
-    private function updateLastCronTime()
+    private function updateLastCronTime(string $cacheKey = Constants::ESCALATION_CACHE_KEY)
     {
-        $this->cache->put(Constants::ESCALATION_CACHE_KEY, Carbon::now()->getTimestamp());
+        $this->cache->put($cacheKey, Carbon::now()->getTimestamp());
     }
 
     public function handleMtuSegmentEvent()
     {
-        $lastCronTime = $this->getLastCronTime();
+        $lastCronTime = $this->getLastCronTime(Constants::SEGMENT_MTU_CACHE_KEY);
+
+        /*
+         * Update last Cron time instantly, since processing of cron may take another 5-10 mins
+         * and during that time another payments can happen
+         */
+        $this->updateLastCronTime(Constants::SEGMENT_MTU_CACHE_KEY);
 
         // Filter out all merchants that have transacted since last time cron ran
-        $transactedMerchants = $this->repo->transaction->fetchTransactedMerchants('payment', $lastCronTime);
+        $transactedMerchants = $this->repo->transaction->fetchTransactedMerchants(
+            'payment', $lastCronTime, false);
 
         $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
             'last_cron_time'    => $lastCronTime,
-            'type'              => 'segment_mtu',
+            'type'              => 'segment_mtu_init',
             'merchants_count'   => count($transactedMerchants),
         ]);
 
@@ -142,13 +158,14 @@ class Core extends Base\Core
 
         foreach ($merchantIdChunks as $merchantIdChunk)
         {
-            $filteredMerchants = $this->repo->payment->filterMerchantsWithFirstPaymentAboveTimestamp(
+            $filteredMerchants = $this->repo->transaction->filterMerchantsWithFirstTransactionAboveTimestamp(
                 $merchantIdChunk, $lastCronTime);
 
             $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
                 'last_cron_time'    => $lastCronTime,
                 'type'              => 'segment_mtu',
                 'merchants_count'   => count($filteredMerchants),
+                'merchants'         => $filteredMerchants
             ]);
 
             if(empty($filteredMerchants) === false)
