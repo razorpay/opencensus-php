@@ -130,7 +130,7 @@ export const partnerProducts = {
   msmex: {
     slug: 'msmex',
     title: 'MSMEx',
-    url: 'https://www.msmex.in/',
+    url: 'https://sh.msmex.in/MSMEx',
     category: 'Expert Marketplace',
     description: 'Live Online Business Learning and Advisory',
     logo: 'msmex.jpg',
