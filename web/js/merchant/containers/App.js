@@ -255,7 +255,7 @@ class App extends Component {
       this.state.NonGoLiveNPSEnableTypeForm = NonGoLiveNPSEnableTypeForm; // saving reference typeform
 
       if (
-        ((user.experiments || {})['csm_experience_survey'] || {}).result === 'on' &&
+        ((user.experiments || {})['csm_experince_survey'] || {}).result === 'on' &&
         !LocalStorageService.getItem('csm_experience_survey_showed')
       ) {
         LocalStorageService.setItem('csm_experience_survey_showed');
