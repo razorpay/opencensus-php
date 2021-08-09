@@ -1399,4 +1399,11 @@ class Service extends Base\Service
 
         return (new Core())->removeIncorrectPasswordCount($input['emails']);
     }
+
+    public function sendXMobileAppDownloadLinkSms(array $input)
+    {
+        $merchant = $this->merchant;
+
+        return $this->core()->sendXMobileAppDownloadLinkSms($input, $merchant);
+    }
 }

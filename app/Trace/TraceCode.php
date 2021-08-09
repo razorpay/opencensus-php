@@ -2266,6 +2266,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_NOT_FOUND                                        = 'USER_NOT_FOUND';
     const USER_LOGIN                                            = 'USER_LOGIN';
     const USER_MOBILE_LOGIN                                     = 'USER_MOBILE_LOGIN';
+    const USER_X_MOBILE_APP_DOWNLOAD_LINK                       = 'USER_X_MOBILE_APP_DOWNLOAD_LINK';
+    const USER_X_MOBILE_APP_DOWNLOAD_LINK_SENDING_FAILED        = 'USER_X_MOBILE_APP_DOWNLOAD_LINK_SENDING_FAILED';
     const USER_SEND_SMS_OTP_FOR_LOGIN                          = 'USER_SEND_SMS_OTP_FOR_LOGIN';
     const USER_VERIFY_SMS_OTP_FOR_LOGIN                        = 'USER_VERIFY_SMS_OTP_FOR_LOGIN';
     const USER_SEND_EMAIL_OTP_FOR_LOGIN                        = 'USER_SEND_EMAIL_OTP_FOR_LOGIN';

@@ -1869,6 +1869,19 @@ return [
         ],
     ],
 
+    'testSendXMobileAppDownloadLink' => [
+        'request' => [
+            'url'     => '/users/mobile_app_link',
+            'method'  => 'POST',
+            'content' => [
+                'contact_number' => '123456789',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testSendOtpForXSignupV2' => [
         'request' => [
             'url'     => '/users/otp/send',

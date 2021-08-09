@@ -400,4 +400,16 @@ class UserController extends Controller
 
         return $this->service()->getDetailsUnified($input);
     }
+
+    public function sendXMobileAppDownloadLinkSms()
+    {
+        $input = Request::all();
+
+        /** @var Service $userService */
+        $userService = $this->service();
+
+        $response = $userService->sendXMobileAppDownloadLinkSms($input);
+
+        return ApiResponse::json($response);
+    }
 }

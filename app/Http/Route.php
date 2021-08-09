@@ -1538,6 +1538,7 @@ class Route
         'user_account_unlock'                      => ['put',      'users/account/{id}/{action}',                    'UserController@accountLockUnlock'                                  ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
         'user_roles_mapping_bulk'                  => ['put',      'users/roles-mapping/bulk',                       'UserController@bulkUpdateUserMapping'                              ],
+        'user_send_x_mobile_app_link'              => ['post',     'users/mobile_app_link',                          'UserController@sendXMobileAppDownloadLinkSms'                      ],
 
         //user change his/her 2fa setting
         'user_2fa_change_setting'                  => ['patch',    'users/2fa',                                      'UserController@change2faSetting'                                   ],
@@ -4025,6 +4026,7 @@ class Route
         'user_verify_contact',
         'user_verify_email',
         'payout_create_with_otp',
+        'user_send_x_mobile_app_link',
         'payout_approve_bulk',
         'payout_reject_bulk',
         'payout_approve',
@@ -6316,6 +6318,7 @@ class Route
         'merchant_post_preferences'                    => Permission::UPDATE_MERCHANT_PREFERENCE,
         'merchant_get_preferences'                     => Permission::VIEW_MERCHANT_PREFERENCE,
         'user_account_unlock'                          => Permission::UPDATE_MERCHANT_2FA_SETTING,
+        'user_send_x_mobile_app_link'                  => '*',
         'user_2fa_change_setting'                      => '*',
         'user_opt_in_whatsapp'                         => '*',
         'banking_account_create'                       => '*',
@@ -7561,6 +7564,7 @@ class Route
             'user_opt_in_whatsapp',
             'user_opt_out_whatsapp',
             'user_otp_create',
+            'user_send_x_mobile_app_link',
             'user_resend_otp_2fa',
             'user_resend_verification',
             'user_resend_verification_otp',

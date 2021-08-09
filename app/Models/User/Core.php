@@ -2625,4 +2625,34 @@ class Core extends Base\Core
 
         return $summary;
     }
+
+    public function sendXMobileAppDownloadLinkSms(array $input, $merchant)
+    {
+        $payload = [
+            'receiver' => $input['contact_number'],
+            'source'   => "api",
+            'template' => "sms.user.mobile_app_download_link",
+            'sender' => "RZPAYX",
+            'params'   => [],
+        ];
+
+        try
+        {
+            $response = $this->app->raven->sendSms($payload);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::USER_X_MOBILE_APP_DOWNLOAD_LINK_SENDING_FAILED,
+                [
+                    'merchant_id' => $merchant->getMerchantId(),
+                ]);
+        }
+
+        $this->trace->info(TraceCode::USER_X_MOBILE_APP_DOWNLOAD_LINK, $response);
+
+        return $response;
+    }
 }

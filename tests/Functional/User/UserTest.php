@@ -2496,6 +2496,17 @@ class UserTest extends TestCase
         $this->assertNotEmpty($response['token']);
     }
 
+    public function testSendXMobileAppDownloadLink()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['sms_id']);
+    }
+
     public function testSendOtpForXSignupV2()
     {
         Mail::fake();
