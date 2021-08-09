@@ -1184,7 +1184,7 @@ class Entity extends Base\PublicEntity
         return Network::getEnabledCardNetworks($networks);
     }
 
-    protected function getEnabledDebitEmiProviders(): array
+    public function getEnabledDebitEmiProviders(): array
     {
         $networks = $this->attributes[self::DEBIT_EMI_PROVIDERS];
 

@@ -608,6 +608,11 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['debit_emi_providers' => $providers]);
     }
 
+    public function disableDebitEmiProviders($id = '10000000000000', $providers = ['HDFC' => 0])
+    {
+        return $this->fixtures->edit('methods', $id, ['debit_emi_providers' => $providers]);
+    }
+
     public function enableEmiCredit($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['emi' => [Methods\EmiType::CREDIT => '1']]);

@@ -429,13 +429,32 @@ class Service extends Base\Service
         {
             $emiType = Type::DEBIT;
 
-            $sharedDebitEmiPlans = $sharedPlans->reject(function($plan) use ($emiType) {
-                return $plan->type !== $emiType;
+            // remove providers which are not enabled
+            $enabledProviders = $methods->getEnabledDebitEmiProviders();
+
+            $sharedDebitEmiPlans = $sharedPlans->reject(function($plan) use ($emiType, $enabledProviders) {
+                if ($plan->type !== $emiType)
+                {
+                    return true;
+                }
+
+                $provider = $plan->bank;
+
+                return ($enabledProviders[$provider] === 0);
             });
 
-            $merchantDebitEmiPlans = $merchantEmiPlans->reject(function($plan) use ($emiType) {
-                return $plan->type !== $emiType;
+
+            $merchantDebitEmiPlans = $merchantEmiPlans->reject(function($plan) use ($emiType, $enabledProviders) {
+                if ($plan->type !== $emiType)
+                {
+                    return true;
+                }
+
+                $provider = $plan->bank;
+
+                return ($enabledProviders[$provider] === 0);
             });
+
         }
 
         $issuers = [];

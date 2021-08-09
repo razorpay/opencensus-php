@@ -692,6 +692,8 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
+        $this->fixtures->merchant->enableDebitEmiProviders();
+
         $this->fixtures->emiPlan->create(
             [
                 'merchant_id' => '10000000000000',
@@ -722,9 +724,32 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertFalse($response['methods']['emi_types']['credit']);
     }
 
+    public function testGetCheckoutPreferencesForDisabledDebitEmiProviders()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->merchant->disableDebitEmiProviders();
+
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101312',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'HDFC',
+                'type'        => 'debit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayNotHasKey('HDFC_DC', $response['methods']['emi_options']);
+    }
+
     public function testGetCheckoutPreferencesForDebitEmiWithExistingCreditEmi()
     {
         $this->fixtures->merchant->enableEmi();
+        $this->fixtures->merchant->enableDebitEmiProviders();
 
         $this->fixtures->emiPlan->create(
             [
