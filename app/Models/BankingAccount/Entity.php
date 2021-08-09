@@ -657,6 +657,12 @@ class Entity extends Base\PublicEntity
                     ->get();
     }
 
+    public function getLatestActivationComment()
+    {
+        return $this->getActivationComments()
+                    ->first();
+    }
+
     public function bankingAccountDetails()
     {
         return $this->hasMany(Detail\Entity::class, Detail\Entity::BANKING_ACCOUNT_ID, self::ID);

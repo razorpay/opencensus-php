@@ -32,6 +32,9 @@ use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Models\BankingAccount\Gateway\Rbl\Processor as RblProcessor;
+use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\DiscrepancyInDoc;
+use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
+use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantPreparingDoc;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
 
 class BankingAccountTest extends TestCase
@@ -5023,5 +5026,120 @@ class BankingAccountTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = '/banking_accounts/' . '222' .'/10000000000000';
 
         $this->startTest();
+    }
+
+    public function testNotifyToSPOC()
+    {
+        Mail::fake();
+
+        $bankingAccount = $this->testCreateActivationDetail();
+
+        $this->fixtures->edit('banking_account',
+                              $bankingAccount['id'] ,
+                              [
+                                  'status' => Status::INITIATED,
+                              ]);
+
+        $request = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+                'content' => [
+                    Entity::SUB_STATUS => Status::MERCHANT_NOT_AVAILABLE,
+                ],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($request);
+
+        Mail::assertQueued(MerchantNotAvailable::class);
+    }
+
+    public function testNotifyToSPOCForMerchantPreparingDoc()
+    {
+        Mail::fake();
+
+        $bankingAccount = $this->testCreateActivationDetail();
+
+        $this->fixtures->edit('banking_account',
+                              $bankingAccount['id'] ,
+                              [
+                                  'status' => Status::INITIATED,
+                              ]);
+
+        $request = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+                'content' => [
+                    Entity::SUB_STATUS => Status::MERCHANT_PREPARING_DOCS,
+                ],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($request);
+
+        $createdAt = strtotime('- 5 day - 5 hours');
+
+        $bankingAccountState = $this->getDbLastEntity('banking_account_state');
+
+        $this->fixtures->edit('banking_account_state',
+                              $bankingAccountState->getId(),
+                              [
+                                  'created_at' => $createdAt,
+                              ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(MerchantPreparingDoc::class);
+    }
+
+    public function testNotifyToSPOCForDiscrepancyInDoc()
+    {
+        Mail::fake();
+
+        $bankingAccount = $this->testCreateActivationDetail();
+
+        $this->fixtures->edit('banking_account',
+                              $bankingAccount['id'] ,
+                              [
+                                  'status' => Status::PROCESSING,
+                              ]);
+
+        $request = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+                'content' => [
+                    Entity::SUB_STATUS => Status::DISCREPANCY_IN_DOCS,
+                ],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($request);
+
+        $bankingAccountState = $this->getDbLastEntity('banking_account_state');
+
+        $createdAt = strtotime('- 5 day - 5 hours');
+
+        $this->fixtures->edit('banking_account_state',
+                              $bankingAccountState->getId(),
+                              [
+                                  'created_at' => $createdAt,
+                              ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(DiscrepancyInDoc::class);
     }
 }

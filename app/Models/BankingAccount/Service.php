@@ -24,6 +24,9 @@ use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
+use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\DiscrepancyInDoc;
+use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
+use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantPreparingDoc;
 
 class Service extends Base\Service
 {
@@ -1038,6 +1041,83 @@ class Service extends Base\Service
                     'channel' => $channel
                 ],
                 'Current account on-boarding cannot be initiated for the Non Razorpay org merchants.');
+        }
+    }
+
+    public function notifyToSPOC(): array
+    {
+        try
+        {
+            $this->notifyForMerchantPreparingDoc();
+
+            $this->notifyForDiscrepancyInDoc();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::BANKING_ACCOUNT_NOTIFICATION_TO_SPOC_FAILED);
+        }
+
+        return [];
+    }
+
+    private function notifyForMerchantPreparingDoc()
+    {
+        $stateRepo = new State\Repository();
+
+        $spocGroupedBankingAccountStates = $stateRepo->getBankingAccountsStateBySubStateAndCreatedBetween(Status::MERCHANT_PREPARING_DOCS, strtotime('- 6 day'), strtotime('- 5 day'));
+
+        foreach ($spocGroupedBankingAccountStates as $spocEmail => $bankingAccountStates)
+        {
+            if (empty($spocEmail) === false)
+            {
+                $finalBankingAccountStates = [];
+
+                foreach ($bankingAccountStates as $bankingAccountState)
+                {
+                    $bankingAccount = $bankingAccountState->bankingAccount;
+
+                    if ($bankingAccountState->getSubStatus() === $bankingAccount->getSubStatus())
+                    {
+                        array_push($finalBankingAccountStates, $bankingAccountState);
+                    }
+                }
+
+                $mailable = new MerchantPreparingDoc($finalBankingAccountStates, $spocEmail);
+
+                Mail::queue($mailable);
+            }
+        }
+    }
+
+    private function notifyForDiscrepancyInDoc()
+    {
+        $stateRepo = new State\Repository();
+
+        $spocGroupedBankingAccountStates = $stateRepo->getBankingAccountsStateBySubStateAndCreatedBetween(Status::DISCREPANCY_IN_DOCS, strtotime('- 6 day'), strtotime('- 5 day'));
+
+        foreach ($spocGroupedBankingAccountStates as $spocEmail => $bankingAccountStates)
+        {
+            if (empty($spocEmail) === false)
+            {
+                $finalBankingAccountStates = [];
+
+                foreach ($bankingAccountStates as $bankingAccountState)
+                {
+                    $bankingAccount = $bankingAccountState->bankingAccount;
+
+                    if ($bankingAccountState->getSubStatus() === $bankingAccount->getSubStatus())
+                    {
+                        array_push($finalBankingAccountStates, $bankingAccountState);
+                    }
+                }
+
+                $mailable = new DiscrepancyInDoc($finalBankingAccountStates, $spocEmail);
+
+                Mail::queue($mailable);
+            }
         }
     }
 }

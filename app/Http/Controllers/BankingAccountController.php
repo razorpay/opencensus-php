@@ -202,4 +202,11 @@ class BankingAccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function sendNotificationToSPOC()
+    {
+        $response = $this->service()->notifyToSPOC();
+
+        return ApiResponse::json($response);
+    }
 }

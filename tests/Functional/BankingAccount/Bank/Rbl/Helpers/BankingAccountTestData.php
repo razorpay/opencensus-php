@@ -2800,4 +2800,37 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testNotifyToSPOC' => [
+        'request' => [
+            'url'     => '/banking_accounts/send_notification',
+            'method'  => 'GET',
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testNotifyToSPOCForMerchantPreparingDoc' => [
+        'request' => [
+            'url'     => '/banking_accounts/send_notification',
+            'method'  => 'GET',
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testNotifyToSPOCForDiscrepancyInDoc' => [
+        'request' => [
+            'url'     => '/banking_accounts/send_notification',
+            'method'  => 'GET',
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
 ];

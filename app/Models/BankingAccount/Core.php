@@ -45,6 +45,7 @@ use RZP\Models\BankingAccountStatement\Channel as BasChannel;
 use RZP\Models\BankingAccountStatement\Details as BASDetails;
 use RZP\Models\BankingAccount\Activation\Notification\Notifier;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
+use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
 use RZP\Constants\Mode;
 
@@ -1161,6 +1162,8 @@ class Core extends Base\Core
             if ($bankingAccountSubStatusChanged === true)
             {
                 $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
+
+                $this->notifyForMerchantNotAvailableToSPOC($bankingAccount);
             }
         }
     }
@@ -1674,5 +1677,33 @@ class Core extends Base\Core
             }
         }
 
+    }
+
+    private function notifyForMerchantNotAvailableToSPOC(Entity $bankingAccount)
+    {
+        if($bankingAccount->getSubStatus() !== Status::MERCHANT_NOT_AVAILABLE)
+        {
+            return;
+        }
+
+        $stateRepo = new State\Repository();
+
+        $bankingAccountState = $stateRepo->getStateByBankingAccountIdAndSubState($bankingAccount->getId(), Status::MERCHANT_NOT_AVAILABLE);
+
+        $spocEmail = $bankingAccount->spocs()->first()['email'];
+
+        if (empty($spocEmail) === false)
+        {
+            $finalBankingAccountStates = [];
+
+            if ($bankingAccountState->getSubStatus() === $bankingAccount->getSubStatus())
+            {
+                array_push($finalBankingAccountStates, $bankingAccountState);
+            }
+
+            $mailable = new MerchantNotAvailable($finalBankingAccountStates, $spocEmail);
+
+            Mail::queue($mailable);
+        }
     }
 }
