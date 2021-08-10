@@ -48,6 +48,14 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
         }
         catch (DBQueryException $ex)
         {
+            if ((empty($row[Constants::COLUMN_PAYMENT_ID]) === false) and (strlen($row[Constants::COLUMN_PAYMENT_ID]) === 14))
+            {
+                return $row[Constants::COLUMN_PAYMENT_ID];
+            }
+
+            $this->trace->info(TraceCode::MISC_TRACE_CODE, ['fetching payment id from nbplus for payment id' => $row[Constants::COLUMN_PAYMENT_ID],
+                                                                     'bankPaymentId' =>  $row[Constants::BANK_PAYMENT_ID]]);
+
             /**
              * In case the payment is not found in api DB due to incorrect payment id in file
              * Then fetch from nbplus using bank_transaction_id field
