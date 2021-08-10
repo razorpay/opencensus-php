@@ -32,31 +32,35 @@ class Status
     const ARCHIVED_EXTERNAL    = 'Archived';
 
     // Substatuses
-    const MERCHANT_NOT_AVAILABLE = 'merchant_not_available';
-    const MERCHANT_PREPARING_DOCS = 'merchant_preparing_docs';
-    const READY_TO_SEND_TO_BANK = 'ready_to_send_to_bank';
-    const BANK_TO_PICKUP_DOCS = 'bank_to_pickup_docs';
-    const BANK_PICKED_UP_DOCS = 'bank_picked_up_docs';
-    const DISCREPANCY_IN_DOCS = 'discrepancy_in_docs';
-    const BANK_OPENED_ACCOUNT = 'bank_opened_account';
-    const API_ONBOARDING_PENDING = 'api_onboarding_pending';
-    const API_ONBOARDING_INITIATED = 'api_onboarding_initiated';
-    const API_ONBOARDING_IN_PROGRESS = 'api_onboarding_in_progress';
-    const NONE = 'none';
+    const DOCS_WALK_THROUGH_PENDING      = 'docs_walkthrough_pending';
+    const NEEDS_CLARIFICATION_FROM_SALES = 'needs_clarification_from_sales';
+    const MERCHANT_NOT_AVAILABLE         = 'merchant_not_available';
+    const MERCHANT_PREPARING_DOCS        = 'merchant_preparing_docs';
+    const READY_TO_SEND_TO_BANK          = 'ready_to_send_to_bank';
+    const BANK_TO_PICKUP_DOCS            = 'bank_to_pickup_docs';
+    const BANK_PICKED_UP_DOCS            = 'bank_picked_up_docs';
+    const DISCREPANCY_IN_DOCS            = 'discrepancy_in_docs';
+    const BANK_OPENED_ACCOUNT            = 'bank_opened_account';
+    const API_ONBOARDING_PENDING         = 'api_onboarding_pending';
+    const API_ONBOARDING_INITIATED       = 'api_onboarding_initiated';
+    const API_ONBOARDING_IN_PROGRESS     = 'api_onboarding_in_progress';
+    const NONE                           = 'none';
 
 
     // External Substatuses as inputted by Ops/Sales teams via batch
-    const MERCHANT_NOT_AVAILABLE_EXTERNAL = 'Merchant is not Available';
-    const MERCHANT_PREPARING_DOCS_EXTERNAL = 'Merchant is preparing Docs';
-    const READY_TO_SEND_TO_BANK_EXTRENAL = 'Ready to send to Bank';
-    const BANK_TO_PICKUP_DOCS_EXTERNAL = 'Bank yet to pick up Docs';
-    const BANK_PICKED_UP_DOCS_EXTERNAL = 'Bank has picked up Docs';
-    const DISCREPANCY_IN_DOCS_EXTERNAL = 'Discrepancy in Docs';
-    const BANK_OPENED_ACCOUNT_EXTERNAL = 'Bank Opened Account-Webhook Pending';
-    const API_ONBOARDING_PENDING_EXTERNAL = 'API onboarding is Pending on RZP';
-    const API_ONBOARDING_INITIATED_EXTERNAL = 'API onboarding has been initiated by RZP';
-    const API_ONBOARDING_IN_PROGRESS_EXTERNAL = 'API onboarding in Progress';
-    const NONE_EXTERNAL = 'None';
+    const DOCS_WALK_THROUGH_PENDING_EXTERNAL      = 'Docs Walkthrough Pending';
+    const NEEDS_CLARIFICATION_FROM_SALES_EXTERNAL = 'Needs clarification from Sales';
+    const MERCHANT_NOT_AVAILABLE_EXTERNAL         = 'Merchant is not Available';
+    const MERCHANT_PREPARING_DOCS_EXTERNAL        = 'Merchant is preparing Docs';
+    const READY_TO_SEND_TO_BANK_EXTRENAL          = 'Ready to send to Bank';
+    const BANK_TO_PICKUP_DOCS_EXTERNAL            = 'Bank yet to pick up Docs';
+    const BANK_PICKED_UP_DOCS_EXTERNAL            = 'Bank has picked up Docs';
+    const DISCREPANCY_IN_DOCS_EXTERNAL            = 'Discrepancy in Docs';
+    const BANK_OPENED_ACCOUNT_EXTERNAL            = 'Bank Opened Account-Webhook Pending';
+    const API_ONBOARDING_PENDING_EXTERNAL         = 'API onboarding is Pending on RZP';
+    const API_ONBOARDING_INITIATED_EXTERNAL       = 'API onboarding has been initiated by RZP';
+    const API_ONBOARDING_IN_PROGRESS_EXTERNAL     = 'API onboarding in Progress';
+    const NONE_EXTERNAL                           = 'None';
 
 
     //
@@ -167,6 +171,8 @@ class Status
 
     # TODO: Finalize after checking with Product
     protected static $subStatuses = [
+        self::NEEDS_CLARIFICATION_FROM_SALES,
+        self::DOCS_WALK_THROUGH_PENDING,
         self::MERCHANT_NOT_AVAILABLE,
         self::MERCHANT_PREPARING_DOCS,
         self::READY_TO_SEND_TO_BANK,
@@ -196,6 +202,8 @@ class Status
             self::MERCHANT_NOT_AVAILABLE,
             self::MERCHANT_PREPARING_DOCS,
             self::READY_TO_SEND_TO_BANK,
+            self::DOCS_WALK_THROUGH_PENDING,
+            self::NEEDS_CLARIFICATION_FROM_SALES,
         ],
         self::INITIATED => [
             self::NONE,
@@ -285,18 +293,20 @@ class Status
     ];
 
     public static $externalToInternalSubStatusMap = [
-        self::MERCHANT_NOT_AVAILABLE_EXTERNAL => self::MERCHANT_NOT_AVAILABLE,
-        self::MERCHANT_PREPARING_DOCS_EXTERNAL => self::MERCHANT_PREPARING_DOCS,
-        self::READY_TO_SEND_TO_BANK_EXTRENAL => self::READY_TO_SEND_TO_BANK,
-        self::BANK_TO_PICKUP_DOCS_EXTERNAL => self::BANK_TO_PICKUP_DOCS,
-        self::BANK_PICKED_UP_DOCS_EXTERNAL => self::BANK_PICKED_UP_DOCS,
-        self::DISCREPANCY_IN_DOCS_EXTERNAL => self::DISCREPANCY_IN_DOCS,
-        self::BANK_OPENED_ACCOUNT_EXTERNAL => self::BANK_OPENED_ACCOUNT,
-        self::API_ONBOARDING_PENDING_EXTERNAL => self::API_ONBOARDING_PENDING,
-        self::API_ONBOARDING_INITIATED_EXTERNAL => self::API_ONBOARDING_INITIATED,
-        self::API_ONBOARDING_IN_PROGRESS_EXTERNAL => self::API_ONBOARDING_IN_PROGRESS,
-        self::NONE_EXTERNAL => self::NONE,
-        'null' => null
+        self::NEEDS_CLARIFICATION_FROM_SALES_EXTERNAL => self::NEEDS_CLARIFICATION_FROM_SALES,
+        self::DOCS_WALK_THROUGH_PENDING_EXTERNAL      => self::DOCS_WALK_THROUGH_PENDING,
+        self::MERCHANT_NOT_AVAILABLE_EXTERNAL         => self::MERCHANT_NOT_AVAILABLE,
+        self::MERCHANT_PREPARING_DOCS_EXTERNAL        => self::MERCHANT_PREPARING_DOCS,
+        self::READY_TO_SEND_TO_BANK_EXTRENAL          => self::READY_TO_SEND_TO_BANK,
+        self::BANK_TO_PICKUP_DOCS_EXTERNAL            => self::BANK_TO_PICKUP_DOCS,
+        self::BANK_PICKED_UP_DOCS_EXTERNAL            => self::BANK_PICKED_UP_DOCS,
+        self::DISCREPANCY_IN_DOCS_EXTERNAL            => self::DISCREPANCY_IN_DOCS,
+        self::BANK_OPENED_ACCOUNT_EXTERNAL            => self::BANK_OPENED_ACCOUNT,
+        self::API_ONBOARDING_PENDING_EXTERNAL         => self::API_ONBOARDING_PENDING,
+        self::API_ONBOARDING_INITIATED_EXTERNAL       => self::API_ONBOARDING_INITIATED,
+        self::API_ONBOARDING_IN_PROGRESS_EXTERNAL     => self::API_ONBOARDING_IN_PROGRESS,
+        self::NONE_EXTERNAL                           => self::NONE,
+        'null'                                        => null
     ];
 
 

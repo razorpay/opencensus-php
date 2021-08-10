@@ -1820,31 +1820,31 @@ class BankingAccountTest extends TestCase
     public function testUpdateBankingAccountStatusProcessingToProcessedForNeostone()
     {
         $this->assertUpdateBankingAccountStatusFromToForNeostone(
-            \RZP\Models\BankingAccount\Status::PROCESSING,
-            \RZP\Models\BankingAccount\Status::PROCESSED);
+            Status::PROCESSING,
+            Status::PROCESSED);
     }
 
     public function testUpdateBankingAccountStatusCreatedToPickedForNeostone()
     {
         $this->assertUpdateBankingAccountStatusFromToForNeostone(
-            \RZP\Models\BankingAccount\Status::CREATED,
-            \RZP\Models\BankingAccount\Status::PICKED);
+            Status::CREATED,
+            Status::PICKED);
     }
 
     public function testUpdateBankingAccountStatusPickedToInitiatedForNeostone()
     {
         $this->assertUpdateBankingAccountStatusFromToForNeostone(
-            \RZP\Models\BankingAccount\Status::PICKED,
-            \RZP\Models\BankingAccount\Status::INITIATED);
+            Status::PICKED,
+            Status::INITIATED);
     }
 
     public function testUpdateBankingAccountStatusWithSubStatusForNeostone()
     {
         $this->assertUpdateBankingAccountStatusFromToForNeostone(
-            \RZP\Models\BankingAccount\Status::INITIATED,
-            \RZP\Models\BankingAccount\Status::PROCESSING,
+            Status::INITIATED,
+            Status::PROCESSING,
             null,
-            \RZP\Models\BankingAccount\Status::DISCREPANCY_IN_DOCS);
+            Status::DISCREPANCY_IN_DOCS);
     }
 
     protected function assertUpdateBankingAccountStatusFromTo(string $initialStatus,
@@ -1940,75 +1940,93 @@ class BankingAccountTest extends TestCase
     public function testUpdateBankingAccountStatusProcessingToProcessed()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
-            \RZP\Models\BankingAccount\Status::PROCESSING,
-            \RZP\Models\BankingAccount\Status::PROCESSED);
+            Status::PROCESSING,
+            Status::PROCESSED);
     }
 
     public function testUpdateBankingAccountStatusCreatedToProcessed()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
-            \RZP\Models\BankingAccount\Status::CREATED,
-            \RZP\Models\BankingAccount\Status::PROCESSED);
+            Status::CREATED,
+            Status::PROCESSED);
     }
 
     public function testUpdateBankingAccountStatusPickedToProcessed()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
-            \RZP\Models\BankingAccount\Status::PICKED,
-            \RZP\Models\BankingAccount\Status::PROCESSED);
+            Status::PICKED,
+            Status::PROCESSED);
     }
 
     public function testUpdateBankingAccountStatusInitiatedToProcessed()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
-            \RZP\Models\BankingAccount\Status::INITIATED,
-            \RZP\Models\BankingAccount\Status::PROCESSED);
+            Status::INITIATED,
+            Status::PROCESSED);
     }
 
     public function testUpdateBankingAccountStatusUnservicableToPicked()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
-            \RZP\Models\BankingAccount\Status::UNSERVICEABLE,
-            \RZP\Models\BankingAccount\Status::PICKED);
+            Status::UNSERVICEABLE,
+            Status::PICKED);
     }
 
     public function testUpdateBankingAccountStatusCancelledToPicked()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
-            \RZP\Models\BankingAccount\Status::CANCELLED,
-            \RZP\Models\BankingAccount\Status::PICKED);
+            Status::CANCELLED,
+            Status::PICKED);
     }
 
     public function testUpdateBankingAccountStatusArchivedToProcessed()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
-            \RZP\Models\BankingAccount\Status::ARCHIVED,
-            \RZP\Models\BankingAccount\Status::PROCESSED);
+            Status::ARCHIVED,
+            Status::PROCESSED);
     }
 
     public function testUpdateBankingAccountStatusRejectedToProcessed()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
-            \RZP\Models\BankingAccount\Status::REJECTED,
-            \RZP\Models\BankingAccount\Status::PROCESSED);
+            Status::REJECTED,
+            Status::PROCESSED);
     }
 
     public function testUpdateBankingAccountSubStatus()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
-            \RZP\Models\BankingAccount\Status::INITIATED,
-            \RZP\Models\BankingAccount\Status::INITIATED,
+            Status::INITIATED,
+            Status::INITIATED,
             null,
-            \RZP\Models\BankingAccount\Status::MERCHANT_NOT_AVAILABLE);
+            Status::MERCHANT_NOT_AVAILABLE);
+    }
+
+    public function testUpdateBankingAccountSubStatusForDocsWalkThrough()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED,
+            Status::PICKED,
+            null,
+            Status::DOCS_WALK_THROUGH_PENDING);
+    }
+
+    public function testUpdateBankingAccountSubStatusForNeedClarification()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED,
+            Status::PICKED,
+            null,
+            Status::NEEDS_CLARIFICATION_FROM_SALES);
     }
 
     public function testUpdateBankingAccountStatusWithSubStatus()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
-            \RZP\Models\BankingAccount\Status::PICKED,
-            \RZP\Models\BankingAccount\Status::INITIATED,
+            Status::PICKED,
+            Status::INITIATED,
             null,
-            \RZP\Models\BankingAccount\Status::MERCHANT_NOT_AVAILABLE);
+            Status::MERCHANT_NOT_AVAILABLE);
     }
 
     public function testUpdateBankingAccountStatusWithInvalidSubStatus()
@@ -2016,18 +2034,18 @@ class BankingAccountTest extends TestCase
         $this->expectException(BadRequestValidationFailureException::class);
 
         $this->assertUpdateBankingAccountStatusFromTo(
-            \RZP\Models\BankingAccount\Status::INITIATED,
-            \RZP\Models\BankingAccount\Status::PROCESSING,
+            Status::INITIATED,
+            Status::PROCESSING,
             null,
-            \RZP\Models\BankingAccount\Status::MERCHANT_NOT_AVAILABLE);
+            Status::MERCHANT_NOT_AVAILABLE);
     }
 
     public function testUpdateBankingAccountStatusWithNoneSubStatus()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
-            \RZP\Models\BankingAccount\Status::PICKED,
-            \RZP\Models\BankingAccount\Status::INITIATED,
-            \RZP\Models\BankingAccount\Status::MERCHANT_NOT_AVAILABLE,
+            Status::PICKED,
+            Status::INITIATED,
+            Status::MERCHANT_NOT_AVAILABLE,
             Status::NONE);
     }
 
