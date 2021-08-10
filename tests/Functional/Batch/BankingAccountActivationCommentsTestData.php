@@ -21,4 +21,25 @@ return [
             ],
         ],
     ],
+
+    'testBatchUploadIcici'          => [
+        'request'  => [
+            'url'     => '/admin/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'     => 'icici_lead_account_activation_comments',
+                'config'   => [
+                    'added_at' => 1593567500,
+                    'source_team_type' => 'external',
+                    'source_team'   => 'bank',
+                    'channel'       => 'icici'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'        => 'CREATED'
+            ],
+        ],
+    ],
 ];

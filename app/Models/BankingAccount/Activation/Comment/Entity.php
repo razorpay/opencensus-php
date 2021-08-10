@@ -43,6 +43,8 @@ class Entity extends Base\PublicEntity
     //other constants
     const ADMIN_EMAIL = 'admin_email';
 
+    const ADMIN_NAME = 'admin_name';
+
     protected $entity = 'banking_account_comment';
 
     protected $table = Table::BANKING_ACCOUNT_COMMENT;

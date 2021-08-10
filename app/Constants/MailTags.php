@@ -77,8 +77,9 @@ class MailTags
     const BATCH_PAYOUT_FILE                = 'batch_payout_file';
     const BATCH_TALLY_PAYOUT_FILE          = 'batch_tally_payout_file';
     const BATCH_MERCHANT_ONBOARDING_FILE   = 'batch_merchant_onboarding_file';
-    const BATCH_BANKING_ACCOUNT_ACTIVATION_COMMENTS_FILE
-                                           = 'batch_banking_account_activation_comments_file';
+
+    const BATCH_BANKING_ACCOUNT_ACTIVATION_COMMENTS_FILE         = 'batch_banking_account_activation_comments_file';
+    const BATCH_ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS_FILE      = 'batch_icici_lead_account_activation_comments_file';
 
     const BATCH_PARTNER_SUBMERCHANT_INVITE_FILE = 'batch_partner_submerchant_invite_file';
 

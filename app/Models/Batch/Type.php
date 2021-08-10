@@ -140,7 +140,9 @@ class Type
 
     const CREDIT              = 'credit';
 
-    const BANKING_ACCOUNT_ACTIVATION_COMMENTS  = 'banking_account_activation_comments';
+    const BANKING_ACCOUNT_ACTIVATION_COMMENTS     = 'banking_account_activation_comments';
+
+    const ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS  = 'icici_lead_account_activation_comments';
 
 
     const INTERNAL_INSTRUMENT_REQUEST = 'internal_instrument_request';
@@ -210,6 +212,7 @@ class Type
         self::CREDIT,
         self::MERCHANT_STATUS_ACTION,
         self::BANKING_ACCOUNT_ACTIVATION_COMMENTS,
+        self::ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS,
         self::NACH_MIGRATION,
         self::MERCHANT_ACTIVATION,
         self::INTERNAL_INSTRUMENT_REQUEST,

@@ -526,6 +526,7 @@ class AdminFetch
                         'submerchant_type_update',
                         'submerchant_delink',
                         'banking_account_activation_comments',
+                        'icici_lead_account_activation_comments',
                         'partner_submerchant_invite',
                         'nach_debit_nach_citi',
                         'website_checker',

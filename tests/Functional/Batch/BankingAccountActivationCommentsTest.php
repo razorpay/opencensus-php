@@ -87,6 +87,47 @@ class BankingAccountActivationCommentsTest extends TestCase
         $response = $this->startTest();
     }
 
+    public function testBatchUploadIcici(array $entries = [])
+    {
+        $comment = "This is a sample comment from the icici bank.";
+
+        if (empty($entries) === true)
+        {
+            $entries = [
+                [
+                    Batch\Header::APPLICATION_NO => '198734',
+                    Batch\Header::TRACKER_ID => '2022345678',
+                    Batch\Header::CLIENT_NAME => 'Test Account',
+                    Batch\Header::F_NAME => 'Razorpay',
+                    Batch\Header::L_NAME => 'Private Limited',
+                    Batch\Header::LEADID => '345612367',
+                    Batch\Header::ICICI_CA_ACCOUNT_NUMBER => '1234543122',
+                    Batch\Header::ICICI_CA_ACCOUNT_STATUS => '1234543121',
+                    Batch\Header::LAST_UPDATED_ON_DATE => '20/7/2020 12:00:00 AM',
+                    Batch\Header::LAST_UPDATED_ON_TIME => '20/7/2020 12:00:00 AM',
+                    Batch\Header::COMMENT_OR_REMARKS => $comment,
+                ],
+                [
+                    Batch\Header::APPLICATION_NO => '198735',
+                    Batch\Header::TRACKER_ID => '2022345678',
+                    Batch\Header::CLIENT_NAME => 'Test Account',
+                    Batch\Header::F_NAME => 'Razorpay',
+                    Batch\Header::L_NAME => 'Private Limited',
+                    Batch\Header::LEADID => '345612367',
+                    Batch\Header::ICICI_CA_ACCOUNT_NUMBER => '1234543122',
+                    Batch\Header::ICICI_CA_ACCOUNT_STATUS => '1234543121',
+                    Batch\Header::LAST_UPDATED_ON_DATE => '20/7/2020 12:00:00 AM',
+                    Batch\Header::LAST_UPDATED_ON_TIME => '20/7/2020 12:00:00 AM',
+                    Batch\Header::COMMENT_OR_REMARKS => $comment,
+                ]
+            ];
+        }
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
+
     public function testBatchUploadIncorrectHeaders()
     {
         $entries = [
@@ -114,5 +155,34 @@ class BankingAccountActivationCommentsTest extends TestCase
         $this->expectException(BadRequestException::class);
 
         $this->testBatchUpload($entries);
+    }
+
+    public function testBatchUploadIncorrectHeadersForIcici()
+    {
+        $entries = [
+            [
+                'abc' => '191919',
+                Batch\Header::COMMENT => 'Sample comment'
+            ]
+        ];
+
+        $this->expectException(BadRequestException::class);
+
+        $this->testBatchUploadIcici($entries);
+    }
+
+    public function testBatchUploadIncorrectValuesForIcici()
+    {
+        $entries = [
+            [
+                Batch\Header::APPLICATION_NO => 'abc',
+                Batch\Header::COMMENT => 'Sample comment',
+                Batch\Header::TRACKER_ID => 'Razorpay Processing'
+            ]
+        ];
+
+        $this->expectException(BadRequestException::class);
+
+        $this->testBatchUploadIcici($entries);
     }
 }

@@ -1055,6 +1055,18 @@ class Header
     const SALES_TEAM                = 'Sales Team';
     const SALES_POC_EMAIL           = 'Sales POC Email';
 
+    //ICICI CA Activation
+    const APPLICATION_NO            = 'APPLICATION_NO';
+    const TRACKER_ID                = 'TRACKER_ID';
+    const CLIENT_NAME               = 'Client name';
+    const F_NAME                    = 'F_NAME';
+    const L_NAME                    = 'L_NAME';
+    const LEADID                    = 'LEADID';
+    const ICICI_CA_ACCOUNT_NUMBER   = 'Account number';
+    const ICICI_CA_ACCOUNT_STATUS   = 'Account status';
+    const LAST_UPDATED_ON_DATE      = 'Last updated on date';
+    const LAST_UPDATED_ON_TIME      = 'Last updated on time';
+    const COMMENT_OR_REMARKS        = 'Comment/Remarks';
 
     // Internal Instrument Request
     const INTERNAL_INSTRUMENT_REQUEST_ID = 'internal_instrument_request_id';
@@ -3657,6 +3669,21 @@ class Header
             ],
         ],
 
+        Type::ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS => [
+            self::INPUT => [
+                self::APPLICATION_NO,
+                self::TRACKER_ID,
+                self::CLIENT_NAME,
+                self::F_NAME,
+                self::L_NAME,
+                self::LEADID,
+                self::ICICI_CA_ACCOUNT_NUMBER,
+                self::ICICI_CA_ACCOUNT_STATUS,
+                self::LAST_UPDATED_ON_DATE,
+                self::LAST_UPDATED_ON_TIME,
+                self::COMMENT_OR_REMARKS
+            ]
+        ],
 
         Type::INTERNAL_INSTRUMENT_REQUEST => [
             self::INPUT => [

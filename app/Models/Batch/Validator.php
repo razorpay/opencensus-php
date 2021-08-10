@@ -277,6 +277,12 @@ class Validator extends Base\Validator
         Entity::CONFIG      => 'filled|array',
     ];
 
+    protected static $iciciLeadAccountActivationCommentsCreateRules = [
+        Entity::FILE        => 'required|file' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE        => 'required|in:icici_lead_account_activation_comments',
+        Entity::CONFIG      => 'filled|array',
+    ];
+
     protected static $virtualBankAccountCreateRules = [
         Entity::TYPE                 => 'required|in:virtual_bank_account',
         Entity::FILE                 => 'required|file' . self::DEFAULT_MIME_RULE,
@@ -1923,6 +1929,20 @@ class Validator extends Base\Validator
         else
         {
             return BatchHelper::PAISE;
+        }
+    }
+
+    protected function validateIciciLeadAccountActivationCommentsEntries(array &$entries, array $params, ME $merchant)
+    {
+        foreach ($entries as $entry)
+        {
+            $applicationNumber = $entry[Header::APPLICATION_NO];
+
+            if (empty($applicationNumber) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_APPLICATION_NO);
+            }
         }
     }
 }
