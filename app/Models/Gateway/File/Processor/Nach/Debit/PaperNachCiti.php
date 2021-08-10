@@ -14,7 +14,6 @@ use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Customer\Token;
 use RZP\Models\Gateway\File\Status;
-use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Exception\ServerErrorException;
@@ -487,20 +486,13 @@ class PaperNachCiti extends Debit\Base
      */
     public function fetchEntities(): PublicCollection
     {
-        if (Holidays::isWorkingDay(Carbon::now(Timezone::IST)) === false)
-        {
-            return new PublicCollection();
-        }
-
         $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
                          ->addHours(9)
                          ->getTimestamp();
 
-        $begin = $this->getLastWorkingDay($begin);
-
         $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
-                      ->addHours(9)
-                      ->getTimestamp();
+                       ->addHours(9)
+                       ->getTimestamp();
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
 
@@ -530,8 +522,8 @@ class PaperNachCiti extends Debit\Base
             if ($token->merchant->isEarlyMandatePresentmentEnabled() === true)
             {
                 $end = Carbon::createFromTimestamp($begin, Timezone::IST)
-                                ->addHours(7)
-                                ->getTimestamp();
+                               ->addHours(7)
+                               ->getTimestamp();
 
                 $createdAt = $token['payment_created_at'];
                 /*
