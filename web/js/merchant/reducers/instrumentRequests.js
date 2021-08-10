@@ -607,15 +607,22 @@ let initialState = {
       actionItems: {},
       leafList: [
         {
-          header: 'EMI on Cards',
-          docLink: 'https://razorpay.com/docs/payment-gateway/payment-methods/emi/',
+          header: 'Debit Card EMI',
+          docLink: 'https://razorpay.com/docs/payment-gateway/payment-methods/emi/debit-card-emi/',
           list: [
             {
-              name: 'Debit Cards',
+              name: 'HDFC Bank',
               description: '',
               status: 'Request',
-              slug: 'debit',
+              slug: 'debit.hdfc',
+              icon: 'https://cdn.razorpay.com/paylater-sq/hdfc.svg',
             },
+          ],
+        },
+        {
+          header: 'Credit Card EMI',
+          docLink: 'https://razorpay.com/docs/payment-gateway/payment-methods/emi/',
+          list: [
             {
               name: 'Credit Cards',
               description: '',

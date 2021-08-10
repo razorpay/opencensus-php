@@ -61,5 +61,7 @@ function getIconFn(iconName) {
 
 export const getIcon = (iconName) => {
   const iconFn = getIconFn(iconName);
-  return `https://cdn.razorpay.com/static/assets/instrument-request/${iconFn}.png`;
+  return iconName.includes('https://')
+    ? iconName
+    : `https://cdn.razorpay.com/static/assets/instrument-request/${iconFn}.png`;
 };
