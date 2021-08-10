@@ -699,7 +699,7 @@ trait PayoutTrait
                 'source_type'         => 'payout',
                 'status'              => $status,
                 'utr'                 => $utr,
-                'source_account_id'   => '111111111',
+                'source_account_id'   => 111111111,
                 'bank_account_type'   => 'current'
             ],
         ];

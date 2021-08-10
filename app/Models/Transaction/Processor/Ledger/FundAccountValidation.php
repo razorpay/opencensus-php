@@ -139,6 +139,15 @@ class FundAccountValidation extends Base
             ];
         }
 
-        return $ftsSourceAccountInformation;
+        if (empty($ftsSourceAccountInformation) === true)
+        {
+            return $ftsSourceAccountInformation;
+        }
+
+        // Specifically converting the values to string as FTS sometimes passes this info as integers
+        return [
+            self::FTS_FUND_ACCOUNT_ID => (string) $ftsSourceAccountInformation[self::FTS_FUND_ACCOUNT_ID] ?? null,
+            self::FTS_ACCOUNT_TYPE    => (string) $ftsSourceAccountInformation[self::FTS_ACCOUNT_TYPE] ?? null,
+        ];
     }
 }

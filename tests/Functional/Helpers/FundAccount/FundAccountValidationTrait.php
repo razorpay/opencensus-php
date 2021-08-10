@@ -107,7 +107,7 @@ trait FundAccountValidationTrait
             'status'              => ($status === 'COMPLETED') ? 'PROCESSED' : $status,
             'remarks'             => ($status === 'COMPLETED') ? 'Transaction Successful' : 'Invalid Bene/Mobile number',
             'utr'                 => str_shuffle('111917301337'),
-            'source_account_id'   => '1111111',
+            'source_account_id'   => 1111111,
             'bank_account_type'   => 'current',
         ];
 
