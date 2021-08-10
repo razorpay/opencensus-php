@@ -2020,18 +2020,6 @@ class Validator extends Base\Validator
         Entity::STATUS  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
-    public function validateEntry($entry)
-    {
-        $hasInvalidPlan = $entry[Constants::INVALID_PLAN] ?? false;
-
-        if ($hasInvalidPlan)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_MULTIPLE_PLAN_NAME_ON_SAME_GATEWAY_MERCHANT_ID
-            );
-        }
-    }
-
     public function validateType()
     {
         $type = $this->entity->getType();

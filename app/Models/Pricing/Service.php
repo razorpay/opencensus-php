@@ -14,6 +14,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Models\Payment\Method;
+use RZP\Models\Admin\Org;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor;
 use RZP\Models\Base\UniqueIdEntity;
@@ -250,18 +251,13 @@ class Service extends Base\Service
                 'request body' => $this->redactBulkInput($input),
             ]);
 
-        // grouping pricing rules by Plan Name.
-        $groupedRules = collect($input)->groupBy(Entity::PLAN_NAME);
-
         $buyPricingRules = new PublicCollection();
 
-        foreach ($groupedRules as $item)
+        foreach ($input as $item)
         {
-            // Item is a group of rules with same MAI and plan name. These will be processed together.
             $rowOutput = $this->processAddBulkBuyPricingRules($item);
 
-            $buyPricingRules = $buyPricingRules->mergeRecursive($rowOutput);
-
+            $buyPricingRules = $buyPricingRules->push($rowOutput);
         }
 
         return $buyPricingRules->toArrayWithItems();
@@ -279,63 +275,54 @@ class Service extends Base\Service
 
     protected function processAddBulkBuyPricingRules($item)
     {
-        $idempotencyKeys = $item->pluck(Constants::IDEMPOTENCY_KEY);
+        $idempotencyKey = $item[Constants::IDEMPOTENCY_KEY];
 
         $item = $this->modifyInput($item);
 
-        $input[Entity::PLAN_NAME] = $item[0][Entity::PLAN_NAME];
-        $input[Entity::RULES] = $item->toArray();
+        $input[Entity::PLAN_NAME] = $item[Entity::PLAN_NAME];
+        $input[Entity::RULES] = array($item);
 
         try
         {
-            // input is plan_name + group of rules on same MAI.
             $this->processEntry($input);
 
-            $planName = $input[Entity::PLAN_NAME];
-
-            return $idempotencyKeys->map(function ($key) use ($planName)
-            {
-                return [Entity::PLAN_NAME => $planName, Constants::BATCH_SUCCESS => true, Constants::IDEMPOTENCY_KEY => $key];
-            });
+            return [Entity::PLAN_NAME => $input[Entity::PLAN_NAME], Constants::BATCH_SUCCESS => true, Constants::IDEMPOTENCY_KEY => $idempotencyKey];
         }
         catch (\Throwable $e)
         {
-            return $idempotencyKeys->map(function ($key) use ($e)
-            {
-                return [
-                    Constants::IDEMPOTENCY_KEY   => $key,
-                    Constants::BATCH_SUCCESS     => false,
-                    Constants::BATCH_ERROR       => [
-                        Constants::BATCH_ERROR_DESCRIPTION  => $e->getMessage(),
-                        Constants::BATCH_ERROR_CODE         => $e->getCode(),
-                    ]
-                ];
-            });
+            return [
+                Constants::IDEMPOTENCY_KEY   => $idempotencyKey,
+                Constants::BATCH_SUCCESS     => false,
+                Constants::BATCH_ERROR       => [
+                    Constants::BATCH_ERROR_DESCRIPTION  => $e->getMessage(),
+                    Constants::BATCH_ERROR_CODE         => $e->getCode(),
+                ]
+            ];
         }
     }
 
-    private function modifyInput($item)
+    private function modifyInput($rule)
     {
-        $item = $item->map(function ($rule)
+        unset($rule[Constants::IDEMPOTENCY_KEY]);
+
+        array_walk($rule, function (&$value, &$key)
         {
-            unset($rule[Constants::IDEMPOTENCY_KEY]);
+            $value = $value === '' ? null : $value;
 
-            array_walk($rule, function (&$value, &$key)
+            // Networks, Issuers can be passed as array for multiple rules creation in one go.
+            if (in_array($key, [Entity::PAYMENT_ISSUER, Entity::PAYMENT_NETWORK]))
             {
-                $value = $value === '' ? null : $value;
+                $value = isset($value) ? explode(",",$value) : null;
+            }
 
-                // Networks, Issuers can be passed as array for multiple rules creation in one go.
-                if (in_array($key, [Entity::PAYMENT_ISSUER, Entity::PAYMENT_NETWORK]))
-                {
-                    $value = isset($value) ? explode(",",$value) : null;
-                }
+            if ($key === Entity::AMOUNT_RANGE_MAX and $value === '0')
+            {
+                $value = null;
+            }
 
-            });
-
-            return $rule;
         });
 
-        return $item;
+        return $rule;
     }
 
     protected function processEntry($item)
@@ -349,20 +336,29 @@ class Service extends Base\Service
         {
             return $this->repo->transactionOnLiveAndTest(function () use ($item, $planName)
             {
+                // Keeping this as rzp org. Field is not currently passed with batch.
+                $ruleOrgId = Org\Entity::RAZORPAY_ORG_ID;
+                $item[Entity::RULES] = (new Entity())->formattedBuyPricingRules($item[Entity::RULES]);
                 $existingPlan = (new Pricing\Repository)->onlyBuyPricing()->getPlanByName($planName);
 
                 // Create a new Plan if plan with name doesn't exist.
                 if (count($existingPlan) === 0)
                 {
-                    (new Validator)->validateBuyPricingRules($item[Entity::RULES]);
-
-                    $item[Entity::RULES] = (new Entity())->formattedBuyPricingRules($item[Entity::RULES]);
-
-                    (new Pricing\Core)->create($item, '100000razorpay');
+                    (new Pricing\Core)->create($item, $ruleOrgId);
                 }
                 else
                 {
-                    throw new BadRequestException(ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
+                    $inputRules = $item[Entity::RULES];
+
+                    $this->repo->transactionOnLiveAndTest(function () use ($inputRules, $existingPlan, $ruleOrgId)
+                    {
+                        $rules = [];
+                        foreach ($inputRules as $inputRule)
+                        {
+                            $rules[] = (new Pricing\Core)->addPlanRule($existingPlan, $inputRule, $ruleOrgId);
+                        }
+                        return $rules;
+                    });
                 }
             });
         },
@@ -448,6 +444,9 @@ class Service extends Base\Service
         $this->repo->pricing->onlyBuyPricing();
 
         $plan = $this->repo->pricing->getPlan($id);
+
+        // Validation is required to verify plans before assigning to terminal.
+        (new Validator)->validBuyPricingRules($plan->toArray());
 
         return $plan->toArrayPublic();
     }

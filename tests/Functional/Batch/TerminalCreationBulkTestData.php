@@ -78,6 +78,24 @@ return [
         ],
     ],
 
+    'testBulkTerminalCreationValidateInvalidFile' => [
+        'request'  => [
+            'url'     => '/admin/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'     => 'terminal_creation',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
     'testBulkTerminalCreationCompletelyMigratedBatchUpload'          => [
         'request'  => [
             'url'     => '/admin/batches',

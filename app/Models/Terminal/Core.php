@@ -11,6 +11,7 @@ use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Pricing;
 use RZP\Constants\Procurer;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
@@ -134,6 +135,9 @@ class Core extends Base\Core
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_BUY_PRICING_PLAN_WITH_NAME_DOES_NOT_EXIST);
             }
+
+            // Validating plan before assigning to terminal.
+            (new Pricing\Validator())->validBuyPricingRules($plan->toArray());
 
             $input[Entity::PLAN_ID] = $plan->getId();
         }

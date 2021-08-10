@@ -31,6 +31,26 @@ class TerminalCreationBulkTest extends TestCase
         $this->startTest();
     }
 
+    public function testBulkTerminalCreationValidateInvalidFile()
+    {
+        $this->ba->adminAuth();
+
+        $entries = $this->getDefaultFileEntries();
+
+        $entries[1] = $entries[0];
+
+        $entries[0][Batch\Header::TERMINAL_CREATION_PLAN_NAME] = 'plan1';
+        $entries[1][Batch\Header::TERMINAL_CREATION_PLAN_NAME] = 'plan2';
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $response = $this->startTest();
+
+        $errorGatewayMid = json_decode($response['error']['description'])[0];
+
+        $this->assertEquals("1253", $errorGatewayMid);
+    }
+
     public function testBulkTerminalCreation()
     {
         $this->markTestSkipped();

@@ -711,8 +711,6 @@ class Service extends Base\Service
     {
         $response = new Base\PublicCollection;
 
-        $this->verifyInputPlans($input);
-
         foreach ($input as $row)
         {
             $rowOutput = $this->processTerminalCreationBulkRow($row);
@@ -721,29 +719,6 @@ class Service extends Base\Service
         }
 
         return $response;
-    }
-
-    // Verifying than all terminals on same gateway merchant id have same plans in input.
-    protected function verifyInputPlans(& $input)
-    {
-        $idempotencyKeys = [];
-
-        collect($input)->groupBy(Batch\Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID)
-            ->map(function ($rows) use (& $idempotencyKeys)
-            {
-                if (count($rows->unique(Batch\Header::TERMINAL_CREATION_PLAN_NAME)) > 1)
-                {
-                    $idempotencyKeys = array_merge($idempotencyKeys, $rows->pluck(Constants::IDEMPOTENCY_KEY)->toArray());
-                }
-            });
-
-        foreach ($input as & $item)
-        {
-            if (in_array($item[Constants::IDEMPOTENCY_KEY], $idempotencyKeys))
-            {
-                $item[Constants::INVALID_PLAN] = true;
-            }
-        }
     }
 
     public function processTerminalCreationBulkRow(array $row)
@@ -763,8 +738,6 @@ class Service extends Base\Service
 
         try
         {
-            (new Validator())->validateEntry($row);
-
             (new TerminalCreation())->processEntry($row);
 
             $result[Constants::BATCH_SUCCESS] = true;

@@ -16,8 +16,10 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\User\Role;
+use RZP\Models\Batch;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
+use RZP\Models\Pricing;
 use RZP\Http\UserRolesScope;
 use RZP\Models\Payment\Refund;
 use RZP\Exception\BaseException;
@@ -858,6 +860,55 @@ class Validator extends Base\Validator
         {
             // The payout amount may not be greater than 100000000.00.
             throw new BadRequestValidationFailureException('The payout amount (in rupees) may not be greater than 100000000.00');
+        }
+    }
+
+    // Verifying than all records on same gateway merchant id have same plans in input.
+    protected function validateTerminalCreationEntries($input)
+    {
+        $failedRecords = [];
+
+         collect($input)->groupBy(Batch\Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID)
+            ->map(function ($rows) use (& $failedRecords)
+            {
+                if (count($rows->pluck(Batch\Header::TERMINAL_CREATION_PLAN_NAME)) > 1)
+                {
+                    $failedRecords[] = $rows->pluck('Gateway Merchant ID')->toArray()[0];
+                }
+            });
+
+        if (count($failedRecords) > 0)
+        {
+            throw new BadRequestValidationFailureException(json_encode($failedRecords));
+        }
+    }
+
+    // Grouping input buy pricing plans with plan name and range validating.
+    protected function validateBuyPricingRuleEntries($input)
+    {
+        $groupedRules = (new Pricing\Entity)->groupBuyPricingRules($input)->toArray();
+        $failedRules = [];
+
+        foreach ($groupedRules as $rules)
+        {
+            try
+            {
+                (new Pricing\Validator)->validateBuyPricingRules($rules);
+            }
+            catch (\Throwable $t)
+            {
+                $failedMai = [];
+                foreach (Pricing\Entity::$buyPricingMethods as $method)
+                {
+                    $failedMai[$method] = $rules[0][$method];
+                }
+                $failedRules[] = $failedMai;
+            }
+        }
+
+        if (count($failedRules) > 0)
+        {
+            throw new BadRequestValidationFailureException(json_encode($failedRules));
         }
     }
 

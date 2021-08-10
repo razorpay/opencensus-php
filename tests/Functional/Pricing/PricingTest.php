@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Transaction;
 use RZP\Error\PublicErrorCode;
 use RZP\Constants\Entity as E;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
@@ -24,10 +25,9 @@ use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 
 class PricingTest extends TestCase
 {
-    use PaymentTrait;
     use HeimdallTrait;
-    use DbEntityFetchTrait;
     use TerminalTrait;
+    use BatchTestTrait;
 
     protected $authToken = null;
 
@@ -1361,6 +1361,38 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testValidateBulkBuyPlanRulesBatchSuccess()
+    {
+        $this->ba->adminAuth();
+
+        $entries = $this->getDefaultFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testValidateBulkBuyPlanRulesBatchFailure()
+    {
+        $this->ba->adminAuth();
+
+        $entries = $this->getDefaultFileEntries();
+
+        // Setting max to make range incomplete.
+        $entries[0]['amount_range_max'] = '1000';
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $response = $this->startTest();
+
+        $mai = json_decode($response['error']['description'])[0];
+
+        foreach ($mai as $key => $value)
+        {
+            $this->assertEquals($entries[0][$key], $value);
+        }
+    }
+
     public function testAddBulkEsPlanRulesForCustomerFeeBearerMerchant()
     {
         $content = $this->assignPricingPlanToMerchant();
@@ -1520,6 +1552,27 @@ class PricingTest extends TestCase
         $plan['id'] = $plan['plan_id'];
 
         return $plan;
+    }
+
+    protected function getDefaultFileEntries()
+    {
+        return [
+            [
+                'plan_name'             => 'testName',
+                'payment_method'        => 'card',
+                'payment_method_type'   => 'credit',
+                'receiver_type'         => '',
+                'payment_issuer'        => 'hdfc',
+                'payment_network'       => 'Visa,MasterCard',
+                'percent_rate'          => '10',
+                'international'         => '0',
+                'emi_duration'          => '',
+                'amount_range_active'   => '1',
+                'amount_range_min'      => '0',
+                'amount_range_max'      => '',
+                'fixed_rate'            => '5',
+            ],
+        ];
     }
 
     protected function addPricingPlanRule($id, $rule = [])

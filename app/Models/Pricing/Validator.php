@@ -1033,6 +1033,27 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validBuyPricingRules($rules)
+    {
+        $requiredKeys = [
+            Pricing\Entity::AMOUNT_RANGE_MIN,
+            Pricing\Entity::AMOUNT_RANGE_MAX,
+            Pricing\Entity::AMOUNT_RANGE_ACTIVE,
+            Pricing\Entity::FIXED_RATE,
+            Pricing\Entity::PERCENT_RATE
+        ];
+
+        $requiredKeys = array_merge($requiredKeys, Pricing\Entity::$buyPricingMethods);
+
+        array_walk($rules, function (&$value) use ($requiredKeys)
+        {
+            $value = array_intersect_key($value, array_flip($requiredKeys));
+        });
+
+        // Validating plan before assigning to terminal.
+        $this->validateBuyPricingRules($rules);
+    }
+
     public function validateBuyPricingRules($inputRules)
     {
         foreach ($inputRules as $rule)

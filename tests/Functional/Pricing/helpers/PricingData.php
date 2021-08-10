@@ -484,7 +484,7 @@ return [
                     'idempotency_key'       => 'batch_DZtFGiJXmcdLaM',
                     'amount_range_active'   => '1',
                     'amount_range_min'      => '500',
-                    'amount_range_max'      => '',
+                    'amount_range_max'      => '0',
                 ],
                 [
                     'plan_name'             => 'testPlan',
@@ -536,7 +536,7 @@ return [
                     'idempotency_key'       => 'batch_DxtFGiJXmcdLfa',
                     'amount_range_active'   => '1',
                     'amount_range_min'      => '700',
-                    'amount_range_max'      => '',
+                    'amount_range_max'      => '0',
                 ],
             ],
             'url'       => '/buy_pricing/rules/bulk',
@@ -571,6 +571,40 @@ return [
             ],
             'status_code' => 200,
         ]
+    ],
+
+    'testValidateBulkBuyPlanRulesBatchSuccess' => [
+        'request'  => [
+            'url'     => '/admin/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'     => 'buy_pricing_rule',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+            ],
+        ],
+    ],
+
+    'testValidateBulkBuyPlanRulesBatchFailure' => [
+        'request'  => [
+            'url'     => '/admin/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'     => 'buy_pricing_rule',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
     ],
 
     'testAddBulkPlanRulesReplicatePlan' => [
