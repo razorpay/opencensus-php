@@ -80,6 +80,7 @@ class Service extends Base\Service
         $account = $this->core->createBankingAccount($input, $this->merchant, $activationDetailInput, 'create_normal');
 
         return $account->toArrayPublic();
+
     }
 
     /**

@@ -66,6 +66,8 @@ class Entity extends Base\PublicEntity
 
     const BUSINESS_NAME = 'business_name';
 
+    const BANKING_ACCOUNT_ACTIVATION_DETAILS = 'banking_account_activation_details';
+
     /**
      * Stores Personal Pan if Business category is sole_proprietorship
      * else stores Business Pan
@@ -88,6 +90,10 @@ class Entity extends Base\PublicEntity
     const SALES_POC_PHONE_NUMBER = 'sales_poc_phone_number';
 
     const IS_DOCUMENTS_WALKTHROUGH_COMPLETE = 'is_documents_walkthrough_complete';
+
+    // This additional_details column will store tags of a lead in json format.
+
+    const ADDITIONAL_DETAILS = 'additional_details';
 
     const COMMENT = 'comment';
 
@@ -150,6 +156,7 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_TYPE,
         self::BUSINESS_PAN,
         self::DECLARATION_STEP,
+        self::ADDITIONAL_DETAILS,
     ];
 
     protected $visible = [
@@ -184,6 +191,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_OPEN_DATE,
         self::ACCOUNT_LOGIN_DATE,
         self::CREATED_AT,
+        self::ADDITIONAL_DETAILS,
     ];
 
     public $public = [
@@ -218,6 +226,11 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_OPEN_DATE,
         self::ACCOUNT_LOGIN_DATE,
         self::CREATED_AT,
+        self::ADDITIONAL_DETAILS,
+    ];
+
+    protected $publicSetters = [
+        self::ADDITIONAL_DETAILS,
     ];
 
     protected $dates = [
@@ -308,5 +321,15 @@ class Entity extends Base\PublicEntity
     public function isAssigneeTeamUpdated()
     {
         return array_key_exists(self::ASSIGNEE_TEAM, $this->getChanges());
+    }
+
+    public function setPublicAdditionalDetailsAttribute(array &$array)
+    {
+        if (app('basicauth')->isAdminAuth() === true and
+            isset($array[self::ADDITIONAL_DETAILS]) === true) {
+
+            $array[self::ADDITIONAL_DETAILS] = json_decode($array[self::ADDITIONAL_DETAILS], true);
+
+        }
     }
 }

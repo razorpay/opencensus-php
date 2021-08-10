@@ -75,6 +75,10 @@ class CreateBankingAccountActivationDetailTable extends Migration
             $table->boolean(Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE)
                   ->default(0);
 
+            $table->json(Entity::ADDITIONAL_DETAILS)
+                  ->nullable()
+                  ->default(null);
+
             $table->boolean(Entity::CONTACT_VERIFIED)
                   ->default(0);
 

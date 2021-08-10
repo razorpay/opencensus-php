@@ -56,6 +56,11 @@ class Service extends Base\Service
                 $this->addSalesPOCToBankingAccountIfApplicable($bankingAccount, $input);
             }
 
+            if(array_key_exists(Entity::ADDITIONAL_DETAILS, $input) === true)
+            {
+                $input[Entity::ADDITIONAL_DETAILS] = json_encode($input['additional_details']);
+            }
+
             $activationDetail = $this->core->create($input, $validatorOP);
 
             $this->addCommentIfApplicable($bankingAccount, $input);
@@ -125,6 +130,11 @@ class Service extends Base\Service
         if ($isAutomatedUpdate === false)
         {
             (new Validator())->validateCommentOnAssigneeTeamChange($activationDetail, $input, $commentInput);
+        }
+
+        if(array_key_exists(Entity::ADDITIONAL_DETAILS, $input) === true)
+        {
+            $input[Entity::ADDITIONAL_DETAILS] = json_encode($input['additional_details']);
         }
 
         $updatedActivationDetail = $this->repo->transaction(function() use ($bankingAccount,

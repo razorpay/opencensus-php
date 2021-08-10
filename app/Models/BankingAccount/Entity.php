@@ -313,7 +313,7 @@ class Entity extends Base\PublicEntity
         self::FEE_RECOVERY_DETAILS,
         self::ACCOUNT_STATEMENT_LAST_UPDATED_AT,
         self::STATUS_LAST_UPDATED_AT,
-        self::BANKING_ACCOUNT_ACTIVATION_DETAILS
+        self::BANKING_ACCOUNT_ACTIVATION_DETAILS,
     ];
 
     // ---------------------------- Setters ----------------------------------- //

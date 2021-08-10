@@ -6334,6 +6334,10 @@ ALTER TABLE rewards
 ALTER TABLE merchants
    ADD COLUMN purpose_code VARCHAR(5) DEFAULT NULL;
 
+ALTER TABLE banking_account_activation_details
+    ADD additional_details json
+    DEFAULT NULL;
+
 ALTER TABLE merchant_business_details
    ADD COLUMN app_urls json DEFAULT NULL;
 

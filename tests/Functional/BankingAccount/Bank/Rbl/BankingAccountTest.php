@@ -244,6 +244,43 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
+    public function testCreateBankingAccountWithAdditionalDetails()
+    {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        // Turn on the 'allow_all_merchants' feature for admin
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        Mail::fake();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $merchantId = $bankingAccount->merchant->getId();
+
+        $this->createMerchantDetail([
+            'merchant_id' => $merchantId,
+            'business_name' => 'CA Business']
+        );
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        $this->assertEquals(null, $bankingAccount['last_statement_attempt_at']);
+
+        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        $this->assertNotNull($activationDetailEntity);
+
+        Mail::assertQueued(XProActivation::class);
+
+        return $bankingAccount;
+    }
+
     public function testCreateBankingAccountWithActivationDetailFormDashboard()
     {
         $attribute = ['activation_status' => 'activated'];
@@ -4019,6 +4056,36 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateActivationDetailIfNameUpdated()
     {
+        $bankingAccount = $this->testCreateActivationDetail();
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        if(str_contains($bankingAccount['id'], Entity::getIdPrefix()) === false)
+        {
+            $bankingAccountId = $bankingAccount->getPublicId();
+        }
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details',
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+
+    public function testUpdateAdditionalDetailUpdated()
+    {
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id'       => '10000000000000',
+                'business_type'     => '2',
+            ]);
+
         $bankingAccount = $this->testCreateActivationDetail();
 
         $bankingAccountId = $bankingAccount['id'];

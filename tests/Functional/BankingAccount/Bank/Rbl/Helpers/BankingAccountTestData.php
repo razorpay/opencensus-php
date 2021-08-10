@@ -126,6 +126,49 @@ return [
         ],
     ],
 
+    'testCreateBankingAccountWithAdditionalDetails' => [
+        'request'  => [
+            'url'     => '/banking_accounts_admin',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'channel' => 'rbl',
+                'pincode' => '560034',
+                'activation_detail' => [
+                    'merchant_poc_name' => 'Sample Name',
+                    'merchant_poc_designation' => 'Financial Consultant',
+                    'merchant_poc_email' => 'sample@sample.com',
+                    'merchant_poc_phone_number' => '9876556789',
+                    'merchant_documents_address' => 'x, y, z',
+                    'initial_cheque_value' => 100,
+                    'account_type' => 'insignia',
+                    'merchant_city' => 'Bangalore',
+                    'comment' => 'abc',
+                    'is_documents_walkthrough_complete' => true,
+                    'merchant_region' => 'South',
+                    'expected_monthly_gmv' => 10000,
+                    'average_monthly_balance' => 0,
+                    'business_category' => 'partnership',
+                    'sales_team' => 'sme',
+                    'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                    'sales_poc_phone_number' => '1234554321',
+                    'additional_details' => json_encode(["green_channel" => true]),
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                'status'      => 'created',
+                'banking_account_activation_details' => [
+                    'additional_details' => json_encode(["green_channel" => true]),
+                ]
+            ],
+        ],
+    ],
+
     'testCreateBankingAccountWithActivationDetailFormDashboard' => [
         'request'  => [
             'url'     => '/banking_accounts_dashboard',
@@ -2381,6 +2424,35 @@ return [
                 'expected_monthly_gmv' => '10000',
                 'account_type' => 'zero_balance',
                 "is_documents_walkthrough_complete" => '1',
+            ],
+        ],
+    ],
+
+    'testUpdateAdditionalDetailUpdated' => [
+        'request'  => [
+            'url'     => '/banking_accounts/activation/{id}/details',
+            'method'  => 'PATCH',
+            'content' => [
+                'merchant_poc_name' => 'Sample',
+                'merchant_poc_phone_number' => '1234554321',
+                'expected_monthly_gmv' => '10000',
+                'business_category' => 'sole_proprietorship',
+                'account_type' => 'zero_balance',
+                'is_documents_walkthrough_complete' => true,
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'rm_name' => 'Test RM',
+                'rm_phone_number' => '9234567890',
+                'additional_details' => json_encode(["green_channel" => true]),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_poc_name' => 'Sample',
+                'merchant_poc_phone_number' => '1234554321',
+                'expected_monthly_gmv' => '10000',
+                'account_type' => 'zero_balance',
+                "is_documents_walkthrough_complete" => '1',
+                'additional_details' => json_encode(["green_channel" => true]),
             ],
         ],
     ],
