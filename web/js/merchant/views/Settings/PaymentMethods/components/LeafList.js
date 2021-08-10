@@ -63,7 +63,14 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
       return list.map((leafItem) => {
         if (leafItem.slug === 'internationalcards') return <International />;
         else if (leafItem.slug === 'paypal') return <Paypal instrument={leafItem} />;
-        else {
+        else if (
+          (leafItem.slug === 'itzcash' ||
+            leafItem.slug === 'paycash' ||
+            leafItem.slug === 'citibankrewards') &&
+          leafItem.status !== 'activated'
+        ) {
+          return null;
+        } else {
           return <LeafListItem key={leafItem.name} instrument={leafItem} />;
         }
       });

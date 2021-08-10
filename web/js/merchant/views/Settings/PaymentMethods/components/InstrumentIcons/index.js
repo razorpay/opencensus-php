@@ -50,6 +50,12 @@ function getIconFn(iconName) {
       return 'visa';
     case 'zestmoney':
       return 'zestmoney';
+    case 'itzcash':
+      return 'itzcash';
+    case 'paycash':
+      return 'paycash';
+    case 'citibankrewards':
+      return 'citibankrewards';
   }
 }
 
