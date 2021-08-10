@@ -95,7 +95,7 @@ app
       $scope.isOneTapEnabled = false;
       $scope.isGauthTypeDecided = false;
       $scope.oneTapScaling = 0.8;
-      $scope.authVersion = window.isOneTapExpOn ? 1.2 : 1.1; // for analytics
+      $scope.authVersion = 1.2; // for analytics
 
       var G_AUTH_TYPES = {
         oneTap: 'google-one-tap',
@@ -109,7 +109,7 @@ app
       };
 
       // initialize onetap only when not X and if optimize experiment(isOneTapExpOn) returns true
-      if ($scope.currentService != 'X' && window.isOneTapExpOn) {
+      if ($scope.currentService != 'X') {
         $scope.isOneTapExpOn = true;
       }
 
