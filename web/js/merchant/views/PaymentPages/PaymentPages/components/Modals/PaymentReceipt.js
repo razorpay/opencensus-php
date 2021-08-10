@@ -1,11 +1,7 @@
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import {
-  trackClickOnSavePaymentReceipts,
-} from '../../ga';
+import track from '../../Wysiwyg/track';
 
 import Form from 'common/new-ui/Form';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
@@ -62,32 +58,19 @@ export default class PaymentReceipt extends React.Component {
     };
   }
 
-  trackReceipt = (event, options) => {
-    this.props.tracking.trackEvent(
-      window.rzpQ.paymentPages().success(
-        `pp.receipt.${event}`,
-        {
-          template: '',
-          page_id: this.PAGE_ID,
-        },
-        options,
-      ),
-    );
-  };
-
   componentDidMount() {
-    this.trackReceipt('open_settings');
+    track.receipt.open();
   }
 
   componentWillUnmount() {
-    this.trackReceipt('close_settings');
+    track.receipt.close();
   }
 
   open80gDetailsModal = () => {
     this.props.openModal({
       size: 'medium',
       component: (
-        <Merchant80gDetails trackFn={this.trackReceipt} get80gDetails={this.get80gDetails} />
+        <Merchant80gDetails get80gDetails={this.get80gDetails} />
       ),
     });
   };
@@ -99,28 +82,6 @@ export default class PaymentReceipt extends React.Component {
   };
 
   onSubmit = (formData) => {
-    analyticsTrack({
-      objectName: 'receipts',
-      actionName: 'saved',
-      screen: 'create payment page',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-
-    //preparing track data for GA
-    const trackData = [];
-
-    if(formData.enable_custom_serial_number == 0) {
-      trackData.push('Automated');
-    } else {
-      trackData.push('Manual');
-    }
-
-    if(formData.enable_80g_details) {
-      trackData.push('80G');
-    }
-    trackClickOnSavePaymentReceipts(trackData);
 
     const data = {
       enable_receipt: 1, // Currently, enabling in all cases. Later, can add toggle
@@ -142,62 +103,15 @@ export default class PaymentReceipt extends React.Component {
       this.props.handleClose();
     }
 
-    this.trackReceipt('save', {
-      '80_details': this.state['80_details'],
-      input_field: data.selected_udf_field,
-    });
+    track.receipt.save(
+      formData.enable_custom_serial_number == 0,
+      data.selected_udf_field,
+      formData.enable_80g_details,
+    );
   };
 
   trackSendingOptions = (event) => {
-    analyticsTrack({
-      objectName: `receipts ${event.target.value === '0' ? 'automated' : 'manual'}`,
-      actionName: 'clicked',
-      screen: 'create payment page',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-    this.trackReceipt(event.target.value === '0' ? 'automated' : 'manual');
-  };
-
-  trackInputField = () => {
-    this.trackReceipt('select_input');
-  };
-
-  handleClose = () => {
-    this.trackReceipt('cancel', {
-      '80_details': this.state['80_details'],
-      input_field:
-        this.state.isInputFieldChecked && this.state.selectedInputField
-          ? this.state.selectedInputField.name
-          : '',
-    });
-
-    this.props.handleClose();
-    this.trackReceipt('save', {
-      '80_details': this.state['80_details'],
-      input_field: data.selected_udf_field,
-    });
-  };
-
-  trackSendingOptions = (event) => {
-    this.trackReceipt(event.target.value === '0' ? 'automated' : 'manual');
-  };
-
-  trackInputField = () => {
-    this.trackReceipt('select_input');
-  };
-
-  handleClose = () => {
-    this.trackReceipt('cancel', {
-      '80_details': this.state['80_details'],
-      input_field:
-        this.state.isInputFieldChecked && this.state.selectedInputField
-          ? this.state.selectedInputField.name
-          : '',
-    });
-
-    this.props.handleClose();
+    track.receipt.clickSendingOption(event.target.value === '0' ? 'automated' : 'manual');
   };
 
   render() {
@@ -205,7 +119,7 @@ export default class PaymentReceipt extends React.Component {
 
     return (
       <ModalMask maskClosable={false} class="PaymentpagesReceipt">
-        <Modal class="PaymentpagesReceipt" onClose={this.handleClose}>
+        <Modal class="PaymentpagesReceipt" onClose={props.handleClose}>
           <ModalContent>
             <div class="main-title">Payment Receipts Settings</div>
 
@@ -261,14 +175,7 @@ export default class PaymentReceipt extends React.Component {
                     </div>
                   )}
                   onChange={(e) => {
-                    analyticsTrack({
-                      objectName: 'receipts input field',
-                      actionName: 'chosen',
-                      screen: 'create payment page',
-                      properties: {
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
+                    track.receipt.checkInputFields();
                     this.setState({
                       isInputFieldChecked: e.target.checked,
                     });
@@ -297,7 +204,6 @@ export default class PaymentReceipt extends React.Component {
                       selectedInputField: option,
                     });
                   }}
-                  onBlur={this.trackInputField}
                   showClear={false}
                   searchEnabled={false}
                   disabled={!this.state.isInputFieldChecked}
@@ -318,20 +224,10 @@ export default class PaymentReceipt extends React.Component {
                     </div>
                   )}
                   onChange={(e) => {
-                    analyticsTrack({
-                      objectName: 'receipts 80-G',
-                      actionName: 'clicked',
-                      screen: 'create payment page',
-                      properties: {
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
+                    track.receipt.check80GDetails(e.target.checked ? '80g_on' : '80g_off');
                     this.setState({
                       is80GDetailsChecked: e.target.checked,
                     });
-                  }}
-                  onBlur={(e) => {
-                    this.trackReceipt(e.target.checked ? '80g_on' : '80g_off');
                   }}
                   checked={this.state.is80GDetailsChecked}
                   defaultChecked={this.state.is80GDetailsChecked}
@@ -353,7 +249,7 @@ export default class PaymentReceipt extends React.Component {
               </div>
 
               <footer>
-                <Button.Transparent type="button" onClick={this.handleClose}>
+                <Button.Transparent type="button" onClick={props.handleClose}>
                   Cancel
                 </Button.Transparent>
                 <Button.Primary type="submit">{props.saveBtnLabel || 'Save'}</Button.Primary>

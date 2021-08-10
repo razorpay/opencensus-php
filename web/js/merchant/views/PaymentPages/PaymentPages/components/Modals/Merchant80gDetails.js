@@ -9,11 +9,7 @@ import FileUpload from 'merchant/components/File/Upload';
 import Form from 'common/new-ui/Form';
 import Button from 'common/new-ui/Button';
 import Spinner from 'common/ui/Spinner';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import {
-  trackClickOnUpdate80G
-} from '../../ga';
+import track from '../../Wysiwyg/track';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -62,23 +58,15 @@ export default class Merchant80gDetails extends React.Component {
         });
       });
 
-    this.props.trackFn('80g_details_start');
+    track.modal80G.open();
   }
 
   componentWillUnmount() {
-    this.props.trackFn('80g_details_close');
+    track.modal80G.close();
   }
 
   onSubmit = (formData) => {
-    analyticsTrack({
-      objectName: 'receipts 80-G',
-      actionName: 'saved',
-      screen: 'create payment page',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-    trackClickOnUpdate80G(this.state.signatoryImageFileUrl ? 'signed' : 'unsigned');
+    track.modal80G.save();
 
     const reqPayload = {
       text_80g_12a: formData.text_80g_12a || '',
@@ -150,7 +138,7 @@ export default class Merchant80gDetails extends React.Component {
 
       reader.readAsDataURL(file);
 
-      this.props.trackFn('80g_upload_start');
+      track.modal80G.uploadStart();
     }
   };
 
@@ -160,7 +148,7 @@ export default class Merchant80gDetails extends React.Component {
       signatoryImageFileUrl: null,
     });
 
-    this.props.trackFn('80g_upload_remove');
+    track.modal80G.removeSignature();
   };
 
   // This allows to re-upload the file
@@ -171,7 +159,7 @@ export default class Merchant80gDetails extends React.Component {
   };
 
   onSave = () => {
-    this.props.trackFn('80g_upload_save');
+    track.modal80G.uploadSave();
   };
 
   render() {
@@ -232,9 +220,7 @@ export default class Merchant80gDetails extends React.Component {
                   showFileSize={false}
                   onSave={this.onSave}
                   onError={(message) => {
-                    this.props.trackFn('80g_upload_fail', {
-                      error: message,
-                    });
+                    track.modal80G.uploadFail(message);
                   }}
                 />
                 <Description text="For best results take the signature on a white paper and then scan it" />

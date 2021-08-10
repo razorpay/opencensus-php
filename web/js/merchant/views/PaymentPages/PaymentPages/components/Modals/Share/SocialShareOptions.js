@@ -1,3 +1,5 @@
+import { track } from "../../../ga";
+
 const fbBase = 'https://www.facebook.com/sharer/sharer.php?u=',
   twitterBase = 'https://twitter.com/share?url=',
   whatsappBase = 'https://api.whatsapp.com/send?text='; // Shares on browser client / launches app on OSX / windows
@@ -17,7 +19,7 @@ function _shareMessage(title, description = '') {
   return msg;
 }
 
-const SocialShareOptions = ({ msgInPost, linkInPost, trackerFn }) => {
+const SocialShareOptions = ({ msgInPost, linkInPost }) => {
   function mediaWindowUrl(e) {
     const type = e.target.dataset['type'];
     let mediaUrl;
@@ -44,7 +46,7 @@ const SocialShareOptions = ({ msgInPost, linkInPost, trackerFn }) => {
         break;
     }
 
-    trackerFn && trackerFn('Click Social Media', type);
+    track.clickShareUrlViaSocialMedia(type);
 
     return false;
   }

@@ -5,8 +5,7 @@ import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { lenientUrl, validateSlug } from 'common/utils/validators';
 import { trackPageSettingsData } from '../../ga';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import track from '../../Wysiwyg/track';
 
 import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
 import PluginsAndAddOns from './PluginsAndAddOns';
@@ -31,14 +30,7 @@ export default class extends React.Component {
   }
 
   updateDate = (newDate) => {
-    analyticsTrack({
-      objectName: 'settings expiry',
-      actionName: 'added',
-      screen: 'create payment page',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
+    track.settings.clickExpiryDate();
     this.setState({ expire_by: newDate });
   };
 
@@ -56,6 +48,8 @@ export default class extends React.Component {
       size: 'small',
       component: <CreateEmbedButton id={this.props.paymentPageEntity.id} />,
     });
+
+    track.settings.clickCreateHyperlinkButton();
   };
 
   openConfigurePluginsView = () => {
@@ -64,6 +58,8 @@ export default class extends React.Component {
       className: 'PluginsAndAddOns',
       component: <PluginsAndAddOns />,
     });
+
+    track.settings.clickConfigurePlugins();
   };
 
   onSuccessMsgChange = (e) => {
@@ -73,14 +69,11 @@ export default class extends React.Component {
   };
 
   onSubmit = (formData) => {
-    analyticsTrack({
-      objectName: 'settings',
-      actionName: 'saved',
-      screen: 'create payment page',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
+    track.settings.save(
+      !!formData.expire_by,
+      !!formData.payment_success_message,
+      !!formData.payment_success_redirect_url,
+    );
     this.props.handleAction(formData);
 
     /*
@@ -225,6 +218,8 @@ export default class extends React.Component {
                             document.getElementsByName('payment_success_message')[0].focus();
                           }
                         });
+
+                        track.settings.checkCustomMessage(isChecked);
                       }}
                     />
 
@@ -254,6 +249,8 @@ export default class extends React.Component {
                             document.getElementsByName('payment_success_redirect_url')[0].focus();
                           }
                         });
+
+                        track.settings.checkRedirect(isChecked);
                       }}
                     />
 
@@ -328,14 +325,7 @@ export default class extends React.Component {
                 <Button.Transparent
                   type="button"
                   onClick={() => {
-                    analyticsTrack({
-                      objectName: 'settings',
-                      actionName: 'closed',
-                      screen: 'create payment page',
-                      properties: {
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
+                    track.settings.close();
                     handleClose();
                   }}
                 >

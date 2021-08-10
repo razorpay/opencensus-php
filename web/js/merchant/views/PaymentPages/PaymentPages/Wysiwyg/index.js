@@ -10,8 +10,7 @@ import Svelte from './Svelte';
 import DetailsSection from './DetailsSection';
 import FormSection from './FormSection';
 import SubscriptionButtonLaunchFullPageBanner from 'merchant/components/Announcements/SubscriptionButtonLaunch/FullPageBanner';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import track from './track';
 
 import TemplatesMask from './Templates';
 import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
@@ -46,7 +45,6 @@ import {
   trackPageSettingsClick,
   trackPageSave,
   trackClickOnCreateEmbedButton,
-  trackClickOnOpenPaymentReceipts
 } from '../ga';
 
 const ERROR = {
@@ -157,14 +155,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   changeFETheme(theme) {
     const parentEl = document.getElementById('paymentpage-container');
-    analyticsTrack({
-      objectName: 'settings theme',
-      actionName: 'changed',
-      screen: 'create payment page',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
     if (theme === 'dark') {
       parentEl.classList.add('dark');
       parentEl.classList.remove('light');
@@ -213,6 +203,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   componentDidMount() {
     this.props.initDefaultFormItems();
+
+    track.init(this.props.tracking.trackEvent, { payment_page_id: this.props.id, });
 
     // Load color.js
     let script = document.createElement('script');
@@ -336,14 +328,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   // Update settings in store
   handleSaveSettings = (formData) => {
-    analyticsTrack({
-      objectName: 'settings',
-      actionName: 'saved',
-      screen: 'create payment page',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
     const data = {};
 
     data.expire_by = formData.expire_by;
@@ -387,14 +371,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }),
   )
   handleSavePublish = (label) => {
-    analyticsTrack({
-      objectName: label,
-      actionName: 'clicked',
-      screen: 'create payment page',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
+    track.publishPaymentPage(label);
+
     const isEditExistingId = !!this.props.id;
     const { paymentPageEntity, FORM_ITEMS } = this.props;
     // console.log('Handle Create..', paymentPageEntity);
@@ -706,30 +684,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   togglePageSettings = () => {
-    analyticsTrack({
-      objectName: 'settings',
-      actionName: 'clicked',
-      screen: 'create payment page',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
+    !this.state.isSettingsOpened && track.settings.open();
     this.setState({
       isSettingsOpened: !this.state.isSettingsOpened,
     });
   };
 
   togglePageReceiptModal = () => {
-    analyticsTrack({
-      objectName: 'payment receipts',
-      actionName: 'clicked',
-      screen: 'create payment page',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-    !this.state.isPageReceiptModalOpened && trackClickOnOpenPaymentReceipts();
-
     this.setState({
       isPageReceiptModalOpened: !this.state.isPageReceiptModalOpened,
     });

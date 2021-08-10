@@ -5,9 +5,7 @@ import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 
-import Popover, { PopoverBody } from 'common/ui/Popover';
 import CreateEmbedButton from './CreateEmbedButton';
-import PreviewEmbedButton from './CreateEmbedButton/PreviewEmbedButton';
 
 import { isEmail, isPhone } from 'common/utils/validators';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
@@ -15,9 +13,8 @@ import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import SocialShareOptions from './Share/SocialShareOptions';
 import Collapsible from 'merchant/components/Collapsible';
 import ProductCard from 'merchant/components/ProductCard/ProductCard';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getCustomURL } from 'merchant/components/DocsLink'
+import { track } from '../../Wysiwyg/track';
 
 export default class extends React.PureComponent {
   state = {};
@@ -47,7 +44,7 @@ export default class extends React.PureComponent {
             message: 'URL is successfully sent via ' + msg.join(' and '),
           });
 
-          this.props.trackerFn('Send', getKeysSeparatedByPipe(formData));
+          track.success.clickShareUrlViaEmailorSMS(getKeysSeparatedByPipe(formData));
           this.props.handleClose();
         }
       })
@@ -79,14 +76,7 @@ export default class extends React.PureComponent {
   };
 
   openEmbedButtonView = () => {
-    analyticsTrack({
-      objectName: 'get hyperlink',
-      actionName: 'button',
-      screen: 'create payment page',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
+    track.success.getHyperlinkButton();
     this.props.trackClickOnCreateEmbedButton && this.props.trackClickOnCreateEmbedButton('new');
 
     this.props.openModal({
@@ -125,14 +115,7 @@ export default class extends React.PureComponent {
               <CustomClipboard
                 value={url}
                 onCopy={() => {
-                  analyticsTrack({
-                    objectName: 'copy hyperlink',
-                    actionName: 'button',
-                    screen: 'create payment page',
-                    properties: {
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
+                  track.success.clickCopyUrlinSuccess();
                   const ele = document.getElementsByName('short_url');
                   ele[0] && ele[0].focus();
                   this.props.trackerFn('Click Copy URL');
@@ -156,7 +139,6 @@ export default class extends React.PureComponent {
               <SocialShareOptions
                 msgInPost={this.props.title}
                 linkInPost={this.props.url}
-                trackerFn={this.props.trackerFn}
               />
 
               {/* Collapsible phone and email fields */}

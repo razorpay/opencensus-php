@@ -7,9 +7,7 @@ import Button from 'common/new-ui/Button';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { updateData } from 'merchant/reducers/wysiwyg';
 
-import {
-  trackClickOnSavePlugins
-} from '../../ga';
+import track from '../../Wysiwyg/track';
 
 const FB_PIXEL_CTA_LINK =
   'https://www.facebook.com/business/help/952192354843755?id=1205376682832142';
@@ -50,16 +48,7 @@ export default class PluginsAndAddOns extends React.Component {
   };
 
   handleSubmit = (formData) => {
-    // setting track data for GA
-    const trackData = [];
-    if(formData.pp_fb_pixel_tracking_id) {
-      trackData.push('FB');
-    }
-
-    if(formData.pp_ga_pixel_tracking_id) {
-      trackData.push('GA');
-    }
-    trackClickOnSavePlugins(trackData);
+    track.plugins.save(formData.pp_fb_pixel_tracking_id, formData.pp_ga_pixel_tracking_id);
 
     const data = {};
     data.settings = {
