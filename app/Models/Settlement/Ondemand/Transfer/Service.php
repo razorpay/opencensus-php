@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\Ondemand\Transfer;
 
 use RZP\Models\Base;
 use RZP\Models\Settlement\Ondemand\Bulk;
+use RZP\Models\Settlement\Ondemand\Attempt;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
 
 class Service extends Base\Service
@@ -54,6 +55,20 @@ class Service extends Base\Service
         $settlementOndemandTransfer = (new Repository)->findById($id);
 
         $this->core()->markAsProcessed($settlementOndemandTransfer);
+
+        return [];
+    }
+
+    public function triggerOndemandTransfer(array $settlementOndemandTransferIds)
+    {
+        foreach ($settlementOndemandTransferIds as $id)
+        {
+            $settlementOndemandTransfer = (new Repository)->findById($id);
+
+            $attempt = (new Attempt\Core)->createAttempt($settlementOndemandTransfer);
+
+            CreateSettlementOndemandBulkTransfer::dispatch($this->mode, $attempt->getId(), $settlementOndemandTransfer)->delay(10);
+        }
 
         return [];
     }

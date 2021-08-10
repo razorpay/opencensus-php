@@ -20,6 +20,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Jobs\SettlementOndemand\RequestOndemandPayout;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
+use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
 
 class SettlementOndemandTest extends TestCase
 {
@@ -682,6 +683,37 @@ class SettlementOndemandTest extends TestCase
             'status'                          => 'processed',
             'payout_id'                       => null,
         ], $settlementOndemandAttempt);
+    }
+
+    public function testOndemandTransferTrigger()
+    {
+        Queue::fake();
+
+        $this->ba->adminAuth(MODE::TEST);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.transfer', [
+            'id'       => '12345678910111',
+            'status'   => 'reversed',
+            'mode'     => 'NEFT',
+            'attempts' => 10,
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.transfer', [
+            'id'       => '12345678910112',
+            'status'   => 'reversed',
+            'mode'     => 'NEFT',
+            'attempts' => 10,
+        ]);
+
+        $this->startTest();
+
+        $settlementOndemandAttempts = $this->getEntities(
+            EntityConstants::SETTLEMENT_ONDEMAND_ATTEMPT,
+            ['count' => 2],
+            true,
+            'test');
+
+        Queue::assertPushed(CreateSettlementOndemandBulkTransfer::class, 2);
     }
 
     public function testOndemandCreationForMerchantWithXSettlementAccountNonBankingHoursGreaterThanIMPSLimit()

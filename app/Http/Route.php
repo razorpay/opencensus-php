@@ -1779,6 +1779,8 @@ class Route
         'settlement_ondemand_feature_validate'     => ['get',       'settlements/ondemand/feature/validate',         'SettlementOndemandController@validateWithFeatureConfig'            ],
         'settlement_ondemand_enqueue'              => ['post',      'settlements/ondemand/enqueue/{id}',             'SettlementOndemandController@enqueueJob'                           ],
         'setl_ondemand_transfer_processed'         => ['post',      'settlements/ondemand/transfer/{id}/processed',  'SettlementOndemandController@markAsProcessed'                      ],
+        'setl_ondemand_transfer_trigger'           => ['post',      'settlements/ondemand/transfer/trigger',         'SettlementOndemandController@triggerOndemandTransfer'              ],
+
 
         // OAuth routes
         'oauth_token_create'                       => ['post',     'oauth/tokens',                                   'OAuthTokenController@create'                                       ],
@@ -4318,6 +4320,7 @@ class Route
         'setl_ondemand_fund_accounts',
         'settlement_ondemand_enqueue',
         'setl_ondemand_transfer_processed',
+        'setl_ondemand_transfer_trigger',
         'banking_account_statement_process_admin',
         'd2c_bureau_report_delete',
         'correct_merchant_owners_products',
@@ -5219,6 +5222,7 @@ class Route
         'setl_ondemand_fund_accounts'              => Permission::CAPITAL_DEVELOPER,
         'settlement_ondemand_enqueue'              => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_transfer_processed'         => Permission::CAPITAL_DEVELOPER,
+        'setl_ondemand_transfer_trigger'           => Permission::CAPITAL_DEVELOPER,
         'd2c_bureau_report_delete'                 => Permission::CAPITAL_DEVELOPER,
         'merchant_balance_create'                  => Permission::CAPITAL_DEVELOPER,
         'internal_balance_fetch_by_merchant_id'    => Permission::CAPITAL_DEVELOPER,
@@ -8975,6 +8979,7 @@ class Route
             'setl_ondemand_pricing',
             'settlement_ondemand_enqueue',
             'setl_ondemand_transfer_processed',
+            'setl_ondemand_transfer_trigger',
             'setl_process_data',
             'setl_process_data_reset',
             'setl_reconcile',

@@ -1329,6 +1329,20 @@ return [
         ],
     ],
 
+    'testOndemandTransferTrigger' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand/transfer/trigger',
+            'method'  => 'post',
+            'content' => [
+                    '12345678910111',
+                    '12345678910112',
+                ]
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testEnqueueJob' => [
         'request'  => [
             'url'     => '/settlements/ondemand/enqueue/12345678910234',
