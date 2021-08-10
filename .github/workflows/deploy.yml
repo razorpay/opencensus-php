@@ -232,3 +232,157 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+  RxPayouts:
+    runs-on: [self-hosted]
+    if: github.event.deployment.environment == 'RX_PAYOUTS'
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+    continue-on-error: false
+    name: RX Test Suite Payouts
+    steps:
+      - name: checkout
+        id: checkout
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+      - name: prepare_test
+        run: ci-assets/prepare_test.sh
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+          SONAR_HOST: https://sonar.razorpay.com
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+      - name: rx test suite
+        run: ci-assets/unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+          SONAR_HOST: https://sonar.razorpay.com
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          GIT_COMMIT_ID: ${{ github.sha }}
+          SONAR_PROJECT_ID: API_RX_PAYOUT
+          TEST_SUITE_NAME: "Rx Test Suite Payouts"
+          SOURCE_DIR: /__w/api/api/app/Models/Payout,/__w/api/api/app/Models/FeeRecovery,/__w/api/api/app/Models/Contact,/__w/api/api/app/Models/FundAccount,/__w/api/api/app/Models/BankingAccountStatement,/__w/api/api/app/Models/BankingAccount,/__w/api/api/app/Models/FundTransfer,/__w/api/api/app/Models/Counter,/__w/api/api/app/Models/BankingAccountTpv,/__w/api/api/app/Models/RequestLog,/__w/api/api/app/Models/BankTransfer,/__w/api/api/app/Models/Merchant/Balance,/__w/api/api/app/Models/Merchant/Invoice
+    services:
+      redis:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/redis:alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mysql:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/bitnami/mysql:8.0
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+      elasticsearch:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  RxCore:
+    runs-on: [self-hosted]
+    if: github.event.deployment.environment == 'RX_CORE'
+    container:
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+    continue-on-error: false
+    name: RX Test Suite Core
+    steps:
+      - name: checkout
+        id: checkout
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+      - name: prepare_test
+        run: ci-assets/prepare_test.sh
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+          SONAR_HOST: https://sonar.razorpay.com
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+      - name: rx test suite
+        run: ci-assets/unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+          SONAR_HOST: https://sonar.razorpay.com
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          GIT_COMMIT_ID: ${{ github.sha }}
+          SONAR_PROJECT_ID: API_RX_CORE
+          TEST_SUITE_NAME: "Rx Test Suite Core"
+          SOURCE_DIR: /__w/api/api/app/Models/Payout,/__w/api/api/app/Models/FeeRecovery,/__w/api/api/app/Models/Contact,/__w/api/api/app/Models/FundAccount,/__w/api/api/app/Models/BankingAccountStatement,/__w/api/api/app/Models/BankingAccount,/__w/api/api/app/Models/FundTransfer,/__w/api/api/app/Models/Counter,/__w/api/api/app/Models/BankingAccountTpv,/__w/api/api/app/Models/RequestLog,/__w/api/api/app/Models/BankTransfer,/__w/api/api/app/Models/Merchant/Balance,/__w/api/api/app/Models/Merchant/Invoice
+    services:
+      redis:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/redis:alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mysql:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/bitnami/mysql:8.0
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+      elasticsearch:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m

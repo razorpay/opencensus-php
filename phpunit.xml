@@ -203,6 +203,24 @@
       <testsuite name="Payment Page Test Suite">
           <directory>./tests/Functional/PaymentLink</directory>
       </testsuite>
+      <testsuite name="Rx Test Suite Payouts">
+          <directory>./tests/Functional/Payout/</directory>
+      </testsuite>
+      <testsuite name="Rx Test Suite Core">
+          <directory>./tests/Functional/FeeRecovery/</directory>
+         	<directory>./tests/Functional/Contact/</directory>
+         	<directory>./tests/Functional/FundAccounts/</directory>
+      	  <directory>./tests/Functional/BankingAccountStatement/</directory>
+          <directory>./tests/Functional/BankingAccount/</directory>
+        	<directory>./tests/Functional/FundTransfer/</directory>
+       		<directory>./tests/Functional/Counter/</directory>
+       		<directory>./tests/Functional/BankingAccountTPV/</directory> 
+          <directory>./tests/Functional/RequestLog/</directory>
+         	<directory>./tests/Functional/BankTransfer/</directory>
+        	<file>./tests/Functional/Merchant/BalanceTest.php</file>
+       		<file>./tests/Functional/Merchant/MerchantBankingInvoiceTest.php</file>
+       		<file>./tests/Functional/Merchant/LowBalanceConfigTest.php</file>
+      </testsuite>
   </testsuites>
   <listeners>
     <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener">
