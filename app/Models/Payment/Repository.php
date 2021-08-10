@@ -1193,6 +1193,7 @@ class Repository extends Base\Repository
         //   AND `transactions`.`reconciled_at` BETWEEN $from AND $to
         //   AND `payments`.`status` IN ( $status ) // status is an array
         //   AND `terminals`.`tpv` = $tpvEnabled
+        //   AND `terminals`.`corporate` = 0 // corporate payments have separate gateway file generation
 
         $paymentAttrs = $this->dbColumn('*');
 
@@ -1211,6 +1212,7 @@ class Repository extends Base\Repository
 
         $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
         $terminalTpv = $tRepo->dbColumn(Terminal\Entity::TPV);
+        $terminalCorporate = $tRepo->dbColumn(Terminal\Entity::CORPORATE);
 
         // replication lag threshold of 5 minutes
         return $this->newQueryOnSlave(300000)
@@ -1221,6 +1223,7 @@ class Repository extends Base\Repository
                     ->where($transactionEntityType, '=', 'payment')
                     ->whereBetween($transactionReconciledAt, [$from, $to])
                     ->whereIn($paymentStatus, $status)
+                    ->where($terminalCorporate, '=', 0)
                     ->where($terminalTpv, '=', $tpvEnabled)
                     ->with($relations)
                     ->get();
