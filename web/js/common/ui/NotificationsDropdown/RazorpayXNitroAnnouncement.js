@@ -790,13 +790,14 @@ class DetailView extends React.Component {
   }
 }
 
-const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking }) => {
+const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking, user }) => {
   const [activeView, setActiveView] = useState('detail-view');
 
   const onOfferAccept = () => {
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated(`${fromWhere}_click_popup_screen1_cta`, {
         ...nitroCampaignId(),
+        form_version: user.isNitroFormFillEnabled ? 'with_fields' : 'without_fields',
       }),
     );
   };
@@ -830,4 +831,10 @@ export default compose(
   RTracking({
     page: 'ScheduledNitroBanner',
   }),
+  connect(
+    (state) => ({
+      user: state.session.user,
+    }),
+    null
+  ),
 )(RazorpayXNitroAnnouncement);
