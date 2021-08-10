@@ -92,6 +92,23 @@ class App extends Component {
     this.pendingRequests.push(req);
   }
 
+  canMerchantMoveToLiveMode = (currentMode, isActivated, user) => {
+    // if user is unregisterd or activation status is activated or activated_mcc_pending in test mode.
+    // on behalf of merchant, system will change to the live mode first time
+    // post that user can switch b/w any mode.
+
+    return (
+      ((user.isUnregisteredBusiness &&
+        user.instantActivation.isL1Submitted &&
+        user.poi_verification_status === 'verified' &&
+        user.activation_status === 'instantly_activated') ||
+        user.activation_status === 'activated' ||
+        user.activation_status === 'activated_mcc_pending') &&
+      currentMode === 'test' &&
+      !isActivated
+    );
+  };
+
   componentWillMount() {
     const user = window.rzp_user;
 
@@ -150,6 +167,7 @@ class App extends Component {
     });
 
     let currentMode = LocalStorageService.getItem(this.modeToken);
+    const isActivated = LocalStorageService.getItem(`is_activated--${user.current}`);
     this.props.fetchGST();
     this.props.fetchConfig();
     this.props.fetchRefundPricing();
@@ -158,8 +176,11 @@ class App extends Component {
       this.fetchUser().then(({ data }) => {
         const user = data;
         const role = user.userRole;
+
         if (!currentMode) {
           currentMode = user.isActivated ? 'live' : 'test';
+        } else if (this.canMerchantMoveToLiveMode(currentMode, isActivated, user)) {
+          currentMode = 'live';
         } else if (!user.isActivated) {
           currentMode = 'test';
         }
@@ -484,9 +505,13 @@ class App extends Component {
       // if the user is live but chose to browse in test mode,
       // it will be stored in rzp_mode
       let currentMode = LocalStorageService.getItem(this.modeToken);
+      const isActivated = LocalStorageService.getItem(`is_activated--${user.current}`);
 
       if (!currentMode) {
         currentMode = user.isActivated ? 'live' : 'test';
+      } else if (this.canMerchantMoveToLiveMode(currentMode, isActivated, user)) {
+        currentMode = 'live';
+        LocalStorageService.setItem(`is_activated--${user.current}`, 'true');
       } else if (!user.isActivated) {
         currentMode = 'test';
       }
