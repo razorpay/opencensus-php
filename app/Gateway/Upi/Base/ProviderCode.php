@@ -322,6 +322,8 @@ class ProviderCode
         self::ICICI         => ProviderPsp::WHATSAPP,
         self::PAYTM         => ProviderPsp::PAYTM,
         self::YBL           => ProviderPsp::PHONEPE,
+        self::IBL           => ProviderPsp::PHONEPE,
+        self::AXL           => ProviderPsp::PHONEPE,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
@@ -371,6 +373,7 @@ class ProviderCode
     protected static $validAutoPayPspProvider = [
         ProviderPsp::BHIM,
         ProviderPsp::PAYTM,
+        ProviderPsp::PHONEPE,
     ];
 
     public static function getBankCode($provider)

@@ -39,6 +39,17 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
             "App not Supported for Upi AutoPay");
     }
 
+    /**
+     * This test checks a PhonePay vpa handle (ybl) is whitelisted for upi recurring.
+     * Other whitelisted handles for PhonePe are - ibl, axl.
+     */
+    public function testMandateCreateWithPhonePeVpa()
+    {
+        $this->payment['vpa'] = 'razorpay@ybl';
+
+        $this->testRecurringMandateCreate();
+    }
+
     public function testEncryptedRecurringCallback(){
 
         // test when callback is encrypted.
