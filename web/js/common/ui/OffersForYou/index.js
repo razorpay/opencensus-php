@@ -77,9 +77,7 @@ const OffersForYou = ({ closeModals, openModals, tracking, canShowOnboardingOffe
 };
 
 export default compose(
-  RTracking({
-    page: 'OffersForYou',
-  }),
+  RTracking(() => window.rzpQ.component('OffersForYou')),
   connect(
     (state) => {
       return {

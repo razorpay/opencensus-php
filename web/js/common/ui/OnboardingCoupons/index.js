@@ -4,8 +4,10 @@ import Button from 'common/new-ui/Button';
 import { showProductsModal } from 'merchant/reducers/home';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import RTracking from 'react-tracking';
+import { compose } from 'redux';
 
-const OnboardingCoupons = ({ closeModal, showProductModal }) => {
+const OnboardingCoupons = ({ closeModal, showProductModal, tracking }) => {
   useEffect(() => {
     analyticsTrack({
       objectName: 'Limited time MTU offer popup',
@@ -16,6 +18,11 @@ const OnboardingCoupons = ({ closeModal, showProductModal }) => {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+    tracking.trackEvent(
+      window.rzpQ.merchantActions().success('merchant_dashboard.view_onboarding_coupons', {
+        ID: 'AUG21-1LFREECREDITS-PL',
+      }),
+    );
   }, []);
 
   return (
@@ -48,6 +55,11 @@ const OnboardingCoupons = ({ closeModal, showProductModal }) => {
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
               });
+              tracking.trackEvent(
+                window.rzpQ.merchantActions().success('merchant_dashboard.click_onboarding_coupons_cta1', {
+                  ID: 'AUG21-1LFREECREDITS-PL',
+                }),
+              );
             }}
           >
             Accept payments
@@ -58,6 +70,12 @@ const OnboardingCoupons = ({ closeModal, showProductModal }) => {
   );
 };
 
-export default connect(null, {
-  showProductModal: showProductsModal,
-})(OnboardingCoupons);
+export default compose(
+  RTracking(() => window.rzpQ.component('OnboardingCoupons')),
+  connect(
+    null,
+    {
+      showProductModal: showProductsModal,
+    },
+  ),
+)(OnboardingCoupons);
