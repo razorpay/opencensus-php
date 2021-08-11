@@ -13,7 +13,7 @@ import {
 import LocalStorageService from 'common/utils/localStorage';
 import { getCookie } from '../../../common/utils/cookies';
 import debounce from 'common/utils/debounce';
-import { getFormattedAmountNew } from 'common/utils/rzp-utils';
+import { getFormattedAmountNew, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import rolesList from 'merchant/helpers/permissions/roles-list';
@@ -55,7 +55,10 @@ import CardPaymentsBlockedModal from 'merchant/views/Subscriptions/components/Ca
 import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
 import TnCModal from 'merchant/components/Home/TnCModal';
 import { fetchSupportDetail } from 'merchant/reducers/support_detail';
-import { showOrHideHighlightMode } from 'merchant/reducers/session';
+import { showOrHideHighlightMode, updateSession } from 'merchant/reducers/session';
+import { merchantFetch } from 'merchant/utils/ajax';
+import User from 'merchant/models/User';
+import { analyticsTrack } from 'common/utils/analytics';
 
 const dateRangePresets = [
     ['Past 7 Days', -7, 'days'],
@@ -116,6 +119,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
     fetchOndemandRestrictions,
     hideTnC,
     showOrHideHighlightMode,
+    updateSession,
   },
 )
 @RTracking(() => window.rzpQ.component('HomeContainer'))
@@ -560,6 +564,67 @@ export default class HomeContainer extends Component {
     this.setScrollAmountToStickHeader();
   }
 
+  fetchMerchantDetails = async () => {
+    const response = await merchantFetch({
+      url: 'merchant/activation',
+      mode: 'live',
+    });
+    return response;
+  };
+
+  triggerTimerToUpdateMode = () => {
+    const { user, mode, updateSession, history } = this.props;
+
+    if (
+      user.isAutoRefreshExperimentEnabled &&
+      mode === 'test' &&
+      user.isUnregisteredBusiness &&
+      user.instantActivation.isL1Submitted &&
+      user.poi_verification_status === 'initiated' &&
+      !user.activation_status
+    ) {
+      setTimeout(() => {
+        this.fetchMerchantDetails().then((res) => {
+          if (
+            res?.data &&
+            res?.data?.poi_verification_status === 'verified' &&
+            res?.data?.activation_status === 'instantly_activated'
+          ) {
+            const {
+              activation_progress,
+              activated,
+              activation_status,
+              activation_form_milestone,
+              poi_verification_status,
+              business_type,
+            } = res.data;
+
+            const userData = new User({
+              ...user,
+              activation_progress,
+              activated,
+              activation_status,
+              activation_form_milestone,
+              poi_verification_status,
+              business_type,
+            });
+
+            localStorage.setItem(`rzp_mode--${user.current}`, 'live');
+            updateSession({ user: userData, mode: 'live' });
+            analyticsTrack({
+              objectName: 'IA Page',
+              actionName: 'refreshed',
+              screen: 'home page',
+              properties: {
+                ...getCommonAnalyticsProperties(user),
+              },
+            });
+          }
+        });
+      }, 30000);
+    }
+  };
+
   componentDidMount() {
     this.props.fetchSettlementAmount();
     this.fetchRestrictionsIfAny();
@@ -580,6 +645,7 @@ export default class HomeContainer extends Component {
         window.hj && window.hj('trigger', 'MOBILE_SURVEY');
       }, 0);
     }
+    this.triggerTimerToUpdateMode();
   }
 
   closeOnboardingStep() {

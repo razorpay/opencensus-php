@@ -44,11 +44,11 @@ const PaymentProgressBar = ({ user, mode, history, limitBreach }) => {
         if (PaymentProgressData?.data?.transactionVolume) {
           const payment = PaymentProgressData?.data?.transactionVolume?.result[0].value;
           setPaymentProgress(paiseToRupees(payment));
-          setLastUpdateTime(PaymentProgressData?.data?.transactionVolume?.last_updated_at)
+          setLastUpdateTime(PaymentProgressData?.data?.transactionVolume?.last_updated_at);
         }
       });
     }
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
     const activationState = getActivationState(user, user.isUnregisteredBusiness);
@@ -78,9 +78,9 @@ const PaymentProgressBar = ({ user, mode, history, limitBreach }) => {
 
     setContent(activationFlowContent);
     setButton(activationFlowButton);
-  }, []);
+  }, [mode]);
 
-  const isLatestTransaction = limitBreach?.amount > paymentProgress
+  const isLatestTransaction = limitBreach?.amount > paymentProgress;
 
   return (
     // eslint-disable-next-line react/jsx-no-useless-fragment

@@ -1128,6 +1128,10 @@ export default class User {
     return this.getExpStatus('mtu_coupon_code');
   }
 
+  get isAutoRefreshExperimentEnabled() {
+    return this.getExpStatus('auto_refresh_experiment');
+  }
+
   get isProductRecommendationEnabled() {
     return this.getExpStatus('product_recommendation');
   }

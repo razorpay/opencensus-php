@@ -1604,6 +1604,7 @@ class Service extends Base\Service
             'optimizer_add_provider',
             'mtu_coupon_code',
             'product_recommendation',
+            'auto_refresh_experiment',
             'csm_experince_survey'
         ];
 

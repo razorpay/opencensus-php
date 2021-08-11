@@ -167,7 +167,23 @@ class App extends Component {
     });
 
     let currentMode = LocalStorageService.getItem(this.modeToken);
-    const isActivated = LocalStorageService.getItem(`is_activated--${user.current}`);
+    let isActivated = LocalStorageService.getItem(`is_activated--${user.current}`);
+    const isUnregBiz = ['2', '11'].indexOf(user.business_type) !== -1;
+
+    if (
+      currentMode === 'live' &&
+      !isActivated &&
+      (user.activation_status === 'activated' ||
+        user.activation_status === 'activated_mcc_pending' ||
+        (isUnregBiz &&
+          user.activation_form_milestone === 'L1' &&
+          user.poi_verification_status === 'verified' &&
+          user.activation_status === 'instantly_activated'))
+    ) {
+      LocalStorageService.setItem(`is_activated--${user.current}`, 'true');
+      isActivated = 'true';
+    }
+
     this.props.fetchGST();
     this.props.fetchConfig();
     this.props.fetchRefundPricing();
