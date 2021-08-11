@@ -8,6 +8,7 @@ class Status
 {
     const PAYMENT_GATEWAY_PRODUCT_STATUS_MAPPING = [
         MerchantActivationStatus::ACTIVATED             => MerchantActivationStatus::ACTIVATED,
+        MerchantActivationStatus::INSTANTLY_ACTIVATED   => MerchantActivationStatus::INSTANTLY_ACTIVATED,
         MerchantActivationStatus::REJECTED              => MerchantActivationStatus::REJECTED,
         MerchantActivationStatus::UNDER_REVIEW          => MerchantActivationStatus::UNDER_REVIEW,
         MerchantActivationStatus::NEEDS_CLARIFICATION   => MerchantActivationStatus::NEEDS_CLARIFICATION,

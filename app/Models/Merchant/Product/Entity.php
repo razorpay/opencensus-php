@@ -55,7 +55,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVATION_STATUS);
     }
 
-    public function setActivationStatus(string $activationStatus)
+    public function setActivationStatus($activationStatus)
     {
         $this->setAttribute(self::ACTIVATION_STATUS, $activationStatus);
     }

@@ -214,6 +214,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onProductPaymentGatewayInstantlyActivated($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onProductPaymentGatewayUnderReview($merchantProduct)
     {
         $payload = $this->getMerchantProductPayload($merchantProduct);
@@ -236,6 +243,13 @@ class ApiEventSubscriber extends Base\Core
     }
 
     protected function onProductPaymentLinksNeedsClarification($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onProductPaymentLinksInstantlyActivated($merchantProduct)
     {
         $payload = $this->getMerchantProductPayload($merchantProduct);
 

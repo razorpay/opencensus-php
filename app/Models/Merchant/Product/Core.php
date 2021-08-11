@@ -5,9 +5,12 @@ namespace RZP\Models\Merchant\Product;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Stakeholder;
 use RZP\Jobs\MerchantProductsConfig;
 use RZP\Models\Merchant\Product\Util;
+use RZP\Constants\Entity as EntityName;
 use RZP\Models\Merchant\Product\Config;
 use RZP\Models\Merchant\Product\Requirements;
 use RZP\Models\Merchant\Detail\NeedsClarification;
@@ -193,16 +196,17 @@ class Core extends Base\Core
             foreach ($products as $product)
             {
                 $this->trace->info(TraceCode::MERCHANT_PRODUCT_STATUS_AUTO_UPDATE, [
-                    'merchant_id'         => $merchantDetails->getMerchantId(),
-                    'merchant_product_id' => $product->getId(),
-                    'product_name'        => $product->getProduct(),
+                    'merchant_id'                => $merchantDetails->getMerchantId(),
+                    'merchant_product_id'        => $product->getId(),
+                    'product_name'               => $product->getProduct(),
+                    'merchant_activation_status' => $merchantDetails->getActivationStatus()
                 ]);
 
                 $merchantActivationStatus = $merchantDetails->getActivationStatus();
 
                 $productStatusMapping = Status::PRODUCT_NAME_STATUS_MAPPING[$product->getProduct()];
 
-                $productActivationStatus = $productStatusMapping[$merchantActivationStatus] ?? null;
+                $productActivationStatus = $productStatusMapping[$merchantActivationStatus] ?? $product->getStatus();
 
                 $product->setActivationStatus($productActivationStatus);
 
@@ -211,17 +215,24 @@ class Core extends Base\Core
                 $eventService->notifyProductActivationStatus($product);
 
                 $updateProducts[$product->getId()] = $product->getProduct();
+
+                $this->trace->info(TraceCode::MERCHANT_PRODUCT_STATUS_AUTO_UPDATE, [
+                    'merchant_id'         => $merchantDetails->getMerchantId(),
+                    'merchant_product_id' => $product->getId(),
+                    'success'             => true,
+                ]);
             }
         }
         catch (\Exception $e)
         {
             $this->trace->traceException($e,
-                                         null,
+                                         Logger::CRITICAL,
                                          TraceCode::MERCHANT_PRODUCT_STATUS_UPDATE_FAILURE,
                                          [
                                              'merchant_id'      => $merchantDetails->getMerchantId(),
                                              'updated_products' => $updateProducts
                                          ]);
+            $this->trace->count(Metric::PRODUCT_CONFIG_AUTO_UPDATE_MERCHANT_STATUS_FAILED);
         }
     }
 
@@ -272,7 +283,7 @@ class Core extends Base\Core
      */
     private function updatePaymentGatewayProductIfApplicable(Merchant\Entity $merchant, Detail\Entity $merchantDetails, Entity $merchantProduct)
     {
-        $this->submitMerchantActivation($merchant, $merchantDetails);
+        $this->submitMerchantActivation($merchant, $merchantDetails, $merchantProduct);
     }
 
     /**
@@ -285,14 +296,17 @@ class Core extends Base\Core
      */
     private function updatePaymentLinksProductIfApplicable(Merchant\Entity $merchant, Detail\Entity $merchantDetails, Entity $merchantProduct)
     {
-        $this->submitMerchantActivation($merchant, $merchantDetails);
+        $this->submitMerchantActivation($merchant, $merchantDetails, $merchantProduct);
     }
 
-    private function submitMerchantActivation(Merchant\Entity $merchant, Detail\Entity $merchantDetails)
+    private function submitMerchantActivation(Merchant\Entity $merchant, Detail\Entity $merchantDetails, Entity $merchantProduct)
     {
         $merchantDetailCore = new Detail\Core;
 
         $input = [
+            EntityName::STAKEHOLDER => [
+                Stakeholder\Entity::AADHAAR_LINKED => 0,
+            ],
             Detail\Entity::SUBMIT => '1',
         ];
 
@@ -306,10 +320,12 @@ class Core extends Base\Core
             return;
         }
 
+        $submitResponse = [];
+
         if ($merchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
         {
             // auto submit the activation form if all requirements are met
-            $merchantDetailCore->saveMerchantDetails($input, $merchant);
+            $submitResponse = $merchantDetailCore->saveMerchantDetails($input, $merchant);
         }
         else
         {
@@ -317,9 +333,23 @@ class Core extends Base\Core
 
             if ($nonAcknowledgedNCFields[Merchant\Constants::COUNT] === 0)
             {
-                $merchantDetailCore->saveMerchantDetails($input, $merchant);
+                $submitResponse = $merchantDetailCore->saveMerchantDetails($input, $merchant);
             }
         }
+
+        $submitted = $submitResponse[Detail\Entity::SUBMITTED] ?? false;
+
+        $this->trace->info(TraceCode::MERCHANT_SUBMITTED_POST_ZERO_PRODUCT_REQUIREMENTS, [
+            'merchant_id'  => $merchant->getId(),
+            'product_name' => $merchantProduct->getProduct(),
+            'product_id'   => $merchantProduct->getId(),
+            'submitted'    => $submitted
+        ]);
+    }
+
+    private function traceContext()
+    {
+
     }
 
     /**

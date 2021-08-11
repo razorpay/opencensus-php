@@ -9,6 +9,7 @@ use RZP\Models\User\Role;
 use RZP\Models\Merchant\Methods;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Traits\TestsMetrics;
+use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Product\Metric;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -284,6 +285,11 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->runRequestResponseFlow($testData);
 
+        Stakeholder\Entity::verifyIdAndSilentlyStripSign($stakeholderId);
+
+        $stakeholder = $this->getDbEntity('stakeholder',  ['id' => $stakeholderId]);
+
+        $this->assertTrue(($stakeholder[Stakeholder\Entity::AADHAAR_LINKED] === 0));
     }
 
     /**
