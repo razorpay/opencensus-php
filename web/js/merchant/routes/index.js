@@ -463,12 +463,12 @@ const fullPageViewsMap = {
   '/paymentbuttons/new': {
     component: PaymentButtonCreate,
     additionalCondition: (user) =>
-      user.isAllowedEdit('payment_pages') && user.isPaymentButtonEnabledByRazorX,
+      user.isAllowedEdit('payment_buttons') && user.isPaymentButtonEnabledByRazorX,
   },
   '/paymentbuttons/:id(pl_.+)/edit': {
     component: PaymentButtonCreate,
     additionalCondition: (user) =>
-      user.isAllowedEdit('payment_pages') && user.isPaymentButtonEnabledByRazorX,
+      user.isAllowedEdit('payment_buttons') && user.isPaymentButtonEnabledByRazorX,
   },
   '/subscription_buttons/new': {
     component: SubscriptionButtonCreate,
