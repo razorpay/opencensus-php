@@ -72,7 +72,7 @@ class ReconService
 
        unset($input[self::FILE]);
 
-        return $this->sendRequest('uploads', 'POST', $input);
+        return $this->sendRequest('file', 'POST', $input);
     }
 
     protected function uploadFileToUfh($file, $storageFileName, $type)
