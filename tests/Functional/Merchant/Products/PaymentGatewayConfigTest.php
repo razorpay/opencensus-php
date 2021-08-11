@@ -500,7 +500,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->runRequestResponseFlow($testData);
 
-        $this->verifyKycClarificationReasonAcknowledged('promoter_pan_name' , $merchantId);
+        $this->verifyKycClarificationReasonAcknowledged('promoter_pan_name' , $merchantId, 'clarification_reasons');
 
         $this->updateUploadDocumentData('testPostStakeholderDocumentAadharFront');
 
@@ -512,16 +512,28 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->runRequestResponseFlow($testData);
 
-        $this->verifyKycClarificationReasonAcknowledged('aadhar_front' , $merchantId);
+        $this->verifyKycClarificationReasonAcknowledged('aadhar_front' , $merchantId, 'clarification_reasons');
+
+        $testData = $this->testData['testUpdatePaymentGatewayConfig'];
+
+        $testData['request']['content'] = ['settlements' => ['account_number' => '123456780']];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $testData['response']['content'] = ['active_configuration' => ['settlements' => ['account_number' => '123456780']]];
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->verifyKycClarificationReasonAcknowledged('bank_account_number' , $merchantId, 'additional_details');
     }
 
-    private function verifyKycClarificationReasonAcknowledged(string $field, string $merchantId)
+    private function verifyKycClarificationReasonAcknowledged(string $field, string $merchantId, string $updateKey)
     {
         $merchantDetails = $this->getDbEntity('merchant_detail', ['merchant_id' => $merchantId]);
 
         $kycClarificationReasons = $merchantDetails->getKycClarificationReasons();
 
-        $clarificationReasons = $kycClarificationReasons['clarification_reasons'];
+        $clarificationReasons = $kycClarificationReasons[$updateKey];
 
         $this->assertTrue($clarificationReasons[$field][0]['acknowledged']);
     }
@@ -547,14 +559,15 @@ class PaymentGatewayConfigTest extends OAuthTestCase
                                                 'from'        => 'admin'
                                             ],
                     ],
+                ],
+                'additional_details' => [
                     'bank_account_number' => [[
                                                   'reason_type' => 'predefined',
                                                   'field_value' => '1234567890',
                                                   'reason_code' => 'unable_to_validate_acc_number',
-                                                  'is_current'  => true,
-                                                  'from'        => 'admin'
+                                                  'from'        => 'system'
                                               ]]
-                ],
+                ]
             ],
             'activation_status'         => 'needs_clarification',
             'submitted'                 => 1,

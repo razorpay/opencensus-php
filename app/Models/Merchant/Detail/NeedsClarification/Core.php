@@ -286,8 +286,9 @@ class Core extends Base\Core
              *   Case 2: bank_account_number is acknowledged and bank proof is not submitted
              *   In both the above cases check for bank proof submission
              ***/
-            if (($this->isBankDetailsNCField($field) === true) && ($this->isNCAcknowledgedForBankDocumentProofs($documentResponse, $clarificationDetails) === false))
-            {
+            if (($this->isBankDetailsNCField($field) === true) &&
+                ($this->isNCAcknowledgedForBankDocumentProofs($documentResponse, $clarificationDetails) === false) &&
+                array_key_exists(DocumentType::CANCELLED_CHEQUE, $nonAcknowledgedNCFields[Constants::DOCUMENTS]) === false) {
                 $nonAcknowledgedNCFields[Constants::DOCUMENTS][DocumentType::CANCELLED_CHEQUE] = $clarificationDetails;
 
                 $totalNonAcknowledgedFieldCount = $totalNonAcknowledgedFieldCount + 1;
@@ -381,6 +382,16 @@ class Core extends Base\Core
             }
         }
 
+        $additionalDetails = $kycClarificationReasons[DetailEntity::ADDITIONAL_DETAILS] ?? [];
+
+        if(empty($additionalDetails) === false)
+        {
+            foreach ($additionalDetails as $field => $clarificationDetails)
+            {
+                $latestReasons[$field] = $clarificationDetails[0];
+            }
+        }
+
         return $latestReasons;
     }
 
@@ -394,19 +405,34 @@ class Core extends Base\Core
         }
 
         $clarificationReasons = $kycClarificationReasons[DetailEntity::CLARIFICATION_REASONS] ?? [];
+        $additionalDetails    = $kycClarificationReasons[DetailEntity::ADDITIONAL_DETAILS] ?? [];
 
-        if(array_key_exists($field, $clarificationReasons) === false)
+        $fieldNCReasons = [];
+
+        $reasons = $clarificationReasons;
+        $updateKey = DetailEntity::CLARIFICATION_REASONS;
+
+        if (array_key_exists($field, $clarificationReasons) === true)
+        {
+            $fieldNCReasons = $clarificationReasons[$field];
+        }
+        if (array_key_exists($field, $additionalDetails) === true)
+        {
+            $updateKey = DetailEntity::ADDITIONAL_DETAILS;
+            $reasons = $additionalDetails;
+            $fieldNCReasons = $additionalDetails[$field];
+        }
+
+        if(empty($fieldNCReasons) === true)
         {
             return false;
         }
 
-        $reasons = $clarificationReasons[$field];
+        $latestReasonIndex = count($fieldNCReasons) - 1;
 
-        $latestReasonIndex = count($reasons) - 1;
+        $reasons[$field][$latestReasonIndex][Constants::ACKNOWLEDGED] = true;
 
-        $clarificationReasons[$field][$latestReasonIndex][Constants::ACKNOWLEDGED] = true;
-
-        $kycClarificationReasons[DetailEntity::CLARIFICATION_REASONS] = $clarificationReasons;
+        $kycClarificationReasons[$updateKey] = $reasons;
 
         $merchantDetails->setKycClarificationReasons($kycClarificationReasons);
 
@@ -415,7 +441,7 @@ class Core extends Base\Core
         $tracePayload = [
             'merchant_id'       => $merchantDetails->getMerchantId(),
             'field'             => $field,
-            'updatedKycReasons' => $clarificationReasons[$field][$latestReasonIndex]
+            'updatedKycReasons' => $reasons[$field][$latestReasonIndex]
         ];
 
         $this->trace->info(TraceCode::MERCHANT_ACKNOWLEDGED_NC_FIELD, $tracePayload);
