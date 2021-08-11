@@ -892,23 +892,23 @@ const s3 = props => {
                     <tbody>
                       <tr>
                         <td>Domestic Credit Cards</td>
-                        <td style={{ textAlign: 'right' }}>1.75%</td>
+                        <td style={{ textAlign: 'right' }}>1.9%</td>
                       </tr>
                       <tr>
                         <td>Debit Cards</td>
-                        <td style={{ textAlign: 'right' }}>1.75%</td>
+                        <td style={{ textAlign: 'right' }}>1.9%</td>
                       </tr>
                       <tr>
                         <td>Net Banking</td>
-                        <td style={{ textAlign: 'right' }}>1.75%</td>
+                        <td style={{ textAlign: 'right' }}>1.9%</td>
                       </tr>
                       <tr>
                         <td>Online Wallets</td>
-                        <td style={{ textAlign: 'right' }}>1.75%</td>
+                        <td style={{ textAlign: 'right' }}>1.9%</td>
                       </tr>
                       <tr>
                         <td>UPI</td>
-                        <td style={{ textAlign: 'right' }}>1.75%</td>
+                        <td style={{ textAlign: 'right' }}>1.9%</td>
                       </tr>
                       <tr>
                         <td>Amex / Diners / International Credit Cards</td>
@@ -940,7 +940,7 @@ const s3 = props => {
                   </p>
                   <p>Partner Commission</p>
                   <p>
-                    0.25% for domestic transactions and 0.1% for international transactions (transacting
+                    0.1% for domestic transactions and 0.1% for international transactions (transacting
                     directly and not via any other Partner platform ) will be
                     paid out as commission to the Partner.
                   </p>
