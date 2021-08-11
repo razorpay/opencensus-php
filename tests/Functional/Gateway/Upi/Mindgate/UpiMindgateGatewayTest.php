@@ -1817,4 +1817,132 @@ class UpiMindgateGatewayTest extends TestCase
             ],
         ], $metricDriver->metric(PaymentMetric::PAYMENT_AUTHORIZED, 'histogram'));
     }
+
+    public function testIntentTpvPaymentForDirectSettlementMerchant()
+    {
+        // creating direct settlement terminal (tpv) for merchant
+        $this->fixtures->create('terminal:direct_settlement_upi_mindgate_terminal', ['tpv' => 1]);
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->createOrder([
+            'amount'         => 50000,
+            'currency'       => 'INR',
+            'receipt'        => 'rcptid42',
+            'method'         => 'upi',
+            'bank'           => 'RATN',
+            'account_number' => '04030403040304',
+        ]);
+
+        $order = $this->getDbLastEntity('order');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+        $this->payment['order_id']  = $order->getPublicId();
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals('10DiSeUpMnTmnl', $payment['terminal_id']);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->assertEquals(
+            [
+                'success' => true
+            ],
+            $response);
+
+        $payment->reload();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertNotNull($upi['status_code']);
+
+        $this->assertNotNull($upi['npci_reference_id']);
+
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+
+        $this->assertEquals('pay', $upi['type']);
+
+        // the payment status should be 'captured' because
+        // in case of DS merchant the payment is auto-captured
+        // during the callback flow
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
+    public function testTpvPaymentForDirectSettlementMerchant()
+    {
+        // creating direct settlement terminal (tpv) for merchant
+        $this->fixtures->create('terminal:direct_settlement_upi_mindgate_terminal', ['tpv' => 1]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->createOrder([
+            'amount'         => 50000,
+            'currency'       => 'INR',
+            'receipt'        => 'rcptid42',
+            'method'         => 'upi',
+            'bank'           => 'RATN',
+            'account_number' => '04030403040304',
+        ]);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment                = $this->getDefaultUpiPaymentArray();
+        $payment['amount']      = $order['amount'];
+        $payment['order_id']    = $order['id'];
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals('10DiSeUpMnTmnl', $payment['terminal_id']);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->assertEquals(
+            [
+                'success' => true
+            ],
+            $response);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertNotNull($upi['status_code']);
+
+        $this->assertNotNull($upi['npci_reference_id']);
+
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+
+        $this->assertEquals('collect', $upi['type']);
+
+        $this->assertEquals('vishnu@icici', $upi['vpa']);
+
+        // the payment status should be 'captured' because
+        // in case of DS merchant the payment is auto-captured
+        // during the callback flow
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->fixtures->merchant->disableTPV();
+    }
 }
