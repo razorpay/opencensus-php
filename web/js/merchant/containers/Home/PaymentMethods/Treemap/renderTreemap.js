@@ -434,7 +434,7 @@ const makeCSVData = (data, bankNames, groupTitleMap) => {
   rows.sort((item1, item2) => (item1[0] <= item2[0] ? -1 : 1));
 
   rows.forEach((row) => {
-    if (row?.length > 0) {
+    if (typeof row !== 'undefined' && row?.length > 0) {
       row.push(`${((row[row.length - 1] / total) * 100).toFixed(2)}%`);
     }
   });
