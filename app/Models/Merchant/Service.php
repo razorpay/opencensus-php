@@ -781,6 +781,9 @@ class Service extends Base\Service
 
         $user = $this->repo->user->getUserFromEmailOrFail($input[Entity::EMAIL]);
 
+        // user to whom ownership is being transfered should not have any cross org merchant
+        (new Validator())->validateUserDoesNotBelongToMerchantsInMultipleOrgsForEmailUpdate($user);
+
         // this flow is used by owner user only : basic auth user is same as owner user
         $currentOwner = $this->app['basicauth']->getUser();
 

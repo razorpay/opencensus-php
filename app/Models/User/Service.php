@@ -525,6 +525,22 @@ class Service extends Base\Service
         return $user->toArrayPublic();
     }
 
+    /**
+     *  checks if provided role exist for provided user id, merchant id and product
+     * @param $userId
+     * @param $merchantId
+     * @param $role
+     * @param $product
+     * @return bool
+     */
+    public function doesUserHaveRoleForMerchantAndProduct($userId, $merchantId, $role, $product)
+    {
+        $merchantUserMapping = $this->repo->merchant->getMerchantUserMapping($merchantId, $userId, $role, $product);
+
+        return (empty($merchantUserMapping) === false);
+    }
+
+
     public function login(array $input): array
     {
         try

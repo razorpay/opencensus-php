@@ -164,6 +164,10 @@ class Validator extends Base\Validator
         Entity::EMAIL                               => 'required|email|unique:merchants',
     ];
 
+    protected static $editEmailNonUniqueRules = [
+        Entity::EMAIL                               => 'required|email',
+    ];
+
     protected static $changeEmailTokenRules = [
         User\Entity::PASSWORD                    => 'required|between:8,50|confirmed|numbers|letters',
         User\Entity::PASSWORD_CONFIRMATION       => 'required|between:8,50',
@@ -565,6 +569,28 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Key access cannot be granted with out website details');
         }
+    }
+
+    public function validateUserDoesNotBelongToMerchantsInMultipleOrgsForEmailUpdate($user)
+    {
+        $app = App::getFacadeRoot();
+
+        $merchantOrgIdsForUser = array_unique($user->merchants()->get()->pluck('org_id')->toArray());
+
+        $numberOfOrgIdsForUser = sizeof($merchantOrgIdsForUser);
+
+        $orgId = $app['basicauth']->getMerchant()->getOrgId();
+
+        // if user has no merchant or user has merchant[s] belongs to requested org
+        if (($numberOfOrgIdsForUser === 0) or
+            (($numberOfOrgIdsForUser === 1) and ($merchantOrgIdsForUser[0] === $orgId)))
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestValidationFailureException(
+            'We are unable to change your email Id to ' . $user->getEmail() . '. Please reach out to our support team to perform this action');
+
     }
 
     protected function validateHandle($attribute, $handle)

@@ -388,7 +388,7 @@ return [
         ],
     ],
 
-    'testMerchantEmailUpdateEmailUserExistContactEmailAlreadyTakenFail' => [
+    'testMerchantEmailUpdateEmailUserExistUserHasCrossOrgMerchantFail' => [
         'request' => [
             'content' => [
                 'email'                  => 'newowner@gmail.com',
@@ -402,7 +402,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The email has already been taken.',
+                    'description' => 'We are unable to change your email Id to newowner@gmail.com. Please reach out to our support team to perform this action',
                 ],
             ],
             'status_code' => 400,

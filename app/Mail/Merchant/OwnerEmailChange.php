@@ -1,13 +1,11 @@
 <?php
 
-namespace RZP\Mail\User;
+namespace RZP\Mail\Merchant;
 
-use App;
 use RZP\Mail\Base;
 use RZP\Models\User;
-use RZP\Trace\TraceCode;
 
-class PasswordAndEmailReset extends Base\Mailable
+class OwnerEmailChange extends Base\Mailable
 {
     protected $org;
 
@@ -16,33 +14,30 @@ class PasswordAndEmailReset extends Base\Mailable
      */
     protected $user;
 
-    protected $token;
-
     protected $email;
+
+    protected $isChangeRequest;
 
     protected $merchantId;
 
-    public function __construct($user, $org, $email, $merchantId)
+    public function __construct($user, $org, $email, $merchantId, $isChangeRequest = true)
     {
         parent::__construct();
 
         $this->user = $user;
 
+        $this->isChangeRequest = $isChangeRequest;
+
         $this->email = $email;
 
         $this->merchantId = $merchantId;
-
-        $this->token = (new User\Service)->getTokenWithExpiry(
-            $this->user['id'],
-            User\Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME
-        );
 
         $this->org = $org;
     }
 
     protected function addRecipients()
     {
-        $email = $this->email;
+        $email = $this->user['email'];
 
         $name = $this->user['name'];
 
@@ -72,11 +67,9 @@ class PasswordAndEmailReset extends Base\Mailable
     protected function addMailData()
     {
         $data = [
-            'token'               => $this->token,
             'org'                 => $this->org,
             'current_owner_email' => $this->user['email'],
             'email'               => $this->email,
-            'merchant_id'         => $this->merchantId
         ];
 
         $this->with($data);
@@ -86,7 +79,14 @@ class PasswordAndEmailReset extends Base\Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.user.edit_email_and_password_set');
+        if ($this->isChangeRequest === true)
+        {
+            $this->view('emails.merchant.owner_email_change_request');
+        }
+        else
+        {
+            $this->view('emails.merchant.owner_email_change');
+        }
 
         return $this;
     }

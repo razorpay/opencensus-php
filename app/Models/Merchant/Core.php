@@ -52,6 +52,7 @@ use RZP\Models\Partner\Activation;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountService;
+use RZP\Mail\Merchant as MerchantMail;
 
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Base\PublicCollection;
@@ -873,10 +874,11 @@ class Core extends Base\Core
      * @param \RZP\Models\Merchant\Entity $merchant
      * @param array $input
      *
+     * @param string $validationRule
      * @return \RZP\Models\Merchant\Entity
      * @throws BadRequestException
      */
-    public function editEmail($merchant, $input)
+    public function editEmail($merchant, $input, $operation = 'edit_email')
     {
         $oldEmail = $merchant->getEmail();
 
@@ -896,7 +898,7 @@ class Core extends Base\Core
             }
         }
 
-        $merchant->edit($input, 'editEmail');
+        $merchant->edit($input, $operation);
 
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
@@ -1515,19 +1517,17 @@ class Core extends Base\Core
     {
         $this->repo->transactionOnLiveAndTest(function () use ($user, $merchant, $input, $currentOwner)
         {
-            $product              = $this->app['basicauth']->getRequestOriginProduct();
-
             $updateContactEmail   = (bool) ($input[Constants::SET_CONTACT_EMAIL] ?? false);
 
             $reAttachCurrentOwner = (bool) ($input[Constants::REATTACH_CURRENT_OWNER] ?? true);
 
-            $this->transferOwnerShipToUserForEmailUpdate($merchant, $user, $currentOwner, $product, $reAttachCurrentOwner);
+            $this->transferOwnerShipToUserForEmailUpdate($merchant, $user, $currentOwner, $reAttachCurrentOwner);
 
             if ($updateContactEmail === true)
             {
                 $this->editEmail($merchant, [
                     'email' => $input['email']
-                ]);
+                ], 'editEmailNonUnique');
             }
 
             $this->trace->info(TraceCode::OWNERSHIP_TRANSFER_FOR_EMAIL_UPDATE, [
@@ -1538,10 +1538,42 @@ class Core extends Base\Core
                 'contact_email_updated' => $updateContactEmail,
                 'old_owner_reattached'  => $reAttachCurrentOwner,
             ]);
+
+            $orgId = $this->app['basicauth']->getOrgId();
+
+            //get Org and send it to mailer, deal with other orgs as well.
+            $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+
+            $emailChangedMail = new MerchantMail\OwnerEmailChange($currentOwner->toArrayPublic(),
+                $org,
+                $input['email'],
+                $merchant->getId(),
+                false
+            );
+
+            Mail::queue($emailChangedMail);
         });
     }
 
-    protected function transferOwnerShipToUserForEmailUpdate($merchant, $user, $currentOwner, $product, $reAttachCurrentOwner)
+    protected function transferOwnerShipToUserForEmailUpdate($merchant, $user, $currentOwner, $reAttachCurrentOwner)
+    {
+        // transfer ownership for PG
+        $this->transferOwnerShipToUser($merchant, $user, $currentOwner, Product::PRIMARY, $reAttachCurrentOwner);
+
+        $isOwnerForBanking = (new User\Service())->doesUserHaveRoleForMerchantAndProduct(
+            $currentOwner->getId(),
+            $merchant->getId(),
+            Role::OWNER,
+            Product::BANKING);
+
+        // if current owner is owner on X : transfer ownership for X to user
+        if ($isOwnerForBanking === true)
+        {
+            $this->transferOwnerShipToUser($merchant, $user, $currentOwner, Product::BANKING, $reAttachCurrentOwner);
+        }
+    }
+
+    protected function transferOwnerShipToUser($merchant, $user, $currentOwner, $product, $reAttachCurrentOwner)
     {
         // detach current owner
         $this->detachUserForMerchant($merchant->getId(), $currentOwner, $product);
@@ -1656,6 +1688,20 @@ class Core extends Base\Core
 
         $org['hostname'] = $this->app['basicauth']->getOrgHostName();
 
+        $this->sendOwnerEmailChangeRequestMailForEmailUpdateSelfServe($user, $org, $email, $merchantId);
+
+        $this->sendPasswordResetMailForEmailUpdateSelfServe($user, $org, $email, $merchantId);
+    }
+
+    protected function sendOwnerEmailChangeRequestMailForEmailUpdateSelfServe($user, $org, $email, $merchantId)
+    {
+        $emailChangeRequestMail = new MerchantMail\OwnerEmailChange($user, $org, $email, $merchantId);
+
+        Mail::queue($emailChangeRequestMail);
+    }
+
+    protected function sendPasswordResetMailForEmailUpdateSelfServe($user, $org, $email, $merchantId)
+    {
         $passwordAndEmailResetMail = new UserMail\PasswordAndEmailReset($user->toArrayPublic(), $org, $email, $merchantId);
 
         Mail::queue($passwordAndEmailResetMail);

@@ -4,17 +4,11 @@
     <meta charset="utf-8">
 </head>
 <body>
-<h2>Email Reset For Owner</h2>
 
 <div>
-        We have received a request to update the registered email of Razorpay account to {{$email}} from {{$current_owner_email}},
-        To reset your password, <a href="{{'https://' . $org['hostname'] . '/#/access/emailupdate?email=' . urlencode($email) .'&token='.$token . '&mid=' . $merchant_id }}" target="_blank">click here</a>. <br/>
-
-        Or you may open the following link in your browser: <br/>
-        <a href="{{'https://' . $org['hostname'] . '/#/access/emailupdate?email=' . urlencode($email) .'&token='.$token . '&mid=' . $merchant_id }}" target="_blank">
-            {{'https://' . $org['hostname'] . '/#/access/emailupdate?email=' . urlencode($email) .'&token='.$token . '&mid=' . $merchant_id}}
-        </a>
-
+        We have received a request to update the registered email of Razorpay account to {{$email}} from {{$current_owner_email}}.
+        To successfully update your registered email id, please <a href="{{'https://' . $org['hostname'] . '/#/access/emailupdate?email=' . urlencode($email) .'&token='.$token . '&mid=' . $merchant_id }}" target="_blank">click here</a>. <br/>
+        and set the login password for {{$email}}.
 </div>
 
 <div>

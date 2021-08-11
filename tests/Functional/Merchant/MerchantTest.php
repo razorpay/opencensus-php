@@ -4391,6 +4391,23 @@ class MerchantTest extends TestCase
 
         $this->assertCacheDataForMerchantEmailUpdate($merchant['id'], $expectedCacheData);
 
+        Mail::assertQueued(MerchantMail\OwnerEmailChange::class, function ($mailable) use($merchant, $token)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertEquals('emails.merchant.owner_email_change_request', $mailable->view);
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertEquals('abctest@gmail.com', $mailData['current_owner_email']);
+
+            $this->assertEquals('newowner@gmail.com', $mailData['email']);
+
+            $this->assertTrue($mailable->hasTo('abctest@gmail.com'));
+
+            return true;
+        });
+
         Mail::assertQueued(PasswordAndEmailResetMail::class, function ($mailable) use($merchant, $token)
         {
             $mailData = $mailable->viewData;
@@ -4440,6 +4457,8 @@ class MerchantTest extends TestCase
 
         $this->assertCacheDataForMerchantEmailUpdate($merchant['id'], null);
 
+        Mail::assertNotQueued(MerchantMail\OwnerEmailChange::class);
+
         Mail::assertNotQueued(PasswordAndEmailResetMail::class);
     }
 
@@ -4472,6 +4491,8 @@ class MerchantTest extends TestCase
         $this->startTest();
 
         $this->assertCacheDataForMerchantEmailUpdate($merchant1['id'], null);
+
+        Mail::assertNotQueued(MerchantMail\OwnerEmailChange::class);
 
         Mail::assertNotQueued(PasswordAndEmailResetMail::class);
     }
@@ -4506,31 +4527,35 @@ class MerchantTest extends TestCase
 
         $this->assertCacheDataForMerchantEmailUpdate($merchant1['id'], null);
 
+        Mail::assertNotQueued(MerchantMail\OwnerEmailChange::class);
+
         Mail::assertNotQueued(PasswordAndEmailResetMail::class);
     }
 
     public function testMerchantEmailUpdateCreateNewOwnerDetachOldOwner()
     {
-        $this->merchantEmailUpdateCreateNewOwner(false, false);
+        $this->merchantEmailUpdateCreateNewOwner(false, false, true);
     }
 
     public function testMerchantEmailUpdateCreateNewOwnerDetachOldOwnerSetContactEmail()
     {
-        $this->merchantEmailUpdateCreateNewOwner(false, true);
+        $this->merchantEmailUpdateCreateNewOwner(false, true, false);
     }
 
     public function testMerchantEmailUpdateCreateNewOwnerReAttachOldOwner()
     {
-        $this->merchantEmailUpdateCreateNewOwner(true, false);
+        $this->merchantEmailUpdateCreateNewOwner(true, false, true);
     }
 
     public function testMerchantEmailUpdateCreateNewOwnerReAttachOldOwnerSetContactEmail()
     {
-        $this->merchantEmailUpdateCreateNewOwner(true, true);
+        $this->merchantEmailUpdateCreateNewOwner(true, true, false);
     }
 
     public function testMerchantEmailUpdateCreateNewOwnerTokenMismatchFail()
     {
+        Mail::fake();
+
         $reAttachCurrentOwner = true;
 
         $setContactEmail = true;
@@ -4575,10 +4600,14 @@ class MerchantTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
+
+        Mail::assertNotQueued(MerchantMail\OwnerEmailChange::class);
     }
 
     public function testMerchantEmailUpdateCreateNewOwnerTokenExpiredFail()
     {
+        Mail::fake();
+
         $reAttachCurrentOwner = true;
 
         $setContactEmail = true;
@@ -4621,10 +4650,14 @@ class MerchantTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
+
+        Mail::assertNotQueued(MerchantMail\OwnerEmailChange::class);
     }
 
     public function testMerchantEmailUpdateCreateNewOwnerCacheDataExpiredFail()
     {
+        Mail::fake();
+
         $merchant = $this->fixtures->create('merchant', ['email' => 'oldcontact@gmail.com']);
 
         $oldOwnerUser = $this->fixtures->create('user',[
@@ -4646,30 +4679,34 @@ class MerchantTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
+
+        Mail::assertNotQueued(MerchantMail\OwnerEmailChange::class);
     }
 
     public function testMerchantEmailUpdateEmailUserExistNotInTeamReAttachOldOwner()
     {
-        $this->merchantEmailUpdateForExistingEmailUser(false, true, false);
+        $this->merchantEmailUpdateForExistingEmailUser(false, true, false, true);
     }
 
     public function testMerchantEmailUpdateEmailUserExistNotInTeamDetachOldOwnerSetContactEmail()
     {
-        $this->merchantEmailUpdateForExistingEmailUser(false, false, true);
+        $this->merchantEmailUpdateForExistingEmailUser(false, false, true, false);
     }
 
     public function testMerchantEmailUpdateEmailUserExistInTeamReAttachOldOwner()
     {
-        $this->merchantEmailUpdateForExistingEmailUser(true, true, false);
+        $this->merchantEmailUpdateForExistingEmailUser(true, true, false, true);
     }
 
     public function testMerchantEmailUpdateEmailUserExistInTeamDetachOldOwnerSetContactEmail()
     {
-        $this->merchantEmailUpdateForExistingEmailUser(true, false, true);
+        $this->merchantEmailUpdateForExistingEmailUser(true, false, true, false);
     }
 
-    public function testMerchantEmailUpdateEmailUserExistContactEmailAlreadyTakenFail()
+    public function testMerchantEmailUpdateEmailUserExistContactEmailAlreadyTakenPass()
     {
+        $this->testData[__FUNCTION__] = $this->testData['testMerchantEmailUpdateExistingUser'];
+
         $merchant = $this->fixtures->create('merchant', [
             'email' => 'oldcontact@gmail.com'
         ]);
@@ -4693,10 +4730,44 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $oldOwnerUser['id']);
 
         $this->startTest();
+
+        $this->assertMerchantContactEmailForEmailUpdate($merchant['id'], true);
     }
 
-    protected function merchantEmailUpdateCreateNewOwner($reAttachCurrentOwner, $setContactEmail)
+    public function testMerchantEmailUpdateEmailUserExistUserHasCrossOrgMerchantFail()
     {
+        $merchant = $this->fixtures->create('merchant', [
+            'email' => 'oldcontact@gmail.com'
+        ]);
+
+        $oldOwnerUser = $this->fixtures->create('user',[
+            'email'                   => 'oldowner@gmail.com',
+            'contact_mobile'          => '8839106483',
+            'name'                    => 'ownername',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner');
+
+        $existingUser = $this->fixtures->create('user', ['email' => 'newowner@gmail.com']);
+
+        $crossOrg =  $this->fixtures->create('org');
+
+        $crossOrgMerchant = $this->fixtures->create('merchant', [
+            'org_id' => $crossOrg['id']
+        ]);
+
+        $this->createMerchantUserMapping($existingUser['id'], $crossOrgMerchant['id'], 'owner');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $oldOwnerUser['id']);
+
+        $this->startTest();
+    }
+
+    protected function merchantEmailUpdateCreateNewOwner($reAttachCurrentOwner, $setContactEmail, $isCurrentOwnerOnX)
+    {
+        Mail::fake();
+
         $app = App::getFacadeRoot();
 
         $merchant = $this->fixtures->create('merchant', ['email' => 'oldcontact@gmail.com']);
@@ -4712,7 +4783,14 @@ class MerchantTest extends TestCase
             'password_reset_expiry'   => Carbon::now()->timestamp + 86400,
         ]);
 
-        $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner');
+        // create owner role on pg
+        $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner', 'test', 'primary');
+
+        // if current owner is owner for X: create owner role for banking product
+        if ($isCurrentOwnerOnX === true)
+        {
+            $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner', 'test', 'banking');
+        }
 
         // put data in cache
         $cacheData = [
@@ -4739,24 +4817,57 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
+        Mail::assertQueued(MerchantMail\OwnerEmailChange::class, function ($mailable) use($merchant, $token)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertEquals('emails.merchant.owner_email_change', $mailable->view);
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertEquals('oldowner@gmail.com', $mailData['current_owner_email']);
+
+            $this->assertEquals('newowner@gmail.com', $mailData['email']);
+
+            $this->assertTrue($mailable->hasTo('oldowner@gmail.com'));
+
+            return true;
+        });
+
         $newOwnerUser = $this->getLastEntity('user', true);
 
         $this->assertOldAndNewOwnerAttributes($newOwnerUser['id'], $oldOwnerUser['id']);
 
         $this->assertCacheDataForMerchantEmailUpdate($merchant['id'], null);
 
+        // assert roles for PG
         $this->assertRolesOfOldAndNewOwnersForMerchantEmailUpdate(
             $merchant['id'],
             $oldOwnerUser['id'],
             $newOwnerUser['id'],
-            $reAttachCurrentOwner
+            $reAttachCurrentOwner,
+            'primary'
         );
+
+        // if current owner is owner for X : assert Role for banking product
+        if ($isCurrentOwnerOnX === true)
+        {
+            $this->assertRolesOfOldAndNewOwnersForMerchantEmailUpdate(
+                $merchant['id'],
+                $oldOwnerUser['id'],
+                $newOwnerUser['id'],
+                $reAttachCurrentOwner,
+                'banking'
+            );
+        }
 
         $this->assertMerchantContactEmailForEmailUpdate($merchant['id'], $setContactEmail);
     }
 
-    protected function merchantEmailUpdateForExistingEmailUser($userExistInTeam, $reAttachCurrentOwner, $setContactEmail)
+    protected function merchantEmailUpdateForExistingEmailUser($userExistInTeam, $reAttachCurrentOwner, $setContactEmail, $isCurrentOwnerOnX)
     {
+        Mail::fake();
+
         $merchant = $this->fixtures->create('merchant', [
             'email' => 'oldcontact@gmail.com'
         ]);
@@ -4768,7 +4879,14 @@ class MerchantTest extends TestCase
             'contact_mobile_verified' => true,
         ]);
 
-        $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner');
+        // create owner role on pg
+        $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner', 'test', 'primary');
+
+        // if current owner is owner for X: create owner role for banking product
+        if ($isCurrentOwnerOnX === true)
+        {
+            $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner', 'test', 'banking');
+        }
 
         $existingUser = $this->fixtures->create('user', ['email' => 'newowner@gmail.com']);
 
@@ -4790,12 +4908,43 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
+        Mail::assertQueued(MerchantMail\OwnerEmailChange::class, function ($mailable) use($merchant)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertEquals('emails.merchant.owner_email_change', $mailable->view);
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertEquals('oldowner@gmail.com', $mailData['current_owner_email']);
+
+            $this->assertEquals('newowner@gmail.com', $mailData['email']);
+
+            $this->assertTrue($mailable->hasTo('oldowner@gmail.com'));
+
+            return true;
+        });
+
+        // assert roles for PG
         $this->assertRolesOfOldAndNewOwnersForMerchantEmailUpdate(
             $merchant['id'],
             $oldOwnerUser['id'],
             $existingUser['id'],
-            $reAttachCurrentOwner
+            $reAttachCurrentOwner,
+            'primary'
         );
+
+        // if current owner is owner for X : assert Role for banking product
+        if ($isCurrentOwnerOnX === true)
+        {
+            $this->assertRolesOfOldAndNewOwnersForMerchantEmailUpdate(
+                $merchant['id'],
+                $oldOwnerUser['id'],
+                $existingUser['id'],
+                $reAttachCurrentOwner,
+                'banking'
+            );
+        }
 
         $this->assertMerchantContactEmailForEmailUpdate($merchant['id'], $setContactEmail);
     }
@@ -4809,17 +4958,25 @@ class MerchantTest extends TestCase
         $this->assertEquals($expectedCacheData, $cacheData);
     }
 
-    protected function assertRolesOfOldAndNewOwnersForMerchantEmailUpdate($merchantId, $oldOwnerUserId, $newOwnerUserId, $reAttachOldOwner)
+    protected function assertRolesOfOldAndNewOwnersForMerchantEmailUpdate($merchantId, $oldOwnerUserId, $newOwnerUserId, $reAttachOldOwner, $product = 'primary')
     {
-        $oldOwnerMerchantMapping = $this->getDBMerchantUserMapping($merchantId, $oldOwnerUserId);
+        $oldOwnerMerchantMapping = $this->getDBMerchantUserMapping($merchantId, $oldOwnerUserId, $product);
 
-        $newOwnerMerchantMapping = $this->getDBMerchantUserMapping($merchantId, $newOwnerUserId);
+        $newOwnerMerchantMapping = $this->getDBMerchantUserMapping($merchantId, $newOwnerUserId, $product);
 
         $this->assertEquals('owner', $newOwnerMerchantMapping->role);
 
         if ($reAttachOldOwner === true)
         {
-            $this->assertEquals('manager', $oldOwnerMerchantMapping->role);
+            switch ($product)
+            {
+                case 'primary':
+                    $this->assertEquals('manager', $oldOwnerMerchantMapping->role);
+                    break;
+
+                case 'banking':
+                    $this->assertEquals('finance_l1', $oldOwnerMerchantMapping->role);
+            }
         }
         else
         {
@@ -10268,12 +10425,13 @@ class MerchantTest extends TestCase
         $this->app['workflow']->initWorkflowMaker();
     }
 
-    protected function createMerchantUserMapping(string $userId, string $merchantId, string $role, $mode = 'test')
+    protected function createMerchantUserMapping(string $userId, string $merchantId, string $role, $mode = 'test', $product = 'primary')
     {
         DB::connection($mode)->table('merchant_users')
             ->insert([
                 'merchant_id' => $merchantId,
                 'user_id'     => $userId,
+                'product'     => $product,
                 'role'        => $role,
                 'created_at'  => 1493805150,
                 'updated_at'  => 1493805150
