@@ -41,6 +41,13 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchSubMerchantOnMerchantId(string $merchantId)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->first();
+    }
+
     public function fetchSubMerchantReferredByPartner(string $submerchantId, string $partnerId)
     {
         $accessMapsEntityId   = $this->dbColumn(Entity::ENTITY_ID);

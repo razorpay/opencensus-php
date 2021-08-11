@@ -36,6 +36,18 @@ return [
         ],
     ],
 
+    'testIfSubMerchant' => [
+        'request'  => [
+            'url'    => '/merchant/activation',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'isSubMerchant' => true,
+            ],
+        ],
+    ],
+
     'testUpdateIfscCode' => [
         'request'  => [
             'content' => [

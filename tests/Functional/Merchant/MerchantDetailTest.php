@@ -81,6 +81,21 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testIfSubMerchant()
+    {
+        $merchant = $this->fixtures->create('merchant:with_keys');
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->fixtures->create('merchant_access_map',[
+                'merchant_id' => $merchant['id'],
+            ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
+
+        $this->startTest();
+    }
+
     public function testUpdateIfscCode()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');

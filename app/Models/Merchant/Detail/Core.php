@@ -193,7 +193,6 @@ class Core extends Base\Core
         if(empty($businessDetailsInput[BusinessDetailEntity::APP_URLS]) === false)
         {
             $this->checkForCorrectAppUrls($businessDetailsInput[BusinessDetailEntity::APP_URLS]);
-            
             //save App Urls Details
             $businessDetailService = new Service();
             $businessDetails = $businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $businessDetailsInput);
@@ -2417,6 +2416,10 @@ class Core extends Base\Core
         {
             $response[Entity::MERCHANT_TNC] = (new Merchant\Tnc\Core)->getTncDetails($merchantDetails->tnc);
         }
+
+        $isSubMerchant = $this->repo->merchant_access_map->fetchSubMerchantOnMerchantId($merchant->getMerchantId());
+
+        $response['isSubMerchant'] = (empty($isSubMerchant) === false);
 
         $response = $this->appendBankingSpecificDetails($response, $merchant);
 

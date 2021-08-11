@@ -42,6 +42,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\FundAccount\Repository                       $fund_account
  * @property Models\Merchant\Balance\Repository                  $balance
  * @property Models\Merchant\Balance\BalanceConfig\Repository    $balance_config
+ * @property Models\Merchant\AccessMap\Repository                $merchant_access_map
  * @property Models\Transaction\Statement\Repository             $statement
  * @property Models\FundAccount\Repository                       $customer_balance
  * @property Models\FundAccount\Validation\Repository            $fund_account_validation
