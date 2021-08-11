@@ -1,4 +1,4 @@
-import { track } from "../../../ga";
+import track from "../../../Wysiwyg/track";
 
 const fbBase = 'https://www.facebook.com/sharer/sharer.php?u=',
   twitterBase = 'https://twitter.com/share?url=',
@@ -46,7 +46,7 @@ const SocialShareOptions = ({ msgInPost, linkInPost }) => {
         break;
     }
 
-    track.clickShareUrlViaSocialMedia(type);
+    track.success.clickShareUrlViaSocialMedia(type);
 
     return false;
   }
