@@ -194,7 +194,10 @@ class Entity extends Base\PublicEntity
 
     public function setPublicTrAttribute(array & $array)
     {
-        $array[self::TR] = $array[self::TRANSACTION_REFERENCE];
+        if(empty($array[self::TRANSACTION_REFERENCE]) === false)
+        {
+            $array[self::TR] = $array[self::TRANSACTION_REFERENCE];
+        }
     }
 
 // -------------------------- Getters --------------------------------------
@@ -272,18 +275,6 @@ class Entity extends Base\PublicEntity
     public function getPii()
     {
         return $this->pii;
-    }
-
-    public function toArrayPublic()
-    {
-        if ($this->virtualAccount->merchant->isFeatureEnabled(Feature\Constants::UPI_TRANSFER_TR) === false)
-        {
-            $index = array_search(self::TR, $this->public);
-
-            unset($this->public[$index]);
-        }
-
-        return parent::toArrayPublic();
     }
 
     public function toArrayTrace(): array

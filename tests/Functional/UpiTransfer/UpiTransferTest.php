@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
@@ -14,6 +15,7 @@ use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 class UpiTransferTest extends TestCase
 {
     use PaymentTrait;
+    use TestsWebhookEvents;
     use DbEntityFetchTrait;
     use VirtualAccountTrait;
 
@@ -673,5 +675,41 @@ class UpiTransferTest extends TestCase
         $this->assertEquals('REFUND_OR_CAPTURE_PAYMENT_FAILED',$upiTransferRequestArray['error_message']);
 
         $this->assertTrue($upiTransferRequestArray['is_created']);
+    }
+
+    public function testWebhookUpiPaymentWithoutTr()
+    {
+        $expectedEvent = [];
+
+        $this->expectWebhookEvent(
+            'virtual_account.credited',
+            function (array $event) use ($expectedEvent)
+            {
+                $upiTransferArray = $event['payload']['upi_transfer']['entity'];
+
+                $this->assertArrayNotHasKey('tr', $upiTransferArray);
+            }
+        );
+
+        $this->processUpiTransfer();
+    }
+
+    public function testWebhookUpiPaymentWithTr()
+    {
+        $expectedEvent = [];
+
+        $this->expectWebhookEvent(
+            'virtual_account.credited',
+            function (array $event) use ($expectedEvent)
+            {
+                $upiTransferArray = $event['payload']['upi_transfer']['entity'];
+
+                $this->assertArrayHasKey('tr', $upiTransferArray);
+
+                $this->assertEquals($upiTransferArray['tr'],'randomutr');
+            }
+        );
+
+        $this->processUpiTransfer('testWebhookUpiPaymentWithTr');
     }
 }

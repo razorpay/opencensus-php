@@ -41,7 +41,6 @@ class Constants
     const VIRTUAL_ACCOUNTS                = 'virtual_accounts';
     const QR_CODES                        = 'qr_codes';
     const QR_IMAGE_CONTENT                = 'qr_image_content';
-    const UPI_TRANSFER_TR                 = 'upi_transfer_tr';
     const VIRTUAL_ACCOUNTS_BANKING        = 'virtual_accounts_banking';
     const BANK_TRANSFER_ON_CHECKOUT       = 'bank_transfer_on_checkout';
     const CHECKOUT_VA_WITH_CUSTOMER       = 'checkout_va_with_customer';
@@ -850,7 +849,6 @@ class Constants
         self::EXPOSE_DOWNTIMES                => true,
         self::PAYMENT_FAILURE_EMAIL           => true,
         self::VIRTUAL_ACCOUNTS                => true,
-        self::UPI_TRANSFER_TR                 => true,
         self::QR_IMAGE_CONTENT                => true,
         self::VIRTUAL_ACCOUNTS_BANKING        => true,
         self::BANK_TRANSFER_ON_CHECKOUT       => true,
@@ -1212,11 +1210,6 @@ class Constants
             'feature'       => self::BHARAT_QR,
             'display_name'  => 'Bharat QR',
             'documentation' => 'qr-codes-bqr',
-        ],
-        self::UPI_TRANSFER_TR => [
-            'feature'       => self::UPI_TRANSFER_TR,
-            'display_name'  => 'UPI transfer tr webhook',
-            'documentation' => 'smart-collect',
         ],
         self::QR_IMAGE_CONTENT => [
             'feature'       => self::QR_IMAGE_CONTENT,

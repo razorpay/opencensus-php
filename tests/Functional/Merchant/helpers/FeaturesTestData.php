@@ -676,11 +676,6 @@ return [
                         'display_name' => 'Bharat QR'
                     ],
                     [
-                        'feature'      => 'upi_transfer_tr',
-                        'value'        => false,
-                        'display_name' => 'UPI transfer tr webhook'
-                    ],
-                    [
                         'feature'      => 'qr_image_content',
                         'value'        => false,
                         'display_name' => 'QR Intent link response'
@@ -932,7 +927,6 @@ return [
                     'expose_downtimes',
                     'payment_failure_email',
                     'virtual_accounts',
-                    'upi_transfer_tr',
                     'qr_image_content',
                     'virtual_accounts_banking',
                     'bank_transfer_on_checkout',
