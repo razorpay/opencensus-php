@@ -35,6 +35,7 @@ class Validator extends Base\Validator
         Types::TERMS_AND_CONDITIONS       => 'sometimes|array',
         Types::OTHERS                     => 'sometimes|array',
         Types::REFUND_CANCELLATION_POLICY => 'sometimes|array',
+        Types::PROOF_OF_SERVICE           => 'sometimes|array',
     ];
 
     protected static $createRules = [
@@ -45,9 +46,10 @@ class Validator extends Base\Validator
         Entity::CUSTOM_TYPE => 'required_if:type,others',
     ];
 
-    public function validateCreateManyInput(array $createManyInput)
+    public function validateCreateManyInput(array $createManyInput, $allowEmpty = false)
     {
-        if (count($createManyInput) === 0)
+        if ((count($createManyInput) === 0) and
+            ($allowEmpty === false))
         {
             throw new BadRequestValidationFailureException(Constants::ACTION_DISALLOWED_PROOF_BECOMES_EMPTY_EXCEPTION_MESSAGE,
                 Entity::TYPE);
@@ -56,9 +58,10 @@ class Validator extends Base\Validator
         $this->validateInput('create_many', $createManyInput);
     }
 
-    public function validateBulkCreateInput($inputs)
+    public function validateBulkCreateInput($inputs, $allowEmpty = false)
     {
-        if (count($inputs) > 0)
+        if ((count($inputs) > 0) or
+            ($allowEmpty === true))
         {
             return;
         }

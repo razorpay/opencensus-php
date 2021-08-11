@@ -836,6 +836,8 @@ class DisputeTest extends TestCase
 
         $content = $this->runRequestResponseFlow($testData);
 
+        $this->assertArrayNotHasKey('reason', $content);
+
         $this->checkDisputeFetchForMerchant($disputes, $content);
     }
 
@@ -888,6 +890,23 @@ class DisputeTest extends TestCase
         $testData = $this->updateFetchTestData();
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    /**
+     * Creating a endpoint in proxy auth to fetch only the count of disputes which match a particular query
+     * Query params allowed are same as /disputes in proxy/private auth
+     * Reason: This endpoint will be called on merchant-dashboard on transaction page load as a notification
+     * we want to avoid sending data for every such load to reduce bandwidth usage on merchant devices
+     */
+    public function testDisputeFetchCountProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->times(3)->create('dispute');
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('items', $response);
     }
 
     public function testDisputeFetchForAdminRestricted()

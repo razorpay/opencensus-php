@@ -57,6 +57,15 @@ class DisputeController extends Controller
         return ApiResponse::json($disputes);
     }
 
+    public function getCountForFetchMultiple()
+    {
+        $input = Request::all();
+
+        $disputes = $this->service()->getCountForFetchMultiple($input);
+
+        return ApiResponse::json($disputes);
+    }
+
     public function migrateOldAdjustments()
     {
         if (Request::hasFile('file') === false)

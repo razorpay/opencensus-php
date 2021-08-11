@@ -254,6 +254,23 @@ class Repository extends Base\Repository
             ->count(Entity::PAYMENT_ID);
     }
 
+    public function getCountForFetchMultiple($params)
+    {
+        $this->validateFetchParams($params);
+
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection());
+
+        $merchantId = $this->merchant->getId();
+
+        $this->buildQueryWithParams($query, $params);
+
+        $query = $query->merchantId($merchantId);
+
+        $count = $query->count();
+
+        return ['count' => $count];
+    }
+
     protected function addQueryParamInternalRespondByFrom($query, $params)
     {
         $dbColumn = $this->dbColumn(Entity::INTERNAL_RESPOND_BY);

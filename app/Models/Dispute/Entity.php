@@ -179,6 +179,7 @@ class Entity extends Base\PublicEntity
         self::COMMENTS,
         self::EVIDENCE,
         self::CREATED_AT,
+        self::REASON,
     ];
 
     protected $expanded = [
@@ -193,6 +194,7 @@ class Entity extends Base\PublicEntity
         self::RESPOND_BY,
         self::REASON_DESCRIPTION,
         self::EVIDENCE,
+        self::REASON,
     ];
 
     protected $casts = [
@@ -444,6 +446,22 @@ class Entity extends Base\PublicEntity
     public function setComments(string $comments = null)
     {
         $this->setAttribute(self::COMMENTS, $comments);
+    }
+
+    public function setPublicReasonAttribute(array &$attributes)
+    {
+        $app = App::getFacadeRoot();
+
+        $basicAuth = $app['basicauth'];
+
+        if ($basicAuth->isProxyAuth() === false)
+        {
+            unset($attributes[self::REASON]);
+
+            return;
+        }
+
+        $attributes[self::REASON] = $this->reason->toArrayPublic();
     }
 
     public function setPublicReasonDescriptionAttribute(array &$attributes)

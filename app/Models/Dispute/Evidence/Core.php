@@ -80,8 +80,9 @@ class Core extends Base\Core
 
         (new Validator)->validateInput('create_for_dispute', $input);
 
-        (new Document\Core)->createMany($dispute, $input);
+        $allowEmpty = $this->canAllowEmptyDocumentEvidence($input);
 
+        (new Document\Core)->createMany($dispute, $input, $allowEmpty);
 
         return $this->createAndSaveEvidenceForDispute($dispute, $input);
     }
@@ -475,6 +476,13 @@ class Core extends Base\Core
         ]);
 
         return $result;
+    }
+
+    protected function canAllowEmptyDocumentEvidence($input): bool
+    {
+        $action = $input[Constants::ACTION] ?? Action::DRAFT;
+
+        return ($action === Action::DRAFT);
     }
 
 }

@@ -4,7 +4,6 @@
 namespace RZP\Models\Dispute\Evidence\Document;
 
 use RZP\Constants\Table;
-use Elasticsearch\Endpoints\Count;
 use RZP\Models\Base\Repository as BaseRepository;
 
 

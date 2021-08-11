@@ -324,6 +324,13 @@ class Service extends Base\Service
         return $disputes->toArrayPublic();
     }
 
+    public function getCountForFetchMultiple(array $input): array
+    {
+        $merchantId = $this->merchant->getId();
+
+        return $this->repo->dispute->getCountForFetchMultiple($input, $merchantId);
+    }
+
     public function migrateOldAdjustments($file): array
     {
         return $this->core()->migrateOldAdjustments($file);

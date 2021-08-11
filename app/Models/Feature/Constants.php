@@ -1654,6 +1654,11 @@ class Constants
             'display_name'  => 'Enable BBPS Product for the merchant',
             'documentation' => '',
         ],
+        self::DISPUTE_PRESENTMENT => [
+            'feature'       => self::DISPUTE_PRESENTMENT,
+            'display_name'  => 'Enable dispute presentment',
+            'documentation' => '',
+        ],
     ];
 
     /**

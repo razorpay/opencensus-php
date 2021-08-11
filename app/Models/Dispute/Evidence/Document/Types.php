@@ -16,8 +16,8 @@ class Types
     const TERMS_AND_CONDITIONS       = 'terms_and_conditions';
     const OTHERS                     = 'others';
     const REFUND_CANCELLATION_POLICY = 'refund_cancellation_policy';
+    const PROOF_OF_SERVICE           = 'proof_of_service';
 
-    const PROOF_OF_SERVICE = 'proof_of_service';
     const NAME             = 'name';
     const LABEL            = 'label';
     const DESCRIPTION      = 'description';

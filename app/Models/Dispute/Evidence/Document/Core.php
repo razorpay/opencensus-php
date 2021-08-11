@@ -11,17 +11,17 @@ use RZP\Trace\TraceCode;
 class Core extends Base\Core
 {
 
-    public function createMany(Dispute\Entity $dispute, array $merchantInput)
+    public function createMany(Dispute\Entity $dispute, array $merchantInput, $allowEmpty = false)
     {
         $createManyInput = $this->makeInputForCreateMany($merchantInput);
 
         $this->app->trace->info(TraceCode::EVIDENCE_DOCUMENT_CREATE_MANY_INPUT, $createManyInput);
 
-        (new Validator)->validateCreateManyInput($createManyInput);
+        (new Validator)->validateCreateManyInput($createManyInput, $allowEmpty);
 
         $bulkCreateInput = $this->makeBulkCreateInputFromCreateManyInput($dispute, $createManyInput);
 
-        (new Validator)->validateBulkCreateInput($bulkCreateInput);
+        (new Validator)->validateBulkCreateInput($bulkCreateInput, $allowEmpty);
 
         $this->repo->dispute_evidence_document->transaction(function () use ($dispute, $bulkCreateInput)
         {

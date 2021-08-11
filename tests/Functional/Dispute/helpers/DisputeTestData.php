@@ -1173,6 +1173,13 @@ return [
                     'status' => "open",
                     'phase' => "chargeback",
                     'comments' => NULL,
+                    'reason'   => [
+                        'code'                  => 'KFRER_R',
+                        'description'           => 'This is a serious fraud',
+                        'network'               => 'Visa',
+                        'gateway_code'          => '8fjf',
+                        'gateway_description'   => 'Fraud on merchant side',
+                    ]
                 ]
             ],
     ],
@@ -1250,6 +1257,18 @@ return [
                         'internal_respond_by' => 1600000000,
                     ],
                 ]
+            ],
+        ],
+    ],
+
+    'testDisputeFetchCountProxyAuth'    => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/disputes-count?status=open',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 3,
             ],
         ],
     ],

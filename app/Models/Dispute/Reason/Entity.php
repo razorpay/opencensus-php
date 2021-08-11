@@ -43,8 +43,11 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
+        self::GATEWAY_CODE,
+        self::GATEWAY_DESCRIPTION,
         self::CODE,
         self::DESCRIPTION,
+        self::NETWORK,
     ];
 
     protected $dates = [

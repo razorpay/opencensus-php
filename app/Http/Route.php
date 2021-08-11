@@ -1733,6 +1733,7 @@ class Route
         'dispute_bulk_edit'                        => ['post',     'disputes/bulk-edit',                             'DisputeController@bulkUpdate'                                      ],
         'dispute_reason_create'                    => ['post',     'disputes/reasons',                               'DisputeController@createReason'                                    ],
         'dispute_fetch_multiple'                   => ['get',      'disputes',                                       'DisputeController@fetchMultiple'                                   ],
+        'dispute_fetch_multiple_count'             => ['get',      'disputes-count',                                 'DisputeController@getCountForFetchMultiple',                             ],
         'dispute_fetch'                            => ['get',      'disputes/{id}',                                  'DisputeController@get'                                             ],
         'dispute_file_delete'                      => ['delete',   'disputes/{id}/files/{fileId}',                   'DisputeController@deleteFile'                                      ],
         'dispute_files_fetch'                      => ['get',      'disputes/{id}/files',                            'DisputeController@getFiles'                                        ],
@@ -4295,6 +4296,11 @@ class Route
         'merchant_international_enablement_draft',
         'merchant_international_enablement_submit',
         'merchant_international_enablement_discard',
+
+        'get_dispute_document_types_metadata',
+        'patch_dispute_contest_by_id',
+        'post_dispute_accept_by_id',
+        'dispute_fetch_multiple_count',
     ];
 
     //
@@ -6880,6 +6886,7 @@ class Route
             'dispute_edit',
             'dispute_fetch',
             'dispute_fetch_multiple',
+            'dispute_fetch_multiple_count',
             'dispute_file_delete',
             'dispute_files_fetch',
             'document_upload_v1',
@@ -7661,6 +7668,9 @@ class Route
             'merchant_international_enablement_draft',
             'merchant_international_enablement_submit',
             'merchant_international_enablement_discard',
+            'get_dispute_document_types_metadata',
+            'patch_dispute_contest_by_id',
+            'post_dispute_accept_by_id',
         ],
 
         'admin_dashboard' => [
@@ -7974,6 +7984,7 @@ class Route
             'dispute_edit',
             'dispute_fetch',
             'dispute_fetch_multiple',
+            'dispute_fetch_multiple_count',
             'dispute_file_delete',
             'dispute_files_fetch',
             'dispute_poc_mails',
@@ -10898,6 +10909,7 @@ class Route
         'reversal_fetch_multiple_la'                        => HeartbeatLagChecker::SLAVE,
         'transfer_fetch_multiple_la'                        => HeartbeatLagChecker::SLAVE,
         'dispute_fetch_multiple'                            => HeartbeatLagChecker::SLAVE,
+        'dispute_fetch_multiple_count'                      => HeartbeatLagChecker::SLAVE,
         'oauth_token_fetch_multiple'                        => HeartbeatLagChecker::SLAVE,
         'oauth_application_fetch_multiple'                  => HeartbeatLagChecker::SLAVE,
         'beta_account_fetch_multiple'                       => HeartbeatLagChecker::SLAVE,
@@ -11174,6 +11186,7 @@ class Route
         'reversal_fetch_multiple_la',
         'transfer_fetch_multiple_la',
         'dispute_fetch_multiple',
+        'dispute_fetch_multiple_count',
         'oauth_token_fetch_multiple',
         'oauth_application_fetch_multiple',
         'beta_account_fetch_multiple',

@@ -127,6 +127,70 @@ class DisputePresentmentTest extends TestCase
 
     }
 
+    /**
+     * Not asserting anything specific in this test.
+     * Intent of test is to assert that required routes are reachable from merchant-dashboard
+     */
+    public function testDisputePresentmentInProxyAuth()
+    {
+        $this->setUpForUpdateDraftEvidenceTest();
+
+        $this->ba->proxyAuth();
+
+        $responses[] = $features = $this->makeRequestAndGetContent([
+            'url'    => '/merchants/me/features',
+            'method' => 'get',
+        ]);
+
+        $featureFound = false;
+
+        $expectedFeature = [
+            'feature'       => 'dispute_presentment',
+            'value'         => true,
+            'display_name'  => 'Enable dispute presentment',
+        ];
+
+        foreach ($features['features'] as $feature)
+        {
+            if ($feature === $expectedFeature)
+            {
+                $featureFound = true;
+            }
+        }
+
+        $this->assertTrue($featureFound);
+
+
+        $responses[] = $this->makeRequestAndGetContent([
+            'url'    => '/disputes/documents/types',
+            'method' => 'get',
+        ]);
+
+        $responses[] = $this->makeRequestAndGetContent([
+            'url'     => '/disputes/disp_0123456789abcd/contest',
+            'method'  => 'PATCH',
+            'content' => [
+                'amount'         => 1000,
+                'summary'        => 'sample contest summary',
+                'shipping_proof' => ['doc_shippingProfId'],
+                'action'         => 'draft',
+            ],
+        ]);
+
+        $responses[] = $this->makeRequestAndGetContent([
+            'url'     => '/disputes/disp_0123456789abcd/accept',
+            'method'  => 'POST',
+            'content' => [
+
+            ],
+        ]);
+
+        foreach ($responses as $response)
+        {
+            $this->assertArrayNotHasKey('error', $response);
+        }
+    }
+
     public function testInitiateDraftEvidenceNoAmountProvided()
     {
         $this->setUpForInitiateDraftEvidenceTest();
@@ -296,7 +360,7 @@ class DisputePresentmentTest extends TestCase
         $this->startTest();
     }
 
-    public function testUpdateDraftEvidenceLeadingToNoProofSubmittedShouldFail()
+    public function testUpdateDraftEvidenceLeadingToNoProofSubmitted()
     {
         $this->setUpForUpdateDraftEvidenceTest();
 

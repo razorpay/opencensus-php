@@ -176,16 +176,19 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => 'BAD_REQUEST_ERROR',
-                    'description' => 'action not allowed as it will lead to all proof becoming empty',
+                'id'       => 'disp_0123456789abcd',
+                'evidence' => [
+                    'amount'                     => 1000,
+                    'cancellation_proof'         => null,
+                    'customer_communication'     => null,
+                    'proof_of_service'           => null,
+                    'explanation_letter'         => null,
+                    'refund_confirmation'        => null,
+                    'access_activity_log'        => null,
+                    'refund_cancellation_policy' => null,
+                    'terms_and_conditions'       => null,
                 ],
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
 
@@ -511,7 +514,7 @@ return [
         ],
     ],
 
-    'testUpdateDraftEvidenceLeadingToNoProofSubmittedShouldFail' => [
+    'testUpdateDraftEvidenceLeadingToNoProofSubmitted' => [
         'request'   => [
             'url'     => '/disputes/disp_0123456789abcd/contest',
             'method'  => 'PATCH',
@@ -520,20 +523,25 @@ return [
                 'shipping_proof'     => null,
                 'cancellation_proof' => null,
                 'others'             => null,
+                'summary'            => 'test summary',
             ],
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => 'BAD_REQUEST_ERROR',
-                    'description' => 'action not allowed as it will lead to all proof becoming empty',
+                'id'       => 'disp_0123456789abcd',
+                'evidence' => [
+                    'amount'                     => 1000,
+                    'summary'                    => 'test summary',
+                    'cancellation_proof'         => null,
+                    'customer_communication'     => null,
+                    'proof_of_service'           => null,
+                    'explanation_letter'         => null,
+                    'refund_confirmation'        => null,
+                    'access_activity_log'        => null,
+                    'refund_cancellation_policy' => null,
+                    'terms_and_conditions'       => null,
                 ],
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
 
