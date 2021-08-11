@@ -2157,4 +2157,56 @@ class FeaturesTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testAddPayoutFeatureWhenAlreadyAssignedExceptionThrown()
+    {
+        $response = $this->invokeAddFeaturesWrapper(new \RZP\Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED));
+
+        $this->assertNull($response);
+    }
+
+    public function testAddPayoutFeatureWhenNonAlreadyAssignedExceptionThrown()
+    {
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED);
+
+        $this->invokeAddFeaturesWrapper(new \RZP\Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_UNAUTHORIZED));
+    }
+
+    public function testAddPayoutFeatureWhenServerExceptionThrown()
+    {
+        $this->expectException(\RZP\Exception\ServerErrorException::class);
+
+        $this->expectExceptionMessage('Socket Creation Failed');
+
+        $this->invokeAddFeaturesWrapper(new \RZP\Exception\ServerErrorException(
+        'Socket Creation Failed',
+        ErrorCode::SERVER_ERROR));
+    }
+
+    public function invokeAddFeaturesWrapper(\Throwable $exception)
+    {
+        $merchantActivateMock = $this->getMockBuilder(\RZP\Models\Merchant\Activate::class)
+            ->setMethods(['addFeatures'])
+            ->getMock();
+
+        $merchantActivateMock->method('addFeatures')
+            ->will($this->throwException($exception));
+
+        $merchantActivateMockReflectionObj = new \ReflectionObject($merchantActivateMock);
+
+        $method = $merchantActivateMockReflectionObj->getMethod('addPayoutFeaturesWhileHandlingStaleRead');
+
+        $featureParams = [
+            \RZP\Models\Feature\Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,
+            \RZP\Models\Feature\Entity::ENTITY_TYPE => 'merchant',
+            \RZP\Models\Feature\Entity::NAMES       => ['payout'],
+            \RZP\Models\Feature\Entity::SHOULD_SYNC => false
+        ];
+
+        $method->invoke($merchantActivateMock, $featureParams);
+    }
 }

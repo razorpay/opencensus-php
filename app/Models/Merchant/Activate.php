@@ -784,8 +784,39 @@ class Activate extends Base\Core
                 Feature\Entity::SHOULD_SYNC => false,
             ];
 
-            (new Feature\Service)->addFeatures($featureParams);
+            $this->addPayoutFeaturesWhileHandlingStaleRead($featureParams);
         }
+    }
+
+    /**
+     * Adding this wrapper to handle stale read from redis cache for payout feature
+     * And to also make the code testable
+     * If payout feature was present, then this should not get called ideally but at times we have
+     * seen cache lag issues because of which this is getting called even if feature is already present.
+     * Slack link: https://razorpay.slack.com/archives/C012KKG1STS/p1628227117052900?thread_ts=1628181255.051600&cid=C012KKG1STS
+     */
+    public function addPayoutFeaturesWhileHandlingStaleRead(array $featureParams)
+    {
+        try
+        {
+            $this->addFeatures($featureParams);
+        }
+        catch (BadRequestException $exception)
+        {
+            if ($exception->getCode() === ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED)
+            {
+                $this->trace->info(TraceCode::PAYOUT_FEATURE_STALE_READ_SUCCESS, $featureParams);
+            }
+            else
+            {
+                throw $exception;
+            }
+        }
+    }
+
+    public function addFeatures(array $featureParams)
+    {
+        (new Feature\Service)->addFeatures($featureParams);
     }
 
     /**
