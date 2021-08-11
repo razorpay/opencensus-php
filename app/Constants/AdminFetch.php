@@ -1642,6 +1642,38 @@ class AdminFetch
                     Fetch::LABEL  => 'Bank Txn Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+                BAS\Entity::UTR => [
+                    Fetch::LABEL  => 'UTR',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                BAS\Entity::ENTITY_ID => [
+                    Fetch::LABEL  => 'Payout Id/ Reversal Id/ External Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                BAS\Entity::ENTITY_TYPE => [
+                    Fetch::LABEL => 'Entity Type',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [Entity::PAYOUT, Entity::EXTERNAL, Entity::REVERSAL]
+                ]
+            ],
+
+            Entity::BANKING_ACCOUNT_STATEMENT_DETAILS => [
+                BAS\Details\Entity::MERCHANT_ID => Fetch::FIELD_MERCHANT_ID,
+                BAS\Details\Entity::BALANCE_ID => Fetch::FIELD_BALANCE_ID,
+                BAS\Details\Entity::ACCOUNT_NUMBER => [
+                    Fetch::LABEL  => 'Account Number',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                BAS\Details\Entity::CHANNEL => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => BAS\Details\Channel::getChannels(),
+                ],
+                BAS\Details\Entity::STATUS => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => BAS\Details\Status::getStatuses(),
+                ]
             ],
 
             Entity::EXTERNAL => [

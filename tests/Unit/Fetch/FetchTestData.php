@@ -119,6 +119,14 @@ return [
         ],
     ],
 
+    E::BANKING_ACCOUNT_STATEMENT_DETAILS => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => '10000000000000'
+            ],
+        ],
+    ],
+
     E::BANKING_ACCOUNT_COMMENT => [
         Type::PRIVILEGE_AUTH => [
             [

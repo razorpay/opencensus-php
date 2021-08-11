@@ -9,10 +9,13 @@ class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
-            Entity::MERCHANT_ID           => 'sometimes|unsigned_id',
-            Entity::TRANSACTION_ID        => 'sometimes|unsigned_id',
-            Entity::ACCOUNT_NUMBER        => 'sometimes|alpha_num|max:40',
-            Entity::BANK_TRANSACTION_ID   => 'sometimes|string',
+            Entity::MERCHANT_ID         => 'sometimes|unsigned_id',
+            Entity::TRANSACTION_ID      => 'sometimes|unsigned_id',
+            Entity::ACCOUNT_NUMBER      => 'sometimes|alpha_num|max:40',
+            Entity::BANK_TRANSACTION_ID => 'sometimes|string',
+            Entity::UTR                 => 'sometimes|string',
+            Entity::ENTITY_ID           => 'sometimes|string',
+            Entity::ENTITY_TYPE         => 'sometimes|string',
         ],
     ];
 
