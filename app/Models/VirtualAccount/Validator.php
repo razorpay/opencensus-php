@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         Entity::NOTES                           => 'sometimes|notes',
         Entity::CLOSE_BY                        => 'filled|epoch|custom',
         Entity::CUSTOMER                        => 'sometimes|array',
-        Entity::ALLOWED_PAYERS                  => 'sometimes|array|min:1|max:5',
+        Entity::ALLOWED_PAYERS                  => 'sometimes|array|min:1|max:10',
     ];
 
     protected static $createForBankingRules = [
