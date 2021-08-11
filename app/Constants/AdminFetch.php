@@ -2182,10 +2182,67 @@ class AdminFetch
                         'reversed',
                     ],
                 ],
+                'payout_id' => [
+                    Fetch::LABEL => 'Payout ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ]
             ],
 
             Entity::SETTLEMENT_ONDEMAND_FUND_ACCOUNT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
+            Entity::SETTLEMENT_ONDEMAND_TRANSFER => [
+                'payout_id' => [
+                    Fetch::LABEL => 'Payout ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'processing',
+                        'processed',
+                        'reversed',
+                    ],
+                ],
+                'mode'   => [
+                    Fetch::LABEL  => 'Mode',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'IMPS',
+                        'NEFT',
+                    ],
+                ],
+            ],
+
+            Entity::SETTLEMENT_ONDEMAND_ATTEMPT => [
+                'settlement_ondemand_transfer_id' => [
+                    Fetch::LABEL => 'Settlement Ondemand Transfer ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'processing',
+                        'processed',
+                        'reversed',
+                    ],
+                ],
+            ],
+
+            Entity::SETTLEMENT_ONDEMAND_BULK => [
+                'settlement_ondemand_id' => [
+                    Fetch::LABEL => 'Settlement Ondemand ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'settlement_ondemand_transfer_id' => [
+                    Fetch::LABEL => 'Settlement Ondemand Transfer ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::EMI_PLAN => [
