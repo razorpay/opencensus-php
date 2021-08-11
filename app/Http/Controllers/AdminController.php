@@ -150,6 +150,13 @@ class AdminController extends Controller
         ]);
     }
 
+    public function getCheckoutBuilder()
+    {
+        return view('admin.checkout-builder', [
+            'cdn' => \Config::get('app.cdn_base_url')
+        ]);
+    }
+
     public function putAction($merchantId)
     {
         list($error, $data) = (new Admin\Service)->action($merchantId);

@@ -203,6 +203,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::any('/admin/api/{mode}/{path}', 'GenericController@handleAny')
             ->where(['path' => '.*'])
             ->name('admin');
+        Route::get('/admin/checkout-builder', 'AdminController@getCheckoutBuilder');
     });
 
     Route::get('razorx/{all?}', 'AdminController@getIndex')->name('razorx_catchall')->where(['all' => '.*']);
