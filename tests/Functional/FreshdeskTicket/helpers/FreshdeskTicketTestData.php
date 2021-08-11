@@ -13,6 +13,7 @@ return [
             'content'       => [
                 'ticket_id'     => 1,
                 'ticket_status' => 'Processing',
+                'ticket_exists' => true,
             ],
             'status_code'   => 200,
         ],
@@ -25,16 +26,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => ErrorCode::BAD_REQUEST_RESERVE_BALANCE_TICKET_NOT_FOUND
-                ],
+                'ticket_exists' => false
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'status_code' => 200,
         ],
     ],
 

@@ -60,11 +60,19 @@ class Service extends Base\Service
     {
         $ticketId = $this->getReserveBalanceTicketId();
 
+        if ($ticketId === "")
+        {
+            return [
+                'ticket_exists'     =>  false,
+            ];
+        }
+
         $response = $this->app['freshdesk_client']->getReserveBalanceTicketStatus($ticketId);
 
         $response = [
-            'ticket_id'      => $response['id'],
-            'ticket_status'  => (new FreshdeskTicketService)->getTicketStatus($response)
+            'ticket_id'         => $response['id'],
+            'ticket_status'     => (new FreshdeskTicketService)->getTicketStatus($response),
+            'ticket_exists'     =>  true,
         ];
 
         return $response;
@@ -96,10 +104,7 @@ class Service extends Base\Service
             return $tickets->first()->getTicketId();
         }
 
-        throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_RESERVE_BALANCE_TICKET_NOT_FOUND,
-            'No Reserve Balance ticket exists for merchant.',
-            ['merchant_id' => $merchantId]
-        );
+        return "";
     }
 
     /**
@@ -1502,5 +1507,4 @@ class Service extends Base\Service
 
         return $allTickets;
     }
-
 }
