@@ -11447,7 +11447,7 @@ class MerchantTest extends TestCase
 
         $this->assertArrayNotHasKey('sbibuddy', $response['methods']['wallet']);
     }
-
+    
     public function testEditBulkEnableLiveMerchantNotActivated()
     {
         $this->createMerchant([
@@ -11468,5 +11468,255 @@ class MerchantTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+    
+    protected function createRiskTaggedMerchantForBulkForAction($action, array $permissions)
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+        
+        switch ($action)
+        {
+            case 'live_enable':
+                $this->fixtures->merchant->edit('10000000000044', ['live' => false, 'activated' => 1]);
+                break;
+            case 'unsuspend':
+                $this->fixtures->base->editEntity('merchant', '10000000000044', ['suspended_at' => '123456789']);
+                break;
+        }
+        
+        $tagInputData = [
+            'tags' => ['MS_Risk_review_watchlist'],
+        ];
+        
+        (new MerchantCore())->addTags('10000000000044',$tagInputData,false);
+        
+        $admin = $this->ba->getAdmin();
+        
+        $role = $admin->roles()->get()[0];
+        
+        foreach ($permissions as $permission)
+        {
+            $perm = $this->fixtures->create('permission', ['name' => $permission]);
+            
+            $role->permissions()->attach($perm->getId());
+        }
+    }
+    
+    /**
+     * Failure test case with checked not having required permissions
+     *
+     * Testing the flow for "enabling live" via bulk update for the merchant which is tagged by risk team,
+     * for such cases, user should have the 'merchant_risk_constructive_action'
+     * if not the constructive action should fail for that merchant
+     */
+    public function testEditBulkEnableLiveRiskTaggedMerchantWithoutPermission()
+    {
+        $this->createRiskTaggedMerchantForBulkForAction('live_enable',['edit_merchant_toggle_live_bulk']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+    
+    /**
+     * Happy test case
+     * Testing the flow for "enabling live" via bulk update for the merchant which is tagged by risk team,
+     * for such cases, user should have the 'merchant_risk_constructive_action'
+     * if not the constructive action should fail for that merchant
+     */
+    public function testEditBulkEnableLiveRiskTaggedMerchant()
+    {
+        $this->createRiskTaggedMerchantForBulkForAction('live_enable',
+            [
+                'merchant_risk_constructive_action',
+                'edit_merchant_toggle_live_bulk',
+            ]);
+        
+        $this->ba->adminAuth();
+        
+        $this->startTest();
+    }
+    
+    /**
+     * Failure test case with checked not having required permissions
+     *
+     * Testing the flow for "unsuspend" via bulk update for the merchant which is tagged by risk team,
+     * for such cases, user should have the 'merchant_risk_constructive_action'
+     * if not the constructive action should fail for that merchant
+     */
+    public function testEditBulkUnsuspendRiskTaggedMerchantWithoutPermission()
+    {
+        $this->createRiskTaggedMerchantForBulkForAction('unsuspend',
+            [
+                'edit_merchant_suspend_bulk'
+            ]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+    
+    /**
+     * Happy test case
+     *
+     * Testing the flow for "unsuspend" via bulk update for the merchant which is tagged by risk team,
+     * for such cases, user should have the 'merchant_risk_constructive_action'
+     * if not the constructive action should fail for that merchant
+     *
+     * PS: Workflow is not created is this test case
+     */
+    public function testEditBulkUnsuspendRiskTaggedMerchant()
+    {
+        $this->createRiskTaggedMerchantForBulkForAction('unsuspend',
+            [
+                'edit_merchant_suspend_bulk',
+                'merchant_risk_constructive_action'
+            ]);
+        
+        $this->ba->adminAuth();
+        
+        $this->startTest();
+    }
+    
+    
+    protected function createRiskTaggedMerchantForUnsuspendAction($action, array $permissions)
+    {
+        $merchant = $this->getLastEntity('merchant', true);
+        
+        $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => '123456789' ]);
+        
+        $tagInputData = [
+            'tags' => ['MS_Risk_review_watchlist'],
+        ];
+        
+        (new MerchantCore())->addTags($merchant['id'],$tagInputData,false);
+        
+        $this->setAdminForInternalAuth();
+    
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+    
+        $admin = $this->ba->getAdmin();
+    
+        $role = $admin->roles()->get()[0];
+    
+        foreach ($permissions as $permission)
+        {
+            $perm = $this->fixtures->create('permission', ['name' => $permission]);
+            
+            $role->permissions()->attach($perm->getId());
+        }
+        
+        return $merchant;
+    }
+    /**
+     * Happy test case
+     *
+     * Testing the flow for "unsuspend" for the merchant which is tagged by risk team,
+     * for such cases, user should have the 'merchant_risk_constructive_action'
+     ** if not then validation exception will be thrown
+     *
+     * PS: Workflow is not created is this test case
+     */
+    public function testRiskTaggedMerchantUnsuspendRiskTagged()
+    {
+        $merchant = $this->createRiskTaggedMerchantForUnsuspendAction('unsuspend', ['merchant_risk_constructive_action']);
+        
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+    
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        
+        $response = $this->startTest();
+        
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+    
+        $this->assertNull($merchant['suspended_at']);
+    }
+    
+    /**
+     * Failure test case - failing as actioneer doesn't have permission
+     *
+     * Testing the flow for "unsuspend" for the merchant which is tagged by risk team,
+     * for such cases, user should have the 'merchant_risk_constructive_action'
+     ** if not then validation exception will be thrown
+     *
+     * PS: Workflow is not created is this test case
+     */
+    public function testRiskTaggedMerchantUnsuspendRiskTaggedWithoutPermission()
+    {
+        $merchant = $this->createRiskTaggedMerchantForUnsuspendAction('unsuspend', []);
+        
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+    
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        
+        $response = $this->startTest();
+        
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+        
+        $this->assertNull($merchant['suspended_at']);
+    }
+    
+    protected function createMerchantForRiskTaggedMerchantForReleaseFundsWithWorkflow(array $permissions)
+    {
+        $this->ba->adminAuth();
+    
+        $this->fixtures->merchant->edit('10000000000000', ['hold_funds' => 1]);
+    
+        $tagInputData = [
+            'tags' => ['MS_Risk_review_watchlist'],
+        ];
+    
+        (new MerchantCore())->addTags('10000000000000',$tagInputData,false);
+    
+        $admin = $this->ba->getAdmin();
+    
+        $role = $admin->roles()->get()[0];
+        
+        foreach($permissions as $permission)
+        {
+            $perm = $this->fixtures->create('permission', ['name' => $permission]);
+            $role->permissions()->attach($perm->getId());
+        }
+        
+        $this->ba->adminAuth();
+    
+        $this->setupWorkflow('Release Funds',PermissionName::$actionMap["release_funds"], "test");
+    }
+    
+    /**
+     * Happy test case
+     *
+     * Testing the flow for "release_funds" for the merchant which is tagged by risk team,
+     * for such cases, workflow will be created.
+     * Checker should have the 'merchant_risk_constructive_action'
+     * if not then validation exception will be thrown
+     *
+     */
+    public function testRiskTaggedMerchantReleaseFundsWithWorkflow()
+    {
+        $this->createMerchantForRiskTaggedMerchantForReleaseFundsWithWorkflow(
+            [
+                PermissionName::EDIT_MERCHANT_RELEASE_FUNDS,
+                PermissionName::MERCHANT_RISK_CONSTRUCTIVE_ACTION
+            ]);
+        
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], '10000000000000');
+    
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        
+        $response = $this->startTest();
+    
+        $this->assertStringStartsWith('w_action_', $response['id']);
+    
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+    
+        $this->performWorkflowAction($workflowAction['id'], true);
+    
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+    
+        $this->assertEquals(false, $merchant->isFundsOnHold());
     }
 }

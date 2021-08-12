@@ -615,6 +615,8 @@ class Name
     const MANUALLY_LINK_RBL_ACCOUNT_STATEMENT = 'manually_link_rbl_account_statement';
 
     const MERCHANT_RISK_ALERT_FOH          = 'merchant_risk_alert_foh';
+    
+    const MERCHANT_RISK_CONSTRUCTIVE_ACTION = 'merchant_risk_constructive_action';
 
     // NPS survey create
     const NPS_SURVEY                          = 'nps_survey';

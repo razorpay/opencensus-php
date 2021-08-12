@@ -520,17 +520,19 @@ class Service extends Base\Service
         // this is being done to have the data consistent within api and settlements service
         $newSettlementService = (new Bucket\Core)->shouldProcessViaNewService($id);
 
-        if(isset($input['hold_funds']) === true and $newSettlementService === true)
+        if(isset($input['hold_funds']) === true)
         {
             $action = $input['hold_funds'] == 1 ? Merchant\Action::HOLD_FUNDS : Merchant\Action::RELEASE_FUNDS;
-
-            $this->core()->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::LIVE);
-
-            $this->core()->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::TEST);
-
-            if($action === Merchant\Action::RELEASE_FUNDS)
+            (new Validator())->validateRiskPermissionForAction($merchant, $action);
+            if($newSettlementService === true)
             {
-                (new MerchantActionNotification())->removeNotificationTag($merchant, $action);
+                $this->core()->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::LIVE);
+    
+                $this->core()->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::TEST);
+    
+                if ($action === Merchant\Action::RELEASE_FUNDS) {
+                    (new MerchantActionNotification())->removeNotificationTag($merchant, $action);
+                }
             }
         }
 
@@ -1670,6 +1672,7 @@ class Service extends Base\Service
             [
                 'merchant_id' => $id,
                 'input'       => $input,
+                'useWorkflows'=> $useWorkflows
             ]);
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);

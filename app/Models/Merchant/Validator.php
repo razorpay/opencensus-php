@@ -84,8 +84,8 @@ class Validator extends Base\Validator
         Action::UNSUSPEND             => Permission::EDIT_MERCHANT_SUSPEND_BULK,
         Action::LIVE_DISABLE          => Permission::EDIT_MERCHANT_TOGGLE_LIVE_BULK,
         Action::LIVE_ENABLE           => Permission::EDIT_MERCHANT_TOGGLE_LIVE_BULK,
-        ];
-
+    ];
+    
     const MERCHANT_RISK_ATTRIBUTES = [
         Entity::MAX_PAYMENT_AMOUNT
     ];
@@ -935,6 +935,54 @@ class Validator extends Base\Validator
 
             // Check for admin permissions
             $admin->hasPermissionOrFail(self::ACTION_PERMISSION_MAP_FOR_MERCHANT_EDIT_BULK[$action]);
+        }
+    }
+    
+    /**
+     * if the contructive action is being performed by non-risk l3 on a merchant tagged by risk ops,
+     * then the validator should throw validation exception
+     * @param $merchant
+     * @param $action
+     */
+    public function validateRiskPermissionForAction($merchant, $action)
+    {
+        //if the action is constructive action
+        if(in_array($action, Constants::RISK_CONSTRUCTIVE_ACTION_LIST) === false)
+        {
+            return;
+        }
+        
+        $tags = $merchant->tagNames();
+        
+        $taggedByRiskOps = false;
+        
+        //Check if the merchant is tagged by Risk team
+        foreach ($tags as $tag)
+        {
+            if (in_array(strtolower($tag), Constants::RISK_TAG_LIST) === true)
+            {
+                $taggedByRiskOps = true;
+               
+                break;
+            }
+        }
+        //if the merchant is not tagged, no further check required
+        if ($taggedByRiskOps === false)
+        {
+            return;
+        }
+        
+        //if the merchant is tagged, we need check the permission
+        $app = App::getFacadeRoot();
+        
+        $admin = $app['basicauth']->getAdmin();
+        
+        $adminPermissions = $admin->getPermissionsList();
+
+        if (in_array(Permission::MERCHANT_RISK_CONSTRUCTIVE_ACTION, $adminPermissions, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Merchant is tagged by risk team hence constructive action can be performed on this only by risk team');
         }
     }
 

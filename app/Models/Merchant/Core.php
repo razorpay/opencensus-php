@@ -1071,7 +1071,12 @@ class Core extends Base\Core
         $merchant->getValidator()->validateInput('action', $input);
 
         $action = $input['action'];
-
+        
+        if($this->shouldValidateTag($useWorkflows) === true)
+        {
+            (new Validator)->validateRiskPermissionForAction($merchant,$action);
+        }
+        
         $internationalProducts = array_key_exists(ProductInternationalMapper::INTERNATIONAL_PRODUCTS, $input) ?
             $input[ProductInternationalMapper::INTERNATIONAL_PRODUCTS] :
             null;
@@ -1079,7 +1084,7 @@ class Core extends Base\Core
         $originalMerchant = clone $merchant;
 
         $function = camel_case($action);
-
+        
         $this->repo->transactionOnLiveAndTest(function() use (
             $merchant,
             $function,
@@ -1088,7 +1093,6 @@ class Core extends Base\Core
             $action,
             $internationalProducts
         ) {
-
             $this->handleInternationalAction($action, $merchant, $internationalProducts);
 
             $merchant->$function();
@@ -1099,7 +1103,6 @@ class Core extends Base\Core
             }
 
             $this->repo->saveOrFail($merchant);
-
         });
 
         $fundsHoldToggleActions = [
@@ -1143,6 +1146,16 @@ class Core extends Base\Core
         return $merchant;
     }
 
+    private function shouldValidateTag($useWorkflows)
+    {
+        if($useWorkflows === false ||
+            $this->app['api.route']->isWorkflowExecuteOrApproveCall() === true)
+        {
+            return true;
+        }
+        
+        return false;
+    }
     public function merchantAction(string $merchantId, array $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);

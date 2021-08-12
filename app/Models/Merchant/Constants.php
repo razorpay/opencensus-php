@@ -545,7 +545,34 @@ final class Constants
         'archived'      => 'On hold',
         'processed'     => 'Activation In Progress'
     ];
+    
+    const MS_RISK_REVIEW_ONHOLD_TAG     = 'ms_risk_review_onhold';
+    const MS_RISK_REVIEW_SUSPEND_TAG    = 'ms_risk_review_suspend';
+    const SC_RISK_REVIEW_ONHOLD_TAG     = 'sc_risk_review_onhold';
+    const SC_RISK_REVIEW_SUSPEND_TAG    = 'sc_risk_review_suspend';
+    const RISK_REVIEW_ONHOLD_TAG        = 'risk_review_onhold';
+    const RISK_REVIEW_SUSPEND_TAG       = 'risk_review_suspend';
+    const RISK_REVIEW_WATCHLIST_TAG     = 'risk_review_watchlist';
+    const MS_RISK_REVIEW_WATCHLIST_TAG  = 'ms_risk_review_watchlist';
+    const SC_RISK_REVIEW_WATCHLIST_TAG  = 'ms_risk_review_watchlist';
 
+    const RISK_TAG_LIST = [
+        self::MS_RISK_REVIEW_ONHOLD_TAG,
+        self::MS_RISK_REVIEW_SUSPEND_TAG,
+        self::SC_RISK_REVIEW_ONHOLD_TAG,
+        self::SC_RISK_REVIEW_SUSPEND_TAG,
+        self::RISK_REVIEW_ONHOLD_TAG,
+        self::RISK_REVIEW_SUSPEND_TAG,
+        self::RISK_REVIEW_WATCHLIST_TAG,
+        self::MS_RISK_REVIEW_WATCHLIST_TAG,
+        self::SC_RISK_REVIEW_WATCHLIST_TAG,
+    ];
+
+    const RISK_CONSTRUCTIVE_ACTION_LIST = [
+        Action::UNSUSPEND,
+        Action::LIVE_ENABLE,
+        Action::RELEASE_FUNDS,
+    ];
 }
 
 

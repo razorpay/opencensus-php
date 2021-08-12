@@ -8854,6 +8854,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
         ],
     ],
+    
     'testPreferencesToCheckDisabledSbibuddyWallet' => [
         'request'  => [
             'url'    => '/preferences',
@@ -8864,6 +8865,143 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+    
+    'testEditBulkEnableLiveRiskTaggedMerchant' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'live_enable',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 1,
+                'success'   => 1,
+                'failed'    => 0,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ]
+    ],
+    
+    'testEditBulkEnableLiveRiskTaggedMerchantWithoutPermission' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'live_enable',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 1,
+                'success'   => 0,
+                'failed'    => 1,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ]
+    ],
+    
+    'testEditBulkUnsuspendRiskTaggedMerchant' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'unsuspend',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 1,
+                'success'   => 1,
+                'failed'    => 0,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ]
+    ],
+    
+    'testEditBulkUnsuspendRiskTaggedMerchantWithoutPermission' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'unsuspend',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 1,
+                'success'   => 0,
+                'failed'    => 1,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ]
+    ],
+    
+    'testRiskTaggedMerchantUnsuspendRiskTagged' => [
+        'request' => [
+            'content' => [
+                'action' => 'unsuspend'
+            ],
+            'url' => '/merchants/%s/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => ['suspended_at' => null],
+            'status_code' => 200
+        ]
+    ],
+    
+    'testRiskTaggedMerchantUnsuspendRiskTaggedWithoutPermission' => [
+        'request' => [
+            'content' => [
+                'action' => 'unsuspend'
+            ],
+            'url' => '/merchants/%s/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => ['suspended_at' => null],
+            'status_code' => 200
+        ]
+    ],
+
+    'testRiskTaggedMerchantReleaseFundsWithWorkflow' => [
+        'request' => [
+            'content' => [
+                'action' => 'release_funds'
+            ],
+            'url' => '/merchants/%s/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'workflow' => [
+                    'name' => "Release Funds",
+                ],
             ],
         ],
     ],
