@@ -16,7 +16,7 @@ const DifferentTeam = ({ newEmail, openModal, closeModal, user, updateOwner }) =
       size: 'small',
       component: <OwnerUpdated newEmail={newEmail} />,
     });
-    return updateOwner(newEmail)
+    return updateOwner(newEmail, false)
       .then((res) => {
         if (res.data && res.success) {
           openModal({

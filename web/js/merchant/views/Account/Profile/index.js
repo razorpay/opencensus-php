@@ -121,6 +121,17 @@ export default class Profile extends Component {
   }
 
   handleUpdateClick = () => {
+    const { user } = this.props;
+    analyticsTrack({
+      objectName: 'edit email',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        location: 'profile',
+        currentEmailId: user.email,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     return this.context.criticalFlow({
       modes: ['test', 'live'],
       onUserTwoFaVerified: () => {
@@ -539,10 +550,11 @@ export default class Profile extends Component {
             </IntoView>
           ) : null}
 
-          {this.state.loggedInUserRole === rolesList.OWNER ||
+          {this.state.loggedInUserRole === 'owner' ||
           this.state.merchantCount > 1 ||
           this.state.loggedInUser.email !== user.email ? (
             <LoggedInUserDetails
+              isOrgRZP={user.isOrgRZP}
               loggedInUser={this.state.loggedInUser}
               loggedInUserRole={this.state.loggedInUserRole}
               handleUpdateClick={this.handleUpdateClick}
