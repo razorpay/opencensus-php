@@ -116,7 +116,7 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE  => 'required_without:email|max:15|contact_syntax',
         Entity::EMAIL           => 'required_without:contact_mobile|email',
         Entity::TOKEN           => 'required|string',
-        Entity::OTP             => 'required|string|between:4,6'
+        Entity::OTP             => 'required|string|between:4,6',
     ];
 
     protected static $loginOauthRules = [
@@ -125,6 +125,20 @@ class Validator extends Base\Validator
         Constants::ID_TOKEN     => 'sometimes|string',
         Constants::OAUTH_SOURCE => 'sometimes|string',
         Entity::APP             => 'sometimes|string',
+    ];
+
+    protected static $sendVerificationOtpRules = [
+        Entity::CONTACT_MOBILE  => 'required_without:email|max:15|contact_syntax',
+        Entity::EMAIL           => 'required_without:contact_mobile|email',
+        Entity::TOKEN           => 'sometimes|string',
+        Entity::PASSWORD        => 'required|between:6,50',
+    ];
+
+    protected static $verifyVerificationOtpRules = [
+        Entity::CONTACT_MOBILE  => 'required_without:email|max:15|contact_syntax',
+        Entity::EMAIL           => 'required_without:contact_mobile|email',
+        Entity::TOKEN           => 'required|string',
+        Entity::OTP             => 'required|string|between:4,6',
     ];
 
     protected static $verifyUserSecondFactorRules = [

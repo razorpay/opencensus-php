@@ -142,6 +142,24 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function sendVerificationOtp()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->sendVerificationOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function verifyVerificationOtp()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyVerificationOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function checkUserAccess()
     {
         $input = Request::all();

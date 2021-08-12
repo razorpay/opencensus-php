@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\User\Entity as UserEntity;
 
 return [
@@ -575,6 +576,213 @@ return [
                 'otp'            => '0007',
                 'token'          => 'Gvt61zZ3Iwzcqy',
                 'email'          => 'a@gmail.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testMailSendVerificationOtp' => [
+        'request' => [
+            'url'     => '/users/login/otp/sendVerificationOtp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testMobileResendVerificationOtp' => [
+        'request' => [
+            'url'     => '/users/login/otp/sendVerificationOtp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj'
+            ],
+        ],
+    ],
+
+    'testMailResendVerificationOtp' => [
+        'request' => [
+            'url'     => '/users/login/otp/sendVerificationOtp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj'
+            ],
+        ],
+    ],
+
+    'testMailSendVerificationOtpVerifiedUser' => [
+        'request' => [
+            'url'     => '/users/login/otp/sendVerificationOtp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Email is already verified',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+
+    'testMailSendVerificationOtpWrongPassword' => [
+        'request' => [
+            'url'     => '/users/login/otp/sendVerificationOtp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                ],
+            ],
+            'status_code' => 401,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+        ],
+    ],
+
+    'testMobileSendVerificationOtp' => [
+        'request' => [
+            'url'     => '/users/login/otp/sendVerificationOtp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testMobileSendVerificationOtpVerifiedUser' => [
+        'request' => [
+            'url'     => '/users/login/otp/sendVerificationOtp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Contact mobile is already verified',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+
+    'testMobileSendVerificationOtpWrongPassword' => [
+        'request' => [
+            'url'     => '/users/login/otp/sendVerificationOtp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                ],
+            ],
+            'status_code' => 401,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+        ],
+    ],
+
+    'testMobileSendVerificationOtpMultipleAccounts' => [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED,
+        ],
+    ],
+
+    'testVerificationMailVerifyOtp' => [
+        'request' => [
+            'url'     => '/users/login/otp/verifyVerificationOtp',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'email'          => 'a@gmail.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testVerificationMobileVerifyOtp' => [
+        'request' => [
+            'url'     => '/users/login/otp/verifyVerificationOtp',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'contact_mobile' => '0123456789'
             ],
         ],
         'response' => [

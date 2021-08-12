@@ -8,6 +8,7 @@ use Config;
 use Carbon\Carbon;
 use Illuminate\Hashing\BcryptHasher;
 
+use RZP\Exception\BadRequestValidationFailureException;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -545,7 +546,7 @@ class Core extends Base\Core
 
     }
 
-    public function getLoginOtpPayload(array $input)
+    public function getLoginOtpPayload(array $input, string $action)
     {
         $medium = 'email';
 
@@ -555,7 +556,7 @@ class Core extends Base\Core
         }
 
         return [
-            Entity::ACTION => 'login_otp',
+            Entity::ACTION => $action,
             Entity::MEDIUM => $medium
         ];
     }
@@ -637,7 +638,7 @@ class Core extends Base\Core
 
     public function sendLoginOtpViaSms(array $input, Entity $user)
     {
-        $input += $this->getLoginOtpPayload($input);
+        $input += $this->getLoginOtpPayload($input, 'login_otp');
 
         $otp = $this->generateOtpForLogin($user, $input);
 
@@ -665,7 +666,7 @@ class Core extends Base\Core
 
     public function sendLoginOtpViaEmail(array $input, Entity $user)
     {
-        $input += $this->getLoginOtpPayload($input);
+        $input += $this->getLoginOtpPayload($input, 'login_otp');
 
         $otp = $this->generateOtpForLogin($user, $input);
 
@@ -754,7 +755,7 @@ class Core extends Base\Core
 
         $user = $this->fetchUser($input);
 
-        $input += $this->getLoginOtpPayload($input);
+        $input += $this->getLoginOtpPayload($input, 'login_otp');
 
         $payload = [
             'receiver' => $receiver,
@@ -777,6 +778,194 @@ class Core extends Base\Core
         {
             $this->traceEmailOtpLoginRoute($input, TraceCode::USER_VERIFY_EMAIL_OTP_FOR_LOGIN);
         }
+
+        return $this->get($user);
+    }
+
+    public function sendVerificationOtpViaEmail(array $input, Entity $user)
+    {
+        if ($user->getConfirmedAttribute() === true)
+        {
+            throw new BadRequestValidationFailureException('Email is already verified');
+        }
+
+        $input += $this->getLoginOtpPayload($input, 'verify_user');
+
+        $otp = $this->generateOtpForLogin($user, $input);
+
+        $payload = $this->getEmailPayload($input, $otp);
+
+        $mailable = new OtpMail($payload, $user, $otp);
+
+        try
+        {
+            Mail::queue($mailable);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::USERS_SEND_EMAIL_OTP_FAILED,
+                compact('input'));
+        }
+
+        $this->traceEmailOtpLoginRoute($input, TraceCode::USER_SEND_EMAIL_OTP_FOR_VERIFICATION);
+
+        return array_only($otp, 'token');
+    }
+
+    public function sendVerificationOtpViaSms(array $input, Entity $user)
+    {
+        if ($user->isContactMobileVerified() === true)
+        {
+            throw new BadRequestValidationFailureException('Contact mobile is already verified');
+        }
+
+        $input += $this->getLoginOtpPayload($input, 'verify_user');
+
+        $otp = $this->generateOtpForLogin($user, $input);
+
+        $payload = $this->getSmsPayload($input, $otp);
+
+        try
+        {
+            $this->app->raven->sendOtp($payload);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::USER_SEND_VERIFICATION_SMS_OTP_FAILED,
+                compact('input'));
+        }
+
+        $maskedInput[Entity::CONTACT_MOBILE] = $user->getMaskedContactMobile();
+
+        $this->traceMobileLoginRoute($maskedInput, TraceCode::USER_SEND_SMS_OTP_FOR_VERIFICATION);
+
+        return array_only($otp, 'token');
+    }
+
+    public function fetchUserForVerification(array $input)
+    {
+        if (isset($input[Entity::CONTACT_MOBILE]) === true)
+        {
+            $user = $this->getUserByMobile($input[Entity::CONTACT_MOBILE]);
+
+            return $user;
+        }
+
+        $user = $this->repo->user->findByEmail($input[Entity::EMAIL]);
+
+        return $user;
+    }
+
+    /**
+     * sendVerificationOtp fetches the user based on email or mobile. On successful authentication, an OTP is sent to
+     * the user's login medium. The generated token is returned.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function sendVerificationOtp(array $input)
+    {
+        $this->getUserEntity()->getValidator()->validateInput('sendVerificationOtp', $input);
+
+        $user = $this->fetchUserForVerification($input);
+
+        $isPasswordEqual = (new BcryptHasher)->check($input[Entity::PASSWORD], $user->getPassword());
+
+        if ($isPasswordEqual === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
+        }
+
+        if (isset($input[Entity::EMAIL]) === true)
+        {
+            $token = $this->sendVerificationOtpViaEmail($input, $user);
+        }
+        else if (isset($input[Entity::CONTACT_MOBILE]) === true)
+        {
+            $token = $this->sendVerificationOtpViaSms($input, $user);
+        }
+
+        return $token;
+    }
+
+    public function checkIfContactMobileOrEmailIsVerified(array $input, Entity $user)
+    {
+        $receiver = null;
+
+        if (isset($input[Entity::CONTACT_MOBILE]) === true)
+        {
+            $receiver = $input[Entity::CONTACT_MOBILE];
+
+            if ($user->isContactMobileVerified() === true)
+            {
+                throw new BadRequestValidationFailureException('Contact mobile is already verified');
+            }
+        }
+        else if (isset($input[Entity::EMAIL]) === true)
+        {
+            $receiver = $input[Entity::EMAIL];
+
+            if ($user->getConfirmedAttribute() === true)
+            {
+                throw new BadRequestValidationFailureException('Email is already verified');
+            }
+        }
+
+        return $receiver;
+    }
+
+    public function setContactMobileOrEmailVerify(array $input, $user)
+    {
+        if (isset($input[Entity::CONTACT_MOBILE]) === true)
+        {
+            $user->setContactMobileVerified(true);
+
+            $this->repo->saveOrFail($user);
+        }
+        else if (isset($input[Entity::EMAIL]) === true)
+        {
+            $this->confirm($user, Entity::OTP);
+        }
+    }
+
+    /**
+     * verifyVerificationOtp fetches the user based on email or mobile. Based on the token, it verifies the OTP and
+     * returns the user on successful verification.
+     *
+     * @param array $input
+     *
+     * @return Entity
+     */
+    public function verifyVerificationOtp(array $input)
+    {
+        $this->getUserEntity()->getValidator()->validateInput('verifyVerificationOtp', $input);
+
+        $user = $this->fetchUserForVerification($input);
+
+        $receiver = $this->checkIfContactMobileOrEmailIsVerified($input, $user);
+
+        $input += $this->getLoginOtpPayload($input, 'verify_user');
+
+        $payload = [
+            'receiver' => $receiver,
+            'source'   => "api.user.{$input['action']}"
+        ];
+
+        $payload += $this->getToken($user, $input);
+
+        $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
+
+        $this->app->raven->verifyOtp($payload);
+
+        $this->setContactMobileOrEmailVerify($input, $user);
 
         return $this->get($user);
     }

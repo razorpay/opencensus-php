@@ -733,6 +733,318 @@ class UserTest extends TestCase
         $response=$this->startTest();
     }
 
+    public function testMailSendVerificationOtp()
+    {
+        Mail::fake();
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:verify_user:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($smsPayload);
+
+        $user = $this->fixtures->create('user', ['email' => 'hello123@gmail.com', 'password' => 'hello123', 'confirm_token' => '0123456789']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response=$this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+
+        Mail::assertQueued(Otp::class, function ($mail)
+        {
+            $this->assertEquals('verify_user', $mail->input['action']);
+
+            $this->assertNotEmpty($mail->user);
+
+            $this->assertNotEmpty($mail->otp);
+
+            $this->assertEquals('emails.user.verify_user', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testMailSendVerificationOtpVerifiedUser()
+    {
+        Mail::fake();
+
+        $user = $this->fixtures->create('user', ['email' => 'hello123@gmail.com', 'password' => 'hello123']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response=$this->startTest();
+    }
+
+    public function testMailSendVerificationOtpWrongPassword()
+    {
+        $user = $this->fixtures->create('user', ['password' => 'hello123']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello1234',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testMobileSendVerificationOtp()
+    {
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:verify_user:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($smsPayload);
+
+        $user = $this->fixtures->create('user', ['contact_mobile' => '1234567890', 'password' => 'hello123', 'contact_mobile_verified' => false]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '1234567890',
+            'password'              => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function testMobileResendVerificationOtp()
+    {
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:verify_user:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($smsPayload);
+
+        $user = $this->fixtures->create('user', ['contact_mobile' => '1234567890', 'password' => 'hello123', 'contact_mobile_verified' => false]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '1234567890',
+            'password'              => 'hello123',
+            'token'                 => 'BUIj3m2Nx2VvVj'
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function testMailResendVerificationOtp()
+    {
+        Mail::fake();
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:verify_user:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn($smsPayload);
+
+        $user = $this->fixtures->create('user', ['email' => 'hello123@gmail.com', 'password' => 'hello123', 'confirm_token' => '0123456789']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'token'                 => 'BUIj3m2Nx2VvVj'
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response=$this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+
+        Mail::assertQueued(Otp::class, function ($mail)
+        {
+            $this->assertEquals('verify_user', $mail->input['action']);
+
+            $this->assertNotEmpty($mail->user);
+
+            $this->assertNotEmpty($mail->otp);
+
+            $this->assertEquals('emails.user.verify_user', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testMobileSendVerificationOtpVerifiedUser()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '0123456789',
+            'password'              => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response=$this->startTest();
+    }
+
+    public function testMobileSendVerificationOtpWrongPassword()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile'        => '0123456789', 'password' => 'hello123']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '0123456789',
+            'password'              => 'hello1234',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testMobileSendVerificationOtpMultipleAccounts()
+    {
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+        $user2 = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '0123456789',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testVerificationMailVerifyOtp()
+    {
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['verifyOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp');
+
+        $user = $this->fixtures->create('user', ['email' => 'a@gmail.com', 'password' => 'hello123', 'confirm_token' => '0123456789']);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user',  $user['id']);
+
+        $this->assertTrue($user->getConfirmedAttribute());
+    }
+
+    public function testVerificationMobileVerifyOtp()
+    {
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['verifyOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp');
+
+        $user = $this->fixtures->create('user', ['contact_mobile' => '0123456789', 'contact_mobile_verified' => false]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertTrue($user->isContactMobileVerified()===true);
+    }
+
     public function testMobileResendOtpLogin()
     {
         $smsPayload = [

@@ -173,7 +173,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;"><div class="center-align font-size-normal font-color-primary" style="text-align: center; font-size: 16px; line-height: 1.5; color: #0D2366;">OTP to login</div></div>
+                                                    <div class="card title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;"><div class="center-align font-size-normal font-color-primary" style="text-align: center; font-size: 16px; line-height: 1.5; color: #0D2366;">Verify Your Email Address</div></div>
                                                 </div>
 
                                             </td>
@@ -245,10 +245,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-
-                                                    <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;">
-                                                        <div class="center-align padding-top-8 padding-bottom-8 font-size-large otp-field" style="color: #0D2366; text-align: center; font-size: 24px; line-height: 1.5; padding-top: 8px; padding-bottom: 8px;">{{ $otp['otp'] }}</div>
-                                                        <p class="para-normal font-size-medium center-align" style="text-align: center; font-size: 14px; line-height: 1.5; color: #515978;"> is the  OTP to login using email. OTP is valid till {{ epoch_format($otp['expires_at']) }} IST. Do not share it with anyone.</p></div>
+                                                    <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="para-normal font-size-medium center-align" style="text-align: center; font-size: 14px; line-height: 1.5; color: #515978;">Your OTP for verifying your email address with Razorpay is </p><div class="center-align padding-top-8 padding-bottom-8 font-size-large otp-field" style="color: #0D2366; text-align: center; font-size: 24px; line-height: 1.5; padding-top: 8px; padding-bottom: 8px;">{{ $otp['otp'] }}</div><p class="para-normal padding-borttom-8 center-align font-size-medium" style="text-align: center; font-size: 14px; line-height: 1.5; color: #515978;">OTP is valid till {{ epoch_format($otp['expires_at']) }} IST. Do not share with anyone.</p></div>
                                                 </div>
 
 

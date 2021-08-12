@@ -569,6 +569,20 @@ class Service extends Base\Service
         return $user;
     }
 
+    public function sendVerificationOtp(array $input): array
+    {
+        $data = $this->core->sendVerificationOtp($input);
+
+        return $data;
+    }
+
+    public function verifyVerificationOtp(array $input): array
+    {
+        $user = $this->core->verifyVerificationOtp($input);
+
+        return $user;
+    }
+
     public function checkUserAccess(array $input)
     {
         if (empty($input['merchant_id']) === true)
