@@ -1,9 +1,6 @@
 import { Link } from 'react-router-dom';
-import Amount from 'common/ui/Amount';
 
 function SettlementOverview({ payment }) {
-  const rzp_fees = payment.transaction.settlement.fees - payment.transaction.settlement.tax;
-
   return (
     <div style={{ marginTop: '5px' }}>
       <div>

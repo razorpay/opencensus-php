@@ -1,13 +1,14 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
+import { bindActionCreators } from 'redux';
 
 // Duplicated AsyncButton logic here.
 // TODO: Should make `react-async-button` quite composable in the upstream
-@connect(null, { showNotification })
-export default class FileUploadButton extends Component {
-  constructor() {
-    super(...arguments);
+
+class FileUploadButton extends Component {
+  constructor(props) {
+    super(props);
     this.state = {
       asyncState: null,
     };
@@ -30,6 +31,7 @@ export default class FileUploadButton extends Component {
         asyncState: 'pending',
       });
 
+      // eslint-disable-next-line prefer-spread
       const returnFn = eventHandler.apply(null, args);
       if (returnFn && typeof returnFn.then === 'function') {
         returnFn
@@ -41,7 +43,7 @@ export default class FileUploadButton extends Component {
               asyncState: 'fulfilled',
             });
           })
-          .catch(error => {
+          .catch((error) => {
             if (this.isUnmounted) {
               return;
             }
@@ -92,14 +94,12 @@ export default class FileUploadButton extends Component {
         <input
           {...attributes}
           type="file"
-          onChange={event => {
+          onChange={(event) => {
             if (event.target.files.length) {
               if (maxSize && event.target.files[0].size > maxSize) {
                 this.props.showNotification({
                   type: 'error',
-                  message: `Max file size allowed is ${Math.round(
-                    maxSize / 1e6
-                  )} MB`,
+                  message: `Max file size allowed is ${Math.round(maxSize / 1e6)} MB`,
                 });
               } else {
                 this.handleChange(event);
@@ -117,3 +117,7 @@ FileUploadButton.defaultProps = {
   pendingText: 'Uploading...',
   labelClass: 'btn-default',
 };
+
+export default connect(null, (dispatch) =>
+  bindActionCreators({ showNotification: fnShowNotification }, dispatch),
+)(FileUploadButton);

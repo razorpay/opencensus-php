@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-
 import {
   paymentId,
   paymentOrder,
@@ -10,17 +9,16 @@ import {
   createdAt,
   status,
 } from 'common/ui/item/pair';
-
 import EntityTable from 'merchant/components/EntityTable';
 
 const getOrderId = ({ notes }) => {
   // Merchant's custom defined order IDs
   // First, we look for whole match. If that fails, we try `order_id` suffix
-  var orderId = notes.order_id || notes.orderId;
+  const orderId = notes.order_id || notes.orderId;
   if (orderId) {
     return orderId;
   }
-  for (let key in notes) {
+  for (const key in notes) {
     if (key.endsWith('_order_id')) {
       return notes[key];
     }
@@ -43,7 +41,7 @@ const getRazorpayOrderId = ({ order_id }) => {
 
 const mapOrders = (payments) =>
   payments.reduce((orders, payment) => {
-    let orderId = getOrderId(payment);
+    const orderId = getOrderId(payment);
     if (orderId) {
       orders[payment.id] = orderId;
     }
@@ -52,7 +50,7 @@ const mapOrders = (payments) =>
 
 const mapRzpOrders = (payments) =>
   payments.reduce((orders, payment) => {
-    let razorpayOrderId = getRazorpayOrderId(payment);
+    const razorpayOrderId = getRazorpayOrderId(payment);
     if (razorpayOrderId) {
       orders[payment.id] = razorpayOrderId;
     }
@@ -66,8 +64,8 @@ export default (props) => {
     paymentColumns = props.paymentColumns;
   }
 
-  let orders = mapOrders(props.items);
-  let rzpOrders = mapRzpOrders(props.items);
+  const orders = mapOrders(props.items);
+  const rzpOrders = mapRzpOrders(props.items);
 
   // if there is at least one visible "order-id"
   if (Object.keys(orders).length) {

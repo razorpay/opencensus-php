@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-
 import Amount from 'common/ui/Amount';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import Definition from 'common/ui/Definition';
@@ -27,26 +26,26 @@ const createdAtWithStyle = { columnClass: 'text-right', ...createdAt };
 const NumTransfers = ({ transfers, titleCase = false }) => {
   const transferItems = transfers.items || [];
 
-  const numTransfers = transferItems.length,
-    transfersSuffix = numTransfers === 0 || numTransfers > 1 ? 's' : '';
+  const numTransfers = transferItems.length;
+  const transfersSuffix = numTransfers === 0 || numTransfers > 1 ? 's' : '';
 
   return (
     <span>
-      {transfers.loading ? <LoaderDots /> : numTransfers}{' '}
-      {titleCase ? 'T' : 't'}ransfer{transfersSuffix}
+      {transfers.loading ? <LoaderDots /> : numTransfers} {titleCase ? 'T' : 't'}ransfer
+      {transfersSuffix}
     </span>
   );
 };
 
-const TransfersList = ({ transfers, payment }) => {
+const TransfersList = ({ transfers }) => {
   const transfersHeading = {
     title: 'Transfer Details',
     subTitle: <NumTransfers transfers={transfers} titleCase={true} />,
   };
 
-  var paymentTransferId = {
+  const paymentTransferId = {
     ...transferId,
-    value: item => (
+    value: (item) => (
       <Link to={`/route/transfers/${item.id}`}>
         <code>{item.id}</code>
       </Link>
@@ -79,8 +78,8 @@ const CreateTransferBtn = ({ onClick, text = 'Create Transfer' }) => (
 );
 
 export default ({ payment, transfers, onCreateTransfer }) => {
-  const amountTransferred = payment.amount_transferred,
-    paymentStatus = payment.status;
+  const amountTransferred = payment.amount_transferred;
+  const paymentStatus = payment.status;
 
   if (['created', 'authorized', 'failed'].indexOf(paymentStatus) >= 0) {
     return (
@@ -94,15 +93,9 @@ export default ({ payment, transfers, onCreateTransfer }) => {
   if (!transfers.items.length && !transfers.loading) {
     return (
       <div>
-        <p>
-          No transfers created{`${payment.status === 'captured' ? ' yet' : ''}`}
-        </p>
-        <ShowWhen
-          additionalCondition={user => user.isAllowedEdit('marketplace')}
-        >
-          {payment.status === 'captured' && (
-            <CreateTransferBtn onClick={onCreateTransfer} />
-          )}
+        <p>No transfers created{`${payment.status === 'captured' ? ' yet' : ''}`}</p>
+        <ShowWhen additionalCondition={(user) => user.isAllowedEdit('marketplace')}>
+          {payment.status === 'captured' && <CreateTransferBtn onClick={onCreateTransfer} />}
         </ShowWhen>
       </div>
     );
@@ -125,15 +118,12 @@ export default ({ payment, transfers, onCreateTransfer }) => {
           </span>
         </Definition>
       </div>
-      <ShowWhen additionalCondition={user => user.isAllowedEdit('marketplace')}>
+      <ShowWhen additionalCondition={(user) => user.isAllowedEdit('marketplace')}>
         {!transfers.loading &&
           payment.status === 'captured' &&
           payment.amount !== amountTransferred && (
             <div class="m-b">
-              <CreateTransferBtn
-                text="Create another transfer"
-                onClick={onCreateTransfer}
-              />
+              <CreateTransferBtn text="Create another transfer" onClick={onCreateTransfer} />
             </div>
           )}
       </ShowWhen>

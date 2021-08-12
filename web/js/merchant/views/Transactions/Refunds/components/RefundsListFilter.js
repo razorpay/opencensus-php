@@ -1,14 +1,8 @@
+import React from 'react';
 import ListFilter from 'merchant/components/ListFilter';
 import { Field } from 'redux-form';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { connect } from 'react-redux';
-
-@connect((state) => {
-  return {
-    rs_filter: state.config.config.rs_filter,
-  };
-})
-export default class RefundListFilter extends React.Component {
+class RefundListFilter extends React.Component {
   render() {
     return (
       <ListFilter {...this.props}>
@@ -53,3 +47,11 @@ export default class RefundListFilter extends React.Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    rs_filter: state.config.config.rs_filter,
+  };
+};
+
+export default connect(mapStateToProps, null)(RefundListFilter);

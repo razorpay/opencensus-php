@@ -4,23 +4,13 @@ import RTracking from 'react-tracking';
 import RazorpayXNitroAnnouncement, {
   nitroCampaignId,
 } from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import {
+  closeModal as fnCloseModal,
+  openModal as fnOpenModal,
+} from 'merchant_common/reducers/modals';
+import { compose, bindActionCreators } from 'redux';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-  }),
-  {
-    openModal,
-    closeModal,
-  },
-)
-@RTracking(() => window.rzpQ.component('ScheduledNitroBanner'))
-export default class ScheduledNitroBanner extends Component {
-  constructor(props) {
-    super(props);
-  }
-
+class ScheduledNitroBanner extends Component {
   componentDidMount() {
     const tracking = this.props.tracking;
     tracking.trackEvent(
@@ -55,7 +45,7 @@ export default class ScheduledNitroBanner extends Component {
         <a
           class="Button--secondary Button scheduled-btn-act btn-border"
           target="_blank"
-          onClick={(e) => {
+          onClick={() => {
             const { closeModal, openModal } = this.props;
 
             openModal({
@@ -77,3 +67,13 @@ export default class ScheduledNitroBanner extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => ({ user: state.session.user }),
+    (dispatch) =>
+      bindActionCreators({ openModal: fnOpenModal, closeModal: fnCloseModal }, dispatch),
+  ),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('ScheduledNitroBanner')),
+)(ScheduledNitroBanner);

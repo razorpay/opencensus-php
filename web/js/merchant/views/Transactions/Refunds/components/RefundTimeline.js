@@ -1,6 +1,7 @@
+import React from 'react';
 import Time from 'common/ui/Time';
 import { RefundStatusLabel } from 'merchant/components/StatusLabel';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 
 function ShowTime({ time }) {
   return <Time value={time} format="DD MMM YYYY, hh:mm:ss a" />;
@@ -24,7 +25,7 @@ export default class RefundStatusTimeline extends React.Component {
           timeStamp: refund.created_at,
         });
 
-        let speedChangeTime = refund.speed_change_time
+        const speedChangeTime = refund.speed_change_time
           ? refund.speed_change_time
           : refund.created_at;
 
@@ -35,12 +36,12 @@ export default class RefundStatusTimeline extends React.Component {
                 Refund speed updated to Normal &nbsp;
                 <span>
                   <i class="i i-help" />
-                  <Popover align="right" theme="dark">
+                  <PopoverComponent align="right" theme="dark">
                     <PopoverBody>
                       &nbsp; Instant Refund was unsuccessful, the fee &nbsp; for instant refund has
                       been reversed.
                     </PopoverBody>
-                  </Popover>
+                  </PopoverComponent>
                 </span>
               </div>
             ),
@@ -95,7 +96,6 @@ export default class RefundStatusTimeline extends React.Component {
                 can't be processed for this payment as it was created more than 6 months ago{' '}
                 <a
                   href="https://razorpay.com/docs/payment-gateway/refunds/#handling-errors"
-                  href="https://razorpay.com/docs/payment-gateway/refunds/#handling-errors"
                   rel="noopener noreferrer"
                   target="_blank"
                 >
@@ -119,7 +119,7 @@ export default class RefundStatusTimeline extends React.Component {
   };
 
   render() {
-    let mileStones = this.getMilestones(this.props.refund);
+    const mileStones = this.getMilestones(this.props.refund);
 
     return (
       <ul class="refund-timeline">
@@ -135,9 +135,9 @@ export default class RefundStatusTimeline extends React.Component {
                   {item.infoText && (
                     <span className="status-infotext">
                       <i class="i i-help" />
-                      <Popover align="top" theme="dark">
+                      <PopoverComponent align="top" theme="dark">
                         <PopoverBody>{item.infoText}</PopoverBody>
-                      </Popover>
+                      </PopoverComponent>
                     </span>
                   )}
                 </p>

@@ -4,17 +4,13 @@ import ListContainer from 'merchant/containers/ListContainer';
 import RefundsListFilter from 'merchant/views/Transactions/Refunds/components/RefundsListFilter';
 import { fetchRefunds as fetchAll } from 'merchant/reducers/collection';
 import { refundId, paymentId, amount, createdAt, status } from 'common/ui/item/pair';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
-import EnableInstantRefundsModal from '../Payments/components/EnableInstantRefundsModal';
+import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { withRouter } from 'react-router-dom';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { openModal } from 'merchant_common/reducers/modals';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { bindActionCreators } from 'redux';
 
-@withRouter
-@connect((state) => state.refunds, { fetchAll, openModal })
-export default class RefundsListContainer extends ListContainer {
+class RefundsListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Refunds',
@@ -109,3 +105,9 @@ export default class RefundsListContainer extends ListContainer {
     );
   }
 }
+
+const mapStateToProps = (state) => state.refunds;
+
+const mapDispatchToProps = (dispatch) => bindActionCreators({ fetchAll, openModal }, dispatch);
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(RefundsListContainer));

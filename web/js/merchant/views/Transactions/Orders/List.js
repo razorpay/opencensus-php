@@ -1,4 +1,3 @@
-import { Component } from 'react';
 import { connect } from 'react-redux';
 import DataTable from 'common/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -6,11 +5,10 @@ import OrdersListFilter from 'merchant/views/Transactions/Orders/components/Orde
 import { fetchOrders as fetchAll } from 'merchant/reducers/collection';
 import { orderId, attempts, amount, status, receipt, createdAt } from 'common/ui/item/pair';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { bindActionCreators } from 'redux';
 
-@connect((state) => state.orders, { fetchAll })
-export default class OrdersListContainer extends ListContainer {
+class OrdersListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Orders',
@@ -104,3 +102,8 @@ export default class OrdersListContainer extends ListContainer {
     );
   }
 }
+
+export default connect(
+  (state) => state.orders,
+  (dispatch) => bindActionCreators({ fetchAll }, dispatch),
+)(OrdersListContainer);

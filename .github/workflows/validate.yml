@@ -34,9 +34,10 @@ jobs:
       - name: Validate
         # Automatically installs npm ci in web too
         run: |
-          npm run lint
+          MODULES=$MODULES npm run lint
           npm run style-lint
           cd web && npx tsc
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          MODULES: web/v2 web/js/merchant/views/Settlements web/js/merchant/views/Transactions
