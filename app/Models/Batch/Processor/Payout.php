@@ -239,4 +239,26 @@ class Payout extends Base
             return parent::createExcelObject($data, $dir, $name, $extension, $columnFormat, $sheetNames);
         }
     }
+
+    protected function saveSettings(array $input)
+    {
+        $config = $input[Entity::CONFIG] ?? [];
+
+        // Temporary: For payout type batch captures user email to be used later to send processed file to.
+        if (($this->batch->isPayoutType() === true) and
+            ($this->app->basicauth->isStrictPrivateAuth() === false))
+        {
+            $user = $this->app->basicauth->getUser();
+            $config['user'] = [
+                'name'  => $user->getName(),
+                'email' => $user->getEmail(),
+            ];
+        }
+
+        if ((empty($config) === false) and
+            ($this->app->basicauth->isStrictPrivateAuth() === false))
+        {
+            $this->settingsAccessor->upsert($config)->save();
+        }
+    }
 }
