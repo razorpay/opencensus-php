@@ -111,7 +111,11 @@ $height = 40px;
 
 .date-range-preset-select
   z-index: 2
+  left: -28px !important //adding important to override element.style added by PowerSelect library
+  top: 5px !important //adding important to override element.style added by PowerSelect library
 
+  &.PowerSelect__Tether
+    width: 160px
   &.react-normal-select
     &__Menu
       .PowerSelect__Option
