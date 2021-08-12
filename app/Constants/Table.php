@@ -65,7 +65,6 @@ class Table
     const MERCHANT_NOTIFICATION_CONFIG = 'merchant_notification_configs';
     const PAYOUTS_META                 = 'payouts_meta';
     const PAYOUTS_DETAILS              = 'payouts_details';
-    const PAYOUTS_BATCH                = 'payouts_batch';
 
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,

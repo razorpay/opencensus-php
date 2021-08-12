@@ -30,7 +30,6 @@ class Constants
     const PAYMENT_EMAIL_FETCH             = 'payment_email_fetch';
     const CREATED_FLOW                    = 'created_flow';
     const PAYOUT                          = 'payout';
-    const PAYOUTS_BATCH                   = 'payouts_batch';
     const OPENWALLET                      = 'openwallet';
     const MARKETPLACE                     = 'marketplace';
     const EMAIL_OPTIONAL                  = 'email_optional';
@@ -690,11 +689,6 @@ class Constants
     const RBL_CA_UPI = 'rbl_ca_upi';
 
     /**
-     * Used to identify if a payouts batch request is an MFN request
-     */
-    const MFN = 'mfn';
-
-    /**
      * Used to enable new FAV forward flow, where FTA is deprecated.
      */
     const FAV_FTA_DPRCN_FWD = 'fav_fta_dprcn_fwd';
@@ -846,7 +840,6 @@ class Constants
         self::PAYMENT_EMAIL_FETCH             => true,
         self::CREATED_FLOW                    => true,
         self::PAYOUT                          => true,
-        self::PAYOUTS_BATCH                   => true,
         self::OPENWALLET                      => true,
         self::MARKETPLACE                     => true,
         self::EMAIL_OPTIONAL                  => true,
@@ -1137,7 +1130,6 @@ class Constants
         self::ORG_AXIS_PAYPAL                 => true,
         self::AXIS_PAYPAL_ENABLE              => true,
         self::AVS                             => true,
-        self::MFN                             => true,
     ];
 
     // Entity type constants
@@ -1228,11 +1220,6 @@ class Constants
             'feature'       => self::PAYOUT,
             'display_name'  => 'Payouts',
             'documentation' => 'payouts',
-        ],
-        self::PAYOUTS_BATCH => [
-            'feature'       => self::PAYOUTS_BATCH,
-            'display_name'  => 'Payouts Batch API',
-            'documentation' => 'payouts batch API'
         ],
         self::REPORT_V2 => [
             'feature'       => self::REPORT_V2,

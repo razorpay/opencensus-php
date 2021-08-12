@@ -692,6 +692,4 @@ return [
     E::DISPUTE_EVIDENCE => [],
 
     E::DISPUTE_EVIDENCE_DOCUMENT => [],
-
-    E::PAYOUTS_BATCH => [],
 ];

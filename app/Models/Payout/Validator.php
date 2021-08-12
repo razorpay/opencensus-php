@@ -108,11 +108,6 @@ class Validator extends Base\Validator
         Entity::ORIGIN               => 'sometimes|filled',
     ];
 
-    /**
-     * @see Payout\Batch\Validator Need to change for payout rules if any changes are done here
-     *
-     * @var array
-     */
     protected static $fundAccountPayoutCompositeRules = [
         Entity::PURPOSE                              => 'required|filled|string|max:30|alpha_dash_space',
         Entity::AMOUNT                               => 'required|integer|min:100',
@@ -136,9 +131,6 @@ class Validator extends Base\Validator
 
     /**
      * @see Batch\Validator Need to change for payout rules if any changes are done here
-     *
-     * @see Payout\Batch\Validator A change needed here as well
-     *
      * @var array
      */
     protected static $fundAccountPayoutRules = [

@@ -972,8 +972,6 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             'partner_activation'        => RZP\Models\Partner\Activation\Entity::class,
 
-            'payouts_batch'             => RZP\Models\Payout\Batch\Entity::class,
-
         ]);
     }
 

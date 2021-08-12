@@ -1260,7 +1260,6 @@ class Route
         'payout_create'                            => ['post',     'payouts',                                        'PayoutController@postFundAccountPayout'                            ],
         'payout_create_internal'                   => ['post',     'payouts_internal',                               'PayoutController@postFundAccountPayout'                            ],
         'payout_create_on_internal_contact'        => ['post',     'internalContactPayout',                          'PayoutController@postFundAccountOnInternalContact'                 ],
-        'payouts_batch_create'                     => ['post',     'payouts_batch',                                  'PayoutsBatchController@create'                                     ],
         'payout_bulk_create'                       => ['post',     'payouts/bulk',                                   'PayoutController@createPayoutBulk'                                 ],
         'payout_bulk_approve'                      => ['post',     'payouts/bulk_approve',                           'PayoutController@approvePayoutBulk'                                ],
         'payout_create_with_otp'                   => ['post',     'payouts_with_otp',                               'PayoutController@postFundAccountPayoutWithOtp'                     ],
@@ -3012,7 +3011,6 @@ class Route
         'payout_fetch_by_id',
         'payout_fetch_multiple',
         'payout_create',
-        'payouts_batch_create',
         'payout_cancel',
         'customer_get_wallet_balance',
         'customer_get_wallet_statement',
@@ -5877,7 +5875,6 @@ class Route
 
         //Enable maker/checker for payouts
         'payout_create'                            => Permission::CREATE_PAYOUT,
-        'payouts_batch_create'                     => Permission::CREATE_PAYOUT,
         'payout_create_with_otp'                   => Permission::CREATE_PAYOUT,
 
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
@@ -6237,7 +6234,6 @@ class Route
         'reporting_log_update'                         => Permission::UPDATE_REPORTING,
         'ufh_get_file_signed_url'                      => '*',
         'payout_create'                                => Permission::CREATE_PAYOUT,
-        'payouts_batch_create'                         => Permission::CREATE_PAYOUT,
         'payout_create_with_otp'                       => Permission::CREATE_PAYOUT,
         'currency_fetch_all_proxy'                     => '*',
         'reports_monthly_banking_invoice'              => '*',
@@ -7362,7 +7358,6 @@ class Route
             'payout_reject',
             'payout_reject_bulk',
             'payout_update_status',
-            'payouts_batch_create',
             'payouts_bulk_amount_type_update',
             'payouts_bulk_sample_file',
             'payouts_scheduled_time_slots',
@@ -10213,7 +10208,6 @@ class Route
         'reports_order_rpp'                    => [Feature::RPP_REPORT],
         'payment_payout'                       => [Feature::PAYOUT],
         'payout_create'                        => [Feature::PAYOUT],
-        'payouts_batch_create'                 => [Feature::PAYOUT, Feature::PAYOUTS_BATCH],
         'payout_approve_bulk'                  => [Feature::PAYOUT],
         'payout_reject_bulk'                   => [Feature::PAYOUT],
         'payout_update_status'                 => [Feature::PAYOUT],
@@ -10371,11 +10365,7 @@ class Route
         'payout_create_internal' => [
             IdempotencyKey\Entity::SOURCE_TYPE  => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY   => RequestHeader::X_PAYOUT_IDEMPOTENCY,
-        ],
-        'payouts_batch_create' => [
-            IdempotencyKey\Entity::SOURCE_TYPE => Entity::PAYOUTS_BATCH,
-            IdempotencyKey\Entity::HEADER_KEY  => RequestHeader::X_PAYOUT_BATCH_IDEMPOTENCY,
-        ],
+        ]
     ];
 
     /**
@@ -10574,7 +10564,6 @@ class Route
 
         //payout related routes
         'payout_create',
-        'payouts_batch_create',
         'payout_fetch_multiple',
         'payout_fetch_by_id',
         'payout_cancel',
@@ -10604,7 +10593,6 @@ class Route
     //
     const BANKING_SPECIFIC_ROUTES = [
         'payout_create',
-        'payouts_batch_create',
         'payout_create_with_otp',
         'payout_bulk_create',
         'payout_bulk_approve',

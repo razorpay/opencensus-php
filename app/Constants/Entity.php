@@ -503,8 +503,6 @@ class Entity
 
     const PAYOUTS_DETAILS = 'payouts_details';
 
-    const PAYOUTS_BATCH = 'payouts_batch';
-
     //merchant on-boarding
     const MERCHANT_DETAIL   = 'merchant_detail';
     const MERCHANT_DOCUMENT = 'merchant_document';
@@ -778,8 +776,6 @@ class Entity
         self::BANKING_ACCOUNT_STATEMENT_DETAILS => \RZP\Models\BankingAccountStatement\Details::class,
 
         self::PAYOUTS_DETAILS => \RZP\Models\PayoutsDetails::class,
-
-        self::PAYOUTS_BATCH => \RZP\Models\Payout\Batch::class,
 
         self::SUBSCRIPTION_OFFERS_MASTER  => \RZP\Models\Offer\SubscriptionOffer::class,
 

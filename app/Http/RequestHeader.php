@@ -74,8 +74,6 @@ class RequestHeader
 
     const X_PAYOUT_IDEMPOTENCY          = 'X-Payout-Idempotency';
 
-    const X_PAYOUT_BATCH_IDEMPOTENCY    = 'X-Payout-Batch-Idempotency';
-
     const X_TASK_ID                     = 'X-Task-ID';
     const X_SERVICE_ID                  = 'X-Service-ID';
 

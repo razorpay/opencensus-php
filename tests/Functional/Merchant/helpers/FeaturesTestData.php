@@ -686,11 +686,6 @@ return [
                         'display_name' => 'Payouts'
                     ],
                     [
-                        'feature'      => 'payouts_batch',
-                        'value'        => false,
-                        'display_name' => 'Payouts Batch API'
-                    ],
-                    [
                         'feature'      => 'report_v2',
                         'value'        => false,
                         'display_name' => 'Report V2'
@@ -923,7 +918,6 @@ return [
                     'payment_email_fetch',
                     'created_flow',
                     'payout',
-                    'payouts_batch',
                     'openwallet',
                     'marketplace',
                     'email_optional',

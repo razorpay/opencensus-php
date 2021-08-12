@@ -451,17 +451,10 @@ class Validator extends Base\Validator
         Entity::NAME        => 'filled|string|max:255',
         Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_EXCEL_MIME_RULE,
         Entity::FILE_ID     => 'required_without:file|public_id',
-        Entity::SCHEDULE    => 'sometimes|numeric',
-        Entity::CONFIG      => 'sometimes'
-    ];
-
-    protected static $payoutCreateOtpRules = [
         Entity::OTP         => 'required|filled|min:4',
         Entity::TOKEN       => 'required|unsigned_id',
-    ];
-
-    protected static $payoutCreateValidators = [
-        'otp_and_token_for_payout_create',
+        Entity::SCHEDULE    => 'sometimes|numeric',
+        Entity::CONFIG      => 'sometimes'
     ];
 
     protected static $payoutApprovalCreateRules = [
@@ -1937,18 +1930,6 @@ class Validator extends Base\Validator
         {
             return BatchHelper::PAISE;
         }
-    }
-
-    protected function validateOtpAndTokenForPayoutCreate(array $input)
-    {
-        $app = App::getFacadeRoot();
-
-        if ($app['basicauth']->isStrictPrivateAuth() === true)
-        {
-            return;
-        }
-
-        $this->validateInputValues('payout_create_otp', $input);
     }
 
     protected function validateIciciLeadAccountActivationCommentsEntries(array &$entries, array $params, ME $merchant)
