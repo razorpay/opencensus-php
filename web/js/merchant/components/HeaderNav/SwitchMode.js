@@ -6,16 +6,16 @@ import { analyticsTrack } from 'common/utils/analytics';
 const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked, user }) => {
   const dropdownDisabled = mode === 'live' && !!isTestModeBlocked;
 
-  const isActivated = localStorage.getItem(`is_activated--${user.current}`);
+  const isActivated = localStorage.getItem(`is_activated--${user?.current}`);
   const isLiveModeActivatedKeySet =
     mode === 'live' &&
     !isActivated &&
-    (user.activation_status === 'activated' ||
-      user.activation_status === 'activated_mcc_pending' ||
-      (user.isUnregisteredBusiness &&
-        user.activation_form_milestone === 'L1' &&
-        user.poi_verification_status === 'verified' &&
-        user.activation_status === 'instantly_activated'));
+    (user?.activation_status === 'activated' ||
+      user?.activation_status === 'activated_mcc_pending' ||
+      (user?.isUnregisteredBusiness &&
+        user?.activation_form_milestone === 'L1' &&
+        user?.poi_verification_status === 'verified' &&
+        user?.activation_status === 'instantly_activated'));
 
   return (
     <Dropdown disabled={dropdownDisabled}>

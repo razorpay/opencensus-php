@@ -8,7 +8,7 @@ import { toggleMobileMenu } from 'merchantLA/reducers/app';
 import NavFragment from 'merchant/components/HeaderNav/NavFragment';
 import ModesDropdown from 'merchant/components/HeaderNav/SwitchMode';
 
-const analytics = action => {
+const analytics = (action) => {
   window.rzpAnalytics({
     eventCategory: 'LA Dashboard - Header',
     eventAction: action,
@@ -16,10 +16,10 @@ const analytics = action => {
 };
 
 @connect(
-  state => ({
+  (state) => ({
     activePageName: state.app.activePageName,
   }),
-  { toggleMobileMenu }
+  { toggleMobileMenu },
 )
 export default class HeaderNav extends Component {
   constructor(props) {
@@ -60,11 +60,7 @@ export default class HeaderNav extends Component {
           <div className="navbar-collapse" id="headerNav">
             {showMobileNav && (
               <div className="pull-left navbar-toggle-container">
-                <button
-                  type="button"
-                  className="navbar-toggle"
-                  onClick={this.onToggleAppMenu}
-                >
+                <button type="button" className="navbar-toggle" onClick={this.onToggleAppMenu}>
                   <span class="i-bar" />
                   <span class="i-bar" />
                   <span class="i-bar" />
@@ -74,17 +70,14 @@ export default class HeaderNav extends Component {
             )}
             <ul className="nav navbar-nav navbar-right">
               {(!showMobileNav && (
-                <NavFragment
-                  analytics={analytics}
-                  {...fragmentSpecificProps}
-                  {...commonProps}
-                />
+                <NavFragment analytics={analytics} {...fragmentSpecificProps} {...commonProps} />
               )) || (
                 <li>
                   <ModesDropdown
                     mode={mode}
                     modeFormatted={modeFormatted}
                     onSwitchMode={onSwitchMode}
+                    user={user}
                   />
                 </li>
               )}
