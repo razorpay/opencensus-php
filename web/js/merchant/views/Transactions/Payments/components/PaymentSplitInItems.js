@@ -1,11 +1,10 @@
-import { Component } from 'react';
+import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import DataTable from 'common/ui/Table/DataTable';
 import Amount from 'common/ui/Amount';
 import { getPaymentSplitAmongstItems } from 'merchant/views/PaymentPages/PaymentPages/model';
-import { compose } from 'redux';
 
 const name = { title: 'Item Name', value: (item) => item.name };
 const revenue = {
@@ -18,15 +17,16 @@ const price = {
 };
 const unitsSold = { title: 'Units Sold', value: (item) => item.quantity || '--' };
 
-class PaymentSplitInItems extends Component {
+@withRouter
+@RTracking(() => window.rzpQ.component('PaymentSplitInItems'))
+export default class PaymentSplitInItems extends React.Component {
   state = {
     isLoading: false,
     items: [],
   };
 
   componentDidMount() {
-    if (this.isSectionAllowed()) {
-      // eslint-disable-next-line react/no-did-mount-set-state
+    if (this.isSectionAllowed) {
       this.setState({
         isLoading: true,
       });
@@ -40,8 +40,7 @@ class PaymentSplitInItems extends Component {
     }
   }
 
-  // eslint-disable-next-line consistent-return
-  isSectionAllowed() {
+  get isSectionAllowed() {
     let hash = this.props.location.hash;
 
     if (hash) {
@@ -55,7 +54,7 @@ class PaymentSplitInItems extends Component {
   render() {
     const { isLoading, items } = this.state;
 
-    if (!this.isSectionAllowed()) {
+    if (!this.isSectionAllowed) {
       return null;
     }
 
@@ -74,9 +73,3 @@ class PaymentSplitInItems extends Component {
     );
   }
 }
-
-export default compose(
-  withRouter,
-  // eslint-disable-next-line babel/new-cap
-  RTracking(() => window.rzpQ.component('PaymentSplitInItems')),
-)(PaymentSplitInItems);

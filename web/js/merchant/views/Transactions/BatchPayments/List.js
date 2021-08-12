@@ -1,13 +1,17 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+
 import BatchList from 'merchant/containers/BatchNew/List';
 import BatchPaymentsUpload from 'merchant/views/Transactions/BatchPayments/BatchUpload';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
+
 import { fetchPaymentBatches as fetchAll } from 'merchant/reducers/batches';
-import { bindActionCreators } from 'redux';
 
 const gaEvents = setGaTrack('Dashboard - Payments - BU');
-class BatchListContainer extends Component {
+
+@connect(null, { fetchAll })
+export default class BatchListContainer extends Component {
   renderUploadModal = () => (
     <BatchPaymentsUpload
       gaEvents={gaEvents}
@@ -30,7 +34,3 @@ class BatchListContainer extends Component {
     );
   }
 }
-
-export default connect(null, (dispatch) => bindActionCreators({ fetchAll }, dispatch))(
-  BatchListContainer,
-);

@@ -239,10 +239,10 @@ export default (props) => {
                   <Definition>
                     <Amount value={payment.fee} />
                     <span>
-                      Razorpay Fee - <Amount value={payment.fee - payment.tax} currency="INR" />
+                      Razorpay Fee - <Amount value={payment.fee - payment.tax} currency={'INR'} />
                     </span>
                     <span>
-                      GST - <Amount value={payment.tax} currency="INR" />
+                      GST - <Amount value={payment.tax} currency={'INR'} />
                     </span>
                   </Definition>
                 </EntityDetailRow>

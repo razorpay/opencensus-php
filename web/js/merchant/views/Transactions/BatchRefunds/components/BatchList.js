@@ -1,11 +1,12 @@
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import DataTable from 'common/ui/Table/DataTable';
+import { Link } from 'react-router-dom';
 import HeaderAction from 'common/ui/HeaderAction';
 import { batchId, totalCount, status, createdAt } from 'common/ui/item/pair';
 import {
   batchDownload,
-  cancelBatchRefund as fnCancelBatchRefund,
+  cancelBatchRefund as CancelBatchRefund,
   fetchBatchAjax,
   updateBatchInList,
 } from 'merchant/reducers/batches';
@@ -17,8 +18,9 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 import { titleCase } from 'common/utils/rzp-utils';
+import Spinner from 'common/ui/Spinner';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { getCustomURL } from '../../../../components/DocsLink';
-import { bindActionCreators } from 'redux';
 
 const gaEvents = setGaTrack('Dashboard - Instant Refunds - BU');
 
@@ -30,6 +32,7 @@ const batchName = {
 };
 
 function batchActions({
+  mode,
   viewAll,
   issueAll,
   batchType,
@@ -108,11 +111,11 @@ function handleLinks({ viewAll, issueAll, item, plType, issuableIdList }) {
   return elem;
 }
 
-function cancelBatch({ batch, openModal, closeModal, CancelBatchRefund }) {
+function cancelBatch({ batch, openModal, closeModal, CancelBatchRefund, batchType }) {
   openModal({
     size: 'small',
     component: (
-      <ConnectedCancelConfirmation
+      <CancelConfirmation
         cancelBatchRefund={CancelBatchRefund}
         closeModal={closeModal}
         batch={batch}
@@ -121,9 +124,16 @@ function cancelBatch({ batch, openModal, closeModal, CancelBatchRefund }) {
   });
 }
 
-class BatchList extends Component {
+@connect((state) => ({ session: state.session }), {
+  batchDownload,
+  showNotification,
+  CancelBatchRefund,
+  ...NotificationsActions,
+  ...ModalActions,
+})
+export default class BatchList extends Component {
   dowload = (id) => {
-    const windowRef = window.open('', '_blank');
+    let windowRef = window.open('', '_blank');
     this.props
       .batchDownload(id)
       .then((response) => {
@@ -143,7 +153,7 @@ class BatchList extends Component {
       size: 'large',
       component: (
         <BatchUpload
-          docUrl={getCustomURL('https://razorpay.com/docs/payments/refunds/batch/')}
+          docUrl={getCustomURL("https://razorpay.com/docs/payments/refunds/batch/")}
           sampleUrl={this.props.sampleUrl}
           closeUrl="/refunds/batchuploads"
           ctaText="Create Batch"
@@ -164,28 +174,29 @@ class BatchList extends Component {
   };
 
   render() {
-    const {
-      mode,
-      docUrl,
-      count,
-      skip,
-      paginate,
-      onSubmit,
-      CancelBatchRefund,
-      viewAll,
-      issueAll,
-      issuableIdList,
-      showBatchName,
-      session,
-      batchType,
-      openModal,
-      sampleUrl,
-      closeModal,
-    } = this.props;
-    const { user } = session;
-    const handleDownloadClick = this.dowload;
-    const items = this.props.items;
-
+    let {
+        mode,
+        docUrl,
+        count,
+        skip,
+        paginate,
+        onSubmit,
+        uploadUrl,
+        CancelBatchRefund,
+        fetchBatchAjax,
+        viewAll,
+        issueAll,
+        issuableIdList,
+        showBatchName,
+        session,
+        batchType,
+        openModal,
+        sampleUrl,
+        closeModal,
+      } = this.props,
+      { user } = session;
+    let handleDownloadClick = this.dowload;
+    let items = this.props.items;
     return (
       <div class="content-wrapper">
         <HeaderAction>
@@ -200,10 +211,10 @@ class BatchList extends Component {
               </a>
             )}
             <ShowWhen
-              additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}
+              additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
             >
               {docUrl && (
-                <a class="btn btn-link" href={docUrl} target="_blank" rel="noopener noreferrer">
+                <a class="btn btn-link" href={docUrl} target="_blank">
                   Documentation &nbsp;
                   <i class="i i-external-link" />
                 </a>
@@ -211,9 +222,11 @@ class BatchList extends Component {
             </ShowWhen>
 
             {(session.mode !== 'live' || !user.isRejected) && (
-              <button class="btn btn-primary pull-right" onClick={this.openBatchUploadModal}>
-                Click here to upload
-              </button>
+              <Fragment>
+                <button class="btn btn-primary pull-right" onClick={this.openBatchUploadModal}>
+                  Click here to upload
+                </button>
+              </Fragment>
             )}
           </div>
         </HeaderAction>
@@ -236,6 +249,7 @@ class BatchList extends Component {
               issuableIdList,
               openModal,
               CancelBatchRefund,
+              fetchBatchAjax,
               closeModal,
             }),
           ]}
@@ -250,20 +264,9 @@ class BatchList extends Component {
   }
 }
 
-export default connect(
-  (state) => ({ session: state.session }),
-  (dispatch) =>
-    bindActionCreators(
-      {
-        batchDownload,
-        CancelBatchRefund: fnCancelBatchRefund,
-        ...NotificationsActions,
-        ...ModalActions,
-      },
-      dispatch,
-    ),
-)(BatchList);
-
+@connect((state) => null, {
+  ...NotificationsActions,
+})
 class CancelConfirmation extends Component {
   state = {
     loading: false,
@@ -278,7 +281,7 @@ class CancelConfirmation extends Component {
     fetchBatchAjax(this.props.batch.id).then((r) => {
       const batch = r.batch;
       if (batch.status == 'created') {
-        return this.props.cancelBatchRefund(this.props.batch.id).then(() => {
+        return this.props.cancelBatchRefund(this.props.batch.id).then((e) => {
           this.setState({ loading: false });
           this.props.closeModal();
           this.props.showNotification({
@@ -303,12 +306,10 @@ class CancelConfirmation extends Component {
         if (message) {
           this.props.showNotification({
             type: 'error',
-            message,
+            message: message,
           });
         }
       }
-
-      return true;
     });
   };
   render() {
@@ -320,7 +321,7 @@ class CancelConfirmation extends Component {
         </div> */}
         <div class="content">
           <button class="btn btn-default" onClick={this.props.closeModal}>
-            No don't
+            No, don't
           </button>
           <button disabled={this.state.loading} onClick={this.cancel} class="btn btn-primary">
             {this.state.loading ? <span>Please Wait..</span> : <span>Yes, cancel</span>}
@@ -330,7 +331,3 @@ class CancelConfirmation extends Component {
     );
   }
 }
-
-const ConnectedCancelConfirmation = connect(null, (dispatch) =>
-  bindActionCreators({ ...NotificationsActions }, dispatch),
-)(CancelConfirmation);

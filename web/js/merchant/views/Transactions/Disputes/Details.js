@@ -2,10 +2,7 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import * as DisputeActions from 'merchant/reducers/disputes/details';
-import {
-  openModal as fnOpenModal,
-  closeModal as fnCloseModal,
-} from 'merchant_common/reducers/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import DisputeDetails from 'merchant/views/Transactions/Disputes/components/Details';
 import PaymentDetails from 'merchant/views/Transactions/Payments/Details';
@@ -43,8 +40,8 @@ class DisputeDetailsContainer extends Component {
   };
 
   secClose = (close) => {
-    const { history, location } = this.props;
-    history.push(location.pathname.replace(!close ? /\/[^/]+\/[^/]+\/?$/ : /\/[^/]+\/?$/, ''));
+    let { history, location } = this.props;
+    history.push(location.pathname.replace(!close ? /\/[^\/]+\/[^\/]+\/?$/ : /\/[^\/]+\/?$/, ''));
   };
 
   render() {
@@ -86,12 +83,6 @@ export default compose(
       disputes: state.disputes.items,
       ...state.dispute,
     }),
-    {
-      ...DisputeActions,
-      openModal: fnOpenModal,
-      closeModal: fnCloseModal,
-      compactSlider,
-      expandSlider,
-    },
+    { ...DisputeActions, openModal, closeModal, compactSlider, expandSlider },
   ),
 )(DisputeDetailsContainer);

@@ -1,4 +1,4 @@
-import { Component, Fragment } from 'react';
+import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
@@ -7,15 +7,13 @@ import AutoResizeTextarea from 'common/ui/Forms/AutoResizeTextarea';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import InputField from 'common/ui/Forms/InputField';
 import ModalHeader from 'common/ui/ModalHeader';
-import Amount, { AmountTooltip } from 'common/ui/Amount';
-import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+import Input from 'common/new-ui/Input';
+import { AmountTooltip } from 'common/ui/Amount';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import Amount from 'common/ui/Amount';
+import { Fragment } from 'react';
 import moment from 'moment';
-import {
-  rupeesToPaise,
-  paiseToRupees,
-  titleCase,
-  getCommonAnalyticsProperties,
-} from 'common/utils/rzp-utils';
+import { isBlank, rupeesToPaise, paiseToRupees, titleCase } from 'common/utils/rzp-utils';
 import {
   refundPayment,
   fetchItem as fetchPayment,
@@ -25,11 +23,11 @@ import {
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
-import { compose, bindActionCreators } from 'redux';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export const isPartialPayment = (props) => {
-  const refundableAmount = props.payment.amount - props.payment.amount_refunded;
-  const amountEntered = rupeesToPaise(props.payable_amount);
+  const refundableAmount = props.payment.amount - props.payment.amount_refunded,
+    amountEntered = rupeesToPaise(props.payable_amount);
 
   return amountEntered < refundableAmount;
 };
@@ -60,8 +58,6 @@ export const amountValidation = (props) => {
       ` Amount (${paiseToRupees(refundableAmount)}).`
     );
   }
-
-  return '';
 };
 
 export const RefundType = ({ partial, isTitleCase = false }) => {
@@ -75,16 +71,43 @@ export const RefundType = ({ partial, isTitleCase = false }) => {
 };
 
 const selector = formValueSelector('refundModal');
-
-class RefundModal extends Component {
+@connect(
+  (state) => {
+    let partial = selector(state, 'partial');
+    let reverse_all = selector(state, 'reverse_all');
+    let payable_amount = selector(state, 'amount');
+    return {
+      ...state.session,
+      ...state.payment,
+      user: state.session.user,
+      transfers: state.payment.transfers,
+      default_refund_speed: state.config.config.default_refund_speed,
+      partial,
+      payable_amount,
+    };
+  },
+  {
+    closeModal,
+    refundPayment,
+    fetchPayment,
+    fetchRefunds,
+    fetchTransfers,
+    ...NotificationsActions,
+  },
+)
+@reduxForm({
+  form: 'refundModal',
+})
+export default class RefundModal extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
   instant_refund = false;
-  constructor(props) {
-    super(props);
+  constructor() {
+    super(...arguments);
     this.state = {
       focussed: false,
+      errors: null,
       reversal: null,
       instantChecked:
         (!showWhenUtil({ featureEnabled: 'disable_instant_refunds' }) &&
@@ -120,7 +143,7 @@ class RefundModal extends Component {
   }
 
   componentWillMount() {
-    const payment = this.props.payment;
+    let payment = this.props.payment;
 
     if (this.props.user.isMarketplaceEnabled) {
       this.props.fetchTransfers(payment);
@@ -129,7 +152,7 @@ class RefundModal extends Component {
     this.props.initialize({
       comment: '',
       partial: false,
-      amount: `${(payment.amount - payment.amount_refunded) / 100} `,
+      amount: (payment.amount - payment.amount_refunded) / 100 + '',
       reverse_all: false,
     });
   }
@@ -147,10 +170,8 @@ class RefundModal extends Component {
       });
     }
 
-    if (this.props.onMount) this.props.onMount(this.props.payment);
-
+    this.props.onMount && this.props.onMount(this.props.payment);
     this.props.fetchMerchantBalance();
-
     if (!this.hasEnoughFunds()) {
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Instant Refund',
@@ -188,12 +209,12 @@ class RefundModal extends Component {
   }
 
   componentWillUnmount() {
-    if (this.props.onUnmount) this.props.onUnmount(this.props.payment);
+    this.props.onUnmount && this.props.onUnmount(this.props.payment);
   }
 
   refund(speedValue, props, partial) {
-    const payment = this.props.payment;
-    const data = {
+    let payment = this.props.payment;
+    let data = {
       amount: rupeesToPaise(props.amount),
       comment: props.comment,
       reverse_all: props.reverse_all ? '1' : '0',
@@ -264,17 +285,17 @@ class RefundModal extends Component {
           this.props.onRefund();
         }
 
-        if (this.props.afterRefund)
+        this.props.afterRefund &&
           this.props.afterRefund({
             amount: data.amount,
-            partial,
+            partial: partial,
             payment: this.props.payment,
           });
 
         this.props.closeModal();
       })
       .catch(({ errors }) => {
-        if (errors)
+        errors &&
           this.props.showNotification({
             type: 'error',
             message: errors,
@@ -284,8 +305,8 @@ class RefundModal extends Component {
   }
 
   save = (props) => {
-    const partial = isPartialPayment(this.props);
-    const hasAmountErrors = amountValidation(this.props);
+    const partial = isPartialPayment(this.props),
+      hasAmountErrors = amountValidation(this.props);
 
     if (hasAmountErrors) {
       return;
@@ -293,7 +314,7 @@ class RefundModal extends Component {
 
     // For partial refund, if reverse all is checked, we cannot reverse when there is more than 1 transfer on the payment.
     if (partial && props.reverse_all && this.props.transfers.items.length > 1) {
-      const errorMsg = `Reversals can't be automated when partially refunding a payment with more than 1 transfer to different linked accounts. Create reversals manually before attempting the refund.`;
+      var errorMsg = `Reversals can't be automated when partially refunding a payment with more than 1 transfer to different linked accounts. Create reversals manually before attempting the refund.`;
 
       this.props.showNotification({
         type: 'error',
@@ -316,24 +337,22 @@ class RefundModal extends Component {
           .confirm({
             header: 'Do you want to refund this payment?',
             message: () => (
-              <div class="confirm-note">
-                The payment will be instantly refunded &nbsp;
-                <span>
-                  <i class="i i-help" />
-                  <PopoverComponent
-                    theme="dark"
-                    align="bottom"
-                    parentQuerySelector=".Modal--confirm"
-                  >
-                    <PopoverBody>
-                      <div>
-                        If the instant refund is unsuccessful, the fee will be reversed. The payment
-                        will still be refunded in 5-7 days.
-                      </div>
-                    </PopoverBody>
-                  </PopoverComponent>
-                </span>
-              </div>
+              <React.Fragment>
+                <div class="confirm-note">
+                  The payment will be instantly refunded &nbsp;
+                  <span>
+                    <i class="i i-help" />
+                    <Popover theme="dark" align="bottom" parentQuerySelector={`.Modal--confirm`}>
+                      <PopoverBody>
+                        <div>
+                          If the instant refund is unsuccessful, the fee will be reversed. The
+                          payment will still be refunded in 5-7 days.
+                        </div>
+                      </PopoverBody>
+                    </Popover>
+                  </span>
+                </div>
+              </React.Fragment>
             ),
             affirmativeLabel: 'Yes, Refund',
             affirmativePendingLabel: 'Refunding...',
@@ -399,11 +418,11 @@ class RefundModal extends Component {
     // if this flag is true and they opt for normal refund, we skip balance check validations
     if (payment.direct_settlement_refund && this.state.instantChecked === false) return true;
 
-    const merchant = user.merchants[user.current] || {};
-    const isBalanceSource = merchant.refund_source === 'balance';
+    let merchant = user.merchants[user.current] || {};
+    let isBalanceSource = merchant.refund_source === 'balance';
 
-    const amount = rupeesToPaise(payable_amount);
-    const balance = isBalanceSource ? data.balance : data.refund_credits;
+    let amount = rupeesToPaise(payable_amount);
+    let balance = isBalanceSource ? data.balance : data.refund_credits;
 
     if (this.props.current_balance.loading === true) {
       return true;
@@ -426,8 +445,6 @@ class RefundModal extends Component {
     } else if (this.props.current_balance.loading === true || Val === false) {
       return 'checkbox';
     }
-
-    return '';
   };
 
   showInstantRefund = (payment, isInstantDisabled) => {
@@ -440,11 +457,11 @@ class RefundModal extends Component {
         <div>
           <div
             style={{ marginTop: '20px' }}
-            class={`${this.getInstantRefundClassNames(
-              refund_check_disabled,
-            )} instant-refund-check ${
-              this.state.instantChecked && !refund_check_disabled ? 'focussed' : ''
-            }`}
+            class={
+              this.getInstantRefundClassNames(refund_check_disabled) +
+              ' instant-refund-check' +
+              (this.state.instantChecked && !refund_check_disabled ? ' focussed' : '')
+            }
           >
             <div class="row">
               <div class="col-xs-8">
@@ -475,11 +492,7 @@ class RefundModal extends Component {
                             this.analytics.hovered = true;
                           }}
                         />
-                        <PopoverComponent
-                          theme="dark"
-                          align="bottom"
-                          parentQuerySelector=".Modal--small"
-                        >
+                        <Popover theme="dark" align="bottom" parentQuerySelector={`.Modal--small`}>
                           <PopoverBody>
                             You can refund this payment instantly for a small fee of{' '}
                             <Amount
@@ -488,7 +501,7 @@ class RefundModal extends Component {
                             />{' '}
                             (Plus Taxes){' '}
                           </PopoverBody>
-                        </PopoverComponent>
+                        </Popover>
                       </Fragment>
                     ) : null}
                   </span>
@@ -496,7 +509,7 @@ class RefundModal extends Component {
                   !refund_check_disabled && (
                     <Fragment>
                       <Amount
-                        parentQuerySelector=".Modal--small"
+                        parentQuerySelector={`.Modal--small`}
                         value={this.state.instant_fee.fee}
                         currency={payment.currency}
                       />{' '}
@@ -519,7 +532,7 @@ class RefundModal extends Component {
                     Your account does not have sufficient balance to instantly refund this payment.
                     &nbsp;{' '}
                     <span>
-                      <Link to="/addfunds" target="_blank">
+                      <Link to={'/addfunds'} target="_blank">
                         Add Funds &nbsp; <i class="i i-external-link" />
                       </Link>
                     </span>
@@ -534,8 +547,6 @@ class RefundModal extends Component {
                   </div>
                 );
               }
-
-              return null;
             })()
           ) : null}
           {this.state.instantChecked &&
@@ -546,81 +557,80 @@ class RefundModal extends Component {
                 <div>
                   A total amount of &nbsp;
                   <Amount
-                    parentQuerySelector=".Modal--small"
+                    parentQuerySelector={`.Modal--small`}
                     value={rupeesToPaise(this.props.payable_amount) + this.state.instant_fee.fee}
                     currency={payment.currency}
                   />
                   &nbsp; will be deducted
-                  <div style={{ display: 'inline', marginLeft: '5px' }}>
-                    <i
-                      onMouseEnter={() => {
-                        this.analytics.hover_breakup = true;
-                      }}
-                      class="i i-info-circle"
-                    />
-                    <PopoverComponent
-                      theme="dark"
-                      align="bottom"
-                      parentQuerySelector=".Modal--small"
-                    >
-                      <PopoverBody>
-                        <div class="instant-breakup">
-                          <div class="flex">
-                            <div class="w50 text-left">Refund Amount</div>
-                            <div class="w50 text-right">
-                              <Amount
-                                value={rupeesToPaise(this.props.payable_amount)}
-                                currency={payment.currency}
-                              />
-                            </div>
-                          </div>
-                          <div class="flex">
-                            <div class="w50 text-left">Instant Refund Fees</div>
-                            <div class="w50 text-right">
-                              +{' '}
-                              <Amount
-                                value={this.state.instant_fee.fee - this.state.instant_fee.tax}
-                                currency={payment.currency}
-                              />
-                            </div>
-                          </div>
-                          <div class="flex">
-                            <div class="w50 text-left">Taxes</div>
-                            <div class="w50 text-right">
-                              +
-                              <Amount
-                                value={this.state.instant_fee.tax}
-                                currency={payment.currency}
-                              />
-                            </div>
-                          </div>
-                          <hr
-                            style={{
-                              margin: '5px 0px',
-                              opacity: 0.6,
-                            }}
-                          />
-                          <div class="flex">
-                            <div style={{ flex: '1 1 auto' }} class="text-left">
-                              <b>Amount to be deducted</b>
-                            </div>
-                            <div style={{ flex: '1 1 auto' }} class="text-right">
-                              <b>
-                                {' '}
+                  <React.Fragment>
+                    <div style={{ display: 'inline', marginLeft: '5px' }}>
+                      <i
+                        onMouseEnter={() => {
+                          this.analytics.hover_breakup = true;
+                        }}
+                        class="i i-info-circle"
+                      />
+                      <Popover theme="dark" align="bottom" parentQuerySelector={`.Modal--small`}>
+                        <PopoverBody>
+                          <div class="instant-breakup">
+                            <div class="flex">
+                              <div class="w50 text-left">Refund Amount</div>
+                              <div class="w50 text-right">
                                 <Amount
-                                  value={
-                                    this.state.instant_fee.fee +
-                                    rupeesToPaise(this.props.payable_amount)
-                                  }
+                                  value={rupeesToPaise(this.props.payable_amount)}
                                   currency={payment.currency}
                                 />
-                              </b>
+                              </div>
+                            </div>
+                            <div class="flex">
+                              <div class="w50 text-left">Instant Refund Fees</div>
+                              <div class="w50 text-right">
+                                +{' '}
+                                <Amount
+                                  value={this.state.instant_fee.fee - this.state.instant_fee.tax}
+                                  currency={payment.currency}
+                                />
+                              </div>
+                            </div>
+                            <div class="flex">
+                              <div class="w50 text-left">Taxes</div>
+                              <div class="w50 text-right">
+                                +
+                                <Amount
+                                  value={this.state.instant_fee.tax}
+                                  currency={payment.currency}
+                                />
+                              </div>
+                            </div>
+                            <hr
+                              style={{
+                                margin: 0,
+                                margin: '5px 0px',
+                                opacity: 0.6,
+                              }}
+                            />
+                            <div class="flex">
+                              <div style={{ flex: '1 1 auto' }} class="text-left">
+                                <b>Amount to be deducted</b>
+                              </div>
+                              <div style={{ flex: '1 1 auto' }} class="text-right">
+                                <b>
+                                  {' '}
+                                  <Amount
+                                    value={
+                                      this.state.instant_fee.fee +
+                                      rupeesToPaise(this.props.payable_amount)
+                                    }
+                                    currency={payment.currency}
+                                  />
+                                </b>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </PopoverBody>
-                    </PopoverComponent>
-                  </div>
+                        </PopoverBody>
+                      </Popover>
+                    </div>
+                  </React.Fragment>
                 </div>
               </div>
             </div>
@@ -648,7 +658,7 @@ class RefundModal extends Component {
     this.setState({ instantChecked: e.target.checked });
   };
 
-  onInstantRefundTooltipHover = () => {
+  onInstantRefundTooltipHover = (e) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Payments',
       eventAction: 'Hover - Instant Refund Tooltip',
@@ -658,11 +668,11 @@ class RefundModal extends Component {
 
   isPaymentOlderThanSixMonths = () => {
     // created_at is in epoch time
-    const { created_at } = this.props.payment;
+    let { created_at } = this.props.payment;
 
     // convert both to moment objs
-    const createdAt = moment.unix(created_at);
-    const today = moment(new Date());
+    let createdAt = moment.unix(created_at);
+    let today = moment(new Date());
 
     const monthDiff = today.diff(createdAt, 'months');
 
@@ -682,7 +692,7 @@ class RefundModal extends Component {
   shouldDisableRefundIfUnchecked = () => {
     if (!this.state.instantChecked && this.props.payment.gateway_refund_support === false)
       return true;
-    else return false;
+    else false;
   };
 
   handleHoverIn = (_) => this.setState({ highlightNote: true });
@@ -697,21 +707,21 @@ class RefundModal extends Component {
   };
 
   render() {
-    const { handleSubmit, payment, transfers } = this.props;
-    const {
+    const { handleSubmit, payment, transfers, refunds } = this.props;
+    let {
       gateway_refund_support,
       payment_age_limit_for_gateway_refund,
       instant_refund_support,
     } = payment;
 
-    const amountError = amountValidation(this.props);
-    const partial = isPartialPayment(this.props);
+    const amountError = amountValidation(this.props),
+      partial = isPartialPayment(this.props);
 
     const nonFraudDisputeCount =
       payment.disputes &&
       payment.disputes.items.filter((dispute) => dispute.phase !== 'fraud').length;
 
-    const isInstantDisabled = !this.hasEnoughFunds();
+    let isInstantDisabled = !this.hasEnoughFunds();
     const { highlightNote } = this.state;
 
     return (
@@ -778,11 +788,11 @@ class RefundModal extends Component {
                   <Field
                     name="amount"
                     component={InputField}
-                    onFocus={() => {
+                    onFocus={(e) => {
                       const focussed = this.state.focussed;
                       this.setState({ focussed: !focussed });
                     }}
-                    onBlur={() => {
+                    onBlur={(e) => {
                       const focussed = this.state.focussed;
                       this.setState({ focussed: !focussed });
                     }}
@@ -808,7 +818,7 @@ class RefundModal extends Component {
                 <div class="row">
                   <div class="col-xs-12">
                     <div
-                      class={`instant-refund-check ${this.state.reversal ? 'focussed' : ''}`}
+                      class={'instant-refund-check' + (this.state.reversal ? ' focussed' : '')}
                       style={{ marginBottom: '0', marginTop: '0' }}
                     >
                       <div
@@ -828,7 +838,6 @@ class RefundModal extends Component {
                           <a
                             href="https://razorpay.com/docs/route/operations/#reversals"
                             target="_blank"
-                            rel="noopener noreferrer"
                           >
                             Route Transfers
                           </a>{' '}
@@ -886,37 +895,3 @@ class RefundModal extends Component {
     );
   }
 }
-
-const mapStateToProps = (state) => {
-  const partial = selector(state, 'partial');
-  const payable_amount = selector(state, 'amount');
-  return {
-    ...state.session,
-    ...state.payment,
-    user: state.session.user,
-    transfers: state.payment.transfers,
-    default_refund_speed: state.config.config.default_refund_speed,
-    partial,
-    payable_amount,
-  };
-};
-
-const mapDispatchToProps = (dispatch) =>
-  bindActionCreators(
-    {
-      closeModal,
-      refundPayment,
-      fetchPayment,
-      fetchRefunds,
-      fetchTransfers,
-      ...NotificationsActions,
-    },
-    dispatch,
-  );
-
-export default compose(
-  reduxForm({
-    form: 'refundModal',
-  }),
-  connect(mapStateToProps, mapDispatchToProps),
-)(RefundModal);

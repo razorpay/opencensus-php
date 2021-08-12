@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+
 import ValidateModal from 'merchant/components/BatchNew/ValidateModal';
 import CreateModal from 'merchant/components/BatchNew/CreateModal';
 import SuccessModal from 'merchant/components/BatchNew/SuccessModal';
@@ -10,7 +11,6 @@ import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { createPaymentsBatch as createBatch } from 'merchant/reducers/batches';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { bindActionCreators } from 'redux';
 
 const hostToIframeHost = {
   'dashboard.razorpay.in': 'http://api.razorpay.in',
@@ -20,14 +20,15 @@ const hostToIframeHost = {
 
 const iframeHost = hostToIframeHost[location.hostname];
 
-class BatchUploadContainer extends Component {
+@withRouter
+@connect(null, { closeModal, createBatch, showNotification })
+export default class BatchUploadContainer extends Component {
   state = {
     fileUploadProgress: 0,
     mode: 'loading',
   };
 
   onWindowEvent = ({ data: message }) => {
-    // eslint-disable-next-line no-restricted-globals
     if (event.origin !== iframeHost) return;
 
     switch (message.event) {
@@ -40,22 +41,18 @@ class BatchUploadContainer extends Component {
           files: [message.data],
         });
         break;
-      case 'progress': {
+      case 'progress':
         const fileUploadProgress = message.data.loaded;
         this.setState({ fileUploadProgress });
         break;
-      }
-
-      case 'file_uploaded': {
+      case 'file_uploaded':
         const { parsed_entries: parsedEntries, file_id: id } = message.data;
-        const file = this.state.files[0];
         this.setState({
           mode: 'create',
-          files: [{ ...file, id }],
+          files: [{ ...this.state.files[0], id }],
           parsedEntries,
         });
         break;
-      }
       case 'error':
         this.setState({
           fileUploadProgress: 0,
@@ -150,7 +147,7 @@ class BatchUploadContainer extends Component {
           </div>
         );
 
-      case 'create': {
+      case 'create':
         const initialValues = {
           name: this.state.files[0].name,
         };
@@ -165,8 +162,6 @@ class BatchUploadContainer extends Component {
             />
           </div>
         );
-      }
-
       case 'success':
         return (
           <div class="batch-upload-modal success">
@@ -184,15 +179,8 @@ class BatchUploadContainer extends Component {
             </SuccessModal>
           </div>
         );
-
       default:
         return null;
     }
   }
 }
-
-export default withRouter(
-  connect(null, (dispatch) =>
-    bindActionCreators({ closeModal, createBatch, showNotification }, dispatch),
-  )(BatchUploadContainer),
-);

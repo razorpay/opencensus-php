@@ -1,16 +1,14 @@
-import { Component } from 'react';
 import { connect } from 'react-redux';
 import { handleProductQuickGuide } from 'merchant/reducers/onboarding';
-import { bindActionCreators } from 'redux';
-import PropTypes from 'prop-types';
 
-class TakeATourButton extends Component {
+@connect(null, { handleProductQuickGuide })
+export default class TakeATourButton extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
 
   onClick = () => {
-    if (this.props.onClick) this.props.onClick();
+    this.props.onClick && this.props.onClick();
 
     this.context.confirm({
       header: 'Restart the Tour?',
@@ -30,10 +28,10 @@ class TakeATourButton extends Component {
           eventAction: `Need help? Take a Tour CTA `,
         });
 
-        if (this.props.onSuccess) this.props.onSuccess();
+        this.props.onSuccess && this.props.onSuccess();
       },
       abort: () => {
-        if (this.props.onAbort) this.props.onAbort();
+        this.props.onAbort && this.props.onAbort();
       },
     });
   };
@@ -47,7 +45,3 @@ class TakeATourButton extends Component {
     );
   }
 }
-
-export default connect(null, (dispatch) =>
-  bindActionCreators({ handleProductQuickGuide }, dispatch),
-)(TakeATourButton);

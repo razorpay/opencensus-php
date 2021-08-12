@@ -1,10 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
+
 import DisputeListFilter from 'merchant/views/Transactions/Disputes/components/DisputeListFilter';
 import { fetchDisputes as fetchAll } from 'merchant/reducers/collection';
 import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';
-import { titleCase, daysFromToday, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { titleCase, daysFromToday } from 'common/utils/rzp-utils';
 import { getTime } from 'common/ui/item';
 import ListContainer from 'merchant/containers/ListContainer';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -16,8 +17,8 @@ import {
   createdAt as createdAtProperty,
 } from 'common/ui/item/pair';
 import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getCustomURL } from '../../../components/DocsLink';
-import { bindActionCreators } from 'redux';
 
 const daysLeftInExpiry = (expiresOn) => {
   const daysLeft = daysFromToday(expiresOn);
@@ -42,11 +43,20 @@ const respondIn = {
   value: (item) => (item.status === 'open' ? daysLeftInExpiry(item.respond_by) : '--'),
 };
 
+const resolvedOn = {
+  title: 'Resolved On',
+  value: getTime('resolved_on'),
+};
+
 const createdAt = {
   title: createdAtProperty.title,
   value: getTime('created_at', 'll'),
 };
-class Dispute extends ListContainer {
+
+@connect((state) => ({ mode: state.session.mode, ...state.disputes }), {
+  fetchAll,
+})
+export default class Dispute extends ListContainer {
   render() {
     return (
       <div class="content-wrapper">
@@ -58,7 +68,6 @@ class Dispute extends ListContainer {
               class="btn btn-link"
               href={getCustomURL('https://razorpay.com/docs/payments/disputes/')}
               target="_blank"
-              rel="noopener noreferrer"
             >
               Guide to Dispute
             </a>
@@ -107,11 +116,3 @@ class Dispute extends ListContainer {
     );
   }
 }
-
-const mapStateToProps = (state) => {
-  return { mode: state.session.mode, ...state.disputes };
-};
-
-export default connect(mapStateToProps, (dispatch) => bindActionCreators({ fetchAll }, dispatch))(
-  Dispute,
-);

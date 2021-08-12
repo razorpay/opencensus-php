@@ -1,14 +1,17 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+
 import BatchUpload from './components/BatchUpload';
 import { getCustomURL } from '../../../components/DocsLink';
+
 import { uploadRefundBatch as uploadBatch } from 'merchant/reducers/batches';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { SAMPLE_BATCH_REFUND_FILE } from './List';
-import { bindActionCreators } from 'redux';
 
-class BatchUploadContainer extends Component {
+@withRouter
+@connect((state) => state.session, { uploadBatch, showNotification })
+export default class BatchUploadContainer extends Component {
   render() {
     return (
       <BatchUpload
@@ -23,10 +26,3 @@ class BatchUploadContainer extends Component {
     );
   }
 }
-
-export default withRouter(
-  connect(
-    (state) => state.session,
-    (dispatch) => bindActionCreators({ uploadBatch, showNotification }, dispatch),
-  )(BatchUploadContainer),
-);

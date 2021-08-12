@@ -1,20 +1,18 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { Field } from 'redux-form';
 import RTracking from 'react-tracking';
 import moment from 'moment';
-import { compose, bindActionCreators } from 'redux';
+
 import { showNotification } from 'merchant_common/reducers/notifications';
+
 import BatchCreateModal from 'merchant/components/BatchNew/CreateModal';
 
 const oneHour = 3600 * 1000; //1 hour in milliseconds
 
-const batchFormDefaults = {
-  processing: 'immediate',
-  scheduleDate: moment().add(1, 'days'),
-  scheduleTime: moment(),
-};
-
-class BatchCreate extends Component {
+@connect((state) => state.session, { showNotification })
+@RTracking(() => window.rzpQ.component('BatchCreate'))
+export default class BatchCreate extends Component {
   formInitialValues = {
     name: this.props.batchName,
   };
@@ -114,11 +112,8 @@ class BatchCreate extends Component {
   }
 }
 
-export default compose(
-  connect(
-    (state) => state.session,
-    (dispatch) => bindActionCreators({ showNotification }, dispatch),
-  ),
-  // eslint-disable-next-line babel/new-cap
-  RTracking(() => window.rzpQ.component('BatchCreate')),
-)(BatchCreate);
+const batchFormDefaults = {
+  processing: 'immediate',
+  scheduleDate: moment().add(1, 'days'),
+  scheduleTime: moment(),
+};

@@ -3,9 +3,9 @@ import { connect } from 'react-redux';
 import RefundDetails from 'merchant/views/Transactions/Refunds/components/RefundDetails';
 import * as RefundActions from 'merchant/reducers/refunds/details';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
-import { bindActionCreators } from 'redux';
 
-class RefundDetailsContainer extends Component {
+@connect(state => state.refund, RefundActions)
+export default class RefundDetailsContainer extends Component {
   componentWillMount() {
     this.props.fetchItem(this.props.id);
   }
@@ -27,12 +27,11 @@ class RefundDetailsContainer extends Component {
   }
 
   componentWillUnmount() {
-    const { closeUrl, id } = this.props;
-    const eventCategory = getEventCategoryFromPath(closeUrl);
-
-    if (eventCategory)
+    const { closeUrl, id } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
       window.rzpAnalytics({
-        eventCategory,
+        eventCategory: eventCategory,
         eventAction: 'Close Details - Refunds',
         eventLabel: `refund_id=${id}`,
       });
@@ -48,7 +47,7 @@ class RefundDetailsContainer extends Component {
   };
 
   render() {
-    const { loading, error, refund } = this.props;
+    let { loading, error, refund, payments } = this.props;
     let statusMsg = {};
 
     if (error) {
@@ -68,8 +67,3 @@ class RefundDetailsContainer extends Component {
     );
   }
 }
-
-export default connect(
-  (state) => state.refund,
-  (dispatch) => bindActionCreators(RefundActions, dispatch),
-)(RefundDetailsContainer);

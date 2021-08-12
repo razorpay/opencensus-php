@@ -1,17 +1,15 @@
 import React from 'react';
+
 import Amount from 'common/ui/Amount';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import Definition from 'common/ui/Definition';
 import DataTable from 'common/ui/Table/DataTable';
 import LoaderDots from 'common/ui/LoaderDots';
-import {
-  refundId,
-  amount,
-  refundSpeed,
-  refundStatus as refundStatusPair,
-} from 'common/ui/item/pair';
-import ShowWhen from 'merchant/components/ShowWhen';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import { refundId, amount, createdAt, refundSpeed, refundStatus } from 'common/ui/item/pair';
+import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 /*
  * Design:
@@ -24,11 +22,13 @@ import { analyticsTrack } from 'common/utils/analytics';
  * will display refund status and actions
  */
 
+const createdAtWithStyle = { columnClass: 'text-right', ...createdAt };
+
 const NumRefunds = ({ refunds, titleCase = false }) => {
   const refundItems = refunds.items || [];
 
-  const numRefunds = refundItems.length;
-  const refundSuffix = numRefunds === 0 || numRefunds > 1 ? 's' : '';
+  const numRefunds = refundItems.length,
+    refundSuffix = numRefunds === 0 || numRefunds > 1 ? 's' : '';
 
   return (
     <span>
@@ -40,7 +40,7 @@ const NumRefunds = ({ refunds, titleCase = false }) => {
 const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
   const columns = [refundId, amount];
   columns.splice(1, 0, refundSpeed);
-  columns.push(refundStatusPair);
+  columns.push(refundStatus);
 
   return refunds && refunds?.items?.length > 0 ? (
     <ContentToggler
@@ -66,10 +66,10 @@ const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
 };
 
 export default ({ payment, refunds, openRefundModal, onToggleClick = () => {} }) => {
-  const paymentStatus = payment.status;
-  const refundStatus = payment.refund_status;
-  const refundAmount = payment.amount_refunded;
-  const currency = payment.currency;
+  const paymentStatus = payment.status,
+    refundStatus = payment.refund_status,
+    refundAmount = payment.amount_refunded,
+    currency = payment.currency;
 
   if (['created', 'authorized', 'failed'].indexOf(paymentStatus) >= 0) {
     return (

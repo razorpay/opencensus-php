@@ -1,3 +1,4 @@
+import AsyncButton from 'react-async-button';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
@@ -8,31 +9,26 @@ import { OrderStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { paymentId, amount, status, createdAt } from 'common/ui/item/pair';
 import Definition from 'common/ui/Definition';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
 export default (props) => {
-  const { order, payments, isLoading, statusMsg } = props;
-
+  let { order, payments, isLoading, statusMsg } = props;
   useEffect(() => {
-    const properties = {
-      orderId: order.id,
-      orderAmount: order.amount,
-      orderCurrency: order.currency,
-      orderStatus: order.status,
-      createdAt: order.created_at,
-      ...getCommonAnalyticsProperties(window.rzp_user),
-    };
-
     analyticsTrack({
       objectName: 'order details',
       actionName: 'fetched',
       screen: 'transactions',
-      properties,
+      properties: {
+        orderId: order.id,
+        orderAmount: order.amount,
+        orderCurrency: order.currency,
+        orderStatus: order.status,
+        createdAt: order.created_at,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
     });
   }, []);
-
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (

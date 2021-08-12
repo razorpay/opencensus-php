@@ -7,9 +7,9 @@ import { titleCase } from 'common/utils/rzp-utils';
 import ProceedModal from './ProceedModal';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { bindActionCreators } from 'redux';
 
-class BatchUpload extends Component {
+@connect(state => state.session, ModalActions)
+export default class BatchUpload extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -18,7 +18,7 @@ class BatchUpload extends Component {
     file: null,
   };
 
-  handleChange = (event) => {
+  handleChange = event => {
     this.setState({ file: event.target.files[0] });
   };
 
@@ -52,7 +52,11 @@ class BatchUpload extends Component {
       component: (
         <ProceedModal
           closeUrl={this.props.closeUrl}
-          submitUploadBatch={this.props.uploadBatch.bind(null, this.state.file, this.props.mode)}
+          submitUploadBatch={this.props.uploadBatch.bind(
+            null,
+            this.state.file,
+            this.props.mode
+          )}
         />
       ),
     });
@@ -63,12 +67,15 @@ class BatchUpload extends Component {
       <div class="content-wrapper content-sm upload-container">
         <div class="panel panel-default">
           <div class="panel-heading">
-            {titleCase(this.props.title)} File Upload - {this.props.modeFormatted} Mode
+            {titleCase(this.props.title)} File Upload -{' '}
+            {this.props.modeFormatted} Mode
             <small class="pull-right">
               <ShowWhen
-                additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
+                additionalCondition={user =>
+                  user.isOrgAllowedFunctionality('external_links')
+                }
               >
-                <a href={this.props.docUrl} target="_blank" rel="noopener noreferrer">
+                <a href={this.props.docUrl} target="_blank">
                   DOCUMENTATION &nbsp;
                   <i class="i i-external-link" />
                 </a>
@@ -78,14 +85,9 @@ class BatchUpload extends Component {
 
           <div class="panel-body">
             <div class="help-block">
-              This is a simple way to process <b>{this.props.title}</b> in batches. For a quick
-              reference,{' '}
-              <a
-                class="highlight"
-                href={this.props.sampleUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              This is a simple way to process <b>{this.props.title}</b> in
+              batches. For a quick reference,{' '}
+              <a class="highlight" href={this.props.sampleUrl} target="_blank">
                 click here
               </a>{' '}
               to download a sample file.
@@ -101,7 +103,11 @@ class BatchUpload extends Component {
 
             <div class="text-center">
               {this.props.isProceedDialogType ? (
-                <button class="btn btn-primary" onClick={this.proceed} disabled={!this.state.file}>
+                <button
+                  class="btn btn-primary"
+                  onClick={this.proceed}
+                  disabled={!this.state.file}
+                >
                   Proceed
                 </button>
               ) : (
@@ -121,8 +127,3 @@ class BatchUpload extends Component {
     );
   }
 }
-
-export default connect(
-  (state) => state.session,
-  (dispatch) => bindActionCreators(ModalActions, dispatch),
-)(BatchUpload);

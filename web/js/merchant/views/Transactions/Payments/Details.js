@@ -3,6 +3,7 @@ import { compose } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+
 import ShowWhen from 'merchant/components/ShowWhen';
 import Amount from 'common/ui/Amount';
 import PaymentDetails from 'merchant/views/Transactions/Payments/components/PaymentDetails';
@@ -10,24 +11,20 @@ import DisputeDetails from 'merchant/views/Transactions/Disputes/Details';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import * as PaymentActions from 'merchant/reducers/payments/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
+
 import RefundModal from 'merchant/views/Transactions/Payments/components/RefundModal';
+
 import { fetchSettlementAmount } from 'merchant/reducers/home';
-import { expandSlider, compactSlider as fnCompactSlider } from 'merchant_common/reducers/slider';
+import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import PaymentTransferNew from 'merchant/views/Marketplace/Transfers/New';
-import {
-  getKeysSeparatedByPipe,
-  getEventCategoryFromPath,
-  getCommonAnalyticsProperties,
-} from 'common/utils/rzp-utils';
+
+import { getKeysSeparatedByPipe, getEventCategoryFromPath } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import DualDetailView, { PrimaryView, SecondaryView } from 'common/new-ui/DualDetailView';
 
 class PaymentDetailsContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-    this.transfersView = React.createRef();
-  }
+  state = {};
 
   static contextTypes = {
     confirm: PropTypes.func,
@@ -53,30 +50,12 @@ class PaymentDetailsContainer extends Component {
     });
   };
 
-  checkSecView(props) {
-    if (!props.entity_name) {
-      this.props.compactSlider();
-
-      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
-      if (this.transfersView) {
-        this.transfersView.current.classList.add('toggle-slider');
-      }
-    } else {
-      this.props.expandSlider();
-      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
-      if (this.transfersView) {
-        this.transfersView.current.classList.remove('toggle-slider');
-      }
-    }
-  }
-
   componentDidMount() {
-    const { closeUrl, id } = this.props;
-    const eventCategory = getEventCategoryFromPath(closeUrl);
-
-    if (eventCategory)
+    const { closeUrl, id } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
       window.rzpAnalytics({
-        eventCategory,
+        eventCategory: eventCategory,
         eventAction: 'Open Details - Payments',
         eventLabel: `payment_id=${id}`,
       });
@@ -85,12 +64,11 @@ class PaymentDetailsContainer extends Component {
   }
 
   componentWillUnmount() {
-    const { closeUrl, id } = this.props;
-    const eventCategory = getEventCategoryFromPath(closeUrl);
-
-    if (eventCategory)
+    const { closeUrl, id } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
       window.rzpAnalytics({
-        eventCategory,
+        eventCategory: eventCategory,
         eventAction: 'Close Details - Payments',
         eventLabel: `payment_id=${id}`,
       });
@@ -122,15 +100,14 @@ class PaymentDetailsContainer extends Component {
   };
 
   confirmCapture = (payment) => {
-    const { closeUrl } = this.props;
+    const { id, closeUrl } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
     window.rzpAnalytics({
-      eventCategory,
+      eventCategory: eventCategory,
       eventAction: 'Open Form - Capture',
       eventLabel: `payment_id=${payment.id}`,
     });
-
     this.context
       .confirm({
         header: 'Are you sure you want to capture this payment?',
@@ -149,7 +126,7 @@ class PaymentDetailsContainer extends Component {
         abortLabel: "No, don't!",
         action: () => {
           window.rzpAnalytics({
-            eventCategory,
+            eventCategory: eventCategory,
             eventAction: 'Capture - Payment',
             eventLabel: `payment_id=${payment.id}`,
           });
@@ -210,10 +187,13 @@ class PaymentDetailsContainer extends Component {
   };
 
   secClose = (closeTransferDetails) => {
-    const { history, location } = this.props;
+    let { history, location } = this.props;
 
     history.push(
-      location.pathname.replace(!closeTransferDetails ? /\/[^/]+\/[^/]+\/?$/ : /\/[^/]+\/?$/, ''),
+      location.pathname.replace(
+        !closeTransferDetails ? /\/[^\/]+\/[^\/]+\/?$/ : /\/[^\/]+\/?$/,
+        '',
+      ),
     );
   };
 
@@ -293,7 +273,7 @@ class PaymentDetailsContainer extends Component {
       eventCategory: 'Dashboard - Payments',
       eventAction: 'See - Payment Refund Details',
       eventLabel: `payment_id=${payment.id}`,
-      speed_requested,
+      speed_requested: speed_requested,
     });
   };
 
@@ -306,7 +286,7 @@ class PaymentDetailsContainer extends Component {
   };
 
   render() {
-    const {
+    let {
       loading,
       error,
       payment,
@@ -320,7 +300,7 @@ class PaymentDetailsContainer extends Component {
     } = this.props;
     let statusMsg = {};
 
-    const { card = {} } = payment;
+    let { card = {} } = payment;
 
     if (error) {
       statusMsg = {
@@ -368,7 +348,7 @@ class PaymentDetailsContainer extends Component {
               paymentId={payment && payment.id}
               onClose={() => this.secClose(null)}
               onCreate={this.onCreateTransfer}
-              ref={(instance) => (this.transfersView = instance)}
+              ref={(c) => (this.transfersView = c)}
               isDirectTransferEnabled={this.props.user.isDirectTransferEnabled}
             />
           </ShowWhen>
@@ -392,7 +372,7 @@ export default compose(
     {
       fetchSettlementAmount,
       expandSlider,
-      compactSlider: fnCompactSlider,
+      compactSlider,
       ...ModalActions,
       ...PaymentActions,
       ...NotificationsActions,

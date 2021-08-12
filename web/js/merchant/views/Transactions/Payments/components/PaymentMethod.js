@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import Amount from 'common/ui/Amount';
 import React from 'react';
+
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import Definition from 'common/ui/Definition';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
@@ -44,7 +45,7 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {} }) => 
       paymentMethod !== 'netbanking' ? titleCase(paymentMethodText) : paymentMethodText;
     el = (
       <Definition>
-        <span>{`${paymentMethodText}' '${titleCase(paymentMethod)}`}</span>
+        <span>{paymentMethodText + ' ' + titleCase(paymentMethod)}</span>
       </Definition>
     );
   } else if (['card', 'emi'].indexOf(paymentMethod) !== -1) {
@@ -52,8 +53,8 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {} }) => 
       return <PlaceholderLoader />;
     }
 
-    const emiPlan = payment.emi_plan;
-    const emi = !!emiPlan && getEMI(payment.amount, emiPlan.duration, emiPlan.rate / 100);
+    const emiPlan = payment.emi_plan,
+      emi = !!emiPlan && getEMI(payment.amount, emiPlan.duration, emiPlan.rate / 100);
 
     const subTypeMap = {
       consumer: 'Consumer',
@@ -61,35 +62,35 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {} }) => 
     };
 
     const cardTitle = (
-      <span>
-        {paymentMethod === 'emi' ? 'EMI on ' : ''}
-        {subTypeMap[cardDetails.sub_type]}{' '}
-        {cardDetails.international ? 'International ' : 'Domestic '}
-        {cardDetails.type !== 'unknown' && titleCase(`${cardDetails.type} `)}
-        Card
-      </span>
-    );
-    const cardInfo = (
-      <span>
         <span>
-          {cardDetails.issuer ? `${cardDetails.issuer} ,` : ''}
-          {`${cardDetails.network} ending `}
+          {paymentMethod === 'emi' ? 'EMI on ' : ''}
+          {subTypeMap[cardDetails.sub_type]}{' '}
+          {cardDetails.international ? 'International ' : 'Domestic '}
+          {cardDetails.type !== 'unknown' && titleCase(cardDetails.type + ' ')}
+          Card
         </span>
-        <b>{cardDetails.last4}</b>
-      </span>
-    );
-    const customer = <span>Name on card - {cardDetails.name}</span>;
-    const emiInfo = emi !== false && (
-      <span>
-        <span>{emiPlan.duration} Months EMI at</span>
-        <span> {emiPlan.rate / 100}%</span>
+      ),
+      cardInfo = (
         <span>
-          {' '}
-          (<Amount value={emi} currency={payment.currency} />)
+          <span>
+            {cardDetails.issuer ? cardDetails.issuer + ', ' : ''}
+            {cardDetails.network + ' ending '}
+          </span>
+          <b>{cardDetails.last4}</b>
         </span>
-      </span>
-    );
-    const cardId = <code>{cardDetails.id}</code>;
+      ),
+      customer = <span>Name on card - {cardDetails.name}</span>,
+      emiInfo = emi !== false && (
+        <span>
+          <span>{emiPlan.duration} Months EMI at</span>
+          <span> {emiPlan.rate / 100}%</span>
+          <span>
+            {' '}
+            (<Amount value={emi} currency={payment.currency} />)
+          </span>
+        </span>
+      ),
+      cardId = <code>{cardDetails.id}</code>;
 
     el = (
       <ContentToggler>
@@ -239,7 +240,7 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {} }) => 
     } else {
       el = (
         <Definition>
-          <span>{`${titleCase(paymentMethod)}-${titleCase(paymentProvider)}`}</span>
+          <span>{titleCase(paymentMethod) + '-' + titleCase(paymentProvider)}</span>
         </Definition>
       );
     }

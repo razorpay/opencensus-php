@@ -5,14 +5,14 @@ import { Link } from 'react-router-dom';
 import { titleCase } from 'common/utils/rzp-utils';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
-import { DocLink } from 'merchant/components/DocsLink';
-import { bindActionCreators } from 'redux';
+import { DocLink } from 'merchant/components/DocsLink'
 
 const DEFAULT_MAX_FILE_SIZE = 1048576; // 1MB in bytes.
 
-class BatchValidateModal extends Component {
+@connect(null, { closeModal })
+export default class BatchValidateModal extends Component {
   render() {
-    const {
+    let {
       status,
       stagedFileStatus,
       fileUrl,
@@ -20,6 +20,7 @@ class BatchValidateModal extends Component {
       sampleUrl,
       docUrl,
       batchType,
+      batchTypeText = '',
       maxRows,
       onFileChange,
       onBiggerFileSize,
@@ -33,8 +34,6 @@ class BatchValidateModal extends Component {
       batchClass,
       acceptFileInfo,
     } = this.props;
-
-    let { batchTypeText = '' } = this.props;
 
     if (batchType === 'payment_link_v2') {
       batchTypeText = 'Payment Link'; // We don't want to unnececssarily expose that merchant is using V2
@@ -71,7 +70,7 @@ class BatchValidateModal extends Component {
 
         {/* Show batch upload modal info when no file uploaded */}
         {!status || status === 'exceed' ? (
-          <>
+          <React.Fragment>
             {batchType === 'partner_submerchant_invite' ? (
               <div class="top-download-link">
                 <a class="btn-link" href={sampleUrl} onClick={onSampleFileDownload}>
@@ -98,7 +97,7 @@ class BatchValidateModal extends Component {
               <h5 style={{ fontSize: '16px' }}>
                 Getting Started with Batch Uploads?{' '}
                 <ShowWhen
-                  additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}
+                  additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
                 >
                   <DocLink class="btn btn-link m-l doc-url" href={docUrl} target="_blank">
                     View Documentation <i class="i i-external-link" />
@@ -119,7 +118,7 @@ class BatchValidateModal extends Component {
                 )}
 
                 {batchType == 'refund' ? (
-                  <>
+                  <React.Fragment>
                     <li>The payment Id for all refunds should be unique.</li>
                     <li>
                       Mention refund speed of each payment Id otherwise refunds will be processed at
@@ -149,7 +148,7 @@ class BatchValidateModal extends Component {
                       </strong>{' '}
                       for default refund speed).
                     </li>
-                  </>
+                  </React.Fragment>
                 ) : (
                   ''
                 )}
@@ -188,7 +187,7 @@ class BatchValidateModal extends Component {
                 </DocLink>
               </p>
             )}
-          </>
+          </React.Fragment>
         ) : null}
 
         {/* Show batch modal error-info when file upload */}
@@ -215,7 +214,3 @@ class BatchValidateModal extends Component {
     );
   }
 }
-
-export default connect(null, (dispatch) => bindActionCreators({ closeModal }, dispatch))(
-  BatchValidateModal,
-);

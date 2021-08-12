@@ -1,12 +1,12 @@
 import { Component, Fragment } from 'react';
 import { Field, reduxForm } from 'redux-form';
-import { compose, bindActionCreators } from 'redux';
-import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import PropTypes from 'prop-types';
 import InputField from 'common/ui/Forms/InputField';
 import TableSlider from 'common/ui/TableSlider';
 import AsyncButton from 'react-async-button';
-import { openModal } from 'merchant_common/reducers/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ProcessingOptions from './ProcessingOptions';
@@ -14,14 +14,23 @@ import { required } from 'common/utils/validators';
 import InstantRefundPricingTable from 'merchant/views/Transactions/Payments/components/InstantRefundPricingTable';
 import { titleCase } from 'common/utils/rzp-utils';
 
-const getTableColumns = (entries) => {
-  return Object.keys(entries).map((entry) => ({
-    title: entry,
-    value: (item) => item[entry],
-  }));
-};
-
-class BatchCreateModal extends Component {
+@reduxForm({
+  form: 'createBatch',
+})
+@connect(
+  (state) => {
+    return {
+      user: state.session.user,
+      refund_pricing: state.config.refund_pricing,
+      features: state.config.features,
+      default_refund_speed: state.config.config.default_refund_speed,
+    };
+  },
+  {
+    openModal,
+  },
+)
+export default class BatchCreateModal extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -32,7 +41,7 @@ class BatchCreateModal extends Component {
 
   //shift input caret to the end
   moveCaretAtEnd(e) {
-    const temp_value = e.target.value;
+    var temp_value = e.target.value;
     e.target.value = '';
     e.target.value = temp_value;
   }
@@ -100,11 +109,7 @@ class BatchCreateModal extends Component {
                         Speed{this.props.default_refund_speed === 'normal' ? '' : '*'}{' '}
                         <span>
                           <i class="i i-help" />
-                          <PopoverComponent
-                            align="right"
-                            theme="dark"
-                            parentQuerySelector=".Modal--large"
-                          >
+                          <Popover align="right" theme="dark" parentQuerySelector={`.Modal--large`}>
                             <PopoverBody>
                               {speedCount.default} payment{speedCount.default > 1 ? 's' : ''} in the
                               file have no specified speed. These will be processed by the default
@@ -112,7 +117,7 @@ class BatchCreateModal extends Component {
                               {this.props.default_refund_speed == 'normal' ? 'normal' : 'instant'}{' '}
                               for your account.
                             </PopoverBody>
-                          </PopoverComponent>
+                          </Popover>
                         </span>
                       </b>
                     </li>
@@ -249,17 +254,9 @@ class BatchCreateModal extends Component {
   }
 }
 
-export default compose(
-  reduxForm({
-    form: 'createBatch',
-  }),
-  connect(
-    (state) => ({
-      user: state.session.user,
-      refund_pricing: state.config.refund_pricing,
-      features: state.config.features,
-      default_refund_speed: state.config.config.default_refund_speed,
-    }),
-    (dispatch) => bindActionCreators({ openModal }, dispatch),
-  ),
-)(BatchCreateModal);
+const getTableColumns = (entries) => {
+  return Object.keys(entries).map((entry) => ({
+    title: entry,
+    value: (item) => item[entry],
+  }));
+};

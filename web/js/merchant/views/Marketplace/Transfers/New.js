@@ -6,14 +6,21 @@ import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import moment from 'moment';
 import { TypeAhead } from 'react-power-select';
 import { withRouter } from 'react-router-dom';
+
 import debounce from 'common/utils/debounce';
+import { merchantFetch } from 'merchant/utils/ajax';
+
+import { showWhenUtil } from 'merchant/components/ShowWhen';
+
 import { prefixEntityValue } from 'merchant_common/helpers/data';
+
 import Alert from 'common/ui/Forms/Alert';
 import DatePickerField from 'common/ui/Forms/DatePickerField';
 import InputGroupField from 'common/ui/Forms/InputField/InputGroupField';
 import { required } from 'common/utils/validators';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { titleCase, rupeesToPaise } from 'common/utils/rzp-utils';
+
 import { fetchAccountsApi, fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 import FormItem from 'merchant/components/FormItem';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
@@ -21,13 +28,11 @@ import { createTransfer } from 'merchant/reducers/payments/details';
 import { isHoliday, nextWorkingDay } from 'common/utils/bankHolidays';
 import RadioButton from 'common/ui/Forms/RadioButton';
 import DirectTransferBanner from './components/DirectTransferBanner';
-import { compose, bindActionCreators } from 'redux';
 
 // TODO: Use components/AccountSelector to for account search | selection input
 
-// eslint-disable-next-line no-shadow
-const Label = ({ text, htmlFor, required }) => {
-  const classes = typeof required !== 'undefined' ? 'label-required' : '';
+let Label = ({ text, htmlFor, required }) => {
+  var classes = typeof required !== 'undefined' ? 'label-required' : '';
 
   return (
     <div class="pair-label">
@@ -40,13 +45,41 @@ const Label = ({ text, htmlFor, required }) => {
 
 const selector = formValueSelector('createPaymentTransfer');
 
-class TransferNew extends Component {
+@connect(
+  (state) => {
+    return {
+      accounts: state.accounts,
+      onHold: selector(state, 'onHold'),
+      holdUntil: selector(state, 'holdUntil'),
+      notes: selector(state, 'notes'),
+      amount: selector(state, 'amount'),
+      accountId: state.accountId,
+    };
+  },
+  {
+    createTransfer,
+    showNotification,
+    fetchAccounts,
+  },
+)
+@reduxForm({
+  form: 'createPaymentTransfer',
+  initialValues: {
+    onHold: 'false',
+    notes: [],
+    account_id: null,
+    holdUntil: null,
+  },
+})
+@withRouter
+export default class TransferNew extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
 
   state = {
     selectedAccount: null,
+    accountId: null,
   };
 
   componentWillMount() {
@@ -79,8 +112,8 @@ class TransferNew extends Component {
       });
     }
 
-    const { onHold, holdUntil, notes, amount } = props;
-    const accountId = this.state.selectedAccount.id;
+    const { onHold, holdUntil, notes, amount } = props,
+      accountId = this.state.selectedAccount.id;
 
     if (onHold === 'on_hold_until' && !holdUntil) {
       return this.props.showNotification({
@@ -102,7 +135,7 @@ class TransferNew extends Component {
       }, {});
     }
 
-    const holdData = {};
+    let holdData = {};
 
     if (this.props.onHold !== 'false') {
       holdData.on_hold = 1;
@@ -125,13 +158,13 @@ class TransferNew extends Component {
           account: prefixEntityValue('account', accountId),
           amount: rupeesToPaise(amount),
           notes: transformedNotes,
-          linked_account_notes,
+          linked_account_notes: linked_account_notes,
           currency: 'INR',
           ...holdData,
         },
       ],
     }).then(
-      () => {
+      (data) => {
         this.props.showNotification({
           type: 'success',
           message: 'Transfer created Successfully',
@@ -139,6 +172,7 @@ class TransferNew extends Component {
 
         this.setState({
           selectedAccount: null,
+          accountId: null,
         });
 
         this.props.reset();
@@ -174,7 +208,7 @@ class TransferNew extends Component {
 
         this.setState({ accountsList });
       })
-      .catch(() => {
+      .catch((err) => {
         this.setState({ accountsList: null });
       });
   }
@@ -197,7 +231,7 @@ class TransferNew extends Component {
   };
 
   render() {
-    const { handleSubmit, accounts, isDirectTransferEnabled } = this.props;
+    const { handleSubmit, invalid, plan, accounts, isDirectTransferEnabled } = this.props;
 
     let accountsList;
 
@@ -300,7 +334,7 @@ class TransferNew extends Component {
                         name="onHold"
                         htmlValue="false"
                         checked={this.props.onHold === 'false'}
-                        label={() => (
+                        label={(_) => (
                           <div>
                             <span>Settle Now</span>
                             <div class="text-fade">
@@ -314,7 +348,7 @@ class TransferNew extends Component {
                         name="onHold"
                         htmlValue="on_hold_until"
                         checked={this.props.onHold === 'on_hold_until'}
-                        label={() => (
+                        label={(_) => (
                           <div>
                             <span>Schedule settlement on</span>
                           </div>
@@ -339,7 +373,7 @@ class TransferNew extends Component {
                         name="onHold"
                         htmlValue="on_hold"
                         checked={this.props.onHold === 'on_hold'}
-                        label={() => (
+                        label={(_) => (
                           <div>
                             <span>Put on hold</span>
                             <div class="text-fade">
@@ -404,31 +438,3 @@ class TransferNew extends Component {
 TransferNew.defaultProps = {
   onSave: () => {},
 };
-
-const mapStateToProps = (state) => {
-  return {
-    accounts: state.accounts,
-    onHold: selector(state, 'onHold'),
-    holdUntil: selector(state, 'holdUntil'),
-    notes: selector(state, 'notes'),
-    amount: selector(state, 'amount'),
-    accountId: state.accountId,
-  };
-};
-
-const mapDispatchToProps = (dispatch) =>
-  bindActionCreators({ createTransfer, showNotification, fetchAccounts }, dispatch);
-
-export default compose(
-  withRouter,
-  reduxForm({
-    form: 'createPaymentTransfer',
-    initialValues: {
-      onHold: 'false',
-      notes: [],
-      account_id: null,
-      holdUntil: null,
-    },
-  }),
-  connect(mapStateToProps, mapDispatchToProps),
-)(TransferNew);

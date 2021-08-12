@@ -1,4 +1,3 @@
-import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
@@ -11,9 +10,13 @@ import {
   saveReceipt,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { compose, bindActionCreators } from 'redux';
 
-class PaymentReceipt extends Component {
+@withRouter
+@connect(null, {
+  showNotification,
+})
+@RTracking(() => window.rzpQ.component('PaymentReceiptDetails'))
+export default class PaymentReceipt extends React.Component {
   state = {
     isActionInProgress: false,
     invoiceId: null,
@@ -22,7 +25,7 @@ class PaymentReceipt extends Component {
   };
 
   componentDidMount() {
-    if (this.isSectionAllowed()) {
+    if (this.isSectionAllowed) {
       getReceiptDetails(this.props.payment.id).then((res) => {
         if (res && res.data) {
           this.setState({
@@ -155,8 +158,7 @@ class PaymentReceipt extends Component {
     );
   };
 
-  // eslint-disable-next-line consistent-return
-  isSectionAllowed() {
+  get isSectionAllowed() {
     let hash = this.props.location.hash;
 
     if (hash) {
@@ -168,7 +170,8 @@ class PaymentReceipt extends Component {
   }
 
   render() {
-    const showReceiptActions = !!this.state.invoiceId && this.isSectionAllowed(); // TODO: Must add support for product names as constants in dashboard
+    const { payment } = this.props;
+    const showReceiptActions = !!this.state.invoiceId && this.isSectionAllowed; // TODO: Must add support for product names as constants in dashboard
 
     // Payment Receipt Actions only to be shown for payment pages for which invoice id exists in GET /receipt call
     if (!showReceiptActions) {
@@ -247,10 +250,3 @@ class PaymentReceipt extends Component {
     );
   }
 }
-
-export default compose(
-  withRouter,
-  connect(null, (dispatch) => bindActionCreators({ showNotification }, dispatch)),
-  // eslint-disable-next-line babel/new-cap
-  RTracking(() => window.rzpQ.component('PaymentReceiptDetails')),
-)(PaymentReceipt);
