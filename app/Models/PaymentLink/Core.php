@@ -12,6 +12,7 @@ use RZP\Models\Invoice;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Jobs\NotifyRas;
 use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -1683,7 +1684,7 @@ class Core extends Base\Core
 
             $riskAovInput = $this->getAovRiskCallInput($paymentLink, $payment);
 
-            $this->merchantRiskService->createAlertRequest($riskAovInput);
+            NotifyRas::dispatch($this->mode, $riskAovInput);
 
         }
         catch (\Exception $e)
@@ -1714,7 +1715,7 @@ class Core extends Base\Core
 
             $this->trace->count(Metric::PAYMENT_PAGE_RISK_ALERT_COUNT, $paymentLink->getMetricDimensions());
 
-            $this->merchantRiskService->createAlertRequest($alertInput);
+            NotifyRas::dispatch($this->mode, $alertInput);
 
         }
         catch (\Exception $e)
