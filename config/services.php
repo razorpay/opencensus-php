@@ -130,6 +130,13 @@ return [
             'key'       => env('MERCHANT_RISK_ALERTS_CLIENT_KEY'),
             'secret'    => env('MERCHANT_RISK_ALERTS_CLIENT_SECRET')
         ],
+        'new' => [
+            'url'  => env('NEW_MERCHANT_RISK_ALERTS_URL'),
+            'auth' => [
+                'key'       => env('NEW_MERCHANT_RISK_ALERTS_CLIENT_KEY'),
+                'secret'    => env('NEW_MERCHANT_RISK_ALERTS_CLIENT_SECRET'),
+            ],
+        ],
     ],
 
     'druid' => [

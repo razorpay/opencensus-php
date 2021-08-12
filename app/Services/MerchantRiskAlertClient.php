@@ -18,10 +18,8 @@ use RZP\Exception\ServerErrorException;
 
 class MerchantRiskAlertClient
 {
-    // Request timeout in milliseconds for all HTTP requests to stork.
-    const REQUEST_TIMEOUT = 2000;
-    // Request connect timeout in milliseconds for all HTTP requests to stork.
-    // Request timeout parameter applies after connection is established.
+    const REQUEST_TIMEOUT = 5000;
+
     const REQUEST_CONNECT_TIMEOUT = 2000;
 
     const NOTIFY_NON_RISKY_MERCHANT_URL = '/twirp/rzp.merchant_risk_alerts.alert.v1.AlertService/NotifyNonRiskyMerchant';
@@ -31,6 +29,14 @@ class MerchantRiskAlertClient
     const IDENTIFY_BLACKLIST_COUNTRY_ALERTS = '/twirp/rzp.merchant_risk_alerts.blacklist_ip.v1.BlacklistIpService/IdentifyAndPublishAlerts';
 
     const IDENTIFY_BLACKLIST_COUNTRY_ALERTS_REQUEST_TIMEOUT = 180000;
+
+    const RAS_ROUTE_FEATURE_FLAG = 'ras_route_caller_api_category_%s';
+
+    const SVC_CONFIG_KEY = 'services.merchant_risk_alerts';
+
+    const SVC_NEW_CONFIG_KEY = 'services.merchant_risk_alerts.new';
+
+    const FALLBACK_ENABLED = true;
 
     /**
      * @var Requests_Session
@@ -53,11 +59,15 @@ class MerchantRiskAlertClient
         $this->trace = app('trace');
 
         $this->auth = app('basicauth');
+
+        $this->razorx = app('razorx');
+
+        $this->mode = app('rzp.mode');
     }
 
-    public function init(int $timeoutMs = null)
+    public function init(string $configKey, int $timeoutMs = null)
     {
-        $config = config('services.merchant_risk_alerts');
+        $config = config($configKey);
 
         $auth = [
             $config['auth']['key'],
@@ -117,28 +127,39 @@ class MerchantRiskAlertClient
 
     public function notifyNonRiskyMerchant(string $merchantId)
     {
-        $this->init();
+        $retryWithFallbackRoute = false;
 
-        $requestPayload = ['merchant_id' => $merchantId];
+        do {
+            $configKey = $this->getRasConfigKey(
+                'notify_risky_merchant', $merchantId , $retryWithFallbackRoute,
+                ['merchant_id' => $merchantId]
+            );
 
-        try {
-            $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
-                'payload'   => $requestPayload,
-                'service'   => 'merchant_risk_alerts',
-            ]);
+            $this->init($configKey);
 
-            return $this->requestAndGetParsedBody(self::NOTIFY_NON_RISKY_MERCHANT_URL, $requestPayload);
-        }
-        catch (\Throwable $e) {
-            $this->trace->traceException($e, Trace::CRITICAL,
-                TraceCode::DOWNSTREAM_SERVICE_REQUEST_FAILED,
-                [
+            $requestPayload = ['merchant_id' => $merchantId];
+
+            try {
+                $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
                     'payload'   => $requestPayload,
                     'service'   => 'merchant_risk_alerts',
-                    'path'      => self::NOTIFY_NON_RISKY_MERCHANT_URL,
-                ]
-            );
-        }
+                ]);
+
+                return $this->requestAndGetParsedBody(self::NOTIFY_NON_RISKY_MERCHANT_URL, $requestPayload);
+            }
+            catch (\Throwable $e) {
+                $this->trace->traceException($e, Trace::CRITICAL,
+                    TraceCode::DOWNSTREAM_SERVICE_REQUEST_FAILED,
+                    [
+                        'payload'   => $requestPayload,
+                        'service'   => 'merchant_risk_alerts',
+                        'path'      => self::NOTIFY_NON_RISKY_MERCHANT_URL,
+                    ]
+                );
+
+                $retryWithFallbackRoute = $this->retryWithFallback($configKey);
+            }
+        } while ($retryWithFallbackRoute === true);
     }
 
     public function createMerchantAlert(
@@ -146,74 +167,94 @@ class MerchantRiskAlertClient
         string $category, string $source, string $eventType,
         int $eventTimestamp, array $data)
     {
-        $this->init();
+        $retryWithFallbackRoute = false;
 
-        $requestPayload = [
-            'merchant_id'     => $merchantId,
-            'entity_type'     => $entityType,
-            'entity_id'       => $entityId,
-            'category'        => $category,
-            'source'          => $source,
-            'event_type'      => $eventType,
-            'event_timestamp' => $eventTimestamp,
-            'data'            => $data,
-        ];
-
-        try {
-            $data = $requestPayload['data'];
-
-            $requestPayload['data'] = [];
-
-            $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
-                'payload'   => $requestPayload,
-                'service'   => 'merchant_risk_alerts',
-            ]);
-
-            $requestPayload['data'] = $data;
-
-            return $this->requestAndGetParsedBody(self::CREATE_MERCHANT_ALERT_URL, $requestPayload);
-        }
-        catch (\Throwable $e) {
-            $data = $requestPayload['data'];
-
-            $requestPayload['data'] = [];
-
-            $this->trace->traceException($e, Trace::CRITICAL,
-                TraceCode::DOWNSTREAM_SERVICE_REQUEST_FAILED,
-                [
-                    'payload'   => $requestPayload,
-                    'service'   => 'merchant_risk_alerts',
-                    'path'      => self::CREATE_MERCHANT_ALERT_URL,
-                ]
+        do {
+            $configKey = $this->getRasConfigKey(
+                $category, $entityId , $retryWithFallbackRoute,
+                ['entity_type' => $entityType, 'entity_id' => $entityId]
             );
 
-            $requestPayload['data'] = $data;
-        }
+            $this->init($configKey);
+
+            $requestPayload = [
+                'merchant_id'     => $merchantId,
+                'entity_type'     => $entityType,
+                'entity_id'       => $entityId,
+                'category'        => $category,
+                'source'          => $source,
+                'event_type'      => $eventType,
+                'event_timestamp' => $eventTimestamp,
+                'data'            => $data,
+            ];
+
+            try {
+                $data = $requestPayload['data'];
+
+                $requestPayload['data'] = [];
+
+                $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
+                    'payload'   => $requestPayload,
+                    'service'   => 'merchant_risk_alerts',
+                ]);
+
+                $requestPayload['data'] = $data;
+
+                return $this->requestAndGetParsedBody(self::CREATE_MERCHANT_ALERT_URL, $requestPayload);
+            }
+            catch (\Throwable $e) {
+                $data = $requestPayload['data'];
+
+                $requestPayload['data'] = [];
+
+                $this->trace->traceException($e, Trace::CRITICAL,
+                    TraceCode::DOWNSTREAM_SERVICE_REQUEST_FAILED,
+                    [
+                        'payload'   => $requestPayload,
+                        'service'   => 'merchant_risk_alerts',
+                        'path'      => self::CREATE_MERCHANT_ALERT_URL,
+                    ]
+                );
+
+                $requestPayload['data'] = $data;
+
+                $retryWithFallbackRoute = $this->retryWithFallback($configKey);
+            }
+        } while ($retryWithFallbackRoute === true);
     }
 
     public function identifyBlacklistCountryAlerts(array $requestPayload)
     {
-        $this->init(self::IDENTIFY_BLACKLIST_COUNTRY_ALERTS_REQUEST_TIMEOUT);
+        $retryWithFallbackRoute = false;
 
-        try {
-            $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
-                'payload'   => $requestPayload,
-                'service'   => 'merchant_risk_alerts',
-                'path'      => self::IDENTIFY_BLACKLIST_COUNTRY_ALERTS,
-            ]);
+        do {
+            $configKey = $this->getRasConfigKey(
+                'blacklist_country_cron', 'blacklist_country_cron', $retryWithFallbackRoute, []);
 
-            return $this->requestAndGetParsedBody(self::IDENTIFY_BLACKLIST_COUNTRY_ALERTS, $requestPayload);
-        }
-        catch (\Throwable $e) {
-            $this->trace->traceException($e, Trace::CRITICAL,
-                TraceCode::DOWNSTREAM_SERVICE_REQUEST_FAILED,
-                [
+            $this->init($configKey, self::IDENTIFY_BLACKLIST_COUNTRY_ALERTS_REQUEST_TIMEOUT);
+
+            try {
+                $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
                     'payload'   => $requestPayload,
                     'service'   => 'merchant_risk_alerts',
                     'path'      => self::IDENTIFY_BLACKLIST_COUNTRY_ALERTS,
-                ]
-            );
-        }
+                ]);
+
+                return $this->requestAndGetParsedBody(self::IDENTIFY_BLACKLIST_COUNTRY_ALERTS, $requestPayload);
+            }
+            catch (\Throwable $e) {
+                $this->trace->traceException($e, Trace::CRITICAL,
+                    TraceCode::DOWNSTREAM_SERVICE_REQUEST_FAILED,
+                    [
+                        'payload'   => $requestPayload,
+                        'service'   => 'merchant_risk_alerts',
+                        'path'      => self::IDENTIFY_BLACKLIST_COUNTRY_ALERTS,
+                    ]
+                );
+
+                $retryWithFallbackRoute = $this->retryWithFallback($configKey);
+            }
+        } while ($retryWithFallbackRoute === true);
     }
 
     /**
@@ -305,4 +346,33 @@ class MerchantRiskAlertClient
         return $res;
     }
 
+    protected function getRasConfigKey(string $category, string $treatmentId, bool $tryWithFallback, array $logData)
+    {
+        if ($tryWithFallback === true)
+        {
+            return self::SVC_CONFIG_KEY;
+        }
+
+        $featureFlag = sprintf(self::RAS_ROUTE_FEATURE_FLAG, $category);
+
+        $variant = $this->razorx->getTreatment($treatmentId, $featureFlag, $this->mode);
+
+        $this->trace->info(TraceCode::MERCHANT_RISK_ALERT_SERVICE_ROUTE_RAZORX_VARIANT, [
+            'treatment_id'   => $treatmentId,
+            'razorx_variant' => $variant,
+            'extra_data'     => $logData,
+        ]);
+
+        if ($variant === 'on')
+        {
+            return self::SVC_NEW_CONFIG_KEY;
+        }
+
+        return self::SVC_CONFIG_KEY;
+    }
+
+    protected function retryWithFallback($triedWithSvcConfigKey)
+    {
+        return ($triedWithSvcConfigKey === self::SVC_NEW_CONFIG_KEY) && (self::FALLBACK_ENABLED === true);
+    }
 }
