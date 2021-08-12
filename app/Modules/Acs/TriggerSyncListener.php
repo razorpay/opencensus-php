@@ -63,7 +63,10 @@ class TriggerSyncListener
         elseif (is_a($event, QueueJobProcessed::class) or is_a($event, KafkaJobProcessed::class))
         {
             $jobName = get_class($event->job);
-            if (method_exists($event->job, 'getJobName'))
+            if (method_exists($event->job, 'resolveName')){
+                $jobName = $event->job->resolveName();
+            }
+            else if (method_exists($event->job, 'getJobName'))
             {
                 $jobName = $event->job->getJobName();
             }

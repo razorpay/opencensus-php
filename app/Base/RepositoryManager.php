@@ -379,6 +379,33 @@ class RepositoryManager extends Illuminate\Support\Manager
         return $result;
     }
 
+    public function transactionOnConnection($callback, string $connection)
+    {
+        $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT);
+
+        if ((is_object($callback) === false) or
+            ($callback instanceof Closure === false))
+        {
+            //
+            // It's a callable not closure. Wrap it in closure because
+            // transaction function in db only accepts closures.
+            //
+            $result = $this->db->connection($connection)->transaction(function() use ($callback)
+            {
+                return call_user_func($callback);
+            });
+
+        }
+        else
+        {
+            $result = $this->db->connection($connection)->transaction($callback);
+        }
+
+        $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_WAIT_TIMEOUT);
+
+        return $result;
+    }
+
     public function transactionOnLiveAndTest(callable $callback)
     {
         //

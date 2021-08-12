@@ -10,7 +10,6 @@ use RZP\Constants\Mode;
 use RZP\Exception\LogicException;
 use RZP\Trace\TraceCode;
 use Razorpay\Outbox\Job\Core as Outbox;
-use RZP\Models\Merchant\Repository as MerchantRepo;
 
 /**
  * Class SyncEventManager
@@ -174,9 +173,12 @@ class SyncEventManager
             ];
 
             // this needs to be in a transaction due to a hard check in outbox implementation
-            (new MerchantRepo())->connection($mode)->transaction(function () use ($mode, $jobPayload) {
+            // Also, since we are not using the any entities to do db operations,
+            // we cannot use $entityRepo->connection()->transaction() as this will
+            // default to the connection based on basic auth mode set
+            $this->app['repo']->transactionOnConnection(function () use ($mode, $jobPayload) {
                 $this->outbox->send(self::OUTBOX_JOB_NAME, $jobPayload, $mode, false);
-            });
+            }, $mode);
 
             $this->trace->info(TraceCode::ACS_SYNC_EVENT_PUBLISHED, $jobPayload);
             $this->trace->count(Metric::ACS_SYNC_EVENT_PUBLISHED, $metricDimensions);
