@@ -9,6 +9,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Partner\Constants as PartnerConstants;
 
 class Core extends Merchant\Core
 {
@@ -248,7 +249,7 @@ class Core extends Merchant\Core
         $subMerchantCreateInput = Helper::getSubMerchantCreateInput($input);
 
         // this creates only test balance
-        $subMerchantArray = (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner);
+        $subMerchantArray = (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner, PartnerConstants::ADD_ACCOUNT, true);
         $subMerchantId    = Entity::verifyIdAndStripSign($subMerchantArray[Entity::ID]);
 
         $subMerchant = $this->fillSubMerchant($subMerchantId, $input);
