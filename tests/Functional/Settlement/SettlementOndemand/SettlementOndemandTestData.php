@@ -1343,6 +1343,26 @@ return [
         ],
     ],
 
+    'testUpdateOndemandTransferPayoutId' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand/transfer/payout',
+            'method'  => 'post',
+            'content' => [
+                            [
+                                'settlement_ondemand_attempt_id'  => 'Hjw8I44gThg3z7',
+                                'payout_id'                       => 'pout_Gjswrr4zGv1jpY',
+                            ],
+                            [
+                                'settlement_ondemand_attempt_id' => 'Hjw8I3sWSwlhlD',
+                                'payout_id'                      => 'pout_GjtCcoBj338MzV',
+                            ]
+            ]
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testEnqueueJob' => [
         'request'  => [
             'url'     => '/settlements/ondemand/enqueue/12345678910234',

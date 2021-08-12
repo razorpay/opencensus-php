@@ -131,11 +131,13 @@ class Core extends Base\Core
 
         $settlementOndemandTransfer->setAttempts($presentAttempts + 1);
 
-        $this->updateStatusAndRetryIfRequired($payoutStatus, $settlementOndemandTransfer);
+        $this->updateStatusAndRetryIfRequired($payoutId, $payoutStatus, $settlementOndemandTransfer);
     }
 
-    public function updateStatusAndRetryIfRequired($payoutStatus, $settlementOndemandTransfer)
+    public function updateStatusAndRetryIfRequired($payoutId, $payoutStatus, $settlementOndemandTransfer)
     {
+        $settlementOndemandTransfer->setPayoutId($payoutId);
+
         switch ($payoutStatus)
         {
             case Status::REVERSED:

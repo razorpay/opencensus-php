@@ -707,13 +707,77 @@ class SettlementOndemandTest extends TestCase
 
         $this->startTest();
 
+        Queue::assertPushed(CreateSettlementOndemandBulkTransfer::class, 2);
+    }
+
+    public function testUpdateOndemandTransferPayoutId()
+    {
+        $this->ba->adminAuth(MODE::LIVE);
+
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand.transfer', [
+            'id'       => '12345678910111',
+            'status'   => 'reversed',
+            'mode'     => 'NEFT',
+            'attempts' =>  10,
+            'payout_id'=> 'pout_Hjswrr4zGv1jpY',
+        ]);
+
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand.transfer', [
+            'id'       => '12345678910112',
+            'status'   => 'reversed',
+            'mode'     => 'NEFT',
+            'attempts' =>  10,
+            'payout_id'=> 'pout_HjtCcoBj338MzV',
+        ]);
+
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand.attempt', [
+            'id'                              => 'Hjw8I44gThg3z7',
+            'status'                          => 'processed',
+            'settlement_ondemand_transfer_id' => '12345678910111',
+            'payout_id'                       => 'pout_Hjswrr4zGv1jpY'
+        ]);
+
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand.attempt', [
+            'id'                              => 'Hjw8I3sWSwlhlD',
+            'status'                          => 'processed',
+            'settlement_ondemand_transfer_id' => '12345678910112',
+            'payout_id'                       => 'pout_HjtCcoBj338MzV'
+        ]);
+
+        $this->startTest();
+
+        $settlementOndemandTransfers = $this->getEntities(
+            EntityConstants::SETTLEMENT_ONDEMAND_TRANSFER,
+            ['count' => 2],
+            true,
+            'live');
+
         $settlementOndemandAttempts = $this->getEntities(
             EntityConstants::SETTLEMENT_ONDEMAND_ATTEMPT,
             ['count' => 2],
             true,
-            'test');
+            'live');
 
-        Queue::assertPushed(CreateSettlementOndemandBulkTransfer::class, 2);
+        $this->assertArraySelectiveEquals([
+            'id'        => '12345678910112',
+            'payout_id' => 'pout_GjtCcoBj338MzV',
+        ], $settlementOndemandTransfers['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'id'        => '12345678910111',
+            'payout_id' => 'pout_Gjswrr4zGv1jpY',
+        ], $settlementOndemandTransfers['items'][1]);
+
+        $this->assertArraySelectiveEquals([
+            'id'        => 'Hjw8I3sWSwlhlD',
+            'payout_id' => 'pout_GjtCcoBj338MzV',
+        ], $settlementOndemandAttempts['items'][1]);
+
+        $this->assertArraySelectiveEquals([
+            'id'        => 'Hjw8I44gThg3z7',
+            'payout_id' => 'pout_Gjswrr4zGv1jpY',
+        ], $settlementOndemandAttempts['items'][0]);
+
     }
 
     public function testOndemandCreationForMerchantWithXSettlementAccountNonBankingHoursGreaterThanIMPSLimit()

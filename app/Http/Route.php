@@ -1784,6 +1784,7 @@ class Route
         'settlement_ondemand_enqueue'              => ['post',      'settlements/ondemand/enqueue/{id}',             'SettlementOndemandController@enqueueJob'                           ],
         'setl_ondemand_transfer_processed'         => ['post',      'settlements/ondemand/transfer/{id}/processed',  'SettlementOndemandController@markAsProcessed'                      ],
         'setl_ondemand_transfer_trigger'           => ['post',      'settlements/ondemand/transfer/trigger',         'SettlementOndemandController@triggerOndemandTransfer'              ],
+        'setl_ondemand_transfer_payout_update'     => ['post',      'settlements/ondemand/transfer/payout',          'SettlementOndemandController@updateOndemandTransferPayoutId'      ],
 
 
         // OAuth routes
@@ -4333,6 +4334,7 @@ class Route
         'settlement_ondemand_enqueue',
         'setl_ondemand_transfer_processed',
         'setl_ondemand_transfer_trigger',
+        'setl_ondemand_transfer_payout_update',
         'banking_account_statement_process_admin',
         'd2c_bureau_report_delete',
         'correct_merchant_owners_products',
@@ -5235,6 +5237,7 @@ class Route
         'settlement_ondemand_enqueue'              => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_transfer_processed'         => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_transfer_trigger'           => Permission::CAPITAL_DEVELOPER,
+        'setl_ondemand_transfer_payout_update'     => Permission::CAPITAL_DEVELOPER,
         'd2c_bureau_report_delete'                 => Permission::CAPITAL_DEVELOPER,
         'merchant_balance_create'                  => Permission::CAPITAL_DEVELOPER,
         'internal_balance_fetch_by_merchant_id'    => Permission::CAPITAL_DEVELOPER,
@@ -9000,6 +9003,7 @@ class Route
             'settlement_ondemand_enqueue',
             'setl_ondemand_transfer_processed',
             'setl_ondemand_transfer_trigger',
+            'setl_ondemand_transfer_payout_update',
             'setl_process_data',
             'setl_process_data_reset',
             'setl_reconcile',

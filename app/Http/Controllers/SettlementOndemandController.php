@@ -149,4 +149,13 @@ class SettlementOndemandController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function updateOndemandTransferPayoutId()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND_ATTEMPT)->updatePayoutId($input);
+
+        return ApiResponse::json($data);
+    }
 }

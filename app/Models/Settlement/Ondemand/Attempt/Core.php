@@ -188,6 +188,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($settlementOndemandAttempt);
 
         (new Transfer\Core)
-            ->updateStatusAndRetryIfRequired($payoutStatus, $settlementOndemandAttempt->settlementOndemandTransfer);
+            ->updateStatusAndRetryIfRequired($payoutData['id'], $payoutStatus, $settlementOndemandAttempt->settlementOndemandTransfer);
     }
 }
