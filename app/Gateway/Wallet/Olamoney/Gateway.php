@@ -1125,12 +1125,12 @@ class Gateway extends Base\Gateway
         return $refundAttributes;
     }
 
-    protected function getRefundRequest($input)
+    protected function getRefundRequest($input): array
     {
         $content = [
             RequestFields::COMMAND          => Command::REFUND,
             RequestFields::ACCESS_TOKEN     => $this->getAccessToken($input['terminal']),
-            RequestFields::UNIQUE_ID        => $input['refund']['id'],
+            RequestFields::UNIQUE_ID        => $this->getRefundId($input['refund']),
             RequestFields::COMMENTS         => 'Razorpay_refund',
             RequestFields::UDF              => $input['payment']['public_id'],
             RequestFields::RETURN_URL       => 'NA',
@@ -1560,5 +1560,10 @@ class Gateway extends Base\Gateway
         }
 
         return $this->config['live_iv'];
+    }
+
+    protected function getRefundId(array $refund): string
+    {
+        return $refund['id'] . ($refund['attempts'] ?: '');
     }
 }
