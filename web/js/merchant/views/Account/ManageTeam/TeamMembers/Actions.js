@@ -16,19 +16,14 @@ import { analyticsTrack } from 'common/utils/analytics';
 import ChangeOwner from 'merchant/views/Settings/EmailSelfServe/components/SameTeam/ChangeOwner';
 import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 
-@connect(
-  (state) => {
-    return { user: state.session.user };
-  },
-  {
-    removeMember,
-    updateMember,
-    updateOwner,
-    openModal,
-    closeModal,
-    showNotification,
-  },
-)
+@connect(null, {
+  removeMember,
+  updateMember,
+  updateOwner,
+  openModal,
+  closeModal,
+  showNotification,
+})
 export default class MembersActions extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -60,9 +55,9 @@ export default class MembersActions extends Component {
     const defaults = pickProps(member, toBePickedFields);
     const onFormSubmit = (...e) => {
       const { role } = e[0];
-      if (role === rolesList.OWNER) {
+      if (role === 'owner') {
         return this.props
-          .updateOwner(member.email,true)
+          .updateOwner(member.email)
           .then(() => {
             analyticsTrack({
               objectName: 'team member update',
@@ -226,10 +221,10 @@ export default class MembersActions extends Component {
   };
 
   render() {
-    const { member, items, isEmailSelfServeEnabled, user } = this.props;
+    const { member, items, isEmailSelfServeEnabled } = this.props;
 
     if (isOwner(member)) {
-      if (items.length == 1 || !isEmailSelfServeEnabled || !user.isOrgRZP) return null;
+      if(items.length == 1 || !isEmailSelfServeEnabled)return null;
       return (
         <TwoFactorVerificationContext.Consumer>
           {(context) => (

@@ -40,12 +40,7 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
       <div className="settlements-banner-container">
         {user.isISBannerEnabled && <EarlySettlementsAnnouncement userId={user.current} />}
         {current_balance.data.balance < 0 && (
-          <AnnouncementBanner
-            title="Add Funds"
-            theme="warning"
-            canBeClosed={true}
-            card_id="negative-balance-add-funds-banner"
-          >
+          <AnnouncementBanner title="Add Funds" theme="warning" canBeClosed={true}>
             Your balance went into negative value. Add funds to avoid the transaction failures.{' '}
             <Link to="/addfunds" target="_blank">
               {' '}
@@ -55,12 +50,7 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
         )}
 
         {handleNegativeBalanceLimit(merchantBalanceConfigs, current_balance.data.balance) && (
-          <AnnouncementBanner
-            title="On Hold!"
-            theme="danger"
-            canBeClosed={true}
-            card_id="on-hold-add-funds-banner"
-          >
+          <AnnouncementBanner title="On Hold!" theme="danger" canBeClosed={true}>
             Your current balance had reached the maximum negative limit. Transactions will start to
             fail now. Please add funds to avoid transaction failures.{' '}
             <Link to="/addfunds" target="_blank">

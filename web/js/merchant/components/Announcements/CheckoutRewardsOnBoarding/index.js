@@ -42,7 +42,7 @@ const RewardsOnBoardingAnnouncment = ({ userId }) => {
   if (!isInstrested && getItem(bannerID)) setIsInstrested(!!getItem(bannerID));
 
   return (
-    <AnnouncementBanner class="rewards-onboarding-anc" theme="success" title="Coming Soon !" card_id="checkout-rewards-interest-banner">
+    <AnnouncementBanner class="rewards-onboarding-anc" theme="success" title="Coming Soon !">
       <span class="display-inline">
         {isInstrested
           ? 'Your interest has been recorded! We are currently testing out the feature. We will notify you once it’s available.'

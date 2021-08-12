@@ -46,7 +46,6 @@ const SwitchToPaymentLinksV2 = React.memo((props) => {
       canBeClosed={false}
       theme="warning"
       bannerKey={`switch-to-payment-links-v2-${props.user.current}`}
-      card_id="switch-to-payment-links-v2-banner"
     >
       <span class="display-inline">{bannerText}</span>
       <a

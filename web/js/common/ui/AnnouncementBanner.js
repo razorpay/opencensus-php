@@ -56,27 +56,11 @@ export default class Announcement extends Component {
     this.handleClose = this.handleClose.bind(this);
   }
 
-  componentDidMount() {
-    const { title, card_id, tracking } = this.props;
-    const bannerContainer = document.getElementById(`announcement-banner-${card_id}`);
-
-    tracking?.trackEvent(
-      window.rzpQ?.merchantActions().success('merchant_dashboard.display_banner', {
-        title,
-        banner_text: bannerContainer?.querySelector('.content')?.textContent,
-        card_id,
-      }),
-    );
-  }
-
   trackBannerClose = () => {
     const { title, card_id, tracking } = this.props;
-    const bannerContainer = document.getElementById(`announcement-banner-${card_id}`);
-
-    tracking?.trackEvent(
+    tracking.trackEvent(
       window.rzpQ?.merchantActions().success('merchant_dashboard.banner_close', {
         title,
-        banner_text: bannerContainer?.querySelector('.content')?.textContent,
         card_id,
       }),
     );
@@ -99,27 +83,6 @@ export default class Announcement extends Component {
     return this.props.onClose && this.props.onClose();
   }
 
-  handleCtaClick = (e) => {
-    const node = e.target?.nodeName;
-    const parentNode = e.target?.parentElement?.nodeName;
-
-    // the condition after && is because some CTA text are wrapped in strong, b, etc. tags, so checking if their parent is a or button, then fire an event.
-    if ((node !== 'A' && node !== 'BUTTON') && (parentNode !== 'A' && parentNode !== 'BUTTON')) return;
-
-    const { title, card_id, tracking } = this.props;
-    const link = node === 'A' ? e.target?.href : e.target?.parentElement?.href;
-
-    tracking?.trackEvent(
-      window.rzpQ?.merchantActions().initiated('merchant_dashboard.click_banner_cta', {
-        title,
-        banner_text: e.target?.closest('.content')?.textContent,
-        card_id,
-        cta_value: e.target?.textContent?.trim(),
-        link
-      }),
-    );
-  }
-
   render() {
     const {
         title,
@@ -128,7 +91,6 @@ export default class Announcement extends Component {
         hidden,
         onClose,
         fullPage,
-        card_id = '',
         ...props
       } = this.props,
       theme = BANNER_THEMES[passedTheme];
@@ -150,7 +112,7 @@ export default class Announcement extends Component {
       };
 
     return (
-      <div {...props} onClick={this.handleCtaClick} id={`announcement-banner-${card_id}`}>
+      <div {...props}>
         {title && !fullPage && (
           <Fragment>
             <div className="title" style={titleStyle}>

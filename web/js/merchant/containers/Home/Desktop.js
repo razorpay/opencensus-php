@@ -344,7 +344,7 @@ class AnalyticsDesktop extends Component {
             user.isCovidReliefFlowEnabled &&
             user.business_type !== 7 &&
             user.business_type !== 9 && (
-              <AnnouncementBanner title="Donations for Covid Relief" theme="primary" card_id="donations-covid-relif-banner">
+              <AnnouncementBanner title="Donations for Covid Relief" theme="primary">
                 Enable donations on Checkout Page and help India Fight COVID-19.{' '}
                 <Link to="/config" style={{ cursor: 'pointer' }}>
                   <strong>Know More</strong>
@@ -360,7 +360,7 @@ class AnalyticsDesktop extends Component {
             )}
 
           {this.isCaptureSettingsDefault(items) && user.instantActivation.isWhitelistFlow === true && (
-            <AnnouncementBanner title="Capture Settings" theme="success" canBeClosed={true} card_id="capture-settings-banner">
+            <AnnouncementBanner title="Capture Settings" theme="success" canBeClosed={true}>
               Currently all payments with order id are being captured by default, click{' '}
               <Link
                 onClick={() => {
@@ -384,7 +384,7 @@ class AnalyticsDesktop extends Component {
             </AnnouncementBanner>
           )}
           {this.showGSTOptOutFlow() === true && (
-            <AnnouncementBanner title="GST Address Mismatch" theme="warning" canBeClosed={false} card_id="gst-address-mismatch-banner">
+            <AnnouncementBanner title="GST Address Mismatch" theme="warning" canBeClosed={false}>
               The business address you provided to Razorpay does not match with your address details
               on your GST certificate. On Jan 25, 2021, we will update your address to the same as
               your GST details.{' '}
@@ -399,12 +399,7 @@ class AnalyticsDesktop extends Component {
             </AnnouncementBanner>
           )}
           {current_balance.data.balance < 0 && (
-            <AnnouncementBanner
-              title="Add Funds"
-              theme="warning"
-              canBeClosed={true}
-              card_id="negative-balance-add-funds-banner"
-            >
+            <AnnouncementBanner title="Add Funds" theme="warning" canBeClosed={true}>
               Your balance went into negative value. Add funds to avoid the transaction failures.{' '}
               <Link
                 onClick={() => {
@@ -429,12 +424,7 @@ class AnalyticsDesktop extends Component {
           )}
 
           {handleNegativeBalanceLimit(merchantBalanceConfigs, current_balance.data.balance) && (
-            <AnnouncementBanner
-              title="On Hold!"
-              theme="danger"
-              canBeClosed={true}
-              card_id="on-hold-add-funds-banner"
-            >
+            <AnnouncementBanner title="On Hold!" theme="danger" canBeClosed={true}>
               Your current balance had reached the maximum negative limit. Transactions will start
               to fail now. Please add funds to avoid transaction failures.{' '}
               <Link

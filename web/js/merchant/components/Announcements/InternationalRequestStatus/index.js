@@ -50,7 +50,6 @@ const InternationalRequestStatus = ({ internationalProductsStatus }) => {
       theme={announcement.theme}
       bannerKey="international-request-status"
       canBeClosed={true}
-      card_id="international-request-status"
     >
       {announcement.content}
     </AnnouncementBanner>

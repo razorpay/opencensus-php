@@ -41,7 +41,6 @@ const NPSAnnouncement = ({ user }) => {
       theme="success"
       bannerKey={`nps-banner-mar-21-${survey.cohort}-${user.current}`}
       canBeClosed={true}
-      card_id="nps-banner-mar-21"
     >
       Hello! Request you to fill in this quick feedback survey about your experience with Razorpay.
       <span className="big-dot-separator" />

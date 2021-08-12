@@ -7,7 +7,6 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import Input from 'common/new-ui/Input';
 import Form from 'common/new-ui/Form';
 import Button from 'common/new-ui/Button';
-import { roles } from 'merchant/helpers/data';
 
 import OwnerUpdated from './OwnerUpdatedModal';
 
@@ -19,7 +18,7 @@ const ChangeOwner = ({ openModal, closeModal, user, items, showNotification, upd
     setDisabled(true);
     const { newOwner } = e;
     const { email } = filteredItems[parseInt(newOwner)];
-    return updateOwner(email, true)
+    return updateOwner(email)
       .then((res) => {
         setDisabled(false);
         openModal({
@@ -60,7 +59,7 @@ const ChangeOwner = ({ openModal, closeModal, user, items, showNotification, upd
               label: (
                 <div>
                   <p className="new-owner-email">{item.email}</p>
-                  <p className="new-owner-role">{roles[item.role].label}</p>
+                  <p className="new-owner-role">{item.role}</p>
                 </div>
               ),
               value: idx,

@@ -163,7 +163,6 @@ const CaInfo = (props) => {
         theme="danger"
         canBeClosed={true}
         handleClose={handleAnnouncementClose}
-        card_id="current-account-pricing-reverted-banner"
       >
         Your have failed to open a RazorpayX current account due to which you have been reverted to
         classic pricing with 2% transaction rate

@@ -134,7 +134,7 @@ const CashAdvanceOrNitroBanner = ({
 
   if (showApplyNowBanner) {
     return (
-      <AnnouncementBanner card_id="apply-for-cash-advance-banner" title="Need more money!" theme="primary">
+      <AnnouncementBanner title="Need more money!" theme="primary">
         Apply for Cash Advance to withdraw additional money instantly whenever you need, day or
         night!
         <Button.Secondary
@@ -147,7 +147,7 @@ const CashAdvanceOrNitroBanner = ({
     );
   } else if (showWithdrawNowBanner) {
     return (
-      <AnnouncementBanner card_id="withdraw-funds-banner" title="Need more money!" theme="primary">
+      <AnnouncementBanner title="Need more money!" theme="primary">
         You have <Amount value={internalCreditBalance} className="ca-banner__withdraw-amount" />{' '}
         available in the withdrawable balance of your credit line with Razorpay Cash Advance.
         <Button.Secondary
@@ -165,7 +165,7 @@ const CashAdvanceOrNitroBanner = ({
           user.isProjectNitroEnabled || user.isProjectNitroCorporateCard
         }
       >
-        <AnnouncementBanner card_id="nitro-settlements-banner" title="Exclusive Offer For You" canBeClosed={false}>
+        <AnnouncementBanner title="Exclusive Offer For You" canBeClosed={false}>
           <ScheduledNitroBanner
             fromWhere="settlements"
             url="https://lp.razorpay.com/razorpayxca-sttlmnts1"

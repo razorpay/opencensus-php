@@ -96,7 +96,7 @@ export const AccordionItemTitle = ({ className = '', children, onClick, cantBeOp
   return (
     <div {...props}>
       {children}
-      {!cantBeOpened && <div class="accordion__arrow" data-uuid={props['data-uuid']} />}
+      {!cantBeOpened && <div class="accordion__arrow" />}
     </div>
   );
 };

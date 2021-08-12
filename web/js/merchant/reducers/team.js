@@ -71,13 +71,13 @@ export const updateUser = (userId, data) => {
   };
 };
 
-export const updateOwner = (email, reattach) => {
+export const updateOwner = (email) => {
   return {
     type: OWNER_UPDATE,
     payload: merchantFetch({
       url: 'merchants/email/update',
       method: 'put',
-      data: {email, set_contact_email:false, reattach_current_owner: reattach},
+      data: {email, set_contact_email:false},
     }),
   };
 };
@@ -88,7 +88,7 @@ export const getEmailStatus = (email, setContactEmail) => {
     payload: merchantFetch({
       url: 'merchants/email_user/status',
       method: 'get',
-      data: { email, set_contact_email: +setContactEmail, reattach_current_owner: false },
+      data: { email, set_contact_email: +setContactEmail },
     }),
   };
 };

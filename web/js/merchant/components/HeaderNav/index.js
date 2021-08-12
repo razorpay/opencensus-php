@@ -30,7 +30,7 @@ function toggleDropdown() {
 @connect(
   (state) => ({
     activePageName: state.app.activePageName,
-    user: state.session.user,
+    user: state.session.user
   }),
   { toggleMobileMenu },
 )
@@ -124,7 +124,6 @@ export default class HeaderNav extends Component {
                     modeFormatted={modeFormatted}
                     onSwitchMode={onSwitchMode}
                     isTestModeBlocked={user.isTestModeBlocked}
-                    user={user}
                   />
                 </li>
               )}
@@ -180,8 +179,7 @@ export default class HeaderNav extends Component {
                   user.isOrgAllowedFunctionality('external_links') &&
                   user.isWhatsNewSectionEnabled &&
                   !user.isAnnouncementTextEnabled &&
-                  !user.isWhatsNewTextEnabled &&
-                  !user.isOrgAxis
+                  !user.isWhatsNewTextEnabled && !user.isOrgAxis
                 }
               >
                 <li id="whats-new-section">

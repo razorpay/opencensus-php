@@ -13,7 +13,7 @@ const SuccessTnCGeneratedModal = ({ onCloseModal }) => {
         <div className="modal-body">
           <div className="modal-description success-redeem">
             <p className="coupon-content">
-              You will not be charged any fees until 2 Lakhs worth of payments. You can check your
+              You will not be charged any fees until 50000 worth of payments. You can check your
               free credits in the{' '}
               <Link to="/credits" className="link" onClick={onCloseModal}>
                 credits section

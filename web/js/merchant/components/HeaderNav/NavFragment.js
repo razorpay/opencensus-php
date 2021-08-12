@@ -79,12 +79,7 @@ class NavFragment extends Component {
         method: 'post',
         data: {
           filters: {
-            default: [
-              {
-                created_at: { gte: user.created_at, lte: TRANSACTION_TIMESTAMP },
-                authorized_at: { gt: 0 },
-              },
-            ],
+            default: [{ created_at: { gte: user.created_at, lte: TRANSACTION_TIMESTAMP } }],
           },
           aggregations: {
             transactionVolume: {
@@ -120,9 +115,7 @@ class NavFragment extends Component {
         method: 'post',
         data: {
           filters: {
-            default: [
-              { created_at: { gte: from, lte: new Date().getTime() }, authorized_at: { gt: 0 } },
-            ],
+            default: [{ created_at: { gte: from, lte: new Date().getTime() } }],
           },
           aggregations: {
             transactionVolume: {
@@ -174,7 +167,6 @@ class NavFragment extends Component {
             modeFormatted={modeFormatted}
             onSwitchMode={onSwitchMode}
             isTestModeBlocked={user.isTestModeBlocked}
-            user={user}
           />
           {showSwitchModeTooltip && (
             <Popover persistent={true} theme="dark">

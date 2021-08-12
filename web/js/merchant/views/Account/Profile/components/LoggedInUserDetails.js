@@ -1,16 +1,9 @@
 import DetailRow from 'merchant/components/DetailRow';
 import { titleCase } from 'common/utils/rzp-utils';
-import Button from 'common/new-ui/Button';
 import { roles, agentRole, RBLRoles, RegistrationLinkRoles } from 'merchant/helpers/data';
 import AsyncButton from 'react-async-button';
 
-export default ({
-  isOrgRZP,
-  loggedInUser,
-  loggedInUserRole,
-  handleUpdateClick,
-  isEmailSelfServeEnabled,
-}) => {
+export default ({ loggedInUser, loggedInUserRole, handleUpdateClick, isEmailSelfServeEnabled }) => {
   let ROLES = { ...roles, ...agentRole, ...RBLRoles, ...RegistrationLinkRoles };
 
   return (
@@ -22,12 +15,15 @@ export default ({
           label="Login Email"
           value={() => (
             <span>
-              {loggedInUser.email}
-              {isOrgRZP && isEmailSelfServeEnabled && loggedInUserRole === 'owner' ? (
-                <Button.Transparent onClick={handleUpdateClick}>
-                  <i class="i i-edit p-l" />
-                </Button.Transparent>
+              {isEmailSelfServeEnabled && loggedInUserRole === 'owner' ? (
+                <AsyncButton
+                  type="button"
+                  class="Button--secondary Button scheduled-btn-act btn-border"
+                  onClick={handleUpdateClick}
+                  text="update"
+                />
               ) : null}
+              {loggedInUser.email}
             </span>
           )}
         />

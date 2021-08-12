@@ -798,7 +798,6 @@ export default class InstantActivationAnnouncements extends Component {
             theme={theme}
             bannerKey={`announcement-banner-${user.activation_status}-${user.current}`}
             canBeClosed={user.isAccepted}
-            card_id="instant-activation-status-banner"
           >
             {content}
           </AnnouncementBanner>

@@ -49,7 +49,6 @@ const RewardsAnnouncment = ({ userId }) => {
       theme="warning"
       title="Checkout Rewards"
       bannerKey={bannerID}
-      card_id="checkout-rewards-banner"
     >
       <span class="display-inline">
         Checkout Rewards lets you run promotional offers across thousands of merchants. If you are

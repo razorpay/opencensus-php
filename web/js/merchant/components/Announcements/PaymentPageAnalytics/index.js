@@ -7,7 +7,6 @@ export default React.memo(function ({ bannerKey }) {
       canBeClosed={true}
       theme="warning"
       bannerKey={bannerKey}
-      card_id="introducing-analytics-pixel-banner"
     >
       You can now use the Facebook & Google Analytics pixel to track your visitors' actions.{' '}
       <a

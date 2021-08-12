@@ -3,19 +3,8 @@ import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 
-const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked, user }) => {
+const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked }) => {
   const dropdownDisabled = mode === 'live' && !!isTestModeBlocked;
-
-  const isActivated = localStorage.getItem(`is_activated--${user?.current}`);
-  const isLiveModeActivatedKeySet =
-    mode === 'live' &&
-    !isActivated &&
-    (user?.activation_status === 'activated' ||
-      user?.activation_status === 'activated_mcc_pending' ||
-      (user?.isUnregisteredBusiness &&
-        user?.activation_form_milestone === 'L1' &&
-        user?.poi_verification_status === 'verified' &&
-        user?.activation_status === 'instantly_activated'));
 
   return (
     <Dropdown disabled={dropdownDisabled}>
@@ -49,12 +38,7 @@ const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked, user
         <ul class="dropdown-menu switch-modes-menu nav nav-stacked">
           <li data-test="Test Mode">
             <a
-              onClick={() => {
-                onSwitchMode('test');
-                if (isLiveModeActivatedKeySet) {
-                  localStorage.setItem(`is_activated--${user.current}`, 'true');
-                }
-              }}
+              onClick={() => onSwitchMode('test')}
               class={classList(mode === 'test' && 'selected')}
             >
               <i class="i i-info-circle ModeIndicator--test" /> Test Mode

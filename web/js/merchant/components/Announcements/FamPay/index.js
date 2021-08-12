@@ -28,7 +28,6 @@ const FamPay = ({ user, tracking }) => {
         theme="primary"
         className="fampay-fundraise-banner"
         canBeClosed={true}
-        card_id="fundraise-banner"
         onClose={() => {
           LocalStorageService.setItem(`${user?.current}-healthifyme-banner-shown`, '1');
           tracking.trackEvent(

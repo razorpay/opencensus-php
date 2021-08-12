@@ -72,7 +72,6 @@ export default React.memo(({ productName }) => {
       canBeClosed={true}
       theme="warning"
       bannerKey={`payment-button-launch-${user.current}`}
-      card_id="payment-button-launch-banner"
     >
       <span class="display-inline">{bannerText}</span>
       <a class="btn btn-link" href={cta2Link} target="_blank" onClick={track.onClickCTA2}>

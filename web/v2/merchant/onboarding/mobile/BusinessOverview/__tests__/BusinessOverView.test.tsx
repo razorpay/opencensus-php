@@ -50,11 +50,13 @@ test('renders all the input fields of the form correctly', async () => {
   fireEvent.click(AovField);
   fireEvent.change(AovField, { target: { value: { value: '₹ 1 - ₹ 150' } } });
   fireEvent.blur(AovField);
-
   expect(screen.getByText('Website Details')).toBeInTheDocument();
   expect(screen.getByText('I have a live website/app')).toBeInTheDocument();
 
   fireEvent.click(screen.getByText('I have a live website/app'));
-  expect(screen.getByText('Accept payments on website')).toBeInTheDocument();
-  expect(screen.getByText('Accept payments on app')).toBeInTheDocument();
+  expect(screen.getByText('Website/App URL')).toBeInTheDocument();
+  fireEvent.change(screen.getAllByPlaceholderText('Enter text here')[2], {
+    target: { value: 'www.google.com' },
+  });
+  fireEvent.blur(screen.getAllByPlaceholderText('Enter text here')[2]);
 });
