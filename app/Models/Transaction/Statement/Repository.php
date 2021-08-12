@@ -2,17 +2,19 @@
 
 namespace RZP\Models\Transaction\Statement;
 
+use Db;
 use Illuminate\Database\Query\JoinClause;
 
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Base\BuilderEx;
-use RZP\Base\ConnectionType;
+use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\External;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
+use RZP\Base\ConnectionType;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicCollection;
@@ -93,6 +95,8 @@ class Repository extends Transaction\Repository
                           string $merchantId = null,
                           string $connectionType = null): PublicCollection
     {
+        $this->setBaseQueryIfApplicable($merchantId);
+
         $statements = parent::fetch($input, $merchantId, $connectionType);
 
         // After fetching settlement collection, we lazy load source relations for payout.
@@ -102,6 +106,30 @@ class Repository extends Transaction\Repository
         $statements->where(Entity::TYPE, E::FUND_ACCOUNT_VALIDATION)->load($this->expandsForTypeFAV);
 
         return $statements;
+    }
+
+    protected function setBaseQueryIfApplicable(string $merchantId)
+    {
+        $variant = $this->app->razorx->getTreatment($merchantId,
+                                                    Merchant\RazorxTreatment::IGNORE_INDEX_IN_TRANSACTIONS_FETCH,
+                                                    $this->app['rzp.mode']);
+
+        if ($variant === 'on')
+        {
+            $this->baseQuery = $this->setQueryToIgnoreTransactionsCreatedAtIndex();
+        }
+    }
+
+    protected function setQueryToIgnoreTransactionsCreatedAtIndex($query = null)
+    {
+        if ($query == null)
+        {
+            $query = $this->newQueryWithConnection($this->getReportingReplicaConnection());
+        }
+
+        $query->from(\DB::raw(Table::TRANSACTION.' IGNORE INDEX (transactions_created_at_index)'));
+
+        return $query;
     }
 
     /**

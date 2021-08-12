@@ -104,6 +104,8 @@ trait RepositoryFetch
      */
     protected $mysqlParams = [];
 
+    protected $baseQuery = null;
+
     /**
      * Holds params to be searched from ES.
      *
@@ -139,6 +141,11 @@ trait RepositoryFetch
         $expands = $this->getExpandsForQueryFromInput($params);
 
         $query = $this->newQuery();
+
+        if ($this->baseQuery !== null)
+        {
+            $query = $this->baseQuery;
+        }
 
         $connection = null;
 
