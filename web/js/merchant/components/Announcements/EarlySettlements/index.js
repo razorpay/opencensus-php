@@ -12,6 +12,7 @@ export default ({ userId }) => {
       title="Instant Settlements"
       canBeClosed={true}
       bannerKey={`instant-settlements-banner-${userId}`}
+      card_id="instant-settlements-banner"
     >
       Get your payments settled within a few hours and never have a shortfall of
       working capital <span class="big-dot-separator" />

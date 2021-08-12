@@ -17,6 +17,7 @@ export default class EarlyScheduledAnnouncement extends Component {
         theme="primary"
         title="Introducing Early Settlements"
         canBeClosed={true}
+        card_id="introducing-early-settlements-banner"
       >
         <span class="es-schedule-banner-text">
           Get your settlements on the same day automtically!{' '}

@@ -116,7 +116,7 @@ export default class TransactionsContainer extends Component {
               user.isProjectNitroEnabled || user.isProjectNitroCorporateCard
             }
           >
-            <AnnouncementBanner title="Exclusive Offer For You" canBeClosed={false}>
+            <AnnouncementBanner title="Exclusive Offer For You" canBeClosed={false} card_id="nitro-transactions-banner">
               <ScheduledNitroBanner
                 fromWhere="transactions"
                 url="https://lp.razorpay.com/razorpayxca-pymnts1"

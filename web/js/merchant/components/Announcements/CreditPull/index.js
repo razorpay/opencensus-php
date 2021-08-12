@@ -15,6 +15,7 @@ export default class CreditPullAnnouncement extends Component {
         theme="primary"
         title="Free Credit Score!"
         canBeClosed={true}
+        card_id="free-credit-score-banner"
       >
         <span>
           Click here to check your credit report for FREE!{` `}

@@ -3,7 +3,7 @@ import { DocLink } from 'merchant/components/DocsLink';
 
 export default function() {
   return (
-    <AnnouncementBanner title="Introducing Payment Receipts" canBeClosed={true}>
+    <AnnouncementBanner title="Introducing Payment Receipts" canBeClosed={true} card_id="introducing-payment-receipts-banner">
       Send automated payment receipts for transactions on your Payment Pages.{' '}
       <span class="big-dot-separator" />
       <DocLink

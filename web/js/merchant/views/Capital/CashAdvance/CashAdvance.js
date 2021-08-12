@@ -162,7 +162,7 @@ class CashAdvance extends React.Component {
 
     return (
       <div className="cash-advance-gromor-esign-wrapper">
-        <AnnouncementBanner theme="primary" className={state} onClose={() => handleClose()}>
+        <AnnouncementBanner theme="primary" className={state} onClose={() => handleClose()} card_id="cash-advance-banner">
           <img
             src={state === 'signed' ? RoundTick : LegalSignIcon}
             alt="legal-sign"

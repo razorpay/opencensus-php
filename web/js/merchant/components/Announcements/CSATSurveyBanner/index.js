@@ -28,6 +28,7 @@ export default function CSATSurveyBanner({ user }) {
           onClose={closeSurvey}
           title="Your Feedback Matters"
           theme="primary"
+          card_id="csat-survey-banner"
         >
           Hello, Developer! Would you like to take a few seconds to help us improve your experience
           with Razorpay?

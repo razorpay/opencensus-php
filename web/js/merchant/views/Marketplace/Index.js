@@ -125,6 +125,7 @@ export default class MarketplaceContainer extends React.Component {
             title="Introducing Direct Transfers"
             theme="primary"
             canBeClosed={true}
+            card_id="introducing-direct-transfers-banner"
           >
             <span className="support-tagline">
               Now start creating Direct Transfers to your linked accounts directly

@@ -11,6 +11,7 @@ export default ({ userId }) => {
       title="Razorpay Capital"
       canBeClosed={true}
       bannerKey={`capital-banner-${userId}`}
+      card_id='capital-banner'
     >
       Get loans up to Rs 10 Lakhs for your business and repay from your Razorpay
       settlements with ease. <span class="big-dot-separator" />

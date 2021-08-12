@@ -17,6 +17,7 @@ export default class FTXPassAnnouncement extends React.PureComponent {
         theme="purply"
         title="Razorpay FTX"
         canBeClosed={false}
+        card_id="razorpay-ftx-banner"
       >
         <div>
           <span>

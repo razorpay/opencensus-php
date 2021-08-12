@@ -52,7 +52,7 @@ export default React.memo(({ productName }) => {
   const user = getUser();
 
   return (
-    <AnnouncementBanner title="Introducing Subscription Button" theme="primary" fullPage>
+    <AnnouncementBanner title="Introducing Subscription Button" theme="primary" fullPage card_id="introducing-subscription-button-banner">
       <span class="display-inline m-r">{bannerText}</span>
       <DocLink
         class="Button--primary Button Button--narrow m-l"

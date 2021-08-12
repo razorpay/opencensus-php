@@ -11,6 +11,7 @@ export default React.memo(({ productName }) => {
       canBeClosed={true}
       theme="primary"
       bannerKey={`subscription-button-launch-${user.current}`}
+      card_id="subscription-button-launch"
     >
       <span class="display-inline">
         You can now extend discounts to your customers on subscription plans.
