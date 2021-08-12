@@ -396,11 +396,11 @@ class Generator extends QrCode\Generator
         ];
     }
 
-    protected function setMerchantLogoInQrImage($logo, $qrImage)
+    protected function setMerchantLogoInQrImage($logo, & $qrImage)
     {
         if ($logo === null)
         {
-            return $qrImage;
+            return;
         }
 
         try
@@ -430,13 +430,13 @@ class Generator extends QrCode\Generator
                                $postMergeImageWidth, $postMergeImageHeight,
                                $logo_width, $logo_height);
 
-            return $finalImage;
+            $qrImage = $finalImage;
         }
         catch (\Exception $e)
         {
             $this->trace->traceException($e);
 
-            return $qrImage;
+            return;
         }
     }
 
