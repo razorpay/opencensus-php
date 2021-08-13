@@ -18,7 +18,7 @@ class Business_pan extends BaseConfig
             '0' => [
                 'rule_type' => 'string_comparison_rule',
                 'rule_def'  => [
-                    'fuzzy_suzzy' => [
+                    'fuzzy_wuzzy' => [
                         [
                             'var' => 'artefact.details.name.value'
                         ],
@@ -26,6 +26,13 @@ class Business_pan extends BaseConfig
                             'var' => 'enrichments.online_provider.details.name.value'
                         ],
                         81,
+                        [
+                            "private limited",
+                            "limited liability partnership",
+                            "pvt",
+                            "ltd",
+                            "."
+                        ]
                     ],
                 ],
             ],
