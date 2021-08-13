@@ -7,6 +7,7 @@ use APP;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Merchant\Detail\NeedsClarification\Constants as NcConstants;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
@@ -54,6 +55,20 @@ class Factory
         }
     }
 
+    protected function getValidationUnitFromNeedsClarificationMetadata(array $needsClarificationMetaData)
+    {
+        $fieldType = $needsClarificationMetaData[NcConstants::FIELD_TYPE] ?? '';
+        $referenceKey = $needsClarificationMetaData[NeedsClarificationMetaData::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY] ?? [];
+
+        switch ($fieldType)
+        {
+            case NcConstants::TEXT:
+                return Constants::IDENTIFIER;
+        }
+
+        return Constant::FIELD_ARTEFACT_DETAILS_MAP[$referenceKey][Constant::VALIDATION_UNIT] ?? '';
+    }
+
     /**
      * @param array $needsClarificationMetaData
      *
@@ -62,10 +77,9 @@ class Factory
     protected function getNeedsClarificationReasonComposerForV2(array $needsClarificationMetaData): ClarificationReasonComposerInterface
     {
         $referenceKey = $needsClarificationMetaData[NeedsClarificationMetaData::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY] ?? [];
-
         $artefactType = Constant::FIELD_ARTEFACT_DETAILS_MAP[$referenceKey][Constant::ARTEFACT_TYPE] ?? '';
 
-        $validationUnit = Constant::FIELD_ARTEFACT_DETAILS_MAP[$referenceKey][Constant::VALIDATION_UNIT] ?? '';
+        $validationUnit = $this->getValidationUnitFromNeedsClarificationMetadata($needsClarificationMetaData);
 
         $validation = $this->repo->bvs_validation->getLatestArtefactValidationForOwnerId(
             $this->merchantDetails->getMerchantId(),

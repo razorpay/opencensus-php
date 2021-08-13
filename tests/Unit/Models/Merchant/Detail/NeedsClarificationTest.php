@@ -891,6 +891,45 @@ class NeedsClarificationTest extends TestCase
         $this->assertEquals($expectedReasons, $reason);
     }
 
+    public function testReasonComposerForIncorrectPersonalPan() {
+        $input          = [
+            'poi_verification_status'               => 'incorrect_details',
+            'poa_verification_status'               => 'verified',
+            'bank_details_verification_status'      => 'verified',
+            'business_type'                         => 11
+        ];
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $this->mockRazorxTreatment('on');
+
+        $this->fixtures->create('bvs_validation', [
+            'owner_type'        => 'merchant',
+            'owner_id'          => $mid,
+            'artefact_type'     => 'personal_pan',
+            'validation_unit'   => 'identifier',
+            'error_code'        => 'INPUT_DATA_ISSUE',
+            'validation_status' => 'failed'
+        ]);
+
+        $kycClarificationReasons =  (new Core())->composeNeedsClarificationReason($merchantDetail);
+
+        $expectedKycClarificationReasons = [
+            'clarification_reasons' =>  [
+                'promoter_pan' => [
+                    [
+                        'reason_type'   => 'predefined',
+                        'field_type'    => 'text',
+                        'reason_code'   => 'invalid_personal_pan_number'
+                    ]
+                ],
+            ]
+        ];
+
+        $this->assertEquals($expectedKycClarificationReasons, $kycClarificationReasons);
+    }
+
     public function testReasonComposerForIncorrectAndNotMatched() {
         $input          = [
             'poi_verification_status'                => 'verified',

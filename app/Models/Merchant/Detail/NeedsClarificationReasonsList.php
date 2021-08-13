@@ -34,10 +34,14 @@ class NeedsClarificationReasonsList
     const SUBMIT_PROPRIETOR_PAN                             = 'submit_proprietor_pan';
     const RESUBMIT_CANCELLED_CHEQUE                         = 'resubmit_cancelled_cheque';
     const SUBMIT_DRIVING_LICENSE                            = 'submit_driving_license';
+
     const INVALID_GSTIN_NUMBER                              = 'invalid_gstin_number';
     const INVALID_CIN_NUMBER                                = 'invalid_cin_number';
     const INVALID_LLPIN_NUMBER                              = 'invalid_llpin_number';
     const INVALID_SHOP_ESTABLISHMENT_NUMBER                 = 'invalid_shop_establishment_number';
+    const INVALID_PERSONAL_PAN_NUMBER                       = 'invalid_personal_pan_number';
+    const INVALID_COMPANY_PAN_NUMBER                        = 'invalid_company_pan_number';
+
     const SHOP_ESTABLISHMENT_DATA_UNAVAILABLE               = 'shop_establishment_data_unavailable';
     const GSTIN_DATA_UNAVAILABLE                            = 'gstin_data_unavailable';
     const CIN_DATA_UNAVAILABLE                              = 'cin_data_unavailable';
@@ -69,6 +73,10 @@ class NeedsClarificationReasonsList
             NeedsClarificationMetaData::DESCRIPTION => 'The CIN number you have entered is invalid, please enter valid details.',],
         self::INVALID_SHOP_ESTABLISHMENT_NUMBER                       => [
             NeedsClarificationMetaData::DESCRIPTION => 'The SHOP ESTABLISHMENT NUMBER you have entered is invalid, please enter valid details.',],
+        self::INVALID_PERSONAL_PAN_NUMBER                             => [
+            NeedsClarificationMetaData::DESCRIPTION => "The Personal PAN number you have entered is invalid as per Government's Database, please enter valid details.",],
+        self::INVALID_COMPANY_PAN_NUMBER                              => [
+            NeedsClarificationMetaData::DESCRIPTION => "The Business PAN number you have entered is invalid as per Government's Database, please enter valid details.",],
         self::INVALID_GSTIN_NUMBER                                    => [
             NeedsClarificationMetaData::DESCRIPTION => 'The GSTIN number you have entered is invalid, please enter valid details.',],
         self::INVALID_LLPIN_NUMBER                                    => [

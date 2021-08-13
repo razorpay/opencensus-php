@@ -97,7 +97,7 @@ class UpdateMerchantContext extends Job
 
         $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_JOB,[
             "merchant_id"   => $merchant->getId(),
-            "Method"=>"updateMerchantContext",
+            "bvs_validation_id" => $this->validationId,
             "CAN_UPDATE_MERCHANT_CONTEXT"=>$canUpdateMerchantContext,
             "POA_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::POA_VERIFICATION_STATUS),
             "COMPANY_PAN_VERIFICATION_STATUS"=>$merchantDetail->getAttribute(Entity::COMPANY_PAN_VERIFICATION_STATUS),

@@ -33,8 +33,10 @@ class NeedsClarificationMetaData
                                                     ReasonList::CIN_DATA_UNAVAILABLE,
                                                     ReasonList::INVALID_LLPIN_NUMBER,
                                                     ReasonList::LLPIN_DATA_UNAVAILABLE],
-        Entity::PROMOTER_PAN                    => [ReasonList::UPDATE_DIRECTOR_PAN,
+        Entity::PROMOTER_PAN                    => [ReasonList::INVALID_PERSONAL_PAN_NUMBER,
+                                                    ReasonList::UPDATE_DIRECTOR_PAN,
                                                     ReasonList::UPDATE_PROPRIETOR_PAN,],
+        Entity::COMPANY_PAN                     => [ReasonList::INVALID_COMPANY_PAN_NUMBER],
         Entity::COMPANY_PAN_NAME                => [ReasonList::UPDATE_DIRECTOR_PAN],
         Entity::BANK_ACCOUNT_NUMBER             => [ReasonList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PROP_NGO_TRUST,
                                                     ReasonList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_UNREGISTERED,
@@ -117,6 +119,24 @@ class NeedsClarificationMetaData
      */
 
     const SYSTEM_BASED_NEEDS_CLARIFICATION_METADATA = [
+        Constants::PERSONAL_PAN_IDENTIFIER  => [
+            self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V2,
+            self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::PERSONAL_PAN,
+            Constants::FIELD_NAME                          => Entity::PROMOTER_PAN,
+            Constants::FIELD_TYPE                          => Constants::TEXT,
+            Constants::REASON_MAPPING                      => [
+                BvsValidationConstant::INPUT_DATA_ISSUE      => ReasonList::INVALID_PERSONAL_PAN_NUMBER,
+            ],
+        ],
+        Constants::COMPANY_PAN_IDENTIFIER   => [
+            self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V2,
+            self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::BUSINESS_PAN,
+            Constants::FIELD_NAME                          => Entity::COMPANY_PAN,
+            Constants::FIELD_TYPE                          => Constants::TEXT,
+            Constants::REASON_MAPPING                      => [
+                BvsValidationConstant::INPUT_DATA_ISSUE      => ReasonList::INVALID_COMPANY_PAN_NUMBER,
+            ],
+        ],
         Constants::GSTIN_IDENTIFER     => [
             self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V2,
             self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::GSTIN,
