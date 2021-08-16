@@ -45,15 +45,7 @@ function HelpSection({
       }
       CreateTicketEmitter.emit(
         'create-ticket',
-        'ticket',
-        () => {
-          rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
-        },
-        () => {
-          setTimeout(() => {
-            rzpTicketSystem.modal.next();
-          }, 0);
-        },
+        'tickets',
       );
 
       setTimeout(() => {

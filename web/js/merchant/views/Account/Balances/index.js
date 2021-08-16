@@ -159,19 +159,10 @@ export default class AddFundsContainer extends Component {
 
   handleActivate = () => {
     if (window.rzpTicketSystem && window.rzpTicketSystem.addEventListener) {
-      const rzpTicketSystem = window.rzpTicketSystem;
       window.rzpTicketSystem.addEventListener('ticket-created', this.handleTicketCreation);
       CreateTicketEmitter.emit(
         'create-ticket',
-        'ticket',
-        () => {
-          rzpTicketSystem.setPrefill('#request', ['merchant', 'account-configuration-changes']);
-        },
-        () => {
-          setTimeout(() => {
-            rzpTicketSystem.modal?.next();
-          }, 0);
-        },
+        'tickets'
       );
 
       if (document.getElementsByName('request-description')?.length > 0) {
@@ -205,19 +196,10 @@ export default class AddFundsContainer extends Component {
       },
     });
     if (window.rzpTicketSystem) {
-      const rzpTicketSystem = window.rzpTicketSystem;
       window.rzpTicketSystem.addEventListener('ticket-created', this.handleTicketCreation);
       CreateTicketEmitter.emit(
         'create-ticket',
-        'ticket',
-        () => {
-          rzpTicketSystem.setPrefill('#request', ['merchant', 'account-configuration-changes']);
-        },
-        () => {
-          setTimeout(() => {
-            rzpTicketSystem.modal?.next();
-          }, 0);
-        },
+        'tickets'
       );
     }
   };

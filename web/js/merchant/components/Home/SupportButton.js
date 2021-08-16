@@ -22,18 +22,9 @@ const SupportButton = ({ type, buttonLabel, category, openSection, tracking }) =
       },
     });
     if (window.rzpTicketSystem) {
-      const rzpTicketSystem = window.rzpTicketSystem;
       CreateTicketEmitter.emit(
         'create-ticket',
-        'ticket',
-        () => {
-          rzpTicketSystem.setPrefill('#request', [category, openSection]);
-        },
-        () => {
-          setTimeout(() => {
-            rzpTicketSystem.modal?.nextButton?.click?.();
-          }, 0);
-        },
+        'tickets'
       );
     }
   };

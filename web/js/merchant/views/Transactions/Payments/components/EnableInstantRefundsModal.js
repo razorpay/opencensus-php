@@ -449,18 +449,9 @@ export default class EnableInstantRefundsModal extends Component {
 
 const raiseTicket = () => {
   if (window.rzpTicketSystem) {
-    const rzpTicketSystem = window.rzpTicketSystem;
     CreateTicketEmitter.emit(
       'create-ticket',
-      'ticket',
-      () => {
-        rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
-      },
-      () => {
-        setTimeout(() => {
-          rzpTicketSystem.modal.next();
-        }, 0);
-      },
+      'tickets',
     );
     setTimeout(() => {
       var el = document.getElementsByName('request-description')[0];

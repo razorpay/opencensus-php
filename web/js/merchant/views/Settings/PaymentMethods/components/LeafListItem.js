@@ -282,18 +282,9 @@ class LeafListItem extends React.Component {
 
   handleRaiseRequest = () => {
     if (window.rzpTicketSystem) {
-      const rzpTicketSystem = window.rzpTicketSystem;
       CreateTicketEmitter.emit(
         'create-ticket',
-        'ticket',
-        () => {
-          rzpTicketSystem.setPrefill('#request', ['merchant', 'add-payment-methods']);
-        },
-        () => {
-          setTimeout(() => {
-            rzpTicketSystem.modal.next();
-          }, 0);
-        },
+        'tickets',
       );
     }
   };

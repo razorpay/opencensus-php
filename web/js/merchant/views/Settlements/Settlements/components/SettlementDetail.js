@@ -19,19 +19,7 @@ class SettlementDetail extends Component {
     });
 
     if (window.rzpTicketSystem) {
-      const rzpTicketSystem = window.rzpTicketSystem;
-      CreateTicketEmitter.emit(
-        'create-ticket',
-        'ticket',
-        () => {
-          rzpTicketSystem.setPrefill('#request', ['merchant', 'settlement-related']);
-        },
-        () => {
-          setTimeout(() => {
-            rzpTicketSystem.modal.next();
-          }, 0);
-        },
-      );
+      CreateTicketEmitter.emit('create-ticket', 'tickets');
     }
   };
 

@@ -10,19 +10,9 @@ const SuccesfullyEnabledModal = ({ onClose }) => {
   const handleContactSupportClick = () => {
     trackAutomatedCA.clickContactSupportInSuccessfullyEnabled({});
     if (window.rzpTicketSystem) {
-      const rzpTicketSystem = window.rzpTicketSystem;
-
       CreateTicketEmitter.emit(
         'create-ticket',
-        'ticket',
-        () => {
-          rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
-        },
-        () => {
-          setTimeout(() => {
-            rzpTicketSystem.modal.next();
-          }, 0);
-        },
+        'tickets',
       );
     }
   };

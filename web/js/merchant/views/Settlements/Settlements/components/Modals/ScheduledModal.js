@@ -56,19 +56,7 @@ class ScheduledModal extends Component {
       eventLabel: `Clicks | Support`,
     });
     if (window.rzpTicketSystem) {
-      const rzpTicketSystem = window.rzpTicketSystem;
-      CreateTicketEmitter.emit(
-        'create-ticket',
-        'ticket',
-        () => {
-          rzpTicketSystem.setPrefill('#request', ['merchant', 'international-early-settlement']);
-        },
-        () => {
-          setTimeout(() => {
-            rzpTicketSystem.modal.next();
-          }, 0);
-        },
-      );
+      CreateTicketEmitter.emit('create-ticket', 'tickets');
     }
   };
 

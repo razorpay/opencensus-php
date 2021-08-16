@@ -8,14 +8,8 @@ export default ({ userId }) => {
 
   const raiseTicket = () => {
     if (window.rzpTicketSystem) {
-      const rzpTicketSystem = window.rzpTicketSystem;
 
-      CreateTicketEmitter.emit('create-ticket', 'ticket', null, () => {
-        rzpTicketSystem.setPrefill('#request', ['merchant', 'covid-19-relief-query']);
-        setTimeout(() => {
-          rzpTicketSystem.modal.next();
-        }, 0);
-      });
+      CreateTicketEmitter.emit('create-ticket', 'tickets');
 
       setTimeout(() => {
         document.getElementsByName('request-description')[0].value =
