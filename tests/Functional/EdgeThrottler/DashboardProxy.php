@@ -171,7 +171,6 @@ class DashboardProxy extends TestCase
 
     public function testUpdateRuleOnService()
     {
-        $this->markTestSkipped();
         $responseArray = [
             'id'         => '9405289d-70a0-4b53-adfb-1429ad432fd5',
             'service'    => [

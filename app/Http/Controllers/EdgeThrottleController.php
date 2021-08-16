@@ -99,7 +99,7 @@ class EdgeThrottleController extends Controller
 
         $method = $request->method();
 
-        $path = $this->rulePathPrefix() . '/rate-limit-rules';
+        $path = $this->rulePathPrefix(false) . '/rate-limit-rules';
 
         $input = Request::all();
         unset($input['service_id']);
@@ -132,7 +132,7 @@ class EdgeThrottleController extends Controller
 
         $method = $request->method();
 
-        $path = $this->rulePathPrefix() . '/rate-limit-rules' . $this->constructQueryParam();
+        $path = $this->rulePathPrefix(true) . '/rate-limit-rules' . $this->constructQueryParam();
 
         $response = $this->request($method, $path);
 
@@ -161,7 +161,7 @@ class EdgeThrottleController extends Controller
 
         $method = $request->method();
 
-        $path = $this->rulePathPrefix() . '/rate-limit-rules/' . $id;
+        $path = $this->rulePathPrefix(true) . '/rate-limit-rules/' . $id;
 
         $input = Request::all();
 
@@ -196,7 +196,7 @@ class EdgeThrottleController extends Controller
 
         $method = $request->method();
 
-        $path = $this->rulePathPrefix() . '/rate-limit-rules/' . $id;
+        $path = $this->rulePathPrefix(false) . '/rate-limit-rules/' . $id;
 
         $response = $this->request($method, $path);
 
@@ -357,11 +357,11 @@ class EdgeThrottleController extends Controller
      * Used only for routes which operates on rate limit rules
      * It'll construct the route path based on the attributes of request body or query param
      *
+     * @param $serviceOperationAllowed
      * @return string
      * @throws BadRequestException
-     * @throws BadRequestHttpException
      */
-    protected function rulePathPrefix(): string
+    protected function rulePathPrefix($serviceOperationAllowed): string
     {
         $input = Request::all();
 
@@ -369,10 +369,9 @@ class EdgeThrottleController extends Controller
         {
             return '/routes/' . $input['route_id'];
         }
-        else if (isset($input['service_id']) === true)
+        else if (($serviceOperationAllowed === true) and (isset($input['service_id']) === true))
         {
-//            disabling all service level rule operations
-//            return '/services/' . $input['service_id'];
+            return '/services/' . $input['service_id'];
         }
 
         throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARAMETERS);
