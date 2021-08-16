@@ -32,11 +32,13 @@ class Kernel extends HttpKernel {
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \App\Http\Middleware\SessionInActivity::class,
+            \App\Http\Middleware\CacheControl::class,
         ],
         'jwt_session' => [
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Session\Middleware\StartSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
+            \App\Http\Middleware\CacheControl::class,
         ],
 
         'graph'     => [
@@ -44,6 +46,7 @@ class Kernel extends HttpKernel {
             \App\Http\Middleware\StartSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \App\Http\Middleware\GraphRequestAuthCheck::class,
+            \App\Http\Middleware\CacheControl::class,
         ],
     ];
 
