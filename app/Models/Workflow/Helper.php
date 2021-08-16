@@ -25,17 +25,14 @@ class Helper
 
     public function redactFields(array $input)
     {
-        foreach (Constants::KEYS_TO_ENCRYPT_BEFORE_SAVING_IN_ES as $fieldToEncrypt)
+        if (array_key_exists('new', $input))
         {
-            if (array_key_exists($fieldToEncrypt, $input['new']) === true)
-            {
-                $input['new'][$fieldToEncrypt] = str_repeat("*", strlen($input['new'][$fieldToEncrypt]));
-            }
+            $input['new'] = $this->encryptSensitiveValuesInArray($input['new']);
+        }
 
-            if (array_key_exists($fieldToEncrypt, $input['old']) === true) {
-
-                $input['old'][$fieldToEncrypt] = str_repeat("*", strlen($input['old'][$fieldToEncrypt]));
-            }
+        if (array_key_exists('old', $input))
+        {
+            $input['old'] = $this->encryptSensitiveValuesInArray($input['old']);
         }
 
         return $input;
@@ -45,9 +42,22 @@ class Helper
     {
         foreach (Constants::KEYS_TO_ENCRYPT_BEFORE_SAVING_IN_ES as $fieldToEncrypt)
         {
-            if(array_key_exists($fieldToEncrypt, $input) === true)
+            if (array_key_exists($fieldToEncrypt, $input) === true)
             {
                 $input[$fieldToEncrypt] = Crypt::decrypt($input[$fieldToEncrypt]);
+            }
+        }
+
+        return $input;
+    }
+
+    protected function encryptSensitiveValuesInArray(array $input): array
+    {
+        foreach (Constants::KEYS_TO_ENCRYPT_BEFORE_SAVING_IN_ES as $fieldToEncrypt)
+        {
+            if (array_key_exists($fieldToEncrypt, $input) === true)
+            {
+                $input[$fieldToEncrypt] = str_repeat("*", strlen($input[$fieldToEncrypt]));
             }
         }
 
