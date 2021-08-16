@@ -71,13 +71,22 @@ class SegmentAnalyticsClient extends AbstractEventClient
         try
         {
             $properties += [
-                'merchant_id'   => $merchant->getId()
+                Merchant\Entity::MERCHANT_ID    => $merchant->getId(),
+                'event_category'                => Constants::SEGMENT_EVENT_CATEGORY,
+                'event_action'                  => $eventName
             ];
+
+            $eventLabel = EventCode::EVENT_LABELS[$eventName] ?? "";
+
+            if(empty($eventLabel) === false)
+            {
+                $properties['event_label'] = $eventLabel;
+            }
 
             $eventData = [
                 'type'          => 'track',
                 'properties'    => $properties,
-                'event'         => $eventName
+                'event'         => $eventName,
             ];
 
             $this->pushEvent($merchant, $eventData);

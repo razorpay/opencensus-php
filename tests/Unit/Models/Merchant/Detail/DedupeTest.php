@@ -21,8 +21,7 @@ class DedupeTest extends OAuthTestCase
         $mockMR = $this->getMockBuilder(MerchantRiskClient::class)
             ->setMethods(['getMerchantRiskScores'])
             ->getMock();
-
-
+        
         $mockMR->expects($this->any())
             ->method('getMerchantRiskScores')
             ->willReturn([
@@ -30,7 +29,7 @@ class DedupeTest extends OAuthTestCase
                 "entity_id" => $merchantId,
                 "fields" => $fields
             ]);
-        
+
         return $mockMR;
     }
 

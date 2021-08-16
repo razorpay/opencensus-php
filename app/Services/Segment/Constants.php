@@ -7,6 +7,8 @@ use RZP\Models\Merchant;
 
 class Constants
 {
+    const SEGMENT_EVENT_CATEGORY = "Backend - offline - Segment";
+
     const COMMON_MERCHANT_DETAIL_PROPERTIES = [
         Merchant\Detail\Entity::POI_VERIFICATION_STATUS,
         Merchant\Detail\Entity::POA_VERIFICATION_STATUS,
