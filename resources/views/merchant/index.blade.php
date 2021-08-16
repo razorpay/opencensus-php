@@ -123,7 +123,13 @@ _dcs.account = '9421167';
 <!-- Blank interface init before loading the project entry file -->
 @include('partials/rzpq-interface')
 
-@if ($isConfirmed and $isPreSignupComplete)
+@if ($newAuthFlow === true and app('request')->input('auth_source') === 'website')
+  <script type="text/javascript">
+      window.session_id = "{!! $session_id !!}"
+      window.isAuthPage = true;
+  </script>
+  <script src="{{$cdnDashboardUrl}}/dist/newAuth-entry.js"></script>
+@elseif ($isConfirmed and $isPreSignupComplete)
   <script type="text/javascript">
     window.rzp_user = {!! $user !!};
     window.rzp_org = {!! $org !!};
