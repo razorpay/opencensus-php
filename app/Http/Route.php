@@ -6191,6 +6191,8 @@ class Route
     ];
 
     public static $bankingRoutePermissions = [
+        'merchant_activation_needs_clarification'      => '*',
+
         'merchant_fire_hubspot_event'                  => '*',
         'merchant_create_lead_to_salesforce'           => '*',
         'accounting_payouts_integration_status'        => Permission::VIEW_ACCOUNTING_INTEGRATION,
@@ -10592,6 +10594,7 @@ class Route
     // Banking specific routes for which sensitive data will be scrubbed from logs.
     //
     const BANKING_SPECIFIC_ROUTES = [
+        'merchant_activation_needs_clarification',
         'payout_create',
         'payout_create_with_otp',
         'payout_bulk_create',
