@@ -45,7 +45,11 @@ const isVisible = (fieldName, context) => {
     case 'passport_back':
     case 'voter_id_front':
     case 'voter_id_back':
-      return canShowAadharDoc(context);
+      return canShowAadharDoc(
+        context.business_type,
+        context.stakeholder?.aadhaar_linked,
+        context.stakeholder?.aadhaar_esign_status,
+      );
     case 'business_proof_url':
       return isBusinessProofUrlVisible(context);
     case 'business_pan_url':

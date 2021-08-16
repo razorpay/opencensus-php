@@ -195,36 +195,35 @@ function onScreenDocuments(data) {
       return prevValue;
     }, {});
 }
-export function checkIfEAadharStepCompleted(data) {
+
+export function isEkycStepCompleted(
+  businessType = '',
+  isAadharLinked: number | boolean | undefined,
+  esignStatus: string | undefined,
+): boolean {
   let isEAadharFieldFilled = false;
   const AadharEnabledTypes = ['11', '1', '3'];
-  if (
-    (data && data.stakeholder && data.stakeholder.aadhaar_esign_status === 'verified') ||
-    (data.stakeholder && data.stakeholder.aadhaar_linked == '0')
-  ) {
+  if (esignStatus === 'verified' || !isAadharLinked) {
     isEAadharFieldFilled = true;
   }
-  if (!AadharEnabledTypes.includes(data.business_type)) {
+  if (!AadharEnabledTypes.includes(businessType)) {
     isEAadharFieldFilled = true;
   }
 
   return isEAadharFieldFilled;
 }
 
-export const canShowAadharDoc = (context) => {
-  const shouldShowEsignFlow =
-    context.business_type === '11' ||
-    context.business_type === '1' ||
-    context.business_type === '3';
-
-  const shouldShowAddressProofField = !(
-    shouldShowEsignFlow &&
-    context.stakeholder &&
-    context.stakeholder.aadhaar_linked
-  );
+export const canShowAadharDoc = (
+  businessType = '',
+  isAadharLinked: number | boolean | undefined,
+  esignStatus: string | undefined,
+): boolean => {
+  const shouldShowEsignFlow = ['11', '1', '3'].includes(businessType);
+  const canSkipAddressProofDoc = !(shouldShowEsignFlow && isAadharLinked);
 
   return (
-    (shouldShowAddressProofField && checkIfEAadharStepCompleted(context)) || !shouldShowEsignFlow
+    !shouldShowEsignFlow ||
+    (canSkipAddressProofDoc && isEkycStepCompleted(businessType, isAadharLinked, esignStatus))
   );
 };
 
@@ -246,7 +245,14 @@ export function isDocumentTabComplete(data, isGstinMandatory = false) {
     return !!tabData[key].value && !tabData[key].error;
   });
 
-  return isDocumentFieldsFilled && checkIfEAadharStepCompleted(data);
+  return (
+    isDocumentFieldsFilled &&
+    isEkycStepCompleted(
+      data.business_type,
+      data.stakeholder?.aadhaar_linked,
+      data.stakeholder?.aadhaar_esign_status,
+    )
+  );
 }
 
 export function getDefaultSelectedDocs(context, type) {
