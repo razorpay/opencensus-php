@@ -23,9 +23,8 @@ const PaymentProgressBar = ({ user, mode, history, limitBreach }) => {
           filters: {
             default: [
               {
-                created_at: {
-                  gte: user.createdAt,
-                },
+                created_at: { gte: user.created_at, lte: new Date().getTime() },
+                authorized_at: { gt: 0 },
               },
             ],
           },
