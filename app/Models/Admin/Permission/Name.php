@@ -516,6 +516,7 @@ class Name
 
     const VIEW_INTERNAL_INSTRUMENT_REQUEST   = 'view_internal_instrument_request';
     const UPDATE_INTERNAL_INSTRUMENT_REQUEST = 'update_internal_instrument_request';
+    const CANCEL_INTERNAL_INSTRUMENT_REQUEST = 'cancel_internal_instrument_request';
     const DELETE_INTERNAL_INSTRUMENT_REQUEST = 'delete_internal_instrument_request';
 
     const UPDATE_MERCHANT_INSTRUMENT_REQUEST = 'update_merchant_instrument_request';

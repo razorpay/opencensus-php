@@ -1343,6 +1343,10 @@ return [
                 'description'   => 'Update single/bulk internal instrument requests',
                 'assignable'    => true,
             ],
+            Permission::CANCEL_INTERNAL_INSTRUMENT_REQUEST => [
+                'description'   => 'Cancel single/bulk internal instrument requests',
+                'assignable'    => true,
+            ],
             Permission::DELETE_INTERNAL_INSTRUMENT_REQUEST => [
                 'description'   => 'Delete internal instrument requests',
                 'assignable'    => true,

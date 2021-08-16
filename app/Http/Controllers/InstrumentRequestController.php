@@ -125,6 +125,20 @@ class InstrumentRequestController extends BaseController
         return ApiResponse::json($response);
     }
 
+    public function cancelInternalInstrumentRequests()
+    {
+        $input = Request::all();
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            $input,
+            \Requests::PATCH,
+            'v2/cancel_internal_instrument_request',
+            ['timeout' => 30],
+            $this->getAdminHeadersForInstrumentRequest());
+
+        return ApiResponse::json($response);
+    }
+
     public function bulkCopyInternalInstrumentRequest()
     {
         $input = Request::all();
