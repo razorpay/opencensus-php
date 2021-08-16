@@ -540,9 +540,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $atomEditTerminalRules = [
-        Entity::GATEWAY                     => 'sometimes|in:atom',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD2  => 'sometimes',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',

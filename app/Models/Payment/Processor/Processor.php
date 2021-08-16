@@ -1831,6 +1831,14 @@ class Processor
             return;
         }
 
+        if (($payment->getGateway() === Payment\Gateway::ATOM) and
+            ($payment->terminal->getGatewayMerchantId2() === "v2"))
+        {
+            $this->setPaymentService($payment, 'nbplusps');
+
+            return;
+        }
+
         if ($this->isNbPlusServiceConfigEnabled() === true)
         {
             $prefix = $payment->getMethod() . '_' . self::NB_PLUS_PAYMENTS_PREFIX;
