@@ -189,11 +189,11 @@ class BajajFinservEmiTest extends TestCase
 
         $this->assertEquals(4940, $txn['debit']);
 
-        $this->assertEquals(60, $txn['fee']);
+        $this->assertEquals(0, $txn['fee']);
 
-        $this->assertEquals(10, $txn['tax']);
+        $this->assertEquals(0, $txn['tax']);
 
-        $this->assertEquals(60, $txn['mdr']);
+        $this->assertEquals(0, $txn['mdr']);
 
         $this->assertEquals(118, $paymentEntity['fee']);
 
@@ -282,11 +282,11 @@ class BajajFinservEmiTest extends TestCase
 
         $this->assertEquals(9882, $txn['debit']);
 
-        $this->assertEquals(118, $txn['fee']);
+        $this->assertEquals(0, $txn['fee']);
 
-        $this->assertEquals(18, $txn['tax']);
+        $this->assertEquals(0, $txn['tax']);
 
-        $this->assertEquals(118, $txn['mdr']);
+        $this->assertEquals(0, $txn['mdr']);
 
         $this->assertEquals(118, $paymentEntity['fee']);
         $this->assertEquals('refunded', $paymentEntity['status']);

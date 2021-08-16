@@ -147,9 +147,9 @@ class Refund extends Base
 
         $paymentClone->base_amount = $this->txn->amount;
 
-       list($this->fees, $this->tax, $this->feesplit) = (new Pricing\Fee)->calculateMerchantFees($paymentClone);
+       list($fees, $tax, $feesplit) = (new Pricing\Fee)->calculateMerchantFees($paymentClone);
 
-        return $this->fees;
+        return $fees;
     }
 
     public function getDiscountIfApplicable($payment)
