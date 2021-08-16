@@ -62,7 +62,14 @@ class Repository extends Base\Repository
     {
         // Collect different table names, and their columns to query on
         $hostname = mb_strtolower($hostname);
+        // if org host has the pattern dashboard-.*.dev.razorpay.in -> dashboard.dev.razorpay.in
+        //This is for the feature in devstack where the host name will be appended with label as a preview URL
+        $isMatched = preg_match('/dashboard-(.*).dev.razorpay.in/', $hostname, $matches);
 
+        if ($isMatched === 1)
+        {
+            $hostname = \RZP\Models\Admin\Org\Constants::DEVSERVE_HOST_URL ;
+        }
         $orgId = $this->dbColumn(Entity::ID);
         $orgColumnNames = $this->dbColumn('*');
 

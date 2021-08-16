@@ -52,3 +52,5 @@ api.iml
 
 #Central Repo Error Codes
 error_codes/
+
+.devspace/
