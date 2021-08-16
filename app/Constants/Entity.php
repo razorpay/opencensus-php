@@ -908,6 +908,7 @@ class Entity
         self::ACTION_COMMENT               => \RZP\Models\Workflow\Action\Comment::class,
         self::STATE_REASON                 => \RZP\Models\State\Reason::class,
         self::WORKFLOW_PAYOUT_AMOUNT_RULES => \RZP\Models\Workflow\PayoutAmountRules::class,
+        self::COMMENT                      => \RZP\Models\Comment::class,
 
         self::TAX_GROUP             => \RZP\Models\Tax\Group::class,
         self::LINE_ITEM_TAX         => \RZP\Models\LineItem\Tax::class,

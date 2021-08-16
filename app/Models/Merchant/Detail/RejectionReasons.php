@@ -861,7 +861,6 @@ class RejectionReasons
             ],
         ]
     ];
-
     /**
      * Given a rejection reason code, it will return the corresponding rejection reason description
      *
@@ -870,6 +869,12 @@ class RejectionReasons
      * @return string $reasonDescription
      * @throws Exception\BadRequestValidationFailureException
      */
+
+    public static function getDescriptionReasonCodeMapping()
+    {
+        return array_flip(self::REASON_CODES_DESCRIPTIONS_MAPPING);
+    }
+
     public static function getReasonDescriptionByReasonCode(string $reasonCode): string
     {
         if (isset(self::REASON_CODES_DESCRIPTIONS_MAPPING[$reasonCode]) === false) {

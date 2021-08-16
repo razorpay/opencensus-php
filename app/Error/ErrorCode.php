@@ -2040,6 +2040,7 @@ class ErrorCode
     const BAD_REQUEST_ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED                       = 'BAD_REQUEST_ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED';
 
     //typeform Error codes
+    const BAD_REQUEST_INVALID_COMMENT                                               = 'BAD_REQUEST_INVALID_COMMENT';
 
     const BAD_REQUEST_INVALID_PLAYSTORE_URL                                         = 'BAD_REQUEST_INVALID_PLAYSTORE_URL';
 
