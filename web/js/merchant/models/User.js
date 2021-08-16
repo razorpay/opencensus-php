@@ -1113,7 +1113,15 @@ export default class User {
   }
 
   get isAadharEkycMandatory() {
-    return this.getExpStatus('mandatory_aadhar_ekyc') && !this.isPartner();
+    const query = QueryString.parse(window.location.search);
+    const isSourceRX = !!(query && query.merchant && query.merchant === 'x');
+
+    // not required for Razorpay X, partner accounts and sub merchants
+    if (isSourceRX || this.isPartner() || this.isSubMerchant) {
+      return false;
+    }
+
+    return this.getExpStatus('mandatory_aadhar_ekyc');
   }
 
   get isGstinMandatory() {
