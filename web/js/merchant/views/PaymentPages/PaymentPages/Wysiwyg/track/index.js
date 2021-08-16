@@ -2,7 +2,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 function _track() {
-    let lumberjackTrack;
+    let lumberjackTrack = () => {};
     let config = {
       payment_page_id: '',
     };
