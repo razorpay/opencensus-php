@@ -9005,4 +9005,21 @@ return [
             ],
         ],
     ],
+    
+    'testRiskTaggedMerchantReleaseFundsWithWorkflowWithoutPermission' => [
+        'request' => [
+            'content' => [
+                'action' => 'release_funds'
+            ],
+            'url' => '/merchants/%s/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'workflow' => [
+                    'name' => "Release Funds",
+                ],
+            ],
+        ],
+    ],
 ];

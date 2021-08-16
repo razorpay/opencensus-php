@@ -11713,10 +11713,58 @@ class MerchantTest extends TestCase
     
         $workflowAction = $this->getLastEntity('workflow_action', true);
     
+        $this->esClient->indices()->refresh();
+        
         $this->performWorkflowAction($workflowAction['id'], true);
     
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
     
         $this->assertEquals(false, $merchant->isFundsOnHold());
+    }
+    
+    /**
+     * Failure test case
+     *
+     * Testing the flow for "release_funds" for the merchant which is tagged by risk team,
+     * for such cases, workflow will be created.
+     * Checker should have the 'merchant_risk_constructive_action'
+     * if not then validation exception will be thrown
+     *
+     */
+    public function testRiskTaggedMerchantReleaseFundsWithWorkflowWithoutPermission()
+    {
+        $this->createMerchantForRiskTaggedMerchantForReleaseFundsWithWorkflow([PermissionName::EDIT_MERCHANT_RELEASE_FUNDS]);
+        
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], '10000000000000');
+    
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        
+        $response = $this->startTest();
+    
+        $this->assertStringStartsWith('w_action_', $response['id']);
+    
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+    
+        $this->esClient->indices()->refresh();
+        
+        $caughtException = false;
+        
+        try
+        {
+            $this->performWorkflowAction($workflowAction['id'], true);
+        }
+        catch (BadRequestValidationFailureException $e)
+        {
+            $this->assertEquals(
+                'Merchant is tagged by risk team hence constructive action can be performed on this only by risk team',
+            $e->getMessage());
+            $caughtException = true;
+        }
+        
+        $this->assertEquals(true, $caughtException);
+        
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+    
+        $this->assertEquals(true, $merchant->isFundsOnHold());
     }
 }
