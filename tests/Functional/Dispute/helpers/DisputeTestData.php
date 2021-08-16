@@ -1240,6 +1240,60 @@ return [
             ],
         ],
     ],
+    'testDisputeFetchLifecycleForAdmin' => [
+        'request' => [
+            'url'       => '/admin/dispute/',
+            'method'    => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'lifecycle' => [
+                    [
+                        'admin_id'    => 'RzrpySprAdmnId',
+                        'merchant_id' => null,
+                        'user_id'     => null,
+                        'auth_type'   => 'privilege',
+                        'app'         => 'admin_dashboard',
+                        'change'      => [
+                            'new' => [
+                                "entity"             => "dispute",
+                                "amount"             => 100,
+                                "currency"           => "INR",
+                                "amount_deducted"    => 0,
+                                "gateway_dispute_id" => "4342frf34r",
+                                "reason_code"        => "dummy_reason",
+                                "reason_description" => "This is a serious fraud",
+                                "status"             => "open",
+                                "phase"              => "chargeback",
+                            ],
+                            'old' => null,
+                        ],
+                    ],
+                    [
+                        'admin_id'    => 'RzrpySprAdmnId',
+                        'merchant_id' => '10000000000000',
+                        'user_id'     => null,
+                        'auth_type'   => 'private',
+                        'app'         => 'admin_dashboard',
+                        'change'      => [
+                            'old' => [
+                                'status'                => 'open',
+                                'internal_status'       => 'open',
+                                'deduction_source_type' => null,
+                            ],
+                            'new' => [
+                                'status'                => 'lost',
+                                'internal_status'       => 'lost_merchant_debited',
+                                'deduction_source_type' => 'adjustment',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+
 
     'testDisputeFetchForAdminInternalRespondByPrioritize'    => [
         'request'   => [

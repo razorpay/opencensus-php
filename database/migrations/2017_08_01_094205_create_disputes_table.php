@@ -119,6 +119,9 @@ class CreateDisputesTable extends Migration
 
             $table->integer(Dispute::EXPIRES_ON);
 
+            $table->json(Dispute::LIFECYCLE)
+                  ->nullable();
+
             $table->index(Dispute::STATUS);
             $table->index(Dispute::PHASE);
             $table->index(Dispute::REASON_CODE);

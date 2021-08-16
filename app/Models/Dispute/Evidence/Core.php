@@ -190,6 +190,8 @@ class Core extends Base\Core
             }
         }
 
+        $result[Constants::ACTION] = $newInput[Constants::ACTION] ?? Action::DRAFT;
+
         return $result;
     }
 

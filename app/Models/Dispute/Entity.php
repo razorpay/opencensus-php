@@ -9,12 +9,15 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 
 class Entity extends Base\PublicEntity
 {
-    use Base\Traits\RevisionableTrait;
+    use Base\Traits\RevisionableTrait {
+        preSave as traitPreSave;
+    }
 
     const MERCHANT_ID             = 'merchant_id';
     const PARENT_ID               = 'parent_id';
@@ -43,6 +46,7 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT              = 'updated_at';
     const RESOLVED_AT             = 'resolved_at';
     const BACKFILL                = 'backfill';
+    const LIFECYCLE               = 'lifecycle';
 
     const EMAIL_NOTIFICATION_STATUS = 'email_notification_status';
 
@@ -91,6 +95,15 @@ class Entity extends Base\PublicEntity
 
     const DEDUCTION_SOURCE_TYPE_LENGTH = 30;
     const DEDUCTION_SOURCE_ID_LENGTH   = 14;
+
+    //Lifecycle related constants
+    const ADMIN_ID      = 'admin_id';
+    const USER_ID       = 'user_id';
+    const AUTH_TYPE     = 'auth_type';
+    const CHANGE        = 'change';
+    const APP           = 'app';
+    const LIFECYCLE_NEW = 'new';
+    const LIFECYCLE_OLD = 'old';
 
     private $backfill = false;
 
@@ -159,6 +172,7 @@ class Entity extends Base\PublicEntity
         self::COMMENTS,
         self::EMAIL_NOTIFICATION_STATUS,
         self::EVIDENCE,
+        self::LIFECYCLE,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -204,6 +218,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DEDUCTED     => 'int',
         self::AMOUNT_REVERSED     => 'int',
         self::DEDUCT_AT_ONSET     => 'bool',
+        self::LIFECYCLE           => 'json',
     ];
 
     protected $guarded = [self::ID];
@@ -240,6 +255,21 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED,
         self::AMOUNT_DEDUCTED,
     ];
+
+    public function preSave()
+    {
+        $this->traitPreSave();
+
+        try
+        {
+            $this->updateLifecycleIfApplicable();
+        }
+        catch (\Exception $exception)
+        {
+            $this->getTrace()->traceException($exception);
+        }
+
+    }
 
     // ----------------------- Generators --------------------------------------
 
@@ -480,6 +510,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function setLifecycle(array $lifecycle)
+    {
+        $this->setAttribute(self::LIFECYCLE, $lifecycle);
+    }
+
     // ----------------------- Setters Ends-------------------------------------
 
     // ------------ Mutators Starts -------------------
@@ -487,6 +522,36 @@ class Entity extends Base\PublicEntity
     protected function setPhaseAttribute($phase)
     {
         $this->attributes[self::PHASE] = strtolower($phase);
+    }
+
+    protected function updateLifecycleIfApplicable()
+    {
+        $ba = App::getFacadeRoot()['basicauth'];
+
+        if ($this->shouldUpdateLifecycle() === false)
+        {
+            return;
+        }
+
+        $baAdmin = $ba->getAdmin();
+
+        $baMerchantId = $ba->getMerchantId();
+
+        $baUser = $ba->getUser();
+
+        $lifecycleEntry = [
+            self::ADMIN_ID      => $baAdmin === null ? null : $baAdmin->getId(),
+            self::MERCHANT_ID   => $baMerchantId,
+            self::USER_ID       => $baUser === null ? null : $baUser ->getId(),
+            self::AUTH_TYPE     => $ba->getAuthType(),
+            self::APP           => $ba->getInternalApp() ?? null,
+            self::CHANGE        => $this->getChangesForLifecycle(),
+            self::CREATED_AT    => time(),
+        ];
+
+        $this->getTrace()->info(TraceCode::DISPUTE_LIFECYCLE_APPEND, $lifecycleEntry);
+
+        $this->appendEntryToLifecycle($lifecycleEntry);
     }
 
     // ------------ Mutators Ends ---------------------
@@ -601,6 +666,11 @@ class Entity extends Base\PublicEntity
     public function getGatewayDisputeId()
     {
         return $this->getAttribute(self::GATEWAY_DISPUTE_ID);
+    }
+
+    protected function getLifecycle() : array
+    {
+        return $this->getAttribute(self::LIFECYCLE) ?? [];
     }
 
 
@@ -740,5 +810,46 @@ class Entity extends Base\PublicEntity
         }
 
         return true;
+    }
+
+    protected function shouldUpdateLifecycle(): bool
+    {
+        if (empty($this->getDirty()) === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function appendEntryToLifecycle(array $entry)
+    {
+        $lifecycle = $this->getLifecycle();
+
+        array_push($lifecycle, $entry);
+
+        $this->setLifecycle($lifecycle);
+    }
+
+    protected function getChangesForLifecycle() : array
+    {
+        if ($this->exists === false)
+        {
+            return [
+                self::LIFECYCLE_OLD       => null,
+                self::LIFECYCLE_NEW       => $this->getFormattedRevisionsForPostCreate()['entity']['change']['new'] ?? null,
+            ];
+        }
+
+        if ($this->updating === true)
+        {
+            $formattedRevisions = $this->getFormattedRevisionsForPostSave();
+
+            return [
+                self::LIFECYCLE_OLD   => $formattedRevisions['entity']['change']['old'],
+                self::LIFECYCLE_NEW   => $formattedRevisions['entity']['change']['new'],
+            ];
+        }
+
     }
 }

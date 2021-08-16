@@ -192,6 +192,32 @@ return [
         ],
     ],
 
+    'testInitiateDraftEvidenceOnlyActionSubmitted' => [
+        'request'   => [
+            'url'     => '/disputes/disp_0123456789abcd/contest',
+            'method'  => 'PATCH',
+            'content' => [
+                'action'  => 'draft',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'id'       => 'disp_0123456789abcd',
+                'evidence' => [
+                    'amount'                     => 1000000,
+                    'cancellation_proof'         => null,
+                    'customer_communication'     => null,
+                    'proof_of_service'           => null,
+                    'explanation_letter'         => null,
+                    'refund_confirmation'        => null,
+                    'access_activity_log'        => null,
+                    'refund_cancellation_policy' => null,
+                    'terms_and_conditions'       => null,
+                ],
+            ],
+        ],
+    ],
+
     'testInitiateDraftEvidenceInvalidProofSubmitted' => [
         'request'   => [
             'url'     => '/disputes/disp_0123456789abcd/contest',

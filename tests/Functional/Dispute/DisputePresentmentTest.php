@@ -215,6 +215,14 @@ class DisputePresentmentTest extends TestCase
         $this->startTest();
     }
 
+    public function testInitiateDraftEvidenceOnlyActionSubmitted()
+    {
+        $this->setUpForInitiateDraftEvidenceTest();
+
+        $this->startTest();
+
+    }
+
     public function testInitiateDraftEvidenceInvalidProofSubmitted()
     {
         $this->setUpForInitiateDraftEvidenceTest();

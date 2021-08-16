@@ -6347,3 +6347,6 @@ ALTER TABLE iins
 
 ALTER TABLE merchant_banks
     ADD COLUMN additional_wallets json DEFAULT NULL;
+
+ALTER TABLE disputes
+    ADD COLUMN lifecycle json DEFAULT NULL;

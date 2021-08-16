@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Dispute;
 
+use DB;
 use Mail;
 use Cache;
 use Mockery;
@@ -810,6 +811,7 @@ class DisputeTest extends TestCase
                   'deduction_source_id',
                   'internal_status',
                   'internal_respond_by',
+                  'lifecycle',
                  ] as $keysNotVisibleToMerchant)
         {
             $this->assertArrayNotHasKey($keysNotVisibleToMerchant, $content);
@@ -850,6 +852,57 @@ class DisputeTest extends TestCase
         $testData = $this->updateFetchTestData();
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    public function testDisputeFetchLifecycleForAdmin()
+    {
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        $reason = $this->fixtures->create('dispute_reason', [
+            'code'    => 'dummy_reason',
+            'network' => Network::VISA,
+        ]);
+
+        $paymentId = $this->fixtures->create('payment:captured')->getPublicId();
+
+        $this->ba->adminAuth();
+
+        $disputeId = $this->makeRequestAndGetContent([
+            'url'       => "/payments/{$paymentId}/disputes",
+            'method'    => 'post',
+            'content'   => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+                'reason_id'            => $reason['id'],
+            ],
+        ])['id'];
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
+
+        // now edit the dispute and make it lost
+        $this->makeRequestAndGetContent([
+           'url'        => '/disputes/' . $disputeId,
+           'method'     => 'post',
+           'content'    => [
+                'status' => 'lost',
+           ],
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $disputeId;
+
+        $this->ba->adminAuth();
+
+        $lifecycle = $this->startTest()['lifecycle'];
+
+        foreach ($lifecycle as $entry)
+        {
+            $this->assertArrayHasKey('created_at', $entry);
+        }
+
     }
 
     public function testDisputeFetchForAdminInternalStatusParam()

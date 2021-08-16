@@ -179,22 +179,7 @@ trait RevisionableTrait
         {
             // if it does, it means we're updating
 
-            $changes_to_record = $this->changedRevisionableFields();
-
-            $revisions = array();
-
-            foreach ($changes_to_record as $key => $change)
-            {
-                $revisions[] = [
-                    'revisionable_type' => $this->getMorphClass(),
-                    'revisionable_id' => $this->getKey(),
-                    'key' => $key,
-                    'old_value' => array_get($this->originalData, $key),
-                    'new_value' => $this->updatedData[$key]
-                ];
-            }
-
-            $formattedRevisons = $this->formatRevisions($revisions, 'EDIT');
+            $formattedRevisons = $this->getFormattedRevisionsForPostSave();
 
             if ((empty($formattedRevisons) === false) and (empty($this->getAuditAction()) === false))
             {
@@ -236,19 +221,7 @@ trait RevisionableTrait
 
         if ((!isset($this->revisionEnabled) or $this->revisionEnabled))
         {
-            $created = $this->toArrayPublic();
-
-            //$removeFields = ['created_at','updated_at','deleted_at'];
-
-            //unset($this->originalData[$removeFields]);
-
-            $revisions = [
-                'revisionable_type' => $this->getMorphClass(),
-                'revisionable_id' => $this->getKey(),
-                'created' => $created
-            ];
-
-            $formatted = $this->formatRevisions($revisions, 'CREATE');
+            $formatted = $this->getFormattedRevisionsForPostCreate();
 
             $trace = $this->getTrace();
 
@@ -599,5 +572,42 @@ trait RevisionableTrait
         }
 
         return [$entityName, $entityId];
+    }
+
+    protected function getFormattedRevisionsForPostSave(): ?array
+    {
+        $changes_to_record = $this->changedRevisionableFields();
+
+        $revisions = [];
+
+        foreach ($changes_to_record as $key => $change)
+        {
+            $revisions[] = [
+                'revisionable_type' => $this->getMorphClass(),
+                'revisionable_id'   => $this->getKey(),
+                'key'               => $key,
+                'old_value'         => array_get($this->originalData, $key),
+                'new_value'         => $this->updatedData[$key]
+            ];
+        }
+
+        return $this->formatRevisions($revisions, 'EDIT');
+    }
+
+    protected function getFormattedRevisionsForPostCreate(): ?array
+    {
+        $created = $this->toArrayPublic();
+
+        //$removeFields = ['created_at','updated_at','deleted_at'];
+
+        //unset($this->originalData[$removeFields]);
+
+        $revisions = [
+            'revisionable_type' => $this->getMorphClass(),
+            'revisionable_id'   => $this->getKey(),
+            'created'           => $created
+        ];
+
+        return $this->formatRevisions($revisions, 'CREATE');
     }
 }

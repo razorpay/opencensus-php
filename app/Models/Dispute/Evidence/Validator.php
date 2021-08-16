@@ -29,11 +29,15 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::DISPUTE_ID => 'required|size:14',
-        Entity::SUMMARY    => 'required',
+        Entity::SUMMARY    => 'sometimes|string',
         Entity::AMOUNT     => 'required|integer|min:0',
         Entity::CURRENCY   => 'required',
         Entity::SOURCE     => 'required',
         Constants::ACTION  => 'required',
+    ];
+
+    protected static $createValidators = [
+        'empty_summary_on_accept',
     ];
 
     public function validateAmount(Dispute\Entity $dispute, array $createInput)
@@ -73,5 +77,22 @@ class Validator extends Base\Validator
 
             Constants::ACTION,
             $exceptionData);
+    }
+
+    public function validateEmptySummaryOnAccept($input)
+    {
+        if ($input[Constants::ACTION] === Action::DRAFT)
+        {
+            return;
+        }
+
+        $summary = $input[Entity::SUMMARY] ?? '';
+
+        if (strlen($summary) > 0)
+        {
+            return;
+        }
+
+        throw new BadRequestValidationFailureException('Summary cannot be empty');
     }
 }
