@@ -610,6 +610,7 @@ export default class HomeContainer extends Component {
             });
 
             localStorage.setItem(`rzp_mode--${user.current}`, 'live');
+            localStorage.setItem(`is_activated--${user.current}`, 'true');
             updateSession({ user: userData, mode: 'live' });
             analyticsTrack({
               objectName: 'IA Page',

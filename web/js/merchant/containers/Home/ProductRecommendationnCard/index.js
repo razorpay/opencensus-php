@@ -16,7 +16,12 @@ const RecommendationWidget = ({ user, history }) => {
       method: 'post',
       data: {
         filters: {
-          default: [{ created_at: { gte: user.activated_at, lte: new Date().getTime() } }],
+          default: [
+            {
+              created_at: { gte: user.activated_at, lte: new Date().getTime() },
+              authorized_at: { gt: 0 },
+            },
+          ],
         },
         aggregations: {
           transactionVolume: {
