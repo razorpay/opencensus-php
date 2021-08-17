@@ -51,9 +51,14 @@ class Service extends Base\Service
         Constants::RZPCAP => ['Corporate card related','Instant Settlements', 'Cash Advance', 'Working Capital Loan'],
     ];
 
-    public function getTicketStatus(array $response)
+    public function getTicketStatusForCustomer(array $response)
     {
-        return TicketStatus::$ticketStatusMapping[$response['status']];
+        if (array_key_exists($response['status'], TicketStatus::$ticketStatusMapping) === true)
+        {
+            return TicketStatus::$ticketStatusMapping[$response['status']];
+        }
+
+        return TicketStatus::$ticketStatusMapping[2];
     }
 
     public function getReserveBalanceTicketStatus() : array
@@ -70,9 +75,9 @@ class Service extends Base\Service
         $response = $this->app['freshdesk_client']->getReserveBalanceTicketStatus($ticketId);
 
         $response = [
-            'ticket_id'         => $response['id'],
-            'ticket_status'     => (new FreshdeskTicketService)->getTicketStatus($response),
-            'ticket_exists'     =>  true,
+            'ticket_id'     => $response['id'],
+            'ticket_status' => (new FreshdeskTicketService)->getTicketStatusForCustomer($response),
+            'ticket_exists' => true,
         ];
 
         return $response;
@@ -224,17 +229,17 @@ class Service extends Base\Service
             }
 
             $ticketResponse = [
-                'number'            => $ticket['id'],
-                'status'            => $this->getTicketStatus($ticket),
-                'subject'           => $ticket['subject'],
-                'source'            => $ticket['source'],
-                'type'              => $ticket['type'],
-                'payment_id'        => $ticket['custom_fields']['cf_razorpay_payment_id'],
-                'refund_id'         => $ticket['custom_fields']['cf_refund_id'],
-                'order_id'          => $ticket['custom_fields']['cf_order_id'],
-                'transaction_id'    => $ticket['custom_fields']['cf_transaction_id'],
-                'created_at'        => $ticket['created_at'],
-                'updated_at'        => $ticket['updated_at'],
+                'number'         => $ticket['id'],
+                'status'         => $this->getTicketStatusForCustomer($ticket),
+                'subject'        => $ticket['subject'],
+                'source'         => $ticket['source'],
+                'type'           => $ticket['type'],
+                'payment_id'     => $ticket['custom_fields']['cf_razorpay_payment_id'],
+                'refund_id'      => $ticket['custom_fields']['cf_refund_id'],
+                'order_id'       => $ticket['custom_fields']['cf_order_id'],
+                'transaction_id' => $ticket['custom_fields']['cf_transaction_id'],
+                'created_at'     => $ticket['created_at'],
+                'updated_at'     => $ticket['updated_at'],
             ];
 
             $response[] = $ticketResponse;
@@ -300,7 +305,7 @@ class Service extends Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
         }
 
-        if ($this->getTicketStatus($ticket) === TicketStatus::CLOSED)
+        if ($this->getTicketStatusForCustomer($ticket) === TicketStatus::CLOSED)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_ALREADY_CLOSED);
         }
@@ -333,18 +338,18 @@ class Service extends Base\Service
         $this->validateNoteResponse($noteResponse, $customerDescription);
 
         return [
-            'number'            => $ticket['id'],
-            'status'            => $this->getTicketStatus($ticket),
-            'subject'           => $ticket['subject'],
-            'source'            => $ticket['source'],
-            'type'              => $ticket['type'],
-            'description'       => $ticket['description'],
-            'payment_id'        => $ticket['custom_fields']['cf_razorpay_payment_id'],
-            'refund_id'         => $ticket['custom_fields']['cf_refund_id'],
-            'order_id'          => $ticket['custom_fields']['cf_order_id'],
-            'transaction_id'    => $ticket['custom_fields']['cf_transaction_id'],
-            'created_at'        => $ticket['created_at'],
-            'updated_at'        => $ticket['updated_at'],
+            'number'         => $ticket['id'],
+            'status'         => $this->getTicketStatusForCustomer($ticket),
+            'subject'        => $ticket['subject'],
+            'source'         => $ticket['source'],
+            'type'           => $ticket['type'],
+            'description'    => $ticket['description'],
+            'payment_id'     => $ticket['custom_fields']['cf_razorpay_payment_id'],
+            'refund_id'      => $ticket['custom_fields']['cf_refund_id'],
+            'order_id'       => $ticket['custom_fields']['cf_order_id'],
+            'transaction_id' => $ticket['custom_fields']['cf_transaction_id'],
+            'created_at'     => $ticket['created_at'],
+            'updated_at'     => $ticket['updated_at'],
         ];
     }
 
