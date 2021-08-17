@@ -707,7 +707,7 @@ class Currency
         self::THB => 64,
         self::TTD => 14,
         self::TZS => 1000,
-        self::USD => 50,
+        self::USD => 10,
         self::UYU => 67,
         self::UZS => 1000,
         self::YER => 501,

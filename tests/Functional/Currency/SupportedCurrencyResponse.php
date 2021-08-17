@@ -699,7 +699,7 @@ $responseContent = [
     ],
     'USD' => [
         'code'           => '840',
-        'min_value'      => 50,
+        'min_value'      => 10,
         'min_auth_value' => 50,
         'denomination'   => 100,
         'symbol'         => '$',

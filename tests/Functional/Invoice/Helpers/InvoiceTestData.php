@@ -1738,7 +1738,7 @@ return [
                     'contact'   => '9999999999',
                     'name'      => 'test',
                 ],
-                'amount'        => 10,
+                'amount'        => 5,
                 'currency'      => 'USD',
                 'type'          => 'link',
             ],
@@ -1747,7 +1747,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The amount must be atleast USD 0.50',
+                    'description' => 'The amount must be atleast USD 0.10',
                 ],
             ],
             'status_code' => 400,
