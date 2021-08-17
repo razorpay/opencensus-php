@@ -5,6 +5,7 @@ namespace Unit\Models\Merchant\Detail;
 
 
 use Config;
+use Mail;
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Fixtures\Entity\Merchant;
@@ -23,7 +24,7 @@ class PoiVerificationTest extends TestCase
         Config::set('applications.kyc.mock', true);
         Config::set('services.bvs.mock', true);
         Config::set('services.bvs.response', 'success');
-
+        Mail::fake();
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
             ->setMethods(['getTreatment'])

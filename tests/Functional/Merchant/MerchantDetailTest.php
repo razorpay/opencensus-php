@@ -2756,11 +2756,15 @@ class MerchantDetailTest extends OAuthTestCase
      */
     protected function submitL2FormAndVerifyBvsValidation(array $input, string $mid, array $validationInput)
     {
+        Config::set('applications.kyc.mock', true);
         Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        Mail::fake();
 
         $this->checkCanSubmitForAutoKycVerificationStatus($input, 'testSubmit');
 
-        $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
+        $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant','artefact_type'=>$validationInput['artefact_type'],'validation_unit' => $validationInput['validation_unit']]);
 
         $this->assertNotNull($bvsValidation);
 
@@ -2966,7 +2970,6 @@ class MerchantDetailTest extends OAuthTestCase
         ], $pincodeRule);
 
         $this->assertArraySelectiveEquals([
-            'validation_id'     => 'ValidationId12',
             'owner_id'          => $merchant['id'],
             'owner_type'        => 'merchant',
             'validation_status' => 'captured',

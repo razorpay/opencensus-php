@@ -67,7 +67,7 @@ class BvsValidationTest extends TestCase
         ];
 
         // since we've removed that code now.
-        $this->assertNull($bvsValidation);
+        $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
 
     }
 

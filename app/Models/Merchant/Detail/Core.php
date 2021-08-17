@@ -1170,6 +1170,9 @@ class Core extends Base\Core
 
         $this->updateDocumentVerificationStatus(
             $merchant, Constant::PERSONAL_PAN, BvsValidationConstants::IDENTIFIER);
+
+        //call to bvs for personal pan before l1 submission
+        (new requestDispatcher\PersonalPan($merchant, $merchantDetails))->triggerBVSRequest();
     }
 
     /**
@@ -1210,6 +1213,9 @@ class Core extends Base\Core
         }
 
         $this->updateDocumentVerificationStatus($merchant, Constant::BUSINESS_PAN);
+
+        //call to bvs for company pan before l1 submission
+        (new requestDispatcher\CompanyPan($merchant, $merchantDetails))->triggerBVSRequest();
     }
 
     /**

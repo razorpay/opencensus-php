@@ -6,7 +6,7 @@ use Rzp\Bvs\Validation\V1\Error;
 use RZP\Exception\IntegrationException;
 use RZP\Models\Merchant\AutoKyc\Response;
 use Rzp\Bvs\Validation\V1\ValidationResponse;
-
+use RZP\Models\Merchant\BvsValidation\Entity as BvsValidationEntity;
 class DefaultProcessorMock extends DefaultProcessor
 {
     private $mockStatus;
@@ -33,7 +33,11 @@ class DefaultProcessorMock extends DefaultProcessor
         {
             case Constant::SUCCESS:
 
-                $validationResponse->setValidationId('ValidationId12');
+                $bvsValidation = new BvsValidationEntity();
+
+                $bvsValidation->generateId();
+
+                $validationResponse->setValidationId($bvsValidation->getId());
 
                 $validationResponse->setStatus('captured');
 
