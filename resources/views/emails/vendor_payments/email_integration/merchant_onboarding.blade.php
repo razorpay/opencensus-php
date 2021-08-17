@@ -82,6 +82,9 @@
       </style>
     <![endif]-->
     <style type="text/css">
+      a:link, a:visited, a:hover, a:active {
+        color: #5A99E8 !important
+      }
       @media only screen and (min-width: 480px) {
         .mj-column-per-100 {
           width: 100% !important;
