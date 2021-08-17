@@ -20,7 +20,7 @@ class Service extends Base\Service
 
     public function getConfig(string $merchantId, string $merchantProductConfigId)
     {
-        $timeStarted = microtime(true);
+        $timeStarted = millitime();
 
         list($merchant, $partner) = $this->validateAndSetMerchantContext($merchantId);
 
@@ -30,7 +30,7 @@ class Service extends Base\Service
 
         $response = $this->core()->getConfig($merchant, $merchantProduct);
 
-        $timeTaken = get_diff_in_millisecond($timeStarted);
+        $timeTaken = millitime() - $timeStarted;
 
         $this->captureMetricsForFetchProductConfig($merchantProduct, $timeTaken);
 

@@ -106,7 +106,7 @@ class Service extends Base\Service
     {
         list($entity, $merchant) = $this->validateAndGetDocumentRequest($accountId, $entityType, $entityId);
 
-        $timeStarted = microtime(true);
+        $timeStarted = millitime();
 
         $documentResponse =  (new DocumentResponse)->documentsResponse($merchant, $entityType, $entity->getId());
 
@@ -117,7 +117,7 @@ class Service extends Base\Service
 
     public function postDocumentsByPartner(string $accountId, string $entityType, string $entityId, array $input)
     {
-        $timeStarted = microtime(true);
+        $timeStarted = millitime();
 
         list($entity, $merchant) = $this->validateAndGetDocumentRequest($accountId, $entityType, $entityId);
 
@@ -169,7 +169,7 @@ class Service extends Base\Service
         ];
 
         $this->trace->count(Metric::DOCUMENT_UPLOAD_V2_SUCCESS_TOTAL, $dimensions);
-        $this->trace->histogram(Metric::DOCUMENT_UPLOAD_V2_SUCCESS_TOTAL, get_diff_in_millisecond($timeStarted), $dimensions);
+        $this->trace->histogram(Metric::DOCUMENT_UPLOAD_V2_SUCCESS_TOTAL, millitime() - $timeStarted, $dimensions);
     }
 
     private function captureMetricsForDocumentFetch($entity, $timeStarted)
@@ -179,7 +179,7 @@ class Service extends Base\Service
         ];
 
         $this->trace->count(Metric::DOCUMENT_FETCH_V2_SUCCESS_TOTAL, $dimensions);
-        $this->trace->histogram(Metric::DOCUMENT_FETCH_V2_TIME_IN_MS, get_diff_in_millisecond($timeStarted), $dimensions);
+        $this->trace->histogram(Metric::DOCUMENT_FETCH_V2_TIME_IN_MS, millitime() - $timeStarted, $dimensions);
     }
 
     protected function validateAndGetDocumentRequest(string $accountId, string $entityType, string $entityId)

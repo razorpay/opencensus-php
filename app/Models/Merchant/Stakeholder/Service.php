@@ -28,7 +28,7 @@ class Service extends Base\Service
 
     public function fetch(string $accountId, string $id)
     {
-        $timeStarted = microtime(true);
+        $timeStarted = millitime();
 
         (new Account\Core)->validatePartnerAccess($this->merchant, $accountId);
 
@@ -43,7 +43,7 @@ class Service extends Base\Service
 
         $this->trace->count(Metric::STAKEHOLDER_V2_FETCH_SUCCESS_TOTAL, $dimensions);
 
-        $this->trace->histogram(Metric::STAKEHOLDER_V2_FETCH_TIME_IN_MS, get_diff_in_millisecond($timeStarted), $dimensions);
+        $this->trace->histogram(Metric::STAKEHOLDER_V2_FETCH_TIME_IN_MS, millitime() - $timeStarted, $dimensions);
 
         return $publicResponse;
     }

@@ -44,7 +44,7 @@ class Core extends Merchant\Core
 
     public function fetchAccountV2(string $accountId)
     {
-        $timeStarted = microtime(true);
+        $timeStarted = millitime();
 
         $accountCoreV1 = new Merchant\Account\Core();
 
@@ -64,7 +64,7 @@ class Core extends Merchant\Core
 
         $this->trace->count(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $dimensions);
 
-        $this->trace->histogram(Metric::ACCOUNT_V2_FETCH_TIME_MS, get_diff_in_millisecond($timeStarted), $dimensions);
+        $this->trace->histogram(Metric::ACCOUNT_V2_FETCH_TIME_MS, millitime() - $timeStarted, $dimensions);
 
         return $account;
     }

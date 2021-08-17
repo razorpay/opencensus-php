@@ -118,6 +118,12 @@ class Event
     const PAYMENT_GATEWAY_PRODUCT_ACTIVATED           = 'product.payment_gateway.activated';
     const PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION = 'product.payment_gateway.needs_clarification';
     const PAYMENT_GATEWAY_PRODUCT_REJECTED            = 'product.payment_gateway.rejected';
+    const PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED = 'product.payment_gateway.instantly_activated';
+    const PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          = 'product.payment_links.under_review';
+    const PAYMENT_LINKS_PRODUCT_ACTIVATED             = 'product.payment_links.activated';
+    const PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   = 'product.payment_links.needs_clarification';
+    const PAYMENT_LINKS_PRODUCT_REJECTED              = 'product.payment_links.rejected';
+    const PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED   = 'product.payment_links.instantly_activated';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -221,6 +227,12 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_REJECTED,
         self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION,
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED,
+        self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED,
+        self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED,
+        self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION,
+        self::PAYMENT_LINKS_PRODUCT_REJECTED,
+        self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW,
     ];
 
     /**
@@ -331,6 +343,12 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_REJECTED,
         self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION,
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED,
+        self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED,
+        self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED,
+        self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION,
+        self::PAYMENT_LINKS_PRODUCT_REJECTED,
+        self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW,
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -435,6 +453,13 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW        => 30,
         self::PAYMENT_DISPUTE_UNDER_REVIEW                => 31,
         self::PAYMENT_DISPUTE_ACTION_REQUIRED             => 32,
+
+        self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED => 34,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED             => 35,
+        self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED   => 36,
+        self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   => 37,
+        self::PAYMENT_LINKS_PRODUCT_REJECTED              => 38,
+        self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => 39,
     ];
 
     /**
@@ -541,6 +566,12 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION => [Product::PRIMARY],
         self::PAYMENT_GATEWAY_PRODUCT_REJECTED            => [Product::PRIMARY],
         self::PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW        => [Product::PRIMARY],
+        self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED => [Product::PRIMARY],
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED             => [Product::PRIMARY],
+        self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED   => [Product::PRIMARY],
+        self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   => [Product::PRIMARY],
+        self::PAYMENT_LINKS_PRODUCT_REJECTED              => [Product::PRIMARY],
+        self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => [Product::PRIMARY],
     ];
 
     /**
@@ -642,6 +673,12 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION => Entity::MERCHANT_PRODUCT,
         self::PAYMENT_GATEWAY_PRODUCT_REJECTED            => Entity::MERCHANT_PRODUCT,
         self::PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW        => Entity::MERCHANT_PRODUCT,
+        self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED => Entity::MERCHANT_PRODUCT,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED             => Entity::MERCHANT_PRODUCT,
+        self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED   => Entity::MERCHANT_PRODUCT,
+        self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   => Entity::MERCHANT_PRODUCT,
+        self::PAYMENT_LINKS_PRODUCT_REJECTED              => Entity::MERCHANT_PRODUCT,
+        self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => Entity::MERCHANT_PRODUCT,
     ];
 
     public static $eventsToFeatureMap = [
@@ -713,6 +750,12 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_GATEWAY_PRODUCT_REJECTED            => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW        => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED             => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED   => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::PAYMENT_LINKS_PRODUCT_REJECTED              => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
     ];
 
     public static function getLaunchedEventNames()
