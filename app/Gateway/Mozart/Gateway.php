@@ -34,7 +34,6 @@ class Gateway extends Base\Gateway
 
     const CACHE_KEY    = 'gateway:cache_key_%s';
     const BAJAJ_FINSERV_REST_API =  'bajaj_finserv_rest_api';
-    const GATEWAY_SBI_PUBLIC_KEY_RAZORX_PREFIX = 'gateway_sbi_public_key';
 
     protected $map = [
         'data'      => Entity::RAW,
@@ -1610,17 +1609,9 @@ class Gateway extends Base\Gateway
         }
         if($gateway === Payment\Gateway::UPI_SBI)
         {
-            $variant = $this->app->razorx->getTreatment(
-                $this->request->getTaskId(),
-                self::GATEWAY_SBI_PUBLIC_KEY_RAZORX_PREFIX,
-                $mode);
+            $url = $baseUrl . $prefix . '/' . $gateway . '/v2/' . $this->action;
 
-            if (strtolower($variant) === 'v2')
-            {
-                $url = $baseUrl . $prefix . '/' . $gateway . '/v2/' . $this->action;
-
-                return $url;
-            }
+            return $url;
         }
         $isBajajFinserv = $this->isBajajFinservGateway($input);
 
