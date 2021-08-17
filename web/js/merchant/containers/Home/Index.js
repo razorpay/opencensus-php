@@ -612,6 +612,11 @@ export default class HomeContainer extends Component {
             localStorage.setItem(`rzp_mode--${user.current}`, 'live');
             localStorage.setItem(`is_activated--${user.current}`, 'true');
             updateSession({ user: userData, mode: 'live' });
+            this.props.showNotification({
+              type: 'success',
+              message: 'Congratulations, you are now in live mode, start accepting payments now!',
+              hidePrevious: true,
+            });
             analyticsTrack({
               objectName: 'IA Page',
               actionName: 'refreshed',

@@ -260,6 +260,11 @@ export default class ActivationContainer extends React.Component {
           if (response?.data?.activated && isTestMode) {
             localStorage.setItem(`rzp_mode--${this.props.user.current}`, 'live');
             this.props.updateSession({ mode: 'live' });
+            this.props.showNotification({
+              type: 'success',
+              message: 'You have switched to live mode, transact now!',
+              hidePrevious: true,
+            });
           }
           //if recommand product payment gateway and business_website avilable
           if (response?.data?.business_website) {
