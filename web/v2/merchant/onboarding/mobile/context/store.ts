@@ -103,7 +103,9 @@ const isTabComplete = (data, tab) => {
 type State = {
   same_address: boolean;
   has_gstin: boolean;
+  has_website_or_app: boolean;
   has_website: boolean;
+  has_app: boolean;
   active_tab_id: string;
   isFAQOpen: boolean;
   fAQSection: string;
@@ -119,7 +121,9 @@ type State = {
   setDocumentUploadCompleted: (value: boolean) => void;
   setSameAddress: (value: boolean) => void;
   setHasGSTIN: (value: boolean) => void;
+  setHasWebsiteOrApp: (value: boolean) => void;
   setHasWebsite: (value: boolean) => void;
+  setHasApp: (value: boolean) => void;
   setActiveTabId: (value: string) => void;
   setIsFAQOpen: (value: boolean) => void;
   setFAQSection: (value: string) => void;
@@ -128,7 +132,9 @@ type State = {
 const useActivationFormState = create<State>((set) => ({
   same_address: true,
   has_gstin: false,
+  has_website_or_app: false,
   has_website: false,
+  has_app: false,
   active_tab_id: 'contact_details',
   isFAQOpen: false,
   fAQSection: '',
@@ -144,6 +150,8 @@ const useActivationFormState = create<State>((set) => ({
   setDocumentUploadCompleted: (value) => set({ isDocumentsUploadCompleted: value }),
   setSameAddress: (value) => set({ same_address: value }),
   setHasGSTIN: (value) => set({ has_gstin: value }),
+  setHasWebsiteOrApp: (value) => set({ has_website_or_app: value }),
+  setHasApp: (value) => set({ has_app: value }),
   setHasWebsite: (value) => set({ has_website: value }),
   setActiveTabId: (value) => set({ active_tab_id: value }),
   setIsFAQOpen: (value) => set({ isFAQOpen: value }),

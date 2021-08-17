@@ -106,6 +106,9 @@ export default function useActivation() {
     (state) => state.setDocumentUploadCompleted,
   );
   const setHasWebsite = useActivationFormState((state) => state.setHasWebsite);
+  const setHasApp = useActivationFormState((state) => state.setHasApp);
+  const setHasWebsiteOrApp = useActivationFormState((state) => state.setHasWebsiteOrApp);
+  const activeTabId = useActivationFormState((state) => state.active_tab_id);
   const setSameAddress = useActivationFormState((state) => state.setSameAddress);
   const setHasGSTIN = useActivationFormState((state) => state.setHasGSTIN);
 
@@ -142,6 +145,21 @@ export default function useActivation() {
       if (data.business_overview.business_website.value) {
         setHasWebsite(true);
       }
+      if (data.playstore_url) {
+        setHasApp(true);
+      }
+      if (
+        !data.business_overview.business_website.value &&
+        !data.playstore_url &&
+        activeTabId !== 'business_overview'
+      ) {
+        setHasWebsiteOrApp(false);
+        setHasApp(false);
+        setHasWebsite(false);
+      }
+      if (data.business_overview.business_website.value || data.playstore_url) {
+        setHasWebsiteOrApp(true);
+      }
       if (
         isUnregisteredBusiness(data.business_overview.business_type.value) ||
         (data.business_details.business_registered_pin.value &&
@@ -172,6 +190,8 @@ export default function useActivation() {
     setBankAndCompanyDetailsCompleted,
     setDocumentUploadCompleted,
     setHasWebsite,
+    setHasApp,
+    setHasWebsiteOrApp,
     setSameAddress,
     setHasGSTIN,
   ]);
