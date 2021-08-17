@@ -6,7 +6,9 @@ use Event;
 
 use RZP\Models\Card\SubType;
 use RZP\Models\Feature;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Models\Card\Network;
 use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
@@ -511,6 +513,39 @@ class MethodsTest extends TestCase
 
         $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
 
+        $this->assertEquals(['HDFC' => 1], $merchantMethods->getDebitEmiProviders());
+    }
+
+    public function testBulkEnableHdfcDebitEmiProvider()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            MerchantEntity::ACTIVATED      => 1,
+            MerchantEntity::ACTIVATED_AT   => 1614921159,
+            MerchantEntity::CATEGORY       => 5193,
+
+        ]);
+
+        $merchantId = $merchant['id'];
+
+        $this->fixtures->create('methods', [
+            'merchant_id'    => $merchantId,
+            'emi'            => [Merchant\Methods\EmiType::DEBIT => '1'],
+            'disabled_banks' => [],
+            'banks'          => '[]'
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        // 5399 category, blacklist
+        $this->assertEquals(['HDFC' => 0], $merchantMethods->getDebitEmiProviders());
+
+        $merchantMethods = $this->getDbEntityById('merchant', $merchantId)->getMethods();
+
+        // 5193
         $this->assertEquals(['HDFC' => 1], $merchantMethods->getDebitEmiProviders());
     }
 

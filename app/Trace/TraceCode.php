@@ -3885,6 +3885,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKENIZE_QR_STRING_MPANS_REQUEST                         = 'TOKENIZE_QR_STRING_MPANS_REQUEST';
     const TOKENIZE_QR_STRING_MPANS_RESPONSE                        = 'TOKENIZE_QR_STRING_MPANS_RESPONSE';
 
+    const UPDATE_HDFC_DEBIT_EMI_VALUE_REQUEST                      = 'UPDATE_HDFC_DEBIT_EMI_VALUE_REQUEST';
+    const UPDATE_HDFC_DEBIT_EMI_VALUE_RESPONSE                     = 'UPDATE_HDFC_DEBIT_EMI_VALUE_RESPONSE';
+    const UPDATE_HDFC_DEBIT_EMI_VALUE_FAILED                       = 'UPDATE_HDFC_DEBIT_EMI_VALUE_FAILED';
     // Payout Feature
     const PAYOUT_FEATURE_ADDED                                  = 'PAYOUT_FEATURE_ADDED';
 

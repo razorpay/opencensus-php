@@ -433,6 +433,24 @@ return [
         ],
     ],
 
+    'testBulkEnableHdfcDebitEmiProvider' => [
+        'request' => [
+            'url' => '/methods/hdfc_debit_emi',
+            'method' => 'post',
+            'content'   => [
+                'count'  => 10,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'count' => "10",
+                'success' => 2,
+                'failure'=> 0,
+                'total' => 2
+            ],
+        ],
+    ],
+
     'testMerchantPaybackInEmiOptions' => [
         'request' => [
             'url' => '/merchant/methods',

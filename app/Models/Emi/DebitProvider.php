@@ -14,6 +14,7 @@ class DebitProvider
         self::HDFC,
     ];
 
+
     protected static $providerBitPositionMap = [
         self::HDFC => 1,
     ];
@@ -25,6 +26,7 @@ class DebitProvider
             throw new Exception\InvalidArgumentException('Invalid debit emi provider given');
         }
     }
+
 
     public static function getEnabledDebitEmiProviders(int $debitEmi, $providers): array
     {

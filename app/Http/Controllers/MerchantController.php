@@ -71,6 +71,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateHdfcDebitEmiPaymentMethods()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateHdfcDebitEmiPaymentMethods($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function bulkOnboardSubMerchantViaBatch()
     {
         $input = Request::all();

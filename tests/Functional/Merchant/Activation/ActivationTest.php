@@ -314,6 +314,7 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
+            'debit_emi_providers'=> ['HDFC' => 0],
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
@@ -371,6 +372,7 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => true,
+            'debit_emi_providers'=> ['HDFC' => 1],
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
@@ -443,6 +445,7 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
+            'debit_emi_providers'=> [],
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
@@ -512,6 +515,7 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
+            'debit_emi_providers'=> ['HDFC' => 1],
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
@@ -583,6 +587,7 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => true,
+            'debit_emi_providers'=> [],
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
@@ -705,6 +710,7 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => true,
+            'debit_emi_providers'=> [],
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
@@ -766,6 +772,7 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => false,
             'sbibuddy'      => false,
             'phonepe'       => false,
+            'debit_emi_providers'=> [],
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);

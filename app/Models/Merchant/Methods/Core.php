@@ -211,6 +211,7 @@ class Core extends Base\Core
         $data[Entity::DEBIT_EMI_PROVIDERS] = $methods->getDebitEmiProviders();
         $data[Entity::EMI_TYPES] = $methods->getEmiTypes();
 
+
         if ($netbankingEnabled === true)
         {
             $banks = $methods->getSupportedBanks();

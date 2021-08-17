@@ -17,6 +17,7 @@ use Razorpay\OAuth\Application as OAuthApplication;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\Error;
+use RZP\Models\Terminal\Category;
 use RZP\Models\User;
 use RZP\Models\Offer;
 use RZP\Models\Payout;
@@ -527,9 +528,9 @@ class Service extends Base\Service
             if($newSettlementService === true)
             {
                 $this->core()->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::LIVE);
-    
+
                 $this->core()->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::TEST);
-    
+
                 if ($action === Merchant\Action::RELEASE_FUNDS) {
                     (new MerchantActionNotification())->removeNotificationTag($merchant, $action);
                 }
@@ -2174,6 +2175,82 @@ class Service extends Base\Service
         $input[Methods\Entity::DISABLED_BANKS] = $disabledBanks;
 
         return (new Methods\Core)->setPaymentMethods($merchant, $input);
+    }
+
+    public function updateHdfcDebitEmiPaymentMethods($input)
+    {
+
+        $this->trace->info(
+            TraceCode::UPDATE_HDFC_DEBIT_EMI_VALUE_REQUEST,
+            $input
+        );
+
+        $count = $input['count'] ?? 100;
+
+        $sucessCount = 0;
+        $failureCount = 0;
+        $totalCount = 0;
+
+        // fetch methods from slave, debit_emi_provider value as null
+        $methods = $this->repo->useSlave(function() use ($count)
+        {
+            return $this->repo->methods->fetchMethodsToUpdateHdfcDebitEmiValue($count);;
+
+        });
+
+        foreach ($methods as $method)
+        {
+            $totalCount++;
+
+            $merchantId = $method->getMerchantId();
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $debitEmiProvider = 0;
+
+                if ($merchant->isActivated() === true)
+                {
+
+                    $category = $merchant->getCategory();
+
+                    $category2 = $merchant->getCategory2();
+
+                    $autoDisabledMethods = DefaultMethodsForCategory::getDefaultDisabledMethodsForInstrumentRequestFromMerchantCategories($category, $category2);
+
+                    if (in_array(Methods\Entity::HDFC_DEBIT_EMI, $autoDisabledMethods) === false)
+                    {
+                        $debitEmiProvider = 1;
+                    }
+                }
+
+                $method->setAttribute(Methods\Entity::DEBIT_EMI_PROVIDERS, $debitEmiProvider);
+
+                $this->repo->saveOrFail($method);
+
+                $sucessCount++;
+            }
+            catch(\Throwable $ex)
+            {
+                $data = ["merchant_id" => $merchantId];
+
+                $this->trace->traceException($ex,
+                    Trace::ERROR,
+                    TraceCode::UPDATE_HDFC_DEBIT_EMI_VALUE_FAILED,
+                    $data);
+
+                $failureCount++;
+            }
+        }
+
+        $res = ["count"=>$count, "success"=> $sucessCount, "failure"=>$failureCount, "total"=>$totalCount];
+
+        $this->trace->info(
+            TraceCode::UPDATE_HDFC_DEBIT_EMI_VALUE_RESPONSE,
+            $res
+        );
+
+        return $res;
     }
 
     public function updateMethodsForMultipleMerchants($input)

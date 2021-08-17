@@ -53,6 +53,16 @@ class Repository extends Base\Repository
         return $methods;
     }
 
+    public function fetchMethodsToUpdateHdfcDebitEmiValue($count)
+    {
+        $debitEmiProvider = $this->dbColumn(Entity::DEBIT_EMI_PROVIDERS);
+
+        return $this->newQuery()
+                    ->take($count)
+                    ->whereNull($debitEmiProvider)
+                    ->get();
+    }
+
     protected function addQueryOrder($query)
     {
         $query->orderBy(Entity::MERCHANT_ID, 'desc');

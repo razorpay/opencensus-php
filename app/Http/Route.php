@@ -54,6 +54,8 @@ class Route
         'checkout_hosted_get'                      => ['get',      'checkout/hosted',                                'PublicController@renderCheckoutHosted'                             ],
         // TODO: Check Splunk and remove the write here
         'merchant_methods'                         => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
+        'merchant_methods_hdfc_debit_emi'         => ['post',      'methods/hdfc_debit_emi',                         'MerchantController@updateHdfcDebitEmiPaymentMethods'                              ],
+
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'internal_merchant_checkout_preferences'   => ['get',      'internal/preferences/{merchant_id}',             'MerchantController@getInternalCheckoutPreferences'                 ],
@@ -3635,6 +3637,7 @@ class Route
         // payment analytics cron creates a new partition and drops oldest partition, runs daily
         'payment_analytics_partition_cron',
         'payout_links_batch_process',
+        'merchant_methods_hdfc_debit_emi',
 
         'vendor_payment_email_integration_webhook',
         // ledger route
@@ -9669,6 +9672,7 @@ class Route
             'health_checker_reminder_cron',
             'payment_analytics_partition_cron',
             'banking_account_service_cron_routes',
+            'merchant_methods_hdfc_debit_emi',
             'merchant_action_notification_cron',
             'merchant_risk_identify_blacklist_country_alerts',
             'payout_send_pending_approval_email',
