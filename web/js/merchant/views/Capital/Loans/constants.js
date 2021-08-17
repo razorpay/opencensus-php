@@ -37,10 +37,10 @@ export const APPLICATION_STATES = {
   CONTRACT_PENDING: 'CONTRACT_PENDING',
   NACH_CREATION_PENDING: 'NACH_CREATION_PENDING',
   NACH_UPLOAD_PENDING: 'NACH_UPLOAD_PENDING',
-  SLOT_SELECTION_PENDING: 'SLOT_SELECTION_PENDING',
-  DOCUMENT_COLLECTION_INITIATED: 'DOCUMENT_COLLECTION_INITIATED',
+  // SLOT_SELECTION_PENDING: 'SLOT_SELECTION_PENDING',
+  // DOCUMENT_COLLECTION_INITIATED: 'DOCUMENT_COLLECTION_INITIATED',
   OFFLINE_DOCUMENT_COLLECTION_PENDING: 'OFFLINE_DOCUMENT_COLLECTION_PENDING',
-  DOCUMENT_COLLECTION_FAILED: 'DOCUMENT_COLLECTION_FAILED',
+  // DOCUMENT_COLLECTION_FAILED: 'DOCUMENT_COLLECTION_FAILED',
   DOCUMENTS_UNDER_REVIEW: 'DOCUMENTS_UNDER_REVIEW',
   RZP_APPROVED: 'RZP_APPROVED',
   CREDIT_DISBURSED: 'CREDIT_DISBURSED',
@@ -62,10 +62,10 @@ export const APPLICATION_STATE_SEQUENCE = [
   APPLICATION_STATES.CONTRACT_PENDING,
   APPLICATION_STATES.NACH_CREATION_PENDING,
   APPLICATION_STATES.NACH_UPLOAD_PENDING,
-  APPLICATION_STATES.SLOT_SELECTION_PENDING,
-  APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED,
+  // APPLICATION_STATES.SLOT_SELECTION_PENDING,
+  // APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED,
   APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING,
-  APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED,
+  // APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED,
   APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW,
   APPLICATION_STATES.RZP_APPROVED,
   APPLICATION_STATES.CREDIT_DISBURSED,
@@ -84,7 +84,7 @@ export const PENDING_APPLICATION_STATES = [
   APPLICATION_STATES.SCORE_GENERATION_PENDING,
   APPLICATION_STATES.CREDIT_OFFER_PENDING,
   APPLICATION_STATES.CONTRACT_PENDING,
-  APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED,
+  // APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED,
   // TODO: remove this
   APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING,
   APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW,
@@ -92,7 +92,7 @@ export const PENDING_APPLICATION_STATES = [
 
 export const ERROR_STATES = [
   APPLICATION_STATES.PREVERIFICATION_FAILED,
-  APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED,
+  // APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED,
   APPLICATION_STATES.CREDIT_PULL_FAILED,
 ];
 
@@ -211,30 +211,31 @@ export const APPLICATION_STATE_DESCRIPTIONS = {
     ctaText: 'Upload Nach Form',
     short_description: 'Submit Nach Form',
   },
-  [APPLICATION_STATES.SLOT_SELECTION_PENDING]: {
-    title: 'Document collection pending',
-    description: 'Select a convenient time slot for document collection',
-    ctaText: 'Schedule appointment',
-    short_description: 'Schedule appointment',
-  },
-  [APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED]: {
-    title: 'Document collection pending',
-    description: 'Our representative will reach out to you for the document collection',
-    ctaText: 'view application',
-    short_description: 'Document Collection',
-  },
+  // [APPLICATION_STATES.SLOT_SELECTION_PENDING]: {
+  //   title: 'Document collection pending',
+  //   description: 'Select a convenient time slot for document collection',
+  //   ctaText: 'Schedule appointment',
+  //   short_description: 'Schedule appointment',
+  // },
+  // [APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED]: {
+  //   title: 'Document collection pending',
+  //   description: 'Our representative will reach out to you for the document collection',
+  //   ctaText: 'view application',
+  //   short_description: 'Document Collection',
+  // },
   [APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING]: {
-    title: 'Document collection pending',
-    description: 'Our representative will reach out to you for the document collection',
+    title: 'Post-approval document collection',
+    description:
+      'Please share the final set of documents on this email: capital.support@razorpay.com',
     ctaText: 'view application',
     short_description: 'Document Collection',
   },
-  [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: {
-    title: 'Documents collection failed',
-    description: `Reach out to ${CAPITAL_LINKS.support_email} for assistance`,
-    ctaText: 'view application',
-    short_description: 'Documents Review',
-  },
+  // [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: {
+  //   title: 'Documents collection failed',
+  //   description: `Reach out to ${CAPITAL_LINKS.support_email} for assistance`,
+  //   ctaText: 'view application',
+  //   short_description: 'Documents Review',
+  // },
   [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: {
     title: 'Documents review',
     description: 'Your documents will be shared with the lender for the final approval',
@@ -368,12 +369,12 @@ export const APPLICATION_STATE_MESSAGE_MAP = {
       be signed through the mail.
     </span>
   ),
-  [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: (
-    <span>
-      Your loan application has been rejected due to the repeated failure of the document
-      collection.
-    </span>
-  ),
+  // [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: (
+  //   <span>
+  //     Your loan application has been rejected due to the repeated failure of the document
+  //     collection.
+  //   </span>
+  // ),
   [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: (
     <span>
       We usually confirm the document review within 1-2 working days. We’ll let you know once the
@@ -469,21 +470,31 @@ export const APPLICATION_STATE_TITLE_MAP = {
     description:
       "Why NACH? In case, there is a deficit in the collections flow, Razorpay holds the right to trigger the NACH to auto-debit the pending amount from the merchant's bank account.",
   },
-  [APPLICATION_STATES.SLOT_SELECTION_PENDING]: {
-    title: 'Schedule an appointment for document collection',
-    description:
-      'Why? This is mandatory as the physical documents will be verified by the lender for processing the application and approving the final disbursal.',
-  },
-  [APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED]: {
+  // [APPLICATION_STATES.SLOT_SELECTION_PENDING]: {
+  //   title: 'Schedule an appointment for document collection',
+  //   description:
+  //     'Why? This is mandatory as the physical documents will be verified by the lender for processing the application and approving the final disbursal.',
+  // },
+  // [APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED]: {
+  //   title: 'Document Collection',
+  //   description:
+  //     'Please be ready with the original documents along with a xerox copies. Our executive will be verifying the xerox copies with the original documents.',
+  // },
+  [APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING]: {
     title: 'Document Collection',
-    description:
-      'Please be ready with the original documents along with a xerox copies. Our executive will be verifying the xerox copies with the original documents.',
+    description: (
+      <span>
+        Please <strong>Sign & Stamp</strong> the following documents and{' '}
+        <strong>Send the copies</strong> to{' '}
+        <a href={`mailto:${CAPITAL_LINKS.support_email}`}>{CAPITAL_LINKS.support_email}</a>
+      </span>
+    ),
   },
-  [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: {
-    title: 'Document Collection Failed',
-    description: 'Oops! It seems like we have not been able to collect your documents.',
-    type: 'error',
-  },
+  // [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: {
+  //   title: 'Document Collection Failed',
+  //   description: 'Oops! It seems like we have not been able to collect your documents.',
+  //   type: 'error',
+  // },
   [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: {
     title: 'Documents Under Review',
     description: 'We’re reviewing your documents internally and with our vendor.',
@@ -511,56 +522,98 @@ export const APPLICATION_STATE_TITLE_MAP = {
     description: 'The following loan amount has been successfully disbursed to your bank account.',
     type: 'success',
   },
-  [APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING]: {
-    title: 'Document Collection',
-    description: (
-      <span>
-        Please <strong>Sign & Stamp</strong> the following documents and{' '}
-        <strong>Send the copies</strong> to{' '}
-        <a href={`mailto:${CAPITAL_LINKS.support_email}`}>{CAPITAL_LINKS.support_email}</a>
-      </span>
-    ),
-  },
 };
 
 export const OFFLINE_COLLECTION_DOCUMENTS = {
-  business: [
-    {
-      type: 'Applicant Selfie',
-    },
-    {
-      type: 'Personal Proof Of Address',
-      allowedDocuments: ['Aadhar', 'Passport', 'Driving License', 'Voter Card'],
-    },
-    {
-      type: 'Personal Proof Of Identification',
-      allowedDocuments: ['Owner PAN'],
-    },
-  ],
-  personal: [
-    {
-      type: 'Certificate of Incorporation',
-    },
-    {
-      type: 'List of Director',
-    },
-    {
-      type: 'Board Resolution',
-    },
-    {
-      type: 'Business PAN',
-    },
-    {
-      type: 'Company Address Proof',
-      allowedDocuments: ['GST Certificate', 'ITR', 'Utility Bills'],
-    },
-    {
-      type: 'GST Certificate',
-    },
-    {
-      type: 'Memorandum of Association',
-    },
-  ],
+  proprietorship: {
+    personal: [
+      {
+        type: 'Applicant Selfie',
+      },
+      {
+        type: 'Personal Proof Of Address',
+        allowedDocuments: [
+          'Aadhaar',
+          'e-Aadhaar',
+          'Passport',
+          'Driving License',
+          'Electricity bill in last 3 months if own property',
+          'Rental agreement if rented property',
+        ],
+      },
+      {
+        type: 'Personal Proof Of Identification',
+        allowedDocuments: ['Owner PAN', 'e-PAN'],
+      },
+    ],
+    business: [
+      {
+        type: 'Business PAN',
+      },
+      {
+        type: 'Any 1 of the following',
+        list: [
+          'GST certificate (if GST registered)',
+          'MSME certificate',
+          'IEC',
+          'ITR with company name and income',
+          'Shops and Establishment certificate',
+        ],
+      },
+      {
+        type: 'Address Proof with the business name in it',
+        allowedDocuments: [
+          'Electricity bill',
+          'Any other Utility bill',
+          'Current Account statement',
+          'Rental Agreement',
+        ],
+      },
+    ],
+  },
+  others: {
+    personal: [
+      {
+        type: 'Applicant Selfie',
+      },
+      {
+        type: 'Personal Proof Of Address',
+        allowedDocuments: [
+          'Aadhaar',
+          'e-Aadhaar',
+          'Passport',
+          'Driving License',
+          'Electricity bill in last 3 months if own property',
+          'Rental agreement if rented property',
+        ],
+      },
+      {
+        type: 'Personal Proof Of Identification',
+        allowedDocuments: ['Owner PAN', 'e-PAN'],
+      },
+    ],
+    business: [
+      {
+        type: 'Any 1 of the following',
+        list: [
+          'GST certificate (if GST registered)',
+          'MSME certificate',
+          'IEC',
+          'ITR with company name and income',
+          'Shops and Establishment certificate',
+        ],
+      },
+      {
+        type: 'Address Proof with the business name in it',
+        allowedDocuments: [
+          'Electricity bill',
+          'Any other Utility bill',
+          'Current Account statement',
+          'Rental Agreement',
+        ],
+      },
+    ],
+  },
 };
 
 export const GA_CATEGORY_BY_PRODUCT = {

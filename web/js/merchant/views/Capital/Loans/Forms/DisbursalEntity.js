@@ -16,6 +16,7 @@ import Button from 'common/new-ui/Button';
 import RepaymentModal from '../../components/RepaymentModal';
 import Modal from 'react-modal';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { NavLink } from 'react-router-dom';
 
 @connect(
   (state) => ({
@@ -112,17 +113,10 @@ class DisbursalEntity extends Component {
             <i className="i i-chevron-left" />
             Back
           </Button.Transparent>
-          <button
-            class="btn btn-outline m-l"
-            onClick={() => {
-              this.props._trackEvent({
-                eventAction: 'Application | Repayment Details',
-              });
-              this.toggleModal(true);
-            }}
-          >
-            View Repayment Details
-          </button>
+
+          {/* <NavLink className="btn btn-outline m-l" exact to={`/capital/loans/overview`}>
+            Go to Repayment Dashboard <i className="i i-chevron-right" />
+          </NavLink> */}
         </div>
       </div>
     );

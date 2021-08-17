@@ -131,45 +131,56 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState, isCashAd
         return (
           <Banner
             title={`${isCashAdvanceProduct ? 'Cash Advance' : 'Loan'} Offer Accepted!`}
-            description="Thank you for accepting the ${
+            description={`Thank you for accepting the ${
               isCashAdvanceProduct ? 'Cash Advance' : 'loan'
-            } offer, Only couple of more steps to get the funds disbursed to your account."
+            } offer, Only couple of more steps to get the funds disbursed to your account.`}
             type="success"
           />
         );
       }
       return null;
-    case 'SLOT_SELECTION_PENDING':
-      const { schedule_details } = loanApplicationDetails;
-      if (schedule_details.data && schedule_details.data.slot_timing) {
-        return (
-          <Banner
-            title="Slot Selection Confirmed!"
-            description="Thank you for choosing a slot for document collection. You will receive a mail regarding the details"
-            type="success"
-          />
-        );
-      } else {
-        return (
-          <Banner
-            title={`${isCashAdvanceProduct ? 'Cash Advance' : 'Loan'} application is completed!`}
-            description={`Your ${
-              isCashAdvanceProduct ? 'Cash Advance' : 'loan'
-            } application has been completed successfully. You are now few steps away from getting your ${
-              isCashAdvanceProduct ? 'Cash Advance' : 'loan'
-            } amount disbursed.`}
-            type="success"
-          />
-        );
-      }
-    case 'DOCUMENT_COLLECTION_INITIATED':
+    case 'OFFLINE_DOCUMENT_COLLECTION_PENDING':
       return (
         <Banner
-          title="Slot selection confirmation!"
-          description="Thank you for choosing the slot for doorstep collection. A confirmation mail has been sent to your registered email."
+          title={`${isCashAdvanceProduct ? 'Cash Advance' : 'Loan'}  Offer Accepted!`}
+          description={`Thank you for accepting the ${
+            isCashAdvanceProduct ? 'Cash Advance' : 'loan'
+          } offer, Only couple of more steps to get the funds disbursed to your account.`}
           type="success"
         />
       );
+
+    // case 'SLOT_SELECTION_PENDING':
+    //   const { schedule_details } = loanApplicationDetails;
+    //   if (schedule_details.data && schedule_details.data.slot_timing) {
+    //     return (
+    //       <Banner
+    //         title="Slot Selection Confirmed!"
+    //         description="Thank you for choosing a slot for document collection. You will receive a mail regarding the details"
+    //         type="success"
+    //       />
+    //     );
+    //   } else {
+    //     return (
+    //       <Banner
+    //         title={`${isCashAdvanceProduct ? 'Cash Advance' : 'Loan'} application is completed!`}
+    //         description={`Your ${
+    //           isCashAdvanceProduct ? 'Cash Advance' : 'loan'
+    //         } application has been completed successfully. You are now few steps away from getting your ${
+    //           isCashAdvanceProduct ? 'Cash Advance' : 'loan'
+    //         } amount disbursed.`}
+    //         type="success"
+    //       />
+    //     );
+    //   }
+    // case 'DOCUMENT_COLLECTION_INITIATED':
+    //   return (
+    //     <Banner
+    //       title="Slot selection confirmation!"
+    //       description="Thank you for choosing the slot for doorstep collection. A confirmation mail has been sent to your registered email."
+    //       type="success"
+    //     />
+    //   );
     default:
       return null;
   }

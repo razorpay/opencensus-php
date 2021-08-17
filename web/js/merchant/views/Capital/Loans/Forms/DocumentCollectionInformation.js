@@ -181,7 +181,8 @@ class DocumentCollectionInformation extends Component {
         <div className="actions pull-right">
           <Button.Transparent
             onClick={() => {
-              this.props._trackNavigationActions('BACK', APPLICATION_STATES.SLOT_SELECTION_PENDING);
+              // this.props._trackNavigationActions('BACK', APPLICATION_STATES.SLOT_SELECTION_PENDING);
+              this.props._trackNavigationActions('BACK', APPLICATION_STATES.CREDIT_OFFER_GENERATED);
               this.props.navigation.back();
             }}
           >

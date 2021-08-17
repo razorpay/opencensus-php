@@ -66,11 +66,18 @@ const PersonalDetailsForm = ({
     promoter_details: {
       data: {
         applicant: {
-          kyc: { first_name, second_name, date_of_birth, gender, pan_number, majority_stakeholder },
+          kyc: {
+            first_name,
+            second_name,
+            date_of_birth,
+            gender,
+            pan_number,
+            majority_stakeholder,
+          } = {},
           phones,
           emails,
           addresses,
-        },
+        } = {},
       } = {},
     } = {},
   } = loanApplicationDetails;
@@ -81,12 +88,12 @@ const PersonalDetailsForm = ({
     gender,
     pan_number,
     date_of_birth,
-    contact_number: phones[0].phone_number,
-    contact_email: emails[0].email_id,
-    address: addresses[0].address_line1 + (addresses[0].address_l2 || ''),
-    pincode: addresses[0].pincode,
-    city: addresses[0].city,
-    state: addresses[0].state || Object.entries(states)[0][0],
+    contact_number: phones && phones[0].phone_number,
+    contact_email: emails && emails[0].email_id,
+    address: addresses && addresses[0].address_line1 + (addresses[0].address_l2 || ''),
+    pincode: addresses && addresses[0].pincode,
+    city: addresses && addresses[0].city,
+    state: (addresses && addresses[0].state) || Object.entries(states)[0][0],
   });
   const [majorityStakeholder, setMajorityStakeholder] = React.useState(majority_stakeholder);
   const [pincodeError, setPincodeError] = React.useState(false);

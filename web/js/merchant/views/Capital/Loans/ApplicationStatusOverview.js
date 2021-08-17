@@ -16,10 +16,15 @@ import { isCashAdvanceProduct } from '../utils';
 
 const parseApplicationMetaData = (loanApplicationDetails) => {
   const {
-    meta: { product, loading, data: { application: { status = '' } = {} } } = {},
+    meta: {
+      product,
+      loading,
+      data: { application: { status = '' } = {} },
+      configuration: { ui: { product: { applicationFinalCTA: { text } = {} } = {} } = {} } = {},
+    } = {},
   } = loanApplicationDetails;
 
-  return { loading, product, status };
+  return { loading, product, status, text };
 };
 
 @withRouter
@@ -106,7 +111,7 @@ class ApplicationStatusOverview extends Component {
   };
 
   getStep = (step) => {
-    const { loading, status } = parseApplicationMetaData(this.props.loanApplicationDetails);
+    const { loading, status, text } = parseApplicationMetaData(this.props.loanApplicationDetails);
     const applicationStatus = loading ? APPLICATION_STATES.PROMOTER_INFO_PENDING : status;
 
     const APPLICATION_STATE_GROUPS = this.getUserFlowConfiguration().getApplicationStateGroups();
@@ -165,12 +170,12 @@ class ApplicationStatusOverview extends Component {
           <div>
             {classList.includes('completed') ? (
               <div class="flex">
-                {isFinalState && meta.configuration.ui.product.applicationFinalCTA && (
+                {isFinalState && text && (
                   <button
                     className="btn btn-primary multilevel-step__step-action m-r"
                     onClick={this.handleFinalCTAAction}
                   >
-                    {meta.configuration.ui.product.applicationFinalCTA.text}
+                    {text}
                   </button>
                 )}
                 <Button.Transparent

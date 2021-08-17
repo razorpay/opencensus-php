@@ -31,10 +31,9 @@ import PreVerification from './Forms/PreVerification/PreVerification';
 import CreditOfferEntity from './Forms/CreditOfferEntity';
 import ContractEntity from './Forms/ContractEntity';
 import NachEntity from './Forms/NachEntity';
-import VerificationSlotSelection from './Forms/VerificationSlotSelection';
 import LoanApproved from './Forms/LoanApproved';
 import FormSectionLoadingSkeleton from '../components/FormSectionLoadingSkeleton';
-import { isCashAdvanceProduct, isLoanProduct, isPreceedingState, getStepIndex } from '../utils';
+import { isCashAdvanceProduct, isPreceedingState, getStepIndex } from '../utils';
 import {
   APPLICATION_STATES,
   APPLICATION_STATE_MESSAGE_MAP,
@@ -42,7 +41,6 @@ import {
   GA_CATEGORY_BY_PRODUCT,
   CAPITAL_PRODUCT_NAME_CODE_MAP,
 } from './constants';
-import DocumentCollectionInformation from './Forms/DocumentCollectionInformation';
 import DisbursalEntity from './Forms/DisbursalEntity';
 import PendingState from './Forms/PendingState';
 import CashAdvanceApproved from './Forms/CashAdvanceApproved';
@@ -75,16 +73,16 @@ const stateFormMap = {
   [APPLICATION_STATES.CONTRACT_PENDING]: ContractEntity,
   CONTRACT_SIGNED: ContractEntity,
   [APPLICATION_STATES.NACH_UPLOAD_PENDING]: NachEntity,
-  [APPLICATION_STATES.SLOT_SELECTION_PENDING]: VerificationSlotSelection,
-  [APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED]: DocumentCollectionInformation,
-  OFFLINE_DOCUMENT_COLLECTION_PENDING: OfflineDocumentCollection,
-  [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: (props) => (
-    <PendingState
-      message={APPLICATION_STATE_MESSAGE_MAP[APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]}
-      showNavigation
-      navigation={props.navigation}
-    />
-  ),
+  // [APPLICATION_STATES.SLOT_SELECTION_PENDING]: VerificationSlotSelection,
+  // [APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED]: DocumentCollectionInformation,
+  [APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING]: OfflineDocumentCollection,
+  // [APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]: (props) => (
+  //   <PendingState
+  //     message={APPLICATION_STATE_MESSAGE_MAP[APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED]}
+  //     showNavigation
+  //     navigation={props.navigation}
+  //   />
+  // ),
   [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: (props) => (
     <PendingState
       message={APPLICATION_STATE_MESSAGE_MAP[APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]}
@@ -374,70 +372,70 @@ class FormSectionRenderer extends Component {
       ]);
     }
 
-    if (state === APPLICATION_STATES.SLOT_SELECTION_PENDING) {
-      const { meta, business_details, promoter_details } = this.props.loanApplicationDetails;
+    // if (state === APPLICATION_STATES.SLOT_SELECTION_PENDING) {
+    //   const { meta, business_details, promoter_details } = this.props.loanApplicationDetails;
 
-      try {
-        const acceptedOfferDetails = await this.props.getAcceptedOffer({
-          application_id: meta.data.application.id,
-        });
-        await this.props.getScheduleDetails({
-          credit_offer_id: acceptedOfferDetails.data.credit_offer_id,
-        });
-      } catch (e) {
-        //suppress the error
-        console.error('Not scheduled yet');
-      }
+    //   try {
+    //     const acceptedOfferDetails = await this.props.getAcceptedOffer({
+    //       application_id: meta.data.application.id,
+    //     });
+    //     await this.props.getScheduleDetails({
+    //       credit_offer_id: acceptedOfferDetails.data.credit_offer_id,
+    //     });
+    //   } catch (e) {
+    //     //suppress the error
+    //     console.error('Not scheduled yet');
+    //   }
 
-      if (!business_details.data.business) {
-        const businessDetails = await this.props.fetchBusinessDetails({
-          business_id: meta.data.application.owner_id,
-        });
-        if (!promoter_details.data.applicant) {
-          await this.props.fetchApplicantDetails({
-            applicant_id: businessDetails.data.applicant_ids[0],
-          });
-        }
-      }
-    }
+    //   if (!business_details.data.business) {
+    //     const businessDetails = await this.props.fetchBusinessDetails({
+    //       business_id: meta.data.application.owner_id,
+    //     });
+    //     if (!promoter_details.data.applicant) {
+    //       await this.props.fetchApplicantDetails({
+    //         applicant_id: businessDetails.data.applicant_ids[0],
+    //       });
+    //     }
+    //   }
+    // }
 
     if (state === APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING) {
       await this.props.fetchLoanApplicationMeta(
         this.props.loanApplicationDetails.meta.data.application.id,
       );
     }
-    if (state === APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED) {
-      const { meta } = this.props.loanApplicationDetails;
+    // if (state === APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED) {
+    //   const { meta } = this.props.loanApplicationDetails;
 
-      const creditOffers = await this.props.fetchCreditOffers(
-        {
-          application_id: meta.data.application.id,
-        },
-        meta.product,
-      );
-      const acceptedOfferDetails = await this.props.getAcceptedOffer({
-        application_id: meta.data.application.id,
-      });
+    //   const creditOffers = await this.props.fetchCreditOffers(
+    //     {
+    //       application_id: meta.data.application.id,
+    //     },
+    //     meta.product,
+    //   );
+    //   const acceptedOfferDetails = await this.props.getAcceptedOffer({
+    //     application_id: meta.data.application.id,
+    //   });
 
-      const acceptedCreditOfferId = acceptedOfferDetails.data.credit_offer_id;
-      const acceptedOffer = creditOffers.data.credit_offers.find(
-        (credit_offer) => credit_offer.id === acceptedCreditOfferId,
-      );
+    //   const acceptedCreditOfferId = acceptedOfferDetails.data.credit_offer_id;
+    //   const acceptedOffer = creditOffers.data.credit_offers.find(
+    //     (credit_offer) => credit_offer.id === acceptedCreditOfferId,
+    //   );
 
-      if (acceptedOffer) {
-        await Promise.all([
-          this.props.getLenderDetails({
-            lender_id: acceptedOffer.lender_id,
-          }),
-          this.props.getScheduleDetails({
-            credit_offer_id: acceptedOffer.id,
-          }),
-          this.props.getOfferVerificationTasks({
-            credit_offer_id: acceptedOffer.id,
-          }),
-        ]);
-      }
-    }
+    //   if (acceptedOffer) {
+    //     await Promise.all([
+    //       this.props.getLenderDetails({
+    //         lender_id: acceptedOffer.lender_id,
+    //       }),
+    //       this.props.getScheduleDetails({
+    //         credit_offer_id: acceptedOffer.id,
+    //       }),
+    //       this.props.getOfferVerificationTasks({
+    //         credit_offer_id: acceptedOffer.id,
+    //       }),
+    //     ]);
+    //   }
+    // }
 
     if (state === APPLICATION_STATES.RZP_APPROVED) {
       const { meta } = this.props.loanApplicationDetails;
@@ -565,22 +563,22 @@ class FormSectionRenderer extends Component {
         return this.getTitleInformation(
           APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.NACH_UPLOAD_PENDING],
         );
-      case APPLICATION_STATES.SLOT_SELECTION_PENDING:
-        return this.getTitleInformation(
-          APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.SLOT_SELECTION_PENDING],
-        );
-      case APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED:
-        return this.getTitleInformation(
-          APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED],
-        );
+      // case APPLICATION_STATES.SLOT_SELECTION_PENDING:
+      //   return this.getTitleInformation(
+      //     APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.SLOT_SELECTION_PENDING],
+      //   );
+      // case APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED:
+      //   return this.getTitleInformation(
+      //     APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED],
+      //   );
       case APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING:
         return this.getTitleInformation(
           APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING],
         );
-      case APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED:
-        return this.getTitleInformation(
-          APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED],
-        );
+      // case APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED:
+      //   return this.getTitleInformation(
+      //     APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED],
+      //   );
       case APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW:
         return this.getTitleInformation(
           APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW],
@@ -652,11 +650,11 @@ class FormSectionRenderer extends Component {
       case 'BUSINESS_INFO_PENDING':
       case 'PROMOTER_INFO_PENDING':
       case APPLICATION_STATES.CREDIT_OFFER_GENERATED:
-      case APPLICATION_STATES.SLOT_SELECTION_PENDING:
-      case APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED:
-      case APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED:
-      case APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW:
+      // case APPLICATION_STATES.SLOT_SELECTION_PENDING:
+      // case APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED:
       case APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING:
+      // case APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED:
+      case APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW:
       case APPLICATION_STATES.CREDIT_DISBURSED:
         TobeRenderedFormComponent = stateFormMap[activeState];
         break;
@@ -738,6 +736,7 @@ class FormSectionRenderer extends Component {
   getToBeRenderedState = () => {
     const { meta, context } = this.props.loanApplicationDetails;
     const defaultState = 'NOT_STARTED';
+
     if (context) {
       return context.activeState
         ? context.activeState

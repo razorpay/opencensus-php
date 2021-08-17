@@ -221,7 +221,11 @@ class NachEntity extends Component {
   };
 
   handleNext = () => {
-    this.props._trackNavigationActions('NEXT', APPLICATION_STATES.SLOT_SELECTION_PENDING);
+    // this.props._trackNavigationActions('NEXT', APPLICATION_STATES.SLOT_SELECTION_PENDING);
+    this.props._trackNavigationActions(
+      'NEXT',
+      APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING,
+    );
     return this.props.fetchLoanApplicationMeta(
       this.props.loanApplicationDetails.meta.data.application.id,
     );
@@ -305,9 +309,13 @@ class NachEntity extends Component {
             <Button.Primary
               class="m-l"
               onClick={() => {
+                // this.props._trackNavigationActions(
+                //   'NEXT',
+                //   APPLICATION_STATES.SLOT_SELECTION_PENDING,
+                // );
                 this.props._trackNavigationActions(
                   'NEXT',
-                  APPLICATION_STATES.SLOT_SELECTION_PENDING,
+                  APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING,
                 );
                 this.props.navigation.next();
               }}

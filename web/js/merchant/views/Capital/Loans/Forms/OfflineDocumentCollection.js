@@ -3,12 +3,53 @@ import Button from 'common/new-ui/Button';
 import { connect } from 'react-redux';
 import { APPLICATION_STATES, CAPITAL_LINKS, OFFLINE_COLLECTION_DOCUMENTS } from '../constants';
 import { isPreceedingState } from '../../utils';
+import { BUSINESS_TYPE_MAP } from 'merchant/views/Account/constants';
+import { titleCase } from 'common/utils/rzp-utils';
 
 @connect((state) => ({
   loanApplicationDetails: state.loanApplicationDetails,
+  user: state.session.user,
 }))
 class OfflineDocumentCollection extends Component {
+  renderDetails = (businessType) => {
+    return Object.entries(businessType).map(([documentEntity, requiredDocuments]) => (
+      <div className="section" key={documentEntity}>
+        <p className="content-padding title">{documentEntity}</p>
+        <div className="content-padding highlight">
+          {requiredDocuments.map((document) => (
+            <>
+              <p key={document.type}>
+                {document.type}
+                {'   '}
+                {document.allowedDocuments && document.allowedDocuments.length > 0 && (
+                  <span class="text-faded">
+                    (
+                    {document.allowedDocuments.reduce((acc, doc, index) => {
+                      return `${acc}${doc}${
+                        index < document.allowedDocuments.length - 1 ? ' / ' : ''
+                      }`;
+                    }, '')}
+                    )
+                  </span>
+                )}
+              </p>
+              {document.list && document.list.length > 0 && (
+                <div className="list-wrapper">
+                  {document.list.map((item) => {
+                    return <li class="list-item">{item}</li>;
+                  })}
+                </div>
+              )}
+            </>
+          ))}
+        </div>
+      </div>
+    ));
+  };
+
   render() {
+    const businessType = BUSINESS_TYPE_MAP[this.props.user.business_type].toLowerCase();
+
     return (
       <div className="offline-loan-document-collection">
         <div className="step">
@@ -22,33 +63,9 @@ class OfflineDocumentCollection extends Component {
             </div>
           </div>
           <div class="content-wrapper">
-            {Object.entries(OFFLINE_COLLECTION_DOCUMENTS).map(
-              ([documentEntity, requiredDocuments]) => (
-                <div className="section" key={documentEntity}>
-                  <p className="content-padding title">{documentEntity}</p>
-                  <div className="content-padding highlight">
-                    {requiredDocuments.map((document) => (
-                      <p key={document.type}>
-                        {document.type}
-                        {document.allowedDocuments && document.allowedDocuments.length > 0 && (
-                          <span class="text-faded">
-                            (
-                            {document.allowedDocuments.reduce((acc, doc, index) => {
-                              return `${acc}${doc}${
-                                index > 0 && index < document.allowedDocuments.length - 1
-                                  ? '/ '
-                                  : ''
-                              }`;
-                            }, '')}
-                            )
-                          </span>
-                        )}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              ),
-            )}
+            {businessType && businessType in OFFLINE_COLLECTION_DOCUMENTS
+              ? this.renderDetails(OFFLINE_COLLECTION_DOCUMENTS[businessType])
+              : this.renderDetails(OFFLINE_COLLECTION_DOCUMENTS['others'])}
           </div>
         </div>
 

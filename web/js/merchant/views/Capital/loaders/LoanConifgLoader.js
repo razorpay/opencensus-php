@@ -99,12 +99,22 @@ export default class LoansConfigLoader extends BaseConfigLoader {
         description: 'Complete application',
         index: 1,
       },
+      // [CONSOLIDATED_STATES.DOCUMENT_COLLECTION]: {
+      //   steps: {
+      //     [APPLICATION_STATES.SLOT_SELECTION_PENDING]: [APPLICATION_STATES.SLOT_SELECTION_PENDING],
+      //     [APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED]: [
+      //       APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED,
+      //       APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED,
+      //     ],
+      //   },
+      //   description: 'Document Collection',
+      //   index: 2,
+      // },
       [CONSOLIDATED_STATES.DOCUMENT_COLLECTION]: {
         steps: {
-          [APPLICATION_STATES.SLOT_SELECTION_PENDING]: [APPLICATION_STATES.SLOT_SELECTION_PENDING],
-          [APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED]: [
-            APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED,
-            APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED,
+          [APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING]: [
+            APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING,
+            // APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED,
           ],
         },
         description: 'Document Collection',
@@ -158,9 +168,10 @@ export default class LoansConfigLoader extends BaseConfigLoader {
         APPLICATION_STATES.CREDIT_OFFER_GENERATED,
       ],
       DOCUMENT_COLLECTION: [
-        APPLICATION_STATES.SLOT_SELECTION_PENDING,
-        APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED,
-        APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED,
+        // APPLICATION_STATES.SLOT_SELECTION_PENDING,
+        // APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED,
+        APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING,
+        // APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED,
       ],
       FINAL_REVIEW: [
         ...(isPreceedingState(this.applicationStatus, APPLICATION_STATES.RZP_APPROVED, true)
@@ -183,8 +194,8 @@ export default class LoansConfigLoader extends BaseConfigLoader {
         description: 'You have successfully completed the Loan application form',
       },
       [CONSOLIDATED_STATES.DOCUMENT_COLLECTION]: {
-        title: 'Document collection is done',
-        description: 'Our executive has successfully picked up your Documents and proofs',
+        title: 'Document received',
+        description: 'We have received the required documents shared by you.',
       },
       [CONSOLIDATED_STATES.FINAL_REVIEW]: {
         title: 'Loan offer is Approved!',
