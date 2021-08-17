@@ -7646,6 +7646,8 @@ class MerchantTest extends TestCase
      */
     public function testMerchantSwitchProduct($expValue = 'on', $category2 = 'school')
     {
+        $this->mockLedgerSns(0);
+
         $this->enableRazorXTreatmentForXOnboarding($expValue);
 
         $user = (new User())->createUserForMerchant('10000000000000', [
@@ -7753,6 +7755,127 @@ class MerchantTest extends TestCase
 
         $this->assertContains(Features::NEW_BANKING_ERROR, $testFeaturesArray);
         $this->assertContains(Features::NEW_BANKING_ERROR, $liveFeaturesArray);
+
+        // Assert that the ledger_journal_writes feature is not enabled at all
+        $this->assertNotContains('ledger_journal_writes', $testFeaturesArray);
+        $this->assertNotContains('ledger_journal_writes', $liveFeaturesArray);
+    }
+
+    public function testMerchantSwitchProductWithLedgerExperimentOn($expValue = 'on', $category2 = 'school')
+    {
+        $this->mockLedgerSns(2);
+
+        $this->enableRazorXTreatmentForXOnboarding($expValue, 'on');
+
+        $liveUser = (new User())->createUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888',
+        ],'owner', 'live');
+
+        $this->fixtures->edit('merchant',
+                              '10000000000000',
+                              ['activated' => true, 'business_banking' => false, 'category2' => $category2]);
+
+        $this->fixtures->create('merchant_detail',
+                                [
+                                    'merchant_id' => '10000000000000',
+                                    'activation_status' => 'activated'
+                                ]);
+
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+                                ['merchant_id' => '100000Razorpay']);
+
+        // To create a virtual account we need to enable bank transfer
+        $this->fixtures->edit('methods', '10000000000000', ['bank_transfer' => true]);
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+                                                 [
+                                                     'merchant_id' => '10000000000000',
+                                                 ],
+                                                 'live');
+
+        $this->assertNull($liveBankingAccount);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $liveUser['id'], 'owner');
+
+        $this->startTest();
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+                                                 [
+                                                     'merchant_id' => '10000000000000',
+                                                 ],
+                                                 'live');
+
+        $this->assertNotNull($liveBankingAccount);
+
+        /** @var BankingAccount\Entity $bankingAccount */
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $expectedBankingAccount = [
+            'channel'     => 'yesbank',
+            'merchant_id' => '10000000000000',
+            'status'      => 'activated',
+            'pincode'     => null
+        ];
+
+        $balanceId = $liveBankingAccount->getBalanceId();
+
+        $this->assertArraySelectiveEquals($expectedBankingAccount, $bankingAccount->toArray());
+        $this->assertArraySelectiveEquals($expectedBankingAccount, $liveBankingAccount->toArray());
+        $this->assertNotNull($balanceId);
+
+        /** @var BankingAccount\Entity $bankingAccount */
+        $balance = $this->getDbEntityById('balance', $balanceId, 'live');
+
+        $expectedBalance = [
+            'type'             => 'banking',
+            'account_type'     => 'shared',
+            'channel'          => null,
+            'merchant_id'      => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBalance, $balance->toArray());
+
+        $merchants = DB::connection('live')->table('merchant_users')
+                       ->where('user_id', '=', $liveUser['id'])
+                       ->pluck('merchant_id', 'product');
+
+        $this->assertEquals(count($merchants), 2);
+
+        $this->assertArrayHasKey('banking', $merchants);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(BankingAccount\AccountType::NODAL, $bankingAccount->getAccountType());
+
+        $testFeaturesArray = $this->getDbEntity('feature',
+                                                [
+                                                    'entity_id' => '10000000000000',
+                                                    'entity_type' => 'merchant'
+                                                ])->pluck('name')->toArray();
+
+        $liveFeaturesArray = $this->getDbEntity('feature',
+                                                [
+                                                    'entity_id' => '10000000000000',
+                                                    'entity_type' => 'merchant'
+                                                ],
+                                                'live')->pluck('name')->toArray();
+
+        $this->assertContains('payout', $testFeaturesArray);
+        $this->assertContains('payout', $liveFeaturesArray);
+
+        $this->assertContains('skip_hold_funds_on_payout', $testFeaturesArray);
+        $this->assertContains('skip_hold_funds_on_payout', $liveFeaturesArray);
+
+        $this->assertContains(Features::NEW_BANKING_ERROR, $testFeaturesArray);
+        $this->assertContains(Features::NEW_BANKING_ERROR, $liveFeaturesArray);
+
+        // Assert that the ledger_journal_writes feature is enabled for live mode
+        $this->assertNotContains('ledger_journal_writes', $testFeaturesArray);
+        $this->assertContains('ledger_journal_writes', $liveFeaturesArray);
     }
 
     /**
@@ -9523,7 +9646,8 @@ class MerchantTest extends TestCase
         $this->app->instance('razorx', $razorxMock);
     }
 
-    protected function enableRazorXTreatmentForXOnboarding($value = 'on')
+    protected function enableRazorXTreatmentForXOnboarding($value = 'on',
+                                                           $ledgerOnboardingValue = 'control')
     {
         (new Admin\Service)->setConfigKeys(
             [
@@ -9546,7 +9670,7 @@ class MerchantTest extends TestCase
 
         $this->app->razorx->method('getTreatment')
                           ->will($this->returnCallback(
-                              function ($mid, $feature, $mode) use ($value)
+                              function ($mid, $feature, $mode) use ($value, $ledgerOnboardingValue)
                               {
                                   if ($feature === Merchant\RazorxTreatment::RAZORPAY_X_TEST_MODE_ONBOARDING)
                                   {
@@ -9557,9 +9681,14 @@ class MerchantTest extends TestCase
                                       return $value;
                                   }
 
-                                  if($feature == Merchant\RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED)
+                                  if ($feature == Merchant\RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED)
                                   {
                                       return $value;
+                                  }
+
+                                  if ($feature == Merchant\RazorxTreatment::LEDGER_ONBOARDING)
+                                  {
+                                      return $ledgerOnboardingValue;
                                   }
 
                                   return 'off';
@@ -11447,7 +11576,7 @@ class MerchantTest extends TestCase
 
         $this->assertArrayNotHasKey('sbibuddy', $response['methods']['wallet']);
     }
-    
+
     public function testEditBulkEnableLiveMerchantNotActivated()
     {
         $this->createMerchant([
@@ -11469,14 +11598,14 @@ class MerchantTest extends TestCase
 
         $this->startTest();
     }
-    
+
     protected function createRiskTaggedMerchantForBulkForAction($action, array $permissions)
     {
         $this->createMerchant([
             'id'    => '10000000000044',
             'email' => 'test1@razorpay.com',
         ]);
-        
+
         switch ($action)
         {
             case 'live_enable':
@@ -11486,25 +11615,25 @@ class MerchantTest extends TestCase
                 $this->fixtures->base->editEntity('merchant', '10000000000044', ['suspended_at' => '123456789']);
                 break;
         }
-        
+
         $tagInputData = [
             'tags' => ['MS_Risk_review_watchlist'],
         ];
-        
+
         (new MerchantCore())->addTags('10000000000044',$tagInputData,false);
-        
+
         $admin = $this->ba->getAdmin();
-        
+
         $role = $admin->roles()->get()[0];
-        
+
         foreach ($permissions as $permission)
         {
             $perm = $this->fixtures->create('permission', ['name' => $permission]);
-            
+
             $role->permissions()->attach($perm->getId());
         }
     }
-    
+
     /**
      * Failure test case with checked not having required permissions
      *
@@ -11520,7 +11649,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
     }
-    
+
     /**
      * Happy test case
      * Testing the flow for "enabling live" via bulk update for the merchant which is tagged by risk team,
@@ -11534,12 +11663,12 @@ class MerchantTest extends TestCase
                 'merchant_risk_constructive_action',
                 'edit_merchant_toggle_live_bulk',
             ]);
-        
+
         $this->ba->adminAuth();
-        
+
         $this->startTest();
     }
-    
+
     /**
      * Failure test case with checked not having required permissions
      *
@@ -11558,7 +11687,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
     }
-    
+
     /**
      * Happy test case
      *
@@ -11575,40 +11704,40 @@ class MerchantTest extends TestCase
                 'edit_merchant_suspend_bulk',
                 'merchant_risk_constructive_action'
             ]);
-        
+
         $this->ba->adminAuth();
-        
+
         $this->startTest();
     }
-    
-    
+
+
     protected function createRiskTaggedMerchantForUnsuspendAction($action, array $permissions)
     {
         $merchant = $this->getLastEntity('merchant', true);
-        
+
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => '123456789' ]);
-        
+
         $tagInputData = [
             'tags' => ['MS_Risk_review_watchlist'],
         ];
-        
+
         (new MerchantCore())->addTags($merchant['id'],$tagInputData,false);
-        
+
         $this->setAdminForInternalAuth();
-    
+
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
-    
+
         $admin = $this->ba->getAdmin();
-    
+
         $role = $admin->roles()->get()[0];
-    
+
         foreach ($permissions as $permission)
         {
             $perm = $this->fixtures->create('permission', ['name' => $permission]);
-            
+
             $role->permissions()->attach($perm->getId());
         }
-        
+
         return $merchant;
     }
     /**
@@ -11623,18 +11752,18 @@ class MerchantTest extends TestCase
     public function testRiskTaggedMerchantUnsuspendRiskTagged()
     {
         $merchant = $this->createRiskTaggedMerchantForUnsuspendAction('unsuspend', ['merchant_risk_constructive_action']);
-        
+
         $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
-    
+
         $this->testData[__FUNCTION__]['request']['url'] = $url;
-        
+
         $response = $this->startTest();
-        
+
         $merchant = $this->getEntityById('merchant', $merchant['id'], true);
-    
+
         $this->assertNull($merchant['suspended_at']);
     }
-    
+
     /**
      * Failure test case - failing as actioneer doesn't have permission
      *
@@ -11647,45 +11776,45 @@ class MerchantTest extends TestCase
     public function testRiskTaggedMerchantUnsuspendRiskTaggedWithoutPermission()
     {
         $merchant = $this->createRiskTaggedMerchantForUnsuspendAction('unsuspend', []);
-        
+
         $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
-    
+
         $this->testData[__FUNCTION__]['request']['url'] = $url;
-        
+
         $response = $this->startTest();
-        
+
         $merchant = $this->getEntityById('merchant', $merchant['id'], true);
-        
+
         $this->assertNull($merchant['suspended_at']);
     }
-    
+
     protected function createMerchantForRiskTaggedMerchantForReleaseFundsWithWorkflow(array $permissions)
     {
         $this->ba->adminAuth();
-    
+
         $this->fixtures->merchant->edit('10000000000000', ['hold_funds' => 1]);
-    
+
         $tagInputData = [
             'tags' => ['MS_Risk_review_watchlist'],
         ];
-    
+
         (new MerchantCore())->addTags('10000000000000',$tagInputData,false);
-    
+
         $admin = $this->ba->getAdmin();
-    
+
         $role = $admin->roles()->get()[0];
-        
+
         foreach($permissions as $permission)
         {
             $perm = $this->fixtures->create('permission', ['name' => $permission]);
             $role->permissions()->attach($perm->getId());
         }
-        
+
         $this->ba->adminAuth();
-    
+
         $this->setupWorkflow('Release Funds',PermissionName::$actionMap["release_funds"], "test");
     }
-    
+
     /**
      * Happy test case
      *
@@ -11702,26 +11831,26 @@ class MerchantTest extends TestCase
                 PermissionName::EDIT_MERCHANT_RELEASE_FUNDS,
                 PermissionName::MERCHANT_RISK_CONSTRUCTIVE_ACTION
             ]);
-        
+
         $url = sprintf($this->testData[__FUNCTION__]['request']['url'], '10000000000000');
-    
+
         $this->testData[__FUNCTION__]['request']['url'] = $url;
-        
+
         $response = $this->startTest();
-    
+
         $this->assertStringStartsWith('w_action_', $response['id']);
-    
+
         $workflowAction = $this->getLastEntity('workflow_action', true);
-    
+
         $this->esClient->indices()->refresh();
-        
+
         $this->performWorkflowAction($workflowAction['id'], true);
-    
+
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
-    
+
         $this->assertEquals(false, $merchant->isFundsOnHold());
     }
-    
+
     /**
      * Failure test case
      *
@@ -11734,21 +11863,21 @@ class MerchantTest extends TestCase
     public function testRiskTaggedMerchantReleaseFundsWithWorkflowWithoutPermission()
     {
         $this->createMerchantForRiskTaggedMerchantForReleaseFundsWithWorkflow([PermissionName::EDIT_MERCHANT_RELEASE_FUNDS]);
-        
+
         $url = sprintf($this->testData[__FUNCTION__]['request']['url'], '10000000000000');
-    
+
         $this->testData[__FUNCTION__]['request']['url'] = $url;
-        
+
         $response = $this->startTest();
-    
+
         $this->assertStringStartsWith('w_action_', $response['id']);
-    
+
         $workflowAction = $this->getLastEntity('workflow_action', true);
-    
+
         $this->esClient->indices()->refresh();
-        
+
         $caughtException = false;
-        
+
         try
         {
             $this->performWorkflowAction($workflowAction['id'], true);
@@ -11760,11 +11889,11 @@ class MerchantTest extends TestCase
             $e->getMessage());
             $caughtException = true;
         }
-        
+
         $this->assertEquals(true, $caughtException);
-        
+
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
-    
+
         $this->assertEquals(true, $merchant->isFundsOnHold());
     }
 }

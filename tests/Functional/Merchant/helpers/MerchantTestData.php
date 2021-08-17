@@ -6066,6 +6066,17 @@ return [
         ],
     ],
 
+    'testMerchantSwitchProductWithLedgerExperimentOn' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testMerchantSwitchProductActivationSMS' => [
         'request'  => [
             'url'     => '/merchants/product-switch',
@@ -8854,7 +8865,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
         ],
     ],
-    
+
     'testPreferencesToCheckDisabledSbibuddyWallet' => [
         'request'  => [
             'url'    => '/preferences',
@@ -8868,7 +8879,7 @@ return [
             ],
         ],
     ],
-    
+
     'testEditBulkEnableLiveRiskTaggedMerchant' => [
         'request'  => [
             'method'  => 'PUT',
@@ -8891,7 +8902,7 @@ return [
             'status_code' => 200,
         ]
     ],
-    
+
     'testEditBulkEnableLiveRiskTaggedMerchantWithoutPermission' => [
         'request'  => [
             'method'  => 'PUT',
@@ -8914,7 +8925,7 @@ return [
             'status_code' => 200,
         ]
     ],
-    
+
     'testEditBulkUnsuspendRiskTaggedMerchant' => [
         'request'  => [
             'method'  => 'PUT',
@@ -8937,7 +8948,7 @@ return [
             'status_code' => 200,
         ]
     ],
-    
+
     'testEditBulkUnsuspendRiskTaggedMerchantWithoutPermission' => [
         'request'  => [
             'method'  => 'PUT',
@@ -8960,7 +8971,7 @@ return [
             'status_code' => 200,
         ]
     ],
-    
+
     'testRiskTaggedMerchantUnsuspendRiskTagged' => [
         'request' => [
             'content' => [
@@ -8974,7 +8985,7 @@ return [
             'status_code' => 200
         ]
     ],
-    
+
     'testRiskTaggedMerchantUnsuspendRiskTaggedWithoutPermission' => [
         'request' => [
             'content' => [

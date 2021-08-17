@@ -718,6 +718,24 @@ class Activate extends Base\Core
             // check if experiment is active and balance is created in this call
             if (($ledgerExperimentActive === true) and ($created === true))
             {
+                if (($mode === Mode::LIVE) and
+                    ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES) === false))
+                {
+                    (new Feature\Core)->create(
+                        [
+                            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                            Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                            Feature\Entity::NAME        => Feature\Constants::LEDGER_JOURNAL_WRITES,
+                        ]);
+
+                    $this->trace->info(
+                        TraceCode::LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
+                        [
+                            'merchant_id'       => $merchant->getId(),
+                            'mode'              => $mode,
+                        ]);
+                }
+
                 (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAccount, $mode);
             }
 
