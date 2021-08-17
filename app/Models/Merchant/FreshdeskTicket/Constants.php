@@ -119,6 +119,7 @@ class Constants
     const RAZORX_FLAG_VALIDATE_FRESHDESK_ATTACHMENT_EXTENSION         = 'validate_freshdesk_attachment_extension';
     const RAZORX_FLAG_SHOULD_MIGRATE_FRESHDESK_IND_MERCHANT           = 'should_migrate_freshdesk_ind_merchant';
     const RAZORX_FLAG_FRESHDESK_CUSTOMER_TICKET_CREATION_SERVER_PICK  = 'Freshdesk_Customer_Ticket_Creation_Server_Pick';
+    const RAZORX_FLAG_FRESHDESK_RZPSOL_RZP_MERGED                     = 'freshdesk_rzpsol_rzp_merged';
 
 
     // Default values for Activation Workflow Ticket Creation

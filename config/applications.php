@@ -382,6 +382,10 @@ return [
                 'Technical support'     => env('FRESHDESK_RZPSOL_TECHNICAL_SUPPORT_GROUP_ID', ''),
                 'Integrations'          => env('FRESHDESK_RZPSOL_INTEGRATIONS_GROUP_ID', ''),
             ],
+            'rzpind' => [
+                'Technical support'     => env('FRESHDESK_RZPIND_TECHNICAL_SUPPORT_GROUP_ID', ''),
+                'Integrations'          => env('FRESHDESK_RZPIND_INTEGRATIONS_GROUP_ID', ''),
+            ],
             'rzpcap' => [
                 'Instant Settlements'   => env('FRESHDESK_RZPCAP_INSTANT_SETTLEMENTS_GROUP_ID', ''),
                 'Cash Advance'          => env('FRESHDESK_RZPCAP_CASH_ADVANCE_GROUP_ID', ''),

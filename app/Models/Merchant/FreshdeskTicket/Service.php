@@ -894,7 +894,10 @@ class Service extends Base\Service
         {
             return Constants::RZPX;
         }
+
         $fdInstance = $this->getMigratedFdInstanceIfApplicable($fdInstance, $input);
+
+        $fdInstance = $this->getNewFdInstanceIfRzpSolAndRzpMerged($fdInstance, $this->merchant->getId());
 
         return $fdInstance;
     }
@@ -1195,7 +1198,10 @@ class Service extends Base\Service
     {
         if ($this->validateFdInstanceFromTicketInput($input, Constants::RZPSOL) === true)
         {
-            $input[Constants::GROUP_ID] = $this->getGroupIdForFdInstanceAndTicketInput($input, Constants::RZPSOL);
+            /* fdInstance will become rzpind if merge(rzpind-rzpsol) is 'on' for this account */
+            $fdInstance = $this->getNewFdInstanceIfRzpSolAndRzpMerged(Constants::RZPSOL, $this->merchant->getId());
+
+            $input[Constants::GROUP_ID] = $this->getGroupIdForFdInstanceAndTicketInput($input, $fdInstance);
         }
         if ($this->validateFdInstanceFromTicketInput($input, Constants::RZPCAP) === true)
         {
@@ -1511,5 +1517,22 @@ class Service extends Base\Service
         });
 
         return $allTickets;
+    }
+
+    protected function getNewFdInstanceIfRzpSolAndRzpMerged($fdInstance, $merchantId)
+    {
+        if ($fdInstance !== Constants::RZPSOL)
+        {
+            return $fdInstance;
+        }
+
+        $result = $this->app->razorx->getTreatment($merchantId, Constants::RAZORX_FLAG_FRESHDESK_RZPSOL_RZP_MERGED, Mode::LIVE);
+
+        if ($result === "on")
+        {
+            $fdInstance = Constants::RZPIND;
+        }
+
+        return $fdInstance;
     }
 }

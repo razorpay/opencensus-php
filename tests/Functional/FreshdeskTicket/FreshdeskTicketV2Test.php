@@ -515,53 +515,72 @@ class FreshdeskTicketV2Test extends TestCase
 
     public function testCreateTicketRzpSol()
     {
-        $frDueBy = time() + self::DAY * 2;
-
-        $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
-
-        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST','rzpsol',
+        $testCases = [
             [
-                'description' => 'ticket description',
-                'subject' => 'ticket subject',
-                'cc_emails' => ['a@b.com', 'merchantuser01@razorpay.com'],
-                'custom_fields' => [
-                    'cf_requester_category'    => 'Merchant',
-                    'cf_requestor_subcategory'    => 'Technical support',
-                    'cf_requester_item'           => 'Success rate',
-                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                    'cf_merchant_id'           => '10000000000000',
-                ],
-                'email' =>  'test@razorpay.com',
-                'phone' => '9876543210',
-                'priority' =>  1,
-                'group_id' => 42000097450,
+                'fd_instance' => 'rzpsol',
+                'razorx'      => 'control',
+                'group_id'      => 42000097450,
             ],
             [
-                'id'            => '99',
-                'description'   => 'ticket description',
-                'fr_due_by'     => $frDueByFreshdeskFormat,
-                'custom_fields' => [
-                    'cf_requester_category'    => 'Merchant',
-                    'cf_requestor_subcategory' => 'Technical support',
-                    'cf_requester_item'        => 'Success rate',
-                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                ],
-                'priority' =>  1,
-            ]);
+                'fd_instance' => 'rzpind',
+                'razorx'      => 'on',
+                'group_id'      => 42000097444,
+            ]];
 
-        $response = $this->startTest();
+        foreach ($testCases as $testCase)
+        {
+            $this->mockRazorxTreatment($testCase['razorx']);
 
-        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+            $this->ba->proxyAuth();
 
-        $fdInstance = $ticket['ticket_details']['fd_instance'];
+            $frDueBy = time() + self::DAY * 2;
 
-        $this->assertNotEquals('razorpayid0012', $ticket['id']);
+            $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
 
-        $this->assertNotEquals('99', $response['id']);
+            $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', $testCase['fd_instance'],
+                                                                   [
+                                                                       'description'   => 'ticket description',
+                                                                       'subject'       => 'ticket subject',
+                                                                       'cc_emails'     => ['a@b.com', 'merchantuser01@razorpay.com'],
+                                                                       'custom_fields' => [
+                                                                           'cf_requester_category'    => 'Merchant',
+                                                                           'cf_requestor_subcategory' => 'Technical support',
+                                                                           'cf_requester_item'        => 'Success rate',
+                                                                           'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                                                                           'cf_merchant_id'           => '10000000000000',
+                                                                       ],
+                                                                       'email'         => 'test@razorpay.com',
+                                                                       'phone'         => '9876543210',
+                                                                       'priority'      => 1,
+                                                                       'group_id'      => $testCase['group_id'],
+                                                                   ],
+                                                                   [
+                                                                       'id'            => '99',
+                                                                       'description'   => 'ticket description',
+                                                                       'fr_due_by'     => $frDueByFreshdeskFormat,
+                                                                       'custom_fields' => [
+                                                                           'cf_requester_category'    => 'Merchant',
+                                                                           'cf_requestor_subcategory' => 'Technical support',
+                                                                           'cf_requester_item'        => 'Success rate',
+                                                                           'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                                                                       ],
+                                                                       'priority'      => 1,
+                                                                   ]);
 
-        $this->assertEquals($response['id'], $ticket['id']);
+            $response = $this->startTest();
 
-        $this->assertEquals('rzpsol', $fdInstance);
+            $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+            $fdInstance = $ticket['ticket_details']['fd_instance'];
+
+            $this->assertNotEquals('razorpayid0012', $ticket['id']);
+
+            $this->assertNotEquals('99', $response['id']);
+
+            $this->assertEquals($response['id'], $ticket['id']);
+
+            $this->assertEquals($testCase['fd_instance'], $fdInstance);
+        }
     }
 
     public function testCreateTicketRzpCap()
