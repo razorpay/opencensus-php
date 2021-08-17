@@ -1962,7 +1962,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($finalBankStatus, $bankingAccountStateUpdate['bank_status']);
 
         if (($finalStatus !== $initialStatus)
-            and (in_array($finalStatus, [Status::INITIATED, Status::PICKED]) === false))
+            and (in_array($finalStatus, [Status::INITIATED, Status::PICKED, Status::ARCHIVED]) === false))
         {
             $mailableClass = RZP\Mail\BankingAccount\StatusNotifications\Factory::getMailer($updatedBankingAccount);
 
@@ -2014,6 +2014,13 @@ class BankingAccountTest extends TestCase
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::CANCELLED,
             Status::PICKED);
+    }
+
+    public function testUpdateBankingAccountStatusProcessedToArchived()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PROCESSED,
+            Status::ARCHIVED);
     }
 
     public function testUpdateBankingAccountStatusArchivedToProcessed()

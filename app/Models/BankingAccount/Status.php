@@ -144,6 +144,8 @@ class Status
         ],
         self::PROCESSED => [
             self::ACTIVATED,
+            // Sometimes leads drop off after CA is opened.
+            self::ARCHIVED,
         ],
         self::UNSERVICEABLE => [
             self::PICKED,
