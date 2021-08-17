@@ -2323,7 +2323,7 @@ class Repository extends Base\Repository
         $obj = $this->connection(Mode::LIVE)->newQuery()->find($id);
 
         if (($obj !== null) and
-            ($obj->getGateway() !== null))
+            ($obj->getAuthenticationGateway() !== null))
         {
             return Mode::LIVE;
         }
@@ -2331,7 +2331,7 @@ class Repository extends Base\Repository
         $obj = $this->connection(Mode::TEST)->newQuery()->find($id);
 
         if (($obj !== null) and
-            ($obj->getGateway() !== null))
+            ($obj->getAuthenticationGateway() !== null))
         {
             return Mode::TEST;
         }

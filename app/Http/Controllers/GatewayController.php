@@ -194,6 +194,15 @@ class GatewayController extends Controller
         if ($gatewayDriver === Gateway::GOOGLE_PAY)
         {
             $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+            if (is_null($mode) === true)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                    null,
+                    [
+                        'method'      => 'card',
+                        'application' => 'google_pay'
+                    ]);
+            }
 
             $this->app['basicauth']->setModeAndDbConnection($mode);
 
