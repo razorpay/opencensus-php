@@ -274,26 +274,7 @@ export default class InvoicesNewContainer extends Component {
     }
 
     // Set Customer.
-    let customerDetails = invoice.customer;
-
-    if (customerDetails) {
-      let customer =
-        this.props.customers.items &&
-        this.props.customers.items.find((c) => c.id == customerDetails.id);
-
-      if (customer) {
-        this.setState({
-          selectedCustomerDisplay: customer,
-        });
-
-        let billingAddress, shippingAddress;
-
-        billingAddress = customerDetails.billing_address_id;
-        shippingAddress = customerDetails.shipping_address_id;
-
-        this.onSelectCustomer(customer, billingAddress, shippingAddress, false);
-      }
-    }
+    invoice.customer && this.setCustomerData(invoice.customer);
 
     // Set State of Supply
     if (invoice.supply_state_code && this.state.states) {
@@ -304,6 +285,25 @@ export default class InvoicesNewContainer extends Component {
 
     // Refresh merchant info.
     setTimeout(() => this.getMerchantInfo());
+  }
+
+  setCustomerData(customerDetails) {
+    let customer =
+      this.props.customers.items &&
+      this.props.customers.items.find((c) => c.id == customerDetails.id);
+
+    if (customer) {
+      this.setState({
+        selectedCustomerDisplay: customer,
+      });
+
+      let billingAddress, shippingAddress;
+
+      billingAddress = customerDetails.billing_address_id;
+      shippingAddress = customerDetails.shipping_address_id;
+
+      this.onSelectCustomer(customer, billingAddress, shippingAddress, false);
+    }
   }
 
   componentWillUpdate(nextProps) {
@@ -321,11 +321,13 @@ export default class InvoicesNewContainer extends Component {
 
   initInvoicePage(props) {
     let promises = [];
+    let invoiceDataFromFetch;
     props = props || this.props;
 
     let invoiceId = props.match.params.id;
     const searchQuery = getURLQueryParams(props.location.search);
     this.isIntentDuplicate = false;
+    const customerFetchIssue = props.session.user.isCustomerFetchIssuePresentInInvoices;
 
     if (invoiceId) {
       promises.push(
@@ -353,8 +355,21 @@ export default class InvoicesNewContainer extends Component {
       }
     }
 
+    /*
+      few customers were facing issue with customers fetching taking upto 3-4 minutes. For those merchants fetching customers
+      parallely and initialising customer data again if initilization already done before by keeping variable invoiceDataFromFetch as reference
+    */
+    if(customerFetchIssue) {
+      props.fetchCustomersForAutocomplete()
+      .then(() => {
+        if(invoiceDataFromFetch?.customer ) {
+          this.setCustomerData(invoiceDataFromFetch.customer);
+        }
+      });
+    }
+
     promises = [
-      props.fetchCustomersForAutocomplete(),
+      !customerFetchIssue && props.fetchCustomersForAutocomplete(),
       props.fetchItemsForAutocomplete({
         type: 'invoice',
         'expand[]': 'tax',
@@ -372,6 +387,7 @@ export default class InvoicesNewContainer extends Component {
       .then(([customers, items, states, gst, invoice]) => {
         if (invoice) {
           this._initialize(invoice);
+          invoiceDataFromFetch = invoice;
         }
 
         let statesList = states && states.data && states.data.items;
@@ -1085,6 +1101,13 @@ export default class InvoicesNewContainer extends Component {
         },
         this.state.invoiceCurrency,
       );
+
+      if(this.props.session.user.isCustomerFetchIssuePresentInInvoices) {
+        // add dummy customer if doesn't exist already
+        if(!updatedProps.customer) {
+          updatedProps.customer = {};
+        }
+      }
 
       return this._save(updatedProps).then((invoice) => {
         track({
@@ -2266,7 +2289,7 @@ export default class InvoicesNewContainer extends Component {
                               type="button"
                               class="btn btn-primary btn-block btn-lg"
                               disabled={
-                                this.state.isSaving || this.props.invalid || !hasCustomerSelected
+                                this.state.isSaving || this.props.invalid|| (!hasCustomerSelected && !this.props.session.user.isCustomerFetchIssuePresentInInvoices)
                               }
                               onClick={handleSubmit((props) => {
                                 return this.saveAndIssue({

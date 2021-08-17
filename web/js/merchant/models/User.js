@@ -1030,6 +1030,12 @@ export default class User {
     return this.isFeatureEnabled('nps_survey_payment_pages');
   }
 
+  get isCustomerFetchIssuePresentInInvoices() {
+    const merchantsWithIssue = ['9TiAKhdkxKlRFR', 'GJ6L9lV78SmCLy'];
+
+    return merchantsWithIssue.includes(this.current);
+  }
+
   // No experiment of disable-edit-<moduleName> => Module is not restricted
   isViewRestrictedByRazorX(moduleName) {
     // Eg: disable-view-reports (if corresponding experiment is "on", it can't be viewed by those merchants)
