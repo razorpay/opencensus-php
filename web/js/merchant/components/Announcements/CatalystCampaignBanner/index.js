@@ -15,7 +15,7 @@ const cta2Link = 'paymentlinks/new';
 
 const cta1Text = 'Know More';
 
-function _track(source) {
+function _track(source, merchant_id) {
   const mode = getMode();
 
   function onViewBanner() {
@@ -25,6 +25,7 @@ function _track(source) {
         banner_text: bannerText,
         card_id: cardId,
         source,
+        merchant_id,
       }),
     );
   }
@@ -37,6 +38,7 @@ function _track(source) {
         card_id: cardId,
         cta_value: cta1Text,
         source,
+        merchant_id,
       }),
     );
   }
@@ -50,6 +52,7 @@ function _track(source) {
         cta_value: cta2Text,
         link_url: cta2Link,
         source,
+        merchant_id,
       }),
     );
   }
@@ -62,11 +65,10 @@ function _track(source) {
 }
 
 const CatalystCampaignBanner = React.memo(({ productName, openModal }) => {
-  const track = _track(productName);
+  const user = getUser();
+  const track = _track(productName, user.current);
 
   track.onViewBanner();
-
-  const user = getUser();
 
   const handleCTA1Click = () => {
     openModal({
