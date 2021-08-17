@@ -446,15 +446,26 @@ class Validator extends Base\Validator
         Entity::FILE_ID     => 'required_without:file|public_id'
     ];
 
+    // Further validations for otp and token happen in validateOtpAndTokenForPayoutCreate()
+    // Making OTP and token validation rules as sometimes here to not break the flow
     protected static $payoutCreateRules = [
         Entity::TYPE        => 'required|in:payout',
         Entity::NAME        => 'filled|string|max:255',
         Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_EXCEL_MIME_RULE,
         Entity::FILE_ID     => 'required_without:file|public_id',
+        Entity::SCHEDULE    => 'sometimes|numeric',
+        Entity::CONFIG      => 'sometimes',
+        Entity::OTP         => 'sometimes',
+        Entity::TOKEN       => 'sometimes',
+    ];
+
+    protected static $payoutCreateOtpRules = [
         Entity::OTP         => 'required|filled|min:4',
         Entity::TOKEN       => 'required|unsigned_id',
-        Entity::SCHEDULE    => 'sometimes|numeric',
-        Entity::CONFIG      => 'sometimes'
+    ];
+
+    protected static $payoutCreateValidators = [
+        'otp_and_token_for_payout_create',
     ];
 
     protected static $payoutApprovalCreateRules = [
@@ -1929,6 +1940,27 @@ class Validator extends Base\Validator
         else
         {
             return BatchHelper::PAISE;
+        }
+    }
+
+    protected function validateOtpAndTokenForPayoutCreate(array $input)
+    {
+        $app = App::getFacadeRoot();
+
+        if ($app['basicauth']->isStrictPrivateAuth() === true)
+        {
+            if (array_key_exists(Entity::OTP, $input))
+            {
+                $this->throwExtraFieldsException([Entity::OTP]);
+            }
+            if (array_key_exists(Entity::TOKEN, $input))
+            {
+                $this->throwExtraFieldsException([Entity::TOKEN]);
+            }
+        }
+        else
+        {
+            $this->validateInputValues('payout_create_otp', $input);
         }
     }
 

@@ -113,6 +113,9 @@ class Event
     const PAYOUT_DOWNTIME_STARTED           = 'payout.downtime.started';
     const PAYOUT_DOWNTIME_RESOLVED          = 'payout.downtime.resolved';
 
+    // Payouts Batch API
+    const PAYOUT_CREATION_FAILED = 'payout.creation.failed';
+
     //V2 partner Onboarding events
     const PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW        = 'product.payment_gateway.under_review';
     const PAYMENT_GATEWAY_PRODUCT_ACTIVATED           = 'product.payment_gateway.activated';
@@ -227,6 +230,7 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_REJECTED,
         self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION,
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED,
+        self::PAYOUT_CREATION_FAILED,
         self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED,
         self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED,
@@ -343,6 +347,7 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_REJECTED,
         self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION,
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED,
+        self::PAYOUT_CREATION_FAILED,
         self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED,
         self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED,
@@ -454,6 +459,8 @@ class Event
         self::PAYMENT_DISPUTE_UNDER_REVIEW                => 31,
         self::PAYMENT_DISPUTE_ACTION_REQUIRED             => 32,
 
+        self::PAYOUT_CREATION_FAILED => 33,
+
         self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED => 34,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED             => 35,
         self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED   => 36,
@@ -561,6 +568,7 @@ class Event
         self::P2P_DEREGISTRATION_COMPLETED      => [Product::PRIMARY],
         self::PAYOUT_DOWNTIME_STARTED           => [Product::BANKING],
         self::PAYOUT_DOWNTIME_RESOLVED          => [Product::BANKING],
+        self::PAYOUT_CREATION_FAILED            => [Product::BANKING],
 
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED           => [Product::PRIMARY],
         self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION => [Product::PRIMARY],

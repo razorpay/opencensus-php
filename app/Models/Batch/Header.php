@@ -34,9 +34,13 @@ class Header
     const NOTES_REGEX       = '/^notes\[(.*)]$/';
     const TERMINAL_CREATION_TYPE_REGEX           = '/^Type\[(.*)]$/';
 
-    const NOTES_PLACE       = 'notes[place]';
-    const NOTES_CODE        = 'notes[code]';
-    const NOTES_STR_VALUE   = 'note[value]'; // on purpose this is not 'notes[value]', to avoid the NotesRegex
+    const NOTES_PLACE               = 'notes[place]';
+    const NOTES_CODE                = 'notes[code]';
+    const NOTES_BATCH_REFERENCE_ID  = 'notes[batch_reference_id]';
+    const NOTES_FUND_ACCOUNT_NAME   = 'notes[fund_account_name]'; // For MFN Only
+    const NOTES_FUND_ACCOUNT_NUMBER = 'notes[fund_account_number]'; // For MFN Only
+    const NOTES_CORRELATION_ID      = 'notes[correlation_id]'; // For MFN Only
+    const NOTES_STR_VALUE           = 'note[value]'; // on purpose this is not 'notes[value]', to avoid the NotesRegex
 
     //
     // Refund Headers

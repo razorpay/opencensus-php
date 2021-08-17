@@ -155,6 +155,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Dispute\Evidence\Repository                    $dispute_evidence;
  * @property Models\Dispute\Evidence\Document\Repository           $dispute_evidence_document;
  * @property Models\Merchant\RiskNotes\Repository                  $merchant_risk_note;
+ * @property Models\Payout\Batch\Repository                        $payouts_batch;
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

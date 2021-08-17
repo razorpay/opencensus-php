@@ -90,6 +90,8 @@ class ApiTraceProcessor
         'client_secret',
         'payer_account_number',
         'otp',
+        'fund_account_name',
+        'fund_account_number',
     ];
 
     public function __construct($app)

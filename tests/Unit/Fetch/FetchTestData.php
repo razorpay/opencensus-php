@@ -694,4 +694,6 @@ return [
     E::DISPUTE_EVIDENCE_DOCUMENT => [],
 
     E::MERCHANT_RISK_NOTE => [],
+
+    E::PAYOUTS_BATCH => [],
 ];

@@ -30,6 +30,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountService;
 use RZP\Mail\Payout\PendingApprovals;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Application\ApplicationMerchantMaps;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
@@ -941,6 +942,12 @@ class Service extends Base\Service
                     ],
                     Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
                 ];
+
+                if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_BATCH))
+                {
+                    (new PayoutsBatch\Core())
+                        ->pushWebhookForPayoutCreationFailure($exceptionData, $item, $this->merchant);
+                }
 
                 $payoutBatch->push($exceptionData);
             }
