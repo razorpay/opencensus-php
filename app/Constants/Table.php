@@ -377,6 +377,9 @@ class Table
     const INTERNATIONAL_ENABLEMENT_DETAIL   = 'international_enablement_details';
     const INTERNATIONAL_ENABLEMENT_DOCUMENT = 'international_enablement_documents';
 
+    // Merchant Risk Notes
+    const MERCHANT_RISK_NOTE = 'merchant_risk_notes';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,
         Entity::AXIS_GENIUS                        => self::MIGS,

@@ -551,6 +551,8 @@ class Entity
     // Merchant Fraud
     const MERCHANT_HEALTH_CHECKER = 'merchant_health_checker';
 
+    const MERCHANT_RISK_NOTE = 'merchant_risk_note';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -998,6 +1000,8 @@ class Entity
         self::SEGMENTATION   => \RZP\Models\Segmentation::class,
 
         self::MERCHANT_HEALTH_CHECKER   => \RZP\Models\Merchant\Fraud\HealthChecker::class,
+
+        self::MERCHANT_RISK_NOTE       => \RZP\Models\Merchant\RiskNotes::class,
     ];
 
     protected static $repository = [

@@ -2685,6 +2685,11 @@ class Route
         'health_checker_retry_cron'              => ['post',    'merchant/{checker_type}/checker/retry/cron',                     'MerchantController@healthCheckerRetryCron'                   ],
         'health_checker_reminder_cron'           => ['post',    'merchant/{checker_type}/checker/reminder/cron',                  'MerchantController@healthCheckerReminderCron'                ],
 
+        // Merchant Risk Notes
+        'merchant_risk_notes_get'              => ['get',       'merchants/{merchant_id}/risk_notes',                       'MerchantRiskNotesController@getAll'    ],
+        'merchant_risk_notes_create'           => ['post',      'merchants/{merchant_id}/risk_notes',                       'MerchantRiskNotesController@create'    ],
+        'merchant_risk_notes_delete'           => ['delete',    'merchants/{merchant_id}/risk_notes/{id}',                  'MerchantRiskNotesController@delete'    ],
+
         // Payout service url's
         'create_payout_entry'                     => ['post',     'payouts_service/create',                                 'PayoutController@createPayoutEntry'                           ],
         'create_FTA_payout_service'               => ['post',     'payouts_service/create_fta/{payout_id}',                 'PayoutController@createFTAForPayoutService'                   ],
@@ -5212,6 +5217,11 @@ class Route
 
         // Payout service
         'retry_payouts_on_service',
+
+        // Merchant Risk Notes
+        'merchant_risk_notes_get',
+        'merchant_risk_notes_create',
+        'merchant_risk_notes_delete'
     ];
 
     public static $routePermission = [
@@ -6194,6 +6204,11 @@ class Route
         'retry_payouts_on_service'                        => Permission::RETRY_PAYOUTS_ON_SERVICE,
 
         'complete_submerchant_onboarding'                 => Permission::MERCHANT_ACTIONS,
+
+        // Merchant Risk Notes
+        'merchant_risk_notes_get'                         => Permission::GET_MERCHANT_RISK_NOTES,
+        'merchant_risk_notes_create'                      => Permission::CREATE_MERCHANT_RISK_NOTES,
+        'merchant_risk_notes_delete'                      => Permission::DELETE_MERCHANT_RISK_NOTES,
     ];
 
     public static $bankingRoutePermissions = [
@@ -9392,6 +9407,11 @@ class Route
             'metro_project_create',
             'metro_project_credentials_create',
             'metro_project_topic_update',
+
+            // Merchant Risk Notes
+            'merchant_risk_notes_get',
+            'merchant_risk_notes_create',
+            'merchant_risk_notes_delete'
         ],
 
         //
