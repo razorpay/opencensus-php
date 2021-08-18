@@ -164,6 +164,7 @@ export default class GSTDetails extends Component {
         <div class="panel-heading">
           GST Details
           <ShowWhen
+            myRole="owner admin"
             additionalCondition={(user) =>
               user.isAllowedEdit('profile') && user.isFeatureEnabled(`gstin_self_serve`)
             }
