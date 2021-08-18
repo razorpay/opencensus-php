@@ -911,6 +911,17 @@ class Selector extends Base\Core
                 unset($tracePayment['card']);
             }
 
+            $tokens = [];
+
+            // Adding temporary logs for gateway token for nach
+            if ( $payment->isMethod(Method::NACH) === true )
+            {
+                foreach($data['gateway_tokens'] as $token)
+                {
+                    array_push($tokens, $token['token_id']);
+                }
+            }
+
             $this->trace->info(
                 TraceCode::SMART_ROUTING_REQUEST,
                 [
@@ -920,6 +931,7 @@ class Selector extends Base\Core
                     'merchant'            => $data['merchant'],
                     'gateway_downtime'    => $data['gateway_downtime'],
                     'failed_terminals'    => $data['failed_terminals'],
+                    'gateway_tokens'      => $tokens,
                 ]);
 
             $response = $this->app->smartRouting->sendPaymentData($data);
