@@ -5153,6 +5153,12 @@ class BankingAccountTest extends TestCase
     {
         Mail::fake();
 
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'          => '10000000000000',
+            'activation_status'    => 'activated',
+            'business_category'    => 'education',
+            'business_subcategory' => 'college']);
+
         $bankingAccount = $this->testCreateActivationDetail();
 
         $this->fixtures->edit('banking_account',
@@ -5189,12 +5195,22 @@ class BankingAccountTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(MerchantPreparingDoc::class);
+        Mail::assertQueued(MerchantPreparingDoc::class, function ($mail) use($bankingAccount)
+        {
+            $mail->build();
+            return $mail->hasTo('superadmin@razorpay.com');
+        });
     }
 
     public function testNotifyToSPOCForDiscrepancyInDoc()
     {
         Mail::fake();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'          => '10000000000000',
+            'activation_status'    => 'activated',
+            'business_category'    => 'education',
+            'business_subcategory' => 'college']);
 
         $bankingAccount = $this->testCreateActivationDetail();
 
@@ -5232,6 +5248,10 @@ class BankingAccountTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(DiscrepancyInDoc::class);
+        Mail::assertQueued(DiscrepancyInDoc::class, function ($mail) use($bankingAccount)
+        {
+            $mail->build();
+            return $mail->hasTo('superadmin@razorpay.com');
+        });
     }
 }

@@ -1,8 +1,14 @@
-<style>
-    table, th, td {
-        border: 1px solid black;
-    }
-</style>
+<!doctype html>
+<html lang="en">
+<head>
+    <title></title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
 <br/> Hi,<br/>
 <p>The following customers are either stuck or taking more than the expected time to provide valid documents required for the
     Current Account opening process. We need your attention to make sure the customers complete the CA onboarding
@@ -31,3 +37,5 @@
 <br/>
 Thanks,<br/>
 Team RazorpayX<br/>
+</body>
+</html>

@@ -2,8 +2,10 @@
 
 namespace RZP\Mail\BankingAccount\StatusNotificationsToSPOC;
 
+use Carbon\Carbon;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
+use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
@@ -32,7 +34,7 @@ class Base extends Mailable
             $bankingAccount = $state->bankingAccount;
 
             array_push($data, [
-                PublicEntity::MERCHANT_ID => $state->getMerchantId(),
+                PublicEntity::MERCHANT_ID => $bankingAccount->getMerchantId(),
 
                 'businessName' => $bankingAccount->merchant->merchantDetail->getBusinessName(),
 
@@ -67,7 +69,9 @@ class Base extends Mailable
 
     protected function addSubject()
     {
-        $this->subject(static::SUBJECT);
+        $date = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        $this->subject(static::SUBJECT . ' | ' . $date);
 
         return $this;
     }
