@@ -2579,4 +2579,44 @@ class TerminalSelectionTest extends TestCase
             RuntimeException::class, 'No terminal found.');
     }
 
+    /**
+     * Tests terminal selection using the 'enabled_wallets' field
+     *
+     * @throws RuntimeException
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function testPayuTerminalForWallet()
+    {
+        $this->fixtures->create('terminal:payu_terminal');
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'wallet';
+        $paymentArray['wallet'] = 'jiomoney';
+
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+
+        $this->assertEquals(1, sizeof($selectedTerminals));
+
+        $terminal = $selectedTerminals[0];
+
+        $this->assertEquals('payu', $terminal->getGateway());
+    }
+
 }

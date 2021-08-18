@@ -76,7 +76,16 @@ class TransactionFilter extends Terminal\Filter
 
                 $gateway = Gateway::getGatewayForWallet($wallet);
 
-                return ($gateway === $terminal->getGateway());
+                $enabled_wallets = $terminal->getEnabledWallets();
+
+                if (empty($enabled_wallets)) {
+                    return ($gateway === $terminal->getGateway());
+                }
+
+                // Select the terminals whose gateway matches with wallet gateway
+                // For some gateways like payu and ccavenue, gateway will not match, in that case,
+                // we check for enabled wallets field of terminals.
+                return (($gateway === $terminal->getGateway()) || (in_array($wallet, $enabled_wallets)));
 
             case Method::UPI:
                 return $terminal->isUpiEnabled();

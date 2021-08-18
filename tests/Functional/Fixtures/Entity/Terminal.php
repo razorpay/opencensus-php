@@ -351,6 +351,7 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'network_category'      => 'ecommerce',
             'gateway_secure_secret' => 'secret',
+            'enabled_wallets'       => ['jiomoney','mobikwik'],
         ];
         $attributes = array_merge($attributes, $override);
         return $this->createEntityInTestAndLive('terminal', $attributes);
