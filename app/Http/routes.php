@@ -63,6 +63,10 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['prefix' => 'user'], function()
     {
         Route::post('/signin', 'UserController@postSignin'); // ePOS
+        Route::post('/otp-signin', 'UserController@postSendLoginOtp');
+        Route::post('/otp-verifyUser', 'UserController@postSendVerifyUserOtp');
+        Route::post('/verifyotp-signin', 'UserController@postVerifyLoginOtp');
+        Route::post('/verifyotp-verifyUser', 'UserController@postVerifyUserOtp');
         Route::post('/register', 'UserController@postRegister'); // ePOS
         Route::post('/oauth-signin', 'UserController@postOauthSignIn');
         Route::post('/oauth-register', 'UserController@postOauthRegister');

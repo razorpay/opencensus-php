@@ -15,6 +15,7 @@ class Constants
   const METRIC_COUNTER_HTTP_REQUESTS               = 'http_requests';
   const METRIC_HISTOGRAM_HTTP_REQUESTS_DURATION    = 'http_requests_duration';
   const USER_LOGIN_COUNT            = 'user_login_count';
+  const USER_VERIFY_COUNT           = 'user_verify_count';
   const USER_LOGOUT_COUNT           = 'user_logout_count';
   const USER_SIGNUP_COUNT           = 'user_signup_count';
 
@@ -40,9 +41,11 @@ class Constants
   const TWO_FA_OTP_VERIFICATION     = 'two_fa_verificiation';
    //when user does a normal login
   const NORMAL_LOGIN                = 'normal_login';
+  const OTP_LOGIN                   = 'otp_login';
 
   /** Possible Login methods **/
   const PASSWORD                    = 'password';
+  const OTP                         = 'otp';
    //currently only one oauth provider - google
   const OAUTH                       = 'oauth';
 

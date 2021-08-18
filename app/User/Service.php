@@ -364,6 +364,58 @@ class Service extends Base\Service
         return $this->handleLoginResponse($error, $genericUser);
     }
 
+    /**
+     * @param  array  $input [description]
+     *
+     * @return array
+     */
+    public function otpLogin(array $input)
+    {
+        $res = null;
+
+        return $this->otpLoginOnApi($input);
+    }
+
+    /**
+     * @param  array  $input [description]
+     *
+     * @return array
+     */
+    public function otpVerifyUser(array $input)
+    {
+        $res = null;
+
+        return $this->otpLoginForVerifyUser($input);
+    }
+
+    /**
+     * @param  array  $input [description]
+     *
+     * @return array
+     */
+    public function verifyOtpLogin(array $input)
+    {
+        $res = null;
+
+        list($error, $genericUser) = $this->verifyOtpLoginOnApi($input);
+
+        return $this->handleLoginResponse($error, $genericUser);
+    }
+
+    /**
+     * @param  array  $input [description]
+     *
+     * @return array
+     */
+    public function verifyOtpVerifyUser(array $input)
+    {
+        $res = null;
+
+        list($error, $genericUser) = $this->verifyOtpVerifyUserApi($input);
+
+        return $this->handleLoginResponse($error, $genericUser);
+    }
+
     protected function handleLoginResponse($error, $genericUser)
     {
         if (empty($error) === false)
@@ -406,7 +458,37 @@ class Service extends Base\Service
                 return [['Incorrect Password login attempt exhausted. Please contact support or login via dashboard', self::LOGIN_UNAUTHENTICATED], null];
             }
 
-            return [['Incorrect email or password. To reset, click on "Forgot?" link.', self::LOGIN_UNAUTHENTICATED], null];
+            if (in_array('Verification failed because of incorrect OTP.', $error) === true)
+            {
+                return [['Verification failed because of incorrect OTP.', self::LOGIN_UNAUTHENTICATED], null];
+            }
+
+            if (in_array('Contact mobile is already verified', $error) === true)
+            {
+                return [['Contact mobile is already verified', self::LOGIN_UNAUTHENTICATED], null];
+            }
+
+            if (in_array('Email is already verified', $error) === true)
+            {
+                return [['Email is already verified', self::LOGIN_UNAUTHENTICATED], null];
+            }
+
+            if (in_array('BAD_REQUEST_EMAIL_NOT_VERIFIED', $error) === true)
+            {
+                return [['Email is not verified.', self::LOGIN_UNAUTHENTICATED], null];
+            }
+
+            if (in_array('BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED', $error) === true)
+            {
+                return [['Contact mobile is not verified.', self::LOGIN_UNAUTHENTICATED], null];
+            }
+
+            if (in_array('BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED', $error) === true)
+            {
+                return [['Either multiple or no accounts associated with the contact mobile/email.', self::LOGIN_UNAUTHENTICATED], null];
+            }
+
+            return [['Incorrect email/contact mobile or password. To reset, click on "Forgot?" link.', self::LOGIN_UNAUTHENTICATED], null];
         }
 
         Auth::login($genericUser, false);
@@ -1130,6 +1212,23 @@ class Service extends Base\Service
         return [$error, $genericUser];
     }
 
+    public function loginOtpRoute(array $input, string $route, string $httpVerb, array $options=[])
+    {
+        $request = new \App\Admin\ApiRequestAny($options);
+
+        list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
+
+        return [$error, $data];
+    }
+
+    public function userVerificationRoute(array $input, string $route, string $httpVerb, array $options=[])
+    {
+        $request = new \App\Admin\ApiRequestAny($options);
+
+        list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
+
+        return [$error, $data];
+    }
 
     /**
      * @param array  $input
@@ -1183,6 +1282,26 @@ class Service extends Base\Service
         $this->checkOauthProviderInPayload($input);
 
         return $this->loginOnApiOnRoute($input,'users/login', 'POST', [ 'headers' => $headers ]);
+    }
+
+    public function otpLoginOnApi(array $input)
+    {
+           return $this->loginOtpRoute($input,'users/login/otp', 'POST');
+    }
+
+    public function otpLoginForVerifyUser(array $input)
+    {
+        return $this->userVerificationRoute($input,'users/login/otp/sendVerificationOtp', 'POST');
+    }
+
+    public function verifyOtpLoginOnApi(array $input)
+    {
+        return $this->loginOnApiOnRoute($input,'users/login/otp/verify', 'POST');
+    }
+
+    public function verifyOtpVerifyUserApi(array $input)
+    {
+        return $this->loginOnApiOnRoute($input,'users/login/otp/verifyVerificationOtp', 'POST');
     }
 
     // Another route for a successful login. If a uses 2fa is not setup

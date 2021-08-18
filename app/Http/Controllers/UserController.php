@@ -309,6 +309,138 @@ class UserController extends Controller
         return $result;
     }
 
+    /**
+     * Handle the authentication request from the user for OTP logins and send OTP.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function postSendLoginOtp()
+    {
+        $timeStarted = microtime(true);
+
+        $input = Input::all();
+
+        // Lowercasing emails for consistency
+        if (isset($input['email']))
+        {
+            $input['email'] = mb_strtolower($input['email']);
+        }
+
+        list($error, $data) = (new User\Service)->otpLogin($input);
+
+        $timeEnd = microtime(true);
+
+        $timeTaken = $timeEnd - $timeStarted;
+
+        $this->traceDuration($timeTaken, TraceCode::SEND_LOGIN_OTP_DURATION);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    /**
+     * Handle the request to verify the user and send OTP.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function postSendVerifyUserOtp()
+    {
+        $timeStarted = microtime(true);
+
+        $input = Input::all();
+
+        // Lowercasing emails for consistency
+        if (isset($input['email']))
+        {
+            $input['email'] = mb_strtolower($input['email']);
+        }
+
+        list($error, $data) = (new User\Service)->otpVerifyUser($input);
+
+        $timeEnd = microtime(true);
+
+        $timeTaken = $timeEnd - $timeStarted;
+
+        $this->traceDuration($timeTaken, TraceCode::SEND_USER_VERIFY_OTP_DURATION);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    /**
+     * Handle the authentication request from the user for OTP logins and send OTP.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function postVerifyLoginOtp()
+    {
+        $timeStarted = microtime(true);
+
+        $input = Input::all();
+
+        // Lowercasing emails for consistency
+        if (isset($input['email']))
+        {
+            $input['email'] = mb_strtolower($input['email']);
+        }
+
+        list($error, $data) = (new User\Service)->verifyOtpLogin($input);
+
+        if (empty($error) === true)
+        {
+            $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
+                EVENT_TRIGGER_COUNT,
+                [
+                    MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
+                    MetricConstants::LOGIN_ACTION => MetricConstants::OTP_LOGIN,
+                ]);
+        }
+
+        $timeEnd = microtime(true);
+
+        $timeTaken = $timeEnd - $timeStarted;
+
+        $this->traceDuration($timeTaken, TraceCode::VERIFY_LOGIN_OTP_DURATION);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    /**
+     * Handle the authentication request from the user for OTP logins and send OTP.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function postVerifyUserOtp()
+    {
+        $timeStarted = microtime(true);
+
+        $input = Input::all();
+
+        // Lowercasing emails for consistency
+        if (isset($input['email']))
+        {
+            $input['email'] = mb_strtolower($input['email']);
+        }
+
+        list($error, $data) = (new User\Service)->verifyOtpVerifyUser($input);
+
+        if (empty($error) === true)
+        {
+            $this->metrics->count(MetricConstants::USER_VERIFY_COUNT,
+                EVENT_TRIGGER_COUNT,
+                [
+                    MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
+                    MetricConstants::LOGIN_ACTION => MetricConstants::OTP_LOGIN,
+                ]);
+        }
+
+        $timeEnd = microtime(true);
+
+        $timeTaken = $timeEnd - $timeStarted;
+
+        $this->traceDuration($timeTaken, TraceCode::VERIFY_VERIFICATION_OTP_DURATION);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function postOauthSignIn()
     {
         $input = Input::all();

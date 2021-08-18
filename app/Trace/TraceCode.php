@@ -34,9 +34,14 @@ class TraceCode
 
     const USER_LOGIN                                = 'USER_LOGIN';
     const USER_LOGIN_DURATION                       = 'USER_LOGIN_DURATION';
+    const SEND_LOGIN_OTP_DURATION                   = 'SEND_LOGIN_OTP_DURATION';
+    const SEND_USER_VERIFY_OTP_DURATION             = 'SEND_USER_VERIFY_OTP_DURATION';
+    const VERIFY_LOGIN_OTP_DURATION                 = 'VERIFY_LOGIN_OTP_DURATION';
+    const VERIFY_VERIFICATION_OTP_DURATION          = 'VERIFY_VERIFICATION_OTP_DURATION';
     const USER_LOGIN_KEYS                           = 'USER_LOGIN_KEYS';
     const USER_OAUTH_LOGIN                          = 'USER_OAUTH_LOGIN';
     const USER_LOGIN_FAILURE                        = 'USER_LOGIN_FAILURE';
+    const USER_VERIFICATION_FAILURE                 = 'USER_VERIFICATION_FAILURE';
     const SWITCH_MERCHANT                           = 'SWITCH_MERCHANT';
     const USER_LOGOUT                               = 'USER_LOGOUT';
     const USER_RETRIEVE_CREDS                       = 'USER_RETRIEVE_CREDS';
