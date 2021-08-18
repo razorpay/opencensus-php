@@ -204,7 +204,13 @@ abstract class Processor extends Base\Core
             {
                 if ($this->shouldRefundOrderPayment($entity) === true)
                 {
-                    $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment());
+                    $refundNotes = [
+                        'notes' => [
+                            'refund_reason' => PublicErrorDescription::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH
+                        ]
+                    ];
+
+                    $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment(), $refundNotes);
                 }
                 else if ($this->verifyPayerUsingTpv($entity) === false)
                 {
