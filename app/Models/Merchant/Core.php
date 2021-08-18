@@ -2020,6 +2020,19 @@ class Core extends Base\Core
                     // create referred app and partner config for aggregator/fully_managed partners to give them reseller functionality
                     $this->createReferredAppAndPartnerConfigForManaged($merchant);
                 }
+
+                $dimensionsForMerchantApplication = [
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                    'application_type'   => $applicationType
+                ];
+
+                $this->trace->count(Metric::PARTNER_MERCHANT_APPLICATION_CREATE_TOTAL, $dimensionsForMerchantApplication);
+
+                $dimensionsForDefaultPartnerConfig = [
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ];
+
+                $this->trace->count(Metric::PARTNER_CONFIG_CREATE_TOTAL, $dimensionsForDefaultPartnerConfig);
             }
         });
 
@@ -2062,6 +2075,19 @@ class Core extends Base\Core
 
         // create new partner config for referred app for aggregator/fully_managed partners
         $this->createPartnerConfig($referredApp, $merchant);
+
+        $dimensionsForMerchantApplication = [
+            Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+            'application_type'   => MerchantApplications\Entity::REFERRED
+        ];
+
+        $this->trace->count(Metric::PARTNER_MERCHANT_APPLICATION_CREATE_TOTAL, $dimensionsForMerchantApplication);
+
+        $dimensionsForDefaultPartnerConfig = [
+            Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+        ];
+
+        $this->trace->count(Metric::PARTNER_CONFIG_CREATE_TOTAL, $dimensionsForDefaultPartnerConfig);
     }
 
     protected function setDefaultFeatureForPartner(Entity $partner)

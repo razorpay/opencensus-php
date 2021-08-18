@@ -124,6 +124,12 @@ class Core extends Merchant\Core
             $this->app['terminals_service']->requestDefaultMerchantInstruments($subMerchant->getId());
         }
 
+        $businessType = $input[Constants::BUSINESS_ENTITY] ?? null;
+
+        $dimensions = $this->getDimensionsForAccountMetrics($partner, $businessType);
+
+        $this->trace->count(Metric::ACCOUNT_V1_CREATE_SUCCESS_TOTAL, $dimensions);
+
         return $subMerchant;
     }
 
@@ -160,6 +166,10 @@ class Core extends Merchant\Core
 
             return $subMerchant;
         });
+
+        $dimensions = $this->getDimensionsForAccountMetrics($partner, null);
+
+        $this->trace->count(Metric::ACCOUNT_V1_EDIT_SUCCESS_TOTAL, $dimensions);
 
         return $account;
     }
@@ -407,5 +417,19 @@ class Core extends Merchant\Core
         }
 
         return $merchantDetails;
+    }
+
+    private function getDimensionsForAccountMetrics(Merchant\Entity $partner, $businessType): array
+    {
+        $dimensions = [
+            'partner_name' => $partner->getName() // adding this because v1 apis are exposed to limited partners
+        ];
+
+        if (empty($businessType) === false)
+        {
+            $dimensions['submerchant_business_type'] = $businessType;
+        }
+
+        return $dimensions;
     }
 }

@@ -2458,6 +2458,9 @@ class Core extends Base\Core
 
         if(empty($merchantForCurrentProduct) === true)
         {
+
+            $this->trace->count(Metric::DASHBOARD_SWITCH_FAILURE_TOTAL , []);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ID,
                 null,
@@ -2472,6 +2475,8 @@ class Core extends Base\Core
         $merchants = $this->getUnifiedMerchants($merchants);
 
         $merchants = $this->appendBankingSpecificDetails($merchants);
+
+        $this->trace->count(Metric::DASHBOARD_SWITCH_SUCCESS_TOTAL , []);
 
         return [
             // just to maintain backward compatibility

@@ -15,6 +15,8 @@ use RZP\Models\User\Role;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\TestsMetrics;
+use RZP\Models\Merchant\Account\Metric;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Feature\Constants as FName;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -28,6 +30,7 @@ class PartnerAccountTest extends TestCase
     use DbEntityFetchTrait;
     use PartnerTrait;
     use TestsWebhookEvents;
+    use TestsMetrics;
 
     const RZP_ORG = '100000razorpay';
 
@@ -50,7 +53,17 @@ class PartnerAccountTest extends TestCase
 
         $this->expectWebhookEvent('account.under_review');
 
+        $metricsMock = $this->createMetricsMock();
+
+        $metricCaptured = false;
+
+        $expectedMetricData = $this->getDimensionsForAccountMetrics();
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V1_CREATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
         $response = $this->startTest();
+
+        $this->assertTrue($metricCaptured);
 
         // assert that legal entity is created for the submerchant
         $legalEntity = $this->getDbLastEntity('legal_entity');
@@ -582,5 +595,12 @@ class PartnerAccountTest extends TestCase
         $this->runRequestResponseFlow($testData);
 
         return $merchant;
+    }
+
+    private function getDimensionsForAccountMetrics(): array
+    {
+        return [
+            'submerchant_business_type' => 'llp',
+        ];
     }
 }

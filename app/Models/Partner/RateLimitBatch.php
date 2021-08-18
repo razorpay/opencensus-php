@@ -31,6 +31,9 @@ class RateLimitBatch extends Base\Core
 
         if ($allow === false)
         {
+            //Adding merchant Id to dimension as this is a extreme case
+            $this->trace->count(Metric::SUBMERCHANT_INVITE_BATCH_DAILY_LIMIT_EXCEEDED, ['partner_id' => $merchant->getId()]);
+
             throw new BadRequestException(ErrorCode::BAD_REQUEST_DAILY_LIMIT_SUBMERCHANT_INVITE_EXCEEDED, null,
                                           ['merchant_id' => $merchant->getMerchantId(), 'email' => $merchant->getEmail(),]);
         }

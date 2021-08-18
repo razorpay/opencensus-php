@@ -4500,7 +4500,7 @@ class Service extends Base\Service
 
         $newUser = null;
 
-        $createdNew = false;
+        $createdNewUser = false;
 
         if ($isLinkedAccount === false)
         {
@@ -4525,7 +4525,7 @@ class Service extends Base\Service
         // dashboard access is true.
         if ((($enableDashboardAccess === true) and ($isLinkedAccount === true)) or ($isLinkedAccount === false))
         {
-            list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant, $product);
+            list($newUser, $createdNewUser) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant, $product);
         }
 
         $this->repo->saveOrFail($subMerchant);
@@ -4547,7 +4547,11 @@ class Service extends Base\Service
 
         $this->trace->count(Metric::ADD_SUB_MERCHANT, $dimensions);
 
-        return [$subMerchant, $newUser, $createdNew];
+        $this->trace->count(PartnerMetric::SUBMERCHANT_PRICING_PLAN_ASSIGN_TOTAL, ['partner_type' => $merchant->getPartnerType()]);
+
+        $this->trace->count(PartnerMetric::SUBMERCHANT_USER_CREATE_TOTAL, ['submerchant_user_created' => $createdNewUser]);
+
+        return [$subMerchant, $newUser, $createdNewUser];
     }
 
     protected function createSubMerchantAndSetRelations(Entity $merchant, bool $isLinkedAccount, array $input, bool $optimizeCreationFlow = false)

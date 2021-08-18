@@ -21,4 +21,7 @@ final class Metric
     const USER_2FA_NOT_SETUP                  = 'user_2fa_not_setup';
     const USER_2FA_LOCKED                     = 'user_2fa_locked';
     const USER_ACCESS_CRITICAL_ROUTE          = 'user_access_critical_route';
+
+    const DASHBOARD_SWITCH_SUCCESS_TOTAL = 'dashboard_switch_success_total';
+    const DASHBOARD_SWITCH_FAILURE_TOTAL = 'dashboard_switch_failure_total';
 }

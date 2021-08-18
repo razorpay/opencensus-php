@@ -123,6 +123,8 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::PARTNER_AUTO_ACTIVATION_FROM_MERCHANT_SUCCESS, [
                 'merchant_id' => $merchant->getId()
             ]);
+
+            $this->trace->count(Metric::PARTNER_ACTIVATION_AUTO_ACTIVATE_SUCCESS_TOTAL, ['partner_type' => $merchant->getPartnerType()]);
         }
 
         return $partnerActivation;
@@ -206,6 +208,8 @@ class Core extends Base\Core
             $this->trace->error(TraceCode::PARTNER_AUTO_ACTIVATION_FROM_MERCHANT_FAILED, [
                 'merchant_id' => $merchant->getId()
             ]);
+
+            $this->trace->count(Metric::PARTNER_ACTIVATION_AUTO_ACTIVATE_FAILURE_TOTAL);
         }
     }
 

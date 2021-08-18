@@ -65,18 +65,20 @@ class Core extends Base\Core
         }
         // Get the type. If type is migrated redirect to Batch MicroService.
 
+        $dimensions = $batch->getMetricDimensions();
+
         if ($processor->shouldSendToBatchService())
         {
             $processor->addSettingsIfRequired($input);
 
             $batchResponse = $this->app->batchService->forwardToBatchServiceRequest($input, $merchant, $ufhFile);
 
+            $this->trace->count(Metric::BATCH_REQUESTS_TOTAL, $dimensions);
+
             return (new ResponseEntity)->fill($batchResponse);
         }
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
-
-        $dimensions = $batch->getMetricDimensions();
 
         $this->trace->count(Metric::BATCH_REQUESTS_TOTAL, $dimensions);
 

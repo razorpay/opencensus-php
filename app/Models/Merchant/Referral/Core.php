@@ -203,6 +203,12 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($newReferral);
 
+            $this->trace->count(Metric::MERCHANT_REFERRAL_CREATE_SUCCESS_TOTAL,
+                               [
+                                   'product' => $product,
+                                   'partner_type' => $merchant->getPartnerType()
+                               ]);
+
             $newReferrals[$product] = $newReferral->toArrayPublic();
         }
 
