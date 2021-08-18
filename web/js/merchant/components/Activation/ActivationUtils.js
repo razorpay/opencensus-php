@@ -85,13 +85,20 @@ function showForOrgs(activation) {
 
 function isPANVerified(activation) {
   return (
-    isUnregisteredBusiness(activation) &&
+    (isUnregisteredBusiness(activation) || activation.props.user.isSyncExperimentEnabled) &&
     activation.props.data.poi_verification_status === 'verified'
   );
 }
 
+function isCompanyPANVerified(activation) {
+  return (
+    activation.props.user.isSyncExperimentEnabled &&
+    activation.props.data.company_pan_verification_status === 'verified'
+  );
+}
+
 function checkValidityFromAPI(data, key, errValue, errorMsg) {
-  return data && data[key] === errValue ? errorMsg : '';
+  return data && (data[key] === errValue || data[key] === 'not_matched') ? errorMsg : '';
 }
 
 function getPANDescription(data) {
@@ -503,6 +510,15 @@ const getBankTabHeader = (businessType) => {
   return { title, subtitle };
 };
 
+const isPanVerificationFailed = (poiStatus, companyPanStatus) => {
+  return (
+    poiStatus === 'incorrect_details' ||
+    poiStatus === 'not_matched' ||
+    companyPanStatus === 'incorrect_details' ||
+    companyPanStatus === 'not_matched'
+  );
+};
+
 export {
   differentAddress,
   isUnregisteredBusiness,
@@ -543,4 +559,6 @@ export {
   getActivationState,
   isDedupeOldFunc,
   getBankTabHeader,
+  isCompanyPANVerified,
+  isPanVerificationFailed,
 };

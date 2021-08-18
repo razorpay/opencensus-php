@@ -267,7 +267,7 @@ export default class LiveMode extends Component {
 
     return (
       <Step status={status} isInstantActivationEnabled={this.props.user.isInstantActivationEnabled}>
-        ><StepTitle>{title}</StepTitle>
+        <StepTitle>{title}</StepTitle>
         <StepContent>{content}</StepContent>
       </Step>
     );

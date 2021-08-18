@@ -163,9 +163,13 @@ $side-width = 240px
     display: inline
 
   .subfooter
-      border-top: 1px solid rgba(0, 0, 0, 0.1)
-      width: 450px
-      padding-top: 8px
+    display: flex
+    margin-right: 40px
+
+    .footer-checkbox
+      margin: 0
+    .checkbox-cursor
+      cursor: not-allowed
 
   footer
     left: 0
@@ -196,6 +200,11 @@ $side-width = 240px
 
       &--visible
         opacity: 1
+
+    .footer-content
+      display: flex
+      align-items: center
+      justify-content: flex-end
 
   // File upload component
   .document-group

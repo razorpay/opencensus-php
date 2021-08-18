@@ -1134,6 +1134,10 @@ export default class User {
     return this.getExpStatus('mandatory_gstin_input');
   }
 
+  get isSyncExperimentEnabled() {
+    return this.getExpStatus('sync_experiment');
+  }
+
   get isRecurringMoreAccountType() {
     return this.getExpStatus('recurring_more_account_type');
   }

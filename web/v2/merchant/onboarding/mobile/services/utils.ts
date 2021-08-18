@@ -21,6 +21,8 @@ import {
   BUSINESS_PROOF_CERTIFICATE_TYPES,
 } from '../Constants/OnboardingConstants';
 
+const PAN_ERROR_MESSAGE = "PAN number and/or name doesn't match the government DB, kindly verify";
+
 export const getLabel = (field, data) => {
   const businessType = data.business_overview.business_type.value;
   let label = '';
@@ -331,14 +333,12 @@ export function getDetailsForIFSC(ifscCode: string): any {
   });
 }
 
-export function getPoiVerificationStatus(context): boolean {
-  return (
-    context &&
-    isUnregisteredBusiness(context.business_overview.business_type.value) &&
-    (context.poi_verification_status === 'incorrect_details' ||
-      context.poi_verification_status === 'failed' ||
-      context.poi_verification_status === 'not_matched')
-  );
+export function getPoiVerificationStatus(poiStatus: undefined | string): boolean {
+  return poiStatus === 'incorrect_details' || poiStatus === 'not_matched';
+}
+
+export function getCompanyPanVerificationStatus(companyPanStatus: undefined | string): boolean {
+  return companyPanStatus === 'incorrect_details' || companyPanStatus === 'not_matched';
 }
 
 export function isBusinessProofUrlVisible(context) {
@@ -466,4 +466,12 @@ export const getBankTabHeader = (businessType) => {
     subtitle = 'Enter your personal bank account details.';
   }
   return { title, subtitle };
+};
+
+export const getPanError = (isTouched, formikError, isPanInvalid: boolean): string => {
+  return isTouched ? formikError : isPanInvalid ? PAN_ERROR_MESSAGE : '';
+};
+
+export const getPanNameError = (isTouched, formikError, isPanInvalid: boolean): string => {
+  return isTouched ? formikError : isPanInvalid ? PAN_ERROR_MESSAGE : '';
 };

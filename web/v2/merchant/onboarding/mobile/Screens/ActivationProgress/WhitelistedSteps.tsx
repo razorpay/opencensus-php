@@ -4,7 +4,7 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import shallow from 'zustand/shallow';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import useActivation from '../../hooks/useActivation';
-import { useActivationFormState } from '../../context/store';
+import { isVisible, useActivationFormState } from '../../context/store';
 import OnboardingStepCard from '../../OnboardingStepCard';
 import {
   isL1Submitted,
@@ -12,6 +12,7 @@ import {
   checkIfDedupe,
   hasSelectedBlacklistCategory,
   isUnregisteredBusiness,
+  getCompanyPanVerificationStatus,
 } from 'v2/merchant/onboarding/mobile/services/utils';
 import { ActivationModal, ModalTypeT } from 'v2/merchant/onboarding/mobile/ActivationModals';
 import useBusinessCategory from '../../hooks/useBusinessCategory';
@@ -43,11 +44,15 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
     }),
     shallow,
   );
+  const isL1Acknowledge = useActivationFormState((state) => state.is_l1_acknowledge);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalType, setModalType] = useState<ModalTypeT>('');
 
   const isL1AllTabComplete =
-    isContactDetailsCompleted && isBusinessOverviewCompleted && isBusinessDetailsCompleted;
+    isContactDetailsCompleted &&
+    isBusinessOverviewCompleted &&
+    isBusinessDetailsCompleted &&
+    (isL1Acknowledge || !experiments.isSyncExperimentEnabled);
 
   const isBlackListCategory =
     status === 'success' && hasSelectedBlacklistCategory(data, businessCategoriesData);
@@ -98,13 +103,23 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
   };
 
   const shouldShowPoiError =
-    !isL1Submitted(data.activation_form_milestone) &&
-    getPoiVerificationStatus(data) &&
-    !experiments.canSkipPoiValidation;
+    !data.submitted &&
+    getPoiVerificationStatus(data?.poi_verification_status) &&
+    (!experiments.canSkipPoiValidation || experiments.isSyncExperimentEnabled);
+
+  const isCompanyPanInvalid =
+    isVisible('company_pan', data) &&
+    !data.submitted &&
+    experiments.isSyncExperimentEnabled &&
+    getCompanyPanVerificationStatus(data?.company_pan_verification_status);
 
   const canL1Submit =
-    !isL1Submitted(data.activation_form_milestone) &&
-    (!isL1AllTabComplete || isBlackListCategory || shouldShowPoiError);
+    !isL1Submitted(data.activation_form_milestone) && (!isL1AllTabComplete || isBlackListCategory);
+
+  const canShowCTA =
+    !isDedupe &&
+    (data.poi_verification_status !== 'initiated' ||
+      (experiments.isSyncExperimentEnabled && !isL1Submitted(data.activation_form_milestone)));
 
   return (
     <Screen>
@@ -116,7 +131,7 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
             : 'Submit all the details and get your KYC approved to complete account activation and enable settlements'
         }
         info={
-          data.poi_verification_status === 'initiated'
+          data.poi_verification_status === 'initiated' && data.activation_form_milestone === 'L1'
             ? 'You have submitted all the details. Our team is reviewing them'
             : ''
         }
@@ -142,13 +157,16 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
             name: 'Business Details',
             id: 'business_details',
             onClick,
-            isComplete: isBusinessDetailsCompleted && !shouldShowPoiError,
-            hasErrorText: shouldShowPoiError ? 'Unable to verify your PAN. Please update' : '',
+            isComplete: isBusinessDetailsCompleted && (!shouldShowPoiError || !isCompanyPanInvalid),
+            hasErrorText:
+              shouldShowPoiError || isCompanyPanInvalid
+                ? 'Unable to verify your PAN. Please update'
+                : '',
           },
         ]}
         showSettlement={!isDedupe}
         onCTAClick={onCTAClick}
-        showCTA={!isDedupe && data.poi_verification_status !== 'initiated'}
+        showCTA={canShowCTA}
         canSubmitL1Form={canL1Submit}
         milestone={data.activation_form_milestone}
       />

@@ -12,7 +12,15 @@ import { Select, Option } from 'v2/components/Select';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isVisible, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
-import { getLabel, isUnregisteredBusiness, getHelpText } from '../services/utils';
+import {
+  getLabel,
+  isUnregisteredBusiness,
+  getHelpText,
+  getPanError,
+  getPanNameError,
+  getPoiVerificationStatus,
+  getCompanyPanVerificationStatus,
+} from '../services/utils';
 import {
   states,
   CIN_BusinessTypes,
@@ -58,7 +66,13 @@ const businessDetailsSchema = ({ hasGSTIN, businessOverviewDetails }) =>
       })
       .required('Promoter PAN is a required field')
       .nullable(),
-    promoter_pan_name: Yup.string().required('Promoter PAN Name is a required field').nullable(),
+    promoter_pan_name: Yup.string()
+      .matches(/^[a-zA-Z ]+$/, {
+        message: 'PAN Name should not have any numbers or special characters',
+        excludeEmptyString: true,
+      })
+      .required('Promoter PAN Name is a required field')
+      .nullable(),
     business_registered_address: Yup.string()
       .required('Registered address is a required field')
       .nullable(),
@@ -90,6 +104,10 @@ const businessDetailsSchema = ({ hasGSTIN, businessOverviewDetails }) =>
       then: Yup.string()
         .trim()
         .length(15, 'Please provide valid GSTIN')
+        .matches(/^[0123][0-9][a-z]{5}[0-9]{4}[a-z][0-9][a-z0-9][a-z0-9]$/gi, {
+          message: 'Invalid GSTIN',
+          excludeEmptyString: true,
+        })
         .required('GSTIN is a required field')
         .nullable(),
       otherwise: Yup.string().trim().nullable(),
@@ -189,12 +207,19 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
     },
   );
 
-  const hasPoiStatus =
-    data.poi_verification_status === 'incorrect_details' ||
-    data.poi_verification_status === 'not_matched' ||
-    data.poi_verification_status === 'failed';
+  const hasPoiStatus = getPoiVerificationStatus(data?.poi_verification_status);
 
-  const shouldShowPoiError = !data.submitted && hasPoiStatus && !experiments.canSkipPoiValidation;
+  const shouldShowPoiError =
+    !data.submitted &&
+    hasPoiStatus &&
+    (!experiments.canSkipPoiValidation || experiments.isSyncExperimentEnabled);
+
+  const isCompanyPanInvalid =
+    isVisible('company_pan', data) &&
+    !data.submitted &&
+    experiments.isSyncExperimentEnabled &&
+    getCompanyPanVerificationStatus(data?.company_pan_verification_status);
+
   useEffect(() => {
     if (hasPoiStatus) {
       analyticsTrack({
@@ -283,6 +308,11 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
     }
   }, [businessDetails, pinCode]);
 
+  const isPanVerified =
+    data.poi_verification_status === 'verified' && experiments.isSyncExperimentEnabled;
+  const isCompanyPanVerified =
+    data.company_pan_verification_status === 'verified' && experiments.isSyncExperimentEnabled;
+
   return (
     <Formik
       initialValues={{
@@ -316,11 +346,11 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
           <FormSection
             title="PAN Details"
             subtitle={
-              shouldShowPoiError
+              shouldShowPoiError || isCompanyPanInvalid
                 ? 'PAN Verification failed. Please review your details and submit again'
                 : 'These details will be verified with the government database'
             }
-            hasError={shouldShowPoiError}
+            hasError={shouldShowPoiError || isCompanyPanInvalid}
           >
             <Field visible={isVisible('company_pan', data)}>
               <TextInput
@@ -331,8 +361,12 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 value={
                   formikProps.values.company_pan && formikProps.values.company_pan.toUpperCase()
                 }
-                errorText={formikProps.touched.company_pan && formikProps.errors.company_pan}
-                disabled={isFormLocked}
+                errorText={getPanError(
+                  formikProps.touched.company_pan,
+                  formikProps.errors.company_pan,
+                  isCompanyPanInvalid,
+                )}
+                disabled={isFormLocked || isCompanyPanVerified}
                 autoCapitalize="characters"
               />
             </Field>
@@ -343,9 +377,11 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                   <View>
                     <BusinessName
                       businessNameValue={formikProps.values.business_name}
-                      errorText={
-                        formikProps.touched.business_name && formikProps.errors.business_name
-                      }
+                      errorText={getPanNameError(
+                        formikProps.touched.business_name,
+                        formikProps.errors.business_name,
+                        isCompanyPanInvalid,
+                      )}
                       updateBusinessName={({
                         company_name = '',
                         identity_number,
@@ -366,7 +402,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                         }
                         setIsBlurCalled(true);
                       }}
-                      disabled={isFormLocked}
+                      disabled={isFormLocked || isCompanyPanVerified}
                     />
                   </View>
                 </Space>
@@ -377,8 +413,12 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                   label="Business Name"
                   helpText="As mentioned in the PAN"
                   value={formikProps.values.business_name}
-                  errorText={formikProps.touched.business_name && formikProps.errors.business_name}
-                  disabled={isFormLocked}
+                  errorText={getPanNameError(
+                    formikProps.touched.business_name,
+                    formikProps.errors.business_name,
+                    isCompanyPanInvalid,
+                  )}
+                  disabled={isFormLocked || isCompanyPanVerified}
                 />
               )}
             </Field>
@@ -410,8 +450,12 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 value={
                   formikProps.values.promoter_pan && formikProps.values.promoter_pan.toUpperCase()
                 }
-                errorText={formikProps.touched.promoter_pan && formikProps.errors.promoter_pan}
-                disabled={isFormLocked}
+                errorText={getPanError(
+                  formikProps.touched.promoter_pan,
+                  formikProps.errors.promoter_pan,
+                  shouldShowPoiError,
+                )}
+                disabled={isFormLocked || isPanVerified}
                 autoCapitalize="characters"
               />
             </Field>
@@ -422,10 +466,12 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 label={getLabel('promoter_pan_name', data)}
                 helpText="As mentioned in the PAN"
                 value={formikProps.values.promoter_pan_name}
-                errorText={
-                  formikProps.touched.promoter_pan_name && formikProps.errors.promoter_pan_name
-                }
-                disabled={isFormLocked}
+                errorText={getPanNameError(
+                  formikProps.touched.promoter_pan_name,
+                  formikProps.errors.promoter_pan_name,
+                  shouldShowPoiError,
+                )}
+                disabled={isFormLocked || isPanVerified}
               />
             </Field>
           </FormSection>

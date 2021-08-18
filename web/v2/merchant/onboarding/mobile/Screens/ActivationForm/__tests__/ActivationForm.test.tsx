@@ -90,7 +90,7 @@ test('ActivationForm Flow', async () => {
   fireEvent.change(stateInput, { target: { value: 'Karnataka' } });
   await waitFor(() => fireEvent.click(screen.getByText('Submit KYC')));
   fireEvent.click(screen.getByTestId('backIcon'));
-  fireEvent.click(screen.getByText('Documents'));
+  fireEvent.click(screen.getByText('Contact Details'));
   await waitFor(() => fireEvent.click(screen.getByText('Save and Exit')));
   await waitFor(() => fireEvent.click(screen.getByText('FAQs')));
 });

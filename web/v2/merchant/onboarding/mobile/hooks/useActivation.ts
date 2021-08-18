@@ -51,7 +51,7 @@ export const deleteFile = (curDoc) =>
 export default function useActivation() {
   const snackbar = useSnackbar();
   const { experiments } = useApp();
-  const { status, data } = useQuery('activation', fetchActivationData, {
+  const { status, data, refetch } = useQuery('activation', fetchActivationData, {
     refetchOnMount: 'always',
     staleTime: Infinity,
     onError: (err: any) => {
@@ -196,5 +196,5 @@ export default function useActivation() {
     setHasGSTIN,
   ]);
 
-  return { status, data, postData, documentUpload, documentDelete };
+  return { status, data, postData, documentUpload, documentDelete, refetch };
 }

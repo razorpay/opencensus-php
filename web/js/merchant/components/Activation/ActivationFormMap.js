@@ -1,11 +1,14 @@
 import Input from 'common/new-ui/Input';
-import { states } from 'merchant/helpers/data';
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
-import { isValidGSTIN, getDetailsForIFSC, isPresent } from 'common/utils/rzp-utils';
+import {
+  isValidGSTIN,
+  getDetailsForIFSC,
+  isPresent,
+  getCommonSegmentProperties,
+} from 'common/utils/rzp-utils';
 import {
   validateCIN,
   validateIFSC,
-  validatePANCard,
   validatePersonalPAN,
   validateCompanyPAN,
   validateCompanyAB,
@@ -15,8 +18,6 @@ import {
 import { trackLinkClick } from 'merchant/containers/Activation/ga_new';
 import { analyticsTrack } from 'common/utils/analytics';
 import AddressFields from 'merchant/containers/Activation/AddressFieldsMap';
-import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
-
 import {
   excludeFor_Indiv,
   isUnregisteredBusiness,
@@ -45,7 +46,7 @@ import {
   isBusinessProofTypeDocFieldVisible,
   canShowEAadharComponent,
   showAadharDoc,
-  isDedupe,
+  isCompanyPANVerified,
 } from './ActivationUtils';
 
 import {
@@ -116,6 +117,7 @@ export const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
 export const E_SIGN_AADHAR = [PROPRIETORSHIP, PARTNERSHIP, NOT_REGISTERED];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
+const PAN_ERROR_MESSAGE = "PAN number and/or name doesn't match the government DB, kindly verify";
 
 const contactFields = [
   {
@@ -153,7 +155,7 @@ const UnregisteredBusinessTypeOptions = [
   { label: 'Not Registered', name: NOT_REGISTERED },
 ];
 
-var DefaultBusinessTypeOptions = removeArrayDuplicatesByProp(
+const DefaultBusinessTypeOptions = removeArrayDuplicatesByProp(
   [...RegisteredBusinessTypeOptions, ...UnregisteredBusinessTypeOptions],
   'label',
 );
@@ -442,29 +444,51 @@ const businessDetails = [
       label: 'Business PAN',
       name: 'company_pan',
       placeholder: 'PAN of the company',
+      _autoRenderImpure: true,
       className: 'Input--capitalize',
       info: 'Mandatory for Companies. PAN details should be of the mentioned business only.',
       validator: validateCompanyPAN,
       checkValidityFromAPI: (activation) => {
-        if (activation.props.user.canSkipPoiValidation) {
+        if (
+          activation.props.user.canSkipPoiValidation &&
+          !activation.props.user.isSyncExperimentEnabled
+        ) {
           return null;
         }
-        const errMsg =
-          'The number entered doesn’t exist in the PAN database. Please verify and enter again';
+        const errMsg = activation.props.user.isSyncExperimentEnabled
+          ? PAN_ERROR_MESSAGE
+          : 'The number entered doesn’t exist in the PAN database. Please verify and enter again';
         return checkValidityFromAPI(
-          activation.props.data,
+          activation.props.user,
           'company_pan_verification_status',
           'incorrect_details',
           errMsg,
         );
       },
       _when: (activation) => displayCompanyPAN(activation),
+      onBlur: function onBlur() {
+        const { user } = this.props;
+        const { dirty } = this.state;
+        const isCompanyPANValid = !validateCompanyPAN(dirty?.company_pan);
+
+        if (
+          !user.activation_form_milestone &&
+          user.isSyncExperimentEnabled &&
+          dirty?.company_pan &&
+          dirty?.company_pan !== user?.company_pan &&
+          isCompanyPANValid
+        ) {
+          this.saveCurrentTab();
+        }
+      },
+      _disabledWhen: isCompanyPANVerified,
     },
     {
       label: 'Business Name',
       name: 'business_name',
       options: [],
       info: getBusinessNameInfo,
+      _autoRenderImpure: true,
       placeholder: 'Business name as per PAN',
       validator: function (value) {
         const contactName = this.state.dirty.contact_name || this.props.data.contact_name;
@@ -474,11 +498,18 @@ const businessDetails = [
           : validateCompanyAB(value, contactName, showCompanyName);
       },
       _when: excludeFor_Indiv,
-      _disabledWhen: (activation) =>
-        activation.props.user.isInstantActivationEnabled &&
-        !isSourceRX() &&
-        isL1Completed(activation) &&
-        isPresent(activation.props.data.business_name),
+      _disabledWhen: (activation) => {
+        if (displayCompanyPAN(activation) && activation.props.user.isSyncExperimentEnabled) {
+          return isCompanyPANVerified(activation);
+        } else {
+          return (
+            activation.props.user.isInstantActivationEnabled &&
+            !isSourceRX() &&
+            isL1Completed(activation) &&
+            isPresent(activation.props.data.business_name)
+          );
+        }
+      },
       optionLabelPath: 'company_name',
       searchIndices: ['company_name'],
       className: 'ps-in-modal',
@@ -495,6 +526,33 @@ const businessDetails = [
           return true;
         }
         return false;
+      },
+      checkValidityFromAPI: (activation) => {
+        if (!activation.props.user.isSyncExperimentEnabled) {
+          return null;
+        }
+        return checkValidityFromAPI(
+          activation.props.user,
+          'company_pan_verification_status',
+          'incorrect_details',
+          PAN_ERROR_MESSAGE,
+        );
+      },
+      onBlur: function onBlur() {
+        const { user } = this.props;
+        const { dirty } = this.state;
+
+        const shouldApiCall = displayCompanyPAN(this);
+
+        if (
+          !user.activation_form_milestone &&
+          user.isSyncExperimentEnabled &&
+          dirty?.business_name &&
+          dirty?.business_name !== user?.business_name &&
+          shouldApiCall
+        ) {
+          this.saveCurrentTab();
+        }
       },
     },
     {
@@ -529,6 +587,7 @@ const businessDetails = [
       name: 'promoter_pan',
       placeholder: 'PAN Number',
       className: 'Input--capitalize',
+      _autoRenderImpure: true,
       getPlaceholder: (activation) =>
         isUnregisteredBusiness(activation) ? 'Business owner’s PAN' : 'PAN of one of the directors',
       validator: function (value) {
@@ -538,19 +597,40 @@ const businessDetails = [
       getLabel: (activation) =>
         isUnregisteredBusiness(activation) ? 'PAN' : 'Authorised Signatory PAN',
       checkValidityFromAPI: (activation) => {
-        if (activation.props.user.canSkipPoiValidation) {
+        if (
+          activation.props.user.canSkipPoiValidation &&
+          !activation.props.user.isSyncExperimentEnabled
+        ) {
           return null;
         }
-        const errMsg =
-          'The number entered doesn’t exist in the PAN database. Please verify and enter again';
+        const errMsg = activation.props.user.isSyncExperimentEnabled
+          ? PAN_ERROR_MESSAGE
+          : 'The number entered doesn’t exist in the PAN database. Please verify and enter again';
         return checkValidityFromAPI(
-          activation.props.data,
+          activation.props.user,
           'poi_verification_status',
           'incorrect_details',
           errMsg,
         );
       },
       _disabledWhen: isPANVerified,
+      onBlur: function onBlur() {
+        const { user } = this.props;
+        const { dirty } = this.state;
+        const isPanValid =
+          dirty?.promoter_pan &&
+          !validatePersonalPAN(dirty?.promoter_pan, isUnregisteredBusiness(this));
+
+        if (
+          !user.activation_form_milestone &&
+          user.isSyncExperimentEnabled &&
+          isPanValid &&
+          dirty?.promoter_pan &&
+          dirty?.promoter_pan !== user?.promoter_pan
+        ) {
+          this.saveCurrentTab();
+        }
+      },
     },
     {
       getLabel: (activation) => {
@@ -558,6 +638,7 @@ const businessDetails = [
       },
       name: 'promoter_pan_name',
       placeholder: 'Name as per PAN',
+      _autoRenderImpure: true,
       info: function () {
         return isUnregisteredBusiness(this) || !this.props.user.isRegAutoKYCEnabled
           ? ''
@@ -571,18 +652,36 @@ const businessDetails = [
         }
       },
       checkValidityFromAPI: (activation) => {
-        if (!isUnregisteredBusiness(activation) || activation.props.user.canSkipPoiValidation) {
+        if (
+          (!isUnregisteredBusiness(activation) || activation.props.user.canSkipPoiValidation) &&
+          !activation.props.user.isSyncExperimentEnabled
+        ) {
           return null;
         }
-        const errMsg = 'Please ensure you are entering the same spelling as on your PAN card';
+        const errMsg = activation.props.user.isSyncExperimentEnabled
+          ? PAN_ERROR_MESSAGE
+          : 'Please ensure you are entering the same spelling as on your PAN card';
         return checkValidityFromAPI(
-          activation.props.data,
+          activation.props.user,
           'poi_verification_status',
-          'not_matched',
+          'incorrect_details',
           errMsg,
         );
       },
       _disabledWhen: isPANVerified,
+      onBlur: function onBlur() {
+        const { user } = this.props;
+        const { dirty } = this.state;
+
+        if (
+          !user.activation_form_milestone &&
+          user.isSyncExperimentEnabled &&
+          dirty?.promoter_pan_name &&
+          dirty?.promoter_pan_name !== user?.promoter_pan_name
+        ) {
+          this.saveCurrentTab();
+        }
+      },
     },
   ],
   {

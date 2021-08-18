@@ -734,6 +734,7 @@ class App extends Component {
       isInstantActivationEnabled: user.isInstantActivationEnabled,
       isAadharEkycMandatory: user.isAadharEkycMandatory,
       isGstinMandatory: user.isGstinMandatory,
+      isSyncExperimentEnabled: user.isSyncExperimentEnabled,
     };
   };
 

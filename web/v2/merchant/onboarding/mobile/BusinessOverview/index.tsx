@@ -161,6 +161,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
             .nullable(),
           business_dba: Yup.string()
             .nullable()
+            .min(3, 'Please enter billing label with at least 3 characters')
             .required('Billing Label is a required field')
             .nullable(),
           business_category: Yup.string()
@@ -169,7 +170,16 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
             .nullable(),
           business_website: Yup.lazy(() => {
             if (hasWebsiteOrApp) {
-              return Yup.string().required('Please provide website').nullable();
+              return Yup.string()
+                .matches(
+                  /^(https?:\/\/)?[\w.-]+(?:\.[\w\\.-]+)+[\w\-\\._~:/?#[\]@!\\$&'\\(\\)\\*\\+,;=.]+$/,
+                  {
+                    message: 'Please enter a valid url',
+                    excludeEmptyString: true,
+                  },
+                )
+                .required('Please provide website')
+                .nullable();
             }
             return Yup.string().nullable();
           }),

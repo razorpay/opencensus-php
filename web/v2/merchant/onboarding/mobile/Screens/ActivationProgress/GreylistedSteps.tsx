@@ -3,9 +3,13 @@ import shallow from 'zustand/shallow';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import View from '@razorpay/blade-old/src/atoms/View';
 import OnboardingStepCard from '../../OnboardingStepCard';
-import { useActivationFormState } from '../../context/store';
+import { isVisible, useActivationFormState } from '../../context/store';
 import useActivation from '../../hooks/useActivation';
-import { checkIfDedupe } from '../../services/utils';
+import {
+  checkIfDedupe,
+  getCompanyPanVerificationStatus,
+  getPoiVerificationStatus,
+} from '../../services/utils';
 import { analyticsTrack } from '../../../../../services/tracking/segment';
 import { ActivationModal, ModalTypeT } from 'v2/merchant/onboarding/mobile/ActivationModals';
 import { useApp } from 'v2/context/App';
@@ -116,11 +120,16 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
     }
   };
 
-  const hasPoiStatus =
-    data.poi_verification_status === 'incorrect_details' ||
-    data.poi_verification_status === 'not_matched';
+  const shouldShowPoiError =
+    !data.submitted &&
+    getPoiVerificationStatus(data?.poi_verification_status) &&
+    (!experiments.canSkipPoiValidation || experiments.isSyncExperimentEnabled);
 
-  const shouldShowPoiError = !data.submitted && hasPoiStatus && !experiments.canSkipPoiValidation;
+  const isCompanyPanInvalid =
+    isVisible('company_pan', data) &&
+    !data.submitted &&
+    experiments.isSyncExperimentEnabled &&
+    getCompanyPanVerificationStatus(data?.company_pan_verification_status);
 
   return (
     <View>
@@ -159,8 +168,11 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
             name: 'Business Details',
             id: 'business_details',
             onClick,
-            isComplete: isBusinessDetailsCompleted && !shouldShowPoiError,
-            hasErrorText: shouldShowPoiError ? 'Unable to verify your PAN. Please update' : '',
+            isComplete: isBusinessDetailsCompleted && (!shouldShowPoiError || !isCompanyPanInvalid),
+            hasErrorText:
+              shouldShowPoiError || isCompanyPanInvalid
+                ? 'Unable to verify your PAN. Please update'
+                : '',
           },
           {
             name: 'Bank and Business Details',

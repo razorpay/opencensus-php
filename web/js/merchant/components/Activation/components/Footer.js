@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Loader from './Loader';
 import { FOOTER_BUTTONS } from '../Constants';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
+import { getCommonSegmentProperties, classList } from 'common/utils/rzp-utils';
+import ShowWhen from 'merchant/components/ShowWhen';
+import Input from 'common/new-ui/Input';
 
 const Save = ({ saveCurrentTab }) => <Button onClick={saveCurrentTab}>Save</Button>;
 
@@ -27,9 +29,9 @@ const SubmitL1Form = ({ canSubmitL1Form, submitL1, tracking }) => (
           ...getCommonSegmentProperties(),
         },
       });
-      submitL1();
+      return submitL1();
     }}
-    pendingState={'Verifying'}
+    pendingState="Verifying"
     name="submit-and-verify"
   >
     {'Submit and Verify'}
@@ -68,6 +70,69 @@ const SubmitClarifications = ({ canSubmitNeedsClarification, submitClarification
   </AsyncBtn.Primary>
 );
 
+const FooterCheckBox = ({
+  activeTab,
+  isL1Submitted,
+  canSubmitL1Form,
+  checkbox,
+  setCheckBox,
+  onAction,
+  fetchData,
+}) => {
+  const fetchMerchantData = (isChecked) => {
+    if (isChecked) {
+      fetchData().then((res) => {
+        if (res?.data) {
+          setCheckBox(isChecked);
+        }
+      });
+    } else {
+      setCheckBox(isChecked);
+    }
+    analyticsTrack({
+      objectName: 'sync experiment checkbox',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        ...getCommonSegmentProperties(),
+        checked: isChecked,
+      },
+    });
+  };
+  return (
+    <ShowWhen
+      additionalCondition={(user) =>
+        user.isOrgAllowedFunctionality('external_links') &&
+        activeTab == 2 &&
+        !isL1Submitted &&
+        user.isSyncExperimentEnabled
+      }
+    >
+      <div className="subfooter">
+        <Input.Check
+          checked={checkbox}
+          onChange={({ target }) => fetchMerchantData(target.checked)}
+          autoRender={true}
+          disabled={!canSubmitL1Form}
+          className={classList('footer-checkbox', !canSubmitL1Form ? 'checkbox-cursor' : '')}
+        />
+        <span>
+          I agree to Razorpay{' '}
+          <a
+            className="text-primary"
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://razorpay.com/terms/"
+            onClick={() => onAction && onAction.trackTnCClick()}
+          >
+            Terms and Conditions
+          </a>
+        </span>
+      </div>
+    </ShowWhen>
+  );
+};
+
 const Footer = ({
   isSaving,
   defaultMsg,
@@ -82,8 +147,18 @@ const Footer = ({
   canSubmitL1Form,
   canSubmitNeedsClarification,
   footerButtons,
+  activeTab,
+  isL1Submitted,
+  onAction,
+  isSyncExperimentEnabled,
+  fetchData,
 }) => {
   const buttons = [];
+  const [checkbox, setCheckBox] = useState(!isSyncExperimentEnabled);
+
+  const onChange = (checked) => {
+    setCheckBox(checked);
+  };
 
   if (footerButtons.includes(FOOTER_BUTTONS.SUBMIT_CLARIFICATIONS)) {
     buttons.push(
@@ -105,7 +180,7 @@ const Footer = ({
   if (footerButtons.includes(FOOTER_BUTTONS.SUBMIT_L1_FORM)) {
     buttons.push(
       <SubmitL1Form
-        canSubmitL1Form={canSubmitL1Form}
+        canSubmitL1Form={canSubmitL1Form && checkbox}
         submitL1={submitL1}
         isUnregBiz={isUnregBiz}
         tracking={tracking}
@@ -125,8 +200,19 @@ const Footer = ({
 
   return (
     <footer>
-      <Loader isSaving={isSaving} defaultMsg={defaultMsg} />
-      {buttons}
+      <Loader isSaving={isSaving} defsaultMsg={defaultMsg} />
+      <div className="footer-content">
+        <FooterCheckBox
+          activeTab={activeTab}
+          isL1Submitted={isL1Submitted}
+          canSubmitL1Form={canSubmitL1Form}
+          checkbox={checkbox}
+          setCheckBox={onChange}
+          onAction={onAction}
+          fetchData={fetchData}
+        />
+        {buttons}
+      </div>
     </footer>
   );
 };

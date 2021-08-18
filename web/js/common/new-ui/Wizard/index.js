@@ -10,9 +10,8 @@ import { classList } from 'common/utils/rzp-utils';
  *   {String}, activeTab:
  *   {Boolean}, activetTabContdition:
  * */
-export const ModalAsideNav = _ => {
+export const ModalAsideNav = (_) => {
   const {
-    size,
     title,
     description,
     tabs,
@@ -22,6 +21,8 @@ export const ModalAsideNav = _ => {
     activeTab,
     activeTabContdition,
     disableTabCondition,
+    isPanVerifactionFailed,
+    isBusinessDetailsTab,
   } = _;
 
   return (
@@ -30,32 +31,35 @@ export const ModalAsideNav = _ => {
       {description}
       <ul>
         {tabs.map((t, i) => {
-          let isTabValid = tabsValidity && tabsValidity[i];
+          const isTabValid = tabsValidity && tabsValidity[i];
 
           let isActiveClass = i == activeTab && 'active';
           if (typeof activeTabContdition !== 'undefined') {
             // Is defined and is true
             isActiveClass = activeTabContdition && isActiveClass;
           }
+          const canShowSuccessCheckbox = isPanVerifactionFailed ? i !== 2 : true;
 
           const isDisabled =
-            typeof disableTabCondition === 'function'
-              ? disableTabCondition(i)
-              : false;
+            typeof disableTabCondition === 'function' ? disableTabCondition(i) : false;
 
           return (
             <li
               class={classList(
                 isActiveClass,
                 isTabValid && 'text-success',
-                isDisabled && 'disabled'
+                isDisabled && 'disabled',
               )}
               key={i}
               data-index={i}
               onClick={isDisabled ? undefined : tabClickHandler}
             >
-              {!isDisabled &&
-                isTabValid && <i class={'i-check text-success'} />}
+              {!isDisabled && isTabValid && canShowSuccessCheckbox && (
+                <i className="i-check text-success" />
+              )}
+              {isPanVerifactionFailed && isBusinessDetailsTab && i === 2 && (
+                <i className="i i-error text-danger" />
+              )}
               {do {
                 if (typeof t === 'object') {
                   <span class="li--broad">

@@ -82,6 +82,11 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
       validationSchema={() => {
         return Yup.object().shape({
           bank_account_name: Yup.string()
+            .matches(/^[a-zA-Z0-9][a-zA-Z0-9-&\\'._()\s–\\/]{3,119}$/, {
+              message:
+                'Name should contain at least 4 characters. Exclude numbers and special characters',
+              excludeEmptyString: true,
+            })
             .required('Bank Account Name is a required field')
             .nullable(),
           bank_account_number: Yup.string()
@@ -91,7 +96,10 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
             .oneOf([Yup.ref('bank_account_number')], "Account number don't match!")
             .required('Bank Account Number is a required field')
             .nullable(),
-          bank_branch_ifsc: Yup.string().required('IFSC is a required field').nullable(),
+          bank_branch_ifsc: Yup.string()
+            .min(11, 'IFSC code must be 11 characters')
+            .required('IFSC is a required field')
+            .nullable(),
         });
       }}
       onSubmit={() => {}}

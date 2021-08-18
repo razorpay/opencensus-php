@@ -64,6 +64,7 @@ import {
   validatePersonalPAN,
   validateCompanyAB,
   validateCompanyPAN,
+  validateCIN,
 } from 'common/utils/validators';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -82,6 +83,7 @@ import {
   isDedupe,
   isSourceRX,
   getBankTabHeader,
+  isPanVerificationFailed,
 } from './ActivationUtils';
 
 import { fireL1FormSuccessEvents } from 'merchant/containers/Activation/ActivationFormMarketingEvents';
@@ -150,7 +152,12 @@ export default class ActivationWizard extends React.Component {
       this.props.data.business_operation_pin == this.props.data.business_registered_pin
         ? '1'
         : '0', // '1' => checkbox ticked
-    has_url: this.props.data && this.props.data.business_website === '' && this.props.data.playstore_url === '' ? '0' : '1', // '0' => 0th radio button, value exists
+    has_url:
+      this.props.data &&
+      this.props.data.business_website === '' &&
+      this.props.data.playstore_url === ''
+        ? '0'
+        : '1', // '0' => 0th radio button, value exists
     app_website_url: this.props.data && this.props.data.business_website === '' ? '0' : '1',
     app_url: this.props.data && this.props.data.playstore_url === '' ? '0' : '1',
     has_gstin: this.props.data && this.props.data.gstin === '' ? '1' : '0', // '0' => 0th radio button, value exists
@@ -674,7 +681,12 @@ export default class ActivationWizard extends React.Component {
         reqData[name] = fieldVal;
 
         // For business website empty string => user don't have website. null => user didn't attempt the field.
-        const allowEmptyString = ['business_website','playstore_url', 'gstin', 'shop_establishment_number'];
+        const allowEmptyString = [
+          'business_website',
+          'playstore_url',
+          'gstin',
+          'shop_establishment_number',
+        ];
         if (allowEmptyString.indexOf(name) === -1) {
           reqData[name] = reqData[name] === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
         }
@@ -896,6 +908,31 @@ export default class ActivationWizard extends React.Component {
     const contactName = this.state.dirty.contact_name || this.props.data.contact_name;
     const companyPAN = this.state.dirty.company_pan || this.props.data.company_pan;
     const promoterPANName = this.state.dirty.promoter_pan_name || this.props.data.promoter_pan_name;
+    const currentBusinessType = this.state.dirty.business_type || this.props.data.business_type;
+    const companyCin = this.state.dirty.company_cin || this.props.data.company_cin;
+    const billingLabel = this.state.dirty.business_dba || this.props.data.business_dba;
+    const hasSameAddress = this.state.dirty.same_address === '1';
+    const registeredAddress =
+      this.state.dirty.business_registered_address || this.props.data.business_registered_address;
+    const registeredPin =
+      this.state.dirty.business_registered_pin || this.props.data.business_registered_pin;
+    const registeredCity =
+      this.state.dirty.business_registered_city || this.props.data.business_registered_city;
+    const registeredState =
+      this.state.dirty.business_registered_state || this.props.data.business_registered_state;
+    const operationAddress = hasSameAddress
+      ? true
+      : this.state.dirty.business_operation_address || this.props.data.business_operation_address;
+    const operationCity = hasSameAddress
+      ? true
+      : this.state.dirty.business_operation_city || this.props.data.business_operation_city;
+    const operationPin = hasSameAddress
+      ? true
+      : this.state.dirty.business_operation_pin || this.props.data.business_operation_pin;
+    const operationState = hasSameAddress
+      ? true
+      : this.state.dirty.business_operation_state || this.props.data.business_operation_state;
+
     const isCompanyPANValid = displayCompanyPAN(this)
       ? companyPAN && !validateCompanyPAN(companyPAN)
       : true;
@@ -905,6 +942,30 @@ export default class ActivationWizard extends React.Component {
       : !validateCompanyAB(businessName, contactName, showCompanyName);
     const businessCategory =
       this.state.dirty.business_category || this.props.data.business_category;
+    const isCINValid =
+      currentBusinessType && CIN_BusinessTypes.indexOf(Number(currentBusinessType)) !== -1
+        ? companyCin && !validateCIN(companyCin)
+        : true;
+    const isLPINValid =
+      currentBusinessType && LLPIN_BusinessTypes.indexOf(Number(currentBusinessType)) !== -1
+        ? companyCin && !validateCIN(companyCin, 'LLPIN')
+        : true;
+
+    const isSyncExpEnable =
+      !this.props.user.isSyncExperimentEnabled ||
+      (billingLabel &&
+        isCINValid &&
+        isLPINValid &&
+        registeredAddress &&
+        registeredPin &&
+        registeredCity &&
+        registeredState &&
+        registeredState &&
+        operationAddress &&
+        operationAddress &&
+        operationCity &&
+        operationPin &&
+        operationState);
 
     return (
       !hasSelectedBlacklistedCategory(this) &&
@@ -912,7 +973,8 @@ export default class ActivationWizard extends React.Component {
       isCompanyPANValid &&
       isCompanyNameValid &&
       promoterPANName &&
-      businessCategory
+      businessCategory &&
+      isSyncExpEnable
     );
   }
 
@@ -1846,6 +1908,13 @@ export default class ActivationWizard extends React.Component {
           tabClickHandler={this.changeTab}
           activeTab={activeTab}
           activeTabContdition={!this.state.showSubmitLayer}
+          isPanVerifactionFailed={
+            isPanVerificationFailed(
+              this.props.user.poi_verification_status,
+              this.props.user.company_pan_verification_status,
+            ) && this.props.user.isSyncExperimentEnabled
+          }
+          isBusinessDetailsTab={FORM_TABS[2] === 'Business Details'}
         />
 
         {/* Activation form Content */}
@@ -2001,7 +2070,8 @@ export default class ActivationWizard extends React.Component {
             additionalCondition={(user) =>
               user.isOrgAllowedFunctionality('external_links') &&
               this.state.activeTab == 2 &&
-              !this.props.user.instantActivation.isL1Submitted
+              !this.props.user.instantActivation.isL1Submitted &&
+              !user.isSyncExperimentEnabled
             }
           >
             <div className="subfooter">
@@ -2050,6 +2120,11 @@ export default class ActivationWizard extends React.Component {
           toggleSubmitLayer={this.toggleSubmitLayer}
           tracking={this.props.tracking}
           submitClarifications={this.submitClarifications}
+          activeTab={this.state.activeTab}
+          isL1Submitted={this.props.user.instantActivation.isL1Submitted}
+          onAction={onAction}
+          isSyncExperimentEnabled={this.props.user.isSyncExperimentEnabled}
+          fetchData={this.props.fetchMerchantDetails}
         />
       </div>
     );
@@ -2164,6 +2239,7 @@ function ActivationField(field) {
     rest.options = this.state.business_name_options || [];
     rest.selected = this.state.business_name_selected_option;
     rest.onChange = this.onOptionChange;
+    rest.companyPanError = rest.checkValidityFromAPI && rest.checkValidityFromAPI(this);
   }
 
   if (field.name === 'e_aadhar' && rest.customField) {
@@ -2393,7 +2469,15 @@ function handleInstantActivationSuccess(props) {
 }
 
 function CustomField(props) {
-  const { name, disabled, selected, validator, aadharStatus, isAadharLinked } = props;
+  const {
+    name,
+    disabled,
+    selected,
+    validator,
+    aadharStatus,
+    isAadharLinked,
+    companyPanError,
+  } = props;
   let error = '';
 
   switch (name) {
@@ -2402,6 +2486,9 @@ function CustomField(props) {
 
       if (typeof validator === 'function' && isPresent(businessName)) {
         error = validator(businessName);
+      }
+      if (companyPanError) {
+        error = companyPanError;
       }
       return (
         <div

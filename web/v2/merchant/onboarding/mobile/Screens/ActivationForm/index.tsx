@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Heading from '@razorpay/blade-old/src/atoms/Heading';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
+import Checkbox from '@razorpay/blade-old/src/atoms/Checkbox';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import Link from '@razorpay/commander-shield/src/shared/Link';
 import { FullPageLoader } from 'v2/components/Loader';
@@ -53,8 +54,24 @@ const StyledHeader = styled(View)`
   background-color: ${({ theme }) => theme.colors.background[200]};
 `;
 
+const AcknowledgementFooter = styled(View)`
+  padding: 4px 20px 2px;
+`;
+
+const Seprator = styled.hr`
+  margin: 6px 0 8px;
+`;
+const CheckBoxStyle = styled(View)`
+  display: inline-block;
+  margin-right: 2.5px;
+`;
+
+const TnCLink = styled(Link)`
+  bottom: 6.55px;
+`;
+
 const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
-  const { status: activationStatus, data, postData } = useActivation();
+  const { status: activationStatus, data, postData, refetch } = useActivation();
   const { user, experiments } = useApp();
   const [status, businessCategoriesData] = useBusinessCategory('');
   const isContactDetailsCompleted = useActivationFormState(
@@ -72,6 +89,9 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   const isDocumentsUploadCompleted = useActivationFormState(
     (state) => state.isDocumentsUploadCompleted,
   );
+  const isL1Acknowledge = useActivationFormState((state) => state.is_l1_acknowledge);
+  const setL1Acknowledge = useActivationFormState((state) => state.setL1Acknowledge);
+  const autoScrollRef = useRef<HTMLDivElement>(null);
 
   const isTestMode = getMode(user.current) === 'test';
   const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
@@ -112,6 +132,20 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       }
     };
   }, [data]);
+
+  useEffect(() => {
+    if (autoScrollRef.current && activeTabId === 'business_details' && data) {
+      const thresholdToScroll = 890;
+      const top = autoScrollRef.current.getBoundingClientRect().top;
+      if (top < thresholdToScroll && !isUnregisteredBusiness(data.business_type)) {
+        autoScrollRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'end',
+        });
+      }
+    }
+  }, [data, activeTabId, isBusinessDetailsCompleted]);
 
   if (activationStatus === 'loading') {
     return <FullPageLoader />;
@@ -212,7 +246,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       isInstantActivationEnabled &&
       (!isL1Submitted(activation_form_milestone) ||
         isDedupe ||
-        poi_verification_status === 'initiated')
+        (poi_verification_status === 'initiated' && !experiments.isSyncExperimentEnabled))
     ) {
       return 'Submit KYC';
     }
@@ -423,15 +457,18 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     ) {
       return (
         !isL1AllTabComplete ||
+        (!isL1Acknowledge && experiments.isSyncExperimentEnabled) ||
         isBlackListCategory ||
-        (getPoiVerificationStatus(data) && !experiments.canSkipPoiValidation)
+        (getPoiVerificationStatus(data?.poi_verification_status) &&
+          !experiments.canSkipPoiValidation)
       );
     } else {
       return (
         false ||
         (activeTabId === 'business_details' &&
           poi_verification_status === 'initiated' &&
-          isInstantActivationEnabled)
+          isInstantActivationEnabled &&
+          !experiments.isSyncExperimentEnabled)
       );
     }
   };
@@ -566,8 +603,51 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           >
             {getTabs()}
           </Tabs>
+
+          {/* sync experiment */}
+          {activeTabId === 'business_details' &&
+            !isL1Submitted(activation_form_milestone) &&
+            experiments.isSyncExperimentEnabled && (
+              <AcknowledgementFooter ref={autoScrollRef}>
+                <CheckBoxStyle>
+                  <Checkbox
+                    name=""
+                    title="I agree to Razorpay"
+                    disabled={!isL1AllTabComplete}
+                    defaultChecked={isL1Acknowledge}
+                    onChange={(value) => {
+                      if (value) {
+                        refetch();
+                      }
+                      setL1Acknowledge(value);
+                      analyticsTrack({
+                        objectName: 'sync experiment',
+                        actionName: 'checkbox',
+                        screen: 'home page',
+                        eventAction: 'clicked',
+                        user,
+                        isLJReqiuired: false,
+                        properties: {
+                          checked: value,
+                        },
+                      });
+                    }}
+                  />
+                </CheckBoxStyle>
+                <TnCLink
+                  target="_blank"
+                  href="https://razorpay.com/terms/"
+                  size="small"
+                  weight="bold"
+                >
+                  Terms and Conditions
+                </TnCLink>
+                <Seprator />
+              </AcknowledgementFooter>
+            )}
         </StyledActivationForm>
       </Space>
+
       {/* Footer */}
       <Flex justifyContent="space-between">
         <StyledFooter>

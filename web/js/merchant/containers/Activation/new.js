@@ -178,6 +178,11 @@ export default class ActivationContainer extends React.Component {
       business_type,
       merchant,
       isHardLimitReached,
+      company_pan_verification_status,
+      business_name,
+      company_pan,
+      promoter_pan,
+      promoter_pan_name,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -196,6 +201,11 @@ export default class ActivationContainer extends React.Component {
       business_type,
       merchant,
       isHardLimitReached,
+      company_pan_verification_status,
+      business_name,
+      company_pan,
+      promoter_pan,
+      promoter_pan_name,
     });
 
     this.props.updateSession({
@@ -208,6 +218,12 @@ export default class ActivationContainer extends React.Component {
     return merchantFetch('merchant/activation/business_categories').then((response) => {
       return response;
     });
+  };
+
+  fetchMerchantDetails = async () => {
+    const response = await merchantFetch({ url: 'merchant/activation', mode: 'live' });
+    this.updateSession(response.data);
+    return response;
   };
 
   submitForm = ({ data }) => {
@@ -594,6 +610,7 @@ export default class ActivationContainer extends React.Component {
           fetchBusinessCategory={this.fetchBusinessCategory}
           aovRange={aovRange}
           trackEvent={this.props.tracking.trackEvent}
+          fetchMerchantDetails={this.fetchMerchantDetails}
         />
       );
     }

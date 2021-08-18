@@ -1600,6 +1600,7 @@ class Service extends Base\Service
             'email_self_serve',
             'pb_new_success_screen',
             'mandatory_gstin_input',
+            'sync_experiment',
             'recurring_more_account_type',
             'optimizer_add_provider',
             'mtu_coupon_code',
