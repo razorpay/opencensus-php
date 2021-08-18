@@ -6,6 +6,7 @@ use App;
 
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Gateway\Base\Verify;
@@ -16,6 +17,7 @@ class Emandate extends Service
 {
     const REGISTER = 'register';
     const DEBIT    = 'debit';
+    const BANK_REFERENCE_ID = 'bank_reference_id';
 
     protected $transactionType = self::REGISTER;
 
@@ -31,6 +33,16 @@ class Emandate extends Service
             ($input[Entity::PAYMENT][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::AUTO))
         {
             $this->transactionType = self::DEBIT;
+        }
+
+        if ($this->action === Action::FORCE_AUTHORIZE_FAILED)
+        {
+            if ($this->app['api.route']->getCurrentRouteName() === 'payment_force_authorize')
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ACTION);
+            }
+
+            return true;
         }
 
         if (empty($input[Entity::TERMINAL]) === false)

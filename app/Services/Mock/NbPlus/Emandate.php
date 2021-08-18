@@ -112,6 +112,21 @@ class Emandate extends EmandataBase
         ];
     }
 
+    protected function forceAuthorizeFailed($input): array
+    {
+        return [
+            'response' => [
+                'data' => [
+                    'gateway_reference_id' => '1234',
+                    'recurring_status'     => 'confirmed',
+                    'gateway_token'        => str_random(),
+                    'gateway_status'       => true,
+                ]
+            ],
+            'error' => null
+        ];
+    }
+
     public function content(& $content, $action = '')
     {
         return $content;

@@ -8,14 +8,16 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Reconciliator\Base\SubReconciliator;
+use RZP\Services\NbPlus\Emandate as EmandateService;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Services\NbPlus\Netbanking as NetbankingService;
 
 class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
 {
+    use AppReconTrait;
+    use EmandateReconTrait;
     use NetbankingReconTrait;
     use CardlessEmiReconTrait;
-    use AppReconTrait;
     //
     // These are the attributes required from the netbanking entity on nbplus service
     //
@@ -65,6 +67,9 @@ class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
                     break;
                 case Payment\Method::APP:
                     $this->nbPlusPaymentServiceAppMethodDispatch($rowDetails);
+                    break;
+                case Payment\Method::EMANDATE;
+                    $this->nbPlusPaymentServiceEmandateDispatch($rowDetails);
             }
         }
     }
