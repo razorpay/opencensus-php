@@ -7857,6 +7857,8 @@ class Route
             'banking_account_webhook_account_info_internal',
             'banking_account_yesb_bulk_create',
             'banking_accounts_list',
+            'account_service_trigger_sync',
+            'account_service_trigger_full_sync',
             'batch_create',
             'batch_create_admin',
             'batch_download_file',
