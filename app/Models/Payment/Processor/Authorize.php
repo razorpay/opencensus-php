@@ -5746,11 +5746,14 @@ trait Authorize
         {
             // We need to update the mandate status if applicable
             $this->updateRecurringEntitiesForUpiIfApplicable($this->payment, $data, $wasFailed);
-
             return;
         }
 
-        $this->validateAvsResponseAndRemoveBillingAddressIfRequired($this->payment, $data);
+        try {
+            $this->validateAvsResponseAndRemoveBillingAddressIfRequired($this->payment, $data);
+        } catch (Exception\BadRequestException $e) {
+            $this->updatePaymentOnExceptionAndThrow($e);
+        }
 
         // Updates payment entity to authorized and adds a transaction.
         $updated = $this->updatePaymentAuthorized($data, $wasFailed);
