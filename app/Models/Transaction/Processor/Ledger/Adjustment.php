@@ -69,7 +69,7 @@ class Adjustment extends Base
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::LEDGER_JOURNAL_FUND_LOADING_PAYLOAD_ERROR,
+                TraceCode::LEDGER_JOURNAL_ADJUSTMENT_PAYLOAD_ERROR,
                 [
                     self::TRANSACTOR_ID   => $adjustment->getPublicId(),
                     self::TRANSACTOR_TYPE => $transactorType,
@@ -78,7 +78,7 @@ class Adjustment extends Base
         finally
         {
             $this->trace->info(
-                TraceCode::LEDGER_JOURNAL_FUND_LOADING_STREAMING_TIME_TAKEN,
+                TraceCode::LEDGER_JOURNAL_ADJUSTMENT_STREAMING_TIME_TAKEN,
                 [
                     self::TIME_TAKEN => millitime() - $startTime,
                 ]);
