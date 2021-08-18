@@ -167,10 +167,11 @@ class App extends Component {
     });
 
     let currentMode = LocalStorageService.getItem(this.modeToken);
-    let isActivated = LocalStorageService.getItem(`is_activated--${user.current}`);
-    const isUnregBiz = ['2', '11'].indexOf(user.business_type) !== -1;
+    let isActivated = LocalStorageService.getItem(`is_activated--${user?.current}`);
+    const isUnregBiz = ['2', '11'].indexOf(user?.business_type) !== -1;
 
     if (
+      user &&
       currentMode === 'live' &&
       !isActivated &&
       (user.activation_status === 'activated' ||

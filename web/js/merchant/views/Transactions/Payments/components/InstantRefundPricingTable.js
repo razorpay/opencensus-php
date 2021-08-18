@@ -19,10 +19,7 @@ const selector = formValueSelector('refundModal');
 
 const raiseTicket = () => {
   if (window.rzpTicketSystem) {
-    CreateTicketEmitter.emit(
-      'create-ticket',
-      'tickets',
-    );
+    CreateTicketEmitter.emit('create-ticket', 'tickets');
 
     setTimeout(() => {
       const el = document.getElementsByName('request-description')[0];
