@@ -6243,6 +6243,7 @@ class Route
         'capital_collections_service'                  => '*',
         // common routes between banking and admin dashboard
         'merchant_balance_fetch'                       => Permission::VIEW_MERCHANT_BALANCE,
+        'merchant_balance_fetch_by_id'                 => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_edit_config'                         => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_activation_details'                  => '*',
         'merchant_fetch_users'                         => Permission::VIEW_MERCHANT_USER,
