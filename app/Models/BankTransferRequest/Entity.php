@@ -137,6 +137,7 @@ class Entity extends Base\PublicEntity
         self::PAYEE_ACCOUNT,
         self::PAYER_NAME,
         self::PAYER_ACCOUNT,
+        self::REQUEST_PAYLOAD,
     ];
 
     protected static $generators = [
@@ -348,7 +349,6 @@ class Entity extends Base\PublicEntity
                 default:
                     break;
             }
-
             unset($data[$piiField]);
         }
 

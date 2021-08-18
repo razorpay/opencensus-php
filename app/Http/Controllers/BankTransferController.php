@@ -93,7 +93,7 @@ class BankTransferController extends Controller
 
         $input = Request::all();
 
-        $this->trace->info(TraceCode::RBL_VA_CALLBACK, $input);
+        $this->trace->info(TraceCode::RBL_VA_CALLBACK, $this->service()->removeSenderSensitiveInfoFromLogging($input, Provider::RBL));
 
         $errorResp = $this->validateRequestToken($validateReqToken);
 
@@ -138,7 +138,7 @@ class BankTransferController extends Controller
         $input = Request::all();
 
         $this->trace->info(TraceCode::ICICI_VA_CALLBACK, [
-            Entity::INPUT          =>   $input,
+            Entity::INPUT          =>    $this->service()->removeSenderSensitiveInfoFromLogging($input, Provider::ICICI),
             Entity::REQUEST_SOURCE =>   Entity::CALLBACK,
             Entity::GATEWAY        =>   Provider::ICICI,
         ]);
@@ -174,7 +174,7 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
-        $this->trace->info(TraceCode::HDFC_ECMS_VA_CALLBACK, $input);
+        $this->trace->info(TraceCode::HDFC_ECMS_VA_CALLBACK, $this->service()->removeSenderSensitiveInfoFromLogging($input, Provider::HDFC_ECMS));
 
         $serviceResponse = (new HdfcEcms\Service())->saveAndProcessRequest($input);
 

@@ -643,4 +643,35 @@ class Service extends Base\Service
 
         return [];
     }
+
+    /**
+     * remove sender sensitive fields (account number, VA etc.) which are not required to be logged on the behalf of there banks callback.
+     * @param array $input
+     * @param string $traceCode
+     * @return array
+     */
+    public function removeSenderSensitiveInfoFromLogging(array $input, string $provider)
+    {
+            switch ($provider)
+            {
+                case Provider::RBL:
+
+                    unset($input['Data'][0]['senderAccountNumber']);
+                    break;
+
+                case Provider::ICICI :
+
+                    unset($input['Virtual_Account_Number_Verification_IN'][0]['payer_account']);
+                    break;
+
+                case Provider::HDFC_ECMS :
+
+                    unset($input['Remitter_Account_No'], $input['Account_Number']);
+                    break;
+
+                default:
+                    break;
+            }
+            return $input;
+    }
 }
