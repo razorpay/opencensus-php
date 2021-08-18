@@ -2,6 +2,8 @@
 
 namespace RZP\Excel;
 
+use App;
+use RZP\Trace\TraceCode;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\WithStartRow;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -17,12 +19,21 @@ class Import extends DefaultValueBinder implements SkipsUnknownSheets, WithStart
         import as parentImport;
     }
 
+    protected $app;
     protected $headingRow = 1;
     protected $startRow = 2;
 
     public function __construct($startRow = 1)
     {
         $this->setStartRow($startRow);
+
+        $this->app = App::getFacadeRoot();
+
+        $this->app['trace']->info(TraceCode::EXCEL_CONSTRUCT_INIT,
+            [
+                'class' => 'Import'
+            ]
+        );
     }
 
     public function onUnknownSheet($sheetName)

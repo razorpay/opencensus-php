@@ -2,6 +2,8 @@
 
 namespace RZP\Excel;
 
+use App;
+use RZP\Trace\TraceCode;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
@@ -9,6 +11,7 @@ class Export implements WithMultipleSheets
 {
     use Exportable;
 
+    protected $app;
     protected $data;
     protected $columnFormat;
     protected $sheetNames;
@@ -21,6 +24,14 @@ class Export implements WithMultipleSheets
         $this->columnFormat = $columnFormat;
         $this->sheetNames = $sheetNames;
         $this->sheetExport = $sheetExport;
+
+        $this->app = App::getFacadeRoot();
+
+        $this->app['trace']->info(TraceCode::EXCEL_CONSTRUCT_INIT,
+            [
+                'class' => 'Export'
+            ]
+        );
     }
 
     public function setSheets(callable $closure)

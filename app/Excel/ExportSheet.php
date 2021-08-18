@@ -2,6 +2,8 @@
 
 namespace RZP\Excel;
 
+use App;
+use RZP\Trace\TraceCode;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -15,6 +17,7 @@ use Maatwebsite\Excel\Concerns\WithPreCalculateFormulas;
 
 class ExportSheet implements FromArray, WithHeadings, WithColumnFormatting, WithStrictNullComparison, ShouldAutoSize, WithStyles, WithPreCalculateFormulas, WithTitle, WithCustomStartCell
 {
+    protected $app;
     protected $data;
     protected $columnFormat = [];
     protected $sheetName = 'Worksheet';
@@ -26,6 +29,14 @@ class ExportSheet implements FromArray, WithHeadings, WithColumnFormatting, With
     {
         $this->data = $data;
         $this->columnFormat = $columnFormat;
+
+        $this->app = App::getFacadeRoot();
+
+        $this->app['trace']->info(TraceCode::EXCEL_CONSTRUCT_INIT,
+            [
+                'class' => 'ExportSheet'
+            ]
+        );
     }
 
     public function array(): array

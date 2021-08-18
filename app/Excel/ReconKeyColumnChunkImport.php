@@ -2,6 +2,8 @@
 
 namespace RZP\Excel;
 
+use App;
+use RZP\Trace\TraceCode;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Events\BeforeImport;
 use Maatwebsite\Excel\Concerns\Importable;
@@ -18,6 +20,8 @@ use Maatwebsite\Excel\Concerns\RegistersEventListeners;
 
 class ReconKeyColumnChunkImport extends DefaultValueBinder implements SkipsUnknownSheets, WithStartRow, WithCustomValueBinder, WithMultipleSheets, WithChunkReading, WithEvents, ToCollection
 {
+    protected $app;
+
     use RegistersEventListeners;
 
     use Importable {
@@ -34,6 +38,14 @@ class ReconKeyColumnChunkImport extends DefaultValueBinder implements SkipsUnkno
         $this->startRow = $startRow;
 
         $this->setSheets((array) $sheets);
+
+        $this->app = App::getFacadeRoot();
+
+        $this->app['trace']->info(TraceCode::TRACE_REQUEST_METRIC,
+            [
+                'class' => 'ReconKeyColumnChunkImport'
+            ]
+        );
     }
 
     public function setSheets($sheets)
