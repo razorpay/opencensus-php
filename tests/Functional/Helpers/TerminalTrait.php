@@ -106,6 +106,22 @@ trait TerminalTrait
         return $response;
     }
 
+    protected function getProxyTerminalOnboardStatusResponse() : \Requests_Response
+    {
+        $data = [];
+        $terminal = ["id" => "10000000000000", "gateway" => "hitachi"];
+        $data["terminal"] = $terminal;
+        $data["message"] = "test_message";
+
+        $response = new \Requests_Response;
+
+        $responseData = ['data' => [$data]];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
+
     protected function getHitachiOnboardErrorResponse()
     {
         $this->throwTerminalsServiceIntegrationException();

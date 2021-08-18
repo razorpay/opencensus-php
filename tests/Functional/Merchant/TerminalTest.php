@@ -73,6 +73,19 @@ class TerminalTest extends TestCase
         $this->assertEquals($resp['items'][0]['id'], $terminal->getPublicId());
     }
 
+    public function testProxyTerminalOnboardStatus()
+    {
+        $this->ba->proxyAuth();
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $this->mockTerminalsServiceSendRequest(function () {
+            return $this->getProxyTerminalOnboardStatusResponse();
+        }, 1);
+
+        $this->startTest();
+    }
+
     public function testProxyFetchMerchantTerminalsWithNoTerminalInApi()
     {
         $this->ba->proxyAuth();

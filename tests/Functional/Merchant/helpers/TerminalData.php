@@ -36,6 +36,23 @@ return [
         ],
     ],
 
+    'testProxyTerminalOnboardStatus' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/proxy/terminal/onboard/status',
+            'content' => ['gateway' => 'wallet_paypal']
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'message'   => "test_message",
+                    'terminal'   => ["id"=>"10000000000000", "gateway"=> "hitachi"],
+                ]
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
     'testProxyFetchMerchantTerminalsWithNoTerminalInApi' => [
         'request' => [
             'method' => 'GET',

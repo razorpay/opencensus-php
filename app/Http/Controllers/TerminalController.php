@@ -272,6 +272,23 @@ class TerminalController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function proxyGetTerminalsGatewayStatus()
+    {
+        $input = Request::all();
+
+        $gateway = $input['gateway'];
+
+        $mid =  $this->ba->getMerchant()->getId();
+
+        $method = Request::method();
+
+        $path = "v2/terminal/onboard/" . $mid . "/status?gateway=" . $gateway;
+
+        $response = $this->app['terminals_service']->proxyTerminalService('', $method, $path, [],  []);
+
+        return ApiResponse::json($response);
+    }
+
     public function fetchTerminalTestRun()
     {
         $input = Request::all();
