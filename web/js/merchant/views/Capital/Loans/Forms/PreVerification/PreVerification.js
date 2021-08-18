@@ -388,8 +388,11 @@ const PreVerification = ({
         heading="Bank Statement"
         subHeading={
           <>
-            Please share <strong>6 month</strong> statements of the bank account{' '}
-            <strong>linked to your Razorpay Payment Gateway</strong>.
+            Please share the last <strong>6 months</strong>
+            {'  '}
+            bank statements (current month included) of your business's{' '}
+            <strong>Primary Bank account</strong>.{' '}
+            <strong>Savings account statements are not accepted</strong>.
           </>
         }
       />
