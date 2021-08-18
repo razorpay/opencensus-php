@@ -6875,9 +6875,9 @@ class Service extends Base\Service
     {
         $data = [];
 
-        $data = PurposeCodeList::PURPOSE_CODE_LIST;
+        $data = PurposeCodeList::getPurposeCode();
 
-        return array_values($data);
+        return $data;
     }
 
     public function patchMerchantPurposeCode(array $input)
