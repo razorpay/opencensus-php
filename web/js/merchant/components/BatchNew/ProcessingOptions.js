@@ -1,16 +1,13 @@
+import React from 'react';
 import { Field, formValueSelector } from 'redux-form';
 import { connect } from 'react-redux';
 import moment from 'moment';
-
 import RadioButton from 'common/ui/Forms/RadioButton';
 import ReduxDatetime from 'common/ui/ReduxDatetime';
 
 const selector = formValueSelector('createBatch');
 
-@connect(state => ({
-  processingType: selector(state, 'processing'),
-}))
-export default class BatchProcessingOptions extends React.Component {
+class BatchProcessingOptions extends React.Component {
   render() {
     const processingType = this.props.processingType;
     return (
@@ -80,3 +77,9 @@ const yesterday = moment().subtract(1, 'days');
 function isValidBatchScheduleDate(date) {
   return date.isAfter(yesterday);
 }
+
+export default connect((state) => {
+  return {
+    processingType: selector(state, 'processing'),
+  };
+}, null)(BatchProcessingOptions);

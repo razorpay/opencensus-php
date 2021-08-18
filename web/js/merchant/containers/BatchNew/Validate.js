@@ -1,10 +1,18 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-
 import BatchValidateModal from 'merchant/components/BatchNew/ValidateModal';
 
-@connect((state) => state.session)
-export default class BatchValidate extends Component {
+/**
+ * Notification Map: change nofitication msg based on current validation state.
+ */
+const notificationMsgs = {
+  process: 'The batch file is being processed. Please wait as this may take some time.',
+  success: 'The batch file has been processed successfully.',
+  error: 'Please correct them and upload the file again',
+  exceed: 'The file size exceeds the maximum size limit. Please upload a smaller file.',
+};
+
+class BatchValidate extends Component {
   state = {
     status: null,
     notifyMsg: null,
@@ -60,7 +68,7 @@ export default class BatchValidate extends Component {
       })
       .catch((error) => {
         this.changeBatchState('error', error.errors[0]);
-        this.props.onValidationFail && this.props.onValidationFail(error.errors[0]);
+        if (this.props.onValidationFail) this.props.onValidationFail(error.errors[0]);
         clearInterval(t);
         this.props.gaEvents.trackUploadBatchFile('error', error.errors[0], secondsSinceStart);
         return error;
@@ -76,7 +84,7 @@ export default class BatchValidate extends Component {
   };
 
   handleCloseClick = () => {
-    this.props.onFileRemove && this.props.onFileRemove();
+    if (this.props.onFileRemove) this.props.onFileRemove();
     this.changeBatchState();
   };
 
@@ -96,12 +104,4 @@ export default class BatchValidate extends Component {
   }
 }
 
-/**
- * Notification Map: change nofitication msg based on current validation state.
- */
-const notificationMsgs = {
-  process: 'The batch file is being processed. Please wait as this may take some time.',
-  success: 'The batch file has been processed successfully.',
-  error: 'Please correct them and upload the file again',
-  exceed: 'The file size exceeds the maximum size limit. Please upload a smaller file.',
-};
+export default connect((state) => state.session, null)(BatchValidate);

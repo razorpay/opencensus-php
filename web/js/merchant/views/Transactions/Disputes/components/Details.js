@@ -1,5 +1,4 @@
 import React from 'react';
-import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
@@ -7,7 +6,17 @@ import Alert from 'common/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { DisputeStatusLabel } from 'merchant/components/StatusLabel';
 import { titleCase, daysFromToday } from 'common/utils/rzp-utils';
-import { ShowWhen } from 'merchant/components/ShowWhen';
+
+export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
+  const daysLeft = daysFromToday(expiresOn);
+  if (daysLeft < 0) {
+    return <span class="text-muted">Passed</span>;
+  } else if (daysLeft === 0) {
+    return <strong class="text-danger">Today</strong>;
+  } else {
+    return `${prefixForDays}${daysLeft} day${daysLeft > 1 ? 's' : ''}`;
+  }
+};
 
 const DisputeDetails = (props) => {
   const { dispute, isLoading, error, onCloseSecView, goToLink } = props;
@@ -46,11 +55,11 @@ const DisputeDetails = (props) => {
                     {dispute.phase === 'fraud' ? (
                       'If you think this is a valid transaction, then '
                     ) : (
-                      <React.Fragment>
+                      <>
                         A customer has raised a dispute for&nbsp;
                         <Amount value={dispute.amount} currency={dispute.currency} />
                         ,&nbsp;
-                      </React.Fragment>
+                      </>
                     )}
                     {/* Text required in all types of dispute  */}
                     kindly respond to the mail sent to you by&nbsp;
@@ -82,10 +91,10 @@ const DisputeDetails = (props) => {
               {/* expiry date of dispute */}
               <EntityDetailRow label="Respond By">
                 {dispute.status === 'open' ? (
-                  <React.Fragment>
+                  <>
                     <Time value={dispute.respond_by} format="LL" />
                     &nbsp;({daysLeftInExpiry(dispute.respond_by, 'In ')})
-                  </React.Fragment>
+                  </>
                 ) : (
                   '--'
                 )}
@@ -101,13 +110,6 @@ const DisputeDetails = (props) => {
               <EntityDetailRow label="Created At">
                 <Time value={dispute.created_at} format="LL|hh:mm A" />
               </EntityDetailRow>
-              {/* <ShowWhen
-                additionalCondition={(user) => user.isUxRevampPhase2Enabled && dispute.transaction}
-              >
-                <EntityDetailRow label="Settlement Details">
-                  <SettlementInfo data={dispute} />
-                </EntityDetailRow>
-              </ShowWhen> */}
 
               {/* payment */}
               <EntityDetailRow label="Payment">
@@ -118,12 +120,6 @@ const DisputeDetails = (props) => {
 
               {/* comment */}
               <EntityDetailRow label="Comment" value={() => dispute.comment || '--'} />
-
-              {/* documents uploaded */}
-              {/*<EntityDetailRow
-              label="Upload Documents"
-              value="The documents should be .jpeg, .png or .pdf format with the maximum size of 1 MB"
-            />*/}
             </div>
           </div>
         </div>
@@ -132,14 +128,4 @@ const DisputeDetails = (props) => {
   );
 };
 
-export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
-  const daysLeft = daysFromToday(expiresOn);
-  if (daysLeft < 0) {
-    return <span class="text-muted">Passed</span>;
-  } else if (daysLeft === 0) {
-    return <strong class="text-danger">Today</strong>;
-  } else {
-    return `${prefixForDays}${daysLeft} day${daysLeft > 1 ? 's' : ''}`;
-  }
-};
 export default DisputeDetails;

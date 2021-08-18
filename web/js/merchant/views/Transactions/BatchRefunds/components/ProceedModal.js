@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-
+import { bindActionCreators, compose } from 'redux';
 import AsyncButton from 'react-async-button';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import ModalHeader from 'common/ui/ModalHeader';
@@ -9,27 +9,14 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 const selector = formValueSelector('uploadBatch');
-@withRouter
-@connect(
-  state => ({
-    sms_notify: selector(state, 'sms_notify'),
-    email_notify: selector(state, 'email_notify'),
-  }),
-  { ...ModalActions, showNotification }
-)
-@reduxForm({
-  form: 'uploadBatch',
-})
-export default class ProceedFormFields extends Component {
-  onSubmitClick = props => {
+class ProceedFormFields extends Component {
+  onSubmitClick = (props) => {
     const prom = new Promise(() => {
-      let additionalFormFields = {};
+      const additionalFormFields = {};
 
-      additionalFormFields['sms_notify'] =
-        props.sms_notify === true ? '1' : '0';
-      additionalFormFields['email_notify'] =
-        props.email_notify === true ? '1' : '0';
-      additionalFormFields['draft'] = '0'; // Implicitly sending draft = '0'
+      additionalFormFields.sms_notify = props.sms_notify === true ? '1' : '0';
+      additionalFormFields.email_notify = props.email_notify === true ? '1' : '0';
+      additionalFormFields.draft = '0'; // Implicitly sending draft = '0'
 
       this.props
         .submitUploadBatch(additionalFormFields)
@@ -58,34 +45,21 @@ export default class ProceedFormFields extends Component {
 
     return (
       <div class="proceed-upload-modal">
-        <ModalHeader
-          title="Batch Upload"
-          onCloseClick={this.props.closeModal}
-        />
+        <ModalHeader title="Batch Upload" onCloseClick={this.props.closeModal} />
         <form class="form-horizontal">
           <div class="modal-body">
             <div>
               <p>Send link and payment instructions to...</p>
 
               <div class="rzpCheckbox">
-                <Field
-                  name="sms_notify"
-                  id="sms_notify"
-                  component="input"
-                  type="checkbox"
-                />
+                <Field name="sms_notify" id="sms_notify" component="input" type="checkbox" />
                 <label for="sms_notify" class="icon i-check">
                   Sms Notify
                 </label>
               </div>
 
               <div class="rzpCheckbox">
-                <Field
-                  name="email_notify"
-                  id="email_notify"
-                  component="input"
-                  type="checkbox"
-                />
+                <Field name="email_notify" id="email_notify" component="input" type="checkbox" />
                 <label for="email_notify" class="icon i-check">
                   Email Notify
                 </label>
@@ -111,3 +85,21 @@ export default class ProceedFormFields extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    sms_notify: selector(state, 'sms_notify'),
+    email_notify: selector(state, 'email_notify'),
+  };
+};
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators({ ...ModalActions, showNotification }, dispatch);
+
+export default compose(
+  withRouter,
+  connect(mapStateToProps, mapDispatchToProps),
+  reduxForm({
+    form: 'uploadBatch',
+  }),
+)(ProceedFormFields);

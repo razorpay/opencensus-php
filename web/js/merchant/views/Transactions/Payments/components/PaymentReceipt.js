@@ -1,3 +1,4 @@
+import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
@@ -10,13 +11,9 @@ import {
   saveReceipt,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { compose, bindActionCreators } from 'redux';
 
-@withRouter
-@connect(null, {
-  showNotification,
-})
-@RTracking(() => window.rzpQ.component('PaymentReceiptDetails'))
-export default class PaymentReceipt extends React.Component {
+class PaymentReceipt extends Component {
   state = {
     isActionInProgress: false,
     invoiceId: null,
@@ -25,7 +22,7 @@ export default class PaymentReceipt extends React.Component {
   };
 
   componentDidMount() {
-    if (this.isSectionAllowed) {
+    if (this.isSectionAllowed()) {
       getReceiptDetails(this.props.payment.id).then((res) => {
         if (res && res.data) {
           this.setState({
@@ -158,7 +155,8 @@ export default class PaymentReceipt extends React.Component {
     );
   };
 
-  get isSectionAllowed() {
+  // eslint-disable-next-line consistent-return
+  isSectionAllowed() {
     let hash = this.props.location.hash;
 
     if (hash) {
@@ -170,8 +168,7 @@ export default class PaymentReceipt extends React.Component {
   }
 
   render() {
-    const { payment } = this.props;
-    const showReceiptActions = !!this.state.invoiceId && this.isSectionAllowed; // TODO: Must add support for product names as constants in dashboard
+    const showReceiptActions = !!this.state.invoiceId && this.isSectionAllowed(); // TODO: Must add support for product names as constants in dashboard
 
     // Payment Receipt Actions only to be shown for payment pages for which invoice id exists in GET /receipt call
     if (!showReceiptActions) {
@@ -250,3 +247,10 @@ export default class PaymentReceipt extends React.Component {
     );
   }
 }
+
+export default compose(
+  withRouter,
+  connect(null, (dispatch) => bindActionCreators({ showNotification }, dispatch)),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('PaymentReceiptDetails')),
+)(PaymentReceipt);

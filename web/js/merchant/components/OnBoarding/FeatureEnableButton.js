@@ -1,41 +1,19 @@
+import { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-
 import { AsyncBtn } from 'common/new-ui/Button';
-
 import { classList } from 'common/utils/rzp-utils';
-
 import { showNotification } from 'merchant_common/reducers/notifications';
-
 import { updateFeatures } from 'merchant/reducers/config';
 import {
-  saveOnboarding,
+  saveOnboarding as fnSaveOnboarding,
   handleProductQuickGuide,
 } from 'merchant/reducers/onboarding';
 import { fetchUser } from 'merchant/reducers/session';
-
 import { setOnBoardingDataInLocalState } from './utils';
+import { bindActionCreators, compose } from 'redux';
 
-@connect(
-  state => {
-    return {
-      user: state.session.user,
-      isTestMode: state.session.mode === 'test',
-      onboarding: state.onboarding,
-    };
-  },
-  {
-    fetchUser: () => fetchUser(), // TODO: import fetchUser is not working
-    saveOnboarding,
-    updateFeatures,
-    showNotification,
-    handleProductQuickGuide,
-  }
-)
-@RTracking(props =>
-  window.rzpQ.component(`${props.feature}_onboarding_feature_enable_button`)
-)
-export default class FeatureEnableButton extends React.Component {
+class FeatureEnableButton extends Component {
   state = {
     isSuccess: false,
   };
@@ -50,14 +28,12 @@ export default class FeatureEnableButton extends React.Component {
         },
       });
 
-      this.props.onClick && this.props.onClick();
+      if (this.props.onClick) this.props.onClick();
 
       this.props.tracking.trackEvent(
-        window.rzpQ
-          .productOnboarding()
-          .success(`${this.props.feature}.onboarding.get_started`, {
-            isTour: true,
-          })
+        window.rzpQ.productOnboarding().success(`${this.props.feature}.onboarding.get_started`, {
+          isTour: true,
+        }),
       );
 
       return;
@@ -72,7 +48,7 @@ export default class FeatureEnableButton extends React.Component {
             [this.props.feature]: 1,
           },
         },
-        this.props.user.current
+        this.props.user.current,
       );
     } else {
       saveOnboarding = this.props.saveOnboarding(this.props.feature, {
@@ -81,26 +57,22 @@ export default class FeatureEnableButton extends React.Component {
     }
 
     return saveOnboarding
-      .then(res => {
+      .then((res) => {
         this.props.tracking.trackEvent(
-          window.rzpQ
-            .productOnboarding()
-            .success(`${this.props.feature}.onboarding.get_started`)
+          window.rzpQ.productOnboarding().success(`${this.props.feature}.onboarding.get_started`),
         );
 
         return this.props.fetchUser();
       })
-      .then(res => {
+      .then((res) => {
         this.setState({
           isSuccess: true,
         });
 
         this.props.onClick && this.props.onClick(res);
       })
-      .catch(err => {
-        window.rzpQ
-          .productOnboarding()
-          .failed(`${this.props.feature}.onboarding.get_started`);
+      .catch((err) => {
+        window.rzpQ.productOnboarding().failed(`${this.props.feature}.onboarding.get_started`);
 
         this.props.showNotification({
           type: 'error',
@@ -122,14 +94,39 @@ export default class FeatureEnableButton extends React.Component {
   }
 }
 
-FeatureEnableButton.Primary = props => (
-  <FeatureEnableButton {...props} class={PRIMARY_COLOR(props.className)} />
+const primaryColor = (className) => classList(className, 'Button--primary');
+const transparentColor = (className) => classList(className, 'Button--transparent');
+
+FeatureEnableButton.Primary = (props) => (
+  <FeatureEnableButton {...props} class={primaryColor(props.className)} />
 );
 
-FeatureEnableButton.Transparent = props => (
-  <FeatureEnableButton {...props} class={TRANSPARENT_COLOR(props.className)} />
+FeatureEnableButton.Transparent = (props) => (
+  <FeatureEnableButton {...props} class={transparentColor(props.className)} />
 );
 
-const PRIMARY_COLOR = className => classList(className, 'Button--primary');
-const TRANSPARENT_COLOR = className =>
-  classList(className, 'Button--transparent');
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+    isTestMode: state.session.mode === 'test',
+    onboarding: state.onboarding,
+  };
+};
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      fetchUser: () => fetchUser(), // TODO: import fetchUser is not working
+      saveOnboarding: fnSaveOnboarding,
+      updateFeatures,
+      showNotification,
+      handleProductQuickGuide,
+    },
+    dispatch,
+  );
+
+export default compose(
+  connect(mapStateToProps, mapDispatchToProps),
+  // eslint-disable-next-line babel/new-cap
+  RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_enable_button`)),
+)(FeatureEnableButton);

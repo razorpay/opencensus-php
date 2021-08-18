@@ -3,9 +3,9 @@ import { connect } from 'react-redux';
 import OrderDetails from 'merchant/views/Transactions/Orders/components/OrderDetails';
 import * as OrderActions from 'merchant/reducers/orders/details';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
+import { bindActionCreators } from 'redux';
 
-@connect(state => state.order, OrderActions)
-export default class OrderDetailsContainer extends Component {
+class OrderDetailsContainer extends Component {
   componentWillMount() {
     this.props.fetchItem(this.props.id);
   }
@@ -16,34 +16,36 @@ export default class OrderDetailsContainer extends Component {
     }
   }
 
-  fetchOrderPayments = order => {
+  fetchOrderPayments = (order) => {
     return this.props.fetchOrderPayments(order);
   };
 
   componentDidMount() {
-    const { closeUrl, id } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
-    eventCategory &&
+    const { closeUrl, id } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
+
+    if (eventCategory)
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory,
         eventAction: 'Open Details - Orders',
         eventLabel: `order_id=${id}`,
       });
   }
 
   componentWillUnmount() {
-    const { closeUrl, id } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
-    eventCategory &&
+    const { closeUrl, id } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
+
+    if (eventCategory)
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory,
         eventAction: 'Close Details - Orders',
         eventLabel: `order_id=${id}`,
       });
   }
 
   render() {
-    let { loading, error, order, payments } = this.props;
+    const { loading, error, order, payments } = this.props;
     let statusMsg = {};
 
     if (error) {
@@ -64,3 +66,8 @@ export default class OrderDetailsContainer extends Component {
     );
   }
 }
+
+export default connect(
+  (state) => state.order,
+  (dispatch) => bindActionCreators(OrderActions, dispatch),
+)(OrderDetailsContainer);

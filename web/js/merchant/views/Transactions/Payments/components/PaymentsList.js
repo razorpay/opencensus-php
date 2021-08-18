@@ -1,5 +1,5 @@
 import React from 'react';
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import HeaderAction from 'common/ui/HeaderAction';
 import DocsLink from 'merchant/components/DocsLink';
 import EmptyList from 'merchant/components/EmptyList';
@@ -7,7 +7,7 @@ import PaymentsTable from 'merchant/views/Transactions/Payments/components/Payme
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import PaymentsListFilter from 'merchant/views/Transactions/Payments/components/PaymentsListFilter';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+
 import ListContainer from 'merchant/containers/ListContainer';
 
 const EmptyRoutesComponent = () => (
@@ -114,7 +114,7 @@ export default class PaymentsListContainer extends ListContainer {
                   },
                 });
               })
-              .catch((er) => {
+              .catch(() => {
                 analyticsTrack({
                   objectName: 'payments search',
                   actionName: 'result',

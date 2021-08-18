@@ -1,29 +1,28 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-
 import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { luminateRow } from 'merchant/reducers/app';
-
 import BatchValidate from './Validate';
 import BatchCreate from './Create';
 import SuccessModal from 'merchant/components/BatchNew/SuccessModal';
-import { getCustomURL } from 'merchant/components/DocsLink'
-
+import { getCustomURL } from 'merchant/components/DocsLink';
+import { bindActionCreators } from 'redux';
 /**
  * Container:  Switches between validation or creation of batch.
  */
 
-const ROUTE_SUCCESS_MESSAGE = 'You can download the output file from batch details view to check the items which were generated. For the items that could not be generated due to some issues, please upload a new batch file.';
+const ROUTE_SUCCESS_MESSAGE =
+  'You can download the output file from batch details view to check the items which were generated. For the items that could not be generated due to some issues, please upload a new batch file.';
 
 const successMessageMap = {
-  refund: ' You can download the batch file report to check the final state of each refund request.',
+  refund:
+    ' You can download the batch file report to check the final state of each refund request.',
   payment_transfer: ROUTE_SUCCESS_MESSAGE,
   linked_account_create: ROUTE_SUCCESS_MESSAGE,
   transfer_reversal: ROUTE_SUCCESS_MESSAGE,
-}
-@connect(null, { closeModal, openModal, luminateRow })
-export default class BatchUpload extends Component {
+};
+class BatchUpload extends Component {
   state = {
     batchName: '',
     currentStatus: 'validate',
@@ -39,9 +38,11 @@ export default class BatchUpload extends Component {
   };
 
   handleCreation = (batch) => {
-    this.setState({
-      batch: { ...this.state.batch, ...batch },
-      currentStatus: 'success',
+    this.setState((prevState) => {
+      return {
+        batch: { ...prevState.batch, ...batch },
+        currentStatus: 'success',
+      };
     });
     this.props.luminateRow(batch.id);
   };
@@ -100,12 +101,13 @@ export default class BatchUpload extends Component {
               return (
                 <SuccessModal onModalClose={this.onModalClose}>
                   <p class="text-center">
-                      {successMessageMap[this.props.batchType] || 'You can download the output file from batch detail view to check payment links generated. For the links that could not be generated due to some issues, please upload a new batch file.'}
+                    {successMessageMap[this.props.batchType] ||
+                      'You can download the output file from batch detail view to check payment links generated. For the links that could not be generated due to some issues, please upload a new batch file.'}
                     <br />
                   </p>
                 </SuccessModal>
               );
-            case 'default':
+            default:
               return null;
           }
         })()}
@@ -113,3 +115,7 @@ export default class BatchUpload extends Component {
     );
   }
 }
+
+export default connect(null, (dispatch) =>
+  bindActionCreators({ closeModal, openModal, luminateRow }, dispatch),
+)(BatchUpload);

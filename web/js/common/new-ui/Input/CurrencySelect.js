@@ -1,25 +1,35 @@
+import { Component } from 'react';
 import { connect } from 'react-redux';
 import { PowerSelect } from 'react-power-select';
-import { setNativeValue } from 'common/utils/rzp-utils';
 import { Label } from 'common/new-ui/Input';
 import { AmountTooltip } from 'common/ui/Amount';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, setNativeValue } from 'common/utils/rzp-utils';
 
 const frequentlyUsedCurrencies = ['INR', 'USD', 'SGD', 'EUR'];
 
-function CurrencyOption({ option }, noTick = false) {
+function currencyOption({ option }, noTick = false) {
   return (
     <div>
       <span>
-        <span class="currency-symbol">{option.sym}</span> - {option.label} (
-        {option.name})
+        <span class="currency-symbol">{option.sym}</span> - {option.label} ({option.name})
       </span>
       {noTick && <i className="i-check text-success" />}
     </div>
   );
 }
 
-function SelectedCurrencyOption(option) {
+function OptionComponent({ option }, noTick = false) {
+  return (
+    <div>
+      <span>
+        <span class="currency-symbol">{option.sym}</span> - {option.label} ({option.name})
+      </span>
+      {noTick && <i className="i-check text-success" />}
+    </div>
+  );
+}
+
+function selectedCurrencyOption(option) {
   return (
     <div>
       <span>{option.sym}</span>
@@ -27,23 +37,22 @@ function SelectedCurrencyOption(option) {
   );
 }
 
-@connect(state => ({ user: state.session.user }))
-export default class extends React.Component {
+class CurrencySelect extends Component {
   state = this.initState();
 
   initState() {
-    let currencyList = [
-        {
-          label: 'Frequently Used',
-          options: [],
-        },
-        {
-          label: 'All others',
-          options: [],
-        },
-      ],
-      currency,
-      isDisabled = this.props.disabled;
+    const currencyList = [
+      {
+        label: 'Frequently Used',
+        options: [],
+      },
+      {
+        label: 'All others',
+        options: [],
+      },
+    ];
+    let currency;
+    const isDisabled = this.props.disabled;
 
     const defaultValue = this.props.defaultValue || 'INR'; // If no value passed, then INR is the displayed option.
 
@@ -51,10 +60,10 @@ export default class extends React.Component {
      * Note: it can happen that international is manually disabled (by merchant / by support team).
      * And some payments in international currency might exist, hence regardless international enable, currency requested via this component must reflect correct currency, and not INR.
      * */
-    Object.keys(window.currencyList).forEach(c => {
-      const fullName = window.currencyList[c].name,
-        ISO = c,
-        symbol = window.currencyList[c].symbol;
+    Object.keys(window.currencyList).forEach((c) => {
+      const fullName = window.currencyList[c].name;
+      const ISO = c;
+      const symbol = window.currencyList[c].symbol;
 
       const currencyObj = {
         label: fullName,
@@ -92,7 +101,7 @@ export default class extends React.Component {
     setNativeValue(inpEle, option.name);
     inpEle.dispatchEvent(new Event('change', { bubbles: true }));
 
-    this.props.onChange && this.props.onChange(option);
+    if (this.props.onChange) this.props.onChange(option);
   };
 
   onOpen = () => {
@@ -101,19 +110,16 @@ export default class extends React.Component {
       window.hj('tagRecording', ['international_currency_select']);
     }
 
-    this.props.onOpen && this.props.onOpen();
+    if (this.props.onOpen) this.props.onOpen();
   };
 
   getSelectedCurrencyOption = ({ option }) => {
     const optionContent = this.props.fullDisplay
-      ? CurrencyOption({ option }, false)
-      : SelectedCurrencyOption(option);
+      ? currencyOption({ option }, false)
+      : selectedCurrencyOption(option);
 
     return this.state.disabled ? (
-      <AmountTooltip
-        currency={option.name}
-        parentQuerySelector={this.props.parentQuerySelector}
-      >
+      <AmountTooltip currency={option.name} parentQuerySelector={this.props.parentQuerySelector}>
         {optionContent}
       </AmountTooltip>
     ) : (
@@ -134,9 +140,8 @@ export default class extends React.Component {
         class={classList(
           'Input Input--Currency',
           this.props.fullDisplay && 'Input--Currency--fullDisplay',
-          (!this.isInternationalEnabled || this.props.disabled) &&
-            'Input--noMargin',
-          this.props.className
+          (!this.isInternationalEnabled || this.props.disabled) && 'Input--noMargin',
+          this.props.className,
         )}
       >
         {this.props.label && <Label text={this.props.label} />}
@@ -150,7 +155,7 @@ export default class extends React.Component {
                   value={this.state.currency.name}
                   hidden
                   readOnly
-                  ref={inp => (this.ele = inp)}
+                  ref={(inp) => (this.ele = inp)}
                 />
                 <PowerSelect
                   name="currency"
@@ -158,7 +163,7 @@ export default class extends React.Component {
                   options={this.state.currencyList}
                   searchIndices={['name', 'label']}
                   placeholder="Select currency"
-                  optionComponent={CurrencyOption}
+                  optionComponent={OptionComponent}
                   selectedOptionLabelPath="name"
                   selectedOptionComponent={this.getSelectedCurrencyOption}
                   onChange={this.onSelectCurrency}
@@ -173,12 +178,7 @@ export default class extends React.Component {
         ) : (
           <div class="value">
             {props.name && (
-              <input
-                name={props.name}
-                value={this.state.currency.name}
-                hidden
-                readOnly
-              />
+              <input name={props.name} value={this.state.currency.name} hidden readOnly />
             )}
             <AmountTooltip
               currency={this.state.currency.name}
@@ -192,3 +192,5 @@ export default class extends React.Component {
     );
   }
 }
+
+export default connect((state) => ({ user: state.session.user }), null)(CurrencySelect);

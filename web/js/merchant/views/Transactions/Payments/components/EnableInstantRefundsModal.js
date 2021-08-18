@@ -1,23 +1,14 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
-import { Link } from 'react-router-dom';
-import AutoResizeTextarea from 'common/ui/Forms/AutoResizeTextarea';
+import { formValueSelector } from 'redux-form';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import InputField from 'common/ui/Forms/InputField';
 import ModalHeader from 'common/ui/ModalHeader';
-import Input from 'common/new-ui/Input';
-import { AmountTooltip } from 'common/ui/Amount';
-import Popover, { PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
-import { Fragment } from 'react';
 import { updateConfig } from 'merchant/reducers/config';
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
-import { isBlank, rupeesToPaise, paiseToRupees, titleCase } from 'common/utils/rzp-utils';
 import {
   refundPayment,
   fetchItem as fetchPayment,
@@ -25,46 +16,41 @@ import {
   fetchTransfers,
 } from 'merchant/reducers/payments/details';
 import { closeModal } from 'merchant_common/reducers/modals';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { CreateTicketEmitter } from '../../../TicketSupport/utils';
-const selector = formValueSelector('refundModal');
+import { compose, bindActionCreators } from 'redux';
 
-@connect(
-  (state) => {
-    let partial = selector(state, 'partial');
-    let reverse_all = selector(state, 'reverse_all');
-    let payable_amount = selector(state, 'amount');
-    return {
-      ...state.session,
-      ...state.payment,
-      user: state.session.user,
-      transfers: state.payment.transfers,
-      default_refund_speed: state.config.config.default_refund_speed,
-      partial,
-      default_refund_speed: state.config.config.default_refund_speed,
-      payable_amount,
-    };
-  },
-  {
-    closeModal,
-    refundPayment,
-    fetchPayment,
-    fetchRefunds,
-    updateConfig,
-    fetchTransfers,
-    ...NotificationsActions,
-  },
-)
-@RTracking(() => window.rzpQ.component('EnableInstantRefundsModal'))
-export default class EnableInstantRefundsModal extends Component {
+const raiseTicket = () => {
+  if (window.rzpTicketSystem) {
+    const rzpTicketSystem = window.rzpTicketSystem;
+    CreateTicketEmitter.emit(
+      'create-ticket',
+      'ticket',
+      () => {
+        rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+      },
+      () => {
+        setTimeout(() => {
+          rzpTicketSystem.modal.next();
+        }, 0);
+      },
+    );
+    setTimeout(() => {
+      const el = document.getElementsByName('request-description')[0];
+      el.value = `Hello Team,\n I’d like to know my custom pricing for instant refunds.`;
+      el.focus();
+    }, 1000);
+  }
+};
+
+const selector = formValueSelector('refundModal');
+class EnableInstantRefundsModal extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
   hovered = false;
-  constructor() {
-    super(...arguments);
+  constructor(props) {
+    super(props);
     this.state = {
-      errors: null,
       show_breakup: false,
     };
     this.analytics = { learn_more: false };
@@ -174,8 +160,8 @@ export default class EnableInstantRefundsModal extends Component {
   };
 
   render() {
-    let rules;
-    rules = this.props.pricing.rules;
+    const rules = this.props.pricing.rules;
+
     return (
       <div class="enable-instant-refund-modal">
         <ModalHeader
@@ -222,149 +208,119 @@ export default class EnableInstantRefundsModal extends Component {
         />
         <div class="modal-body" style={{ paddingBottom: 0 }}>
           <div>
-            <React.Fragment>
-              <div style={{ margin: '10px 0' }} class="change-default-refund-speed">
-                <div>
-                  {this.props.speed == 'normal' ? (
-                    <p>
-                      Your customers will receive their refunds in 5-7 days. The default refund
-                      speed for all your refunds will be set to `normal`
-                    </p>
-                  ) : (
-                    <p>
-                      Your customers will receive refunds instantly. The default refund speed for
-                      all your refunds will be set to `optimum`{' '}
-                    </p>
-                  )}
-                  &nbsp;
-                  {this.props.speed !== 'normal' ? (
-                    <div class="panel panel-default refund-fee-structure">
-                      <div class="panel-heading">
-                        <div class="flex">
-                          <div style={{ color: '#515978', width: '60%' }}>
-                            Minimal fee on each refund
-                          </div>
-                          <div class="w50 text-right" style={{ width: '40%' }}>
-                            <span
-                              onClick={() => {
-                                const show_breakup = this.state.show_breakup;
-                                this.setState({ show_breakup: !show_breakup });
-                                if (!show_breakup) {
-                                  this.props.tracking.trackEvent(
-                                    window.rzpQ
-                                      .merchantActions()
-                                      .initiated(`Click - Show Pricing`, {
-                                        label: `Instant Refund Modal - ${
-                                          this.props.pricing.custom_pricing
-                                            ? 'Custom Pricing'
-                                            : 'Normal Pricing'
-                                        }`,
-                                        category: 'Merchant Dashboard - IR',
-                                        session_id: window.session_id,
-                                      }),
-                                  );
-                                }
-                              }}
-                              class="show-fee-struct"
+            <div style={{ margin: '10px 0' }} class="change-default-refund-speed">
+              <div>
+                {this.props.speed == 'normal' ? (
+                  <p>
+                    Your customers will receive their refunds in 5-7 days. The default refund speed
+                    for all your refunds will be set to `normal`
+                  </p>
+                ) : (
+                  <p>
+                    Your customers will receive refunds instantly. The default refund speed for all
+                    your refunds will be set to `optimum`{' '}
+                  </p>
+                )}
+                &nbsp;
+                {this.props.speed !== 'normal' ? (
+                  <div class="panel panel-default refund-fee-structure">
+                    <div class="panel-heading">
+                      <div class="flex">
+                        <div style={{ color: '#515978', width: '60%' }}>
+                          Minimal fee on each refund
+                        </div>
+                        <div class="w50 text-right" style={{ width: '40%' }}>
+                          <span
+                            onClick={() => {
+                              const show_breakup = this.state.show_breakup;
+                              this.setState({ show_breakup: !show_breakup });
+                              if (!show_breakup) {
+                                this.props.tracking.trackEvent(
+                                  window.rzpQ.merchantActions().initiated(`Click - Show Pricing`, {
+                                    label: `Instant Refund Modal - ${
+                                      this.props.pricing.custom_pricing
+                                        ? 'Custom Pricing'
+                                        : 'Normal Pricing'
+                                    }`,
+                                    category: 'Merchant Dashboard - IR',
+                                    session_id: window.session_id,
+                                  }),
+                                );
+                              }
+                            }}
+                            class="show-fee-struct"
+                          >
+                            <b>{this.state.show_breakup ? 'Hide' : 'Show'} Pricing</b>{' '}
+                            <i
+                              class={`i action-arrow i-chevron-${
+                                this.state.show_breakup ? 'up' : 'down'
+                              }`}
                             >
-                              <b>{this.state.show_breakup ? 'Hide' : 'Show'} Pricing</b>{' '}
-                              <i
-                                class={`i action-arrow i-chevron-${
-                                  this.state.show_breakup ? 'up' : 'down'
-                                }`}
-                              >
-                                {' '}
-                              </i>{' '}
-                            </span>
-                          </div>
+                              {' '}
+                            </i>{' '}
+                          </span>
                         </div>
                       </div>
-                      {this.state.show_breakup ? (
-                        <Fragment>
-                          <div class="panel-body" style={{ paddingBottom: '8px' }}>
-                            {!this.props.pricing.custom_pricing ? (
-                              <div class="instant-breakup">
-                                <div class="flex">
-                                  <div
-                                    style={{ marginBottom: '5px' }}
-                                    class="w50 text-left t-heading"
-                                  >
-                                    Refund Amount
-                                  </div>
-                                  <div
-                                    style={{ marginBottom: '5px' }}
-                                    class="w50 text-right t-heading"
-                                  >
-                                    Processing Fees
-                                  </div>
-                                </div>
-                                {rules.map((r, i) => (
-                                  <div key={i} class="flex">
-                                    <div class="text-left amt" style={{ flexGrow: 1 }}>
-                                      ₹{' '}
-                                      {i > 0
-                                        ? r.amount_range_min / 100 + 1
-                                        : r.amount_range_min / 100}{' '}
-                                      {i == rules.length - 1 ? 'and' : '-'}{' '}
-                                      {i == rules.length - 1 ? `above` : r.amount_range_max / 100}{' '}
-                                    </div>
-                                    <div class="text-right" style={{ flexGrow: 1 }}>
-                                      <Amount
-                                        value={r.fixed_rate}
-                                        currency={'INR'}
-                                        parentQuerySelector={`.Modal--small`}
-                                      />
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <div class="flex">
-                                <div style={{ color: '#515978' }}>
-                                  To know your pricing, please{' '}
-                                  <a>
-                                    <strong
-                                      class="pointer"
-                                      onClick={() => {
-                                        window.rzpAnalytics({
-                                          eventCategory: 'Dashboard - Instant Refund',
-                                          eventAction: 'Contact Support',
-                                          eventLabel: `Fee Modal | Contact Support`,
-                                        });
-                                        raiseTicket();
-                                      }}
-                                      style={{ color: '#0B70E7' }}
-                                    >
-                                      contact support
-                                    </strong>
-                                  </a>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          {/* <div
-                            class="panel-footer grey text-center"
-                            style={{
-                              background: '#fff',
-                              padding: '10px 0',
-                              fontSize: '13px',
-                            }}
-                          >
-                           We charge{' '}
-                            <Amount
-                              value={1000}
-                              currency={'INR'}
-                              parentQuerySelector={`.Modal--small`}
-                            />{' '}
-                            fees for Debit Card refunds
-                          </div> */}
-                        </Fragment>
-                      ) : null}
                     </div>
-                  ) : null}
-                </div>
+                    {this.state.show_breakup ? (
+                      <div class="panel-body" style={{ paddingBottom: '8px' }}>
+                        {!this.props.pricing.custom_pricing ? (
+                          <div class="instant-breakup">
+                            <div class="flex">
+                              <div style={{ marginBottom: '5px' }} class="w50 text-left t-heading">
+                                Refund Amount
+                              </div>
+                              <div style={{ marginBottom: '5px' }} class="w50 text-right t-heading">
+                                Processing Fees
+                              </div>
+                            </div>
+                            {rules.map((r, i) => (
+                              <div key={i} class="flex">
+                                <div class="text-left amt" style={{ flexGrow: 1 }}>
+                                  ₹{' '}
+                                  {i > 0 ? r.amount_range_min / 100 + 1 : r.amount_range_min / 100}{' '}
+                                  {i == rules.length - 1 ? 'and' : '-'}{' '}
+                                  {i == rules.length - 1 ? `above` : r.amount_range_max / 100}{' '}
+                                </div>
+                                <div class="text-right" style={{ flexGrow: 1 }}>
+                                  <Amount
+                                    value={r.fixed_rate}
+                                    currency="INR"
+                                    parentQuerySelector=".Modal--small"
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div class="flex">
+                            <div style={{ color: '#515978' }}>
+                              To know your pricing, please{' '}
+                              <a>
+                                <strong
+                                  class="pointer"
+                                  onClick={() => {
+                                    window.rzpAnalytics({
+                                      eventCategory: 'Dashboard - Instant Refund',
+                                      eventAction: 'Contact Support',
+                                      eventLabel: `Fee Modal | Contact Support`,
+                                    });
+                                    raiseTicket();
+                                  }}
+                                  style={{ color: '#0B70E7' }}
+                                >
+                                  contact support
+                                </strong>
+                              </a>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
-            </React.Fragment>
+            </div>
           </div>
           <div class="confirm-note-info">
             {this.props.speed == 'normal' ? (
@@ -374,6 +330,7 @@ export default class EnableInstantRefundsModal extends Component {
                 <a
                   href="https://razorpay.com/docs/payment-gateway/refunds/#using-the-dashboard"
                   target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => {
                     window.rzpAnalytics({
                       eventCategory: 'Dashboard - Instant Refund',
@@ -402,6 +359,7 @@ export default class EnableInstantRefundsModal extends Component {
                 <a
                   href="https://razorpay.com/docs/payment-gateway/refunds/#using-the-dashboard"
                   target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => {
                     window.rzpAnalytics({
                       eventCategory: 'Dashboard - Instant Refund',
@@ -434,7 +392,7 @@ export default class EnableInstantRefundsModal extends Component {
         <div>
           <div class="Modal__actions" style={{ padding: '20px', paddingTop: 0 }}>
             <div class="row flex" style={{ marginBottom: '5px' }}>
-              <div class="w100" class="change-default-speed-btn">
+              <div class="w100 change-default-speed-btn">
                 <button class="btn btn-primary btn-block" onClick={this.enableInstantRefunds}>
                   Enable {this.props.speed == 'normal' ? 'Normal' : 'Instant'} Refund
                 </button>
@@ -447,16 +405,36 @@ export default class EnableInstantRefundsModal extends Component {
   }
 }
 
-const raiseTicket = () => {
-  if (window.rzpTicketSystem) {
-    CreateTicketEmitter.emit(
-      'create-ticket',
-      'tickets',
-    );
-    setTimeout(() => {
-      var el = document.getElementsByName('request-description')[0];
-      el.value = 'Hello Team,\n' + 'I’d like to know my custom pricing for instant refunds.';
-      el.focus();
-    }, 1000);
-  }
+const mapStateToProps = (state) => {
+  const partial = selector(state, 'partial');
+  const payable_amount = selector(state, 'amount');
+  return {
+    ...state.session,
+    ...state.payment,
+    user: state.session.user,
+    transfers: state.payment.transfers,
+    default_refund_speed: state.config.config.default_refund_speed,
+    partial,
+    payable_amount,
+  };
 };
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      closeModal,
+      refundPayment,
+      fetchPayment,
+      fetchRefunds,
+      updateConfig,
+      fetchTransfers,
+      ...NotificationsActions,
+    },
+    dispatch,
+  );
+
+export default compose(
+  connect(mapStateToProps, mapDispatchToProps),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('EnableInstantRefundsModal')),
+)(EnableInstantRefundsModal);

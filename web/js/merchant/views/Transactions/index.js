@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
-import { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import { getURLQueryParams, getMobileOperatingSystem } from 'common/utils/rzp-utils';
-import ShowWhen from 'merchant/components/ShowWhen';
+import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import { getMobileOperatingSystem, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import PaymentsList from 'merchant/views/Transactions/Payments/List';
 import RefundsList from 'merchant/views/Transactions/Refunds/List';
@@ -12,63 +11,50 @@ import DisputesList from 'merchant/views/Transactions/Disputes/List';
 import BatchPaymentsList from 'merchant/views/Transactions/BatchPayments/List';
 import BatchRefundsList from 'merchant/views/Transactions/BatchRefunds/List';
 import BatchRefundsUpload from 'merchant/views/Transactions/BatchRefunds/BatchUpload';
-import HeaderAction from 'common/ui/HeaderAction';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import { fetchSettlementAmount } from 'merchant/reducers/home';
 import Amount from 'common/ui/Amount';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import Time from 'common/ui/Time';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
 import CatalystCampaignBanner from 'merchant/components/Announcements/CatalystCampaignBanner';
-import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
-import LocalStorageService from 'common/utils/localStorage';
+import { getItem } from 'common/utils/localStorage';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { bindActionCreators } from 'redux';
 
 let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
 if (getMobileOperatingSystem() == 'iOS') {
   url = 'https://apps.apple.com/in/app/razorpay-payments-dashboard/id1497250144';
 }
 
-@connect(
-  (state) => {
-    return {
-      ...state.session,
-      settlement_amount: state.home.settlement_amount,
-      config: state.config.config,
-      payments: state.payments,
-    };
-  },
-  { fetchSettlementAmount, openModal, closeModal },
-)
-export default class TransactionsContainer extends Component {
+class TransactionsContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      openAutoModal: false,
       showPopup: false,
       showFooter: false,
-      url: url,
+      url,
     };
   }
 
   componentDidMount() {
     this.props.fetchSettlementAmount();
 
-    const mwebPopupLS = !!LocalStorageService.getItem('transactions_mweb_popup'); // Check if popup is already shown to user once.
-    const mwebPopupSS = !!window.sessionStorage.getItem('payment links_mweb_popup'); // Check if popup is shown in session on another scrren.
+    const mwebPopupLS = !!getItem('transactions_mweb_popup'); // Check if popup is already shown to user once.
+    const mwebPopupSS = !!getItem('payment links_mweb_popup'); // Check if popup is shown in session on another scrren.
     let showPopup = isMobileDevice();
     if (mwebPopupLS) {
       showPopup = false;
     } else if (mwebPopupSS) {
       showPopup = false;
     }
-    this.setState({ showPopup: showPopup });
+    // eslint-disable-next-line react/no-did-mount-set-state
+    this.setState({ showPopup });
   }
 
   closePopup = () => {
@@ -80,8 +66,6 @@ export default class TransactionsContainer extends Component {
   };
 
   showMobilePopup = () => {
-    const { url } = this.state;
-
     this.props.openModal({
       size: 'xlarge',
       component: (
@@ -89,7 +73,7 @@ export default class TransactionsContainer extends Component {
           title="Tracking Payments Is Better in the Mobile App"
           subtitle="Switch to the app for better ways to track payments, issue refunds, and more."
           screen="Transactions"
-          url={url}
+          url={this.state.url}
           notNowClicked={this.closePopup}
           closeModal={this.props.closeModal}
         />
@@ -99,8 +83,8 @@ export default class TransactionsContainer extends Component {
   };
 
   render() {
-    const { user, mode } = this.props,
-      { showInstantActivation, isSubmitted, role, activation_status } = user;
+    const { user, mode } = this.props;
+    const { role, activation_status } = user;
 
     const nextSettlement = !this.props.settlement_amount.data.next_settlement_time;
 
@@ -112,8 +96,8 @@ export default class TransactionsContainer extends Component {
       <React.Fragment>
         <div className="banner-container">
           <ShowWhen
-            additionalCondition={(user) =>
-              user.isProjectNitroEnabled || user.isProjectNitroCorporateCard
+            additionalCondition={(usr) =>
+              usr.isProjectNitroEnabled || usr.isProjectNitroCorporateCard
             }
           >
             <AnnouncementBanner title="Exclusive Offer For You" canBeClosed={false}>
@@ -146,7 +130,7 @@ export default class TransactionsContainer extends Component {
             </NavLink>
             <ShowWhen
               featureEnabled="direct_debit"
-              additionalCondition={(user) => user.isAllowedView('payments_batch_uploads')}
+              additionalCondition={(usr) => usr.isAllowedView('payments_batch_uploads')}
             >
               <NavLink
                 to="/payments/batchuploads"
@@ -165,7 +149,7 @@ export default class TransactionsContainer extends Component {
                 Batch Payments
               </NavLink>
             </ShowWhen>
-            <ShowWhen additionalCondition={(user) => user.isAllowedView('refunds')}>
+            <ShowWhen additionalCondition={(usr) => usr.isAllowedView('refunds')}>
               <NavLink
                 to="/refunds"
                 exact
@@ -184,11 +168,11 @@ export default class TransactionsContainer extends Component {
                 Refunds
               </NavLink>
             </ShowWhen>
-            <ShowWhen additionalCondition={(user) => user.isAllowedView('refunds_batch_uploads')}>
+            <ShowWhen additionalCondition={(usr) => usr.isAllowedView('refunds_batch_uploads')}>
               <NavLink
                 to="/refunds/batchuploads"
-                isActive={(match, { pathname }) =>
-                  pathname === '/refunds/batchupload' || pathname === '/refunds/batchuploads'
+                isActive={(match, { pathname: path }) =>
+                  path === '/refunds/batchupload' || path === '/refunds/batchuploads'
                 }
                 onClick={() => {
                   analyticsTrack({
@@ -205,7 +189,7 @@ export default class TransactionsContainer extends Component {
                 Batch Refunds
               </NavLink>
             </ShowWhen>
-            <ShowWhen additionalCondition={(user) => user.isAllowedView('orders')}>
+            <ShowWhen additionalCondition={(usr) => usr.isAllowedView('orders')}>
               <NavLink
                 to="/orders"
                 onClick={() => {
@@ -247,16 +231,14 @@ export default class TransactionsContainer extends Component {
               <div class="text-right settlement-caption">
                 {no_settlement.caption}
                 {no_settlement.reason && (
-                  <React.Fragment>
-                    <div style={{ display: 'inline' }}>
-                      <i class="i i-info-circle" />
-                      <Popover theme="dark" align="left">
-                        <PopoverBody>
-                          <div>{no_settlement.reason}</div>
-                        </PopoverBody>
-                      </Popover>
-                    </div>
-                  </React.Fragment>
+                  <div style={{ display: 'inline' }}>
+                    <i class="i i-info-circle" />
+                    <PopoverComponent theme="dark" align="left">
+                      <PopoverBody>
+                        <div>{no_settlement.reason}</div>
+                      </PopoverBody>
+                    </PopoverComponent>
+                  </div>
                 )}
               </div>
             ) : null}
@@ -267,25 +249,23 @@ export default class TransactionsContainer extends Component {
                 <strong>
                   <Amount
                     value={this.props.settlement_amount.data.settlement_amount}
-                    currency={'INR'}
+                    currency="INR"
                   />
                 </strong>{' '}
                 will be settled on{' '}
                 <Time
                   value={this.props.settlement_amount.data.next_settlement_time}
-                  format={'DD MMM YYYY, hh:mm:ss a'}
+                  format="DD MMM YYYY, hh:mm:ss a"
                 />{' '}
                 {this.props.settlement_amount.data.reason_for_delay && (
-                  <React.Fragment>
-                    <div style={{ display: 'inline' }}>
-                      <i class="i i-info-circle" />
-                      <Popover theme="dark" align="left">
-                        <PopoverBody>
-                          <div>{this.props.settlement_amount.data.reason_for_delay}</div>
-                        </PopoverBody>
-                      </Popover>
-                    </div>
-                  </React.Fragment>
+                  <div style={{ display: 'inline' }}>
+                    <i class="i i-info-circle" />
+                    <PopoverComponent theme="dark" align="left">
+                      <PopoverBody>
+                        <div>{this.props.settlement_amount.data.reason_for_delay}</div>
+                      </PopoverBody>
+                    </PopoverComponent>
+                  </div>
                 )}
                 <span
                   class="btn-link"
@@ -348,7 +328,7 @@ export default class TransactionsContainer extends Component {
               <ShowWhenRoute
                 path="/orders"
                 component={OrdersList}
-                additionalCondition={(user) => user.isAllowedView('orders')}
+                additionalCondition={(usr) => usr.isAllowedView('orders')}
               />
               <Route path="/payments/batchuploads/:mode" component={BatchPaymentsList} />
               <Route path="/payments/batchuploads" component={BatchPaymentsList} />
@@ -375,3 +355,18 @@ export default class TransactionsContainer extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    ...state.session,
+    settlement_amount: state.home.settlement_amount,
+    config: state.config.config,
+    payments: state.payments,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ fetchSettlementAmount, openModal, closeModal }, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(TransactionsContainer);

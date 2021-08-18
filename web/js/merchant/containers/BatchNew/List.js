@@ -1,30 +1,23 @@
 import { Fragment } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-
+import { compose, bindActionCreators } from 'redux';
 import DataTable from 'common/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { EmptyComponent } from 'merchant/components/BatchNew/ListAddons';
-import {
-  batchIdLink,
-  totalCount,
-  batchName,
-  status,
-} from 'common/ui/item/pair';
-import { openModal } from 'merchant_common/reducers/modals';
-
+import { batchIdLink, totalCount, batchName, status } from 'common/ui/item/pair';
+import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import { luminateRow } from 'merchant/reducers/app';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-
 import { batchDownload } from 'merchant/reducers/batches';
-import Popover, { PopoverBody, PopoverTitle } from 'common/ui/Popover';
+import PopoverComponent, { PopoverBody, PopoverTitle } from 'common/ui/Popover';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { DocLink } from 'merchant/components/DocsLink'
+import { DocLink } from 'merchant/components/DocsLink';
 
 const batchStatus = {
   ...status,
-  value: item => (
+  value: (item) => (
     <Fragment>
       {status.value(item)}
       {item.status === 'created' && <i class="i i-refresh refresh-batch-btn" />}
@@ -32,35 +25,21 @@ const batchStatus = {
   ),
 };
 
-@connect(
-  state => ({
-    session: state.session,
-    ...state.batches,
-  }),
-  {
-    batchDownload,
-    openModal,
-    luminateRow,
-    ...NotificationsActions,
-  }
-)
-@RTracking(() => window.rzpQ.component('BatchList'))
-export default class BatchList extends ListContainer {
+class BatchList extends ListContainer {
   static defaultProps = {
     extraColumns: [],
   };
 
-  handleDownloadClick = id => {
+  handleDownloadClick = (id) => {
     this.props.gaEvents.trackDownloadProcessedBatchReport();
 
     this.props.tracking.trackEvent(
       window.rzpQ.chargeAtWill().interaction(`download.list.initiate`),
     );
-    const batchDownload =
-      this.props.extraPropBatchDownload || this.props.batchDownload;
+    const batchDownload = this.props.extraPropBatchDownload || this.props.batchDownload;
 
-    batchDownload(id)
-      .then(response => {
+    fnBatchDownload(id)
+      .then((response) => {
         window.location = response.data.url;
       })
       .catch(({ errors }) => {
@@ -74,9 +53,9 @@ export default class BatchList extends ListContainer {
   @RTracking(() =>
     window.rzpQ.onbr().success('dash.pl_action', {
       action: 'Upload_Batch_PL_File',
-    })
+    }),
   )
-  openUploadModal = renderUploadModal => () => {
+  openUploadModal = (renderUploadModal) => () => {
     const { openModal } = this.props;
     openModal({
       size: 'large',
@@ -89,8 +68,8 @@ export default class BatchList extends ListContainer {
   }
 
   render() {
-    let { docUrl, uploadUrl, sampleUrl, extraColumns, session } = this.props,
-      { user } = session;
+    const { docUrl, uploadUrl, sampleUrl, extraColumns, session } = this.props;
+    const { user } = session;
 
     return (
       <div class="content-wrapper batch-upload-wrapper">
@@ -99,18 +78,12 @@ export default class BatchList extends ListContainer {
             <a
               class="btn btn-link hidden-xs"
               href={sampleUrl}
-              onClick={this.props.gaEvents.trackSampleFileDownload(
-                'From List View'
-              )}
+              onClick={this.props.gaEvents.trackSampleFileDownload('From List View')}
             >
               Download Sample File
             </a>
           )}
-          <ShowWhen
-            additionalCondition={user =>
-              user.isOrgAllowedFunctionality('external_links')
-            }
-          >
+          <ShowWhen additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}>
             {docUrl && (
               <DocLink class="btn btn-link hidden-xs" href={docUrl} target="_blank">
                 Documentation &nbsp;
@@ -122,16 +95,14 @@ export default class BatchList extends ListContainer {
           {this.props.multiBatch ? (
             <div class="pull-right MultiBatch--action">
               <div class="btn btn-primary">Upload New Batch</div>
-              <Popover align="bottom" class="MultiBatch--popover">
+              <PopoverComponent align="bottom" class="MultiBatch--popover">
                 <PopoverTitle>
                   <h4>
                     <strong>Upload New Batch</strong>
                   </h4>
                 </PopoverTitle>
-                <PopoverBody>
-                  {this.props.renderBatchOptions(this.openUploadModal)}
-                </PopoverBody>
-              </Popover>
+                <PopoverBody>{this.props.renderBatchOptions(this.openUploadModal)}</PopoverBody>
+              </PopoverComponent>
             </div>
           ) : (
             ((session.mode !== 'live' || !user.isRejected) && (
@@ -167,9 +138,7 @@ export default class BatchList extends ListContainer {
           onSubmit={this.search}
           EmptyComponent={EmptyComponent(
             uploadUrl,
-            !this.props.multiBatch
-              ? this.openUploadModal(this.props.renderUploadModal)
-              : undefined,
+            !this.props.multiBatch ? this.openUploadModal(this.props.renderUploadModal) : undefined,
             this.props.emptyResultsDescription,
           )}
           {...this.props}
@@ -182,17 +151,30 @@ export default class BatchList extends ListContainer {
 function batchActions(onDownloadClick, otherBatchActions = []) {
   return {
     title: 'Actions',
-    value: item =>
+    value: (item) =>
       item.status === 'processed' && (
         <div class="btn-toolbar">
-          <button
-            class="btn btn-xs btn-default"
-            onClick={() => onDownloadClick(item.id)}
-          >
+          <button class="btn btn-xs btn-default" onClick={() => onDownloadClick(item.id)}>
             <i class="i i-download" /> Download
           </button>
-          {otherBatchActions.map(batchAction => batchAction(item))}
+          {otherBatchActions.map((batchAction) => batchAction(item))}
         </div>
       ),
   };
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      session: state.session,
+      ...state.batches,
+    }),
+    (dispatch) =>
+      bindActionCreators(
+        { batchDownload, openModal: fnOpenModal, luminateRow, ...NotificationsActions },
+        dispatch,
+      ),
+  ),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('BatchList')),
+)(BatchList);
