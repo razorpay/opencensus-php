@@ -193,8 +193,6 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $this->logPaymentRequestEvent($input);
-
         $startTime = microtime(true);
 
         (new Payment\Metric())->pushCheckoutSubmitRequestMetrics($input, $startTime);
@@ -208,8 +206,12 @@ class PaymentCreateController extends Controller
         {
             $input['view'] = 'html';
 
+            $this->logPaymentRequestEvent($input, true);
+
             return $this->createFeeBearerCustomerPayment($input);
         }
+
+        $this->logPaymentRequestEvent($input);
 
         $data = $this->service(E::PAYMENT)->process($input);
 
