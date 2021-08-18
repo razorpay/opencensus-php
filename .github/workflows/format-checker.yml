@@ -1,0 +1,32 @@
+name: Format Checker
+on: pull_request
+jobs:
+  validate:
+    runs-on: [self-hosted]
+    continue-on-error: false
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Use Node v12
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.13.0
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v9.3
+        with:
+          files: |
+            .(js|json|jsx|ts|tsx)$
+
+      - name: Run prettier check on changed files
+        if: ${{ steps.changed-files.outputs.all_modified_files != '' }}
+        run: |
+          npm install --only=dev
+          npx prettier --check ${{ steps.changed-files.outputs.all_modified_files }}
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
