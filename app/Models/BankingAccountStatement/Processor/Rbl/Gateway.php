@@ -66,6 +66,8 @@ class Gateway extends BaseProcessor
 
     protected $rblAccountStatementV2MaxNumberOfRecords;
 
+    protected $savePaginationKey = true;
+
     public function __construct(string $channel,
                                 string $accountNumber,
                                 BasDetails\Entity $basDetails,
@@ -381,6 +383,8 @@ class Gateway extends BaseProcessor
             $this->rblAccountStatementV2MaxNumberOfRecords = self::DEFAULT_RBL_ACCOUNT_STATEMENT_V2_MAX_NUMBER_OF_RECORDS;
         }
 
+        $recordNumber = 1;
+
         do
         {
             $paginationKey = $this->basDetails->getPaginationKey();
@@ -391,6 +395,8 @@ class Gateway extends BaseProcessor
             // If for a merchant pagination key is not available, we use 1st format else 2nd format is used.
             // Bank will be returning next_key in every successful api call.
             $this->selectApiAndModifyRequest($requestData, $paginationKey, $isRetry);
+
+            $requestTime = Carbon::now();
 
             try
             {
@@ -446,9 +452,9 @@ class Gateway extends BaseProcessor
 
             $isRetry = false;
 
-            $formattedResponse = $this->getFormattedResponseV2($bankResponse[Fields::DATA]);
+            $formattedResponse = $this->getFormattedResponseV2($bankResponse[Fields::DATA], $recordNumber, $requestTime);
 
-            if (count($formattedResponse) > 0)
+            if ((count($formattedResponse) > 0) and ($this->savePaginationKey === true))
             {
                 $this->basDetails->setPaginationKey($bankResponse[Fields::DATA][Fields::FETCH_ACCOUNT_STATEMENT_RESPONSE][Fields::HEADER][Fields::NEXT_KEY]);
             }
@@ -606,6 +612,10 @@ class Gateway extends BaseProcessor
             $transactionDetail[Fields::TRANSACTION_AMOUNT]        = $decodedTransaction[7];    // TRAN_AMT
             $transactionDetail[Fields::TRANSACTION_BALANCE]       = $decodedTransaction[8];    // TRAN_BALANCE
 
+            // Validation on each record is moved here as number of records can go upto 5000 and having a validation on an array of 5000 records is time consuming.
+            // Slack thread for ref.: https://razorpay.slack.com/archives/C01CX0EC34M/p1628683569061000?thread_ts=1628225601.039500&cid=C01CX0EC34M
+            $this->validateMozartResponseRecordV2($transactionDetail);
+
             array_push($decodedTxnDetails , $transactionDetail);
         }
 
@@ -621,6 +631,11 @@ class Gateway extends BaseProcessor
     protected function validateMozartResponseV2(array $response)
     {
         (new Validator)->validateInput('rbl_statement_fetch_response_v2', $response['data']);
+    }
+
+    protected function validateMozartResponseRecordV2(array $record)
+    {
+        (new Validator)->validateInput('rbl_statement_fetch_response_v2_record', $record);
     }
 
     protected function getRequestDataForMozart(array $input, array $lastTransaction)
@@ -866,13 +881,15 @@ class Gateway extends BaseProcessor
         return $transactions;
     }
 
-    public function getFormattedResponseV2(array $responseData)
+    public function getFormattedResponseV2(array $responseData, int & $recordNumber, Carbon $requestTime)
     {
         $responseBody = $responseData[Fields::FETCH_ACCOUNT_STATEMENT_RESPONSE][Fields::ACCOUNT_STATEMENT_DATA];
 
         $transactionsData = $responseBody[Fields::FILE_DATA] ?? [];
 
         $transactions = [];
+
+        $offset = $this->getOffsetForSavingRecords();
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_RESPONSE_COUNT_V2,
@@ -884,11 +901,32 @@ class Gateway extends BaseProcessor
 
         foreach ($transactionsData as $transactionData)
         {
+            // Due to discrepancies on bank side where new records can appear in few seconds, we prefer not to save
+            // latest records within time range set using $offset to maintain order.
+            // This came up in rbl incident: https://razorpay.slack.com/archives/CM9230B5Y/p1615457898201700
+            $allowRecordToSave = $this->allowRecordToSave($requestTime, $offset, $transactionData);
+
             //
             // Logging it here even though it's logged in Mozart Service since that
             // log is most probably going to be truncated due to large amount of data.
             //
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_TRANSACTION_DATA_V2, $transactionData);
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_TRANSACTION_DATA_V2,
+                               [
+                                   'record_no'            => $recordNumber,
+                                   'record_saved'         => $allowRecordToSave,
+                                   Entity::CHANNEL        => $this->getChannel(),
+                                   Entity::ACCOUNT_NUMBER => $this->accountNumber
+                               ] + $transactionData
+            );
+
+            $recordNumber++;
+
+            if ($allowRecordToSave === false)
+            {
+                $this->savePaginationKey = false;
+
+                continue;
+            }
 
             $transactions[] = [
                 Entity::CHANNEL             => $this->getChannel(),

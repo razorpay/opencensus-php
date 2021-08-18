@@ -25,6 +25,9 @@ class Fetch extends BaseFetch
             Entity::TRANSACTION_ID,
             Entity::ACCOUNT_NUMBER,
             Entity::BANK_TRANSACTION_ID,
+            Entity::UTR,
+            Entity::ENTITY_ID,
+            Entity::ENTITY_TYPE,
         ],
     ];
 

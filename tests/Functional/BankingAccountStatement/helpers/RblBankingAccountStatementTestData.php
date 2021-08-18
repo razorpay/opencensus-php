@@ -205,7 +205,7 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-            'message'             => 'The FetchAccStmtRes.AccStmtData.File_Data.0.pstdDate field is required.'
+            'message'             => 'The pstd date field is required.'
         ],
     ],
 

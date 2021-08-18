@@ -57,17 +57,18 @@ class Validator extends Base\Validator
         self::RESPONSE_HEADER . '.' . F::STATUS_DESCRIPTION    => 'sometimes|string',
 
         self::ACCOUNT_STATEMENT_DATA                           => 'required|array',
+    ];
 
-        self::FILE_DATA                                        => 'present|array',
-        self::FILE_DATA . '.*.' . F::TRANSACTION_ID_RESPONSE   => 'required|string',
-        self::FILE_DATA . '.*.' . F::TRANSACTION_SERIAL_NUMBER => 'required|integer',
-        self::FILE_DATA . '.*.' . F::TRANSACTION_DATE          => 'required',
-        self::FILE_DATA . '.*.' . F::TRANSACTION_POSTED_DATE   => 'required|filled|string',
-        self::FILE_DATA . '.*.' . F::TRANSACTION_CATEGORY      => 'required|string',
-        self::FILE_DATA . '.*.' . F::TRANSACTION_TYPE          => 'required|alpha|max:1',
-        self::FILE_DATA . '.*.' . F::TRANSACTION_DESCRIPTION   => 'required|string',
-        self::FILE_DATA . '.*.' . F::TRANSACTION_AMOUNT        => 'required|numeric|min:0',
-        self::FILE_DATA . '.*.' . F::TRANSACTION_BALANCE       => 'required|numeric',
+    protected static $rblStatementFetchResponseV2RecordRules = [
+        F::TRANSACTION_ID_RESPONSE   => 'required|string',
+        F::TRANSACTION_SERIAL_NUMBER => 'required|integer',
+        F::TRANSACTION_DATE          => 'required',
+        F::TRANSACTION_POSTED_DATE   => 'required|filled|string',
+        F::TRANSACTION_CATEGORY      => 'required|string',
+        F::TRANSACTION_TYPE          => 'required|alpha|max:1',
+        F::TRANSACTION_DESCRIPTION   => 'required|string',
+        F::TRANSACTION_AMOUNT        => 'required|numeric|min:0',
+        F::TRANSACTION_BALANCE       => 'required|numeric',
     ];
 
     protected static $rblStatementFetchResponseValidators = [
