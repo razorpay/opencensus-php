@@ -34,8 +34,14 @@ export default class GSTDetails extends Component {
   }
 
   componentDidMount() {
+    let { user } = this.props;
+
     this.fetchNewAddress();
-    this.getSelfServeStatus();
+
+    // Check if this feature is enabled for the user
+    if (user.isFeatureEnabled(`gstin_self_serve`)) {
+      this.getSelfServeStatus();
+    }
 
     // scroll directly to GST section
     if (location.hash.startsWith('#gst') && this.GSTSection.current)
