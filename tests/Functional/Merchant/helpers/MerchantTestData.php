@@ -7696,6 +7696,7 @@ return [
                 'auto_disabled_methods' =>
                     [   "credit_card",
                         "emi",
+                        "cardless_emi",
                         "prepaid_card",
                         "paylater",
                     ]
@@ -7718,6 +7719,7 @@ return [
                     'netbanking',
                     'upi',
                     'emi',
+                    'cardless_emi',
                     'prepaid_card',
                     'paylater',
                     'airtelmoney',

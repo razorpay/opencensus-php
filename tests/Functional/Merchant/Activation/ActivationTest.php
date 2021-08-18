@@ -314,6 +314,7 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
+            'cardless_emi'  => false,
             'debit_emi_providers'=> ['HDFC' => 0],
         ];
 
@@ -445,6 +446,7 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
+            'cardless_emi'  => false,
             'debit_emi_providers'=> [],
         ];
 
@@ -587,6 +589,7 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => true,
+            'cardless_emi'  => false,
             'debit_emi_providers'=> [],
         ];
 
@@ -649,6 +652,7 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => true,
+            'cardless_emi'  => true,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
@@ -710,6 +714,7 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => true,
+            'cardless_emi'  => false,
             'debit_emi_providers'=> [],
         ];
 
@@ -772,6 +777,7 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => false,
             'sbibuddy'      => false,
             'phonepe'       => false,
+            'cardless_emi'  => false,
             'debit_emi_providers'=> [],
         ];
 
@@ -866,6 +872,7 @@ class ActivationTest extends OAuthTestCase
             'phonepe'       => false,
             'phonepeswitch' => false,
             'bank_transfer' => false,
+            'cardless_emi'  => false,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);

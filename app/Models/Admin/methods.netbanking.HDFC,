@@ -1,0 +1,87 @@
+ methods.netbanking.HDFC,
+   methods.netbanking.SBIN,
+   methods.netbanking.UTIB,
+   methods.netbanking.ICIC,
+   methods.netbanking.CIUB,
+   methods.netbanking.SCBL,
+   methods.netbanking.AUBL,
+   methods.netbanking.ABPB,
+   methods.netbanking.AIRP,
+   methods.netbanking.ALLA,
+   methods.netbanking.ANDB,
+   methods.netbanking.BDBL,
+   methods.netbanking.BBKM,
+   methods.netbanking.BARB_
+ R,  methods.netbanking.BKID,
+   methods.netbanking.MAHB,
+   methods.netbanking.BACB,
+   methods.netbanking.CITI,
+   methods.netbanking.CNRB,
+   methods.netbanking.CSBK,
+   methods.netbanking.CBIN,
+   methods.netbanking.COSB,
+   methods.netbanking.DCBL,
+   methods.netbanking.BKDN,
+   methods.netbanking.DEUT,
+   methods.netbanking.DBSS,
+   methods.netbanking.DLXB,
+   methods.netbanking.ESAF,
+   methods.netbanking.ESFB,
+   methods.netbanking.FDRL,
+   methods.netbanking.IBKL,
+   methods.netbanking.IDFB,
+   methods.netbanking.IDIB,
+   methods.netbanking.IOBA,
+   methods.netbanking.INDB,
+   methods.netbanking.JAKA,
+   methods.netbanking.JSFB,
+   methods.netbanking.JSBP,
+   methods.netbanking.KCCB,
+   methods.netbanking.KJSB,
+   methods.netbanking.KARB,
+   methods.netbanking.KVBL,
+   methods.netbanking.KKBK,
+   methods.netbanking.LAVB_
+ R,  methods.netbanking.MSNU,
+   methods.netbanking.NKGS,
+   methods.netbanking.NESF,
+   methods.netbanking.ORBC,
+   methods.netbanking.UTBI,
+   methods.netbanking.PSIB,
+   methods.netbanking.PUNB_
+ R,  methods.netbanking.RATN,
+   methods.netbanking.SRCB,
+   methods.netbanking.SVCB,
+   methods.netbanking.SIBL,
+   methods.netbanking.SBBJ,
+   methods.netbanking.SBHY,
+   methods.netbanking.SBMY,
+   methods.netbanking.STBP,
+   methods.netbanking.SBTR,
+   methods.netbanking.SURY,
+   methods.netbanking.SYNB,
+   methods.netbanking.TMBL,
+   methods.netbanking.TNSC,
+   methods.netbanking.TBSB,
+   methods.netbanking.TJSB,
+   methods.netbanking.UCBA,
+   methods.netbanking.UBIN,
+   methods.netbanking.CORP,
+   methods.netbanking.VARA,
+   methods.netbanking.VIJB,
+   methods.netbanking.YESB,
+   methods.netbanking.ZCBL,
+   methods.netbanking.BARB_
+ C,  methods.netbanking.PUNB_
+ C,  methods.netbanking.LAVB_
+ C,  methods.netbanking.ICIC_
+ C,  methods.netbanking.UTIB_
+ C,  methods.netbanking.BKID_
+ C,  methods.netbanking.IBKL_
+ C,  methods.netbanking.YESB_
+ C,  methods.netbanking.ANDB_
+ C,  methods.netbanking.RATN_
+ C,  methods.netbanking.SVCB_
+ C,  methods.netbanking.DLXB_
+ C,  methods.netbanking.KKBK_
+ C--- PASS: TestFetchMerchantInstrumentStatusPaylaterEnabled (0.01s)
