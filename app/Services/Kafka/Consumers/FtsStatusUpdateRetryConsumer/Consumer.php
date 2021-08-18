@@ -82,6 +82,11 @@ class Consumer extends BaseConsumer
     {
         $operation = 'kafka retry consumer failed after max retries.';
 
+        $this->trace->info(TraceCode::KAFKA_FTS_STATUS_UPDATE_RETRY_CONSUMER_SLACK_NOTIFICATION_SENT, [
+            "operation" => $operation,
+            "payload"   => $this->getPayloadWithSensitiveDetailsMasked($payload),
+        ])
+
         (new SlackNotification)->send($operation, $payload, null, 1, 'rx_ca_rbl_alerts');
     }
 
