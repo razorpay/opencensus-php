@@ -868,6 +868,7 @@ return [
                 'fr_due_by'     => '2021-06-04T05:21:22Z',
                 'status'        => 2,
                 'fd_instance'   => 'rzp',
+                'email'         => 'test@razorpay.com',
                 'custom_fields' => [
                     'cf_requester_category'    => 'Merchant',
                     'cf_requestor_subcategory' => 'Call Requested',

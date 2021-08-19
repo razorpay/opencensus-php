@@ -1487,14 +1487,12 @@ Team Razorpay',
                 'request'  => [
                     'description'   => 'ticket description',
                     'subject'       => 'ticket subject',
-                    'cc_emails'     => ['a@b.com'],
                     'custom_fields' => [
                         'cf_requester_category'    => 'Merchant',
                         'cf_requestor_subcategory' => 'Call Requested',
                         'cf_merchant_id'           => '10000000000000',
                     ],
                     'email'         => 'test@razorpay.com',
-                    'phone'         => '9876543210',
                     'priority'      => '4',
                 ],
                 'response' =>
