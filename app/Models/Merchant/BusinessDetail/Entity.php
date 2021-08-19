@@ -50,7 +50,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults           = [
         self::WEBSITE_DETAILS => [],
-        self::APP_URLS        => [],
+        self::APP_URLS        => null,
     ];
 
     public function getId()
