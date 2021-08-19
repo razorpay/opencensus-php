@@ -1146,6 +1146,11 @@ export default class User {
     return this.getExpStatus('mtu_coupon_code');
   }
 
+  get isIndependentPartnerKYCEnabled() {
+    const variant = getSplitzExperimentVariant('independent_partner_kyc');
+    return variant?.name === 'exposed';
+  }
+
   get isAutoRefreshExperimentEnabled() {
     return this.getExpStatus('auto_refresh_experiment');
   }

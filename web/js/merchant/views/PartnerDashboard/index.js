@@ -8,21 +8,20 @@ import Earnings from './Earnings';
 import Subvention from './Subvention';
 import Applications from './Applications';
 import Reports from './Reports';
+import Activation from './Activation/index';
 
 export default function PartnerDashboard() {
   return (
     <Switch>
       <Redirect to="/partners/submerchants" from="/partners" exact />
       <ShowWhenRoute
-        additionalCondition={user =>
-          user.isPartner('aggregator', 'fully_managed')
-        }
+        additionalCondition={(user) => user.isPartner('aggregator', 'fully_managed')}
         path="/partners/settings"
         component={Settings}
       />
 
       <ShowWhenRoute
-        additionalCondition={user => user.isPartner('pure_platform')}
+        additionalCondition={(user) => user.isPartner('pure_platform')}
         path="/partners/applications"
         component={Applications}
       />
@@ -30,7 +29,7 @@ export default function PartnerDashboard() {
       <ShowWhenRoute
         path="/partners/earnings"
         component={Earnings}
-        additionalCondition={user =>
+        additionalCondition={(user) =>
           user.isAllowedView('earnings') && user.isHavingPartnerConfigs
         }
       />
@@ -38,7 +37,7 @@ export default function PartnerDashboard() {
       <ShowWhenRoute
         path="/partners/subventions"
         component={Subvention}
-        additionalCondition={user =>
+        additionalCondition={(user) =>
           user.isAllowedView('earnings') && user.isHavingSubventionConfigs
         }
       />
@@ -46,15 +45,16 @@ export default function PartnerDashboard() {
       <ShowWhenRoute
         path="/partners/reports"
         component={Reports}
-        path="/partners/reports"
-        component={Reports}
         // disabling for resellers not having partner configs
-        additionalCondition={user =>
-          !user.isPartner('reseller') || user.isHavingPartnerConfigs
-        }
+        additionalCondition={(user) => !user.isPartner('reseller') || user.isHavingPartnerConfigs}
       />
 
       <Route path="/partners/submerchants" component={SubMerchantList} />
+      <ShowWhenRoute
+        additionalCondition={(user) => user.isIndependentPartnerKYCEnabled}
+        path="/partners/activation"
+        component={Activation}
+      />
     </Switch>
   );
 }

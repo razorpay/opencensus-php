@@ -107,4 +107,11 @@ export default {
     // beta
     'Hb3p41OFV4RKzs',
   ],
+  independent_partner_kyc: [
+    // beta experiment ids
+    'HhTUjZcw4WsE2V',
+
+    // prod experiment ids
+    'HmbfCtIa68aQcC',
+  ],
 };
