@@ -22,7 +22,7 @@ const appListBusinessBanking = [
   {
     icon: '/dist/css/assets/products/blue-theme/vendor-payments.svg',
     name: 'Vendor Payments',
-    link: 'https://www.razorpay.com/x/vendor-payments/?ref=app-switcher',
+    link: 'https://razorpay.com/x/vendor-payments/?ref=app-switcher',
     desc: 'Automated Tax payments.',
     showForUnregisteredBusiness: false,
   },
