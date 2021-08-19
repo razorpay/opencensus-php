@@ -1140,6 +1140,14 @@ const uploadFields = [
         'Please provide the correct GSTIN details',
       );
     },
+    onBlur: function onBlur() {
+      const { user } = this.props;
+      const { dirty } = this.state;
+      const isGstinValid = dirty?.gstin && isValidGSTIN(dirty?.gstin);
+      if (isGstinValid && dirty?.gstin !== user?.gstin) {
+        this.saveCurrentTab();
+      }
+    },
   },
   {
     name: 'business_pan_url',

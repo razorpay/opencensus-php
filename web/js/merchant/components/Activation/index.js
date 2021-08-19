@@ -2166,10 +2166,6 @@ function defaultFieldProps(f) {
     f.validator = f.validator.bind(self); // Field dependent on other field must auto update its validator. Recommended to use with `_autoRenderImpure` to auto show error simultaneously as the other fiels is being updated.
   }
 
-  if (f.hasOwnProperty('onBlur') && typeof f.onBlur === 'function') {
-    f.onBlur = f.onBlur.bind(self); // Control dependent field for auto-focus, etc.
-  }
-
   if (f.hasOwnProperty('info') && typeof f.info === 'function') {
     f.info = f.info.bind(self); // Show different info based on other fields
   }
@@ -2252,6 +2248,10 @@ function ActivationField(field) {
       : true;
     rest.mobileLinkedOnChange = this.onEAadharCheckboxChange;
     rest.activeTab = this.state.activeTab;
+  }
+
+  if (typeof rest.onBlur === 'function') {
+    rest.onBlur = rest.onBlur.bind(this);
   }
 
   if (rest.getName) {
