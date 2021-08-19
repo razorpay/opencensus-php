@@ -10,13 +10,13 @@ import Button from 'common/new-ui/Button';
 
 import OwnerUpdated from './OwnerUpdatedModal';
 
-const DifferentTeam = ({ newEmail, openModal, closeModal, user, updateOwner }) => {
+const DifferentTeam = ({ newEmail, setContactEmail, openModal, closeModal, user, updateOwner }) => {
   const onProceedClick = () => {
     openModal({
       size: 'small',
       component: <OwnerUpdated newEmail={newEmail} />,
     });
-    return updateOwner(newEmail, false)
+    return updateOwner(newEmail, false, setContactEmail)
       .then((res) => {
         if (res.data && res.success) {
           openModal({

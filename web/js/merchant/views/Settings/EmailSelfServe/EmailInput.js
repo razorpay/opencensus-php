@@ -77,7 +77,7 @@ const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmai
         } else {
           openModal({
             size: 'small',
-            component: <DifferentTeam newEmail={email} />,
+            component: <DifferentTeam newEmail={email} setContactEmail={setContactEmail} />,
           });
         }
       })

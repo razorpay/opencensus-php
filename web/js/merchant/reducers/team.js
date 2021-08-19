@@ -1,9 +1,6 @@
 import { set, merge } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
-import {
-  makeActionCollectionReducer,
-  fetchAll,
-} from 'merchant/reducers/collection';
+import { makeActionCollectionReducer, fetchAll } from 'merchant/reducers/collection';
 
 import Team from 'merchant/models/Team';
 
@@ -23,22 +20,22 @@ const TEAM_MEMBER_UNLOCK = 'TEAM_MEMBER_UNLOCK';
 const TEAM_MEMBER_EDIT = 'TEAM_MEMBER_EDIT';
 const TEAM_MEMBER_CONTACT_UNVERIFY = 'TEAM_MEMBER_CONTACT_UNVERIFY';
 
-const fetchInvitations = _ =>
+const fetchInvitations = (_) =>
   merchantFetch({
     url: 'invitations',
     mode: 'live',
   });
 
-const fetchUsers = _ =>
+const fetchUsers = (_) =>
   merchantFetch({
     url: 'merchants-users',
     mode: 'live',
   });
 
-export const fetchTeamDetails = params => {
+export const fetchTeamDetails = (params) => {
   return {
     type: TEAM_FETCH,
-    payload: Promise.all([fetchInvitations(), fetchUsers()]).then(values => {
+    payload: Promise.all([fetchInvitations(), fetchUsers()]).then((values) => {
       if (!values[0].success || !values[1].success) {
         throw "Couldn't load team details";
       }
@@ -71,13 +68,13 @@ export const updateUser = (userId, data) => {
   };
 };
 
-export const updateOwner = (email, reattach) => {
+export const updateOwner = (email, reattach, setContactEmail = false) => {
   return {
     type: OWNER_UPDATE,
     payload: merchantFetch({
       url: 'merchants/email/update',
       method: 'put',
-      data: {email, set_contact_email:false, reattach_current_owner: reattach},
+      data: { email, set_contact_email: setContactEmail, reattach_current_owner: reattach },
     }),
   };
 };
@@ -93,7 +90,7 @@ export const getEmailStatus = (email, setContactEmail) => {
   };
 };
 
-export const updateSelfContact = data => {
+export const updateSelfContact = (data) => {
   return {
     type: UPDATE_SESSION,
     payload: merchantFetch({
@@ -105,7 +102,7 @@ export const updateSelfContact = data => {
   };
 };
 
-export const updateMember = data => {
+export const updateMember = (data) => {
   const team = new Team();
   return {
     type: TEAM_MEMBER_EDIT,
@@ -113,7 +110,7 @@ export const updateMember = data => {
   };
 };
 
-export const removeMember = userId => {
+export const removeMember = (userId) => {
   const team = new Team();
   return {
     type: TEAM_MEMBER_DELETE,
@@ -121,12 +118,12 @@ export const removeMember = userId => {
   };
 };
 
-export const unlockMember = memberId => ({
+export const unlockMember = (memberId) => ({
   type: TEAM_MEMBER_UNLOCK,
   payload: new Team().unlock(memberId),
 });
 
-export const unverifyContact = memberId => ({
+export const unverifyContact = (memberId) => ({
   type: TEAM_MEMBER_CONTACT_UNVERIFY,
   payload: new Team().unverifyContact(memberId),
 });
@@ -146,11 +143,9 @@ const toggle2FaEnforcement = (data, url) => {
   };
 };
 
-export const toggleMerchant2FaEnforcement = data =>
-  toggle2FaEnforcement(data, 'merchants/2fa');
+export const toggleMerchant2FaEnforcement = (data) => toggle2FaEnforcement(data, 'merchants/2fa');
 
-export const toggleUser2FaEnforcement = data =>
-  toggle2FaEnforcement(data, 'users/2fa');
+export const toggleUser2FaEnforcement = (data) => toggle2FaEnforcement(data, 'users/2fa');
 
 let initialState = {
   loading: true,
@@ -159,7 +154,7 @@ let initialState = {
   error: null,
 };
 
-export const fetchTeam = params => fetchAll(params, Team, 'TEAM_MEMBERS');
+export const fetchTeam = (params) => fetchAll(params, Team, 'TEAM_MEMBERS');
 
 export const teamReducer = makeActionCollectionReducer('TEAM_MEMBERS', {
   // since update account api does not send all the details in the response
@@ -170,22 +165,19 @@ export const teamReducer = makeActionCollectionReducer('TEAM_MEMBERS', {
 
   ['TEAM_MEMBER_EDIT::SUCCESS']: (state, action) => ({
     ...state,
-    items: state.items.map(
-      item =>
-        item.id === action.payload.id
-          ? {
-              ...item,
-              ...action.payload,
-            }
-          : { ...item }
+    items: state.items.map((item) =>
+      item.id === action.payload.id
+        ? {
+            ...item,
+            ...action.payload,
+          }
+        : { ...item },
     ),
   }),
 });
 
 function updateTeamMember(state, action, operation) {
-  const itemIndex = state.items.findIndex(
-    item => item.id === action.payload.user_id
-  );
+  const itemIndex = state.items.findIndex((item) => item.id === action.payload.user_id);
 
   let key = '',
     value = '';
@@ -203,7 +195,7 @@ function updateTeamMember(state, action, operation) {
   return set(state, `items.${itemIndex}.${key}`, value);
 }
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case `${TEAM_FETCH}::PENDING`:
       return set(state, 'loading', true);

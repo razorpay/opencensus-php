@@ -11,12 +11,14 @@ const OwnerUpdatedModal = ({ user, newEmail }) => {
       <div className="image-container">
         <img
           alt="user Image"
-          src='https://cdn.razorpay.com/static/assets/email-self-serve/userImage.svg'
+          src="https://cdn.razorpay.com/static/assets/email-self-serve/userImage.svg"
         />
       </div>
       <p className="verification-msg">Log in with account credentials associated with {newEmail}</p>
       <div className="dialogue-container">
-        <p className="dialogue-msg">Your exisitng email-id {user.email} has been deactivated</p>
+        <p className="dialogue-msg">
+          Your exisitng email-id {user.user.email} has been deactivated
+        </p>
       </div>
       <Button.Primary type="button" onClick={() => window.location.reload()} className="btn-block">
         Okay Got it
