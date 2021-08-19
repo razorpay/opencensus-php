@@ -36,7 +36,8 @@ class BatchList extends ListContainer {
     this.props.tracking.trackEvent(
       window.rzpQ.chargeAtWill().interaction(`download.list.initiate`),
     );
-    const batchDownload = this.props.extraPropBatchDownload || this.props.batchDownload;
+
+    const fnBatchDownload = this.props.extraPropBatchDownload || this.props.batchDownload;
 
     fnBatchDownload(id)
       .then((response) => {
