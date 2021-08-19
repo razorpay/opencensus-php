@@ -512,6 +512,13 @@ class Core extends Base\Core
         (new Core)->trackOnboardingEvent($user->getContactMobile(),
             EventCode::LOGIN_SUCCESS_WITH_MOBILE);
 
+        $dimensionsForUserLogin = [
+            Constants::LOGIN_METHOD => Constants::PASSWORD,
+            Constants::LOGIN_MEDIUM => Constants::CONTACT_MOBILE,
+        ];
+
+        $this->trace->count(Metric::USER_LOGIN_COUNT, $dimensionsForUserLogin);
+
         return $this->get($user);
     }
 
@@ -541,6 +548,13 @@ class Core extends Base\Core
 
         (new Core)->trackOnboardingEvent($user->getEmail(),
             EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
+
+        $dimensionsForUserLogin = [
+            Constants::LOGIN_METHOD => Constants::PASSWORD,
+            Constants::LOGIN_MEDIUM => Constants::EMAIL,
+        ];
+
+        $this->trace->count(Metric::USER_LOGIN_COUNT, $dimensionsForUserLogin);
 
         return $this->get($user);
 
@@ -650,6 +664,8 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $this->trace->count(Metric::USER_SMS_OTP_SEND_FAILED);
+
             $this->trace->traceException(
                 $e,
                 null,
@@ -658,6 +674,8 @@ class Core extends Base\Core
         }
 
         $maskedInput[Entity::CONTACT_MOBILE] = $user->getMaskedContactMobile();
+
+        $this->trace->count(Metric::USER_SMS_OTP_SENT);
 
         $this->traceMobileLoginRoute($maskedInput, TraceCode::USER_SEND_SMS_OTP_FOR_LOGIN);
 
@@ -674,7 +692,22 @@ class Core extends Base\Core
 
         $mailable = new OtpMail($payload, $user, $otp);
 
-        Mail::queue($mailable);
+        try
+        {
+            Mail::queue($mailable);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->count(Metric::USER_EMAIL_OTP_SEND_FAILED);
+
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::USERS_SEND_EMAIL_OTP_FAILED,
+                compact('input'));
+        }
+
+        $this->trace->count(Metric::USER_EMAIL_OTP_SENT);
 
         $this->traceEmailOtpLoginRoute($input, TraceCode::USER_SEND_EMAIL_OTP_FOR_LOGIN);
 
@@ -706,11 +739,11 @@ class Core extends Base\Core
     {
         $this->getUserEntity()->getValidator()->validateInput('loginOtp', $input);
 
-        $receiver = $this->mobileOtpLogin($input);
+        $token = $this->mobileOtpLogin($input);
 
-        if ($receiver !== null)
+        if ($token !== null)
         {
-            return $receiver;
+            return $token;
         }
 
         $receiver = $this->repo->user->findByEmail($input[Entity::EMAIL]);
@@ -746,10 +779,14 @@ class Core extends Base\Core
 
         if (isset($input[Entity::CONTACT_MOBILE]) === true)
         {
+            $loginMedium = Constants::CONTACT_MOBILE;
+
             $receiver = $input[Entity::CONTACT_MOBILE];
         }
         else
         {
+            $loginMedium = Constants::EMAIL;
+
             $receiver = $input[Entity::EMAIL];
         }
 
@@ -766,7 +803,24 @@ class Core extends Base\Core
 
         $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
 
-        $this->app->raven->verifyOtp($payload);
+        $dimensionsForUserLogin = [
+            Constants::LOGIN_METHOD => Constants::OTP,
+            Constants::LOGIN_MEDIUM => $loginMedium,
+        ];
+
+        try
+        {
+            $this->app->raven->verifyOtp($payload);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->count(Metric::VERIFY_LOGIN_INCORRECT_OTP, $dimensionsForUserLogin);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+        }
+
+        $loginMedium = null;
 
         if (isset($input[Entity::CONTACT_MOBILE]) === true)
         {
@@ -778,6 +832,8 @@ class Core extends Base\Core
         {
             $this->traceEmailOtpLoginRoute($input, TraceCode::USER_VERIFY_EMAIL_OTP_FOR_LOGIN);
         }
+
+        $this->trace->count(Metric::USER_LOGIN_COUNT, $dimensionsForUserLogin);
 
         return $this->get($user);
     }
@@ -803,10 +859,12 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $this->trace->count(Metric::USER_EMAIL_OTP_SEND_FAILED);
+
             $this->trace->traceException(
                 $e,
                 null,
-                TraceCode::USERS_SEND_EMAIL_OTP_FAILED,
+                TraceCode::USER_SEND_VERIFICATION_EMAIL_OTP_FAILED,
                 compact('input'));
         }
 
@@ -834,6 +892,8 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $this->trace->count(Metric::USER_SMS_OTP_SEND_FAILED);
+
             $this->trace->traceException(
                 $e,
                 null,
@@ -874,23 +934,25 @@ class Core extends Base\Core
     {
         $this->getUserEntity()->getValidator()->validateInput('sendVerificationOtp', $input);
 
-        $user = $this->fetchUserForVerification($input);
+        $receiver = $this->fetchUserForVerification($input);
 
-        $isPasswordEqual = (new BcryptHasher)->check($input[Entity::PASSWORD], $user->getPassword());
+        $isPasswordEqual = (new BcryptHasher)->check($input[Entity::PASSWORD], $receiver->getPassword());
 
         if ($isPasswordEqual === false)
         {
+            $this->trace->count(Metric::USER_NOT_AUTHENTICATED);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
         }
 
         if (isset($input[Entity::EMAIL]) === true)
         {
-            $token = $this->sendVerificationOtpViaEmail($input, $user);
+            $token = $this->sendVerificationOtpViaEmail($input, $receiver);
         }
         else if (isset($input[Entity::CONTACT_MOBILE]) === true)
         {
-            $token = $this->sendVerificationOtpViaSms($input, $user);
+            $token = $this->sendVerificationOtpViaSms($input, $receiver);
         }
 
         return $token;
@@ -906,6 +968,8 @@ class Core extends Base\Core
 
             if ($user->isContactMobileVerified() === true)
             {
+                $this->trace->count(Metric::USER_MOBILE_ALREADY_VERIFIED);
+
                 throw new BadRequestValidationFailureException('Contact mobile is already verified');
             }
         }
@@ -915,6 +979,8 @@ class Core extends Base\Core
 
             if ($user->getConfirmedAttribute() === true)
             {
+                $this->trace->count(Metric::USER_EMAIL_ALREADY_VERIFIED);
+
                 throw new BadRequestValidationFailureException('Email is already verified');
             }
         }
@@ -922,17 +988,31 @@ class Core extends Base\Core
         return $receiver;
     }
 
-    public function setContactMobileOrEmailVerify(array $input, $user)
+    public function setContactMobileOrEmailVerify(array $input, Entity $user)
     {
         if (isset($input[Entity::CONTACT_MOBILE]) === true)
         {
             $user->setContactMobileVerified(true);
 
             $this->repo->saveOrFail($user);
+
+            $maskedInput[Entity::CONTACT_MOBILE] = $user->getMaskedContactMobile();
+
+            $this->trace->count(Metric::VERIFY_USER_MOBILE);
+
+            $this->traceMobileLoginRoute($maskedInput, TraceCode::USER_VERIFY_SMS_OTP_FOR_VERIFICATION);
+
+            return Constants::CONTACT_MOBILE;
         }
         else if (isset($input[Entity::EMAIL]) === true)
         {
             $this->confirm($user, Entity::OTP);
+
+            $this->trace->count(Metric::VERIFY_USER_EMAIL);
+
+            $this->traceEmailOtpLoginRoute($input, TraceCode::USER_VERIFY_EMAIL_OTP_FOR_VERIFICATION);
+
+            return Constants::EMAIL;
         }
     }
 
@@ -963,9 +1043,26 @@ class Core extends Base\Core
 
         $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
 
-        $this->app->raven->verifyOtp($payload);
+        $loginMedium = $this->setContactMobileOrEmailVerify($input, $user);
 
-        $this->setContactMobileOrEmailVerify($input, $user);
+        $dimensionsForUserLogin = [
+            Constants::LOGIN_METHOD => Constants::OTP,
+            Constants::LOGIN_MEDIUM => $loginMedium,
+        ];
+
+        try
+        {
+            $this->app->raven->verifyOtp($payload);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->count(Metric::VERIFY_LOGIN_INCORRECT_OTP, $dimensionsForUserLogin);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+        }
+
+        $this->trace->count(Metric::USER_LOGIN_COUNT, $dimensionsForUserLogin);
 
         return $this->get($user);
     }
@@ -1426,6 +1523,8 @@ class Core extends Base\Core
             return $user;
         }
 
+        $this->trace->count(Metric::USER_MOBILE_NOT_VERIFIED);
+
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED);
     }
@@ -1444,6 +1543,8 @@ class Core extends Base\Core
         {
             return $user;
         }
+
+        $this->trace->count(Metric::USER_EMAIL_NOT_VERIFIED);
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_EMAIL_NOT_VERIFIED);
@@ -1486,6 +1587,8 @@ class Core extends Base\Core
         {
             return $user->firstOrFail();
         }
+
+        $this->trace->count(Metric::MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED);
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_MULTIPLE_OR_NO_ACCOUNTS_ASSOCIATED);

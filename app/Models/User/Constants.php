@@ -40,6 +40,19 @@ class Constants
 
     const BANNER_CLICKTIME = 'banner_clicktime';
 
+    // Login metrics start
+    const LOGIN_METHOD                = 'login_method';
+    const LOGIN_MEDIUM                = 'login_medium';
+
+    // Possible Login methods
+    const PASSWORD                    = 'password';
+    const OTP                         = 'otp';
+
+    //when user does a normal or OTP login
+    const EMAIL                       = 'email';
+    const CONTACT_MOBILE              = 'contact_mobile';
+
+
     // oauth constants start
     const OAUTH_SOURCE = 'oauth_source';
     const CLIENT_ID    = 'client_id';
