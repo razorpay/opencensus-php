@@ -766,6 +766,8 @@ class Constants
      */
     const DISPUTE_PRESENTMENT = 'dispute_presentment';
 
+    const ORG_EMAIL_UPDATE_2FA_ENABLED = 'email_update_2fa_enabled';
+
     const ORG_TPV_DISABLE    = 'axis_tpv';
 
     const AXIS_TPV_ENABLE   = 'axis_tpv_enable';
@@ -1127,6 +1129,7 @@ class Constants
         self::SKIP_SUBM_ONBOARDING_COMM       => true,
         self::SKIP_CUSTOMER_ID_CHECKOUT       => true,
         self::DISPUTE_PRESENTMENT             => true,
+        self::ORG_EMAIL_UPDATE_2FA_ENABLED    => true,
         self::ORG_TPV_DISABLE                 => true,
         self::AXIS_TPV_ENABLE                 => true,
         self::ROUTE_KEY_MERCHANTS_QUEUE       => true,
@@ -1139,7 +1142,6 @@ class Constants
         self::AVS                             => true,
         self::MFN                             => true,
     ];
-
     // Entity type constants
     const ACCOUNT                       = 'account';
     const MERCHANT                      = 'merchant';

@@ -11599,6 +11599,66 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+
+    public function testCheck2FAException()
+    {
+        $feature = 'email_update_2fa_enabled';
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '100000razorpay',
+                'name' => $feature,
+                'entity_type' => 'org',
+            ]);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchant['id']);
+
+        $this->startTest();
+    }
+
+    public function testCheck2FACorrectOTP()
+    {
+
+        $feature = 'email_update_2fa_enabled';
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '100000razorpay',
+                'name' => $feature,
+                'entity_type' => 'org',
+            ]);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchant['id']);
+
+        $this->startTest();
+    }
+
+    public function testCheck2FAIncorrectOTP()
+    {
+
+        $feature = 'email_update_2fa_enabled';
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '100000razorpay',
+                'name' => $feature,
+                'entity_type' => 'org',
+            ]);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchant['id']);
+
+        $this->startTest();
+    }
+
     protected function createRiskTaggedMerchantForBulkForAction($action, array $permissions)
     {
         $this->createMerchant([

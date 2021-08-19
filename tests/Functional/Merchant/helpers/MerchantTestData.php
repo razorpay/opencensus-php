@@ -8882,6 +8882,93 @@ return [
         ],
     ],
 
+    'testCheck2FAException'    =>[
+        'request'       =>[
+            'url'       => '/account/config/email',
+            'method'    => 'POST',
+            'server'   =>[
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+            'content'   =>[
+                'transaction_report_email' =>[
+                    'test@email.com'
+                ]
+            ],
+        ],
+        'response'  =>[
+            'content' =>[
+                'error'  => [
+                    'code' =>  ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+            'description'         => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+        ],
+    ],
+
+    'testCheck2FACorrectOTP'   =>[
+        'request'       =>[
+            'url'       => '/account/config/email',
+            'method'    => 'POST',
+            'server'   =>[
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+            'content'   =>[
+                'transaction_report_email' =>[
+                    'test@email.com',
+                ],
+                'otp'          =>'0007',
+                'token'        =>'HXB27fsBvwvyyw'
+            ],
+        ],
+        'response'  =>[
+            'content' =>[
+                'transaction_report_email' =>[
+                    'test@email.com',
+                ],
+            ],
+        ],
+    ],
+
+    'testCheck2FAIncorrectOTP' =>[
+        'request'       =>[
+            'url'       => '/account/config/email',
+            'method'    => 'POST',
+            'server'   =>[
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+            'content'   =>[
+                'transaction_report_email' =>[
+                    'test@email.com',
+                ],
+                'otp'          =>'0008',
+                'token'        =>'HXB27fsBvwvyyw'
+            ],
+        ],
+        'response'  =>[
+            'content' =>[
+                'error'  => [
+                    'code' =>  ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+            'description'         => PublicErrorDescription::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+        ],
+    ],
     'testEditBulkEnableLiveRiskTaggedMerchant' => [
         'request'  => [
             'method'  => 'PUT',
@@ -9016,9 +9103,9 @@ return [
                     'name' => "Release Funds",
                 ],
             ],
+            ]
         ],
-    ],
-    
+
     'testRiskTaggedMerchantReleaseFundsWithWorkflowWithoutPermission' => [
         'request' => [
             'content' => [

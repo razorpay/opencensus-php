@@ -919,9 +919,69 @@ class Service extends Base\Service
         // Adds uploaded logo's url to the input.
         $this->uploadLogoIfFound($input);
 
+        //remove the email field from payload
+        if($this->merchant->org->isFeatureEnabled(Feature\Constants::ORG_EMAIL_UPDATE_2FA_ENABLED) === true)
+        {
+            unset($input['transaction_report_email']);
+        }
+
         $this->core()->editConfig($this->merchant, $input);
 
         return $this->merchant->toArrayConfig();
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function editEmail2FA(array $input): array
+    {
+        if($this->merchant->org->isFeatureEnabled(Feature\Constants::ORG_EMAIL_UPDATE_2FA_ENABLED) === false)
+        {
+            return $this->editConfig($input);
+        }
+        else if(array_key_exists("otp",$input) === false or array_key_exists("token",$input) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,null,[
+                "internal_error_code" =>ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                "description" => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+            ]);
+        }
+
+        $this->trace->info(TraceCode::INPUT_OTP_TOKEN_CHECK, [
+            'otp_exists' => array_key_exists("otp",$input),
+            'token_exists'=> array_key_exists("token",$input),
+        ]);
+
+        $input[User\Entity::MEDIUM] = "email";
+        $input[User\Entity::ACTION] = "verify_contact";
+
+        $data=[];
+
+        $user = $this->auth->getUser();
+
+        $content = [
+            "otp"=>$input["otp"],
+            "token"=>$input["token"]
+        ];
+
+        try {
+            $response = (new User\Core)->verifyUserThroughEmail($content, $this->merchant, $user);
+        }
+        catch (\Exception $e)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,null,[
+                "internal_error_code" =>ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+                "description" => PublicErrorDescription::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+            ]);
+        }
+
+        $data["transaction_report_email"] = $input["transaction_report_email"];
+
+        $this->core()->editConfig($this->merchant, ["transaction_report_email"=>$input["transaction_report_email"]]);
+
+        return $data;
     }
 
     public function deleteMerchantLogo(): array

@@ -5088,7 +5088,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREATE_NEW_PAYMENT_DOWNTIME                                   = 'CREATE_NEW_PAYMENT_DOWNTIME';
     const EDIT_PAYMENT_DOWNTIME                                         = 'EDIT_PAYMENT_DOWNTIME';
     const TRIGGER_WEBHOOK_NOTIFICATIONS                                 = 'TRIGGER_WEBHOOK_NOTIFICATIONS';
-    const MERCHANT_DOWNTIME_CREATION                                    = 'MERCHANT_DOWNTIME_CREATION';
+    const  MERCHANT_DOWNTIME_CREATION                                   = 'MERCHANT_DOWNTIME_CREATION';
+    const INPUT_OTP_TOKEN_CHECK                                         = 'INPUT_OTP_TOKEN_CHECK';
 
     // GooglePay payment
     const GOOGLEPAY_PAYMENT_METHOD_UPDATE                       = 'GOOGLEPAY_PAYMENT_METHOD_UPDATE';
