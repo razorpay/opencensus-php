@@ -1723,6 +1723,7 @@ class Service extends Base\Service
             'recurring_more_account_type',
             'optimizer_add_provider',
             'mtu_coupon_code',
+            'dispute_presentment',
             'product_recommendation',
             'auto_refresh_experiment',
             'csm_experince_survey',

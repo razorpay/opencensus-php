@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { DisputeStatusLabel } from 'merchant/components/StatusLabel';
-import { titleCase, daysFromToday } from 'common/utils/rzp-utils';
+import ConfirmModal from './ConfirmModal';
+import ContestDispute from './ContestDispute';
+import { connect } from 'react-redux';
+import { analyticsTrack } from 'common/utils/analytics';
+import { titleCase, daysFromToday, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
   const daysLeft = daysFromToday(expiresOn);
@@ -13,13 +18,68 @@ export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
     return <span class="text-muted">Passed</span>;
   } else if (daysLeft === 0) {
     return <strong class="text-danger">Today</strong>;
+  } else if (daysLeft === 1) {
+    return <strong class="text-danger">Tomorrow</strong>;
   } else {
     return `${prefixForDays}${daysLeft} day${daysLeft > 1 ? 's' : ''}`;
   }
 };
 
 const DisputeDetails = (props) => {
-  const { dispute, isLoading, error, onCloseSecView, goToLink } = props;
+  const {
+    dispute,
+    isLoading,
+    error,
+    onCloseSecView,
+    goToLink,
+    openModal,
+    closeModal,
+    showNotification,
+  } = props;
+  const [showContest, setShowContest] = useState(!!dispute?.evidence);
+  const contestRef = React.createRef();
+  const { isDisputePresentmentEnabled } = props.user;
+  const isDisputeOpen = dispute.status === 'open';
+
+  useEffect(() => {
+    if (dispute?.evidence) {
+      setShowContest(dispute.evidence?.amount !== 0);
+    } else {
+      setShowContest(false);
+    }
+  }, [dispute.evidence, dispute.id]);
+
+  const acceptDispute = () => {
+    openModal({
+      size: 'small',
+      component: (
+        <ConfirmModal
+          context="accept"
+          closeModal={closeModal}
+          dispute={dispute}
+          showNotification={showNotification}
+        />
+      ),
+    });
+  };
+
+  const contestDispute = () => {
+    analyticsTrack({
+      objectName: 'dispute presentment',
+      actionName: 'contest begin',
+      screen: 'disputes',
+      properties: {
+        timestamp: Date.now(),
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+    setShowContest(true);
+    // Scrolling contest section into view
+    setTimeout(() => {
+      document.getElementById('contest-dispute').scrollIntoView({ behavior: 'smooth' });
+    }, 0);
+  };
+
   return (
     <div class="content-wrapper content-sm txn-details dispute-details">
       {isLoading ? (
@@ -39,7 +99,7 @@ const DisputeDetails = (props) => {
           </div>
           <Alert type="error" message={error} />
           <div class="SliderPanel__Body">
-            {dispute.status === 'open' && (
+            {!isDisputePresentmentEnabled && isDisputeOpen && (
               <div class="alert alert-warning rzp-banner">
                 <div class="rzp-banner-text">
                   {/* text required only for fraud dispute */}
@@ -75,22 +135,75 @@ const DisputeDetails = (props) => {
               </div>
             )}
 
+            {isDisputePresentmentEnabled && isDisputeOpen && (
+              <div class="alert alert-warning dispute-banner">
+                <div class="rzp-banner-text">
+                  {dispute.phase === 'fraud' ? (
+                    <p>
+                      This transaction is reported as fraudulent by the account holder. A good
+                      practice would be to stop processing of the order/service and to reverse the
+                      transaction. If you believe this is a genuine transaction, we request you to
+                      respond before&nbsp;
+                      <strong>
+                        <Time value={dispute.respond_by} format="ll" />
+                      </strong>
+                      &nbsp; with corresponding proofs to avoid losing the dispute.
+                    </p>
+                  ) : (
+                    <p>
+                      Your customer has raised a dispute for&nbsp;
+                      <Amount value={dispute.amount} currency={dispute.currency} />
+                      .&nbsp;Kindly respond before&nbsp;
+                      <strong>
+                        {daysFromToday(dispute.respond_by) in [0, 1] ? (
+                          daysLeftInExpiry(dispute.respond_by)
+                        ) : (
+                          <Time value={dispute.respond_by} format="ll" />
+                        )}
+                      </strong>
+                      &nbsp; and help us represent the case in your favour. If no response is
+                      received before the deadline, the dispute will be deemed accepted and the
+                      amount will be deducted from your Razorpay balance.
+                    </p>
+                  )}
+                </div>
+                <div class="dispute-cta">
+                  <button class="btn btn-primary" onClick={contestDispute}>
+                    Contest &amp; upload evidence
+                  </button>
+                  <button class="btn btn-outline" onClick={acceptDispute}>
+                    Accept Dispute
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div class="panel-body">
               <div class="list-group details-row-container">
                 {/* disputed amount */}
-                <EntityDetailRow label="Amount">
+                <EntityDetailRow label="Dispute amount">
                   <Amount value={dispute.amount} currency={dispute.currency} />
                 </EntityDetailRow>
 
                 {/* status of dispute */}
                 <EntityDetailRow label="Status">
                   <DisputeStatusLabel status={dispute.status} />
+                  {dispute.status === 'lost' && dispute.amount_deducted > 0 && (
+                    <div class="alert alert-info status-alert">
+                      <div class="rzp-banner-text">
+                        <p>
+                          <Amount value={dispute.amount_deducted} currency={dispute.currency} /> has
+                          been debited from your Razorpay account balance
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </EntityDetailRow>
               </div>
 
               {/* expiry date of dispute */}
               <EntityDetailRow label="Respond By">
-                {dispute.status === 'open' ? (
+                {isDisputeOpen ? (
                   <>
                     <Time value={dispute.respond_by} format="LL" />
                     &nbsp;({daysLeftInExpiry(dispute.respond_by, 'In ')})
@@ -104,11 +217,18 @@ const DisputeDetails = (props) => {
               <EntityDetailRow label="Type" value={titleCase(dispute.phase)} />
 
               {/* reason_description of dispute */}
-              <EntityDetailRow label="Reason" value={dispute.reason_description} />
-
-              {/* created_at of dispute */}
-              <EntityDetailRow label="Created At">
-                <Time value={dispute.created_at} format="LL|hh:mm A" />
+              <EntityDetailRow label="Reason" pairClass="reason">
+                {dispute.reason_description}
+                <ContentToggler show={false}>
+                  Learn More
+                  <>
+                    <strong>
+                      {dispute.reason.network} •{' '}
+                      <span title="gateway code">{dispute.reason.gateway_code}</span>
+                    </strong>
+                    <div>{dispute.reason.gateway_description}</div>
+                  </>
+                </ContentToggler>
               </EntityDetailRow>
 
               {/* payment */}
@@ -118,8 +238,29 @@ const DisputeDetails = (props) => {
                 </a>
               </EntityDetailRow>
 
+              {/* created_at of dispute */}
+              <EntityDetailRow label="Created At">
+                <Time value={dispute.created_at} format="LL / hh:mm A" />
+              </EntityDetailRow>
+
               {/* comment */}
-              <EntityDetailRow label="Comment" value={() => dispute.comment || '--'} />
+              <EntityDetailRow
+                label="Comment"
+                value={() =>
+                  dispute.comment ||
+                  (dispute?.evidence?.amount === 0 && dispute?.evidence?.summary) ||
+                  '--'
+                }
+              />
+
+              {isDisputePresentmentEnabled && showContest && (
+                <ContestDispute
+                  dispute={dispute}
+                  ref={contestRef}
+                  showNotification={showNotification}
+                  onCancelContest={acceptDispute}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -128,4 +269,4 @@ const DisputeDetails = (props) => {
   );
 };
 
-export default DisputeDetails;
+export default connect((state) => ({ user: state.session.user }), null)(DisputeDetails);

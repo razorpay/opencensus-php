@@ -11,6 +11,7 @@ import DisputeDetails from 'merchant/views/Transactions/Disputes/components/Deta
 import PaymentDetails from 'merchant/views/Transactions/Payments/Details';
 import DualDetailView, { PrimaryView, SecondaryView } from 'common/new-ui/DualDetailView';
 import { compose } from 'redux';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const findDispute = (disputes = [], disputeId) =>
   disputes.find(({ id }) => id === disputeId) || disputeId;
@@ -20,6 +21,7 @@ class DisputeDetailsContainer extends Component {
 
   componentWillMount() {
     this.loadDispute(this.props.id);
+    if (this.props.fileTypes.length === 0) this.props.fetchFileTypes();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -69,6 +71,7 @@ class DisputeDetailsContainer extends Component {
             error={error}
             goToLink={this.goToLink}
             onCloseSecView={onCloseSecView}
+            showNotification={this.props.showNotification}
           />
         </PrimaryView>
         <SecondaryView entityName="payments">
@@ -85,6 +88,7 @@ export default compose(
     (state) => ({
       disputes: state.disputes.items,
       ...state.dispute,
+      ...state.user,
     }),
     {
       ...DisputeActions,
@@ -92,6 +96,7 @@ export default compose(
       closeModal: fnCloseModal,
       compactSlider,
       expandSlider,
+      showNotification,
     },
   ),
 )(DisputeDetailsContainer);

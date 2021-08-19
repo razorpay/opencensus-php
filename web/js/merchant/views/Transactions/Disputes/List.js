@@ -37,8 +37,8 @@ const type = {
   value: (item = {}) => titleCase(item.phase),
 };
 
-const respondIn = {
-  title: 'Respond In',
+const respondBy = {
+  title: 'Respond By',
   value: (item) => (item.status === 'open' ? daysLeftInExpiry(item.respond_by) : '--'),
 };
 
@@ -87,7 +87,7 @@ class Dispute extends ListContainer {
 
         <DataTable
           title="Disputes"
-          columns={[disputeId, paymentId, amount, type, respondIn, createdAt, status]}
+          columns={[disputeId, paymentId, amount, type, respondBy, createdAt, status]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

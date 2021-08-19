@@ -25,6 +25,7 @@ import { isMobileDevice } from 'merchant/components/Home/data';
 import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
 import { getItem } from 'common/utils/localStorage';
 import { analyticsTrack } from 'common/utils/analytics';
+import { fetchOpen as fetchOpenDisputes } from 'merchant/reducers/disputes/details';
 import { bindActionCreators } from 'redux';
 
 let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
@@ -44,6 +45,7 @@ class TransactionsContainer extends Component {
 
   componentDidMount() {
     this.props.fetchSettlementAmount();
+    this.props.fetchOpenDisputes();
 
     const mwebPopupLS = !!getItem('transactions_mweb_popup'); // Check if popup is already shown to user once.
     const mwebPopupSS = !!getItem('payment links_mweb_popup'); // Check if popup is shown in session on another scrren.
@@ -83,7 +85,7 @@ class TransactionsContainer extends Component {
   };
 
   render() {
-    const { user, mode } = this.props;
+    const { user, mode, openDisputes } = this.props;
     const { role, activation_status } = user;
 
     const nextSettlement = !this.props.settlement_amount.data.next_settlement_time;
@@ -221,7 +223,22 @@ class TransactionsContainer extends Component {
                 });
               }}
             >
-              Disputes
+              Disputes{' '}
+              {openDisputes !== 0 ? (
+                <div class="open-disputes">
+                  <span>{openDisputes}</span>
+                  <PopoverComponent theme="dark" align="bottom">
+                    <PopoverBody>
+                      <div>
+                        There are {openDisputes} pending disputes. Take action immediately before
+                        the deadline
+                      </div>
+                    </PopoverBody>
+                  </PopoverComponent>
+                </div>
+              ) : (
+                ''
+              )}
             </NavLink>
             {no_settlement &&
             (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') &&
@@ -362,11 +379,15 @@ const mapStateToProps = (state) => {
     settlement_amount: state.home.settlement_amount,
     config: state.config.config,
     payments: state.payments,
+    openDisputes: state.dispute.openDisputes,
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({ fetchSettlementAmount, openModal, closeModal }, dispatch);
+  return bindActionCreators(
+    { fetchSettlementAmount, openModal, closeModal, fetchOpenDisputes },
+    dispatch,
+  );
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(TransactionsContainer);

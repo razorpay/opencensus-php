@@ -365,6 +365,10 @@ export default class User {
     return this.isFeatureEnabled('rzp_trusted_badge');
   }
 
+  get isDisputePresentmentEnabled() {
+    return this.isFeatureEnabled('dispute_presentment');
+  }
+
   get currentMerchant() {
     return this.merchants[this.current];
   }
