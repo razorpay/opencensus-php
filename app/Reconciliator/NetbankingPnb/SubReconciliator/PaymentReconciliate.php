@@ -7,7 +7,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Pnb\ReconFields;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const COLUMN_PAYMENT_AMOUNT = ReconFields::AMOUNT;
 

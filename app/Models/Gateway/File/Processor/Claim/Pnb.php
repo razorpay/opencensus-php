@@ -10,12 +10,13 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Encryption\PGPEncryption;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Gateway\Netbanking\Pnb\ClaimFields;
 
-class Pnb extends Base
+class Pnb extends NetbankingBase
 {
     const FILE_NAME              = 'PNB_CLAIMS_';
     const EXTENSION              = FileStore\Format::XLSX;
@@ -96,12 +97,12 @@ class Pnb extends Base
         foreach ($data as $row)
         {
             $formattedData[] = [
-                ClaimFields::BANK_PAYMENT_ID    => $row['gateway']['bank_payment_id'],
+                ClaimFields::BANK_PAYMENT_ID    => $this->fetchBankPaymentId($row),
                 ClaimFields::AMOUNT             => $this->getFormattedAmount($row['payment']['amount']),
-                ClaimFields::DATE               => $row['gateway']['date'],
+                ClaimFields::DATE               => $this->fetchDate($row),
                 ClaimFields::PAYMENT_ID         => $row['payment']['id'],
                 ClaimFields::PID                => $row['terminal']['gateway_merchant_id'],
-                ClaimFields::ACCOUNT_NO         => $row['gateway']['account_number'],
+                ClaimFields::ACCOUNT_NO         => $this->fetchBankAccountNumber($row),
                 ClaimFields::STATUS             => 'successful',
             ];
         }
@@ -119,5 +120,35 @@ class Pnb extends Base
     protected function getFormattedAmount($amount): String
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function fetchBankPaymentId($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+        }
+
+        return $data['gateway']['bank_payment_id'];
+    }
+
+    protected function fetchBankAccountNumber($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_ACCOUNT_NUMBER]; // payment through nbplus service
+        }
+
+        return $data['gateway']['account_number'];
+    }
+
+    protected function fetchDate($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['payment']['created_at']; // payment through nbplus service
+        }
+
+        return $data['gateway']['date'];
     }
 }

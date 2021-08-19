@@ -3547,6 +3547,7 @@ class Gateway
             self::NETBANKING_SBI,
             self::NETBANKING_NSDL,
             self::TWID,
+            self::NETBANKING_PNB,
         ];
 
         $acquirerGateways = [
