@@ -758,6 +758,21 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals($merchant->getWebsite(), 'https://www.example.com');
         $this->assertEquals($merchant->getHasKeyAccess() , true);
     }
+    
+    public function testMerchantUpdateWebsiteDetailsIpv6()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        
+        $merchantId = $merchantDetail['merchant_id'];
+        
+        $this->ba->proxyAuth('rzp_test_'.$merchantId);
+        
+        $this->startTest();
+        
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+        $this->assertEquals($merchant->getWebsite(), 'https://cholasmartedisuat.chola.murugappa.com');
+        $this->assertEquals($merchant->getHasKeyAccess() , true);
+    }
 
     public function testMerchantDetailsFetchWithCustomText()
     {

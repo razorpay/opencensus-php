@@ -688,6 +688,22 @@ return [
             ],
         ],
     ],
+    
+    'testMerchantUpdateWebsiteDetailsIpv6' => [
+        'request'  => [
+            'content' => [
+                'business_website' => 'https://cholasmartedisuat.chola.murugappa.com',
+            ],
+            'url'     => '/merchant/activation/update_website_details',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_website' => 'https://cholasmartedisuat.chola.murugappa.com',
+                'has_key_access'   => true,
+            ],
+        ],
+    ],
 
     'testCommentMerchant' => [
         'request' => [

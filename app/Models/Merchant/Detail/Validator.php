@@ -62,8 +62,8 @@ class Validator extends Base\Validator
         Entity::BUSINESS_NAME                   => 'filled|string|max:255',
         Entity::BUSINESS_DESCRIPTION            => 'sometimes|string|max:255',
         Entity::BUSINESS_DBA                    => 'sometimes|string|max:255',
-        Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
-        Entity::ADDITIONAL_WEBSITE              => 'sometimes|active_url|max:255|nullable',
+        Entity::BUSINESS_WEBSITE                => 'sometimes|max:255|custom',
+        Entity::ADDITIONAL_WEBSITE              => 'sometimes|max:255|custom',
         Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
         Entity::BUSINESS_PAYMENTDETAILS         => 'sometimes|max:2000',
         Entity::BUSINESS_MODEL                  => 'sometimes|max:255',
@@ -146,8 +146,8 @@ class Validator extends Base\Validator
         Entity::BUSINESS_NAME                            => 'sometimes|max:255',
         Entity::BUSINESS_DESCRIPTION                     => 'filled|max:255',
         Entity::BUSINESS_DBA                             => 'filled|max:255',
-        Entity::BUSINESS_WEBSITE                         => 'sometimes|active_url|max:255|nullable',
-        Entity::ADDITIONAL_WEBSITE                       => 'sometimes|active_url|max:255|nullable',
+        Entity::BUSINESS_WEBSITE                         => 'sometimes|max:255|custom',
+        Entity::ADDITIONAL_WEBSITE                       => 'sometimes|max:255|custom',
         Entity::BUSINESS_INTERNATIONAL                   => 'sometimes|in:0,1',
         Entity::BUSINESS_PAYMENTDETAILS                  => 'sometimes|max:2000',
         Entity::BUSINESS_MODEL                           => 'sometimes|max:255',
@@ -247,7 +247,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_NAME                   => 'sometimes|string|max:255',
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
-        Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
+        Entity::BUSINESS_WEBSITE                => 'sometimes|max:255|custom',
     ];
 
     protected static $uploadDocumentRules = [
@@ -304,7 +304,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN_NAME           => 'sometimes|string|max:255',
         Entity::BUSINESS_NAME               => 'sometimes|string|max:255',
         Entity::BUSINESS_MODEL              => 'sometimes|max:255',
-        Entity::BUSINESS_WEBSITE            => 'sometimes|active_url|max:255|nullable',
+        Entity::BUSINESS_WEBSITE            => 'sometimes|max:255|custom',
         Entity::BUSINESS_DBA                => 'required|string|max:255',
         Entity::BUSINESS_TYPE               => 'required|numeric|digits_between:1,10',
         Entity::BUSINESS_OPERATION_ADDRESS  => 'sometimes|max:255',
@@ -340,11 +340,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $websiteDetailsRules = [
-        Entity::BUSINESS_WEBSITE                => 'required|max:255|url',
+        Entity::BUSINESS_WEBSITE                => 'required|max:255|custom',
     ];
 
     protected static $additionalWebsitesRules = [
-        Entity::ADDITIONAL_WEBSITE              => 'required|max:255|active_url',
+        Entity::ADDITIONAL_WEBSITE              => 'required|max:255|custom',
     ];
 
     protected static $deleteAdditionalWebsitesRules = [
@@ -1284,4 +1284,55 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CANNOT_UPDATE_COMMON_FIELDS);
         }
     }
+    
+    /**
+     * custom validation for business website to enable ipv6 and ipv4 urls
+     * @param array $input
+     *
+     * @return void
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateBusinessWebsite(string $attribute, $value)
+    {
+        $this->validateURL($value, "Invalid Business website");
+    }
+    
+    /**
+     * custom validation for additional website to enable ipv6 and ipv4 urls
+     * @param array $input
+     *
+     * @return void
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateAdditionalWebsite(string $attribute, $value)
+    {
+        $this->validateURL($value, "Invalid Additional website");
+    }
+    
+    
+    /**
+     * validate any url - supports IPV6 and IPV4
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    private function validateURL($value,$message)
+    {
+        if(empty($value) === true)
+        {
+            return;
+        }
+        
+        if (filter_var($value, FILTER_VALIDATE_URL) === false) {
+           
+            $host = parse_url($value, PHP_URL_HOST);
+            
+            $ipv = trim($host, '[]'); // trim potential enclosing tags for IPV6
+            
+            if (filter_var($ipv, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false AND
+                filter_var($ipv, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException($message." ".$value);
+            }
+        }
+    }
+    
 }
