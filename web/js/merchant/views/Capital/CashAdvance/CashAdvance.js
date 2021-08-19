@@ -1,8 +1,7 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { NavLink, withRouter, Redirect } from 'react-router-dom';
-import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS, NOOP } from './constants';
+import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS } from './constants';
 import Withdrawals from './withdrawals';
 import Overview from './Overview';
 import Repayments from './Repayments/Repayments';
@@ -162,7 +161,12 @@ class CashAdvance extends React.Component {
 
     return (
       <div className="cash-advance-gromor-esign-wrapper">
-        <AnnouncementBanner theme="primary" className={state} onClose={() => handleClose()}>
+        <AnnouncementBanner
+          theme="primary"
+          className={state}
+          onClose={() => handleClose()}
+          card_id="cash-advance-banner"
+        >
           <img
             src={state === 'signed' ? RoundTick : LegalSignIcon}
             alt="legal-sign"

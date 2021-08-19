@@ -1,7 +1,6 @@
-import { Link } from 'react-router-dom';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { DocLink } from 'merchant/components/DocsLink';
-import { getMode, getUser } from 'merchant/store';
+import { getMode } from 'merchant/store';
 
 const bannerText =
   'Start accepting subscriptions from your consumers, right from your website or blog!';
@@ -49,10 +48,13 @@ export default React.memo(({ productName }) => {
 
   track.onViewBanner();
 
-  const user = getUser();
-
   return (
-    <AnnouncementBanner title="Introducing Subscription Button" theme="primary" fullPage>
+    <AnnouncementBanner
+      title="Introducing Subscription Button"
+      theme="primary"
+      fullPage
+      card_id="introducing-subscription-button-banner"
+    >
       <span class="display-inline m-r">{bannerText}</span>
       <DocLink
         class="Button--primary Button Button--narrow m-l"

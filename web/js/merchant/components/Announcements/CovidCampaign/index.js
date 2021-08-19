@@ -8,7 +8,6 @@ export default ({ userId }) => {
 
   const raiseTicket = () => {
     if (window.rzpTicketSystem) {
-
       CreateTicketEmitter.emit('create-ticket', 'tickets');
 
       setTimeout(() => {
@@ -25,6 +24,7 @@ export default ({ userId }) => {
       title="COVID 19 Relief Update"
       canBeClosed={true}
       bannerKey={`covid-campaign-banner-${userId}`}
+      card_id="covid-campaign-banner"
     >
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <div>

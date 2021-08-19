@@ -1,9 +1,9 @@
 import { connect } from 'react-redux';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-import { passLink, eventsLink, visitBanner } from './ga';
+import { eventsLink, visitBanner } from './ga';
 
-@connect(state => ({ user: state.session.user }))
-export default class FTXPassAnnouncement extends React.PureComponent {
+@connect((state) => ({ user: state.session.user }))
+class FTXPassAnnouncement extends React.PureComponent {
   componentDidMount() {
     visitBanner();
   }
@@ -17,18 +17,16 @@ export default class FTXPassAnnouncement extends React.PureComponent {
         theme="purply"
         title="Razorpay FTX"
         canBeClosed={false}
+        card_id="razorpay-ftx-banner"
       >
         <div>
           <span>
-            Join us for the largest Indian FinTech conference happening in
-            Bengaluru on 7th Dec.
+            Join us for the largest Indian FinTech conference happening in Bengaluru on 7th Dec.
           </span>{' '}
           <a
             class="btn-link"
             target="_blank"
-            href={`https://razorpay.com/events/ftx/?source=dashboard&mid=${
-              user.current
-            }`}
+            href={`https://razorpay.com/events/ftx/?source=dashboard&mid=${user.current}`}
             onClick={eventsLink}
           >
             Speakers & Agenda
@@ -38,3 +36,5 @@ export default class FTXPassAnnouncement extends React.PureComponent {
     );
   }
 }
+
+export default FTXPassAnnouncement;

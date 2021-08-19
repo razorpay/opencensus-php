@@ -46,7 +46,7 @@ import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
     handleProductQuickGuide,
   },
 )
-export default class MarketplaceContainer extends React.Component {
+class MarketplaceContainer extends React.Component {
   componentDidMount() {
     this.initMarketPlace();
 
@@ -88,8 +88,8 @@ export default class MarketplaceContainer extends React.Component {
   };
 
   initMarketPlace = (props = this.props) => {
-    const { routeProductOnBoarding } = props,
-      { isMarketplaceEnabled } = props.user;
+    const { routeProductOnBoarding } = props;
+    const { isMarketplaceEnabled } = props.user;
 
     if (routeProductOnBoarding.isTour) {
       return;
@@ -125,6 +125,7 @@ export default class MarketplaceContainer extends React.Component {
             title="Introducing Direct Transfers"
             theme="primary"
             canBeClosed={true}
+            card_id="introducing-direct-transfers-banner"
           >
             <span className="support-tagline">
               Now start creating Direct Transfers to your linked accounts directly
@@ -141,8 +142,10 @@ export default class MarketplaceContainer extends React.Component {
             <NavLink to="/route/transfers">Transfers</NavLink>
             <NavLink to="/route/reversals">Reversals</NavLink>
             <NavLink to="/route/accounts">Accounts</NavLink>
-            <ShowWhen additionalCondition={user => user.isRouteBatchUploadEnabled} >
-              <NavLink to="/route/batchuploads">Batch Upload <span class="badge bg-success">NEW</span></NavLink>
+            <ShowWhen additionalCondition={(user) => user.isRouteBatchUploadEnabled}>
+              <NavLink to="/route/batchuploads">
+                Batch Upload <span class="badge bg-success">NEW</span>
+              </NavLink>
             </ShowWhen>
           </header>
 
@@ -166,3 +169,5 @@ export default class MarketplaceContainer extends React.Component {
 const ClonedPaymentsList = (props) => (
   <PaymentsList docUrl="https://razorpay.com/docs/route" {...props} />
 );
+
+export default MarketplaceContainer;

@@ -41,7 +41,7 @@ export const BANNER_THEMES = {
 };
 
 @RTracking(() => window.rzpQ.component('DashboardBanner'))
-export default class Announcement extends Component {
+class Announcement extends Component {
   constructor(props) {
     super(props);
 
@@ -56,15 +56,31 @@ export default class Announcement extends Component {
     this.handleClose = this.handleClose.bind(this);
   }
 
-  trackBannerClose = () => {
+  componentDidMount() {
     const { title, card_id, tracking } = this.props;
-    tracking.trackEvent(
-      window.rzpQ?.merchantActions().success('merchant_dashboard.banner_close', {
+    const bannerContainer = document.getElementById(`announcement-banner-${card_id}`);
+
+    tracking?.trackEvent(
+      window.rzpQ?.merchantActions().success('merchant_dashboard.display_banner', {
         title,
+        banner_text: bannerContainer?.querySelector('.content')?.textContent,
         card_id,
       }),
     );
   }
+
+  trackBannerClose = () => {
+    const { title, card_id, tracking } = this.props;
+    const bannerContainer = document.getElementById(`announcement-banner-${card_id}`);
+
+    tracking?.trackEvent(
+      window.rzpQ?.merchantActions().success('merchant_dashboard.banner_close', {
+        title,
+        banner_text: bannerContainer?.querySelector('.content')?.textContent,
+        card_id,
+      }),
+    );
+  };
 
   handleClose() {
     if (!this.isPure) {
@@ -83,17 +99,39 @@ export default class Announcement extends Component {
     return this.props.onClose && this.props.onClose();
   }
 
+  handleCtaClick = (e) => {
+    const node = e.target?.nodeName;
+    const parentNode = e.target?.parentElement?.nodeName;
+
+    // the condition after && is because some CTA text are wrapped in strong, b, etc. tags, so checking if their parent is a or button, then fire an event.
+    if (node !== 'A' && node !== 'BUTTON' && parentNode !== 'A' && parentNode !== 'BUTTON') return;
+
+    const { title, card_id, tracking } = this.props;
+    const link = node === 'A' ? e.target?.href : e.target?.parentElement?.href;
+
+    tracking?.trackEvent(
+      window.rzpQ?.merchantActions().initiated('merchant_dashboard.click_banner_cta', {
+        title,
+        banner_text: e.target?.closest('.content')?.textContent,
+        card_id,
+        cta_value: e.target?.textContent?.trim(),
+        link,
+      }),
+    );
+  };
+
   render() {
     const {
-        title,
-        theme: passedTheme,
-        className,
-        hidden,
-        onClose,
-        fullPage,
-        ...props
-      } = this.props,
-      theme = BANNER_THEMES[passedTheme];
+      title,
+      theme: passedTheme,
+      className,
+      hidden,
+      onClose,
+      fullPage,
+      card_id = '',
+      ...props
+    } = this.props;
+    const theme = BANNER_THEMES[passedTheme];
 
     if (this.isPure ? hidden : this.state.hidden) {
       return null;
@@ -103,30 +141,28 @@ export default class Announcement extends Component {
       fullPage ? 'announcement-banner--fullpage' : ''
     }`;
 
-    const { dark, light } = theme.colors,
-      titleStyle = {
-        color: light,
-      },
-      titleContentStyle = {
-        backgroundImage: `linear-gradient(90deg, ${dark} 0%, ${dark} 50%, ${light} 100%)`,
-      };
+    const { dark, light } = theme.colors;
+    const titleStyle = {
+      color: light,
+    };
+    const titleContentStyle = {
+      backgroundImage: `linear-gradient(90deg, ${dark} 0%, ${dark} 50%, ${light} 100%)`,
+    };
 
     return (
-      <div {...props}>
+      <div {...props} onClick={this.handleCtaClick} id={`announcement-banner-${card_id}`}>
         {title && !fullPage && (
-          <Fragment>
-            <div className="title" style={titleStyle}>
-              <div className="title-content" style={titleContentStyle}>
-                <div className="title-content-wrapper">{title}</div>
-              </div>
+          <div className="title" style={titleStyle}>
+            <div className="title-content" style={titleContentStyle}>
+              <div className="title-content-wrapper">{title}</div>
             </div>
-          </Fragment>
+          </div>
         )}
 
         {fullPage && (
           <Fragment>
-            <div class="skew-pattern skew-pattern-left" style={titleStyle}></div>
-            <div class="skew-pattern skew-pattern-right" style={titleStyle}></div>
+            <div class="skew-pattern skew-pattern-left" style={titleStyle} />
+            <div class="skew-pattern skew-pattern-right" style={titleStyle} />
           </Fragment>
         )}
 
@@ -148,4 +184,7 @@ Announcement.defaultProps = {
 
 Announcement.propTypes = {
   theme: PropTypes.oneOf(Object.keys(BANNER_THEMES)),
+  title: PropTypes.string,
 };
+
+export default Announcement;

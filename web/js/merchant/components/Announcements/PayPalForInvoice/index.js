@@ -7,6 +7,7 @@ export default React.memo(() => {
       title="Boost your International Sales with PayPal"
       canBeClosed={true}
       theme="warning"
+      card_id="boost-international-sales-with-paypal-banner"
     >
       <span class="display-inline">
         Get up to 20% higher success rates on International payments with PayPal wallet. Click here

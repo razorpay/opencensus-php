@@ -9,6 +9,7 @@ const LakshmiVilasBankBanner = () => {
       theme="danger"
       bannerKey="lakshmi-vilas-bank"
       canBeClosed={false}
+      card_id="lakshmi-villas-bank-ac-notsupported-banner"
     >
       Razorpay isn’t supporting Laxmi Vilas Bank accounts temporarily, please edit your bank account
       to continue receiving settlements.
