@@ -108,20 +108,6 @@ class MethodsTest extends TestCase
         $this->assertEquals($content['card_networks']['DICL'], false);
         $this->assertEquals($content['card_networks']['MAES'], true);
         $this->assertEquals($content['card_networks']['RUPAY'], false);
-        $this->assertEquals($content['card_networks']['AMEX'], false);
-    }
-
-    public function testBulkMethodUpdateAmexFailEnablement()
-    {
-        $this->fixtures->merchant->disableAllMethods('10000000000000');
-
-        $this->fixtures->create('pricing:standard_plan');
-
-        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
-
-        $this->ba->adminAuth();
-
-        $this->startTest();
     }
 
     public function testBulkMethodUpdateCreditEmiEnable()
@@ -456,7 +442,7 @@ class MethodsTest extends TestCase
             'method'  => 'PUT',
             'url'     => '/merchants/10000000000000/methods',
             'content' => [
-                'amex' => 0,
+                'amex' => 1,
                 'card_networks' => [
                     'dicl' => 0,
                     'jcb'  => 0,
@@ -478,8 +464,7 @@ class MethodsTest extends TestCase
 
         $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
 
-        // Skipping this, since we're not allowing enablement of AMEX
-        // $this->assertTrue($merchantMethods->isCardNetworkEnabled(Network::AMEX));
+        $this->assertTrue($merchantMethods->isCardNetworkEnabled(Network::AMEX));
 
         $this->assertFalse($merchantMethods->isCardNetworkEnabled(Network::JCB));
 

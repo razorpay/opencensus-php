@@ -20,7 +20,7 @@ class Validator extends Base\Validator
         Entity::ENABLED_BANKS      => 'sometimes|array',
         Entity::DISABLED_BANKS     => 'sometimes|array',
         Entity::NETBANKING         => 'sometimes|boolean',
-        Entity::AMEX               => 'sometimes|boolean|not_in:1',
+        Entity::AMEX               => 'sometimes|boolean',
         Entity::PAYTM              => 'sometimes|boolean',
         Entity::PAYZAPP            => 'sometimes|boolean',
         Entity::PAYUMONEY          => 'sometimes|boolean',
@@ -74,8 +74,7 @@ class Validator extends Base\Validator
     protected static $bulkAssignMethodsRules = [
         'methods'                    => 'required|array|custom',
         'merchants'                  => 'required|array',
-        'merchants.*'                => 'required|string|filled|size:14',
-        'methods.card_networks.AMEX' => 'sometimes|boolean|not_in:1',
+        'merchants.*'                => 'required|string|filled|size:14'
     ];
 
     protected function validateMethodBanks(array $input)

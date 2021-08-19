@@ -56,8 +56,7 @@ return [
                     'card_networks' => [
                         'DICL' => '0',
                         'MAES' => '1',
-                        'RUPAY'=> '0',
-                        'AMEX' => '0',
+                        'RUPAY'=> '0'
                     ],
                 ],
             ],
@@ -65,34 +64,6 @@ return [
         'response' => [
             'content' => [
             ],
-        ],
-    ],
-
-    'testBulkMethodUpdateAmexFailEnablement' => [
-        'request' => [
-            'url' => '/methods/bulkupdate',
-            'method' => 'put',
-            'content' => [
-                'merchants' => ['10000000000000'],
-                'methods' => [
-                    'card_networks' => [
-                        'AMEX' => '1',
-                    ],
-                ],
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The selected methods.card networks. a m e x is invalid.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

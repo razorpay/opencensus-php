@@ -4685,33 +4685,6 @@ return [
         ]
     ],
 
-    'testEnableAmex' => [
-        'request' => [
-            'url' => '/merchants/10000000000000/methods',
-            'method' => 'put',
-            'content' => [
-                'amex' => 1,
-            ],
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The selected amex is invalid.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
     'testPutPaytmCardNetworkAndEMIMethodWithUpdateObserverData'=> [
         'request' => [
             'url' => '/merchants/10000000000000/methods',
