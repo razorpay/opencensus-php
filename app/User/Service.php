@@ -1725,7 +1725,8 @@ class Service extends Base\Service
             'mtu_coupon_code',
             'product_recommendation',
             'auto_refresh_experiment',
-            'csm_experince_survey'
+            'csm_experince_survey',
+            'inv_create_flow_ux',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

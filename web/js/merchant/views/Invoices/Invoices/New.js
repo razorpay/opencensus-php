@@ -327,7 +327,8 @@ export default class InvoicesNewContainer extends Component {
     let invoiceId = props.match.params.id;
     const searchQuery = getURLQueryParams(props.location.search);
     this.isIntentDuplicate = false;
-    const customerFetchIssue = props.session.user.isCustomerFetchIssuePresentInInvoices;
+    const isCreateFlowUXOptimizationEnabled =
+      props.session.user.isInvoiceCreateFlowUXOptimizationEnabled;
 
     if (invoiceId) {
       promises.push(
@@ -356,20 +357,20 @@ export default class InvoicesNewContainer extends Component {
     }
 
     /*
-      few customers were facing issue with customers fetching taking upto 3-4 minutes. For those merchants fetching customers
-      parallely and initialising customer data again if initilization already done before by keeping variable invoiceDataFromFetch as reference
+      - Fetching customers parallely and not waiting for the API to complete. Loads the invoice page faster and shows loader on specific dropdown instead of blocking the whole render
+      - { search_hits: 1 } params the api directly hit elastic search for faster results
+      - initialising customer data on success if other APIs complete  before by keeping variable invoiceDataFromFetch as reference
     */
-    if(customerFetchIssue) {
-      props.fetchCustomersForAutocomplete()
-      .then(() => {
-        if(invoiceDataFromFetch?.customer ) {
+    if (isCreateFlowUXOptimizationEnabled) {
+      props.fetchCustomersForAutocomplete({ search_hits: 1 }).then(() => {
+        if (invoiceDataFromFetch?.customer) {
           this.setCustomerData(invoiceDataFromFetch.customer);
         }
       });
     }
 
     promises = [
-      !customerFetchIssue && props.fetchCustomersForAutocomplete(),
+      !isCreateFlowUXOptimizationEnabled && props.fetchCustomersForAutocomplete(),
       props.fetchItemsForAutocomplete({
         type: 'invoice',
         'expand[]': 'tax',
@@ -1101,13 +1102,6 @@ export default class InvoicesNewContainer extends Component {
         },
         this.state.invoiceCurrency,
       );
-
-      if(this.props.session.user.isCustomerFetchIssuePresentInInvoices) {
-        // add dummy customer if doesn't exist already
-        if(!updatedProps.customer) {
-          updatedProps.customer = {};
-        }
-      }
 
       return this._save(updatedProps).then((invoice) => {
         track({
@@ -2289,7 +2283,7 @@ export default class InvoicesNewContainer extends Component {
                               type="button"
                               class="btn btn-primary btn-block btn-lg"
                               disabled={
-                                this.state.isSaving || this.props.invalid|| (!hasCustomerSelected && !this.props.session.user.isCustomerFetchIssuePresentInInvoices)
+                                this.state.isSaving || this.props.invalid || !hasCustomerSelected
                               }
                               onClick={handleSubmit((props) => {
                                 return this.saveAndIssue({
