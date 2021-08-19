@@ -487,7 +487,9 @@ class IinTest extends TestCase
 
     public function testGetCardPaymentDomesticIinNA()
     {
-        $this->ba->publicAuth();
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                             ->setCOnstructorArgs([$this->app])
@@ -497,6 +499,13 @@ class IinTest extends TestCase
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')->willReturn('on');
+
+        $this->startTest();
+    }
+
+    public function testGetCardPaymentDomesticIinNATestMode()
+    {
+        $this->ba->publicAuth();
 
         $this->startTest();
     }

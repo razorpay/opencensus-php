@@ -6,6 +6,7 @@ use App;
 
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\Name;
@@ -150,10 +151,6 @@ class Entity extends Base\PublicEntity
         self::ENABLED     => 'bool',
         self::LOCKED      => 'bool',
         self::RECURRING   => 'bool',
-    ];
-
-    protected $issuerEnabledForCardMandate = [
-        IFSC::RATN, // RBL
     ];
 
     protected $editFormatKeys = [
@@ -321,19 +318,13 @@ class Entity extends Base\PublicEntity
 
     public function isCardMandateApplicable(Merchant\Entity $merchant)
     {
+        $iin = $this->getIin();
+
         $app = App::getFacadeRoot();
 
-        if ($app['env'] === Environment::PRODUCTION)
+        if ($app['rzp.mode'] === Mode::TEST)
         {
-            return false;
-        }
-
-        $issuer = $this->getIssuer();
-
-        if (($merchant->isFeatureEnabled(Feature\Constants::RECURRING_CARD_MANDATE) === true) and
-            (in_array($issuer, $this->issuerEnabledForCardMandate, true) === true))
-        {
-            return true;
+            return $app->mandateHQ->isBinSupported($iin);
         }
 
         return false;

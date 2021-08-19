@@ -67,6 +67,8 @@ class CardMandateTest extends TestCase
 
     public function testCreateCardMandatePayment()
     {
+        $this->mockCheckBin();
+
         $this->mockRegisterMandate();
 
         $this->mockReportPayment();
@@ -99,6 +101,8 @@ class CardMandateTest extends TestCase
 
     public function testCreateCardMandatePaymentForMandateCancelledByCustomer()
     {
+        $this->mockCheckBin();
+
         $this->mockRegisterMandate();
 
         $this->mandateConfirm = 'false';
@@ -387,6 +391,16 @@ class CardMandateTest extends TestCase
         };
 
         return $this->mockMandateHQ($callable);
+    }
+
+    protected function mockCheckBin()
+    {
+        $callable = function ()
+        {
+            return true;
+        };
+
+        return $this->mockMandateHQ($callable, 'isBinSupported');
     }
 
     protected function mockReportPayment()

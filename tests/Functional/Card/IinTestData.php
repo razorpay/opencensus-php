@@ -938,6 +938,27 @@ return [
         ]
     ],
 
+    'testGetCardPaymentDomesticIinNATestMode' => [
+        'request' => [
+            'url'     => '/payment/iin',
+            'content' => [
+                'iin' => '401200',
+            ],
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content'     => [
+                'flows'   => [
+                    'recurring' => true,
+                    'iframe'    => false,
+                    'emi'       => true,
+                ],
+                'issuer'  => 'HDFC',
+                'type'    => 'credit',
+            ]
+        ]
+    ],
+
     'testGetIssuerDetails' => [
         'request' => [
             'url'     => '/mandate_hq/iin/401200',

@@ -695,11 +695,16 @@ return [
 
     'mandate_hq' => [
         'secret'         => env('APP_MANDATE_HQ_SECRET'),
+        'mock'           => env('APP_MANDATE_HQ_MOCK', false),
+        'webhook_secret' => env('APP_MANDATE_HQ_WEBHOOK_SECRET'),
+
         'url'            => env('APP_MANDATE_HQ_URL'),
         'username'       => env('APP_MANDATE_HQ_LIVE_USERNAME'),
         'password'       => env('APP_MANDATE_HQ_LIVE_PASSWORD'),
-        'mock'           => env('APP_MANDATE_HQ_MOCK', false),
-        'webhook_secret' => env('APP_MANDATE_HQ_WEBHOOK_SECRET'),
+
+        'test_mode_url'      => env('APP_MANDATE_HQ_TEST_URL'),
+        'test_mode_username' => env('APP_MANDATE_HQ_TEST_USERNAME'),
+        'test_mode_password' => env('APP_MANDATE_HQ_TEST_PASSWORD'),
     ],
 
     'loan_origination_system' => [

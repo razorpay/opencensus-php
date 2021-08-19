@@ -65,21 +65,6 @@ class RecurringPaymentTest extends TestCase
         $this->assertEquals('initial', $payment['recurring_type']);
     }
 
-    public function testRecurringInitialPaymentBlocked()
-    {
-        $this->ba->privateAuth();
-
-        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
-
-        $payment = $this->getDefaultRecurringPaymentArray();
-
-        $this->mockRazorx(RazorxTreatment::RECURRING_CARD_NOT_ENABLED, 'on');
-
-        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
-
-        $this->doAuthAndCapturePayment($payment);
-    }
-
     public function testRecurringInitialPaymentAxisInternationalBlocked()
     {
         $this->ba->privateAuth();
@@ -122,7 +107,7 @@ class RecurringPaymentTest extends TestCase
 
         $payment = $this->getLastPayment(true);
 
-        $this->assertEquals(0, $payment['recurring']);
+        $this->assertEquals(true, $payment['recurring']);
         $this->assertEquals('captured', $payment['status']);
     }
 

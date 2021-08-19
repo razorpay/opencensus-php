@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
 
@@ -14,9 +15,14 @@ class MandateHQ
         'register_mandate'              => 'v1/mandates/register',
         'create_pre_debit_notification' => 'v1/mandates/%s/notifications',
         'report_payment'                => 'v1/mandates/%s/payments',
+        'check_bin'                     => 'v1/iins/%s'
     ];
 
+    protected $app;
+
     protected $baseUrl;
+
+    protected $testModeBaseUrl;
 
     protected $config;
 
@@ -24,15 +30,32 @@ class MandateHQ
 
     protected $secret;
 
+    protected $testModeKey;
+
+    protected $testModeSecret;
+
     public function __construct($app)
     {
+        $this->app = $app;
+
         $this->config = $app['config']->get('applications.mandate_hq');
 
         $this->baseUrl = $this->config['url'];
+        $this->key     = $this->config['username'];
+        $this->secret  = $this->config['password'];
 
-        $this->key = $this->config['username'];
+        $this->testModeBaseUrl = $this->config['test_mode_url'];
+        $this->testModeKey     = $this->config['test_mode_username'];
+        $this->testModeSecret  = $this->config['test_mode_password'];
+    }
 
-        $this->secret = $this->config['password'];
+    public function isBinSupported($bin): bool
+    {
+        $url = sprintf(self::MANDATE_HQ_URLS['check_bin'], $bin);
+
+        $response = $this->sendRequest($url, 'post', []);
+
+        return $response['recurring_enabled'];
     }
 
     public function registerMandate($input)
@@ -65,7 +88,17 @@ class MandateHQ
      */
     public function sendRequest($url, $method, array $inputData = [])
     {
-        $url = $this->baseUrl . $url;
+        $baseUrl = $this->baseUrl;
+        $key = $this->key;
+        $secret = $this->secret;
+
+        if ($this->app['rzp.mode'] === Mode::TEST) {
+            $baseUrl = $this->testModeBaseUrl;
+            $key = $this->testModeKey;
+            $secret = $this->testModeSecret;
+        }
+
+        $url = $baseUrl . $url;
 
         $data = '';
 
@@ -78,7 +111,7 @@ class MandateHQ
 
         $options = array(
             'timeout' => self::REQUEST_TIMEOUT,
-            'auth'    => [$this->key, $this->secret],
+            'auth'    => [$key, $secret],
         );
 
         $request = array(

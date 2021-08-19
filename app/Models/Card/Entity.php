@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 
 use RZP\Models\Card;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -796,10 +797,14 @@ class Entity extends Base\PublicEntity
             return false;
         }
 
+        $app  = \App::getFacadeRoot();
+
         // allow international IIN
         // allow domestic card if razorX is disabled
         // for fail safety, razorX retry count is 3
-        if (($iin->isInternational() === false || $iin->isAmex() === true) && ($isInitial === true))
+        if (((($iin->isInternational() === false) and ($app['rzp.mode'] !== Mode::TEST))
+                or ($iin->isAmex() === true))
+            and ($isInitial === true))
         {
             $variant  = app('razorx')->getTreatment($merchant->getId(),
                 RazorxTreatment::RECURRING_CARD_NOT_ENABLED,

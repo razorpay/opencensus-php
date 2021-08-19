@@ -2,18 +2,35 @@
 
 namespace RZP\Services\Mock;
 
+use Carbon\Carbon;
+
 class MandateHQ
 {
+    public function isBinSupported($bin): bool
+    {
+        return false;
+    }
+
     public function registerMandate($input)
     {
         return [
-            'error' => [
-                'success' => true,
-                'error_code' => "",
-                'error_message' => ""
-            ],
             'redirect_url' => "https://mandate-manager.stage.razorpay.in/issuer/hdfc_GX3VC146gmBVNe/hostedpage",
-            'mandate_id' => "ratn_GX3VC146gmBVNe"
+            'id'           => "C146gmBVNe",
+            "status"       => "created",
         ];
+    }
+
+    public function createPreDebitNotification($mandateId, $input)
+    {
+        return [
+            'id'           => 'C146gmBVNe',
+            'status'       => 'delivered',
+            'delivered_at' => Carbon::now()->timestamp,
+        ];
+    }
+
+    public function reportPayment($mandateId, $input)
+    {
+        return [];
     }
 }
