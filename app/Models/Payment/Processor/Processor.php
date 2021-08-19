@@ -3955,12 +3955,24 @@ class Processor
         // api, to execute the mandate, we will block this scenario right now.
         if ($payment->isUpiOtm() === true)
         {
+            $this->trace->info(
+                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
+                [
+                    'reason'    => "UPI OTM Payment",
+                ]);
+
            return false;
         }
 
         // Bank transfers are auto-captured only if they are expected. This is checked later.
         if ($payment->isBankTransfer() === true)
         {
+            $this->trace->info(
+                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
+                [
+                    'reason'    => "Bank Transfer Payment",
+                ]);
+
             return false;
         }
 
@@ -3968,12 +3980,24 @@ class Processor
         // We can't capture payments that are in authenticated state.
         if ($payment->getStatus() === Payment\Status::AUTHENTICATED)
         {
+            $this->trace->info(
+                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
+                [
+                    'reason'    => "Payment Status Authenticated",
+                    'status'    => $payment->getStatus(),
+                ]);
+
             return false;
         }
 
         if ($payment->isUpiTransfer() === true)
-
         {
+            $this->trace->info(
+                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
+                [
+                    'reason'    => "UPI Transfer Payment",
+                ]);
+
             return false;
         }
 
@@ -3988,6 +4012,12 @@ class Processor
         {
             if ($payment->merchant->isFeatureEnabled(Feature::PAYMENT_PAGES_NO_CAPTURE) === true)
             {
+                $this->trace->info(
+                    TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
+                    [
+                        'reason'    => "Payment Link with Merchant Feature PAYMENT_PAGES_NO_CAPTURE enabled",
+                    ]);
+
                 return false;
             }
         }
@@ -4039,6 +4069,12 @@ class Processor
         //
         if ($payment->hasOrder() === false)
         {
+            $this->trace->info(
+                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
+                [
+                    'reason'    => "Payment does not have order",
+                ]);
+
             return false;
         }
 
@@ -4052,6 +4088,12 @@ class Processor
         //
         if ($payment->hasSubscription() === true)
         {
+            $this->trace->info(
+                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
+                [
+                    'reason'    => "Payment Subscription",
+                ]);
+
             return false;
         }
 
@@ -4071,6 +4113,12 @@ class Processor
         //
         if ($payment->isFileBasedEmandateRegistrationPayment() === true)
         {
+            $this->trace->info(
+                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
+                [
+                    'reason'    => "FileBasedEmandateRegistrationPayment",
+                ]);
+
             return false;
         }
 
@@ -4190,6 +4238,12 @@ class Processor
         if ((($order->isPaid() === true) and
                 ($order->merchant->isFeatureEnabled(Feature::DISABLE_AMOUNT_CHECK) === false)))
         {
+            $this->trace->info(
+                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
+                [
+                    'reason'    => "Disable Amount Check Feature not enabled",
+                ]);
+
             return false;
         }
 
@@ -4198,6 +4252,12 @@ class Processor
         if (($amount > $order->getAmountDue()) and
             ($this->merchant->isFeatureEnabled(Feature::EXCESS_ORDER_AMOUNT) === false))
         {
+            $this->trace->info(
+                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
+                [
+                    'reason'    => "Excess Order Amount Feature not enabled",
+                ]);
+
            return false;
         }
 
@@ -4209,16 +4269,34 @@ class Processor
         }
         elseif ($captureConfig === false)
         {
+            $this->trace->info(
+                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
+                [
+                    'reason'    => "Capture Settings is manual",
+                ]);
+
             return false;
         }
 
         if ($order->getPaymentCapture() !== true)
         {
+            $this->trace->info(
+                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
+                [
+                    'reason'    => "Order Payment Capture is false",
+                ]);
+
             return false;
         }
 
         if ($this->isAutoRefundDelayExceeded($payment) === true)
         {
+            $this->trace->info(
+                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
+                [
+                    'reason'    => "Auto refund delay exceeded",
+                ]);
+
             return false;
         }
 
@@ -4344,6 +4422,13 @@ class Processor
         {
             $configEntity = $this->repo->config->findByPublicIdAndMerchantAndType($lateAuthConfigId, $merchant->getId(), 'late_auth');
         }
+
+        $this->trace->info(
+            TraceCode::CAPTURE_SETTINGS_FOR_PAYMENT,
+            [
+                'capture_settings'    => $configEntity,
+                'payment_capture_flag' => $paymentCaptureFlag,
+            ]);
 
         if (isset($configEntity) === false)
         {
