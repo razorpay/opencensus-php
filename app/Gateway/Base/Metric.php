@@ -389,6 +389,17 @@ class Metric
                     $gatewayMetrics = app('trace')->metricsDriver(self::DOGSTATSD_DRIVER);
 
                     $gatewayMetrics->count(Metric::GATEWAY_REQUEST_COUNT_OPTIMISER_V1, 1, $metricDimension);
+
+                    $this->trace->info(TraceCode::OPTIMISER_GATEWAY_METRIC_DIMENSION_PUSHED,
+                        [
+                            'merchant_id'   => $this->getMerchantId($input),
+                            'payment_id'    => $input[Entity::PAYMENT][Payment\Entity::ID],
+                            'gateway'       => $gateway,
+                            'procurer'      => $procurer,
+                            'action'        => $action,
+                            'excData'       => $excData,
+                            'statusCode'    => $statusCode
+                        ]);
                 }
         }
         catch (\Throwable $exc)
