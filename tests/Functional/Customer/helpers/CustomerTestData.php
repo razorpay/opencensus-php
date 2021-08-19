@@ -649,6 +649,21 @@ return [
             ],
     ],
 
+    'testFetchSavedTokensStatusSavedSkipOTPSend'   => [
+        'request' => [
+                'url' => '/customers/status/9988776655',
+                'method' => 'get',
+                'content' => [
+                    'skip_otp' => true
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'saved' => true,
+                ],
+            ],
+    ],
+
     'testFetchSavedCustomerStatusWithDeviceToken'   => [
         'request' => [
                 'url' => '/customers/status/9988776655',

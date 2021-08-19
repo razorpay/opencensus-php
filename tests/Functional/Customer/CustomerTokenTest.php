@@ -153,6 +153,15 @@ class CustomerTokenTest extends TestCase
         $this->assertEquals(isset($response['email']), false);
     }
 
+    public function testFetchSavedTokensStatusSavedSkipOTPSend()
+    {
+        $this->mockSession();
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchSavedCustomerStatusWithDeviceToken()
     {
         $this->mockSession();

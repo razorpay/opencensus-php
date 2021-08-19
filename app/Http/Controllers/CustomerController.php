@@ -167,7 +167,14 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $status = $this->service()->fetchGlobalCustomerStatus($contact, $input, true);
+        $sendOTP = true;
+
+        if(isset($input['skip_otp']) === true) 
+        {
+            $sendOTP = false;
+        }
+
+        $status = $this->service()->fetchGlobalCustomerStatus($contact, $input, $sendOTP);
 
         return ApiResponse::json($status);
     }
