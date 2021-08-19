@@ -860,7 +860,7 @@ class Service extends Base\Service
             Constants::CURRENT_OWNER_EMAIL    => $userEmail,
             Entity::EMAIL                     => $input[Entity::EMAIL],
             Entity::MERCHANT_ID               => $merchantId,
-            Constants::REATTACH_CURRENT_OWNER => (bool) ($input[Constants::REATTACH_CURRENT_OWNER] ?? true),
+            Constants::REATTACH_CURRENT_OWNER => (bool) ($input[Constants::REATTACH_CURRENT_OWNER] ?? false),
             Constants::SET_CONTACT_EMAIL      => (bool) ($input[Constants::SET_CONTACT_EMAIL] ?? false)
         ];
 
