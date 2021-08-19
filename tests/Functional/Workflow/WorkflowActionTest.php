@@ -12,6 +12,8 @@ use RZP\Models\Merchant\Account;
 use Rzp\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
 use Rzp\Models\Admin\Admin\Token;
+use RZP\Models\Workflow\Constants;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Admin\Permission as AdminPermission;
@@ -503,5 +505,121 @@ class WorkflowActionTest extends TestCase
         $this->addPermissionToBaAdmin(AdminPermission\Name::EDIT_ACTION);
 
         $this->startTest();
+    }
+
+    private function getWorkflowsForRiskAudit()
+    {
+        $workflows = [];
+
+        for ($i = 0; $i < 5; $i++)
+        {
+            $workflowIds = Constants::getRiskAuditWorkflowIds();
+
+            $workflow = $this->fixtures->create('workflow', ['id' => $workflowIds[$i]]);
+
+            array_push($workflows, $workflow);
+        }
+
+        return $workflows;
+    }
+
+    private function createActionsForRiskWorkflows($workflows, $merchantId)
+    {
+        $workflowActions = [];
+
+        $permission = $this->fixtures->create('permission', [
+            'name' => Permission\Name::VIEW_ALL_WORKFLOW
+        ]);
+
+        foreach ($workflows as $workflow)
+        {
+            $workflowAction = $this->fixtures->create('workflow_action', [
+                'entity_id'     => $merchantId,
+                'entity_name'   => 'merchant',
+                'approved'      => 1,
+                'workflow_id'   => $workflow->getId(),
+            ]);
+
+            array_push($workflowActions, $workflowAction);
+        }
+
+        return $workflowActions;
+    }
+
+    private function createActionStatesForWfAction($workflowActions)
+    {
+        $actionStates = [];
+
+        $admin = $this->fixtures->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        foreach ($workflowActions as $workflowAction)
+        {
+            $actionState = $this->fixtures->create('action_state', [
+                  'action_id'   => $workflowAction->getId(),
+                  'entity_id'   => $workflowAction->getId(),
+                  'entity_type' => 'workflow_action',
+                  'admin_id'    => $admin->getId(),
+                  'name'        => 'approved'
+              ]);
+
+            array_push($actionStates, $actionState);
+        }
+        return $actionStates;
+    }
+
+    private function createTestDataForRiskAudit()
+    {
+        $this->ba->adminAuth();
+
+        $merchantId = '10000000000000';
+
+        $workflows = $this->getWorkflowsForRiskAudit();
+
+        $workflowActions = $this->createActionsForRiskWorkflows($workflows, $merchantId);
+
+        $workflowActionIds = array_map(
+            function ($action)
+            {
+                return $action->getId();
+            },
+            $workflowActions
+        );
+
+        $this->createActionStatesForWfAction($workflowActions);
+
+        return $workflowActionIds;
+    }
+
+    public function testGetActionsForRiskAudit()
+    {
+        $workflowActionIds = $this->createTestDataForRiskAudit();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(sizeof($response[Constants::WORKFLOW_ACTION_IDS]), 5);
+
+        $this->assertEquals($response[Constants::WORKFLOW_ACTION_IDS], $workflowActionIds);
+    }
+
+    public function testGetActionsForRiskAuditWithTimeWithinRange()
+    {
+        $workflowActionIds = $this->createTestDataForRiskAudit();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(sizeof($response[Constants::WORKFLOW_ACTION_IDS]), 5);
+
+        $this->assertEquals($response[Constants::WORKFLOW_ACTION_IDS], $workflowActionIds);
+    }
+
+    public function testGetActionsForRiskAuditWithTimeOutsideRange()
+    {
+        $this->createTestDataForRiskAudit();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(sizeof($response[Constants::WORKFLOW_ACTION_IDS]), 0);
     }
 }

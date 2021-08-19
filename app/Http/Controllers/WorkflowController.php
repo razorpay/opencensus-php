@@ -168,4 +168,12 @@ class WorkflowController extends Controller
         return ApiResponse::json($result);
     }
 
+    public function getActionsForRiskAudit(string $merchantId)
+    {
+        $input = Request::all();
+
+        $result = $this->service(E::WORKFLOW_ACTION)->getActionsForRiskAudit($merchantId, $input);
+
+        return ApiResponse::json($result);
+    }
 }

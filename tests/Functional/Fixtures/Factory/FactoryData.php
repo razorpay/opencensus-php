@@ -1171,6 +1171,11 @@ final class FactoryData
                                                           ]
         );
 
+        $factory(\RZP\Models\Workflow\Action\State\Entity::class, [
+                                                              'id'                => $faker->uniqueid
+                                                          ]
+        );
+
         $factory(\RZP\Models\State\Entity::class, [
                                                     'id'                => $faker->uniqueid,
                                                     'name'              => \RZP\Models\State\Name::OPEN,

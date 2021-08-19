@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Workflow\Action;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Illuminate\Database\Query\JoinClause;
 
 use RZP\Base\BuilderEx;
@@ -471,5 +473,39 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    protected function filterByApprovalTimestampRange($input, $query)
+    {
+        $approvalStartTime = $input[Constants::APPROVAL_START_TIME] ?? null;
 
+        $approvalEndTime = $input[Constants::APPROVAL_END_TIME] ?? null;
+
+        if (($approvalStartTime === null) or
+            ($approvalEndTime === null))
+        {
+            return;
+        }
+
+        $query->where(Table::ACTION_STATE . '.' . Entity::CREATED_AT, '>=', $approvalStartTime);
+
+        $query->where(Table::ACTION_STATE . '.' . Entity::CREATED_AT, '<=', $approvalEndTime);
+    }
+
+    public function getActionIdsForRiskAudit($merchantId, $input)
+    {
+        $workflowIds = $input[Constants::WORKFLOW_IDS] ?? Constants::getRiskAuditWorkflowIds();
+
+        $query = $this->newQuery()
+                    ->select(Table::WORKFLOW_ACTION . '.' . Entity::ID)
+                    ->distinct()
+                    ->join(Table::ACTION_STATE, Table::ACTION_STATE . '.' . State\Entity::ACTION_ID, Table::WORKFLOW_ACTION . '.' . Entity::ID)
+                    ->join(Table::WORKFLOW, Table::WORKFLOW . '.' . Entity::ID, Entity::WORKFLOW_ID)
+                    ->where(Entity::ENTITY_NAME, 'merchant')
+                    ->where(Table::WORKFLOW_ACTION . '.' . Entity::ENTITY_ID, $merchantId)
+                    ->where(Table::ACTION_STATE . '.' . State\Entity::NAME, Entity::APPROVED)
+                    ->whereIn(Entity::WORKFLOW_ID, $workflowIds);
+
+        $this->filterByApprovalTimestampRange($input, $query);
+
+        return $query->get()->pluck(Entity::ID)->toArray();
+    }
 }

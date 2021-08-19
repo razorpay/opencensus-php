@@ -86,6 +86,16 @@ class Service extends Base\Service
         return $actions;
     }
 
+    public function getActionsForRiskAudit($merchantId, $input)
+    {
+        $actionIds = $this->repo->workflow_action->getActionIdsForRiskAudit($merchantId, $input);
+
+        return [
+            Constants::RISK_AUDIT_WORKFLOWS_FOR_QUERY           =>  Constants::getRiskAuditWorkflows(),
+            Constants::WORKFLOW_ACTION_IDS                      =>  $actionIds,
+        ];
+    }
+
     public function getActionDetails(string $actionId)
     {
         $data = [];

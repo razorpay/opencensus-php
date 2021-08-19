@@ -2734,6 +2734,9 @@ class Route
 
         // Onboarding APIs
         'complete_submerchant_onboarding'         => ['post',       'submerchants/{id}/onboard',                             'MerchantController@completeSubmerchantOnboarding'],
+
+        // Risk Audit Workflow Actions
+        'w-actions_merchant_risk_audit_get'       => ['get',        'merchants/{merchant_id}/risk-audit/w-actions',           'WorkflowController@getActionsForRiskAudit'                   ],
     ];
 
     public static $public = [
@@ -5227,7 +5230,10 @@ class Route
         // Merchant Risk Notes
         'merchant_risk_notes_get',
         'merchant_risk_notes_create',
-        'merchant_risk_notes_delete'
+        'merchant_risk_notes_delete',
+
+        // Risk Audit Workflow Actions
+        'w-actions_merchant_risk_audit_get',
     ];
 
     public static $routePermission = [
@@ -6217,6 +6223,9 @@ class Route
         'merchant_risk_notes_get'                         => Permission::GET_MERCHANT_RISK_NOTES,
         'merchant_risk_notes_create'                      => Permission::CREATE_MERCHANT_RISK_NOTES,
         'merchant_risk_notes_delete'                      => Permission::DELETE_MERCHANT_RISK_NOTES,
+
+        // Risk Audit Workflow Actions
+        'w-actions_merchant_risk_audit_get'               => Permission::VIEW_ALL_WORKFLOW,
     ];
 
     public static $bankingRoutePermissions = [
@@ -9428,7 +9437,10 @@ class Route
             // Merchant Risk Notes
             'merchant_risk_notes_get',
             'merchant_risk_notes_create',
-            'merchant_risk_notes_delete'
+            'merchant_risk_notes_delete',
+
+            // Risk Audit Workflow Actions
+            'w-actions_merchant_risk_audit_get',
         ],
 
         //

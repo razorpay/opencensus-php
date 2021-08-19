@@ -291,5 +291,44 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED,
         ],
+    ],
+    'testGetActionsForRiskAudit' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/merchants/10000000000000/risk-audit/w-actions',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+    'testGetActionsForRiskAuditWithTimeWithinRange' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/merchants/10000000000000/risk-audit/w-actions',
+            'content' => [
+                'approval_start_time'   => time() - 1000,
+                'approval_end_time'     => time() + 1000
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+    'testGetActionsForRiskAuditWithTimeOutsideRange' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/merchants/10000000000000/risk-audit/w-actions',
+            'content' => [
+                'approval_start_time'   => '101',
+                'approval_end_time'     => '1001'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
     ]
 ];
