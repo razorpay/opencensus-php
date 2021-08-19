@@ -35,6 +35,11 @@ class Emandate extends Service
             $this->transactionType = self::DEBIT;
         }
 
+        if ($this->action === Action::AUTHORIZE_FAILED)
+        {
+            $action = Action::VERIFY;
+        }
+
         if ($this->action === Action::FORCE_AUTHORIZE_FAILED)
         {
             if ($this->app['api.route']->getCurrentRouteName() === 'payment_force_authorize')
@@ -171,14 +176,14 @@ class Emandate extends Service
         return $response[Response::DATA][Response::NEXT][Response::REDIRECT];
     }
 
-    protected function getRecurringData($response)
+    protected function getRecurringData($response): array
     {
         $reference = $response[Response::DATA][Response::BANK_REFERENCE_ID] ?? null;
 
         $returnData = [
             Token\Entity::RECURRING_STATUS         => $response[Response::DATA][Response::RECURRING_STATUS],
             Token\Entity::GATEWAY_TOKEN            => $response[Response::DATA][Response::GATEWAY_TOKEN],
-            Token\Entity::RECURRING_FAILURE_REASON => $response[Response::DATA][Response::RECURRING_FAILURE_REASON],
+            Token\Entity::RECURRING_FAILURE_REASON => $response[Response::DATA][Response::RECURRING_FAILURE_REASON] ?? null,
         ];
 
         if (empty($reference) === false)
@@ -191,7 +196,7 @@ class Emandate extends Service
         return $returnData;
     }
 
-    protected function getCallbackResponseData($response)
+    protected function getCallbackResponseData($response): array
     {
         $callbackResponseData = $this->getRecurringData($response);
 
