@@ -121,6 +121,9 @@ class Status
             self::PICKED,
             self::CANCELLED,
             self::PROCESSED,
+            // This is for cases in Neostone where users submit the details in the form
+            // but don’t respond when called.
+            self::ARCHIVED,
         ],
         self::PICKED => [
             self::INITIATED,

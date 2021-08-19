@@ -1988,6 +1988,13 @@ class BankingAccountTest extends TestCase
             Status::PROCESSED);
     }
 
+    public function testUpdateBankingAccountStatusCreatedToArchived()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::CREATED,
+            Status::ARCHIVED);
+    }
+
     public function testUpdateBankingAccountStatusPickedToProcessed()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
