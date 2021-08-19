@@ -176,7 +176,7 @@ function main(
   }
 
   function canBeZoomed(d) {
-    return d._children.length > 0 && typeof d._children[0].key !== 'undefined';
+    return d._children?.length > 0 && typeof d._children[0].key !== 'undefined';
   }
 
   function display(d, isTransitioning) {
