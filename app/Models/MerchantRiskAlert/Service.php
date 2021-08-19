@@ -636,7 +636,7 @@ class Service extends Base\Service
 
             $templateName = Constants::FOH_HEALTH_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_NAME[$rasTriggerReason];
 
-            $template = Constants::FOH_HEALTH_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE[[$rasTriggerReason]];
+            $template = Constants::FOH_HEALTH_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE[$rasTriggerReason];
 
             $data = [
                 'merchantId'   => $merchant->getId(),
