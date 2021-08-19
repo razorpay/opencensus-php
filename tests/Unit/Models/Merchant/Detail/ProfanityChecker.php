@@ -19,6 +19,11 @@ class ProfanityChecker extends TestCase
         $this->profanityCheckerModerationHelper('image');
     }
 
+    function testProfanityCheckerSiteModeration()
+    {
+        $this->profanityCheckerModerationHelper('site');
+    }
+
     // ------------------ Helpers -------------------- //
     function profanityCheckerModerationHelper(string $moderationType)
     {
@@ -37,6 +42,8 @@ class ProfanityChecker extends TestCase
 
         $target = '';
 
+        $depth = 0;
+
         if ($moderationType === 'text')
         {
             $target = 'test';
@@ -49,10 +56,20 @@ class ProfanityChecker extends TestCase
 
             $expectedRequestPayload['URL'] = $target;
         }
+        else if ($moderationType === 'site')
+        {
+            $target = 'https://testimages.com';
+
+            $depth = 2;
+
+            $expectedRequestPayload['URL'] = $target;
+
+            $expectedRequestPayload['Depth'] = $depth;
+        }
 
         $mrsMock = $this->getMrsRequestMock($expectedRequestPayload);
 
-        $res = $mrsMock->enqueueProfanityCheckerRequest($moderationType, $entityType, $entityId, $target, $caller);
+        $res = $mrsMock->enqueueProfanityCheckerRequest($moderationType, $entityType, $entityId, $target, $depth, $caller);
 
         $this->assertEquals(true, $res['success']);
     }

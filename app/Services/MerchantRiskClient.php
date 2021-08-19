@@ -176,7 +176,7 @@ class MerchantRiskClient
         }
     }
 
-    public function enqueueProfanityCheckerRequest(string $moderationType, string $entityType, string $entityId, string $target, string $caller = null): array
+    public function enqueueProfanityCheckerRequest(string $moderationType, string $entityType, string $entityId, string $target, int $depth, string $caller = null): array
     {
         $this->init();
 
@@ -194,6 +194,12 @@ class MerchantRiskClient
         else if ($moderationType === 'image')
         {
             $requestPayload['URL'] = $target;
+        }
+        else if ($moderationType === 'site')
+        {
+            $requestPayload['URL'] = $target;
+
+            $requestPayload['Depth'] = $depth;
         }
 
         try
