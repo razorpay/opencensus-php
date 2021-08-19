@@ -5,6 +5,7 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 use Carbon\Carbon;
 use RZP\Gateway\Upi\Base;
 use RZP\Constants\Timezone;
+use RZP\Models\QrCode\Constants as Constants;
 
 class InvoiceDetails
 {
@@ -60,7 +61,7 @@ class InvoiceDetails
                 case InvoiceDetails::INVOICE_DATE:
 
                     $taxDetails[Base\IntentParams::INVOICE_DATE] = Carbon::createFromTimestamp($invoiceDetails[InvoiceDetails::INVOICE_DATE])
-                                                                         ->toDateTimeString();
+                                                                         ->toDateTimeLocalString() . Constants::UTC_INDIA_OFFSET;
 
                     break;
 
@@ -109,7 +110,7 @@ class InvoiceDetails
 
         if (empty($taxDetails[Base\IntentParams::INVOICE_DATE]) === true)
         {
-            $taxDetails[Base\IntentParams::INVOICE_DATE] = Carbon::now(Timezone::IST)->toDateTimeString();
+            $taxDetails[Base\IntentParams::INVOICE_DATE] = Carbon::now(Timezone::IST)->toDateTimeLocalString() . Constants::UTC_INDIA_OFFSET;
         }
 
         return $taxDetails;

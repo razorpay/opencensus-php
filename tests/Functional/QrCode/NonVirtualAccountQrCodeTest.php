@@ -155,7 +155,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertStringContainsString('gstIn=06AABCU9603R1ZR', $qrCode['image_content']);
         $this->assertStringContainsString('gstBrkUp=GST:40.1|SGST:20.05|CGST:20.05|CESS:2', $qrCode['image_content']);
         $this->assertStringContainsString('invoiceNo=INV001', $qrCode['image_content']);
-        $this->assertStringContainsString('invoiceDate=2020-05-2017:14:58', $qrCode['image_content']);
+        $this->assertStringContainsString('invoiceDate=2020-05-20T17:14:58+05:30', $qrCode['image_content']);
 
         $this->runEntityAssertions($qrCode);
     }

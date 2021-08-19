@@ -59,4 +59,6 @@ class Constants
     const REMINDER_BASE_URL     = 'reminders/send';
     const REMINDER_NAMESPACE    = 'qr_code';
     const REMINDER_ENTITY_NAME  = 'qr_code';
+
+    const UTC_INDIA_OFFSET = '+05:30';
 }
