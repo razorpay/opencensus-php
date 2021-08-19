@@ -19,6 +19,7 @@ use RZP\Error;
 use RZP\Mail\Merchant\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMail;
 use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Card\IIN\Country;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
@@ -3864,7 +3865,7 @@ class Service extends Base\Service
         if (($merchant !== null) and ($merchant->isInternational() === true)
             and ($merchant->isAddressRequiredEnabled() === true))
         {
-            if (($iinEntity !== null) and ($iinEntity->isInternational() === true))
+            if (($iinEntity !== null) and ($iinEntity->isInternational() === true) and (Country::isAddressRequiredCountry($iinEntity->getCountry())))
             {
                 return true;
             }
