@@ -198,12 +198,12 @@ class Repository extends Base\Repository
     {
         $ftaTable           = $this->repo->fund_transfer_attempt->getTableName();
         $ftaSourceIdColumn  = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::SOURCE_ID);
+        $ftaModeColumn      = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::MODE);
 
         $payoutsIdColumn            = $this->repo->payout->dbColumn(Entity::ID);
         $payoutsBalanceColumn       = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
         $payoutInitiatedAtColumn    = $this->repo->payout->dbColumn(Payout\Entity::INITIATED_AT);
         $payoutsAmountColumn        = $this->repo->payout->dbColumn(Entity::AMOUNT);
-        $payoutsMethodColumn        = $this->repo->payout->dbColumn(Entity::MODE);
 
         $payoutAttrs = $this->dbColumn('*');
 
@@ -213,7 +213,7 @@ class Repository extends Base\Repository
                     ->where($payoutsBalanceColumn, $balanceId)
                     ->whereRaw('UPPER(`fund_transfer_attempts`.`gateway_ref_no`) = ?', $gatewayRefNumber)
                     ->where($payoutsAmountColumn, $amount)
-                    ->where($payoutsMethodColumn, Mode::IFT)
+                    ->where($ftaModeColumn, Mode::IFT)
                     ->whereBetween($payoutInitiatedAtColumn, [$txnDateTimeBefore, $txnDateTime])
                     ->get();
     }
@@ -259,12 +259,12 @@ class Repository extends Base\Repository
     {
         $ftaTable               = $this->repo->fund_transfer_attempt->getTableName();
         $ftaSourceIdColumn      = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::SOURCE_ID);
+        $ftaModeColumn      = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::MODE);
 
         $payoutsIdColumn            = $this->repo->payout->dbColumn(Entity::ID);
         $payoutsBalanceColumn       = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
         $payoutInitiatedAtColumn    = $this->repo->payout->dbColumn(Payout\Entity::INITIATED_AT);
         $payoutsAmountColumn        = $this->repo->payout->dbColumn(Entity::AMOUNT);
-        $payoutsMethodColumn        = $this->repo->payout->dbColumn(Entity::MODE);
         $payoutsTransactionIdColumn = $this->repo->payout->dbColumn(Entity::TRANSACTION_ID);
 
         $payoutAttrs = $this->dbColumn('*');
@@ -275,7 +275,7 @@ class Repository extends Base\Repository
                     ->where($payoutsBalanceColumn, $balanceId)
                     ->whereRaw('UPPER(`fund_transfer_attempts`.`gateway_ref_no`) = UPPER(?)', $gatewayRefNumber)
                     ->where($payoutsAmountColumn, $amount)
-                    ->where($payoutsMethodColumn, Mode::IFT)
+                    ->where($ftaModeColumn, Mode::IFT)
                     ->whereNull($payoutsTransactionIdColumn)
                     ->whereBetween($payoutInitiatedAtColumn, [$txnDateTimeBefore, $txnDateTime])
                     ->get();

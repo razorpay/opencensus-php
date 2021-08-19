@@ -2624,13 +2624,13 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $channel = Channel::RBL;
 
-        $this->setupForRblPayout($channel, 104, FundTransfer\Mode::IFT);
+        $this->setupForRblPayout($channel, 20000000, FundTransfer\Mode::RTGS);
 
         $payout = $this->getDbLastEntity('payout');
 
-        $this->assertEquals(590, $payout['fees']);
-        $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals(1770, $payout['fees']);
+        $this->assertEquals(270, $payout['tax']);
+        $this->assertEquals('Bbg7e4oKCgaube', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -2645,7 +2645,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], [
             'cms_ref_no'     => 'S5',
             'utr'            => 'UTIBH20106341692',
-            'gateway_ref_no' => 'jaMesBond7']);
+            'gateway_ref_no' => 'jaMesBond7',
+            'mode'           => Payout\Mode::IFT]);
 
         $this->fixtures->edit('balance', $payout['balance_id'], ['balance' => 30019995]);
 
@@ -2689,6 +2690,7 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($payout['id'], $basEntries[0]['entity_id']);
         $this->assertEquals($payout['transaction_id'], $basEntries[0]['transaction_id']);
         $this->assertEquals(Payout\Status::REVERSED, $payout[Payout\Entity::STATUS]);
+        $this->assertEquals(Payout\Mode::RTGS, $payout[Payout\Entity::MODE]);
 
         $this->assertEquals(EntityConstants::REVERSAL, $basEntries[1]['entity_type']);
         $this->assertEquals($payout['id'], $reversal['entity_id']);
