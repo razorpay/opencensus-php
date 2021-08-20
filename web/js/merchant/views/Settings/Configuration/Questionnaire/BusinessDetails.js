@@ -68,7 +68,7 @@ const BusinessDetails = ({ disabled, triggerSource }) => {
         label="Business Use-Case"
         disabled={disabled}
         value={formikProps.values.business_use_case}
-        placeholder="Why do you need international payments (Min 250 Chars)"
+        placeholder="Why do you need international payments (Min 50 Chars)"
         info={`Ex: "We sell apparels, unisex. Most of our customers are from abroad, so we need to enable international card acceptance for that reason"`}
         onBlur={formikProps.handleBlur}
         mature={formikProps.touched.business_use_case}

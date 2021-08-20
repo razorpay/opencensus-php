@@ -12,7 +12,7 @@ export const schema = Yup.object().shape({
   business_use_case: Yup.string()
     .nullable()
     .trim()
-    .min(250, 'Min 250 characters required')
+    .min(50, 'Min 50 characters required')
     .required('Business use case is a required field'),
   allowed_currencies: Yup.string().nullable().required('This is a required field'),
   monthly_sales_intl_cards: Yup.string().nullable().required('This is a required field'),
