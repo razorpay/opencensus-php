@@ -86,6 +86,7 @@ class Constants
     const PERIODIC_CHECKER_EVENT   = 'periodic_checker';
     const MILESTONE_CHECKER_EVENT  = 'milestone_checker';
     const RISK_SCORE_CHECKER_EVENT = 'risk_score_checker';
+    const ONBOARDING_CHECKER_EVENT = 'onboarding_checker';
 
     // 2592000 = 30 days = 30 * 24 * 60 * 60
     const PERIODIC_CHECKER_MERCHANT_LIST_PAYMENT_CREATED_WINDOW_SECONDS = 2592000;
@@ -93,7 +94,8 @@ class Constants
     const EVENT_TYPES = [
         self::PERIODIC_CHECKER_EVENT,
         self::MILESTONE_CHECKER_EVENT,
-        self::RISK_SCORE_CHECKER_EVENT
+        self::RISK_SCORE_CHECKER_EVENT,
+        self::ONBOARDING_CHECKER_EVENT
     ];
 
     const CHECKER_TYPES = [

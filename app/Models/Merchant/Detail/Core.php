@@ -77,6 +77,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\Merchant\AvgOrderValue;
 use RZP\Models\Merchant\BusinessDetail\Service;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
+use RZP\Services\MerchantRiskClient as MRS;
+use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
+use RZP\Models\Merchant\Fraud\HealthChecker\Constants as HealthCheckerConstants;
 
 class Core extends Base\Core
 {
@@ -196,6 +199,21 @@ class Core extends Base\Core
             //save App Urls Details
             $businessDetailService = new Service();
             $businessDetails = $businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $businessDetailsInput);
+
+            //Calling App Checker Service during onboarding
+            (new HealthChecker\Core())->notifyRiskChecker(
+                $merchant->getId(), HealthCheckerConstants::PERFORM_HEALTH_CHECK_JOB, [
+                    HealthCheckerConstants::RETRY_COUNT_KEY          => HealthCheckerConstants::MAX_RISK_CHECK_RETRIES,
+                    HealthCheckerConstants::EVENT_TYPE               => HealthCheckerConstants::ONBOARDING_CHECKER_EVENT,
+                    HealthCheckerConstants::CHECKER_TYPE             => HealthCheckerConstants::APP_CHECKER,
+                ]
+            );
+        }
+
+        if(empty($input['business_website']) === false)
+        {
+            //Calling Profanity Checker during onboarding
+            (new MRS())->enqueueProfanityCheckerRequest('site', 'merchant', $merchant->getId(), $input['business_website'], 2);
         }
 
         unset($input[Entity::ACTIVATION_FORM_MILESTONE]);

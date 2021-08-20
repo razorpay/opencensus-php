@@ -313,7 +313,7 @@ class Core extends Base\Core
         return true;
     }
 
-    private function notifyRiskChecker(string $merchantId, string $jobType, array $jobDetails)
+    public function notifyRiskChecker(string $merchantId, string $jobType, array $jobDetails)
     {
         $checkerType = $jobDetails[Constants::CHECKER_TYPE] ?? Constants::WEBSITE_CHECKER;
         $this->trace->info(
