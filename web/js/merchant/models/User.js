@@ -1164,6 +1164,10 @@ export default class User {
   get isProductRecommendationEnabled() {
     return this.getExpStatus('product_recommendation');
   }
+
+  get isLoansCollectionsEnabled() {
+    return this.getExpStatus('loans_collections_dashboard');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

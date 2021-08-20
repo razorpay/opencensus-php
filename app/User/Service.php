@@ -1729,6 +1729,7 @@ class Service extends Base\Service
             'auto_refresh_experiment',
             'csm_experince_survey',
             'inv_create_flow_ux',
+            'loans_collections_dashboard',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
