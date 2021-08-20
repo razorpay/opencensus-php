@@ -1001,6 +1001,7 @@ return [
                     'es_on_demand_restricted',
                     'es_automatic',
                     'headless_disable',
+                    'bepg_disable',
                     'first_data_s2s_flow',
                     'bin_issuer_validator',
                     'offer_private_auth',

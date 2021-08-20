@@ -108,6 +108,7 @@ class Constants
     const ES_ON_DEMAND_RESTRICTED         = 'es_on_demand_restricted';
     const ES_AUTOMATIC                    = 'es_automatic';
     const HEADLESS_DISABLE                = 'headless_disable';
+    const BEPG_DISABLE                    = 'bepg_disable';
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
     const FIRST_DATA_S2S_FLOW             = 'first_data_s2s_flow';
     const OFFER_PRIVATE_AUTH              = 'offer_private_auth';
@@ -926,6 +927,7 @@ class Constants
         self::ES_ON_DEMAND_RESTRICTED         => true,
         self::ES_AUTOMATIC                    => true,
         self::HEADLESS_DISABLE                => true,
+        self::BEPG_DISABLE                    => true,
         self::FIRST_DATA_S2S_FLOW             => true,
         self::BIN_ISSUER_VALIDATOR            => true,
         self::OFFER_PRIVATE_AUTH              => true,
