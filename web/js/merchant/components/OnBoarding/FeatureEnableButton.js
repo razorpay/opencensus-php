@@ -10,6 +10,23 @@ import { fetchUser } from 'merchant/reducers/session';
 import { setOnBoardingDataInLocalState } from './utils';
 import { bindActionCreators, compose } from 'redux';
 
+@connect(
+  (state) => {
+    return {
+      user: state.session.user,
+      isTestMode: state.session.mode === 'test',
+      onboarding: state.onboarding,
+    };
+  },
+  {
+    fetchUser: () => fetchUser(), // TODO: import fetchUser is not working
+    saveOnboarding,
+    updateFeatures,
+    showNotification,
+    handleProductQuickGuide,
+  },
+)
+@RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_enable_button`))
 class FeatureEnableButton extends Component {
   state = {
     isSuccess: false,
@@ -37,10 +54,10 @@ class FeatureEnableButton extends Component {
       return;
     }
 
-    let saveOnboarding = null;
+    let saveOnboardingPromise = null;
 
     if (this.props.isTestMode) {
-      saveOnboarding = this.props.updateFeatures(
+      saveOnboardingPromise = this.props.updateFeatures(
         {
           features: {
             [this.props.feature]: 1,
@@ -49,12 +66,12 @@ class FeatureEnableButton extends Component {
         this.props.user.current,
       );
     } else {
-      saveOnboarding = this.props.saveOnboarding(this.props.feature, {
+      saveOnboardingPromise = this.props.saveOnboarding(this.props.feature, {
         business_model: 'null-value',
       });
     }
 
-    return saveOnboarding
+    return saveOnboardingPromise
       .then((res) => {
         if (this.props.tracking) {
           this.props.tracking.trackEvent(
@@ -105,28 +122,4 @@ FeatureEnableButton.Transparent = (props) => (
   <FeatureEnableButton {...props} class={transparentColor(props.className)} />
 );
 
-const mapStateToProps = (state) => {
-  return {
-    user: state.session.user,
-    isTestMode: state.session.mode === 'test',
-    onboarding: state.onboarding,
-  };
-};
-
-const mapDispatchToProps = (dispatch) =>
-  bindActionCreators(
-    {
-      fetchUser: () => fetchUser(), // TODO: import fetchUser is not working
-      saveOnboarding: () => saveOnboarding(), // Somehow, only this seems to work
-      updateFeatures,
-      showNotification,
-      handleProductQuickGuide,
-    },
-    dispatch,
-  );
-
-export default compose(
-  connect(mapStateToProps, mapDispatchToProps),
-  // eslint-disable-next-line babel/new-cap
-  RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_enable_button`)),
-)(FeatureEnableButton);
+export default FeatureEnableButton;
