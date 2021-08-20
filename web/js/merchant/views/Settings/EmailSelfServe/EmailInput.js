@@ -112,7 +112,7 @@ const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmai
         />
         <Input
           name="reEmail"
-          type="password"
+          type="email"
           onPaste={function (e) {
             e.preventDefault();
           }}
