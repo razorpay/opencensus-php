@@ -6350,3 +6350,6 @@ ALTER TABLE merchant_banks
 
 ALTER TABLE disputes
     ADD COLUMN lifecycle json DEFAULT NULL;
+
+ALTER TABLE paytm
+    MODIFY COLUMN banktxnid VARCHAR(30);
