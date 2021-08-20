@@ -205,7 +205,7 @@ return [
                             'The selected goods type is invalid.'
                         ],
                         'business_use_case' => [
-                            'The business use case must be at least 250 characters.'
+                            'The business use case must be at least 50 characters.'
                         ],
                         'contact_us_link' => [
                             'The contact us link is not a valid URL.'

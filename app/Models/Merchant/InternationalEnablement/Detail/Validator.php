@@ -15,7 +15,7 @@ class Validator extends Base\Validator
 
     public static $createForDraftRules = [
         Entity::GOODS_TYPE                          => 'nullable|sometimes|string|in:' . Constants::GOODS_TYPE_VALIDATOR_CSV,
-        Entity::BUSINESS_USE_CASE                   => 'nullable|sometimes|string|min:250|max:1000',
+        Entity::BUSINESS_USE_CASE                   => 'nullable|sometimes|string|min:50|max:1000',
         Entity::ALLOWED_CURRENCIES                  => 'nullable|sometimes|array|between:1,100|custom',
         Entity::ALLOWED_CURRENCIES . '.*'           => 'sometimes|string|size:3',
         Entity::MONTHLY_SALES_INTL_CARDS_MIN        => 'nullable|sometimes|integer|min:0',
@@ -48,7 +48,7 @@ class Validator extends Base\Validator
 
     public static $createForSubmitRules = [
         Entity::GOODS_TYPE                          => 'required|string|in:' . Constants::GOODS_TYPE_VALIDATOR_CSV,
-        Entity::BUSINESS_USE_CASE                   => 'required|string|min:250|max:1000',
+        Entity::BUSINESS_USE_CASE                   => 'required|string|min:50|max:1000',
         Entity::ALLOWED_CURRENCIES                  => 'required|array|between:1,100|custom',
         Entity::ALLOWED_CURRENCIES . '.*'           => 'required|string|size:3',
         Entity::MONTHLY_SALES_INTL_CARDS_MIN        => 'required|integer|min:0',
