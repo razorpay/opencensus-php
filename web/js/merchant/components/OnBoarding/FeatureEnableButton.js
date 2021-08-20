@@ -26,12 +26,13 @@ class FeatureEnableButton extends Component {
       });
 
       if (this.props.onClick) this.props.onClick();
-
-      this.props.tracking.trackEvent(
-        window.rzpQ.productOnboarding().success(`${this.props.feature}.onboarding.get_started`, {
-          isTour: true,
-        }),
-      );
+      if (this.props.tracking) {
+        this.props.tracking.trackEvent(
+          window.rzpQ.productOnboarding().success(`${this.props.feature}.onboarding.get_started`, {
+            isTour: true,
+          }),
+        );
+      }
 
       return;
     }
@@ -55,9 +56,11 @@ class FeatureEnableButton extends Component {
 
     return saveOnboarding
       .then((res) => {
-        this.props.tracking.trackEvent(
-          window.rzpQ.productOnboarding().success(`${this.props.feature}.onboarding.get_started`),
-        );
+        if (this.props.tracking) {
+          this.props.tracking.trackEvent(
+            window.rzpQ.productOnboarding().success(`${this.props.feature}.onboarding.get_started`),
+          );
+        }
 
         return this.props.fetchUser();
       })
