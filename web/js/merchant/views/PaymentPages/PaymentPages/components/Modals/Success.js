@@ -14,7 +14,7 @@ import SocialShareOptions from './Share/SocialShareOptions';
 import Collapsible from 'merchant/components/Collapsible';
 import ProductCard from 'merchant/components/ProductCard/ProductCard';
 import { getCustomURL } from 'merchant/components/DocsLink';
-import track from '../../Wysiwyg/track';
+// import track from '../../Wysiwyg/track';
 
 export default class extends React.PureComponent {
   state = {};
@@ -44,7 +44,7 @@ export default class extends React.PureComponent {
             message: 'URL is successfully sent via ' + msg.join(' and '),
           });
 
-          track.success.clickShareUrlViaEmailorSMS(getKeysSeparatedByPipe(formData));
+          // track.success.clickShareUrlViaEmailorSMS(getKeysSeparatedByPipe(formData));
           this.props.handleClose();
         }
       })
@@ -76,7 +76,7 @@ export default class extends React.PureComponent {
   };
 
   openEmbedButtonView = () => {
-    track.success.getHyperlinkButton();
+    // track.success.getHyperlinkButton();
     this.props.trackClickOnCreateEmbedButton && this.props.trackClickOnCreateEmbedButton('new');
 
     this.props.openModal({
@@ -115,7 +115,7 @@ export default class extends React.PureComponent {
               <CustomClipboard
                 value={url}
                 onCopy={() => {
-                  track.success.clickCopyUrl();
+                  // track.success.clickCopyUrl();
                   const ele = document.getElementsByName('short_url');
                   ele[0] && ele[0].focus();
                   this.props.trackerFn('Click Copy URL');
