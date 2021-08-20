@@ -16,7 +16,7 @@ class Api extends BaseSettlementsApi
         return $this->getDefaultMerchantConfigArray();
     }
 
-    public function migrateBankAccount($input, $via, $mode)
+    public function migrateBankAccount($input, $mode, $via = 'payout')
     {
         return [
             'id' => 'bankAccount123',

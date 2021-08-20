@@ -271,7 +271,7 @@ class Base
      * @param $via
      * @return array
      */
-    public function getBankAccountCreateRequestForSettlementService($ba, $via = 'fts')
+    public function getBankAccountCreateRequestForSettlementService($ba, $via = 'payout')
     {
         return [
             'merchant_id'         => $ba->getMerchantId(),

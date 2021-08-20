@@ -62,7 +62,14 @@ class Core extends Base\Core
 
             if ($this->settlementServiceRamp($ba->getMerchantId()) === true)
             {
-                app('settlements_dashboard')->createBankAccount($ba, $this->mode);
+                if( $this->app['basicauth']->isAdminAuth() === true )
+                {
+                    app('settlements_dashboard')->createBankAccount($ba, $this->mode);
+                }
+                else
+                {
+                    app('settlements_api')->migrateBankAccount($ba, $this->mode);
+                }
             }
 
             return $ba;
@@ -92,7 +99,14 @@ class Core extends Base\Core
 
         if ($this->settlementServiceRamp($ba->getMerchantId()) === true)
         {
-            app('settlements_dashboard')->createBankAccount($ba, $this->mode);
+            if( $this->app['basicauth']->isAdminAuth() === true )
+            {
+                app('settlements_dashboard')->createBankAccount($ba, $this->mode);
+            }
+            else
+            {
+                app('settlements_api')->migrateBankAccount($ba, $this->mode);
+            }
         }
 
         return $ba;
@@ -375,7 +389,14 @@ class Core extends Base\Core
         // only this function will call and we can not have the merchant id configured in front
         if ($this->settlementServiceRamp($merchant->getId()) === true)
         {
-            app('settlements_dashboard')->createBankAccount($ba, Mode::TEST);
+            if( $this->app['basicauth']->isAdminAuth() === true )
+            {
+                app('settlements_dashboard')->createBankAccount($ba, Mode::TEST);
+            }
+            else
+            {
+                app('settlements_api')->migrateBankAccount($ba, Mode::TEST);
+            }
         }
 
         return $ba;
@@ -578,7 +599,7 @@ class Core extends Base\Core
             throw new Exception\LogicException(SettlementServiceMigration::REGEX_MATCH_FAILURE_FOR_MERCHANT);
         }
 
-        app('settlements_api')->migrateBankAccount($ba, $via, $mode);
+        app('settlements_api')->migrateBankAccount($ba, $mode, $via);
 
         $this->trace->info(
             TraceCode::SETTLEMENT_SERVICE_BA_MIGRATION_SUCCESS,

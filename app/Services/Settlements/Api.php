@@ -93,7 +93,7 @@ class Api extends Base
      * @throws RuntimeException
      * @throws \Throwable
      */
-    public function migrateBankAccount($input, $via, $mode)
+    public function migrateBankAccount($input, $mode, $via = 'payout')
     {
         if ($input->getType() !== Type::MERCHANT)
         {
