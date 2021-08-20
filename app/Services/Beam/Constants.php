@@ -41,4 +41,6 @@ class Constants
     const UBI_NB_REFUND_FILE_JOB_NAME = 'ubi_netbanking_refund_prod';
 
     const NSDL_NB_COMBINED_FILE_JOB_NAME  = 'nsdl_netbanking_refund_prod';
+
+    const AXIS_NB_COMBINED_FILE_JOB_NAME = 'axis_netbanking_refund_prod';
 }

@@ -34,6 +34,7 @@ class Lambda extends Base
         Base::NETBANKING_UBI,
         Base::NETBANKING_AUSF,
         Base::NETBANKING_NSDL,
+        Base::NETBANKING_AXIS,
     ];
 
     public function process(array $input): array
