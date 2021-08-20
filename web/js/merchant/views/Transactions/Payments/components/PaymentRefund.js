@@ -65,6 +65,24 @@ const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
   ) : null;
 };
 
+const RefundDetails = ({ items = [] }) => {
+  const refundReason = items[0]?.notes?.refund_reason;
+  const refundRefNumber = items[0]?.acquirer_data?.rrn || items[0]?.acquirer_data?.arn;
+
+  return (
+    <>
+      <Definition customClass="m-t">
+        <span>Refund Reason</span>
+        <span>{refundReason || '--'}</span>
+      </Definition>
+      <Definition customClass="m-t">
+        <span>Refund Reference Number</span>
+        <span>{refundRefNumber || '--'}</span>
+      </Definition>
+    </>
+  );
+};
+
 export default ({ payment, refunds, openRefundModal, onToggleClick = () => {} }) => {
   const paymentStatus = payment.status;
   const refundStatus = payment.refund_status;
@@ -184,7 +202,10 @@ export default ({ payment, refunds, openRefundModal, onToggleClick = () => {} })
               Fully Refunded in <NumRefunds refunds={refunds} />
             </span>
           </Definition>
-          <p />
+          <ShowWhen additionalCondition={(user) => user.isPaymentsExtraRefundDetailsEnabled}>
+            <RefundDetails items={refunds.items} />
+          </ShowWhen>
+          <div class="m-t" />
           {
             <RefundsList
               refunds={refunds}

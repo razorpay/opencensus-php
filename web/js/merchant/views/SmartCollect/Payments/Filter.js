@@ -5,22 +5,22 @@ export default ({ showAdvancedFilters, ...props }) => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
-        <label>Virtual Account Id</label>
-        <Field
-          name="virtual_account_id"
-          component="input"
-          class="form-control input-sm"
-          onBlur={props.onEleBlur('virtual_account_id')}
-        />
-      </div>
-
-      <div class="form-group list-filter-item">
         <label>Payment Id</label>
         <Field
           name="id"
           component="input"
           class="form-control input-sm"
           onBlur={props.onEleBlur('payment_id')}
+        />
+      </div>
+
+      <div class="form-group list-filter-item">
+        <label>Virtual Account Id</label>
+        <Field
+          name="virtual_account_id"
+          component="input"
+          class="form-control input-sm"
+          onBlur={props.onEleBlur('virtual_account_id')}
         />
       </div>
 

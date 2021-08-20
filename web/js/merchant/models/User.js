@@ -775,6 +775,10 @@ export default class User {
     return this.getExpStatus('va_search');
   }
 
+  get isPaymentsExtraRefundDetailsEnabled() {
+    return this.getExpStatus('payments_extra_refund_details');
+  }
+
   get isEmandateNonzeroAmountEnabled() {
     return this.getExpStatus('emandate_nonzero_amount');
   }

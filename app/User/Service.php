@@ -1718,6 +1718,7 @@ class Service extends Base\Service
             'route_batch_upload',
             'email_self_serve',
             'pb_new_success_screen',
+            'payments_extra_refund_details',
             'mandatory_gstin_input',
             'sync_experiment',
             'recurring_more_account_type',

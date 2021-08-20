@@ -2,7 +2,8 @@ import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { RZPFeatures } from 'merchant/helpers/data';
 
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 import { paymentId, amount, email, contact, createdAt, status } from 'common/ui/item/pair';
 
@@ -77,14 +78,31 @@ export default class VAPaymentsListContainer extends ListContainer {
       });
   };
 
-  trackPaymentIdCol = () => {
-    this.track('list.payment_id');
+  trackPaymentIdCol = ({ id, status }) => {
+    return () => {
+      const options = { id, status };
+
+      this.track('list.payment_id', options);
+
+      // TODO: Move all tracking to one file
+      analyticsTrack({
+        objectName: 'payment id',
+        actionName: 'clicked',
+        screen: 'Smart Collect Payments',
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user),
+          ...options,
+        },
+      });
+    };
   };
 
   get paymentIdCol() {
     return {
       ...paymentId,
-      value: (...args) => <div onClick={this.trackPaymentIdCol}>{paymentId.value(...args)}</div>,
+      value: (...args) => (
+        <div onClick={this.trackPaymentIdCol(...args)}>{paymentId.value(...args)}</div>
+      ),
     };
   }
 
