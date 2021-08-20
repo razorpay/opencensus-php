@@ -3659,6 +3659,8 @@ class PayoutTest extends OAuthTestCase
 
         $payout2 = $this->startTest();
 
+        $this->assertArrayNotHasKey(Payout\Entity::REMARKS, $payout2);
+
         $this->assertArraySelectiveEquals($payout2, $payout);
     }
 

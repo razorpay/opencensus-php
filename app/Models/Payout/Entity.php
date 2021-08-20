@@ -2166,6 +2166,10 @@ class Entity extends Base\PublicEntity
         {
             $attributes[self::REMARKS] = $this->getRemarks();
         }
+        else
+        {
+            unset($attributes[self::REMARKS]);
+        }
     }
 
     public function setPublicCancellationUserIdAttribute(array & $attributes)
