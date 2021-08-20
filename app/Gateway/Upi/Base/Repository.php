@@ -129,4 +129,12 @@ class Repository extends Base\Repository
                     ->limit($count)
                     ->get();
     }
+
+    public function fetchByNpciReferenceIdOrGatewayPaymentId(string $arn)
+    {
+        return $this->newQuery()
+                    ->where(Entity::NPCI_REFERENCE_ID, '=', $arn)
+                    ->orWhere(Entity::GATEWAY_PAYMENT_ID, '=', $arn)
+                    ->first();
+    }
 }

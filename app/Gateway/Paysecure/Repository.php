@@ -14,4 +14,11 @@ class Repository extends Base\Repository
         Entity::RRN                    => 'sometimes',
         Entity::APPRCODE               => 'sometimes',
     ];
+
+    public function getByRrn(string $rrn)
+    {
+        return $this->newQuery()
+                    ->where(Entity::RRN, $rrn)
+                    ->first();
+    }
 }

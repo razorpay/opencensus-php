@@ -2231,6 +2231,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function bulkFraudNotify()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_BULK_FRAUD_NOTIFY)->notify($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function healthChecker($checkerType)
     {
         $input = Request::all();

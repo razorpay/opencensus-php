@@ -2681,6 +2681,7 @@ class Route
         'merchant_rtb_details_fetch'              => ['get',     'badge_details',                                           'MerchantController@getRZPTrustedBadgeDetails'                 ],
         'payment_verify_new'                      => ['post',    'payments/{id}/verify_new',                                'PaymentController@postVerifyNew'                              ],
         // Merchant Fraud
+        'bulk_fraud_notify'                      => ['post',    'merchant/notify/fraud/bulk',                              'MerchantController@bulkFraudNotify'                           ],
         'health_checker'                         => ['post',    'merchant/{checker_type}/checker',                                'MerchantController@healthChecker'                            ],
         'health_checker_periodic_cron'           => ['post',    'merchant/{checker_type}/checker/cron',                           'MerchantController@healthCheckerPeriodicCron'                ],
         'health_checker_milestone_cron'          => ['post',    'merchant/{checker_type}/checker/milestone/cron',                 'MerchantController@healthCheckerMilestoneCron'               ],
@@ -3631,6 +3632,7 @@ class Route
         'user_fetch_entity',
         'bulk_submerchant_assign',
         // Merchant Fraud
+        'bulk_fraud_notify',
         'health_checker',
         'health_checker_periodic_cron',
         'health_checker_milestone_cron',
@@ -6209,6 +6211,7 @@ class Route
         'fetch_filter_ledger'                             => Permission::LEDGER_VIEW_DASHBOARD,
 
         'merchant_risk_data'                              => Permission::GET_MERCHANT_RISK_DATA,
+        'bulk_fraud_notify'                               => Permission::BULK_FRAUD_NOTIFY,
 
         // Metro service Route
         'metro_project_create'                            => Permission::METRO_PROJECT_CREATE,
@@ -9428,6 +9431,9 @@ class Route
             'merchant_international_enablement_draft',
             'merchant_international_enablement_submit',
             'merchant_international_enablement_discard',
+
+            // Merchant Fraud
+            'bulk_fraud_notify',
 
             // metro
             'metro_project_create',

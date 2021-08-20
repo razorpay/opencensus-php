@@ -60,4 +60,10 @@ class Repository extends Base\Repository
         return $refundEntities;
     }
 
+    public function getByRrn(string $rrn)
+    {
+        return $this->newQuery()
+                    ->where(Entity::RRN, $rrn)
+                    ->first();
+    }
 }

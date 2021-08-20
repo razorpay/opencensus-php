@@ -428,6 +428,7 @@ return [
             'merchant_risk' => env('FRESHDESK_GROUP_MERCHANT_RISK_ID'),
             'rzpind' => [
                 'merchant_risk' => env('FRESHDESK_IND_GROUP_MERCHANT_RISK_ID'),
+                'byers_risk'    => env('FRESHDESK_IND_GROUP_BUYERS_RISK_ID'),
             ]
         ],
 

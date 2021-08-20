@@ -1,0 +1,191 @@
+<?php
+
+namespace RZP\Models\Merchant\Fraud\BulkNotification;
+
+use Carbon\Carbon;
+use Monolog\Logger;
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
+use Illuminate\Cache\RedisStore;
+use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
+
+class Freshdesk extends Base\Core
+{
+    /** @var $cache RedisStore */
+    protected $cache;
+
+    /**
+     * @var Entity
+     */
+    protected $entity;
+
+    public function __construct(Entity $entity)
+    {
+        parent::__construct();
+
+        $this->entity = $entity;
+
+        $this->cache = $this->app['cache'];
+    }
+
+    public function notify(array $aggregatedData, array &$output)
+    {
+        foreach ($aggregatedData as $merchantId => $merchantData)
+        {
+            try
+            {
+                $this->notifySingle($merchantData, $output[$merchantId], $merchantId);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, Logger::ERROR, TraceCode::MERCHANT_BULK_FRAUD_NOTIFICATION_FRESHDESK_REQUEST_FAILED, [
+                    'entity_id'     => $this->entity->getId(),
+                    'merchant_id'   => $merchantId,
+                    'merchant_data' => $merchantData,
+                ]);
+
+                foreach ($output[$merchantId] as &$merchantOutputRow)
+                {
+                    $merchantOutputRow[Constants::OUTPUT_KEY_ERROR] = $e->getMessage();
+                }
+
+            }
+        }
+    }
+
+    protected function notifySingle(array $merchantData, array &$merchantOutput, string $merchantId)
+    {
+        $this->validateLastNotified($merchantId);
+
+        /** @var Merchant\Entity $merchant */
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $fdOutboundEmailRequest = $this->getFdRequestPayload($merchant, $merchantData);
+
+        $this->trace->debug(TraceCode::MERCHANT_BULK_FRAUD_NOTIFICATION_FRESHDESK_REQUEST, [
+            'entity_id'       => $this->entity->getId(),
+            'request_payload' => $fdOutboundEmailRequest,
+        ]);
+
+        $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest, FreshdeskConstants::URLIND);
+
+        $this->cache->set(sprintf(Constants::REDIS_KEY_FMT, $merchantId), Carbon::now()->timestamp, Constants::REDIS_KEY_TTL);
+
+        $this->trace->debug(TraceCode::MERCHANT_BULK_FRAUD_NOTIFICATION_FRESHDESK_RESPONSE, [
+            'entity_id' => $this->entity->getId(),
+            'response'  => $response,
+        ]);
+
+        $fdTicketId = $response['id'] ?? null;
+
+        $this->setMerchantOutputRows($fdTicketId, $merchantOutput);
+    }
+
+    private function renderBody(array $merchantData): string
+    {
+        return \View::make('merchant.fraud.bulk_notification')->with(['merchantDataTable' => $merchantData])->render();
+    }
+
+    private function validateLastNotified(string $merchantId)
+    {
+        $lastNotifiedAt = $this->cache->get(sprintf(Constants::REDIS_KEY_FMT, $merchantId));
+
+        if (is_null($lastNotifiedAt) === false)
+        {
+            $message = sprintf("Merchant notified at %s. Can not notify more than once in 24 hours. Please try again later.", Carbon::createFromTimestamp($lastNotifiedAt)->setTimezone(Timezone::IST)->format('d/m/Y H:i:s'));
+
+            throw new \Exception($message);
+        }
+    }
+
+    private function getEmailIds(Merchant\Entity $merchant): array
+    {
+        $emailIds = $this->repo->merchant_email->getEmailsByMerchantIdsAndTypes([$merchant->getId()], [Merchant\Email\Type::CHARGEBACK])->pluck(Merchant\Email\Entity::EMAIL)->toArray();
+
+        if (empty($emailIds) === true)
+        {
+            $emailIds = [$merchant->getEmail()];
+        }
+
+        $emailIds = array_unique($emailIds);
+
+        if (count($emailIds) < 1)
+        {
+            $message = sprintf("No email_id found for merchant - %s", $merchant->getId());
+
+            throw new \Exception($message);
+        }
+
+        return $emailIds;
+    }
+
+    private function getGroupId($source): ?int
+    {
+        $groupId = null;
+
+        if ($source === Constants::SOURCE_BANK)
+        {
+            $groupId = (int) $this->app['config']->get('applications.freshdesk')['group_ids']['rzpind']['merchant_risk'];
+        }
+        else if ($source === Constants::SOURCE_CYBERCELL)
+        {
+            $groupId = (int) $this->app['config']->get('applications.freshdesk')['group_ids']['rzpind']['byers_risk'];
+        }
+
+        return $groupId;
+    }
+
+    private function setMerchantOutputRows($fdTicketId, array &$merchantOutput)
+    {
+        if (is_null($fdTicketId) === false)
+        {
+            foreach ($merchantOutput as &$merchantOutputRow)
+            {
+                $merchantOutputRow[Constants::OUTPUT_KEY_FD_TICKET_ID] = $fdTicketId;
+            }
+        }
+    }
+
+    private function getFdRequestPayload(Merchant\Entity $merchant, array $merchantData): array
+    {
+        $mailSubject = sprintf('Razorpay | Unauthorized transaction Alert - %s [%s] | %s', $merchant->getName(), $merchant->getId(), Carbon::now(Timezone::IST)->format('d/m/Y'));
+
+        $mailBody = $this->renderBody($merchantData);
+
+        $emailIds = $this->getEmailIds($merchant);
+
+        $primaryEmailId = array_shift($emailIds);
+
+        $groupId = $this->getGroupId($merchantData[0][Constants::MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION]);
+
+        $emailConfigId = (int) $this->app['config']->get('applications.freshdesk')['email_config_ids']['rzpind']['risk_notification'];
+
+        $fdOutboundEmailRequest = [
+            'subject'         => $mailSubject,
+            'description'     => $mailBody,
+            'status'          => 6,
+            'type'            => 'Service request',
+            'priority'        => 3,
+            'email'           => $primaryEmailId,
+            'tags'            => ['bulk_fraud_email'],
+            'group_id'        => $groupId,
+            'email_config_id' => $emailConfigId,
+            'custom_fields'   => [
+                'cf_ticket_queue' => 'Merchant',
+                'cf_merchant_id'  => $merchant->getId(),
+                'cf_category'     => 'Risk Report_Merchant',
+                'cf_subcategory'  => 'Fraud alerts',
+                'cf_product'      => 'Payment Gateway',
+            ],
+        ];
+
+        if (empty($emailIds) === false)
+        {
+            $fdOutboundEmailRequest['cc_emails'] = $emailIds;
+        }
+
+        return $fdOutboundEmailRequest;
+    }
+}

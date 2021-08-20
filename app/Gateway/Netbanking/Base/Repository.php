@@ -58,4 +58,11 @@ class Repository extends Base\Repository
                     ->where(Entity::REFERENCE1, '=', $reference1)
                     ->firstOrFail();
     }
+
+    public function findByGatewayPaymentId($gatewayPaymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::BANK_PAYMENT_ID, '=', $gatewayPaymentId)
+                    ->first();
+    }
 }

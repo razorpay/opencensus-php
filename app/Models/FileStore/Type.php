@@ -235,6 +235,8 @@ class Type
 
     const RECON_INPUT                           = 'recon_input';
 
+    const BULK_FRAUD_NOTIFICATION               = 'bulk_fraud_notification';
+
     const ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT = 'icici_netbanking_refund_direct_settlement';
 
     // File contants required for merchant feature onboarding
@@ -398,6 +400,10 @@ class Type
         Constants\Entity::FEATURE => [
             self::MARKETPLACE_VENDOR_AGREEMENT
         ],
+
+        Constants\Entity::BULK_FRAUD_NOTIFICATION => [
+            self::BULK_FRAUD_NOTIFICATION,
+        ]
     ];
 
     /**
@@ -523,6 +529,7 @@ class Type
         self::KOTAK_CORP_NETBANKING_REFUND,
         self::DATA_LAKE_SEGMENT_FILE,
         self::RECON_INPUT,
+        self::BULK_FRAUD_NOTIFICATION,
     ];
 
     /**

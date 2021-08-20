@@ -683,6 +683,8 @@ class Name
 
     const GET_MERCHANT_RISK_DATA = 'get_merchant_risk_data';
 
+    const BULK_FRAUD_NOTIFY = 'bulk_fraud_notify';
+
     // Recon service permission
     const RECON_OPERATION                              = 'recon_operation';
 

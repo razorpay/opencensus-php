@@ -1839,5 +1839,26 @@ final class FactoryData
             'updated_at'   => $faker->timestamp,
             'submitted_at' => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Gateway\Hitachi\Entity::class, [
+            'id'     => $faker->randomNumber(6),
+            'amount' => $faker->randomNumber(2),
+        ]);
+
+        $factory(\RZP\Gateway\Paysecure\Entity::class, [
+            'id'        => $faker->randomNumber(6),
+            'tran_date' => '1234',
+            'tran_time' => '567',
+        ]);
+
+        $factory(\RZP\Models\BankTransfer\Entity::class, [
+            'id'            => 'randombanktran',
+            'payee_account' => '123',
+            'payee_ifsc'    => 'RZPB0000000',
+            'gateway'       => 'hdfc',
+            'amount'        => $faker->randomNumber(2),
+            'mode'          => 'test',
+            'time'          => 123,
+        ]);
     }
 }

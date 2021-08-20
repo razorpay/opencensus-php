@@ -553,6 +553,10 @@ class Entity
     // Merchant Fraud
     const MERCHANT_HEALTH_CHECKER = 'merchant_health_checker';
 
+    const MERCHANT_BULK_FRAUD_NOTIFY = 'merchant_bulk_fraud_notify';
+
+    const BULK_FRAUD_NOTIFICATION = 'bulk_fraud_notification';
+
     const MERCHANT_RISK_NOTE = 'merchant_risk_note';
 
     /**
@@ -1004,6 +1008,8 @@ class Entity
         self::SEGMENTATION   => \RZP\Models\Segmentation::class,
 
         self::MERCHANT_HEALTH_CHECKER   => \RZP\Models\Merchant\Fraud\HealthChecker::class,
+
+        self::MERCHANT_BULK_FRAUD_NOTIFY   => \RZP\Models\Merchant\Fraud\BulkNotification::class,
 
         self::MERCHANT_RISK_NOTE       => \RZP\Models\Merchant\RiskNotes::class,
     ];
