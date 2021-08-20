@@ -5,10 +5,7 @@ import { AsyncBtn } from 'common/new-ui/Button';
 import { classList } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateFeatures } from 'merchant/reducers/config';
-import {
-  saveOnboarding as fnSaveOnboarding,
-  handleProductQuickGuide,
-} from 'merchant/reducers/onboarding';
+import { saveOnboarding, handleProductQuickGuide } from 'merchant/reducers/onboarding';
 import { fetchUser } from 'merchant/reducers/session';
 import { setOnBoardingDataInLocalState } from './utils';
 import { bindActionCreators, compose } from 'redux';
@@ -117,7 +114,7 @@ const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
       fetchUser: () => fetchUser(), // TODO: import fetchUser is not working
-      saveOnboarding: fnSaveOnboarding,
+      saveOnboarding: () => saveOnboarding(), // Somehow, only this seems to work
       updateFeatures,
       showNotification,
       handleProductQuickGuide,
