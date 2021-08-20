@@ -4,6 +4,7 @@ import RazorpayXNitroAnnouncement, {
   nitroCampaignId,
 } from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
 import OnboardingCoupons from 'common/ui/OnboardingCoupons';
+import RXPayrollMoonshineModal from 'common/ui/RXPayrollMoonshineModal';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -12,7 +13,7 @@ import LocalStorageService from 'common/utils/localStorage';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-const OffersForYou = ({ closeModals, openModals, tracking, canShowOnboardingOffers }) => {
+const OffersForYou = ({ closeModals, openModals, tracking, canShowOnboardingOffers, user }) => {
   const offersForYouState = LocalStorageService.getItem('offers_for_you_state');
   let showAnimation = true;
   if (offersForYouState === 'animationShown' || offersForYouState === 'hasAppliedCA')
@@ -32,7 +33,25 @@ const OffersForYou = ({ closeModals, openModals, tracking, canShowOnboardingOffe
   }, []);
 
   const handleClick = () => {
-    if (canShowOnboardingOffers) {
+    if (user.isProjectMoonshineEnabled) {
+      openModals({
+        component: (
+          <RXPayrollMoonshineModal
+            hideModal={closeModals}
+            fromWhere="offers-for-you"
+            tracking={tracking}
+          />
+        ),
+        size: 'xlarge',
+        className: 'RXPayrollMoonshine--Modal',
+      });
+
+      tracking.trackEvent(
+        window.rzpQ.merchantActions().initiated('merchant_dashboard.click_offer_for_you', {
+          ID: nitroCampaignId().version,
+        }),
+      );
+    } else if (canShowOnboardingOffers) {
       openModals({
         component: <OnboardingCoupons closeModal={closeModals} />,
         size: 'xlarge',

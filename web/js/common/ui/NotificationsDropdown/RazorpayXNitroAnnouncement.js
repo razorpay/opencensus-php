@@ -741,18 +741,16 @@ class DetailView extends React.Component {
               src="/dist/css/assets/razorpay-x-logo-white.svg"
               alt="rx-logo"
             />
-            <h3 className="heading">
-              {isProjectNitroCorporateCard ? (
-                <h3 className="heading">
-                  Get <span>1.65% pricing</span> & a Corporate Card by switching to a RazorpayX
-                  Current Account
-                </h3>
-              ) : (
-                <h3 className="heading">
-                  Get <span>1.65% pricing</span> when you switch to a RazorpayX Current Account
-                </h3>
-              )}
-            </h3>
+            {isProjectNitroCorporateCard ? (
+              <h3 className="heading">
+                Get <span>1.65% pricing</span> & a Corporate Card by switching to a RazorpayX
+                Current Account
+              </h3>
+            ) : (
+              <h3 className="heading">
+                Get <span>1.65% pricing</span> when you switch to a RazorpayX Current Account
+              </h3>
+            )}
             <ul className="list">
               {content.map((data) => (
                 <li key={data}>
@@ -835,6 +833,6 @@ export default compose(
     (state) => ({
       user: state.session.user,
     }),
-    null
+    null,
   ),
 )(RazorpayXNitroAnnouncement);

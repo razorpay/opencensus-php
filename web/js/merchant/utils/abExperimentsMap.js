@@ -99,7 +99,7 @@ export default {
     'HYimXrRKRI0V7y', // Prod
     'HYiqGXEBQX3oo8', // Beta
   ],
-  
+
   nitro_form_ab_experiment: [
     //prod
     'Hc1t1p85dJkRkp',
@@ -107,6 +107,17 @@ export default {
     // beta
     'Hb3p41OFV4RKzs',
   ],
+
+  project_moonshine: [
+    // prod
+    'HmypdLPF5UusXz',
+    'Hmz4DDcpwRNuXK',
+    'Hmz5aOOpuLg9QG',
+
+    // beta
+    'HmF8BO9pvG303W',
+  ],
+
   independent_partner_kyc: [
     // beta experiment ids
     'HhTUjZcw4WsE2V',

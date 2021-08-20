@@ -163,7 +163,8 @@ class NavFragment extends Component {
           additionalCondition={(user) =>
             canShowOnboardingOffers ||
             user.isProjectNitroEnabled ||
-            user.isProjectNitroCorporateCard
+            user.isProjectNitroCorporateCard ||
+            user.isProjectMoonshineEnabled
           }
         >
           <OffersForYou canShowOnboardingOffers={canShowOnboardingOffers} />

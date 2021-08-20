@@ -405,6 +405,10 @@ export default class User {
     return getSplitzExperimentVariant('nitro_corporate_cards')?.variables?.result === 'on';
   }
 
+  get isProjectMoonshineEnabled() {
+    return getSplitzExperimentVariant('project_moonshine')?.variables?.result === 'on';
+  }
+
   get isWhatsNewLazyEnabled() {
     return getSplitzExperimentVariant('whats_new_lazy_experiment')?.variables?.result === 'on';
   }
