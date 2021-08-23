@@ -40,6 +40,7 @@ final class PostAuthenticate
     protected $ba;
 
     const CONSUMER_TYPE_MERCHANT = "merchant";
+    const PRINCIPAL_TYPE_PARTNER = "partner";
 
     /**
      * @return void
@@ -115,6 +116,7 @@ final class PostAuthenticate
         $this->ensureRequestContextPassportForPublicAuth($passport, $errors);
         $this->ensureRequestContextPassportForPrivateAuth($passport, $errors);
         $this->ensureRequestContextPassportForOAuth($passport, $errors);
+        $this->ensureRequestContextPassportForPartner($passport, $errors);
 
         // If $passport was created fresh i.e. not from edge then of course there would be errors(i.e mismatch) :)
         if ($fromEdge and $errors)
@@ -189,6 +191,27 @@ final class PostAuthenticate
         ensureSameOrOverride($passport->oauth->appId, $this->ba->getOAuthApplicationId(), 'oauth.app_id', $errors);
     }
 
+    private function ensureRequestContextPassportForPartner(Passport\Passport $passport, array &$errors)
+    {
+        if (!$this->isPartnerAuth()) {
+            return;
+        }
+
+        $isConsumerExpected = true;
+        ensureSameExistenceOrOverride($passport->consumer, $isConsumerExpected, 'consumer', $errors, new Passport\ConsumerClaims);
+        ensureSameOrOverride($passport->consumer->id, $this->ba->getPartnerMerchantId(), 'consumer.id', $errors);
+        ensureSameOrOverride($passport->consumer->type, self::CONSUMER_TYPE_MERCHANT, 'consumer.type', $errors);
+
+        $isPartnerAuthExpected = true;
+        ensureSameExistenceOrOverride($passport->impersonation, $isPartnerAuthExpected, 'impersonation', $errors, new Passport\ImpersonationClaims);
+
+        ensureSameExistenceOrOverride($passport->impersonation->consumer, $isPartnerAuthExpected, 'impersonation.consumer', $errors, new Passport\ConsumerClaims);
+        ensureSameOrOverride($passport->impersonation->consumer->id, $this->ba->getMerchantId(), 'impersonation.consumer.id', $errors);
+        ensureSameOrOverride($passport->impersonation->consumer->type, self::CONSUMER_TYPE_MERCHANT, 'impersonation.consumer.type', $errors);
+
+        ensureSameOrOverride($passport->impersonation->type, self::PRINCIPAL_TYPE_PARTNER, 'impersonation.type', $errors);
+    }
+
     private function ensureRequestContextPassportForDirectAuth(Passport\Passport $passport, array &$errors)
     {
         if (!$this->isDirectAuth()) {
@@ -208,6 +231,11 @@ final class PostAuthenticate
     private function isOAuth()
     {
         return $this->reqCtx->authFlowType == BasicAuth\BasicAuth::OAUTH;
+    }
+
+    private function isPartnerAuth()
+    {
+        return $this->reqCtx->authFlowType == BasicAuth\BasicAuth::PARTNER;
     }
 
     private function isDirectAuth()

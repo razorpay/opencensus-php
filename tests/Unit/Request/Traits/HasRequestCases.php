@@ -30,6 +30,8 @@ trait HasRequestCases
     public static $testAdminEmail       = 'test@test.com';
     public static $testDeviceToken      = 'authentication_token';
     public static $testOauthPublicToken = 'rzp_test_oauth_100OAuthPublic';
+    public static $testPartnerKey       = 'rzp_test_partner_TheTestAuthKey';
+    public static $testPartnerSecret    = 'TheKeySecretForTests';
 
     /**
      * Invokes mocker method for given request case.
@@ -144,6 +146,13 @@ trait HasRequestCases
         $token = file_get_contents(__DIR__ . '/../Helpers/test_oauth_bearer_token.txt');
 
         return $this->mockRouteRequest($name, $path, [], [], [], [], ['HTTP_Authorization' => 'Bearer ' . $token]);
+    }
+
+    protected function mockPrivateRouteWithPartnerAuthToken(
+        string $name = 'invoice_fetch_multiple',
+        string $path = 'invoices'): Request
+    {
+        return $this->mockRouteRequest($name, $path, [], [self::$testPartnerKey, self::$testPartnerSecret], [], [], ['X-Razorpay-Account' => 'acc_100000Razorpay']);
     }
 
     protected function mockPrivateRouteWithProxyAuth(

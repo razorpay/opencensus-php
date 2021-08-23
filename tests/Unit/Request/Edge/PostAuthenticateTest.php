@@ -189,4 +189,62 @@ class PostAuthenticateTest extends TestCase
             [$passport, $passport->mode, $passport->oauth->clientId, $passport->oauth->appId, $passport->consumer->id, 'i_merchant_id', true],
         ];
     }
+
+    /**
+     * @dataProvider getPartnerAuthCases
+     *
+     * @param Passport\Passport $passport
+     * @param                   $expectedMode
+     * @param                   $expectedPartnerMerchantId
+     * @param                   $expectedMerchantId
+     * @param                   $expectedMismatch
+     */
+    public function testPartnerAuth(Passport\Passport $passport,
+                                   $expectedMode,
+                                   $expectedPartnerMerchantId,
+                                   $expectedMerchantId,
+                                   $expectedMismatch)
+    {
+        $request = $this->mockPrivateRouteWithPartnerAuthToken();
+        app('request.ctx')->init();
+        app('request.ctx')->resolveKeyIdIfApplicable();
+        $reqCtx           = app('request.ctx.v2');
+
+        $ba = $this->mockBasicAuth();
+        $ba->expects($this->atLeastOnce())->method('getMode')->willReturn($expectedMode);
+        $ba->expects($this->atLeastOnce())->method('getPartnerMerchantId')->willReturn($expectedPartnerMerchantId);
+        $ba->expects($this->atLeastOnce())->method('getMerchantId')->willReturn($expectedMerchantId);
+
+
+        $reqCtx->passport = $passport;
+
+        (new PostAuthenticate)->handle(true, $request);
+        $this->assertSame($passport->mode, $expectedMode);
+        $this->assertSame($reqCtx->passportAttrsMismatch, $expectedMismatch);
+    }
+
+    public function getPartnerAuthCases()
+    {
+        $passport                 = new Passport\Passport;
+        $passport->identified     = true;
+        $passport->authenticated  = true;
+        $passport->mode           = "live";
+        $passport->consumer       = new Passport\ConsumerClaims;
+        $passport->consumer->id   = "partner_id";
+        $passport->consumer->type = "merchant";
+
+        $passport->impersonation                    = new Passport\ImpersonationClaims;
+        $passport->impersonation->consumer          = new Passport\ConsumerClaims;
+        $passport->impersonation->consumer->id      = "merchant_id";
+        $passport->impersonation->consumer->type    = "merchant";
+        $passport->impersonation->type              = "partner";
+        return [
+            // Case 1 - Successful case.
+            [$passport, $passport->mode, $passport->consumer->id, $passport->impersonation->consumer->id, false],
+            // Case 2 - Mismatch partner_id
+            [$passport, $passport->mode, 'i_partner_id', $passport->impersonation->consumer->id, true],
+            // Case 3 - Mismatch merchant_id
+            [$passport, $passport->mode, $passport->consumer->id, 'i_merchant_id', true],
+        ];
+    }
 }
