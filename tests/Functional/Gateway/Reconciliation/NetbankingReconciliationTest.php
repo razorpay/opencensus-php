@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Reconciliation;
 use Mockery;
 use Illuminate\Http\UploadedFile;
 
+use RZP\Models\FileStore;
 use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Reconciliator\RequestProcessor\Base;
@@ -1961,6 +1962,175 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertEquals('authorized', $updatedPayment['status']);
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testNetbankingAxisSuccessRecon()
+    {
+        $this->gateway = 'netbanking_axis';
+
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_axis_terminal');
+
+        $payment = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
+
+        $this->createNetbanking($payment['id'], 'AXIS', 'Y');
+
+        $fileContents = $this->generateFile('axis', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingAxis', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertEquals(99999, $gatewayEntity['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testNetbankingAxisDoubleBidFirstSuccess()
+    {
+        $this->gateway = 'netbanking_axis';
+
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_axis_terminal');
+
+        $payment1 = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
+
+        $this->createNetbanking($payment1['id'], 'AXIS', 'Y');
+
+        $fileContents = $this->generateFile('axis', []);
+
+        $data = file($fileContents['local_file_path']);
+
+        $filePath = $this->createAxisDoubleBidFile($data);
+
+        $uploadedFile = $this->createUploadedFile($filePath);
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertEquals(99999, $gatewayEntity['bank_payment_id']);
+        $this->reconcile('NetbankingAxis', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertEquals(99999, $gatewayEntity['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment1['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals(Status::PARTIALLY_PROCESSED, $batch['status']);
+        $this->assertEquals(1, $batch['success_count']);
+        $this->assertEquals(1, $batch['failure_count']);
+    }
+
+    public function testNetbankingAxisDoubleBidSecondSuccess()
+    {
+        $this->gateway = 'netbanking_axis';
+
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_axis_terminal');
+
+        $payment1 = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
+
+        $this->createNetbanking($payment1['id'], 'AXIS', 'Y');
+
+        $fileContents = $this->generateFile('axis', []);
+
+        $data = file($fileContents['local_file_path']);
+
+        $filePath = $this->createAxisDoubleBidFile($data, true);
+
+        $uploadedFile = $this->createUploadedFile($filePath);
+
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertEquals(99999, $gatewayEntity['bank_payment_id']);
+
+        $this->reconcile('NetbankingAxis', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertEquals(99999, $gatewayEntity['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment1['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals(Status::PARTIALLY_PROCESSED, $batch['status']);
+        $this->assertEquals(1, $batch['success_count']);
+        $this->assertEquals(1, $batch['failure_count']);
+    }
+
+    protected function createAxisDoubleBidFile($data, $swap = false)
+    {
+        $fileData = [];
+        $fileData[] = explode(",", trim($data[0]));
+        $fileData[] = explode(",", trim($data[1]));
+        $row2 = explode(",", trim($data[1]));
+        $row2[0] = 11111;
+        $fileData[] = $row2;
+        $fileData[] = explode(",", trim($data[2]));
+
+        if($swap === true)
+        {
+            $temp = $fileData[1];
+            $fileData[1] = $fileData[2];
+            $fileData[2] = $temp;
+        }
+
+        $creator = new FileStore\Creator;
+        $type = FileStore\Type::MOCK_RECONCILIATION_FILE;
+        $txt = $this->generateText($fileData, ',', false);
+
+        $file = $creator->extension('txt')
+            ->content($txt)
+            ->name('sp_razorpay_payeespecific')
+            ->type($type)
+            ->headers(false)
+            ->save()
+            ->get();
+
+       return $file['local_file_path'];
+    }
+
+    protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
+    {
+        $txt = '';
+
+        $count = count($data);
+
+        foreach ($data as $row)
+        {
+            $txt .= implode($glue, array_values($row));
+
+            $count--;
+
+            if (($ignoreLastNewline === false) or
+                (($ignoreLastNewline === true) and ($count > 0)))
+            {
+                $txt .= "\r\n";
+            }
+        }
+
+        return $txt;
     }
 
     public function testNetbankingFederalSuccessRecon()

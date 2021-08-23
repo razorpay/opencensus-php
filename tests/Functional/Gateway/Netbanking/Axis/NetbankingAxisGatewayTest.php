@@ -447,19 +447,19 @@ class NetbankingAxisGatewayTest extends TestCase
 
     public function testMulipleSuccessTableVerifyResponse()
     {
-
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
         $this->mockMultipleVerifyTables('S');
 
-        $data = $this->testData[__FUNCTION__];
+        $this->doAuthAndCapturePayment($this->payment);
 
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->verifyPayment($payment['id']);
-            });
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->assertEquals('9999999999', $payment['acquirer_data']['bank_transaction_id']);
+
+        $netbankingEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals('9999999999', $netbankingEntity['bank_payment_id']);
     }
 
     /**
@@ -697,7 +697,7 @@ class NetbankingAxisGatewayTest extends TestCase
                 {
                     $gatewayEntity = $this->getLastEntity('netbanking', true);
 
-                    $content->Table1->BID = $gatewayEntity['bank_payment_id'];
+                    $content->Table1->BID = '11111111';
 
                     $response = (array) $content;
                     $array = json_decode(json_encode($response), true);
@@ -708,6 +708,7 @@ class NetbankingAxisGatewayTest extends TestCase
                     array_walk_recursive($table2, array ($content->Table2, 'addChild'));
 
                     $content->Table1->PaymentStatus = $status;
+                    $content->Table2->BID = $gatewayEntity['bank_payment_id'];
                 }
             });
     }

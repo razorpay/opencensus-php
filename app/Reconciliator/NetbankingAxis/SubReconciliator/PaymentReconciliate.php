@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\NetbankingAxis\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Payment\Status;
 use RZP\Gateway\Netbanking\Axis;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -17,6 +18,34 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const BLACKLISTED_COLUMNS = [
         self::COLUMN_BANK_CUSTOMER_NAME,
     ];
+
+    protected function handleAlreadyReconciled(string $entityId, int $reconciledAt = null)
+    {
+        // For axis we get can same payment multiple times with different BID, hence we need to prevent
+        // incrementing success count for such entries
+        $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::ALREADY_RECONCILED, $reconciledAt);
+
+        $this->setSummaryCount(self::FAILURES_SUMMARY, $entityId);
+    }
+
+    protected function getReconPaymentStatus(array $row)
+    {
+        $bankPaymentId = $this->getReferenceNumber($row);
+
+        $bankPaymentIdInDB = null;
+
+        $bankPaymentIdInDB = $this->gatewayPayment->getBankPaymentId();
+
+        // Duplicate entry, fail the row
+        if($bankPaymentIdInDB !== null && $bankPaymentIdInDB !== $bankPaymentId)
+        {
+            return Status::FAILED;
+        }
+
+        // case of late auth when gateway_payment_id is not present in DB, the move ahead and
+        // try authorizing failed payment on api
+        // or if bank id in db matches with on the on in row.. consider this row as success
+    }
 
     protected function getPaymentId(array $row)
     {

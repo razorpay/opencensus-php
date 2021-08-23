@@ -233,7 +233,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $verify->verifyResponseContent = $this->parseVerifyResponse($response);
+        $verify->verifyResponseContent = $this->parseVerifyResponse($response, $verify);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -599,7 +599,7 @@ class Gateway extends Base\Gateway
         return $attributes ?? [];
     }
 
-    protected function parseVerifyResponse($response)
+    protected function parseVerifyResponse($response, $verify)
     {
         $response = $response->body;
 
@@ -625,12 +625,17 @@ class Gateway extends Base\Gateway
         //
         $numSuccess = 0;
 
+        $bankPaymentIdInDB = $verify->payment->getBankPaymentId();
+
         foreach ($responseArray as $key => $table)
         {
             if ((isset($table[ResponseFields::PAYMENT_STATUS])) and
                 ($table[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS))
             {
-                $tableToBeReturned = $table;
+                if(($table['BID'] === $bankPaymentIdInDB) or ($bankPaymentIdInDB === null))
+                {
+                    $tableToBeReturned = $table;
+                }
 
                 $numSuccess++;
             }
@@ -650,15 +655,9 @@ class Gateway extends Base\Gateway
                 'gateway'        => $this->gateway,
             ];
 
-            $this->trace->error(TraceCode::MULTIPLE_TABLES_IN_VERIFY_RESPONSE, ['response_data' => $data]);
-
-            throw new Exception\PaymentVerificationException(
-                $data,
-                null,
-                VerifyAction::FINISH,
-                ErrorCode::SERVER_ERROR_MULTIPLE_SUCCESS_TRANSACTIONS_IN_VERIFY
-            );
+            $this->trace->info(TraceCode::MULTIPLE_TABLES_IN_VERIFY_RESPONSE, ['response_data' => $data]);
         }
+
         return $tableToBeReturned;
     }
 
