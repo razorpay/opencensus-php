@@ -40,8 +40,12 @@ class OndemandModal extends Component {
     this.state = {
       isSaving: false,
       isSaved: false,
-      amount: props.currentBalance
-        ? parseInt(props.settlableAmount / 100, 10) || parseInt(props.currentBalance / 100, 10)
+      amount: props.settlableAmount
+        ? parseInt(props.settlableAmount / 100, 10)
+        : props.currentBalance
+        ? props.currentBalance > 2000000000
+          ? 20000000
+          : parseInt(props.currentBalance / 100, 10)
         : 0,
       validAmount: true,
       closeClicked: false,
