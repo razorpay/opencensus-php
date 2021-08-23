@@ -121,7 +121,9 @@ class EsSync extends Job
                 {
                     $documents = $this->repo->findManyForIndexingByIds($batch);
 
-                    $this->esRepo->bulkUpdate($documents);
+                    $response = $this->esRepo->bulkUpdate($documents);
+                    
+                    $this->traceErrorResponse($response);
                 }
 
                 break;
@@ -152,6 +154,19 @@ class EsSync extends Job
         if (isset($this->id) === true)
         {
             $this->ids = array_wrap($this->id);
+        }
+    }
+    
+    private function traceErrorResponse($res)
+    {
+        if( isset($res['errors']) and $res['errors'] == true)
+        {
+            $this->trace->debug(TraceCode::ES_UNHANDLED_FAILURE, [
+                'mode'         => $this->mode,
+                'action'       => $this->action,
+                'entity'       => $this->entity,
+                'ids'          => $this->ids,
+            ]);
         }
     }
 }

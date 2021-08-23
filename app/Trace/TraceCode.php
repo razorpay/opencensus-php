@@ -1860,6 +1860,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_DELETE_QUERY                                       = 'ES_DELETE_QUERY';
     const ES_INDEX_CREATE                                       = 'ES_INDEX_CREATE';
     const ES_UPDATE_ACTION                                      = 'ES_UPDATE_ACTION';
+    const ES_UNHANDLED_FAILURE                                  = 'ES_UNHANDLED_FAILURE';
 
     const RECON_ALERT                                           = 'RECON_ALERT';
     const RECON_EMAIL_VALIDATION_FAILED                         = 'RECON_EMAIL_VALIDATION_FAILED';
