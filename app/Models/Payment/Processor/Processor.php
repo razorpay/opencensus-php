@@ -2636,6 +2636,15 @@ class Processor
 
         $internalCode = $error->getInternalErrorCode();
 
+        $updatedPayment = $this->repo->payment->find($this->payment->getId());
+
+        if(isset($updatedPayment) === true)
+        {
+            $updatedStatus = $updatedPayment->getStatus();
+
+            $this->payment->setStatus($updatedStatus);
+        }
+
         $payment = $this->payment;
 
         $error->setDetailedError($internalCode, $payment->getMethod());
