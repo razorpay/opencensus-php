@@ -16,6 +16,7 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Models\Payment\Gateway as PaymentGateway;
+use RZP\Diag\EventCode;
 
 class Gateway extends Base\Gateway
 {
@@ -118,6 +119,26 @@ class Gateway extends Base\Gateway
 
         $payment->fill($attrs);
         $payment->saveOrFail();
+
+        $paymentEntity = $this->app['repo']->payment->findOrFail($input['payment']['id']);
+
+        $properties = [
+            'cardMasked' => mask_except_last4($serverData['data']['cardMasked']),
+            'bin'        => $serverData['data']['bin'],
+            'pgAuthCode' => $serverData['data']['pgAuthCode']
+        ];
+
+        $this->app['diag']->trackPaymentEventV2(
+            EventCode::PAYMENT_CALLBACK_INITIATED,
+            $paymentEntity,
+            null,
+            [
+                'metadata' => [ 'payment' => array_merge([ 'id' => $paymentEntity->getPublicId() ], $properties) ],
+                'read_key'  => array('payment.id'),
+                'write_key' => 'payment.id',
+                'ketan'     => 'ketan'
+            ],
+            $properties);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,

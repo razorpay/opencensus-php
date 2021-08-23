@@ -40,7 +40,9 @@ class Gateway extends Payzapp\Gateway
                 'txnAmt'        => 50000,
                 'cardClassificationType' => 'Credit',
                 'cardHash'      => 'cRpzqfJynHah84KRyfGdU4TC5Mg=',
-                'cardMasked'    => '4329XXXXXXXX7413'
+                'cardMasked'    => '4329XXXXXXXX7413',
+                'bin'           => '123456',
+                'pgAuthCode'    => 'ABCDEF'
             ]
         );
 
