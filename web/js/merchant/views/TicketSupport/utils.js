@@ -55,9 +55,7 @@ export function getExpiryTime(awsURL) {
 
 export const CreateTicketEmitter = new EventEmitter();
 
-
-
-export const getFormattedDate = d => {
+export const getFormattedDate = (d) => {
   const month = d.getMonth();
   const date = d.getDate();
   const year = d.getFullYear() % 2000;
@@ -86,22 +84,8 @@ export const raiseTicket = () => {
     eventLabel: `Tickets`,
   });
 
-  if (window.rzpTicketSystem) {
-    const rzpTicketSystem = window.rzpTicketSystem;
-    rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
-    let options = {};
-    options = {
-      screens: 'dashboardRequest',
-      email: window.rzp_user ? window.rzp_user.email : '',
-    };
-    rzpTicketSystem.openModal('#ticket', options);
-
-    setTimeout(() => {
-      rzpTicketSystem.modal.next();
-    }, 0);
-  }
+  CreateTicketEmitter.emit('create-ticket', 'tickets');
 };
-
 
 export const STATUSES = {
   '2': 'ACTIVE',

@@ -20,26 +20,7 @@ import { CreateTicketEmitter } from '../../../TicketSupport/utils';
 import { compose, bindActionCreators } from 'redux';
 
 const raiseTicket = () => {
-  if (window.rzpTicketSystem) {
-    const rzpTicketSystem = window.rzpTicketSystem;
-    CreateTicketEmitter.emit(
-      'create-ticket',
-      'ticket',
-      () => {
-        rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
-      },
-      () => {
-        setTimeout(() => {
-          rzpTicketSystem.modal.next();
-        }, 0);
-      },
-    );
-    setTimeout(() => {
-      const el = document.getElementsByName('request-description')[0];
-      el.value = `Hello Team,\n I’d like to know my custom pricing for instant refunds.`;
-      el.focus();
-    }, 1000);
-  }
+  CreateTicketEmitter.emit('create-ticket', 'tickets');
 };
 
 const selector = formValueSelector('refundModal');

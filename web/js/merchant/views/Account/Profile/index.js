@@ -467,24 +467,7 @@ export default class Profile extends Component {
   };
 
   raiseTicket = () => {
-    if (window.rzpTicketSystem) {
-      const rzpTicketSystem = window.rzpTicketSystem;
-      rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
-
-      let options = {};
-      if (this.props.user.isNewGrievanceFlowEnabled) {
-        options = {
-          screens: 'dashboardRequest',
-          email: window.rzp_user ? window.rzp_user.email : '',
-        };
-      }
-
-      rzpTicketSystem.openModal('#ticket', options);
-
-      setTimeout(() => {
-        rzpTicketSystem.modal.next();
-      }, 0);
-    }
+    CreateTicketEmitter.emit('create-ticket', 'tickets');
   };
 
   render() {
