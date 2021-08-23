@@ -1,14 +1,30 @@
+import { useState } from 'react';
 import ListFilter from 'merchant/components/ListFilter';
+import DateRangePicker from 'common/ui/DateRangePicker';
 import { Field } from 'redux-form';
 import { titleCase } from 'common/utils/rzp-utils';
+
+const dateRangePresets = [
+  ['Past 7 Days', -7, 'days'],
+  ['Past 30 Days', -30, 'days'],
+  ['Past 90 Days', -90, 'days'],
+];
 
 const phases = ['retrieval', 'chargeback', 'pre_arbitration', 'arbitration', 'fraud'];
 
 const statues = ['open', 'under_review', 'lost', 'won', 'closed'];
 
 export default (props) => {
+  const [date, setDate] = useState({ from: '', to: '' });
+  const onDatesChange = (from, to) => {
+    setDate({
+      from: from.unix(),
+      to: to.unix(),
+    });
+  };
+
   return (
-    <ListFilter {...props}>
+    <ListFilter date={date} {...props}>
       <div class="form-group list-filter-item">
         <label>Dispute Id</label>
         <Field name="id" component="input" class="form-control input-sm" />
@@ -17,6 +33,15 @@ export default (props) => {
       <div class="form-group list-filter-item">
         <label>Payment Id</label>
         <Field name="payment_id" component="input" class="form-control input-sm" />
+      </div>
+
+      <div className="form-group datepicker-group">
+        <label>Duration</label>
+        <DateRangePicker
+          presets={dateRangePresets}
+          defaultPreset={2}
+          onDatesChange={onDatesChange}
+        />
       </div>
 
       <div class="form-group list-filter-item">

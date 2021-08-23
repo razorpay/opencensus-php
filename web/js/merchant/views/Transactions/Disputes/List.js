@@ -18,6 +18,7 @@ import {
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCustomURL } from '../../../components/DocsLink';
 import { bindActionCreators } from 'redux';
+import EmptyList from 'merchant/components/EmptyList';
 
 const daysLeftInExpiry = (expiresOn) => {
   const daysLeft = daysFromToday(expiresOn);
@@ -30,6 +31,12 @@ const daysLeftInExpiry = (expiresOn) => {
   } else {
     return <strong class="text-danger">{getTime('expiresOn', 'll')({ expiresOn })}</strong>;
   }
+};
+
+const EmptyComponent = () => {
+  return (
+    <EmptyList description={<div>No disputes found for the selected duration and criteria!</div>} />
+  );
 };
 
 const type = {
@@ -91,6 +98,7 @@ class Dispute extends ListContainer {
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}
+          EmptyComponent={EmptyComponent}
           {...this.props}
         />
 

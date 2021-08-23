@@ -64,10 +64,7 @@ export default class ListContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (
-      decodeURI(this.props.location.search) !==
-      decodeURI(nextProps.location.search)
-    ) {
+    if (decodeURI(this.props.location.search) !== decodeURI(nextProps.location.search)) {
       this.defaultSearch(nextProps.location.search);
     }
   }
@@ -79,6 +76,11 @@ export default class ListContainer extends Component {
     // HOTFIX: temporary, default to 7 days for loading payments if there is no from and to in the URL
     if (this.props.location.pathname === '/payments' && !params?.from && !params?.to) {
       params.from = moment().add(-7, 'd').startOf('day').unix();
+      params.to = moment().endOf('day').unix();
+    }
+
+    if (this.props.location.pathname === '/disputes' && !params?.from && !params?.to) {
+      params.from = moment().add(-90, 'd').startOf('day').unix();
       params.to = moment().endOf('day').unix();
     }
 
@@ -110,7 +112,7 @@ export default class ListContainer extends Component {
               },
             });
           })
-          .catch(err => {
+          .catch((err) => {
             this.setState({
               status: {
                 type: 'error',
@@ -124,7 +126,7 @@ export default class ListContainer extends Component {
     }
   };
 
-  search = params => {
+  search = (params) => {
     this.searchFilters = trimDeep(params);
     return this.fetchAll({
       ...this.getDefaultPageParams(),
@@ -132,7 +134,7 @@ export default class ListContainer extends Component {
     });
   };
 
-  paginate = params => {
+  paginate = (params) => {
     let filters = {
       ...this.searchFilters,
       ...params,
