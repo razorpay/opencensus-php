@@ -370,6 +370,39 @@ return [
         ]
     ],
 
+    'testCreateDcCardOfferWithIin' => [
+        'request' => [
+            'content' => [
+                'name'            => 'Test Offer',
+                'payment_method'  => 'card',
+                'issuer'          => 'HDFC_DC',
+                'percent_rate'    => 1000,
+                'processing_time' => 86400,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
+                'display_text'    => 'Some more details',
+                'terms'           => 'Some more details',
+                'block'           =>  1,
+                'type'            =>  'instant'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'          => true,
+                'name'            => 'Test Offer',
+                'issuer'          => 'HDFC_DC',
+                'percent_rate'    => 1000,
+                'processing_time' => 86400,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
+                'display_text'    => 'Some more details',
+                'terms'           => 'Some more details'
+            ]
+        ]
+    ],
+
     'testCreateWalletOffer' => [
         'request' => [
             'content' => [

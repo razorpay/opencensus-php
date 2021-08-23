@@ -49,6 +49,11 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateDcCardOfferWithIin()
+    {
+        $this->startTest();
+    }
+
     public function testCreateCardOfferWithMaxPaymentCount()
     {
         $this->startTest();
