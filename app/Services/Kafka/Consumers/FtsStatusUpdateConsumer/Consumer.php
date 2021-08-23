@@ -81,7 +81,8 @@ class Consumer extends BaseConsumer
 
             $this->trace->info(TraceCode::KAFKA_FTS_STATUS_UPDATE_CONSUMER_FINISHED,
                                [
-                                   Constants::RESPONSE => $response
+                                   Constants::RESPONSE => $response,
+                                   Constants::PAYLOAD  => $this->getPayloadWithSensitiveDetailsMasked($payload)
                                ]);
 
             $isProcessedSuccessfully = true;
@@ -92,7 +93,9 @@ class Consumer extends BaseConsumer
                 $ex,
                 Trace::ERROR,
                 TraceCode::KAFKA_CONSUMER_FOR_UPDATE_FTS_FUND_TRANSFER_FAILED,
-                []);
+                [
+                    Constants::PAYLOAD => $this->getPayloadWithSensitiveDetailsMasked($payload)
+                ]);
 
             $payload     = $this->addRetryDetailsToPayload($payload);
             $retryTopic  = $this->getRetryTopicName();

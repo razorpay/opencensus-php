@@ -117,7 +117,8 @@ class Consumer extends BaseConsumer
 
             $this->trace->info(TraceCode::KAFKA_FTS_STATUS_UPDATE_RETRY_CONSUMER_FINISHED,
                                [
-                                   Constants::RESPONSE => $response
+                                   Constants::RESPONSE => $response,
+                                   Constants::PAYLOAD  => $this->getPayloadWithSensitiveDetailsMasked($payload)
                                ]);
         }
         catch(\Throwable $ex)
@@ -127,7 +128,8 @@ class Consumer extends BaseConsumer
                 Trace::ERROR,
                 TraceCode::KAFKA_RETRY_CONSUMER_FOR_UPDATE_FTS_FUND_TRANSFER_FAILED,
                 [
-                    Constants::RETRY_ATTEMPT_NO => $retryAttemptNo
+                    Constants::RETRY_ATTEMPT_NO => $retryAttemptNo,
+                    Constants::PAYLOAD          => $this->getPayloadWithSensitiveDetailsMasked($payload)
                 ]);
 
             $retryAttemptNo++;
