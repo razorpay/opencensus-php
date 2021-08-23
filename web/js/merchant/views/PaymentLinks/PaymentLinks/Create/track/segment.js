@@ -28,6 +28,9 @@ function _segmentTrack() {
       } else if (objectName === 'partial_payment') {
         objectName = 'partial payment';
         actionName = 'changed';
+      } else if (objectName === 'reminder_enable') {
+        objectName = 'reminder enable';
+        actionName = 'changed';
       }
       return send(objectName, actionName, 'Create Payment Link', { duplicate: duplicate });
     },
