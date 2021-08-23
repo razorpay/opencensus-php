@@ -1124,9 +1124,36 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testDeactivatedPaymentPageHostedView()
+    {
+        $support = $this->fixtures->create('merchant_email', ['type' => 'support']);
+
+        $support = $support->toArrayPublic();
+
+        $this->createPaymentLink(self::TEST_PL_ID,  ['view_type' => 'page']);
+
+        $this->createPaymentPageItem(self::TEST_PPI_ID, self::TEST_PL_ID, []);
+
+        $this->fixtures->edit('payment_link', self::TEST_PL_ID, [ 'status' => 'inactive' , 'status_reason' => 'deactivated']);
+
+        $this->ba->publicAuth();
+
+        $response = $this->call('GET', "/v1/payment_pages/pl_".self::TEST_PL_ID."/view");
+
+        $this->assertStringContainsString($support['email'], $response->getContent());
+
+        $this->assertStringContainsString($support['phone'], $response->getContent());
+
+        $this->assertStringContainsString('This page has been deactivated', $response->getContent());
+    }
+
     public function testPaymentPageHostedViewForSuspendedMerchant()
     {
         $this->fixtures->edit('merchant', '10000000000000', [ 'suspended_at' => '123456789' ]);
+
+        $support = $this->fixtures->create('merchant_email', ['type' => 'support']);
+
+        $support = $support->toArrayPublic();
 
         $this->createPaymentLink(self::TEST_PL_ID,  ['view_type' => 'page']);
 
@@ -1134,17 +1161,46 @@ class PaymentLinkTest extends TestCase
 
         $this->ba->publicAuth();
 
-        $request = [
-            'method'  => 'GET',
-            'url'     => '/v1/payment_pages/pl_100000000000pl/view',
-        ];
+        $response = $this->call('GET', "/v1/payment_pages/pl_".self::TEST_PL_ID."/view");
 
-        $this->makeRequestAndCatchException(function() use ($request)
-        {
-            $this->makeRequestAndGetContent($request);
-        }, BadRequestValidationFailureException::class);
+        $this->assertStringContainsString($support['email'], $response->getContent());
 
+        $this->assertStringContainsString($support['phone'], $response->getContent());
 
+        $this->assertStringContainsString('This account is suspended', $response->getContent());
+    }
+
+    public function testPaymentPageHostedViewForSuspendedMerchantForCustomBrandingOrg()
+    {
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => $org->getId()]);
+
+        $this->fixtures->edit('org', $org->getId(), ['checkout_logo_url' => 'https://www.google.com']);
+
+        $this->fixtures->edit('merchant', '10000000000000', [ 'suspended_at' => '123456789' ]);
+
+        $support = $this->fixtures->create('merchant_email', ['type' => 'support']);
+
+        $support = $support->toArrayPublic();
+
+        $this->createPaymentLinkWithMultipleItem();
+
+        $this->ba->publicAuth();
+
+        $response = $this->call('GET', "/v1/payment_pages/pl_" . self::TEST_PL_ID . "/view");
+
+        $this->assertStringContainsString('https:\/\/cdn.razorpay.com\/logo.svg', $response->getContent());
+
+        $this->fixtures->create('feature', [
+            'entity_id' => $org->getId(),
+            'entity_type' => 'org',
+            'name' => 'org_custom_branding',
+        ]);
+
+        $response = $this->call('GET', "/v1/payment_pages/pl_" . self::TEST_PL_ID . "/view");
+
+        $this->assertStringContainsString('https:\/\/www.google.com', $response->getContent());
     }
 
     public function testFetchPaymentPageInvoiceReceiptDetails()

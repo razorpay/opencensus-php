@@ -2,17 +2,16 @@
 
 namespace RZP\Http\Controllers;
 
-
 use View;
 use Request;
 use ApiResponse;
 use Illuminate\Http\Request  as CurrentRequest;
-
 use RZP\Error\ErrorCode;
 use RZP\Models\PaymentLink\Entity;
 use RZP\Models\PaymentLink\ViewType;
 use RZP\Exception\BadRequestException;
 use RZP\Http\Controllers\Traits\HasCrudMethods;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class PaymentLinkController extends Controller
 {
@@ -107,21 +106,29 @@ class PaymentLinkController extends Controller
      */
     public function view(string $id)
     {
-        // Fetch view name and payload
-        list ($view, $payload) = $this->service()->getViewNameAndPayload($id);
+        try {
+            // Fetch view name and payload
+            list ($view, $payload) = $this->service()->getViewNameAndPayload($id);
 
-        // If request had an error string, append that to the payload separately for view to consume
-        if (empty($error = Request::get(Entity::ERROR)) === false)
-        {
-            $payload[Entity::ERROR] = $error;
+            // If request had an error string, append that to the payload separately for view to consume
+            if (empty($error = Request::get(Entity::ERROR)) === false)
+            {
+                $payload[Entity::ERROR] = $error;
+            }
+
+            // Additionally, appends all request parameters too for view to consume
+            $payload[Entity::REQUEST_PARAMS] = $this->input;
+
+            $this->service()->appendAmountIfPossible($id, $this->input, $payload);
+
+            return View::make($view, $payload);
         }
+        catch(BadRequestException | BadRequestValidationFailureException $e)
+        {
+            $data = ['error_code' => $e->getCode(), 'message' => $e->getMessage(), 'data' => $e->getData()];
 
-        // Additionally, appends all request parameters too for view to consume
-        $payload[Entity::REQUEST_PARAMS] = $this->input;
-
-        $this->service()->appendAmountIfPossible($id, $this->input, $payload);
-
-        return View::make($view, $payload);
+            return View::make('payment_link.error_payment_link', ['data' => $data]);
+        }
     }
 
     /**

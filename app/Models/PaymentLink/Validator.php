@@ -4,6 +4,7 @@ namespace RZP\Models\PaymentLink;
 
 use Carbon\Carbon;
 
+use App;
 use RZP\Base;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
@@ -556,7 +557,21 @@ class Validator extends Base\Validator
     {
         if ($paymentLink->merchant->isSuspended() === true)
         {
-            throw new BadRequestValidationFailureException("This account is suspended");
+            $app = App::getFacadeRoot();
+
+            $merchantDetails = $paymentLink->getMerchantSupportDetails();
+
+            $orgBrandingDetails = $paymentLink->getMerchantOrgBrandingDetails();
+
+            $data['merchant'] = $merchantDetails;
+
+            $data['org'] = $orgBrandingDetails;
+
+            $data['entity'] = [Entity::ID => $paymentLink->getPublicId()];
+
+            $data['mode'] = $app['rzp.mode'];
+
+            throw new BadRequestValidationFailureException("This account is suspended", null, $data);
         }
     }
 }

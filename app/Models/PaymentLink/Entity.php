@@ -2,6 +2,7 @@
 
 namespace RZP\Models\PaymentLink;
 
+use App;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -651,6 +652,46 @@ class Entity extends Base\PublicEntity
         return [
             'view_type' => $this->getViewType(),
         ];
+    }
+
+    public function getMerchantSupportDetails(): array
+    {
+        $app = App::getFacadeRoot();
+
+        $repo = $app['repo'];
+
+        $merchantName = $this->merchant->getBillingLabel();
+
+        $supportEmail = '';
+
+        $supportMobile = '';
+
+        $supportDetails = $repo->merchant_email->getEmailByType(Merchant\Email\Type::SUPPORT, $this->merchant->getId());
+
+        if ($supportDetails !== null)
+        {
+            $supportDetails = $supportDetails->toArrayPublic();
+
+            $supportEmail  = $supportDetails[Merchant\Email\Entity::EMAIL];
+
+            $supportMobile = $supportDetails[Merchant\Email\Entity::PHONE];
+        }
+
+        return ['support_email' => $supportEmail, 'support_mobile' => $supportMobile, 'name' => $merchantName];
+    }
+
+    public function getMerchantOrgBrandingDetails(): array
+    {
+        $brandingLogo = 'https://cdn.razorpay.com/logo.svg';
+
+        if($this->merchant->shouldShowCustomOrgBranding() === true)
+        {
+            $org = $this->merchant->org;
+
+            $brandingLogo = $org->getCheckoutLogo();
+        }
+
+        return ['branding_logo' => $brandingLogo];
     }
 
     // -------------------------------------- End Getters -----------------------------

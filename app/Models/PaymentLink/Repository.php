@@ -110,7 +110,19 @@ class Repository extends Base\Repository
         // No direct query with filter because index is as (status, status_reason).
         if ($entity->isDeactivated() === true)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            $merchantDetails = $entity->getMerchantSupportDetails();
+
+            $orgBrandingDetails = $entity->getMerchantOrgBrandingDetails();
+
+            $data['merchant'] = $merchantDetails;
+
+            $data['org'] = $orgBrandingDetails;
+
+            $data['entity'] = [Entity::ID => $entity->getPublicId()];
+
+            $data['mode'] = $this->app['rzp.mode'];
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, $data, 'This page has been deactivated');
         }
 
         return $entity;
