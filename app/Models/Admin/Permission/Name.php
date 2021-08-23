@@ -184,6 +184,7 @@ class Name
     const REMINDER_OPERATION                  = 'reminder_operation';
     const GATEWAY_PVT                         = 'gateway_pvt';
     const FTS_SOURCE_ACCOUNT_UPDATE           = 'fts_source_account_update';
+    const FTS_SOURCE_ACCOUNT_GRACEFUL_UPDATE  = 'fts_source_account_graceful_update';
     const GET_RECONCILIATION                  = 'get_reconciliation';
     // @todo
     // Rename delete_merchant_features to delete_features as features

@@ -1463,7 +1463,11 @@ return [
 
         PermissionCategory::FTS_DASHBOARD_ADMIN => [
             Permission::FTS_SOURCE_ACCOUNT_UPDATE => [
-                'description'   => 'Update FTS source account details. This may also update baking account details creds depending upon the source of the request',
+                'description'   => 'Update FTS source account details. This may also update banking account details creds depending upon the source of the request',
+                'assignable'    => true,
+            ],
+            Permission::FTS_SOURCE_ACCOUNT_GRACEFUL_UPDATE => [
+                'description'   => 'Add more creds to the FTS source account. This may also update baking account details creds depending upon the source of the request',
                 'assignable'    => true,
             ],
         ]

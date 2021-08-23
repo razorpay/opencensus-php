@@ -271,7 +271,7 @@ class FtsTest extends TestCase
     protected function generateMockRequestForGracefulSourceAccountUpdate()
     {
         return [
-            'url'     => '/fts/dashboard/source_account/update',
+            'url'     => '/fts/dashboard/source_account/graceful_update',
             'method'  => 'PATCH',
             'content' => [
                 'source_account' => [
