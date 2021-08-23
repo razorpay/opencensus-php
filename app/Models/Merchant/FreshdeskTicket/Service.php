@@ -335,7 +335,7 @@ class Service extends Base\Service
 
         $noteResponse = $this->app[Constants::FRESHDESK_CLIENT]->addNoteToTicket($ticketId, $noteData, $url);
 
-        $this->validateNoteResponse($noteResponse, $customerDescription);
+        $this->validateNoteResponse($noteResponse);
 
         return [
             'number'         => $ticket['id'],
@@ -611,43 +611,18 @@ class Service extends Base\Service
         }
     }
 
-    protected function validateNoteResponse($response, $customerDescription)
+    protected function validateNoteResponse($response)
     {
-        if ((isset($response['body_text']) === false) or ($response['body_text'] !== $customerDescription))
+        if (isset($response['errors']) !== false)
         {
-            if(isset($response['body_text']) !== false){
-                if($response['body_text'] !== $customerDescription){
-                    $this->trace->error(
-                      TraceCode::  FAILED_NOTE_RESPONSE_BODY,[
-                            'error'         => "response[body_text] !== customer_desc",
-                            'body_text'     => $response['body_text'],
-                            'customer_desc' => $customerDescription
-                        ]
-                    );
-                }
-            }
+            $this->trace->error(
+                TraceCode:: FAILED_NOTE_RESPONSE_BODY,[
+                    'error' => $response['errors']
+                ]
+            );
 
-            if (isset($response['errors']) !== false)
-            {
-                $this->trace->error(
-                    TraceCode:: FAILED_NOTE_RESPONSE_BODY,[
-                        'error' => $response['errors']
-                    ]
-                );
-            }
-
-            if (isset($response['body_text']) === false)
-            {
-                $this->trace->error(
-                    TraceCode::  FAILED_NOTE_RESPONSE_BODY,[
-                        'error'     => "Missing body_text in response"
-                    ]
-                );
-            }
             throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_ADD_NOTE_FAILED);
         }
-
-
 
         if ((isset($response['private']) === false) or ($response['private'] !== false))
         {
@@ -661,15 +636,6 @@ class Service extends Base\Service
                         'response' => $response['private'],
                     ]);
                 }
-            }
-
-            if (isset($response['errors']) !== false)
-            {
-                $this->trace->error(
-                    TraceCode:: FAILED_NOTE_RESPONSE_BODY,[
-                        'error' => $response['errors']
-                    ]
-                );
             }
 
             if(isset($response['private']) === false)
