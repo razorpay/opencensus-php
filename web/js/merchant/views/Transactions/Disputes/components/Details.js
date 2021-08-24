@@ -167,14 +167,16 @@ const DisputeDetails = (props) => {
                     </p>
                   )}
                 </div>
-                <div class="dispute-cta">
-                  <button class="btn btn-primary" onClick={contestDispute}>
-                    Contest &amp; upload evidence
-                  </button>
-                  <button class="btn btn-outline" onClick={acceptDispute}>
-                    Accept Dispute
-                  </button>
-                </div>
+                {daysFromToday(dispute.respond_by) >= 0 && (
+                  <div class="dispute-cta">
+                    <button class="btn btn-primary" onClick={contestDispute}>
+                      Contest &amp; upload evidence
+                    </button>
+                    <button class="btn btn-outline" onClick={acceptDispute}>
+                      Accept Dispute
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
