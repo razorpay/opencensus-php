@@ -30,10 +30,13 @@ export default function MerchantNavLinks(props) {
   }, []);
 
   useEffect(() => {
-    //set recommmend product to localstorage.
+    //set recommend product to localstorage.
     const query = QueryString.parse(window.location.search);
     if (query?.recommended_product && user.isProductRecommendationEnabled) {
-      localStorage.setItem('merchant_landing_page', query.recommended_product);
+      LocalStorageService.setItem('merchant_landing_page', query.recommended_product);
+    } else if (!getLandingProduct && user.isProductRecommendationEnabled) {
+      //set default payment link as a recommend product.
+      LocalStorageService.setItem('merchant_landing_page', 'payment_link');
     }
   }, []);
 
