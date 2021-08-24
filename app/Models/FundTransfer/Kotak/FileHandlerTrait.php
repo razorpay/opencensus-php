@@ -884,7 +884,7 @@ trait FileHandlerTrait
 
         assertTrue($spreadsheet->getSheetCount() === 1);
 
-        $rows = $spreadsheet->getActiveSheet()->toArray();
+        $rows = $spreadsheet->getActiveSheet()->toArray(null, false);
 
         $rows = array_slice($rows, $numRowsToSkip);
 

@@ -42,7 +42,7 @@ class EnachRbl extends Base
         $reader->setLoadSheetsOnly('ACKNOWLEDGMENT REPORT');
         $spreadsheet = $reader->load($filePath);
         assertTrue($spreadsheet->getSheetCount() === 1);
-        $rows = $spreadsheet->getActiveSheet()->toArray();
+        $rows = $spreadsheet->getActiveSheet()->toArray(null, false);
         // Override 2: Shifts through 1 row. 1st row in this particular file is not to be considered.
         array_shift($rows);
         // First row is always expected to be header

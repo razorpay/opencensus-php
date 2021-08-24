@@ -62,6 +62,11 @@ class Base extends BaseModel\Core
         FileStore\Type::BATCH_OUTPUT    => Batch\Entity::OUTPUT_FILE_PREFIX,
     ];
 
+    const EXCEL_FORMULAE_INITIATOR = [
+        "=",
+        "@",
+    ];
+
     // Additional output keys
     const FILE_ID           = 'file_id';
     const SIGNED_URL        = 'signed_url';
@@ -1234,6 +1239,11 @@ class Base extends BaseModel\Core
                 else if ($key === Batch\Header::SPEED)
                 {
                     $entry[$key] = trim($value);
+                }
+                // Add ' if found any formulae in excel value (formulae generally starts from = and @)
+                else if (($value !== null) and strlen(trim($value)) > 0 and in_array(trim($value)[0], self::EXCEL_FORMULAE_INITIATOR, true) === true)
+                {
+                    $entry[$key] = "'" . $value;
                 }
             }
         }
