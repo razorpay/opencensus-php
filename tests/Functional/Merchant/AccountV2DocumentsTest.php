@@ -157,6 +157,34 @@ class AccountV2DocumentsTest extends OAuthTestCase
         $this->assertTrue($metricCaptured);
     }
 
+    public function testPostAccountAdditionalDocuments()
+    {
+        list($subMerchant, $partner) = $this->setupPrivateAuthForPartner();
+        $this->updateUploadDocumentData(__FUNCTION__);
+
+        $this->fixtures->merchant_detail->on('live')->edit($subMerchant->getId(), [
+            'business_type'        => 7,
+            'business_category'    => 'education',
+            'business_subcategory' => 'college']);
+
+        $this->fixtures->merchant_detail->on('test')->edit($subMerchant->getId(), [
+            'business_type'        => 7,
+            'business_category'    => 'education',
+            'business_subcategory' => 'college']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+
+        $insertedDocument = $this->getDbLastEntity('merchant_document');
+
+        $this->assertEquals('merchant', $insertedDocument['entity_type']);
+        $this->assertEquals($subMerchant->getId(), $insertedDocument['entity_id']);
+        $this->assertEquals($subMerchant->getId(), $insertedDocument['merchant_id']);
+    }
+
     public function testPostStakeholderDocument()
     {
         list($subMerchant, $partner) = $this->setupPrivateAuthForPartner();

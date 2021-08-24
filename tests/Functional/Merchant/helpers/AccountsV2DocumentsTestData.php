@@ -259,5 +259,25 @@ return [
                 ]
             ],
         ]
-    ]
+    ],
+
+    'testPostAccountAdditionalDocuments' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/documents',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'form_12a_url',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'additional_documents' => [
+                    [
+                        'type' => 'form_12a_url',
+                        'url'  => 'paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf',
+                    ],
+                ]
+            ],
+        ]
+    ],
 ];

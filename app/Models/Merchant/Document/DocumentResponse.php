@@ -58,7 +58,7 @@ class DocumentResponse extends Detail\Core
 
     public function getDocumentsGroupedAndMergedByProofType(Detail\Entity $merchantDetails, string $entityType): array
     {
-        $fields = $this->getValidationFields($merchantDetails);
+        $fields = $this->getValidationFields($merchantDetails, true);
 
         $fields = $this->filterFieldsForDocuments($fields);
 
@@ -95,7 +95,9 @@ class DocumentResponse extends Detail\Core
         }
         if ($entityType === Entity::MERCHANT)
         {
-            $returnData[Document\Type::ADDITIONAL_DOCUMENTS] = Document\Type::BANK_PROOF_DOCUMENTS;
+            $additionalDocuments = $returnData[Document\Type::ADDITIONAL_DOCUMENTS] ?? [];
+
+            $returnData[Document\Type::ADDITIONAL_DOCUMENTS]  = array_merge($additionalDocuments , Document\Type::BANK_PROOF_DOCUMENTS);
         }
 
         return $returnData;
