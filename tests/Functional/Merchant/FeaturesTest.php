@@ -2198,7 +2198,7 @@ class FeaturesTest extends OAuthTestCase
 
         $merchantActivateMockReflectionObj = new \ReflectionObject($merchantActivateMock);
 
-        $method = $merchantActivateMockReflectionObj->getMethod('addPayoutFeaturesWhileHandlingStaleRead');
+        $method = $merchantActivateMockReflectionObj->getMethod('addFeatureWhileHandlingStaleRead');
 
         $featureParams = [
             \RZP\Models\Feature\Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,

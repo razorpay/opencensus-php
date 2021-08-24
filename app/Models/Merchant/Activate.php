@@ -802,18 +802,19 @@ class Activate extends Base\Core
                 Feature\Entity::SHOULD_SYNC => false,
             ];
 
-            $this->addPayoutFeaturesWhileHandlingStaleRead($featureParams);
+            $this->addFeatureWhileHandlingStaleRead($featureParams);
         }
     }
 
     /**
-     * Adding this wrapper to handle stale read from redis cache for payout feature
+     * Adding this wrapper to handle stale read from redis cache for payout and skip_hold_funds_on_payout feature
      * And to also make the code testable
-     * If payout feature was present, then this should not get called ideally but at times we have
+     * If payout/skip_hold_funds_on_payout feature was present,
+     * then this should not get called ideally but at times we have
      * seen cache lag issues because of which this is getting called even if feature is already present.
      * Slack link: https://razorpay.slack.com/archives/C012KKG1STS/p1628227117052900?thread_ts=1628181255.051600&cid=C012KKG1STS
      */
-    public function addPayoutFeaturesWhileHandlingStaleRead(array $featureParams)
+    public function addFeatureWhileHandlingStaleRead(array $featureParams)
     {
         try
         {
@@ -823,7 +824,7 @@ class Activate extends Base\Core
         {
             if ($exception->getCode() === ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED)
             {
-                $this->trace->info(TraceCode::PAYOUT_FEATURE_STALE_READ_SUCCESS, $featureParams);
+                $this->trace->info(TraceCode::FEATURE_STALE_READ_SUCCESS, $featureParams);
             }
             else
             {
@@ -885,7 +886,7 @@ class Activate extends Base\Core
         return $result;
     }
 
-    protected function  addSkipHoldFundsOnPayout(Entity $merchant)
+    protected function addSkipHoldFundsOnPayout(Entity $merchant)
     {
         if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_HOLD_FUNDS_ON_PAYOUT) === true)
         {
@@ -898,7 +899,7 @@ class Activate extends Base\Core
             Feature\Entity::NAMES       => [Feature\Constants::SKIP_HOLD_FUNDS_ON_PAYOUT],
         ];
 
-        (new Feature\Service)->addFeatures($featureParams);
+        $this->addFeatureWhileHandlingStaleRead($featureParams);
     }
 
     // Returns true if experiment and env variable to onboard merchant on ledger is running.
