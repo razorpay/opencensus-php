@@ -33,7 +33,14 @@ class Processor extends VirtualAccount\Processor
     {
         $providerReferenceId = $this->gatewayInput[GatewayResponseParams::PROVIDER_REFERENCE_ID];
 
-        $upiTransferEntity = $this->repo->upi_transfer->findByProviderReferenceId($providerReferenceId);
+        $payeeVpa = $this->gatewayInput[GatewayResponseParams::PAYEE_VPA];
+
+        $amount = $this->gatewayInput[GatewayResponseParams::AMOUNT];
+
+        $upiTransferEntity = $this->repo->upi_transfer->findByProviderReferenceIdAndPayeeVpaAndAmount(
+                                                                                                      $providerReferenceId,
+                                                                                                      $payeeVpa,
+                                                                                                      $amount);
 
         if ($upiTransferEntity === null)
         {

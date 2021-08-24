@@ -9,10 +9,12 @@ class Repository extends Base\Repository
 {
     protected $entity = Constants\Entity::UPI_TRANSFER;
 
-    public function findByProviderReferenceId(string $providerReferenceId)
+    public function findByProviderReferenceIdAndPayeeVpaAndAmount(string $providerReferenceId,string $payeeVpa,int $amount)
     {
         return $this->newQuery()
-                    ->where(Entity::PROVIDER_REFERENCE_ID, '=', $providerReferenceId)
+                    ->where(Entity::PROVIDER_REFERENCE_ID,'=',$providerReferenceId)
+                    ->where(Entity::PAYEE_VPA,'=',$payeeVpa)
+                    ->where(Entity::AMOUNT,'=',$amount)
                     ->first();
     }
 

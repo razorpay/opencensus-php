@@ -599,6 +599,67 @@ class UpiTransferTest extends TestCase
         );
     }
 
+    public function testProcessDuplicateIciciTransferWithAmountAndPayeeVpa()
+    {
+
+        $this->processUpiTransfer();
+
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
+        $payment     = $this->getDbLastEntity('payment');
+        $upi         = $this->getDbLastEntity('upi');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(10000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('vpa', $payment['receiver_type']);
+
+        $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
+        $this->assertEqualsIgnoringCase($this->vpa['address'], $upiTransfer['payee_vpa'], '');
+
+        $this->assertTrue(isset($upi['type']));
+        $this->assertEquals($upi['type'], 'pay');
+        $this->assertEquals($upiTransfer['expected'], true);
+
+        $this->assertEquals(null, $upiTransfer['unexpected_reason']);
+
+        $request = $this->testData['processUpiTransfer'];
+        $request['amount'] = '200.0';
+
+        $this->processUpiTransfer(__FUNCTION__,true);
+
+        $vpaAddress = 'rzr.payto00055vpvpaicici@icici';
+
+        $merchantId = '10000000000000';
+
+        $virtualAccount = $this->fixtures->create(
+            'virtual_account',
+            [
+                'merchant_id' => $merchantId,
+                'status'      => 'active',
+            ]
+        );
+
+        $vpa = $this->fixtures->create(
+            'vpa',
+            [
+                'merchant_id' => $merchantId,
+                'entity_id'   => $virtualAccount->getId(),
+                'entity_type' => 'virtual_account',
+                'username'    => explode('@', $vpaAddress)[0],
+                'handle'      => explode('@', $vpaAddress)[1],
+            ]
+        );
+
+        $this->fixtures->edit('virtual_account', $virtualAccount->getId(),
+            [
+                'vpa_id' => $vpa->getId()
+            ]
+        );
+
+        $this->processUpiTransfer();
+    }
+
     protected function runUpiTransferRequestAssertions(string $gateway, bool $isCreated, $errorMessage = null, $expectedValues = [])
     {
         $upiTransferRequest = $this->getDbLastEntity('upi_transfer_request');
