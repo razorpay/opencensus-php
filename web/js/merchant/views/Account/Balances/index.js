@@ -190,14 +190,6 @@ class AddFundsContainer extends Component {
     const { user } = this.props;
     const { data: ticketStatusData, loading: ticketStatusLoading } = this.props.ticket_status;
 
-    if (ticketStatusLoading) {
-      return (
-        <div class="page-spinner-container">
-          <Spinner />
-        </div>
-      );
-    }
-
     return (
       <div class="content-wrapper content-sm" style={{ backgroundColor: '#f9fafb' }}>
         <div class="balances-note-row">
@@ -250,48 +242,56 @@ class AddFundsContainer extends Component {
             </p>
           </div>
         </div>
-        <div class="balances-container">
-          <div class="bal-cont-header">
-            <div class="balances-lhs-container">
-              <div class="balance-type-container">
-                <p>Reserve Balance</p>
+
+        {ticketStatusLoading ? (
+          <div class="page-spinner-container">
+            <Spinner />
+          </div>
+        ) : (
+          <div class="balances-container">
+            <div class="bal-cont-header">
+              <div class="balances-lhs-container">
+                <div class="balance-type-container">
+                  <p>Reserve Balance</p>
+                </div>
+                <div class="balance-amount-container">
+                  <Amount
+                    value={Math.abs(this.getReserveBalanceAmount(items))}
+                    // value={Math.abs(reserve_balance)}
+                    currency="INR"
+                  />
+                </div>
               </div>
-              <div class="balance-amount-container">
-                <Amount
-                  value={Math.abs(this.getReserveBalanceAmount(items))}
-                  // value={Math.abs(reserve_balance)}
-                  currency="INR"
-                />
-              </div>
-            </div>
-            {!user.isOrgAxis && !user.isSelfServeCreditsEnabled && (
-              <div class="balances-add-funds">
-                {this.state.ticketGenerated || ticketStatusData.ticket_status === 'Processing' ? (
-                  <button class="btn btn-primary">Processing...</button>
-                ) : ticketStatusData.ticket_status === 'Resolved' ||
-                  ticketStatusData.ticket_status === 'Closed' ||
-                  reserveBalance > 0 ? null : (
-                  <button class="btn btn-outline" onClick={this.handleActivate}>
-                    Activate
+              {!user.isOrgAxis && !user.isSelfServeCreditsEnabled && (
+                <div class="balances-add-funds">
+                  {this.state.ticketGenerated || ticketStatusData.ticket_status === 'Processing' ? (
+                    <button class="btn btn-primary">Processing...</button>
+                  ) : ticketStatusData.ticket_status === 'Resolved' ||
+                    ticketStatusData.ticket_status === 'Closed' ||
+                    reserveBalance > 0 ? null : (
+                    <button class="btn btn-outline" onClick={this.handleActivate}>
+                      Activate
+                    </button>
+                  )}
+                </div>
+              )}
+              {!user.isOrgAxis && user.isSelfServeCreditsEnabled && (
+                <div class="balances-add-funds">
+                  <button class="btn btn-outline" onClick={() => this.handlAddFunds('reserve')}>
+                    Add Funds
                   </button>
-                )}
-              </div>
-            )}
-            {!user.isOrgAxis && user.isSelfServeCreditsEnabled && (
-              <div class="balances-add-funds">
-                <button class="btn btn-outline" onClick={() => this.handlAddFunds('reserve')}>
-                  Add Funds
-                </button>
-              </div>
-            )}
+                </div>
+              )}
+            </div>
+            <div class="bal-cont-footer">
+              <p>
+                Add funds to your reserve balance to increase the negative balance limit. Thinking
+                of withdrawing your reserve balance?{' '}
+                <a onClick={this.handleContactUs}>Contact Us</a>
+              </p>
+            </div>
           </div>
-          <div class="bal-cont-footer">
-            <p>
-              Add funds to your reserve balance to increase the negative balance limit. Thinking of
-              withdrawing your reserve balance? <a onClick={this.handleContactUs}>Contact Us</a>
-            </p>
-          </div>
-        </div>
+        )}
 
         {this.state.ticketGenerated ||
         (ticketStatusData.ticket_status === 'Processing' && !user.isSelfServeCreditsEnabled) ? (
