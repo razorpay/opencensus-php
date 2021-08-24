@@ -358,11 +358,11 @@ class VendorPaymentTest extends TestCase
             'status_code' => 406,
             'body' => 'error'
         ]);
-        
+
         $this->app->instance('vendor-payment', $vpMock);
 
         $this->startTest();
-      
+
         $vpMock->shouldHaveReceived('processIncomingMail');
     }
 
@@ -402,7 +402,7 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('processIncomingMail');
     }
-  
+
     public function testGetMerchantEmailAddress()
     {
         $this->ba->proxyAuth();
@@ -414,8 +414,26 @@ class VendorPaymentTest extends TestCase
         $this->app->instance('vendor-payment', $vpMock);
 
         $this->startTest();
-      
+
         $vpMock->shouldHaveReceived('getMerchantEmailAddress');
-        
+
+    }
+
+    public function testCreateMerchantEmailMapping()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('createMerchantEmailMapping')->andReturn([
+            'email_address' => 'invoices+abcdef@invoice.razorpay.com'
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('createMerchantEmailMapping');
+
     }
 }

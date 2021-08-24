@@ -252,8 +252,14 @@ class VendorPaymentController extends Controller
 
         return $response;
     }
+
     public function getMerchantEmailAddress()
     {
         return $this->service->getMerchantEmailAddress($this->ba->getMerchant());
+    }
+
+    public function createMerchantEmailMapping()
+    {
+        return $this->service->createMerchantEmailMapping($this->ba->getMerchant());
     }
 }

@@ -14,7 +14,6 @@ use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Mail\VendorPayments\GenericVendorPaymentEmail;
 
-
 /**
  * This class will be the main file that will talk to
  * Vendor Payment Micro Service and relay all the responses.
@@ -23,64 +22,65 @@ use RZP\Mail\VendorPayments\GenericVendorPaymentEmail;
  */
 class Service
 {
-    const LIST_CONTACTS               = 'SearchContacts';
-    const LIST_VENDOR_PAYMENTS        = 'ListVendorPayments';
-    const PUSH_PAYOUT_STATUS_UPDATE   = 'PayoutStatusChange';
-    const GET_VENDOR_PAYMENT          = 'GetVendorPayment';
-    const EXECUTE_VENDOR_PAYMENT      = 'ExecuteVendorPayment';
-    const EXECUTE_VENDOR_PAYMENT_BULK = 'ExecuteVendorPaymentBulk';
-    const CREATE_CONTACT              = 'CreateContact';
-    const UPDATE_CONTACT              = 'UpdateContactById';
-    const GET_CONTACT                 = 'GetContactById';
-    const CREATE_VENDOR_PAYMENT       = 'CreateVendorPayment';
-    const CONTACT_ID                  = 'contact_id';
-    const ID                          = 'id';
-    const UPLOAD_INVOICE              = 'UploadInvoice';
-    const GET_TDS_CATEGORIES          = 'GetTdsCategory';
-    const UPCOMING_MAIL_CRON          = 'UpcomingMailCron';
-    const EDIT_VENDOR_PAYMENTS        = 'EditVendorPayment';
-    const CANCEL_VENDOR_PAYMENTS      = 'CancelVendorPayment';
-    const BULK_CANCEL_VENDOR_PAYMENTS = 'BulkCancelVP';
-    const GET_INVOICE_SIGNED_URL      = 'GetInvoiceSignedURL';
-    const VP_SUMMARY_API              = 'SummaryApi';
-    const GET_OCR_DATA                = 'GetOcrData';
-    const OCR_ACCURACY_CHECK          = 'GetOcrAccuracy';
-    const MARK_AS_PAID                = 'MarkAsPaid';
-    const UFH_BULK_DOWNLOAD           = 'InitiateBulkInvoiceDownload';
-    const UPDATE_INVOICE_FILE_ID      = 'UpdateInvoiceFileId';
-    const GET_INVOICES_FROM_UFH       = 'GetUfhFile';
-    const GET_VENDOR_BY_CONTACT_ID    = 'GetVendorByContactId';
-    const CREATE_VENDOR               = 'CreateVendor';
-    const UPDATE_VENDOR               = 'UpdateVendor';
-    const GET_VENDOR_BULK             = 'GetVendorBulk';
-    const GET_QUICK_FILTER_AMOUNTS    = 'GetQuickFilterAmounts';
-    const RECEIVE_EMAIL               = 'ReceiveVPEmailMessage';
-    const GET_MERCHANT_EMAIL_ADDRESS  = 'GetMerchantEmailAddress';
-    const FUND_ACCOUNT_LINKING        = 'FundAccountCreated';
+    const LIST_CONTACTS                 = 'SearchContacts';
+    const LIST_VENDOR_PAYMENTS          = 'ListVendorPayments';
+    const PUSH_PAYOUT_STATUS_UPDATE     = 'PayoutStatusChange';
+    const GET_VENDOR_PAYMENT            = 'GetVendorPayment';
+    const EXECUTE_VENDOR_PAYMENT        = 'ExecuteVendorPayment';
+    const EXECUTE_VENDOR_PAYMENT_BULK   = 'ExecuteVendorPaymentBulk';
+    const CREATE_CONTACT                = 'CreateContact';
+    const UPDATE_CONTACT                = 'UpdateContactById';
+    const GET_CONTACT                   = 'GetContactById';
+    const CREATE_VENDOR_PAYMENT         = 'CreateVendorPayment';
+    const CONTACT_ID                    = 'contact_id';
+    const ID                            = 'id';
+    const UPLOAD_INVOICE                = 'UploadInvoice';
+    const GET_TDS_CATEGORIES            = 'GetTdsCategory';
+    const UPCOMING_MAIL_CRON            = 'UpcomingMailCron';
+    const EDIT_VENDOR_PAYMENTS          = 'EditVendorPayment';
+    const CANCEL_VENDOR_PAYMENTS        = 'CancelVendorPayment';
+    const BULK_CANCEL_VENDOR_PAYMENTS   = 'BulkCancelVP';
+    const GET_INVOICE_SIGNED_URL        = 'GetInvoiceSignedURL';
+    const VP_SUMMARY_API                = 'SummaryApi';
+    const GET_OCR_DATA                  = 'GetOcrData';
+    const OCR_ACCURACY_CHECK            = 'GetOcrAccuracy';
+    const MARK_AS_PAID                  = 'MarkAsPaid';
+    const UFH_BULK_DOWNLOAD             = 'InitiateBulkInvoiceDownload';
+    const UPDATE_INVOICE_FILE_ID        = 'UpdateInvoiceFileId';
+    const GET_INVOICES_FROM_UFH         = 'GetUfhFile';
+    const GET_VENDOR_BY_CONTACT_ID      = 'GetVendorByContactId';
+    const CREATE_VENDOR                 = 'CreateVendor';
+    const UPDATE_VENDOR                 = 'UpdateVendor';
+    const GET_VENDOR_BULK               = 'GetVendorBulk';
+    const GET_QUICK_FILTER_AMOUNTS      = 'GetQuickFilterAmounts';
+    const RECEIVE_EMAIL                 = 'ReceiveVPEmailMessage';
+    const GET_MERCHANT_EMAIL_ADDRESS    = 'GetMerchantEmailAddress';
+    const FUND_ACCOUNT_LINKING          = 'FundAccountCreated';
+    const CREATE_MERCHANT_EMAIL_MAPPING = 'CreateMerchantEmailMapping';
 
-    const BASE_PATH                   = 'twirp/vendorpayments.Vendorpayments';
+    const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
 
-    const DATA                        = 'data';
-    const TEMPLATE_NAME               = 'template_name';
-    const SUBJECT                     = 'subject';
-    const NAME                        = 'name';
-    const TO_EMAIL                    = 'to_emails';
-    const GET_REPORTING_INFO          = 'GetReportingInfo';
-    const CONTENT_TYPE                = 'Content-Type';
-    const X_TASK_ID                   = 'X-Task-ID';
-    const X_APP_MODE                  = 'X-App-Mode';
+    const DATA               = 'data';
+    const TEMPLATE_NAME      = 'template_name';
+    const SUBJECT            = 'subject';
+    const NAME               = 'name';
+    const TO_EMAIL           = 'to_emails';
+    const GET_REPORTING_INFO = 'GetReportingInfo';
+    const CONTENT_TYPE       = 'Content-Type';
+    const X_TASK_ID          = 'X-Task-ID';
+    const X_APP_MODE         = 'X-App-Mode';
 
-    const MESSAGE_ID                  = 'message_id';
-    const RECIPIENT                   = 'recipient';
-    const SENDER                      = 'sender';
-    const SIGNATURE                   = 'signature';
-    const TOKEN                       = 'token';
-    const TIMESTAMP                   = 'timestamp';
-    const FILE                        = 'file';
-    const FILE_TYPE                   = 'type';
-    const FILE_FORMAT                 = 'format';
-    const FILE_SIZE                   = 'size';
-    const ATTACHMENTS                 = 'attachments';
+    const MESSAGE_ID  = 'message_id';
+    const RECIPIENT   = 'recipient';
+    const SENDER      = 'sender';
+    const SIGNATURE   = 'signature';
+    const TOKEN       = 'token';
+    const TIMESTAMP   = 'timestamp';
+    const FILE        = 'file';
+    const FILE_TYPE   = 'type';
+    const FILE_FORMAT = 'format';
+    const FILE_SIZE   = 'size';
+    const ATTACHMENTS = 'attachments';
 
     protected $app;
 
@@ -98,7 +98,7 @@ class Service
 
         $this->config = $app['config']['applications.vendor_payments'];
 
-        $this->repo =  $app['repo'];
+        $this->repo = $app['repo'];
     }
 
     public function sendMail(array $input)
@@ -176,8 +176,8 @@ class Service
         }
 
         $fundAccounts = $this->repo
-                            ->fund_account
-                            ->findManyByPublicIds($fundAccountIds, ['expand' => ['contact']]);
+            ->fund_account
+            ->findManyByPublicIds($fundAccountIds, ['expand' => ['contact']]);
 
         foreach ($fundAccounts as $fa)
         {
@@ -329,7 +329,7 @@ class Service
 
         $input = [
             'payout_status' => $payout->getStatus(),
-            'payout_id' => $payout->getPublicId(),
+            'payout_id'     => $payout->getPublicId(),
         ];
 
         return $this->makeRequest($payout->merchant, $url, $input, [], 'POST', $mode);
@@ -542,15 +542,15 @@ class Service
 
     public function processIncomingMail(array $input)
     {
-        if(empty($_FILES === false))
+        if (empty($_FILES === false))
         {
             $input[self::ATTACHMENTS] = array();
             foreach ($_FILES as $file)
             {
-                $attachment[self::FILE] = base64_encode(file_get_contents($file['tmp_name']));
+                $attachment[self::FILE]        = base64_encode(file_get_contents($file['tmp_name']));
                 $attachment[self::FILE_FORMAT] = $file[self::FILE_TYPE];
-                $attachment[self::FILE_SIZE] = $file[self::FILE_SIZE];
-                $attachment[self::NAME] = $file[self::NAME];
+                $attachment[self::FILE_SIZE]   = $file[self::FILE_SIZE];
+                $attachment[self::NAME]        = $file[self::NAME];
                 array_push($input['attachments'], $attachment);
             }
         }
@@ -559,6 +559,7 @@ class Service
 
         return $this->makeRequest(null, $url, $input, [], 'POST', Mode::LIVE);
     }
+
     public function getMerchantEmailAddress(MerchantEntity $merchant)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_MERCHANT_EMAIL_ADDRESS);
@@ -571,6 +572,17 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::FUND_ACCOUNT_LINKING);
 
         return $this->makeRequest(null, $url, $data, [], 'POST', $mode);
+    }
+
+    public function createMerchantEmailMapping(MerchantEntity $merchant)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_MERCHANT_EMAIL_MAPPING);
+
+        $data = [
+            'merchant_id' => $merchant->getMerchantId()
+        ];
+
+        return $this->makeRequest($merchant, $url, $data, [], 'POST');
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,

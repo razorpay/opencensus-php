@@ -518,5 +518,21 @@ return [
         'response' => [
             'content' => []
         ]
+    ],
+    'testCreateMerchantEmailMapping' => [
+        'request'  => [
+            'method' => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'    => '/vendor-payments/email-integration/email',
+            'content' => [],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'email_address' => 'invoices+abcdef@invoice.razorpay.com'
+            ]
+        ]
     ]
 ];

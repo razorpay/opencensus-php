@@ -1329,6 +1329,7 @@ class Route
         'vendor_payment_contact_create'            => ['post',     'vendor-payments/contacts',                       'VendorPaymentController@createContact'                             ],
         'vendor_payment_contact_update'            => ['post',     'vendor-payments/contacts/{id}',                  'VendorPaymentController@updateContact'                             ],
         'vendor_payment_get_email_mapping'         => ['get',      'vendor-payments/email-integration/email',        'VendorPaymentController@getMerchantEmailAddress'                   ],
+        'vendor_payment_create_email_mapping'      => ['post',     'vendor-payments/email-integration/email',        'VendorPaymentController@createMerchantEmailMapping'                ],
         'vendor_payment_create'                    => ['post',     'vendor-payments/',                               'VendorPaymentController@create'                                    ],
         'vendor_payment_list'                      => ['get',      'vendor-payments/',                               'VendorPaymentController@list'                                      ],
         'vendor_payment_get_by_id'                 => ['get',      'vendor-payments/{id}',                           'VendorPaymentController@get'                                       ],
@@ -4168,6 +4169,7 @@ class Route
 
         // Vendor Payment Routes
         'vendor_payment_get_email_mapping',
+        'vendor_payment_create_email_mapping',
         'vendor_payment_summary',
         'vendor_payment_get_tds_categories',
         'vendor_payment_invoice_upload',
@@ -6323,6 +6325,7 @@ class Route
         'payout_links_merchant_settings_post'          => Permission::DASHBOARD_PAYOUT_LINKS,
         'payout_links_resend_notification'             => Permission::RESEND_PAYOUT_LINKS,
         'vendor_payment_get_email_mapping'             => Permission::ENABLE_EMAIL_IMPORT,
+        'vendor_payment_create_email_mapping'          => Permission::CREATE_VENDOR_PAYMENTS_EMAIL,
         'vendor_payment_contact_list'                  => Permission::VIEW_CONTACT,
         'vendor_payment_invoice_upload'                => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payment_get_ocr_data'                  => Permission::CREATE_VENDOR_PAYMENTS,
@@ -7662,6 +7665,7 @@ class Route
             'user_fetch_admin',
             'validate_checkout_offers',
             'vendor_payment_get_email_mapping',
+            'vendor_payment_create_email_mapping',
             'vendor_payment_bulk_cancel',
             'vendor_payment_bulk_invoice_download',
             'vendor_payment_cancel',
