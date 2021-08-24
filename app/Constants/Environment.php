@@ -16,6 +16,7 @@ final class Environment
     const PERF              = 'perf';
     const BVT               = 'bvt';
     const AXIS              = 'axis';
+    const BETA              = 'beta';
     const QA_ENVS           = [self::PERF, self::FUNC, self::AUTOMATION, self::BVT];
 
     public static function isEnvironmentQA(string $env): bool
