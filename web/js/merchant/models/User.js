@@ -431,6 +431,10 @@ export default class User {
     return this.findTag('Charge_at_will');
   }
 
+  get isEsignEnabled() {
+    return this.isFeatureEnabled('esign');
+  }
+
   get isMerchantRestricted() {
     return this.restricted;
   }

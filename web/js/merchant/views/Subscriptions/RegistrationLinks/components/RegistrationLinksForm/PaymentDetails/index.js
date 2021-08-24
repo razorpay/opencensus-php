@@ -1,11 +1,15 @@
+/* eslint-disable react/jsx-no-undef */
+/* eslint-disable react/jsx-pascal-case */
 import { PowerSelect } from 'react-power-select';
 import Input from 'common/new-ui/Input';
+
+import DocsLink from 'merchant/components/DocsLink';
 
 import AmountScreen from './Amount';
 import NACH from './NACH';
 import Emandate from './Emandate';
 import UPI from './UPI';
-import { checkIfAmount } from './utils';
+import { checkIfAmount, getPaymentMethodOptions, DOCUMENTATION_LINKS } from './utils';
 
 export default (props) => {
   const {
@@ -34,6 +38,7 @@ export default (props) => {
     handlePaymentMethod,
     isUPIPayment,
     notes,
+    isEsignEnabled,
   } = props;
   return (
     <React.Fragment>
@@ -42,6 +47,7 @@ export default (props) => {
         avlblMethods={avlblMethods}
         handlePaymentMethod={handlePaymentMethod}
         onBlurElement={onBlurElement}
+        isEsignEnabled={isEsignEnabled}
       />
 
       {isEmandatePayment && (
@@ -74,7 +80,6 @@ export default (props) => {
           handleTPV={props.handleTPV}
           bankAccountNumber={props.bankAccountNumber}
           bankAccountIFSC={props.bankAccountIFSC}
-          handleTPV={props.handleTPV}
         />
       )}
 
@@ -110,8 +115,22 @@ export default (props) => {
   );
 };
 
-function PaymentMethod({ avlblMethods, mandateMethod, handlePaymentMethod, onBlurElement }) {
+function getDocLinkForSelectedPayment(method) {
+  if (!method || method === 'nach') return;
+  const { title, href } = DOCUMENTATION_LINKS[method];
+  if (!title || !href) return;
+  return <DocsLink url={href} title={title} style={{ padding: '4px 0px' }} />;
+}
+
+function PaymentMethod({
+  avlblMethods,
+  mandateMethod,
+  handlePaymentMethod,
+  onBlurElement,
+  isEsignEnabled,
+}) {
   if (avlblMethods.length) {
+    const optionsList = getPaymentMethodOptions(isEsignEnabled);
     return (
       <div class="Input">
         <div class="Input-label">Payment Method</div>
@@ -123,12 +142,13 @@ function PaymentMethod({ avlblMethods, mandateMethod, handlePaymentMethod, onBlu
             name="mandateMethod"
             options={avlblMethods}
             placeholder="Method to be used for Registration Link "
-            optionComponent={PaymentMethodOption}
-            selectedOptionComponent={PaymentMethodOption}
+            optionComponent={(params) => paymentMethodOption(params, optionsList)}
+            selectedOptionComponent={(params) => paymentMethodSelected(params, optionsList)}
             onBlur={onBlurElement}
             selected={mandateMethod}
             onChange={handlePaymentMethod}
           />
+          {getDocLinkForSelectedPayment(mandateMethod)}
         </div>
       </div>
     );
@@ -146,35 +166,28 @@ function PaymentMethodPlaceHolder({ content }) {
   );
 }
 
-const PAYMENT_METHODS_OPTIONS = {
-  card: {
-    method: 'Card',
-    icon: 'card',
-    desc: 'Through Credit and Debit Cards',
-  },
-  nach: {
-    method: 'NACH',
-    icon: 'bank',
-    desc: 'Through a NACH Form',
-  },
-  emandate: {
-    method: 'Emandate',
-    icon: 'bank',
-    desc: 'Through NetBanking Details',
-  },
-  upi: {
-    method: 'UPI',
-    icon: 'upi',
-    desc: 'Through UPI mandates',
-  },
-};
-
-function PaymentMethodOption({ option }) {
-  const { icon, desc, method } = PAYMENT_METHODS_OPTIONS[option];
+function paymentMethodSelected({ option }, optionsList) {
+  const { icon, desc, method } = optionsList[option];
 
   return (
     <div class="PaymentMethodOption">
-      <i class={`i i-${icon}`} /> <span class="method">{method}</span> {desc}
+      <i class={`i i-${icon}`} />
+      <span class="method">{method}</span>
+      <span class="desc">{desc}</span>
+    </div>
+  );
+}
+
+function paymentMethodOption({ option }, optionsList) {
+  const { icon, desc, method } = optionsList[option];
+
+  return (
+    <div class="PaymentMethodOption">
+      <i class={`i i-${icon}`} />
+      <div className="title">
+        <span class="method">{method}</span>
+        <div className="desc">{desc}</div>
+      </div>
     </div>
   );
 }

@@ -328,14 +328,48 @@
     font-weight: bold
     color: #58666E
     margin: 12px 0
-
+    
 .PaymentMethodOption
   .method
     font-weight: bold
     font-size: 14px
+    padding: 0px 6px
+    color: #58666E
+  
+  .desc
+    width: 75%
+    display: inline-block
+    font-size: 12px
+    overflow: hidden
+    text-overflow: ellipsis
+    white-space: nowrap
+    vertical-align: bottom
+
 
 .PowerSelect__Menu .PaymentMethodOption
-  padding: 6px 2px
+  padding: 9px 4px
+  display: flex
+  line-height: 8px
+
+  .title
+    padding-left: 6px
+    line-height: 10px
+    display: flex
+    flex-direction: column
+    width: 100%;
+    .method
+      font-weight: 700
+      font-size: 14px
+      padding: 0px
+
+    .desc
+      padding-top: 8px
+      color: #838383
+      font-weight: 400
+      font-size: 12px
+      width: 75%
+      line-height: 14px
+      white-space: normal
 
 .RegistrationLinks--New
   .PowerSelect
