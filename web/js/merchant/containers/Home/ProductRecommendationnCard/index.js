@@ -1,15 +1,30 @@
 import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { getRecommendedProduct } from './productMap';
+import * as KeyActions from 'merchant/reducers/keys';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import NewKey from 'merchant/views/Settings/Keys/components/NewKey';
 import { paiseToRupees, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
+import { getRecommendedProduct } from './productMap';
 
-const RecommendationWidget = ({ user, history }) => {
+const RecommendationWidget = ({
+  user,
+  history,
+  keys,
+  generateKey,
+  showNotification,
+  closeModal,
+  openModal,
+  session,
+}) => {
   const [amount, setAmount] = useState(0);
+  const [isApiKeyGenerated, setIsApiKeyGenerated] = useState(false);
+  const [showGenerateKeyLoader, setShowGenerateKeyLoader] = useState(false);
   const landingProduct = localStorage.getItem('merchant_landing_page');
-  const recommandedProduct = getRecommendedProduct(landingProduct);
-
+  const recommendedProduct = getRecommendedProduct(landingProduct);
   const getTransactionVoulme = async () => {
     const response = await merchantFetch({
       url: 'merchant/analytics',
@@ -39,11 +54,13 @@ const RecommendationWidget = ({ user, history }) => {
   };
 
   useEffect(() => {
-    if (landingProduct && recommandedProduct && !!user.activated) {
+    props.fetchKeys({ mode: session.mode }, session.user.has_key_access);
+
+    if (landingProduct && recommendedProduct && !!user.activated) {
       getTransactionVoulme();
     }
 
-    if (landingProduct && recommandedProduct) {
+    if (landingProduct && recommendedProduct) {
       analyticsTrack({
         objectName: 'Product recommendation widget',
         actionName: 'displayed',
@@ -56,7 +73,7 @@ const RecommendationWidget = ({ user, history }) => {
     }
   }, []);
 
-  if (!landingProduct || !recommandedProduct) {
+  if (!landingProduct || !recommendedProduct) {
     return null;
   }
 
@@ -65,10 +82,10 @@ const RecommendationWidget = ({ user, history }) => {
   }
 
   const exploreProducts = () => {
-    history.push(recommandedProduct[0].redirectUrl);
+    history.push(recommendedProduct[0].redirectUrl);
 
     analyticsTrack({
-      objectName: recommandedProduct[0].segmentEventName,
+      objectName: recommendedProduct[0].segmentEventName,
       actionName: 'clicked',
       screen: 'home page',
       properties: {
@@ -78,20 +95,116 @@ const RecommendationWidget = ({ user, history }) => {
     });
   };
 
+  const showNewKeyModal = (key) => {
+    openModal({
+      component: <NewKey apiKey={key} />,
+    });
+  };
+
+  const showGenerateKeyModal = () => {
+    const merchantId = user?.id;
+
+    // return immediately if api call is in progress
+    if (showGenerateKeyLoader) {
+      return;
+    }
+
+    setShowGenerateKeyLoader(true);
+
+    generateKey({ merchantId })
+      .then((response) => {
+        setShowGenerateKeyLoader(false);
+        const key = response.new || response;
+
+        showNotification({
+          type: 'success',
+          message: 'New Key Generated',
+        });
+
+        analyticsTrack({
+          objectName: `generate ${session.mode} key`,
+          actionName: 'result',
+          screen: 'home page',
+          properties: {
+            location: 'API Keys',
+            status: 'Success',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+        closeModal();
+        showNewKeyModal(key);
+        setIsApiKeyGenerated(true);
+      })
+      .catch((err) => {
+        setShowGenerateKeyLoader(false);
+        const errorMsg =
+          (err?.errors && err.errors[0]) ||
+          'Something went wrong. Please try again after sometime.';
+        showNotification({
+          type: 'error',
+          message: errorMsg,
+        });
+
+        analyticsTrack({
+          objectName: `generate ${session.mode} key`,
+          actionName: 'result',
+          screen: 'home page',
+          properties: {
+            location: 'API Keys',
+            status: 'Failure',
+            failureReason: err.errors[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+      });
+  };
+
+  const { primaryCardCta, onCardCtaClicked } = (() => {
+    if (!user.activated) {
+      return {
+        primaryCardCta: 'Explore Now',
+        onCardCtaClicked: exploreProducts,
+      };
+    }
+
+    if (landingProduct === 'payment_gateway' && user.has_key_access) {
+      if (isApiKeyGenerated || keys?.count > 0) {
+        return {
+          primaryCardCta: 'View API Key',
+          onCardCtaClicked: exploreProducts,
+        };
+      }
+      return {
+        primaryCardCta: 'Generate API Key',
+        onCardCtaClicked: showGenerateKeyModal,
+      };
+    }
+
+    return {
+      primaryCardCta: '+ Accept Payments',
+      onCardCtaClicked: exploreProducts,
+    };
+  })();
+
   return (
     <div className="recommendation-widget">
       <div className="recommend-product">
         <div className="title">Get started with Razorpay product suite</div>
         <div className="active-product">
-          <img src={recommandedProduct[0].imageCdn} />
+          <img src={recommendedProduct[0].imageCdn} />
           <div className="active-product__container">
             <div className="name">
-              <span onClick={exploreProducts}>{recommandedProduct[0].name}</span>
+              <span onClick={exploreProducts}>{recommendedProduct[0].name}</span>
             </div>
-            <div className="desc">{recommandedProduct[0].description}</div>
+            <div className="desc">{recommendedProduct[0].description}</div>
             <div className="explore">
-              <span onClick={exploreProducts}>
-                {user.activated ? '+ Accept Payments' : 'Explore Now'}
+              {showGenerateKeyLoader && (
+                <span className="api-loader">
+                  <span className="spin-btn visible" />
+                </span>
+              )}
+              <span className="card-cta" onClick={onCardCtaClicked}>
+                {primaryCardCta}
               </span>
               {!user.activated && <i class="i i-arrow-forward text-primary" />}
             </div>
@@ -102,14 +215,14 @@ const RecommendationWidget = ({ user, history }) => {
         <div className="more-product__title">Explore more products</div>
         <div className="product-container">
           <div className="prd-one">
-            <img src={recommandedProduct[1].imageCdn} />
+            <img src={recommendedProduct[1].imageCdn} />
             <div className="container">
               <div className="name">
                 <span
                   onClick={() => {
-                    history.push(recommandedProduct[1].redirectUrl);
+                    history.push(recommendedProduct[1].redirectUrl);
                     analyticsTrack({
-                      objectName: recommandedProduct[1].segmentEventName,
+                      objectName: recommendedProduct[1].segmentEventName,
                       actionName: 'clicked',
                       screen: 'home page',
                       properties: {
@@ -119,22 +232,22 @@ const RecommendationWidget = ({ user, history }) => {
                     });
                   }}
                 >
-                  {recommandedProduct[1].name}
+                  {recommendedProduct[1].name}
                 </span>{' '}
                 &gt;
               </div>
-              <span className="desc">{recommandedProduct[1].description}</span>
+              <span className="desc">{recommendedProduct[1].shortDescription}</span>
             </div>
           </div>
           <div className="prd-two">
-            <img src={recommandedProduct[2].imageCdn} />
+            <img src={recommendedProduct[2].imageCdn} />
             <div className="container">
               <div className="name">
                 <span
                   onClick={() => {
-                    history.push(recommandedProduct[2].redirectUrl);
+                    history.push(recommendedProduct[2].redirectUrl);
                     analyticsTrack({
-                      objectName: recommandedProduct[2].segmentEventName,
+                      objectName: recommendedProduct[2].segmentEventName,
                       actionName: 'clicked',
                       screen: 'home page',
                       properties: {
@@ -144,11 +257,11 @@ const RecommendationWidget = ({ user, history }) => {
                     });
                   }}
                 >
-                  {recommandedProduct[2].name}
+                  {recommendedProduct[2].name}
                 </span>{' '}
                 &gt;
               </div>
-              <span className="desc">{recommandedProduct[2].description}</span>
+              <span className="desc">{recommendedProduct[2].shortDescription}</span>
             </div>
           </div>
         </div>
@@ -157,4 +270,13 @@ const RecommendationWidget = ({ user, history }) => {
   );
 };
 
-export default withRouter(RecommendationWidget);
+const mapStateToProps = (state) => ({
+  keys: state.keys,
+  session: state.session,
+});
+
+export default withRouter(
+  connect(mapStateToProps, { ...KeyActions, ...ModalActions, ...NotificationsActions })(
+    RecommendationWidget,
+  ),
+);
