@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import Input from 'common/new-ui/Input';
 import Form from 'common/new-ui/Form';
 import { connect } from 'react-redux';
-import StatusBanner from './StatusBanner';
 import CurrencyField from './CurrencyField';
 import EvidenceUpload from './EvidenceUpload';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -158,7 +157,6 @@ const ContestDispute = (props) => {
           </div>
         )}
       </Form>
-      {dispute.status !== 'open' && <StatusBanner dispute={dispute} />}
     </div>
   );
 };

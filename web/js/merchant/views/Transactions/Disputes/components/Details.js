@@ -11,6 +11,7 @@ import ContestDispute from './ContestDispute';
 import { connect } from 'react-redux';
 import { analyticsTrack } from 'common/utils/analytics';
 import { titleCase, daysFromToday, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import StatusBanner from './StatusBanner';
 
 export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
   const daysLeft = daysFromToday(expiresOn);
@@ -262,6 +263,9 @@ const DisputeDetails = (props) => {
                   showNotification={showNotification}
                   onCancelContest={acceptDispute}
                 />
+              )}
+              {isDisputePresentmentEnabled && dispute.status !== 'open' && (
+                <StatusBanner dispute={dispute} />
               )}
             </div>
           </div>
