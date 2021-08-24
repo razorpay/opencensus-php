@@ -21,7 +21,8 @@ import {
   BUSINESS_PROOF_CERTIFICATE_TYPES,
 } from '../Constants/OnboardingConstants';
 
-const PAN_ERROR_MESSAGE = "PAN number and/or name doesn't match the government DB, kindly verify";
+const PAN_ERROR_MESSAGE =
+  'Entered PAN no & name don’t match, please re-enter by verifying with your physical PAN Copy.';
 
 export const getLabel = (field, data) => {
   const businessType = data.business_overview.business_type.value;

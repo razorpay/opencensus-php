@@ -117,7 +117,8 @@ export const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
 export const E_SIGN_AADHAR = [PROPRIETORSHIP, PARTNERSHIP, NOT_REGISTERED];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
-const PAN_ERROR_MESSAGE = "PAN number and/or name doesn't match the government DB, kindly verify";
+const PAN_ERROR_MESSAGE =
+  'Entered PAN no & name don’t match, please re-enter by verifying with your physical PAN Copy.';
 
 const contactFields = [
   {
