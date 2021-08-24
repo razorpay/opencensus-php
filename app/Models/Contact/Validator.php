@@ -19,7 +19,7 @@ class Validator extends Base\Validator
      * - Must end with a-z/A-Z/0-9/./)
      * - Can have anything from a-z/A-Z/0-9/'/’/,/-/&/–/./_/(/)/\/space in between
      */
-    const NAME_REGEX = '/(^[a-zA-Z0-9][\w\-&\'’,.()\s–\/]+[a-zA-Z0-9.)]$)/';
+    const NAME_REGEX = '/(^[a-zA-Z0-9][\w\-&\'’,.()\s–\/]+[a-zA-Z0-9.\/)]$)/';
 
     const MAX_TYPES_ALLOWED = 100;
 

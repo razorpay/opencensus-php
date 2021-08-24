@@ -420,10 +420,10 @@ return [
         ],
     ],
 
-    'testCreateContactWithComma' => [
+    'testCreateContactWithCommaAndSlash' => [
         'request'  => [
             'content' => [
-                'name'         => 'Test, company',
+                'name'         => 'Test, com/pany/',
                 'type'         => 'self',
                 'reference_id' => '#123abc',
                 'email'        => 'asd@abc.com',
@@ -438,7 +438,7 @@ return [
         'response' => [
             'content' => [
                 'entity'       => 'contact',
-                'name'         => 'Test, company',
+                'name'         => 'Test, com/pany/',
                 'type'         => 'self',
                 'reference_id' => '#123abc',
                 'email'        => 'asd@abc.com',
