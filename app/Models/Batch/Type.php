@@ -481,6 +481,7 @@ class Type
         self::BUY_PRICING_RULE              => Name::PAYMENTS_CREATE_BUY_PRICING_PLAN,
         self::BUY_PRICING_ASSIGN            => Name::EDIT_TERMINAL,
         self::TERMINAL_CREATION             => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
+        self::CAPTURE_SETTING               => Name::CAPTURE_SETTING_BATCH_UPLOAD
     ];
 
     public static $workflowApplicableBatchTypes = [

@@ -405,6 +405,10 @@ return [
                 'description' => 'create terminals in bulk',
                 'assignable'  => true,
             ],
+            Permission::CAPTURE_SETTING_BATCH_UPLOAD        => [
+                'description' => 'Permission to add capture settings in batch',
+                'assignable'  => true
+            ],
             Permission::CREATE_SETTLEMENTS_RECONCILE        => '',
             Permission::DEACTIVATE_PROMOTION                 => [
                 'assignable' => true,

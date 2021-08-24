@@ -318,6 +318,7 @@ class Name
     const VIEW_THROTTLE_SETTINGS              = 'view_throttle_settings';
     const ACCESS_EXCEL_STORE                  = 'access_excel_store';
     const CANCEL_BATCH                        = 'cancel_batch';
+    const CAPTURE_SETTING_BATCH_UPLOAD        = 'capture_setting_batch_upload';
     const PAYMENT_CAPTURE_BULK                = 'payment_capture_bulk';
     const COMMISSION_CAPTURE                  = 'commission_capture';
     const COMMISSION_PAYOUT                   = 'commission_payout';
@@ -618,7 +619,7 @@ class Name
     const MANUALLY_LINK_RBL_ACCOUNT_STATEMENT = 'manually_link_rbl_account_statement';
 
     const MERCHANT_RISK_ALERT_FOH          = 'merchant_risk_alert_foh';
-    
+
     const MERCHANT_RISK_CONSTRUCTIVE_ACTION = 'merchant_risk_constructive_action';
 
     // NPS survey create
