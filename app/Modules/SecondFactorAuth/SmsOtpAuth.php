@@ -137,12 +137,12 @@ class SmsOtpAuth implements BaseAuth
         }
         catch(BaseException $e)
         {
-            $this->app['trace']->info(TraceCode::VERIFY_2FA_OTP_SMS_FOR_ACTION_FAILED, [
+            $this->app['trace']->info(TraceCode::VERIFY_OTP_SMS_VALIDATION_FAILURE, [
                 'reason'    => 'input_validation_failed',
                 'exception' => $e->getMessage(),
             ]);
 
-            throw new LogicException($e->getPublicError());
+            throw $e;
         }
 
         $inputForLogging = $input;

@@ -3360,11 +3360,22 @@ class UserTest extends TestCase
             $userDb['contact_mobile_verified']);
     }
 
+    public function testVerifyOtpValidationFailure()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->ba->setAppAuthHeaders(['X-Dashboard-User-Id' => $user['id']]);
+
+        $this->startTest();
+    }
+
     public function testEditContactMobileWhichIsVerifiedByUser()
     {
         $user = $this->fixtures->create('user', [
-            UserEntity::CONTACT_MOBILE              => '9123456789',
-            UserEntity::CONTACT_MOBILE_VERIFIED     => true,
+            UserEntity::CONTACT_MOBILE          => '9123456789',
+            UserEntity::CONTACT_MOBILE_VERIFIED => true,
         ]);
 
         $merchantIds = $user->merchants()->get()->pluck('id')->toArray();

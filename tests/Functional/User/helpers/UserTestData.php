@@ -2680,15 +2680,40 @@ return [
         ],
     ],
 
-    'testEditContactMobileWhichIsVerifiedByUser'    => [
-        'request'       => [
-            'url'           => '/users/contact/update',
-            'method'        => 'PATCH',
-            'content'       => [
-                'contact_mobile'        => '8877666666',
+    'testVerifyOtpValidationFailure' => [
+        'request'   => [
+            'url'     => '/users/2fa/verify',
+            'method'  => 'post',
+            'content' => [
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
             ],
         ],
         'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'The otp field is required.',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testEditContactMobileWhichIsVerifiedByUser' => [
+        'request'  => [
+            'url'     => '/users/contact/update',
+            'method'  => 'PATCH',
+            'content' => [
+                'contact_mobile' => '8877666666',
+            ],
+        ],
+        'response' => [
             'content'       => [
                 'contact_mobile'            => '8877666666',
                 'contact_mobile_verified'   => false,
