@@ -4,7 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use DB;
 use App;
-use Illuminate\Support\Facades\Mail;
+use Mail;
 use Queue;
 use Config;
 use Mockery;
@@ -23,6 +23,7 @@ use RZP\Jobs\FundAccountValidation;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
+use RZP\Mail\Merchant\RejectionSettlement;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Models\Merchant\Detail\PennyTesting;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
@@ -3845,5 +3846,116 @@ class ActivationTest extends OAuthTestCase
                 'route' => "merchant_activation_status",
             ];
         }
+    }
+
+    public function testInternalMerchantGetRejectionReasonsWithRejectionOptionDisableSettlement()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->makeRequestAndGetContent([
+            'method' => 'PATCH',
+            'url' => '/merchant/activation/10000000000000/activation_status',
+            'content' => [
+                'activation_status' => 'rejected',
+                'rejection_reasons' => [
+                    [
+                        'reason_category' => 'risk_related_rejections',
+                        'reason_code' => 'reject_on_risk_remarks',
+                    ],
+                ],
+                'rejection_option' => 'disable_settlement',
+            ],
+        ]);
+
+        $this->ba->careAppAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('Merchant', '10000000000000', true);
+
+        $this->assertFalse($merchant['live']);
+
+        $this->assertTrue($merchant['hold_funds']);
+
+    }
+
+    public function testInternalMerchantGetRejectionReasonsWithRejectionOptionEnableSettlement()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->makeRequestAndGetContent([
+            'method' => 'PATCH',
+            'url' => '/merchant/activation/10000000000000/activation_status',
+            'content' => [
+                'activation_status' => 'rejected',
+                'rejection_reasons' => [
+                    [
+                        'reason_category' => 'risk_related_rejections',
+                        'reason_code' => 'reject_on_risk_remarks',
+                    ],
+                ],
+                'rejection_option' => 'enable_settlement',
+            ],
+        ]);
+
+        $this->ba->careAppAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('Merchant', '10000000000000', true);
+
+        $this->assertFalse($merchant['live']);
+
+    }
+
+    public function testInternalMerchantGetRejectionReasonsWithRejectionOptionProofOfDeliveryMail()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->makeRequestAndGetContent([
+            'method' => 'PATCH',
+            'url' => '/merchant/activation/10000000000000/activation_status',
+            'content' => [
+                'activation_status' => 'rejected',
+                'rejection_reasons' => [
+                    [
+                        'reason_category' => 'risk_related_rejections',
+                        'reason_code' => 'reject_on_risk_remarks',
+                    ],
+                ],
+                'rejection_option' => 'proof_of_delivery_mail',
+            ],
+        ]);
+
+        $this->ba->careAppAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('Merchant', '10000000000000', true);
+
+        $this->assertFalse($merchant['live']);
+
+        $this->assertTrue($merchant['hold_funds']);
+
+        Mail::assertQueued(RejectionSettlement::class, function ($mail)
+        {
+            $this->assertEquals('emails/merchant/settlement_rejection_mail', $mail->view);
+
+            return true;
+        });
     }
 }

@@ -3,7 +3,10 @@
 
 namespace Functional\Care;
 
+use Mail;
+
 use Mockery;
+use RZP\Mail\Merchant\RejectionSettlement;
 use RZP\Trace\TraceCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;

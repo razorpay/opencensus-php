@@ -267,6 +267,7 @@ class Validator extends Base\Validator
         Entity::ACTIVATION_STATUS               => 'required|string|max:30',
         Entity::CLARIFICATION_MODE              => 'filled|string|max:15',
         Entity::REJECTION_REASONS               => 'filled|array',
+        Entity::REJECTION_OPTION                => 'sometimes|string|max:30'
     ];
 
     protected  static $bulkEditRules = [

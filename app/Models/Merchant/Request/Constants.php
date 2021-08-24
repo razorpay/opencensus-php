@@ -19,6 +19,14 @@ class Constants
     const ACTIVATION               = 'activation';
     const DEACTIVATION             = 'deactivation';
 
+    // Rejection types
+    const DISABLE_SETTLEMENT       = 'disable_settlement';
+    const ENABLE_SETTLEMENT        = 'enable_settlement';
+    const PROOF_OF_DELIVERY_MAIL   = 'proof_of_delivery_mail';
+    const DISABLE_LIVE_MODE        = 'liveDisable';
+    const FUNDS_ON_HOLD            = 'holdFunds';
+    const SEND_MAIL                = 'sendRejectionEmailProof';
+
     /*
      * Need this map to map onboarding statuses to merchant request statuses to
      * ensure backward compatability with existing code till it isn't deprecated
@@ -27,6 +35,12 @@ class Constants
         MerchantDetail\Entity::PENDING  => Status::UNDER_REVIEW,
         MerchantDetail\Entity::APPROVED => Status::ACTIVATED,
         MerchantDetail\Entity::REJECTED => Status::REJECTED,
+    ];
+
+    const REJECTION_OPTION_MAP = [
+        self::DISABLE_SETTLEMENT     => [self::DISABLE_LIVE_MODE, self::FUNDS_ON_HOLD],
+        self::ENABLE_SETTLEMENT      => [self::DISABLE_LIVE_MODE],
+        self::PROOF_OF_DELIVERY_MAIL => [self::DISABLE_LIVE_MODE, self::FUNDS_ON_HOLD, self::SEND_MAIL],
     ];
 
     public static $typeNamesMap = [

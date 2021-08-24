@@ -3856,4 +3856,65 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testInternalMerchantGetRejectionReasonsWithRejectionOptionDisableSettlement' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/internal/merchants/10000000000000/rejection_reasons',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'reason_type'        => 'rejection',
+                        'reason_category'    => 'risk_related_rejections',
+                        'reason_description' => 'Merchant rejected based on Risk team\'s remarks',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+
+    'testInternalMerchantGetRejectionReasonsWithRejectionOptionEnableSettlement' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/internal/merchants/10000000000000/rejection_reasons',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'reason_type'        => 'rejection',
+                        'reason_category'    => 'risk_related_rejections',
+                        'reason_description' => 'Merchant rejected based on Risk team\'s remarks',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testInternalMerchantGetRejectionReasonsWithRejectionOptionProofOfDeliveryMail' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/internal/merchants/10000000000000/rejection_reasons',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'reason_type'        => 'rejection',
+                        'reason_category'    => 'risk_related_rejections',
+                        'reason_description' => 'Merchant rejected based on Risk team\'s remarks',
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

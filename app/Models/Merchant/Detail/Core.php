@@ -13,6 +13,7 @@ use RZP\Encryption;
 use RZP\Encryption\AESEncryption;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
+use RZP\Mail\Merchant\RejectionSettlement;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Base;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
@@ -76,6 +77,7 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\Merchant\AvgOrderValue;
 use RZP\Models\Merchant\BusinessDetail\Service;
+use RZP\Models\Merchant\Request\Constants as RequestConstants;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 use RZP\Services\MerchantRiskClient as MRS;
 use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
@@ -1837,6 +1839,8 @@ class Core extends Base\Core
 
         $rejectionReasons = [];
 
+        $rejectionOption = '';
+
         $shouldSave = true;
 
         if (empty($input[Entity::REJECTION_REASONS]) === false)
@@ -1844,6 +1848,13 @@ class Core extends Base\Core
             $rejectionReasons = $input[Entity::REJECTION_REASONS];
 
             unset($input[Entity::REJECTION_REASONS]);
+        }
+
+        if (empty($input[Entity::REJECTION_OPTION]) === false)
+        {
+            $rejectionOption = $input[Entity::REJECTION_OPTION];
+
+            unset($input[Entity::REJECTION_OPTION]);
         }
 
         $oldMerchantDetails = clone $merchantDetails;
@@ -1880,6 +1891,7 @@ class Core extends Base\Core
         });
 
         $this->repo->transactionOnLiveAndTest(function() use (
+            $rejectionOption,
             $merchantDetails,
             $oldMerchantDetails,
             $newMerchantDetails,
@@ -1925,9 +1937,28 @@ class Core extends Base\Core
                     $newMerchantDetails,
                     $rejectionReasons);
 
-                $merchant->deactivate();
+                if (empty($rejectionOption) === true)
+                {
+                    $merchant->deactivate();
 
-                $this->sendRejectionEmail($merchant);
+                    $this->sendRejectionEmail($merchant);
+                }
+                else
+                {
+                    $actions = RequestConstants::REJECTION_OPTION_MAP[$rejectionOption];
+
+                    foreach ($actions as $action)
+                    {
+                        if ($action === RequestConstants::SEND_MAIL)
+                        {
+                            $this->$action($merchant);
+                        }
+                        else
+                        {
+                            $merchant->$action();
+                        }
+                    }
+                }
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
@@ -3228,6 +3259,27 @@ class Core extends Base\Core
         }
 
         $rejectionMail = new RejectionEmail($data, $org->toArray());
+
+        Mail::queue($rejectionMail);
+    }
+
+    public function sendRejectionEmailProof($merchant)
+    {
+        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+
+        $data = [
+            'name'  => $merchant->getName(),
+            'email' => $merchant->getEmail(),
+            'id'    => $merchant->getId(),
+        ];
+
+        // For marketplace accounts, send this email to the parent merchant
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $data['email'] = $merchant->parent->getEmail();
+        }
+
+        $rejectionMail = new RejectionSettlement($data, $org->toArray());
 
         Mail::queue($rejectionMail);
     }

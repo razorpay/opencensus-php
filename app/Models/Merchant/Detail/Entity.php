@@ -161,6 +161,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const PENNY_TESTING_UPDATED_AT                 = 'penny_testing_updated_at';
     const SHOP_ESTABLISHMENT_NUMBER                = 'shop_establishment_number';
     const SHOP_ESTABLISHMENT_VERIFICATION_STATUS   = 'shop_establishment_verification_status';
+    const REJECTION_OPTION                         = 'rejection_option';
 
     const BUSINESS_SUGGESTED_PIN     = 'business_suggested_pin';
     const BUSINESS_SUGGESTED_ADDRESS = 'business_suggested_address';
