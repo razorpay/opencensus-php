@@ -92,6 +92,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::WALNUT369,
         RequestProcessor\Base::TWID,
         RequestProcessor\Base::FULCRUM,
+        RequestProcessor\Base::CHECKOUT_DOT_COM,
     ];
 
     /**

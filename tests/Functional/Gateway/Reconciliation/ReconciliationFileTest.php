@@ -49,6 +49,7 @@ use RZP\Reconciliator\BillDesk\SubReconciliator\PaymentReconciliate as BilldeskP
 use RZP\Reconciliator\VirtualAccIcici\SubReconciliator\ReconciliationFields as VirtualAccIcici;
 use RZP\Reconciliator\Freecharge\SubReconciliator\PaymentReconciliate as FreechargePaymentRecon;
 use RZP\Reconciliator\VirtualAccYesBank\SubReconciliator\PaymentReconciliate as VirtualAccYesBank;
+use RZP\Reconciliator\checkout_dot_com\SubReconciliator\ReconciliationFields as CheckoutDotComPaymentRecon;
 
 class ReconciliationFileTest extends TestCase
 {
@@ -5115,5 +5116,57 @@ class ReconciliationFileTest extends TestCase
         $batch = $this->getDbLastEntityToArray('batch');
 
         $this->assertEquals($batch['status'], $status);
+    }
+
+    private function overrideCheckoutDotComPayment(array $payment)
+    {
+        $facade = $this->testData['facades']['checkout_dot_com'];
+
+        $facade[CheckoutDotComPaymentRecon::REFERENCE] = $payment['id'];
+
+        $facade[CheckoutDotComPaymentRecon::PROCESSING_CURRENCY_AMOUNT] = intval($payment['amount'] / 100);
+
+        return $facade;
+    }
+
+    public function testCheckoutDotComReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+       $terminal = $this->fixtures->create('terminal:checkout_dot_com_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $attributes = [
+            'terminal_id'       => $terminal->getId(),
+            'method'            => Payment\Method::CARD,
+            'amount'            => $payment['amount'],
+            'base_amount'       => $payment['amount'],
+            'amount_authorized' => $payment['amount'],
+            'status'            => 'captured',
+            'gateway'           => 'checkout_dot_com'
+        ];
+
+        $payment = $this->fixtures->create('payment', $attributes);
+
+        $transaction = $this->fixtures->create(
+            'transaction',
+            [
+                'entity_id'   => $payment->getId(),
+                'merchant_id' => '10000000000000',
+            ]
+        );
+
+        $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
+
+        $payment1 = $this->getDbLastEntityToArray('payment');
+
+        $entries[] = $this->overrideCheckoutDotComPayment($payment1);
+
+        $file = $this->writeToExcelFile($entries, 'checkout_dot_com');
+
+        $this->runForFiles([$file], 'checkout_dot_com');
+
+        $this->assertBatchStatus();
     }
 }

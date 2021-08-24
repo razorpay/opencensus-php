@@ -138,6 +138,7 @@ class Base extends Core
     const TWID                   = 'Twid';
 
     const BT_RBL                 = 'BtRbl';
+    const CHECKOUT_DOT_COM       = 'checkout_dot_com';
 
 
     /**
@@ -233,6 +234,7 @@ class Base extends Core
         self::TWID                   => [],
         self::VIRTUAL_ACC_ICICI      => [],
         self::NETBANKING_DLB         => ['alerts@dhanbank.co.in'],
+        self::CHECKOUT_DOT_COM       => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -357,6 +359,7 @@ class Base extends Core
         Gateway::HDFC_DEBIT_EMI         => self::HDFC_DEBIT_EMI,
         Gateway::WORLDLINE              => self::VAS_AXIS,
         Gateway::TWID                   => self::TWID,
+        Gateway::CHECKOUT_DOT_COM       => self::CHECKOUT_DOT_COM,
     ];
 
     // Gateways for which halt gateway mismatch recon flow is ready
