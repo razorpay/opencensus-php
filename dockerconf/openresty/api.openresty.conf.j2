@@ -39,6 +39,12 @@ server {
        return 404;
     }
 
+    location /stub_status {
+        stub_status;
+        allow 127.0.0.1;
+        deny all;
+    }
+
     location / {
         access_by_lua_block {
             local lib = require 'rate_limit_router'
