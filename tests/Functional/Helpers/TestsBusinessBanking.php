@@ -317,6 +317,7 @@ trait TestsBusinessBanking
     }
 
     // TODO: Remove all the params and take an array of key value pair of features and their expected values instead
+    // Check function setMockRazorxTreatment.
     protected function mockRazorxTreatment(string $channel = 'yesbank',
                                            string $ftsEnabled = 'off',
                                            string $webhookViaStork = 'off',
@@ -450,6 +451,29 @@ trait TestsBusinessBanking
 
         $this->app->razorx->method('getCachedTreatment')
                           ->willReturn(strtolower($webhookViaStork));
+    }
+
+    protected function setMockRazorxTreatment(array $razorxTreatment, string $defaultBehaviour = 'off')
+    {
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode) use ($razorxTreatment, $defaultBehaviour)
+                              {
+                                  if (array_key_exists($feature, $razorxTreatment) === true)
+                                  {
+                                      return $razorxTreatment[$feature];
+                                  }
+
+                                  return strtolower($defaultBehaviour);
+                              }));
     }
 
     protected function createWorkflowFeature(array $attributes = [], $mode = 'test')

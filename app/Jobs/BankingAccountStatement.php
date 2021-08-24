@@ -62,52 +62,18 @@ class BankingAccountStatement extends Job
                     'account_number'    => $this->params['account_number']
                 ]);
 
-            $newStatementFetchFlowFeature = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::ACCOUNT_STATEMENT_V2_FLOW]);
-
             $workerStartTime = Carbon::now()->getTimestamp();
 
-            if (in_array($this->params['account_number'], $newStatementFetchFlowFeature) === true)
-            {
-                 (new BAS\Core)->fetchAccountStatementV2($this->params);
+            $result = (new BAS\Core)->processStatementForAccount($this->params);
 
-                $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_RECORDS_FETCHED,
-                [
-                    'channel'           => $this->params['channel'],
-                    'account_number'    => $this->params['account_number'],
-                ]);
+            $workerEndTime = Carbon::now()->getTimestamp();
 
-                (new BAS\Core)->processStatementForAccountV2($this->params);
-
-                $this->trace->info(
-                    TraceCode::BANKING_ACCOUNT_STATEMENT_RECORDS_SAVED,
-                    [
-                        'channel'           => $this->params['channel'],
-                        'account_number'    => $this->params['account_number']
-                    ]);
-
-                $workerEndTime = Carbon::now()->getTimestamp();
-
-                $this->trace->info(TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
-                    [
-                        'account_number'     => $this->params['account_number'],
-                        'channel'            => $this->params['channel'],
-                        'start_time'         => $workerStartTime,
-                        'end_time'           => $workerEndTime,
-                    ]);
-            }
-            else
-            {
-                $result = (new BAS\Core)->processStatementForAccount($this->params);
-
-                $workerEndTime = Carbon::now()->getTimestamp();
-
-                $this->trace->info(TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
-                    [
-                        'result'        => $result,
-                        'start_time'    => $workerStartTime,
-                        'end_time'      => $workerEndTime
-                    ]);
-            }
+            $this->trace->info(TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
+                               [
+                                   'result'     => $result,
+                                   'start_time' => $workerStartTime,
+                                   'end_time'   => $workerEndTime
+                               ]);
 
             $this->delete();
         }

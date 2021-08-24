@@ -101,10 +101,7 @@ class Core extends Base\Core
 
         $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
 
-        $newStatementFetchFlowFeature = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::ACCOUNT_STATEMENT_V2_FLOW]);
-
-        if (($channel === Channel::ICICI) or
-            (in_array($accountNumber, $newStatementFetchFlowFeature) === true))
+        if ($this->checkReArchFlow($accountNumber, $channel) === true)
         {
             $input = [
                 Entity::CHANNEL         => $channel,
@@ -148,8 +145,6 @@ class Core extends Base\Core
                     $basDetailEntity->setLastStatementAttemptAt();
 
                     $this->repo->saveOrFail($basDetailEntity);
-
-                    $merchant = $basDetailEntity->merchant;
 
                     $accountStatementApiVersion = $this->getAccountStatementApiVersion($basDetailEntity);
 
@@ -2058,10 +2053,7 @@ class Core extends Base\Core
 
     protected function getAccountStatementJobForChannel(string $channel, string $accountNumber)
     {
-        $accountNumbers = (new AdminService)->getConfigKey(['key' => ConfigKey::ACCOUNT_STATEMENT_V2_FLOW]);
-
-        if (($channel === BASDetails\Channel::ICICI) or
-            (in_array($accountNumber, $accountNumbers) === true))
+        if ($this->checkReArchFlow($accountNumber, $channel) === true)
         {
             $job = 'RZP\Jobs' . '\\' . studly_case($channel) . 'BankingAccountStatement';
 
@@ -2176,5 +2168,33 @@ class Core extends Base\Core
             $response);
 
         return $response;
+    }
+
+    public function checkReArchFlow(string $accountNumber, string $channel)
+    {
+        if ($channel === Channel::ICICI)
+        {
+            return true;
+        }
+
+        // Some accounts are already onboarded to re-arch flow using this config key. Hence this is required for backward compatibility.
+        $newStatementFetchFlowFeature = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::ACCOUNT_STATEMENT_V2_FLOW]);
+
+        if (in_array($accountNumber, $newStatementFetchFlowFeature) === true)
+        {
+            return true;
+        }
+
+        /** @var BASDetails\Entity $basDetailEntity */
+        $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
+
+        // roll out via razorx.
+        $variant = $this->app->razorx->getTreatment(
+            $basDetailEntity->getMerchantId(),
+            Merchant\RazorxTreatment::BAS_FETCH_RE_ARCH,
+            $this->mode
+        );
+
+        return (strtolower($variant) == 'on');
     }
 }

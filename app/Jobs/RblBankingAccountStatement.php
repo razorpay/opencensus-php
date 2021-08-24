@@ -76,9 +76,9 @@ class RblBankingAccountStatement extends Job
         {
             parent::handle();
 
-            $newStatementFetchFlowFeature = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::ACCOUNT_STATEMENT_V2_FLOW]);
+            $BASCore = new BAS\Core;
 
-            if (in_array($this->params['account_number'], $newStatementFetchFlowFeature) === false)
+            if ($BASCore->checkReArchFlow($this->params['account_number'], $this->params['channel']) === false)
             {
                 $this->trace->info(
                     TraceCode::RBL_BANKING_ACCOUNT_STATEMENT_JOB_CALLED_BUT_V2_FEATURE_NOT_ENABLED,
@@ -136,7 +136,7 @@ class RblBankingAccountStatement extends Job
 
                 $workerStartTime = Carbon::now()->getTimestamp();
 
-                (new BAS\Core)->fetchAccountStatementV2($this->params);
+                $BASCore->fetchAccountStatementV2($this->params);
 
                 $workerEndTime = Carbon::now()->getTimestamp();
 

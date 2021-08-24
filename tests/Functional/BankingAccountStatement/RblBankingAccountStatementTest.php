@@ -26,6 +26,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Channel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use RZP\Models\Merchant\Balance\Entity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Mail\BankingAccount\StatementMail;
@@ -5910,7 +5911,9 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->ba->cronAuth();
 
-        $this->mockRazorxTreatment('yesbank', 'off', 'off', 'off', 'on');
+        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'off',
+                                       RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'off'],
+                                      'on');
 
         $this->dontExpectWebhookEvent('transaction.created');
 
@@ -9011,8 +9014,7 @@ class RblBankingAccountStatementTest extends TestCase
     // runs as expected
     public function testRblAccountStatementFetchV2WithDifferentValueForBulkFetchAndSave()
     {
-        (new Admin\Service)->setConfigKeys([
-            Admin\ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ['2224440041626905']]);
+        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'on']);
 
         (new Admin\Service)->setConfigKeys([
             Admin\ConfigKey::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE => 3]);
