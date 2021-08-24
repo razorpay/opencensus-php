@@ -176,6 +176,7 @@ export default class ActivationWizard extends React.Component {
     isAadharDocVisible:
       !this.props.data.stakeholder ||
       (this.props.data.stakeholder && !!this.props.data.stakeholder.aadhaar_linked),
+    ischeck: !this.props.user.isSyncExperimentEnabled,
   };
 
   constructor(props) {
@@ -1330,6 +1331,10 @@ export default class ActivationWizard extends React.Component {
       this.setState({ callingAPI: false });
     }
   };
+  //  in sync pan verification footer checkbox
+  onCheckboxChange = (checked) => {
+    this.setState({ ischeck: checked });
+  };
 
   /*
    * Fadeout based loader text.
@@ -1396,7 +1401,9 @@ export default class ActivationWizard extends React.Component {
     const { data } = this.props;
 
     const currentBusinessType = dirty.business_type || data.business_type;
-
+    if (this.props.user.isSyncExperimentEnabled) {
+      this.setState({ ischeck: false });
+    }
     // Company Search only available for PG Activation
     if (
       placeholder === 'Business name as per PAN' &&
@@ -1622,6 +1629,9 @@ export default class ActivationWizard extends React.Component {
     } else if (LLPIN_BusinessTypes.indexOf(Number(currentBusinessType)) !== -1) {
       businessIdentityType = 'llpin';
     } else businessIdentityType = null;
+    if (this.props.user.isSyncExperimentEnabled) {
+      this.setState({ ischeck: false });
+    }
 
     const shouldAutoPopulateCompanyCin = businessIdentityType === args.option.identity_type;
     const shouldAutoPopulateBillingLabel =
@@ -2123,8 +2133,9 @@ export default class ActivationWizard extends React.Component {
           activeTab={this.state.activeTab}
           isL1Submitted={this.props.user.instantActivation.isL1Submitted}
           onAction={onAction}
-          isSyncExperimentEnabled={this.props.user.isSyncExperimentEnabled}
+          isCheck={this.state.ischeck}
           fetchData={this.props.fetchMerchantDetails}
+          onCheckboxChange={this.onCheckboxChange}
         />
       </div>
     );
@@ -2235,7 +2246,8 @@ function ActivationField(field) {
     rest.options = this.state.business_name_options || [];
     rest.selected = this.state.business_name_selected_option;
     rest.onChange = this.onOptionChange;
-    rest.companyPanError = rest.checkValidityFromAPI && rest.checkValidityFromAPI(this);
+    rest.companyPanError =
+      rest.checkValidityFromAPI && !this.isOnKYCTab() && rest.checkValidityFromAPI(this);
   }
 
   if (field.name === 'e_aadhar' && rest.customField) {

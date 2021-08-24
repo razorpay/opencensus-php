@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Loader from './Loader';
 import { FOOTER_BUTTONS } from '../Constants';
@@ -150,14 +150,14 @@ const Footer = ({
   activeTab,
   isL1Submitted,
   onAction,
-  isSyncExperimentEnabled,
+  isCheck,
   fetchData,
+  onCheckboxChange,
 }) => {
   const buttons = [];
-  const [checkbox, setCheckBox] = useState(!isSyncExperimentEnabled);
 
   const onChange = (checked) => {
-    setCheckBox(checked);
+    onCheckboxChange(checked);
   };
 
   if (footerButtons.includes(FOOTER_BUTTONS.SUBMIT_CLARIFICATIONS)) {
@@ -180,7 +180,7 @@ const Footer = ({
   if (footerButtons.includes(FOOTER_BUTTONS.SUBMIT_L1_FORM)) {
     buttons.push(
       <SubmitL1Form
-        canSubmitL1Form={canSubmitL1Form && checkbox}
+        canSubmitL1Form={canSubmitL1Form && isCheck}
         submitL1={submitL1}
         isUnregBiz={isUnregBiz}
         tracking={tracking}
@@ -206,7 +206,7 @@ const Footer = ({
           activeTab={activeTab}
           isL1Submitted={isL1Submitted}
           canSubmitL1Form={canSubmitL1Form}
-          checkbox={checkbox}
+          checkbox={isCheck}
           setCheckBox={onChange}
           onAction={onAction}
           fetchData={fetchData}

@@ -109,10 +109,7 @@ class NavFragment extends Component {
     const { user } = this.props;
     const isMerchantAlreadyMTU = await this.isMerchantAlreadyMTU();
 
-    if (
-      (!isMerchantAlreadyMTU || this.isMtuOfferShowed === 'visited') &&
-      this.canShowOnboardingOffers
-    ) {
+    if (!isMerchantAlreadyMTU && this.canShowOnboardingOffers) {
       const from = this.isNewMerchantPostMTUCouponLive ? user.created_at : TRANSACTION_TIMESTAMP;
 
       merchantFetch({
@@ -125,15 +122,23 @@ class NavFragment extends Component {
             ],
           },
           aggregations: {
-            transactionVolume: {
-              agg_type: 'sum',
-              details: { index: 'payments', column: 'base_amount', mode: 'live' },
+            firstTransaction: {
+              agg_type: 'oldest',
+              details: {
+                index: 'payments',
+                column: 'created_at',
+                mode: 'live',
+                limit: 1,
+                result_fields: ['base_amount'],
+              },
             },
           },
         },
       }).then((res) => {
-        if (res?.data?.transactionVolume) {
-          const payment = paiseToRupees(res.data.transactionVolume?.result[0].value);
+        if (res?.data?.firstTransaction) {
+          const payment = res.data.firstTransaction?.result?.length
+            ? paiseToRupees(res.data.firstTransaction?.result[0].base_amount)
+            : 0;
           this.setState({
             transactionAmount: payment,
           });
