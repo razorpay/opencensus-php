@@ -1,23 +1,17 @@
-import React, { PureComponent, Component } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
-import RTracking from 'react-tracking';
 import ModalHeader from 'common/ui/ModalHeader';
 import { reduxForm, Field } from 'redux-form';
 import { required } from 'common/utils/validators';
 import InputField from 'common/ui/Forms/InputField';
-import { updatePassword } from 'merchant/reducers/profile';
-import { closeModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { closeModal as closeModalReducer } from 'merchant_common/reducers/modals';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { openCheckout } from 'merchant/utils/checkout-utility';
+import { bindActionCreators, compose } from 'redux';
 
-@connect(null, { closeModal })
-@reduxForm({
-  form: 'AddFundsForm',
-})
-export default class AddFundsForm extends Component {
+class AddFundsForm extends Component {
   addFunds = (fieldProps) => {
     const { closeModal, type, user, statusHandler, addHandler, analyticsHandler } = this.props;
     const typeValue = type.charAt(0).toUpperCase() + type.slice(1);
@@ -47,6 +41,8 @@ export default class AddFundsForm extends Component {
         return 'Fee Credits Pop up - Add Funds';
       case 'refund':
         return 'Refund Credits Pop up - Add Funds';
+      default:
+        return '';
     }
   };
 
@@ -60,6 +56,8 @@ export default class AddFundsForm extends Component {
         return 'Add Reserve Balance';
       case 'current':
         return 'Add Funds';
+      default:
+        return '';
     }
   };
 
@@ -67,7 +65,7 @@ export default class AddFundsForm extends Component {
     const { handleSubmit, type } = this.props;
     const title = this.formTitle(type);
     const typesArray = ['fee', 'refund'];
-    let text = typesArray.includes(type) ? 'Add Credits' : 'Add Funds';
+    const text = typesArray.includes(type) ? 'Add Credits' : 'Add Funds';
 
     return (
       <form onSubmit={handleSubmit(this.addFunds)}>
@@ -127,3 +125,13 @@ export default class AddFundsForm extends Component {
     );
   }
 }
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators({ closeModal: closeModalReducer }, dispatch);
+
+export default compose(
+  connect(null, mapDispatchToProps),
+  reduxForm({
+    form: 'AddFundsForm',
+  }),
+)(AddFundsForm);

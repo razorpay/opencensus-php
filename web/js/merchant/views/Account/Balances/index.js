@@ -9,8 +9,10 @@ import {
 } from 'merchant/reducers/profile';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
+import { bindActionCreators } from 'redux';
 import AddFundsForm from 'common/ui/AddFundsForm';
 import Amount from 'common/ui/Amount';
+import Spinner from 'common/ui/Spinner';
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 import { analyticsTrack } from 'common/utils/analytics';
 import {
@@ -24,29 +26,11 @@ import {
 } from './ga';
 import { CreateTicketEmitter } from '../../TicketSupport/utils';
 import { getCustomURL } from 'merchant/components/DocsLink';
-@connect(
-  (state) => ({
-    ...state.session,
-    account_balance: state.home.current_balance,
-    reserve_balance: state.profile.reserve_balance,
-    ticket_status: state.profile.ticket_status,
-  }),
-  {
-    ...NotificationsActions,
-    ...ModalActions,
-    fetchCurrentBalance,
-    fetchReserveBalance,
-    storeTicketDetails,
-    getTicketStatus,
-  },
-)
-export default class AddFundsContainer extends Component {
-  constructor() {
-    super(...arguments);
+
+class AddFundsContainer extends Component {
+  constructor(props) {
+    super(props);
     this.state = {
-      isSaving: false,
-      status: {},
-      hasKeys: false,
       ticketGenerated: false,
     };
   }
@@ -69,9 +53,6 @@ export default class AddFundsContainer extends Component {
   }
 
   addFunds = (transaction, type) => {
-    this.setState({
-      isSaving: true,
-    });
     return new Promise((resolve, reject) => {
       if (transaction.razorpay_payment_id) {
         resolve(true);
@@ -80,9 +61,6 @@ export default class AddFundsContainer extends Component {
       }
     })
       .then((_) => {
-        this.setState({
-          isSaving: false,
-        });
         if (type === 'reserve') {
           this.props.fetchReserveBalance();
         }
@@ -91,21 +69,25 @@ export default class AddFundsContainer extends Component {
         }
         this.props.showNotification({
           type: 'success',
-          message: `${(type = 'reserve' ? 'Reserve balance' : 'Funds')} added successfully`,
+          message: `${type === 'reserve' ? 'Reserve balance' : 'Funds'} added successfully`,
         });
-        type === 'current' && analyticsTrack(CURRENT_BALANCE_SUCCESS);
-        type === 'reserve' && analyticsTrack(RESERVE_BALANCE_SUCCESS);
+
+        if (type === 'current') {
+          analyticsTrack(CURRENT_BALANCE_SUCCESS);
+        }
+
+        if (type === 'reserve') {
+          analyticsTrack(RESERVE_BALANCE_SUCCESS);
+        }
       })
-      .catch((error) => {
-        type === 'current' && analyticsTrack(CURRENT_BALANCE_FAILURE);
-        type === 'reserve' && analyticsTrack(RESERVE_BALANCE_FAILURE);
-        this.setState({
-          isSaving: false,
-          status: {
-            type: 'error',
-            message: error,
-          },
-        });
+      .catch((_) => {
+        if (type === 'current') {
+          analyticsTrack(CURRENT_BALANCE_FAILURE);
+        }
+
+        if (type === 'reserve') {
+          analyticsTrack(RESERVE_BALANCE_FAILURE);
+        }
       });
   };
 
@@ -142,9 +124,12 @@ export default class AddFundsContainer extends Component {
         />
       ),
     });
-    type === 'current'
-      ? analyticsTrack(CLICK_ADD_FUNDS_ON_CURRENT_BALANCE)
-      : analyticsTrack(CLICK_ADD_FUNDS_ON_RESERVE_BALANCE);
+
+    if (type === 'current') {
+      analyticsTrack(CLICK_ADD_FUNDS_ON_CURRENT_BALANCE);
+    } else {
+      analyticsTrack(CLICK_ADD_FUNDS_ON_RESERVE_BALANCE);
+    }
   };
 
   getReserveBalanceAmount = (items) => {
@@ -160,10 +145,7 @@ export default class AddFundsContainer extends Component {
   handleActivate = () => {
     if (window.rzpTicketSystem && window.rzpTicketSystem.addEventListener) {
       window.rzpTicketSystem.addEventListener('ticket-created', this.handleTicketCreation);
-      CreateTicketEmitter.emit(
-        'create-ticket',
-        'tickets'
-      );
+      CreateTicketEmitter.emit('create-ticket', 'tickets');
 
       if (document.getElementsByName('request-description')?.length > 0) {
         setTimeout(() => {
@@ -176,7 +158,7 @@ export default class AddFundsContainer extends Component {
 
   handleTicketCreation = (response) => {
     const payload = {
-      ticketNo: response.ticketNo,
+      ticketNo: response?.data?.ticket_id,
       description: 'Please activate reserve balance and share VA details',
     };
     this.props.storeTicketDetails(payload);
@@ -197,10 +179,7 @@ export default class AddFundsContainer extends Component {
     });
     if (window.rzpTicketSystem) {
       window.rzpTicketSystem.addEventListener('ticket-created', this.handleTicketCreation);
-      CreateTicketEmitter.emit(
-        'create-ticket',
-        'tickets'
-      );
+      CreateTicketEmitter.emit('create-ticket', 'tickets');
     }
   };
 
@@ -209,6 +188,15 @@ export default class AddFundsContainer extends Component {
     const items = this.props.reserve_balance.data.items;
     const reserveBalance = this.getReserveBalanceAmount(items);
     const { user } = this.props;
+    const { data: ticketStatusData, loading: ticketStatusLoading } = this.props.ticket_status;
+
+    if (ticketStatusLoading) {
+      return (
+        <div class="page-spinner-container">
+          <Spinner />
+        </div>
+      );
+    }
 
     return (
       <div class="content-wrapper content-sm" style={{ backgroundColor: '#f9fafb' }}>
@@ -239,7 +227,7 @@ export default class AddFundsContainer extends Component {
                 {current_balance < 0 && <p class="negative-marker">-</p>}
                 <Amount
                   value={Math.abs(current_balance)}
-                  currency={'INR'}
+                  currency="INR"
                   className={current_balance < 0 ? 'negative-balance' : ''}
                 />
               </div>
@@ -257,6 +245,7 @@ export default class AddFundsContainer extends Component {
             <p>
               Add funds to your account to process refunds/transfers when the account balance goes
               low. Adding large funds to your account?
+              {/**/}
               <a onClick={this.handleContactUs}> Contact Us</a>
             </p>
           </div>
@@ -271,17 +260,16 @@ export default class AddFundsContainer extends Component {
                 <Amount
                   value={Math.abs(this.getReserveBalanceAmount(items))}
                   // value={Math.abs(reserve_balance)}
-                  currency={'INR'}
+                  currency="INR"
                 />
               </div>
             </div>
             {!user.isOrgAxis && !user.isSelfServeCreditsEnabled && (
               <div class="balances-add-funds">
-                {this.state.ticketGenerated ||
-                this.props.ticket_status.data.ticket_status === 'Processing' ? (
+                {this.state.ticketGenerated || ticketStatusData.ticket_status === 'Processing' ? (
                   <button class="btn btn-primary">Processing...</button>
-                ) : this.props.ticket_status.data.ticket_status === 'Resolved' ||
-                  this.props.ticket_status.data.ticket_status === 'Closed' ||
+                ) : ticketStatusData.ticket_status === 'Resolved' ||
+                  ticketStatusData.ticket_status === 'Closed' ||
                   reserveBalance > 0 ? null : (
                   <button class="btn btn-outline" onClick={this.handleActivate}>
                     Activate
@@ -306,8 +294,7 @@ export default class AddFundsContainer extends Component {
         </div>
 
         {this.state.ticketGenerated ||
-        (this.props.ticket_status.data.ticket_status === 'Processing' &&
-          !user.isSelfServeCreditsEnabled) ? (
+        (ticketStatusData.ticket_status === 'Processing' && !user.isSelfServeCreditsEnabled) ? (
           <div class="processing-note">
             <p>
               Your request is being processed. Please check your registered email for an update.
@@ -318,3 +305,28 @@ export default class AddFundsContainer extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    ...state.session,
+    account_balance: state.home.current_balance,
+    reserve_balance: state.profile.reserve_balance,
+    ticket_status: state.profile.ticket_status,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      ...NotificationsActions,
+      ...ModalActions,
+      fetchCurrentBalance,
+      fetchReserveBalance,
+      storeTicketDetails,
+      getTicketStatus,
+    },
+    dispatch,
+  );
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(AddFundsContainer);
