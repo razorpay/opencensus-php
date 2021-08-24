@@ -35,9 +35,6 @@ class Gateway extends Base\Gateway
 
     const MAX_RETRY_COUNT = 5;
 
-    // Razorx Features for migrating to axis single collect api
-    const GATEWAY_AXIS_SINGLE_COLLECT_RAZORX_PREFIX = 'gateway_axis_single_collect';
-
     /**
      * @var AESCrypto
      */
@@ -92,51 +89,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
-        /**
-         * The first digit of variant is used for non-TPV and second is used for TPV
-         * digit 0 tells to use old (fetch token + collect) flow
-         * digit 1 tells to use the new (single collect) flow
-         * "00" - use old flow for non-TPV and TPV, "01" - Use old flow if it is non-TPV and new flow if it is a TPV
-         * "10" - use new flow if non-TPV and old flow if TPV, "11" - Use new flow for both tpv and non-tpv
-         */
-        $variant = $this->app->razorx->getTreatment(
-            $this->request->getTaskId(),
-            self::GATEWAY_AXIS_SINGLE_COLLECT_RAZORX_PREFIX,
-            $this->getMode());
-
-        $this->trace->info(TraceCode::MISC_TRACE_CODE, [
-            'razorx_variant' => $variant,
-            'gateway'        => $this->gateway,
-            'payment_id'     => $input['payment']['id'],
-        ]);
-
-        $isTpv = $input['merchant']->isTPVRequired() === true;
-
-        if (($isTpv and $variant[1] === "1") or
-            (!$isTpv and $variant[0] === "1"))
-        {
-            $request = $this->getAuthorizeRequestArray($input);
-        }
-        else
-        {
-            $token = $this->fetchToken($input, Action::COLLECT);
-
-            // Putting token to input as we want to maintain consistency in collect request
-            $input['gateway']['token'] = $token;
-
-            $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST, [
-                'gateway'     => $this->gateway,
-                'payment_id'  => $input['payment']['id'],
-                'terminal_id' => $input['terminal']['id'],
-                'token'       => $token,
-                'flow'        => $input['upi']['flow'],
-                'vpa'         => mask_vpa($input['payment']['vpa']) ?? null,
-            ]);
-
-            parent::action($input, Action::AUTHENTICATE);
-
-            $request = $this->getCollectRequestArray($input);
-        }
+        $request = $this->getAuthorizeRequestArray($input);
 
         $this->disableRetryForAction();
 
@@ -195,9 +148,10 @@ class Gateway extends Base\Gateway
             true);
     }
 
-    /*
+    /**
      * This method will only be used for collect payments, to generate a token that will be passed
      * in collect request.
+     * @deprecated - This function is deprecated in favour of single collect api
      */
     protected function fetchToken($input, string $action)
     {
@@ -478,10 +432,11 @@ class Gateway extends Base\Gateway
         }
     }
 
-    /*
+    /**
      * This method is responsible to generate token request array for fetching the token
      * to be passed in collect payments.
      * The end point and request body are different for tpv and non tpv token requests.
+     * @deprecated - This function is deprecated in favour of single collect api
      */
     protected function getTokenRequestArray($input)
     {
@@ -530,6 +485,9 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    /**
+     * @deprecated - This function is deprecated in favour of single collect api
+     */
     protected function getTokenRequestForTpv($input, $payment)
     {
         $data = [
@@ -634,6 +592,9 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    /**
+     * @deprecated - This function is deprecated in favour of single collect api
+     */
     protected function getCollectRequestArray($input, $content = [], $method = 'post', $type = null)
     {
         $request = $this->getStandardRequestArray($content, $method, $type);
