@@ -19,6 +19,7 @@ const RecommendationWidget = ({
   closeModal,
   openModal,
   session,
+  fetchKeys,
 }) => {
   const [amount, setAmount] = useState(0);
   const [isApiKeyGenerated, setIsApiKeyGenerated] = useState(false);
@@ -54,7 +55,7 @@ const RecommendationWidget = ({
   };
 
   useEffect(() => {
-    props.fetchKeys({ mode: session.mode }, session.user.has_key_access);
+    fetchKeys({ mode: session.mode }, session.user.has_key_access);
 
     if (landingProduct && recommendedProduct && !!user.activated) {
       getTransactionVoulme();
