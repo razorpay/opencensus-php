@@ -215,6 +215,7 @@ class NetbankingErrorCodes
     const AP35 = 'AP35';
     const AP36 = 'AP36';
     const AP37 = 'AP37';
+    const AP38 = 'AP38';
     const AP39 = 'AP39';
     const AP40 = 'AP40';
     const AP41 = 'AP41';
@@ -432,6 +433,7 @@ class NetbankingErrorCodes
         self::AP35 => 'Debit card validation failed due to_Invalid card number',
         self::AP36 => 'Debit card validation failed due to_Invalid expiry date',
         self::AP37 => 'Debit Card validation failed due to_Invalid PIN',
+        self::AP38 => 'Debit card validation failed due to Invalid CVV',
         self::AP39 => 'OTP Invalid',
         self::AP40 => 'Maximum tries exceeded for OTP',
         self::AP41 => 'Time expired for OTP',
@@ -594,6 +596,7 @@ class NetbankingErrorCodes
         self::AP35 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,
         self::AP36 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
         self::AP37 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_PIN,
+        self::AP38 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
         self::AP39 => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         self::AP40 => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
         self::AP41 => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
