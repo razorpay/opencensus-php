@@ -63,7 +63,7 @@ class SyncEventManagerTest extends TestCase
     public function testPublishJobSkipsSendsEventToOutbox()
     {
         // assuming default to be false, similar to setting it like following
-        // Config::set('applications.acs.sync_enabled', false);
+        Config::set('applications.acs.sync_enabled', false);
         $outboxMock = $this->createOutboxMock();
 
         $accountId = 'AccountId';
