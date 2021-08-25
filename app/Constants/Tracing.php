@@ -166,6 +166,7 @@ class Tracing
             'payment_fetch_multiple',
             'reconciliate_via_batch_service',
             'pricing_get_merchant_plans',
+            'customer_fetch_multiple',
     ]);
     }
 

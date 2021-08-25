@@ -94,6 +94,11 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
+        $this->trace->info(TraceCode::CUSTOMER_FETCH,
+                           [
+                               'input'   => $input
+                           ]);
+
         $customers = $this->repo->customer->fetch($input, $this->merchant->getId());
 
         return $customers->toArrayPublic();

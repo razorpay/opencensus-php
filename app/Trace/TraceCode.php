@@ -962,6 +962,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CUSTOMER_SESSION                                      = 'CUSTOMER_SESSION';
     const CUSTOMER_CREATE_APP_TOKEN                             = 'CUSTOMER_CREATE_APP_TOKEN';
     const CUSTOMER_CHECKCOOKIE_STATUS                           = 'CUSTOMER_CHECKCOOKIE_STATUS';
+    const CUSTOMER_FETCH                                        = 'CUSTOMER_FETCH';
     const PAYMENT_PROCESS_FROM_SAVED_LOCAL                      = 'PAYMENT_PROCESS_FROM_SAVED_LOCAL';
     const PAYMENT_PROCESS_FROM_SAVED_GLOBAL                     = 'PAYMENT_PROCESS_FROM_SAVED_GLOBAL';
     const PAYMENT_SAVE_METHOD                                   = 'PAYMENT_SAVE_METHOD';
