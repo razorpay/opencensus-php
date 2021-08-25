@@ -275,7 +275,7 @@ class BankingAccountService
     {
         $parsedResponse = $this->parseResponse($response);
 
-        if ($response->status_code >= 400)
+        if ($response->status_code >= 500)
         {
             $this->trace->error(
                 TraceCode::BANKING_ACCOUNT_SERVICE_ERROR,
@@ -283,8 +283,31 @@ class BankingAccountService
                     'error' => $parsedResponse['error'] ?? json_encode($response->body, true),
                 ]);
 
-            throw new IntegrationException('banking account service exception',
-                                     ErrorCode::SERVER_ERROR);
+            throw new Exception\ServerErrorException(
+                'Internal Server Error occurred',
+                ErrorCode::SERVER_ERROR);
+        }
+        else if($response->status_code >= 400)
+        {
+            if(empty($parsedResponse['error']) === false)
+            {
+                $error = $parsedResponse['error'];
+            }
+            else
+            {
+                $error = json_encode($response->body, true);
+            }
+            $this->trace->error(
+                TraceCode::BANKING_ACCOUNT_SERVICE_BAD_REQUEST,
+                [
+                    'error' => $error,
+                ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_SERVICE_ERROR, null,
+                [
+                    'errorDetail' => $response->body
+                ], $error);
         }
 
         return $parsedResponse;

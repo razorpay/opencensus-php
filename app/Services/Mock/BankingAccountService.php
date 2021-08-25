@@ -2,6 +2,8 @@
 
 namespace RZP\Services\Mock;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -213,6 +215,11 @@ class BankingAccountService
                     'id' => '20000000000000',
                 ]
             ];
+        }
+
+        else if($path == 'search/wrongUrl' and $method == 'GET')
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
 
         return $result;

@@ -125,6 +125,19 @@ return [
         ],
     ],
 
+    'testLmsErrorFromBas' => [
+        'request'  => [
+            'url'     => '/bas/lms/search/wrongUrl/',
+            'method'  => 'GET',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testLmsOps' => [
         'request'  => [
             'url'     => '/bas/lms_ops/business/',

@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\BankingAccountService;
 use App;
 use Carbon\Carbon;
 
+use RZP\Exception\BadRequestException;
 use RZP\Models\Schedule;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
@@ -228,6 +229,15 @@ class BankingAccountServiceTest extends TestCase
         $response = $this->startTest();
 
         $this->assertEquals('30000000000888', $response['data']['id']);
+    }
+
+    public function testLmsErrorFromBas()
+    {
+        $this->ba->adminAuth();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->startTest();
     }
 
     public function testLmsOps()
