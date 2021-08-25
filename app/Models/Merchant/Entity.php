@@ -3030,4 +3030,27 @@ class Entity extends Base\PublicEntity
 
         return null;
     }
+
+    public function getQueueableRelations()
+    {
+        /**
+         * This introduced seg faults during serialize function call
+         * where 1 of the relations had a relationship defined back
+         * to the initial model, thus creating an infinite loop.
+         *
+         * @see Model::getQueueableRelations()
+         * @see https://github.com/laravel/framework/issues/23505
+         */
+        $relations = [];
+
+        foreach ($this->getRelations() as $key => $relation) {
+            if (!method_exists($this, $key)) {
+                continue;
+            }
+
+            $relations[] = $key;
+        }
+
+        return array_unique($relations);
+    }
 }
