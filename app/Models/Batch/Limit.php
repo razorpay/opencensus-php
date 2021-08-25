@@ -36,6 +36,7 @@ class Limit
         'emandate_debit_enach_npci_netbanking'      => 100000,
         'emandate_debit_enach_nb_icici'             => 100000,
         'emandate_debit_sbi'                        => 10000,
+        Type::BANKING_ACCOUNT_ACTIVATION_COMMENTS   => 10000, 
         Type::ELFIN                                 => 5000,
         Type::PARTNER_SUBMERCHANTS                  => 5000,
         Type::ENTITY_MAPPING                        => 10000,
