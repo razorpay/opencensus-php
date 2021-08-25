@@ -9319,7 +9319,7 @@ class RblBankingAccountStatementTest extends TestCase
                                     'transaction_date'          => 1451327400,
                                     'posted_date'               => 1451384892,
                                     'bank_serial_number'        => 1,
-                                    'description'               => 'DEBIT CARD ANNUAL FEE 2635',
+                                    'description'               => 'DEBIT CARD ANNUAL FEE 2635  ',
                                     'category'                  => 'bank_initiated',
                                     'bank_instrument_id'        => '',
                                     'balance_currency'          => 'INR',

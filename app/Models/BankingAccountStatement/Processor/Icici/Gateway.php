@@ -558,7 +558,7 @@ class Gateway extends BaseProcessor
 
     protected function getDescriptionFromResponse($transaction)
     {
-        return $transaction[Fields::REMARKS];
+        return trim($transaction[Fields::REMARKS]);
     }
 
     protected function getBalanceFromResponse(array $transaction): int
@@ -626,8 +626,11 @@ class Gateway extends BaseProcessor
                 $existingRecords = $this->repo->banking_account_statement
                     ->findExistingStatementRecordsForBank($recordsToCheck);
 
+                /** @var Entity $record */
                 foreach ($existingRecords as $record)
                 {
+                    $record->setDescription(trim($record->getDescription()));
+
                     $isPresent = array_search($record->toArray(), $bankTransactions);
 
                     if ($isPresent !== false)

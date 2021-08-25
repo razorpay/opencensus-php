@@ -133,8 +133,11 @@ class Gateway extends BaseProcessor
                 $existingRecords = $this->repo->banking_account_statement
                                               ->findExistingStatementRecordsForBank($recordsToCheck);
 
+                /** @var Entity $record */
                 foreach ($existingRecords as $record)
                 {
+                    $record->setDescription(trim($record->getDescription()));
+
                     $isPresent = array_search($record->toArray(), $bankTransactions);
 
                     if ($isPresent !== false)
@@ -981,7 +984,7 @@ class Gateway extends BaseProcessor
 
     protected function getDescriptionFromResponseV2($transaction)
     {
-        return $transaction[Fields::TRANSACTION_DESCRIPTION];
+        return trim($transaction[Fields::TRANSACTION_DESCRIPTION]);
     }
 
     protected function getBalanceFromResponseV2(array $transaction): int
@@ -1067,7 +1070,7 @@ class Gateway extends BaseProcessor
 
     protected function getDescriptionFromResponse($transaction)
     {
-        return $transaction[Fields::TRANSACTION_SUMMARY][Fields::TRANSACTION_DESCRIPTION];
+        return trim($transaction[Fields::TRANSACTION_SUMMARY][Fields::TRANSACTION_DESCRIPTION]);
     }
 
     protected function getCategoryFromResponse(array $transaction): string
