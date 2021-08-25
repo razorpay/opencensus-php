@@ -26,7 +26,10 @@ class Constants
 
     // 24 hours = 24 * 60 * 60 = 86400
     const REDIS_KEY_TTL = 86400;
-    const REDIS_KEY_FMT = 'risk:fraud_notification_fd_%s';
+    // redis key format: risk:fraud_notification_fd_<date>_<mid>
+    const REDIS_KEY_FMT = 'risk:fraud_notification_fd_%s_%s';
+
+    const MAX_NOTIFY_COUNT_PER_DAY_PER_MERCHANT = 8;
 
     const MERCHANT_DATA_KEY_NOTES                  = 'notes';
     const MERCHANT_DATA_KEY_AMOUNT                 = 'amount';

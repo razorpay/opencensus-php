@@ -25,7 +25,33 @@ class BulkFraudNotifyTest extends TestCase
         parent::setUp();
     }
 
-    public function testNotifyWithPaymentId()
+    public function testNotifyWithChargebackPocEmail()
+    {
+        /** @var Models\Payment\Entity $payment */
+        $payment = $this->fixtures->create('payment');
+
+        (new Models\Merchant\Email\Service())->createEmails($payment->getMerchantId(), ['type' => 'chargeback', 'email' => 'a@rzp.com,b@rzp.com']);
+
+        $fileData = [
+            [
+                'reported_to_razorpay_at' => '11/08/2021',
+                'payment_method' => '',
+                'reported_by' => 'Visa',
+                'payment_id' => $payment->getPublicId(),
+                'type' => '',
+                'arn' => ''
+            ],
+        ];
+
+        $expectedOutputFileRows = [
+            ["arn", "payment_id", "merchant_id", "fd_ticket_id", "error"],
+            [null, $payment->getPublicId(), $payment->getMerchantId(), 123, null]
+        ];
+
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, true, true);
+    }
+
+    public function testNotifyWithPaymentId(bool $addPermission = true)
     {
         /** @var Models\Payment\Entity $payment */
         $payment = $this->fixtures->create('payment');
@@ -46,7 +72,7 @@ class BulkFraudNotifyTest extends TestCase
             [null, $payment->getPublicId(), $payment->getMerchantId(), 123, null]
         ];
 
-        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, true, true);
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, true, $addPermission);
     }
 
     public function testNotifyWithHitachiPrrn()
@@ -253,26 +279,14 @@ class BulkFraudNotifyTest extends TestCase
 
     public function testNotifyIgnoreOnSecondCall()
     {
-        /** @var Models\Payment\Entity $payment */
-        $payment = $this->fixtures->create('payment');
-
-        $fileData = [
-            [
-                'reported_to_razorpay_at' => '11/08/2021',
-                'payment_method' => '',
-                'reported_by' => 'Visa',
-                'payment_id' => $payment->getPublicId(),
-                'type' => '',
-                'arn' => ''
-            ],
-        ];
-
-        $expectedOutputFileRows = [
-            ["arn", "payment_id", "merchant_id", "fd_ticket_id", "error"],
-            [null, $payment->getPublicId(), $payment->getMerchantId(), 123, null]
-        ];
-
-        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, true, true);
+        $this->testNotifyWithPaymentId();
+        $this->testNotifyWithPaymentId(false);
+        $this->testNotifyWithPaymentId(false);
+        $this->testNotifyWithPaymentId(false);
+        $this->testNotifyWithPaymentId(false);
+        $this->testNotifyWithPaymentId(false);
+        $this->testNotifyWithPaymentId(false);
+        $this->testNotifyWithPaymentId(false);
 
         $payment = $this->fixtures->create('payment');
 
@@ -287,8 +301,7 @@ class BulkFraudNotifyTest extends TestCase
             ],
         ];
 
-        $lastNotifiedAt = $this->app['cache']->get(sprintf("risk:fraud_notification_fd_%s", $payment->getMerchantId()));
-        $message = sprintf("Merchant notified at %s. Can not notify more than once in 24 hours. Please try again later.", Carbon::createFromTimestamp($lastNotifiedAt)->setTimezone(Timezone::IST)->format('d/m/Y H:i:s'));
+        $message = "Merchant was already notified 8 times. Can not notify more than 8 times in 24 hours. Please try again later.";
 
         $expectedOutputFileRows = [
             ["arn", "payment_id", "merchant_id", "fd_ticket_id", "error"],

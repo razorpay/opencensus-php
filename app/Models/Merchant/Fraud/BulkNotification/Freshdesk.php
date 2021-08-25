@@ -57,7 +57,9 @@ class Freshdesk extends Base\Core
 
     protected function notifySingle(array $merchantData, array &$merchantOutput, string $merchantId)
     {
-        $this->validateLastNotified($merchantId);
+        $redisKey = sprintf(Constants::REDIS_KEY_FMT, Carbon::now(Timezone::IST)->format("d_m_Y"), $merchantId);
+
+        $notifyCount = $this->validateLastNotified($redisKey);
 
         /** @var Merchant\Entity $merchant */
         $merchant = $this->repo->merchant->findOrFail($merchantId);
@@ -71,7 +73,7 @@ class Freshdesk extends Base\Core
 
         $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest, FreshdeskConstants::URLIND);
 
-        $this->cache->set(sprintf(Constants::REDIS_KEY_FMT, $merchantId), Carbon::now()->timestamp, Constants::REDIS_KEY_TTL);
+        $this->cache->set($redisKey, $notifyCount + 1, Constants::REDIS_KEY_TTL);
 
         $this->trace->debug(TraceCode::MERCHANT_BULK_FRAUD_NOTIFICATION_FRESHDESK_RESPONSE, [
             'entity_id' => $this->entity->getId(),
@@ -88,23 +90,29 @@ class Freshdesk extends Base\Core
         return \View::make('merchant.fraud.bulk_notification')->with(['merchantDataTable' => $merchantData])->render();
     }
 
-    private function validateLastNotified(string $merchantId)
+    private function validateLastNotified(string $redisKey): int
     {
-        $lastNotifiedAt = $this->cache->get(sprintf(Constants::REDIS_KEY_FMT, $merchantId));
+        $notifyCount = (int) $this->cache->get($redisKey);
 
-        if (is_null($lastNotifiedAt) === false)
+        if ($notifyCount > Constants::MAX_NOTIFY_COUNT_PER_DAY_PER_MERCHANT - 1)
         {
-            $message = sprintf("Merchant notified at %s. Can not notify more than once in 24 hours. Please try again later.", Carbon::createFromTimestamp($lastNotifiedAt)->setTimezone(Timezone::IST)->format('d/m/Y H:i:s'));
+            $message = sprintf("Merchant was already notified %d times. Can not notify more than %d times in 24 hours. Please try again later.", $notifyCount, Constants::MAX_NOTIFY_COUNT_PER_DAY_PER_MERCHANT);
 
             throw new \Exception($message);
         }
+
+        return $notifyCount;
     }
 
     private function getEmailIds(Merchant\Entity $merchant): array
     {
-        $emailIds = $this->repo->merchant_email->getEmailsByMerchantIdsAndTypes([$merchant->getId()], [Merchant\Email\Type::CHARGEBACK])->pluck(Merchant\Email\Entity::EMAIL)->toArray();
+        $emailIds = (new Merchant\Email\Service)->fetchEmailByMerchantIdsAndTypes([$merchant->getId()], [Merchant\Email\Type::CHARGEBACK]);
 
-        if (empty($emailIds) === true)
+        if (isset($emailIds[$merchant->getId()][Merchant\Email\Type::CHARGEBACK]) === true)
+        {
+            $emailIds = $emailIds[$merchant->getId()][Merchant\Email\Type::CHARGEBACK];
+        }
+        else
         {
             $emailIds = [$merchant->getEmail()];
         }
