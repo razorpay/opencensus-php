@@ -6,6 +6,7 @@ use Closure;
 use ApiResponse;
 
 use RZP\Exception;
+use RZP\Http\AxisCardsUser;
 use RZP\Http\Route;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -299,10 +300,34 @@ class UserAccess
         {
             return;
         }
+        //TODO Resolving Org
+        //As of now we are hardcoding org ,in next phase when we are able to resolve the org from request
+        //then that will be passed in the params itself
 
+        $org = 'RAZORPAY_X';
         // If role doesn't have route permission then deny otherwise allow
-        if (UserRolePermissionsMap::isInvalidRolePermission($userRole, $routePermission))
+        //Checking if its a Axis User or a X User below
+        $isRoleValid = true;
+        switch ($org)
         {
+            case 'RAZORPAY_X':
+            {
+                if (UserRolePermissionsMap::isInvalidRolePermission($userRole, $routePermission))
+                {
+                    $isRoleValid = false;
+                }
+                break;
+            }
+            case 'AXIS_CORPORATE':
+            {
+                if (AxisCardsUser::isInvalidRolePermission($userRole, $routePermission))
+                {
+                    $isRoleValid = false;
+                }
+                break;
+            }
+        }
+        if($isRoleValid !== true){
             throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
     }
