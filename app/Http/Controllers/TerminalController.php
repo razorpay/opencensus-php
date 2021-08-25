@@ -284,8 +284,8 @@ class TerminalController extends Controller
 
         $path = "v2/terminal/onboard/" . $mid . "/status?gateway=" . $gateway;
 
-        $response = $this->app['terminals_service']->proxyTerminalService('', $method, $path, [],  []);
-
+        $response = $this->app['terminals_service']->proxyTerminalService('', $method, $path, ['timeout' => 10],  []);
+        
         return ApiResponse::json($response);
     }
 
