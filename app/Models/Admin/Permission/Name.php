@@ -688,6 +688,8 @@ class Name
 
     const BULK_FRAUD_NOTIFY = 'bulk_fraud_notify';
 
+    const WEBSITE_CHECKER = 'website_checker';
+
     // Recon service permission
     const RECON_OPERATION                              = 'recon_operation';
 
