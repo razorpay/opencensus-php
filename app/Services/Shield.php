@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Carbon\Carbon;
 use RZP\Models\Address;
+use RZP\Models\Feature\Constants;
 use RZP\Exception\BadRequestException;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
@@ -162,12 +163,18 @@ class Shield
         $payloadDetails[ShieldConstants::MERCHANT_PROMOTER_PAN]   = strtoupper($merchant->merchantDetail->getPromoterPan() ?? '');
         $payloadDetails[ShieldConstants::MERCHANT_GSTIN]          = strtoupper($merchant->merchantDetail->getGstin() ?? '');
         $payloadDetails[ShieldConstants::MERCHANT_BANK_ACCOUNT]   = strtoupper($merchant->merchantDetail->getBankAccountNumber() ?? '');
+        $payloadDetails[ShieldConstants::APPS_EXEMPT_RISK_CHECK]  = $merchant->isFeatureEnabled(Constants::APPS_EXTEMPT_RISK_CHECK);
 
         $payloadDetails[ShieldConstants::ORG_ID] = $merchant->getOrgId();
 
         $this->populateEarlySettlementDetails($merchant, $payloadDetails);
 
         $this->populateWhiteListedDomains($merchant, $payloadDetails);
+
+        if (isset($merchant->merchantBusinessDetail) === true)
+        {
+            $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_APP_URLS] = $merchant->merchantBusinessDetail->getAppUrls();
+        }
 
     }
 

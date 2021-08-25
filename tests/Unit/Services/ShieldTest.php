@@ -60,4 +60,80 @@ class ShieldTest extends TestCase
 
         $this->assertEquals($token->getMaxAmount(), $input[ShieldConstants::TOKEN_MAX_AMOUNT]);
     }
+
+    private function createCommonDataForBusinessDetail()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'risk_threshold' => 101
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+        ]);
+
+        return $merchant;
+    }
+
+    private function setPopulateMerchantDetailsMethod()
+    {
+        $class = new ReflectionClass(Shield::class);
+
+        $populateMerchantDetailsMethod = $class->getMethod('populateMerchantDetails');
+
+        $populateMerchantDetailsMethod->setAccessible(true);
+
+        return $populateMerchantDetailsMethod;
+    }
+
+    public function testMerchantBusinessDetailNotPresent()
+    {
+        $populateMerchantDetailsMethod = $this->setPopulateMerchantDetailsMethod();
+
+        $merchant = $this->createCommonDataForBusinessDetail();
+
+        $payloadDetails = [];
+
+        $populateMerchantDetailsMethod->invokeArgs(new Shield($this->app), [$merchant, &$payloadDetails]);
+
+        $this->assertFalse(array_key_exists(ShieldConstants::MERCHANT_WHITELISTED_APP_URLS, $payloadDetails));
+    }
+
+    public function testMerchantBusinessDetailPresentWithoutAppUrl()
+    {
+        $populateMerchantDetailsMethod = $this->setPopulateMerchantDetailsMethod();
+
+        $merchant = $this->createCommonDataForBusinessDetail();
+
+        $payloadDetails = [];
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchant->getId()
+        ]);
+
+        $populateMerchantDetailsMethod->invokeArgs(new Shield($this->app), [$merchant, &$payloadDetails]);
+
+        $this->assertNull($payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_APP_URLS]);
+    }
+
+    public function testMerchantBusinessDetailPresentWithAppUrl()
+    {
+        $populateMerchantDetailsMethod = $this->setPopulateMerchantDetailsMethod();
+
+        $merchant = $this->createCommonDataForBusinessDetail();
+
+        $payloadDetails = [];
+
+        $appUrls = [
+            'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+        ];
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchant->getId(),
+            'app_urls' => $appUrls
+        ]);
+
+        $populateMerchantDetailsMethod->invokeArgs(new Shield($this->app), [$merchant, &$payloadDetails]);
+
+        $this->assertEquals($appUrls, $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_APP_URLS]);
+    }
 }
