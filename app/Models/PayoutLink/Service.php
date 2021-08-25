@@ -194,6 +194,11 @@ class Service extends Base\Service
     {
         $this->checkIfPLServiceIsDown();
 
+        // un-setting the user-id here if it came in the request.
+        // not throwing error coz don't want to break the API implementation for the merchant
+        // discussion: https://razorpay.slack.com/archives/C012KKG1STS/p1629710183131700?thread_ts=1627835655.011700&cid=C012KKG1STS
+        unset($input['user_id']);
+
         if ($this->auth->isStrictPrivateAuth() === false)
         {
             // if this is not strictly Private, then we enforce OTP verification

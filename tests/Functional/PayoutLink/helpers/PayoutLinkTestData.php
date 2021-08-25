@@ -2164,4 +2164,43 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testCreateWithUserIdInInputPrivateAuth' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links',
+            'content' => [
+                'amount' => 10,
+                'user_id' => 'some-id',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'poutlk_DWivysHLcspTNI',
+                'amount' => 10,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateWithUserIdInInputProxyAuth' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links',
+            'content' => [
+                'amount' => 10,
+                'user_id' => 'some-id',
+                'token' => 'EFMCRjw1Dq8oHn',
+                'otp' => '0007',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'poutlk_DWivysHLcspTNI',
+                'user_id' => '20000000000000',
+                'amount' => 10,
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

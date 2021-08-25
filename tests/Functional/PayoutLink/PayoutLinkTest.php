@@ -2572,4 +2572,51 @@ class PayoutLinkTest extends TestCase
         // redirection request
         $this->assertResponseOk($response);
     }
+
+    public function testCreateWithUserIdInInputPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        // user_id is there in the request parameter, but will be unset
+        // final payout-link created will not have any user_id populated
+        $plMock->shouldReceive('create')->andReturn([
+            'user_id'=> '',
+            'id' => 'poutlk_DWivysHLcspTNI',
+            'amount' => 10,
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->startTest();
+    }
+
+    public function testCreateWithUserIdInInputProxyAuth()
+    {
+        $user = $this->fixtures->create('user', [
+            'id'       => '20000000000000',
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('create')->andReturn([
+            'user_id'=> '20000000000000',
+            'id' => 'poutlk_DWivysHLcspTNI',
+            'amount' => 10,
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->startTest();
+    }
 }

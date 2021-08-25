@@ -785,6 +785,7 @@ class PublicErrorDescription
     const BAD_REQUEST_USER_ACCOUNT_DISABLED                                     = 'Your account has been disabled';
     const BAD_REQUEST_USER_NOT_AUTHENTICATED                                    = 'The user is not authenticated';
     const BAD_REQUEST_USER_NOT_FOUND                                            = 'User not found with the given input';
+    const BAD_REQUEST_USER_ID_NOT_EXPECTED_IN_INPUT                             = 'User ID not expected in the given input';
     const BAD_REQUEST_USER_ROLE_INVALID                                         = 'The given role is not supported';
     const BAD_REQUEST_USER_OAUTH_PROVIDER_INVALID                               = 'The given oauth provider is not supported';
     const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                                   = 'Token Expired or Not a valid token.';
