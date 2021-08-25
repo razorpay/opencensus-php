@@ -106,28 +106,34 @@ class Metadata
 
     // Integration values
 
-    const WOOCOMMERCE   = 'woocommerce';
-    const MAGENTO       = 'magento';
-    const CSCART        = 'cscart';
-    const OPENCART      = 'opencart';
-    const SHOPIFY       = 'shopify';
-    const WHMCS         = 'whmcs';
-    const ARASTTA       = 'arastta';
-    const PRESTASHOP    = 'prestashop';
-    const WIX           = 'wix';
-    const GRAVITYFORMS  = 'gravityforms';
+    const WOOCOMMERCE               = 'woocommerce';
+    const MAGENTO                   = 'magento';
+    const CSCART                    = 'cscart';
+    const OPENCART                  = 'opencart';
+    const SHOPIFY                   = 'shopify';
+    const WHMCS                     = 'whmcs';
+    const ARASTTA                   = 'arastta';
+    const PRESTASHOP                = 'prestashop';
+    const WIX                       = 'wix';
+    const GRAVITYFORMS              = 'gravityforms';
+    const WOOCOMMERCE_SUBSCRIPTION  = 'woocommerce-subscription';
+    const EDD                       = 'edd';
+    const QUICK_PAYMENT             = 'quick-payment';
 
     const INTEGRATION_VALUES = [
-        self::WOOCOMMERCE   => 1,
-        self::MAGENTO       => 2,
-        self::CSCART        => 3,
-        self::OPENCART      => 4,
-        self::SHOPIFY       => 5,
-        self::WHMCS         => 6,
-        self::ARASTTA       => 7,
-        self::PRESTASHOP    => 8,
-        self::WIX           => 9,
-        self::GRAVITYFORMS  => 10,
+        self::WOOCOMMERCE               => 1,
+        self::MAGENTO                   => 2,
+        self::CSCART                    => 3,
+        self::OPENCART                  => 4,
+        self::SHOPIFY                   => 5,
+        self::WHMCS                     => 6,
+        self::ARASTTA                   => 7,
+        self::PRESTASHOP                => 8,
+        self::WIX                       => 9,
+        self::GRAVITYFORMS              => 10,
+        self::WOOCOMMERCE_SUBSCRIPTION  => 11,
+        self::EDD                       => 12,
+        self::QUICK_PAYMENT             => 13,
     ];
 
     // fraud detection keys
