@@ -3,7 +3,8 @@ import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBa
 import { sendDataToSalesForce } from 'common/utils/common-api';
 import { getMode, getUser } from 'merchant/store';
 
-const bannerText = 'Get exclusive access to RazorpayX Corporate Card with 0.4% cashback, lower FX fee and business-friendly dashboard';
+const bannerText =
+  'Get exclusive access to RazorpayX Corporate Card with 0.4% cashback, lower FX fee and business-friendly dashboard';
 const cardId = 'settlements-banner-JUL21-RXCC-ULTRA';
 
 const cta1Text = 'Apply Now';
@@ -49,26 +50,22 @@ export default React.memo(({ productName }) => {
   const track = _track(productName, user);
   track.onViewBanner();
 
-  if (user.isUltraCampaignBannerEnabled)
-    return (
-      <AnnouncementBanner
-        title="Still Interested?"
-        canBeClosed={true}
-        theme="primary"
-        bannerKey={`ultra-campaign-banner-${user.current}`}
-        card_id={cardId}
+  return (
+    <AnnouncementBanner
+      title="Still Interested?"
+      canBeClosed={true}
+      theme="primary"
+      bannerKey={`ultra-campaign-banner-${user.current}`}
+      card_id={cardId}
+    >
+      <span class="display-inline">{bannerText}</span>{' '}
+      <Link
+        to={cta1Link}
+        class="Button--secondary Button scheduled-btn-act btn-border"
+        onClick={track.onClickCTA1}
       >
-        <span class="display-inline">{bannerText}</span>
-        {' '}
-        <Link
-          to={cta1Link}
-          class="Button--secondary Button scheduled-btn-act btn-border"
-          onClick={track.onClickCTA1}
-        >
-          {cta1Text}
-        </Link>
-      </AnnouncementBanner>
-    );
-  
-  return null;
+        {cta1Text}
+      </Link>
+    </AnnouncementBanner>
+  );
 });

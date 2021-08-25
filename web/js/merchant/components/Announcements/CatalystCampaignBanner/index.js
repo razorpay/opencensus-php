@@ -7,7 +7,8 @@ import { openModal } from 'merchant_common/reducers/modals';
 import { Link } from 'react-router-dom';
 import PLFeaturesModal from './PLFeaturesModal';
 
-const bannerText = 'Find out💡how to improve the checkout conversion rate for your business with Payment Links.';
+const bannerText =
+  'Find out💡how to improve the checkout conversion rate for your business with Payment Links.';
 const cardId = 'JUL21-PG-PL-Cross-selling';
 
 const cta2Text = 'Try Now';
@@ -78,35 +79,23 @@ const CatalystCampaignBanner = React.memo(({ productName, openModal }) => {
     track.onClickCTA1();
   };
 
-  if (user.isCatalystCampaignEnabled)
-    return (
-      <AnnouncementBanner
-        title="Razorpay Recommends"
-        canBeClosed={true}
-        theme="primary"
-        bannerKey={`payment-links-cross-sell-${user.current}`}
-        card_id={cardId}
-      >
-        <span class="display-inline">{bannerText}</span>
-        <a
-          class="Button--secondary Button scheduled-btn-act btn-border"
-          onClick={handleCTA1Click}
-        >
-          {cta1Text}
-        </a>
-        <Link
-          to={cta2Link}
-          class="btn btn-link"
-          onClick={track.onClickCTA2}
-        >
-          {cta2Text}
-        </Link>
-      </AnnouncementBanner>
-    );
-
-  return null;
+  return (
+    <AnnouncementBanner
+      title="Razorpay Recommends"
+      canBeClosed={true}
+      theme="primary"
+      bannerKey={`payment-links-cross-sell-${user.current}`}
+      card_id={cardId}
+    >
+      <span class="display-inline">{bannerText}</span>
+      <a class="Button--secondary Button scheduled-btn-act btn-border" onClick={handleCTA1Click}>
+        {cta1Text}
+      </a>
+      <Link to={cta2Link} class="btn btn-link" onClick={track.onClickCTA2}>
+        {cta2Text}
+      </Link>
+    </AnnouncementBanner>
+  );
 });
 
-export default compose(
-  connect(null, { openModal })
-)(CatalystCampaignBanner);
+export default compose(connect(null, { openModal }))(CatalystCampaignBanner);

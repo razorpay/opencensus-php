@@ -113,7 +113,10 @@ class TransactionsContainer extends Component {
               />
             </AnnouncementBanner>
           </ShowWhen>
-          <CatalystCampaignBanner />
+
+          <ShowWhen additionalCondition={(usr) => usr.isCatalystCampaignEnabled}>
+            <CatalystCampaignBanner productName="Transactions" />
+          </ShowWhen>
         </div>
         <tabbed-container>
           <header id="transactions-header">

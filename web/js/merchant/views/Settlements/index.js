@@ -12,6 +12,7 @@ import UltraCampaignBanner from 'merchant/components/Announcements/UltraCampaign
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import { trackOnDemandTabClick } from './trackEvents';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
   const [settlementExists, setSettlementExists] = useState(true);
@@ -71,7 +72,9 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
         )}
 
         <CashAdvanceOrNitroBanner productName="Settlements" />
-        <UltraCampaignBanner productName="Settlements" />
+        <ShowWhen additionalCondition={(usr) => usr.isUltraCampaignBannerEnabled}>
+          <UltraCampaignBanner productName="Settlements" />
+        </ShowWhen>
       </div>
 
       <tabbed-container>
