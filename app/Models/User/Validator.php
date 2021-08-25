@@ -255,7 +255,8 @@ class Validator extends Base\Validator
                                  . 'approve_payout_bulk,'
                                  . 'user_auth,'
                                  . 'bulk_payout_approve,'
-                                 . 'create_bulk_payout_link',
+                                 . 'create_bulk_payout_link,'
+                                 . 'replace_key',
         Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.

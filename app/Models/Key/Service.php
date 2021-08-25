@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Key;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -26,13 +29,36 @@ class Service extends Base\Service
 
         (new Validator)->checkHasKeyAccess($merchant, $this->mode);
 
-        $keyData = (new Core)->createFirstKey($merchant, $this->mode);
+        return $this->createKeyData($merchant, $this->mode);
+    }
 
-        if ($this->mode === Mode::LIVE)
+
+    public function createKeyWithOtp(array $input)
+    {
+        $merchant = $this->merchant;
+        $validator = new Validator();
+
+        $validator->checkHasKeyAccess($merchant, $this->mode);
+
+        if (isset($input['otp']) === false) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_OTP_REQUIRED);
+        }
+        $validator->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+        (new User\Core)->verifyOtp($input + ['action' => 'replace_key'],
+            $this->merchant,
+            $this->user,
+            $this->mode === Mode::TEST);
+        return $this->createKeyData($merchant, $this->mode);
+    }
+
+    private function createKeyData($merchant, $mode) {
+        $keyData = (new Core)->createFirstKey($merchant, $mode);
+
+        if ($mode === Mode::LIVE)
         {
             $action = Merchant\Action::LIVE_KEYS_CREATED;
         }
-        elseif ($this->mode === Mode::TEST)
+        elseif ($mode === Mode::TEST)
         {
             $action = Merchant\Action::TEST_KEYS_CREATED;
         }
@@ -62,6 +88,24 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
+        return (new Core)->rollKey($merchantId, $keyId, $input, $this->mode);
+    }
+
+    public function updateKeyWithOtp($keyId, array $input)
+    {
+        $validator = new Validator();
+        $validator->checkHasKeyAccess($this->merchant, $this->mode);
+
+        $merchantId = $this->merchant->getId();
+        if (isset($input['otp']) === false) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_OTP_REQUIRED);
+        }
+        $validator->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+
+        (new User\Core)->verifyOtp($input + ['action' => 'replace_key'],
+            $this->merchant,
+            $this->user,
+            $this->mode === Mode::TEST);
         return (new Core)->rollKey($merchantId, $keyId, $input, $this->mode);
     }
 

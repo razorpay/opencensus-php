@@ -20,6 +20,48 @@ return [
         ],
     ],
 
+    'testNewKeyWithOtp' => [
+        'request' => [
+            'url' => '/keys/otp/rzp_test_AltTestAuthKey',
+            'method' => 'PUT',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'old' => [
+                ],
+                'new' => [
+                ]
+            ],
+        ],
+    ],
+
+    'testNewKeyWithWrongOtp' => [
+        'request' => [
+            'url' => '/keys/otp/rzp_test_AltTestAuthKey',
+            'method' => 'PUT',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0009',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP
+        ]
+    ],
+
     'testRegenerateKeyWhereMerchantIdIsDifferent' => [
         'request' => [
             'url' => '',
@@ -90,7 +132,27 @@ return [
             'method' => 'POST',
             'server' => [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'key'
             ],
+        ],
+        'status_code' => 200
+    ],
+
+    'testCaActivatedMerchantCanCreateKeysWithOtp' => [
+        'request' => [
+            'url'    => '/keys/otp',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' =>[
+                'otp' => '0007',
+                'token' => 'BUIj3m2Nx2VvVj'
+            ]
         ],
         'response' => [
             'content' => [

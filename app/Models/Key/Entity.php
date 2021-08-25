@@ -18,6 +18,8 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID   = 'merchant_id';
     const SECRET        = 'secret';
     const EXPIRED_AT    = 'expired_at';
+    const OTP           = 'otp';
+    const TOKEN         = 'token';
 
     const SECRET_LENGTH = 24;
 

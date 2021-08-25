@@ -2913,6 +2913,13 @@ class UserTest extends TestCase
         });
     }
 
+    public function testSendOtpWithReplaceKeyAction()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testSendOtpWithInvalidAction()
     {
         $this->ba->proxyAuth();

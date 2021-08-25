@@ -3,7 +3,6 @@
 namespace RZP\Models\Key;
 
 use RZP\Base;
-use RZP\Models\Key;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -15,6 +14,10 @@ class Validator extends Base\Validator
         '1DP5mmOlF5G5ag',
         '0wFRWIZnH65uny');
 
+    protected static $verifyOtpRules = [
+        Entity::OTP             => 'required|filled|min:4',
+        Entity::TOKEN           => 'required|unsigned_id'
+    ];
     /**
      * This validator is used before operations on key
      * to verify it's not one of the demo keys on

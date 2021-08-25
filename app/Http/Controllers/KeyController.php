@@ -14,6 +14,14 @@ class KeyController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postCreateKeysWithOtp()
+    {
+        $input = Request::all();
+        $data = $this->service()->createKeyWithOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getKeys()
     {
         $data = $this->service()->fetchKeys();
@@ -26,6 +34,15 @@ class KeyController extends Controller
         $input = Request::all();
 
         $keys = $this->service()->updateKey($keyId, $input);
+
+        return ApiResponse::json($keys);
+    }
+
+    public function putKeysWithOtp($keyId)
+    {
+        $input = Request::all();
+
+        $keys = $this->service()->updateKeyWithOtp($keyId, $input);
 
         return ApiResponse::json($keys);
     }

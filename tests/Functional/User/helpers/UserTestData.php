@@ -2165,6 +2165,21 @@ return [
         ],
     ],
 
+    'testSendOtpWithReplaceKeyAction' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'action' => 'replace_key'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                // 'token' => 'BUIj3m2Nx2VvVj'
+            ],
+        ],
+    ],
+
     'testSendOtpWithInvalidAction' => [
         'request' => [
             'url'     => '/users/otp/send',
