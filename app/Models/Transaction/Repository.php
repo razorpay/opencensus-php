@@ -2425,6 +2425,7 @@ class Repository extends Base\Repository
 
         $balanceIdColumn   = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeColumn = $this->repo->balance->dbColumn(Entity::TYPE);
+        $balanceAccountTypeColumn   = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
 
         $selectColumn = [
             $transactionIdColumn,
@@ -2445,6 +2446,7 @@ class Repository extends Base\Repository
             {
                 $query->WhereIn($balanceTypeColumn, [Balance\Type::BANKING]);
             })
+            ->where($balanceAccountTypeColumn, '=', Merchant\Balance\AccountType::SHARED)
             ->whereIn($transactionMerchantIdColumn, $merchantIds)
             ->betweenTime($from, $to)
             ->take($count)
