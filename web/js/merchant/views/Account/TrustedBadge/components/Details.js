@@ -16,7 +16,7 @@ export default function Details({
   optOutConfirmation,
 }) {
   const [isPending, setPending] = useState(false);
-  const trialPeriodEnd = '30-09-2021';
+  const trialPeriodEnd = '31-10-2021';
 
   const joinWaitlist = () => {
     setPending(true);
