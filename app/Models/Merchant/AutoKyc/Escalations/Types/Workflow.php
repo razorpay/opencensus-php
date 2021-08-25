@@ -19,6 +19,9 @@ class Workflow extends BaseEscalationType
 {
     public function triggerEscalation($merchants,$merchantsGmvList, string $type, int $level)
     {
+        $merchantsGmvMap = collect($merchantsGmvList)->mapToDictionary(function($item, $key) {
+            return [$item[DetailEntity::MERCHANT_ID] => $item[MConstants::TOTAL]];
+        });
         foreach ($merchants as $merchant)
         {
             try
@@ -46,6 +49,9 @@ class Workflow extends BaseEscalationType
                     'level'         => $level,
                     'merchant_id'   => $merchant->getId()
                 ]);
+
+                (new EscalationV2())->createEscalationV2ForMerchant($merchant, $merchantsGmvMap[$merchant->getId()][0], $type, $level);
+
             }
             catch (\Exception $e)
             {
@@ -58,7 +64,7 @@ class Workflow extends BaseEscalationType
                 ]);
             }
         }
-        (new EscalationV2())->send($merchants,$merchantsGmvList,$type,$level);
+
     }
 
     private function triggerWorkflow($merchant)
