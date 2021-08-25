@@ -107,7 +107,10 @@ function withInternationalConfig(WrappedComponent) {
       } catch (err) {
         this.props.showNotification({
           type: 'error',
-          message: 'Could not fetch international payments feature status!',
+          message:
+            err.status_code === 500
+              ? 'Could not fetch international payments feature status!'
+              : err.errors[0],
         });
       }
 

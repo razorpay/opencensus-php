@@ -43,11 +43,9 @@ import {
 )
 @RTracking(() => window.rzpQ.component('CongfigurationContainer'))
 export default class CongfigurationContainer extends Component {
-
-
-  state = { 
+  state = {
     isLoading: false,
-    showAxisPaypal: false 
+    showAxisPaypal: false,
   };
 
   componentWillMount() {
@@ -59,32 +57,30 @@ export default class CongfigurationContainer extends Component {
     });
   }
 
-  componentDidMount(){
-    if(this.props.org.custom_code === 'axis'){
+  componentDidMount() {
+    if (this.props.org.custom_code === 'axis') {
       // check paypal org feature
-      if(this.props.org.features.indexOf("axis_paypal") > -1 ){
+      if (this.props.org.features.indexOf('axis_paypal') > -1) {
         // check paypal MID feature
-            this.props
-            .fetchFeatureStatus(this.props.user.id, 'axis_paypal_enable')
-            .then((fetchFeatureStatusResp) => {
-              if(fetchFeatureStatusResp["data"]["status"]){
-                this.setState(
-                  {
-                    showAxisPaypal: true,
-                  }
-                );
-              }
-            })
-            .catch((err) => {
-              if (err) {
-                this.props.showNotification({
-                  type: 'error',
-                  message: err.errors[0],
-                });
-              }
-            });
-          }
-        }
+        this.props
+          .fetchFeatureStatus(this.props.user.id, 'axis_paypal_enable')
+          .then((fetchFeatureStatusResp) => {
+            if (fetchFeatureStatusResp['data']['status']) {
+              this.setState({
+                showAxisPaypal: true,
+              });
+            }
+          })
+          .catch((err) => {
+            if (err) {
+              this.props.showNotification({
+                type: 'error',
+                message: err.errors[0],
+              });
+            }
+          });
+      }
+    }
   }
 
   is_hash_loaded_once = false;
@@ -293,25 +289,25 @@ export default class CongfigurationContainer extends Component {
     const {
       mode,
       user,
-      configState: { config, loading },
+      configState: { config, loading, paypal_terminals },
       org,
     } = this.props;
     let showInternationalPaymentsCard = false;
     if (mode === 'live') {
-      if(this.props.org.custom_code === 'axis'){
+      if (this.props.org.custom_code === 'axis') {
         showInternationalPaymentsCard = this.state.showAxisPaypal;
-     }else{
-      if (user.activated_at < 1614105000) {
-        // Show international payments card if merchant was activated before 24 February 2021 12:00:00 AM GMT+05:30
-        showInternationalPaymentsCard = true;
-      } else if (user.internationalActivationFlow.isWhitelistFlow) {
-        if (!user.isAccepted) {
-          // Show international payments card only if merchant's IAF is whitelisted and L1 activated
+      } else {
+        if (user.activated_at < 1614105000) {
+          // Show international payments card if merchant was activated before 24 February 2021 12:00:00 AM GMT+05:30
           showInternationalPaymentsCard = true;
+        } else if (user.internationalActivationFlow.isWhitelistFlow) {
+          if (!user.isAccepted) {
+            // Show international payments card only if merchant's IAF is whitelisted and L1 activated
+            showInternationalPaymentsCard = true;
+          }
         }
       }
     }
-    } 
 
     return (
       <div class="content-wrapper content-sm" id="settings-content">
@@ -340,7 +336,13 @@ export default class CongfigurationContainer extends Component {
             </IntoView>
 
             {mode === 'live' && showInternationalPaymentsCard && (
-              <InternationalPayments user={user} mode={mode} config={config} org={org} />
+              <InternationalPayments
+                user={user}
+                mode={mode}
+                config={config}
+                org={org}
+                paypal_terminals={paypal_terminals}
+              />
             )}
             <IntoView hashedWith={EMAIL_NOTIF}>
               <EmailNotifications form="configForm" onSave={this.saveConfig} />

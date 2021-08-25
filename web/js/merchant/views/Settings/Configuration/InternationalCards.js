@@ -136,7 +136,7 @@ const InternationalCards = ({
       <div class="body">
         <form class="form-horizontal">
           <div class="description">
-            <div>
+            <div style={{ display: 'flex', alignItems: 'center', margin: '10px 0' }}>
               {isInternationalPaymentsAllowed && (
                 <span>Card payments on payment gateway, payment pages, links & invoices</span>
               )}

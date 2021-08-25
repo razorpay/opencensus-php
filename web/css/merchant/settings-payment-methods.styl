@@ -205,9 +205,37 @@ $checkout-modal-width = 400px
             justify-content: space-between
             padding-left: 0
         + .paypal-leaf-item
-          display: block
-          height: auto
-          padding: 20px
+            display: block
+            height: auto
+            padding: 20px
+            .status-bar
+              display: flex
+              justify-content: space-between
+              align-items: center
+              .instrument
+                display: flex
+                align-items: center
+                width: 100%
+              .status
+                margin-bottom: 20px;
+                text-transform: none;
+                background: rgba(232, 235, 239, 0.32);
+                font-weight: 400;
+                font-size: 14px;
+                height: auto;
+                margin: 15px 0px;
+              .change-account-action
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 10px;
+            .bar-wrap
+              flex-wrap: wrap
+            .bar-nowrap
+              flex-wrap: nowrap
+            .disabled-text
+              text-align: left
+              text-transform: none
           &:hover
             background: unset
           .icon
@@ -215,7 +243,7 @@ $checkout-modal-width = 400px
           .detail
             padding: 0
           .desc
-            width: 240px
+            width: 80%
             font-size: 12px
             line-height: 16px
             color: rgba(22, 47, 86, 0.54)
@@ -321,9 +349,6 @@ $checkout-modal-width = 400px
       li.list-item-disabled
         background: rgba(232,235,239,0.32)
 
-
-
-      
     .status
       text-transform: uppercase
       font-size: 10px

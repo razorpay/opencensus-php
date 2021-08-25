@@ -45,6 +45,8 @@
     .know-more-link
       vertical-align: middle
       margin-left: 10px
+      font-size: 14px
+      font-weight: normal
       .i-external-link
         margin-left: 5px
 
@@ -61,7 +63,24 @@
 
     .paypal-auto-onboarding
       padding-top: 12px
-
+      .heading
+        .status
+          margin-bottom: 20px;
+          .support-link
+            border-bottom: 1px solid;
+            padding: 2px;
+          i
+            margin: 0
+          .i-info-circle
+            margin-right: 5px
+        .change-account
+          display: flex
+          justify-content: space-between
+          .change-account-action
+            margin-top: 10px
+      .disabled-text
+        text-align: left
+        text-transform: none
     .international-card, .paypal-auto-onboarding
       border-top: 2px solid rgba(22, 47, 86, 0.05)
 
@@ -77,7 +96,28 @@
     .heading
       border-bottom: 0
       padding: 20px 0 0 0
-      height: 40px
+
+      .status
+        display: flex
+        align-items: center
+        margin: 10px 0
+        max-width: 70%
+        font-weight: 400;
+        font-size: 14px;
+        i
+          margin-right: 10px
+
+      .status-warning {
+        color: #CD8214;
+      }
+
+      .status-success {
+        color: #1F890E;
+      }
+
+      .status-danger {
+        color: #D12D2D;
+      }
 
       .Button
         margin: 0
@@ -90,8 +130,8 @@
         color: #333
 
       li.title
-        float left
         margin-left: 15px
+        width: 100%
 
       .access-status
         display: flex

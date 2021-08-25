@@ -1,20 +1,12 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { getOnboardingStatus, onboardTerminal } from 'merchant/reducers/config';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { getClassName, getStatusMessage } from './InternationalPayments';
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      features: state.config.features,
-      terminals: state.config.paypal_terminals,
-    };
-  },
-  { getOnboardingStatus, onboardTerminal, showNotification },
-)
-export default class PaypalOnboardingButton extends Component {
+class PaypalOnboardingButton extends Component {
   constructor(props) {
     super(props);
   }
@@ -28,7 +20,7 @@ export default class PaypalOnboardingButton extends Component {
     return this.props
       .getOnboardingStatus('wallet_paypal')
       .then((res) => {
-        this.setState({ terminals: res.data.items });
+        this.setState({ terminals: res.data });
         return Promise.resolve();
       })
       .catch((err) => {
@@ -100,83 +92,151 @@ export default class PaypalOnboardingButton extends Component {
   }
 
   render() {
-    let status = this.props.terminals.length && this.props.terminals[0].status;
-    let showStatus = ['created', 'activated', 'rejected', 'pending'].indexOf(status) !== -1;
-    let { disabled, disabledText } = this.props;
+    let {
+      disabled,
+      disabledText,
+      terminals,
+      showLogo,
+      user,
+      openModal,
+      closeModal,
+      isInternationalPayment = false,
+    } = this.props;
+
+    let status = terminals.length && terminals[0].terminal.status;
+    let showLinkButtonOnly = status === 'requested' || terminals.length === 0;
     return (
       <React.Fragment>
-        {showStatus ? (
-          <span
-            style={{ marginLeft: '20px', float: 'right' }}
-            class={`status-pill status-pill-${(() => {
-              if (status === 'activated') {
-                return 'success';
-              }
-              if (status === 'rejected') {
-                return 'danger';
-              }
-              if (status === 'pending' || status === 'created') {
-                return 'warning';
-              }
-            })()}`}
-          >
-            <span class="status-text">{status == 'created' ? 'pending' : status}</span>{' '}
-            <span>
-              <i class="i i-info-circle" />
-              <Popover theme="dark" align="bottom">
-                <PopoverBody>
-                  <div>
-                    {(() => {
-                      if (status === 'activated') {
-                        return 'PayPal has been activated as a payment method.';
-                      }
-                      if (status === 'rejected') {
-                        return 'Your account is rejected by PayPal.';
-                      }
-                      if (status === 'pending') {
-                        return 'Your account is pending for approval by PayPal.';
-                      }
-                      if (status === 'created') {
-                        return 'Initiate Paypal approval for your account by verifiying your email.';
-                      }
-                    })()}
-                  </div>
-                </PopoverBody>
-              </Popover>
-            </span>{' '}
-          </span>
-        ) : null}
+        <div className={showLinkButtonOnly ? 'link-account' : 'change-account'}>
+          {isInternationalPayment && !showLinkButtonOnly && status !== 'activated' && (
+            <div className="change-account-action">
+              <p>
+                {/* <i className="i i-user-circle" style={{ margin: '10px 25px 0px 7px' }}></i>{' '}
+                {user.email} */}
+              </p>
+              <a
+                onClick={() =>
+                  openModal({
+                    size: 'small',
+                    className: 'change-account-modal',
+                    component: (
+                      <ChangeAccountModal
+                        changeAccount={this.verifyAccount}
+                        onClose={closeModal}
+                        user={user}
+                      />
+                    ),
+                  })
+                }
+              >
+                Change Account
+              </a>
+            </div>
+          )}
 
-        {status === 'requested' || this.props.terminals.length === 0 ? (
-          <>
-            <button
-              disabled={this.state.loading || disabled}
-              onClick={this.verifyAccount}
-              class="btn btn-primary paypal-onboard-button"
-            >
-              {' '}
-              {this.props.showLogo && (
-                <img
-                  class="paypal-onboard-img"
-                  src="https://cdn.razorpay.com/static/assets/paypal.svg"
-                />
+          {['pending', 'created', 'permission_missing'].includes(status) && (
+            <p className={`status status-${getClassName(status)}`}>
+              <i className="i i-info-circle" /> {getStatusMessage(status)}
+            </p>
+          )}
+          {showLinkButtonOnly ? (
+            <>
+              <button
+                disabled={this.state.loading || disabled}
+                onClick={this.verifyAccount}
+                className="btn btn-primary paypal-onboard-button"
+              >
+                {' '}
+                {showLogo && (
+                  <img
+                    className="paypal-onboard-img"
+                    src="https://cdn.razorpay.com/static/assets/paypal.svg"
+                  />
+                )}
+                {this.state.loading ? 'Processing..' : 'Link Account'}
+              </button>
+              {disabled && (
+                <Popover align="right" theme="dark">
+                  <PopoverBody>
+                    <div className="disabled-text">{disabledText}</div>
+                  </PopoverBody>
+                </Popover>
               )}
-              {this.state.loading ? 'Processing..' : 'Link Account'}
-            </button>
-            {disabled && (
-              <Popover align="right" theme="dark">
-                <PopoverBody>
-                  <div style={{ textAlign: 'left', textTransform: 'none' }}>{disabledText}</div>
-                </PopoverBody>
-              </Popover>
-            )}
-          </>
-        ) : null}
+            </>
+          ) : null}
+          {!isInternationalPayment && !showLinkButtonOnly && status !== 'activated' && (
+            <div className="change-account-action">
+              {/* <p style={{ fontStyle: 'italic', fontSize: '12px' }}>{user.email}</p> */}
+              <a
+                onClick={() =>
+                  openModal({
+                    size: 'small',
+                    className: 'change-account-modal',
+                    component: (
+                      <ChangeAccountModal
+                        changeAccount={this.verifyAccount}
+                        onClose={closeModal}
+                        user={user}
+                      />
+                    ),
+                  })
+                }
+              >
+                Change Account
+              </a>
+            </div>
+          )}
+        </div>
       </React.Fragment>
     );
   }
 }
 
+const ChangeAccountModal = (props) => {
+  const { changeAccount, onClose, user } = props;
+  return (
+    <div>
+      <div className="header">
+        <p className="title">Change Paypal Account</p>
+        <i className="i i-close" onClick={() => onClose()}></i>
+      </div>
+      <div className="body">
+        {/* <div className="status">
+          <strong>Account in use</strong>
+          <p>{user.email}</p>
+        </div> */}
+        <div className="message">
+          You can link only one <b>PayPal account</b> with Razorpay. Are you sure you want to remove
+          the existing and link new?
+        </div>
+        <button onClick={() => changeAccount()} className="btn btn-primary paypal-onboard-button">
+          <img
+            className="paypal-onboard-img"
+            src="https://cdn.razorpay.com/static/assets/paypal.svg"
+          />{' '}
+          Link New Account
+        </button>
+      </div>
+    </div>
+  );
+};
+
 PaypalOnboardingButton.defaultProps = {
   showLogo: true,
 };
+
+function mapStateToProps(state) {
+  return {
+    user: state.session.user,
+    features: state.config.features,
+    terminals: state.config.paypal_terminals,
+  };
+}
+
+export default connect(mapStateToProps, {
+  getOnboardingStatus,
+  onboardTerminal,
+  showNotification,
+  openModal,
+  closeModal,
+})(PaypalOnboardingButton);

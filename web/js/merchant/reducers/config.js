@@ -246,7 +246,7 @@ export const replyToConversation = (ticket, body) => {
 
 export const fetchOnboardingStatus = (gateway) => {
   let params = {
-    url: `proxy/merchant/terminals?gateway=${gateway}`,
+    url: `proxy/terminal/onboard/status?gateway=${gateway}`,
   };
   if (gateway) {
     params.gateway = gateway;
@@ -327,14 +327,13 @@ export const uploadLogo = (file, fieldName) => {
   };
 };
 export const removeLogo = (payload) => {
-
   return {
     type: REMOVE_LOGO,
     payload: merchantFetch({
       url: 'account/config/logo',
       method: 'delete',
-      data: payload
-    })
+      data: payload,
+    }),
   };
 };
 /* normalize config in proper format*/
@@ -376,7 +375,6 @@ export const createLateAuthConfig = (payload, method) => {
   };
 };
 
-
 export const fetchFeatureStatus = (currentUserId, featureName) => {
   return {
     type: FETCH_FEATURE_STATUS,
@@ -408,7 +406,6 @@ export const updateEmailSettings = (data) => {
 };
 
 // end updateEmailSettings
-
 
 let initialState = {
   loading: true,
@@ -518,20 +515,19 @@ export default function (state = initialState, action) {
       });
 
     case `${FETCH_FEATURE_STATUS}::SUCCESS`: {
-
-        return set(state, 'lateAuthConfig', {
-          loading: false,
-          data: action.payload.data,
-          error: null,
-        });
-      }
+      return set(state, 'lateAuthConfig', {
+        loading: false,
+        data: action.payload.data,
+        error: null,
+      });
+    }
 
     case `${FETCH_FEATURE_STATUS}::ERROR`:
-        return set(state, 'lateAuthConfig', {
-          loading: false,
-          data: {},
-          error: action.payload.errors,
-        });
+      return set(state, 'lateAuthConfig', {
+        loading: false,
+        data: {},
+        error: action.payload.errors,
+      });
 
     case `${CREATE_LATE_AUTH_CONFIG}::SUCCESS`:
       return set(state, 'createdLateAuthConfig', {
@@ -569,7 +565,7 @@ export default function (state = initialState, action) {
       return set(state, 'features', action.payload.data.features);
 
     case `${GET_ONBOARDING_STATUS}::SUCCESS`:
-      return set(state, 'paypal_terminals', action.payload.data.items);
+      return set(state, 'paypal_terminals', action.payload.data);
 
     case 'UPDATE_BRAND_COLOR_CONTRAST':
       return set(state, 'isBrandColorDark', !!action.payload);
