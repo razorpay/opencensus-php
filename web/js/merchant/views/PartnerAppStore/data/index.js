@@ -136,4 +136,23 @@ export const partnerProducts = {
     logo: 'msmex.jpg',
     brandColor: '#039F62',
   },
+  busy: {
+    slug: 'busy',
+    title: 'Busy',
+    cta: 'Enable Patch',
+    url: 'https://razorpay.typeform.com/to/NZPYQzpY',
+    category: 'Business Accounting Software',
+    description: 'Integrated business accounting and management software for MSMEs',
+    logo: 'busy.jpeg',
+    brandColor: '#1682D4',
+  },
+  uengage: {
+    slug: 'uengage',
+    title: 'Uengage',
+    url: 'https://www.uengage.in/',
+    category: 'SAAS for Restaurants',
+    description: 'Food Delivery Apps for New Age Restaurants',
+    logo: 'uengage.png',
+    brandColor: '#93C45A',
+  },
 };

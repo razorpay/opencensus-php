@@ -86,7 +86,8 @@ function BannerButton({
         target="_blank"
         href={partnerDetails.url}
       >
-        Get Started &nbsp; <i className="fa fa-angle-right"></i>
+        {partnerDetails.cta ? partnerDetails.cta : 'Get Started'} &nbsp;{' '}
+        <i className="fa fa-angle-right"></i>
       </a>
     );
   }
