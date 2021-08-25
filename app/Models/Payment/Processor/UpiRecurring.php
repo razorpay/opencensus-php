@@ -915,7 +915,7 @@ trait UpiRecurring
             ($env === 'bvt'))
         {
             $reminderData = [
-                'remind_at' => Carbon::now()->getTimestamp()+3,
+                'remind_at' => Carbon::now()->getTimestamp()+5,
             ];
         }
 
