@@ -318,4 +318,7 @@ final class RazorxTreatment
     const IGNORE_INDEX_IN_TRANSACTIONS_FETCH = 'ignore_index_in_transactions_fetch';
 
     const BAS_FETCH_RE_ARCH = 'bas_fetch_re_arch';
+
+    // Experiment to send merchant downtimes to checkout and in fetch api
+    const SEND_MERCHANT_DOWNTIMES           = 'send_merchant_downtimes';
 }

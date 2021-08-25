@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Mail\Downtime;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
@@ -34,7 +35,28 @@ class Service extends Base\Service
 
     public function getMethodDowntimeDataForMerchant(array $input): array
     {
-        $downtimes = $this->getRepository()->fetchOngoingDowntimes();
+        $variant = $this->app->razorx->getTreatment(
+            $this->merchant->getMerchantId(),
+            Merchant\RazorxTreatment::SEND_MERCHANT_DOWNTIMES,
+            $this->mode
+        );
+
+        $this->trace->info(
+            TraceCode::PAYMENT_DOWNTIMES_MERCHANT_ID,
+            [
+                'merchantId' => $this->merchant->getMerchantId(),
+                'variant' => $variant
+            ]
+        );
+
+        if (strtolower($variant) === 'on')
+        {
+            $downtimes = $this->getRepository()->fetchOngoingPlatformAndMerchantDowntimes($this->merchant->getMerchantId());
+        }
+        else
+        {
+            $downtimes = $this->getRepository()->fetchOngoingDowntimes();
+        }
 
         return $downtimes->toArrayPublic();
     }

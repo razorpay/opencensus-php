@@ -32,6 +32,27 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function fetchOngoingPlatformAndMerchantDowntimes(string $mid): PublicCollection
+    {
+        $query = $this->newQuery();
+
+        $query->where(function ($query)
+        {
+            $query->whereNull(Entity::END)
+                ->orWhere(Entity::END, '>', Carbon::now()->getTimestamp());
+        });
+
+        $query->where(Entity::BEGIN, '<=', Carbon::now()->getTimestamp());
+
+        $query->where(function ($query) use ($mid)
+        {
+            $query->where(Entity::MERCHANT_ID, '=', $mid)
+                ->orWhereNull(Entity::MERCHANT_ID);
+        });
+
+        return $query->get();
+    }
+
     public function fetchOngoingDowntimesByMethodAndMerchant(string $method, string $mid=null): PublicCollection
     {
         $query = $this->newQuery();
