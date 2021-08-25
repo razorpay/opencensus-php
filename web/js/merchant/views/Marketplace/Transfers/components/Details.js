@@ -39,7 +39,7 @@ const SettlementText = ({ data, transfer, onEdit }) => {
     <div>
       <div>
         {data.onHold === 'false' ? (
-          <span class="text-success">Scheduled</span>
+          <span class="text-success">Pending</span>
         ) : data.holdUntil ? (
           <span class="text-warning transfer-scheduled-text">
             Scheduled for&nbsp;
