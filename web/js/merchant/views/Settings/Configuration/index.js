@@ -21,6 +21,7 @@ import InternationalPayments from './InternationalPayments';
 import { fetchUser } from 'merchant/reducers/session';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
 import IntoView from 'common/ui/IntoView';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
   FLASH_CHECKOUT,
   CAPTURE_SETTINGS,
@@ -247,7 +248,7 @@ export default class CongfigurationContainer extends Component {
       user.user &&
       user.user.contact_mobile &&
       user.activation_status === 'activated' &&
-      user.role === 'owner'
+      (user.role === rolesList.OWNER || user.role === rolesList.ADMIN)
     );
   };
 
