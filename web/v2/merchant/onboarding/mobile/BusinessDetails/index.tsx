@@ -308,6 +308,29 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
     }
   }, [businessDetails, pinCode]);
 
+  useEffect(() => {
+    if (isCompanyPanInvalid) {
+      analyticsTrack({
+        objectName: 'Company PAN',
+        actionName: 'mismatch error',
+        screen: 'Business Detail Tab',
+        eventAction: 'thrown',
+        user,
+        isLJReqiuired: false,
+      });
+    }
+    if (shouldShowPoiError) {
+      analyticsTrack({
+        objectName: 'PAN',
+        actionName: 'mismatch error',
+        screen: 'Business Detail Tab',
+        eventAction: 'thrown',
+        user,
+        isLJReqiuired: false,
+      });
+    }
+  }, [isCompanyPanInvalid, shouldShowPoiError]);
+
   const isPanVerified =
     data.poi_verification_status === 'verified' && experiments.isSyncExperimentEnabled;
   const isCompanyPanVerified =

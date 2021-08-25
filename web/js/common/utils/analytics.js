@@ -142,6 +142,7 @@ export const analyticsTrack = ({
       screen,
       eventTimestamp,
       experiment_ID: getCookie('auth_source') === 'website' ? 'Signup_experiment_1' : 'none',
+      device_type: window.innerWidth <= 1020 ? 'mweb' : 'dweb',
     });
   }
 

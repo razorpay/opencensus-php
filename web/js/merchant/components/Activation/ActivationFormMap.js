@@ -5,6 +5,7 @@ import {
   getDetailsForIFSC,
   isPresent,
   getCommonSegmentProperties,
+  getCommonAnalyticsProperties,
 } from 'common/utils/rzp-utils';
 import {
   validateCIN,
@@ -459,12 +460,23 @@ const businessDetails = [
         const errMsg = activation.props.user.isSyncExperimentEnabled
           ? PAN_ERROR_MESSAGE
           : 'The number entered doesn’t exist in the PAN database. Please verify and enter again';
-        return checkValidityFromAPI(
+        const error = checkValidityFromAPI(
           activation.props.user,
           'company_pan_verification_status',
           'incorrect_details',
           errMsg,
         );
+        if (error) {
+          analyticsTrack({
+            objectName: 'Company PAN mismatch error',
+            actionName: 'thrown',
+            screen: 'Business Details Tab',
+            properties: {
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+        }
+        return error;
       },
       _when: (activation) => displayCompanyPAN(activation),
       onBlur: function onBlur() {
@@ -607,12 +619,23 @@ const businessDetails = [
         const errMsg = activation.props.user.isSyncExperimentEnabled
           ? PAN_ERROR_MESSAGE
           : 'The number entered doesn’t exist in the PAN database. Please verify and enter again';
-        return checkValidityFromAPI(
+        const error = checkValidityFromAPI(
           activation.props.user,
           'poi_verification_status',
           'incorrect_details',
           errMsg,
         );
+        if (error) {
+          analyticsTrack({
+            objectName: 'PAN mismatch error',
+            actionName: 'thrown',
+            screen: 'Business Details Tab',
+            properties: {
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+        }
+        return error;
       },
       _disabledWhen: isPANVerified,
       onBlur: function onBlur() {
