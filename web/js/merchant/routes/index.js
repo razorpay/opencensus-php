@@ -217,13 +217,13 @@ const ProviderDetails = lazy(() =>
 
 const ActivationSteps = lazy(() =>
   import(
-    /* webpackChunkName: "OnboardingForm" */ 'v2/merchant/onboarding/mobile/Screens/ActivationProgress'
+    /* webpackChunkName: "OnboardingForm" */ 'merchant/views/onboarding/mobile/Screens/ActivationProgress'
   ),
 );
 
 const ActivationForm = lazy(() =>
   import(
-    /* webpackChunkName: "OnboardingForm" */ 'v2/merchant/onboarding/mobile/Screens/ActivationForm'
+    /* webpackChunkName: "OnboardingForm" */ 'merchant/views/onboarding/mobile/Screens/ActivationForm'
   ),
 );
 const PartnerAppStore = lazy(() =>
@@ -239,11 +239,13 @@ const WhatsNewDetailsPage = lazy(() =>
 );
 
 const TnCPage = lazy(() =>
-  import(/* webpackChunkName: "TermsAndConditionPage" */ 'v2/merchant/TermsAndCondition/Pages'),
+  import(/* webpackChunkName: "TermsAndConditionPage" */ 'merchant/views/TermsAndCondition/Pages'),
 );
 
 const GenerateTnC = lazy(() =>
-  import(/* webpackChunkName: "TermsAndCondition" */ 'v2/merchant/TermsAndCondition/GenerateTnc'),
+  import(
+    /* webpackChunkName: "TermsAndCondition" */ 'merchant/views/TermsAndCondition/GenerateTnc'
+  ),
 );
 
 /*

@@ -8,7 +8,7 @@ import { ThemeProvider, createGlobalStyle } from 'styled-components';
 import { useQuery } from 'react-query';
 import axios from 'axios';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
-import TncPages from '../../v2/merchant/TermsAndCondition/Pages';
+import TncPages from 'merchant/views/TermsAndCondition/Pages';
 
 const GloblatStyle = createGlobalStyle`
 @font-face {

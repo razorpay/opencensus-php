@@ -39,7 +39,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import initChat from 'merchant/components/Support/chat';
 import RTracking from 'react-tracking';
 import qs from 'query-string';
-import Wrapper from 'v2/components/Bootstrap/Wrapper';
+import Wrapper from 'common/components/Bootstrap/Wrapper';
 import { fetchActiveTickets } from 'merchant/reducers/config.js';
 import LogoutDialog from 'merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';

@@ -1,4 +1,4 @@
-import { Fragment, Component } from 'react';
+import React, { Fragment, Component } from 'react';
 import Time from 'common/ui/Time';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';

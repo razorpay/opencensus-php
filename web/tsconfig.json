@@ -13,9 +13,9 @@
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
+    "baseUrl": "js",
     "paths": {
-      "test-utils": ["v2/services/test/test-utils"]
+      "test-utils": ["common/services/test/test-utils"]
     },
     "plugins": [
       {
@@ -23,5 +23,14 @@
       }
     ]
   },
-  "include": ["v2/**/*", "stories", "typings/**/*"]
+  "include": [
+    "typings/**/*",
+    "js/merchant/views/TermsAndCondition",
+    "js/merchant/views/referral",
+    "js/merchant/views/onboarding",
+    "js/common/hooks",
+    "js/common/context",
+    "js/common/services",
+    "js/common/components"
+  ]
 }

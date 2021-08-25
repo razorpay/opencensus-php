@@ -1,3 +1,4 @@
+import React from 'react';
 import { prevent, classList } from 'common/utils/rzp-utils';
 
 const PRIMARY_COLOR = (className) => classList(className, 'Button--primary');

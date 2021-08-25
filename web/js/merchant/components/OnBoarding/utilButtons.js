@@ -1,3 +1,4 @@
+import React from 'react';
 import RTracking from 'react-tracking';
 import Button from 'common/new-ui/Button';
 
@@ -67,9 +68,7 @@ class NextButton extends React.PureComponent {
   }
 }
 
-@RTracking(props =>
-  window.rzpQ.component(`${props.feature}_skip_and_get_started_btn`)
-)
+@RTracking((props) => window.rzpQ.component(`${props.feature}_skip_and_get_started_btn`))
 class SkipAndGetStartedButton extends React.PureComponent {
   onClickFeatureEnableButton = (...args) => {
     const { props } = this;
@@ -80,13 +79,9 @@ class SkipAndGetStartedButton extends React.PureComponent {
     });
 
     this.props.tracking.trackEvent(
-      window.rzpQ
-        .productOnboarding()
-        .initiated(`${props.feature}.onboarding.get_started`, {
-          clickSource: `Screen_${
-            props.active === 0 ? 1 : 2
-          }_SkipAndGetStarted_CTA`,
-        })
+      window.rzpQ.productOnboarding().initiated(`${props.feature}.onboarding.get_started`, {
+        clickSource: `Screen_${props.active === 0 ? 1 : 2}_SkipAndGetStarted_CTA`,
+      }),
     );
 
     props.onClick && props.onClick(args);

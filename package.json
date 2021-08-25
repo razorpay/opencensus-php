@@ -18,8 +18,7 @@
     "test:jest": "cd web && npm run test:jest",
     "build:e2e": "cd web && npm run e2e:build",
     "test:e2e": "cd web && npm run test:e2e",
-    "lint": "eslint $MODULES --ext .js,.jsx,.ts,.tsx",
-    "style-lint": "stylelint web/v2/**/*.{js,jsx,ts,tsx} web/js/merchant/views/Settlements/**/*.{js,jsx}"
+    "lint": "bash lint.sh"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^3.9.1",

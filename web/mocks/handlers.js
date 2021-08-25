@@ -1,11 +1,11 @@
 import { rest, graphql } from 'msw';
-import * as ActivationDB from '../v2/merchant/onboarding/mobile/services/data/ActivationDB';
-import * as PaymentsDB from '../v2/merchant/onboarding/mobile/services/data/PaymentsDB';
-import * as WebsiteWorkflowDB from '../v2/merchant/onboarding/mobile/services/data/WebsiteWorkflowDB';
-import * as InternationalWorkflowDB from '../v2/merchant/onboarding/mobile/services/data/InternationalWorkflowDB';
-import * as BusinessCategoryDB from '../v2/merchant/onboarding/mobile/services/data/BusinessCategoryDB';
-import * as PaymentEscalationDB from '../v2/merchant/onboarding/mobile/services/data/PaymentEscalationDB';
-import * as TermsAndConditionDB from '../v2/merchant/TermsAndCondition/services/TermsAndConditionDB';
+import * as ActivationDB from '../js/merchant/views/onboarding/mobile/services/data/ActivationDB';
+import * as PaymentsDB from '../js/merchant/views/onboarding/mobile/services/data/PaymentsDB';
+import * as WebsiteWorkflowDB from '../js/merchant/views/onboarding/mobile/services/data/WebsiteWorkflowDB';
+import * as InternationalWorkflowDB from '../js/merchant/views/onboarding/mobile/services/data/InternationalWorkflowDB';
+import * as BusinessCategoryDB from '../js/merchant/views/onboarding/mobile/services/data/BusinessCategoryDB';
+import * as PaymentEscalationDB from '../js/merchant/views/onboarding/mobile/services/data/PaymentEscalationDB';
+import * as TermsAndConditionDB from '../js/merchant/views/TermsAndCondition/services/TermsAndConditionDB';
 
 export const handlers = [
   // Handles a "Login" mutation

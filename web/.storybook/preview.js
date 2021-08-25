@@ -2,7 +2,7 @@ import React from 'react';
 import { addDecorator } from '@storybook/react';
 import { addParameters } from '@storybook/client-api';
 import { INITIAL_VIEWPORTS } from '@storybook/addon-viewport';
-import Wrapper from '../v2/components/Bootstrap/Wrapper';
+import Wrapper from 'common/components/Bootstrap/Wrapper';
 import { Router, Route } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 

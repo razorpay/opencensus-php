@@ -12,7 +12,7 @@ module.exports = {
   moduleFileExtensions: ['web.js', 'js', 'json', 'jsx', 'ts', 'tsx'],
 
   // An array of directory names to be searched recursively up from the requiring module's location
-  moduleDirectories: ['node_modules', 'v2/services/test', __dirname],
+  moduleDirectories: ['js', 'node_modules', 'js/common/services/test', __dirname],
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   moduleNameMapper: {
@@ -22,19 +22,22 @@ module.exports = {
   // A map from regular expressions to paths to transformers
   transform: {
     '^.+\\.stories\\.[jt]sx?$': '@storybook/addon-storyshots/injectFileName',
-    '^.+\\.[jt]sx?$': './jestTransform.js',
+    '^.+\\.[jt]sx?$': '../jestTransform.js',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
-      '<rootDir>/tools/fileTransformer.js',
+      '../tools/fileTransformer.js',
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   transformIgnorePatterns: ['/node_modules/(?!(@commander|@razorpay|@universe)/).*/'],
 
+  // The root directory that Jest should scan for tests and modules within
+  rootDir: 'js',
+
   // A list of paths to directories that Jest should use to search for files in
-  roots: ['v2/'],
+  // roots: ['js/', 'Storyshots.test.js'],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
-  setupFilesAfterEnv: ['./v2/services/test/setupTests.js'],
+  setupFilesAfterEnv: ['<rootDir>/common/services/test/setupTests.js'],
 
   // All imported modules in your tests should be mocked automatically
   // automock: false,
@@ -117,9 +120,6 @@ module.exports = {
 
   // Automatically restore mock state between every test
   // restoreMocks: false,
-
-  // The root directory that Jest should scan for tests and modules within
-  // rootDir: undefined,
 
   // Allows you to use a custom runner instead of Jest's default test runner
   // runner: "jest-runner",

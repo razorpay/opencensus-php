@@ -19,7 +19,7 @@ import { openModal } from 'merchant_common/reducers/modals';
 import Announcement from 'merchant/components/Announcements/Instant';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
-import OnboardingCard from 'v2/merchant/onboarding/mobile/Screens/Home';
+import OnboardingCard from 'merchant/views/onboarding/mobile/Screens/Home';
 import {
   trackPresetChange,
   trackSettlementsClick,

@@ -1,0 +1,23 @@
+import { useQuery } from 'react-query';
+import { fetch } from 'common/services/rest/rest-fetch';
+import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
+
+export default function useAovRange(): any {
+  const snackbar = useSnackbar();
+  const { status, data } = useQuery(
+    `aovRange`,
+    async () => {
+      const aovRange = await fetch({
+        url: `merchant/aov-config`,
+      });
+      return aovRange;
+    },
+    {
+      staleTime: Infinity,
+      onError: (err: any) => {
+        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+      },
+    },
+  );
+  return [status, data];
+}

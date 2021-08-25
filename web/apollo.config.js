@@ -1,6 +1,6 @@
 module.exports = {
   client: {
-    includes: ['./v2/**/*.tsx'],
+    includes: ['./js/**/*.tsx'],
     service: 'razorpay-graph@production',
   },
 };

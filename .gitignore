@@ -52,3 +52,6 @@ _ide_helper.php
 .vscode
 .history
 .devspace
+
+# test coverage
+web/js/coverage

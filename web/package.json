@@ -75,7 +75,8 @@
     "production:build": "STAGE=production run-p build:*",
     "e2e:build": "STAGE=production REDIRECTOR=true npm run build:merchant",
     "storybook": "start-storybook -p 6006 -s ../public",
-    "build-storybook": "build-storybook"
+    "build-storybook": "build-storybook",
+    "tsc": "tsc"
   },
   "devDependencies": {
     "@babel/core": "7.9.0",
