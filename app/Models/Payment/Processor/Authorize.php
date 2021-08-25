@@ -1361,15 +1361,43 @@ trait Authorize
 
     public function autoCapturePaymentIfApplicable(Payment\Entity $payment)
     {
-        if ($this->shouldAutoCapture($payment) === true)
+        $response = $this->shouldAutoCapture($payment);
+
+        if (isset($response) === false)
         {
+            return;
+        }
+
+        $properties = $response ?? [];
+
+        if ($response['should_auto_capture'] === true)
+        {
+            $this->trace->info(
+                TraceCode::AUTO_CAPTURE_TRIGGERED_REASON,
+                [
+                    'reason'    => $response['reason'],
+                ]);
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_ELIGIBLE_FOR_AUTO_CAPTURE, $payment, null,[], $properties);
+
             // If payment_capture was sent as true in order,
             // then we capture it in this step only.
             $this->autoCapturePayment($payment);
         }
-        else if ($this->shouldGatewayCapturePayment($payment) === true)
+        elseif ($response['should_auto_capture'] === false)
         {
-            $this->gatewayCapturePaymentViaQueue($payment);
+            $this->trace->info(
+                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
+                [
+                    'reason'    => $response['reason'],
+                ]);
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_NOT_ELIGIBLE_FOR_AUTO_CAPTURE, $payment, null,[], $properties);
+
+            if ($this->shouldGatewayCapturePayment($payment) === true)
+            {
+                $this->gatewayCapturePaymentViaQueue($payment);
+            }
         }
     }
 

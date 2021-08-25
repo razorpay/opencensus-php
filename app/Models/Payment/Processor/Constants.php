@@ -46,4 +46,28 @@ class Constants
     const REMINDER_DATA                   = 'reminder_data';
     const VERIFY_AT                       = 'verify_at';
     const VERIFY_SERVICE                  = 'verify_service';
+
+    //Auto Capture Reasons
+    const UPI_OTM_PAYMENT                           = 'UPI OTM Payment';
+    const BANK_TRANSFER_PAYMENT                     = 'Bank Transfer Payment';
+    const PAYMENT_STATUS_AUTHENTICATED              = 'Payment Status Authenticated';
+    const UPI_TRANSFER_PAYMENT                      = 'UPI Transfer Payment';
+    const PAYMENT_LINK_WITH_FEATURE                 = 'Payment Link with Merchant Feature PAYMENT_PAGES_NO_CAPTURE enabled';
+    const PAYMENT_STATUS_NOT_AUTHORIZED             = 'Payment should be in authorized status.';
+    const DIRECT_SETTLEMENT_PAYMENT                 = 'Direct Settlement Payment without order.';
+    const AUTH_SPLIT_FEATURE_ENABLED                = 'Merchant has auth_split feature enabled.';
+    const PAYMENT_ATTRIBUTE_CAPTURE_TRUE            = 'Capture Attribute in Payment is true.';
+    const PAYMENT_HAS_NO_ORDER                      = 'Payment does not have an order associated with it.';
+    const SUBSCRIPTION_PAYMENT                      = 'Subscription Payment.';
+    const FILE_BASED_EMANDATE_PAYMENT               = 'File based emandate Payment.';
+    const DIRECT_SETTLEMENT_ORDER_NOT_PAID          = 'Direct Settlement Payment with order is still not paid.';
+    const ORDER_ALREADY_MARKED_PAID                 = 'Order already marked as paid.';
+    const PAYMENT_AMOUNT_GREATER_THAN_AMOUNT_DUE    = 'Payment amount is greater than amount due.';
+    const CAPTURE_SETTINGS_AUTOMATIC                = 'Capture settings is automatic.';
+    const CAPTURE_SETTINGS_MANUAL                   = 'Capture settings is manual.';
+    const ORDER_PAYMENT_CAPTURE_FALSE               = 'Order payment capture flag is false.';
+    const AUTO_REFUND_DELAY_EXCEEDED                = 'Auto Refund delay exceeded for this payment.';
+    const PAYMENT_PASSED_ALL_CHECKS_FOR_CAPTURE     = 'Payment passed all checks for auto capture.';
+    const MERCHANT_AUTO_CAPTURE_LATE_AUTH_TRUE      = 'Merchant has auto capture late auth enabled.';
+    const MERCHANT_AUTO_CAPTURE_LATE_AUTH_FALSE     = 'Merchant has auto capture late auth disabled.';
 }

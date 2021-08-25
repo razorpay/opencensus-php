@@ -5146,6 +5146,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EXCEL_CONSTRUCT_INIT                                      = 'EXCEL_CONSTRUCT_INIT';
 
     const AUTO_CAPTURE_NOT_TRIGGERED_REASON                         = 'AUTO_CAPTURE_NOT_TRIGGERED_REASON';
+    const AUTO_CAPTURE_TRIGGERED_REASON                             = 'AUTO_CAPTURE_TRIGGERED_REASON';
     const CAPTURE_SETTINGS_FOR_PAYMENT                              = 'CAPTURE_SETTINGS_FOR_PAYMENT';
 
     protected static $messages = [

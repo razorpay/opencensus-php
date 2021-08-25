@@ -2322,6 +2322,8 @@ class Service extends Base\Service
                     }
                     catch (\Throwable $e)
                     {
+                        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CRON_TIMEOUT_FAILED, $payment, $e);
+
                         $this->trace->traceException($e);
 
                         $error++;

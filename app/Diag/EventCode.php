@@ -196,6 +196,16 @@ class EventCode
         'name'  => 'payment.authorization.processed'
     ];
 
+    const PAYMENT_CRON_TIMEOUT_INITIATED               = [
+        'group' => 'timeout',
+        'name'  => 'payment.timeout.initiated'
+    ];
+
+    const PAYMENT_CRON_TIMEOUT_FAILED               = [
+        'group' => 'timeout',
+        'name'  => 'payment.timeout.failed'
+    ];
+
     const PAYMENT_CALLBACK_INITIATED                    = [
         'group' => 'authorization',
         'name'  => 'payment.callback.initiated'
@@ -229,6 +239,46 @@ class EventCode
     const PAYMENT_CAPTURE_PROCESSED                     = [
         'group' => 'capture',
         'name'  => 'payment.capture.processed'
+    ];
+
+    const PAYMENT_ELIGIBLE_FOR_AUTO_CAPTURE             = [
+        'group' => 'capture',
+        'name'  => 'payment.auto.capture.eligible'
+    ];
+
+    const PAYMENT_NOT_ELIGIBLE_FOR_AUTO_CAPTURE             = [
+        'group' => 'capture',
+        'name'  => 'payment.auto.capture.not.eligible'
+    ];
+
+    const PAYMENT_CAPTURE_VALIDATION_INITIATED             = [
+        'group' => 'capture',
+        'name'  => 'payment.capture.validation.initiated'
+    ];
+
+    const PAYMENT_CAPTURE_VALIDATION_SUCCESS             = [
+        'group' => 'capture',
+        'name'  => 'payment.capture.validation.success'
+    ];
+
+    const PAYMENT_CAPTURE_VALIDATION_FAILED             = [
+        'group' => 'capture',
+        'name'  => 'payment.capture.validation.failed'
+    ];
+
+    const PAYMENT_CAPTURE_GATEWAY_INITIATED = [
+        'group' => 'capture',
+        'name'  => 'payment.capture.gateway.initiated'
+    ];
+
+    const PAYMENT_CAPTURE_GATEWAY_SUCCESS            = [
+        'group' => 'capture',
+        'name'  => 'payment.capture.gateway.success'
+    ];
+
+    const PAYMENT_CAPTURE_GATEWAY_FAILED            = [
+        'group' => 'capture',
+        'name'  => 'payment.capture.gateway.failed'
     ];
 
     const PAYMENT_CAPTURE_QUEUE                     = [

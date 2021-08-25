@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Lib\PhoneBook;
 
 use RZP\Base;
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Vpa;
 use Razorpay\IFSC\IFSC;
@@ -1241,17 +1242,33 @@ class Validator extends Base\Validator
 
     public function captureValidate(Payment\Entity $payment, int $amount, string $currency)
     {
-        $this->failIfCaptured($payment);
+        $app = App::getFacadeRoot();
 
-        $this->failIfNotAuthorized($payment);
+        $app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_VALIDATION_INITIATED, $payment);
 
-        $this->failIfRefundConfigSetLateAuth($payment);
+        try
+        {
+            $this->failIfCaptured($payment);
 
-        $this->captureAmountValidate($payment, $amount);
+            $this->failIfNotAuthorized($payment);
 
-        $this->captureCurrencyValidate($payment, $currency);
+            $this->failIfRefundConfigSetLateAuth($payment);
 
-        $this->captureUpiOtmExecuteValidate($payment);
+            $this->captureAmountValidate($payment, $amount);
+
+            $this->captureCurrencyValidate($payment, $currency);
+
+            $this->captureUpiOtmExecuteValidate($payment);
+
+            $app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_VALIDATION_SUCCESS, $payment);
+        }
+        catch (\Throwable $e)
+        {
+            $app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_VALIDATION_FAILED, $payment, $e);
+
+            throw $e;
+        }
+
     }
 
     public function cancelValidate($payment)

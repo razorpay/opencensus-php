@@ -2569,6 +2569,8 @@ class Processor
 
     public function timeoutPayment()
     {
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CRON_TIMEOUT_INITIATED, $this->payment);
+
         $payment = $this->payment;
 
         $traceCode = TraceCode::PAYMENT_TIMED_OUT;
@@ -3958,56 +3960,47 @@ class Processor
      *
      * @return bool
      */
-    protected function shouldAutoCapture(Payment\Entity $payment): bool
+    protected function shouldAutoCapture(Payment\Entity $payment): array
     {
         // For upi otm, Payments cannot auto captured, as merchants needs to hit the capture
         // api, to execute the mandate, we will block this scenario right now.
         if ($payment->isUpiOtm() === true)
         {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                [
-                    'reason'    => "UPI OTM Payment",
-                ]);
+            $response['should_auto_capture'] = false;
 
-           return false;
+            $response['reason'] = Constants::UPI_OTM_PAYMENT;
+
+            return $response;
         }
 
         // Bank transfers are auto-captured only if they are expected. This is checked later.
         if ($payment->isBankTransfer() === true)
         {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                [
-                    'reason'    => "Bank Transfer Payment",
-                ]);
+            $response['should_auto_capture'] = false;
 
-            return false;
+            $response['reason'] = Constants::BANK_TRANSFER_PAYMENT;
+
+            return $response;
         }
 
 
         // We can't capture payments that are in authenticated state.
         if ($payment->getStatus() === Payment\Status::AUTHENTICATED)
         {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                [
-                    'reason'    => "Payment Status Authenticated",
-                    'status'    => $payment->getStatus(),
-                ]);
+            $response['should_auto_capture'] = false;
 
-            return false;
+            $response['reason'] = Constants::PAYMENT_STATUS_AUTHENTICATED;
+
+            return $response;
         }
 
         if ($payment->isUpiTransfer() === true)
         {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                [
-                    'reason'    => "UPI Transfer Payment",
-                ]);
+            $response['should_auto_capture'] = false;
 
-            return false;
+            $response['reason'] = Constants::UPI_TRANSFER_PAYMENT;
+
+            return $response;
         }
 
         //
@@ -4021,13 +4014,11 @@ class Processor
         {
             if ($payment->merchant->isFeatureEnabled(Feature::PAYMENT_PAGES_NO_CAPTURE) === true)
             {
-                $this->trace->info(
-                    TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                    [
-                        'reason'    => "Payment Link with Merchant Feature PAYMENT_PAGES_NO_CAPTURE enabled",
-                    ]);
+                $response['should_auto_capture'] = false;
 
-                return false;
+                $response['reason'] = Constants::PAYMENT_LINK_WITH_FEATURE;
+
+                return $response;
             }
         }
 
@@ -4045,7 +4036,11 @@ class Processor
                     'status'        => $payment->getStatus()
                 ]);
 
-            return false;
+            $response['should_auto_capture'] = false;
+
+            $response['reason'] = Constants::PAYMENT_STATUS_NOT_AUTHORIZED;
+
+            return $response;
         }
 
         //
@@ -4056,12 +4051,20 @@ class Processor
         if (($payment->isDirectSettlement() === true) and
             ($payment->hasOrder() === false))
         {
-            return true;
+            $response['should_auto_capture'] = true;
+
+            $response['reason'] = Constants::DIRECT_SETTLEMENT_PAYMENT;
+
+            return $response;
         }
 
         if ($payment->merchant->isFeatureEnabled(Feature::AUTH_SPLIT) === true)
         {
-            return true;
+            $response['should_auto_capture'] = true;
+
+            $response['reason'] = Constants::AUTH_SPLIT_FEATURE_ENABLED;
+
+            return $response;
         }
 
         //
@@ -4070,7 +4073,11 @@ class Processor
         //
         if ($payment->getCapture() === true)
         {
-            return true;
+            $response['should_auto_capture'] = true;
+
+            $response['reason'] = Constants::PAYMENT_ATTRIBUTE_CAPTURE_TRUE;
+
+            return $response;
         }
 
         //
@@ -4078,13 +4085,11 @@ class Processor
         //
         if ($payment->hasOrder() === false)
         {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                [
-                    'reason'    => "Payment does not have order",
-                ]);
+            $response['should_auto_capture'] = false;
 
-            return false;
+            $response['reason'] = Constants::PAYMENT_HAS_NO_ORDER;
+
+            return $response;
         }
 
         //
@@ -4097,13 +4102,11 @@ class Processor
         //
         if ($payment->hasSubscription() === true)
         {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                [
-                    'reason'    => "Payment Subscription",
-                ]);
+            $response['should_auto_capture'] = false;
 
-            return false;
+            $response['reason'] = Constants::SUBSCRIPTION_PAYMENT;
+
+            return $response;
         }
 
         //
@@ -4122,13 +4125,11 @@ class Processor
         //
         if ($payment->isFileBasedEmandateRegistrationPayment() === true)
         {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                [
-                    'reason'    => "FileBasedEmandateRegistrationPayment",
-                ]);
+            $response['should_auto_capture'] = false;
 
-            return false;
+            $response['reason'] = Constants::FILE_BASED_EMANDATE_PAYMENT;
+
+            return $response;
         }
 
         return $this->shouldAutoCaptureOrder($payment);
@@ -4241,19 +4242,21 @@ class Processor
         if (($order->isPaid() === false) and
             ($payment->isDirectSettlement()))
         {
-            return true;
+            $response['should_auto_capture'] = true;
+
+            $response['reason'] = Constants::DIRECT_SETTLEMENT_ORDER_NOT_PAID;
+
+            return $response;
         }
 
         if ((($order->isPaid() === true) and
                 ($order->merchant->isFeatureEnabled(Feature::DISABLE_AMOUNT_CHECK) === false)))
         {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                [
-                    'reason'    => "Disable Amount Check Feature not enabled",
-                ]);
+            $response['should_auto_capture'] = false;
 
-            return false;
+            $response['reason'] = Constants::ORDER_ALREADY_MARKED_PAID;
+
+            return $response;
         }
 
         $amount = $payment->getAdjustedAmountWrtCustFeeBearer();
@@ -4261,60 +4264,81 @@ class Processor
         if (($amount > $order->getAmountDue()) and
             ($this->merchant->isFeatureEnabled(Feature::EXCESS_ORDER_AMOUNT) === false))
         {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                [
-                    'reason'    => "Excess Order Amount Feature not enabled",
-                ]);
+            $response['should_auto_capture'] = false;
 
-           return false;
+            $response['reason'] = Constants::PAYMENT_AMOUNT_GREATER_THAN_AMOUNT_DUE;
+
+            return $response;
         }
 
-        $captureConfig = $this->shouldAutoCapturePaymentConfig($payment);
+        [$captureConfig, $captureSettings]  = $this->shouldAutoCapturePaymentConfig($payment);
 
         if ($captureConfig === true)
         {
-            return true;
+            $response['should_auto_capture'] = true;
+
+            $response['reason'] = Constants::CAPTURE_SETTINGS_AUTOMATIC;
+
+            $response['data'] = $captureSettings;
+
+            return $response;
         }
         elseif ($captureConfig === false)
         {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                [
-                    'reason'    => "Capture Settings is manual",
-                ]);
+            $response['should_auto_capture'] = false;
 
-            return false;
+            $response['reason'] = Constants::CAPTURE_SETTINGS_MANUAL;
+
+            $response['data'] = $captureSettings;
+
+            return $response;
         }
 
         if ($order->getPaymentCapture() !== true)
         {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                [
-                    'reason'    => "Order Payment Capture is false",
-                ]);
+            $response['should_auto_capture'] = false;
 
-            return false;
+            $response['reason'] = Constants::ORDER_PAYMENT_CAPTURE_FALSE;
+
+            return $response;
         }
 
         if ($this->isAutoRefundDelayExceeded($payment) === true)
         {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                [
-                    'reason'    => "Auto refund delay exceeded",
-                ]);
+            $response['should_auto_capture'] = false;
 
-            return false;
+            $response['reason'] = Constants::AUTO_REFUND_DELAY_EXCEEDED;
+
+            return $response;
         }
 
         if ($payment->isLateAuthorized() === true)
         {
-            return $this->shouldAutoCaptureLateAuthorized($payment);
+            $autoCaptureLateAuth =  $this->shouldAutoCaptureLateAuthorized($payment);
+
+            if ($autoCaptureLateAuth === true)
+            {
+                $response['should_auto_capture'] = true;
+
+                $response['reason'] = Constants::MERCHANT_AUTO_CAPTURE_LATE_AUTH_TRUE;
+
+                return $response;
+            }
+            else
+            {
+                $response['should_auto_capture'] = false;
+
+                $response['reason'] = Constants::MERCHANT_AUTO_CAPTURE_LATE_AUTH_FALSE;
+
+                return $response;
+            }
         }
 
-        return true;
+        $response['should_auto_capture'] = true;
+
+        $response['reason'] = Constants::PAYMENT_PASSED_ALL_CHECKS_FOR_CAPTURE;
+
+        return $response;
     }
 
     protected function shouldAutoCapturePaymentConfig(Payment\Entity $payment)
@@ -4323,7 +4347,7 @@ class Processor
 
         if (isset($lateAuthConfig) === false)
         {
-            return null;
+            return [null, null];
         }
 
         $autoTimeoutDuration = $lateAuthConfig['capture_options']['automatic_expiry_period'];
@@ -4347,22 +4371,22 @@ class Processor
         {
             if ($difference < $autoTimeoutDuration)
             {
-                return true;
+                return [true, $lateAuthConfig];
             }
             elseif ($difference > $manualTimeoutDuration)
             {
-                return false;
+                return [false, $lateAuthConfig];
             }
         }
         elseif ($captureValue === 'manual')
         {
             if ($difference > $manualTimeoutDuration)
             {
-                return false;
+                return [false, $lateAuthConfig];
             }
         }
 
-        return false;
+        return [false, $lateAuthConfig];
     }
 
     private function setPaymentRefundAtForConfig($payment, $manualTimeoutDuration)

@@ -57,13 +57,17 @@ trait Capture
             ]
         );
 
+        $ctx = app('request.ctx');
+
         $this->app['diag']->trackPaymentEventV2(
             EventCode::PAYMENT_CAPTURE_INITIATED,
             $payment,
             null,
             [],
             [
-                'input'  => $input
+                'input'  => $input,
+                'source_route' => $ctx->getRoute(),
+                'source_auth_type' =>  $ctx->getAuth(),
             ]);
 
         $this->setPayment($payment);
@@ -582,7 +586,11 @@ trait Capture
                 }
                 else
                 {
+                    $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_GATEWAY_INITIATED, $this->payment);
+
                     $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+
+                    $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_GATEWAY_SUCCESS, $this->payment);
 
                     $this->payment->setGatewayCaptured(true);
 
@@ -591,6 +599,7 @@ trait Capture
                     $this->repo->saveOrFail($this->payment);
                 }
             }
+
             $this->trace->info(TraceCode::AUTO_CAPTURE_CALL_TO_GATEWAY_TIME_TAKEN,
                 [
                     'gateway_time_taken'   => (microtime(true) - $callToGatewayStartTime) * 1000
@@ -599,6 +608,8 @@ trait Capture
         }
         catch (\Throwable $ex)
         {
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_GATEWAY_FAILED, $this->payment, $ex);
+
             $this->trace->traceException(
                 $ex,
                 Trace::ERROR,
