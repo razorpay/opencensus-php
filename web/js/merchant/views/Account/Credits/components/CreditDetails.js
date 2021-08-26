@@ -113,22 +113,20 @@ function CreditDetails({
         <p>{description}</p>
       </div>
       <div class="coupon-details">
-        {user.isSelfServeCreditsEnabled && (
-          <div class="view-history">
-            <button
-              class="btn-link toggle-history"
-              onClick={() => {
-                openModal({
-                  size: 'large',
-                  component: <ViewCreditHistoryTable creditItems={creditItems} title={title} />,
-                });
-                analyticsTrack(clickHistoryCreditsGA(title));
-              }}
-            >
-              View History
-            </button>
-          </div>
-        )}
+        <div class="view-history">
+          <button
+            class="btn-link toggle-history"
+            onClick={() => {
+              openModal({
+                size: 'large',
+                component: <ViewCreditHistoryTable creditItems={creditItems} title={title} />,
+              });
+              analyticsTrack(clickHistoryCreditsGA(title));
+            }}
+          >
+            View History
+          </button>
+        </div>
       </div>
     </div>
   );
