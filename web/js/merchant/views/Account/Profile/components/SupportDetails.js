@@ -52,17 +52,14 @@ export default class SupportDetails extends Component {
     return (
       <div className="panel panel-default">
         <div className="panel-heading">
-         <TextHighlighter hashedWith={SUPPORT_DETAILS}>Support Details</TextHighlighter>
-          <ShowWhen
-          myRole="owner admin manager"
-          >
-          <span className="pull-right">
-            <a onClick={() => this.openAddSupportDetailModal(support_detail)}>
-              {Object.keys(support_detail.data).length ? 'Edit Details' : 'Add Details'}
-            </a>
-          </span>
+          <TextHighlighter hashedWith={SUPPORT_DETAILS}>Support Details</TextHighlighter>
+          <ShowWhen myRole="owner admin manager">
+            <span className="pull-right">
+              <a onClick={() => this.openAddSupportDetailModal(support_detail)}>
+                {Object.keys(support_detail.data).length ? 'Edit Details' : 'Add Details'}
+              </a>
+            </span>
           </ShowWhen>
-          
         </div>
         <div className="list-group details-row-container">
           <div className="list-group-item">

@@ -660,6 +660,10 @@ export default class User {
     return this.isFeatureEnabled('es_on_demand_restricted');
   }
 
+  get isWebsiteSelfServeOn() {
+    return this.getExpStatus('website_self_serve');
+  }
+
   get isCreditPullEnabled() {
     return this.isFeatureEnabled('show_credit_score');
   }

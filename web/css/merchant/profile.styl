@@ -160,17 +160,17 @@ $light-blue-color = #2B83EA;
   display flex
   flex-direction column
 
-  span 
+  span
     display flex
-  
+
   div
     display flex
     flex-direction row
-  
+
   .address-section span:nth-child(1), .pincode-section span:nth-child(1)
     padding 10px 0px 0px 15px
     flex .3
-  
+
   .address-section span:nth-child(2), .pincode-section span:nth-child(2)
     padding 10px 15px 0px 15px
     flex .7
@@ -216,7 +216,7 @@ $light-blue-color = #2B83EA;
     font-size 12px
     color rgba(22, 47, 86, 0.38)
     background-color #FAFAFA
-  
+
   input
     margin-bottom 18px
 
@@ -233,10 +233,81 @@ $light-blue-color = #2B83EA;
       cursor pointer
     }
 
+.website-self-serve__listItem
+  width 50%
+
+.website-self-serve__change-info
+    width 200%
+    margin-top 10px
+    border-left 4px solid #CD8214
+    padding-left 10px
+
+.website-self-serve-initiate-modal
+
+  .img-container
+    display flex
+    justify-content center
+    padding 15px 0px
+
+  .content
+    display flex
+    flex-direction column
+    font-size 13px
+
+    strong
+      padding 2px 0px 2px 22px
+
+    span ol li
+      padding 7px 11px 7px 5px
+
+    .note
+      background-color #FCF8E5
+      border 1px solid rgba(22, 47, 86, 0.1)
+      margin 0px 22px 5px 22px
+      padding 5px 5px 7px 5px
+
+  .action
+    display flex
+    justify-content center
+    padding 10px 0px 22px 0px
+
+    button
+      width 87%
+      font-size 13px
+
+.website-update-form
+  font-size 13px
+
+  .Input-label
+    margin-bottom 10px
+
+  .Input
+    margin-top 15px
+
+  .Input-checkbox + .Input-inlineLabel
+    font-size 13px
+
+  .actions-header
+    display flex
+    justify-content flex-start
+
+    div:last-child
+      margin-left 45px
+
+    label
+      margin-left 10px
+
+  .note
+    background-color #FCF8E5
+    border 1px solid rgba(22, 47, 86, 0.1)
+    padding 5px 5px 7px 5px
+    margin-top 20px
+
+
 // Purpose Code styles
 .purpose-code-header {
   background: #FAFAFA;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);  
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .purpose-code-modal-heading {
@@ -244,11 +315,11 @@ $light-blue-color = #2B83EA;
 }
 
 .purpose-code-search-container {
-  padding: 24px  
+  padding: 24px
   position: relative
-  
+
   .purpose-code-search-input {
-    height: 40px  
+    height: 40px
     padding-left: 35px
   }
 }
@@ -267,7 +338,7 @@ $light-blue-color = #2B83EA;
 }
 
 .purpose-code-accordion-item {
-  margin-top: 0px !important  
+  margin-top: 0px !important
   border-top: 1px solid rgba(228, 228, 228, 1)
 }
 
@@ -290,21 +361,21 @@ $light-blue-color = #2B83EA;
 }
 
 .purpose-code-desc {
-  padding: 0px 10px 0px 0px  
+  padding: 0px 10px 0px 0px
 }
 
 .scroll-codes {
-  overflow-y: scroll  
+  overflow-y: scroll
   max-height: 350px
   min-height: 350px
 }
 
 .scroll-codes::-webkit-scrollbar {
-    display: none 
+    display: none
 }
 
 .purpose-code-accordion-content {
-  padding: 8px 0px 10px 0px !important  
+  padding: 8px 0px 10px 0px !important
 }
 
 .purpose-code-no-results {
@@ -332,7 +403,7 @@ $light-blue-color = #2B83EA;
   box-shadow: 1px 3px 6px rgba(58, 69, 103, 0.12)
   border-radius: 2px
   border: 2px solid transparent !important
-  font-weight: bold 
+  font-weight: bold
   height: 38px
 }
 
@@ -340,20 +411,20 @@ $light-blue-color = #2B83EA;
   background: #4283F7
   box-shadow: 1px 3px 6px rgba(58, 69, 103, 0.12)
   border: 2px solid transparent !important
-  font-weight: bold 
+  font-weight: bold
   height: 38px
 }
 
 .purpose-code-confirmation-form {
-  margin-top: 200px  
+  margin-top: 200px
 }
 
 .purpose-code-confirmation-content {
-  padding: 26px  
+  padding: 26px
   color: rgba(22, 47, 86, 0.74)
 
   .purpose-code-confirmation-text {
-    margin-top: 15px 
+    margin-top: 15px
   }
 }
 

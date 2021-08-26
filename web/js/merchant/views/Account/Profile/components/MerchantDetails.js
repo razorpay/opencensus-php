@@ -1,27 +1,20 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
-
 import Time from 'common/ui/Time';
 import ProgressBar from 'common/ui/ProgressBar';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import { Popover, PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
-
-import {
-  titleCase,
-  isPresent,
-  getCommonAnalyticsProperties,
-} from 'common/utils/rzp-utils';
-
+import { titleCase, isPresent, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import DetailRow from 'merchant/components/DetailRow';
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { BUSINESS_TYPE_MAP, ATTR_DETAILS } from 'merchant/views/Account/constants';
-
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-
-import EditWebsiteDetailsModal from './EditWebsiteDetailsModal';
+import {
+  openModal as fnOpenModal,
+  closeModal as fnCloseModal,
+} from 'merchant_common/reducers/modals';
 import UserContactMobile from './UserContactMobile';
 import { analyticsTrack } from 'common/utils/analytics';
 import Button from 'common/new-ui/Button';
@@ -29,38 +22,33 @@ import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
 import { EMAIL_UPDATE, CONTACT_NUMBER_UPDATE, BILLING_LABEL } from '../deeplink-constants';
 import IntoView from 'common/ui/IntoView';
 import TextHighlighter from 'common/ui/TextHighlighter';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
+import InitiateWebsiteChange from './WebsiteSelfServe/InitiateWebsiteChange';
+
 function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
-  let businessWebsite = user.business_website ? (
+  const businessWebsite = user.business_website ? (
     <div>
-      <a href={user.business_website} target="_blank" rel="noopener">
-        {user.business_website}
-      </a>
+      <span className="text-primary m-r">
+        <a href={user.business_website} target="_blank" rel="noopener noreferrer">
+          {user.business_website}
+        </a>
+      </span>
+      {isWebsiteInWorkflow === false && user.role === 'owner' && user.isWebsiteSelfServeOn && (
+        <Button.Transparent onClick={handleEditWebsite}>
+          <i class="i i-edit p-l" />
+        </Button.Transparent>
+      )}
     </div>
   ) : null;
-
-  /*
-    has_key_access determines if merchant can generate keys
-    Let User enter business_website if has_key_access = false & isWebsiteInWorkflow = false
-  */
-  if (!user.has_key_access) {
-    if (!user.business_website && !isWebsiteInWorkflow) {
-      businessWebsite = (
-        <span>
-          <a onClick={handleEditWebsite}>Add Website/App URL for Full Access</a>
-        </span>
-      );
-    } else {
-      businessWebsite = <span class="status-label label label-info">Under Review</span>;
-    }
-  }
 
   return (
     <div>
       {businessWebsite}
       {isPresent(user.additional_websites) &&
-        user.additional_websites.map((website) => (
-          <div>
-            <a href={website} target="_blank" rel="noopener">
+        user.additional_websites.map((website, idx) => (
+          <div key={`${website}_${idx}`}>
+            <a href={website} target="_blank" rel="noopener noreferrer">
               {website}
             </a>
           </div>
@@ -76,18 +64,33 @@ const MerchantDetails = ({
   openModal,
   closeModal,
   tracking,
-  isWebsiteInWorkflow,
-  onWebsiteAdd,
+  showNotification,
 }) => {
-  // const showView = useRef(null);
-  // if (showView?.current) {
-  //   console.log(showView?.current, 'ref');
-  //   showView.current.scrollIntoView({
-  //     behavior: 'smooth',
-  //     block: 'center',
-  //     inline: 'center',
-  //   });
-  // }
+  const [isWebsiteInWorkflow, setisWebsiteInWorkflow] = useState(false);
+
+  const getWebsiteWorkflowStatus = async () => {
+    try {
+      const response = await merchantFetch({
+        url: `merchant/business_website_status`,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response) setisWebsiteInWorkflow(response.data.status);
+    } catch ({ errors }) {
+      showNotification({
+        type: 'error',
+        message: errors,
+      });
+    }
+  };
+
+  useEffect(() => {
+    getWebsiteWorkflowStatus();
+  }, []);
+
   let activationName = 'KYC';
   let trackerName = 'kyc.form_fill';
   if (
@@ -100,19 +103,16 @@ const MerchantDetails = ({
   }
 
   const handleEditWebsite = () => {
-    tracking.trackEvent(
-      window.rzpQ.onbr().initiated('dash.my_account_actions', {
-        action: 'Add_Website_Initiated',
-      }),
-    );
-    tracking.trackEvent(
-      window.rzpQ.onbr().initiated('dash.add_website', {
-        clickSource: 'My_Account',
-      }),
-    );
     openModal({
       size: 'small',
-      component: <EditWebsiteDetailsModal onWebsiteAdd={onWebsiteAdd} onClose={closeModal} />,
+      component: (
+        <InitiateWebsiteChange
+          user={user}
+          openModal={openModal}
+          closeModal={closeModal}
+          getWebsiteWorkflowStatus={getWebsiteWorkflowStatus}
+        />
+      ),
     });
   };
 
@@ -136,9 +136,11 @@ const MerchantDetails = ({
       },
     });
   };
+
   const labelHandler = (hashedWith, content) => {
     return <TextHighlighter hashedWith={hashedWith}>{content}</TextHighlighter>;
   };
+
   return (
     <div class="list-group details-row-container">
       <DetailRow label="Contact Name" value={titleCase(user.contact_name)} />
@@ -240,7 +242,7 @@ const MerchantDetails = ({
 
       <DetailRow label="Registered By" value={user.marketplace_merchant_name} />
 
-      <ShowWhen additionalCondition={(user) => user.isAllowedEdit('activation')}>
+      <ShowWhen additionalCondition={(usr) => usr.isAllowedEdit('activation')}>
         <DetailRow
           label={() => <b>Account Activation</b>}
           value={() => (
@@ -332,20 +334,30 @@ const MerchantDetails = ({
               </div>
             )}
           />
+
           <DetailRow
             label={() => (
-              <div>
+              <div class="website-self-serve__listItem">
                 <span>Business Website/App details</span>
                 <small class="help-content">
                   <i class="i i-info-outline" />
                   <Popover align="top" theme="dark">
                     <PopoverBody>
                       <div>
-                        These are the verified websites on which payments can be integrated.
+                        <div>
+                          These are the verified websites on which payments can be integrated
+                        </div>
                       </div>
                     </PopoverBody>
                   </Popover>
                 </small>
+                {isWebsiteInWorkflow === true && (
+                  <div class="website-self-serve__change-info">
+                    {user.has_key_access === true
+                      ? 'Your request to update the website is under review.'
+                      : 'Your request to update the website is under review. We will provide the API keys for the new website once the review is complete.'}
+                  </div>
+                )}
               </div>
             )}
             value={() => renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow)}
@@ -420,7 +432,7 @@ const MerchantDetails = ({
           label="Limit per Transaction"
           value={() => (
             <div className="transaction-limit">
-              <Amount value={user.merchant.max_payment_amount} currency={'INR'} />
+              <Amount value={user.merchant.max_payment_amount} currency="INR" />
               <small class="help-content">
                 <i class="i i-info-circle" />
                 <Popover align="right" theme="dark">
@@ -459,8 +471,8 @@ const MerchantDetails = ({
                     children="EDIT DETAILS"
                   />
                   <div>
-                    <a href={user.merchant_tnc.link} target="_blank">
-                      <span>{user.merchant_tnc.link}</span> <i class="i i-external-link"></i>
+                    <a href={user.merchant_tnc.link} target="_blank" rel="noopener noreferrer">
+                      <span>{user.merchant_tnc.link}</span> <i class="i i-external-link" />
                     </a>
                   </div>
                 </>
@@ -473,4 +485,8 @@ const MerchantDetails = ({
   );
 };
 
-export default connect(null, { openModal, closeModal })(RTracking()(MerchantDetails));
+export default connect(null, {
+  openModal: fnOpenModal,
+  closeModal: fnCloseModal,
+  showNotification: fnShowNotification,
+})(RTracking()(MerchantDetails));
