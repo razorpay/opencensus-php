@@ -16,10 +16,13 @@ import OrgView from './components/OrgView';
 import Header from './components/Header';
 
 const Signin = ({ onRouteChange }) => {
+  const [oneTapInfo, setOneTapInfo] = useState({
+    isExpOn: true,
+    isScriptFailed: window.isOneTapScriptFailed,
+  });
+  const [orgData, setOrgData] = useState({});
   // @TODO: Remove this after we go live
   const showNewSignIn = new URLSearchParams(window.location.search).get('newSignIn');
-
-  const [orgData, setOrgData] = useState({});
 
   useEffect(() => {
     fetchOrg()
@@ -32,41 +35,63 @@ const Signin = ({ onRouteChange }) => {
       });
   }, []);
 
+  useEffect(() => {
+    // check if Google Onetap script has successfully loaded or failed to load
+    const oneTapInfoInterval = setInterval(() => {
+      if (window.isOneTapScriptFailed !== undefined) {
+        clearInterval(oneTapInfoInterval);
+        setOneTapInfo({
+          isExpOn: true,
+          isScriptFailed: window.isOneTapScriptFailed,
+        });
+      }
+    }, 200);
+
+    return () => {
+      clearInterval(oneTapInfoInterval);
+    };
+  }, [setOneTapInfo]);
+
   const handleSignUpClick = () => {
     onRouteChange(ROUTES.SIGNUP);
   };
 
-  return (
-    <>
-      {showNewSignIn && (
-        <ThemeProvider theme={theme}>
-          <Size height="100%">
-            <Container org={orgData.orgName}>
-              <Size maxWidth="830px" height="100%">
-                <Flex flexDirection="column">
-                  <ContentContainer>
-                    <Header handleOnClick={handleSignUpClick} orgData={orgData} />
-                    <RelativeView>
-                      <DesktopOnlyView>
-                        <Space padding={[5]}>
-                          <View>
-                            {orgData.isOrgRZP ? <DefaultView /> : <OrgView orgData={orgData} />}
-                          </View>
-                        </Space>
-                      </DesktopOnlyView>
+  if (!showNewSignIn) {
+    return null;
+  }
 
-                      <AbsoluteView>
-                        <Auth appName="dashboard" theme={themeColor[orgData.orgName]} />
-                      </AbsoluteView>
-                    </RelativeView>
-                  </ContentContainer>
-                </Flex>
-              </Size>
-            </Container>
+  return (
+    <ThemeProvider theme={theme}>
+      <Size height="100%">
+        <Container org={orgData.orgName}>
+          <Size maxWidth="830px" height="100%">
+            <Flex flexDirection="column">
+              <ContentContainer>
+                <Header handleOnClick={handleSignUpClick} orgData={orgData} />
+                <RelativeView>
+                  <DesktopOnlyView>
+                    <Space padding={[5]}>
+                      <View>
+                        {orgData.isOrgRZP ? <DefaultView /> : <OrgView orgData={orgData} />}
+                      </View>
+                    </Space>
+                  </DesktopOnlyView>
+
+                  <AbsoluteView>
+                    <Auth
+                      appName="dashboard"
+                      authClientId={window.OAUTH_CLIENT_ID}
+                      oneTapInfo={oneTapInfo}
+                      theme={themeColor[orgData.orgName]}
+                    />
+                  </AbsoluteView>
+                </RelativeView>
+              </ContentContainer>
+            </Flex>
           </Size>
-        </ThemeProvider>
-      )}
-    </>
+        </Container>
+      </Size>
+    </ThemeProvider>
   );
 };
 export default Signin;
