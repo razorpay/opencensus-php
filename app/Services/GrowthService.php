@@ -1,0 +1,145 @@
+<?php
+
+
+namespace RZP\Services;
+
+use App;
+use ApiResponse;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Http\Request\Requests;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use Throwable;
+
+class GrowthService extends Base\Service
+{
+    const CONTENT_TYPE_JSON = 'application/json';
+
+    const GET_ASSET_URL              = 'twirp/rzp.growth.asset.v1.AssetAPI/Get';
+
+    // Tells the client what the content type of the returned content actually is
+    const CONTENT_TYPE = 'Content-Type';
+
+    // Specifies the method or methods allowed when accessing the resource in response to a preflight request.
+    const ACCESS_CONTROL_ALLOW_METHODS = 'Access-Control-Allow-Methods';
+
+    // Used in response to a preflight request which includes the Access-Control-Request-Headers to indicate which HTTP headers can be used during the actual request.
+    const ACCESS_CONTROL_ALLOW_HEADERS = 'Access-Control-Allow-Headers';
+
+    /**
+     * @var string
+     */
+    protected $baseUrl;
+
+    /**
+     * @var string
+     */
+    protected $key;
+
+    /**
+     * @var string
+     */
+    protected $secret;
+
+    /**
+     * @var string
+     */
+    protected $requestTimeout;
+
+    protected $trace;
+
+    protected $env;
+
+    public function __construct()
+    {
+        $app                  = App::getFacadeRoot();
+        $this->trace          = $app['trace'];
+        $this->env            = $app['env'];
+        $growthConfig         = $app['config']['applications.growth'];
+        $this->baseUrl        = $growthConfig['url'];
+        $this->key            = $growthConfig['username'];
+        $this->secret         = $growthConfig['secret'];
+        $this->requestTimeout = $growthConfig['request_timeout'];
+    }
+
+    public function getAssetDetails($parameters)
+    {
+        return $this->sendRequest($parameters, self::GET_ASSET_URL, Requests::POST);
+    }
+
+
+    public function sendRequest($parameters, $path, $method)
+    {
+        $requestParams = $this->getRequestParams($parameters, $path, $method);
+
+        try
+        {
+            $response = Requests::request(
+                $requestParams['url'],
+                $requestParams['headers'],
+                $requestParams['data'],
+                $requestParams['method'],
+                $requestParams['options']);
+
+            return $this->parseAndReturnResponse($response);
+        }
+        catch (Throwable $e)
+        {
+            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+        }
+    }
+
+    protected function getRequestParams($parameters, $path, $method)
+    {
+        $url = $this->baseUrl . $path;
+
+        $headers = [];
+
+        $parameters = json_encode($parameters);
+
+        $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
+
+        $options = [
+            'timeout' => $this->requestTimeout,
+            'auth'    => [$this->key, $this->secret],
+        ];
+
+        $this->trace->info(TraceCode::GROWTH_REQUEST, ['url' => $url, 'parameters' => $parameters, 'headers' => $headers]);
+
+        return [
+            'url'     => $url,
+            'headers' => $headers,
+            'data'    => $parameters,
+            'options' => $options,
+            'method'  => $method,
+        ];
+    }
+
+    protected function parseAndReturnResponse($res)
+    {
+        $code = $res->status_code;
+
+        $res = json_decode($res->body, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE)
+        {
+            throw new Exception\RuntimeException('Malformed json response');
+        }
+
+        $growthResponse = ['status_code' => $code, 'response' => $res];
+
+        return $growthResponse;
+    }
+
+    public function allowCors()
+    {
+        $response = ApiResponse::json([]);
+
+        $response->headers->set(self::ACCESS_CONTROL_ALLOW_METHODS, 'POST, OPTIONS' );
+
+        $response->headers->set(self::ACCESS_CONTROL_ALLOW_HEADERS, self::CONTENT_TYPE);
+
+        return $response;
+    }
+}

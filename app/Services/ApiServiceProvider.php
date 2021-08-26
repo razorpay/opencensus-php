@@ -544,6 +544,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerSplitz();
 
+        $this->registerGrowth();
+
         $this->registerPspx();
     }
 
@@ -1587,6 +1589,21 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             }
 
             return new SplitzService();
+        });
+    }
+
+    protected function registerGrowth()
+    {
+        $this->app->singleton('growthService', function ($app) {
+
+            $mock = $app['config']->get('applications.growth.mock');
+
+            if ($mock === true)
+            {
+                return new RZP\Services\Mock\GrowthService();
+            }
+
+            return new GrowthService();
         });
     }
 

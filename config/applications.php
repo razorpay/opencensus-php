@@ -656,6 +656,14 @@ return [
         'request_timeout' => env('SPLITZ_REQUEST_TIMEOUT', 0.1),
     ],
 
+    'growth' => [
+        'mock'            => env('GROWTH_MOCK', false),
+        'url'             => env('GROWTH_URL'),
+        'username'        => 'api',
+        'secret'          => env('GROWTH_SECRET'),
+        'request_timeout' => env('GROWTH_REQUEST_TIMEOUT', 0.1),
+    ],
+
     'user_2fa' => [
         'max_incorrect_tries' => env('USER_2FA_MAX_INCORRECT_TRIES', 9),
     ],

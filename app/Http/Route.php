@@ -1911,6 +1911,8 @@ class Route
         'splitz_evaluate_bulk'                     => ['post',     'splitz/bulkEvaluate',                            'SplitzController@evaluateRequestBulk'                              ],
         'splitz_preflight'                         => ['options',  'splitz/evaluate',                                'SplitzController@allowCors'                                        ],
 
+        // Growth service
+        'growth_get_asset_details'                          => ['post',     'growth/assets',                                  'GrowthController@getAssetDetails'                                  ],
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@createLinkedAccount'                             ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -6691,6 +6693,7 @@ class Route
         'payout_links_verify_customer_otp_demo_cors',
         'payout_links_initiate_demo',
         'payout_links_initiate_demo_cors',
+        'growth_get_asset_details',
     ];
 
     /**

@@ -1,0 +1,40 @@
+<?php
+
+
+namespace RZP\Http\Controllers;
+
+use Request;
+use Requests;
+use ApiResponse;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+
+class GrowthController extends Controller
+{
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    public function getAssetDetails(){
+        $parameters = Request::all();
+        $response = [];
+
+        try {
+            if (empty($parameters) === false)
+            {
+
+                $response = $this->app->growthService->getAssetDetails($parameters);
+
+                $response = ApiResponse::json($response);
+
+            }
+        } catch (\Throwable $e)
+        {
+            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+        }
+
+        return $response;
+    }
+}

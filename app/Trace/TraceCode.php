@@ -2624,6 +2624,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RAZORX_BULK_REQUEST_EXCEPTION                         = 'RAZORX_BULK_REQUEST_EXCEPTION';
 
     const SPLITZ_REQUEST                                        = 'SPLITZ_REQUEST';
+    const GROWTH_REQUEST                                        = 'GROWTH_REQUEST';
     const SEGMENTATION_CONFIG                                   = 'SEGMENTATION_CONFIG';
     const AWS_CACHE_EXCEPTION                                   = 'AWS_CACHE_EXCEPTION';
 
