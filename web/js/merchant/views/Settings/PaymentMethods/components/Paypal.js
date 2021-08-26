@@ -3,14 +3,14 @@ import PaypalOnboardingButton from 'merchant/views/Settings/Configuration/Paypal
 import { getIcon } from './InstrumentIcons';
 import { GREYED } from '../constants';
 import { getClassName, getStatusMessage } from '../../Configuration/InternationalPayments';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import { Popover, PopoverBody } from 'common/ui/Popover';
 import { connect } from 'react-redux';
 
 const Paypal = ({ instrument, terminals }) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
-  let disabled = status === GREYED;
-  let status = terminals.length && terminals[0].terminal.status;
-  let showStatus = ['created', 'activated', 'permission_missing', 'pending'].includes(status);
+  const [status, setStatus] = useState(terminals.length && terminals[0].terminal.status);
+  const disabled = status === GREYED;
+  const showStatus = ['created', 'activated', 'permission_missing', 'pending'].includes(status);
 
   return (
     <li class="paypal-leaf-item">

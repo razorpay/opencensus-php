@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 import InternationalCards from './InternationalCards';
 import PaypalOnboardingButton from './PaypalOnboarding';
 import { DocLink } from 'merchant/components/DocsLink';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import { Popover, PopoverBody } from 'common/ui/Popover';
 
 export const getClassName = (status) => {
   if (status === 'activated') {
@@ -12,6 +12,7 @@ export const getClassName = (status) => {
   if (['pending', 'created', 'permission_missing'].includes(status)) {
     return 'warning';
   }
+  return '';
 };
 
 export const getStatusMessage = (status) => {
@@ -34,6 +35,7 @@ export const getStatusMessage = (status) => {
           <a
             href="https://www.paypal.com/in/smarthelp/contact-us"
             target="_blank"
+            rel="noopener noreferrer"
             className={`support-link status-${getClassName(status)}`}
           >
             PayPal customer support <i class="i i-external-link" />
@@ -44,6 +46,8 @@ export const getStatusMessage = (status) => {
 
     case 'created':
       return 'Please verify the confirmation email sent by Paypal to your registered email id. Email verification can take upto 24 hours to update.';
+    default:
+      return '';
   }
 };
 
@@ -60,6 +64,7 @@ const InternationalPayments = ({ mode, user, config, org, paypal_terminals }) =>
         <span class="title">International Payments</span>
         <a
           target="_blank"
+          rel="noopener noreferrer"
           class="know-more-link"
           href={
             org.custom_code === 'axis'
@@ -88,8 +93,8 @@ const InternationalPayments = ({ mode, user, config, org, paypal_terminals }) =>
 };
 
 const PaypalWrapper = ({ terminals }) => {
-  let status = terminals.length && terminals[0].terminal.status;
-  let showStatus = ['created', 'activated', 'permission_missing', 'pending'].includes(status);
+  const status = terminals.length && terminals[0].terminal.status;
+  const showStatus = ['created', 'activated', 'permission_missing', 'pending'].includes(status);
   return (
     <div class="paypal-auto-onboarding" id="paypal-auto-onboarding">
       <div class="heading">

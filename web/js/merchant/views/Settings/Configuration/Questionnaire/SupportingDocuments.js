@@ -8,6 +8,7 @@ import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { defaultFileTypes, getAvailableFileTypes } from './utils';
 
+// eslint-disable-next-line no-shadow
 const SupportingDocuments = ({ disabled, saveFormData, showNotification }) => {
   const formikProps = useFormikContext();
   const [availableFileTypes, preUploadedDocuments] = getAvailableFileTypes(formikProps);
@@ -19,8 +20,8 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification }) => {
     (!!formikProps.status ? formikProps.status[name] : '');
 
   useEffect(() => {
-    const [availableFileTypes, _] = getAvailableFileTypes(formikProps);
-    setFileTypes(availableFileTypes);
+    const [_availableFileTypes] = getAvailableFileTypes(formikProps);
+    setFileTypes(_availableFileTypes);
   }, [formikProps.values.accepts_intl_txns]);
 
   const handleAddDocument = (event) => {
@@ -39,7 +40,7 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification }) => {
     setFileTypes(updatedFileTypes);
   };
 
-  const removeFileType = (docType, docId) => {
+  const removeFileType = (docType) => {
     setDocuments((docs) => docs.filter((d) => d.name !== docType));
 
     // Adding file type back
@@ -62,7 +63,7 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification }) => {
       .then((res) => {
         if (res.data) {
           const isOtherDocument =
-            defaultFileTypes.filter((fileTypes) => fileTypes.name === docType).length === 0;
+            defaultFileTypes.filter((_fileTypes) => _fileTypes.name === docType).length === 0;
 
           const docData = {
             id: res.data.id,
@@ -104,7 +105,7 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification }) => {
 
   const handleFileRemoval = (docId, docType) => {
     const isOtherDocument =
-      defaultFileTypes.filter((fileTypes) => fileTypes.name === docType).length === 0;
+      defaultFileTypes.filter((_fileTypes) => _fileTypes.name === docType).length === 0;
 
     let documentObject;
     if (
@@ -143,7 +144,7 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification }) => {
         defaultValue={formikProps.values.accepts_intl_txns}
         propagatedError={getError('accepts_intl_txns')}
       />
-      <div class="spacer"></div>
+      <div class="spacer" />
       <Input
         name="import_export_code"
         label="Import Export Code"
@@ -262,7 +263,7 @@ const AddOtherDoc = ({
             type="text"
             placeholder={placeholder}
             value={input}
-            maxlength="50"
+            maxLength="50"
             onChange={(e) => setInput(e.target.value)}
             autoFocus
           />

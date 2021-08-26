@@ -14,7 +14,7 @@ const MultiSelect = ({
   disabled,
   additionalFieldMaxLength,
 }) => {
-  const [field, meta, helpers] = useField(name);
+  const [meta, helpers] = useField(name);
   const { value: fieldValue, touched } = meta;
   const [selected, setSelected] = useState(fieldValue || []);
   const additionalData = selected.filter((item) => !options.includes(item))[0];
@@ -68,9 +68,9 @@ const MultiSelect = ({
             return (
               <div class="trigger">
                 <p style={{ padding: '10px' }}>
-                  {selected.length ? selected.length + ' items selected' : placeholder}
+                  {selected.length ? `${selected.length} items selected` : placeholder}
                 </p>
-                <i class={`i ${select.isOpen ? 'i-arrow-up' : 'i-arrow-down'}`}></i>
+                <i class={`i ${select.isOpen ? 'i-arrow-up' : 'i-arrow-down'}`} />
               </div>
             );
           }}
@@ -92,7 +92,7 @@ const MultiSelect = ({
             );
           }}
           afterOptionsComponent={({ select }) => {
-            const handleInputChange = function (e) {
+            const handleInputChange = (e) => {
               setAdditionalField(e.target.value);
             };
             return (
@@ -101,7 +101,7 @@ const MultiSelect = ({
                   {takeInput ? (
                     <input
                       type="text"
-                      placeholder={'Enter details here'}
+                      placeholder="Enter details here"
                       name={`${name}_extra`}
                       defaultValue={additionalField}
                       onChange={handleInputChange}
@@ -112,7 +112,7 @@ const MultiSelect = ({
                     <div>
                       <span>{additionalField}</span>
                       <span onClick={() => setTakeInput(true)}>
-                        <i class="i i-edit"></i>
+                        <i class="i i-edit" />
                       </span>
                     </div>
                   ) : (

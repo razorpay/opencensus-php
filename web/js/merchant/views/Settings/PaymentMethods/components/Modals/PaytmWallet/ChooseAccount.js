@@ -1,5 +1,4 @@
 import React from 'react';
-import Input from 'common/new-ui/Input';
 import Form from 'common/new-ui/Form';
 
 export const ChooseAccount = ({ values, setValues }) => {
@@ -41,7 +40,7 @@ export const ChooseAccount = ({ values, setValues }) => {
       </Form>
       {!values.has_account && (
         <div className="register-account">
-          <div className="blue-bar"></div>
+          <div className="blue-bar" />
           <p>
             Register for a Paytm Business Account on{' '}
             <a href="https://dashboard.paytm.com" rel="noreferrer">

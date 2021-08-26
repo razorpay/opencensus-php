@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -10,6 +11,7 @@ import Button from 'common/new-ui/Button';
 
 import OwnerUpdated from './OwnerUpdatedModal';
 
+// eslint-disable-next-line
 const DifferentTeam = ({ newEmail, setContactEmail, openModal, closeModal, user, updateOwner }) => {
   const onProceedClick = () => {
     openModal({

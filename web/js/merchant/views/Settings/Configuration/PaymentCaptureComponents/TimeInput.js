@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 
 export default class TimeInput extends Component {
   constructor(props) {
@@ -7,28 +7,28 @@ export default class TimeInput extends Component {
     this.minutesInput = React.createRef();
   }
 
-  handleDaysChange = e => {
-    let _val = e.target.value;
+  handleDaysChange = (e) => {
+    const _val = e.target.value;
 
     if (_val >= 6) return;
-
-    _val.length >= 1 ? this.hrInput.current.focus() : null;
+    if (_val.length >= 1) this.hrInput.current.focus();
     this.props.handleValueChange(_val, 'days');
   };
 
-  handleHoursChange = e => {
+  handleHoursChange = (e) => {
     let _val = e.target.value;
 
     if (_val >= 24 || _val === 0) return;
 
     if (_val >= 3 && _val <= 9) _val = `0${_val}`;
 
-    _val.length >= 2 ? this.minutesInput.current.focus() : null;
+    if (_val.length >= 2) this.minutesInput.current.focus();
+
     this.props.handleValueChange(_val, 'hrs');
   };
 
-  handleMinutesChange = e => {
-    let _val = e.target.value;
+  handleMinutesChange = (e) => {
+    const _val = e.target.value;
 
     if (_val >= 61) return;
 

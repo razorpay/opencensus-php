@@ -1,26 +1,21 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { getOnboardingStatus, onboardTerminal } from 'merchant/reducers/config';
+import { Popover, PopoverBody } from 'common/ui/Popover';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { getClassName, getStatusMessage } from './InternationalPayments';
 
 class PaypalOnboardingButton extends Component {
-  constructor(props) {
-    super(props);
-  }
   is_redirected = false;
   state = {
     loading: false,
-    terminals: [],
   };
 
   getOnboardingStatus = () => {
     return this.props
       .getOnboardingStatus('wallet_paypal')
-      .then((res) => {
-        this.setState({ terminals: res.data });
+      .then(() => {
         return Promise.resolve();
       })
       .catch((err) => {
@@ -37,8 +32,8 @@ class PaypalOnboardingButton extends Component {
       .then((res) => {
         const w = 520;
         const h = 570;
-        var left = screen.width / 2 - w / 2;
-        var top = screen.height / 2 - h / 2;
+        const left = screen.width / 2 - w / 2;
+        const top = screen.height / 2 - h / 2;
 
         const win = window.open(
           res.data.links,
@@ -56,16 +51,15 @@ class PaypalOnboardingButton extends Component {
           win.window.focus();
         }
 
-        var interval = setInterval(() => {
+        const interval = setInterval(() => {
           if (win && win.closed) {
             if (this.is_redirected) {
               onboardTerminal('wallet_paypal').finally(() => {
                 this.props
                   .getOnboardingStatus('wallet_paypal')
                   .then(() => this.props.getOnboardingStatus('wallet_paypal'))
-                  .then((res) => {
+                  .then(() => {
                     this.setState({
-                      terminals: res.data.items,
                       loading: false,
                     });
                   });
@@ -92,113 +86,113 @@ class PaypalOnboardingButton extends Component {
   }
 
   render() {
-    let {
+    const {
       disabled,
       disabledText,
       terminals,
       showLogo,
       user,
+      /* eslint-disable no-shadow */
       openModal,
       closeModal,
+      /* eslint-disable no-shadow */
       isInternationalPayment = false,
     } = this.props;
 
-    let status = terminals.length && terminals[0].terminal.status;
-    let showLinkButtonOnly = status === 'requested' || terminals.length === 0;
+    const status = terminals.length && terminals[0].terminal.status;
+    const showLinkButtonOnly = status === 'requested' || terminals.length === 0;
     return (
-      <React.Fragment>
-        <div className={showLinkButtonOnly ? 'link-account' : 'change-account'}>
-          {isInternationalPayment && !showLinkButtonOnly && status !== 'activated' && (
-            <div className="change-account-action">
-              <p>
-                {/* <i className="i i-user-circle" style={{ margin: '10px 25px 0px 7px' }}></i>{' '}
+      <div className={showLinkButtonOnly ? 'link-account' : 'change-account'}>
+        {isInternationalPayment && !showLinkButtonOnly && status !== 'activated' && (
+          <div className="change-account-action">
+            <p>
+              {/* <i className="i i-user-circle" style={{ margin: '10px 25px 0px 7px' }}></i>{' '}
                 {user.email} */}
-              </p>
-              <a
-                onClick={() =>
-                  openModal({
-                    size: 'small',
-                    className: 'change-account-modal',
-                    component: (
-                      <ChangeAccountModal
-                        changeAccount={this.verifyAccount}
-                        onClose={closeModal}
-                        user={user}
-                      />
-                    ),
-                  })
-                }
-              >
-                Change Account
-              </a>
-            </div>
-          )}
-
-          {['pending', 'created', 'permission_missing'].includes(status) && (
-            <p className={`status status-${getClassName(status)}`}>
-              <i className="i i-info-circle" /> {getStatusMessage(status)}
             </p>
-          )}
-          {showLinkButtonOnly ? (
-            <>
-              <button
-                disabled={this.state.loading || disabled}
-                onClick={this.verifyAccount}
-                className="btn btn-primary paypal-onboard-button"
-              >
-                {' '}
-                {showLogo && (
-                  <img
-                    className="paypal-onboard-img"
-                    src="https://cdn.razorpay.com/static/assets/paypal.svg"
-                  />
-                )}
-                {this.state.loading ? 'Processing..' : 'Link Account'}
-              </button>
-              {disabled && (
-                <Popover align="right" theme="dark">
-                  <PopoverBody>
-                    <div className="disabled-text">{disabledText}</div>
-                  </PopoverBody>
-                </Popover>
+            <a
+              onClick={() =>
+                openModal({
+                  size: 'small',
+                  className: 'change-account-modal',
+                  component: (
+                    <ChangeAccountModal
+                      changeAccount={this.verifyAccount}
+                      onClose={closeModal}
+                      user={user}
+                    />
+                  ),
+                })
+              }
+            >
+              Change Account
+            </a>
+          </div>
+        )}
+
+        {['pending', 'created', 'permission_missing'].includes(status) && (
+          <p className={`status status-${getClassName(status)}`}>
+            <i className="i i-info-circle" /> {getStatusMessage(status)}
+          </p>
+        )}
+        {showLinkButtonOnly ? (
+          <>
+            <button
+              disabled={this.state.loading || disabled}
+              onClick={this.verifyAccount}
+              className="btn btn-primary paypal-onboard-button"
+            >
+              {' '}
+              {showLogo && (
+                <img
+                  className="paypal-onboard-img"
+                  src="https://cdn.razorpay.com/static/assets/paypal.svg"
+                />
               )}
-            </>
-          ) : null}
-          {!isInternationalPayment && !showLinkButtonOnly && status !== 'activated' && (
-            <div className="change-account-action">
-              {/* <p style={{ fontStyle: 'italic', fontSize: '12px' }}>{user.email}</p> */}
-              <a
-                onClick={() =>
-                  openModal({
-                    size: 'small',
-                    className: 'change-account-modal',
-                    component: (
-                      <ChangeAccountModal
-                        changeAccount={this.verifyAccount}
-                        onClose={closeModal}
-                        user={user}
-                      />
-                    ),
-                  })
-                }
-              >
-                Change Account
-              </a>
-            </div>
-          )}
-        </div>
-      </React.Fragment>
+              {this.state.loading ? 'Processing..' : 'Link Account'}
+            </button>
+            {disabled && (
+              <Popover align="right" theme="dark">
+                <PopoverBody>
+                  <div className="disabled-text">{disabledText}</div>
+                </PopoverBody>
+              </Popover>
+            )}
+          </>
+        ) : null}
+        {!isInternationalPayment && !showLinkButtonOnly && status !== 'activated' && (
+          <div className="change-account-action">
+            {/* <p style={{ fontStyle: 'italic', fontSize: '12px' }}>{user.email}</p> */}
+            <a
+              onClick={() =>
+                openModal({
+                  size: 'small',
+                  className: 'change-account-modal',
+                  component: (
+                    <ChangeAccountModal
+                      changeAccount={this.verifyAccount}
+                      onClose={closeModal}
+                      user={user}
+                    />
+                  ),
+                })
+              }
+            >
+              Change Account
+            </a>
+          </div>
+        )}
+      </div>
     );
   }
 }
 
 const ChangeAccountModal = (props) => {
-  const { changeAccount, onClose, user } = props;
+  const { changeAccount, onClose } = props;
   return (
     <div>
       <div className="header">
         <p className="title">Change Paypal Account</p>
-        <i className="i i-close" onClick={() => onClose()}></i>
+        <i className="i i-close" onClick={() => onClose()} />
       </div>
       <div className="body">
         {/* <div className="status">

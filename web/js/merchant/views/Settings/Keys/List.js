@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React from 'react';
+import { compose } from 'redux';
 import { connect } from 'react-redux';
 import Alert from 'common/ui/Forms/Alert';
 import RTracking from 'react-tracking';
@@ -14,18 +15,8 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
 
-@connect(
-  (state) => {
-    return {
-      keys: state.keys,
-      session: state.session,
-    };
-  },
-  { ...KeyActions, ...ModalActions, ...NotificationsActions },
-)
-@RTracking(() => window.rzpQ.component('KeysListContainer'))
-export default class KeysListContainer extends ListContainer {
-  fetchEntityList(params) {
+class KeysListContainer extends ListContainer {
+  fetchEntityList() {
     return this.props.fetchKeys(
       { mode: this.props.session.mode },
       this.props.session.user.has_key_access,
@@ -60,7 +51,7 @@ export default class KeysListContainer extends ListContainer {
     return this.props
       .generateKey(params)
       .then((response) => {
-        var key = response.new || response;
+        const key = response.new || response;
 
         this.props.showNotification({
           type: 'success',
@@ -98,11 +89,11 @@ export default class KeysListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, keys } = this.props.keys;
-    let mode = this.props.session.modeFormatted;
-    let status = this.state.status;
-    let hasKeyAccess = this.props.session.user.has_key_access;
-    let businessWebsite = this.props.session.user.business_website;
+    const { loading, keys } = this.props.keys;
+    const mode = this.props.session.modeFormatted;
+    const status = this.state.status;
+    const hasKeyAccess = this.props.session.user.has_key_access;
+    const businessWebsite = this.props.session.user.business_website;
     const { isWebsiteInWorkflow, onWebsiteAdd } = this.props;
 
     return (
@@ -127,3 +118,17 @@ export default class KeysListContainer extends ListContainer {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        keys: state.keys,
+        session: state.session,
+      };
+    },
+    { ...KeyActions, ...ModalActions, ...NotificationsActions },
+  ),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('KeysListContainer')),
+)(KeysListContainer);

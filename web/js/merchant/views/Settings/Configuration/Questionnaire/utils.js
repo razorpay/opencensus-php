@@ -129,12 +129,11 @@ export const tabsData = [
 export const modelFormData = (data) => {
   // handle min max values
   if (data.monthly_sales_intl_cards_min && data.monthly_sales_intl_cards_max) {
-    data.monthly_sales_intl_cards =
-      data.monthly_sales_intl_cards_min + '=' + data.monthly_sales_intl_cards_max;
+    data.monthly_sales_intl_cards = `${data.monthly_sales_intl_cards_min}=${data.monthly_sales_intl_cards_max}`;
   }
 
   if (data.business_txn_size_min && data.business_txn_size_max) {
-    data.business_txn_size = data.business_txn_size_min + '=' + data.business_txn_size_max;
+    data.business_txn_size = `${data.business_txn_size_min}=${data.business_txn_size_max}`;
   }
 
   if (!data.documents) {
@@ -207,16 +206,14 @@ export const getAvailableFileTypes = (formikProps) => {
 
     if (doc) {
       preUploadedDocuments.push(it);
+    } else if (
+      accepts_intl_txns === 'true' &&
+      (it.name === 'bank_statement_inward_remittance' ||
+        it.name === 'current_payment_partner_settlement_record')
+    ) {
+      // do nothing
     } else {
-      if (
-        accepts_intl_txns === 'true' &&
-        (it.name === 'bank_statement_inward_remittance' ||
-          it.name === 'current_payment_partner_settlement_record')
-      ) {
-        // do nothing
-      } else {
-        availableFileTypes.push(it);
-      }
+      availableFileTypes.push(it);
     }
   });
 

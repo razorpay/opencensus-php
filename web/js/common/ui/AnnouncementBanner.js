@@ -40,7 +40,6 @@ export const BANNER_THEMES = {
   },
 };
 
-@RTracking(() => window.rzpQ.component('DashboardBanner'))
 class Announcement extends Component {
   constructor(props) {
     super(props);
@@ -187,4 +186,4 @@ Announcement.propTypes = {
   title: PropTypes.string,
 };
 
-export default Announcement;
+export default RTracking(() => window.rzpQ.component('DashboardBanner'))(Announcement);

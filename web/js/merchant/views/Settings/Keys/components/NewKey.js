@@ -1,12 +1,10 @@
 import { Component } from 'react';
+import { compose } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import ModalHeader from 'common/ui/ModalHeader';
 import Alert from 'common/ui/Forms/Alert';
-import { isBlank } from 'common/utils/rzp-utils';
-import { saveInvoice } from 'merchant/reducers/invoices/list';
-import { required, phone, email } from 'common/utils/validators';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ajax from 'merchant/utils/ajax';
@@ -14,17 +12,13 @@ import fileDownload from 'common/utils/file-download';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-@connect((state) => state.session, { closeModal, showNotification })
-@reduxForm({
-  form: 'newKeyModal',
-})
-export default class NewKey extends Component {
+class NewKey extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
 
-  constructor() {
-    super(...arguments);
+  constructor(props) {
+    super(props);
     this.state = {
       errors: null,
     };
@@ -40,7 +34,7 @@ export default class NewKey extends Component {
     }
   }
 
-  save = (props) => {
+  save = () => {
     this.context.confirm({
       message:
         'Are you sure you have saved the key details? ' +
@@ -74,8 +68,7 @@ export default class NewKey extends Component {
   };
 
   render() {
-    const { handleSubmit, apiKey } = this.props;
-    const key = apiKey;
+    const { handleSubmit } = this.props;
 
     analyticsTrack({
       objectName: 'new key popup',
@@ -135,3 +128,10 @@ export default class NewKey extends Component {
     );
   }
 }
+
+export default compose(
+  connect((state) => state.session, { closeModal, showNotification }),
+  reduxForm({
+    form: 'newKeyModal',
+  }),
+)(NewKey);

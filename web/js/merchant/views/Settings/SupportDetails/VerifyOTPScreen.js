@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import RTracking from 'react-tracking';
@@ -9,7 +9,7 @@ import {
   trackSupportDetailPopupClose,
 } from 'merchant/containers/Home/ga';
 import { merchantFetch } from 'merchant/utils/ajax';
-import OtpInput from 'common/new-ui/Input/OtpInput';
+import { OtpInput } from 'common/new-ui/Input/OtpInput';
 import { AsyncBtn } from 'common/new-ui/Button';
 
 const VerifyOTP = ({
@@ -18,7 +18,9 @@ const VerifyOTP = ({
   url,
   closeModal,
   reset,
+  // eslint-disable-next-line no-shadow
   createSupportDetail,
+  // eslint-disable-next-line no-shadow
   showNotification,
   supportDetail,
   tracking,
@@ -29,14 +31,13 @@ const VerifyOTP = ({
   const [wrongPhoneOtp, setWrongPhoneOtp] = useState(false);
   const [isVerified, setIsVerfied] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-  const [isResent, setIsResent] = useState(false);
 
-  const EMAIL = 0,
-    PHONE = 1;
+  const EMAIL = 0;
+  const PHONE = 1;
 
   // const shouldRenderEmailSection = !!email,   /* to be enabled later */
-  const shouldRenderEmailSection = false,
-    shouldRenderPhoneSection = phone !== supportDetail.data.phone;
+  const shouldRenderEmailSection = false;
+  const shouldRenderPhoneSection = phone !== supportDetail.data.phone;
 
   const onSubmit = () => {
     return createSupportDetail({ email, url, phone })
@@ -48,9 +49,9 @@ const VerifyOTP = ({
           });
         }
         trackSupportDetailSubmitAction({
-          email: `${email ? true : false}`,
-          url: `${url ? true : false}`,
-          phone: `${phone ? true : false}`,
+          email: `${!!email}`,
+          url: `${!!url}`,
+          phone: `${!!phone}`,
         });
 
         tracking.trackEvent(
@@ -103,7 +104,8 @@ const VerifyOTP = ({
       })
       .catch((err) => {
         setIsVerifyingOtp(false);
-        context === PHONE ? setWrongPhoneOtp(true) : setWrongEmailOtp(true);
+        if (context === PHONE) setWrongPhoneOtp(true);
+        else setWrongEmailOtp(true);
         showNotification({
           type: 'error',
           message: err.errors ? err.errors[0] : 'Some error occured. Please refresh',
@@ -112,8 +114,9 @@ const VerifyOTP = ({
   };
 
   const sendOtp = () => {
-    const url = 'otp/send',
-      method = 'POST';
+    // eslint-disable-next-line no-shadow
+    const url = 'otp/send';
+    const method = 'POST';
 
     if (shouldRenderEmailSection) {
       const body = {
@@ -154,6 +157,7 @@ const VerifyOTP = ({
           });
         });
     }
+    return null;
   };
 
   const renderOtpSection = (context) => (
@@ -171,8 +175,9 @@ const VerifyOTP = ({
         onComplete={(otpInput) => {
           verifyOtp(otpInput, context);
         }}
-        onChange={(otpInput) => {
-          context === PHONE ? setWrongPhoneOtp(false) : setWrongEmailOtp(false);
+        onChange={() => {
+          if (context === PHONE) setWrongPhoneOtp(false);
+          else setWrongEmailOtp(false);
         }}
         wrong={context === EMAIL ? wrongEmailOtp : wrongPhoneOtp}
         autoFocus={false}
@@ -195,6 +200,7 @@ const VerifyOTP = ({
     if (shouldRenderEmailSection && shouldRenderPhoneSection) return 'Verify your Details';
     if (shouldRenderEmailSection) return 'Verify your E-Mail';
     if (shouldRenderPhoneSection) return 'Verify your Support Number';
+    return '';
   };
 
   useEffect(() => {
@@ -232,12 +238,13 @@ const VerifyOTP = ({
         disabled={!isVerified}
       >
         {isVerifyingOtp ? 'Verifying...' : 'Submit'}
-        </AsyncBtn.Primary>
+      </AsyncBtn.Primary>
     </div>
   );
 };
 
 export default compose(
   connect(null, { showNotification, createSupportDetail }),
+  // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('MerchantDataCollectionModal')),
 )(VerifyOTP);

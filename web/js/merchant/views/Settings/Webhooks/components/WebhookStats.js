@@ -27,13 +27,15 @@ const metricOptions = [
   { label: 'Response Time', name: 'latency' },
 ];
 
-@connect(
-  (state) => ({
-    stats: state.webhooks.stats,
-  }),
-  { fetchStats },
-)
-export default class WebhookStats extends React.Component {
+const metricMap = {
+  '0.99': { label: '99 Percentile', color: namedColors.blue },
+  '0.95': { label: '95 Percentile', color: namedColors.brown },
+  mean: { label: 'Average', color: namedColors.orange },
+  success: { label: 'Successfull Events', color: namedColors.blue },
+  fail: { label: 'Failed Events', color: namedColors.red },
+};
+
+class WebhookStats extends React.Component {
   formValues = {
     metricType: DEFAULT_METRIC,
     timePeriod: DEFAULT_TIME_PERIOD,
@@ -70,6 +72,8 @@ export default class WebhookStats extends React.Component {
         startTime = now.subtract(7, 'days').format('X');
         granularity = 'hour';
         break;
+      default:
+        return null;
     }
 
     const options = {
@@ -161,14 +165,6 @@ const periodStepSizeMap = {
   last3Days: 12,
 };
 
-const metricMap = {
-  '0.99': { label: '99 Percentile', color: namedColors.blue },
-  '0.95': { label: '95 Percentile', color: namedColors.brown },
-  mean: { label: 'Average', color: namedColors.orange },
-  success: { label: 'Successfull Events', color: namedColors.blue },
-  fail: { label: 'Failed Events', color: namedColors.red },
-};
-
 function getChartOptions(formValues, timeStamps) {
   return {
     scales: getScaleOptions(formValues, timeStamps),
@@ -185,8 +181,9 @@ function getChartOptions(formValues, timeStamps) {
       position: 'nearest',
       callbacks: {
         label: (item, data) =>
-          `${data.datasets[item.datasetIndex].label}: ` +
-          (formValues.metricType === 'response_status' ? item.yLabel : getYAxesLabel(item.yLabel)),
+          `${data.datasets[item.datasetIndex].label}: ${
+            formValues.metricType === 'response_status' ? item.yLabel : getYAxesLabel(item.yLabel)
+          }`,
         labelColor: (item, chart) => {
           const color = chart.config.data.datasets[item.datasetIndex].borderColor;
           return { backgroundColor: color, borderColor: color };
@@ -271,11 +268,11 @@ function getYAxes(metric) {
 
 function getYAxesLabel(value) {
   if (value <= 500) {
-    return value + ' ms';
+    return `${value} ms`;
   } else if (value > 500 && value < MS_IN_ONE_MIN) {
-    return value / 1000 + ' s';
+    return `${value / 1000} s`;
   } else {
-    return value / MS_IN_ONE_MIN + ' min';
+    return `${value / MS_IN_ONE_MIN} min`;
   }
 }
 
@@ -300,13 +297,14 @@ function getMetricName(nameContainer, metricType) {
   return nameContainer[nameKey];
 }
 
-function getLabelObject(labelsFromApi, metric) {
-  const labelDisplayValue = metricMap[labelFromAPi].label;
-
-  return { labelFromAPi, labelDisplayValue };
-}
-
 function floorTo30Min(time) {
   const unixEpoch = time.format('X');
   return unixEpoch - (unixEpoch % SECONDS_IN_30_MIN);
 }
+
+export default connect(
+  (state) => ({
+    stats: state.webhooks.stats,
+  }),
+  { fetchStats },
+)(WebhookStats);

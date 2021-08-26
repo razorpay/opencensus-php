@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { createPopup } from '@typeform/embed';
 
 import User from 'merchant/models/User';
@@ -10,13 +11,13 @@ import { updateSession } from 'merchant/reducers/session';
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import { fetchSchedule } from 'merchant/reducers/settlements/details';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, isPresent } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { isPresent } from 'common/utils/rzp-utils';
-import LocalStorageService from 'common/utils/localStorage';
 
-import RequestInitiateModal from './components/InternationalConfigComponents/RequestInitiateModal.js';
-import RequestSubmittedModal from './components/InternationalConfigComponents/RequestSubmittedModal.js';
+import { getItem, setItem } from 'common/utils/localStorage';
+
+import RequestInitiateModal from './components/InternationalConfigComponents/RequestInitiateModal';
+import RequestSubmittedModal from './components/InternationalConfigComponents/RequestSubmittedModal';
 import Questionnaire from './Questionnaire';
 
 const NO_ACTION_RECEIVED = 'no_action_received';
@@ -44,9 +45,11 @@ function withInternationalConfig(WrappedComponent) {
   class InternationalConfig extends React.Component {
     constructor(props) {
       super(props);
+      const currentMID = props.user.current;
       this.internationalSection = React.createRef();
+      const isAccessRequested = getItem(`international-access-requested-${currentMID}`);
       this.state = {
-        isAccessRequested: false,
+        isAccessRequested,
         pgProductStatus: '', // Payment Gateway
         otherProductsStatus: '', // otherProducts = Payment Pages, Payment Links, Invoices
         requestedAccessFrom: '',
@@ -88,10 +91,6 @@ function withInternationalConfig(WrappedComponent) {
     }
 
     async componentDidMount() {
-      const currentMID = this.props.user.current;
-      const isAccessRequested = LocalStorageService.getItem(
-        `international-access-requested-${currentMID}`,
-      );
       this.getQuestionnaireCompletion();
 
       try {
@@ -114,10 +113,6 @@ function withInternationalConfig(WrappedComponent) {
         });
       }
 
-      this.setState({
-        isAccessRequested: !!isAccessRequested,
-      });
-
       this.props
         .fetchAddWebsiteWorkflowStatus()
         .then(({ data }) => {
@@ -125,7 +120,7 @@ function withInternationalConfig(WrappedComponent) {
             isWebsiteInWorkflow: data,
           });
         })
-        .catch((err) => {
+        .catch(() => {
           this.props.showNotification({
             type: 'error',
             message: 'Could not fetch website workflow status.',
@@ -138,23 +133,21 @@ function withInternationalConfig(WrappedComponent) {
     setInternationalFlowStatusForProducts = (internationalWorkflowStatus) => {
       const currentMID = this.props.user.current;
 
-      const isPGStatusSetInLocalStorage = !!LocalStorageService.getItem(
-        `international-pg-${currentMID}`,
-      );
-      const isOtherProductsStatusInLocalStorage = !!LocalStorageService.getItem(
+      const isPGStatusSetInLocalStorage = !!getItem(`international-pg-${currentMID}`);
+      const isOtherProductsStatusInLocalStorage = !!getItem(
         `international-otherProducts-${currentMID}`,
       );
 
       let pgProductStatus = '';
       let otherProductsStatus = '';
 
-      pgProductStatus = internationalWorkflowStatus['payment_gateway'];
+      pgProductStatus = internationalWorkflowStatus.payment_gateway;
 
       if (pgProductStatus === NO_ACTION_RECEIVED && isPGStatusSetInLocalStorage) {
         pgProductStatus = IN_REVIEW;
       }
 
-      otherProductsStatus = internationalWorkflowStatus['payment_links'];
+      otherProductsStatus = internationalWorkflowStatus.payment_links;
 
       if (otherProductsStatus === NO_ACTION_RECEIVED && isOtherProductsStatusInLocalStorage) {
         otherProductsStatus = IN_REVIEW;
@@ -237,9 +230,9 @@ function withInternationalConfig(WrappedComponent) {
       const currentMID = this.props.user.current;
 
       if (requestedAccessFrom === 'requestedFromHeader') {
-        LocalStorageService.setItem(`international-access-requested-${currentMID}`, true);
+        setItem(`international-access-requested-${currentMID}`, true);
       } else {
-        LocalStorageService.setItem(`international-${requestedAccessFrom}-${currentMID}`, true);
+        setItem(`international-${requestedAccessFrom}-${currentMID}`, true);
       }
 
       let stateKeyToUpdate = '';
@@ -328,9 +321,7 @@ function withInternationalConfig(WrappedComponent) {
     hasRequestedAccessForProduct = (product) => {
       const currentMID = this.props.user.current;
 
-      const isProductAccessRequested = LocalStorageService.getItem(
-        `international-${product}-${currentMID}`,
-      );
+      const isProductAccessRequested = getItem(`international-${product}-${currentMID}`);
 
       return this.isStatusUpdatedForProduct(product) || isPresent(isProductAccessRequested);
     };
@@ -451,22 +442,18 @@ function withInternationalConfig(WrappedComponent) {
         } else {
           line = 'Please submit your KYC form to request access.';
         }
-      } else {
-        if (!this.isWebsiteAdded) {
-          if (this.isInternationalWhiteList) {
-            line = 'Add a website to enable international payments.';
-          } else if (this.isInternationalGreyList) {
-            line = 'You need to add your website to request access for international payments.';
-          }
-        } else {
-          // Intl. whitelist but added website after L1 completion
-          if (this.isInternationalWhiteList && user.isAccepted) {
-            line =
-              'Your website is currently in review. International payments will be enabled once website is approved.';
-          } else if (this.isInternationalWhiteList && user.instantActivation.isL1Submitted) {
-            line = 'Please complete your KYC to enable international payments.';
-          }
+      } else if (!this.isWebsiteAdded) {
+        if (this.isInternationalWhiteList) {
+          line = 'Add a website to enable international payments.';
+        } else if (this.isInternationalGreyList) {
+          line = 'You need to add your website to request access for international payments.';
         }
+      } else if (this.isInternationalWhiteList && user.isAccepted) {
+        // Intl. whitelist but added website after L1 completion
+        line =
+          'Your website is currently in review. International payments will be enabled once website is approved.';
+      } else if (this.isInternationalWhiteList && user.instantActivation.isL1Submitted) {
+        line = 'Please complete your KYC to enable international payments.';
       }
 
       if (_isInternationalPaymentsAllowed) {
@@ -499,11 +486,11 @@ function withInternationalConfig(WrappedComponent) {
       };
 
       const config = {
-        showStatusLabel: showStatusLabel,
+        showStatusLabel,
         isKycComplete: this.isKycComplete,
-        isTogglerVisible: isTogglerVisible,
+        isTogglerVisible,
         isWebsiteAdded: this.isWebsiteAdded,
-        internationalEnabled: internationalEnabled,
+        internationalEnabled,
         currentStatusOnHeader: this.currentStatusOnHeader,
         maxPaymentAmount: user.merchant.max_payment_amount,
         questionnaireStatus: this.state.questionnaireStatus,

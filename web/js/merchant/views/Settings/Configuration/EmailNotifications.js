@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'common/ui/Forms/InputField';
@@ -14,22 +15,11 @@ import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorV
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { updateEmailSettings, updateConfig } from 'merchant/reducers/config';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-
-@connect((state) => 
-({
-  user: state.session.user,
-  config: state.config.config,
-  org: state.session.org,
-}),
-{ showNotification, updateEmailSettings, openModal, closeModal, updateConfig })
-
-@reduxForm({})
-export default class EmailNotifications extends Component {
- 
+class EmailNotifications extends Component {
   constructor(props) {
     super(props);
-    this.token = "";
-    this.transaction_report_email = "";
+    this.token = '';
+    this.transaction_report_email = '';
   }
 
   state = {};
@@ -53,22 +43,20 @@ export default class EmailNotifications extends Component {
       });
     });
   };
-  
 
   triggerVerificationOtp = () => {
     return triggerOtpOnEmail()
       .then(({ data }) => {
-       this.token = data.token;
+        this.token = data.token;
         this.triggerOtpModal();
       })
       .catch(({ err }) => {
         this.props.showNotification({
           type: 'error',
-          message: err.errors[0]
+          message: err.errors[0],
         });
       });
   };
-
 
   triggerOtpModal() {
     this.props.openModal({
@@ -82,7 +70,8 @@ export default class EmailNotifications extends Component {
           title="OTP Verification"
           renderMessage={() => (
             <p class="m-b">
-              The action you are trying to perform needs 2 step verification. An Email with 6- digit OTP has been sent to {this.props?.user?.user?.email}.
+              The action you are trying to perform needs 2 step verification. An Email with 6- digit
+              OTP has been sent to {this.props?.user?.user?.email}.
             </p>
           )}
         />
@@ -90,60 +79,48 @@ export default class EmailNotifications extends Component {
     });
   }
 
-
-
-
-
   handleUpdate = (data) => {
-
-    if(this.props.org.features.indexOf("email_update_2fa_enabled") > -1 ){
-
-    return this.props
-      .updateEmailSettings(data)
-      .then((_) =>
-        this.props.showNotification({
-          type: 'success',
-          message: 'Emails Updated',
-          hidePrevious: true,
-        }),
-      )
-      .catch((err) => {
-        const error = err.errors;
-        if (
-          typeof error === 'object' &&
-          !!error.internal_error_code &&
-          error.internal_error_code === 'BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED'
-        ) {
-          return this.triggerVerificationOtp();
-        } else {
+    if (this.props.org.features.indexOf('email_update_2fa_enabled') > -1) {
+      return this.props
+        .updateEmailSettings(data)
+        .then((_) =>
+          this.props.showNotification({
+            type: 'success',
+            message: 'Emails Updated',
+            hidePrevious: true,
+          }),
+        )
+        .catch((err) => {
+          const error = err.errors;
+          if (
+            typeof error === 'object' &&
+            !!error.internal_error_code &&
+            error.internal_error_code === 'BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED'
+          ) {
+            return this.triggerVerificationOtp();
+          }
+          return this.props.showNotification({
+            type: 'error',
+            message: err.errors[0],
+          });
+        });
+    } else {
+      return this.props
+        .updateConfig(data)
+        .then((_) =>
+          this.props.showNotification({
+            type: 'success',
+            message: 'Emails Updated',
+            hidePrevious: true,
+          }),
+        )
+        .catch((err) => {
           this.props.showNotification({
             type: 'error',
             message: err.errors[0],
           });
-        }
-      });
-
-    }else{
-
-      return this.props
-      .updateConfig(data)
-      .then((_) =>
-        this.props.showNotification({
-          type: 'success',
-          message: 'Emails Updated',
-          hidePrevious: true,
-        }),
-      )
-      .catch((err) => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors[0],
         });
-      });
-      
     }
-
-
   };
 
   handleSubmit = ({ transaction_report_email }) => {
@@ -155,7 +132,6 @@ export default class EmailNotifications extends Component {
       transaction_report_email: emails,
     });
   };
-  
 
   onSave = (e) => {
     this.analytics();
@@ -182,47 +158,59 @@ export default class EmailNotifications extends Component {
   render() {
     return (
       <div>
-      { this.props.user.role === rolesList.OWNER && (
-      <div class="panel panel-default ftx-parent">
-        <div class="panel-heading">
-          <span class="title">
-            <TextHighlighter hashedWith={EMAIL_NOTIF}>Email Notifications</TextHighlighter>
-          </span>
-        </div>
-
-        <div class="panel-body">
-          <form class="form-horizontal" onSubmit={this.onSave}>
-            <div class="description">
-              Enter email addresses that will receive email notifications regarding payments,
-              settlements, daily payment reports, webhooks, etc. (You can enter multiple email
-              addresses separated by a comma.)
+        {this.props.user.role === rolesList.OWNER && (
+          <div class="panel panel-default ftx-parent">
+            <div class="panel-heading">
+              <span class="title">
+                <TextHighlighter hashedWith={EMAIL_NOTIF}>Email Notifications</TextHighlighter>
+              </span>
             </div>
 
-            <div class="form-group">
-              <div class="col-sm-10">
-                <Field
-                  name="transaction_report_email"
-                  component={InputField}
-                  class="form-control"
-                  maxLength="255"
-                  validate={required()}
-                />
-              </div>
+            <div class="panel-body">
+              <form class="form-horizontal" onSubmit={this.onSave}>
+                <div class="description">
+                  Enter email addresses that will receive email notifications regarding payments,
+                  settlements, daily payment reports, webhooks, etc. (You can enter multiple email
+                  addresses separated by a comma.)
+                </div>
 
-              <div class="col-sm-2">
-                <AsyncButton
-                  class="btn btn-primary pull-right"
-                  text="Save Changes"
-                  pendingText="Saving..."
-                  onClick={this.onSave}
-                />
-              </div>
+                <div class="form-group">
+                  <div class="col-sm-10">
+                    <Field
+                      name="transaction_report_email"
+                      component={InputField}
+                      class="form-control"
+                      maxLength="255"
+                      validate={required()}
+                    />
+                  </div>
+
+                  <div class="col-sm-2">
+                    <AsyncButton
+                      class="btn btn-primary pull-right"
+                      text="Save Changes"
+                      pendingText="Saving..."
+                      onClick={this.onSave}
+                    />
+                  </div>
+                </div>
+              </form>
             </div>
-          </form>
-        </div>
-      </div>
-      )}
+          </div>
+        )}
       </div>
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      config: state.config.config,
+      org: state.session.org,
+    }),
+    { showNotification, updateEmailSettings, openModal, closeModal, updateConfig },
+  ),
+  reduxForm({}),
+)(EmailNotifications);

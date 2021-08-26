@@ -8,6 +8,7 @@ import RTracking from 'react-tracking';
 import { WHATSAPP_NOTIF } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
 
+// eslint-disable-next-line no-shadow
 function WhatsappNotification({ currentUser, showNotification, location, history, tracking }) {
   const [whatsapp_optin, setWhatsappOptin] = useState(null);
   const whatsappEnableSection = useRef(null);
@@ -34,7 +35,7 @@ function WhatsappNotification({ currentUser, showNotification, location, history
     return merchantFetch({
       url: `users/whatsapp/opt_in_status`,
       method: 'get',
-      data: data,
+      data,
     });
   }
 
@@ -42,7 +43,7 @@ function WhatsappNotification({ currentUser, showNotification, location, history
     return merchantFetch({
       url: `users/whatsapp/${optin ? 'opt_in' : 'opt_out'}`,
       method: 'post',
-      data: data,
+      data,
     });
   }
 
@@ -78,7 +79,7 @@ function WhatsappNotification({ currentUser, showNotification, location, history
     }
 
     updateWhatsappOptin(whatsapp_optin_checked)
-      .then((r) => {
+      .then(() => {
         cb(true);
         setWhatsappOptin(whatsapp_optin_checked);
         showNotification({
@@ -106,8 +107,8 @@ function WhatsappNotification({ currentUser, showNotification, location, history
 
         <span class="toggler-btn">
           <SwitchField
-            checked={whatsapp_optin ? true : false}
-            onChange={(_, cb) => toggleWhatsappNotification(whatsapp_optin ? false : true, cb)}
+            checked={!!whatsapp_optin}
+            onChange={(_, cb) => toggleWhatsappNotification(!whatsapp_optin, cb)}
             type="prime"
           />
           {whatsapp_optin ? (
@@ -141,6 +142,7 @@ export default withRouter(
   connect(mapStateToProps, {
     showNotification,
   })(
+    // eslint-disable-next-line babel/new-cap
     RTracking(() => {
       window.rzpQ.component('WhatsappNotification');
     })(WhatsappNotification),

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
@@ -17,25 +18,7 @@ import DocsLink from 'merchant/components/DocsLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-@connect(
-  (state) => ({
-    userData: state.session.user,
-    webhookFormData: state.form.webhookForm,
-  }),
-  { saveWebhook, ...ModalActions, ...NotificationsActions },
-)
-@reduxForm({
-  form: 'webhookForm',
-  onSubmitFail: (errros) => {
-    window.rzpQ.push(
-      window.rzpQ.merchantActions().failed('Webhook.validationError', {
-        errros,
-      }),
-    );
-  },
-})
-@RTracking(() => window.rzpQ.component('WebhooksContainer'))
-export default class webhookForm extends Component {
+class webhookForm extends Component {
   state = {
     errors: null,
     showSecret: false,
@@ -60,7 +43,7 @@ export default class webhookForm extends Component {
       Object.entries(this.state.filterGroupedWebhooks).forEach((webhook) => {
         const [eventGroup, events] = webhook;
         let checkGroup = true;
-        Object.entries(eventValues).map((eventEntry) => {
+        Object.entries(eventValues).forEach((eventEntry) => {
           const [evName, evValue] = eventEntry;
           if (evName.includes(eventGroup) && events.includes(evName)) {
             if (!evValue) checkGroup = false;
@@ -100,11 +83,11 @@ export default class webhookForm extends Component {
       .then((resp) => {
         if (resp.success && resp.data) {
           const allWebhooks = resp.data;
-          const events = resp.data.reduce((events, rawEvent) => {
+          const events = resp.data.reduce((_events, rawEvent) => {
             const [eventGroup] = rawEvent.split('.');
             return {
-              ...events,
-              [eventGroup]: [...(events[eventGroup] || []), rawEvent],
+              ..._events,
+              [eventGroup]: [...(_events[eventGroup] || []), rawEvent],
             };
           }, {});
           this.setState(
@@ -131,11 +114,11 @@ export default class webhookForm extends Component {
 
   initializeEventValues = (clearAll) => {
     const { webhook } = this.props;
-    let currentValues = {};
+    const currentValues = {};
 
-    let activeEvents = [];
+    const activeEvents = [];
     if (webhook) {
-      Object.keys(webhook.events).forEach(function (key) {
+      Object.keys(webhook.events).forEach((key) => {
         if (webhook.events[key] === true) {
           activeEvents.push(key);
         }
@@ -160,12 +143,13 @@ export default class webhookForm extends Component {
     const { webhookList } = this.props;
     if (webhookList) {
       const existingUrlList = [];
-      webhookList.map((item) => {
+      webhookList.forEach((item) => {
         existingUrlList.push(item.url);
       });
 
       return existingUrlList.includes(value) ? 'Webhook URL already exists' : undefined;
     }
+    return null;
   };
 
   save = (formData) => {
@@ -186,7 +170,6 @@ export default class webhookForm extends Component {
       this.setState({
         eventsError: true,
       });
-      return;
     } else {
       const { appId, mode } = this.props;
       const { webhook } = this.props;
@@ -222,20 +205,22 @@ export default class webhookForm extends Component {
         });
 
         // compare the object and find difference
-        function diff(obj1, obj2) {
-          var result = {};
-          for (let key in obj1) {
-            if (obj2[key] != obj1[key]) result[key] = obj2[key];
-            if (!(key in obj2) && obj1[key] != undefined) {
-              result[key] = obj1[key];
-            }
-            if (typeof obj2[key] == 'object' && typeof obj1[key] == 'object') {
-              result[key] = diff(obj1[key], obj2[key]);
-              if (Object.keys(result[key]).length === 0) delete result[key];
+        const diff = (obj1, obj2) => {
+          const result = {};
+          for (const key in obj1) {
+            if (obj1.hasOwnProperty(key)) {
+              if (obj2[key] != obj1[key]) result[key] = obj2[key];
+              if (!(key in obj2) && obj1[key] != undefined) {
+                result[key] = obj1[key];
+              }
+              if (typeof obj2[key] == 'object' && typeof obj1[key] == 'object') {
+                result[key] = diff(obj1[key], obj2[key]);
+                if (Object.keys(result[key]).length === 0) delete result[key];
+              }
             }
           }
           return result;
-        }
+        };
 
         difference = diff(newData, oldData);
       }
@@ -279,20 +264,22 @@ export default class webhookForm extends Component {
             type: 'success',
             message: 'Webhook saved successfully',
           });
-          webhook
-            ? tracking.trackEvent(
-                window.rzpQ.merchantActions().success('Webhook.editCompleted', {
-                  webhook_id: webhook.id,
-                  changes_made: difference,
-                }),
-              )
-            : tracking.trackEvent(
-                window.rzpQ.merchantActions().success('Webhook.setupCompleted', {
-                  secret: data.secret,
-                  alert_email: data.alert_email || '',
-                  webhook_count: webhookList.length || '',
-                }),
-              );
+          if (webhook) {
+            tracking.trackEvent(
+              window.rzpQ.merchantActions().success('Webhook.editCompleted', {
+                webhook_id: webhook.id,
+                changes_made: difference,
+              }),
+            );
+          } else {
+            tracking.trackEvent(
+              window.rzpQ.merchantActions().success('Webhook.setupCompleted', {
+                secret: data.secret,
+                alert_email: data.alert_email || '',
+                webhook_count: webhookList.length || '',
+              }),
+            );
+          }
 
           analyticsTrack({
             objectName: `${webhook ? 'edit' : 'add'} webhooks`,
@@ -309,17 +296,19 @@ export default class webhookForm extends Component {
           this.setState({
             errors: err.errors,
           });
-          webhook
-            ? tracking.trackEvent(
-                window.rzpQ.merchantActions().failed('Webhook.editValidationError', {
-                  errors: err.errors,
-                }),
-              )
-            : tracking.trackEvent(
-                window.rzpQ.merchantActions().failed('Webhook.setupValidationError', {
-                  errors: err.errors,
-                }),
-              );
+          if (webhook) {
+            tracking.trackEvent(
+              window.rzpQ.merchantActions().failed('Webhook.editValidationError', {
+                errors: err.errors,
+              }),
+            );
+          } else {
+            tracking.trackEvent(
+              window.rzpQ.merchantActions().failed('Webhook.setupValidationError', {
+                errors: err.errors,
+              }),
+            );
+          }
 
           analyticsTrack({
             objectName: `${webhook ? 'edit' : 'add'} webhooks`,
@@ -334,10 +323,13 @@ export default class webhookForm extends Component {
           });
         });
     }
+    return null;
   };
 
-  toggleVisibility = (e) => {
-    this.setState({ showSecret: !this.state.showSecret });
+  toggleVisibility = () => {
+    this.setState((prevState) => {
+      return { showSecret: !prevState.showSecret };
+    });
   };
 
   filterWebhooks = (searchEventsQuery) => {
@@ -363,12 +355,7 @@ export default class webhookForm extends Component {
 
   render() {
     const { handleSubmit, webhookFormData, webhook, userData } = this.props;
-    const {
-      groupedWebhooks,
-      filterGroupedWebhooks,
-      searchEventsQuery,
-      isSecretPresent,
-    } = this.state;
+    const { filterGroupedWebhooks, searchEventsQuery, isSecretPresent } = this.state;
 
     let noOfEventsSelected = 0;
     if (webhookFormData && webhookFormData.values) {
@@ -549,8 +536,8 @@ export default class webhookForm extends Component {
                       <Spinner />
                     </div>
                   ) : Object.keys(filterGroupedWebhooks).length ? (
-                    Object.entries(filterGroupedWebhooks).map((webhook) => {
-                      const [eventGroup, events] = webhook;
+                    Object.entries(filterGroupedWebhooks).map((_webhook) => {
+                      const [eventGroup, events] = _webhook;
                       return (
                         <React.Fragment key={eventGroup}>
                           <div className="checkbox eventGroup">
@@ -691,3 +678,25 @@ export default class webhookForm extends Component {
 webhookForm.defaultProps = {
   onSave: () => {},
 };
+
+export default compose(
+  connect(
+    (state) => ({
+      userData: state.session.user,
+      webhookFormData: state.form.webhookForm,
+    }),
+    { saveWebhook, ...ModalActions, ...NotificationsActions },
+  ),
+  reduxForm({
+    form: 'webhookForm',
+    onSubmitFail: (errros) => {
+      window.rzpQ.push(
+        window.rzpQ.merchantActions().failed('Webhook.validationError', {
+          errros,
+        }),
+      );
+    },
+  }),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('WebhooksContainer')),
+)(webhookForm);

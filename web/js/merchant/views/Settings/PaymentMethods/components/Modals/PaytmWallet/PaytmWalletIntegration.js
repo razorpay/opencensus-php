@@ -25,6 +25,8 @@ const RenderPage = ({ page, values, setValues, setDisabled }) => {
           setDisabled={(val) => setDisabled(val)}
         />
       );
+    default:
+      return null;
   }
 };
 
@@ -44,22 +46,22 @@ const PaytmWalletIntegration = (props) => {
 
   const {
     closeModal,
+    // eslint-disable-next-line no-shadow
     showNotification,
     fetchInstrumentStatus,
-    user: { merchant },
   } = props;
 
   function handleStepper(type) {
     if (closeButton) {
       return closeModal();
-    } else {
-      let currentStep = activeStep;
-      type === 'increment' ? currentStep++ : currentStep--;
-      setActiveStep(currentStep);
     }
+    let currentStep = activeStep;
+    if (type === 'increment') currentStep++;
+    else currentStep--;
+    return setActiveStep(currentStep);
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     const { merchant_id, merchant_key, website_name, industry_type, mode } = values;
 
     return onboardPaytmTerminal(
@@ -70,7 +72,7 @@ const PaytmWalletIntegration = (props) => {
       website_name,
       mode,
     )
-      .then(async () => {
+      .then(() => {
         try {
           fetchInstrumentStatus();
           closeModal();
@@ -107,6 +109,7 @@ const PaytmWalletIntegration = (props) => {
               website_name: identifiers.gateway_access_code,
             });
           }
+          return null;
         });
       }
     }
@@ -118,6 +121,8 @@ const PaytmWalletIntegration = (props) => {
         return setPage(CHOOSE_ACCOUNT);
       case 2:
         return setPage(PRODUCTION_API_DETAILS);
+      default:
+        return null;
     }
   }, [activeStep]);
 
@@ -134,8 +139,8 @@ const PaytmWalletIntegration = (props) => {
       <div className="wizard-header">
         <p>Enable Paytm Wallet on Checkout </p>
         <div className="close" onClick={() => closeModal()}>
-          <span></span>
-          <span></span>
+          <span />
+          <span />
         </div>
       </div>
       <div className="paytm-wallet-integration">
@@ -149,26 +154,24 @@ const PaytmWalletIntegration = (props) => {
         </div>
         <div className="flex-end footer">
           <div className="action-buttons">
-            <>
-              {[2, 3].includes(activeStep) && props.step !== 2 && (
-                <button className="btn btn-link" onClick={() => handleStepper('decrement')}>
-                  Previous
-                </button>
-              )}
-              {[1].includes(activeStep) ? (
-                <button className="btn btn-primary" onClick={() => handleStepper('increment')}>
-                  {closeButton ? 'Close' : 'Next'}
-                </button>
-              ) : (
-                <button
-                  className="btn btn-primary"
-                  disabled={disabled}
-                  onClick={() => handleSubmit()}
-                >
-                  {props.step === 2 ? 'Save Changes' : 'Submit'}
-                </button>
-              )}
-            </>
+            {[2, 3].includes(activeStep) && props.step !== 2 && (
+              <button className="btn btn-link" onClick={() => handleStepper('decrement')}>
+                Previous
+              </button>
+            )}
+            {[1].includes(activeStep) ? (
+              <button className="btn btn-primary" onClick={() => handleStepper('increment')}>
+                {closeButton ? 'Close' : 'Next'}
+              </button>
+            ) : (
+              <button
+                className="btn btn-primary"
+                disabled={disabled}
+                onClick={() => handleSubmit()}
+              >
+                {props.step === 2 ? 'Save Changes' : 'Submit'}
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -1,9 +1,5 @@
 export default (foregroundColor, backgroundColor) => (
-  <svg
-    fill={backgroundColor}
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 30 27"
-  >
+  <svg fill={backgroundColor} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 27">
     <path
       fill={foregroundColor}
       d="M14.5 14.1l.3-.3c2-2.2 4.4-2.8 7-2v-1H2.2V20c0 1 .9 1.9 1.9 1.9h9c-.3-1-.4-2-.4-3 0 1.6.7 3.2 1.8 5H4A4 4 0 0 1 .1 20V6.4a4 4 0 0 1 3.9-4h2.5V1.1c0-.5.4-1 1-1s1 .5 1 1v1.3h7V1.1c0-.5.4-1 1-1s1 .5 1 1v1.3H20a4 4 0 0 1 3.9 4v6.4c-3.5-1.9-6.5-1.5-9.2 1.1l-.2.2zM4 4.5c-1 0-1.9.8-1.9 1.9v2.4H22V6.4c0-1-.9-2-1.9-2h-2.4v1.3c0 .6-.5 1-1 1a1 1 0 0 1-1-1V4.5h-7v1.2c0 .6-.5 1-1.1 1a1 1 0 0 1-1-1V4.5H4z"

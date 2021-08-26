@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import LeafListItem from './LeafListItem';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -24,11 +24,12 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
   });
   if (!instrument) return null;
   function renderLeafList(leafList) {
-    let analyticsList = {};
-    leafList.list &&
+    const analyticsList = {};
+    if (leafList.list) {
       leafList.list.forEach((item) => {
         analyticsList[item.name] = item.status;
       });
+    }
     analyticsTrack({
       objectName: 'method instruments',
       actionName: 'displayed',
@@ -40,7 +41,7 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    let list = leafList.list
+    const list = leafList.list
       .filter((_) => {
         if (intermediateInstrument && intermediateInstrument.slug === 'netbanking') {
           if (filter === 'active') {
@@ -59,22 +60,21 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
       } else if (filter === 'active') {
         return <p class="all-inactive">No banks active for you. Add more banks to catch up.</p>;
       }
-    } else {
-      return list.map((leafItem) => {
-        if (leafItem.slug === 'internationalcards') return <International />;
-        else if (leafItem.slug === 'paypal') return <Paypal instrument={leafItem} />;
-        else if (
-          (leafItem.slug === 'itzcash' ||
-            leafItem.slug === 'paycash' ||
-            leafItem.slug === 'citibankrewards') &&
-          leafItem.status !== 'activated'
-        ) {
-          return null;
-        } else {
-          return <LeafListItem key={leafItem.name} instrument={leafItem} />;
-        }
-      });
     }
+    return list.map((leafItem) => {
+      if (leafItem.slug === 'internationalcards') return <International />;
+      else if (leafItem.slug === 'paypal') return <Paypal instrument={leafItem} />;
+      else if (
+        (leafItem.slug === 'itzcash' ||
+          leafItem.slug === 'paycash' ||
+          leafItem.slug === 'citibankrewards') &&
+        leafItem.status !== 'activated'
+      ) {
+        return null;
+      } else {
+        return <LeafListItem key={leafItem.name} instrument={leafItem} />;
+      }
+    });
   }
   return (
     <div class={`level-3 ${instrument.leafList && instrument.leafList.length > 1 && 'overflowY'}`}>
@@ -88,7 +88,7 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
                   <a
                     href={leafList.docLink}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     onClick={() =>
                       analyticsTrack({
                         objectName: 'method documentation',

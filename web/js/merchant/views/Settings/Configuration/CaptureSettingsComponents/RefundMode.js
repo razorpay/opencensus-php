@@ -207,11 +207,7 @@ function RefundMode(props) {
             <p class="prev-btn" onClick={onPreviousClick}>
               Previous
             </p>
-            <button
-              class="btn btn-primary"
-              onClick={onNextClick}
-              disabled={isSelected ? false : true}
-            >
+            <button class="btn btn-primary" onClick={onNextClick} disabled={!isSelected}>
               Next
             </button>
           </div>

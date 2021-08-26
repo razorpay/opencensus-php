@@ -1,18 +1,22 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { updateFeatures } from 'merchant/reducers/config';
+import { compose } from 'redux';
+import {
+  updateFeatures,
+  updateConfig,
+  fetchRefundPricing,
+  createLateAuthConfig,
+} from 'merchant/reducers/config';
+import PropTypes from 'prop-types';
+
 import { showNotification } from 'merchant_common/reducers/notifications';
-import ShowWhen from 'merchant/components/ShowWhen';
-import SwitchField from 'common/ui/Forms/SwitchField';
-import Input from 'common/new-ui/Input';
-import Popover, { PopoverTitle, PopoverBody } from 'common/ui/Popover';
-import { updateConfig } from 'merchant/reducers/config';
+import { Popover, PopoverBody } from 'common/ui/Popover';
+
 import { showWhenUtil } from 'merchant/components/ShowWhen';
-import Amount from 'common/ui/Amount';
 import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/components/EnableInstantRefundsModal';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { openModal } from 'merchant_common/reducers/modals';
 import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
-import { fetchRefundPricing, createLateAuthConfig } from 'merchant/reducers/config';
+
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -20,27 +24,31 @@ import { CreateTicketEmitter } from '../../TicketSupport/utils';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import { REFUND_SETTINGS } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      refund_pricing: state.config.refund_pricing,
-      features: state.config.features,
-      default_refund_speed: state.config.config.default_refund_speed,
-      lateAuthConfig: state.config.lateAuthConfig,
-    };
-  },
-  {
-    updateFeatures,
-    showNotification,
-    updateConfig,
-    openModal,
-    fetchRefundPricing,
-    createLateAuthConfig,
-  },
-)
-@RTracking(() => window.rzpQ.component('DefaultRefundSpeed'))
-export default class DefaultRefundSpeed extends Component {
+
+const raiseTicket = () => {
+  if (window.rzpTicketSystem) {
+    const rzpTicketSystem = window.rzpTicketSystem;
+    CreateTicketEmitter.emit(
+      'create-ticket',
+      'ticket',
+      () => {
+        rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+      },
+      () => {
+        setTimeout(() => {
+          rzpTicketSystem.modal.next();
+        }, 0);
+      },
+    );
+
+    setTimeout(() => {
+      const el = document.getElementsByName('request-description')[0];
+      el.value = 'Hello Team,\nI’d like to enable Instant Refund feature';
+      el.focus();
+    }, 1000);
+  }
+};
+class DefaultRefundSpeed extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -89,7 +97,7 @@ export default class DefaultRefundSpeed extends Component {
           pricing={this.props.refund_pricing}
           updated={() => this.updateDefaultRefundSpeed(speed)}
           speed={speed}
-          openedFrom={'Announcement'}
+          openedFrom="Announcement"
         />
       ),
       size: 'small',
@@ -105,7 +113,7 @@ export default class DefaultRefundSpeed extends Component {
       .updateConfig({
         default_refund_speed: speed,
       })
-      .then((r) => {
+      .then(() => {
         this.setState(
           {
             default_refund_speed: speed,
@@ -132,35 +140,28 @@ export default class DefaultRefundSpeed extends Component {
       error,
     } = this.props.lateAuthConfig;
 
-    if (error) return;
+    if (error || items.length === 0) return;
+    const capture_config = items[0];
+    capture_config.config.capture_options.refund_speed = speed;
+    delete capture_config.name;
+    delete capture_config.merchant_id;
+    delete capture_config.entity;
+    delete capture_config.is_default;
+    delete capture_config.created_at;
+    delete capture_config.updated_at;
 
-    if (items.length === 0) return;
-    else {
-      let capture_config = items[0];
-      capture_config.config.capture_options['refund_speed'] = speed;
-      delete capture_config.name;
-      delete capture_config.merchant_id;
-      delete capture_config.entity;
-      delete capture_config.is_default;
-      delete capture_config.created_at;
-      delete capture_config.updated_at;
+    capture_config.type = 'late_auth';
 
-      capture_config.type = 'late_auth';
+    if (capture_config.config.capture_options.automatic_expiry_period === null)
+      delete capture_config.config.capture_options.automatic_expiry_period;
 
-      if (capture_config.config.capture_options.automatic_expiry_period === null)
-        delete capture_config.config.capture_options.automatic_expiry_period;
+    if (capture_config.config.capture_options.manual_expiry_period === null)
+      delete capture_config.config.capture_options.manual_expiry_period;
 
-      if (capture_config.config.capture_options.manual_expiry_period === null)
-        delete capture_config.config.capture_options.manual_expiry_period;
-
-      this.props.createLateAuthConfig(capture_config, 'patch');
-    }
+    this.props.createLateAuthConfig(capture_config, 'patch');
   };
 
   render() {
-    const {
-      org: { custom_code },
-    } = this.props;
     return (
       <div id="default-refund-container" class="panel panel-default refund-panel">
         <div class="panel-heading pl10" style={{ paddingTop: 0 }}>
@@ -169,6 +170,7 @@ export default class DefaultRefundSpeed extends Component {
             <a
               class="highlight know-more"
               target="_blank"
+              rel="noopener noreferrer"
               href={getCustomURL(
                 'https://razorpay.com/docs/payment-gateway/refunds/#setting-the-default-speed-of-refunds',
               )}
@@ -191,6 +193,7 @@ export default class DefaultRefundSpeed extends Component {
             <a
               class="highlight know-more"
               target="_blank"
+              rel="noopener noreferrer"
               style={{
                 borderLeft: '1px solid rgba(22, 47, 86, 0.1)',
                 paddingLeft: '9px',
@@ -227,10 +230,9 @@ export default class DefaultRefundSpeed extends Component {
                   <b>Normal Refund</b>
                   <input
                     type="radio"
-                    class="radio-pointer"
+                    class="radio-pointer refund-speed-change-permission"
                     name="default_instant"
                     checked={this.state.default_refund_speed == 'normal'}
-                    class="refund-speed-change-permission"
                     onChange={(e) => {
                       const speed = e.target.checked ? 'normal' : 'optimum';
                       this.checkDefaultRefundSpeed(speed);
@@ -271,14 +273,13 @@ export default class DefaultRefundSpeed extends Component {
                   }) ? (
                     <input
                       type="radio"
-                      class="radio-pointer"
+                      class="radio-pointer refund-speed-change-permission"
                       checked={this.state.default_refund_speed == 'optimum'}
                       name="default_instant"
                       onChange={(e) => {
                         const speed = e.target.checked ? 'optimum' : 'normal';
                         this.checkDefaultRefundSpeed(speed);
                       }}
-                      class="refund-speed-change-permission"
                     />
                   ) : null}
                 </h4>
@@ -355,17 +356,26 @@ export default class DefaultRefundSpeed extends Component {
   }
 }
 
-const raiseTicket = () => {
-  if (window.rzpTicketSystem) {
-    CreateTicketEmitter.emit(
-      'create-ticket',
-      'tickets',
-    );
-
-    setTimeout(() => {
-      var el = document.getElementsByName('request-description')[0];
-      el.value = 'Hello Team,\n' + 'I’d like to enable Instant Refund feature';
-      el.focus();
-    }, 1000);
-  }
-};
+export default compose(
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+        refund_pricing: state.config.refund_pricing,
+        features: state.config.features,
+        default_refund_speed: state.config.config.default_refund_speed,
+        lateAuthConfig: state.config.lateAuthConfig,
+      };
+    },
+    {
+      updateFeatures,
+      showNotification,
+      updateConfig,
+      openModal,
+      fetchRefundPricing,
+      createLateAuthConfig,
+    },
+  ),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('DefaultRefundSpeed')),
+)(DefaultRefundSpeed);

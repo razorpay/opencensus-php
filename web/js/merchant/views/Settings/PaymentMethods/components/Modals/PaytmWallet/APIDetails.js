@@ -1,9 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import Spinner from 'common/ui/Spinner';
 import { DetailsDrawer } from './DetailsDrawer';
-import { useEffect } from 'react';
 
 export const ProductionAPIDetails = ({ values, setValues, setDisabled }) => {
   function onChange(e) {
@@ -17,17 +15,20 @@ export const ProductionAPIDetails = ({ values, setValues, setDisabled }) => {
     if (val.length < 20) {
       return 'Please add the valid merchant id';
     }
+    return '';
   }
   function validateMerchantKey(val) {
     if (val.length < 16) {
       return 'Please add the valid merchant key';
     }
+    return '';
   }
 
   function validateWebsite(val) {
     if (val.length < 1) {
       return 'Website is required';
     }
+    return '';
   }
 
   useEffect(() => {
@@ -66,7 +67,7 @@ export const ProductionAPIDetails = ({ values, setValues, setDisabled }) => {
             </p>
             <div className="form-description">
               <div className="form-control-input">
-                <label className="payment-method-label"></label>
+                <label className="payment-method-label" />
                 <Input
                   name="merchant_id"
                   label="Paytm Merchant ID"
@@ -78,7 +79,7 @@ export const ProductionAPIDetails = ({ values, setValues, setDisabled }) => {
                 />
               </div>
               <div className="form-control-input">
-                <label className="payment-method-label"></label>
+                <label className="payment-method-label" />
                 <Input
                   name="merchant_key"
                   label="Paytm Merchant Key"
@@ -90,7 +91,7 @@ export const ProductionAPIDetails = ({ values, setValues, setDisabled }) => {
                 />
               </div>
               <div className="form-control-input">
-                <label className="payment-method-label"></label>
+                <label className="payment-method-label" />
                 <Input
                   name="website_name"
                   label="Paytm Website Name"
@@ -101,7 +102,7 @@ export const ProductionAPIDetails = ({ values, setValues, setDisabled }) => {
                 />
               </div>
               <div className="form-control-input">
-                <label className="payment-method-label"></label>
+                <label className="payment-method-label" />
                 <Input
                   name="industry_type"
                   label="Industry Type"

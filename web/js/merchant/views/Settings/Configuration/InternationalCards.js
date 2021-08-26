@@ -5,7 +5,7 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 import { formatFromNow } from 'common/utils/rzp-utils';
 import withInternationalConfig from './InternationalConfig';
 import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
-import ProductInfo from './components/InternationalConfigComponents/ProductInfo.js';
+import ProductInfo from './components/InternationalConfigComponents/ProductInfo';
 
 const statusMap = {
   approved: 'enabled',
@@ -158,7 +158,7 @@ const InternationalCards = ({
               <div>
                 <span>
                   Limit per transaction:&nbsp;
-                  <Amount value={maxPaymentAmount} currency={'INR'} />
+                  <Amount value={maxPaymentAmount} currency="INR" />
                 </span>
                 &nbsp;&nbsp;
                 <span>

@@ -91,7 +91,7 @@ const International = ({
 
       {!!isAnyProductIntlApproved && (
         <>
-          <div class="spacer-10"></div>
+          <div class="spacer-10" />
 
           <ProductInfo
             product="pg"
@@ -99,13 +99,12 @@ const International = ({
             settlementCycle={settlementDelay}
             showStatusLabel={showStatusLabel}
             transactionSize={maxPaymentAmount}
-            status={productStatus['pg'].status}
-            showRequestAccessBtn={productStatus['pg'].isRequested}
-            questionnaireStatus={questionnaireStatus}
+            status={productStatus.pg.status}
+            showRequestAccessBtn={productStatus.pg.isRequested}
             onRequestAccessClick={() => onRequestAccessClick({ triggerSource: 'pg' })}
           />
 
-          <div class="spacer-20"></div>
+          <div class="spacer-20" />
 
           <ProductInfo
             product="otherProducts"
@@ -113,9 +112,8 @@ const International = ({
             settlementCycle={settlementDelay}
             transactionSize={maxPaymentAmount}
             title="Payment Pages, Links and Invoices"
-            status={productStatus['otherProducts'].status}
-            questionnaireStatus={questionnaireStatus}
-            showRequestAccessBtn={productStatus['otherProducts'].isRequested}
+            status={productStatus.otherProducts.status}
+            showRequestAccessBtn={productStatus.otherProducts.isRequested}
             onRequestAccessClick={() => onRequestAccessClick({ triggerSource: 'otherProducts' })}
           />
         </>
@@ -156,7 +154,7 @@ const ProductInfo = ({
           <p>
             Transaction Size Enabled :{' '}
             <strong>
-              <Amount value={transactionSize} currency={'INR'} />
+              <Amount value={transactionSize} currency="INR" />
             </strong>
           </p>
           <p>
@@ -165,6 +163,8 @@ const ProductInfo = ({
         </>
       );
       break;
+    default:
+      return null;
   }
   return (
     <div class="product-info">
@@ -184,7 +184,7 @@ const ProductInfo = ({
           showStatusLabel && <InternationalStatusLabel status={statusMap[status]} />
         )}
       </div>
-      <div class="spacer-10"></div>
+      <div class="spacer-10" />
       {description}
     </div>
   );

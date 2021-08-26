@@ -44,7 +44,7 @@ const BusinessDetails = ({ disabled, triggerSource }) => {
         className="Input--vTop"
         propagatedError={getError('products')}
       />
-      <div class="spacer"></div>
+      <div class="spacer" />
       <Input.Select
         required
         name="goods_type"

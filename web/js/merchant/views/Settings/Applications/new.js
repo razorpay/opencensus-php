@@ -1,21 +1,12 @@
 import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { Field, formValueSelector, reduxForm } from 'redux-form';
+import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import { Link, withRouter } from 'react-router-dom';
 
-import {
-  autoPrefixUrls,
-  checkIfHTTPS,
-  titleCase,
-} from 'common/utils/rzp-utils';
+import { autoPrefixUrls, titleCase } from 'common/utils/rzp-utils';
 
-import {
-  required,
-  lenientUrl,
-  isUrlLenient,
-  flexibleDevUrl,
-} from 'common/utils/validators';
+import { required, lenientUrl, flexibleDevUrl } from 'common/utils/validators';
 
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import * as ApplicationActions from 'merchant/reducers/applications';
@@ -28,7 +19,7 @@ import LoaderDots from 'common/ui/LoaderDots';
 
 import AppWebhook from './AppWebhook';
 
-const INFO = user => ({
+const info = (user) => ({
   icon: `Your uploaded app icon will be shown to your users on ${
     user.isOrgRZP ? 'Razorpay' : 'the'
   } Connect screens. The icon will also be displayed in the connected applications list`,
@@ -37,20 +28,17 @@ const INFO = user => ({
   }.`,
   prod: (
     <span>
-      Add comma separated URIs. <b>URIs must be HTTPs.</b> We'll redirect your
-      users back to any of the URI provided, after they connect{' '}
-      {user.isOrgRZP ? 'with Razorpay' : 'their account'}.
+      Add comma separated URIs. <b>URIs must be HTTPs.</b> We'll redirect your users back to any of
+      the URI provided, after they connect {user.isOrgRZP ? 'with Razorpay' : 'their account'}.
     </span>
   ),
 });
 
-const selector = formValueSelector('newApplicationForm');
-
 function readURL(input, self) {
   if (input.files && input.files[0]) {
-    var reader = new FileReader();
+    const reader = new FileReader();
 
-    reader.onload = function(e) {
+    reader.onload = (e) => {
       self.setState({
         details: {
           ...self.state.details,
@@ -65,13 +53,13 @@ function readURL(input, self) {
 
 @withRouter
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       applications: state.applications.items,
     };
   },
-  { ...ApplicationActions, ...NotificationActions, openModal, closeModal }
+  { ...ApplicationActions, ...NotificationActions, openModal, closeModal },
 )
 @reduxForm({
   form: 'newApplicationForm',
@@ -83,7 +71,7 @@ class NewApplicationForm extends Component {
   };
 
   componentWillMount() {
-    let id = this.props.match.params.id;
+    const id = this.props.match.params.id;
     if (!id) return;
     this.setState({ edit: true });
 
@@ -95,7 +83,7 @@ class NewApplicationForm extends Component {
       this.fetchWebhooks();
     }
 
-    var appDetails = this.props.applications.filter(app => app.id === id);
+    const appDetails = this.props.applications.filter((app) => app.id === id);
     if (appDetails.length) {
       const data = appDetails[0];
       this.initForm(data);
@@ -103,10 +91,10 @@ class NewApplicationForm extends Component {
     }
     this.props
       .fetchApplication(id)
-      .then(data => {
+      .then((data) => {
         this.initForm(data);
       })
-      .catch(err => {
+      .catch(() => {
         this.props.showNotification({
           type: 'error',
           message: `Application id '${id}' not found`,
@@ -115,7 +103,7 @@ class NewApplicationForm extends Component {
       });
   }
 
-  setWebhookState = mode => ({ webhookLoading, webhook }) => {
+  setWebhookState = (mode) => ({ webhookLoading, webhook }) => {
     mode = mode || '';
     this.setState({
       [`${mode}webhookLoading`]: webhookLoading,
@@ -127,13 +115,13 @@ class NewApplicationForm extends Component {
     const changeWebhookState = this.setWebhookState(mode);
     changeWebhookState({ webhookLoading: false });
     // Fetch call getting app's webhook
-    let appId = this.props.match.params.id;
+    const appId = this.props.match.params.id;
     ApplicationActions.fetchAppWebhooks(appId, mode)
-      .then(data => {
-        let webhook = data.data.items.length ? data.data.items[0] : null;
+      .then((data) => {
+        const webhook = data.data.items.length ? data.data.items[0] : null;
         changeWebhookState({ webhookLoading: false, webhook });
       })
-      .catch(e => {
+      .catch(() => {
         changeWebhookState({ webhookLoading: false, webhook: null });
       });
   }
@@ -151,23 +139,19 @@ class NewApplicationForm extends Component {
 
   openPreviewPage = () => {
     // open in a popup
-    var prefixPos = window.location.hostname.indexOf('-');
-    var prefix =
+    const prefixPos = window.location.hostname.indexOf('-');
+    const prefix =
       prefixPos !== -1
-        ? 'https://' + window.location.hostname.substr(0, prefixPos + 1)
+        ? `https://${window.location.hostname.substr(0, prefixPos + 1)}`
         : 'https://';
-    var hostname = prefix + 'auth.razorpay.com';
-    const popupUrl =
-      hostname +
-      `/authorize?response_type=code&client_id=${
-        this.state.details.client_details.dev.id
-      }&redirect_uri=http://localhost&scope=read_only&state=current_state`;
+    const hostname = `${prefix}auth.razorpay.com`;
+    const popupUrl = `${hostname}/authorize?response_type=code&client_id=${this.state.details.client_details.dev.id}&redirect_uri=http://localhost&scope=read_only&state=current_state`;
     window.open(popupUrl, 'PopupPreview');
   };
 
   // save handler
-  create = props => {
-    let data = { ...props };
+  create = (props) => {
+    const data = { ...props };
 
     if (data.website) {
       data.website = autoPrefixUrls(data.website);
@@ -175,17 +159,17 @@ class NewApplicationForm extends Component {
 
     return this.props
       .createApplication(data, 'logo')
-      .then(application => {
+      .then((application) => {
         this.initForm(application);
         this.props.history.replace(
-          `${this.props.location.pathname.replace('new', '')}${application.id}`
+          `${this.props.location.pathname.replace('new', '')}${application.id}`,
         );
         this.props.showNotification({
           type: 'success',
           message: 'Application created successfully',
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -204,11 +188,11 @@ class NewApplicationForm extends Component {
 
   // Currently only being for development URIs
   prependHTTPinUrl(urlList) {
-    return urlList.map(url => autoPrefixUrls(url));
+    return urlList.map((url) => autoPrefixUrls(url));
   }
 
-  update = props => {
-    let data = { ...props };
+  update = (props) => {
+    const data = { ...props };
 
     if (data.website) {
       data.website = autoPrefixUrls(data.website);
@@ -216,7 +200,7 @@ class NewApplicationForm extends Component {
 
     if (data.client_details.dev.redirect_url) {
       data.client_details.dev.redirect_url = this.prependHTTPinUrl(
-        data.client_details.dev.redirect_url
+        data.client_details.dev.redirect_url,
       );
     }
 
@@ -240,13 +224,13 @@ class NewApplicationForm extends Component {
     }
     return this.props
       .updateApplication(this.state.details.id, payload, 'logo')
-      .then(application => {
+      .then(() => {
         this.props.showNotification({
           type: 'success',
           message: 'Application saved successfully',
         });
       })
-      .catch(err => {
+      .catch(() => {
         this.props.showNotification({
           type: 'error',
           message: "Couldn't save application",
@@ -254,16 +238,16 @@ class NewApplicationForm extends Component {
       });
   };
 
-  showDevSecret = e => {
+  showDevSecret = (e) => {
     e.preventDefault();
     this.setState({ showDevSecret: true });
   };
-  showProdSecret = e => {
+  showProdSecret = (e) => {
     e.preventDefault();
     this.setState({ showProdSecret: true });
   };
 
-  onWebhookSave = mode => webhook => {
+  onWebhookSave = (mode) => (webhook) => {
     const changeWebhookState = this.setWebhookState(mode);
     this.props.closeModal();
     changeWebhookState({ webhook: webhook.data });
@@ -285,7 +269,11 @@ class NewApplicationForm extends Component {
   };
 
   render() {
-    const { handleSubmit, location: { pathname }, user } = this.props;
+    const {
+      handleSubmit,
+      location: { pathname },
+      user,
+    } = this.props;
     return (
       <div class="content-box new-application-form">
         <div class="content-header">
@@ -296,10 +284,7 @@ class NewApplicationForm extends Component {
             <i class="i i-arrow-back" />
             <span> Back&nbsp;</span>
           </Link>
-          <strong>
-            {' '}
-            /&nbsp; {this.state.edit ? 'Edit' : 'Create'} Application
-          </strong>
+          <strong> /&nbsp; {this.state.edit ? 'Edit' : 'Create'} Application</strong>
         </div>
         <form
           class="form-horizontal"
@@ -319,19 +304,14 @@ class NewApplicationForm extends Component {
               </div>
             </div>
             <div class="form-group">
-              <label class="col-md-2 control-label label-required">
-                Website
-              </label>
+              <label class="col-md-2 control-label label-required">Website</label>
               <div class="col-md-10">
                 <Field
                   name="website"
                   component={InputField}
                   class="form-control"
                   placeholder="http://test-app.com/"
-                  validate={[
-                    required(),
-                    lenientUrl('Please enter a valid URL'),
-                  ]}
+                  validate={[required(), lenientUrl('Please enter a valid URL')]}
                 />
               </div>
             </div>
@@ -342,10 +322,7 @@ class NewApplicationForm extends Component {
                   <label htmlFor="logo-upload">
                     {this.state.details.logo_url === null ||
                     typeof this.state.details.logo_url === 'undefined' ? (
-                      <span
-                        class="upload-icon"
-                        style={{ fontWeight: 'normal' }}
-                      >
+                      <span class="upload-icon" style={{ fontWeight: 'normal' }}>
                         <i class="fa fa-folder-open" />
                         Upload App Icon
                       </span>
@@ -362,7 +339,7 @@ class NewApplicationForm extends Component {
                       id="logo-upload"
                       type="file"
                       class="hide"
-                      onChange={e => {
+                      onChange={(e) => {
                         this.props.change('file', e.target.files[0]);
                         readURL(e.target, this);
                       }}
@@ -372,7 +349,7 @@ class NewApplicationForm extends Component {
               </div>
               <small class="col-md-8 help-block">
                 <i class="i i-info-circle" />
-                <span>{INFO(user).icon}</span>
+                <span>{info(user).icon}</span>
               </small>
             </div>
 
@@ -389,11 +366,11 @@ class NewApplicationForm extends Component {
               <div class="form-group">
                 <label class="col-md-2 control-label">Webhooks:</label>
                 {user.isPartner('pure_platform') ? (
-                  ['live', 'test'].map(mode => {
+                  ['live', 'test'].map((mode, idx) => {
                     const webhook = this.state[`${mode}webhook`];
                     const webhookLoading = this.state[`${mode}webhookLoading`];
                     return (
-                      <div class="col-md-5">
+                      <div class="col-md-5" key={idx}>
                         <WebhookDetail
                           webhook={webhook}
                           webhookLoading={webhookLoading}
@@ -425,9 +402,7 @@ class NewApplicationForm extends Component {
                     text="Save"
                     type="submit"
                     pendingText="Saving..."
-                    onClick={handleSubmit(
-                      this.state.edit ? this.update : this.create
-                    )}
+                    onClick={handleSubmit(this.state.edit ? this.update : this.create)}
                   />
 
                   {this.state.edit && (
@@ -460,9 +435,7 @@ class AppDetails extends Component {
     return (
       <Fragment>
         <div class="col-md-offset-2 col-md-10">
-          <h4 class="form-header text-left">
-            {type === 'dev' ? 'Development' : 'Production'}:
-          </h4>
+          <h4 class="form-header text-left">{type === 'dev' ? 'Development' : 'Production'}:</h4>
         </div>
 
         <div class="form-group">
@@ -487,10 +460,7 @@ class AppDetails extends Component {
               placeholder="Client Secret"
             />
             {!this.state.showSecret && (
-              <button
-                class="btn btn-default btn-show-secret"
-                onClick={this.showSecret}
-              >
+              <button class="btn btn-default btn-show-secret" onClick={this.showSecret}>
                 <i class="fa fa-eye" />
               </button>
             )}
@@ -511,7 +481,7 @@ class AppDetails extends Component {
           <div class="clearfix" />
           <small class="col-md-offset-2 col-md-10 help-block">
             <i class="i i-info-circle" />
-            <span>{INFO(user)[type]}</span>
+            <span>{info(user)[type]}</span>
           </small>
         </div>
       </Fragment>
@@ -519,14 +489,9 @@ class AppDetails extends Component {
   }
 }
 
-function WebhookDetail({
-  webhookLoading,
-  webhook,
-  mode = '',
-  showWebhookModal,
-}) {
+function WebhookDetail({ webhookLoading, webhook, mode = '', showWebhookModal }) {
   return webhookLoading ? (
-    <LoaderDots customClass={'loader-dots'} />
+    <LoaderDots customClass="loader-dots" />
   ) : (
     <div>
       {webhook ? (
@@ -536,30 +501,17 @@ function WebhookDetail({
           </div>
           <div>
             <strong>Active: </strong>{' '}
-            <i
-              class={`fa ${
-                webhook.active
-                  ? 'fa-check text-success'
-                  : 'fa-close text-danger'
-              }`}
-            />
+            <i class={`fa ${webhook.active ? 'fa-check text-success' : 'fa-close text-danger'}`} />
           </div>
           <div>
             <strong>Total Events: </strong>
-            {
-              Object.keys(webhook.events).filter(i => !!webhook.events[i])
-                .length
-            }
+            {Object.keys(webhook.events).filter((i) => !!webhook.events[i]).length}
           </div>
         </Fragment>
       ) : (
         <p>No {mode} webhook created</p>
       )}
-      <button
-        class="btn btn-default webhook-btn m-t"
-        onClick={showWebhookModal}
-        type="button"
-      >
+      <button class="btn btn-default webhook-btn m-t" onClick={showWebhookModal} type="button">
         Manage {mode && titleCase(mode)} Webhook
       </button>
     </div>

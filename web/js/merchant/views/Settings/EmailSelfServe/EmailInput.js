@@ -7,8 +7,8 @@ import { getEmailStatus } from 'merchant/reducers/team';
 import Input from 'common/new-ui/Input';
 import Form from 'common/new-ui/Form';
 import Button from 'common/new-ui/Button';
-import { required } from 'common/utils/validators';
-import { isEmail } from 'common/utils/validators';
+import { required, isEmail } from 'common/utils/validators';
+
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
@@ -16,6 +16,7 @@ import NewID from './components/NewId/NewID';
 import SameTeam from './components/SameTeam/SameTeam';
 import DifferentTeam from './components/DifferentTeam/DifferentTeam';
 
+// eslint-disable-next-line no-shadow
 const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmailStatus }) => {
   const [disabled, setDisabled] = useState(false);
   let enteredEmail = '';
@@ -113,12 +114,14 @@ const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmai
         <Input
           name="reEmail"
           type="email"
-          onPaste={function (e) {
+          onPaste={(e) => {
             e.preventDefault();
+            return null;
           }}
           placeholder="Re-Enter Email"
           validator={(value) => {
             if (value !== enteredEmail) return "Email doesn't match";
+            return null;
           }}
           required
         />

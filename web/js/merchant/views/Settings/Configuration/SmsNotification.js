@@ -10,6 +10,8 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import { SMS_NOTIF } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
+
+// eslint-disable-next-line no-shadow
 function SmsNotification({ currentUser, showNotification }) {
   const [sms_optin, setSmsOptin] = useState(null);
 
@@ -126,8 +128,8 @@ function SmsNotification({ currentUser, showNotification }) {
 
         <span class="toggler-btn">
           <SwitchField
-            checked={sms_optin ? true : false}
-            onChange={(_, cb) => toggleSmsNotification(sms_optin ? false : true, cb)}
+            checked={!!sms_optin}
+            onChange={(_, cb) => toggleSmsNotification(!sms_optin, cb)}
             type="prime"
           />
           {sms_optin ? <b class="text-primary">Enabled</b> : <b class="text-faded">Disbaled</b>}

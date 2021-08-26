@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
@@ -11,6 +12,7 @@ import Definition from 'common/ui/Definition';
 import Button from 'common/new-ui/Button';
 import Alert from 'common/new-ui/Alert';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import PropTypes from 'prop-types';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import DocsLink from 'merchant/components/DocsLink';
@@ -21,19 +23,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import AddEditWebhook from './AddEditWebhook';
 import WebhookStats from './components/WebhookStats';
 
-@withRouter
-@connect(
-  (state) => {
-    return {
-      userData: state.session.user,
-      webhooks: state.webhooks,
-      modeFormatted: state.session.modeFormatted,
-    };
-  },
-  { ...WebhookActions, ...ModalActions, ...NotificationsActions },
-)
-@RTracking(() => window.rzpQ.component('WebhooksContainer'))
-export default class WebhookEntity extends Component {
+class WebhookEntity extends Component {
   state = {
     toggleStatusLoading: false,
   };
@@ -64,7 +54,7 @@ export default class WebhookEntity extends Component {
   toggleActive = (isChecked, cb) => {
     this.setState({ toggleStatusLoading: true });
     const { webhooks } = this.props.webhooks;
-    const webhook = webhooks.find((webhook) => webhook.id === this.props.id);
+    const webhook = webhooks.find((_webhook) => _webhook.id === this.props.id);
     const newWebhookData = {
       ...webhook,
       active: isChecked,
@@ -72,7 +62,7 @@ export default class WebhookEntity extends Component {
 
     return this.props
       .saveWebhook(newWebhookData)
-      .then((webhook) => {
+      .then(() => {
         cb(true);
         this.setState({ toggleStatusLoading: false });
       })
@@ -86,7 +76,7 @@ export default class WebhookEntity extends Component {
   };
 
   handleDelete = (webhooks) => {
-    const webhook = webhooks.find((webhook) => webhook.id === this.props.id);
+    const webhook = webhooks.find((_webhook) => _webhook.id === this.props.id);
     this.context
       .confirm({
         header: 'Are you sure?',
@@ -125,11 +115,7 @@ export default class WebhookEntity extends Component {
                 }),
               );
             })
-            .catch((err) => {
-              this.setState({
-                errors: err.errors,
-              });
-            });
+            .catch(() => {});
         },
       })
       .catch(() => {});
@@ -137,9 +123,9 @@ export default class WebhookEntity extends Component {
 
   render() {
     const webhooksState = this.props.webhooks;
-    const { loadingWebhook, webhooks, error } = webhooksState;
+    const { loadingWebhook, webhooks } = webhooksState;
     const { userData } = this.props;
-    const webhook = webhooks.find((webhook) => webhook.id === this.props.id);
+    const webhook = webhooks.find((_webhook) => _webhook.id === this.props.id);
 
     if (loadingWebhook || !webhook) {
       return (
@@ -151,9 +137,9 @@ export default class WebhookEntity extends Component {
       );
     }
 
-    let activeEvents = [];
+    const activeEvents = [];
 
-    Object.keys(webhook.events).forEach(function (key) {
+    Object.keys(webhook.events).forEach((key) => {
       if (webhook.events[key] === true) {
         activeEvents.push(key);
       }
@@ -239,8 +225,8 @@ export default class WebhookEntity extends Component {
                           childrenPosition="top"
                           class="CollapsibleFields"
                         >
-                          {activeEvents.slice(7).map((event) => (
-                            <p>{event}</p>
+                          {activeEvents.slice(7).map((event, idx) => (
+                            <p key={idx}>{event}</p>
                           ))}
                         </Collapsible>
                       </div>
@@ -276,3 +262,19 @@ export default class WebhookEntity extends Component {
     );
   }
 }
+
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        userData: state.session.user,
+        webhooks: state.webhooks,
+        modeFormatted: state.session.modeFormatted,
+      };
+    },
+    { ...WebhookActions, ...ModalActions, ...NotificationsActions },
+  ),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('WebhooksContainer')),
+)(WebhookEntity);

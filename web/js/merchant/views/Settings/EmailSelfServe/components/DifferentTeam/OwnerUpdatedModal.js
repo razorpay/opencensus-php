@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import { compose } from 'redux';

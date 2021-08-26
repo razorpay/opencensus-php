@@ -8,6 +8,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const SCREEN = window.location.pathname.includes('payment-methods') ? 'payment methods' : 'config';
 
+// eslint-disable-next-line no-shadow
 const ExitConfirmation = ({ closeModal, saveFormData, showNotification }) => {
   const saveDraft = () => {
     saveFormData();
@@ -37,7 +38,7 @@ const ExitConfirmation = ({ closeModal, saveFormData, showNotification }) => {
       url: 'international_enablement',
       method: 'delete',
     })
-      .then((res) => {
+      .then(() => {
         closeModal();
       })
       .catch((err) => {

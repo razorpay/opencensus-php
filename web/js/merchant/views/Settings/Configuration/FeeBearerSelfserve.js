@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { getCustomURL } from 'merchant/components/DocsLink';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import { bindActionCreators } from 'redux';
 import { merchantFetch } from 'merchant/utils/ajax';

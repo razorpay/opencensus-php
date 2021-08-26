@@ -1,10 +1,12 @@
+import React from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import moment from 'moment';
 
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import PropTypes from 'prop-types';
+
+import { Popover, PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   createMerchantInstrumentRequest,
@@ -34,9 +36,6 @@ import {
 import { CreateTicketEmitter } from '../../../TicketSupport/utils';
 
 class LeafListItem extends React.Component {
-  constructor(props) {
-    super(props);
-  }
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -61,13 +60,13 @@ class LeafListItem extends React.Component {
     return this.props.openModal({
       component: (
         <PaytmWalletIntegration
-          fetchInstrumentStatus={async () => {
+          fetchInstrumentStatus={() => {
             try {
               return window.location.reload();
             } catch (err) {
-              showNotification({
+              return showNotification({
                 type: 'error',
-                message: errors[0],
+                message: err.errors[0],
               });
             }
           }}
@@ -84,8 +83,8 @@ class LeafListItem extends React.Component {
 
   handleCreateRequest = () => {
     this.setState({ loading: true });
-    let { instrument, intermediateInstrument, leafInstrument, instrumentsTat } = this.props;
-    let requestSlug = `pg.${intermediateInstrument && intermediateInstrument.slug}.${
+    const { instrument, intermediateInstrument, leafInstrument, instrumentsTat } = this.props;
+    const requestSlug = `pg.${intermediateInstrument && intermediateInstrument.slug}.${
       leafInstrument && leafInstrument.slug
     }.${instrument.slug}`.replace(/\.null|\.undefined/g, '');
 
@@ -108,7 +107,7 @@ class LeafListItem extends React.Component {
           <div style={{ marginBottom: '-5px' }}>
             This instrument will be enabled for you using &nbsp;
             <span class="toggler-btn">
-              <a href="https://razorpay.com/pricing/" target="_blank" rel="noreferrer">
+              <a href="https://razorpay.com/pricing/" target="_blank" rel="noopener noreferrer">
                 Standard Pricing <i class="i i-external-link" style={{ marginLeft: '2px' }} />
               </a>
             </span>
@@ -185,7 +184,7 @@ class LeafListItem extends React.Component {
           });
         },
       })
-      .catch((e) => {});
+      .catch(() => {});
   };
 
   handleCancelRequest = (instrument) => {
@@ -277,7 +276,7 @@ class LeafListItem extends React.Component {
           });
         },
       })
-      .catch((e) => {});
+      .catch(() => {});
   };
 
   handleRaiseRequest = () => {
@@ -287,13 +286,8 @@ class LeafListItem extends React.Component {
   };
 
   render() {
-    let {
-      instrument,
-      intermediateInstrument,
-      leafInstrument: { actionItems },
-      instrumentsTat,
-    } = this.props;
-    let ctaClass = {
+    const { instrument, intermediateInstrument, instrumentsTat } = this.props;
+    const ctaClass = {
       Request: 'btn btn-primary',
       account_linkable: 'btn btn-primary',
       requestable: 'btn btn-primary',
@@ -307,7 +301,7 @@ class LeafListItem extends React.Component {
       greyed: 'btn btn-primary disabled',
     };
 
-    let getListClass = (status, path) => {
+    const getListClass = (status, path) => {
       if ([REJECTED, ACTION_REQUIRED].includes(status)) {
         return 'action-required-list-item';
       } else if (status === ACTIVATED_ACTION_REQUIRED) {
@@ -323,7 +317,7 @@ class LeafListItem extends React.Component {
       }
     };
 
-    let statusPopoverText = {
+    const statusPopoverText = {
       activated: 'Payment method active on your checkout',
       requested: 'Payment method has been requested',
       pending: 'Your request has been forwarded for approval',
@@ -472,18 +466,14 @@ class LeafListItem extends React.Component {
               instrument.path !== 'pg.wallet.paytm' && (
                 <div className="flex-end">
                   <div class={ctaClass[instrument.status]}>
-                    <>
-                      {instrument.status === ACTIVATED_ACTION_REQUIRED
-                        ? 'activated'
-                        : instrument.status.replace('_', ' ')}
-                      <Popover align="bottom" theme="dark">
-                        <PopoverBody>
-                          <div style={{ textAlign: 'left', textTransform: 'none' }}>
-                            {statusPopoverText[instrument.status]}
-                          </div>
-                        </PopoverBody>
-                      </Popover>
-                    </>
+                    {instrument.status.replace('_', ' ')}
+                    <Popover align="bottom" theme="dark">
+                      <PopoverBody>
+                        <div style={{ textAlign: 'left', textTransform: 'none' }}>
+                          {statusPopoverText[instrument.status]}
+                        </div>
+                      </PopoverBody>
+                    </Popover>
                   </div>
                 </div>
               )}
@@ -491,10 +481,10 @@ class LeafListItem extends React.Component {
         </div>
         {/* Requested state */}
         {instrument.status === REQUESTED && (
-          <div className="instrument-description">
-            <div className="instrument-description-container requested-list-item">
-              <i className="i i-info-outline"></i>
-              <p>
+          <div className="flex-end instrument-description">
+            <div className="instrument-description-container">
+              <i className="i i-info-outline" />
+              <p className="est-date-para">
                 Estimated date of enablement:{' '}
                 <strong>
                   {instrumentsTat &&
@@ -525,12 +515,10 @@ class LeafListItem extends React.Component {
           </div>
         )}
         {[REJECTED, ACTION_REQUIRED].includes(instrument.status) && (
-          <>
-            <div class="comment" title={instrument.comment}>
-              <i class="i i-info-outline" />
-              <p>{instrument.comment || 'No comments available'}</p>
-            </div>
-          </>
+          <div class="comment" title={instrument.comment}>
+            <i class="i i-info-outline" />
+            <p>{instrument.comment || 'No comments available'}</p>
+          </div>
         )}
         {instrument.status === ACTIVATED_ACTION_REQUIRED && (
           <div className="comment">
@@ -546,7 +534,7 @@ class LeafListItem extends React.Component {
                   Boost Success Rate
                 </div>
                 <div className="toggle">
-                  <i className="i i-chevron-down"></i>
+                  <i className="i i-chevron-down" />
                 </div>
               </summary>
               <div className="description">{instrument.comment || 'No comments available'}</div>

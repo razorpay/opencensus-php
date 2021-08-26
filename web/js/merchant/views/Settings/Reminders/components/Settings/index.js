@@ -1,5 +1,8 @@
+import React from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 import { withRouter, Prompt } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
 import { findBy, objectDiff, isBlank } from 'common/utils/rzp-utils';
 
@@ -23,19 +26,7 @@ const initState = {
   },
 };
 
-@withRouter
-@connect(
-  state => {
-    return {
-      user: state.session.user,
-    };
-  },
-  {
-    ...ModalActions,
-    showNotification,
-  }
-)
-export default class ReminderSettings extends React.Component {
+class ReminderSettings extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -80,20 +71,24 @@ export default class ReminderSettings extends React.Component {
     return this.props
       .disableEnableReminders(!this.state.isEnabled)
       .then(() => {
-        this.setState({
-          isEnabled: !this.state.isEnabled,
+        this.setState((prevState) => {
+          return {
+            isEnabled: !prevState.isEnabled,
+          };
         });
 
         this.props.showNotification({
           type: 'success',
-          message: `Reminders ${
-            this.state.isEnabled ? 'disabled' : 'enabled'
-          } for ${this.typeInLowerCase}`,
+          message: `Reminders ${this.state.isEnabled ? 'disabled' : 'enabled'} for ${
+            this.typeInLowerCase
+          }`,
         });
       })
       .catch(({ errors }) => {
-        this.setState({
-          isEnabled: !this.state.isEnabled,
+        this.setState((prevState) => {
+          return {
+            isEnabled: !prevState.isEnabled,
+          };
         });
 
         this.props.showNotification({
@@ -108,14 +103,10 @@ export default class ReminderSettings extends React.Component {
       return this.disableReminderSetting();
     }
 
-    this.context
+    return this.context
       .confirm({
         header: `Disable reminders for all ${this.typeInLowerCase} ?`,
-        message: `There are ${
-          this.props.totalUnpaidLinks.count
-        } existing unpaid ${
-          this.typeInLowerCase
-        } that have reminders scheduled.`,
+        message: `There are ${this.props.totalUnpaidLinks.count} existing unpaid ${this.typeInLowerCase} that have reminders scheduled.`,
         affirmativeLabel: 'Yes, disable',
         affirmativePendingLabel: 'Disabling...',
         abortLabel: 'No, don’t!',
@@ -129,17 +120,19 @@ export default class ReminderSettings extends React.Component {
       .onSaveClick({
         ...this.state.settings,
       })
-      .then(resp => {
-        this.setState({
-          __stashed_settings__: {
-            ...this.state.settings,
-          },
+      .then(() => {
+        this.setState((prevState) => {
+          return {
+            __stashed_settings__: {
+              ...prevState.settings,
+            },
+          };
         });
       });
   };
 
   getUpdatedReminderOptionsList = (listType, newList) => {
-    return this.state[listType].map(reminder => {
+    return this.state[listType].map((reminder) => {
       const disabled = !!findBy(newList, 'value', reminder.value);
 
       return {
@@ -149,22 +142,23 @@ export default class ReminderSettings extends React.Component {
     });
   };
 
-  onChange = type => list => {
-    const listType =
-      type === 'withExpiry' ? 'withExpireByConfigs' : 'withOutExpireByConfigs';
+  onChange = (type) => (list) => {
+    const listType = type === 'withExpiry' ? 'withExpireByConfigs' : 'withOutExpireByConfigs';
 
-    const newList = list.map(ele => ({ ...ele, disabled: true }));
+    const newList = list.map((ele) => ({ ...ele, disabled: true }));
 
-    this.setState({
-      settings: {
-        ...this.state.settings,
-        [type]: newList,
-      },
-      [listType]: this.getUpdatedReminderOptionsList(listType, newList),
+    this.setState((prevState) => {
+      return {
+        settings: {
+          ...prevState.settings,
+          [type]: newList,
+        },
+        [listType]: this.getUpdatedReminderOptionsList(listType, newList),
+      };
     });
   };
 
-  handleChannelChange = type => e => {
+  handleChannelChange = (type) => (e) => {
     const { settings } = this.state;
 
     this.setState({
@@ -182,9 +176,7 @@ export default class ReminderSettings extends React.Component {
   };
 
   isChanged = () => {
-    return !isBlank(
-      objectDiff(this.state.__stashed_settings__, this.state.settings)
-    );
+    return !isBlank(objectDiff(this.state.__stashed_settings__, this.state.settings));
   };
 
   isValid = () => {
@@ -192,28 +184,28 @@ export default class ReminderSettings extends React.Component {
 
     return (
       (settings.withExpiry.length || settings.withOutExpiry.length) &&
-      (settings.advancedSettings.channels.email ||
-        settings.advancedSettings.channels.sms)
+      (settings.advancedSettings.channels.email || settings.advancedSettings.channels.sms)
     );
   };
 
-  handleRouteChange = location => {
+  handleRouteChange = (location) => {
     this.context.confirm({
       header: 'Discard unsaved changes?',
-      message:
-        'You have made changes to the reminder schedule.  All changes will be lost.',
+      message: 'You have made changes to the reminder schedule.  All changes will be lost.',
       affirmativeLabel: 'Discard',
       abortLabel: 'Cancel',
       action: () => {
         this.setState(
-          {
-            settings: {
-              ...this.state.__stashed_settings__,
-            },
+          (prevState) => {
+            return {
+              settings: {
+                ...prevState.__stashed_settings__,
+              },
+            };
           },
           () => {
             this.props.history.push(location.pathname);
-          }
+          },
         );
       },
     });
@@ -222,13 +214,8 @@ export default class ReminderSettings extends React.Component {
   };
 
   render() {
-    const {
-        settings,
-        isEnabled,
-        withExpireByConfigs,
-        withOutExpireByConfigs,
-      } = this.state,
-      { type, totalUnpaidLinks, maxReminderCount } = this.props;
+    const { settings, isEnabled, withExpireByConfigs, withOutExpireByConfigs } = this.state;
+    const { type, totalUnpaidLinks, maxReminderCount } = this.props;
 
     return (
       <div class={`setting-item ${isEnabled ? 'enabled' : 'disabled'}`}>
@@ -245,10 +232,7 @@ export default class ReminderSettings extends React.Component {
 
             {isEnabled && (
               <div class="panel-body">
-                <Prompt
-                  when={this.isChanged()}
-                  message={this.handleRouteChange}
-                />
+                <Prompt when={this.isChanged()} message={this.handleRouteChange} />
 
                 <ReminderOptionSetting
                   isExpiry
@@ -285,3 +269,18 @@ export default class ReminderSettings extends React.Component {
     );
   }
 }
+
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+      };
+    },
+    {
+      ...ModalActions,
+      showNotification,
+    },
+  ),
+)(ReminderSettings);

@@ -5,15 +5,14 @@ import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { pluralize } from 'common/utils/rzp-utils';
 
-@withRouter
-export default class WebhooksList extends React.Component {
+class WebhooksList extends React.Component {
   render() {
     const { webhooks, isLoading, onNewWebhookClick } = this.props;
 
     const WebhooksListItem = ({ webhook }) => {
-      let activeEventsCount = [];
+      const activeEventsCount = [];
 
-      Object.keys(webhook.events).forEach(function (key) {
+      Object.keys(webhook.events).forEach((key) => {
         if (webhook.events[key] === true) {
           activeEventsCount.push(key);
         }
@@ -28,7 +27,7 @@ export default class WebhooksList extends React.Component {
           </td>
           <td>
             <span
-              className={'status-label label ' + (webhook.active ? 'label-info' : 'label-disabled')}
+              className={`status-label label ${webhook.active ? 'label-info' : 'label-disabled'}`}
             >
               {webhook.active ? 'Enabled' : 'Disabled'}
             </span>
@@ -86,3 +85,5 @@ export default class WebhooksList extends React.Component {
     );
   }
 }
+
+export default withRouter(WebhooksList);

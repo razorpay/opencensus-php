@@ -25,9 +25,7 @@ function CaptureSettingsModal({ closeModal, handleDone }) {
           </div>
           <div class="section-content">
             <div class="title">Automatic Capture</div>
-            <div class="description">
-              Payments will be captured by Razorpay automatically
-            </div>
+            <div class="description">Payments will be captured by Razorpay automatically</div>
           </div>
         </div>
         <div class="section">
@@ -43,15 +41,14 @@ function CaptureSettingsModal({ closeModal, handleDone }) {
           <div class="section-content">
             <div class="title">Manual Capture</div>
             <div class="description">
-              Payments have to be captured manually by you via the API or the
-              dashboard
+              Payments have to be captured manually by you via the API or the dashboard
             </div>
           </div>
         </div>
         <div class="actions">
           <button
             class="btn btn-primary"
-            disabled={selectedRow ? false : true}
+            disabled={!selectedRow}
             onClick={() => {
               handleDone(selectedRow === 1 ? 'automatic' : 'manual');
             }}

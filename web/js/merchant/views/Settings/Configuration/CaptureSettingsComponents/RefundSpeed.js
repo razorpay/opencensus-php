@@ -282,11 +282,7 @@ function RefundSpeed(props) {
             <p class="prev-btn" onClick={onPreviousClick}>
               Previous
             </p>
-            <button
-              class="btn btn-primary"
-              onClick={onSaveClick}
-              disabled={refundSpeed ? false : true}
-            >
+            <button class="btn btn-primary" onClick={onSaveClick} disabled={!refundSpeed}>
               Save
             </button>
           </div>

@@ -1,4 +1,5 @@
-import { findBy, filterBy } from 'common/utils/rzp-utils';
+import React from 'react';
+import { findBy } from 'common/utils/rzp-utils';
 
 import Button from 'common/new-ui/Button';
 
@@ -6,18 +7,24 @@ import { PowerSelect } from 'react-power-select';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
+const filterOptions = (options, selectedReminders, selectedOption) => {
+  return options.filter((option) => {
+    if (selectedOption && option.value === selectedOption.value) return true;
+
+    return !findBy(selectedReminders, 'value', option.value);
+  });
+};
+
 export default class ReminderOptionSetting extends React.Component {
-  handleChange = id => ({ option }) => {
+  handleChange = (id) => ({ option }) => {
     const newList = [...this.props.selectedReminders];
     newList[id] = option;
 
     this.props.onChange(newList, this.props.name);
   };
 
-  handleRemove = option => () => {
-    const newList = this.props.selectedReminders.filter(
-      ele => ele.value != option.value
-    );
+  handleRemove = (option) => () => {
+    const newList = this.props.selectedReminders.filter((ele) => ele.value != option.value);
 
     this.props.onChange(newList);
   };
@@ -27,10 +34,7 @@ export default class ReminderOptionSetting extends React.Component {
 
     const newList = [...props.selectedReminders];
 
-    const nextOptions = filterOptions(
-      props.remindersList,
-      props.selectedReminders
-    );
+    const nextOptions = filterOptions(props.remindersList, props.selectedReminders);
 
     newList.push(nextOptions[0]);
 
@@ -38,17 +42,9 @@ export default class ReminderOptionSetting extends React.Component {
   };
 
   render() {
-    const {
-      name,
-      isExpiry,
-      remindersList,
-      selectedReminders,
-      maxReminderCount,
-    } = this.props;
+    const { name, isExpiry, remindersList, selectedReminders, maxReminderCount } = this.props;
 
-    const label = isExpiry
-      ? 'For links with expiry'
-      : 'For links without expiry';
+    const label = isExpiry ? 'For links with expiry' : 'For links without expiry';
 
     const showAddBtn =
       selectedReminders.length != remindersList.length &&
@@ -103,11 +99,3 @@ const RemovableSelect = ({ options, onRemove, ...otherProps }) => (
     </span>
   </div>
 );
-
-const filterOptions = (options, selectedReminders, selectedOption) => {
-  return options.filter(option => {
-    if (selectedOption && option.value === selectedOption.value) return true;
-
-    return !findBy(selectedReminders, 'value', option.value);
-  });
-};

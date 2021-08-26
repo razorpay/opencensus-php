@@ -26,6 +26,8 @@ function getIconFn(iconName) {
       return paylater;
     case 'international':
       return international;
+    default:
+      return null;
   }
 }
 

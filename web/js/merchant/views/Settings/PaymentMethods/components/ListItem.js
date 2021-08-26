@@ -1,5 +1,4 @@
 import { connect } from 'react-redux';
-import Popover, { PopoverBody } from 'common/ui/Popover';
 import { getIcon } from './paymentMethodIcons';
 import {
   setIntrument,
@@ -10,6 +9,7 @@ import { useEffect } from 'react';
 
 const ListItem = ({
   index,
+  /* eslint-disable no-shadow */
   instrument,
   handleClickedInstument,
   from,
@@ -17,7 +17,9 @@ const ListItem = ({
   clearLeafInstrument,
   clearIntermediateInstrument,
   clickedName,
+  /* eslint-disable no-shadow */
 }) => {
+  // eslint-disable-next-line no-shadow
   const handleSetInstrument = (instrument, from) => {
     if (from === 'root') {
       clearLeafInstrument();

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import MultiSelect from './MultiSelect';
 import { useFormikContext } from 'formik';
 

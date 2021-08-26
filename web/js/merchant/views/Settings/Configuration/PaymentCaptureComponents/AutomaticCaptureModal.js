@@ -66,9 +66,9 @@ function AutomaticCaptureModal({ handleBack, handleDone, closeModal, selectedLat
           </button>
           <button
             class="btn btn-primary"
-            disabled={selectedRow ? false : true}
+            disabled={!selectedRow}
             onClick={() => {
-              handleDone(selectedLateAuthType, selectedRow === 1 ? false : true);
+              handleDone(selectedLateAuthType, selectedRow !== 1);
             }}
           >
             Done

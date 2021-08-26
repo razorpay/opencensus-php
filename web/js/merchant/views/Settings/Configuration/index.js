@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 import Spinner from 'common/ui/Spinner';
 import * as ConfigActions from 'merchant/reducers/config';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
@@ -32,20 +33,7 @@ import {
   REFUND_SETTINGS,
   WHATSAPP_NOTIF,
 } from './deeplink-constants';
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      refund_pricing: state.config.refund_pricing,
-      configState: state.config,
-      mode: state.session.mode,
-      org: state.session.org,
-    };
-  },
-  { ...ConfigActions, ...NotificationActions, openModal, closeModal, fetchUser },
-)
-@RTracking(() => window.rzpQ.component('CongfigurationContainer'))
-export default class CongfigurationContainer extends Component {
+class CongfigurationContainer extends Component {
   state = {
     isLoading: false,
     showAxisPaypal: false,
@@ -68,7 +56,7 @@ export default class CongfigurationContainer extends Component {
         this.props
           .fetchFeatureStatus(this.props.user.id, 'axis_paypal_enable')
           .then((fetchFeatureStatusResp) => {
-            if (fetchFeatureStatusResp['data']['status']) {
+            if (fetchFeatureStatusResp.data.status) {
               this.setState({
                 showAxisPaypal: true,
               });
@@ -88,7 +76,7 @@ export default class CongfigurationContainer extends Component {
 
   is_hash_loaded_once = false;
   saveConfig = ({ brand_color, transaction_report_email }, config) => {
-    let data = {
+    const data = {
       brand_color: brand_color ? brand_color.substr(1).toUpperCase() : null,
       transaction_report_email: transaction_report_email
         ? transaction_report_email.split(',')
@@ -256,7 +244,7 @@ export default class CongfigurationContainer extends Component {
 
   handleCovidReliefOptinAndOut = (e) => {
     this.setState({ isLoading: true });
-    let bool = e === true ? 1 : 0;
+    const bool = e ? 1 : 0;
 
     merchantFetch({
       url: `merchants/me/features?features[covid_19_relief]=${bool}`,
@@ -299,15 +287,13 @@ export default class CongfigurationContainer extends Component {
     if (mode === 'live') {
       if (this.props.org.custom_code === 'axis') {
         showInternationalPaymentsCard = this.state.showAxisPaypal;
-      } else {
-        if (user.activated_at < 1614105000) {
-          // Show international payments card if merchant was activated before 24 February 2021 12:00:00 AM GMT+05:30
+      } else if (user.activated_at < 1614105000) {
+        // Show international payments card if merchant was activated before 24 February 2021 12:00:00 AM GMT+05:30
+        showInternationalPaymentsCard = true;
+      } else if (user.internationalActivationFlow.isWhitelistFlow) {
+        if (!user.isAccepted) {
+          // Show international payments card only if merchant's IAF is whitelisted and L1 activated
           showInternationalPaymentsCard = true;
-        } else if (user.internationalActivationFlow.isWhitelistFlow) {
-          if (!user.isAccepted) {
-            // Show international payments card only if merchant's IAF is whitelisted and L1 activated
-            showInternationalPaymentsCard = true;
-          }
         }
       }
     }
@@ -332,7 +318,7 @@ export default class CongfigurationContainer extends Component {
               </IntoView>
             )}
             <IntoView hashedWith={CAPTURE_SETTINGS}>
-                <PaymentSettings org={org} />
+              <PaymentSettings org={org} />
             </IntoView>
             <IntoView hashedWith={REFUND_SETTINGS}>
               <DefaultRefundSpeed org={org} />
@@ -378,3 +364,20 @@ export default class CongfigurationContainer extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+        refund_pricing: state.config.refund_pricing,
+        configState: state.config,
+        mode: state.session.mode,
+        org: state.session.org,
+      };
+    },
+    { ...ConfigActions, ...NotificationActions, openModal, closeModal, fetchUser },
+  ),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('CongfigurationContainer')),
+)(CongfigurationContainer);

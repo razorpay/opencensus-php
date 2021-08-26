@@ -44,7 +44,7 @@ export const parseTimeoutValues = (timeoutValue) => {
 export const doesContainTimeout = (inputArray, value) => {
   const output = inputArray.filter((item) => item.name === value);
 
-  return output.length > 0 ? true : false;
+  return output.length > 0;
 };
 
 export const getTimeoutOptions = (inputArray, timeoutValue) => {

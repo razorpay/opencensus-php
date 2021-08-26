@@ -12,7 +12,7 @@ export default ({ channels, onChannelChange }) => (
         <EntityDetailRow label="Channels">
           <Input.Group required class="InputGroup--inline InputGroup--near">
             <div class="Input-content">
-              {Object.keys(channels).map(channelName => (
+              {Object.keys(channels).map((channelName) => (
                 <Input.Check
                   key={channelName}
                   name={channelName}
@@ -25,8 +25,8 @@ export default ({ channels, onChannelChange }) => (
 
             <div class="m-t">
               <small>
-                Customers will receive email or SMS only if the details are
-                mentioned during the creation of a payment link
+                Customers will receive email or SMS only if the details are mentioned during the
+                creation of a payment link
               </small>
             </div>
           </Input.Group>

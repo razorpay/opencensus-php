@@ -7,9 +7,7 @@ import { AsyncBtn } from 'common/new-ui/Button';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
-@connect(null, { closeModal })
-export default class TwoFactorVerificationOTP extends React.Component {
+class TwoFactorVerificationOTP extends React.Component {
   static defaultProps = {
     onWrongOtp: () => {},
     onSuccess: () => {},
@@ -128,3 +126,5 @@ export default class TwoFactorVerificationOTP extends React.Component {
     );
   }
 }
+
+export default connect(null, { closeModal })(TwoFactorVerificationOTP);

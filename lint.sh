@@ -2,6 +2,7 @@
 
 eslint web/js/merchant/views/Settlements \
   web/js/merchant/views/Transactions \
+  web/js/merchant/views/Settings \
   web/js/merchant/views/TermsAndCondition \
   web/js/merchant/views/referral \
   web/js/merchant/views/onboarding \

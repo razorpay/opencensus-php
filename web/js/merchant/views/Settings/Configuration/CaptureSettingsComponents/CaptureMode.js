@@ -177,11 +177,7 @@ function CaptureMode(props) {
             <span />
           </div>
           <div>
-            <button
-              class="btn btn-primary"
-              onClick={onClickNext}
-              disabled={captureMode ? false : true}
-            >
+            <button class="btn btn-primary" onClick={onClickNext} disabled={!captureMode}>
               Next
             </button>
           </div>

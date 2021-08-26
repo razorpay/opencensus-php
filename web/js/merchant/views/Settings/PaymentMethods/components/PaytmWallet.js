@@ -1,9 +1,9 @@
 import React from 'react';
 
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import { Popover, PopoverBody } from 'common/ui/Popover';
 import { ACCOUNT_LINKABLE } from '../constants';
 
-const ProductionAccount = ({ loading }) => {
+const ProductionAccount = () => {
   return (
     <div style={{ background: 'rgba(232, 235, 239, 0.32)', padding: '10px' }}>
       <div
@@ -26,26 +26,6 @@ const ProductionAccount = ({ loading }) => {
         Paytm Wallet is enabled on Live Mode, customers can transact with Paytm wallet. To view/edit
         your Paytm Production API Credentials, click here.
       </p>
-    </div>
-  );
-};
-
-const TestAccount = ({ loading }) => {
-  return (
-    <div style={{ background: 'rgba(232, 235, 239, 0.32)', padding: '10px' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <p>Test Mode</p>
-        <button class="btn btn-primary mr-25 ml-5">
-          {(loading && 'Loading..') || 'Link Test Account'}
-        </button>
-      </div>
-      <p>You can also enable Paytm on Test Mode to do sample transactions with Paytm Wallet. </p>
     </div>
   );
 };

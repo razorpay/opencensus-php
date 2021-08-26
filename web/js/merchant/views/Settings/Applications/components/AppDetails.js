@@ -7,9 +7,7 @@ export function AppDetailsLoader() {
     <div class="application-details-container col-lg-6">
       <div class="application-details ">
         <div class="app-icon-container">
-          <PlaceholderLoader
-            style={{ height: '100%', width: '100%', display: 'block' }}
-          />
+          <PlaceholderLoader style={{ height: '100%', width: '100%', display: 'block' }} />
         </div>
 
         <div class="app-details-container">
@@ -26,11 +24,11 @@ export default function AppDetails(props) {
   const isConnected = props.type === 'connected';
   const Comp = isConnected ? 'div' : NavLink;
   return (
-    <div class={`application-details-container col-lg-6`}>
+    <div class="application-details-container col-lg-6">
       <Comp class="application-details-inner" to={props.entityDetailLink}>
         <div class="btn-container pull-right">
           <button
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault();
               props.onBtnClick(data);
             }}
@@ -39,9 +37,7 @@ export default function AppDetails(props) {
             {isConnected ? 'Revoke Access' : 'Delete Application'}
           </button>
         </div>
-        <div
-          class={`application-details ${isConnected ? 'connected-app' : ''}`}
-        >
+        <div class={`application-details ${isConnected ? 'connected-app' : ''}`}>
           <div class="app-icon-container">
             <img
               class="app-icon"

@@ -10,7 +10,7 @@ const SubmitForm = () => {
           <div class="Input-elWrapper">
             <label>
               <input required name="submit" class="Input-el" type="checkbox" />
-              <div class="Input-checkbox"></div>
+              <div class="Input-checkbox" />
               <div class="Input-inlineLabel">
                 I have read and understood the{' '}
                 <a href="https://razorpay.com/terms" target="_blank" rel="noopener noreferrer">

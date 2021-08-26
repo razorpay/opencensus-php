@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { closeModal } from 'merchant_common/reducers/modals';
-import { withRouter } from 'react-router';
+import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import AsyncButton from 'react-async-button';
 
+// eslint-disable-next-line no-shadow
 const SameTeam = ({ newEmail, closeModal, history }) => {
   return (
     <div className="e-self-serve">
@@ -15,7 +16,10 @@ const SameTeam = ({ newEmail, closeModal, history }) => {
         </button>
       </div>
       <div className="image-container">
-        <img alt="image here" src='https://cdn.razorpay.com/static/assets/email-self-serve/userImage.svg' />
+        <img
+          alt="image here"
+          src="https://cdn.razorpay.com/static/assets/email-self-serve/userImage.svg"
+        />
       </div>
       <p className="verification-msg">
         {newEmail} already exists in your team. Please upgrade them to owner role from the manage

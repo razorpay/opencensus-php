@@ -12,11 +12,11 @@ const RequestInitiateModal = ({
 }) => {
   const [products, setProducts] = useState({ pg: 1, otherProducts: 0 });
 
-  const togglePG = e => {
+  const togglePG = (e) => {
     setProducts({ ...products, pg: Number(e.target.value) });
   };
 
-  const toggleOtherProducts = e => {
+  const toggleOtherProducts = (e) => {
     setProducts({ ...products, otherProducts: Number(e.target.value) });
   };
 
@@ -26,22 +26,14 @@ const RequestInitiateModal = ({
     if (triggerSource === 'pg') {
       selectedProducts.push('payment_gateway');
     } else if (triggerSource === 'otherProducts') {
-      selectedProducts = selectedProducts.concat([
-        'payment_links',
-        'payment_pages',
-        'invoices',
-      ]);
+      selectedProducts = selectedProducts.concat(['payment_links', 'payment_pages', 'invoices']);
     } else {
       if (products.pg) {
         selectedProducts.push('payment_gateway');
       }
 
       if (products.otherProducts) {
-        selectedProducts = selectedProducts.concat([
-          'payment_links',
-          'payment_pages',
-          'invoices',
-        ]);
+        selectedProducts = selectedProducts.concat(['payment_links', 'payment_pages', 'invoices']);
       }
     }
 
@@ -92,8 +84,8 @@ const RequestInitiateModal = ({
     if (triggerSource === 'pg') {
       return (
         <div>
-          To enable international payments for Payment Gateway, we need some
-          details about your business.
+          To enable international payments for Payment Gateway, we need some details about your
+          business.
         </div>
       );
     }
@@ -101,16 +93,16 @@ const RequestInitiateModal = ({
     if (triggerSource === 'otherProducts') {
       return (
         <div>
-          To enable international payments for Payment Pages, Payment Links &
-          Invoices, we need some details about your business.
+          To enable international payments for Payment Pages, Payment Links & Invoices, we need some
+          details about your business.
         </div>
       );
     }
 
     return (
       <div>
-        We would need some details about your business. How would you like to
-        accept international payments?
+        We would need some details about your business. How would you like to accept international
+        payments?
         <Input.Check
           fieldLabel="On Payment Gateway"
           onChange={togglePG}
@@ -128,17 +120,11 @@ const RequestInitiateModal = ({
 
   return (
     <div class="Modal__Request-initiate-modal">
-      <ModalHeader
-        title="Enable International Payments"
-        onCloseClick={closeModal}
-      />
+      <ModalHeader title="Enable International Payments" onCloseClick={closeModal} />
       <div class="modal-body">
         {getDescriptionContent()}
         <div class="Modal__actions text-right">
-          <Button.Primary
-            onClick={onProvideDetailsClick}
-            disabled={isProvideDetailsDisabled()}
-          >
+          <Button.Primary onClick={onProvideDetailsClick} disabled={isProvideDetailsDisabled()}>
             Provide Details
           </Button.Primary>
         </div>

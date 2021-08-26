@@ -1,35 +1,26 @@
 import { Component } from 'react';
+import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import InputField from 'common/ui/Forms/InputField';
 import ModalHeader from 'common/ui/ModalHeader';
 import Alert from 'common/ui/Forms/Alert';
-import { isBlank } from 'common/utils/rzp-utils';
-import { generateKey } from 'merchant/reducers/keys';
-import { required, phone, email } from 'common/utils/validators';
 import { closeModal } from 'merchant_common/reducers/modals';
 import RadioButton from 'common/ui/Forms/RadioButton';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-@connect((state) => state.session, { closeModal })
-@reduxForm({
-  form: 'rollKey',
-  initialValues: {
-    delay_roll: '1',
-  },
-})
-export default class RollKey extends Component {
-  constructor() {
-    super(...arguments);
+class RollKey extends Component {
+  constructor(props) {
+    super(props);
     this.state = {
       errors: null,
     };
   }
 
   save = (props) => {
-    var params = this.props.params;
+    const params = this.props.params;
     params.delay_roll = props.delay_roll;
     params.merchantId = this.props.merchantId;
 
@@ -132,3 +123,10 @@ export default class RollKey extends Component {
     );
   }
 }
+
+export default compose(
+  connect((state) => state.session, { closeModal, showNotification }),
+  reduxForm({
+    form: 'newKeyModal',
+  }),
+)(RollKey);

@@ -1,6 +1,6 @@
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
-export function NoConnectedApps(props) {
+export function NoConnectedApps() {
   return (
     <div class="text-center content-body connected-apps">
       <div class="img">
@@ -11,7 +11,7 @@ export function NoConnectedApps(props) {
   );
 }
 
-export function LoadingConnectedApps(props) {
+export function LoadingConnectedApps() {
   return (
     <div class="text-center content-body connected-apps">
       <div class="img">

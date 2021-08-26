@@ -43,7 +43,7 @@ const QuickLinks = ({ disabled }) => {
         label="Terms and Conditions"
         disabled={disabled}
         onBlur={formikProps.handleBlur}
-        placeholder={`https://www.example.com/t&c`}
+        placeholder="https://www.example.com/t&c"
         value={formikProps.values.terms_and_conditions_link}
         mature={formikProps.touched.terms_and_conditions_link}
         propagatedError={getError('contact_us_link')}

@@ -18,35 +18,10 @@ import {
 } from 'merchant/reducers/payments/details';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
+
 const selector = formValueSelector('refundModal');
 
-@connect(
-  (state) => {
-    let partial = selector(state, 'partial');
-    let reverse_all = selector(state, 'reverse_all');
-    let payable_amount = selector(state, 'amount');
-    return {
-      ...state.session,
-      ...state.payment,
-      user: state.session.user,
-      transfers: state.payment.transfers,
-      default_refund_speed: state.config.config.default_refund_speed,
-      partial,
-      default_refund_speed: state.config.config.default_refund_speed,
-      payable_amount,
-    };
-  },
-  {
-    closeModal,
-    refundPayment,
-    fetchPayment,
-    fetchRefunds,
-    updateConfig,
-    fetchTransfers,
-    ...NotificationsActions,
-  },
-)
-export default class DebitRefundAnnouncement extends Component {
+class DebitRefundAnnouncement extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -160,3 +135,30 @@ export default class DebitRefundAnnouncement extends Component {
     );
   }
 }
+
+export default connect(
+  (state) => {
+    let partial = selector(state, 'partial');
+    let reverse_all = selector(state, 'reverse_all');
+    let payable_amount = selector(state, 'amount');
+    return {
+      ...state.session,
+      ...state.payment,
+      user: state.session.user,
+      transfers: state.payment.transfers,
+      default_refund_speed: state.config.config.default_refund_speed,
+      partial,
+      default_refund_speed: state.config.config.default_refund_speed,
+      payable_amount,
+    };
+  },
+  {
+    closeModal,
+    refundPayment,
+    fetchPayment,
+    fetchRefunds,
+    updateConfig,
+    fetchTransfers,
+    ...NotificationsActions,
+  },
+)(DebitRefundAnnouncement);

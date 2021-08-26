@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -23,7 +24,6 @@ import IntoView from 'common/ui/IntoView';
 import { CHECKOUT_LANG } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import Button from 'common/new-ui/Button';
-import { merchantFetch } from 'merchant/utils/ajax';
 import { getCustomURL } from 'merchant/components/DocsLink';
 
 const languageOptions = [
@@ -36,17 +36,7 @@ const languageOptions = [
   { name: 'Telugu', code: 'tel' },
 ];
 
-@connect((state) => ({ ...state.config, user: state.session.user }), {
-  uploadLogo,
-  removeLogo,
-  showNotification,
-  fetchLocale,
-  updateLocale,
-  saveLocale,
-  ...ModalActions,
-})
-@reduxForm({})
-export default class CheckoutTheme extends Component {
+class CheckoutTheme extends Component {
   state = { brandColor: this.props.config.brand_color };
 
   componentWillMount() {
@@ -65,16 +55,18 @@ export default class CheckoutTheme extends Component {
   }
 
   updatePreviewTextClr() {
-    const textClr =
-      !window.colorLib || window.colorLib.isDark(this.state.brandColor)
-        ? '#fff'
-        : 'rgba(0, 0, 0, 0.85)';
+    this.setState((prevState) => {
+      const textClr =
+        !window.colorLib || window.colorLib.isDark(prevState.brandColor)
+          ? '#fff'
+          : 'rgba(0, 0, 0, 0.85)';
 
-    const colorVariations = window.colorLib.getColorVariations(this.state.brandColor);
+      const colorVariations = window.colorLib.getColorVariations(prevState.brandColor);
 
-    this.setState({
-      textClr,
-      colorVariations,
+      return {
+        textClr,
+        colorVariations,
+      };
     });
   }
 
@@ -88,7 +80,10 @@ export default class CheckoutTheme extends Component {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    let file = event.target.files[0];
+    let file;
+    if (event?.target?.files && event?.target?.files.length > 0) {
+      file = event.target.files[0];
+    }
     return this.props
       .uploadLogo(file, 'logo')
       .then(() => {
@@ -126,8 +121,8 @@ export default class CheckoutTheme extends Component {
       });
   };
   removeLogo = () => {
-    let config = this.props.config;
-    let payLoad = { ...config, logo_url: null };
+    const config = this.props.config;
+    const payLoad = { ...config, logo_url: null };
     return this.props
       .removeLogo(payLoad)
       .then(() => {
@@ -359,7 +354,9 @@ export default class CheckoutTheme extends Component {
                   <div class="form-group">
                     <label class="col-md-12" style={{ marginTop: 12 }}>
                       <strong>
-                        <TextHighlighter hashedWith={CHECKOUT_LANG}>Default Language</TextHighlighter>
+                        <TextHighlighter hashedWith={CHECKOUT_LANG}>
+                          Default Language
+                        </TextHighlighter>
                       </strong>
                     </label>
                     <div class="col-md-6" style={{ marginTop: 0 }}>
@@ -395,21 +392,37 @@ export default class CheckoutTheme extends Component {
             <div class="footer-note">
               Changes will reflect on{' '}
               <ShowWhen
-                additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
+                additionalCondition={() => user.isOrgAllowedFunctionality('external_links')}
               >
-                <a target="_blank" href={getCustomURL("https://razorpay.com/payment-gateway/")}>
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={getCustomURL('https://razorpay.com/payment-gateway/')}
+                >
                   Checkout page
                 </a>
                 ,{' '}
-                <a target="_blank" href={getCustomURL("https://razorpay.com/payment-links/")}>
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={getCustomURL('https://razorpay.com/payment-links/')}
+                >
                   Payment Links
                 </a>
                 ,{' '}
-                <a target="_blank" href={getCustomURL("https://razorpay.com/invoices/")}>
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={getCustomURL('https://razorpay.com/invoices/')}
+                >
                   Invoices
                 </a>{' '}
                 &{' '}
-                <a target="_blank" href={getCustomURL("https://razorpay.com/payment-pages")}>
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={getCustomURL('https://razorpay.com/payment-pages')}
+                >
                   Payment pages
                 </a>
                 .
@@ -454,3 +467,16 @@ export default class CheckoutTheme extends Component {
     );
   }
 }
+
+export default compose(
+  connect((state) => ({ ...state.config, user: state.session.user }), {
+    uploadLogo,
+    removeLogo,
+    showNotification,
+    fetchLocale,
+    updateLocale,
+    saveLocale,
+    ...ModalActions,
+  }),
+  reduxForm({}),
+)(CheckoutTheme);

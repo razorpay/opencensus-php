@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { compose } from 'redux';
 import RTracking from 'react-tracking';
 import { connect } from 'react-redux';
 import { reduxForm, Field } from 'redux-form';
@@ -15,30 +16,19 @@ import { autoPrefixUrls, getCommonAnalyticsProperties } from 'common/utils/rzp-u
 import { analyticsTrack } from 'common/utils/analytics';
 import VerifyOTP from './VerifyOTPScreen';
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-    };
-  },
-  { showNotification, createSupportDetail },
-)
-@RTracking(() => window.rzpQ.component('MerchantDataCollectionModal'))
-@reduxForm({
-  form: 'addSupportDetails',
-})
-export default class MerchantDataCollectionModal extends Component {
-  state = { isVerifying: false, newEmail: '', newContact: '', newUrl: '' };
+class MerchantDataCollectionModal extends Component {
+  state = { isVerifying: false, newEmail: '', newUrl: '' };
 
   constructor(props) {
     super(props);
     const { supportDetail, initialize } = props;
-    supportDetail &&
+    if (supportDetail) {
       initialize({
         phone: supportDetail.data.phone,
         email: supportDetail.data.email,
         url: supportDetail.data.url,
       });
+    }
   }
 
   resetState = () => {
@@ -53,9 +43,11 @@ export default class MerchantDataCollectionModal extends Component {
   onSubmit = (props) => {
     const {
       tracking,
+      // eslint-disable-next-line no-shadow
       showNotification,
       closeModal,
       supportModal,
+      // eslint-disable-next-line no-shadow
       createSupportDetail,
       supportDetail,
       user,
@@ -92,7 +84,7 @@ export default class MerchantDataCollectionModal extends Component {
       phone.substr(phone.length - 10) !==
         supportDetail.data.phone /* || email !== supportDetail.data.email */
     ) {
-      let validNumber = phone.substr(phone.length - 10);
+      const validNumber = phone.substr(phone.length - 10);
 
       this.setState({
         newEmail: email,
@@ -102,7 +94,7 @@ export default class MerchantDataCollectionModal extends Component {
       });
       return;
     }
-    return createSupportDetail({ email, url: newurl, phone })
+    createSupportDetail({ email, url: newurl, phone })
       .then((res) => {
         if (res.success && supportModal) {
           showNotification({
@@ -111,9 +103,9 @@ export default class MerchantDataCollectionModal extends Component {
           });
         }
         trackSupportDetailSubmitAction({
-          email: `${email ? true : false}`,
-          url: `${url ? true : false}`,
-          phone: `${phone ? true : false}`,
+          email: `${!!email}`,
+          url: `${!!url}`,
+          phone: `${!!phone}`,
         });
 
         tracking.trackEvent(
@@ -238,3 +230,19 @@ export default class MerchantDataCollectionModal extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+      };
+    },
+    { showNotification, createSupportDetail },
+  ),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('MerchantDataCollectionModal')),
+  reduxForm({
+    form: 'addSupportDetails',
+  }),
+)(MerchantDataCollectionModal);

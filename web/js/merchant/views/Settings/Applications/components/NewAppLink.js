@@ -6,7 +6,7 @@ export default function NewAppLink({ toNewApplication }) {
       <NavLink to={toNewApplication}>
         <div class="new-application application-details">
           <div class="app-icon-container">
-            <img class="app-icon" src={'/img/default-app-logo.svg'} alt="" />
+            <img class="app-icon" src="/img/default-app-logo.svg" alt="" />
           </div>
           <div class="app-details-container">
             <div class="app-name">

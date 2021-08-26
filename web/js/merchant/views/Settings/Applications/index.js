@@ -12,17 +12,7 @@ import {
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as ApplicationActions from 'merchant/reducers/applications';
-
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      applications: state.applications,
-    };
-  },
-  { ...ApplicationActions, ...NotificationActions, ...ModalActions },
-)
-export default class ApplicationContainer extends Component {
+class ApplicationContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -47,7 +37,7 @@ export default class ApplicationContainer extends Component {
       action: () =>
         this.props
           .deleteApplication(application.id)
-          .then((response) => {
+          .then(() => {
             this.props.showNotification({
               type: 'success',
               message: 'Application deleted successfully',
@@ -70,7 +60,7 @@ export default class ApplicationContainer extends Component {
       action: () =>
         this.props
           .revokeAccess(token.id)
-          .then((response) => {
+          .then(() => {
             this.props.showNotification({
               type: 'success',
               message: 'Access revoked successfully',
@@ -96,12 +86,7 @@ export default class ApplicationContainer extends Component {
           <LoadingConnectedApps />
         ) : tokens.length ? (
           tokens.map((data) => (
-            <AppDetails
-              data={data}
-              key={data.id}
-              type={'connected'}
-              onBtnClick={this.revokeAccess}
-            />
+            <AppDetails data={data} key={data.id} type="connected" onBtnClick={this.revokeAccess} />
           ))
         ) : (
           <NoConnectedApps />
@@ -142,3 +127,13 @@ export default class ApplicationContainer extends Component {
     );
   }
 }
+
+export default connect(
+  (state) => {
+    return {
+      user: state.session.user,
+      applications: state.applications,
+    };
+  },
+  { ...ApplicationActions, ...NotificationActions, ...ModalActions },
+)(ApplicationContainer);

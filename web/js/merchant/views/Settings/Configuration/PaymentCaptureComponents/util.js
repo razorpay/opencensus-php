@@ -1,11 +1,11 @@
 import moment from 'moment';
 
 export const parseTimeoutValues = (capture_options, key) => {
-  const days = Math.floor(moment.duration(parseInt(capture_options[key]), 'minutes').asDays());
-  let daysInMinutes = moment.duration(parseInt(days), 'days').asMinutes();
+  const days = Math.floor(moment.duration(parseInt(capture_options[key], 10), 'minutes').asDays());
+  const daysInMinutes = moment.duration(parseInt(days, 10), 'days').asMinutes();
   const remaining = capture_options[key] - daysInMinutes;
-  let hrs = moment.duration(parseInt(remaining), 'minutes').asHours();
-  let hrsInMinutes = moment.duration(parseInt(hrs), 'hours').asMinutes();
+  let hrs = moment.duration(parseInt(remaining, 10), 'minutes').asHours();
+  const hrsInMinutes = moment.duration(parseInt(hrs, 10), 'hours').asMinutes();
   const mins = remaining - hrsInMinutes;
   hrs = Math.floor(hrs);
 
@@ -14,9 +14,9 @@ export const parseTimeoutValues = (capture_options, key) => {
   }
 
   const timeObject = {
-    days: days,
-    hrs: hrs,
-    mins: mins,
+    days,
+    hrs,
+    mins,
   };
 
   if (hrs === '00') {
@@ -34,19 +34,20 @@ export const renderTimeoutAsString = (timeObject) => {
   else {
     let str = '';
 
-    if (_obj['days']) {
-      str = `${_obj['days']}`;
-      parseInt(_obj['days']) === 1 ? (str = `${str} day`) : (str = `${str} days`);
+    if (_obj.days) {
+      str = `${_obj.days}`;
+      if (parseInt(_obj.days, 10) === 1) str = `${str} day`;
+      else str = `${str} days`;
     }
 
-    if (_obj['hrs']) {
-      let suffix = _obj['hrs'] == 1 ? 'Hr' : 'Hrs';
-      str = `${str} ${_obj['hrs']} ${suffix}`;
+    if (_obj.hrs) {
+      const suffix = _obj.hrs == 1 ? 'Hr' : 'Hrs';
+      str = `${str} ${_obj.hrs} ${suffix}`;
     }
 
-    if (_obj['mins']) {
-      let suffix = _obj['mins'] == 1 ? 'Min' : 'Mins';
-      str = `${str} ${_obj['mins']} ${suffix}`;
+    if (_obj.mins) {
+      const suffix = _obj.mins == 1 ? 'Min' : 'Mins';
+      str = `${str} ${_obj.mins} ${suffix}`;
     }
 
     return str;

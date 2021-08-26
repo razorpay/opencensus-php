@@ -4,8 +4,6 @@ import AddEditWebhook from 'merchant/views/Settings/Webhooks/AddEditWebhook';
 
 export default class AppWebhook extends Component {
   render() {
-    let component;
-
     if (this.props.loading) {
       // Edit WebhookCreation won't send appId when it's edit webhook for this application
       return (

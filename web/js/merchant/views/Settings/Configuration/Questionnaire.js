@@ -27,11 +27,12 @@ import {
 
 const SCREEN = window.location.pathname.includes('payment-methods') ? 'payment methods' : 'config';
 
+// eslint-disable-next-line no-shadow
 const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { activeTab, isLoading, isSavingForm, initialValues, tabsValidity } = state;
   let loaderTimeout;
-  let isDisabled = false;
+  const isDisabled = false;
 
   useEffect(() => {
     dispatch({ type: 'LOADING', payload: true });
@@ -71,6 +72,61 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
       window.clearTimeout(loaderTimeout); // cleanup
     };
   }, []);
+
+  const validateTab = (formikProps, validateAll, tabIdx) => {
+    const tabVal = [...tabsValidity];
+    if (!validateAll) {
+      tabVal[tabIdx] = true;
+    }
+    Object.keys(formikProps.errors).forEach((item) => {
+      if (fieldToTabMap[item] === tabIdx) {
+        tabVal[fieldToTabMap[item]] = false;
+      }
+    });
+    // check required files
+    if (
+      formikProps.values.accepts_intl_txns === 'true' &&
+      !formikProps.values.documents.current_payment_partner_settlement_record &&
+      !formikProps.values.documents.bank_statement_inward_remittance
+    ) {
+      tabVal[3] = false;
+    }
+    tabVal[4] = false; // always false, no field on this tab
+    dispatch({ type: 'TAB_VALIDITY', payload: tabVal });
+  };
+
+  const transformErrorsFromAPI = (errors, switchTab, validateTabb) => {
+    const tabVal = [true, true, true, true, false];
+    let tabToSwitch = Infinity;
+
+    if (errors.business_txn_size_min || errors.business_txn_size_max) {
+      errors.business_txn_size = `${errors.business_txn_size_min} ${errors.business_txn_size_max}`;
+      delete errors.business_txn_size_min;
+      delete errors.business_txn_size_max;
+    }
+    if (errors.business_txn_size_min || errors.business_txn_size_max) {
+      errors.business_txn_size = `${errors.business_txn_size_min} ${errors.business_txn_size_max}`;
+      delete errors.business_txn_size_min;
+      delete errors.business_txn_size_max;
+    }
+
+    Object.keys(errors).forEach((e) => {
+      if (e !== 'documents') {
+        tabVal[fieldToTabMap[e]] = false;
+
+        errors[e] = errors[e].toString();
+      }
+      tabToSwitch = Math.min(fieldToTabMap[e], tabToSwitch);
+    });
+
+    if (validateTabb) dispatch({ type: 'TAB_VALIDITY', payload: tabVal });
+
+    if (tabToSwitch !== Infinity && switchTab) {
+      dispatch({ type: 'ACTIVE_TAB', payload: tabToSwitch });
+    }
+
+    return errors;
+  };
 
   const removeLoader = (delay) => {
     loaderTimeout = setTimeout(() => {
@@ -150,39 +206,6 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
       });
   };
 
-  const transformErrorsFromAPI = (errors, switchTab, validateTab) => {
-    const tabVal = [true, true, true, true, false];
-    let tabToSwitch = Infinity;
-
-    if (errors.business_txn_size_min || errors.business_txn_size_max) {
-      errors.business_txn_size = errors.business_txn_size_min + ' ' + errors.business_txn_size_max;
-      delete errors.business_txn_size_min;
-      delete errors.business_txn_size_max;
-    }
-    if (errors.business_txn_size_min || errors.business_txn_size_max) {
-      errors.business_txn_size = errors.business_txn_size_min + ' ' + errors.business_txn_size_max;
-      delete errors.business_txn_size_min;
-      delete errors.business_txn_size_max;
-    }
-
-    Object.keys(errors).map((e) => {
-      if (e !== 'documents') {
-        tabVal[fieldToTabMap[e]] = false;
-
-        errors[e] = errors[e].toString();
-      }
-      tabToSwitch = Math.min(fieldToTabMap[e], tabToSwitch);
-    });
-
-    if (validateTab) dispatch({ type: 'TAB_VALIDITY', payload: tabVal });
-
-    if (tabToSwitch !== Infinity && switchTab) {
-      dispatch({ type: 'ACTIVE_TAB', payload: tabToSwitch });
-    }
-
-    return errors;
-  };
-
   const submitForm = (formData, bag) => {
     formData = modelFormDataBeforeSave(formData);
     bag.setStatus(null); // reset status
@@ -196,7 +219,7 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
       },
     });
     merchantFetch({ url: 'international_enablement/submit', method: 'post', data: formData })
-      .then((res) => {
+      .then(() => {
         analyticsTrack({
           objectName: 'intl enablement form',
           actionName: 'submit success',
@@ -275,32 +298,9 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
         dispatch({ type: 'ACTIVE_TAB', payload: 3 });
         tabsValidity[3] = false;
         dispatch({ type: 'TAB_VALIDITY', payload: tabsValidity });
-        return;
       }
     });
     formikProps.handleSubmit();
-  };
-
-  const validateTab = (formikProps, validateAll, tabIdx) => {
-    const tabVal = [...tabsValidity];
-    if (!validateAll) {
-      tabVal[tabIdx] = true;
-    }
-    Object.keys(formikProps.errors).forEach((item) => {
-      if (fieldToTabMap[item] === tabIdx) {
-        tabVal[fieldToTabMap[item]] = false;
-      }
-    });
-    // check required files
-    if (
-      formikProps.values.accepts_intl_txns === 'true' &&
-      !formikProps.values.documents.current_payment_partner_settlement_record &&
-      !formikProps.values.documents.bank_statement_inward_remittance
-    ) {
-      tabVal[3] = false;
-    }
-    tabVal[4] = false; // always false, no field on this tab
-    dispatch({ type: 'TAB_VALIDITY', payload: tabVal });
   };
 
   const handleNext = (formikProps) => {
@@ -388,7 +388,7 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
                   >
                     <main className="form-container">
                       {React.cloneElement(tabsData[activeTab].component, {
-                        triggerSource: triggerSource,
+                        triggerSource,
                         disabled: isDisabled,
                         saveFormData,
                       })}

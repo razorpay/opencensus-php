@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { compose, bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { formValueSelector } from 'redux-form';
@@ -17,7 +18,6 @@ import {
 } from 'merchant/reducers/payments/details';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { CreateTicketEmitter } from '../../../TicketSupport/utils';
-import { compose, bindActionCreators } from 'redux';
 
 const raiseTicket = () => {
   CreateTicketEmitter.emit('create-ticket', 'tickets');

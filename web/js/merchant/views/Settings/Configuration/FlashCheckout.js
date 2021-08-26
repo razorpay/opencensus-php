@@ -6,19 +6,9 @@ import { updateFeatures } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import SwitchField from 'common/ui/Forms/SwitchField';
-import { getCustomURL } from 'merchant/components/DocsLink';
 import { FLASH_CHECKOUT } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      features: state.config.features,
-    };
-  },
-  { updateFeatures, showNotification },
-)
-export default class FlashCheckout extends Component {
+class FlashCheckout extends Component {
   constructor(props) {
     super(props);
     this.state = {};
@@ -38,7 +28,7 @@ export default class FlashCheckout extends Component {
   }
 
   getFlashCheckoutFlag(features) {
-    let noFlashCheckout = features.find((feature) => feature.feature === 'noflashcheckout') || {};
+    const noFlashCheckout = features.find((feature) => feature.feature === 'noflashcheckout') || {};
 
     const fcEnabled = !noFlashCheckout.value;
     return fcEnabled;
@@ -52,8 +42,8 @@ export default class FlashCheckout extends Component {
   };
 
   toggleFc = (enableFC, cb) => {
-    let shouldSync = 0;
-    var data = {
+    const shouldSync = 0;
+    const data = {
       features: {
         noflashcheckout: this.state.fcEnabled,
       },
@@ -73,7 +63,7 @@ export default class FlashCheckout extends Component {
 
     return this.props
       .updateFeatures(data, this.props.user.current)
-      .then((res) => {
+      .then(() => {
         cb(true);
 
         if (enableFC) {
@@ -96,8 +86,10 @@ export default class FlashCheckout extends Component {
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
-        this.setState({
-          fcEnabled: !this.state.fcEnabled,
+        this.setState((prevState) => {
+          return {
+            fcEnabled: !prevState.fcEnabled,
+          };
         });
       })
       .catch((err) => {
@@ -123,7 +115,7 @@ export default class FlashCheckout extends Component {
   };
 
   render() {
-    let { fcEnabled } = this.state;
+    const { fcEnabled } = this.state;
     const {
       org: { custom_code },
     } = this.props;
@@ -132,7 +124,8 @@ export default class FlashCheckout extends Component {
       <div class="panel panel-default">
         <div class="panel-heading">
           <span class="title">
-            <TextHighlighter hashedWith={FLASH_CHECKOUT}>Flash Checkout</TextHighlighter></span>
+            <TextHighlighter hashedWith={FLASH_CHECKOUT}>Flash Checkout</TextHighlighter>
+          </span>
 
           <span class="toggler-btn">
             <SwitchField
@@ -158,6 +151,7 @@ export default class FlashCheckout extends Component {
                   <a
                     class="highlight"
                     target="_blank"
+                    rel="noopener noreferrer"
                     href={
                       custom_code === 'axis'
                         ? 'https://axisbank-docs.razorpay.com/payments/dashboard/settings/configuration/#enable-flash-checkout'
@@ -188,3 +182,13 @@ export default class FlashCheckout extends Component {
     );
   }
 }
+
+export default connect(
+  (state) => {
+    return {
+      user: state.session.user,
+      features: state.config.features,
+    };
+  },
+  { updateFeatures, showNotification },
+)(FlashCheckout);

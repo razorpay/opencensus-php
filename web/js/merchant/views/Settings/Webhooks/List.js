@@ -1,4 +1,5 @@
 import React from 'react';
+import { compose } from 'redux';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import HeaderAction from 'common/ui/HeaderAction';
@@ -14,18 +15,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
 
-@connect(
-  (state) => {
-    return {
-      webhooks: state.webhooks,
-      user: state.session.user,
-      modeFormatted: state.session.modeFormatted,
-    };
-  },
-  { ...WebhookActions, ...ModalActions, luminateRow },
-)
-@RTracking(() => window.rzpQ.component('WebhooksContainer'))
-export default class WebhooksContainer extends ListContainer {
+class WebhooksContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchWebhooks(params);
   }
@@ -103,3 +93,18 @@ export default class WebhooksContainer extends ListContainer {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        webhooks: state.webhooks,
+        user: state.session.user,
+        modeFormatted: state.session.modeFormatted,
+      };
+    },
+    { ...WebhookActions, ...ModalActions, luminateRow },
+  ),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('WebhooksContainer')),
+)(WebhooksContainer);

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -9,7 +10,10 @@ const OwnerUpdatedModal = ({ newEmail, user }) => {
     <div className="e-self-serve">
       <div className="e-self-serve-heading">Owner updated successfully</div>
       <div className="image-container">
-        <img alt="owner updated" src='https://cdn.razorpay.com/static/assets/email-self-serve/userImage.svg' />
+        <img
+          alt="owner updated"
+          src="https://cdn.razorpay.com/static/assets/email-self-serve/userImage.svg"
+        />
       </div>
       <p className="verification-msg">{newEmail} is now the owner of this workspace</p>
       <div className="dialogue-container">
@@ -25,12 +29,10 @@ const OwnerUpdatedModal = ({ newEmail, user }) => {
 };
 
 export default compose(
-  connect(
-    (state) => {
-      return {
-        user: state.session.user,
-      };
-    },
-  ),
+  connect((state) => {
+    return {
+      user: state.session.user,
+    };
+  }),
   withRouter,
 )(OwnerUpdatedModal);

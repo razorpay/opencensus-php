@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import {
@@ -14,14 +15,9 @@ import DocsLink from 'merchant/components/DocsLink';
 
 import PaymentLinksSettings from './PaymentLinksSettings';
 
-@connect(state => state.reminders, {
-  fetchReminders,
-  fetchRemindersConfigs,
-  fetchRemindersMerchantConfigs,
-})
-export default class extends React.Component {
+class Reminders extends React.Component {
   constructor(props) {
-    super();
+    super(props);
 
     this.state = {
       errors: '',
@@ -37,7 +33,7 @@ export default class extends React.Component {
       this.props.fetchReminders(),
       this.props.fetchRemindersConfigs(),
       this.props.fetchRemindersMerchantConfigs(),
-    ]).catch(err => {
+    ]).catch(() => {
       this.setState({
         errors: 'Failed to fetch data',
       });
@@ -77,3 +73,9 @@ export default class extends React.Component {
     );
   }
 }
+
+export default connect((state) => state.reminders, {
+  fetchReminders,
+  fetchRemindersConfigs,
+  fetchRemindersMerchantConfigs,
+})(Reminders);

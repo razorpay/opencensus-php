@@ -20,22 +20,15 @@ import {
 const PaymentMethod = ({
   intermediateInstrument,
   loading,
+  /* eslint-disable no-shadow */
   fetchMerchantInstruments,
   fetchRequestedInstruments,
   clearIntermediateInstrument,
   clearLeafInstrument,
   setLoading,
   showNotification,
+  /* eslint-disable no-shadow */
 }) => {
-  useEffect(() => {
-    setLoading();
-    fetchAllIntruments();
-    return () => {
-      clearIntermediateInstrument();
-      clearLeafInstrument();
-    };
-  }, [fetchMerchantInstruments, fetchRequestedInstruments]);
-
   const fetchAllIntruments = async () => {
     try {
       await fetchMerchantInstruments();
@@ -46,8 +39,16 @@ const PaymentMethod = ({
         message: errors[0],
       });
     }
-    return;
   };
+
+  useEffect(() => {
+    setLoading();
+    fetchAllIntruments();
+    return () => {
+      clearIntermediateInstrument();
+      clearLeafInstrument();
+    };
+  }, [fetchMerchantInstruments, fetchRequestedInstruments]);
 
   const isActivatedUser = window.rzp_user.activation_status === 'activated';
 
@@ -60,7 +61,7 @@ const PaymentMethod = ({
       {!isActivatedUser && (
         <Banner className="no-margin">
           <span>
-            <i className="i i-info-outline"></i> KYC verification is mandatory to request for new
+            <i className="i i-info-outline" /> KYC verification is mandatory to request for new
             payment methods. Please complete your
             <a> activation form</a>, if not done already.
           </span>
@@ -75,7 +76,7 @@ const PaymentMethod = ({
             <a
               href="https://razorpay.com/docs/payment-gateway/dashboard-guide/settings/payment-methods/"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               onClick={() =>
                 analyticsTrack({
                   objectName: 'know more',

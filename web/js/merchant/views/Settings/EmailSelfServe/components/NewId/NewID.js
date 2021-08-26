@@ -3,6 +3,7 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import Button from 'common/new-ui/Button';
 
+// eslint-disable-next-line no-shadow
 const NewID = ({ newEmail, user, closeModal }) => {
   return (
     <div className="e-self-serve">

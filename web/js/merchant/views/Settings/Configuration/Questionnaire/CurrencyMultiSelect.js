@@ -14,7 +14,7 @@ const CurrencyMultiSelect = ({
   error,
   disabled,
 }) => {
-  const [field, meta, helpers] = useField(name);
+  const [meta, helpers] = useField(name);
   const { value, touched } = meta;
   const { setValue, setTouched } = helpers;
 
@@ -98,7 +98,7 @@ const CurrencyMultiSelect = ({
                     } selected`
                   : placeholder}
               </p>
-              <i class={`i ${select.isOpen ? 'i-arrow-up' : 'i-arrow-down'}`}></i>
+              <i class={`i ${select.isOpen ? 'i-arrow-up' : 'i-arrow-down'}`} />
             </div>
           )}
           optionComponent={({ option }) => {

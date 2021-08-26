@@ -4,7 +4,7 @@ import Input from 'common/new-ui/Input';
 import TimeInput from './TimeInput';
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { parseTimeoutValues, renderTimeoutAsString, capitalize } from './util';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import { Popover, PopoverBody } from 'common/ui/Popover';
 import { analyticsTrack } from 'common/utils/analytics';
 
 const refund_options = [
@@ -21,46 +21,48 @@ export default class PaymentsCaptureConfigurationModal extends Component {
       activeStep: this.props.captureType === 'automatic' ? 1 : 2,
       skipped: false,
       completedSteps: [],
-      refundValue: null,
-      automatic: {},
-      manual: {},
+      ...this.getInitialStates(),
     };
   }
 
-  componentDidMount() {
-    if (!this.props.lateAuthConfig) return;
+  getInitialStates() {
+    if (!this.props.lateAuthConfig) return { refundValue: null, automatic: {}, manual: {} };
 
     const capture_options = this.props.lateAuthConfig.config.capture_options;
     let automatic = {};
     let manual = {};
 
-    if (capture_options['automatic_expiry_period']) {
+    if (capture_options.automatic_expiry_period) {
       automatic = parseTimeoutValues(capture_options, 'automatic_expiry_period');
     }
 
-    if (capture_options['manual_expiry_period']) {
+    if (capture_options.manual_expiry_period) {
       manual = parseTimeoutValues(capture_options, 'manual_expiry_period');
     }
 
-    this.setState({
+    return {
       automatic,
       manual,
       refundValue: capture_options.refund_speed,
-    });
+    };
   }
 
   handleAutomaticTimeoutValues = (value, type) => {
-    let _obj = { ...this.state.automatic };
-    if (value) _obj[type] = value;
-    else delete _obj[type];
-    this.setState({ automatic: _obj });
+    this.setState((prevState) => {
+      const _obj = { ...prevState.automatic };
+      if (value) _obj[type] = value;
+      else delete _obj[type];
+      return { automatic: _obj };
+    });
   };
 
   handleManualTimeoutValues = (value, type) => {
-    let _obj = { ...this.state.manual };
-    if (value) _obj[type] = value;
-    else delete _obj[type];
-    this.setState({ manual: _obj });
+    this.setState((prevState) => {
+      const _obj = { ...prevState.manual };
+      if (value) _obj[type] = value;
+      else delete _obj[type];
+      return { manual: _obj };
+    });
   };
 
   handleNext = () => {
@@ -108,8 +110,8 @@ export default class PaymentsCaptureConfigurationModal extends Component {
   };
 
   handleSave = () => {
-    let { captureType } = this.props;
-    let { refundValue } = this.state;
+    const { captureType } = this.props;
+    const { refundValue } = this.state;
 
     this.props.createLateAuthConfig(this.state, this.props.captureType);
 
@@ -137,7 +139,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
   // top: 144px;
   // height: 290px;
   renderStylesWhenActive = () => {
-    let _l = Object.keys(this.state.manual).length;
+    const _l = Object.keys(this.state.manual).length;
 
     if (this.props.captureType === 'manual') {
       return { top: '99px', height: _l > 0 ? '295px' : '253px' };
@@ -154,8 +156,8 @@ export default class PaymentsCaptureConfigurationModal extends Component {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Payments Capture Settings',
       eventAction: 'Save and Close',
-      eventLabel: `${capitalize(captureType)} - Select ${capitalize(
-        refundValue,
+      eventLabel: `${capitalize('captureType')} - Select ${capitalize(
+        'refundValue',
       )} speed - Hover tool tip `,
     });
   };
@@ -250,7 +252,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                       });
                       this.handleNext();
                     }}
-                    disabled={Object.keys(this.state.automatic).length > 0 ? false : true}
+                    disabled={!(Object.keys(this.state.automatic).length > 0)}
                   >
                     Next
                   </button>
@@ -365,7 +367,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                       });
                       this.handleNext();
                     }}
-                    disabled={Object.keys(this.state.manual).length > 0 ? false : true}
+                    disabled={!(Object.keys(this.state.manual).length > 0)}
                   >
                     Next
                   </button>
@@ -458,7 +460,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                   </button>
                   <button
                     class="btn btn-primary"
-                    disabled={this.state.refundValue ? false : true}
+                    disabled={!this.state.refundValue}
                     onClick={this.handleSave}
                   >
                     Save & Close

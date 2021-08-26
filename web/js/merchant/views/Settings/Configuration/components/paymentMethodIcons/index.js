@@ -23,13 +23,14 @@ function getIconFn(iconName) {
       return wallet;
 
     case 'qr':
+    default:
       return qr;
   }
 }
 
 export const getIcon = (iconName, color = {}) => {
   const iconFn = getIconFn(iconName);
-  let { foregroundColor = '#072654', backgroundColor = '#3F71D7' } = color;
+  const { foregroundColor = '#072654', backgroundColor = '#3F71D7' } = color;
 
   return iconFn && iconFn(foregroundColor, backgroundColor);
 };

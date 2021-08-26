@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink, withRouter } from 'react-router-dom';
+import { compose } from 'redux';
+import { Route, NavLink, withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -13,22 +14,26 @@ import Webhooks from 'merchant/views/Settings/Webhooks/List';
 import Applications from 'merchant/views/Settings/Applications/';
 import Application from 'merchant/models/Application';
 import Configuration from 'merchant/views/Settings/Configuration';
-import ApplicationsNew from 'merchant/views/Settings/Applications/new';
 import PaymentMethods from 'merchant/views/Settings/PaymentMethods';
 
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 
-@RTracking(() => window.rzpQ.component('Settings'))
-@withRouter
-@connect(
-  (state) => ({
-    mode: state.session.mode,
-  }),
-  {
-    fetchAddWebsiteWorkflowStatus,
-  },
-)
-export default class Settings extends Component {
+const analyticsGoTo = (name) => {
+  window.rzpAnalytics({
+    eventCategory: 'Dashboard - Settings',
+    eventAction: `Go To - ${name}`,
+  });
+  analyticsTrack({
+    objectName: name,
+    actionName: 'viewed',
+    screen: 'settings',
+    properties: {
+      location: name,
+      ...getCommonAnalyticsProperties(window.rzp_user),
+    },
+  });
+};
+class Settings extends Component {
   state = {
     isWebsiteInWorkflow: false,
     isConnectedAppsFound: false,
@@ -40,7 +45,7 @@ export default class Settings extends Component {
         isWebsiteInWorkflow: data,
       });
     });
-    let application = new Application();
+    const application = new Application();
     application.fetchConnected().then((resp) => {
       this.setState({
         isConnectedAppsFound: Boolean(resp?.data?.count),
@@ -161,18 +166,16 @@ export default class Settings extends Component {
   }
 }
 
-const analyticsGoTo = (name) => {
-  window.rzpAnalytics({
-    eventCategory: 'Dashboard - Settings',
-    eventAction: `Go To - ${name}`,
-  });
-  analyticsTrack({
-    objectName: name,
-    actionName: 'viewed',
-    screen: 'settings',
-    properties: {
-      location: name,
-      ...getCommonAnalyticsProperties(window.rzp_user),
+export default compose(
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('Settings')),
+  connect(
+    (state) => ({
+      mode: state.session.mode,
+    }),
+    {
+      fetchAddWebsiteWorkflowStatus,
     },
-  });
-};
+  ),
+  withRouter,
+)(Settings);

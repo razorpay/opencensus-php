@@ -11,6 +11,7 @@ import { roles } from 'merchant/helpers/data';
 
 import OwnerUpdated from './OwnerUpdatedModal';
 
+// eslint-disable-next-line no-shadow
 const ChangeOwner = ({ openModal, closeModal, user, items, showNotification, updateOwner }) => {
   const [disabled, setDisabled] = useState(false);
   const filteredItems = items.filter((item) => item.role !== 'owner');
@@ -18,9 +19,9 @@ const ChangeOwner = ({ openModal, closeModal, user, items, showNotification, upd
   const onSubmit = (e) => {
     setDisabled(true);
     const { newOwner } = e;
-    const { email } = filteredItems[parseInt(newOwner)];
-    return updateOwner(email, true)
-      .then((res) => {
+    const { email } = filteredItems[parseInt(newOwner, 10)];
+    return updateOwner(email)
+      .then(() => {
         setDisabled(false);
         openModal({
           size: 'small',

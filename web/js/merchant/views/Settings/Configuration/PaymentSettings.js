@@ -11,13 +11,12 @@ import {
   fetchLateAuthConfig,
   createLateAuthConfig,
 } from 'merchant/reducers/config';
-import { DocLink } from 'merchant/components/DocsLink';
+import { DocLink, getCustomURL } from 'merchant/components/DocsLink';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CaptureMode from './CaptureSettingsComponents/CaptureMode';
-import { getCustomURL } from 'merchant/components/DocsLink';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 
 import { parseTimeoutValues } from './CaptureSettingsComponents/data';
@@ -65,26 +64,7 @@ const CAPTURE_DETAILS = [
   },
 ];
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      features: state.config.features,
-      lateAuthConfig: state.config.lateAuthConfig,
-      createdLateAuthConfig: state.config.createdLateAuthConfig,
-      default_refund_speed: state.config.config.default_refund_speed,
-    };
-  },
-  {
-    updateFeatures,
-    showNotification,
-    fetchLateAuthConfig,
-    createLateAuthConfig,
-    showNotification,
-    ...ModalActions,
-  },
-)
-export default class PaymentSettings extends Component {
+class PaymentSettings extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -120,13 +100,12 @@ export default class PaymentSettings extends Component {
   handleCreateLateAuthConfig = (body, authType) => {
     const {
       data: { items },
-      error,
     } = this.props.lateAuthConfig;
     this.props.closeModal();
 
     let method = '';
 
-    let payload = {
+    const payload = {
       type: 'late_auth',
       config: { capture: authType, capture_options: {} },
     };
@@ -229,18 +208,18 @@ export default class PaymentSettings extends Component {
   getTimeoutValue = (obj) => {
     let timeoutValue = 0;
 
-    if (obj['days']) {
-      let daysInMinutes = moment.duration(parseInt(obj['days']), 'days').asMinutes();
+    if (obj.days) {
+      const daysInMinutes = moment.duration(parseInt(obj.days, 10), 'days').asMinutes();
       timeoutValue = timeoutValue + daysInMinutes;
     }
 
-    if (obj['hrs']) {
-      let hrsInMinutes = moment.duration(parseInt(obj['hrs']), 'hours').asMinutes();
+    if (obj.hrs) {
+      const hrsInMinutes = moment.duration(parseInt(obj.hrs, 10), 'hours').asMinutes();
       timeoutValue = timeoutValue + hrsInMinutes;
     }
 
-    if (obj['mins']) {
-      timeoutValue = timeoutValue + parseInt(obj['mins']);
+    if (obj.mins) {
+      timeoutValue = timeoutValue + parseInt(obj.mins, 10);
     }
 
     return timeoutValue;
@@ -294,27 +273,25 @@ export default class PaymentSettings extends Component {
           />
         ),
       });
-      window.rzpAnalytics({
+      return window.rzpAnalytics({
         eventCategory: 'Dashboard - Payments Capture Settings',
         eventAction: 'Done',
         eventLabel: 'Configure now - Capture Settings - Automatic Capture - Done',
       });
-    } else {
-      this.handleManualCaptureClick();
-      window.rzpAnalytics({
-        eventCategory: 'Dashboard - Payments Capture Settings',
-        eventAction: 'Done',
-        eventLabel: 'Configure now - Capture Settings - Manual Capture - Done',
-      });
     }
+    this.handleManualCaptureClick();
+    return window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments Capture Settings',
+      eventAction: 'Done',
+      eventLabel: 'Configure now - Capture Settings - Manual Capture - Done',
+    });
   };
 
   automaticCaptureDone = (authType, configureTime) => {
     if (configureTime) {
       // open configuration modal
-      authType === 'automatic'
-        ? this.handleAutomaticCaptureClick()
-        : this.handleManualCaptureClick();
+      if (authType === 'automatic') this.handleAutomaticCaptureClick();
+      else this.handleManualCaptureClick();
 
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Payments Capture Settings',
@@ -602,7 +579,9 @@ export default class PaymentSettings extends Component {
                   <button
                     class="btn btn-primary capture-change-btn"
                     onClick={this.changeSettings}
-                    disabled={[rolesList.OWNER,rolesList.ADMIN,rolesList.MANAGER].indexOf(role)===-1}
+                    disabled={
+                      [rolesList.OWNER, rolesList.ADMIN, rolesList.MANAGER].indexOf(role) === -1
+                    }
                   >
                     Change
                   </button>
@@ -619,7 +598,7 @@ export default class PaymentSettings extends Component {
                       : renderTimeoutAsString(
                           parseTimeoutValues(items[0].config.capture_options.manual_expiry_period),
                         )}{' '}
-                    <i className={'i i-chevron-' + (isToggleActive ? 'up' : 'down')} />
+                    <i className={`i i-chevron-${isToggleActive ? 'up' : 'down'}`} />
                   </div>
                   {isToggleActive && (
                     <Timeouts
@@ -637,7 +616,7 @@ export default class PaymentSettings extends Component {
               What is Capturing Payments?
               <span className="details-toggler" onClick={this.handleDetailsToggle}>
                 {isDetailsToggleActive ? 'Hide Details' : 'Show Details'}
-                <i className={'i i-chevron-' + (isDetailsToggleActive ? 'up' : 'down')} />
+                <i className={`i i-chevron-${isDetailsToggleActive ? 'up' : 'down'}`} />
               </span>
               {isDetailsToggleActive && (
                 <div className="capture-details--block">
@@ -673,7 +652,7 @@ export default class PaymentSettings extends Component {
                     style={{ paddingRight: '2px' }}
                     href={getCustomURL('https://razorpay.com/docs/api/orders')}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                   >
                     Orders API
                   </a>{' '}
@@ -695,7 +674,7 @@ export default class PaymentSettings extends Component {
                       style={{ paddingRight: '2px' }}
                       href={getCustomURL('https://razorpay.com/docs/api/orders')}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                     >
                       Orders API
                     </a>
@@ -744,7 +723,7 @@ export default class PaymentSettings extends Component {
                               onClick={this.handleContentToggle}
                             >
                               Timeouts{' '}
-                              <i className={'i i-chevron-' + (isToggleActive ? 'up' : 'down')} />
+                              <i className={`i i-chevron-${isToggleActive ? 'up' : 'down'}`} />
                             </div>
                             {isToggleActive && (
                               <Timeouts
@@ -798,7 +777,7 @@ export default class PaymentSettings extends Component {
                               onClick={this.handleContentToggle}
                             >
                               Timeouts{' '}
-                              <i className={'i i-chevron-' + (isToggleActive ? 'up' : 'down')} />
+                              <i className={`i i-chevron-${isToggleActive ? 'up' : 'down'}`} />
                             </div>
                             {isToggleActive && (
                               <Timeouts
@@ -824,7 +803,7 @@ export default class PaymentSettings extends Component {
                         }
                   }
                   style={{ marginTop: '15px' }}
-                  disabled={role !== 'owner' ? true : false}
+                  disabled={role !== 'owner'}
                 >
                   Change Settings
                 </button>
@@ -840,7 +819,7 @@ export default class PaymentSettings extends Component {
                       style={{ paddingRight: '2px' }}
                       href={getCustomURL('https://razorpay.com/docs/api/orders')}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                     >
                       Orders API
                     </a>
@@ -856,7 +835,7 @@ export default class PaymentSettings extends Component {
                   class="btn btn-primary"
                   onClick={this.configureNow}
                   style={{ marginTop: '15px' }}
-                  disabled={role !== 'owner' ? true : false}
+                  disabled={role !== 'owner'}
                 >
                   Configure Now
                 </button>
@@ -868,3 +847,22 @@ export default class PaymentSettings extends Component {
     );
   }
 }
+
+export default connect(
+  (state) => {
+    return {
+      user: state.session.user,
+      features: state.config.features,
+      lateAuthConfig: state.config.lateAuthConfig,
+      createdLateAuthConfig: state.config.createdLateAuthConfig,
+      default_refund_speed: state.config.config.default_refund_speed,
+    };
+  },
+  {
+    updateFeatures,
+    showNotification,
+    fetchLateAuthConfig,
+    createLateAuthConfig,
+    ...ModalActions,
+  },
+)(PaymentSettings);

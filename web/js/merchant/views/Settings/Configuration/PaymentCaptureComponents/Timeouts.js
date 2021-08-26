@@ -1,6 +1,6 @@
 import { parseTimeoutValues, renderTimeoutAsString } from './util';
 
-function Timeouts({ config, role }) {
+function Timeouts({ config }) {
   const capture_options = config.capture_options;
 
   return (
