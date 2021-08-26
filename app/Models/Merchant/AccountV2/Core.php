@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\Account\Entity;
+use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Merchant\Account\Constants;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -33,6 +34,8 @@ class Core extends Merchant\Core
 
             return $subMerchant;
         });
+
+        $this->invalidateAffectedOwnersCache($account->getId());
 
         $merchantDetails = $account->merchantDetail;
         $dimensions = $this->getDimensionsForAccountV2Metrics($merchantDetails, $partner);
@@ -242,5 +245,11 @@ class Core extends Merchant\Core
         ];
 
         return $dimensions;
+    }
+
+    private function invalidateAffectedOwnersCache(string $merchantId)
+    {
+        (new Stork('live'))->invalidateAffectedOwnersCache($merchantId);
+        (new Stork('test'))->invalidateAffectedOwnersCache($merchantId);
     }
 }

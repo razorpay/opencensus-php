@@ -6,9 +6,12 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Metric;
 use Razorpay\Trace\Logger as Trace;
+use Jitendra\Lqext\TransactionAware;
 
 class MerchantSupportingEntitiesCreateJob extends Job
 {
+    use TransactionAware;
+
     const RETRY_INTERVAL = 300;
 
     const MAX_RETRY_ATTEMPT = 5;
