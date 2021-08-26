@@ -878,6 +878,15 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onZapierPaymentPagePaidV1(Payment\Entity $payment)
+    {
+        $paymentPageCore = new PaymentLink\Core();
+
+        $payload = $paymentPageCore->constructPayloadForZapierWebhook($payment);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     // payouts can be rejected with comment in workflows. passing that comment in payload for consumption by merchant.
     protected function getPayoutRejectCommentInPayload(Payout\Entity $payout, array $payload): array
     {

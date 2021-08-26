@@ -75,6 +75,7 @@ class Fetch extends BaseFetch
             Entity::RECURRING,
             self::EXPAND_EACH,
             Entity::NOTES,
+            Entity::PAYMENT_LINK_ID,
             Entity::VIRTUAL_ACCOUNT_ID,
             Entity::VIRTUAL_ACCOUNT,
             Entity::VA_TRANSACTION_ID,

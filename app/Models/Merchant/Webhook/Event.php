@@ -112,6 +112,7 @@ class Event
     const P2P_DEREGISTRATION_COMPLETED      = 'customer.deregistration.completed';
     const PAYOUT_DOWNTIME_STARTED           = 'payout.downtime.started';
     const PAYOUT_DOWNTIME_RESOLVED          = 'payout.downtime.resolved';
+    const ZAPIER_PAYMENT_PAGE_PAID_V1       = 'zapier.payment_page.paid.v1';
 
     // Payouts Batch API
     const PAYOUT_CREATION_FAILED = 'payout.creation.failed';
@@ -237,6 +238,7 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION,
         self::PAYMENT_LINKS_PRODUCT_REJECTED,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW,
+        self::ZAPIER_PAYMENT_PAGE_PAID_V1,
     ];
 
     /**
@@ -354,6 +356,7 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION,
         self::PAYMENT_LINKS_PRODUCT_REJECTED,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW,
+        self::ZAPIER_PAYMENT_PAGE_PAID_V1,
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -467,6 +470,8 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   => 37,
         self::PAYMENT_LINKS_PRODUCT_REJECTED              => 38,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => 39,
+
+        self::ZAPIER_PAYMENT_PAGE_PAID_V1   => 40,
     ];
 
     /**
@@ -669,6 +674,7 @@ class Event
         self::PAYOUT_PENDING                    => Entity::PAYOUT,
         self::BANKING_ACCOUNTS_ISSUED           => Entity::MERCHANT,
         self::PAYMENT_PAGE_PAID                 => Entity::PAYMENT_PAGE,
+        self::ZAPIER_PAYMENT_PAGE_PAID_V1       => Entity::PAYMENT_PAGE,
         self::P2P_TRANSACTION_CREATED           => Entity::P2P_TRANSACTION,
         self::P2P_TRANSACTION_COMPLETED         => Entity::P2P_TRANSACTION,
         self::P2P_TRANSACTION_FAILED            => Entity::P2P_TRANSACTION,

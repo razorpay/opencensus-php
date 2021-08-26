@@ -30,6 +30,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Jobs\PaymentPageProcessor;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Services\MerchantRiskClient;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -543,6 +544,8 @@ class Core extends Base\Core
         }
 
         $this->doPostPaymentRiskActions($paymentLink, $payment);
+
+        $this->eventPaymentPagePaid($paymentLink, $payment);
     }
 
     public function createOrder(Entity $paymentLink, array $input)
@@ -611,64 +614,6 @@ class Core extends Base\Core
                 $this->migratePaymentPage($paymentPage);
 
                 $migratedPaymentPages[] = $paymentPage->getId();
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->traceException($e);
-
-                $migrationFailedPaymentPages[] = $paymentPage->getId();
-            }
-        }
-
-        $summary = [
-            'total'                          => count($paymentPages),
-            'migrated_payment_pages'         => $migratedPaymentPages,
-            'migration_failed_payment_pages' => $migrationFailedPaymentPages,
-        ];
-
-        $tracePayload         = $summary;
-        $tracePayload['mode'] = $this->mode;
-
-        $this->trace->info(
-            TraceCode::PAYMENT_PAGES_MIGRATED,
-            $tracePayload
-        );
-
-        return $summary;
-    }
-
-    public function migratePaymentPageItemsForMinPurchase(array $input)
-    {
-        $redis = $this->app['redis'];
-
-        $limit = $input['limit'] ?? 1000;
-
-        $lastSyncTimestamp = $redis->get(self::PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP);
-
-        if ($lastSyncTimestamp === null)
-        {
-            $lastSyncTimestamp = 0;
-        }
-
-        $paymentPages = $this->repo->payment_link->getAllPaymentPagesForMigrationOfMinPurchase($lastSyncTimestamp, $limit);
-
-        $this->trace->info(
-            TraceCode::PAYMENT_PAGES_MIGRATION_REQUEST_RECEIVED
-        );
-
-        $migratedPaymentPages = [];
-
-        $migrationFailedPaymentPages = [];
-
-        foreach ($paymentPages as $paymentPage)
-        {
-            try
-            {
-                $this->migratePaymentPageForMinPurchase($paymentPage);
-
-                $migratedPaymentPages[] = $paymentPage->getId();
-
-                $redis->set(self::PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP, $paymentPage->getCreatedAt());
             }
             catch (\Exception $e)
             {
@@ -888,16 +833,6 @@ class Core extends Base\Core
             $input[Entity::PAYMENT_PAGE_ITEMS],
             $this->merchant,
             $paymentLink
-        );
-    }
-
-    protected function migratePaymentPageForMinPurchase(Entity $paymentPage)
-    {
-        (new PaymentPageItem\Core)->migratePaymentPageItemForMinPurchase($paymentPage);
-
-        $this->trace->info(
-            TraceCode::PAYMENT_PAGE_MIGRATED,
-            [Entity::ID => $paymentPage->getId()]
         );
     }
 
@@ -1891,5 +1826,69 @@ class Core extends Base\Core
             'merchant_logo'  => $merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
             'subject'        => $paymentPage->getTitle(),
         ];
+    }
+
+    protected function eventPaymentPagePaid(Entity $paymentPage, Payment\Entity $payment)
+    {
+        $event = '';
+
+        switch ($paymentPage->getViewType())
+        {
+            case ViewType::PAGE:
+
+                $event = 'api.zapier.payment_page.paid.v1';
+
+                break;
+
+            default:
+
+                return;
+
+        }
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $payment
+        ];
+
+        $this->trace->info(TraceCode::PAYMENT_PAGE_FIRE_WEBHOOK, [$event]);
+
+        $this->app['events']->fire($event, $eventPayload);
+    }
+
+    /**
+     * Constructs webhook payload for zapier integration
+     *
+     * @param Payment\Entity $payment
+     * @return array
+     */
+    public function constructPayloadForZapierWebhook(Payment\Entity $payment): array
+    {
+        $payload = [];
+
+        $payload[E::PAYMENT] = $payment->toArrayPublic();
+
+        $paymentPage = $payment->paymentLink;
+
+        if ($paymentPage === null)
+        {
+            return $payload;
+        }
+
+        $payload[E::PAYMENT_PAGE] = $paymentPage->toArrayPublic();
+
+        $order = $payment->order;
+
+        $payload[E::ORDER] = $order->toArrayPublic();
+
+        $lineItems = $order->lineItems;
+
+        if ($lineItems !== null)
+        {
+            $payload[E::ORDER]['items'] = $lineItems->toArrayPublic()['items'];
+        }
+
+        $this->trace->info(TraceCode::PAYMENT_PAGE_FIRE_WEBHOOK, $payload);
+
+        return $payload;
     }
 }

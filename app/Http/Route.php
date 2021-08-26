@@ -1000,6 +1000,8 @@ class Route
         'payment_page_images'                      => ['post',     'payment_pages/images',                           'PaymentLinkController@upload'                                      ],
         'payment_page_get'                         => ['get',      'payment_pages/{id}',                             'PaymentLinkController@get'                                         ],
         'payment_page_get_details'                 => ['get',      'payment_pages/{id}/details',                     'PaymentLinkController@getWithDetailsForDashboard'                  ],
+        'payment_page_get_payments'                => ['get',      'payment_pages/{id}/payments',                    'PaymentLinkController@getPayments'                                 ],
+
         'payment_page_list'                        => ['get',      'payment_pages',                                  'PaymentLinkController@list'                                        ],
         'payment_page_create'                      => ['post',     'payment_pages',                                  'PaymentLinkController@create'                                      ],
         'payment_page_update'                      => ['patch',    'payment_pages/{id}',                             'PaymentLinkController@update'                                      ],
@@ -2897,6 +2899,7 @@ class Route
     ];
 
     public static $private = [
+        'payment_page_get_payments',
         'qr_code_fetch_multiple',
         'qr_payments_fetch_multiple',
         'qr_payment_fetch_for_qr_code',

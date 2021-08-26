@@ -23,6 +23,7 @@ use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\PaymentLink as PaymentLinkModel;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -32,6 +33,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class PaymentLinkTest extends TestCase
 {
     use PaymentTrait;
+    use TestsWebhookEvents;
     use DbEntityFetchTrait;
 
     const TEST_PL_ID    = '100000000000pl';
@@ -1362,6 +1364,70 @@ class PaymentLinkTest extends TestCase
     public function testCreatePaymentLinkWithSupportNumberLargeDigits()
     {
         $this->startTest();
+    }
+
+    public function testZapierPaymentPagePaidWebhook()
+    {
+        $data = $this->createPaymentLinkAndOrderForThat(['view_type' => 'page']);
+
+        $paymentLink = $data['payment_link'];
+
+        $order = $data['payment_link_order']['order'];
+
+        $this->expectWebhookEventWithContents('zapier.payment_page.paid.v1', 'testPaymentPagePaidWebhookEventData');
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert($paymentLink, $order);
+    }
+
+    public function testNoZapierPaymentButtonPaidWebhook()
+    {
+        $data = $this->createPaymentLinkAndOrderForThat(['view_type' => 'button']);
+
+        $paymentLink = $data['payment_link'];
+
+        $order = $data['payment_link_order']['order'];
+
+        $this->dontExpectWebhookEvent('zapier.payment_page.paid.v1');
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert($paymentLink, $order);
+    }
+
+    public function testFetchPaymentsForPaymentPage()
+    {
+        $data = $this->createPaymentLinkAndOrderForThat(['view_type' => 'page']);
+
+        $paymentLink = $data['payment_link'];
+
+        $order = $data['payment_link_order']['order'];
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert($paymentLink, $order);
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testSendPaymentPageReceipt()
+    {
+        $this->testMakePaymentReceiptEnabledCustomSerialEnabled();
+
+        $this->ba->proxyAuth();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $url = '/payment_pages/'.$payment->getPublicId().'/send_receipt';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $order = $payment->order;
+
+        $invoice = $order->invoice;
+
+        $this->assertEquals('thisisareceipt', $invoice->getReceipt());
     }
 
     // -------------------- Protected methods --------------------

@@ -186,13 +186,6 @@ class PaymentLinkController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function migratePaymentPageItemForMinPurchase()
-    {
-        $data = $this->service()->migratePaymentPageItemForMinPurchase($this->input);
-
-        return ApiResponse::json($data);
-    }
-
     public function createOrder(string $id)
     {
         $response = $this->service()->createOrder($id, $this->input);
@@ -280,6 +273,15 @@ class PaymentLinkController extends Controller
         $input = Request::all();
 
         $response = $this->service()->saveReceiptForPayment($paymentId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getPayments(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getPayments($id, $input);
 
         return ApiResponse::json($response);
     }

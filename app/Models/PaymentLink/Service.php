@@ -5,10 +5,11 @@ namespace RZP\Models\PaymentLink;
 use Request;
 use Illuminate\Http\Request  as CurrentRequest;
 
-use RZP\Constants\Mode;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
@@ -239,11 +240,6 @@ class Service extends Base\Service
         return $this->core->migratePaymentPageItems($input);
     }
 
-    public function migratePaymentPageItemForMinPurchase($input)
-    {
-        return $this->core->migratePaymentPageItemsForMinPurchase($input);
-    }
-
     public function createOrder(string $id, array $input)
     {
         $paymentLink = $this->getPaymentLinkAndSetModeAndMerchant($id);
@@ -301,6 +297,41 @@ class Service extends Base\Service
     public function saveReceiptForPayment(string $paymentId, array $input)
     {
         return $this->core->saveReceiptForPaymentAndGeneratePdf($paymentId, $input);
+    }
+
+    public function getPayments(string $id, array $input)
+    {
+        $merchant = $this->merchant;
+
+        $paymentPage = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $payload = $paymentPage->toArrayPublic();
+
+        $payload['payments'] = [];
+
+        $input[Payment\Entity::PAYMENT_LINK_ID] = $paymentPage->getPublicId();
+
+        $payments = $this->repo->payment->fetch($input, $merchant->getId());
+
+        foreach ($payments as $payment)
+        {
+            $order = $payment->order;
+
+            $lineItems = $order->lineItems;
+
+            $payment = $payment->toArrayPublic();
+
+            $payment[E::ORDER] = $order->toArrayPublic();
+
+            if ($lineItems !== null)
+            {
+                $payment[E::ORDER]['items'] = $lineItems->toArrayPublic()['items'];
+            }
+
+            array_push($payload['payments'], $payment);
+        }
+
+        return $payload;
     }
 
     protected function getPaymentLinkAndSetModeAndMerchant(string $id)
