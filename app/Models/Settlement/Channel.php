@@ -24,6 +24,8 @@ class Channel
     const M2P       = 'm2p';
     const AMAZONPAY = 'amz_pay';
     const AMAZONPAY_FTS = 'amazon_pay'; // FTS has "amazon_pay" as value where as FTA has "amz_pay" due to DB limitations
+    const ICICIEXP = "iciciexp"; // settlement has "icici_opgsp_export" as value where api db has "iciciexp" due to DB limitations
+    const ICICI_OPGSP_EXPORT = "icici_opgsp_export";
 
     public static $gateways = [
         self::KOTAK => [
@@ -74,6 +76,7 @@ class Channel
             self::CITI,
             self::M2P,
             self::AMAZONPAY,
+            self::ICICI_OPGSP_EXPORT,
         ];
     }
 

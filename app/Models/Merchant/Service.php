@@ -6188,6 +6188,8 @@ class Service extends Base\Service
             "active"               => $merchant->isActivated(),
             "parent"               => $this->settlementToPartner($mid),
             "partner_bank_account" => isset($merchantSettleToPartner[$mid]) ? $merchantSettleToPartner[$mid] : null,
+            "pan_details"          => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getPan() : null,
+            "purpose_code"         => $merchant->getPurposeCode(),
         ];
     }
 

@@ -6,15 +6,18 @@ use Cache;
 use Config;
 use Carbon\Carbon;
 
+use RZP\Jobs\Settlement\Bucket;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
+use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant as ME;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -267,6 +270,21 @@ class Core extends Base\Core
                 'method'        => $payment->getMethod(),
                 'international' => $payment->isInternational(),
             ];
+
+            if($payment->isInternational() === true)
+            {
+                $meta += [
+                    'gateway'       => $payment->getGateway(),
+                    'remitter_info' => [
+                        "remitter_name"    => $this->getRemitterName($payment),
+                        "remitter_address" => $this->getRemitterAddress($payment),
+                    ],
+                    'amount_meta'   => [
+                        "conversion_amount"   => $this->getConversionAmount($payment, Currency::USD),
+                        "conversion_currency" => Currency::USD
+                    ],
+                ];
+            }
         }
 
         // Add meta details for refund type txn
@@ -324,6 +342,40 @@ class Core extends Base\Core
 
             throw $e;
         }
+    }
+
+    private function getRemitterName(Payment\Entity $payment) {
+
+        $remitterName = null;
+
+        //If card payment get remitter name from card entity.
+        if (($payment->isCard() === true) and ($payment->card !== null))
+        {
+            $remitterName = $payment->card->getName();
+        }
+
+        //if empty, try fetching from customer
+        if ((empty($remitterName) === true) and ($payment->customer !== null)){
+            $remitterName = $payment->customer->getName();
+        }
+
+        return $remitterName;
+    }
+
+    private function getRemitterAddress(Payment\Entity $payment)
+    {
+        $address = $payment->fetchBillingAddress();
+
+        return (empty($address)===false)?$address->formatAsText():null;
+    }
+
+    private function getConversionAmount(Payment\Entity $payment, string $currency) {
+        if ($payment->getGatewayCurrency() === $currency)
+        {
+            return $payment->getGatewayAmount();
+        }
+
+        return (new \RZP\Models\Currency\Core())->convertAmount($payment->getGatewayAmount(), $payment->getGatewayCurrency(), $currency);
     }
 
     protected function getMetaForSource(Transaction\Entity $txn)

@@ -359,6 +359,7 @@ class Merchant
         }
 
         $setl = $setl->build($input);
+        $setl->setChannel($this->getChannel($input[Settlement\Entity::CHANNEL]));
 
         $setl->merchant()->associate($this->merchant);
 
@@ -393,6 +394,15 @@ class Merchant
         }
 
         $this->setl = $setl;
+    }
+
+    public function getChannel(string $channel): string
+    {
+        if (strcasecmp($channel, Channel::ICICI_OPGSP_EXPORT) === 0)
+        {
+            return Channel::ICICIEXP;
+        }
+        return $channel;
     }
 
     protected function updateSettlementEntity(array $merchantSettleToPartner)
