@@ -480,18 +480,20 @@ const businessDetails = [
       },
       _when: (activation) => displayCompanyPAN(activation),
       onBlur: function onBlur() {
-        const { user } = this.props;
-        const { dirty } = this.state;
-        const isCompanyPANValid = !validateCompanyPAN(dirty?.company_pan);
+        if (!this.isOnKYCTab()) {
+          const { user } = this.props;
+          const { dirty } = this.state;
+          const isCompanyPANValid = !validateCompanyPAN(dirty?.company_pan);
 
-        if (
-          !user.activation_form_milestone &&
-          user.isSyncExperimentEnabled &&
-          dirty?.company_pan &&
-          dirty?.company_pan !== user?.company_pan &&
-          isCompanyPANValid
-        ) {
-          this.saveCurrentTab();
+          if (
+            !user.activation_form_milestone &&
+            user.isSyncExperimentEnabled &&
+            dirty?.company_pan &&
+            dirty?.company_pan !== user?.company_pan &&
+            isCompanyPANValid
+          ) {
+            this.saveCurrentTab();
+          }
         }
       },
       _disabledWhen: isCompanyPANVerified,
@@ -552,19 +554,21 @@ const businessDetails = [
         );
       },
       onBlur: function onBlur() {
-        const { user } = this.props;
-        const { dirty } = this.state;
+        if (!this.isOnKYCTab()) {
+          const { user } = this.props;
+          const { dirty } = this.state;
 
-        const shouldApiCall = displayCompanyPAN(this);
+          const shouldApiCall = displayCompanyPAN(this);
 
-        if (
-          !user.activation_form_milestone &&
-          user.isSyncExperimentEnabled &&
-          dirty?.business_name &&
-          dirty?.business_name !== user?.business_name &&
-          shouldApiCall
-        ) {
-          this.saveCurrentTab();
+          if (
+            !user.activation_form_milestone &&
+            user.isSyncExperimentEnabled &&
+            dirty?.business_name &&
+            dirty?.business_name !== user?.business_name &&
+            shouldApiCall
+          ) {
+            this.saveCurrentTab();
+          }
         }
       },
     },
@@ -639,20 +643,22 @@ const businessDetails = [
       },
       _disabledWhen: isPANVerified,
       onBlur: function onBlur() {
-        const { user } = this.props;
-        const { dirty } = this.state;
-        const isPanValid =
-          dirty?.promoter_pan &&
-          !validatePersonalPAN(dirty?.promoter_pan, isUnregisteredBusiness(this));
+        if (!this.isOnKYCTab()) {
+          const { user } = this.props;
+          const { dirty } = this.state;
+          const isPanValid =
+            dirty?.promoter_pan &&
+            !validatePersonalPAN(dirty?.promoter_pan, isUnregisteredBusiness(this));
 
-        if (
-          !user.activation_form_milestone &&
-          user.isSyncExperimentEnabled &&
-          isPanValid &&
-          dirty?.promoter_pan &&
-          dirty?.promoter_pan !== user?.promoter_pan
-        ) {
-          this.saveCurrentTab();
+          if (
+            !user.activation_form_milestone &&
+            user.isSyncExperimentEnabled &&
+            isPanValid &&
+            dirty?.promoter_pan &&
+            dirty?.promoter_pan !== user?.promoter_pan
+          ) {
+            this.saveCurrentTab();
+          }
         }
       },
     },
@@ -694,16 +700,18 @@ const businessDetails = [
       },
       _disabledWhen: isPANVerified,
       onBlur: function onBlur() {
-        const { user } = this.props;
-        const { dirty } = this.state;
+        if (!this.isOnKYCTab()) {
+          const { user } = this.props;
+          const { dirty } = this.state;
 
-        if (
-          !user.activation_form_milestone &&
-          user.isSyncExperimentEnabled &&
-          dirty?.promoter_pan_name &&
-          dirty?.promoter_pan_name !== user?.promoter_pan_name
-        ) {
-          this.saveCurrentTab();
+          if (
+            !user.activation_form_milestone &&
+            user.isSyncExperimentEnabled &&
+            dirty?.promoter_pan_name &&
+            dirty?.promoter_pan_name !== user?.promoter_pan_name
+          ) {
+            this.saveCurrentTab();
+          }
         }
       },
     },
@@ -824,13 +832,15 @@ const bankAccountFields = [
       info: getAccountNumberInfo,
       autoComplete: 'new-password',
       onBlur: function (e) {
-        const bankAccountNumber = this.state.dirty.bank_account_number;
-        const accountNo = this.state.account_no;
+        if (!this.isOnKYCTab()) {
+          const bankAccountNumber = this.state.dirty.bank_account_number;
+          const accountNo = this.state.account_no;
 
-        const isMatching = bankAccountNumber == accountNo;
+          const isMatching = bankAccountNumber == accountNo;
 
-        if (!!bankAccountNumber && (!accountNo || !isMatching)) {
-          document.querySelector('[data-name="account_no"]')?.focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
+          if (!!bankAccountNumber && (!accountNo || !isMatching)) {
+            document.querySelector('[data-name="account_no"]')?.focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
+          }
         }
       },
       linkedfields: ['bank_proof', 'bank_proof_doc'],
@@ -1140,8 +1150,12 @@ const uploadFields = [
   {
     name: 'gstin',
     _when: (activation) =>
-      isBusinessProofTypeDocFieldVisible(activation) &&
-      activation.state.business_proof_type === 'gst_certificate',
+      (isBusinessProofTypeDocFieldVisible(activation) &&
+        activation.state.business_proof_type === 'gst_certificate') ||
+      (activation.isOnKYCTab() &&
+        excludeFor_Indiv(activation) &&
+        activation.state.has_gstin === '0' &&
+        isL1Completed(activation)),
     label: 'GSTIN',
     _autoRenderImpure: true, // Re-render to show the error
     placeholder: 'Enter GSTIN',
@@ -1165,11 +1179,13 @@ const uploadFields = [
       );
     },
     onBlur: function onBlur() {
-      const { user } = this.props;
-      const { dirty } = this.state;
-      const isGstinValid = dirty?.gstin && isValidGSTIN(dirty?.gstin);
-      if (isGstinValid && dirty?.gstin !== user?.gstin) {
-        this.saveCurrentTab();
+      if (!this.isOnKYCTab()) {
+        const { user } = this.props;
+        const { dirty } = this.state;
+        const isGstinValid = dirty?.gstin && isValidGSTIN(dirty?.gstin);
+        if (isGstinValid && dirty?.gstin !== user?.gstin) {
+          this.saveCurrentTab();
+        }
       }
     },
   },
