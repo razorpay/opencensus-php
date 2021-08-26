@@ -522,6 +522,7 @@ class Validator extends Base\Validator
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::GATEWAY                    => 'sometimes|in:isg',
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string|max:15',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string|size:8',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TYPE . '.bharat_qr'        => 'sometimes|in:1',
@@ -537,6 +538,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'required_without:mc_mpan|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4'
     ];
 
     protected static $atomEditTerminalRules = [
