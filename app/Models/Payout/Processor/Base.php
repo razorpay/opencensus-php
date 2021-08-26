@@ -2024,16 +2024,17 @@ class Base extends BaseCore
                 $this->setPayoutBalance($params);
 
                 $input = [
-                    Payout\Entity::FEE_TYPE        => $params[Payout\Entity::FEE_TYPE] ?? null,
-                    Payout\Entity::AMOUNT          => $params[Payout\Entity::AMOUNT] ?? null,
-                    Payout\Entity::PURPOSE         => $params[Payout\Entity::PURPOSE] ?? null,
-                    Payout\Entity::CURRENCY        => $params[Payout\Entity::CURRENCY] ?? null,
-                    Payout\Entity::BALANCE_ID      => $params[Payout\Entity::BALANCE_ID] ?? null,
-                    Payout\Entity::FUND_ACCOUNT_ID => $params[Payout\Entity::FUND_ACCOUNT_ID] ?? null,
-                    Payout\Entity::MODE            => $params[Payout\Entity::MODE] ?? null,
-                    Payout\Entity::REFERENCE_ID    => $params[Payout\Entity::REFERENCE_ID] ?? null,
-                    Payout\Entity::NARRATION       => $params[Payout\Entity::NARRATION] ?? null,
-                    Payout\Entity::NOTES           => $params[Payout\Entity::NOTES] ?? [],
+                    Payout\Entity::FEE_TYPE              => $params[Payout\Entity::FEE_TYPE] ?? null,
+                    Payout\Entity::AMOUNT                => $params[Payout\Entity::AMOUNT] ?? null,
+                    Payout\Entity::PURPOSE               => $params[Payout\Entity::PURPOSE] ?? null,
+                    Payout\Entity::CURRENCY              => $params[Payout\Entity::CURRENCY] ?? null,
+                    Payout\Entity::BALANCE_ID            => $params[Payout\Entity::BALANCE_ID] ?? null,
+                    Payout\Entity::FUND_ACCOUNT_ID       => $params[Payout\Entity::FUND_ACCOUNT_ID] ?? null,
+                    Payout\Entity::MODE                  => $params[Payout\Entity::MODE] ?? null,
+                    Payout\Entity::REFERENCE_ID          => $params[Payout\Entity::REFERENCE_ID] ?? null,
+                    Payout\Entity::NARRATION             => $params[Payout\Entity::NARRATION] ?? null,
+                    Payout\Entity::NOTES                 => $params[Payout\Entity::NOTES] ?? [],
+                    Payout\Entity::QUEUE_IF_LOW_BALANCE  => (boolean) ($input[Payout\Entity::QUEUE_IF_LOW_BALANCE] ?? false),
                 ];
 
                 if (empty($params[Payout\Entity::SOURCE_DETAILS]) === false)
