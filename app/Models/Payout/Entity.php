@@ -222,6 +222,9 @@ class Entity extends Base\PublicEntity
     const CARD    = 'card';
     const NUMBER  = 'number';
 
+    // internal
+    const IS_INTERNAL = "is_internal";
+
     // These are the modes for which we shall be throttling batch payouts from payout core side.
     // For other modes, we shall pass on the request normally.
     const BATCH_PAYOUTS_DELAYED_INITIATION_MODES = [

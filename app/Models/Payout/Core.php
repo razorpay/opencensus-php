@@ -3308,9 +3308,16 @@ class Core extends Base\Core
         // Find merchant using merchant id and set merchant in get processor
         $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
 
-        return $this->getProcessor('fund_account_payout')
-                    ->setMerchant($merchant)
-                    ->createPayoutEntry($input);
+
+        $processor = $this->getProcessor('fund_account_payout')
+                    ->setMerchant($merchant);
+
+        if (isset($input[Entity::IS_INTERNAL]) == true)
+        {
+            $processor->setInternal(true);
+        }
+
+       return $processor->createPayoutEntry($input);
     }
 
     public function createFTAForPayoutService(string $payoutId)
