@@ -4223,6 +4223,8 @@ trait Authorize
 
         $merchantAutoRefundTime = $createdAt + $payment->merchant->getAutoRefundDelay();
 
+        $reason = sprintf(PaymentConstants::MERCHANT_AUTO_REFUND_DELAY,$payment->merchant->getAutoRefundDelay());
+
         $merchantAutoRefundTime = max($minAutoRefundTime, $merchantAutoRefundTime);
 
         if ($payment->isEmandate() === true)
@@ -4230,10 +4232,14 @@ trait Authorize
             $emandateAutoRefundTime = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
 
             $merchantAutoRefundTime = $emandateAutoRefundTime;
+
+            $reason = sprintf(PaymentConstants::REFUND_AT_FOR_EMANDATE_PAYMENT,Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE);
         }
         else if ($payment->isNach() === true)
         {
             $merchantAutoRefundTime = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NACH;
+
+            $reason = sprintf(PaymentConstants::REFUND_AT_FOR_NACH_PAYMENT,Merchant\Entity::AUTO_REFUND_DELAY_FOR_NACH);
         }
         else if ($payment->isUpiOtm() === true)
         {
@@ -4246,10 +4252,19 @@ trait Authorize
                 ($upiMetadata->isOtm() === true))
             {
                 $merchantAutoRefundTime = $upiMetadata->getEndTime() + $payment->merchant->getAutoRefundDelay();
+
+                $reason = sprintf(PaymentConstants::MERCHANT_AUTO_REFUND_DELAY,$payment->merchant->getAutoRefundDelay());
             }
         }
 
         $payment->setRefundAt($merchantAutoRefundTime);
+
+        $properties = [
+            "auto_refund_epoch" => $merchantAutoRefundTime,
+            "reason" => $reason,
+        ];
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTO_REFUND_DATE_SET, $payment, null, [], $properties);
     }
 
     protected function addTestSuccessFlagToGatewayInput(array $input, array & $gatewayInput)

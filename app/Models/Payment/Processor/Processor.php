@@ -4404,6 +4404,13 @@ class Processor
 
         $this->paymentRepo->saveOrFail($payment);
 
+        $properties = [
+            "auto_refund_epoch" => $refundAt,
+            "reason" => sprintf(Constants::REFUND_AT_OVERRIDDEN_CAPTURE_SETTINGS, $manualTimeoutDuration),
+        ];
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTO_REFUND_DATE_OVERRIDDEN, $payment, null, [], $properties);
+
     }
 
     public function getTimeDifferenceInAuthorizeAndCreated($payment)

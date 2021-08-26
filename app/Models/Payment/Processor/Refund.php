@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Batch;
@@ -94,9 +95,22 @@ trait Refund
             }
         }
 
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTO_REFUND_INITIATED, $payment);
+
         $refund = $this->buildRefundEntity($payment, $input, $batch, $batchId);
 
-        $this->processRefund($input);
+        try
+        {
+            $this->processRefund($input);
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTO_REFUND_SUCCESS, $payment);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTO_REFUND_FAILED, $payment, $ex);
+
+            throw $ex;
+        }
 
         $this->pushMetrics();
 

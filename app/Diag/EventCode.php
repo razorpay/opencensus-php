@@ -301,6 +301,36 @@ class EventCode
         'name'  => 'payment.response.sent'
     ];
 
+    const PAYMENT_AUTO_REFUND_DATE_SET                     = [
+        'group' => 'auto_refund',
+        'name'  => 'payment.auto.refund.date'
+    ];
+
+    const PAYMENT_AUTO_REFUND_DATE_OVERRIDDEN                     = [
+        'group' => 'auto_refund',
+        'name'  => 'payment.auto.refund.overridden'
+    ];
+
+    const PAYMENT_AUTO_REFUND_ELIGIBLE                     = [
+        'group' => 'auto_refund',
+        'name'  => 'payment.auto.refund.eligible'
+    ];
+
+    const PAYMENT_AUTO_REFUND_INITIATED                     = [
+        'group' => 'auto_refund',
+        'name'  => 'payment.auto.refund.initiated'
+    ];
+
+    const PAYMENT_AUTO_REFUND_SUCCESS                     = [
+        'group' => 'auto_refund',
+        'name'  => 'payment.auto.refund.success'
+    ];
+
+    const PAYMENT_AUTO_REFUND_FAILED                     = [
+        'group' => 'auto_refund',
+        'name'  => 'payment.auto.refund.failed'
+    ];
+
     // payment verification
     const PAYMENT_VERIFICATION_PAYMENT_BLOCKED          = [
         'group' => 'verification',

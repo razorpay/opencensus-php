@@ -2141,6 +2141,8 @@ class Service extends Base\Service
             {
                 $this->repo->reload($payment);
 
+                $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTO_REFUND_ELIGIBLE, $payment);
+
                 assertTrue ($payment->isAuthorized() === true);
 
                 $merchant = $payment->merchant;

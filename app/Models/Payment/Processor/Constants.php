@@ -47,6 +47,13 @@ class Constants
     const VERIFY_AT                       = 'verify_at';
     const VERIFY_SERVICE                  = 'verify_service';
 
+    //Auto Refund Reasons
+    const MERCHANT_AUTO_REFUND_DELAY            = 'Merchants auto_refund_delay %s has been set as refund_at value';
+    const REFUND_AT_FOR_EMANDATE_PAYMENT        = 'Merchants default value %s for emandate payments has been set as refund_at value';
+    const REFUND_AT_FOR_NACH_PAYMENT            = 'Merchants default value %s for nach payments has been set as refund_at value';
+    const REFUND_AT_FOR_UPI_OTM                 = 'Merchants auto_refund_delay %s has been set as refund_at value to UPI metadata end time';
+    const REFUND_AT_OVERRIDDEN_CAPTURE_SETTINGS = 'Payment refund at value has been overridden with capture settings value, %s';
+
     //Auto Capture Reasons
     const UPI_OTM_PAYMENT                           = 'UPI OTM Payment';
     const BANK_TRANSFER_PAYMENT                     = 'Bank Transfer Payment';
