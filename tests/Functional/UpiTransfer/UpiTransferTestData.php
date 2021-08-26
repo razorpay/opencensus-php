@@ -421,4 +421,23 @@ return [
         ],
     ],
 
+    'testUpiTransferWithLongVpaAddress' => [
+        'url'     => '/test/upi/callback/icici/upi_icici',
+        'method'  => 'post',
+        'content' => [
+            Fields::MERCHANT_ID         => '403343',
+            Fields::SUBMERCHANT_ID      => '78965412',
+            Fields::TERMINAL_ID         => '5411',
+            Fields::BANK_RRN            => '015306767323',
+            Fields::MERCHANT_TRAN_ID    => 'payto00000virtualvpa',
+            Fields::PAYER_NAME          => 'Ria Garg',
+            Fields::PAYER_VA            => '9931724380000000@paytm',
+            Fields::PAYER_AMOUNT        => '100.00',
+            Fields::TXN_STATUS          => 'SUCCESS',
+            Fields::TXN_INIT_DATE       => '20200601085714',
+            Fields::TXN_COMPLETION_DATE => '20200601085715',
+            Fields::RESPONSE_CODE       => '',
+        ],
+    ],
+
 ];

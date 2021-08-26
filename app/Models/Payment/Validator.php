@@ -612,6 +612,16 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function isUpiTransfer()
+    {
+        $app = App::getFacadeRoot();
+
+        $routeName = $app['router']->currentRouteName();
+
+        return in_array($routeName,['upi_transfer_process',
+                                    'upi_transfer_process_test',]);
+    }
+
     protected function validateVpa($attribute, $vpa)
     {
         (new Vpa\Validator)->validateAddress($attribute, $vpa);
@@ -629,10 +639,11 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        if (Reconciliate::$isReconRunning === true)
+        if ((Reconciliate::$isReconRunning === true) or ($this->isUpiTransfer() === true))
         {
             return;
         }
+
         // First we remove all the non-numeric chars from the string
         // +/- are considered numeric chars, we need to remove these separately
         // Now, we are left we only numbers

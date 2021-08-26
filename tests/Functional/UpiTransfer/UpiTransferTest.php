@@ -773,4 +773,42 @@ class UpiTransferTest extends TestCase
 
         $this->processUpiTransfer('testWebhookUpiPaymentWithTr');
     }
+
+    public function testUpiTransferWithLongVpaAddress()
+    {
+        $this->processUpiTransfer(__FUNCTION__, true, Gateway::UPI_ICICI);
+
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
+        $payment     = $this->getDbLastEntity('payment');
+        $upi         = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(10000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+
+        $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
+
+        $this->assertNotNull($upi['payment_id']);
+        $this->assertTrue(isset($upi['type']));
+        $this->assertEquals($upi['type'], 'pay');
+
+        $this->assertEquals($upiTransfer['expected'], true);
+        $this->assertEquals(null, $upiTransfer['unexpected_reason']);
+        $this->assertNull($upiTransfer['transaction_reference']);
+
+        $this->runUpiTransferRequestAssertions(
+            'upi_icici',
+            true,
+            null,
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => $this->virtualAccountId,
+                'merchant_id'                   => '10000000000000',
+                'upi_transfer_id'               => $upiTransfer->getPublicId(),
+                'payment_id'                    => $payment->getPublicId(),
+            ]
+        );
+
+    }
 }
