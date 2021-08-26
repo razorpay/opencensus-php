@@ -1493,7 +1493,7 @@ class Gateway extends Base\Gateway
 
         $payment = $input['payment'];
 
-        if ((array_key_exists('method',$payment)) and ($gateway === Payment\Gateway::PAYU) and ($payment['method'] === Payment\Method::WALLET))
+        if ((array_key_exists('method',$payment)) and (($gateway === Payment\Gateway::CCAVENUE) or ($gateway === Payment\Gateway::PAYU)) and ($payment['method'] === Payment\Method::WALLET))
         {
             $url = $this->getUrlForMozartRequest($input, 'walletPayments', $mode);
         }
@@ -1892,6 +1892,11 @@ class Gateway extends Base\Gateway
                 Action::NOTIFY            => null,
                 Action::VERIFY            => null,
             ],
+            Payment\Gateway::CCAVENUE => [
+                Action::PAY_INIT      => null,
+                Action::PAY_VERIFY    => null,
+                Action::VERIFY        => null,
+            ],
         ];
 
         return $previousActionForStep[$gateway][$this->action];
@@ -2063,6 +2068,11 @@ class Gateway extends Base\Gateway
                 Action::MANDATE_REVOKE    => null,
                 Action::NOTIFY            => null,
                 Action::VERIFY            => null,
+            ],
+            Payment\Gateway::CCAVENUE => [
+                Action::PAY_INIT      => null,
+                Action::PAY_VERIFY    => null,
+                Action::VERIFY        => null,
             ],
         ];
 
@@ -2422,6 +2432,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_KVB,
             Payment\Gateway::CRED,
             Payment\Gateway::NETBANKING_JSB,
+            Payment\Gateway::CCAVENUE,
             Payment\Gateway::PAYU
         ];
 

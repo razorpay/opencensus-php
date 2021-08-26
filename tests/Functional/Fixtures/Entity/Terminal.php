@@ -395,7 +395,8 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'network_category'      => 'ecommerce',
             'gateway_secure_secret' => 'secret',
-            'gateway_access_code'   => 'qwerty890'
+            'gateway_access_code'   => 'qwerty890',
+            'enabled_wallets'       => ['paytm'],
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);

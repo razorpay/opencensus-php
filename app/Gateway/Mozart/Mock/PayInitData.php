@@ -282,6 +282,35 @@ class PayInitData extends Base\Mock\Server
 
     }
 
+    public function ccavenue($entities)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+            'mock_mozart_payment_post',
+            ['gateway' => 'ccavenue', 'callbackUrl' => $entities['callbackUrl']]);
+
+        $response = [
+            'data'              => [],
+            'error'             => null,
+            'success'           => true,
+            'next'              => [
+                'redirect' => [
+                    'method'  => 'post',
+                    'url'     => $url,
+                    'content' => [
+                        'access_code' => 'random_access_code',
+                        'command'     =>  'initiateTransaction',
+                        'encode_data' => 'random_encrypted_string',
+
+                    ],
+                ]
+            ],
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+        ];
+
+        return $response;
+    }
+
     public function wallet_phonepe($entities)
     {
         $this->gateway = $entities['payment']['gateway'];

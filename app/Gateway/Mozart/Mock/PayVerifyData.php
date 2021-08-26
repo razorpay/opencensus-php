@@ -260,6 +260,26 @@ class PayVerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function ccavenue($entities)
+    {
+        $response = [
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id' => 'DUMMY_MOZART_ID',
+            'next' => [],
+            'success' => true,
+            'error' => null,
+            'data' => [
+                '_raw'                     => 'dummy_raw_data',
+                'paymentId'                => $entities['payment']['id'],
+                'amount'                   => $entities['payment']['amount'],
+                'bank_reference_number'    => "dummy_back_ref_number",
+                'gateway_reference_number' => "dummy_gateway_ref_number",
+                'status'                   => 'callback_successful'
+            ],
+        ];
+
+        return $response;
+    }
     public function netbanking_scb($entities)
     {
         $response = [

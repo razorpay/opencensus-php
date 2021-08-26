@@ -899,6 +899,7 @@ class Entity
         self::HDFC_DEBIT_EMI         => \RZP\Gateway\Mozart::class,
         self::CRED                   => \RZP\Gateway\Mozart::class,
         self::CHECKOUT_DOT_COM       => \RZP\Gateway\Mozart::class,
+        self::CCAVENUE               => \RZP\Gateway\Ccavenue::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,
@@ -1069,6 +1070,7 @@ class Entity
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Base::class,
+        self::CCAVENUE               => \RZP\Gateway\Wallet\Base::class,
 
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,

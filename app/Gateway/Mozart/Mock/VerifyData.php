@@ -358,6 +358,28 @@ class VerifyData extends Base\Mock\Server
         return;
     }
 
+    public function ccavenue($entities)
+    {
+        $response = [
+            'error'                        => null,
+            'next'                         => [],
+            'success'                      => true,
+            'external_trace_id'            => 'DUMMY_REQUEST_ID',
+            'mozart_id'                    => 'DUMMY_MOZART_ID',
+            'data' => [
+                '_raw'                     => 'dummy_raw_data',
+                'status'                   => 'verification_successful',
+                'currency'                 => $entities['payment']['currency'],
+                'amount'                   => $entities['payment']['amount'],
+                'paymentId'                => $entities['payment']['id'],
+                'bank_reference_number'    => "dummy_back_ref_number",
+                'gateway_reference_number' => "dummy_gateway_ref_number",
+            ],
+        ];
+
+        return $response;
+    }
+
     public static function wallet_phonepe($entities)
     {
         $response = [
