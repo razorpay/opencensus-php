@@ -41,6 +41,13 @@ trait TerminalTrait
             ->andReturnUsing($closure);
     }
 
+    protected function mockTerminalsServiceSendFormRequest($closure, $times = 2)
+    {
+        $this->terminalsServiceMock->shouldReceive('sendFormRequest')
+            ->times($times)
+            ->andReturnUsing($closure);
+    }
+
     protected function throwTerminalsServiceIntegrationException()
     {
         throw new \Requests_Exception_Transport_cURL('curl timed out', []);

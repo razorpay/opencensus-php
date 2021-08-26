@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional;
 
 
+use GuzzleHttp\Psr7\Response;
 use RZP\Services\TerminalsService;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Admin\Permission\Repository;
@@ -567,6 +568,81 @@ class InstrumentRequestProxyTest extends TestCase
             $this->startTest();
 
         }
+
+    }
+
+    public function testKamAdminDashboardBulkCreateMerchantInstrumentsV2()
+    {
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->ba->adminAuth();
+
+        $testCase = [
+            self::REQUEST       => [
+                'url'      => '/merchant_instrument_requests_v2',
+                'method'   => \Requests::POST,
+                'content'   =>  [
+                    'data' => json_encode([
+                        [
+                            'instrument'    =>  'pg.cards.visa',
+                            'special_pricing' => 'special_pricing_test',
+                            'merchant_id' => '10000000000000',
+                        ],
+                        [
+                            'instrument'    =>  'pg.cards.mastercard',
+                            'special_pricing' => 'special_pricing_test2',
+                            'merchant_id' => '10000000000001',
+                        ],
+                    ])
+                ]
+            ],
+            self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/merchant_instrument_requests_v2',
+            self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::POST,
+            self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => [
+                'data' => json_encode([
+                    [
+                        'instrument'    =>  'pg.cards.visa',
+                        'special_pricing' => 'special_pricing_test',
+                        'merchant_id' => '10000000000000',
+                    ],
+                    [
+                        'instrument'    =>  'pg.cards.mastercard',
+                        'special_pricing' => 'special_pricing_test2',
+                        'merchant_id' => '10000000000001',
+                    ],
+                ])
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response'] = ['content' => ['data' => ['testKey' => 'testValue']]];
+
+        $this->testData[__FUNCTION__]['request'] = $testCase[self::REQUEST];
+
+        $this->mockTerminalsServiceSendFormRequest(function ($path, $content, $method, $additionalOptions = [], $additionalHeaders) use ($testCase) {
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE], $path);
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], $content);
+
+            $this->assertArrayHasKey('X-Dashboard-Admin-Email', $additionalHeaders);
+
+            $body = '
+                   {
+                    "data": {
+                       "testKey": "testValue"
+                    }
+                }';
+
+            $response = new Response(200, [], $body);
+
+            return $response;
+        }, 1);
+
+        $this->startTest();
 
     }
 

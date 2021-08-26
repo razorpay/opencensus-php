@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 
+use GuzzleHttp\Client;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -243,6 +244,13 @@ class TerminalsService
         $response = $this->sendRequest($path, $input, $method, $options, $headers);
 
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    public function proxyTerminalServiceFormRequest($input, $method, $path, $options = [], $headers = [])
+    {
+        $response = $this->sendFormRequest($path, $input, $method, $options, $headers);
+
+        return json_decode($response->getBody()->getContents());
     }
 
     public function removeMerchantFromTerminal(Terminal\Entity $terminal, Merchant\Entity $merchant) : array
@@ -547,6 +555,30 @@ class TerminalsService
         }
     }
 
+    protected function sendFormRequest($url, $content, $method, $options, $headers)
+    {
+        $mode = $this->app['rzp.mode'];
+
+        $tsConfigs = $this->app['config']['applications']['terminals_service'];
+
+        $baseUrl = $tsConfigs[$mode]['url'];
+
+        $multipart = $this->getRequestMultipart($content);
+
+        $client   = new Client([
+            'base_uri'        => $baseUrl,
+            'connect_timeout' => $options['timeout'],
+            'headers'         => $headers,
+        ]);
+
+        $response = $client->request($method, $url, [
+            'multipart' => $multipart,
+            'auth'      => ['api_user', $tsConfigs[$mode]['password']]
+        ]);
+
+        return $response;
+    }
+
     protected function makeRequest($url, $headers, $content, $method, $options)
     {
         return Requests::request($url, $headers, $content, $method, $options);
@@ -656,5 +688,33 @@ class TerminalsService
         return [
             self::X_DASHBOARD_MERCHANT_ID => $merchantId,
         ];
+    }
+
+    protected function getRequestMultipart($input)
+    {
+        $multipart = [
+            [
+                'name'     => 'data',
+                'contents' => $input['data'],
+            ]
+        ];
+
+        unset($input['data']);
+
+        foreach ($input as $key => $value)
+        {
+            $ext = strtolower($value->getClientOriginalExtension());
+
+            $storageFileName = pathinfo($value->getClientOriginalName(), PATHINFO_FILENAME);
+
+            $movedFile = $value->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
+
+            $multipart[] = [
+                'name'     => $key,
+                'contents' => fopen($movedFile->getPathname(), 'r')
+            ];
+        }
+
+        return $multipart;
     }
 }

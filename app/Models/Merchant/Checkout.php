@@ -1255,6 +1255,11 @@ class Checkout
                 }
             }
 
+            elseif ($feature === Feature\Constants::DIRECT_SETTLEMENT and $merchant->getCategory() === '6211')
+            {
+                $data['features']['direct_settlement'] = true;
+            }
+
             else if ($merchant->isFeatureEnabled($feature) === true)
             {
                 $data['features'][$feature] = true;

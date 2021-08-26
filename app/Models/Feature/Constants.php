@@ -169,8 +169,9 @@ class Constants
 
     const DISABLE_NATIVE_CURRENCY         = 'disable_native_currency';
 
-    const AVS                             = 'avs';
+    const DIRECT_SETTLEMENT               = 'direct_settlement';
 
+    const AVS                             = 'avs';
     const ENABLE_DCC_S2S                  = 'enable_dcc_s2s';
 
     const COVID                           = 'covid';
@@ -816,6 +817,8 @@ class Constants
         self::PAYPAL_CC,
         self::SHOW_MOR_TNC,
         self::CRED_MERCHANT_CONSENT,
+        self::TPV,
+        self::DIRECT_SETTLEMENT,
         self::RAAS,
     ];
 

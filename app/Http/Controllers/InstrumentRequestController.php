@@ -369,6 +369,28 @@ class InstrumentRequestController extends BaseController
         return ApiResponse::json($response);
     }
 
+    // for kam dashboard
+    public function createMerchantInstrumentRequestsV2()
+    {
+        $input = Request::all();
+
+        $this->trace->info(
+            TraceCode::CREATE_MERCHANT_INSTRUMENT_REQUEST_BULK_V2,
+            [
+                'input'          => $input['data'],
+            ]);
+
+        $response = $this->app['terminals_service']->proxyTerminalServiceFormRequest(
+            $input,
+            \Requests::POST,
+            'v2/merchant_instrument_requests_v2',
+            ['timeout' => 45],
+            $this->getKAMHeadersForInstrumentRequest()
+        );
+
+        return ApiResponse::json($response);
+    }
+
     protected function getMerchantHeadersForInstrumentRequest() : array
     {
         $merchant = $this->app['basicauth']->getMerchant();
