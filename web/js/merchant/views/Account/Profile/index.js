@@ -38,6 +38,7 @@ import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFac
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import IntoView from 'common/ui/IntoView';
 import { SUPPORT_DETAILS, UPDATE_BANK_ACC, SETTELEMENT_CYCLE } from './deeplink-constants';
+import { CreateTicketEmitter } from '../../TicketSupport/utils';
 
 @connect(
   (state) => {
