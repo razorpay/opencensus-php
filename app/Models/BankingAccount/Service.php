@@ -1072,7 +1072,7 @@ class Service extends Base\Service
 
         foreach ($spocGroupedBankingAccountStates as $spocEmail => $bankingAccountStates)
         {
-            if (empty($spocEmail) === false)
+            if (empty($spocEmail) === false and empty($bankingAccountStates) == false)
             {
                 $finalBankingAccountStates = [];
 
@@ -1101,7 +1101,7 @@ class Service extends Base\Service
 
         foreach ($spocGroupedBankingAccountStates as $spocEmail => $bankingAccountStates)
         {
-            if (empty($spocEmail) === false)
+            if (empty($spocEmail) === false and empty($bankingAccountStates) == false)
             {
                 $finalBankingAccountStates = [];
 

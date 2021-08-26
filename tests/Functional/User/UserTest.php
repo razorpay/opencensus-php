@@ -8,6 +8,7 @@ use Hash;
 use Carbon\Carbon;
 
 use RZP\Models\BankingAccount\Channel;
+use RZP\Models\Merchant\Attribute\Type;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Http\RequestHeader;
@@ -170,6 +171,49 @@ class UserTest extends TestCase
                                                     'entity_id' => $merchantAttribute->getMerchantId(),
                                                     'entity_type' => 'merchant'
                                                 ])->pluck('name')->toArray();
+
+        $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
+    }
+
+    public function testPreSignupCampaignInfoStoredAfterRegistrationForBanking()
+    {
+        $testDataToReplace = [
+            'request' => [
+                'cookies' => [
+                    'rzp_utm' => json_encode([
+                                                 'attributions' => [
+                                                     [
+                                                         Constants::UTM_SOURCE   => 'Facebook',
+                                                         Constants::UTM_MEDIUM   => 'CPC',
+                                                         Constants::UTM_CAMPAIGN => 'Facebook_RZPx_CA_Conv_NewAcquisItion_India_Owners_2555_MF_All_24082021_C1'
+                                                     ]
+                                                 ]
+                                             ])
+                ]
+            ]
+        ];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testDataToReplace);
+
+        $merchantAttribute = $this->getDbEntity('merchant_attribute');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'product' => 'banking',
+                'group'   => 'x_signup',
+                'type'    => Type::CAMPAIGN_TYPE,
+                'value'   => 'ca_neostone'
+            ],
+            $merchantAttribute->toArrayPublic()
+        );
+
+        $featuresArray = $this->getDbEntity('feature',
+                                            [
+                                                'entity_id' => $merchantAttribute->getMerchantId(),
+                                                'entity_type' => 'merchant'
+                                            ])->pluck('name')->toArray();
 
         $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
     }

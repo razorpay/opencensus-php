@@ -20,6 +20,8 @@ class Repository extends Base\Repository
     public function getBankingAccountsStateBySubStateAndCreatedBetween(string $subStatus, string $from, string $to)
     {
         $data = $this->newQuery()
+                     ->select(Entity::BANKING_ACCOUNT_ID, Entity::STATUS, Entity::SUB_STATUS)
+                     ->distinct()
                      ->where(Entity::SUB_STATUS, '=', $subStatus)
                      ->where(Entity::CREATED_AT, '>', $from)
                      ->where(Entity::CREATED_AT, '<', $to)

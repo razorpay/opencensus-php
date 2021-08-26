@@ -159,6 +159,11 @@ class Service extends Base\Service
     const SEGMENT_DATA_PP_ONLY                          = 'pp_only';
 
     const DEFAULT_MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION   =   24;
+    // Should be decided by marketing team
+    const NEOSTONE_UTM_RULES = [
+        [User\Constants::UTM_CAMPAIGN => 'Facebook_RZPx_CA_Conv_NewAcquisItion_India_Owners_2555_MF_All_24082021_C1', User\Constants::UTM_SOURCE => 'Facebook', User\Constants::UTM_MEDIUM => 'CPC'],
+        [User\Constants::UTM_CAMPAIGN => '', User\Constants::UTM_SOURCE => 'rx_ca_neostone', User\Constants::UTM_MEDIUM => '']
+    ];
 
     /**
      * Creates a merchant and saves in database
@@ -5546,6 +5551,85 @@ class Service extends Base\Service
 
     }
 
+    /**
+     * @param Entity $merchant
+     * @param array  $utmParams
+     */
+    protected function storeIfVisitedCaStaticPage(Entity $merchant, array $utmParams): void
+    {
+        $attributeCore = new Attribute\Core;
+
+        $product = Product::BANKING;
+        $group   = Attribute\Group::X_SIGNUP;
+        $type    = Attribute\Type::CA_PAGE_VISITED;
+
+        try
+        {
+            $caPageVisitedAttr = $attributeCore->fetch($merchant, $product, $group, $type);
+        }
+        catch (\Throwable $e)
+        {
+            $caPageVisitedAttr = null;
+        }
+
+        // don't want to rewrite in case product switch happens again.
+        if ($caPageVisitedAttr === null)
+        {
+            $caPageVisited = ((isset($utmParams['first_page']) and ($utmParams['first_page'] === User\Constants::CA_STATIC_PAGE))
+                              or (isset($utmParams['final_page']) and ($utmParams['final_page'] === User\Constants::CA_STATIC_PAGE))
+                              or (isset($utmParams['website']) and ($utmParams['website'] === User\Constants::CA_STATIC_PAGE)));
+            $attributeCore->create(
+                [
+                    Attribute\Entity::PRODUCT => $product,
+                    Attribute\Entity::GROUP   => $group,
+                    Attribute\Entity::TYPE    => $type,
+                    Attribute\Entity::VALUE   => strval((int) ($caPageVisited)) // saving as 1/0
+                ],
+                $merchant
+            );
+        }
+    }
+
+
+    private function storeCampaignType(Entity $merchant, array $utmParams)
+    {
+        $attributeCore = new Attribute\Core;
+
+        $product = Product::BANKING;
+        $group   = Attribute\Group::X_SIGNUP;
+        $type    = Attribute\Type::CAMPAIGN_TYPE;
+
+        try
+        {
+            $campaignTypeAttr = $attributeCore->fetch($merchant, $product, $group, $type);
+        }
+        catch (\Throwable $e)
+        {
+            $campaignTypeAttr = null;
+        }
+
+        // don't want to rewrite in case product switch happens again.
+        if ($campaignTypeAttr === null)
+        {
+            $campaignType = $this->findCampaignType($utmParams);
+
+            if ($campaignType === null)
+            {
+                return;
+            }
+
+            $attributeCore->create(
+                [
+                    Attribute\Entity::PRODUCT => $product,
+                    Attribute\Entity::GROUP   => $group,
+                    Attribute\Entity::TYPE    => $type,
+                    Attribute\Entity::VALUE   => $campaignType
+                ],
+                $merchant
+            );
+        }
+    }
+
     private function isXRegistrationBlocked(bool $currentlyEnabled = false, bool $trace = false) :bool
     {
         $config = (new MainAdmin\Service)->getConfigKey(['key' => MainAdmin\ConfigKey::BLOCK_X_REGISTRATION]) ?? false;
@@ -5597,42 +5681,16 @@ class Service extends Base\Service
 
     public function storeRelevantPreSignUpSourceInfoForBanking(array $utmParams, Merchant\Entity $merchant)
     {
-        // if the merchant visited the CA static page (first or last) (razorpay.com/x/current-accounts/)
-        // we want to show the new CA self-serve flow on dashboard. Hence, saving this information
-        $attributeCore = new Attribute\Core;
-
-        $product = Product::BANKING;
-        $group = Attribute\Group::X_SIGNUP;
-        $type = Attribute\Type::CA_PAGE_VISITED;
-
         $this->trace->info(TraceCode::UTM_PARAMS, [
-            'merchant' => $merchant->getId(),
+            'merchant'   => $merchant->getId(),
             'utm_params' => $utmParams
         ]);
 
-        try {
-            $caPageVisitedAttr = $attributeCore->fetch($merchant, $product, $group, $type);
-        }
-        catch (\Throwable $e){
-            $caPageVisitedAttr = null;
-        }
+        // if the merchant visited the CA static page (first or last) (razorpay.com/x/current-accounts/)
+        // we want to show the new CA self-serve flow on dashboard. Hence, saving this information
+        $this->storeIfVisitedCaStaticPage($merchant, $utmParams);
 
-        // don't want to rewrite in case product switch happens again.
-        if ($caPageVisitedAttr === null)
-        {
-            $caPageVisited = ((isset($utmParams['first_page']) and ($utmParams['first_page'] === User\Constants::CA_STATIC_PAGE))
-                                or (isset($utmParams['final_page']) and ($utmParams['final_page'] === User\Constants::CA_STATIC_PAGE))
-                              or (isset($utmParams['website']) and ($utmParams['website'] === User\Constants::CA_STATIC_PAGE)));
-            $attributeCore->create(
-                [
-                    Attribute\Entity::PRODUCT   => $product,
-                    Attribute\Entity::GROUP     => $group,
-                    Attribute\Entity::TYPE      => $type,
-                    Attribute\Entity::VALUE     => strval((int)($caPageVisited)) // saving as 1/0
-                ],
-                $merchant
-            );
-        }
+        $this->storeCampaignType($merchant, $utmParams);
     }
 
     public function migrationBankingVAs(array $input)
@@ -6959,6 +7017,35 @@ class Service extends Base\Service
             Entity::PURPOSE_CODE => $this->merchant->getPurposeCode(),
         ]);
         return ['success' => true];
+    }
+
+    private function findCampaignType(array $utmParams): ?string
+    {
+        $isNeostoneCampaign = false;
+
+        foreach (self::NEOSTONE_UTM_RULES as $neostoneUtmRule)
+        {
+            $ruleSatisfied = true;
+
+            foreach (User\Constants::$utmDecider as $utmType)
+            {
+                $ruleSatisfied = ($ruleSatisfied and array_key_exists(('final_' . $utmType), $utmParams));
+
+                if (array_key_exists(('final_' . $utmType), $utmParams)) // We check only last click utm parameters
+                {
+                    $ruleSatisfied = ($ruleSatisfied and ($neostoneUtmRule[$utmType] === $utmParams['final_' . $utmType]));
+                }
+            }
+
+            if ($ruleSatisfied === true)
+            {
+                $isNeostoneCampaign = true;
+
+                break;
+            }
+        }
+
+        return $isNeostoneCampaign ? 'ca_neostone' : null;
     }
 
     public function toggleFeeBearer(array $input)

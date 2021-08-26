@@ -93,6 +93,12 @@ class Constants
         self::TIMESTAMP,
     ];
 
+    public static $utmDecider = [
+        self::UTM_SOURCE,
+        self::UTM_CAMPAIGN,
+        self::UTM_MEDIUM,
+    ];
+
     const GC_LID   = 'gclid';
     const FB_CLID  = 'fbclid';
     const MS_CLKID = 'msclkid';

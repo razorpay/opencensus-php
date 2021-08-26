@@ -7,6 +7,7 @@ class Type
     // ONBOARDING Types
     const MERCHANT_ONBOARDING_CATEGORY  = 'merchant_onboarding_category';
     const CA_PAGE_VISITED               = 'ca_page_visited';
+    const CAMPAIGN_TYPE                 = 'campaign_type';
 
     // PREFERENCES Types
     const BUSINESS_CATEGORY             = 'business_category';
