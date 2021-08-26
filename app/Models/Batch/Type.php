@@ -478,6 +478,7 @@ class Type
         self::REPORT                        => Name::REPORTING_BATCH_UPLOAD,
         self::CREDIT                        => Name::CREDITS_BATCH_UPLOAD,
         self::LOC_WITHDRAWAL                => Name::LOC_WITHDRAWAL_EDIT,
+        self::REFUND                        => Name::EDIT_PAYMENT_REFUND,
         self::RETRY_REFUNDS_TO_BA           => Name::BULK_RETRY_REFUNDS_VIA_FTA,
         self::BUY_PRICING_RULE              => Name::PAYMENTS_CREATE_BUY_PRICING_PLAN,
         self::BUY_PRICING_ASSIGN            => Name::EDIT_TERMINAL,
