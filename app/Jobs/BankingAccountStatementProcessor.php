@@ -60,28 +60,25 @@ class BankingAccountStatementProcessor extends Job
                     'account_number'    => $this->params['account_number']
                 ]);
 
-            if ($this->params['channel'] !== BAS\Channel::ICICI)
+            $BASCore = new BAS\Core;
+
+            if ($BASCore->checkReArchFlow($this->params['account_number'], $this->params['channel']) === false)
             {
-                $newStatementFetchFlowFeature = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::ACCOUNT_STATEMENT_V2_FLOW]);
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_CALLED_BUT_V2_FEATURE_NOT_ENABLED,
+                    [
+                        'channel'           => $this->params['channel'],
+                        'account_number'    => $this->params['account_number'],
+                    ]);
 
-                if (in_array($this->params['account_number'], $newStatementFetchFlowFeature) === false)
-                {
-                    $this->trace->info(
-                        TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_CALLED_BUT_V2_FEATURE_NOT_ENABLED,
-                        [
-                            'channel'           => $this->params['channel'],
-                            'account_number'    => $this->params['account_number'],
-                        ]);
+                $this->delete();
 
-                    $this->delete();
-
-                    return;
-                }
+                return;
             }
 
             $workerStartTime = Carbon::now()->getTimestamp();
 
-            (new BAS\Core)->processStatementForAccountV2($this->params);
+            $BASCore->processStatementForAccountV2($this->params);
 
             $workerEndTime = Carbon::now()->getTimestamp();
 
