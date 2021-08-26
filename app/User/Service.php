@@ -1806,6 +1806,15 @@ class Service extends Base\Service
          */
         $flag = null;
 
+        $from_ca_campaign = $this->checkIfFromCaCampaign($merchant);
+
+        if ($from_ca_campaign === true)
+        {
+            $data['experiments']['rx_ca_self_serve_flow_neo'] = ['result' => 'on'];
+
+            $this->fireNeoStoneEventToHubspot($merchant);
+        }
+
         $from_ca_page = $this->checkIfFromCaPage($merchant);
 
         /*
@@ -1829,7 +1838,7 @@ class Service extends Base\Service
          *
          */
 
-        if ($from_ca_page === true)
+        if ($from_ca_page === true and array_key_exists('rx_ca_self_serve_flow_neo', $data['experiments']) === false)
         {
             if ($merchant['business_banking_signup_at'] < strtotime('25 May 2021'))
             {
@@ -1985,6 +1994,23 @@ class Service extends Base\Service
                 if ($attribute['type'] === 'ca_page_visited')
                 {
                     return $attribute['value'] === '1';
+                }
+            }
+        }
+        return false;
+    }
+
+    private function checkIfFromCaCampaign(array $merchant): bool
+    {
+        if (array_key_exists('attributes', $merchant) === true)
+        {
+            $attributes = $merchant['attributes']['items'];
+
+            foreach ($attributes as $attribute)
+            {
+                if ($attribute['type'] === 'campaign_type')
+                {
+                    return $attribute['value'] === 'ca_neostone';
                 }
             }
         }
