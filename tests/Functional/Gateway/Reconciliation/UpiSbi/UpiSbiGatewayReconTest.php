@@ -137,6 +137,38 @@ class UpiSbiGatewayReconTest extends TestCase
         $this->assertEquals('SBI0000000000119', $upiEntity['gateway_merchant_id']);
     }
 
+    public function testAmountMismatchForAllowedMargin()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $paymentId = $this->makeUpiSbiPaymentAndReturnId($createdAt);
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'sbi_recon')
+                {
+                    // Overriding the Amount with in allowed margin
+                    $content[0]['Transaction Amount'] = '500';
+                }
+            });
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiSbi');
+
+        $payments = $this->getDbLastEntity('payment');
+
+        // Asserting PaymentId to check the Amount Mismatch is allowed for given margin or not
+        $this->assertEquals(substr($paymentId,4) , $payments['id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+    }
+
     public function testGatewayMismatch()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
@@ -437,6 +469,15 @@ class UpiSbiGatewayReconTest extends TestCase
         $response = $this->getPaymentStatus($id);
 
         $this->assertEquals($status, $response[Payment\Entity::STATUS]);
+    }
+
+    private function makeUpiSbiPaymentAndReturnId(int $createdAt)
+    {
+        $paymentId = $this->doUpiSbiPayment();
+
+        $this->fixtures->edit('payment', $paymentId, ['created_at' => $createdAt]);
+
+        return $paymentId;
     }
 
     protected function mockRefundData()
