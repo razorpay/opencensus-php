@@ -17,6 +17,7 @@ class CardlessEmi extends Service
     // gateway entity attributes
     const GATEWAY_REFERENCE_NUMBER    = 'gateway_reference_number';
     const PROVIDER_REFERENCE_NUMBER   = 'provider_reference_number';
+    const ADDITIONAL_DATA             = 'additional_data';
 
     public function action(string $method, string $gateway, string $action, array $input)
     {
@@ -175,14 +176,22 @@ class CardlessEmi extends Service
                 $this->input[Entity::PAYMENT]);
         }
 
-        return $this->getAcquirerData($response);
+        $acquirerData = $this->getAcquirerData($response);
+
+        $additionData = $this->getAdditionalData($response);
+
+        return array_merge($acquirerData, $additionData);
     }
 
     // ---------------------- Callback -------------------------------------
 
     protected function getCallbackResponseData($response): array
     {
-        return $this->getAcquirerData($response);
+        $acquirerData = $this->getAcquirerData($response);
+
+        $additionData = $this->getAdditionalData($response);
+
+        return array_merge($acquirerData, $additionData);
     }
 
     protected function getAcquirerData($response): array
@@ -192,6 +201,17 @@ class CardlessEmi extends Service
                 Payment\Entity::REFERENCE1 => $response[Response::DATA][Response::GATEWAY_REFERENCE_NUMBER]
             ]
         ];
+    }
+
+    protected function getAdditionalData($response): array
+    {
+        if(isset($response[Response::DATA][self::ADDITIONAL_DATA]) === true)
+        {
+            return [
+                'additional_data' =>  $response[Response::DATA][self::ADDITIONAL_DATA]
+            ];
+        }
+       return [];
     }
 
 }

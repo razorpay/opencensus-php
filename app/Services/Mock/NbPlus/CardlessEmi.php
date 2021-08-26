@@ -76,7 +76,11 @@ class CardlessEmi extends CardlessEmiBase
                     'entity'                    => 'payment',
                     'rzp_payment_id'            => 'random_pid',
                     'gateway_reference_number'  => '1234',
-                    'status'                    => 'authorized'
+                    'status'                    => 'authorized',
+                    'additional_data'           => [
+                        'mdr'           => '0.0',
+                        'subvention'    => '3.0'
+                    ]
                 ]
             ],
             'error' => null
@@ -90,7 +94,11 @@ class CardlessEmi extends CardlessEmiBase
             'response' => [
                 'data' => [
                     'gateway_status'           => true,
-                    'gateway_reference_number' => '1234'
+                    'gateway_reference_number' => '1234',
+                    'additional_data'           => [
+                        'mdr'           => '0.0',
+                        'subvention'    => '3.0'
+                    ]
                 ]
             ],
             'error' => null

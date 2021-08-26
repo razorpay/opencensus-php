@@ -353,6 +353,7 @@ class Payment extends Base
             case ($this->isVasMerchantWithDirectSettlement()):
             case ($this->txn->isPostpaid() === true):
             case ($this->txn->getCreditType() === Transaction\CreditType::FEE):
+            case (($this->source->isCardlessEmiWalnut369()) and ($this->merchant->isFeatureEnabled(Feature\Constants::SOURCED_BY_WALNUT369) === true)):
             case ($this->txn->getCreditType() === Transaction\CreditType::AMOUNT):
                 $netAmount = $amount;
                 break;
@@ -439,6 +440,23 @@ class Payment extends Base
 
             if ($discount !== null)
             {
+                return $discount->getAmount();
+            }
+        }
+
+        /* For the walnut369 sourced merchant, we don't apply our pricing on the payment and instead settle the amount
+         * based on the subvention/mdr received in the payment which is used to create discount entity
+         * */
+        if (($payment->isCardlessEmiWalnut369() === true) and ($this->merchant->isFeatureEnabled(Feature\Constants::SOURCED_BY_WALNUT369) === true))
+        {
+            $discount = $this->repo->discount->fetchForPayment($payment);
+
+            if ($discount !== null)
+            {
+                $this->fees = 0;
+
+                $this->tax = 0;
+
                 return $discount->getAmount();
             }
         }

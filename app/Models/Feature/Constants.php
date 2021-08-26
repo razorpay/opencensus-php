@@ -154,7 +154,7 @@ class Constants
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
     const GPAY                            = 'gpay';
     const PAYPAL_CC                       = 'paypal_cc';
-
+    const SOURCED_BY_WALNUT369            = 'sourced_by_walnut369';
     const WALLET                          = 'wallet';
 
     const ENACH_INTERMEDIATE              = 'enach_intermediate';
@@ -1144,6 +1144,7 @@ class Constants
         self::AXIS_PAYPAL_ENABLE              => true,
         self::AVS                             => true,
         self::MFN                             => true,
+        self::SOURCED_BY_WALNUT369            => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';

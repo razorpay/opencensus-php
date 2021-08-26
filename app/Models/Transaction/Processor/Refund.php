@@ -5,12 +5,14 @@ namespace RZP\Models\Transaction\Processor;
 use Carbon\Carbon;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Models\Transaction\ReconciledType;
+use RZP\Trace\TraceCode;
 
 class Refund extends Base
 {
@@ -122,6 +124,8 @@ class Refund extends Base
 
         // For cases like cred, here instead of using the whole base amount we deduct the coin burn for the transaction
         // from the base amount.
+        // For walnut369, here instead of deducting whole base amount we subtract the discount for the payment
+        // in case of partial refunds.
         $discount = $this->getDiscountIfApplicable($refund->payment);
 
         $netAmount -= $discount;

@@ -32,6 +32,7 @@ use RZP\Models\Payment\Status;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
+use RZP\Exception\BadRequestException;
 use RZP\Gateway\Upi\Base\RecurringTrait;
 use RZP\Models\Locale\Core as LocaleCore;
 
@@ -367,7 +368,7 @@ trait Callback
         {
             $data = $this->callGatewayCallback($input);
 
-            //For Cred we receive the discount in the callback event.
+            //For Cred and walnut369 we receive the discount in the callback event.
             $this->addDiscountToPaymentIfApplicable($payment, $data);
 
             if (isset($data[Payment\Entity::TWO_FACTOR_AUTH]) === true)
@@ -940,11 +941,16 @@ trait Callback
         }
     }
 
-    protected function addDiscountToPaymentIfApplicable($payment, $callbackData)
+    protected function addDiscountToPaymentIfApplicable(Payment\Entity $payment, $callbackData)
     {
         if ($payment->isAppCred() === true)
         {
             $this->addDiscountToCred($payment, $callbackData);
+        }
+
+        if ($payment->isCardlessEmiWalnut369() === true)
+        {
+            $this->addDiscountToWalnut369($payment, $callbackData);
         }
     }
 
@@ -955,6 +961,39 @@ trait Callback
         {
             $discountAmount = $this->getValidatedCredCoins($callbackData['data']['credCoins'], $payment);
             $discountInput = [Discount\Entity::AMOUNT => $discountAmount,];
+            (new Discount\Service)->create($discountInput, $payment, null);
+        }
+    }
+
+    protected function addDiscountToWalnut369($payment, $callbackData) {
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::SOURCED_BY_WALNUT369) === true)
+        {
+            // apply discount
+            // get mdr and subvention from callback data
+            $mdr        = (float) $callbackData['additional_data']['mdr'];
+            $subvention = (float) $callbackData['additional_data']['subvention'];
+
+            if(($mdr === 0.0) and ($subvention === 0.0))
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_RESPONSE_BODY);
+            }
+
+            $discountAmount = 0;
+
+            if(empty($mdr) === false)
+            {
+                $discountAmount = (($payment->getAmount() * ($mdr * 100)) / 10000);
+            }
+
+            if(empty($subvention) === false)
+            {
+                $discountAmount = (($payment->getAmount() * ($subvention * 100)) / 10000);
+            }
+
+            $discountAmount = (int) $discountAmount;
+
+            $discountInput = [Discount\Entity::AMOUNT => $discountAmount];
             (new Discount\Service)->create($discountInput, $payment, null);
         }
     }

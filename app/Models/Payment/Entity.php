@@ -1859,6 +1859,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             return $this->discount->getAmount();
         }
+
+        if (($this->isCardlessEmiWalnut369() === true) and
+            ($this->discount !== null))
+        {
+            return $this->discount->getAmount();
+        }
+
         return null;
     }
 
@@ -2189,6 +2196,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         return  (($this->getAttribute(self::METHOD) === Payment\Method::APP) and
                  ($this->getAttribute(self::WALLET) === AppMethod::CRED));
+    }
+
+    public function isCardlessEmiWalnut369()
+    {
+        return  (($this->getAttribute(self::METHOD) === Payment\Method::CARDLESS_EMI) and
+            ($this->getAttribute(self::WALLET) === Payment\Processor\CardlessEmi::WALNUT369));
     }
 
 

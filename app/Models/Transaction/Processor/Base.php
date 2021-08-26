@@ -831,8 +831,18 @@ abstract class Base extends BaseCore
     // For cases where the actual debit/credit amount can be different from the actual transaction amount
     // Eg - While doing cred payments a user can burn some % of total amount using cred coins, therefore
     // that amount should be deducted from the transaction amount.
-    protected function getDiscountIfApplicable($payment)
+    // Eg - Another usecase is cardlessemi walnut369, the net settlement amount depends on discount applied during credit
+    protected function getDiscountIfApplicable(Payment\Entity $payment)
     {
+        if (($payment->isCardlessEmiWalnut369() === true) and ($this->merchant->isFeatureEnabled(Feature\Constants::SOURCED_BY_WALNUT369) === true))
+        {
+            if ($payment->getBaseAmount() !== $this->txn->getAmount())
+            {
+                // no discount applicable if partial payment if merchant is sourced by walnut
+                return 0;
+            }
+        }
+
         $discountRatio = $payment->getDiscountRatioIfApplicable();
 
         return (int) round($discountRatio * $this->txn->getAmount());

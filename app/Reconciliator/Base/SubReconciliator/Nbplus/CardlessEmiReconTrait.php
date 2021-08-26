@@ -29,7 +29,7 @@ trait CardlessEmiReconTrait
         $pushData['recon_data']  = $data;
 
         $queueName = $this->app['config']->get('queue.payment_nbplus_api_reconciliation.' . $this->mode);
-        
+
         Queue::pushRaw(json_encode($pushData), $queueName);
 
         $this->trace->info(
