@@ -331,6 +331,24 @@ class Server extends Base\Mock\Server
 
     }
 
+    protected function payu($input)
+    {
+        // This encResp value is never used as the pay_verify response from mozart is mocked.
+        $content = [
+            'encResp' => 'random_encrypted_string'
+        ];
+
+        $this->content($content, 'authorize');
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
     protected function wallet_phonepe($input)
     {
         $content = $input;

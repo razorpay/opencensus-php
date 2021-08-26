@@ -1489,6 +1489,15 @@ class Gateway extends Base\Gateway
 
         $url = $this->getUrlForMozartRequest($input, 'payments', $mode);
 
+        // TODO : Once these wallets migrated to Nbplus service, remove this hack
+
+        $payment = $input['payment'];
+
+        if ((array_key_exists('method',$payment)) and ($gateway === Payment\Gateway::PAYU) and ($payment['method'] === Payment\Method::WALLET))
+        {
+            $url = $this->getUrlForMozartRequest($input, 'walletPayments', $mode);
+        }
+
         $mozartRequest = $this->getAuthenticatedMozartRequestArray($url, $content, $mode);
 
         $this->addMozartTimeoutIfApplicable($input, $mozartRequest);
@@ -1769,6 +1778,11 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY  => Action::PAY_INIT,
                 Action::VERIFY      => Action::PAY_VERIFY,
             ],
+            Payment\Gateway::PAYU => [
+                Action::PAY_INIT      => null,
+                Action::PAY_VERIFY    => null,
+                Action::VERIFY        => null,
+            ],
             Payment\Gateway::NETBANKING_YESB => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => null,
@@ -2022,6 +2036,11 @@ class Gateway extends Base\Gateway
                 Action::VERIFY          => null,
                 Action::REFUND          => null,
                 Action::VERIFY_REFUND   => null,
+            ],
+            Payment\Gateway::PAYU => [
+                Action::PAY_INIT      => null,
+                Action::PAY_VERIFY    => null,
+                Action::VERIFY        => null,
             ],
             Payment\Gateway::CRED       =>  [
                 Action::PAY_INIT        => null,
@@ -2403,6 +2422,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_KVB,
             Payment\Gateway::CRED,
             Payment\Gateway::NETBANKING_JSB,
+            Payment\Gateway::PAYU
         ];
 
         return in_array($gateway, $validationGateways, true);

@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Mozart\Mock;
 
 use RZP\Gateway\Base;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Gateway\Mozart\Mock\Upi\MozartUpiResponse;
@@ -503,9 +504,34 @@ class PayVerifyData extends Base\Mock\Server
 
     public function payu($entities)
     {
-        if ($this->isV2Mock($entities['payment']['description']))
+        $method = $entities['payment']['method'];
+
+        if ($method === Payment\Method::UPI)
         {
-            return $this->upiMozartV2($entities);
+            if ($this->isV2Mock($entities['payment']['description']) === true)
+            {
+                return $this->upiMozartV2($entities);
+            }
+        }
+        if ($method === Payment\Method::WALLET)
+        {
+            $response = [
+                'external_trace_id' => 'DUMMY_REQUEST_ID',
+                'mozart_id' => 'DUMMY_MOZART_ID',
+                'next' => [],
+                'success' => true,
+                'error' => null,
+                'data' => [
+                    '_raw' => 'dummy_raw_data',
+                    'status' => 'callback_successful',
+                    'paymentId' => $entities['payment']['id'],
+                    'amount' => $entities['payment']['amount'],
+                    'bank_reference_number' => "dummy_back_ref_number",
+                    'gateway_reference_number' => "dummy_gateway_ref_number"
+                ],
+            ];
+
+            return $response;
         }
     }
 

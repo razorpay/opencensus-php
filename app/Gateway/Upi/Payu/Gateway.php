@@ -10,12 +10,15 @@ use RZP\Gateway\Base\Verify;
 use RZP\Exception\LogicException;
 use RZP\Gateway\Upi\Payu\Fields;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Wallet\Base\WalletTrait;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 
 class Gateway extends Base\Gateway
 {
 
     use AuthorizeFailed;
+
+    use WalletTrait;
 
     use CommonGatewayTrait;
 
@@ -28,8 +31,8 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         /**
-         * Processing authorize requests for upi payment method payu with upi common trait.
-         * Checking method if upi then send to Mozart else throw exception.
+         * Processing authorize requests for upi/wallet payment method payu.
+         * Checking method if upi/wallet then send to Mozart else throw exception.
          */
         parent::authorize($input);
 
@@ -39,7 +42,11 @@ class Gateway extends Base\Gateway
         {
             return $this->upiAuthorize($input);
         }
-        throw new LogicException('Payment method is not upi, request unable to processed via upiAuthorize');
+        if ($method === Payment\Method::WALLET)
+        {
+            return $this->walletAuthorize($input);
+        }
+        throw new LogicException('Invalid Payment method, authorize request failed');
     }
 
     public function callback(array $input)
@@ -58,7 +65,11 @@ class Gateway extends Base\Gateway
 
             return $this->upiCallback($input);
         }
-        throw new LogicException('Payment method is not upi, request unable to processed via upiCallback');
+        if ($method === Payment\Method::WALLET)
+        {
+            return $this->walletCallback($input);
+        }
+        throw new LogicException('Invalid Payment method, callback request failed');
     }
 
     public function preProcessServerCallback($input): array
@@ -94,6 +105,11 @@ class Gateway extends Base\Gateway
         {
             return $this->upiSendPaymentVerifyRequest($verify);
         }
+        if ($method === Payment\Method::WALLET)
+        {
+            return $this->walletSendPaymentVerifyRequest($input);
+        }
+        throw new LogicException('Invalid Payment method, Mozart request call failed');
     }
 
     public function verify(array $input)
@@ -106,8 +122,13 @@ class Gateway extends Base\Gateway
 
             $verify = new Verify($this->gateway, $input);
 
-            $this->runPaymentVerifyFlow($verify);
+            return $this->runPaymentVerifyFlow($verify);
         }
+        if ($method === Payment\Method::WALLET)
+        {
+            return $this->walletVerify($input);
+        }
+        throw new LogicException('Invalid Payment method, verify request failed');
     }
 
     protected function verifyPayment($verify)
@@ -116,8 +137,13 @@ class Gateway extends Base\Gateway
 
         if ($method === Payment\Method::UPI)
         {
-            $this->upiVerifyPayment($verify);
+            return $this->upiVerifyPayment($verify);
         }
+        if ($method === Payment\Method::WALLET)
+        {
+            return $this->walletSendPaymentVerifyRequest($verify);
+        }
+        throw new LogicException('Invalid Payment method, Payment verification failed');
     }
 
     public function getPaymentToVerify(Verify $verify)

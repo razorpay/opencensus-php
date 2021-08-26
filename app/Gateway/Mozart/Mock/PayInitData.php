@@ -4,6 +4,7 @@ namespace RZP\Gateway\Mozart\Mock;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
@@ -163,9 +164,42 @@ class PayInitData extends Base\Mock\Server
 
     public function payu($entities)
     {
-        if ($this->isV2Mock($entities['payment']['description']))
+        $method = $entities['payment']['method'];
+
+        if ($method === Payment\Method::UPI)
         {
-            return $this->upiMozartV2($entities);
+            if ($this->isV2Mock($entities['payment']['description']) === true)
+            {
+                return $this->upiMozartV2($entities);
+            }
+        }
+        if ($method === Payment\Method::WALLET)
+        {
+            $url = $this->route->getUrlWithPublicAuth(
+                'mock_mozart_payment_post',
+                ['gateway' => 'payu', 'callbackUrl' => $entities['callbackUrl']]);
+
+            $response = [
+                'data' => [],
+                'error' => null,
+                'success' => true,
+                'next' => [
+                    'redirect' => [
+                        'method' => 'post',
+                        'url' => $url,
+                        'content' => [
+                            'command' => 'initiateTransaction',
+                            'access_code' => 'random_access_code',
+                            'encode_data' => 'random_encrypted_string',
+
+                        ],
+                    ]
+                ],
+                'mozart_id' => 'DUMMY_MOZART_ID',
+                'external_trace_id' => 'DUMMY_REQUEST_ID',
+            ];
+
+            return $response;
         }
     }
 
