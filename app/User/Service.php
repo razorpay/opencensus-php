@@ -1617,6 +1617,7 @@ class Service extends Base\Service
             'rx_creation_flows_v2',
             'instant_refunds_default_pricing_v2',
             'covid_19_donation_show',
+            'fee_bearer_self_serve',
             'ir_pricing_v2_rollout_1',
             'ir_pricing_v2_rollout_2',
             'ir_pricing_v2_rollout_3',

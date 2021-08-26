@@ -268,6 +268,11 @@ export default class User {
     return this.activation_status === 'activated';
   }
 
+  // getter to check if payPal is enabled for a certain merchant or not
+  get isPayPalEnabled() {
+    return this.methods?.paypal;
+  }
+
   get needsClarification() {
     return this.activation_status === 'needs_clarification';
   }
@@ -641,6 +646,10 @@ export default class User {
 
   get isCovidReliefFlowEnabled() {
     return this.getExpStatus('covid_19_donation_show');
+  }
+
+  get isFeeBearerSelfServeOn() {
+    return this.getExpStatus('fee_bearer_self_serve');
   }
 
   get isAutomaticSettlementEnabled() {

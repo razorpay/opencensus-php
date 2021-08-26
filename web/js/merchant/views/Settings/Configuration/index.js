@@ -5,10 +5,12 @@ import * as ConfigActions from 'merchant/reducers/config';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import FlashCheckout from './FlashCheckout';
 import DefaultRefundSpeed from './DefaultRefundSpeed';
+import FeeBearerSelfserver from './FeeBearerSelfserve';
 import CheckoutTheme from './CheckoutTheme';
 import EmailNotifications from './EmailNotifications';
 import PaymentSettings from './PaymentSettings';
 import RTracking from 'react-tracking';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
@@ -335,6 +337,18 @@ export default class CongfigurationContainer extends Component {
             <IntoView hashedWith={REFUND_SETTINGS}>
               <DefaultRefundSpeed org={org} />
             </IntoView>
+
+            <ShowWhen
+              additionalCondition={(usr) =>
+                usr.isAccepted &&
+                usr.role === 'owner' &&
+                !usr.international &&
+                !usr.isPayPalEnabled &&
+                usr.isFeeBearerSelfServeOn
+              }
+            >
+              <FeeBearerSelfserver />
+            </ShowWhen>
 
             {mode === 'live' && showInternationalPaymentsCard && (
               <InternationalPayments

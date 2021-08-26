@@ -246,6 +246,15 @@ export default (props) => {
                     </span>
                   </Definition>
                 </EntityDetailRow>
+
+                <EntityDetailRow label="Fee Bearer">
+                  <Definition>
+                    {payment.fee_bearer === 'platform'
+                      ? 'You are the fee bearer for this payment'
+                      : 'The customer has paid the fees for this payment'}
+                  </Definition>
+                </EntityDetailRow>
+
                 <ShowWhen
                   additionalCondition={() =>
                     user.isProjectNitroEnabled || user.isProjectNitroCorporateCard
