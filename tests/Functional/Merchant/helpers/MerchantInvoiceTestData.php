@@ -271,7 +271,7 @@ return [
             'document_details' => [
                 'document_type' => 'INV',
                 'document_number' => 'hello12345670721',
-                'document_date' => '21/07/2021',
+                'document_date' => '20/07/2021',
             ],
             'seller_details' => [
                 'gstin' => '29AAGCR4375J1ZU',
@@ -291,16 +291,32 @@ return [
                 'address1' => 'FILM CENTRE BUILDING, MUMBAI, 68, TARDEO ROAD, 2B ii, Mumbai City, Maharashtra, GROUND FLOOR, 400034',
             ],
             'value_details' => [
-                'total_assessable_value' => '64.90',
-                'total_invoice_value' => '76.58',
+                'total_assessable_value' => '74.90',
+                'total_invoice_value' => '86.58',
                 'total_igst_value' => '0.00',
                 'total_sgst_value' => '5.84',
                 'total_cgst_value' => '5.84',
             ],
             'item_list' => [
                 [
-                    'product_description' => 'Commission on Card Payments > INR 2,000',
+                    'product_description' => 'Commission on Card Payments less than equal to INR 2,000',
                     'item_serial_number' => 1,
+                    'is_service' => 'Y',
+                    'hsn_code' => '997158',
+                    'unit' => 'OTH',
+                    'quantity' => 1,
+                    'unit_price' => '10.00',
+                    'total_amount' => '10.00',
+                    'assessable_value' => '10.00',
+                    'gst_rate' => 0,
+                    'igst_amount' => '0.00',
+                    'sgst_amount' => '0.00',
+                    'cgst_amount' => '0.00',
+                    'total_item_value' => '10.00',
+                ],
+                [
+                    'product_description' => 'Commission on Card Payments greater than INR 2,000',
+                    'item_serial_number' => 2,
                     'is_service' => 'Y',
                     'hsn_code' => '997158',
                     'unit' => 'OTH',
@@ -316,7 +332,7 @@ return [
                 ],
                 [
                     'product_description' => 'Commission on All Methods Except Cards',
-                    'item_serial_number' => 2,
+                    'item_serial_number' => 3,
                     'is_service' => 'Y',
                     'hsn_code' => '997158',
                     'unit' => 'OTH',
@@ -332,7 +348,7 @@ return [
                 ],
                 [
                     'product_description' => 'Commission on All Validations',
-                    'item_serial_number' => 3,
+                    'item_serial_number' => 4,
                     'is_service' => 'Y',
                     'hsn_code' => '997158',
                     'unit' => 'OTH',
@@ -357,7 +373,7 @@ return [
             'document_details' => [
                 'document_type' => 'CRN',
                 'document_number' => 'hello12345670721',
-                'document_date' => '21/07/2021',
+                'document_date' => '20/07/2021',
             ],
             'seller_details' => [
                 'gstin' => '29AAGCR4375J1ZU',
@@ -378,10 +394,10 @@ return [
             ],
             'value_details' => [
                 'total_assessable_value' => '13.00',
-                'total_invoice_value' => '14.24',
+                'total_invoice_value' => '13.00',
                 'total_igst_value' => '0.00',
-                'total_sgst_value' => '0.62',
-                'total_cgst_value' => '0.62',
+                'total_sgst_value' => '0.00',
+                'total_cgst_value' => '0.00',
             ],
             'item_list' => [
                 [
@@ -394,11 +410,11 @@ return [
                     'unit_price' => '13.00',
                     'total_amount' => '13.00',
                     'assessable_value' => '13.00',
-                    'gst_rate' => 18,
+                    'gst_rate' => 0,
                     'igst_amount' => '0.00',
-                    'sgst_amount' => '0.62',
-                    'cgst_amount' => '0.62',
-                    'total_item_value' => '14.24',
+                    'sgst_amount' => '0.00',
+                    'cgst_amount' => '0.00',
+                    'total_item_value' => '13.00',
                 ],
             ],
         ],
@@ -411,7 +427,7 @@ return [
             'document_details' => [
                 'document_type' => 'DBN',
                 'document_number' => 'hello12345670721',
-                'document_date' => '21/07/2021',
+                'document_date' => '20/07/2021',
             ],
             'seller_details' => [
                 'gstin' => '29AAGCR4375J1ZU',
@@ -432,10 +448,10 @@ return [
             ],
             'value_details' => [
                 'total_assessable_value' => '13.00',
-                'total_invoice_value' => '14.24',
+                'total_invoice_value' => '13.00',
                 'total_igst_value' => '0.00',
-                'total_sgst_value' => '0.62',
-                'total_cgst_value' => '0.62',
+                'total_sgst_value' => '0.00',
+                'total_cgst_value' => '0.00',
             ],
             'item_list' => [
                 [
@@ -448,11 +464,11 @@ return [
                     'unit_price' => '13.00',
                     'total_amount' => '13.00',
                     'assessable_value' => '13.00',
-                    'gst_rate' => 18,
+                    'gst_rate' => 0,
                     'igst_amount' => '0.00',
-                    'sgst_amount' => '0.62',
-                    'cgst_amount' => '0.62',
-                    'total_item_value' => '14.24',
+                    'sgst_amount' => '0.00',
+                    'cgst_amount' => '0.00',
+                    'total_item_value' => '13.00',
                 ],
             ],
         ],

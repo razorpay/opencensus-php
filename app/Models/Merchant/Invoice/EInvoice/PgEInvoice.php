@@ -49,7 +49,16 @@ class PgEInvoice extends Core
                 continue;
             }
 
-            $gstRate = PricingCalculator\Base::IGST_PERCENTAGE/100;
+            // TODO: CRN/DBN needs to be evaluated properly here as we might have to send the 0
+            // as tax rate or something different
+            if(in_array(Invoice\Type::getTypeFromDescription($invoiceItem[InvoiceReport::DESCRIPTION]), Invoice\Type::$taxablePrimaryCommissionTypes) === false)
+            {
+                $gstRate = 0;
+            }
+            else
+            {
+                $gstRate = PricingCalculator\Base::IGST_PERCENTAGE/100;
+            }
 
             $amount = $invoiceItem[InvoiceReport::AMOUNT];
             $totalAssessableValue += $amount;
@@ -67,7 +76,7 @@ class PgEInvoice extends Core
             $totalCgstValue += $cgstAmount;
 
             $items[] = [
-                Constants::PRODUCT_DESCRIPTION => $invoiceItem[InvoiceReport::DESCRIPTION],
+                Constants::PRODUCT_DESCRIPTION => $this->getModifiedProductDescription($invoiceItem[InvoiceReport::DESCRIPTION]),
                 Constants::ITEM_SERIAL_NUMBER => ++$itemSerialNumber,
                 Constants::IS_SERVICE => 'Y',
                 Constants::HSN_CODE => $invoiceItem[InvoiceReport::GST_SAC_CODE],
@@ -112,11 +121,6 @@ class PgEInvoice extends Core
             return false;
         }
 
-        if(($item[InvoiceReport::IGST] === 0) and ($item[InvoiceReport::SGST] === 0) and ($item[InvoiceReport::CGST] === 0))
-        {
-            return true;
-        }
-
         return false;
     }
 
@@ -152,6 +156,7 @@ class PgEInvoice extends Core
 
             foreach ($entityMap as $documentType => $eInvoice)
             {
+                //TODO : need to re-look the logic of CRN/DBN generation with same PDF
                 $gspError = $eInvoice->getGspError();
 
                 if((isset($gspError) === true) and ($this->shouldGenerateB2C($gspError) === true))
@@ -172,14 +177,31 @@ class PgEInvoice extends Core
 
                     break;
                 }
+
+                // adding this step here considering we are only creating for the INV not for CRN/DBN in same PDF
+                $eInvoiceSuccessTimeStamp = Carbon::createFromTimestamp($eInvoice->getUpdatedAt(), Timezone::IST)
+                                                        ->subDay()
+                                                        ->format('d/m/Y');
+
+                $eInvoiceData[self::E_INVOICE_COMPLETE_GENERATION_DATE] = $eInvoiceSuccessTimeStamp;
+
+
                 $eInvoiceData[PgEInvoice::$documentTypeMap[$documentType]] = [
-                    self::IRN             => $eInvoice->getGspIrn(),
-                    self::SIGNED_QR_CODE  => $eInvoice->getGspSignedQrCode(),
-                    self::QR_CODE_URL     => $eInvoice->getGspQRCodeUrl(),
+                    self::IRN                                  => $eInvoice->getGspIrn(),
+                    self::SIGNED_QR_CODE                       => $eInvoice->getGspSignedQrCode(),
+                    self::QR_CODE_URL                          => $eInvoice->getGspQRCodeUrl(),
                 ];
             }
         }
 
         return $eInvoiceData;
+    }
+
+    protected function getModifiedProductDescription($description)
+    {
+        return str_replace(
+            ["<=", ">=", "<", ">"],
+            ["less than equal to", "greater than equal to", "less than", "greater than"],
+            $description);
     }
 }

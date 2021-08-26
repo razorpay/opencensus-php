@@ -30,6 +30,8 @@ class Core extends Base\Core
     const ERROR_DELIMITER = ':';
     const CALLOUT_MESSAGE   = 'callout_message';
 
+    const E_INVOICE_COMPLETE_GENERATION_DATE   = 'e_invoice_complete_generation_date';
+
     // 1st Jan 2021 00:00:00 IST - Timestamp at which e-invoicing becomes mandatory.
     const EINVOICE_START_TIMESTAMP = 1609439400;
 
@@ -162,11 +164,12 @@ class Core extends Base\Core
 
     protected function getDocumentDetails(Entity $eInvoiceEntity)
     {
-        Carbon::createFromTimestamp($eInvoiceEntity->getCreatedAt(), Timezone::IST)
-            ->format('d/m/Y');
-
-        $documentDate = Carbon::createFromTimestamp($eInvoiceEntity->getCreatedAt(), Timezone::IST)
-            ->format('d/m/Y');
+        // Adding this to support the retry cases
+        // to pass the last day for the merchant invoice creation
+        // here we need to avoid the scenario of 12 AM midnight
+        $documentDate = Carbon::now(Timezone::IST)
+                                ->subDay()
+                                ->format('d/m/Y');
 
         return [
             Constants::DOCUMENT_TYPE    => $eInvoiceEntity->getDocumentType(),

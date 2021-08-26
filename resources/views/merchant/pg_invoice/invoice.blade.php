@@ -72,7 +72,11 @@
                                                 {{{ $rowItem['Document No.'] }}}
                                             </td>
                                             <td class="doc-date">
-                                                {{{ $rowItem['Document Date'] }}}
+                                                @if(isset($einvoice_data['e_invoice_complete_generation_date']))
+                                                    {{{$einvoice_data['e_invoice_complete_generation_date']}}}
+                                                @else
+                                                    {{{ $rowItem['Document Date'] }}}
+                                                @endif
                                             </td>
                                     @else
                                         <tr class="total">
@@ -102,14 +106,15 @@
             <li>To get GST input, please make sure that you have updated your GSTIN in your Razorpay Dashboard.</li>
             <li>All the Invoice, Debit &amp; Credit note values are inclusive of GST.</li>
             @if (isset($is_postpaid) && $is_postpaid !== true)
-            <li>The payment for this invoice has been collected and the details of these amounts may be found enclosed.</li>
+            <li>The payment for this invoice has been electronically collected and the details of these amounts may be found enclosed.</li>
             @endif
-            @if (isset($einvoice_data['callout_message']))
-            <div class="text-left" style="border:1px solid black;padding:5px;margin-bottom:10px;font-weight:bold;">
-                    NOTE: {{{$einvoice_data['callout_message']}}}
-            </div>
-            @endif
+            <li>Unless otherwise stated, tax on this invoice is not payable under reverse charge.</li>
         </ol>
+        @if (isset($einvoice_data['callout_message']))
+            <div class="text-left" style="border:1px solid black;padding:5px;margin-bottom:10px;font-weight:bold;">
+                NOTE: {{{$einvoice_data['callout_message']}}}
+            </div>
+        @endif
     </div>
 
 @endif

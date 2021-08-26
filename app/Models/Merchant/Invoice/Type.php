@@ -134,4 +134,11 @@ class Type
     {
         return self::$typeToDescriptionMap[$type] ?? self::DEFAULT_DESCRIPTION;
     }
+
+    public static function getTypeFromDescription(string $description): string
+    {
+        $descriptionToTypeMap = array_keys(self::$typeToDescriptionMap, $description, true);
+
+        return empty($descriptionToTypeMap) === true ? "" : $descriptionToTypeMap[0];
+    }
 }

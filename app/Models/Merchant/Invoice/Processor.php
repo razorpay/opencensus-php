@@ -220,7 +220,7 @@ class Processor extends Base\Core
 
     protected function createInvoiceBreakup(Merchant\Balance\Entity $balance, array $details)
     {
-        [$invoiceBreakup, $generatePdf] =  $this->repo->transaction(function() use ($balance, $details){
+        $invoiceBreakup =  $this->repo->transaction(function() use ($balance, $details){
 
             $feeBearer = $this->merchant->getFeeBearer();
 
@@ -258,15 +258,10 @@ class Processor extends Base\Core
                 $invoiceBreakup->push($lineItem);
             }
 
-            if($amount > 0)
-            {
-                return [$invoiceBreakup, true];
-            }
-
-            return [$invoiceBreakup, false];
+            return $invoiceBreakup;
         });
 
-        if(($generatePdf === true) and ($balance->isTypePrimary() === true))
+        if($balance->isTypePrimary() === true)
         {
             try
             {
@@ -282,13 +277,19 @@ class Processor extends Base\Core
                     }
                 }
 
+                // this is added to avoid the PDF creation if none of the amount is present
+                // neither credit_note/debit_note/invoice
+               if ($this->hasTaxableAmount($invoiceBreakup) === false)
+               {
+                   return;
+               }
+
                 $pgEInvoiceCore = (new Merchant\Invoice\EInvoice\PgEInvoice());
                 $merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchantId, ['merchantDetail']);
 
                 $date = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST);
 
-                if(($pgEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp()) === true) and
-                    ($this->hasTaxableLineItem($invoiceBreakup) === true))
+                if($pgEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp()) === true)
                 {
                     $invoiceCore = (new Core());
                     [$date, $isGstApplicable, $data] = $invoiceCore->getPgInvoiceData($merchant, $this->month,
@@ -316,13 +317,13 @@ class Processor extends Base\Core
         }
     }
 
-    public static function hasTaxableLineItem($invoiceBreakup) : bool
+    public static function hasTaxableAmount($invoiceBreakup) : bool
     {
         foreach ($invoiceBreakup as $index => $entity)
         {
-            $tax = abs($entity->getTax());
+            $amount = abs($entity->getAmount());
 
-            if($tax !== 0)
+            if($amount !== 0)
             {
                 return true;
             }

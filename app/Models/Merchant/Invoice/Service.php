@@ -313,7 +313,7 @@ class Service extends Base\Service
                             $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
 
                             if(($pgEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp()) === true) and
-                                (Processor::hasTaxableLineItem($invoiceBreakup) === true))
+                                (Processor::hasTaxableAmount($invoiceBreakup) === true))
                             {
                                 $this->checkForEinvoiceDataAndDispatch($merchant, $month, $year, $invoiceBreakup, true);
 
@@ -331,7 +331,7 @@ class Service extends Base\Service
                             $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
 
                             if(($pgEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp()) === true) and
-                                (Processor::hasTaxableLineItem($invoiceBreakup) === true) and ($strictB2c === false))
+                                (Processor::hasTaxableAmount($invoiceBreakup) === true) and ($strictB2c === false))
                             {
                                 $this->checkForEinvoiceDataAndDispatch($merchant, $month, $year, $invoiceBreakup, true);
 

@@ -204,6 +204,7 @@ class InvoiceReport extends BaseReport
         $createdTimestamp = $invoice->getCreatedAt();
 
         $this->invoiceDate = Carbon::createFromTimestamp($createdTimestamp, Timezone::IST)
+                                    ->subDay()
                                     ->format('d/m/Y');
 
         $this->gstin = $invoice->getGstin();

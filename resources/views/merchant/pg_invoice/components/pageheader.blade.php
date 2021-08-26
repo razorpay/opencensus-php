@@ -8,7 +8,11 @@
 
                 <td class="text-right">
                     Invoice #: {{{$invoice_number}}}<br>
-                    Created: {{{$invoice_date}}}<br>
+                    @if(isset($einvoice_data['e_invoice_complete_generation_date']))
+                        Created: {{{$einvoice_data['e_invoice_complete_generation_date']}}} <br>
+                    @else
+                        Created: {{{$invoice_date}}} <br>
+                    @endif
                 </td>
             </tr>
         </table>

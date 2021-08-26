@@ -651,8 +651,8 @@ class Core extends Base\Core
     public function getPgInvoiceBreakupGroupedData($input, $merchant)
     {
         $invoiceBreakup = $this->repo
-            ->merchant_invoice
-            ->fetchInvoiceReportData($merchant->getId(), $input['month'], $input['year']);
+                               ->merchant_invoice
+                               ->fetchInvoiceReportData($merchant->getId(), $input['month'], $input['year']);
 
         [$date, $isGstApplicable, $data] = $this->getPgInvoiceData($merchant, $input['month'], $input['year'], $invoiceBreakup);
 

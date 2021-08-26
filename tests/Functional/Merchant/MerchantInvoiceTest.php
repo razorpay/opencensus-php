@@ -1077,7 +1077,7 @@ class MerchantInvoiceTest extends TestCase
         $adjustmentData =[
             'merchant_id'   => '10000000000000',
             'fees'          => 1300,
-            'tax'           => 124,
+            'tax'           => 0,
             'currency'      => 'INR',
             'description'   => 'Fee adjustment',
         ];
@@ -1110,7 +1110,7 @@ class MerchantInvoiceTest extends TestCase
         $adjustmentData =[
             'merchant_id'   => '10000000000000',
             'fees'          => -1300,
-            'tax'           => 124,
+            'tax'           => 0,
             'currency'      => 'INR',
             'description'   => 'Fee adjustment',
         ];
