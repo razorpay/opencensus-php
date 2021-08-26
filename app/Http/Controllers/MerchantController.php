@@ -2340,4 +2340,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function toggleFeeBearer()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->toggleFeeBearer($input);
+
+        return ApiResponse::json($response);
+    }
 }

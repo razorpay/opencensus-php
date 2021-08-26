@@ -97,6 +97,7 @@ class UserRolesScope
             'merchant_gstin_self_serve_update'    => [Role::OWNER, Role::ADMIN],
             'merchant_edit_email_self_serve'      => [Role::OWNER],
             'email_user_status_for_email_update'  => [Role::OWNER],
+            'merchant_toggle_fee_bearer'          => [Role::OWNER],
 
             // Merchant user routes
             'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],

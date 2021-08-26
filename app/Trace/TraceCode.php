@@ -5152,6 +5152,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTO_CAPTURE_TRIGGERED_REASON                             = 'AUTO_CAPTURE_TRIGGERED_REASON';
     const CAPTURE_SETTINGS_FOR_PAYMENT                              = 'CAPTURE_SETTINGS_FOR_PAYMENT';
 
+    const PRICING_PLAN_ASSIGN_SUCCESS                                   = 'PRICING_PLAN_ASSIGN_SUCCESS';
+    const MERCHANT_TOGGLE_FEE_BEARER                                    = 'MERCHANT_TOGGLE_FEE_BEARER';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

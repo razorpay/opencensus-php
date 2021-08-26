@@ -618,6 +618,7 @@ class Route
         'merchant_payout_mail'                     => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
         'merchant_post_preferences'                => ['post',     'merchant/preferences/{group}',                   'MerchantController@postMerchantPreferences'                        ],
         'merchant_get_preferences'                 => ['get',      'merchant/preferences/{group}/{type?}',           'MerchantController@getMerchantPreferences'                         ],
+        'merchant_toggle_fee_bearer'               => ['post',     'merchant/toggle_fee_bearer',                     'MerchantController@toggleFeeBearer'                                ],
         'pricing_create_plan'                      => ['post',     'pricing',                                        'PricingController@postCreatePlan'                                  ],
         'buy_pricing_create_plan'                  => ['post',     'buy_pricing',                                    'PricingController@postCreateBuyPlan'                               ],
         'pricing_get_plans'                        => ['get',      'pricing',                                        'PricingController@getPlans'                                        ],
@@ -4327,6 +4328,9 @@ class Route
         'sub_virtual_account_list',
         'sub_virtual_account_transfer_with_otp',
 
+        //Toggle Fee Bearer
+        'merchant_toggle_fee_bearer',
+
         'merchant_international_enablement_preview',
         'merchant_international_enablement_get',
         'merchant_international_enablement_draft',
@@ -7205,6 +7209,7 @@ class Route
             'merchant_submit_support_call_request',
             'merchant_tag_map_create',
             'merchant_tag_map_update',
+            'merchant_toggle_fee_bearer',
             'merchant_tpv_create',
             'merchant_verify_attributes',
             'merchants_risk_service',

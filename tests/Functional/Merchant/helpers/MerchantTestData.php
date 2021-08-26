@@ -8942,6 +8942,80 @@ return [
             'description'         => PublicErrorDescription::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
         ],
     ],
+    'testToggleFeeBearerToCustomer' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/toggle_fee_bearer',
+            'content' => [
+                'fee_bearer' => 'customer',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testToggleFeeBearerToPlatform' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/toggle_fee_bearer',
+            'content' => [
+                'fee_bearer' => 'platform',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testToggleFeeBearerFailForCustomer' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/toggle_fee_bearer',
+            'content' => [
+                'fee_bearer' => 'customer',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The new fee bearer is same as the previous fee bearer'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testToggleFeeBearerToDynamicFail' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/toggle_fee_bearer',
+            'content' => [
+                'fee_bearer' => 'dynamic',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected fee bearer is invalid.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testEditBulkEnableLiveRiskTaggedMerchant' => [
         'request'  => [
             'method'  => 'PUT',
@@ -9076,8 +9150,8 @@ return [
                     'name' => "Release Funds",
                 ],
             ],
-            ]
         ],
+    ],
 
     'testRiskTaggedMerchantReleaseFundsWithWorkflowWithoutPermission' => [
         'request' => [

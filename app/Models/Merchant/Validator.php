@@ -491,6 +491,10 @@ class Validator extends Base\Validator
         'partner_merchant_id'       => 'required|string',
     ];
 
+    protected static $toggleFeeBearerRules = [
+        Entity::FEE_BEARER      => 'required|string|in:platform,customer|custom:toggle_fee_bearer',
+    ];
+
     public function validateMerchantForProductInternational(Entity $merchant)
     {
         $merchant = $merchant?: $this->entity;
@@ -2118,6 +2122,18 @@ class Validator extends Base\Validator
         if (empty($diff) === true)
         {
             throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_MERCHANT_NO_DIFF_IN_RISK_ATTRIBUTES);
+        }
+    }
+
+    public function validateToggleFeeBearer($attribute, $feeBearer)
+    {
+        $merchant = $this->entity;
+
+        $merchantFeeBearer = $merchant->getFeeBearer();
+
+        if ($merchantFeeBearer == $feeBearer)
+        {
+            throw new Exception\BadRequestValidationFailureException('The new fee bearer is same as the previous fee bearer');
         }
     }
 }

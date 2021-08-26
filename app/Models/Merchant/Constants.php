@@ -134,6 +134,9 @@ final class Constants
     const REATTACH_CURRENT_OWNER                        = 'reattach_current_owner';
     const SET_CONTACT_EMAIL                             = 'set_contact_email';
 
+    const OLD_FEE_BEARER                                = 'old_fee_bearer';
+    const NEW_FEE_BEARER                                = 'new_fee_bearer';
+    const SELF_SERVE_FOR_FEE_BEARER                     = 'SelfServe';
 
     public static $EntityBatchActionSettingParams = [
         self::BATCH_ACTION,
@@ -545,7 +548,7 @@ final class Constants
         'archived'      => 'On hold',
         'processed'     => 'Activation In Progress'
     ];
-    
+
     const MS_RISK_REVIEW_ONHOLD_TAG     = 'ms_risk_review_onhold';
     const MS_RISK_REVIEW_SUSPEND_TAG    = 'ms_risk_review_suspend';
     const SC_RISK_REVIEW_ONHOLD_TAG     = 'sc_risk_review_onhold';

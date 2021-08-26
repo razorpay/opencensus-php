@@ -1878,6 +1878,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE_BEARER);
     }
 
+    public function setFeeBearer($feeBearer)
+    {
+        $this->setAttribute(self::FEE_BEARER, $feeBearer);
+    }
+
     public function getFeeModel()
     {
         return $this->getAttribute(self::FEE_MODEL);

@@ -82,6 +82,7 @@ use RZP\Models\Merchant\AutoKyc\Escalations;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Models\Partner\Metric as PartnerMetric;
+use RZP\Models\Pricing\Entity as PricingEntity;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
@@ -6960,4 +6961,96 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
+    public function toggleFeeBearer(array $input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_TOGGLE_FEE_BEARER,
+        [
+            Constants::INPUT   => $input
+        ]);
+        $merchant = $this->merchant;
+
+        $merchant->validateInput('toggle_fee_bearer', $input);
+
+        (new Validator())->validateIsActivated($merchant);
+
+        $planId = $this->repo->transactionOnLiveAndTest(function () use($merchant, $input)
+        {
+            $oldPlanId = $merchant->getPricingPlanId();
+
+            $merchant->setFeeBearer($input[Entity::FEE_BEARER]);
+
+            $plan = $this->repo->pricing->getPlanByIdOrFailPublic($merchant->getPricingPlanId());
+
+            $newPlanId = $this->createNewPricingPlan($merchant, $plan, $input);
+
+            $merchant->setPricingPlan($newPlanId);
+
+            $this->repo->merchant->saveOrFail($merchant);
+
+            $this->trace->info(TraceCode::PRICING_PLAN_ASSIGN_SUCCESS,
+                [
+                    Entity::FEE_BEARER              => $merchant->getFeeBearer(),
+                    Constants::OLD_FEE_BEARER       => $oldPlanId,
+                    Constants::NEW_FEE_BEARER       => $newPlanId
+                ]);
+
+            return $newPlanId;
+        });
+
+        return ['plan id' => $planId];
+    }
+
+    public function createNewPricingPlan($merchant, $plan, $input)
+    {
+        $merchantId = $merchant->getMerchantId();
+
+        $ruleOrgId = $plan->getOrgId();
+
+        $oldRules = $plan->toArray();
+
+        $planName = Constants::SELF_SERVE_FOR_FEE_BEARER . $merchantId . time();
+
+        $newRules = [];
+
+        foreach ($oldRules as $rule)
+        {
+            $rule = array_except ($rule,
+                [
+                    PricingEntity::ID,
+                    PricingEntity::PLAN_ID,
+                    PricingEntity::ORG_ID,
+                    PricingEntity::CREATED_AT,
+                    PricingEntity::UPDATED_AT,
+                    PricingEntity::DELETED_AT,
+                    PricingEntity::EXPIRED_AT
+                ]);
+
+            if ($rule[PricingEntity::FEATURE] === PricingFeature::REFUND)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'This action cannot be performed for your account. Please reach out to support team to perform this action'
+                );
+            }
+            $rule[PricingEntity::FEE_BEARER] = $input[PricingEntity::FEE_BEARER];
+
+            $rule[PricingEntity::INTERNATIONAL] = $rule[PricingEntity::INTERNATIONAL] === true ? '1' : '0';
+
+            if ($rule[PricingEntity::PRODUCT] !== Product::BANKING)
+            {
+                unset($rule[PricingEntity::ACCOUNT_TYPE]);
+            }
+
+            if ((isset($rule[PricingEntity::ACCOUNT_TYPE]) === false) or
+                ($rule[PricingEntity::ACCOUNT_TYPE] !== Merchant\Balance\AccountType::DIRECT))
+            {
+                unset($rule[PricingEntity::CHANNEL]);
+            }
+
+            array_push($newRules, $rule);
+        }
+
+        $newPlan = (new Pricing\Core)->create([PricingEntity::PLAN_NAME => $planName, PricingEntity::RULES => $newRules], $ruleOrgId);
+
+        return $newPlan[0][PricingEntity::PLAN_ID];
+    }
 }

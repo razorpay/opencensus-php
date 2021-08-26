@@ -101,6 +101,7 @@ use RZP\Mail\User\PasswordAndEmailReset as PasswordAndEmailResetMail;
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Pricing\Repository as PricingRepo;
 
 use function foo\func;
 
@@ -11636,6 +11637,112 @@ class MerchantTest extends TestCase
             ]);
 
         $this->ba->proxyAuth('rzp_test_'.$merchant['id']);
+
+        $this->startTest();
+    }
+
+    public function testToggleFeeBearerToCustomer()
+    {
+        $merchant = $this->fixtures->create('merchant', ['activated' => 1]);
+
+        $user = $this->fixtures->create('user');
+
+        $this->createMerchantUserMapping($user->getId(), $merchant->getId(), 'owner');
+
+        $this->fixtures->pricing->createStandardPricingPlanForFeeBearer('platform');
+
+        $this->fixtures->merchant->edit($merchant['id'], ['fee_bearer' => 'platform']);
+
+        $this->fixtures->merchant->edit($merchant['id'], ['pricing_plan_id' => '3R0Ssm31kRSKSS']);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchant['id'], $user->getId());
+
+        $this->startTest();
+
+        $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $rules = (new PricingRepo())->getPlanByIdOrFailPublic($merchantEntity['pricing_plan_id']);
+
+        $this->assertNotEquals($merchantEntity['pricing_plan_id'], '3R0Ssm31kRSKSS');
+
+        $this->assertEquals($merchantEntity['fee_bearer'], 'customer');
+
+        foreach ($rules as $rule)
+        {
+            $this->assertEquals($rule['fee_bearer'], 'customer');
+        }
+
+        $this->assertEquals(sizeof($rules), 13);
+    }
+
+    public function testToggleFeeBearerToPlatform()
+    {
+        $merchant = $this->fixtures->create('merchant', ['activated' => 1]);
+
+        $user = $this->fixtures->create('user');
+
+        $this->createMerchantUserMapping($user->getId(), $merchant->getId(), 'owner');
+
+        $this->fixtures->pricing->createStandardPricingPlanForFeeBearer('customer');
+
+        $this->fixtures->merchant->edit($merchant['id'], ['fee_bearer' => 'customer']);
+
+        $this->fixtures->merchant->edit($merchant['id'], ['pricing_plan_id' => '3R0Ssm31kRSKSS']);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchant['id'], $user->getId());
+
+        $this->startTest();
+
+        $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
+
+        $rules = (new PricingRepo())->getPlanByIdOrFailPublic($merchantEntity['pricing_plan_id']);
+
+        $this->assertNotEquals($merchantEntity['pricing_plan_id'], '3R0Ssm31kRSKSS');
+
+        $this->assertEquals($merchantEntity['fee_bearer'], 'platform');
+
+        foreach ($rules as $rule)
+        {
+            $this->assertEquals($rule['fee_bearer'], 'platform');
+        }
+
+        $this->assertEquals(sizeof($rules), 13);
+    }
+
+    public function testToggleFeeBearerFailForCustomer()
+    {
+        $merchant = $this->fixtures->create('merchant', ['activated' => 1]);
+
+        $user = $this->fixtures->create('user');
+
+        $this->createMerchantUserMapping($user->getId(), $merchant->getId(), 'owner');
+
+        $this->fixtures->pricing->createStandardPricingPlanForFeeBearer('customer');
+
+        $this->fixtures->merchant->edit($merchant['id'], ['fee_bearer' => 'customer']);
+
+        $this->fixtures->merchant->edit($merchant['id'], ['pricing_plan_id' => '3R0Ssm31kRSKSS']);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchant['id'], $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testToggleFeeBearerToDynamicFail()
+    {
+        $merchant = $this->fixtures->create('merchant', ['activated' => 1]);
+
+        $user = $this->fixtures->create('user');
+
+        $this->createMerchantUserMapping($user->getId(), $merchant->getId(), 'owner');
+
+        $this->fixtures->pricing->createStandardPricingPlanForFeeBearer('customer');
+
+        $this->fixtures->merchant->edit($merchant['id'], ['fee_bearer' => 'customer']);
+
+        $this->fixtures->merchant->edit($merchant['id'], ['pricing_plan_id' => '3R0Ssm31kRSKSS']);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchant['id'], $user->getId());
 
         $this->startTest();
     }

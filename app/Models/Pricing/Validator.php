@@ -117,11 +117,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $createPlanRules = [
-        Entity::PLAN_NAME   => 'required|alpha_num|max:20'
+        Entity::PLAN_NAME   => 'required|alpha_num|max:255'
     ];
 
     protected static $createBulkPricingRules = [
-        Entity::PLAN_NAME   => 'required|alpha_num|max:20',
+        Entity::PLAN_NAME   => 'required|alpha_num|max:255',
         Entity::RULES       => 'required|array|min:1',
     ];
 
