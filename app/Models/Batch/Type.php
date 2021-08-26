@@ -462,6 +462,7 @@ class Type
         self::SUB_MERCHANT,
         self::RECURRING_CHARGE_AXIS,
         self::WEBSITE_CHECKER,
+        self::EMANDATE_DEBIT_HDFC,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
