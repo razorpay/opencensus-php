@@ -146,6 +146,65 @@ class Org extends Base
         return $org;
     }
 
+    public function createAxisOrg()
+    {
+        $permissions = (new PermissionEntity)->getAllPermissions();
+
+        // Default organisation to be used for tests
+        $org = $this->fixtures->create('org', [
+            'id'                      => self::AXIS_ORG_ID,
+            'email'                   => 'admin@axis.com',
+            'from_email'              => 'noreplay@axis.com',
+            'cross_org_access'        => true,
+        ]);
+
+        $org->permissions()->attach($permissions);
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'    => self::AXIS_ORG_ID,
+            'hostname'  => 'axis.com'
+        ]);
+
+        $this->fixtures->create('group', [
+            'id'     => '1AxisbankGrpId',
+            'name'   => 'axis_group',
+            'org_id' => self::AXIS_ORG_ID,
+        ]);
+
+        $adminRole = $this->fixtures->create('role', [
+            'id'     => 'AxiAdminRoleId',
+            'org_id' => self::AXIS_ORG_ID,
+            'name'   => Config::get('heimdall.default_role_name'),
+        ]);
+
+        $this->fixtures->create('role', [
+            'id'     => 'AxiMngerRoleId',
+            'org_id' => self::AXIS_ORG_ID,
+            'name'   => 'Admin',
+        ]);
+
+        $adminRole->permissions()->attach($permissions);
+
+        $admin = $this->fixtures->create('admin', [
+            'id'     => 'AxisbSprAdmnId',
+            'org_id' => self::AXIS_ORG_ID,
+            'email'  => 'superadmin@axis.com'
+        ]);
+
+        $admin->roles()->attach($adminRole);
+
+        $this->fixtures->create('admin_token', [
+            'id'         => 'SuprAxisbToken',
+            'admin_id'   => 'AxisbSprAdmnId',
+            'token'      => Hash::make(self::DEFAULT_TOKEN),
+            'created_at' => Carbon::now()->getTimestamp(),
+            'expires_at' => Carbon::now()->addYears(10)->timestamp,
+        ]);
+
+        return $org;
+    }
+
+
     public function createRazorpayOrg()
     {
         $permissions = $this->fixtures->create('permission:default_permissions');

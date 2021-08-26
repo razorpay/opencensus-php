@@ -69,6 +69,21 @@ class Entity extends Base\Entity
     const RESTRICTED      = 'restricted';
 
     /**
+     * Org IDs whose merchants should allow dynamic wallet flow.
+     * Dynamic wallet flow enabled means, for power wallets, front end will not hardcode otp flow,
+     * instead it will decide otp/redirect flow based on payment create response.
+     * This is done as power wallet flow is not supported in some gateways like payu,ccavenue. And hence,
+     * merchants who route their payments via payu,ccavenue should have a dynamic wallet flow.
+     *
+     * Merchants belonging to these org ids, will have dynamic wallet flow.
+     *
+     * @var string[]
+     */
+    protected static $dynamicWalletFlowOrgs = array(
+        self::AXIS_ORG_ID,
+    );
+
+    /**
      * Org features, saved to this variable once fetched to avoid
      * repeated DB calls.
      *
@@ -416,6 +431,18 @@ class Entity extends Base\Entity
     public function setMerchantStyles(string $styles)
     {
         $this->attributes[self::MERCHANT_STYLES] = $styles;
+    }
+
+    /**
+     * Return if an org belongs to dynamic wallet flow orgs.
+     *
+     *
+     * @param $orgId
+     * @return bool
+     */
+    public static function isDynamicWalletFlowOrg($orgId)
+    {
+        return in_array($orgId, self::$dynamicWalletFlowOrgs);
     }
 }
 

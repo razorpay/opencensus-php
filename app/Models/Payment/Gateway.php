@@ -2624,6 +2624,13 @@ class Gateway
         ],
     ];
 
+    // These gateways do not support power wallet flow. for example, freecharge behaves as powerwallet in razorpay,
+    // but for payu and ccavenue powerwallet flow is not supported for freecharge.
+    protected static $GatewaysWithoutPowerWalletSupport = [
+        self::PAYU,
+        self::CCAVENUE,
+    ];
+
     public static function isNonTerminalGateway(string $gateway)
     {
         return in_array($gateway, self::$nonTerminalGateways, true);
@@ -3604,5 +3611,10 @@ class Gateway
     public static function getAllWalletSupportingGateways()
     {
         return array_keys(self::$supportedWallets);
+    }
+
+    public static function isPowerWalletNotSupportedForGateway($gateway)
+    {
+        return in_array($gateway, self::$GatewaysWithoutPowerWalletSupport);
     }
 }

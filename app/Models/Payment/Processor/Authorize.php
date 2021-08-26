@@ -6812,6 +6812,15 @@ trait Authorize
             return false;
         }
 
+        // For payments via external gateways like payu and ccavenue,
+        // all wallets including power wallets do not support otp flow
+        if (($payment->isWallet() === true) and
+            (Payment\Gateway::isPowerWallet($wallet) === true) and
+            ($payment->hasTerminal() === true) and
+            (Payment\Gateway::isPowerWalletNotSupportedForGateway($payment->terminal->getGateway()) === true)) {
+            return false;
+        }
+
         //
         // Special case check for mobikwik
         // Only checkout currently supports otp flow

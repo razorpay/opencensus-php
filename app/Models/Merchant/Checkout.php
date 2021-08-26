@@ -46,6 +46,8 @@ class Checkout
 
     const SUBSCRIPTION_ID               = 'subscription_id';
 
+    const DYNAMIC_WALLET_FLOW = 'dynamic_wallet_flow';
+
     protected $app;
     /**
      * @var Trace
@@ -886,6 +888,16 @@ class Checkout
             ($merchant->isLive() === false))
         {
             $data['blocked'] = true;
+        }
+
+        // For merchants with either "RAAS" feature flag or with org_ids of banking programs,
+        // we need dynamic wallet flow -> which means the checkout should decide whether a wallet follows
+        // otp flow or redirect flow after payment create API response.
+        // Currently, power wallets are hardcoded on front end to follow otp flow. This flag will
+        // tell front end to avoid hardcoding this otp flow.
+        if ($merchant->isFeatureEnabled(Feature\Constants::RAAS) === true ||
+            ORG_ENTITY::isDynamicWalletFlowOrg($merchant->getOrgId())) {
+            $data[self::DYNAMIC_WALLET_FLOW] = true;
         }
 
         return $data;

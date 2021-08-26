@@ -1802,4 +1802,29 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetCheckoutPreferencesForDynamicWalletFlowRaas()
+    {
+        $this->fixtures->merchant->addFeatures(Feature\Constants::RAAS);
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals(true, $response[Merchant\Checkout::DYNAMIC_WALLET_FLOW]);
+    }
+
+    public function testGetCheckoutPreferencesForDynamicWalletFlowOrgId()
+    {
+        $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->addFeatures(Feature\Constants::RAAS);
+        $org = $this->fixtures->org->createAxisOrg();
+        $this->fixtures->merchant->edit('10000000000000',
+            [
+                'org_id' => Admin\Org\Entity::AXIS_ORG_ID
+            ]
+        );
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals(true, $response[Merchant\Checkout::DYNAMIC_WALLET_FLOW]);
+    }
 }

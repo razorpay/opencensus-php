@@ -24,4 +24,14 @@ class GatewayTest extends TestCase
             }
         }
     }
+
+    public function testIsPowerWalletNotSupportedForGatewayPayu() {
+        $result  = Gateway::isPowerWalletNotSupportedForGateway(Gateway::PAYU);
+        assertTrue($result);
+    }
+
+    public function testIsPowerWalletNotSupportedForGatewayCcavenue() {
+        $result  = Gateway::isPowerWalletNotSupportedForGateway(Gateway::CCAVENUE);
+        assertTrue($result);
+    }
 }

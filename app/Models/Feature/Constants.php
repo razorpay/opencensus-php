@@ -816,6 +816,7 @@ class Constants
         self::PAYPAL_CC,
         self::SHOW_MOR_TNC,
         self::CRED_MERCHANT_CONSENT,
+        self::RAAS,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
