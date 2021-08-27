@@ -1,9 +1,10 @@
-name: Format Checker
+name: Format Checker Workflow
 on: pull_request
 jobs:
   validate:
     runs-on: [self-hosted]
     continue-on-error: false
+    name: Format Checker
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v2

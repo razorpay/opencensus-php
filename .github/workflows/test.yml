@@ -1,7 +1,8 @@
-name: Test
+name: Test Workflow
 on: push
 jobs:
   test:
+    name: Test
     runs-on: [self-hosted]
     continue-on-error: false
     steps:
@@ -30,7 +31,7 @@ jobs:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
-      - name: Test
+      - name: Test Codebase
         # Automatically installs npm ci in web too
         run: |
           npm run test
