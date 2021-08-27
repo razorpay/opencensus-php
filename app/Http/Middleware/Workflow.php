@@ -53,6 +53,7 @@ class Workflow
         Permission::MANAGE_RAZORX_OPERATIONS,
         Permission::CREATE_PAYOUT,
         Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
+        Permission::UPDATE_MERCHANT_WEBSITE,
         Permission::DELETE_TERMINAL,
         Permission::TOGGLE_TERMINAL,
         Permission::EDIT_MERCHANT_INTERNATIONAL,

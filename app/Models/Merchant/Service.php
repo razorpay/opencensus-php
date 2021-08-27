@@ -7021,6 +7021,14 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
+    public function getBusinessWebsiteWorkflowStatus()
+    {
+        $status = ($this->openWorkflowExists(Constants::ADDITIONAL_WEBSITE) or
+            $this->openWorkflowExists(Constants::UPDATE_BUSINESS_WEBSITE));
+
+        return $status;
+    }
+
     private function findCampaignType(array $utmParams): ?string
     {
         $isNeostoneCampaign = false;

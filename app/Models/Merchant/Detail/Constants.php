@@ -209,8 +209,10 @@ class Constants
         self::L2_SUBMISSION
     ];
 
-    const ACTIVATION_ROUTE_NAME     = 'merchant_activation_status';
-    const ACTIVATION_CONTROLLER     = 'RZP\Http\Controllers\MerchantController@updateActivationStatus';
+    const ACTIVATION_ROUTE_NAME                = 'merchant_activation_status';
+    const ACTIVATION_CONTROLLER                = 'RZP\Http\Controllers\MerchantController@updateActivationStatus';
+
+    const  UPDATE_BUSINESS_WEBSITE_CONTROLLER  = 'RZP\Http\Controllers\MerchantController@putBusinessWebsiteUpdatePostWorkflow';
 
     const COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX = 'company_search_attempt_count';
     const COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_MIN       = 180;
@@ -302,5 +304,38 @@ class Constants
         Entity::BANK_BRANCH_IFSC,
         Entity::GSTIN
     ];
+
+    // For both app url and business website url we use business_website key.
+    // Following identifiers identifies type of url business_website/app_url.
+    const URL_TYPE_APP                             = 'app';
+
+    const URL_TYPE_WEBSITE                         = 'website';
+
+    const MERCHANT_APP_URL_COMMENT                 = ' app_url : %s,        dedupe_flagged_MIDs : %s';
+
+    const MERCHANT_BUSINESS_WEBSITE_COMMENT        = ' main_page : %s,      about_us : %s,      contact_us : %s,        pricing_details : %s,       privacy_policy : %s,        tnc : %s,       refund_policy : %s,     dedupe_flagged_MIDs : %s';
+
+    const MERCHANT_WEBSITE_TEST_CREDENTIAL_COMMENT = " website_username : %s,       website_username's_password : %s,";
+
+    const MERCHANT_APP_TEST_CREDENTIAL_COMMENT     = " app_username : %s,       app_username's_password : %s,";
+
+    const BUSINESS_WEBSITE_MAIN_PAGE               = 'business_website_main_page';
+    const BUSINESS_WEBSITE_ABOUT_US                = 'business_website_about_us';
+    const BUSINESS_WEBSITE_CONTACT_US              = 'business_website_contact_us';
+    const BUSINESS_WEBSITE_PRICING_DETAILS         = 'business_website_pricing_details';
+    const BUSINESS_WEBSITE_PRIVACY_POLICY          = 'business_website_privacy_policy';
+    const BUSINESS_WEBSITE_TNC                     = 'business_website_tnc';
+    const BUSINESS_WEBSITE_REFUND_POLICY           = 'business_website_refund_policy';
+    const BUSINESS_WEBSITE_USERNAME                = 'business_website_username';
+    const BUSINESS_WEBSITE_PASSWORD                = 'business_website_password';
+
+    const URL_TYPE                                 = 'url_type';
+
+    const BUSINESS_APP_URL                         = 'business_app_url';
+    const BUSINESS_APP_USERNAME                    = 'business_app_username';
+    const BUSINESS_APP_PASSWORD                    = 'business_app_password';
+
+    //Encryper business website comment on workflow request start with following
+    const ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER     = 'business_website_credentials_.';
 }
 

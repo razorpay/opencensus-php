@@ -581,6 +581,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this->getAttribute(self::BUSINESS_WEBSITE);
     }
 
+    public function setWebsite(?string $businessWebsite)
+    {
+        $this->setAttribute(self::BUSINESS_WEBSITE, $businessWebsite);
+    }
+
     public function getSubmittedAt()
     {
         return $this->getAttribute(self::SUBMITTED_AT);

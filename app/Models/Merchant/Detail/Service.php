@@ -33,6 +33,7 @@ use RZP\Models\Merchant\Document as Document;
 use RZP\Models\Merchant\Referral as Referral;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Partner\Metric as PartnerMetric;
+use RZP\Models\Workflow\Action as WorkflowAction;
 use \RZP\Models\State\Entity as StateChangeEntity;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;
@@ -708,6 +709,23 @@ class Service extends Base\Service
         $response = (new Core)->updateWebsiteDetails($merchantDetails, $input);
 
         return $response;
+    }
+
+    public function putBusinessWebsiteUpdatePostWorkflow(array $input)
+    {
+        $previousWebsite = $this->merchant->merchantDetail->getWebsite();
+
+        $newUrl = $input[DetailConstants::URL_TYPE] === DEConstants::URL_TYPE_WEBSITE ?  $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE] : $input[DetailConstants::BUSINESS_APP_URL];
+
+        $this->core()->updateBusinessWebsite($this->merchant , $newUrl);
+
+        $merchantPrimaryOwner = $this->merchant->primaryOwner()->toArrayPublic();
+
+        $mailClassInstance   =  $previousWebsite ?
+            (new MerchantMail\MerchantBusinessWebsiteUpdate($this->merchant->toArrayPublic(), $previousWebsite, $merchantPrimaryOwner)) :
+            (new MerchantMail\MerchantBusinessWebsiteAdd($this->merchant->toArrayPublic(), $merchantPrimaryOwner));
+
+        Mail::queue($mailClassInstance);
     }
 
     /**
@@ -1746,5 +1764,44 @@ class Service extends Base\Service
             $validationArtefact, $merchant, $merchant->merchantDetail);
 
         return $requestDispatcher->fetchValidationDetails($validationId);
+    }
+
+    /**
+     * This function is used for add/edit business website details of an activated merchant
+     * @param array $input
+     *
+     * @return array
+     */
+    public function postSaveBusinessWebsite(string $urlType, array $input)
+    {
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        if($merchantDetails->getActivationStatus() != Status::ACTIVATED)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED);
+        }
+
+        $response = (new Core)->postSaveBusinessWebsite($urlType, $input);
+
+        return $response;
+    }
+
+    public function getDecryptedWebsiteCommentForWebsiteSelfServe(string $actionId)
+    {
+        WorkflowAction\Entity::verifyIdAndStripSign($actionId);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_DECRYPT_WEBSITE_COMMENT_FOR_SELF_SERVE, [
+                "actionId"     => $actionId,
+            ]
+        );
+
+        $comments = $this->repo
+            ->comment
+            ->fetchByActionIdWithRelations(
+                $actionId, [WorkflowAction\Entity::ADMIN]);
+
+        return $this->core()->getDecryptedWebsiteCommentForWebsiteSelfServe($comments);
     }
 }

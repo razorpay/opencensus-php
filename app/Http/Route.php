@@ -584,6 +584,9 @@ class Route
         'merchant_gstin_self_serve_status'         => ['get',      'merchant/gstin_self_serve',                      'MerchantController@getGstinSelfServeStatus'                        ],
         'merchant_gstin_self_serve_update'         => ['post',     'merchant/gstin_self_serve',                      'MerchantController@postGstinSelfServe'                             ],
         'merchant_international_toggle'            => ['patch',    'merchant/international',                         'MerchantController@toggleInternational'                            ],
+        'merchant_save_business_website'           => ['post',     'merchant/save_business_website/{urlType}',       'MerchantController@postSaveBusinessWebsite'                        ],
+        'business_website_status'                  => ['get',      'merchant/business_website_status',               'MerchantController@getBusinessWebsiteWorkflowStatus'               ],
+        'decrypt_merchant_website_comment'         => ['get',      'merchant/{actionId}/decrypt_website_comment',    'MerchantController@getDecryptedWebsiteCommentForWebsiteSelfServe'                     ],
         'merchant_activation_details'              => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
         'merchant_activation_save'                 => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_upload_file'          => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
@@ -4340,7 +4343,8 @@ class Route
         'merchant_international_enablement_draft',
         'merchant_international_enablement_submit',
         'merchant_international_enablement_discard',
-
+        'merchant_save_business_website',
+        'business_website_status',
         'get_dispute_document_types_metadata',
         'patch_dispute_contest_by_id',
         'post_dispute_accept_by_id',
@@ -5257,6 +5261,8 @@ class Route
 
         // Risk Audit Workflow Actions
         'w-actions_merchant_risk_audit_get',
+
+        'decrypt_merchant_website_comment',
     ];
 
     public static $routePermission = [
@@ -6245,6 +6251,8 @@ class Route
 
         'complete_submerchant_onboarding'                 => Permission::MERCHANT_ACTIONS,
 
+        'merchant_save_business_website'                  => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
+
         // Merchant Risk Notes
         'merchant_risk_notes_get'                         => Permission::GET_MERCHANT_RISK_NOTES,
         'merchant_risk_notes_create'                      => Permission::CREATE_MERCHANT_RISK_NOTES,
@@ -6252,6 +6260,8 @@ class Route
 
         // Risk Audit Workflow Actions
         'w-actions_merchant_risk_audit_get'               => Permission::VIEW_ALL_WORKFLOW,
+
+        'decrypt_merchant_website_comment'                => Permission::DECRYPT_MERCHANT_WEBSITE
     ];
 
     public static $bankingRoutePermissions = [
@@ -7754,6 +7764,8 @@ class Route
             'merchant_international_enablement_draft',
             'merchant_international_enablement_submit',
             'merchant_international_enablement_discard',
+            'merchant_save_business_website',
+            'business_website_status',
             'get_dispute_document_types_metadata',
             'patch_dispute_contest_by_id',
             'post_dispute_accept_by_id',
@@ -9482,6 +9494,8 @@ class Route
 
             // Risk Audit Workflow Actions
             'w-actions_merchant_risk_audit_get',
+
+            'decrypt_merchant_website_comment'
         ],
 
         //

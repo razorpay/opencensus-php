@@ -217,6 +217,9 @@ class RouteTeamMap
         'user_otp_create'                          => [self::TEAM_PAYMENTS_DASHBOARD],
         'user_merchant_upgrade'                    => [self::TEAM_PAYMENTS_DASHBOARD],
         'user_details_unified'                     => [self::TEAM_PAYMENTS_DASHBOARD],
+        'business_website_status'                  => [self::TEAM_PAYMENTS_DASHBOARD],
+        'merchant_save_business_website'           => [self::TEAM_PAYMENTS_DASHBOARD],
+        'decrypt_merchant_website_comment'         => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_toggle_fee_bearer'               => [self::TEAM_PAYMENTS_DASHBOARD],
 
         'merchant_activation_details'                     => [self::TEAM_PAYMENTS_GROWTH],

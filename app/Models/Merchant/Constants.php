@@ -188,6 +188,7 @@ final class Constants
     const  NO_ACTION_RECEIVED       = 'no_action_received';
     const  IN_REVIEW                = 'in_review';
     const  APPROVED                 = 'approved';
+    const  UPDATE_BUSINESS_WEBSITE  = 'update_business_website';
 
     const ENABLE_INTERNATIONAL_PG      = 'enable_international_pg';
     const ENABLE_INTERNATIONAL_PROD_V2 = 'enable_international_prod_v2';
@@ -356,7 +357,11 @@ final class Constants
         self::BANK_DETAIL_UPDATE   => [
             self::PERMISSION => Permission::EDIT_MERCHANT_BANK_DETAIL,
             self::ENTITY     => \RZP\Constants\Entity::BANK_ACCOUNT,
-        ]
+        ],
+        self::UPDATE_BUSINESS_WEBSITE   => [
+            self::PERMISSION => Permission::UPDATE_MERCHANT_WEBSITE,
+            self::ENTITY     => \RZP\Constants\Entity::MERCHANT_DETAIL,
+        ],
     ];
 
     // Merchant Email Types For Instrumentation

@@ -8,7 +8,9 @@ use Config;
 
 use RZP\Constants;
 use RZP\Constants\Mode;
+use RZP\Models\Base\EsDao;
 use RZP\Models\Merchant\Core;
+use RZP\Models\User\Role;
 use RZP\Services\DiagClient;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
@@ -26,15 +28,22 @@ use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Models\Merchant\Detail\BusinessCategory;
+use RZP\Mail\Merchant\MerchantBusinessWebsiteAdd;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
+use RZP\Mail\Merchant\MerchantBusinessWebsiteUpdate;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Mail\Merchant\GstinSelfServeVerificationFailure;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Merchant\Bvs\BvsValidationTest;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
+use RZP\Models\Workflow\Action\Repository as ActionRepository;
+use RZP\Models\Admin\Permission\Repository as PermissionRepository;
+
 
 class MerchantDetailTest extends OAuthTestCase
 {
@@ -45,6 +54,8 @@ class MerchantDetailTest extends OAuthTestCase
     use HeimdallTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
+    use WorkflowTrait;
+
 
     const PARTNER                = 'partner';
     const ACTIVATION             = 'activation';
@@ -60,6 +71,11 @@ class MerchantDetailTest extends OAuthTestCase
         $this->testDataFilePath = __DIR__.'/helpers/MerchantDetailTestData.php';
 
         parent::setUp();
+
+        $this->esDao = new EsDao();
+
+        $this->esClient =  $this->esDao->getEsClient()->getClient();
+
     }
 
     public function testGetMerchantDetails()
@@ -3040,7 +3056,6 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertGstinSelfServeStatus('not_started');
     }
 
-
     public function testGstinSelfServeBvsCallbackVerificationFailure()
     {
         $merchant = $this->setupMerchantForGstinSelfServeTest()['merchant'];
@@ -3221,7 +3236,6 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
     }
-
 
     public function testGetMerchantDetailsShopEstbVerifiableZone()
     {
@@ -3423,6 +3437,229 @@ class MerchantDetailTest extends OAuthTestCase
         $this->testData[__FUNCTION__] = $this->testData['testUpdateGstinSelfServe'];
 
         $this->setGstinSelfServeV2Flow();
+
+        $this->startTest();
+    }
+
+    private function setupMerchantWithMerchantDetails(array $predefinedMerchantDetails = [], string $role = Role::OWNER)
+    {
+        $merchant = $this->fixtures->create('merchant', ['has_key_access' => true]);
+
+        $merchantId = $merchant['id'];
+
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user->id,
+            'merchant_id' => $merchantId,
+            'role'        => $role,
+        ]);
+
+        $predefinedMerchantDetails = array_merge(['merchant_id'  => $merchantId, 'activation_status' => 'activated' ], $predefinedMerchantDetails );
+
+        $this->fixtures->create('merchant_detail', $predefinedMerchantDetails);
+
+        return [$merchantId, $user->id];
+    }
+
+    private function raiseWorkflowMakerRequestToSaveBusinessWebsiteWithTestCredentials(string $merchantId, string $permissionName = PermissionName::UPDATE_MERCHANT_WEBSITE, string $userId)
+    {
+        $this->setupWorkflow("update_website", $permissionName);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId );
+
+        $this->startTest();
+
+        return $merchantId;
+    }
+
+    private function raiseWorkflowMakerRequestToSaveBusinessWebsiteWithoutTestCredentials(string $merchantId, string $permissionName = PermissionName::UPDATE_MERCHANT_WEBSITE, string $userId)
+    {
+        $this->setupWorkflow("update_website", $permissionName);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId );
+
+        $this->startTest();
+
+        return $merchantId;
+    }
+
+    private function saveBusinessWebsiteMakerFlow(array $predefinedMerchantDetails = [], string $permissionName = PermissionName::UPDATE_MERCHANT_WEBSITE, bool $addTestCredentials = true)
+    {
+        [$merchantId , $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchantDetails);
+
+        if($addTestCredentials === true)
+        {
+            $this->raiseWorkflowMakerRequestToSaveBusinessWebsiteWithTestCredentials($merchantId, $permissionName, $userId);
+        }
+        else
+        {
+            $this->raiseWorkflowMakerRequestToSaveBusinessWebsiteWithoutTestCredentials($merchantId, $permissionName, $userId);
+        }
+
+        return $merchantId;
+    }
+
+    private function validateBusinessWebsiteWorkflowApprove($merchantId , $workflowActionId)
+    {
+        $this->performWorkflowAction('w_action_'.$workflowActionId, true );
+
+        $merchant = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals('https://www.example.com', $merchant->getWebsite());
+    }
+
+    private function validateBusinessWebsiteWorkflowReject($merchantId, $workflowActionId)
+    {
+        $this->performWorkflowAction('w_action_'.$workflowActionId, false );
+
+        $merchant = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertNotEquals('https://www.example.com', $merchant->getWebsite());
+    }
+
+    private function validateBusinessWebsiteWorkflow($merchantId, string $permissionName = PermissionName::UPDATE_MERCHANT_WEBSITE)
+    {
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertNotEquals($merchant->getWebsite(), 'https://www.example.com');
+
+        $permission = (new PermissionRepository)->findByOrgIdAndPermission(
+            Org::RZP_ORG, $permissionName
+        );
+
+        $workflowActions = (new ActionRepository)->getOpenActionOnEntityOperation(
+            $merchantId, 'merchant_detail', $permission->getId()
+        );
+
+        $this->assertNotEmpty($workflowActions);
+
+        $workflowAction  =  $workflowActions[0];
+
+        $workflowAction = $workflowAction->toArray();
+
+        $this->esClient->indices()->refresh();
+
+        return [$merchantId, $workflowAction['id']];
+    }
+
+    public function testUpdateBusinessWebsiteWorkflowApprove()
+    {
+        Mail::fake();
+
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+
+        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+
+        $this->validateBusinessWebsiteWorkflowApprove($merchantId, $workflowActionId);
+
+        $user = $this->getDbLastEntity('user');
+
+        Mail::assertQueued(MerchantBusinessWebsiteUpdate::class, function ($mail) use($user)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('https://www.example.com', $data['updated_business_website']);
+
+            $this->assertEquals('https://www.sample.com', $data['previous_business_website']);
+
+            $this->assertEquals('emails.merchant.merchant_business_website_update', $mail->view);
+
+            $mail->hasTo($user['email']);
+
+            return true;
+        });
+    }
+
+    public function testBusinessWebsiteAdditionWorkflowApprove()
+    {
+        Mail::fake();
+
+        $merchantId = $this->saveBusinessWebsiteMakerFlow();
+
+        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId);
+
+        $this->validateBusinessWebsiteWorkflowApprove($merchantId, $workflowActionId);
+
+        $user = $this->getDbLastEntity('user');
+
+        Mail::assertQueued(MerchantBusinessWebsiteAdd::class, function ($mail) use($user)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('https://www.example.com', $data['updated_business_website']);
+
+            $this->assertEquals('emails.merchant.merchant_business_website_add', $mail->view);
+
+            $mail->hasTo($user['email']);
+
+            return true;
+        });
+    }
+
+    public function testUpdateBusinessWebsiteWorkflowReject()
+    {
+        Mail::fake();
+
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+
+        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+
+        $this->validateBusinessWebsiteWorkflowReject($merchantId, $workflowActionId);
+
+        Mail::assertNotQueued(MerchantBusinessWebsiteUpdate::class);
+    }
+
+    public function testBusinessWebsiteWorkflowStatus()
+    {
+        $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+
+        $this->startTest();
+    }
+
+    public function testUpdateBusinessWebsiteAppRoleFail()
+    {
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails([], Role::SELLERAPP);
+
+        $this->setupWorkflow("update_website", PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId );
+
+        $this->startTest();
+
+        return $merchantId;
+    }
+
+    public function testBusinessWebsiteEncryption()
+    {
+        Mail::fake();
+
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+
+        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchant/w_action_'.$workflowActionId.'/decrypt_website_comment';
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBusinessWebsiteEncryptionCommentNotFound()
+    {
+        Mail::fake();
+
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL , false);
+
+        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchant/w_action_' . $workflowActionId . '/decrypt_website_comment';
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }

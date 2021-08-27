@@ -383,6 +383,13 @@ class Name
     const UPI_MANAGE_DATA                     = 'upi_manage_data';
     const P2P_MANAGE_MERCHANT                 = 'p2p_manage_merchant';
 
+    // Permission to update business website.
+    const UPDATE_MERCHANT_WEBSITE             = 'update_merchant_website';
+
+    // Permission to see decrypted merchant website.
+    const DECRYPT_MERCHANT_WEBSITE            = 'decrypt_merchant_website';
+
+    // Permission to add business website.
     const EDIT_MERCHANT_WEBSITE_DETAIL        = 'edit_merchant_website_detail';
     const OFFLINE_VERIFICATION_SERVICE_VIEW   = 'offline_verification_service_view';
     const OFFLINE_VERIFICATION_SERVICE_EDIT   = 'offline_verification_service_edit';

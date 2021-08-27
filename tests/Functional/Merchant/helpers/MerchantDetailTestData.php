@@ -688,7 +688,7 @@ return [
             ],
         ],
     ],
-    
+
     'testMerchantUpdateWebsiteDetailsIpv6' => [
         'request'  => [
             'content' => [
@@ -2266,6 +2266,145 @@ return [
         'response' => [
             'content' => [
             ],
+        ],
+    ],
+
+    'raiseWorkflowMakerRequestToSaveBusinessWebsiteWithTestCredentials' => [
+        'request'  => [
+            'content' => [
+                'business_website_main_page'       => 'https://www.example.com',
+                'business_website_about_us'        => 'https://www.example.com/about_us',
+                'business_website_contact_us'      => 'https://www.example.com/contact_us',
+                'business_website_pricing_details' => 'https://www.example.com/pricing_details',
+                'business_website_privacy_policy'  => 'https://www.example.com/privacy_policy',
+                'business_website_refund_policy'   => 'https://www.example.com/refund_policy',
+                'business_website_tnc'             => 'https://www.example.com/website_tnc',
+                'business_website_username'        => 'test-user',
+                'business_website_password'        => 'test-user-password'
+            ],
+            'url'     => '/merchant/save_business_website/website',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'raiseWorkflowMakerRequestToSaveBusinessWebsiteWithoutTestCredentials' => [
+        'request'  => [
+            'content' => [
+                'business_website_main_page'       => 'https://www.example.com',
+                'business_website_about_us'        => 'https://www.example.com/about_us',
+                'business_website_contact_us'      => 'https://www.example.com/contact_us',
+                'business_website_pricing_details' => 'https://www.example.com/pricing_details',
+                'business_website_privacy_policy'  => 'https://www.example.com/privacy_policy',
+                'business_website_refund_policy'   => 'https://www.example.com/refund_policy',
+                'business_website_tnc'             => 'https://www.example.com/website_tnc',
+            ],
+            'url'     => '/merchant/save_business_website/website',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBusinessWebsiteWorkflowStatus' => [
+        'request'  => [
+            'content' => [
+            ],
+            'url'     => '/merchant/business_website_status',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'status' => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateBusinessWebsiteAppRoleFail' => [
+        'request'  => [
+            'content' => [
+                'business_website_main_page'       => 'https://www.example.com',
+                'business_website_about_us'        => 'https://www.example.com/about_us',
+                'business_website_contact_us'      => 'https://www.example.com/contact_us',
+                'business_website_pricing_details' => 'https://www.example.com/pricing_details',
+                'business_website_privacy_policy'  => 'https://www.example.com/privacy_policy',
+                'business_website_refund_policy'   => 'https://www.example.com/refund_policy',
+                'business_website_tnc'             => 'https://www.example.com/website_tnc'
+            ],
+            'url'     => '/merchant/save_business_website/website',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testBusinessWebsiteEncryption' => [
+        'request'  => [
+            'content' => [],
+            'url'     => '/merchant/{actionId}/decrypt_website_comment',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+               'decrypted_info' => " website_username : test-user,       website_username's_password : test-user-password,"
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBusinessWebsiteEncryptionCommentNotFound' => [
+        'request'  => [
+            'content' => [],
+            'url'     => '/merchant/{actionId}/decrypt_website_comment',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ENCRYPTED_COMMENT_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ENCRYPTED_COMMENT_NOT_FOUND,
         ],
     ],
 ];

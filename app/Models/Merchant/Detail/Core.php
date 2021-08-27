@@ -3,27 +3,16 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Mail;
-use phpseclib\Crypt\AES;
 use Queue;
 use Config;
-
 use Carbon\Carbon;
-use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Encryption;
-use RZP\Encryption\AESEncryption;
 use RZP\Exception;
-use RZP\Exception\BadRequestException;
-use RZP\Mail\Merchant\RejectionSettlement;
-use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Base;
-use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
-use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\State;
 use RZP\Models\Coupon;
 use RZP\Diag\EventCode;
-use RZP\Models\Workflow\Action\MakerType;
-use RZP\Services\MerchantRiskClient;
+use phpseclib\Crypt\AES;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
@@ -40,6 +29,7 @@ use RZP\Models\Merchant\Metric;
 use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\AutoKyc;
 use RZP\Models\Admin\Permission;
+use RZP\Encryption\AESEncryption;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
@@ -50,11 +40,22 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\AvgOrderValue;
+use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Mail\Merchant\RejectionSettlement;
+use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Partner\Core as PartnerCore;
+use RZP\Services\MerchantRiskClient as MRS;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Key\Validator as KeyValidator;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
+use RZP\Models\Merchant\BusinessDetail\Service;
+use RZP\Models\Comment\Entity as CommentEntity;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Mail\Merchant\Rejection as RejectionEmail;
@@ -62,25 +63,22 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Models\Merchant\Product as MerchantProduct;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionGreylist;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
+use RZP\Models\Merchant\Request\Constants as RequestConstants;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
+use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
-use SplFileInfo;
-use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use RZP\Models\Merchant\AvgOrderValue;
-use RZP\Models\Merchant\BusinessDetail\Service;
-use RZP\Models\Merchant\Request\Constants as RequestConstants;
-use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
-use RZP\Services\MerchantRiskClient as MRS;
-use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
 use RZP\Models\Merchant\Fraud\HealthChecker\Constants as HealthCheckerConstants;
 
 class Core extends Base\Core
@@ -4626,5 +4624,177 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    private function addCommentForBusinessWebsiteSave(string $urlType, string $permissionName, Entity $merchantDetails, string $dedupeFlaggedMIDs, array  $input)
+    {
+        $businessDetailsComment = '';
+
+        $testCredentialComment = '';
+
+        if($urlType === DetailConstants::URL_TYPE_WEBSITE)
+        {
+            $businessDetailsComment = sprintf(DetailConstants::MERCHANT_BUSINESS_WEBSITE_COMMENT,
+                $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE],
+                $input[DetailConstants::BUSINESS_WEBSITE_ABOUT_US],
+                $input[DetailConstants::BUSINESS_WEBSITE_CONTACT_US],
+                $input[DetailConstants::BUSINESS_WEBSITE_PRICING_DETAILS],
+                $input[DetailConstants::BUSINESS_WEBSITE_PRIVACY_POLICY],
+                $input[DetailConstants::BUSINESS_WEBSITE_TNC],
+                $input[DetailConstants::BUSINESS_WEBSITE_REFUND_POLICY],
+                $dedupeFlaggedMIDs
+            );
+
+            if ((empty($input[DetailConstants::BUSINESS_WEBSITE_USERNAME]) === false) and
+                (empty($input[DetailConstants::BUSINESS_WEBSITE_PASSWORD]) === false))
+            {
+                $testCredentialComment = sprintf(DetailConstants::MERCHANT_WEBSITE_TEST_CREDENTIAL_COMMENT,
+                    $input[DetailConstants::BUSINESS_WEBSITE_USERNAME],
+                    $input[DetailConstants::BUSINESS_WEBSITE_PASSWORD]
+                );
+            }
+        }
+        else
+        {
+            $businessDetailsComment = sprintf(DetailConstants::MERCHANT_APP_URL_COMMENT,
+                $input[DetailConstants::BUSINESS_APP_URL],
+                $dedupeFlaggedMIDs
+            );
+
+            if (
+                (empty($input[DetailConstants::BUSINESS_APP_USERNAME]) === false) and
+                (empty($input[DetailConstants::BUSINESS_APP_PASSWORD]) === false))
+            {
+                $testCredentialComment = sprintf(DetailConstants::MERCHANT_APP_TEST_CREDENTIAL_COMMENT,
+                    $input[DetailConstants::BUSINESS_APP_USERNAME],
+                    $input[DetailConstants::BUSINESS_APP_PASSWORD]
+                );
+            }
+        }
+
+        $this->app['trace']->info(TraceCode::MERCHANT_SAVE_BUSINESS_WEBSITE_COMMENT, [
+            'business_details_comment' => $businessDetailsComment,
+        ]);
+
+        $workFlowAction = (new ActionCore())->fetchOpenActionOnEntityOperation($merchantDetails->getId(),
+            $merchantDetails->getEntity(),
+            $permissionName
+        )->first();
+
+        $businessDetailsCommentEntity = (new CommentCore())->create([
+            CommentEntity::COMMENT =>  $businessDetailsComment,
+        ]);
+
+        $businessDetailsCommentEntity->entity()->associate($workFlowAction);
+
+        $this->repo->saveOrFail($businessDetailsCommentEntity);
+
+        if(empty($testCredentialComment) === false)
+        {
+            $encryptedComment = DetailConstants::ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER . encrypt($testCredentialComment);
+
+            $testCredentialCommentEntity = (new CommentCore())->create([
+                CommentEntity::COMMENT =>  $encryptedComment,
+            ]);
+
+            $testCredentialCommentEntity->entity()->associate($workFlowAction);
+
+            $this->repo->saveOrFail($testCredentialCommentEntity);
+        }
+    }
+
+    /**
+     * This function is used for add/edit merchant website details
+     *
+     * @param Entity $merchantDetails
+     * @param array  $input
+     *
+     * @return array
+     * @throws \Throwable
+     */
+    public function postSaveBusinessWebsite(string $urlType, array $input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_SAVE_BUSINESS_WEBSITE,
+            ['input' => $input]);
+
+        $isRequestToUpdateWebsite  = !empty($this->merchant->merchantDetail->getWebsite());
+
+        $input = array_merge($input , [DetailConstants::URL_TYPE => $urlType]);
+
+        if($urlType === DetailConstants::URL_TYPE_WEBSITE)
+        {
+            $this->merchant->merchantDetail->getValidator()->validateInput('business_websites_check', $input);
+        }
+        else
+        {
+            $this->merchant->merchantDetail->getValidator()->validateInput('business_app_url_check', $input);
+        }
+
+        $permissionName = Permission\Name::UPDATE_MERCHANT_WEBSITE;
+
+        $newUrl = ($urlType === DetailConstants::URL_TYPE_WEBSITE) ?  $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE] : $input[DetailConstants::BUSINESS_APP_URL];
+
+        if($isRequestToUpdateWebsite === true)
+        {
+            if($this->merchant->getHasKeyAccess() === false)
+            {
+                ( new KeyValidator)->checkHasKeyAccess($this->merchant, $this->mode);
+            }
+            $permissionName = Permission\Name::EDIT_MERCHANT_WEBSITE_DETAIL;
+        }
+
+        $originalMerchantDetails = [DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE => $this->merchant->merchantDetail->getWebsite()];
+
+        $this->merchant->merchantDetail->setWebsite($newUrl);
+
+        $dirtyMerchantDetails  = [DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE => $this->merchant->merchantDetail->getWebsite()];
+
+        [$status , $matchedMerchantIds] = $this->dedupeCore->matchAndGetMatchedMIDs($this->merchant);
+
+        $this->merchant->merchantDetail->setWebsite($originalMerchantDetails[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE]);
+
+        $dedupeFlaggedMIDs = implode(',' , $matchedMerchantIds);
+
+        $this->app['workflow']
+            ->setPermission($permissionName)
+            ->setEntityAndId($this->merchant->merchantDetail->getEntity(), $this->merchant->merchantDetail->getMerchantId())
+            ->setController(DetailConstants::UPDATE_BUSINESS_WEBSITE_CONTROLLER)
+            ->setInput($input)
+            ->handle($originalMerchantDetails, $dirtyMerchantDetails , true);
+
+        $this->addCommentForBusinessWebsiteSave($urlType, $permissionName, $this->merchant->merchantDetail, $dedupeFlaggedMIDs, $input );
+    }
+
+    public function updateBusinessWebsite(Merchant\Entity $merchant , string $newUrl)
+    {
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $newUrl)
+        {
+            $this->merchant->merchantDetail->setWebsite($newUrl);
+
+            $this->repo->merchant_detail->saveOrFail($this->merchant->merchantDetail);
+
+            // Sync key business_website  to merchant entity
+            $merchant = (new Merchant\Core)->syncMerchantEntityFields($merchant, [Entity::BUSINESS_WEBSITE => $newUrl]);
+
+            $this->checkAndMarkHasKeyAccess($this->merchant->merchantDetail, $merchant);
+
+            $this->repo->saveOrFail($merchant);
+        });
+    }
+
+    public function getDecryptedWebsiteCommentForWebsiteSelfServe($comments)
+    {
+        foreach ($comments as $comment)
+        {
+            if(empty($comment->comment) == false and strpos($comment->comment, DetailConstants::ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER) === 0)
+            {
+                $decryptedWebsiteInfo = decrypt(substr($comment->comment, strlen(DetailConstants::ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER)));
+
+                return $decryptedWebsiteInfo;
+            }
+        }
+
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_ENCRYPTED_COMMENT_NOT_FOUND);
     }
 }

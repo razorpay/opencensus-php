@@ -231,8 +231,11 @@ class MailTags
     const INTERNATIONAL_ENABLEMENT                       = 'international_enablement';
 
     // Merchant Risk Alert tags
-    const MERCHANT_RISK_ALERT_FUNDS_ON_HOLD  = 'merchant_risk_alert_funds_on_hold';
+    const MERCHANT_RISK_ALERT_FUNDS_ON_HOLD             = 'merchant_risk_alert_funds_on_hold';
 
+    const MERCHANT_BUSINESS_WEBSITE_ADD                 = 'merchant_business_website_add';
+
+    const MERCHANT_BUSINESS_WEBSITE_UPDATE              = 'merchant_business_website_update';
     /**
      * Email tags that should respond to the mailgun failure webhook
      * @var array Email tags

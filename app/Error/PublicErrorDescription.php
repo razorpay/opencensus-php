@@ -1458,6 +1458,8 @@ class PublicErrorDescription
     const SERVER_ERROR_UPI_PAYMENT_SERVICE_REQUEST_TIMEOUT                          = 'The server encountered an error. The incident has been reported to admins.';
     const SERVER_ERROR_UPI_PAYMENT_SERVICE_CONNECTION_FAILED                        = 'The server encountered an error. The incident has been reported to admins.';
 
+    const BAD_REQUEST_ENCRYPTED_COMMENT_NOT_FOUND                                   = 'No Credentials found';
+
     // Payouts Batch
     const BAD_REQUEST_PAYOUTS_BATCH_NOT_ALLOWED = 'Creating a payouts batch request is not allowed. Please contact support for more details.';
 }

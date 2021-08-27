@@ -1196,6 +1196,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function putBusinessWebsiteUpdatePostWorkflow()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->putBusinessWebsiteUpdatePostWorkflow($input);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * @param $id
      *
@@ -2339,6 +2348,32 @@ class MerchantController extends Controller
         $response = $this->service()->patchMerchantPurposeCode($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function postSaveBusinessWebsite(string $urlType)
+    {
+        $input = Request::all();
+
+        $this->service(E::MERCHANT_DETAIL)->postSaveBusinessWebsite($urlType, $input);
+
+        return ApiResponse::json([]);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBusinessWebsiteWorkflowStatus()
+    {
+        $status = $this->service(E::MERCHANT)->getBusinessWebsiteWorkflowStatus();
+
+        return ApiResponse::json(['status' => $status]);
+    }
+
+    public function getDecryptedWebsiteCommentForWebsiteSelfServe(string $actionId)
+    {
+        $decryptedInfo = $this->service(E::MERCHANT_DETAIL)->getDecryptedWebsiteCommentForWebsiteSelfServe($actionId);
+
+        return ApiResponse::json(['decrypted_info' => $decryptedInfo]);
     }
 
     public function toggleFeeBearer()

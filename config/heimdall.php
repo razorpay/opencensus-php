@@ -229,6 +229,16 @@ return [
 
             Permission::EDIT_MERCHANT_WEBSITE_DETAIL        => '',
 
+            Permission::UPDATE_MERCHANT_WEBSITE            => [
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+
+            Permission::DECRYPT_MERCHANT_WEBSITE            => [
+                'assignable'  => true,
+                'workflow'    => false,
+            ],
+
             Permission::EDIT_IIN_RULE                       => '',
             Permission::EDIT_IIN_RULE_BULK                  => [
                 'description' => 'Bulk Edit IIN Rule',

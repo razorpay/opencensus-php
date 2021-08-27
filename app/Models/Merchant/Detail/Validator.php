@@ -405,6 +405,26 @@ class Validator extends Base\Validator
         'gstin_self_serve_not_in_progress',
     ];
 
+    protected static $businessWebsitesCheckRules = [
+        DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE          => 'required|max:255|active_url',
+        DetailConstants::BUSINESS_WEBSITE_ABOUT_US           => 'required|max:255|active_url',
+        DetailConstants::BUSINESS_WEBSITE_CONTACT_US         => 'required|max:255|active_url',
+        DetailConstants::BUSINESS_WEBSITE_PRICING_DETAILS    => 'required|max:255|active_url',
+        DetailConstants::BUSINESS_WEBSITE_PRIVACY_POLICY     => 'required|max:255|active_url',
+        DetailConstants::BUSINESS_WEBSITE_TNC                => 'required|max:255|active_url',
+        DetailConstants::BUSINESS_WEBSITE_REFUND_POLICY      => 'required|max:255|active_url',
+        DetailConstants::BUSINESS_WEBSITE_USERNAME           => 'sometimes|string|max:50',
+        DetailConstants::BUSINESS_WEBSITE_PASSWORD           => 'sometimes|string|max:50',
+        DetailConstants::URL_TYPE                            => 'required|string|in:'.DetailConstants::URL_TYPE_WEBSITE,
+    ];
+
+    protected static $businessAppUrlCheckRules = [
+        DetailConstants::BUSINESS_APP_URL           => 'sometimes|string|max:50',
+        DetailConstants::BUSINESS_APP_USERNAME      => 'sometimes|string|max:50',
+        DetailConstants::BUSINESS_APP_PASSWORD      => 'sometimes|string|max:50',
+        DetailConstants::URL_TYPE                   => 'required|string|in:'.DetailConstants::URL_TYPE_APP,
+    ];
+
     public function validateBusinessRegisteredState(string $attribute, $value)
     {
         if(empty($value) === true)
