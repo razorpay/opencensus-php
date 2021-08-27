@@ -1425,7 +1425,7 @@ class VirtualAccountTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedOutput['output1'], $this->fetchVirtualAccounts($input['input1']));
 
-        $input['input1']['payee_account'] = substr($accountNumber,3,8);
+        $input['input1']['payee_account'] = substr($accountNumber,0,8);
 
         $this->assertArraySelectiveEquals($expectedOutput['output1'], $this->fetchVirtualAccounts($input['input1']));
 
@@ -1435,7 +1435,7 @@ class VirtualAccountTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedOutput['output2'], $this->fetchVirtualAccounts($input['input2']));
 
-        $input['input2']['payee_account'] = substr($address, 4, 15);
+        $input['input2']['payee_account'] = substr($address, 0, 9);
 
         $this->assertArraySelectiveEquals($expectedOutput['output2'], $this->fetchVirtualAccounts($input['input2']));
     }

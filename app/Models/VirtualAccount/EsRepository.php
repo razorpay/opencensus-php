@@ -65,7 +65,7 @@ class EsRepository extends Base\EsRepository
     {
         $string = preg_replace('/[^A-Za-z0-9]/', '*', $string); // Removes special chars.
 
-        return '*' . $string . '*';
+        return $string . '*';
     }
 
     public function buildQueryForEmail(array &$query, $value)
