@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import { merchantFetch } from 'merchant/utils/ajax';
 import * as KeyActions from 'merchant/reducers/keys';
+import { fetchAmount } from 'merchant/reducers/fetchTransaction';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import NewKey from 'merchant/views/Settings/Keys/components/NewKey';
-import { paiseToRupees, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getRecommendedProduct } from './productMap';
+import ProductShimmer from './shimmer';
 
 const RecommendationWidget = ({
   user,
@@ -20,48 +21,22 @@ const RecommendationWidget = ({
   openModal,
   session,
   fetchKeys,
+  fetchTransactionAmount,
+  payment,
 }) => {
-  const [amount, setAmount] = useState(0);
   const [isApiKeyGenerated, setIsApiKeyGenerated] = useState(false);
   const [showGenerateKeyLoader, setShowGenerateKeyLoader] = useState(false);
   const landingProduct = localStorage.getItem('merchant_landing_page');
   const recommendedProduct = getRecommendedProduct(landingProduct);
-  const getTransactionVoulme = async () => {
-    const response = await merchantFetch({
-      url: 'merchant/analytics',
-      method: 'post',
-      data: {
-        filters: {
-          default: [
-            {
-              created_at: { gte: user.activated_at, lte: new Date().getTime() },
-              authorized_at: { gt: 0 },
-            },
-          ],
-        },
-        aggregations: {
-          transactionVolume: {
-            agg_type: 'sum',
-            details: { index: 'payments', column: 'base_amount', mode: 'live' },
-          },
-        },
-      },
-    });
-
-    const payment = response?.data?.transactionVolume
-      ? paiseToRupees(response.data.transactionVolume?.result[0].value)
-      : 0;
-    setAmount(payment);
-  };
 
   useEffect(() => {
     fetchKeys({ mode: session.mode }, session.user.has_key_access);
 
-    if (landingProduct && recommendedProduct && !!user.activated) {
-      getTransactionVoulme();
+    if (landingProduct && recommendedProduct && typeof payment === 'object') {
+      fetchTransactionAmount(user.created_at);
     }
 
-    if (landingProduct && recommendedProduct) {
+    if (landingProduct && recommendedProduct && payment === 0) {
       analyticsTrack({
         objectName: 'Product recommendation widget',
         actionName: 'displayed',
@@ -72,13 +47,13 @@ const RecommendationWidget = ({
         },
       });
     }
-  }, []);
+  }, [landingProduct]);
 
   if (!landingProduct || !recommendedProduct) {
     return null;
   }
 
-  if (amount > 0) {
+  if (payment > 0) {
     localStorage.removeItem('merchant_landing_page');
   }
 
@@ -160,6 +135,10 @@ const RecommendationWidget = ({
       });
   };
 
+  const openPaymentOtions = () => {
+    history.push('/paymentlinks/new');
+  };
+
   const { primaryCardCta, onCardCtaClicked } = (() => {
     if (!user.activated) {
       return {
@@ -181,6 +160,13 @@ const RecommendationWidget = ({
       };
     }
 
+    if (landingProduct === 'payment_link') {
+      return {
+        primaryCardCta: '+ Accept Payments',
+        onCardCtaClicked: openPaymentOtions,
+      };
+    }
+
     return {
       primaryCardCta: '+ Accept Payments',
       onCardCtaClicked: exploreProducts,
@@ -188,85 +174,91 @@ const RecommendationWidget = ({
   })();
 
   return (
-    <div className="recommendation-widget">
-      <div className="recommend-product">
-        <div className="title">Get started with Razorpay product suite</div>
-        <div className="active-product">
-          <img src={recommendedProduct[0].imageCdn} />
-          <div className="active-product__container">
-            <div className="name">
-              <span onClick={exploreProducts}>{recommendedProduct[0].name}</span>
+    <div>
+      {payment === 0 ? (
+        <div className="recommendation-widget">
+          <div className="recommend-product">
+            <div className="title">Get started with Razorpay product suite</div>
+            <div className="active-product">
+              <img src={recommendedProduct[0].imageCdn} />
+              <div className="active-product__container">
+                <div className="name">
+                  <span onClick={exploreProducts}>{recommendedProduct[0].name}</span>
+                </div>
+                <div className="desc">{recommendedProduct[0].description}</div>
+                <div className="explore">
+                  {showGenerateKeyLoader && (
+                    <span className="api-loader">
+                      <span className="spin-btn visible" />
+                    </span>
+                  )}
+                  <span className="card-cta" onClick={onCardCtaClicked}>
+                    {primaryCardCta}
+                  </span>
+                  {!user.activated && <i class="i i-arrow-forward text-primary" />}
+                </div>
+              </div>
             </div>
-            <div className="desc">{recommendedProduct[0].description}</div>
-            <div className="explore">
-              {showGenerateKeyLoader && (
-                <span className="api-loader">
-                  <span className="spin-btn visible" />
-                </span>
-              )}
-              <span className="card-cta" onClick={onCardCtaClicked}>
-                {primaryCardCta}
-              </span>
-              {!user.activated && <i class="i i-arrow-forward text-primary" />}
+          </div>
+          <div className="more-product">
+            <div className="more-product__title">Explore more products</div>
+            <div className="product-container">
+              <div className="prd-one">
+                <img src={recommendedProduct[1].imageCdn} />
+                <div className="container">
+                  <div className="name">
+                    <span
+                      onClick={() => {
+                        history.push(recommendedProduct[1].redirectUrl);
+                        analyticsTrack({
+                          objectName: recommendedProduct[1].segmentEventName,
+                          actionName: 'clicked',
+                          screen: 'home page',
+                          properties: {
+                            display_tag: 'Try for Side nav CTAs',
+                            ...getCommonAnalyticsProperties(window.rzp_user),
+                          },
+                        });
+                      }}
+                    >
+                      {recommendedProduct[1].name}
+                    </span>{' '}
+                    &gt;
+                  </div>
+                  <span className="desc">{recommendedProduct[1].shortDescription}</span>
+                </div>
+              </div>
+              <div className="prd-two">
+                <img src={recommendedProduct[2].imageCdn} />
+                <div className="container">
+                  <div className="name">
+                    <span
+                      onClick={() => {
+                        history.push(recommendedProduct[2].redirectUrl);
+                        analyticsTrack({
+                          objectName: recommendedProduct[2].segmentEventName,
+                          actionName: 'clicked',
+                          screen: 'home page',
+                          properties: {
+                            display_tag: 'Try for Side nav CTAs',
+                            ...getCommonAnalyticsProperties(window.rzp_user),
+                          },
+                        });
+                      }}
+                    >
+                      {recommendedProduct[2].name}
+                    </span>{' '}
+                    &gt;
+                  </div>
+                  <span className="desc">{recommendedProduct[2].shortDescription}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div className="more-product">
-        <div className="more-product__title">Explore more products</div>
-        <div className="product-container">
-          <div className="prd-one">
-            <img src={recommendedProduct[1].imageCdn} />
-            <div className="container">
-              <div className="name">
-                <span
-                  onClick={() => {
-                    history.push(recommendedProduct[1].redirectUrl);
-                    analyticsTrack({
-                      objectName: recommendedProduct[1].segmentEventName,
-                      actionName: 'clicked',
-                      screen: 'home page',
-                      properties: {
-                        display_tag: 'Try for Side nav CTAs',
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
-                  }}
-                >
-                  {recommendedProduct[1].name}
-                </span>{' '}
-                &gt;
-              </div>
-              <span className="desc">{recommendedProduct[1].shortDescription}</span>
-            </div>
-          </div>
-          <div className="prd-two">
-            <img src={recommendedProduct[2].imageCdn} />
-            <div className="container">
-              <div className="name">
-                <span
-                  onClick={() => {
-                    history.push(recommendedProduct[2].redirectUrl);
-                    analyticsTrack({
-                      objectName: recommendedProduct[2].segmentEventName,
-                      actionName: 'clicked',
-                      screen: 'home page',
-                      properties: {
-                        display_tag: 'Try for Side nav CTAs',
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
-                  }}
-                >
-                  {recommendedProduct[2].name}
-                </span>{' '}
-                &gt;
-              </div>
-              <span className="desc">{recommendedProduct[2].shortDescription}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      ) : (
+        <ProductShimmer isMtuMerchant={payment > 0} />
+      )}
     </div>
   );
 };
@@ -274,10 +266,14 @@ const RecommendationWidget = ({
 const mapStateToProps = (state) => ({
   keys: state.keys,
   session: state.session,
+  payment: state.transactionAmount.amount,
 });
 
 export default withRouter(
-  connect(mapStateToProps, { ...KeyActions, ...ModalActions, ...NotificationsActions })(
-    RecommendationWidget,
-  ),
+  connect(mapStateToProps, {
+    ...KeyActions,
+    ...ModalActions,
+    ...NotificationsActions,
+    fetchTransactionAmount: fetchAmount,
+  })(RecommendationWidget),
 );

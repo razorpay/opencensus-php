@@ -3049,3 +3049,91 @@ p.small-txt{
     right: 6px;
   }
 }
+
+.recommendation-shimmer {
+  height: 190px;
+  max-height: 219px;
+  margin: 22px;
+  padding: 20px;
+  background: rgb(255, 255, 255);
+  display: flex;
+  border-radius: 4px;
+  
+  .primary-shimmer {
+    padding-left: 40px;
+    display: flex;
+    width: 50%;
+    margin: auto 0px;
+  
+    .primary-icon {
+      width: 90px;
+      height: 80px;
+    }
+
+    .first-cta {
+      width: 260px;
+      height: 12px;
+    }
+    .sec-cta {
+      width: 330px;
+      height: 10px;
+      margin: 16px 0;
+    }
+    .last-cta {
+      width: 150px;
+      height: 10px;
+      margin-top: 24px;
+    }
+  }
+
+  .secondary-shimmer {
+    width: 50%;
+    margin: auto 0;
+
+    .more-content {
+      display: flex;
+
+      .icon {
+        width: 40px;
+        height: 40px;
+      }
+
+      .first-cta {
+        width: 180px;
+        height: 12px;
+      }
+      .sec-cta {
+        width: 250px;
+        height: 10px;
+        margin-top: 10px;
+      }
+    }
+  }
+
+  .shimmer-loader {
+    position: relative;
+    display: block;
+    background: #ebecf2;
+    background: linear-gradient(to right, #ebecf2 0%, #dfe1ea 10%, #ebecf2 20%);
+    background-size: 800px 100px;
+    animation: loaderShimmer 1.2s forwards infinite linear;
+
+    @keyframes loaderShimmer {
+      0% {
+        background-position: -300px 0;
+      }
+      100% {
+        background-position: 300px 0;
+      }
+    }
+  }
+
+  .side-space {
+    margin-left: 20px;
+  }
+}
+.hideShimer {
+  height: 0;
+  transition: height 0.3s linear;
+  overflow: hidden;
+}

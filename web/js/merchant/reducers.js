@@ -97,6 +97,7 @@ import MigrationReducer from 'merchant/reducers/capital/migrations';
 import instrumentRequestsReducer from 'merchant/reducers/instrumentRequests';
 import navigatorReducer from 'merchant/reducers/navigator/details';
 import supportDetailReducer from 'merchant/reducers/support_detail';
+import fetchTransactionReducer from 'merchant/reducers/fetchTransaction';
 
 export default combineReducers({
   modal: modalReducer,
@@ -188,6 +189,7 @@ export default combineReducers({
   withdrawals: WithdrawalsReducer,
   instrumentRequests: instrumentRequestsReducer,
   supportdetails: supportDetailReducer,
+  transactionAmount: fetchTransactionReducer,
   repayments: RepaymentsReducer,
   rewards: rewardsReducer,
   qr_codes: qrCodesReducer,
