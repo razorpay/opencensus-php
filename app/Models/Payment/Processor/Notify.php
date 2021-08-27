@@ -557,7 +557,7 @@ class Notify
                 'orderId'              => $this->payment->getOrderId(),
                 'risk'                 => $this->merchant->getRiskRating(),
 
-                'dcc'                  => $this->payment->isDCC(),
+                'dcc'                  => ($this->payment->isDCC() and $this->merchant->isDCCMarkupVisible()),
                 'gateway_amount_spread'=> $this->payment->getAmountComponents($this->payment->isDCC())
             ],
             'org'       => [
