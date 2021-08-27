@@ -6223,8 +6223,7 @@ class Route
 
 
         //Partner Activation routes
-        'partner_activation_details'               => '*',
-        'partner_activation_save'                  => '*',
+        'partner_activation_details'               => Permission::VIEW_PARTNERS,
         'partner_activation_update'                => Permission::EDIT_PARTNERS,
         'partner_activation_status'                => Permission::EDIT_ACTIVATE_PARTNER,
         'partner_actions'                          => Permission::PARTNER_ACTIONS,
