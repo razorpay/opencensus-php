@@ -62,19 +62,37 @@ class TncActivationTest extends TestCase
         $this->assertTrue($merchant->isActivated());
     }
 
+    /**
+     * Scenario:
+     *  - merchant hasn't filled website details
+     *  - merchant is of Axis org
+     *  - merchant hasn't filled TnC details
+     * Expectation:
+     *  - merchant should get activated even if tnc is not filled
+     */
     public function testTncApplicableNotGeneratedWFExecutedMerchantNotActivated()
     {
         $this->mockRazorxTreatment();
 
         $this->app['rzp.mode'] = 'test';
 
+        $org = $this->fixtures->create('org', [
+            'id' => OrgEntity::AXIS_ORG_ID
+        ]);
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'    => OrgEntity::AXIS_ORG_ID,
+            'hostname'  => 'hdfcbank.in'
+        ]);
+
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
             'business_type'    => 4,
             'submitted'        => 1,
-            'business_website' => ''
+            'business_website' => '',
         ]);
 
         $merchant = $merchantDetail->merchant;
+        $merchant->setAttribute('org_id', $org->getId());
 
         $this->app['basicauth']->setMerchant($merchant);
 
@@ -82,7 +100,7 @@ class TncActivationTest extends TestCase
 
         $merchant = $this->getDbLastEntity('merchant');
 
-        $this->assertFalse($merchant->isActivated());
+        $this->assertTrue($merchant->isActivated());
     }
 
     public function testTncApplicableAndGeneratedWFExecutedMerchantActivated()
@@ -122,6 +140,15 @@ class TncActivationTest extends TestCase
 
         $this->app['rzp.mode'] = 'live';
 
+        $org = $this->fixtures->create('org', [
+            'id' => OrgEntity::AXIS_ORG_ID
+        ]);
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'    => OrgEntity::AXIS_ORG_ID,
+            'hostname'  => 'hdfcbank.in'
+        ]);
+
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
             'business_type'    => 4,
             'submitted'        => 1,
@@ -133,7 +160,7 @@ class TncActivationTest extends TestCase
         ]);
 
         $workflow = $this->fixtures->connection('live')->create('workflow', [
-            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+            'org_id' => OrgEntity::AXIS_ORG_ID,
             'name'   => "TnC Workflow"
         ]);
 
@@ -144,7 +171,7 @@ class TncActivationTest extends TestCase
         ]);
 
         DB::connection('live')->table('permission_map')->insert([
-            'entity_id'     => OrgEntity::RAZORPAY_ORG_ID,
+            'entity_id'     => OrgEntity::AXIS_ORG_ID,
             'entity_type'   => 'org',
             'permission_id' => $perm->getId(),
         ]);
@@ -158,7 +185,7 @@ class TncActivationTest extends TestCase
         ]);
 
         $merchant = $merchantDetail->merchant;
-
+        $merchant->setAttribute('org_id', $org->getId());
         $this->app['basicauth']->setMerchant($merchant);
 
         $input = [

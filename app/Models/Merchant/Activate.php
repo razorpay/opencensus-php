@@ -97,10 +97,12 @@ class Activate extends Base\Core
         }
 
         $isMerchantTncApplicable = (new Merchant\Detail\Core)->isMerchantTncApplicable($merchant);
+        $shouldActivate = (new Merchant\Detail\Core)->shouldActivateIfTncApplicable($merchant, $isMerchantTncApplicable);
 
         if (($isMerchantTncApplicable === true) and
             ($merchantDetail->tnc === null) and
-            ($triggerWorkflow === true))
+            ($triggerWorkflow === true) and
+            ($shouldActivate === false))
         {
             $shouldSave = false;
 
@@ -270,10 +272,12 @@ class Activate extends Base\Core
         }
 
         $isMerchantTncApplicable = (new Merchant\Detail\Core)->isMerchantTncApplicable($merchant);
+        $shouldActivate = (new Merchant\Detail\Core)->shouldActivateIfTncApplicable($merchant, $isMerchantTncApplicable);
 
         if (($isMerchantTncApplicable === true) and
             ($merchantDetail->tnc === null) and
-            ($triggerWorkflow === true))
+            ($triggerWorkflow === true) and
+            ($shouldActivate === false))
         {
             $shouldSave = false;
 

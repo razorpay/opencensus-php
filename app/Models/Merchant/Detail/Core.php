@@ -4605,6 +4605,13 @@ class Core extends Base\Core
 
     public function isMerchantTncApplicable(Merchant\Entity $merchant)
     {
+        $org = $merchant->getOrgId() ?: $this->app['basicauth']->getOrgId();
+
+        if($org !== ORG_ENTITY::AXIS_ORG_ID)
+        {
+            return false;
+        }
+
         if (empty($merchant->merchantDetail->getAttribute(
                 Entity::BUSINESS_WEBSITE)) === false)
         {
@@ -4624,6 +4631,21 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    public function shouldActivateIfTncApplicable(Merchant\Entity $merchant, bool $isTncApplicable)
+    {
+        if ($isTncApplicable === false) {
+            return true;
+        }
+
+        $org = $merchant->getOrgId() ?: $this->app['basicauth']->getOrgId();
+
+        if ($org === ORG_ENTITY::AXIS_ORG_ID) {
+            return true;
+        }
+
+        return false;
     }
 
     private function addCommentForBusinessWebsiteSave(string $urlType, string $permissionName, Entity $merchantDetails, string $dedupeFlaggedMIDs, array  $input)

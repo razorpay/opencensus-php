@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 
 
 class Core extends Base\Core
@@ -90,9 +91,11 @@ class Core extends Base\Core
     {
         if ($tnc !== null)
         {
+            $merchant = $tnc->merchantDetail->merchant;
+
             $tnc = $tnc->toArrayPublic();
 
-            $tnc['link'] = $this->getMerchantTncLink($tnc[Entity::ID]);
+            $tnc['link'] = $this->getMerchantTncLink($merchant, $tnc[Entity::ID]);
 
             unset($tnc[Entity::ID]);
         }
@@ -100,8 +103,22 @@ class Core extends Base\Core
         return $tnc;
     }
 
-    public function getMerchantTncLink($id)
+    public function getMerchantTncLink(Merchant\Entity $merchant, string $tncId)
     {
-        return env('MERCHANT_TNC_SUBDOMAIN') . '/' . $id;
+        $org = $merchant->getOrgId() ?: $this->app['basicauth']->getOrgId();
+
+        $host = null;
+
+        if($org === ORG_ENTITY::AXIS_ORG_ID)
+        {
+            $host = env('MERCHANT_TNC_SUBDOMAIN_AXIS');
+        }
+
+        if(empty($host) === true)
+        {
+            $host = env('MERCHANT_TNC_SUBDOMAIN');
+        }
+
+        return $host . '/' . $tncId;
     }
 }

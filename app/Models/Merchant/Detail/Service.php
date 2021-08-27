@@ -1661,10 +1661,12 @@ class Service extends Base\Service
 
         $merchantDetail = $tnc->merchantDetail;
 
+        $merchant = $merchantDetail->merchant;
+
         $merchantEmail = (new Merchant\Email\Service())->proxyGetSupportDetails($tnc->merchantDetail->merchant);
 
         $publicTncDetails = [
-            'link' => (new Merchant\Tnc\Core)->getMerchantTncLink($id)
+            'link' => (new Merchant\Tnc\Core)->getMerchantTncLink($merchant, $id)
         ];
 
         foreach (DetailConstants::PUBLIC_TNC_DETAILS as $var => $entities)
