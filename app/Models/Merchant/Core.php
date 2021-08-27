@@ -5158,12 +5158,19 @@ class Core extends Base\Core
         $returnArray = ['status' => 200];
         foreach (Constants::MERCHANT_RISK_SCORE_DRUID_KEY_MAPPING as $druidKey => $returnKey)
         {
-            $returnVal = $druidResult[$druidKey];
-
-            if (empty($returnVal) === false &&
-                in_array($returnKey, Constants::MERCHANT_RISK_SCORE_DATA_MONEY_FIELDS))
+            if (array_key_exists($druidKey, $druidResult) === true)
             {
-                $returnVal = '₹' . number_format($returnVal);
+                $returnVal = $druidResult[$druidKey];
+
+                if (empty($returnVal) === false &&
+                    in_array($returnKey, Constants::MERCHANT_RISK_SCORE_DATA_MONEY_FIELDS))
+                {
+                    $returnVal = '₹' . number_format($returnVal);
+                }
+            }
+            else
+            {
+                $returnVal = 'Data not present in druid';
             }
 
             array_set($returnArray, $returnKey, $returnVal);
