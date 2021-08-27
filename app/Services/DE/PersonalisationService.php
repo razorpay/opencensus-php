@@ -53,12 +53,18 @@ class PersonalisationService
 
         try
         {
+            $startTime = microtime(true);
+
             $response = Requests::request(
                 $this->url,
                 $headers,
                 json_encode($content),
                 $method,
                 $options);
+
+            $this->trace->info(TraceCode::PERSONALISATION_RESPONSE_TIME, [
+                'responseTimeInSeconds'  =>  microtime(true) - $startTime,
+            ]);
         }
         catch(\Exception $e)
         {
