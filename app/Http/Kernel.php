@@ -19,6 +19,7 @@ class Kernel extends HttpKernel
         Middleware\TrustedProxy::class,
         Middleware\VerifyHttps::class,
         Acs\SyncEventTriggerMiddleware::class,
+        Middleware\StripQueryParam::class,
     ];
 
     /**
