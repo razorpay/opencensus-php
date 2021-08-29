@@ -178,7 +178,13 @@ const TncForm: React.FC<FormScreenPropsT> = ({ setApiResponse }) => {
               <Flex alignItems="center">
                 <View>
                   <Link
-                    href={`/app/tnc/${formikProps.values.product_type}`}
+                    href={`https://dashboard-${
+                      user.isOrgAxis ? 'axis' : 'tnc'
+                    }.stage.razorpay.in/tnc/${
+                      formikProps.values.product_type === 'goods'
+                        ? '000000000goods'
+                        : '000000services'
+                    }`}
                     onClick={() => {
                       analyticsTrack({
                         objectName: 'Act',
@@ -355,12 +361,31 @@ const TncForm: React.FC<FormScreenPropsT> = ({ setApiResponse }) => {
                   />
                   <Space padding={[0, 0, 0, 0.75]}>
                     <View>
-                      I / we understand and acknowledge that the use of these draft terms and
-                      conditions for my website/ payment page is at my sole discretion and risk. I
-                      understand that the provision of these draft terms and conditions by Razorpay
-                      is not a substitute for independent legal advice, and I/ we will use our
-                      independent discretion to determine the suitability of these for my/ our
-                      business purposes and will absolve Razorpay of all liability in this regard.
+                      {user.isOrgAxis ? (
+                        <>
+                          I/We have reviewed and accepted the contents of URL LINK which covers the
+                          Terms and Conditions as applicable for the Goods & Service being purchased
+                          by the customers from me/our Company. I agree and confirm that, these
+                          Terms and Conditions are prepared for me/our Company by [Razorpay] basis
+                          my/our request and requirement and same shall not be considered as
+                          substitute for independent legal advice, in any manner whatsoever. I/We
+                          will use my/our independent discretion to determine the suitability of
+                          these Terms and Conditions for my/our Company’s businesses purposes. I/We
+                          hereby confirm that, neither the [Bank] nor [Razorpay] shall be held
+                          liable or responsible in any manner whatsoever in respect of any dispute
+                          arising out of or in connection with these Terms and Conditions.
+                        </>
+                      ) : (
+                        <>
+                          I / we understand and acknowledge that the use of these draft terms and
+                          conditions for my website/ payment page is at my sole discretion and risk.
+                          I understand that the provision of these draft terms and conditions by
+                          Razorpay is not a substitute for independent legal advice, and I/ we will
+                          use our independent discretion to determine the suitability of these for
+                          my/ our business purposes and will absolve Razorpay of all liability in
+                          this regard.
+                        </>
+                      )}
                     </View>
                   </Space>
                 </View>

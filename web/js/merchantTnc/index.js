@@ -9,6 +9,7 @@ import { useQuery } from 'react-query';
 import axios from 'axios';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
 import TncPages from 'merchant/views/TermsAndCondition/Pages';
+import { states } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const GloblatStyle = createGlobalStyle`
 @font-face {
@@ -117,6 +118,8 @@ body {
 const App = () => {
   const [data, setData] = React.useState(null);
   const tncId = location.pathname.split('/app').join('').split('/tnc/')[1];
+  let address = 'H-23, first block, koramangala Banglore, Karnataka Pin-560047';
+  let state = 'Karnataka';
 
   const { status, refetch } = useQuery(
     ['tncPage', tncId],
@@ -150,10 +153,46 @@ const App = () => {
     return null;
   }
 
+  // if user enter wrong dummy url, show 404 not found.
+  if (!data && !['000000services', '000000000goods'].includes(tncId)) {
+    return (
+      <>
+        <center>
+          <h1>404 Not Found</h1>
+        </center>
+        <hr />
+        <center>nginx</center>
+      </>
+    );
+  }
+  if (data) {
+    state = states[data.business_registered_state];
+    address = `${data.business_registered_address}, ${data.business_registered_city} ${state}, Pin-${data.business_registered_pin}`;
+  }
+
+  const TnCProps = {
+    // set some default value for dummy url content
+    businessName: data?.business_name || 'ABC Corp L.T.D',
+    updatedAt: Number(data?.updated_at) || 1620388270,
+    deliverableType: data?.deliverable_type,
+    state,
+    address,
+    tncLink: data?.link || 'https://tnc.razorpay.com/tnc/HFO0JH8G98',
+    subcategory: data?.business_subcategory || 'Horizontal Commerce/Marketplace',
+    category: data?.business_category || 'Ecommerce',
+    businessModel: data?.business_model || 'My business is used for ecommerce online plateform',
+    warrantyPeriod: data?.warranty_period || '3 months',
+    email: data?.email || 'abc.support@gmail.com',
+    refundRequestPeriod: data?.refund_request_period || '3-5 days',
+    refundProcessPeriod: data?.refund_process_period?.replace(' days', '') || '5-8',
+    unAuthorizePage: true,
+    isOrgAxis: window.org ? window.org?.custom_code === 'axis' : false,
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <GloblatStyle />
-      <TncPages data={data} unAuthorizePage={true} />
+      <TncPages {...TnCProps} />
     </ThemeProvider>
   );
 };

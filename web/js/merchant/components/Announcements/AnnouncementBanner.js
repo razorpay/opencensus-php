@@ -40,7 +40,11 @@ class AnnouncementBannerComponent extends Component {
     } = this.props;
 
     // If hidden or org is Axis, don't show banners
-    if (this.props.hidden || this.state.hidden || user.isOrgAxis) {
+    // show banner for axis org only if shouldShowTnCBannerForAxis props is true.
+    if (
+      (this.props.hidden || this.state.hidden || user.isOrgAxis) &&
+      !this.props.shouldShowTnCBannerForAxis
+    ) {
       return null;
     }
 

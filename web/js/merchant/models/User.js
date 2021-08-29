@@ -1142,7 +1142,7 @@ export default class User {
   }
 
   get canGenerateTnCPage() {
-    return this.getExpStatus('merchant_tnc');
+    return this.getExpStatus('merchant_tnc') && this.isOrgAxis;
   }
 
   get isAadharEkycMandatory() {

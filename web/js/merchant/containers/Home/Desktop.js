@@ -71,6 +71,7 @@ class AnalyticsDesktop extends Component {
     showNcPopup: true,
     whatsappNotificationStatus: 'off',
     settlementExists: true,
+    shouldShowTnCBannerForAxis: false,
   };
   constructor(props) {
     super(props);
@@ -131,7 +132,22 @@ class AnalyticsDesktop extends Component {
         modalType: 'KYC_ACTIVATION_SUBMIT_MODAL',
       });
     }
+    this.canShowBannerForAxis(activationState, user.isOrgAxis, user.merchant_tnc);
   }
+
+  canShowBannerForAxis = (activationState, isOrgAxis, isTncGenerated) => {
+    const showTncForAxis =
+      [
+        'activated_mcc_pending_without_tnc',
+        'under_review_without_tnc_passed',
+        'under_review_without_tnc',
+        'under_review_without_tnc_partial',
+      ].includes(activationState) &&
+      isOrgAxis &&
+      !isTncGenerated;
+    //default false not to show other banner for axis org
+    this.setState({ shouldShowTnCBannerForAxis: showTncForAxis });
+  };
 
   checkIfFirstEverSettlement = (callbackSettlementStatus) => {
     const settlementStatus = getSettlementStatus(this.props.user.current, callbackSettlementStatus);
@@ -238,7 +254,7 @@ class AnalyticsDesktop extends Component {
   };
 
   render() {
-    const { settlementExists } = this.state;
+    const { settlementExists, shouldShowTnCBannerForAxis } = this.state;
     const {
       mode,
       user,
@@ -313,8 +329,14 @@ class AnalyticsDesktop extends Component {
           {/* nps banner */}
           {user.isAccepted && <NPSAnnouncement user={user} />}
           {/* onboarding banner */}
-          {showInstantActivation && (
-            <Announcement mode={mode} user={user} payments={payments} limitBreach={limitBreach} />
+          {(showInstantActivation || shouldShowTnCBannerForAxis) && (
+            <Announcement
+              mode={mode}
+              user={user}
+              payments={payments}
+              limitBreach={limitBreach}
+              shouldShowTnCBannerForAxis={shouldShowTnCBannerForAxis}
+            />
           )}
           {/* international onboarding banner */}
           {mode === 'live' &&

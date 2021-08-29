@@ -13,6 +13,7 @@
     @include('partials/environment')
     <script type="text/javascript">
         window.api_host = "{!! $api_host !!}"
+        window.org = {!! $org !!};
     </script>
     @include('partials/common')
 		<script src="{{$cdnDashboardUrl}}/dist/merchantTnc-entry.js"></script>

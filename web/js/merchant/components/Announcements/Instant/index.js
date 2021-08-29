@@ -66,6 +66,7 @@ export default class InstantActivationAnnouncements extends Component {
       hideProductsModal,
       showProducts,
       limitBreach,
+      shouldShowTnCBannerForAxis = false,
     } = this.props;
     const commonSettlementBanner = {
       theme: 'success',
@@ -798,6 +799,7 @@ export default class InstantActivationAnnouncements extends Component {
             theme={theme}
             bannerKey={`announcement-banner-${user.activation_status}-${user.current}`}
             canBeClosed={user.isAccepted}
+            shouldShowTnCBannerForAxis={shouldShowTnCBannerForAxis}
             card_id="instant-activation-status-banner"
           >
             {content}

@@ -33,19 +33,63 @@ export const SubHeader: React.FC<SubHeaderProps> = ({ children }) => {
   );
 };
 
-interface TncPagePropsT {
-  data?: any;
+export interface TncPagePropsT {
   unAuthorizePage?: boolean;
+  isOrgAxis: boolean;
+  businessName: string;
+  updatedAt?: number;
+  deliverableType?: string;
+  state: string;
+  address: string;
+  tncLink: string;
+  businessModel: string;
+  subcategory: string;
+  category: string;
+  warrantyPeriod?: string;
+  email: string;
+  refundRequestPeriod: string;
+  refundProcessPeriod: string;
 }
 
-const TnCPage: React.FC<TncPagePropsT> = ({ data, unAuthorizePage }) => {
+const TnCPage: React.FC<TncPagePropsT> = ({
+  businessName,
+  businessModel,
+  category,
+  subcategory,
+  state,
+  address,
+  tncLink,
+  warrantyPeriod,
+  refundProcessPeriod,
+  refundRequestPeriod,
+  updatedAt,
+  deliverableType,
+  email,
+  unAuthorizePage,
+  isOrgAxis,
+}) => {
   const productType = location.pathname.split('/app').join('').split('/tnc/')[1];
+
+  const commonProps = {
+    businessName,
+    businessModel,
+    category,
+    subcategory,
+    state,
+    address,
+    tncLink,
+    warrantyPeriod,
+    refundProcessPeriod,
+    refundRequestPeriod,
+    email,
+    isOrgAxis,
+  };
 
   return (
     <View>
       <HeaderWrapper unAuthorizePage={unAuthorizePage}>
         <Header color="white.800" align="center" weight="bold">
-          {data ? data?.business_name : 'ABC Corp L.T.D'}
+          {businessName}
           <HeaderSeprator />
         </Header>
       </HeaderWrapper>
@@ -54,15 +98,12 @@ const TnCPage: React.FC<TncPagePropsT> = ({ data, unAuthorizePage }) => {
           Terms and Conditions
         </Title>
         <SubText color="shade.970" size="xxlarge">
-          Last updated on{' '}
-          {data
-            ? convertUnixToDate({ unixTimeStamp: data?.updated_at })
-            : convertUnixToDate({ unixTimeStamp: 1620388270 })}
+          Last updated on {convertUnixToDate({ unixTimeStamp: updatedAt })}
         </SubText>
-        {['000000000goods', 'goods'].includes(productType) || data?.deliverable_type === 'goods' ? (
-          <GoodsType context={data} />
+        {productType === '000000000goods' || deliverableType === 'goods' ? (
+          <GoodsType {...commonProps} />
         ) : (
-          <ServicesType context={data} />
+          <ServicesType {...commonProps} />
         )}
       </Wrapper>
       <Footer>

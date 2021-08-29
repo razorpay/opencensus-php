@@ -1,13 +1,20 @@
 import React from 'react';
-import { SubHeader } from './index';
+import { SubHeader, TncPagePropsT } from './index';
 import { InLineText, ContentWrapper, List, Description, TnCLink } from './Styled';
-import { states } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
-interface ServiceTypePropsT {
-  context: any;
-}
-
-const ServiceType: React.FC<ServiceTypePropsT> = ({ context }) => {
+const ServiceType: React.FC<TncPagePropsT> = ({
+  isOrgAxis,
+  state,
+  address,
+  businessName,
+  tncLink,
+  subcategory,
+  category,
+  businessModel,
+  email,
+  refundRequestPeriod,
+  refundProcessPeriod,
+}) => {
   return (
     <>
       <SubHeader>Introduction and Terms of Use</SubHeader>
@@ -16,14 +23,15 @@ const ServiceType: React.FC<ServiceTypePropsT> = ({ context }) => {
         provision of Services (defined hereinafter) available on the website/ payment page. These
         T&Cs include, and incorporate by this reference, the policies and guidelines referenced
         below. Company (defined hereinafter) reserves the right to change or revise these T&Cs at
-        any time by posting any changes or a revised T&Cs on the website/ payment page and shall be
-        effective immediately, unless stated otherwise. The use of the website/ payment page
-        following the posting any such changes or of revised T&Cs will constitute the acceptance of
-        any such changes or revisions. Company encourages the user/ you to review these T&Cs in
-        order to understand the terms and conditions governing the use of the website/ payment page.
-        These T&Cs do not alter in anyway the terms or conditions of any other written agreement
-        that the Customer (defined hereinafter) may have with Company for other products or
-        services.
+        any time by posting any changes or a revised T&Cs on the {isOrgAxis ? '' : 'website/'}{' '}
+        payment page and shall be effective immediately, unless stated otherwise.
+        {isOrgAxis
+          ? ''
+          : 'The use of the website/ payment page following the posting any such changes or of revised T&Cs will constitute the acceptance of any such changes or revisions.'}{' '}
+        Company encourages the user/ you to review these T&Cs in order to understand the terms and
+        conditions governing the use of the website/ payment page. These T&Cs do not alter in anyway
+        the terms or conditions of any other written agreement that the Customer (defined
+        hereinafter) may have with Company for other products or services.
       </Description>
       <ContentWrapper>
         <SubHeader>Definitions</SubHeader>
@@ -34,27 +42,12 @@ const ServiceType: React.FC<ServiceTypePropsT> = ({ context }) => {
         <ul>
           <List>
             <Description color="shade.970">
-              <InLineText weight="bold">“Company”</InLineText> means{' '}
-              {context ? context?.business_name : 'ABC Corp L.T.D'} with its registered office at{' '}
-              {context
-                ? `${context?.business_registered_address}, ${context?.business_registered_city} ${
-                    states[context?.business_registered_state]
-                  }, Pin-${context?.business_registered_pin}`
-                : 'H-23, first block, Kormangla Banglore, Karnataka Pin-560047'}{' '}
-              and website at{' '}
-              {context ? (
-                <TnCLink href={context?.link}>{context?.link}</TnCLink>
-              ) : (
-                'https://tnc.razorpay.com/tnc/HFO0JH8G98'
-              )}{' '}
-              and/ or one of its associate or subsidiary companies as the case may be. The nature of
-              business of this company is declared as belonging to{' '}
-              {context ? context?.business_subcategory : 'Horizontal Commerce/Marketplace'} within{' '}
-              {context ? context?.business_category : 'Ecommerce'}. Description of business is as
-              follows :{' '}
-              {context
-                ? context?.business_model
-                : 'My business is used for ecommerce online plateform'}
+              <InLineText weight="bold">“Company”</InLineText> means {businessName} with its
+              registered office at {address} and website at{' '}
+              <TnCLink href={tncLink}>{tncLink}</TnCLink> and/ or one of its associate or subsidiary
+              companies as the case may be. The nature of business of this company is declared as
+              belonging to {subcategory} within {category}. Description of business is as follows :{' '}
+              {businessModel}
             </Description>
           </List>
           <br />
@@ -113,9 +106,9 @@ const ServiceType: React.FC<ServiceTypePropsT> = ({ context }) => {
           The website/ payment page offers certain Services. By booking the Services through the
           website/ payment page, the Customer accepts the terms set forth in these T&Cs. The Company
           also has rights to all trademarks and logos and specific layouts of this website/ payment
-          page, including calls to action, text placement, images and other information.
-          <br /> <br /> The Customer shall be responsible for paying any applicable taxes on booking
-          any Services on the website/ payment page, unless otherwise mentioned expressly.
+          page, including calls to action, text placement, images and other information. <br />{' '}
+          <br /> The Customer shall be responsible for paying any applicable taxes on booking any
+          Services on the website/ payment page, unless otherwise mentioned expressly.
         </Description>
       </ContentWrapper>
       <ContentWrapper>
@@ -158,7 +151,7 @@ const ServiceType: React.FC<ServiceTypePropsT> = ({ context }) => {
           arising from or related to this change of circumstances will be fully borne by the
           Customer. <br /> <br /> The Company may, at its discretion and, where possible, replace
           the person or persons charged with performing the Contract, if and in so far as the
-          Company believes that such replacement would benefit the performance of the Contract.
+          Company believes that such replacement would benefit the performance of the Contract.{' '}
           <br /> <br /> The Customer has the right to notify the Company that it wishes to modify
           its requirements in relation to the Contract. Such modifications shall not enter into
           effect until the Company and the Customer have agreed on the consequences thereof such as
@@ -171,14 +164,13 @@ const ServiceType: React.FC<ServiceTypePropsT> = ({ context }) => {
           In case, the Customer intends to cancel the booking for Services and request for refund,
           the Company shall initiate a process of refund of the money paid by the Customer towards
           booking of Services, if the Customer places the request for refund within{' '}
-          {context ? context?.refund_request_period : '3-5 days'} of booking the Services, by
-          writing to our customer care at {context ? context?.email : 'abc.support@gmail.com'}. It
-          is further clarified that the Company shall not be required to make any refund in respect
-          of any Services that it deems ineligible for a refund. If the request for refund is
-          undisputed by the Company, the refund should reflect in the Customer’s bank account and/or
-          the Customer’s store credit within {context ? context?.refund_process_period : '5-8 days'}
-          / such reasonable time (subject to the policies of the Customer’s bank in case of bank
-          account/credit card refunds) from the date on which the Company initiates the refund.
+          {refundRequestPeriod} of booking the Services, by writing to our customer care at {email}.
+          It is further clarified that the Company shall not be required to make any refund in
+          respect of any Services that it deems ineligible for a refund. If the request for refund
+          is undisputed by the Company, the refund should reflect in the Customer’s bank account
+          and/or the Customer’s store credit within {refundProcessPeriod} days/ such reasonable time
+          (subject to the policies of the Customer’s bank in case of bank account/credit card
+          refunds) from the date on which the Company initiates the refund.
         </Description>
       </ContentWrapper>
       <ContentWrapper>
@@ -235,11 +227,10 @@ const ServiceType: React.FC<ServiceTypePropsT> = ({ context }) => {
           be treated as a waiver of any subsequent breach of these T&Cs. <br /> <br />
           Unless otherwise agreed between the parties, the Customer and Company agree that any
           Services performed pursuant to these T&Cs shall be deemed to have been made and executed
-          in {context ? states[context?.business_registered_state] : 'Karnataka'} and that this
-          contract and any disputes hereunder shall be governed, interpreted and construed in
-          accordance with the laws of India. Any dispute arising under these T&Cs shall be
-          exclusively submitted to the court of competent jurisdiction in{' '}
-          {context ? states[context?.business_registered_state] : 'Karnataka'}.
+          in {isOrgAxis ? address : state} and that this contract and any disputes hereunder shall
+          be governed, interpreted and construed in accordance with the laws of India. Any dispute
+          arising under these T&Cs shall be exclusively submitted to the court of competent
+          jurisdiction in {state}.
           <br /> <br /> In the event any provision of these T&Cs is declared invalid or
           unenforceable, the remaining provisions will continue to apply and will retain their
           validity and significance. In such case(s) the parties will, to the extent possible,

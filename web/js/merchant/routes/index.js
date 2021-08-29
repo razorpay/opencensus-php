@@ -238,10 +238,6 @@ const WhatsNewDetailsPage = lazy(() =>
   import(/* webpackChunkName: "WhatsNewDetailsPage" */ 'merchant/views/WhatsNew/Details'),
 );
 
-const TnCPage = lazy(() =>
-  import(/* webpackChunkName: "TermsAndConditionPage" */ 'merchant/views/TermsAndCondition/Pages'),
-);
-
 const GenerateTnC = lazy(() =>
   import(
     /* webpackChunkName: "TermsAndCondition" */ 'merchant/views/TermsAndCondition/GenerateTnc'
@@ -495,9 +491,6 @@ const fullPageViewsMap = {
   },
   '/app-store': {
     component: PartnerAppStore,
-  },
-  '/tnc/:type': {
-    component: TnCPage,
   },
   '/tncform': {
     component: GenerateTnC,

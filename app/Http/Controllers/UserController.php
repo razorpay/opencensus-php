@@ -132,11 +132,15 @@ class UserController extends Controller
 
     public function getTnc()
     {
+        $domain = \Request::server('SERVER_NAME');
+        list($orgError, $org) = (new Admin\Service)->getOrg($domain);
+
         $data = [
             'env'              => \Config::get('app.env'),
             'cdnBaseUrl'       => \Config::get('app.cdn_base_url'),
             'cdnDashboardUrl'  => \Config::get('app.cdn_dashboard_url'),
             'api_host'         => ApiUrl::getCheckoutApi(),
+            'org'              => json_encode($org),
         ];
 
         return view('merchant.tnc', $data);
