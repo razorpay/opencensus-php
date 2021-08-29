@@ -84,21 +84,16 @@ class Axis extends Base
         ];
     }
 
-    protected function getFileData(string $type)
+    protected function getFileLocation(string $type)
     {
         $file = $this->gatewayFile
                      ->files()
                      ->where(FileStore\Entity::TYPE, $type)
                      ->first();
 
-        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+        $fileLocation = $file->getLocation();
 
-        $fileData = [
-            'url'  => $signedUrl,
-            'name' => basename($file->getLocation()),
-        ];
-
-        return $fileData;
+        return $fileLocation;
     }
 
     public function sendFile($data)
@@ -109,15 +104,12 @@ class Axis extends Base
 
             if (isset($data['refunds']) === true)
             {
-                $refundsFile = $this->getFileData(FileStore\Type::AXIS_NETBANKING_REFUND);
-                $fileInfo[]  = $refundsFile['name'];
+                $fileInfo[] = $this->getFileLocation(FileStore\Type::AXIS_NETBANKING_REFUND);
             }
 
             if (isset($data['claims']) === true)
             {
-                $claimFile = $this->getFileData(FileStore\Type::AXIS_NETBANKING_CLAIMS);
-                $fileInfo[]  = $claimFile['name'];
-
+                $fileInfo[] = $this->getFileLocation(FileStore\Type::AXIS_NETBANKING_CLAIMS);
             }
 
             $bucketConfig = $this->getBucketConfig();
