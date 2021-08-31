@@ -105,7 +105,8 @@ const FooterCheckBox = ({
         user.isOrgAllowedFunctionality('external_links') &&
         activeTab == 2 &&
         !isL1Submitted &&
-        user.isSyncExperimentEnabled
+        user.isSyncExperimentEnabled &&
+        !user.submitted
       }
     >
       <div className="subfooter">
