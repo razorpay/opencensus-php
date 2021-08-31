@@ -125,4 +125,11 @@ export default {
     // prod experiment ids
     'HmbfCtIa68aQcC',
   ],
+  edx_app_integration_banner: [
+    // beta experiment ids
+    'HpQN5BGbQ793ir',
+
+    // prod experiment ids
+    'HpmhmqFPLZ3TTw',
+  ],
 };

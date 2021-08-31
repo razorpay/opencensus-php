@@ -144,7 +144,7 @@ class Constants
             'title'       => 'Get 1.65% pricing with RazorpayX',
             'description' => 'Open a current account with RazorpayX & reduce your platform fee to 1.65%.',
             'start_ts'    => 1626159840,
-            'end_ts'      => 1636787040, 
+            'end_ts'      => 1636787040,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
             'id'          => 'projectNitro',
             'campaign'    => 'nitro',
@@ -166,7 +166,7 @@ class Constants
             'title'       => 'Avail Reduced Transaction Fee!',
             'description' => 'Reduce transaction fee to 1.65% & get a corporate card by switching to Razorpay Current Accounts!',
             'start_ts'    => 1626159840,
-            'end_ts'      => 1636787040, 
+            'end_ts'      => 1636787040,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
             'id'          => 'projectNitro',
             'campaign'    => 'nitro',
@@ -1105,6 +1105,25 @@ class Constants
                 'splitz_experiments' => ['PAYMENT_LINKS_PRIMARY_PRODUCT_SPLITZ']
             ]
         ],
+        [
+            'id'          => 'Aug25-AppStore-Intent-Zapier',
+            'title'       => 'Coming soon - Zapier+Razorpay plugin!',
+            'description' => "You will soon be able to create Zapier workflows using Razorpay triggers with our official Razorpay app. Want to try?",
+            'icon'        => '/dist/css/assets/zapier.png',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Get Early Access',
+                    'url'   => '',
+                    'id'    => 'Aug25-AppStore-Intent-Zapier-cta',
+                ],
+            ],
+            'start_ts'    => 1629936000,
+            'end_ts'      => 1627948800,
+            'filters'     => [
+                'splitz_experiments'  => ['ZAPIER_ANNOUNCEMENT_SPLITZ'],
+            ],
+        ],
     ];
 
     //insert data in data field, that is dynamically loaded based on the sub-campaign
@@ -1222,7 +1241,7 @@ class Constants
                 ],
                 'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_APP_SWITCHER_SPLITZ'],
             ]
-            
+
         ],
         'whats-new-april21-m2mrewards-gtm'=> [
             [

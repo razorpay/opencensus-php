@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import LocalStorageService from 'common/utils/localStorage';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, getCommonAnalyticsProperties, isMobileAndTablet } from 'common/utils/rzp-utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { trackLoad, trackExpand, trackAnnouncement, track } from '../NotificationsDropdown/ga';
 import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
@@ -11,13 +11,14 @@ import { showAcceptPaymentsModal } from 'merchant/reducers/home';
 import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnouncementV2';
 import OpfinAnnouncement10L from '../NotificationsDropdown/components/OpfinAnnouncement10L';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties, isMobileAndTablet } from 'common/utils/rzp-utils';
+
 import { openSlider } from 'merchant_common/reducers/slider';
 import Slider from 'common/ui/Slider';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { sendDataToSalesForce } from 'common/utils/common-api';
 import './Old.styl';
 import MobileAppQRCode from 'merchant/components/MobileAppQRCode';
+import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -39,7 +40,7 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
   },
 )
 @RTracking(() => window.rzpQ.component('WhatsNew'))
-export default class WhatsNewOld extends Component {
+class WhatsNewOld extends Component {
   state = {
     isOpenSlider1: false,
     showTooltip: false,
@@ -48,25 +49,21 @@ export default class WhatsNewOld extends Component {
   whatsNew = false;
 
   componentWillMount() {
-    let notifications = [ ...window.notifications ] || [];
+    let notifications = [...window.notifications] || [];
 
     //sort notifications in most recent order using start_timestamp
     if (notifications.length > 1) {
       notifications = notifications.sort((first, second) => {
-        if (first.id === 'projectNitro')
-          return -1;
-        if (first.id === 'whats-new-JUL21-RXCC-ULTRA' && second.id !== 'projectNitro') 
-          return -1;
-        if (second.id === 'projectNitro')
-          return 1;
-        if (second.id === 'whats-new-JUL21-RXCC-ULTRA')
-          return 1;
+        if (first.id === 'projectNitro') return -1;
+        if (first.id === 'whats-new-JUL21-RXCC-ULTRA' && second.id !== 'projectNitro') return -1;
+        if (second.id === 'projectNitro') return 1;
+        if (second.id === 'whats-new-JUL21-RXCC-ULTRA') return 1;
         return second.start_ts - first.start_ts;
       });
     }
 
     this.setState({
-      notifications: notifications,
+      notifications,
     });
 
     this.setLastReadTS();
@@ -81,9 +78,9 @@ export default class WhatsNewOld extends Component {
     document.body.appendChild(scriptJQ);
 
     // add script for youtube iframe api
-    var tag = document.createElement('script');
+    const tag = document.createElement('script');
     tag.src = 'https://www.youtube.com/iframe_api';
-    var firstScriptTag = document.getElementsByTagName('script')[0];
+    const firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
     this.props.tracking.trackEvent(
@@ -124,9 +121,9 @@ export default class WhatsNewOld extends Component {
   setUnreadMsgs() {
     const lastReadTS = this.state.lastReadTS;
     const { notifications } = this.state;
-    const ID = [],
-      readID = [],
-      unreadID = [];
+    const ID = [];
+    const readID = [];
+    const unreadID = [];
 
     let totalUnread = 0;
     for (let i = 0; i < notifications.length; i++) {
@@ -233,6 +230,11 @@ export default class WhatsNewOld extends Component {
     this.props.history.push(url);
   };
 
+  openZapierIntentForm = () => {
+    const form = getSurveyForm(this.props.user, null, 'zRcUmSBp');
+    form.open();
+  };
+
   handleCTA = ({ id, url }) => {
     switch (id) {
       case 'announcement-projectNitro-cta1':
@@ -255,12 +257,15 @@ export default class WhatsNewOld extends Component {
       case 'announcement-May21-PLMApp-GTM':
         this.onMobileAppCampaignCTAClick();
         break;
+      case 'Aug25-AppStore-Intent-Zapier-cta':
+        this.openZapierIntentForm();
+        break;
     }
   };
 
   setLastReadTS() {
     this.setState({
-      lastReadTS: LocalStorageService.getItem('announcements-slider-' + this.id) || 0,
+      lastReadTS: LocalStorageService.getItem(`announcements-slider-${this.id}`) || 0,
     });
   }
 
@@ -284,9 +289,9 @@ export default class WhatsNewOld extends Component {
       }),
     );
 
-    const ID = [],
-      readID = [],
-      unreadID = [];
+    const ID = [];
+    const readID = [];
+    const unreadID = [];
 
     this.state.notifications.forEach((notification) => {
       const notifID = notification.id;
@@ -312,7 +317,7 @@ export default class WhatsNewOld extends Component {
     );
 
     const newLastReadTS = moment().unix();
-    LocalStorageService.setItem('announcements-slider-' + this.id, String(newLastReadTS));
+    LocalStorageService.setItem(`announcements-slider-${this.id}`, String(newLastReadTS));
 
     // Mark all notifications as read
     this.state.notifications.forEach((notif) => {
@@ -337,9 +342,9 @@ export default class WhatsNewOld extends Component {
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated(eventName, {
         CTAValue: value,
-        url: url,
+        url,
         ...this.getNotificationTrackingProperties(notification),
-        id: id,
+        id,
         ...(whatsNew && { whats_new: true }),
       }),
     );
@@ -373,10 +378,10 @@ export default class WhatsNewOld extends Component {
   };
 
   setTooltipVisibility = () => {
-    const tooltipCookie = Number(LocalStorageService.getItem('whats-new-tooltip-count-' + this.id));
+    const tooltipCookie = Number(LocalStorageService.getItem(`whats-new-tooltip-count-${this.id}`));
     const tooltipViewCount = tooltipCookie === NaN ? 0 : tooltipCookie;
     if (tooltipViewCount < 3) {
-      LocalStorageService.setItem('whats-new-tooltip-count-' + this.id, tooltipViewCount + 1);
+      LocalStorageService.setItem(`whats-new-tooltip-count-${this.id}`, tooltipViewCount + 1);
       this.props.tracking.trackEvent(
         window.rzpQ.merchantActions().success('dashboard.notification_section.tool_tip.display', {
           tooltip_display_count: tooltipViewCount + 1,
@@ -426,7 +431,7 @@ export default class WhatsNewOld extends Component {
 
     return (
       <>
-        <i className="i i-horn" onClick={this.handleSliderToggleClick}></i>
+        <i className="i i-horn" onClick={this.handleSliderToggleClick} />
         {hasUnread && <span class="new-bubble">{totalUnread}</span>}
       </>
     );
@@ -474,9 +479,10 @@ export default class WhatsNewOld extends Component {
       'May21-PLMApp-GTM',
       'whats-new-JUL21-RXCC-ULTRA',
       'June21-QR-GTM',
+      'Aug25-AppStore-Intent-Zapier',
     ];
 
-    let cardsList = this.state.notifications.map((card, idx) => (
+    const cardsList = this.state.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>
         <NotificationCard
           {...card}
@@ -504,7 +510,7 @@ export default class WhatsNewOld extends Component {
           <div className="whats-new__content">
             <div className="whats-new__heading">
               <span>🔥 What’s New?</span>
-              <i className="i i-close" onClick={this.closeTooltip}></i>
+              <i className="i i-close" onClick={this.closeTooltip} />
             </div>
             <div className="whats-new__body">
               New Features, Bug Fixes and Product Updates that you might have missed!
@@ -587,7 +593,7 @@ const NotificationCard = ({
       }
     };
 
-    let player = new window.YT.Player(`player-${id}`, {
+    const player = new window.YT.Player(`player-${id}`, {
       videoId: video_url.split('/').slice(-1)[0],
       events: {
         onStateChange: onPlayerStateChange,
@@ -617,7 +623,7 @@ const NotificationCard = ({
         date: start_ts,
         sequence: index,
         actionName: btn.label,
-        title: title,
+        title,
         location: 'top navigation',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
@@ -711,7 +717,7 @@ const NotificationCard = ({
               });
             }
 
-            let internalUrl = isHash ? `${location.href}${URL}` : `/app${URL}`;
+            const internalUrl = isHash ? `${location.href}${URL}` : `/app${URL}`;
             const urlPath = isExternal ? URL : internalUrl;
 
             return (
@@ -773,3 +779,5 @@ const getQueryData = (param, user) => {
     }
   }
 };
+
+export default WhatsNewOld;

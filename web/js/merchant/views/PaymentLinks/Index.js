@@ -28,6 +28,7 @@ import OnBoarding, {
 } from './OnBoarding';
 
 import QuickGuide, { getPaymentLinksQuickGuideIsClosed } from './QuickGuide';
+import AppStoreIntentBanner from 'merchant/components/Announcements/CSATSurveyBanner/AppStoreIntentBanner';
 
 let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
 if (getMobileOperatingSystem() == 'iOS') {
@@ -162,6 +163,15 @@ export default class PaymentLinksContainer extends React.Component {
 
           <ShowWhen additionalCondition={(user) => user.isPLSwitchEnabled}>
             <SwitchToPaymentLinksV2 source="payment-links-list" />
+          </ShowWhen>
+
+          <ShowWhen additionalCondition={(user) => user.isPartOfAppIntegrationBannerExperiment}>
+            <AppStoreIntentBanner
+              title="New plugins alert!"
+              cardId="Aug25-AppStore-Intent-PL-banner"
+              content="Want to find new ways to share your payment link like Whatsapp or custom SMS etc.?"
+              surveyUrl="APOXKJtG"
+            />
           </ShowWhen>
         </div>
 

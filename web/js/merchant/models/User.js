@@ -432,6 +432,10 @@ export default class User {
     return getSplitzExperimentVariant('nitro_form_ab_experiment')?.variables?.result === 'on';
   }
 
+  get isPartOfAppIntegrationBannerExperiment() {
+    return getSplitzExperimentVariant('edx_app_integration_banner')?.variables?.result === 'on';
+  }
+
   get isChargeAtWillEnabled() {
     return this.findTag('Charge_at_will');
   }
@@ -826,7 +830,6 @@ export default class User {
   // 100% rollout done. Exp to be removed shortly
   get isPaymentButtonEnabledByRazorX() {
     return true;
-    return this.getExpStatus('enable_payment_buttons');
   }
 
   get isCriticalRouteExperimentEnabled() {
@@ -911,7 +914,6 @@ export default class User {
 
   get isUPICAWEnabled() {
     return true;
-    return this.isFeatureEnabled('caw_upi') || this.getExpStatus('upi_caw');
   }
 
   get isPLSwitchEnabled() {
@@ -942,7 +944,6 @@ export default class User {
   // TODO: Remove from razorX bcoz it's rolled out 100%
   get isPaymentPageReceiptsEnabled() {
     return true;
-    return this.getExpStatus('enable_payment_page_receipt');
   }
 
   get isPaymentPageDescriptionRequired() {

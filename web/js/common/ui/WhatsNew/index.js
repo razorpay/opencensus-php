@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import LocalStorageService from 'common/utils/localStorage';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, getCommonAnalyticsProperties, isMobileAndTablet } from 'common/utils/rzp-utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { pushSlider, emptySliderStack } from 'merchant_common/reducers/multiSlider';
 import { trackLoad, trackExpand, trackAnnouncement, track } from '../NotificationsDropdown/ga';
@@ -13,7 +13,7 @@ import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnoun
 import OpfinAnnouncement10L from '../NotificationsDropdown/components/OpfinAnnouncement10L';
 import Loader from 'common/ui/Loader';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties, isMobileAndTablet } from 'common/utils/rzp-utils';
+
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { sendDataToSalesForce } from 'common/utils/common-api';
 import lazy from 'merchant/routes/LazyLoader';
@@ -24,6 +24,7 @@ import {
   getExperimentVersion,
 } from './common';
 import MobileAppQRCode from 'merchant/components/MobileAppQRCode';
+import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
 
 const WhatsNewDetailsPage = lazy(() =>
   import(/* webpackChunkName: "WhatsNewDetailsPage" */ 'merchant/views/WhatsNew/Details'),
@@ -50,7 +51,7 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
   },
 )
 @RTracking(() => window.rzpQ.component('WhatsNew'))
-export default class WhatsNew extends Component {
+class WhatsNew extends Component {
   state = {
     showTooltip: false,
   };
@@ -58,25 +59,21 @@ export default class WhatsNew extends Component {
   whatsNew = false;
 
   componentWillMount() {
-    let notifications = [ ...window.notifications ] || [];
+    let notifications = [...window.notifications] || [];
 
     //sort notifications in most recent order using start_timestamp
     if (notifications.length > 1) {
       notifications = notifications.sort((first, second) => {
-        if (first.id === 'projectNitro')
-          return -1;
-        if (first.id === 'whats-new-JUL21-RXCC-ULTRA' && second.id !== 'projectNitro') 
-          return -1;
-        if (second.id === 'projectNitro')
-          return 1;
-        if (second.id === 'whats-new-JUL21-RXCC-ULTRA')
-          return 1;
+        if (first.id === 'projectNitro') return -1;
+        if (first.id === 'whats-new-JUL21-RXCC-ULTRA' && second.id !== 'projectNitro') return -1;
+        if (second.id === 'projectNitro') return 1;
+        if (second.id === 'whats-new-JUL21-RXCC-ULTRA') return 1;
         return second.start_ts - first.start_ts;
       });
     }
 
     this.setState({
-      notifications: notifications,
+      notifications,
     });
 
     this.setLastReadTS();
@@ -93,9 +90,9 @@ export default class WhatsNew extends Component {
     document.body.appendChild(scriptJQ);
 
     // add script for youtube iframe api
-    var tag = document.createElement('script');
+    const tag = document.createElement('script');
     tag.src = 'https://www.youtube.com/iframe_api';
-    var firstScriptTag = document.getElementsByTagName('script')[0];
+    const firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
     this.props.tracking.trackEvent(
@@ -182,6 +179,11 @@ export default class WhatsNew extends Component {
     this.props.history.push(url);
   };
 
+  openZapierIntentForm = () => {
+    const form = getSurveyForm(this.props.user, null, 'zRcUmSBp');
+    form.open();
+  };
+
   handleCTA = ({ id, url }) => {
     switch (id) {
       case 'announcement-projectNitro-cta1':
@@ -205,12 +207,15 @@ export default class WhatsNew extends Component {
       case 'announcement-May21-PLMApp-GTM':
         this.onMobileAppCampaignCTAClick();
         break;
+      case 'Aug25-AppStore-Intent-Zapier-cta':
+        this.openZapierIntentForm();
+        break;
     }
   };
 
   setLastReadTS() {
     this.setState({
-      lastReadTS: LocalStorageService.getItem('announcements-slider-' + this.id) || 0,
+      lastReadTS: LocalStorageService.getItem(`announcements-slider-${this.id}`) || 0,
     });
   }
 
@@ -251,7 +256,7 @@ export default class WhatsNew extends Component {
     );
 
     const newLastReadTS = moment().unix();
-    LocalStorageService.setItem('announcements-slider-' + this.id, String(newLastReadTS));
+    LocalStorageService.setItem(`announcements-slider-${this.id}`, String(newLastReadTS));
 
     // Mark all notifications as read
     this.state.notifications.forEach((notif) => {
@@ -275,9 +280,9 @@ export default class WhatsNew extends Component {
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated(eventName, {
         CTAValue: value,
-        url: url,
+        url,
         ...getNotificationTrackingProperties(notification),
-        id: id,
+        id,
         lazy: true,
       }),
     );
@@ -292,10 +297,10 @@ export default class WhatsNew extends Component {
   };
 
   setTooltipVisibility = () => {
-    const tooltipCookie = Number(LocalStorageService.getItem('whats-new-tooltip-count-' + this.id));
+    const tooltipCookie = Number(LocalStorageService.getItem(`whats-new-tooltip-count-${this.id}`));
     const tooltipViewCount = tooltipCookie === NaN ? 0 : tooltipCookie;
     if (tooltipViewCount < 3) {
-      LocalStorageService.setItem('whats-new-tooltip-count-' + this.id, tooltipViewCount + 1);
+      LocalStorageService.setItem(`whats-new-tooltip-count-${this.id}`, tooltipViewCount + 1);
       this.props.tracking.trackEvent(
         window.rzpQ.merchantActions().success('dashboard.notification_section.tool_tip.display', {
           tooltip_display_count: tooltipViewCount + 1,
@@ -350,9 +355,10 @@ export default class WhatsNew extends Component {
       'JUN21-SELFSERVE-CR&BL',
       'May21-PLMApp-GTM',
       'whats-new-JUL21-RXCC-ULTRA',
+      'Aug25-AppStore-Intent-Zapier',
     ];
 
-    let cardsList = this.state.notifications.map((card, idx) => (
+    const cardsList = this.state.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>
         <NotificationCard
           {...card}
@@ -376,7 +382,7 @@ export default class WhatsNew extends Component {
           <div className="whats-new__content">
             <div className="whats-new__heading">
               <span>🔥 What’s New?</span>
-              <i className="i i-close" onClick={this.closeTooltip}></i>
+              <i className="i i-close" onClick={this.closeTooltip} />
             </div>
             <div className="whats-new__body">
               New Features, Bug Fixes and Product Updates that you might have missed!
@@ -484,7 +490,7 @@ const NotificationCard = ({
         date: start_ts,
         sequence: index,
         actionName: btn.label,
-        title: title,
+        title,
         location: 'top navigation',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
@@ -494,8 +500,7 @@ const NotificationCard = ({
       `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`,
     );
     trackEvents && trackEvents(btn.label, urlPath, btn.type, id, notification);
-    if (!(isExternal || btn.id === 'announcement-details-l2'))
-      emptySliderStack();
+    if (!(isExternal || btn.id === 'announcement-details-l2')) emptySliderStack();
     // distinguish between links and buttons that open modals
     if (btn.id === 'announcement-details-l2') {
       e.preventDefault();
@@ -503,18 +508,18 @@ const NotificationCard = ({
       const urlPartsLength = urlParts.length;
       let notifID = null;
       if (urlPartsLength) {
-        if (urlParts[urlPartsLength - 1].length)
-          notifID = urlParts[urlPartsLength - 1];
-        else (urlParts[urlPartsLength - 2].length)
-          notifID = urlParts[urlPartsLength - 2];
+        if (urlParts[urlPartsLength - 1].length) notifID = urlParts[urlPartsLength - 1];
+        else urlParts[urlPartsLength - 2].length;
+        notifID = urlParts[urlPartsLength - 2];
       }
-      notifID && pushSlider({
-        component: (
-          <Suspense fallback={<Loader />}>
-            <WhatsNewDetailsPage id={notifID} lazy/>
-          </Suspense>
-        ),
-      });
+      notifID &&
+        pushSlider({
+          component: (
+            <Suspense fallback={<Loader />}>
+              <WhatsNewDetailsPage id={notifID} lazy />
+            </Suspense>
+          ),
+        });
     } else if (btn.id) {
       e.preventDefault();
       onCTAClick({ id: btn.id, url: btn.url });
@@ -595,7 +600,7 @@ const NotificationCard = ({
               });
             }
 
-            let internalUrl = isHash ? `${location.href}${URL}` : `/app${URL}`;
+            const internalUrl = isHash ? `${location.href}${URL}` : `/app${URL}`;
             const urlPath = isExternal ? URL : internalUrl;
 
             return (
@@ -657,3 +662,5 @@ const getQueryData = (param, user) => {
     }
   }
 };
+
+export default WhatsNew;

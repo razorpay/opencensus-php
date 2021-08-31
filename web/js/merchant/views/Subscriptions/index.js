@@ -34,6 +34,7 @@ import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
 import SubscriptionOffersLaunchBanner from 'merchant/components/Announcements/SubscriptionOffers';
 import EmandateBanner from 'merchant/components/Announcements/EmandateSubscription';
 import CardPaymentsBlockedBanner from './components/CardPaymentsBlocked/Banner';
+import AppStoreIntentBanner from 'merchant/components/Announcements/CSATSurveyBanner/AppStoreIntentBanner';
 
 @connect(
   (state) => ({
@@ -54,7 +55,7 @@ import CardPaymentsBlockedBanner from './components/CardPaymentsBlocked/Banner';
     handleProductQuickGuide,
   },
 )
-export default class SubscriptionsController extends React.Component {
+class SubscriptionsController extends React.Component {
   componentDidMount() {
     this.initSubscriptions();
     this.fetchDataForOnboarding();
@@ -108,8 +109,8 @@ export default class SubscriptionsController extends React.Component {
       return;
     }
 
-    const { subscriptionProductOnBoarding } = props,
-      { isSubscriptionsEnabled } = props.user;
+    const { subscriptionProductOnBoarding } = props;
+    const { isSubscriptionsEnabled } = props.user;
 
     let showOnboarding = !isSubscriptionsEnabled;
 
@@ -148,6 +149,14 @@ export default class SubscriptionsController extends React.Component {
         {user.isCardRecurringPaymentsBlocked && (
           <CardPaymentsBlockedBanner isCAW={user.isChargeAtWillEnabled} />
         )}
+        {user.isPartOfAppIntegrationBannerExperiment ? (
+          <AppStoreIntentBanner
+            title="New plugins for Subscriptions!"
+            cardId="Aug25-AppStore-Intent-Subscriptions-banner"
+            content="Want to find new ways to send Subscriptions updates like Whatsapp or Custom SMS/Email etc.?"
+            surveyUrl="NTykzJGN"
+          />
+        ) : null}
 
         <tabbed-container>
           {subscriptionProductOnBoarding.isQuickGuideOpen && <QuickGuide />}
@@ -159,9 +168,7 @@ export default class SubscriptionsController extends React.Component {
               </NavLink>
               <NavLink to="/plans">Plans</NavLink>
               <ShowWhen additionalCondition={(user) => !user.isChargeAtWillEnabled}>
-                <NavLink to="/subscriptions/settings">
-                  Settings
-                </NavLink>
+                <NavLink to="/subscriptions/settings">Settings</NavLink>
               </ShowWhen>
             </ShowWhen>
 
@@ -240,3 +247,5 @@ export default class SubscriptionsController extends React.Component {
 const ClonedPlanList = (props) => (
   <PlansList docUrl="https://razorpay.com/docs/subscriptions/" {...props} />
 );
+
+export default SubscriptionsController;

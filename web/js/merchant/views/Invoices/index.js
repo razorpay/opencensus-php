@@ -20,6 +20,7 @@ import OnBoarding, {
 } from './OnBoarding';
 
 import QuickGuide, { getInvoicesQuickGuideIsClosed } from './QuickGuide';
+import AppStoreIntentBanner from 'merchant/components/Announcements/CSATSurveyBanner/AppStoreIntentBanner';
 
 @withRouter
 @connect(
@@ -85,6 +86,7 @@ export default class InvoicesContainer extends Component {
 
   render() {
     const { isQuickGuideOpen, showOnboarding } = this.props.invoicesProductOnBoarding;
+    const { user } = this.props;
 
     if (showOnboarding) {
       return <OnBoarding />;
@@ -93,6 +95,15 @@ export default class InvoicesContainer extends Component {
     return (
       <React.Fragment>
         <PayPalForInvoice />
+
+        {user?.isPartOfAppIntegrationBannerExperiment ? (
+          <AppStoreIntentBanner
+            title="New plugins for Invoices!"
+            cardId="Aug25-AppStore-Intent-Invoices-banner"
+            content="Want to find new ways to share your invoices like Whatsapp or custom SMS etc.?"
+            surveyUrl="P5KBEtOg"
+          />
+        ) : null}
 
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
