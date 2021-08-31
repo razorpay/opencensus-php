@@ -139,7 +139,17 @@ class Service extends Base\Service
 
             $path = "v1/public/merchants/terminals";
 
-            return $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+            $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+
+            $resData = [];
+
+            $resData["entity"] = "collection";
+
+            $resData["count"] = count($response);
+
+            $resData["items"] = $response;
+
+            return $resData;
         }
         else
         {

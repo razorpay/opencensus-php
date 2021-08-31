@@ -567,13 +567,16 @@ return [
         ],
         'response'   => [
             'content'   => [
-                [
-                    'merchant_id' => '10000000000000',
-                    'entity' => 'terminal',
-                    'procurer' => 'razorpay',
-                    'enabled' => true,
-                    'gateway' => 'hdfc'
-                ]
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  =>
+                    [[
+                        'merchant_id' => '10000000000000',
+                        'entity' => 'terminal',
+                        'procurer' => 'razorpay',
+                        'enabled' => true,
+                        'gateway' => 'hdfc'
+                    ]]
             ],
         ],
     ],
