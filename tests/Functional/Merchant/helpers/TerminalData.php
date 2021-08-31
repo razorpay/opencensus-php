@@ -4056,4 +4056,48 @@ return [
             ]
         ]
     ],
+
+    'testTerminalEncryption' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_mindgate',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => 'umesh12345678',
+                'upi'                       => '1',
+                'tpv'                       => '2',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => '12345678',
+                'enabled'              => true,
+                'tpv'                  => 2
+            ]
+        ]
+    ],
+
+    'testTerminalEncryptionAxisOrg' =>  [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_mindgate',
+                'gateway_merchant_id'       => '123456',
+                'gateway_merchant_id2'      => '123456789',
+                'gateway_terminal_password' => 'umesh123456789',
+                'upi'                       => '1',
+                'tpv'                       => '2',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '123456',
+                'gateway_merchant_id2' => '123456789',
+                'enabled'              => true,
+                'tpv'                  => 2
+            ]
+        ]
+    ],
 ];

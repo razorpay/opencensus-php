@@ -38,6 +38,8 @@ class Core extends Base\Core
 
         $input['merchant_id'] = $merchant->getKey();
 
+        $input['org_id'] = $merchant->getOrgId();
+
         $this->validateBuyPricing($input);
 
         $terminal = (new Entity)->build($input);

@@ -222,7 +222,7 @@ return array(
         'Cache'           => Illuminate\Support\Facades\Cache::class,
         'Config'          => Illuminate\Support\Facades\Config::class,
         'Cookie'          => Illuminate\Support\Facades\Cookie::class,
-        'Crypt'           => Illuminate\Support\Facades\Crypt::class,
+        'Crypt'           => RZP\Encryption\Facade::class,
         'DB'              => Illuminate\Support\Facades\DB::class,
         'Eloquent'        => Illuminate\Database\Eloquent\Model::class,
         'File'            => Illuminate\Support\Facades\File::class,
@@ -307,6 +307,10 @@ return array(
         'android_captcha_secret'    => env('ANDROID_NOCAPTCHA_SECRET', ''),
         'invisible_captcha_secret'  => env('INVISIBLE_CAPTCHA_SECRET', ''),
         'v3_captcha_secret'         => env('V3_CAPTCHA_SECRET', ''),
+    ],
+
+    'byok_nonrzp_orgs_encryption_keys' => [
+        'encryption_key_CLTnQqDj9Si8bx' => env('ENCRYPTION_KEY_AXIS'),
     ],
 
     'customer_refund_details' => [

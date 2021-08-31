@@ -151,6 +151,7 @@ class Entity extends Base\PublicEntity
     protected static $sign              = 'term';
 
     protected $fillable = [
+        self::ORG_ID,
         self::GATEWAY,
         self::PROCURER,
         self::CARD,
@@ -444,7 +445,7 @@ class Entity extends Base\PublicEntity
             return $reconPassword;
         }
 
-        return Crypt::decrypt($reconPassword);
+        return Crypt::decrypt($reconPassword, true, $this);
     }
 
     public function getGatewayTerminalId()
@@ -912,7 +913,7 @@ class Entity extends Base\PublicEntity
         if ($pwd === null)
             return $pwd;
 
-        return Crypt::decrypt($pwd);
+        return Crypt::decrypt($pwd, true, $this);
     }
 
     protected function getGatewayTerminalPassword2Attribute()
@@ -922,7 +923,7 @@ class Entity extends Base\PublicEntity
         if ($pwd === null)
             return $pwd;
 
-        return Crypt::decrypt($pwd);
+        return Crypt::decrypt($pwd, true, $this);
     }
 
     protected function getGatewaySecureSecretAttribute()
@@ -934,7 +935,7 @@ class Entity extends Base\PublicEntity
             return $secret;
         }
 
-        return Crypt::decrypt($secret);
+        return Crypt::decrypt($secret, true, $this);
     }
 
     protected function getGatewaySecureSecret2Attribute()
@@ -946,7 +947,7 @@ class Entity extends Base\PublicEntity
             return $secret;
         }
 
-        return Crypt::decrypt($secret);
+        return Crypt::decrypt($secret, true, $this);
     }
 
     protected function getUsedCountAttribute()
@@ -1006,7 +1007,7 @@ class Entity extends Base\PublicEntity
             $password = '';
         }
 
-        $this->attributes[self::GATEWAY_TERMINAL_PASSWORD] = Crypt::encrypt($password);
+        $this->attributes[self::GATEWAY_TERMINAL_PASSWORD] = Crypt::encrypt($password, true, $this);
     }
 
     protected function setGatewayTerminalPassword2Attribute($password)
@@ -1016,7 +1017,7 @@ class Entity extends Base\PublicEntity
             $password = '';
         }
 
-        $this->attributes[self::GATEWAY_TERMINAL_PASSWORD2] = Crypt::encrypt($password);
+        $this->attributes[self::GATEWAY_TERMINAL_PASSWORD2] = Crypt::encrypt($password, true, $this);
     }
 
     protected function setGatewaySecureSecretAttribute($secret)
@@ -1026,7 +1027,7 @@ class Entity extends Base\PublicEntity
             $secret = '';
         }
 
-        $this->attributes[self::GATEWAY_SECURE_SECRET] = Crypt::encrypt($secret);
+        $this->attributes[self::GATEWAY_SECURE_SECRET] = Crypt::encrypt($secret, true, $this);
     }
 
     protected function setGatewaySecureSecret2Attribute($secret)
@@ -1036,7 +1037,7 @@ class Entity extends Base\PublicEntity
             $secret = '';
         }
 
-        $this->attributes[self::GATEWAY_SECURE_SECRET2] = Crypt::encrypt($secret);
+        $this->attributes[self::GATEWAY_SECURE_SECRET2] = Crypt::encrypt($secret, true, $this);
     }
 
     protected function setGatewayReconPasswordAttribute($reconPassword)
@@ -1047,7 +1048,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $this->attributes[self::GATEWAY_RECON_PASSWORD] = Crypt::encrypt($reconPassword);
+        $this->attributes[self::GATEWAY_RECON_PASSWORD] = Crypt::encrypt($reconPassword, true, $this);
     }
 
     protected function setEnabledAttribute($status)
@@ -1208,6 +1209,22 @@ class Entity extends Base\PublicEntity
         $terminal->getValidator()->validateType();
 
         return $terminal;
+    }
+
+    // This is called from parent Entity class's build()
+    public function modify(& $input)
+    {
+        // sorting so that org_id gets set first as we need to do $entity->getOrgId() for getting org key while setting and encrypting sensitive fields.
+        // E.g. relevant test: testTerminalEncryptionAxisOrg
+        uksort($input, function($a, $b) {
+            if ($a === 'org_id')
+            {
+                return false;
+            }
+            return true;
+        });
+
+        parent::modify($input);
     }
 
     public function buildFromTerminalServiceResponse(array $input = array())

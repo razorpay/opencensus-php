@@ -1968,6 +1968,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BATCH_FILE_DELETE_ERROR                               = 'BATCH_FILE_DELETE_ERROR';
 
+    const BYOK_ENCRYPTING_USING_ORG_KEY                         = 'BYOK_ENCRYPTING_USING_ORG_KEY';
+    const BYOK_DECRYPTING_USING_ORG_KEY                         = 'BYOK_DECRYPTING_USING_ORG_KEY';
+    const BYOK_DECRYPTION_USING_ORG_KEY_FAILED                  = 'BYOK_DECRYPTION_USING_ORG_KEY_FAILED';
+    const BYOK_GETTING_ORG_KEY_FOR_ORG_ID                       = 'BYOK_GETTING_ORG_KEY_FOR_ORG_ID';
+    const BYOK_GET_ORG_ID_FAILED_WITH_TYPE_ERROR                = 'BYOK_GET_ORG_ID_FAILED_WITH_TYPE_ERROR';
+
+
     const GATEWAY_NACH_FILE_DELETE_ERROR                        = 'GATEWAY_NACH_FILE_DELETE_ERROR';
 
     const ADMIN_FILE_DELETE_ERROR                               = 'ADMIN_FILE_DELETE_ERROR';

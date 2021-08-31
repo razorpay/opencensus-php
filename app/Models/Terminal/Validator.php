@@ -74,6 +74,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_TYPE                => 'sometimes|string',
         Entity::CRED                        => 'sometimes|string',
         Entity::APP                         => 'sometimes|string',
+        Entity::ORG_ID                      => 'sometimes|string',
         Entity::PLAN_ID                     => 'sometimes',
         Entity::ENABLED_WALLETS             => 'sometimes|array',
     ];
@@ -275,7 +276,7 @@ class Validator extends Base\Validator
         Entity::VPA                                     => 'sometimes|string',
         Entity::NETWORK_CATEGORY                        => 'sometimes|string|max:30',
         Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
-        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed'
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $zaakpayTerminalRules = [
@@ -328,6 +329,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY                   => 'sometimes|array',
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::ORG_ID => 'sometimes',
     ];
 
     protected static $hitachiTerminalRules = [
@@ -750,7 +752,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID                => 'required|alpha_num|size:14',
         Entity::ENABLED                    => 'required|in:0',
         Entity::GATEWAY_ACQUIRER           => 'required|in:axis',
-        Entity::STATUS                     => 'required|in:pending'
+        Entity::STATUS                     => 'required|in:pending',
     ];
 
     protected static $cybersourceEditTerminalRules = [
@@ -2070,10 +2072,13 @@ class Validator extends Base\Validator
     {
         Payment\Gateway::validateGateway($input['gateway']);
 
+
         // Don't unset for paysecure and fulcrum gateway, req is initiated from Terminals Service via merchants/{id}/terminals/internal route
         if (in_array($input['gateway'], [Payment\Gateway::PAYSECURE, Payment\Gateway::FULCRUM]) === false)
         {
+
             unset(
+                $input[Entity::ORG_ID], // unsetting org_id as it is added explicitly in core create() and will be present for all gateways
                 $input[Entity::TPV],
                 $input[Entity::CARD],
                 $input[Entity::SHARED],

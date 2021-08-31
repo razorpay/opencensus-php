@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Crypt;
 use Event;
 use Mockery;
 use Illuminate\Cache\Events\CacheHit;
@@ -19,6 +20,8 @@ use RZP\Services\RazorXClient;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class TerminalTest extends TestCase
 {
@@ -27,6 +30,8 @@ class TerminalTest extends TestCase
     use PartnerTrait;
 
     use TerminalTrait;
+
+    use DbEntityFetchTrait;
 
     protected $razorxValue = RazorXClient::DEFAULT_CASE;
 
@@ -3085,5 +3090,75 @@ class TerminalTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+    }
+
+    public function testTerminalEncryption()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getDbLastEntity('terminal');
+
+        $gatewayTerminalPasswordDb  = $terminal->getOriginal()['gateway_terminal_password'];
+
+        $this->assertNotEquals($gatewayTerminalPasswordDb, 'umesh12345678'); // asserts that it got encrypted
+
+        $decryptedGatewayTerminalPassword  = Crypt::decrypt($gatewayTerminalPasswordDb);
+
+        $this->assertEquals($decryptedGatewayTerminalPassword, 'umesh12345678');
+    }
+
+    // password should get encrypted using axis org's key
+    public function testTerminalEncryptionAxisOrg()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+        ->setConstructorArgs([$this->app])
+        ->setMethods(['getTreatment'])
+        ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+        ->will($this->returnCallback(
+            function ($actionId, $feature, $mode)
+            {
+                return 'on';
+            }) );
+
+        $merchantId = '1cXSLlUU8V9sXl';
+        $orgId      = MerchantEntity::AXIS_ORG_ID; // axis orgId
+
+        $this->fixtures->create('org', ['id' => $orgId]);
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id' => $orgId,
+        ]);
+
+        $url = '/merchants/1cXSLlUU8V9sXl/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getDbLastEntity('terminal');
+
+        $this->assertEquals($terminal['org_id'], MerchantEntity::AXIS_ORG_ID);
+
+        $gatewayTerminalPasswordDb  = $terminal->getOriginal()['gateway_terminal_password'];
+
+        $this->assertNotEquals($gatewayTerminalPasswordDb, 'umesh12345678'); // asserts that it got encrypted
+
+        $decryptedGatewayTerminalPassword  = Crypt::decrypt($gatewayTerminalPasswordDb, true, $terminal);
+
+        $this->assertEquals($decryptedGatewayTerminalPassword, 'umesh123456789');
+
+        $this->expectException(\Illuminate\Contracts\Encryption\DecryptException::class);
+        $this->expectExceptionMessage('The MAC is invalid.');
+
+        // should not get decrypted using default RZP key, should get The MAC is invalid. exception
+        $decryptedGatewayTerminalPassword  = Crypt::decrypt($gatewayTerminalPasswordDb); // Crypt will try to decrypt using default key as we have not passed entity
     }
 }
