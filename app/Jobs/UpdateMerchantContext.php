@@ -4,19 +4,23 @@ namespace RZP\Jobs;
 
 use App;
 use RZP\Diag\EventCode;
-use RZP\Http\Middleware\EventTracker;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Constants;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Http\Middleware\EventTracker;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Detail\Status;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\NeedsClarification\Core;
 use RZP\Models\Merchant\Detail\NeedsClarification\Metrics;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
+use RZP\Models\Partner\Activation\Core as PartnerActivationCore;
 use RZP\Models\Merchant\Detail\NeedsClarification\UpdateContextRequirements;
 
 class UpdateMerchantContext extends Job
@@ -88,12 +92,20 @@ class UpdateMerchantContext extends Job
         $this->checkRetry();
     }
 
+    /**
+     * Update merchant & partner context (activation_status) if possible based on the verification
+     * status of fields such as bank details, PAN, GSTIN etc
+     *
+     * @return void
+     * @throws \RZP\Exception\LogicException
+     * @throws \Throwable
+     */
     protected function updateMerchantContext(): void
     {
         [$merchant, $merchantDetail] = (new DetailCore())->getMerchantAndSetBasicAuth($this->merchantId);
 
         $canUpdateMerchantContext = $this->updateContextRequirements
-            ->canUpdateMerchantContext($merchantDetail);
+                                         ->canUpdateMerchantContext($merchantDetail);
 
         $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_JOB,[
             "merchant_id"   => $merchant->getId(),
@@ -170,6 +182,90 @@ class UpdateMerchantContext extends Job
 
             $this->sendSegmentEvents();
         }
+
+        $this->updatePartnerContext($merchant);
+    }
+
+
+    /**
+     * Update partner context (activation_status) if possible based on the verification
+     * status of fields such as Bank details, PAN or GSTIN
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return void
+     * @throws \RZP\Exception\LogicException
+     * @throws \Throwable
+     */
+    protected function updatePartnerContext(Merchant\Entity $merchant): void
+    {
+        $partnerActivation = (new PartnerCore())->getPartnerActivation($merchant);
+
+        $canUpdatePartnerContext = !($partnerActivation === null) &&
+                                    $this->updateContextRequirements->canUpdatePartnerContext($partnerActivation);
+
+        if ($canUpdatePartnerContext === true)
+        {
+            $clarificationCore = new Core();
+
+            $newActivationStatus = (new PartnerActivationCore())->getApplicablePartnerActivationStatus($partnerActivation);
+
+            $isSystemBasedNeedsClarificationEnabledForPartner = (new Merchant\Core())->isRazorxExperimentEnable(
+                $merchant->getId(),
+                RazorxTreatment::SYSTEM_BASED_NEEDS_CLARIFICATION_FOR_PARTNER);
+
+            if (($clarificationCore->shouldTriggerNeedsClarification($partnerActivation) === true) and
+                ($isSystemBasedNeedsClarificationEnabledForPartner === true))
+            {
+                $kycClarificationReasons = (new Core())->composeNeedsClarificationReason($partnerActivation);
+
+                if (empty($kycClarificationReasons) === false)
+                {
+                    $input[Entity::KYC_CLARIFICATION_REASONS] = $kycClarificationReasons;
+
+                    $kycClarificationReasons = (new PartnerCore())->
+                    getUpdatedPartnerKycClarificationReasons($input, $partnerActivation->getMerchantId(), DetailConstant::SYSTEM);
+
+                    $partnerActivation->setKycClarificationReasons($kycClarificationReasons);
+
+                    $newActivationStatus = Status::NEEDS_CLARIFICATION;
+
+                    $this->trace->count(Metrics::PARTNER_NEEDS_CLARIFICATION_TRIGGERED_TOTAL);
+                }
+            }
+
+            $activationStatus = $partnerActivation->getActivationStatus();
+
+            $this->trace->info(TraceCode::UPDATE_PARTNER_CONTEXT,[
+                'partner_id'            => $merchant->getId(),
+                'new_activation_status' => $newActivationStatus,
+                'old_activation_status' => $activationStatus
+            ]);
+
+            if (($activationStatus !== $newActivationStatus) and
+                ($activationStatus === Status::UNDER_REVIEW))
+            {
+                $activationStatusData = [
+                    Entity::ACTIVATION_STATUS => $newActivationStatus
+                ];
+
+                (new PartnerActivationCore)->updatePartnerActivationStatus($merchant, $partnerActivation, $merchant, $activationStatusData);
+
+                if($newActivationStatus === Status::NEEDS_CLARIFICATION)
+                {
+                    (new Merchant\Core)->appendTag($merchant, "Partner Auto NC");
+
+                    $this->sendAutoNeedsClarificationEvent($merchant, E::PARTNER_ACTIVATION);
+
+                    $this->trace->debug(TraceCode::PARTNER_AUTO_NC_TAG_ADDED, [
+                        'partner_id' => $merchant->getId(),
+                        'tags'       => $merchant->tagNames()
+                    ]);
+                }
+            }
+
+            $this->sendSegmentEvents();
+        }
     }
 
     protected function sendSegmentEvents()
@@ -187,7 +283,7 @@ class UpdateMerchantContext extends Job
         }
     }
 
-    protected function sendAutoNeedsClarificationEvent($merchant)
+    protected function sendAutoNeedsClarificationEvent($merchant, $source = null)
     {
         if(empty($this->validationId) === true)
         {
@@ -205,10 +301,12 @@ class UpdateMerchantContext extends Job
                 BvsValidation\Entity::ERROR_DESCRIPTION     => $validation->getErrorDescription(),
             ];
 
+            $eventCode = ($source === E::PARTNER_ACTIVATION ) ? EventCode::PARTNER_AUTO_NC: EventCode::MERCHANT_AUTO_NC;
+
             $app = App::getFacadeRoot();
 
             $app['diag']->trackOnboardingEvent(
-                EventCode::MERCHANT_AUTO_NC, $merchant, null, $eventAttributes);
+                $eventCode, $merchant, null, $eventAttributes);
         }
         catch (\Exception $e)
         {

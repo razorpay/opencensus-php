@@ -3567,7 +3567,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPDATE_MERCHANT_CONTEXT_JOB                           = 'UPDATE_MERCHANT_CONTEXT_JOB';
     const UPDATE_MERCHANT_CONTEXT_JOB_ERROR                     = 'UPDATE_MERCHANT_CONTEXT_JOB_ERROR';
     const UPDATE_MERCHANT_CONTEXT_JOB_DELETE                    = 'UPDATE_MERCHANT_CONTEXT_JOB_DELETE';
+    const UPDATE_PARTNER_CONTEXT                                = 'UPDATE_PARTNER_CONTEXT';
     const AUTO_NC_TAG_ADDED                                     = 'AUTO_NC_TAG_ADDED';
+    const PARTNER_AUTO_NC_TAG_ADDED                             = 'PARTNER_AUTO_NC_TAG_ADDED';
     const AUTO_NC_EVENT_FAILED                                  = 'AUTO_NC_EVENT_FAILED';
 
     // Salesforce integration

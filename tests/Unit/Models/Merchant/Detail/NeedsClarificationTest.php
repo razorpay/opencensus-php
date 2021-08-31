@@ -2,8 +2,10 @@
 
 namespace RZP\Tests\Unit\Models\Merchant\Detail;
 
+use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Merchant\Detail\NeedsClarification\Core;
 use RZP\Models\Merchant\Detail\NeedsClarificationMetaData;
@@ -232,6 +234,7 @@ class NeedsClarificationTest extends TestCase
                     ]
                 ]
             ]];
+
         $this->assertEquals($expectedReasons, $reason);
     }
 
@@ -888,7 +891,21 @@ class NeedsClarificationTest extends TestCase
                         'reason_code' => 'company_name_not_matched'
                     ]]
             ]];
+
         $this->assertEquals($expectedReasons, $reason);
+
+        // Test KYC clarification reasons for Partner activation
+        $partnerActivationInput = [
+            'merchant_id'       => $mid,
+            'activation_status' => 'under_review',
+            'submitted'         => true
+        ];
+
+        $partnerActivation = $this->fixtures->create('partner_activation', $partnerActivationInput);
+
+        $partnerKycClarificationReasons =  (new Core())->composeNeedsClarificationReason($partnerActivation);
+
+        $this->assertEmpty($partnerKycClarificationReasons);
     }
 
     public function testReasonComposerForIncorrectPersonalPan() {
@@ -1060,6 +1077,126 @@ class NeedsClarificationTest extends TestCase
 
         $this->assertEquals($expectedKycClarificationReasons, $kycClarificationReasons);
 
+        // Test KYC clarification reasons for Partner activation
+        $partnerActivationInput = [
+            'merchant_id'       => $mid,
+            'activation_status' => 'under_review',
+            'submitted'         => true
+        ];
+
+        $partnerActivation = $this->fixtures->create('partner_activation', $partnerActivationInput);
+
+        $partnerKycClarificationReasons =  (new Core())->composeNeedsClarificationReason($partnerActivation);
+
+        $expectedPartnerKycClarificationReasons = [
+            'clarification_reasons' =>  [
+                'gstin' => [
+                    [
+                        'reason_type' =>  'predefined',
+                        'field_type' => 'text',
+                        'reason_code' => 'invalid_gstin_number'
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expectedPartnerKycClarificationReasons, $partnerKycClarificationReasons);
+    }
+
+    public function testReasonComposerForGstAndBankIncorrectForPartner()
+    {
+        $input = [
+            'poi_verification_status'                => 'verified',
+            'bank_details_verification_status'       => 'incorrect_details',
+            'gstin_verification_status'              => 'incorrect_details',
+            'shop_establishment_verification_status' => 'not_matched',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $this->mockRazorxTreatment('on');
+
+        $this->fixtures->create('bvs_validation', [
+            'owner_id'      => $mid,
+            'artefact_type' => 'gstin',
+            'error_code'    => 'INPUT_DATA_ISSUE',
+            'validation_status' => 'failed'
+        ]);
+
+        $this->fixtures->create('bvs_validation', [
+            'owner_id'      => $mid,
+            'artefact_type' => 'bank_account',
+            'error_code'    => 'INPUT_DATA_ISSUE',
+            'validation_status' => 'failed'
+        ]);
+
+        $this->fixtures->create('bvs_validation', [
+            'owner_id'      => $mid,
+            'artefact_type' => 'shop_establishment',
+            'error_code'    => 'RULE_EXECUTION_FAILED',
+            'validation_status' => 'failed'
+        ]);
+
+        // Test KYC clarification reasons for Partner activation
+        $partnerActivationInput = [
+            'merchant_id'       => $mid,
+            'activation_status' => 'under_review',
+            'submitted'         => true
+        ];
+
+        $partnerActivation = $this->fixtures->create('partner_activation', $partnerActivationInput);
+
+        $partnerKycClarificationReasons =  (new Core())->composeNeedsClarificationReason($partnerActivation);
+
+        $expectedPartnerKycClarificationReasons = [
+            'additional_details' =>  [
+                'cancelled_cheque' => [
+                    [
+                        'reason_type' => "predefined",
+                        'field_type' => "document",
+                        'field_value' => null,
+                        'reason_code' => "bank_account_change_request_for_prop_ngo_trust"
+                    ]
+                ],
+                'bank_account_name' => [
+                    [
+                        'reason_type' => "predefined",
+                        'field_type' => "text",
+                        'field_value' => "test",
+                        'reason_code' => "bank_account_change_request_for_prop_ngo_trust"
+                    ]
+                ],
+                'bank_account_number' => [
+                    [
+                        'reason_type' => "predefined",
+                        'field_type' => "text",
+                        'field_value' => "123456789012345",
+                        'reason_code' => "bank_account_change_request_for_prop_ngo_trust"
+                    ]
+                ],
+                'bank_branch_ifsc' => [
+                    [
+                        'reason_type' => "predefined",
+                        'field_type' => "text",
+                        'field_value' => "ICIC0000001",
+                        'reason_code' => "bank_account_change_request_for_prop_ngo_trust"
+                    ]
+                ]
+           ],
+            'clarification_reasons' => [
+                'gstin' =>  [
+                    [
+                        'reason_type' => "predefined",
+                        'field_type' => "text",
+                        'reason_code' => "invalid_gstin_number"
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($partnerKycClarificationReasons, $expectedPartnerKycClarificationReasons);
     }
 
     public function testReasonComposerForShopEstablishmentAndCinNotMatched() {

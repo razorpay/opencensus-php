@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -27,41 +28,48 @@ use RZP\Models\Merchant\Detail\NeedsClarification\ReasonComposer\Factory;
 class Core extends Base\Core
 {
     /**
-     * @param DetailEntity $merchantDetails
+     * Check whether a given entity (merchant/partner) should go under needs clarification
+     *
+     * @param Base\PublicEntity $entity
      *
      * @return bool
      */
-    public function shouldTriggerNeedsClarification(DetailEntity $merchantDetails): bool
+    public function shouldTriggerNeedsClarification(Base\PublicEntity $entity): bool
     {
-        $statusChangeLogs = (new MerchantCore)->getActivationStatusChangeLog($merchantDetails->merchant);
+        $statusChangeLogs = ($entity->getEntityName() === E::PARTNER_ACTIVATION) ? $entity->getActivationStatusChangeLog() :
+                                                    (new MerchantCore)->getActivationStatusChangeLog($entity->merchant);
 
         $needsClarificationCount = (new MerchantDetailCore())->getStatusChangeCount($statusChangeLogs, Status::NEEDS_CLARIFICATION);
 
-        //
-        // If we have already raised needs clarification flow once then don't raise it again
-        //
+        /*
+           If we have already raised needs clarification flow once then don't raise it again
+        */
         if ($needsClarificationCount >= 1)
         {
             return false;
         }
 
-        //
-        // If all statuses are verified then don't trigger needs clarification request
-        //
-        return (new UpdateContextRequirements())->shouldTriggerNeedsClarification($merchantDetails);
+        /*
+           If all statuses are verified then don't trigger needs clarification request
+        */
+        return (new UpdateContextRequirements())->shouldTriggerNeedsClarification($entity);
     }
 
     /**
-     * @param DetailEntity $merchantDetail
+     * Compose needs clarification for a given entity (merchant/partner)
+     *
+     * @param Base\PublicEntity $entity
      *
      * @return array
      * @throws \RZP\Exception\LogicException
      */
-    public function composeNeedsClarificationReason(DetailEntity $merchantDetail): array
+    public function composeNeedsClarificationReason(Base\PublicEntity $entity): array
     {
-        $clarificationKeys = (new UpdateContextRequirements())->getClarificationKeys($merchantDetail);
+        $clarificationKeys = (new UpdateContextRequirements())->getClarificationKeys($entity);
 
         $kycClarificationReasons = [];
+
+        $merchantDetail = ($entity->getEntityName() === E::PARTNER_ACTIVATION) ? $entity->merchantDetail : $entity;
 
         $factory = new Factory($merchantDetail);
 

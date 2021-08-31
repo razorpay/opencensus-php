@@ -237,6 +237,8 @@ final class RazorxTreatment
 
     const SYSTEM_BASED_NEEDS_CLARIFICATION = 'system_based_needs_clarification';
 
+    const SYSTEM_BASED_NEEDS_CLARIFICATION_FOR_PARTNER = 'system_based_needs_clarification_for_partner';
+
     // experiment to enable self serving of auto kyc registered merchants
     const SELF_SERVE_AUTO_KYC = 'self_serve_auto_kyc';
 

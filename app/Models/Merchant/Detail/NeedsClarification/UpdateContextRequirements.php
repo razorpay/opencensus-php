@@ -2,9 +2,14 @@
 
 namespace RZP\Models\Merchant\Detail\NeedsClarification;
 
+use RZP\Constants\Entity as E;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Partner\Activation\Entity as PAEntity;
+use RZP\Models\Partner\Activation\Constants as PAConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+
 
 class UpdateContextRequirements
 {
@@ -65,7 +70,7 @@ class UpdateContextRequirements
         self::STATUS_KEY                  => Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
     ];
 
-    const UPDATE_CONTEXT_REQUIREMENTS = [
+    const UPDATE_MERCHANT_CONTEXT_REQUIREMENTS = [
         self::default                 => [
             [self::POA_VERIFICATION],
             [self::PERSONAL_PAN_VERIFICATION],
@@ -101,18 +106,37 @@ class UpdateContextRequirements
         ],
     ];
 
+    const UPDATE_PARTNER_CONTEXT_REQUIREMENTS = [
+        self::default => [
+            [self::COMPANY_PAN_VERIFICATION],
+            [self::BANK_DETAILS_VERIFICATION],
+            [self::GSTIN_VERIFICATION]
+        ],
+        BusinessType::NOT_YET_REGISTERED => [
+            [self::PERSONAL_PAN_VERIFICATION],
+            [self::BANK_DETAILS_VERIFICATION],
+        ],
+        BusinessType::PROPRIETORSHIP => [
+            [self::PERSONAL_PAN_VERIFICATION],
+            [self::BANK_DETAILS_VERIFICATION],
+            [self::GSTIN_VERIFICATION]
+        ]
+    ];
+
     /**
      * Checks merchant context can be updated or not
      *
      * @param Entity $merchantDetails
-     *
      * @return bool
      */
     public function canUpdateMerchantContext(Entity $merchantDetails): bool
     {
-        $businessType = $merchantDetails->getBusinessType();
+        $requirementList = $this->getUpdateContextRequirement($merchantDetails);
 
-        $requirementList = $this->getUpdateContextRequirement($businessType);
+        if ($merchantDetails->isSubmitted() === false)
+        {
+            return false;
+        }
 
         $canUpdateMerchantContext = true;
 
@@ -126,16 +150,43 @@ class UpdateContextRequirements
     }
 
     /**
-     * @param Entity $merchantDetails
+     * Checks partner context can be updated or not
      *
+     * @param PAEntity $partnerActivation
+     * @return bool
+     */
+    public function canUpdatePartnerContext(PAEntity $partnerActivation): bool
+    {
+        $requirementList = $this->getUpdateContextRequirement($partnerActivation);
+
+        $activationStatus = $partnerActivation->getActivationStatus();
+
+        if ((empty($activationStatus)  === true) or ($activationStatus === PAConstants::ACTIVATED))
+        {
+            return false;
+        }
+
+        $canUpdatePartnerContext = true;
+
+        $merchantDetail = $partnerActivation->merchantDetail;
+
+        foreach ($requirementList as $requirementGroup)
+        {
+            $canUpdatePartnerContext = (($canUpdatePartnerContext === true) and
+                (self::isRequirementFullFilled($merchantDetail, $requirementGroup) === true));
+        }
+
+        return $canUpdatePartnerContext;
+    }
+
+    /**
+     * @param PublicEntity $entity
      * @return array
      */
 
-    public function getClarificationKeys(Entity $merchantDetails): array
+    public function getClarificationKeys(PublicEntity $entity): array
     {
-        $businessType = $merchantDetails->getBusinessType();
-
-        $requirementList = $this->getUpdateContextRequirement($businessType);
+        $requirementList = $this->getUpdateContextRequirement($entity);
 
         $fields = [];
 
@@ -151,19 +202,19 @@ class UpdateContextRequirements
     }
 
     /**
-     * Checks if requirement is full filled or not for a merchant
+     * Checks if requirement is full filled or not for a given entity (merchant/partner)
      *
-     * @param Entity $merchantDetails
+     * @param PublicEntity $entity
      *
      * @return bool
      */
-    public function shouldTriggerNeedsClarification(Entity $merchantDetails): bool
+    public function shouldTriggerNeedsClarification(PublicEntity $entity): bool
     {
-        $businessType = $merchantDetails->getBusinessType();
-
-        $requirementList = $this->getUpdateContextRequirement($businessType);
+        $requirementList = $this->getUpdateContextRequirement($entity);
 
         $shouldTriggerNeedsClarification = false;
+
+        $merchantDetails = ($entity->getEntityName() === E::PARTNER_ACTIVATION) ? $entity->merchantDetail : $entity;
 
         foreach ($requirementList as $requirementGroup)
         {
@@ -211,19 +262,35 @@ class UpdateContextRequirements
     }
 
     /**
-     * Returns needs clarification requirements
+     * Returns needs clarification requirements for a given entity (merchant/partner)
      *
-     * @param string|null $businessType
+     * @param PublicEntity $entity
      *
      * @return \array[][][][]
      */
-    protected function getUpdateContextRequirement(string $businessType = null): array
+    public function getUpdateContextRequirement(PublicEntity $entity): array
     {
-        $requirementList = self::UPDATE_CONTEXT_REQUIREMENTS[self::default];
-
-        if (isset(self::UPDATE_CONTEXT_REQUIREMENTS[$businessType]) === true)
+        switch ($entity->getEntityName())
         {
-            $requirementList = self::UPDATE_CONTEXT_REQUIREMENTS[$businessType];
+            case E::PARTNER_ACTIVATION:
+                $updateContextRequirements = self::UPDATE_PARTNER_CONTEXT_REQUIREMENTS;
+                $type = ($entity->merchantDetail)->getBusinessType();
+                break;
+
+            case E::MERCHANT_DETAIL:
+                $updateContextRequirements = self::UPDATE_MERCHANT_CONTEXT_REQUIREMENTS;
+                $type = $entity->getBusinessType();
+                break;
+
+            default:
+                return [];
+        }
+
+        $requirementList = $updateContextRequirements[self::default];
+
+        if (isset($updateContextRequirements[$type]) === true)
+        {
+            $requirementList = $updateContextRequirements[$type];
         }
 
         return $requirementList;

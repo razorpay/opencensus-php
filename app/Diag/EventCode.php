@@ -664,6 +664,11 @@ class EventCode
         'name'  => 'merchant.auto_nc'
     ];
 
+    const PARTNER_AUTO_NC = [
+        'group' => 'onboarding',
+        'name'  => 'partner.auto_nc'
+    ];
+
     const PAYMENT_PAGE_CREATED = [
         'group' => 'payment_page',
         'name'  => 'payment_page.created',

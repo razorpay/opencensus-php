@@ -484,15 +484,16 @@ class Core extends Detail\Core
     }
 
     /**
-     * This function would fetch the updated kyc clarification reason for each field that has been added
-     * Marks newer clarification reasons as current clarification reason(i.e. latest)
+     * This function would fetch the updated kyc clarification reason for each field that has been added.
+     * Marks newer clarification reasons as current clarification reason (i.e. latest)
      *
-     * @param array  $input
+     * @param array $input
      * @param string $merchantId
+     * @param string|null $source
      *
      * @return array|mixed
      */
-    protected function getUpdatedPartnerKycClarificationReasons(array $input, string $merchantId)
+    public function getUpdatedPartnerKycClarificationReasons(array $input, string $merchantId, string $source = null)
     {
         $partnerActivation         = $this->repo->partner_activation->findOrFailPublic($merchantId);
         $existingKycClarifications = $partnerActivation->getKycClarificationReasons() ?? [];
@@ -512,7 +513,7 @@ class Core extends Detail\Core
 
         $needsClarificationCount = $this->getStatusChangeCount($statusChangeLogs, Activation\Constants::UNDER_REVIEW);
 
-        $clarificationReasons = $this->getClarificationReasons($existingReasons, $newReasons, $needsClarificationCount, null);
+        $clarificationReasons = $this->getClarificationReasons($existingReasons, $newReasons, $needsClarificationCount, $source);
 
         return [
             Entity::CLARIFICATION_REASONS => $clarificationReasons,

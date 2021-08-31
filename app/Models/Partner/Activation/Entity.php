@@ -6,6 +6,9 @@ use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Models\Merchant;
 
+/**
+ * @property Merchant\Detail\Entity  $merchantDetail
+ */
 class Entity extends Base\PublicEntity
 {
     const MERCHANT_ID               = 'merchant_id';
@@ -74,6 +77,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function merchantDetail()
+    {
+        return $this->belongsTo(Merchant\Detail\Entity::class, self::MERCHANT_ID, self::MERCHANT_ID);
     }
 
     public function getActivationStatus()

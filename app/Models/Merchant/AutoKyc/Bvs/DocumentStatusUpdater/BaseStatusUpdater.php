@@ -14,6 +14,7 @@ use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Detail\Core;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Entity;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -107,7 +108,10 @@ abstract class BaseStatusUpdater implements StatusUpdater
      */
     public function updateMerchantContext(): void
     {
-        if ($this->merchantDetails->isSubmitted() === false)
+        $partnerActivation = (new PartnerCore())->getPartnerActivation($this->merchant);
+
+        if (($this->merchantDetails->isSubmitted() === false) and
+            (empty($partnerActivation) or $partnerActivation->isSubmitted() === false))
         {
             return;
         }

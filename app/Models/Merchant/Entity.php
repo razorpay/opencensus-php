@@ -45,20 +45,20 @@ use RZP\Models\Merchant\Methods\Core as MethodCore;
 use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Models\Partner\Activation as PartnerActivation;
 /**
- * @property Org\Entity             $org
- * @property Detail\Entity          $merchantDetail
- * @property Methods\Entity         $methods
- * @property BankAccount\Entity     $bankAccount
- * @property Balance\Entity         $bankingBalance
- * @property Balance\Entity         $sharedBankingBalance
- * @property Balance\Entity         $directBankingBalances
- * @property Balance\Entity         $primaryBalance
- * @property Balance\Entity         $reservePrimaryBalance
- * @property Balance\Entity         $reserveBankingBalance
- * @property Base\Collection        $activeBankingAccounts
- * @property Balance\Entity         $commissionBalance
- * @property PaymentConfig\Entity   $dccPaymentConfig
- * @property PartnerActivation\Entity         $partnerActivation
+ * @property Org\Entity               $org
+ * @property Detail\Entity            $merchantDetail
+ * @property Methods\Entity           $methods
+ * @property BankAccount\Entity       $bankAccount
+ * @property Balance\Entity           $bankingBalance
+ * @property Balance\Entity           $sharedBankingBalance
+ * @property Balance\Entity           $directBankingBalances
+ * @property Balance\Entity           $primaryBalance
+ * @property Balance\Entity           $reservePrimaryBalance
+ * @property Balance\Entity           $reserveBankingBalance
+ * @property Base\Collection          $activeBankingAccounts
+ * @property Balance\Entity           $commissionBalance
+ * @property PaymentConfig\Entity     $dccPaymentConfig
+ * @property PartnerActivation\Entity $partnerActivation
  * @property Merchant\Product\Entity  $merchantProducts
  */
 class Entity extends Base\PublicEntity
