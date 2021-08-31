@@ -1732,6 +1732,7 @@ class Service extends Base\Service
             'csm_experince_survey',
             'inv_create_flow_ux',
             'loans_collections_dashboard',
+            'rx_ca_portal',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
