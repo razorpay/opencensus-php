@@ -1011,9 +1011,22 @@ trait Authorize
 
         $token->saveOrFail();
 
-        $data = [
+        $mandateUrl = $cardMandate->getMandateSummaryUrl();
+
+        if ($this->app['basicauth']->isPrivateAuth() === true)
+        {
+            return [
+                'razorpay_payment_id' => $payment->getPublicId(),
+                'next'                => [
+                    'action' => 'redirect',
+                    'url'    => $mandateUrl,
+                ],
+            ];
+        }
+
+        return [
             'request' => [
-                'url'     => $cardMandate->getMandateSummaryUrl(),
+                'url'     => $mandateUrl,
                 'method'  => 'get',
                 'content' => [],
             ],
@@ -1022,8 +1035,6 @@ trait Authorize
             'payment_id' => $payment->getPublicId(),
             'gateway'    => Crypt::encrypt('mandate_hq'),
         ];
-
-        return $data;
     }
 
     protected function processCardRecurringMandateAutoPaymentCreated(Payment\Entity $payment)

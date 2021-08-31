@@ -370,6 +370,15 @@ class ApiEventSubscriber extends Base\Core
             $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
         }
 
+        if ($payment->isCardMandateRecurringInitialPayment() === true)
+        {
+            (new CardMandate\Core)->reportInitialPayment($payment);
+        }
+        elseif ($payment->hasCardMandateNotification() === true)
+        {
+            (new CardMandate\Core)->reportSubsequentPayment($payment);
+        }
+
         $this->notifySubscriptionRegistrationPaymentAuthorized($payment);
 
         $this->dispatchEventToStork($payload);
@@ -403,15 +412,6 @@ class ApiEventSubscriber extends Base\Core
         if ($payment->hasPaymentLink() === true)
         {
             (new PaymentLink\Core)->postPaymentCaptureUpdatePaymentPage($payment);
-        }
-
-        if ($payment->isCardMandateRecurringInitialPayment() === true)
-        {
-            (new CardMandate\Core)->reportInitialPayment($payment);
-        }
-        elseif ($payment->hasCardMandateNotification() === true)
-        {
-            (new CardMandate\Core)->reportSubsequentPayment($payment);
         }
 
         $payload = $this->getPaymentPayload($payment);

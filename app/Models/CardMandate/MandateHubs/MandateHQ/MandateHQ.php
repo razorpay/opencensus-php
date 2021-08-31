@@ -157,14 +157,20 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
 
     protected function getReportInitialPaymentInput(Payment\Entity $payment): array
     {
+        $paymentStatus = Payment\Status::CAPTURED;
+        if ($payment->isFailed() === true)
+        {
+            $paymentStatus = Payment\Status::FAILED;
+        }
+
         return [
             Constants::RECURRING_DEBIT_TYPE => Constants::RECURRING_DEBIT_TYPE_INITIAL,
             Constants::CURRENCY             => $payment->getCurrency(),
             Constants::AMOUNT               => $payment->getAmount(),
-            Constants::PAYMENT_STATUS       => $payment->getStatus(),
+            Constants::PAYMENT_STATUS       => $paymentStatus,
             Constants::FAILURE_CODE         => $payment->getErrorCode(),
             Constants::FAILURE_DESCRIPTION  => $payment->getErrorDescription(),
-            Constants::CAPTURED_AT          => $payment->getCapturedAt(),
+            Constants::CAPTURED_AT          => $payment->getAuthorizeTimestamp(),
             Constants::AUTHENTICATION       => [
                 Constants::AUTHENTICATION_STATUS          => null,
                 Constants::AUTHENTICATION_ECI             => null,

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity as E;
 use RZP\Models\CardMandate\Status;
+use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Entity as Payment;
@@ -97,6 +98,43 @@ class CardMandateTest extends TestCase
         $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
         $this->assertEquals('active', $cardMandate->getStatus());
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+    }
+
+    public function testCreateCardMandateForUSDCurrencyPayment()
+    {
+        $this->mockCheckBin();
+
+        $this->mockRegisterMandate();
+
+        $this->mockReportPayment();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->paymentInput,
+        ];
+
+        $request['content']['currency'] = Currency::USD;
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+            'currency' => Currency::USD,
+        ]);
+        $request['content'][Payment::ORDER_ID] = $order->getPublicId();
+
+        try
+        {
+            $this->makeRequestAndGetContent($request);
+        }
+        catch (BadRequestException $e)
+        {
+            $exception = true;
+            $this->assertEquals('BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED', $e->getCode());
+            $this->assertEquals('Currency is not supported', $e->getMessage());
+        }
+
+        $this->assertTrue($exception);
     }
 
     public function testCreateCardMandatePaymentForMandateCancelledByCustomer()

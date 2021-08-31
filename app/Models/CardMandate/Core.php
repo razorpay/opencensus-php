@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
 use RZP\Models\CardMandate\MandateHubs\Mandate;
 use RZP\Models\CardMandate\MandateHubs\MandateHQ;
@@ -34,6 +35,11 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::CARD_MANDATE_CREATE_REQUEST, [
             'payment_id' => $payment->getId(),
         ]);
+
+        if ($payment->getCurrency() !== Currency::INR)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+        }
 
         $cardMandate = (new Entity)->build();
 
@@ -100,6 +106,11 @@ class Core extends Base\Core
         if ($payment->getAmount() > $cardMandate->getMaxAmount())
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_AMOUNT_GREATER_THAN_CARD_MANDATE_MAX_AMOUNT);
+        }
+
+        if ($payment->getCurrency() !== Currency::INR)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
         }
     }
 
@@ -245,7 +256,7 @@ class Core extends Base\Core
 
         $mandateHub->ReportInitialPayment($cardMandate, $payment);
 
-        if ($payment->isCaptured() === true)
+        if ($payment->isFailed() === false)
         {
             $cardMandate->setStatus(Status::ACTIVE);
 
