@@ -1163,7 +1163,7 @@ export default class User {
   }
 
   get isSyncExperimentEnabled() {
-    return this.getExpStatus('sync_experiment');
+    return this.getExpStatus('sync_experiment') && !!this.isOrgRZP;
   }
 
   get isRecurringMoreAccountType() {
