@@ -342,8 +342,13 @@
                 You can click here to learn more:<a href="https://razorpay.com/docs/announcements/gst-changes/">
                     https://razorpay.com/docs/announcements/gst-changes/</a></li><br>
             @endif
+            <?php $billing_period_split = explode("/", explode("-", $billing_period)[0]); ?>
+            @if(((int)$billing_period_split[1] >= 8 and (int)$billing_period_split[2] == '2021') or ((int)$billing_period_split[2] > '2021'))
+                <li>Unless otherwise stated, tax on this invoice is not payable under reverse charge.</li>
+            @endif
 
         </ol>
+
         @if($billing_period == '01/12/2020-30/12/2020')
             <div class="text-left" style="border:1px solid black;padding:5px;margin-bottom:10px;font-weight:bold;">
                 This invoice is for the billing cycle starting on Dec 01, 2020 to Dec 30, 2020. The charges for December 31, 2020 will be added to the next billing cycle.
