@@ -30,8 +30,12 @@ class SyncEventTriggerMiddleware
         return $next($request);
     }
 
-    public function terminate()
+    public function terminate($request, $response)
     {
-        event(new TriggerSyncEvent());
+        // raise the event only if the request is successful
+        if ($response->getStatusCode() < 300)
+        {
+            event(new TriggerSyncEvent());
+        }
     }
 }

@@ -45,7 +45,7 @@ class SyncEventManagerTest extends TestCase
 
         $accountId = 'AccountId';
         $mode = Mode::TEST;
-        $metadata = ['dummyMetadata' => true];
+        $metadata = ['dummyMetadata' => true, 'request_id' => app('request')->getId(), 'task_id' => app('request')->getTaskId()];
         $expectedPayload = [
             'account_id' => $accountId,
             'mode' => $mode,

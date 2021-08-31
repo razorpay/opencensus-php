@@ -163,13 +163,14 @@ class SyncEventManager
         }
 
         $metricDimensions = array_merge([Metric::LABEL_RZP_MODE => $mode], $metadata);
+        $payloadMetadata  = array_merge(['request_id' => $this->app['request']->getId(), 'task_id' => $this->app['request']->getTaskId()], $metadata);
         try {
             // TODO: verify and update as per sync request proto
             $jobPayload = [
                 'account_id' => $accountId,
                 'mode' => $mode,
                 'mock' => false,
-                'metadata' => $metadata,
+                'metadata' => $payloadMetadata,
             ];
 
             // this needs to be in a transaction due to a hard check in outbox implementation
