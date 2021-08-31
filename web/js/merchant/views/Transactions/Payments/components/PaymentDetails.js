@@ -8,6 +8,7 @@ import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import ShowWhen from 'merchant/components/ShowWhen';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import PaymentMethod from 'merchant/views/Transactions/Payments/components/PaymentMethod';
+import PaymentProvider from 'merchant/views/Transactions/Payments/components/PaymentProvider';
 import PaymentRefund from 'merchant/views/Transactions/Payments/components/PaymentRefund';
 import PaymentTransfers from 'merchant/views/Transactions/Payments/components/PaymentTransfers';
 import PaymentDisputes from './PaymentDisputes';
@@ -198,6 +199,12 @@ export default (props) => {
                     upiTransfer={upiTransfer}
                   />
                 </EntityDetailRow>
+
+                {payment.provider && (
+                  <EntityDetailRow label="Provider">
+                    <PaymentProvider payment={payment} />
+                  </EntityDetailRow>
+                )}
 
                 {payment.gateway_provider && (
                   <EntityDetailRow label="Gateway">{payment.gateway_provider}</EntityDetailRow>

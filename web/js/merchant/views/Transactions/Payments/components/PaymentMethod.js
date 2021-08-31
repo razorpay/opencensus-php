@@ -209,40 +209,17 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {} }) => 
       </ContentToggler>
     );
   } else if (paymentMethod === 'app') {
-    const paymentProvider = payment.provider;
-
-    if (paymentProvider === 'cred') {
-      el = (
-        <ContentToggler>
-          <span>{paymentProvider.toUpperCase()}</span>
-          <Definition allowEmptyTitle={true}>
-            {null}
-            <span>
-              Paid via Card:
-              <Amount
-                value={payment.acquirer_data.amount * 100}
-                currency={payment.currency}
-                className="cred-payment-amount"
-              />
-            </span>
-            <span>
-              Paid via Cred Coins:
-              <Amount
-                value={payment.acquirer_data.discount * 100}
-                currency={payment.currency}
-                className="cred-payment-amount"
-              />
-            </span>
-          </Definition>
-        </ContentToggler>
-      );
-    } else {
-      el = (
-        <Definition>
-          <span>{`${titleCase(paymentMethod)}-${titleCase(paymentProvider)}`}</span>
-        </Definition>
-      );
-    }
+    el = (
+      <Definition>
+        <span>Application</span>
+      </Definition>
+    );
+  } else if (paymentMethod === 'unselected') {
+    el = (
+      <Definition>
+        <span>{titleCase(paymentMethod)}</span>
+      </Definition>
+    );
   }
 
   return el;
