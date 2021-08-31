@@ -61,6 +61,22 @@ class Service extends Base\Service
         return $downtimes->toArrayPublic();
     }
 
+    public function fetchOngoingDowntimes(): array
+    {
+        $this->trace->info(TraceCode::FETCH_ONGOING_PLATFORM_LEVEL_DOWNTIMES, ["merchantId" => $this->merchant->getId()]);
+        $downtimes = $this->core()->fetchOngoingDowntimes();
+        return $downtimes->toArrayPublic();
+    }
+
+    public function fetchResolvedDowntimes($params): array
+    {
+        $this->trace->info(TraceCode::FETCH_RESOLVED_PLATFORM_LEVEL_DOWNTIMES,
+                           ["merchantId" => $this->merchant->getId(), "filters" => $params]);
+        $this->validateRequestParams($params);
+        $downtimes = $this->core()->fetchResolvedDowntimes($params);
+        return $downtimes->toArrayPublic();
+    }
+
     public function getPaymentDowntimeByID(array $input, string $id): array
     {
         $id = str_replace("down_", "", $id);
@@ -365,6 +381,33 @@ class Service extends Base\Service
                     'status'             => $status,
                     'id'                 => $downtimeArray['id'],
                 ]);
+        }
+    }
+
+    private function validateRequestParams($params)
+    {
+        if (isset($params['startDate']) === false || isset($params['endDate'])===false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+                null, null, "startDate and endDate should be provided");
+        }
+        $sdEpoc = strtotime($params['startDate'].' Asia/Kolkata');
+        $edEpoc = strtotime($params['endDate'].' Asia/Kolkata');
+
+        $tDiff = ($edEpoc - $sdEpoc)/86400;
+        if($tDiff < 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+                null, null, "startDate should never be greater than endDate");
+        }
+
+        if($tDiff > 14)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+                null, null, "Date range should be within 15 days");
         }
     }
 }

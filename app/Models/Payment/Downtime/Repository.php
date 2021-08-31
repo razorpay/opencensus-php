@@ -15,6 +15,13 @@ class Repository extends Base\Repository
 {
     protected $entity = EntityConstants::PAYMENT_DOWNTIME;
 
+    const KEY_OPERATOR_MAP = [
+        Entity::ISSUER      => '=',
+        Entity::METHOD      => '=',
+        Entity::NETWORK     => '=',
+        Entity::VPA_HANDLE  => '=',
+    ];
+
     public function fetchOngoingDowntimes(): PublicCollection
     {
         $query = $this->newQuery();
@@ -76,6 +83,20 @@ class Repository extends Base\Repository
             $query->whereNull(Entity::MERCHANT_ID);
         }
 
+        return $query->get();
+    }
+
+    public function fetchResolvedDowntimes($params): PublicCollection
+    {
+        $query = $this->newQuery();
+        $this->buildQuery(self::KEY_OPERATOR_MAP, $params, $query);
+
+        $query->where(Entity::CREATED_AT, '>=', $this->dateToEpoch($params['startDate']));
+        $query->where(Entity::CREATED_AT, '<=', $this->dateToEpoch($params['endDate']) + (Constants::SECONDS_IN_A_DAY - 1));
+        $query->whereNull(Entity::MERCHANT_ID);
+        $query->where(Entity::STATUS, '=', 'resolved');
+
+        $query->orderBy(Entity::CREATED_AT, 'desc');
         return $query->get();
     }
 
@@ -186,5 +207,22 @@ class Repository extends Base\Repository
         $query->whereIn(Entity::STATUS, [Status::SCHEDULED, Status::STARTED]);
 
         return $query->get();
+    }
+
+    protected function buildQuery(
+        array $keyOperatorMap, array $input, \RZP\Base\BuilderEx & $query)
+    {
+        foreach ($keyOperatorMap as $key => $operator)
+        {
+            if (isset($input[$key]) === true)
+            {
+                $query->where($key, $operator , $input[$key]);
+            }
+        }
+    }
+
+    private function dateToEpoch($date)
+    {
+        return strtotime($date.' Asia/Kolkata');
     }
 }

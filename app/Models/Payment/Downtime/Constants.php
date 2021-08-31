@@ -38,6 +38,7 @@ class Constants
     // Constants used For email notification
     const CREATED   = 'CREATED';
     const RESOLVED  = 'RESOLVED';
+    const SECONDS_IN_A_DAY = 86400;
 
     public static function getMethodQueryInstrument($method)
     {

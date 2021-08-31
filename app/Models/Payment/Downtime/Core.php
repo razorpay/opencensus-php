@@ -8,8 +8,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\PaymentDowntimeEvent;
 use RZP\Models\Gateway\Downtime\Source;
-use RZP\Models\Payment\Downtime\Service;
-use Illuminate\Database\Eloquent\Collection;
+use RZP\Models\Payment\Downtime\Repository;
 use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
 
 class Core extends Base\Core
@@ -60,6 +59,16 @@ class Core extends Base\Core
         }
 
         return $downtime;
+    }
+
+    public function fetchOngoingDowntimes()
+    {
+        return (new Repository())->fetchOngoingDowntimes();
+    }
+
+    public function fetchResolvedDowntimes($params)
+    {
+        return (new Repository())->fetchResolvedDowntimes($params);
     }
 
     public function createFromGatewayDowntimes(array $input = [])

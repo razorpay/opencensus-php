@@ -18,6 +18,20 @@ class DowntimeController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchOngoingDowntimes()
+    {
+        $data = $this->service(E::PAYMENT_DOWNTIME)->fetchOngoingDowntimes();
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchResolvedDowntimes()
+    {
+        $inputs = Request::all();
+        $data = $this->service(E::PAYMENT_DOWNTIME)->fetchResolvedDowntimes($inputs);
+        return ApiResponse::json($data);
+    }
+
     public function getMethodDowntimeDataByID($id)
     {
         $input = Request::all();
