@@ -1681,7 +1681,34 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTest('100', 'Maestro', $expectedPricingRules, Card\Type::CREDIT, true);
     }
 
-    public function testDebitCardRuleSelectionWithOptimizer()
+    public function testDebitCardRuleSelectionWithOptimizerWithSmartRouterProvider()
+    {
+
+        $this->fixtures->merchant->addFeatures(['raas','optimizer_smart_router']);
+
+        $expectedPricingRules = [
+            'payment'        => '4pmbgtgNVVDd7x',
+            'optimizer'      => '1nvp2XPMmaaxya',
+        ];
+
+        //without razorx
+        $this->runMerchantFeeTest('1000', 'Visa', $expectedPricingRules, Card\Type::DEBIT, false, null, null, null, "merchant");
+
+        // with razorx zero pricing rule
+        $this->mockRazorx();
+
+        $this->mockTerminalsServiceSendRequest(function() {
+            return $this->getDefaultTerminalServiceResponse();
+        },1);
+
+        $expectedPricingRules = [
+            'payment'        => '1nvp2XPMmaaxyk',
+            'optimizer'      => '1nvp2XPMmaaxya',
+        ];
+        $this->runMerchantFeeTest('1000', 'Visa', $expectedPricingRules, Card\Type::DEBIT, false, null, null, null, "merchant");
+    }
+
+    public function testDebitCardRuleSelectionWithOptimizerWithoutSmartRouterProvider()
     {
 
         $this->fixtures->merchant->addFeatures(['raas']);
@@ -1708,6 +1735,7 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTest('1000', 'Visa', $expectedPricingRules, Card\Type::DEBIT, false, null, null, null, "merchant");
     }
 
+
     public function testDebitCardRuleSelectionWithOptimizerWithProcurerZeroPricingRule()
     {
         $this->fixtures->merchant->addFeatures(['raas']);
@@ -1717,7 +1745,7 @@ class MerchantFeeTest extends TestCase
         $this->fee->setPricingRepo($rules);
 
         $this->mockRazorx();
-        
+
         $this->mockTerminalsServiceSendRequest(function() {
             return $this->getDefaultTerminalServiceResponse();
         },1);

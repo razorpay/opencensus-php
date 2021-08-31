@@ -257,8 +257,9 @@ class Validator extends Base\Validator
         Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::NETBANKING                              => 'sometimes|boolean|in:0,1',
+        Entity::CARD                                    => 'sometimes|boolean|in:0,1',
         Entity::UPI                                     => 'sometimes|boolean|in:0,1',
-        Entity::ENABLED_WALLETS                         => 'sometimes',
         Entity::VPA                                     => 'sometimes|string',
         Entity::MODE                                    => 'sometimes|in:2',
         Entity::NOTES                                   => 'sometimes|string',
@@ -272,11 +273,14 @@ class Validator extends Base\Validator
         Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
         Entity::MODE                                    => 'sometimes|in:2',
+        Entity::NETBANKING                              => 'sometimes|boolean|in:0,1',
+        Entity::CARD                                    => 'sometimes|boolean|in:0,1',
         Entity::UPI                                     => 'sometimes|boolean|in:0,1',
         Entity::VPA                                     => 'sometimes|string',
         Entity::NETWORK_CATEGORY                        => 'sometimes|string|max:30',
         Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::NOTES                                   => 'sometimes|string',
     ];
 
     protected static $zaakpayTerminalRules = [
@@ -312,7 +316,10 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY                        => 'sometimes|string',
         Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
-        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed'
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::NETBANKING                              => 'sometimes|boolean|in:0,1',
+        Entity::CARD                                    => 'sometimes|boolean|in:0,1',
+        Entity::NOTES                                   => 'sometimes|string',
     ];
 
     protected static $hdfcTerminalRules = [
@@ -648,7 +655,6 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::NOTES                      => 'sometimes|string',
-        Entity::ENABLED_WALLETS            => 'sometimes',
     ];
 
     protected static $cashfreeEditTerminalRules = [
@@ -662,6 +668,9 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
         Entity::VPA                        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::NOTES                      => 'sometimes|string',
     ];
 
     protected static $zaakpayEditTerminalRules = [
@@ -684,6 +693,10 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY           => 'sometimes|string',
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::NOTES                      => 'sometimes|string',
     ];
 
     protected static $billdeskSihubEditTerminalRules = [
@@ -788,7 +801,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
     ];
 
-     protected static $upiMindgateEditTerminalRules = [
+    protected static $upiMindgateEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:upi_mindgate',
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
@@ -801,7 +814,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
-     ];
+    ];
 
     protected static $upiAirtelEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:upi_airtel',
@@ -1617,16 +1630,23 @@ class Validator extends Base\Validator
     ];
 
     protected static $paytmTerminalRules = [
-        Entity::GATEWAY                    => 'required|in:paytm',
-        Entity::GATEWAY_TERMINAL_ID        => 'required',
-        Entity::GATEWAY_ACCESS_CODE        => 'required',
-        Entity::GATEWAY_MERCHANT_ID        => 'required',
-        Entity::GATEWAY_SECURE_SECRET      => 'required',
-        Entity::TYPE                       => 'sometimes',
-        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
-        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
-        Entity::UPI                        => 'sometimes|boolean|in:0,1',
-        Entity::VPA                        => 'sometimes|string',
+        Entity::GATEWAY                                 => 'required|in:paytm',
+        Entity::GATEWAY_TERMINAL_ID                     => 'required',
+        Entity::GATEWAY_ACCESS_CODE                     => 'required',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required',
+        Entity::GATEWAY_SECURE_SECRET                   => 'required',
+        Entity::TYPE                                    => 'sometimes',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::UPI                                     => 'sometimes|boolean|in:0,1',
+        Entity::VPA                                     => 'sometimes|string',
+        Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
+        Entity::MODE                                    => 'sometimes|in:2',
+        Entity::NETBANKING                              => 'sometimes|boolean|in:0,1',
+        Entity::CARD                                    => 'sometimes|boolean|in:0,1',
+        Entity::NETWORK_CATEGORY                        => 'sometimes|string|max:30',
+        Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
+        Entity::NOTES                                   => 'sometimes|string',
     ];
 
     protected static $paytmEditTerminalRules = [
@@ -1637,10 +1657,12 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
-        Entity::NETBANKING                 => 'sometimes|boolean',
-        Entity::CARD                       => 'sometimes|boolean',
+        Entity::NETBANKING                 => 'sometimes|boolean|in:0,1',
+        Entity::CARD                       => 'sometimes|boolean|in:0,1',
         Entity::UPI                        => 'sometimes|boolean|in:0,1',
         Entity::VPA                        => 'sometimes|string',
+        Entity::NOTES                      => 'sometimes|string',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
     protected static $enachRblTerminalRules = [
@@ -2172,7 +2194,7 @@ class Validator extends Base\Validator
         // FirstData N3DS terminals are always in purchase mode
         //
         $isFirstDataNon3DS = (($gateway === Gateway::FIRST_DATA) and
-                              (Type::isApplicableType($type, Type::RECURRING_NON_3DS)));
+            (Type::isApplicableType($type, Type::RECURRING_NON_3DS)));
 
         // Most non-card gateways have terminals only in purchase mode
         //
@@ -2185,7 +2207,7 @@ class Validator extends Base\Validator
         ];
 
         $isNonCardNonMockGateway = ((Gateway::isMethodSupported(Payment\Method::CARD, $gateway)) and
-                                    (in_array($gateway, $nonCardPurchaseExceptions, true)));
+            (in_array($gateway, $nonCardPurchaseExceptions, true)));
 
         // Amex, OpenWallet, CardlessEmi terminals are always in auth-capture mode
         //
@@ -2213,7 +2235,7 @@ class Validator extends Base\Validator
         ];
 
         $isPurchaseSupportedCardGateway = ((Gateway::isMethodSupported(Payment\Method::CARD, $gateway)) and
-                                           (in_array($gateway, $cardGatewaysWithPurchaseSupport, true)));
+            (in_array($gateway, $cardGatewaysWithPurchaseSupport, true)));
 
         $isAuthCaptureOnlyGateway = (in_array($gateway, $authCaptureOnly, true));
 
@@ -2234,18 +2256,18 @@ class Validator extends Base\Validator
                 Entity::GATEWAY);
         }
         else if (($isAuthCaptureOnlyGateway === true) and
-                 ($mode !== Mode::AUTH_CAPTURE))
+            ($mode !== Mode::AUTH_CAPTURE))
         {
             throw new Exception\BadRequestValidationFailureException(
                 $input['gateway'] . ' terminals must be in AuthCapture mode',
                 Entity::GATEWAY);
         }
         else if (($isFirstDataNon3DS === false) and
-                 ($isNonCardNonMockGateway === false) and
-                 ($isAuthCaptureOnlyGateway === false) and
-                 ($isPurchaseSupportedCardGateway === false) and
-                 ($isPurchaseOnlyGateway === false) and
-                 ($mode !== Mode::DUAL))
+            ($isNonCardNonMockGateway === false) and
+            ($isAuthCaptureOnlyGateway === false) and
+            ($isPurchaseSupportedCardGateway === false) and
+            ($isPurchaseOnlyGateway === false) and
+            ($mode !== Mode::DUAL))
         {
             throw new Exception\BadRequestValidationFailureException(
                 $input['gateway'] . ' terminals must be in Dual mode',
@@ -2352,7 +2374,7 @@ class Validator extends Base\Validator
                 ]);
         }
         else if (($newTerminal->getMerchantId() !== Merchant\Account::SHARED_ACCOUNT) and
-                 ($count === Entity::MAX_TERMINALS_COUNT))
+            ($count === Entity::MAX_TERMINALS_COUNT))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED);

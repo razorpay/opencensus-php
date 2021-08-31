@@ -177,6 +177,7 @@ class Constants
     const COVID                           = 'covid';
     const SR_SENSITIVE                    = 'sr_sensitive';
     const RAAS                            = 'raas';
+    const OPTIMIZER_SMART_ROUTER          = 'optimizer_smart_router';
     const SKIP_NOTES_MERGING              = 'skip_notes_merging';
 
     const PAYMENT_STATUS_AGGREGATE        = 'payment_status_aggregate';
@@ -1029,6 +1030,7 @@ class Constants
         self::COVID                           => true,
         self::SR_SENSITIVE                    => true,
         self::RAAS                            => true,
+        self::OPTIMIZER_SMART_ROUTER          => true,
         self::SKIP_NOTES_MERGING              => true,
         self::PAYMENTLINKS_V2                 => true,
         self::RECURRING_DEBIT_UMRN            => true,
@@ -1491,6 +1493,11 @@ class Constants
         self::RAAS => [
             'feature'       => self::RAAS,
             'display_name'  => 'Optimizer',
+            'documentation' => '',
+        ],
+        self::OPTIMIZER_SMART_ROUTER => [
+            'feature'       => self::OPTIMIZER_SMART_ROUTER,
+            'display_name'  => 'Optimizer smart router',
             'documentation' => '',
         ],
         self::SKIP_NOTES_MERGING => [
