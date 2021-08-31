@@ -767,12 +767,15 @@ export const rule = {
 
 export const gatewayLogos = {
   razorpay: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/razorpay.png',
+  smart_router: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/razorpay.png',
   payu: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/payu.png',
   paytm: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/paytm.png',
   billdesk: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/bill-desk.png',
   atom: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/atom.png',
   fss: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/fss.png',
   cybersource: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/cybersource.png',
+  cashfree: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/cashfree.svg',
+  ccavenue: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/ccavenue.svg',
 };
 
 export const popularGateways = ['payu'];
@@ -845,6 +848,8 @@ export const uniqueArray = function (arr) {
 
 export const SMART_ROUTER = 'smart_router';
 
+export const rzpGateways = ['razorpay', 'smart_router'];
+
 export const gatewayDetailsMapping = {
   payu: {
     dashboardImg:
@@ -852,13 +857,37 @@ export const gatewayDetailsMapping = {
     dashboardUrl: 'https://onboarding.payu.in',
     dashboardUrlLabel: 'onboarding.payu.in',
   },
+  cashfree: {
+    dashboardImg:
+      'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/cashfree_dashboard.png',
+    dashboardUrl: 'https://merchant.cashfree.com',
+    dashboardUrlLabel: 'merchant.cashfree.com',
+  },
+  ccavenue: {
+    dashboardImg:
+      'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/ccavenue_dashboard.png',
+    dashboardUrl: 'https://dashboard.ccavenue.com',
+    dashboardUrlLabel: 'dashboard.ccavenue.com',
+  },
+  paytm: {
+    dashboardImg:
+      'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/paytm_dashboard.png',
+    dashboardUrl: 'https://dashboard.paytm.com',
+    dashboardUrlLabel: 'dashboard.paytm.com',
+  },
+  atom: {
+    dashboardImg:
+      'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/atom_dashboard.png',
+    dashboardUrl: 'https://pgreports.atomtech.in/titan_merchant_console/home',
+    dashboardUrlLabel: 'pgreports.atomtech.in',
+  },
 };
 
 export const createMappedProviders = (isAddProviderEnabled, providers, terminalProviders) => {
   let MAPPED_PROVIDERS = [];
   if (isAddProviderEnabled) {
     MAPPED_PROVIDERS = terminalProviders.map((p) => {
-      if (p.Gateway === 'razorpay') {
+      if (rzpGateways.includes(p.Gateway)) {
         return {
           id: p.Gateway,
           name: p.Provider_name,

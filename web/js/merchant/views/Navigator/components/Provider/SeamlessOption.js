@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SeamlessHowto } from './SeamlessComponents';
 
 export const SeamlessOption = ({ providers, selectedProvider }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -35,36 +36,7 @@ export const SeamlessOption = ({ providers, selectedProvider }) => {
               </div>
               {isCollapsed && (
                 <div className="seamless-how-to-details">
-                  <ol>
-                    <li>
-                      Write to your {gatewayName} relationship manager asking to upgrade your
-                      account to Seamless Enabled. Mention that you are using Razorpay as the
-                      technology company to handle sensitive card data.
-                    </li>
-                    <li>
-                      Copy Razorpay in the email and we will provide the supporting document from
-                      our end.
-                    </li>
-                    <li>{gatewayName} will enable seamless on your account.</li>
-                    <li>
-                      If you are going to use UPI as a payment method following steps will have to
-                      be configured:
-                      <ol type="a">
-                        <li>
-                          configure webhook URL as{' '}
-                          <a
-                            href={`https://api.razorpay.com/v1/callback/${selectedProvider}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {`https://api.razorpay.com/v1/callback/${selectedProvider}`}
-                          </a>{' '}
-                          to receive UPI response
-                        </li>
-                        <li>enable UPI on seamless with the flag “txn_s2s_flow=4”</li>
-                      </ol>
-                    </li>
-                  </ol>
+                  <SeamlessHowto gatewayName={gatewayName} selectedProvider={selectedProvider} />
                 </div>
               )}
             </div>

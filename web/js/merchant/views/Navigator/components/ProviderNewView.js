@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { gatewayLogos } from './util';
+import { gatewayLogos, rzpGateways } from './util';
 
 export default class ProviderNewView extends React.Component {
   viewItem = (provider) => {
     return (
       <div
         className={`gateway-provider-block gateway-provider-block-bg ${
-          provider.Gateway.toLowerCase() === 'razorpay' ? 'gateway-no-cursor' : ''
+          rzpGateways.includes(provider.Gateway.toLowerCase()) ? 'gateway-no-cursor' : ''
         }`}
       >
         <div class="provider-img-holder">
@@ -29,7 +29,7 @@ export default class ProviderNewView extends React.Component {
     const { provider } = this.props;
     return (
       <div className="col-xs-3 gateway-provider-col">
-        {provider.Gateway.toLowerCase() === 'razorpay' ? (
+        {rzpGateways.includes(provider.Gateway.toLowerCase()) ? (
           this.viewItem(provider)
         ) : (
           <Link to={`/optimizer/provider/${provider.Terminal_id}`}>{this.viewItem(provider)}</Link>
