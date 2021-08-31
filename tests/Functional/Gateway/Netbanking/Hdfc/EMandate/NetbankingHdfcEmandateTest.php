@@ -681,6 +681,44 @@ class NetbankingHdfcEmandateTest extends TestCase
 
     }
 
+    public function testEmandateDebitRejectedRecon()
+    {
+        $registrationEntities = $this->createRegistrationConfirmedEntities();
+
+        $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
+        $entities[0]['status_in_file'] = 'rejected';
+
+        $file = $this->generateEmandateDebitReconFile($entities);
+
+        $this->mockRazorxTreatment('on');
+
+        $batch = $this->makeBatchRequest(
+            [
+                'type'     => 'emandate',
+                'sub_type' => 'debit',
+                'gateway'  => 'hdfc',
+            ],
+            $file
+        );
+
+        $this->assertEquals('emandate', $batch['batch_type_id']);
+        $this->assertEquals('CREATED', $batch['status']);
+
+        $entries = $this->createBatchRequestData($entities[0], "emandate", "debit", "hdfc", 1);
+
+        $this->runWithData($entries, $batch['id']);
+
+        // Validate registration failure entities
+        $payment = $this->getDbEntityById('payment', $entities[0]['payment']['id'])->toArray();
+
+        $this->assertEquals(Payment\Status::FAILED, $payment['status']);
+
+        $netbanking = $this->getDbEntityById('netbanking', $entities[0]['netbanking']['id'])->toArray();
+
+        $this->assertEquals('rejected', $netbanking[Netbanking::STATUS]);
+
+    }
+
     public function testSecondRecurringPaymentVerify()
     {
         $payment = $this->payment;

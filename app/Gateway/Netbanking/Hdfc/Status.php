@@ -8,8 +8,9 @@ use RZP\Exception\GatewayErrorException;
 class Status
 {
     const DEBIT_SUCCESS    = 'success';
-    const DEBIT_REJECT     = 'failure';
+    const DEBIT_REJECT     = 'rejected';
     const DEBIT_CANCELLED  = 'cancelled';
+    const DEBIT_FAILED     = 'failure';
 
     const REGISTRATION_SUCCESS = 'success';
     const REGISTRATION_FAILURE = 'failure';
@@ -23,6 +24,7 @@ class Status
         self::DEBIT_SUCCESS,
         self::DEBIT_REJECT,
         self::DEBIT_CANCELLED,
+        self::DEBIT_FAILED,
     ];
 
     /**
