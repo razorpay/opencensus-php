@@ -154,6 +154,7 @@ class CardMandateTest extends TestCase
         unset($paymentInput[Payment::BANK]);
 
         $paymentInput[Payment::TOKEN] = $tokenId;
+
         $order = $this->fixtures->create('order', [
             'amount' => 50000,
             'payment_capture' => 1,

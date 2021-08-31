@@ -5,6 +5,7 @@ namespace RZP\Models\CardMandate\CardMandateNotification;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\CardMandate;
@@ -114,7 +115,16 @@ class Entity extends Base\PublicEntity
 
         $time = Carbon::createFromTimestamp($notifiedAt);
 
-        $time->addDay();
+        $app = \App::getFacadeRoot();
+
+        if ($app['rzp.mode'] === Mode::TEST)
+        {
+            $time->addMinutes(5);
+        }
+        else
+        {
+            $time->addDay();
+        }
 
         return $time->timestamp;
     }
