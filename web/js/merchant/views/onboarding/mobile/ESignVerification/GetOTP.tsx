@@ -40,6 +40,7 @@ interface GetOTPPropsT {
   setAadharNumber: (data: string) => void;
   setOTP: (data: string) => void;
   setUserEnteredCaptcha: (data: string) => void;
+  // eslint-disable-next-line react/no-unused-prop-types
   otp: string;
   aadharError: string;
   disabled: boolean;

@@ -15,6 +15,7 @@ import { ActivationModal, ModalTypeT } from '../../ActivationModals';
 import { useApp } from 'common/context/App';
 import { getMode, switchMode } from 'common/services/mode';
 
+// eslint-disable-next-line react/no-unused-prop-types
 const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any) => void }> = ({
   history,
 }) => {

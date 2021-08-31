@@ -1,9 +1,29 @@
-const universeEsLintConfig = require('@universe/configs/eslintrc');
-
 module.exports = {
-  ...universeEsLintConfig,
+  extends: [
+    'kentcdodds',
+    'kentcdodds/react',
+    'plugin:prettier/recommended',
+    // TODO: Uncomment later plugins: 'plugin:jsx-a11y/recommended',
+    'plugin:json/recommended-with-comments',
+    'plugin:yml/standard',
+  ],
+  // TODO: Uncomment later plugins: ['jsx-a11y'],
   rules: {
-    ...universeEsLintConfig.rules,
+    'babel/camelcase': 'off',
+    'import/no-extraneous-dependencies': 'off',
+    'max-lines-per-function': 'off',
+    'max-statements': 'off',
+    'no-console': 'off',
+    'no-negated-condition': 'off',
+    'json/*': [
+      'error',
+      {
+        allowComments: true,
+      },
+    ],
+    complexity: 'off',
+    'no-async-promise-executor': 'warn',
+    'yml/sort-keys': 'off',
     'no-unused-expressions': 'off',
     'babel/no-unused-expressions': 'error',
     'react/prop-types': 'off',
@@ -14,6 +34,17 @@ module.exports = {
     'import/no-unresolved': 'off',
     'import/order': 'off',
     'react/display-name': 'off',
+  },
+  env: {
+    browser: true,
+    node: true,
+    jest: true,
+  },
+  globals: {
+    __STAGE__: false,
+    __VERSION__: false,
+    __CONFIG__: false,
+    __APP_NAME__: false,
   },
   overrides: [
     {
@@ -26,6 +57,8 @@ module.exports = {
       },
       plugins: ['@typescript-eslint'],
       rules: {
+        'one-var': 'off',
+        'object-property-newline': 0,
         'default-param-last': 'off',
         '@typescript-eslint/default-param-last': 'off',
         'no-empty-function': 'off',
@@ -94,8 +127,5 @@ module.exports = {
         moduleDirectory: ['node_modules', 'js/'],
       },
     },
-  },
-  env: {
-    jest: true,
   },
 };

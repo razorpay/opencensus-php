@@ -21,7 +21,9 @@ interface TabProps {
   isActive?: boolean;
   onClick?: () => void;
   title: string;
+  // eslint-disable-next-line react/no-unused-prop-types
   tabId: string | number;
+  // eslint-disable-next-line react/no-unused-prop-types
   children: React.ReactElement | React.ReactElement[];
 }
 
