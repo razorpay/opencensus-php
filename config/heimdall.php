@@ -1193,6 +1193,11 @@ return [
                 'assignable'  => true,
             ],
 
+            Permission::CAPITAL_LOS_CREATE_APPLICATION => [
+                'description' => 'Allows access to create application on los from admin dashboard',
+                'assignable'  => true,
+            ],
+
             Permission::LOS_CARDS => [
                 'description' => 'Allow access to los for cards',
                 'assignable'  => true,
