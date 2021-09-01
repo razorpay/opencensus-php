@@ -3251,7 +3251,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $method = $this->getMethod();
 
-        $errorCodeJson = $app['error_mapper']->getErrorMapping($internalErrorCode,$method);
+        list($errorCodeJson,) = $app['error_mapper']->getErrorMapping($internalErrorCode,$method);
 
         $array[self::ERROR_SOURCE] = $errorCodeJson['source'] ?: null;
 

@@ -121,11 +121,11 @@ class ErrorMappingService
         {
             $array =  json_decode(file_get_contents(storage_path(self::COMMON_ERROR_CODES_JSON_FILE)), true);
 
-            return isset($array[$code]) === true ? json_decode($array[$code], true) : null;
+            return isset($array[$code]) === true ? array(json_decode($array[$code], true), 'common') : array(null, '');
         }
         else
         {
-            return json_decode($array[$code], true);
+            return array(json_decode($array[$code], true), $method);
         }
     }
 

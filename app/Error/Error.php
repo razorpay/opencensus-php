@@ -64,6 +64,8 @@ class Error extends Support\Fluent
     const RECOVERABLE           = 'recoverable';
     const REASON_CODE           = 'reason_code';
     const ENGLISH_DESCRIPTION   = 'english_description';
+    const BASE_URL              = 'base_url';
+    const ERROR_FILE_PATH       = 'error_file_path';
 
     const ERROR_CODE_FILE_PATH          = 'files/errorcodes/error_reason_%s.csv';
     const BANKING_ERROR_CODE_FILE_PATH  = 'files/errorcodes/error_reason_%s.json';
@@ -85,6 +87,8 @@ class Error extends Support\Fluent
     protected $product;
 
     protected $merchant;
+
+    protected $errorFolder;
 
     public function __construct(
         $code,
@@ -346,7 +350,7 @@ class Error extends Support\Fluent
 
     protected function setErrorDetailsFromCentralRepo($code, $method = '')
     {
-        $errorCodeJson = $this->errorMapper->getErrorMapping($code,$method);
+        list($errorCodeJson, $this->errorFolder) = $this->errorMapper->getErrorMapping($code,$method);
 
         if (isset($errorCodeJson) === false)
         {
@@ -821,6 +825,13 @@ class Error extends Support\Fluent
             $array = array_merge($array, $extra);
         }
 
+        $properties = [
+            self::BASE_URL          => url("/"),
+            self::ERROR_FILE_PATH   => $this->errorFolder
+        ];
+
+        $properties = array_merge($array, $properties);
+
         $metaDetails =[
             'metadata'  => $array,
             'read_key'  => array() ,
@@ -829,7 +840,7 @@ class Error extends Support\Fluent
 
         $metaDetails['metadata']['trackId'] = $this->app['req.context']->getTrackId();
 
-        $this->app['diag']->trackPaymentEventV2(EventCode::ERROR_RESPONSE, null,null,$metaDetails,$array);
+        $this->app['diag']->trackPaymentEventV2(EventCode::ERROR_RESPONSE, null,null,$metaDetails,$properties);
 
         return $array;
     }
