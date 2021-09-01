@@ -56,8 +56,9 @@ class Announcement extends Component {
   }
 
   componentDidMount() {
-    const { title, card_id, tracking } = this.props;
+    const { card_id, tracking } = this.props;
     const bannerContainer = document.getElementById(`announcement-banner-${card_id}`);
+    const title = this.getTitle();
 
     tracking?.trackEvent(
       window.rzpQ?.merchantActions().success('merchant_dashboard.display_banner', {
@@ -68,9 +69,16 @@ class Announcement extends Component {
     );
   }
 
+  getTitle = () => {
+    const { card_id } = this.props;
+    const titleElement = document.getElementById(`announcement-banner-title-${card_id}`);
+    return titleElement?.textContent;
+  };
+
   trackBannerClose = () => {
-    const { title, card_id, tracking } = this.props;
+    const { card_id, tracking } = this.props;
     const bannerContainer = document.getElementById(`announcement-banner-${card_id}`);
+    const title = this.getTitle();
 
     tracking?.trackEvent(
       window.rzpQ?.merchantActions().success('merchant_dashboard.banner_close', {
@@ -105,8 +113,9 @@ class Announcement extends Component {
     // the condition after && is because some CTA text are wrapped in strong, b, etc. tags, so checking if their parent is a or button, then fire an event.
     if (node !== 'A' && node !== 'BUTTON' && parentNode !== 'A' && parentNode !== 'BUTTON') return;
 
-    const { title, card_id, tracking } = this.props;
+    const { card_id, tracking } = this.props;
     const link = node === 'A' ? e.target?.href : e.target?.parentElement?.href;
+    const title = this.getTitle();
 
     tracking?.trackEvent(
       window.rzpQ?.merchantActions().initiated('merchant_dashboard.click_banner_cta', {
@@ -153,7 +162,9 @@ class Announcement extends Component {
         {title && !fullPage && (
           <div className="title" style={titleStyle}>
             <div className="title-content" style={titleContentStyle}>
-              <div className="title-content-wrapper">{title}</div>
+              <div id={`announcement-banner-title-${card_id}`} className="title-content-wrapper">
+                {title}
+              </div>
             </div>
           </div>
         )}
