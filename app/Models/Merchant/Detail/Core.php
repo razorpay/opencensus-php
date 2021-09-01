@@ -4753,7 +4753,7 @@ class Core extends Base\Core
             $this->merchant->merchantDetail->getValidator()->validateInput('business_app_url_check', $input);
         }
 
-        $permissionName = Permission\Name::UPDATE_MERCHANT_WEBSITE;
+        $permissionName = Permission\Name::EDIT_MERCHANT_WEBSITE_DETAIL;
 
         $newUrl = ($urlType === DetailConstants::URL_TYPE_WEBSITE) ?  $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE] : $input[DetailConstants::BUSINESS_APP_URL];
 
@@ -4763,7 +4763,8 @@ class Core extends Base\Core
             {
                 ( new KeyValidator)->checkHasKeyAccess($this->merchant, $this->mode);
             }
-            $permissionName = Permission\Name::EDIT_MERCHANT_WEBSITE_DETAIL;
+
+            $permissionName = Permission\Name::UPDATE_MERCHANT_WEBSITE;
         }
 
         $originalMerchantDetails = [DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE => $this->merchant->merchantDetail->getWebsite()];

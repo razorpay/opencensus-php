@@ -3462,7 +3462,7 @@ class MerchantDetailTest extends OAuthTestCase
         return [$merchantId, $user->id];
     }
 
-    private function raiseWorkflowMakerRequestToSaveBusinessWebsiteWithTestCredentials(string $merchantId, string $permissionName = PermissionName::UPDATE_MERCHANT_WEBSITE, string $userId)
+    private function raiseWorkflowMakerRequestToSaveBusinessWebsiteWithTestCredentials(string $merchantId, string $permissionName, string $userId)
     {
         $this->setupWorkflow("update_website", $permissionName);
 
@@ -3473,7 +3473,7 @@ class MerchantDetailTest extends OAuthTestCase
         return $merchantId;
     }
 
-    private function raiseWorkflowMakerRequestToSaveBusinessWebsiteWithoutTestCredentials(string $merchantId, string $permissionName = PermissionName::UPDATE_MERCHANT_WEBSITE, string $userId)
+    private function raiseWorkflowMakerRequestToSaveBusinessWebsiteWithoutTestCredentials(string $merchantId, string $permissionName, string $userId)
     {
         $this->setupWorkflow("update_website", $permissionName);
 
@@ -3484,7 +3484,7 @@ class MerchantDetailTest extends OAuthTestCase
         return $merchantId;
     }
 
-    private function saveBusinessWebsiteMakerFlow(array $predefinedMerchantDetails = [], string $permissionName = PermissionName::UPDATE_MERCHANT_WEBSITE, bool $addTestCredentials = true)
+    private function saveBusinessWebsiteMakerFlow(array $predefinedMerchantDetails = [], string $permissionName = PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL, bool $addTestCredentials = true)
     {
         [$merchantId , $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchantDetails);
 
@@ -3518,7 +3518,7 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertNotEquals('https://www.example.com', $merchant->getWebsite());
     }
 
-    private function validateBusinessWebsiteWorkflow($merchantId, string $permissionName = PermissionName::UPDATE_MERCHANT_WEBSITE)
+    private function validateBusinessWebsiteWorkflow($merchantId, string $permissionName = PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL)
     {
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
@@ -3547,9 +3547,9 @@ class MerchantDetailTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
-        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         $this->validateBusinessWebsiteWorkflowApprove($merchantId, $workflowActionId);
 
@@ -3601,9 +3601,9 @@ class MerchantDetailTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
-        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         $this->validateBusinessWebsiteWorkflowReject($merchantId, $workflowActionId);
 
@@ -3612,7 +3612,7 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testBusinessWebsiteWorkflowStatus()
     {
-        $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+        $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         $this->startTest();
     }
@@ -3634,9 +3634,9 @@ class MerchantDetailTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
-        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -3651,9 +3651,9 @@ class MerchantDetailTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL , false);
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::UPDATE_MERCHANT_WEBSITE , false);
 
-        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
+        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         $testData = & $this->testData[__FUNCTION__];
 
