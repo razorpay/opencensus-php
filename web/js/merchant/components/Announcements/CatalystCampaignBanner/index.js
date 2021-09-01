@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import PLFeaturesModal from './PLFeaturesModal';
 
 const bannerText =
-  'Find out💡how to improve the checkout conversion rate for your business with Payment Links.';
+  'Boost your eCommerce sales by 40%* with Payment Links 🚀';
 const cardId = 'JUL21-PG-PL-Cross-selling';
 
 const cta2Text = 'Try Now';
@@ -81,7 +81,7 @@ const CatalystCampaignBanner = React.memo(({ productName, openModal }) => {
 
   return (
     <AnnouncementBanner
-      title="Razorpay Recommends"
+      title="Grow with Payment Links"
       canBeClosed={true}
       theme="primary"
       bannerKey={`payment-links-cross-sell-${user.current}`}
@@ -91,7 +91,7 @@ const CatalystCampaignBanner = React.memo(({ productName, openModal }) => {
       <a class="Button--secondary Button scheduled-btn-act btn-border" onClick={handleCTA1Click}>
         {cta1Text}
       </a>
-      <Link to={cta2Link} class="btn btn-link" onClick={track.onClickCTA2}>
+      <Link to={cta2Link} class="Button--primary Button scheduled-btn-act btn-border" onClick={track.onClickCTA2}>
         {cta2Text}
       </Link>
     </AnnouncementBanner>
