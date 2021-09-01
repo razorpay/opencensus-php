@@ -45,13 +45,13 @@ if (getMobileOperatingSystem() == 'iOS') {
   },
   { handleProductQuickGuide, openModal, closeModal },
 )
-export default class PaymentLinksContainer extends React.Component {
+class PaymentLinksContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       showPopup: false,
       showFooter: false,
-      url: url,
+      url,
     };
   }
 
@@ -64,7 +64,7 @@ export default class PaymentLinksContainer extends React.Component {
     } else if (mwebPopupSS) {
       showPopup = false;
     }
-    this.setState({ showPopup: showPopup });
+    this.setState({ showPopup });
   }
 
   componentWillReceiveProps(nextProps) {
@@ -157,7 +157,11 @@ export default class PaymentLinksContainer extends React.Component {
     return (
       <React.Fragment>
         <div className="banner-container">
-          <ShowWhen additionalCondition={(user) => !user.isPLSwitchEnabled}>
+          <ShowWhen
+            additionalCondition={(user) =>
+              !user.isPLSwitchEnabled && !user.isPartOfAppIntegrationBannerExperiment
+            }
+          >
             <PaymentButtonLaunchBanner productName="PaymentLinks" />
           </ShowWhen>
 
@@ -230,3 +234,5 @@ export default class PaymentLinksContainer extends React.Component {
     );
   }
 }
+
+export default PaymentLinksContainer;

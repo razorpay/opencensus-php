@@ -34,7 +34,6 @@ import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
 import SubscriptionOffersLaunchBanner from 'merchant/components/Announcements/SubscriptionOffers';
 import EmandateBanner from 'merchant/components/Announcements/EmandateSubscription';
 import CardPaymentsBlockedBanner from './components/CardPaymentsBlocked/Banner';
-import AppStoreIntentBanner from 'merchant/components/Announcements/CSATSurveyBanner/AppStoreIntentBanner';
 
 @connect(
   (state) => ({
@@ -149,14 +148,6 @@ class SubscriptionsController extends React.Component {
         {user.isCardRecurringPaymentsBlocked && (
           <CardPaymentsBlockedBanner isCAW={user.isChargeAtWillEnabled} />
         )}
-        {user.isPartOfAppIntegrationBannerExperiment ? (
-          <AppStoreIntentBanner
-            title="New plugins for Subscriptions!"
-            cardId="Aug25-AppStore-Intent-Subscriptions-banner"
-            content="Want to find new ways to send Subscriptions updates like Whatsapp or Custom SMS/Email etc.?"
-            surveyUrl="NTykzJGN"
-          />
-        ) : null}
 
         <tabbed-container>
           {subscriptionProductOnBoarding.isQuickGuideOpen && <QuickGuide />}
