@@ -3484,7 +3484,14 @@ class UserTest extends TestCase
 
         $this->ba->dashboardGuestAppAuth();
 
-        $this->startTest();
+        $data = $this->startTest();
+
+        $merchantUser = $this->getDbEntity('merchant_user', [
+            'role'    => 'owner',
+            'product' => 'banking'
+        ]);
+
+        $this->assertEquals($merchantUser['created_at'], $data['merchants'][0]['business_banking_signup_at']);
 
         Carbon::setTestNow();
     }

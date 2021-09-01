@@ -64,12 +64,12 @@ class Repository extends Base\Repository
 
     }
 
-    public function fetchBankingSignUpTimeStamp(string $merchantId, string $userId)
+    public function fetchBankingSignUpTimeStampOfOwner(string $merchantId)
     {
         $query =  $this->newQuery()
                     ->select(Entity::CREATED_AT)
-                    ->where(Entity::USER_ID, $userId)
                     ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::ROLE, Role::OWNER)
                     ->where(Entity::PRODUCT, 'banking')
                     ->orderBy(Entity::CREATED_AT);
 

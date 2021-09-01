@@ -2182,7 +2182,7 @@ class UserTest extends TestCase
 
         $this->repoMock->shouldReceive('driver')->with('credit_balance')->andReturn($creditBalanceRepoMock);
 
-        $merchantUserRepoMock->shouldReceive('fetchBankingSignUpTimeStamp')->andReturn(232434);
+        $merchantUserRepoMock->shouldReceive('fetchBankingSignUpTimeStampOfOwner')->andReturn(232434);
 
         $this->coreMock->shouldReceive('getBulkPayoutsUserType')->andReturn('existing_bulk_user_rupees');
 

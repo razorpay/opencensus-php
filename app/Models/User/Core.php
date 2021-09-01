@@ -1645,10 +1645,10 @@ class Core extends Base\Core
                     return $merchant;
                 }
 
-                // Banking Signup time (Created_at of merchant_user)
+                // Owner Role Banking Signup time (Created_at of merchant_user)
                 if (empty($userId) === false)
                 {
-                    $merchant[Merchant\Entity::BUSINESS_BANKING_SIGNUP_AT] = $this->repo->merchant_user->fetchBankingSignUpTimeStamp($merchant['id'], $userId);
+                    $merchant[Merchant\Entity::BUSINESS_BANKING_SIGNUP_AT] = $this->repo->merchant_user->fetchBankingSignUpTimeStampOfOwner($merchant['id']);
                 }
 
                 // Attach Permission
