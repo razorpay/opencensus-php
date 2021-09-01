@@ -808,7 +808,7 @@ class Entity extends Base\PublicEntity
         {
             if ($merchant->isFeatureEnabled(Feature\Constants::RECURRING_CARD_MANDATE) === true)
             {
-                return $app->mandateHQ->isBinSupported($iin);
+                return $app->mandateHQ->isBinSupported($iin->getIin());
             } else {
                 $variant  = app('razorx')->getTreatment($merchant->getId(),
                     RazorxTreatment::RECURRING_CARD_NOT_ENABLED,

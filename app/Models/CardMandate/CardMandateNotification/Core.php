@@ -101,10 +101,14 @@ class Core extends Base\Core
             $cardMandateNotification = $this->repo->card_mandate_notification->findByNotificationId($notification->getId());
         }
 
+        $this->mode = $mode;
+
         if ($cardMandateNotification === null)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
         }
+
+        $this->app['basicauth']->setMerchant($cardMandateNotification->merchant);
 
         $status = $this->getStatusFromNotificationStatus($notification->getStatus());
 
