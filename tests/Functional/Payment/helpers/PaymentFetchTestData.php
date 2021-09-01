@@ -328,6 +328,57 @@ return [
         ],
     ],
 
+    'testGpayPaymentFetchWithUnselectedMethod' => [
+        'request' => [
+            'url'     => '/payments/',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+                'provider' => 'google_pay'
+            ],
+        ],
+    ],
+
+    'testGpayPaymentFetchWithCardMethod' => [
+        'request' => [
+            'url'     => '/payments/',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+                'provider' => 'google_pay'
+            ],
+        ],
+    ],
+
+    'testGpayPaymentFetchWithUpiMethod' => [
+        'request' => [
+            'url'     => '/payments/',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+                'provider' => 'google_pay'
+            ],
+        ],
+    ],
+
+    'testNonGpayPaymentFetch' => [
+        'request' => [
+            'url'     => '/payments/',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
     'testFindWithExpandsForPrivateAuthWithExtraAttributesExposed' => [
         'request' => [
             'url'     => '/payments/',

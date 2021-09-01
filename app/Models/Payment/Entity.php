@@ -2296,6 +2296,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                ($this->isUpi() === true);
     }
 
+    public function isAuthenticationGatewayGooglePay(){
+        return $this->getAuthenticationGateway() === self::GOOGLE_PAY;
+    }
+
     public function isGooglePayCard()
     {
         return (($this->isCard()) and
@@ -3395,6 +3399,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             unset($array[self::WALLET]);
         }
 
+        else if ($this->isMethodlessGooglePay() or $this->isPostMethodGooglePay())
+        {
+            $array[self::PROVIDER] = self::GOOGLE_PAY;
+        }
     }
 
     public function setPublicInvoiceIdAttribute(array & $array)
@@ -5003,7 +5011,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isMethodlessGooglePay()
     {
         return ($this->getMethod() === Payment\Method::UNSELECTED) and
-            ($this->getAuthenticationGateway() === self::GOOGLE_PAY);
+            ($this->isAuthenticationGatewayGooglePay());
+    }
+
+    public function isPostMethodGooglePay()
+    {
+        return $this->isAuthenticationGatewayGooglePay() and
+            in_array($this->getMethod(), Payment\Method::getPostAuthorizeGooglePayMethods(), true);
     }
 
     public function updateGooglePayPaymentMethodIfApplicable($methodToUpdate)

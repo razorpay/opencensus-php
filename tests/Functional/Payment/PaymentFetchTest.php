@@ -14,6 +14,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Carbon\Carbon;
+use RZP\Models\Payment;
 
 /**
  * Covers Base/Fetch implementation. Currently it's not enabled for Payment
@@ -33,6 +34,8 @@ class PaymentFetchTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/PaymentFetchTestData.php';
 
         parent::setUp();
+
+        $this->repo = (new Payment\Repository);
 
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
@@ -263,6 +266,68 @@ class PaymentFetchTest extends TestCase
         $this->assertArrayNotHasKey('gateway_currency', $content);
         $this->assertArrayNotHasKey('dcc_offered', $content);
         $this->assertArrayNotHasKey('dcc_mark_up_percent', $content);
+    }
+
+    public function testGpayPaymentFetchWithUnselectedMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $payment = $this->fixtures->create('payment', ['amount' => 1234,]);
+
+        $payment->setAuthenticationGateway('google_pay');
+        $payment['method'] = 'unselected';
+        $this->repo->saveOrFail($payment);
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $content = $this->startTest();
+
+        $this->assertArrayHasKey('provider', $content);
+    }
+
+    public function testGpayPaymentFetchWithCardMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $payment = $this->fixtures->create('payment', ['amount' => 1234,]);
+
+        $payment->setAuthenticationGateway('google_pay');
+        $payment['method'] = 'card';
+        $this->repo->saveOrFail($payment);
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $content = $this->startTest();
+
+        $this->assertArrayHasKey('provider', $content);
+    }
+
+    public function testGpayPaymentFetchWithUpiMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $payment = $this->fixtures->create('payment', ['amount' => 1234,]);
+
+        $payment->setAuthenticationGateway('google_pay');
+        $payment['method'] = 'upi';
+        $this->repo->saveOrFail($payment);
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $content = $this->startTest();
+
+        $this->assertArrayHasKey('provider', $content);
+    }
+
+    public function testNonGpayPaymentFetch()
+    {
+        $this->ba->proxyAuth();
+
+        $payment = $this->fixtures->create('payment', ['amount' => 1234,]);
+
+        $this->repo->saveOrFail($payment);
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $content = $this->startTest();
+
+        $this->assertArrayNotHasKey('provider', $content);
     }
 
     public function testFindWithExpandsForPrivateAuthWithExtraAttributesExposed()

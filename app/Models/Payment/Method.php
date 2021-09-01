@@ -109,6 +109,11 @@ class Method
         return array_keys(self::$preAuthorizeGooglePayMethods);
     }
 
+    public static function getPostAuthorizeGooglePayMethods()
+    {
+        return self::GOOGLE_PAY_SUPPORTED_METHODS;
+    }
+
     public static function getNonEsPaymentMethods()
     {
         return array_keys(self::$nonEsAutomaticMethods);
