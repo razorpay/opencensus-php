@@ -22,6 +22,20 @@ return [
         ],
     ],
 
+    'testFetchPaymentForBankReference' => [
+        'entity' => 'collection',
+        'count'  => 1,
+        'items'  => [
+            [
+                'entity'            => 'payment',
+                'amount'            => 10000,
+                'currency'          => 'INR',
+                'status'            => 'captured',
+                'method'            => 'upi',
+            ]
+        ],
+    ],
+
     'processUpiTransfer' => [
         'url'     => '/test/upi/callback/icici/upi_icici',
         'method'  => 'post',

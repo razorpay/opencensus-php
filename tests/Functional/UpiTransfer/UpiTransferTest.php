@@ -153,6 +153,19 @@ class UpiTransferTest extends TestCase
         $this->assertNotNull($fta['vpa_id']);
     }
 
+    public function testFetchPaymentForBankReference()
+    {
+        $vpa = $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
+
+        $this->processUpiTransfer('processUpiTransfer', true, Gateway::UPI_ICICI);
+
+        $response = $this->fetchVirtualAccountPayments(null, '015306767323');
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
     public function testProcessIciciUpiTransferPayment()
     {
         $vpa = $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');

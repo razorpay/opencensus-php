@@ -18,6 +18,20 @@ return [
         ],
     ],
 
+    'testFetchBQRPaymentForBankReference' => [
+        'entity' => 'collection',
+        'count'  => 1,
+        'items'  => [
+            [
+                'entity'            => 'payment',
+                'amount'            => 200,
+                'currency'          => 'INR',
+                'status'            => 'captured',
+                'method'            => 'card',
+            ]
+        ],
+    ],
+
     'testQrPaymentProcess' => [
         'url'     => '/payment/callback/bharatqr/hitachi',
         'method'  => 'post',

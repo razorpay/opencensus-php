@@ -8,11 +8,13 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Hitachi\ResponseFields;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class BharatQrPaymentTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use VirtualAccountTrait;
 
     protected function setUp(): void
     {
@@ -96,6 +98,35 @@ class BharatQrPaymentTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $this->assertEquals('Random Name', $card['name']);
+    }
+
+    public function testFetchBQRPaymentForBankReference()
+    {
+        $this->qrCode = $this->createVirtualAccount();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
+
+        $request = [
+            'url'       => '/payment/callback/bharatqr/hitachi',
+            'raw'       => http_build_query($content),
+            'method'    => 'post',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        $response = $this->fetchVirtualAccountPayments(null, 'somethingabc');
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
     public function testQrPaymentProcessForFailedPayment()

@@ -67,9 +67,9 @@ class Repository extends Base\Repository
             return $serialized;
         }
 
-        $vaTransactionIdExists = ($entity->bankTransfer !== null) or
-                                 ($entity->upiTransfer !== null) or
-                                 ($entity->bharatQr !== null);
+        $vaTransactionIdExists = (($entity->bankTransfer !== null) or
+                                  ($entity->upiTransfer !== null) or
+                                  ($entity->bharatQr !== null));
 
         if ($vaTransactionIdExists !== true)
         {
