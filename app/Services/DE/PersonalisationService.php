@@ -12,7 +12,7 @@ class PersonalisationService
     const ACCEPT_HEADER            = 'Accept';
     const APPLICATION_JSON         = 'application/json';
     const CONTENT_TYPE             = 'Content-Type';
-    const REQUEST_TIMEOUT          = 75;
+    const REQUEST_TIMEOUT          = 1;
 
     protected $trace;
     protected $app;
@@ -71,7 +71,6 @@ class PersonalisationService
             $this->trace->error(TraceCode::PERSONALISATION_EXCEPTION, [
                 'message' => $e->getMessage(),
                 'code'    => $e->getCode(),
-                'trace'   => $e->getTrace(),
             ]);
 
             return null;
