@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Partner\Metric;
 use RZP\Models\Partner\Commission\Invoice;
 
 class CommissionInvoiceGenerate extends Job
@@ -34,6 +35,8 @@ class CommissionInvoiceGenerate extends Job
 
     public function handle()
     {
+        $startTime = millitime();
+
         parent::handle();
 
         try
@@ -66,6 +69,8 @@ class CommissionInvoiceGenerate extends Job
                     $summary['failed_ids'][] = $merchantId;
 
                     $this->trace->traceException($e, Trace::ERROR, TraceCode::COMMISSION_INVOICE_GENERATE_ERROR, ['id' => $merchantId]);
+
+                    $this->trace->count(Metric::COMMISSION_INVOICE_GENERATION_FAILED_TOTAL);
                 }
             }
 
@@ -95,6 +100,10 @@ class CommissionInvoiceGenerate extends Job
 
             $this->checkRetry();
         }
+
+        $timeTaken = millitime() - $startTime;
+
+        $this->trace->histogram(Metric::COMMISSION_INVOICE_GENERATION_JOB_PROCESSING_IN_MS, $timeTaken);
     }
 
     protected function checkRetry()

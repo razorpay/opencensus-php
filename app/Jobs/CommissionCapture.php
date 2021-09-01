@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Partner\Metric;
 use RZP\Models\Partner\Commission;
 
 class CommissionCapture extends Job
@@ -29,6 +30,8 @@ class CommissionCapture extends Job
 
     public function handle()
     {
+        $startTime = millitime();
+
         parent::handle();
 
         $this->trace->info(
@@ -87,6 +90,10 @@ class CommissionCapture extends Job
 
             $this->checkRetry();
         }
+
+        $timeTaken = millitime() - $startTime;
+
+        $this->trace->histogram(Metric::COMMISSION_CAPTURE_JOB_PROCESSING_IN_MS, $timeTaken);
     }
 
     protected function checkRetry()

@@ -5,6 +5,7 @@ namespace RZP\Models\Partner\Commission;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Models\Partner\Metric;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Repository as BaseRepository;
 
@@ -114,6 +115,10 @@ class Service extends Base\Service
 
         $query = (new Merchant\Core)->processMerchantAnalyticsQuery($this->merchant->getId(), $query);
 
-        return $this->app['eventManager']->query($query);
+        $response = $this->app['eventManager']->query($query);
+
+        $this->trace->count(Metric::COMMISSION_ANALYTICS_FETCH, ['query_type' => $queryType]);
+
+        return $response;
     }
 }

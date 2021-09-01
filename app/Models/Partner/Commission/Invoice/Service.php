@@ -5,6 +5,7 @@ namespace RZP\Models\Partner\Commission\Invoice;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Partner\Metric;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Activation;
 use RZP\Exception\BadRequestException;
@@ -61,6 +62,8 @@ class Service extends Base\Service
         }
 
         $invoices = $this->repo->commission_invoice->fetch($input, $this->merchant->getId());
+
+        $this->trace->count(Metric::COMMISSION_INVOICE_BULK_FETCH_SUCCESS_TOTAL, $input);
 
         return $invoices->toArrayPublic();
     }

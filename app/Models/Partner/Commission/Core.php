@@ -118,6 +118,8 @@ class Core extends Base\Core
 
         $commissions = $this->repo->commission->fetch($input);
 
+        $this->trace->count(Metric::COMMISSION_FETCH, $input);
+
         return $commissions;
     }
 
