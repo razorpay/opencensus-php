@@ -97,6 +97,7 @@ import { TypeAhead } from 'react-power-select';
 import EAadhard from './components/E-Aadhar';
 import SupportButton from 'merchant/components/Home/SupportButton';
 import { GTAG_KEYS, invokeGtag } from 'merchant/components/OnBoarding/utils';
+import { isValidGSTIN } from '../../../common/utils/rzp-utils';
 
 /*
  *             Main-form        LA-form
@@ -160,7 +161,14 @@ export default class ActivationWizard extends React.Component {
         : '1', // '0' => 0th radio button, value exists
     app_website_url: this.props.data && this.props.data.business_website === '' ? '0' : '1',
     app_url: this.props.data && this.props.data.playstore_url === '' ? '0' : '1',
-    has_gstin: this.props.data && this.props.data.gstin === '' ? '1' : '0', // '0' => 0th radio button, value exists
+    has_gstin:
+      this.props.data &&
+      this.props.data.gstin === '' &&
+      !this.props.data?.merchant_business_detail?.gst_details?.default_gst_in
+        ? '1'
+        : '0', // '0' => 0th radio button, value exists
+    gstin: this.props.data && this.props.data.gstin,
+    showGstinDescription: true,
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
     callingAPI: false,
@@ -1404,6 +1412,19 @@ export default class ActivationWizard extends React.Component {
     if (this.props.user.isSyncExperimentEnabled) {
       this.setState({ ischeck: false });
     }
+
+    if (placeholder === 'Enter GSTIN') {
+      this.setState((prevState) => ({
+        ...prevState,
+        gstin: fieldValue,
+        showGstinDescription: false,
+        dirty: {
+          ...prevState.dirty,
+          gstin: fieldValue,
+        },
+      }));
+      return;
+    }
     // Company Search only available for PG Activation
     if (
       placeholder === 'Business name as per PAN' &&
@@ -2250,6 +2271,39 @@ function ActivationField(field) {
       rest.checkValidityFromAPI && !this.isOnKYCTab() && rest.checkValidityFromAPI(this);
   }
 
+  if (field.name === 'gstin' && rest.customField) {
+    const {
+      props: { data },
+    } = this;
+    const defaultGstin = data?.merchant_business_detail?.gst_details?.default_gst_in;
+    if (!this.state.gstin && defaultGstin) {
+      this.setState((prevState) => ({
+        ...prevState,
+        gstin: defaultGstin,
+        dirty: {
+          ...prevState.dirty,
+          gstin: defaultGstin,
+        },
+      }));
+    }
+    rest.options = data?.merchant_business_detail?.gst_details?.gst_in_list || [];
+    rest.selected = this.state.gstin || defaultGstin;
+    rest.onChange = ({ option }) => {
+      this.setState((prevState) => ({
+        ...prevState,
+        gstin: option,
+        showGstinDescription: false,
+        dirty: {
+          ...prevState.dirty,
+          gstin: option,
+        },
+      }));
+    };
+    rest.description = rest.description(this);
+    rest.gstinInputError =
+      rest.checkValidityFromAPI && !this.isOnKYCTab() && rest.checkValidityFromAPI(this);
+  }
+
   if (field.name === 'e_aadhar' && rest.customField) {
     const { isAadharEkycMandatory } = this.props.user;
     rest.isAadharEkycMandatory = isAadharEkycMandatory && this.isUnregBiz;
@@ -2489,6 +2543,8 @@ function CustomField(props) {
     aadharStatus,
     isAadharLinked,
     companyPanError,
+    gstinInputError,
+    description,
   } = props;
   let error = '';
 
@@ -2521,6 +2577,35 @@ function CustomField(props) {
               matcher={matcher}
             />
             {error && <div className="Input-error">{error}</div>}
+          </div>
+        </div>
+      );
+    case 'gstin':
+      if (typeof validator === 'function' && isPresent(selected)) {
+        error = validator(selected);
+      }
+      if (gstinInputError) {
+        error = gstinInputError;
+      }
+      return (
+        <div
+          className={classList(
+            'Input Input--required Input--small',
+            disabled && 'Input--disabled',
+            error && 'PowerSelectError is-mature is-invalid',
+          )}
+        >
+          <div className="Input-content">
+            <TypeAhead
+              {...props}
+              showClear={false}
+              optionComponent={({ option }) => (
+                <div className="activation-power-select-option">{option}</div>
+              )}
+              matcher={matcher}
+            />
+            {!error && description && <div className="Input-desc">{description}</div>}
+            {error && <div className="Input-error d-block">{error}</div>}
           </div>
         </div>
       );

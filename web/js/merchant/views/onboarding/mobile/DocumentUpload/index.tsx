@@ -35,6 +35,7 @@ import {
 import { analyticsTrack } from 'common/services/tracking/segment';
 import ShopEstablishmentNumber from './ShopEstablishmentNumber';
 import { useApp } from 'common/context/App';
+import GstinAutoPopulate from '../Fields/GstinAutoPopulate';
 
 const StyledSeparator = styled(View)`
   height: 1px;
@@ -57,7 +58,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
   const { data, documentUpload, documentDelete, postData } = useActivation();
   const {
     user,
-    experiments: { isGstinMandatory },
+    experiments: { isGstinMandatory, isGstinAutoPopulate },
   } = useApp();
   const documents = data.documents;
   const businessDetails = data.business_details;
@@ -262,6 +263,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       <Formik
         initialValues={{
           gstin: businessDetails.gstin.value,
+          merchant_business_detail: businessDetails.merchant_business_detail,
           aadhar_front: getFormikInitialValues(documents.aadhar_front),
           aadhar_back: getFormikInitialValues(documents.aadhar_back),
           passport_front: getFormikInitialValues(documents.passport_front),
@@ -444,24 +446,38 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                 </Field>
                 {businessDoc === 'gst_certificate' && (
                   <Field last>
-                    <TextInput
-                      width="auto"
-                      name="gstin"
-                      label="GST Identification Number (GSTIN)"
-                      helpText="Enter GSTIN & get reviewed faster. Should match your business address."
-                      value={formikProps.values.gstin}
-                      errorText={formikProps.touched.gstin && formikProps.errors.gstin}
-                      onBlur={(value) => {
-                        postData({ gstin: value });
-                        analyticsTrack({
-                          objectName: 'SignUp',
-                          actionName: 'Gst Identification Number',
-                          screen: 'home page',
-                          eventAction: 'initiated',
-                          user,
-                        });
-                      }}
-                    />
+                    {isGstinAutoPopulate &&
+                    formikProps.values.merchant_business_detail?.gst_details?.gst_in_list ? (
+                      <GstinAutoPopulate
+                        gstin={formikProps.values.gstin}
+                        merchantBusinessDetail={formikProps.values.merchant_business_detail}
+                        errorText={formikProps.touched.gstin && formikProps.errors.gstin}
+                        updateGstin={(value) => {
+                          postData({ gstin: value });
+                        }}
+                        hasGSTIN={false}
+                        disabled={isFormLocked}
+                      />
+                    ) : (
+                      <TextInput
+                        width="auto"
+                        name="gstin"
+                        label="GST Identification Number (GSTIN)"
+                        helpText="Enter GSTIN & get reviewed faster. Should match your business address."
+                        value={formikProps.values.gstin}
+                        errorText={formikProps.touched.gstin && formikProps.errors.gstin}
+                        onBlur={(value) => {
+                          postData({ gstin: value });
+                          analyticsTrack({
+                            objectName: 'SignUp',
+                            actionName: 'Gst Identification Number',
+                            screen: 'home page',
+                            eventAction: 'initiated',
+                            user,
+                          });
+                        }}
+                      />
+                    )}
                   </Field>
                 )}
                 {businessDoc === 'msme_certificate' && (

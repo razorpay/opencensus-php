@@ -1190,6 +1190,10 @@ export default class User {
   get isLoansCollectionsEnabled() {
     return this.getExpStatus('loans_collections_dashboard');
   }
+
+  get isGstinAutoPopulate() {
+    return this.getExpStatus('gstin_auto_populate');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

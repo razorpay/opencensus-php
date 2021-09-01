@@ -48,6 +48,7 @@ import {
   canShowEAadharComponent,
   showAadharDoc,
   isCompanyPANVerified,
+  canShowCustomGstinField,
 } from './ActivationUtils';
 
 import {
@@ -791,6 +792,24 @@ const businessDetails = [
           'Please provide the correct GSTIN details',
         );
       },
+      className: 'ps-in-modal',
+      customField: canShowCustomGstinField,
+      description: (activation) => {
+        const {
+          props: { data },
+          state: { gstin, showGstinDescription },
+        } = activation;
+        const defaultGstin = data?.merchant_business_detail?.gst_details?.default_gst_in;
+        if (
+          !activation.isOnKYCTab() &&
+          defaultGstin &&
+          !data.gstin &&
+          gstin === defaultGstin &&
+          showGstinDescription
+        ) {
+          return 'Your GSTIN was fetched based on your PAN details, please recheck to avoid any delays in KYC updation and review.';
+        }
+      },
     },
   ],
 ];
@@ -1186,6 +1205,24 @@ const uploadFields = [
         if (isGstinValid && dirty?.gstin !== user?.gstin) {
           this.saveCurrentTab();
         }
+      }
+    },
+    className: 'ps-in-modal',
+    customField: canShowCustomGstinField,
+    description: (activation) => {
+      const {
+        props: { data },
+        state: { gstin, showGstinDescription },
+      } = activation;
+      const defaultGstin = data?.merchant_business_detail?.gst_details?.default_gst_in;
+      if (
+        !activation.isOnKYCTab() &&
+        defaultGstin &&
+        !data.gstin &&
+        gstin === defaultGstin &&
+        showGstinDescription
+      ) {
+        return 'Your GSTIN was fetched based on your PAN details, please recheck to avoid any delays in KYC updation and review.';
       }
     },
   },

@@ -376,6 +376,22 @@ function canShowEAadharComponent(activation) {
   return false;
 }
 
+function canShowCustomGstinField(activation) {
+  const {
+    props: { data },
+  } = activation;
+  const gstinList = data?.merchant_business_detail?.gst_details?.gst_in_list;
+  if (
+    activation.props.user.isGstinAutoPopulate &&
+    !activation.isOnKYCTab() &&
+    gstinList &&
+    Array.isArray(gstinList)
+  ) {
+    return true;
+  }
+  return false;
+}
+
 function isDedupe(activation) {
   if (activation.dedupe && Object.keys(activation.dedupe).length) {
     const { isMatch, isUnderReview } = activation.dedupe;
@@ -561,4 +577,5 @@ export {
   getBankTabHeader,
   isCompanyPANVerified,
   isPanVerificationFailed,
+  canShowCustomGstinField,
 };

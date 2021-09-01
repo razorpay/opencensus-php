@@ -32,6 +32,7 @@ import { useApp } from 'common/context/App';
 import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
 import { fetch } from 'common/services/rest/rest-fetch';
 import BusinessName from '../Fields/BusinessName';
+import GstinAutoPopulate from '../Fields/GstinAutoPopulate';
 
 const businessDetailsSchema = ({ hasGSTIN, businessOverviewDetails }) =>
   Yup.object().shape({
@@ -353,6 +354,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
         business_operation_state: businessDetails.business_operation_state.value || '',
         business_operation_city: businessDetails.business_operation_city.value || '',
         business_operation_pin: businessDetails.business_operation_pin.value,
+        merchant_business_detail: businessDetails.merchant_business_detail,
         ...addressFormikValue,
       }}
       validationSchema={businessDetailsSchema({ hasGSTIN, businessOverviewDetails })}
@@ -688,24 +690,40 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
           }) ? (
             <FormSection title="Company Details" last disabled={isFormLocked}>
               <Field last>
-                <TextInput
-                  width="auto"
-                  name="gstin"
-                  label="GST Identification Number (GSTIN)"
-                  helpText="Enter GSTIN & get reviewed faster. Should match your business address."
-                  value={formikProps.values.gstin}
-                  errorText={formikProps.touched.gstin && formikProps.errors.gstin}
-                  onBlur={() => {
-                    analyticsTrack({
-                      objectName: 'SignUp',
-                      actionName: 'Gst Identification Number',
-                      screen: 'home page',
-                      eventAction: 'initiated',
-                      user,
-                    });
-                  }}
-                  disabled={isFormLocked || hasGSTIN}
-                />
+                {experiments.isGstinAutoPopulate &&
+                formikProps.values.merchant_business_detail?.gst_details?.gst_in_list ? (
+                  <GstinAutoPopulate
+                    gstin={formikProps.values.gstin}
+                    merchantBusinessDetail={formikProps.values.merchant_business_detail}
+                    errorText={formikProps.touched.gstin && formikProps.errors.gstin}
+                    updateGstin={(value) => {
+                      formikProps.setFieldTouched('gstin');
+                      formikProps.setFieldValue('gstin', value);
+                      setIsBlurCalled(true);
+                    }}
+                    hasGSTIN={hasGSTIN}
+                    disabled={isFormLocked || hasGSTIN}
+                  />
+                ) : (
+                  <TextInput
+                    width="auto"
+                    name="gstin"
+                    label="GST Identification Number (GSTIN)"
+                    helpText="Enter GSTIN & get reviewed faster. Should match your business address."
+                    value={formikProps.values.gstin}
+                    errorText={formikProps.touched.gstin && formikProps.errors.gstin}
+                    onBlur={() => {
+                      analyticsTrack({
+                        objectName: 'SignUp',
+                        actionName: 'Gst Identification Number',
+                        screen: 'home page',
+                        eventAction: 'initiated',
+                        user,
+                      });
+                    }}
+                    disabled={isFormLocked || hasGSTIN}
+                  />
+                )}
               </Field>
               {!isUnregisteredBusiness(businessOverviewDetails.business_type.value) ? (
                 <>

@@ -738,6 +738,7 @@ class App extends Component {
       isAadharEkycMandatory: user.isAadharEkycMandatory,
       isGstinMandatory: user.isGstinMandatory,
       isSyncExperimentEnabled: user.isSyncExperimentEnabled,
+      isGstinAutoPopulate: user.isGstinAutoPopulate,
     };
   };
 
