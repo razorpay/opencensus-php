@@ -86,12 +86,16 @@ class Core extends Base\Core
             'notification_id' => $notification->getId(),
         ]);
 
+        $mode = Mode::LIVE;
+
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
 
         $cardMandateNotification = $this->repo->card_mandate_notification->findByNotificationId($notification->getId());
 
         if ($cardMandateNotification === null)
         {
+            $mode = Mode::TEST;
+
             $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);
 
             $cardMandateNotification = $this->repo->card_mandate_notification->findByNotificationId($notification->getId());
@@ -120,7 +124,7 @@ class Core extends Base\Core
 
         if ($cardMandateNotification->getStatus() === Status::NOTIFIED)
         {
-            $reminderId = $this->setCardAutoRecurringReminder($cardMandateNotification);
+            $reminderId = $this->setCardAutoRecurringReminder($cardMandateNotification, $mode);
 
             $cardMandateNotification->setReminderId($reminderId);
 
@@ -147,7 +151,7 @@ class Core extends Base\Core
         $processor->failNotificationNotSentCardAutoRecurringPayment($payment);
     }
 
-    protected function setCardAutoRecurringReminder(Entity $cardMandateNotification)
+    protected function setCardAutoRecurringReminder(Entity $cardMandateNotification, $mode = Mode::TEST)
     {
         $this->trace->info(TraceCode::CARD_MANDATE_NOTIFICATION_REMINDER_CREATE_REQUEST, [
             'id' => $cardMandateNotification->getId(),
@@ -160,7 +164,14 @@ class Core extends Base\Core
         $namespace  = Reminders\ReminderProcessor::CARD_AUTO_RECURRING;
         $merchantId = Merchant\Account::SHARED_ACCOUNT;
         $paymentId  = $cardMandateNotification->payment->GetId();
-        $url = sprintf('reminders/send/%s/payment/%s/%s', $this->mode, $namespace, $paymentId);
+
+        $currentMode = $this->mode;
+        if (empty($currentMode) === true or $currentMode === '')
+        {
+            $currentMode = $mode;
+        }
+
+        $url = sprintf('reminders/send/%s/payment/%s/%s', $currentMode, $namespace, $paymentId);
 
         $request = [
             'namespace'     => $namespace,
