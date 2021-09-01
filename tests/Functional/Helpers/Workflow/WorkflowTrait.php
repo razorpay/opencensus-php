@@ -11,9 +11,9 @@ use RZP\Models\Admin\Org\Repository as OrgRepository;
 
 trait WorkflowTrait
 {
-    private function createWorkflow(array $input, string $mode = 'test')
+    private function createWorkflow(array $input,string $mode = 'test', $template = [])
     {
-        $defaultAttributes = $this->getDefaultWorkflowArray();
+        $defaultAttributes = empty($template) ? $this->getDefaultWorkflowArray() : $template;
 
         $attributes = array_merge($defaultAttributes, $input);
 

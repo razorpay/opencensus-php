@@ -4092,6 +4092,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const WORKFLOW_PAYOUT_RULES_ATTACHMENT                      = 'WORKFLOW_PAYOUT_RULES_ATTACHMENT';
     const WORKFLOW_PAYOUT_EDIT                                  = 'WORKFLOW_PAYOUT_EDIT';
 
+    //Trace Code for WFS config migration
+    const WFS_CONFIG_SYNC_ATTEMPT_RESPONSE_FOR_CONFIG_CREATE    = 'WFS_CONFIG_SYNC_ATTEMPT_RESPONSE_FOR_CONFIG_CREATE';
+    const WFS_CONFIG_SYNC_ATTEMPT_RESPONSE_FOR_CONFIG_EDIT      = 'WFS_CONFIG_SYNC_ATTEMPT_RESPONSE_FOR_CONFIG_EDIT';
+
     const ALREADY_ACTIVATED                                     = 'ALREADY_ACTIVATED';
     const NOT_ACTIVATED                                         = 'NOT_ACTIVATED';
 

@@ -3,11 +3,14 @@
 namespace RZP\Tests\Functional\Workflow;
 
 use Hash;
+use Mockery;
 
 use Illuminate\Support\Facades\DB;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Admin\Role\Repository as RoleRepository;
+use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -33,6 +36,7 @@ class WorkflowTest extends TestCase
     protected $org = null;
     protected $workflowPermissionIds = [];
     private $ownerRoleUser;
+    protected $merchant = null;
 
     protected function setUp(): void
     {
@@ -62,6 +66,17 @@ class WorkflowTest extends TestCase
             'org_id'      => $this->org->getId(),
             'permissions' => array_slice($workflowPermissions, 0, 2),
         ];
+    }
+
+    protected function setupOrgForLiveMode()
+    {
+        $this->org = $this->fixtures->on('live')->create('org');
+
+        $permissions = (new PermissionEntity)->getAllPermissions();
+
+        $this->org->permissions()->attach($permissions);
+
+        $this->addWorkflowPermissionsToOrg($this->org);
     }
 
     public function testCreateWorkflow()
@@ -549,11 +564,124 @@ class WorkflowTest extends TestCase
             'name'   => 'wfs_config_update'
         ]);
 
+        $permission5 = $this->fixtures->on($mode)->create('permission',[
+            'name'   => 'create_workflow'
+        ]);
+
+        $permission6 = $this->fixtures->on($mode)->create('permission',[
+            'name'   => 'edit_workflow'
+        ]);
+
         $role->permissions()->attach($permission3->getId());
         $role->permissions()->attach($permission4->getId());
+        $role->permissions()->attach($permission5->getId());
+        $role->permissions()->attach($permission6->getId());
 
         $admin->roles()->attach($role);
 
         return $admin;
+    }
+
+    public function testWorkflowSyncFlowForConfigCreation()
+    {
+        $this->org = $this->fixtures->org->createRazorpayOrgLive();
+
+        $this->input = [
+            'org_id'      => $this->org->getId(),
+            'permissions' => ['create_payout'],
+        ];
+
+        $workflowIds = [];
+
+        $template = $this->testData['workflowSyncFlowForConfigCreation']['template_level_1'];
+        $workflow1 = $this->createWorkflow($this->input,'live', $template);
+        $workflowIds [] = $workflow1['id'];
+
+        $template = $this->testData['workflowSyncFlowForConfigCreation']['template_level_2'];
+        $workflow2 = $this->createWorkflow($this->input,'live',  $template);
+        $workflowIds [] = $workflow2['id'];
+
+
+        for ($index = 0; $index < 2; $index++) {
+            $this->testData['createWorkflowPayoutAmountRules']['request']['content']['rules'][$index]['workflow_id'] = 'workflow_'.$workflowIds[$index];
+            $this->testData['createWorkflowPayoutAmountRules']['response']['content']['items'][$index]['workflow_id'] = $workflowIds[$index];
+        }
+
+        $this->setUpExperimentForNWFS();
+
+        // Need to do this for test as well because in testing env,
+        // admin authentication is done on test mode, even if live creds
+        // have been passed.
+        $adminForTest = $this->prepareAdminForPayoutWorkflow('test');
+        $adminForLive = $this->prepareAdminForPayoutWorkflow('live');
+
+        $this->app['config']->set('database.default', 'live');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $adminForTest->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('live', $token);
+
+        $testData = $this->testData['createWorkflowPayoutAmountRules'];
+
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+        $this->ba->addAccountAuth('10000000000000');
+
+        $workflowServiceClientMock = Mockery::mock('RZP\Services\WorkflowService');
+
+        $this->app->instance('workflow_service', $workflowServiceClientMock);
+
+        $expectedConfig = $this->testData['workflowSyncFlowForConfigCreation']['expected_config'];
+
+        $workflowServiceClientMock->shouldReceive('createConfig')->with($expectedConfig);
+
+        $this->runRequestResponseFlow($testData);
+
+        return $expectedConfig;
+    }
+
+    public function testWorkflowSyncFlowForConfigEdit()
+    {
+        $config = $this->testWorkflowSyncFlowForConfigCreation();
+
+        $permission = $this->getDbEntity('permission', ['name' => 'create_payout'], 'live');
+
+        DB::table('permission_map')->updateOrInsert(
+            [
+                'entity_id'         => Org::RZP_ORG,
+                'entity_type'       => 'org',
+                'permission_id'     => $permission->getId()
+            ],
+            [
+                'entity_id'         => Org::RZP_ORG,
+                'entity_type'       => 'org',
+                'permission_id'     => $permission->getId(),
+                'enable_workflow'   => 1
+            ]);
+
+        $makerRole = $this->fixtures->on('live')->create('role', [
+            'id'     => 'RzpMakerRoleId',
+            'org_id' => ORG::RZP_ORG,
+            'name'   => 'Maker',
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['workflows'][0]['permissions'][0] = "perm_" . $permission->getId();
+        $this->testData[__FUNCTION__]['request']['content']['workflows'][0]['levels'][0]['steps'][0]['role_id'] = "role_" . $makerRole->getId();
+
+        $workflowServiceClientMock = Mockery::mock('RZP\Services\WorkflowService');
+
+        $this->app->instance('workflow_service', $workflowServiceClientMock);
+
+        $expectedConfig = $this->testData['workflowSyncFlowForConfigEdit']['expected_config'];
+
+        $workflowServiceClientMock->shouldReceive('createConfig')->with($expectedConfig);
+
+        $this->startTest();
+
+        return $config;
     }
 }

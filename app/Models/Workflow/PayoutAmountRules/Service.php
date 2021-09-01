@@ -4,6 +4,7 @@ namespace RZP\Models\Workflow\PayoutAmountRules;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use \RZP\Models\Payout;
 use RZP\Models\Workflow;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -122,6 +123,10 @@ class Service extends Base\Service
 
         $payoutAmountRules = $this->core()->create($rules, $this->merchant);
 
+        $response =(new Payout\Service())->migrateOldConfigToNewOnes(['merchant_ids' => [$this->merchant->getId()]]);
+
+        $this->trace->info(TraceCode::WFS_CONFIG_SYNC_ATTEMPT_RESPONSE_FOR_CONFIG_CREATE, $response);
+
         return $payoutAmountRules->toArrayPublic();
     }
 
@@ -144,6 +149,10 @@ class Service extends Base\Service
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
         $payoutAmountRules = $this->core()->edit($editWorkflows, $this->merchant);
+
+        $response = (new Payout\Service())->migrateOldConfigToNewOnes(['merchant_ids' => [$this->merchant->getId()]]);
+
+        $this->trace->info(TraceCode::WFS_CONFIG_SYNC_ATTEMPT_RESPONSE_FOR_CONFIG_EDIT, $response);
 
         return $payoutAmountRules->toArrayPublic();
     }

@@ -129,6 +129,15 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function migrateWorkflowConfigsToWorkflowService()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->migrateOldConfigToNewOnes($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postRejectFundAccountPayoutInternal(string $id)
     {
         try

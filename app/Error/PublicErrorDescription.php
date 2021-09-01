@@ -866,6 +866,7 @@ class PublicErrorDescription
     const BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED                              = 'Dashboard cant be accessed from the current location';
 
     // Workflow Related Errors
+    const BAD_REQUEST_MORE_THAN_ONE_ROLE_FOR_A_LEVEL                            = 'Migration not supported for workflows having steps with more than one role at any level.';
     const BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND                                 = 'Workflow entity not found';
     const BAD_REQUEST_WORKFLOW_ENTITY_ID_NOT_FOUND                              = 'Workflow entity ID not found';
     const BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL                       = 'No check required from checker roles in the current workflow action level';

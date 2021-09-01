@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\Workflow;
 
 return [
@@ -26,6 +27,65 @@ return [
             ]
         ],
     ],
+
+    'testCreateWorkflowWithTemplate' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/workflows',
+            'content' => [
+                'name' => 'Test workflow',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'   => "Test workflow",
+                'levels' => [
+                    [
+                        'op_type' => 'or',
+                        'level'   => 1
+                    ]
+                ]
+            ]
+        ],
+    ],
+
+    'createWorkflowPayoutAmountRules' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/workflows/rules/payout_amount',
+            'content' => [
+                'rules' => [
+                    [
+                        'min_amount'	=>	0,
+                        'max_amount'	=>	100000
+                    ],
+                    [
+                        'min_amount'	=>	100000,
+                        'max_amount'	=>	null
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'merchant_id'   =>  '10000000000000',
+                        'min_amount'    =>  0,
+                        'max_amount'    =>  100000
+                    ],
+                    [
+                        'merchant_id'   =>  '10000000000000',
+                        'min_amount'    =>  100000,
+                        'max_amount'    =>  null
+                    ]
+                ]
+            ]
+        ],
+    ],
+
     'testDeleteWorkflow' => [
         'request' => [
             'method'  => 'DELETE',
@@ -1350,7 +1410,6 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
         ],
     ],
-
     'testGetWorkflowConfigWFSFromXDashboardWithPermission' => [
         'request'  => [
             'server' => [
@@ -1612,6 +1671,416 @@ return [
                 "created_at" =>  "1597317215"
             ],
         ],
+    ],
+    'testWorkflowSyncFlowForConfigEdit' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/admin-workflows/rules/payout_amount',
+            'content' => [
+                "workflows" => [
+                    [
+                        "name" => "Test workflow",
+                        "permissions" => [],
+                        "levels" => [
+                            [
+                                "op_type"   => "and",
+                                "steps"     => [
+                                    [
+                                        "role_id"        => null,
+                                        "reviewer_count" => 1,
+                                    ],
+                                ],
+                                "level" => 1,
+                            ],
+                        ],
+                        "payout_amount_rules" => [
+                            [
+                                "min_amount" => 0,
+                                "max_amount" => 10,
+                            ]
+                        ],
+                        "org_id" => "org_100000razorpay",
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        "min_amount" => 0,
+                        "max_amount" => 10,
+                        "workflow" => [
+                            "name" => "Test workflow",
+                            "steps" => [
+                                [
+                                    "level" => 1,
+                                    "op_type" => "and",
+                                    "reviewer_count" => 1,
+                                ]
+                            ],
+                            "permissions" => [
+                                [
+                                    "name" => "create_payout",
+                                    "description" => "Merchant can create a new payout",
+                                    "category" => "payouts",
+                                    "assignable" => false,
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ],
+    ],
+    'workflowSyncFlowForConfigCreation' => [
+        'template_level_1' => [
+            'name'   => 'Test workflow',
+            'levels' => [
+                [
+                    'level'   => 1,
+                    'op_type' => 'or',
+                    'steps'   => [
+                        [
+                            'reviewer_count' => 1,
+                            'role_id'        => Org::MANAGER_ROLE,
+                        ]
+                    ],
+                ],
+                [
+                    'level'   => 2,
+                    'op_type' => 'and',
+                    'steps'   => [
+                        [
+                            'reviewer_count' => 1,
+                            'role_id'        => Org::ADMIN_ROLE,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'template_level_2' => [
+            'name'   => 'Test workflow 1',
+            'levels' => [
+                [
+                    'level'   => 1,
+                    'op_type' => 'or',
+                    'steps'   => [
+                        [
+                            'reviewer_count' => 1,
+                            'role_id'        => Org::MANAGER_ROLE,
+                        ]
+                    ],
+                ]
+            ]
+        ],
+        'expected_config' => array (
+            'template' =>
+                array (
+                    'type' => 'approval',
+                    'state_transitions' =>
+                        array (
+                            'START_STATE' =>
+                                array (
+                                    'current_state' => 'START_STATE',
+                                    'next_states' =>
+                                        array (
+                                            0 => '1-100000_workflow',
+                                            1 => '100000-20000000000_workflow',
+                                        ),
+                                ),
+                            '1-100000_workflow' =>
+                                array (
+                                    'current_state' => '1-100000_workflow',
+                                    'next_states' =>
+                                        array (
+                                            0 => 'Admin_0_0_Approval',
+                                        ),
+                                ),
+                            'Admin_0_0_Approval' =>
+                                array (
+                                    'current_state' => 'Admin_0_0_Approval',
+                                    'next_states' =>
+                                        array (
+                                            0 => 'SuperAdmin_0_1_Approval',
+                                        ),
+                                ),
+                            'SuperAdmin_0_1_Approval' =>
+                                array (
+                                    'current_state' => 'SuperAdmin_0_1_Approval',
+                                    'next_states' =>
+                                        array (
+                                            0 => 'END_STATE',
+                                        ),
+                                ),
+                            '100000-20000000000_workflow' =>
+                                array (
+                                    'current_state' => '100000-20000000000_workflow',
+                                    'next_states' =>
+                                        array (
+                                            0 => 'Admin_1_0_Approval',
+                                        ),
+                                ),
+                            'Admin_1_0_Approval' =>
+                                array (
+                                    'current_state' => 'Admin_1_0_Approval',
+                                    'next_states' =>
+                                        array (
+                                            0 => 'END_STATE',
+                                        ),
+                                ),
+                        ),
+                    'states_data' =>
+                        array (
+                            '1-100000_workflow' =>
+                                array (
+                                    'name' => '1-100000_workflow',
+                                    'group_name' => '0',
+                                    'type' => 'between',
+                                    'rules' =>
+                                        array (
+                                            'key' => 'amount',
+                                            'min' => '1',
+                                            'max' => '100000',
+                                        ),
+                                ),
+                            'Admin_0_0_Approval' =>
+                                array (
+                                    'name' => 'Admin_0_0_Approval',
+                                    'group_name' => '1',
+                                    'type' => 'checker',
+                                    'rules' =>
+                                        array (
+                                            'actor_property_key' => 'role',
+                                            'actor_property_value' => 'admin',
+                                            'count' => 1,
+                                        ),
+                                    'callbacks' =>
+                                        array (
+                                            'status' =>
+                                                array (
+                                                    'in' =>
+                                                        array (
+                                                            0 => 'created',
+                                                            1 => 'processed',
+                                                        ),
+                                                ),
+                                        ),
+                                ),
+                            'SuperAdmin_0_1_Approval' =>
+                                array (
+                                    'name' => 'SuperAdmin_0_1_Approval',
+                                    'group_name' => '2',
+                                    'type' => 'checker',
+                                    'rules' =>
+                                        array (
+                                            'actor_property_key' => 'role',
+                                            'actor_property_value' => 'superadmin',
+                                            'count' => 1,
+                                        ),
+                                    'callbacks' =>
+                                        array (
+                                            'status' =>
+                                                array (
+                                                    'in' =>
+                                                        array (
+                                                            0 => 'created',
+                                                            1 => 'processed',
+                                                        ),
+                                                ),
+                                        ),
+                                ),
+                            '100000-20000000000_workflow' =>
+                                array (
+                                    'name' => '100000-20000000000_workflow',
+                                    'group_name' => '0',
+                                    'type' => 'between',
+                                    'rules' =>
+                                        array (
+                                            'key' => 'amount',
+                                            'min' => '100000',
+                                            'max' => '20000000000',
+                                        ),
+                                ),
+                            'Admin_1_0_Approval' =>
+                                array (
+                                    'name' => 'Admin_1_0_Approval',
+                                    'group_name' => '1',
+                                    'type' => 'checker',
+                                    'rules' =>
+                                        array (
+                                            'actor_property_key' => 'role',
+                                            'actor_property_value' => 'admin',
+                                            'count' => 1,
+                                        ),
+                                    'callbacks' =>
+                                        array (
+                                            'status' =>
+                                                array (
+                                                    'in' =>
+                                                        array (
+                                                            0 => 'created',
+                                                            1 => 'processed',
+                                                        ),
+                                                ),
+                                        ),
+                                ),
+                        ),
+                    'allowed_actions' =>
+                        array (
+                            'admin' =>
+                                array (
+                                    'actions' =>
+                                        array (
+                                            0 => 'update_data',
+                                            1 => 'rejected',
+                                        ),
+                                ),
+                            'user' =>
+                                array (
+                                    'actions' =>
+                                        array (
+                                            0 => 'approved',
+                                            1 => 'rejected',
+                                        ),
+                                ),
+                            'rx_live' =>
+                                array (
+                                    'actions' =>
+                                        array (
+                                            0 => 'rejected',
+                                        ),
+                                ),
+                        ),
+                    'meta' =>
+                        array (
+                            'domain' => 'payouts',
+                            'task_list_name' => 'payouts-approval',
+                        ),
+                ),
+            'version' => 1,
+            'type' => 'payout-approval',
+            'name' => '10000000000000 - Payout approval workflow',
+            'service' => 'rx_live',
+            'owner_id' => '10000000000000',
+            'owner_type' => 'merchant',
+            'org_id' => '100000razorpay',
+            'enabled' => 'true',
+        ),
+    ],
+    'workflowSyncFlowForConfigEdit' => [
+        'expected_config' => array (
+            'name' => '10000000000000 - Payout approval workflow',
+            'template' =>
+                array (
+                    'state_transitions' =>
+                        array (
+                            '1-10_workflow' =>
+                                array (
+                                    'current_state' => '1-10_workflow',
+                                    'next_states' =>
+                                        array (
+                                            0 => 'Maker_0_0_Approval',
+                                        ),
+                                ),
+                            'Maker_0_0_Approval' =>
+                                array (
+                                    'current_state' => 'Maker_0_0_Approval',
+                                    'next_states' =>
+                                        array (
+                                            0 => 'END_STATE',
+                                        ),
+                                ),
+                            'START_STATE' =>
+                                array (
+                                    'current_state' => 'START_STATE',
+                                    'next_states' =>
+                                        array (
+                                            0 => '1-10_workflow',
+                                        ),
+                                ),
+                        ),
+                    'states_data' =>
+                        array (
+                            '1-10_workflow' =>
+                                array (
+                                    'name' => '1-10_workflow',
+                                    'group_name' => '0',
+                                    'type' => 'between',
+                                    'rules' =>
+                                        array (
+                                            'min' => '1',
+                                            'max' => '10',
+                                            'key' => 'amount',
+                                        ),
+                                ),
+                            'Maker_0_0_Approval' =>
+                                array (
+                                    'name' => 'Maker_0_0_Approval',
+                                    'group_name' => '1',
+                                    'type' => 'checker',
+                                    'rules' =>
+                                        array (
+                                            'actor_property_key' => 'role',
+                                            'actor_property_value' => 'maker',
+                                            'count' => 1,
+                                        ),
+                                    'callbacks' =>
+                                        array (
+                                            'status' =>
+                                                array (
+                                                    'in' =>
+                                                        array (
+                                                            0 => 'created',
+                                                            1 => 'processed',
+                                                        ),
+                                                ),
+                                        ),
+                                ),
+                        ),
+                    'allowed_actions' =>
+                        array (
+                            'admin' =>
+                                array (
+                                    'actions' =>
+                                        array (
+                                            0 => 'update_data',
+                                            1 => 'rejected',
+                                        ),
+                                ),
+                            'rx_live' =>
+                                array (
+                                    'actions' =>
+                                        array (
+                                            0 => 'rejected',
+                                        ),
+                                ),
+                            'user' =>
+                                array (
+                                    'actions' =>
+                                        array (
+                                            0 => 'approved',
+                                            1 => 'rejected',
+                                        ),
+                                ),
+                        ),
+                    'meta' =>
+                        array (
+                            'domain' => 'payouts',
+                            'task_list_name' => 'payouts-approval',
+                        ),
+                    'type' => 'approval',
+                ),
+            'type' => 'payout-approval',
+            'version' => 1,
+            'owner_id' => '10000000000000',
+            'owner_type' => 'merchant',
+            'enabled' => 'true',
+            'service' => 'rx_live',
+            'org_id' => '100000razorpay',
+        ),
     ],
 
 ];

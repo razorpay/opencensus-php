@@ -776,6 +776,10 @@ return [
                 'description' => 'Edit Action requests',
                 'assignable'  => true,
             ],
+            Permission::WFS_CONFIG_CREATE => [
+                'description' => 'Config create requests',
+                'assignable'  => true,
+            ],
         ],
 
         // Roles

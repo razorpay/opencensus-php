@@ -1316,6 +1316,8 @@ class Route
         'payout_reject_internal'                   => ['post',     'payouts_internal/{id}/reject',                   'PayoutController@postRejectFundAccountPayoutInternal'              ],
         'payout_send_pending_approval_email'       => ['post',     'payouts/pending-payouts-approval-email',         'PayoutController@pendingPayoutApprovalEmail'                       ],
 
+        'payout_wf_config_migrate'                 => ['post',     'payouts_configs/migrate',                        'PayoutController@migrateWorkflowConfigsToWorkflowService'          ],
+
         //Routes related to workflows microservice
         'wfs_config_create'                       => ['post',    'wf-service/configs',                               'WorkflowServiceController@createConfig'                            ],
         'wfs_config_update'                       => ['patch',   'wf-service/configs',                               'WorkflowServiceController@updateConfig'                            ],
@@ -5101,6 +5103,7 @@ class Route
         'wfs_config_update',
         'wfs_config_get_admin',
         'payout_workflow_retry_admin_bulk',
+        'payout_wf_config_migrate',
 
         // gateway credentials
         'terminals_proxy_create_gateway_credential',
@@ -6115,6 +6118,8 @@ class Route
         'wfs_config_create'                        => Permission::WFS_CONFIG_CREATE,
         'wfs_config_update'                        => Permission::WFS_CONFIG_UPDATE,
         'wfs_config_get_admin'                     => Permission::WFS_CONFIG_CREATE,
+
+        'payout_wf_config_migrate'                 => Permission::WFS_CONFIG_CREATE,
 
         // Instrument requests
         'get_internal_instrument_request_by_id'       => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
@@ -8889,6 +8894,7 @@ class Route
             'payout_update_pull_payout_status',
             'payout_links_bulk_resend_notification_admin',
             'payout_update_status',
+            'payout_wf_config_migrate',
             'payout_workflow_retry_admin_bulk',
             'payouts_bulk_amount_type',
             'payouts_bulk_amount_type_update',

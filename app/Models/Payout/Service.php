@@ -57,6 +57,8 @@ class Service extends Base\Service
      */
     protected $appframeworkCore;
 
+    protected $workflowConfigService;
+
     protected const IS_VALID_PURPOSE = "is_valid_purpose";
 
     protected const ON_HOLD_FETCH_LIMIT = 5000;
@@ -72,6 +74,8 @@ class Service extends Base\Service
         $this->fundAccountService = new FundAccountService;
 
         $this->appframeworkCore = new ApplicationMerchantMaps\Core;
+
+        $this->workflowConfigService = new WorkflowConfigService;
     }
 
     public function createPayoutEntry($input)
@@ -647,6 +651,38 @@ class Service extends Base\Service
         return $reversals->toArrayPublic();
     }
 
+    public function migrateOldConfigToNewOnes($input)
+    {
+        $merchantIds = $input['merchant_ids'];
+        $skipFetchFromWfs = $input['skip_wfs_fetch'] ?? true;
+        $returnOld = $input['return_old'] ?? false;
+        $success = [];
+        $failed = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $this->merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $newConfig = (new WorkflowMigration())->convertOldSummaryIntoNew($this->merchant, $skipFetchFromWfs, $returnOld);
+
+            try
+            {
+                $config = $this->workflowConfigService->create($newConfig);
+                $success[] = $merchantId . ' - ' . $config['id'];
+            }
+            catch (\Throwable $e)
+            {
+                $failed[] = $merchantId;
+                $this->trace->traceException($e);
+            }
+        }
+
+        return [
+            'failed'  => $failed,
+            'success' => $success,
+        ];
+    }
+
     /**
      * Return a summary of workflows for RazorpayX dashboard consumption.
      *
@@ -655,7 +691,7 @@ class Service extends Base\Service
      * @return array
      * @throws \Exception
      */
-    public function getWorkflowSummary(): array
+    public function getWorkflowSummary($skipFetchFromWfs = false): array
     {
         // For test mode, we haven't enabled workflows yet
         // therefore returning empty array
@@ -664,7 +700,10 @@ class Service extends Base\Service
             return [];
         }
 
-        if ($this->isWorkflowServiceEnabled() === true)
+        // if the flag $skipFetchFromWfs is set to false then we only fetch the workflow summary from the api db's workflow tables. If set true we fetch from Workflow service as well
+
+        if (($skipFetchFromWfs === false) and
+            ($this->isWorkflowServiceEnabled() === true))
         {
             return (new WorkflowConfigService)->getConfigByType('payout-approval', $this->merchant->getId());
         }
