@@ -42,7 +42,7 @@ const RXPayrollMoonshineModal = ({ hideModal, tracking }) => {
               />
             </div>
             <h3 className="heading">
-              Get <span>2 lakhs worth of credits</span> when you use RazorpayX Payroll for 3 months
+              Get <span>10 lakhs worth of credits</span> when you use RazorpayX Payroll for 3 months
             </h3>
             <ul className="list">
               {content.map((data) => (
@@ -63,7 +63,7 @@ const RXPayrollMoonshineModal = ({ hideModal, tracking }) => {
               </a>
             </div>
             <div className="terms-and-conditions">
-              * Applicable on XPayroll Pro Plan. Rs. 2 lakh worth of payment credits apply after 3
+              * Applicable on XPayroll Pro Plan. Rs. 10 lakhs worth of payment credits apply after 3
               months of payroll execution
             </div>
           </div>
