@@ -34,6 +34,79 @@ class ReconServiceController extends Controller
         ],
     ];
 
+    const WHITELISTED_ADMIN_ROUTES_REGEX = [
+        self::GET => [
+            '^merchants$',
+            '^merchants\/[[:alnum:]]{14}$',
+            '^workspaces$',
+            '^workspaces\/[[:alnum:]]{14}$',
+            '^file_types$',
+            '^file_types\/[[:alnum:]]{14}$',
+            '^recon_runs\/get_metadata\/[[:alnum:]]{14}$',
+            '^recon_summary$',
+            '^sources$',
+            '^sources\/[[:alnum:]]{14}$',
+            '^file_types\/[[:alnum:]]{14}\/source_configs$',
+            '^file_types\/[[:alnum:]]{14}\/source_configs\/[[:alnum:]]{14}$',
+            '^sources\/[[:alnum:]]{14}\/file_types$',
+            '^rules$',
+            '^rules\/\d+$',
+            '^recon_state$',
+            '^recon_state\/\d+$',
+            '^rule_state_map$',
+            '^rule_state_map\/\d+$',
+            '^recon_run_logs$',
+            '^ingestion_run_logs$',
+            '^recon_run_logs\/\d+$',
+            '^ingestion_run_logs\/\d+$',
+            '^journal_voucher$',
+            '^signed_url$',
+        ],
+        self::POST => [
+            '^merchants$',
+            '^workspaces$',
+            '^cron_jobs$',
+            '^bulk_rule$',
+            '^file_types$',
+            '^recon_runs\/trigger\/[[:alnum:]]{14}$',
+            '^sources$',
+            '^file_types\/[[:alnum:]]{14}\/source_configs$',
+            '^sources\/[[:alnum:]]{14}\/file_types$',
+            '^rules$',
+            '^recon_state$',
+            '^rule_state_map$',
+            '^notifications$',
+            '^notification_types$',
+            '^notification_channels$',
+            '^default_notification_channels$',
+        ],
+        self::PUT => [
+            '^notifications$',
+        ],
+        self::PATCH => [
+            '^merchants\/[[:alnum:]]{14}$',
+            '^workspaces\/[[:alnum:]]{14}$',
+            '^file_types\/[[:alnum:]]{14}$',
+            '^file_types\/[[:alnum:]]{14}\/source_configs\/[[:alnum:]]{14}$',
+            '^recon_state\/\d+$',
+            '^rule_state_map\/\d+$'
+        ],
+        self::DELETE => [
+            '^merchants\/[[:alnum:]]{14}$',
+            '^workspaces\/[[:alnum:]]{14}$',
+            '^cron_jobs\/[[:alnum:]]{14}$',
+            '^file_types\/[[:alnum:]]{14}$',
+            '^sources\/[[:alnum:]]{14}$',
+            '^file_types\/[[:alnum:]]{14}\/source_configs\/[[:alnum:]]{14}$',
+            '^rules\/\d+$',
+            '^recon_state\/\d+$',
+            '^rule_state_map\/\d+$',
+            '^bulk_delete$',
+            '^recon_run_logs\/\d+$',
+            '^ingestion_run_logs\/\d+$',
+        ],
+    ];
+
     public function handleAny($path = '')
     {
         $method = Request::method();
@@ -51,6 +124,31 @@ class ReconServiceController extends Controller
         }
 
         $data = Request::all();
+
+        $response = $this->reconService()->sendAnyRequest($path, $method, $data);
+
+        return ApiResponse::json($response);
+    }
+
+    public function handleAdminCall($path = '')
+    {
+        $input = Request::all();
+
+        $method = $input['method'];
+
+        if(array_key_exists($method, self::WHITELISTED_ADMIN_ROUTES_REGEX) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        $whiteListedAdminRoutesRegex = implode('|', self::WHITELISTED_ADMIN_ROUTES_REGEX[$method]);
+
+        if (preg_match('/' . $whiteListedAdminRoutesRegex . '/', $path, $pathMatches) == false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        $data = $input['body'] ?? [];
 
         $response = $this->reconService()->sendAnyRequest($path, $method, $data);
 

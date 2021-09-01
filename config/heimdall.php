@@ -1478,6 +1478,11 @@ return [
                 'description'   => 'Manage access to recon dashboard on admin dashboard',
                 'assignable'    => true,
             ],
+
+            Permission::RECON_ADMIN_OPERATION => [
+                'description'   => 'Manage access to recon actions on admin dashboard',
+                'assignable'    => true,
+            ],
         ],
 
         PermissionCategory::FTS_DASHBOARD_ADMIN => [

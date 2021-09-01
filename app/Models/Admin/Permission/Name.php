@@ -700,6 +700,7 @@ class Name
 
     // Recon service permission
     const RECON_OPERATION                              = 'recon_operation';
+    const RECON_ADMIN_OPERATION                        = 'recon_admin_operation';
 
     // Metro
     const METRO_PROJECT_CREATE                        = 'metro_project_create';

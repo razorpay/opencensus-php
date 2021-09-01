@@ -90,7 +90,7 @@ class ReconService
     {
         $headers['Content-Type'] = 'application/json';
 
-        $requestPayload = $this->getPayload($data ?? [], $method);
+        $requestPayload = $data ?? [];
 
         $url = $this->baseUrl . $url;
 
@@ -156,12 +156,4 @@ class ReconService
 
         return $responseBody;
     }
-
-    protected function getPayload($data, $method)
-    {
-        if ($method === 'GET') return $data;
-
-        return json_encode($data, JSON_FORCE_OBJECT);
-    }
-
 }
