@@ -1236,6 +1236,13 @@ class Constants
             ],
             [
                 'data'  => [
+                    'version'     =>  'project-nitro-coimbatore-v1',
+                    "version_description" => 'Nitro for coimbatore',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_COIMBATORE_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_COIMBATORE_V1_SPLITZ'],
+            ],
+            [
+                'data'  => [
                     'version'     =>  'project-nitro-appswitcher',
                     "version_description" => 'Nitro for appswitcher merchants',
                 ],
@@ -1356,6 +1363,7 @@ class Constants
         'ANNOUNCEMENT_NITRO_GURGAON_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_NAGPUR_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_KOLHAPUR_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_COIMBATORE_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_APP_SWITCHER_SPLITZ'
     ];
     const nitroCorporateCardsSplitzExperimentsList = [
@@ -1374,6 +1382,7 @@ class Constants
         'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_GURGAON_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_NAGPUR_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_KOLHAPUR_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_COIMBATORE_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_CORPORATE_CARDS_TEST_ACCOUNT_SPLITZ',
     ];
 

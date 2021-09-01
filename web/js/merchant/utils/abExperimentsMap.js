@@ -38,6 +38,7 @@ export default {
     'HPc9cMyPKKeAAX', // Gurgaon Nitro
     'HPcAKrn53GP41d', // Nagpur Nitro
     'HPcBJQw2E0BzpZ', // Kolhapur Nitro
+    'Hrt8rX7v1tehY1', // Coimbatore Nitro
     'HYlnMMJoE1RjFf', // App switcher segment
   ],
   announcement_text_experiment: [
@@ -92,6 +93,7 @@ export default {
     'HW1Al5SNojQepQ', // Gurgaon
     'HW1Bb4TphEGzuU', // Nagpur
     'HW1CwITu2o0hdO', // Kolhapur
+    'HrtIYOAiX2ipgI', // Coimbatore
     'HWP22TCyDAfcRG', // Test account prod
   ],
 

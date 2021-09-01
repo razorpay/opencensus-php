@@ -186,6 +186,11 @@ export const nitroCampaignId = () => {
       version_description: 'Nitro for kolhapur',
       target_product_feature: 'XCA',
     },
+    Hrt8rX7v1tehY1: {
+      version: 'project-nitro-coimbatore-v1',
+      version_description: 'Nitro for coimbatore',
+      target_product_feature: 'XCA',
+    },
     HYlnMMJoE1RjFf: {
       version: 'project-nitro-appswitcher',
       version_description: 'Nitro for appswitcher merchants',
@@ -279,6 +284,11 @@ export const nitroCampaignId = () => {
     HW1CwITu2o0hdO: {
       version: 'project-nitro-kolhapur-v1',
       version_description: 'Nitro for kolhapur',
+      target_product_feature: 'XCA+CCC',
+    },
+    HrtIYOAiX2ipgI: {
+      version: 'project-nitro-coimabtore-v1',
+      version_description: 'Nitro for coimabtore',
       target_product_feature: 'XCA+CCC',
     },
   };
