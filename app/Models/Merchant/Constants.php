@@ -80,7 +80,7 @@ final class Constants
     const PARTNER_ID                              = 'partner_id';
     const MARK_AS_PARTNER_IN_PROGRESS             = 'mark_as_partner_in_progress';
     const MARK_AS_PARTNER_LOCK_TIME_OUT           = 30; //seconds
-
+    const MERCHANT_ONBOARDING                     = 'merchant_onboarding';
 
     // Used in partners flows
     const APPLICATION_ID                          = 'application_id';
