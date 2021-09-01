@@ -167,6 +167,17 @@ class Tracing
             'reconciliate_via_batch_service',
             'pricing_get_merchant_plans',
             'customer_fetch_multiple',
+
+            //Login route analysis
+            'merchant_features_fetch',
+            'merchant_get_tags',
+            'merchant_product_switch',
+            'merchant_partner_configs_fetch',
+            'merchant_activation_details',
+            'user_fetch_admin',
+            'fetch_partner_intent',
+            'credits_fetch_multiple'
+
     ]);
     }
 

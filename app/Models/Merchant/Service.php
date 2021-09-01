@@ -17,6 +17,7 @@ use Razorpay\OAuth\Application as OAuthApplication;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\Error;
+use RZP\Trace\Tracer;
 use RZP\Models\Terminal\Category;
 use RZP\Models\User;
 use RZP\Models\Offer;
@@ -5500,7 +5501,10 @@ class Service extends Base\Service
         {
 
             // Add Banking Role for the current merchant User.
-            (new User\Service)->addProductSwitchRole($product);
+            Tracer::inSpan(['name' => 'product_switch.addProductSwitchRole'], function() use($product) {
+                (new User\Service)->addProductSwitchRole($product);
+            });
+
 
             $wasSwitchToPG = $this->auth->getRequestOriginProduct() === Product::PRIMARY;
 
@@ -5514,9 +5518,13 @@ class Service extends Base\Service
 
             if ($wasBankingEnabledNow === true)
             {
-                $this->captureEventOfInterestOfPrimaryMerchantInBanking($merchant);
+                Tracer::inSpan(['name' => 'product_switch.captureEventOfInterestOfPrimaryMerchantInBanking'], function() use($merchant) {
+                    $this->captureEventOfInterestOfPrimaryMerchantInBanking($merchant);
+                });
 
-                $this->addNewBankingErrorFeature($merchant);
+                Tracer::inSpan(['name' => 'product_switch.addNewBankingErrorFeature'], function() use($merchant) {
+                    $this->addNewBankingErrorFeature($merchant);
+                });
             }
 
             // Commenting this call since YesBank Moratorium is done.
@@ -5528,11 +5536,16 @@ class Service extends Base\Service
             //     return;
             // }
 
-            (new Activate)->activateBusinessBankingIfApplicable($merchant, $wasBankingEnabledNow);
+            Tracer::inSpan(['name' => 'product_switch.activateBusinessBankingIfApplicable'] , function() use($merchant, $wasBankingEnabledNow) {
+                (new Activate)->activateBusinessBankingIfApplicable($merchant, $wasBankingEnabledNow);
+            });
+
 
             // creating a user mapping for a merchant on X is equivalent to him signing up on X
             // platform, so we will check if sign up has any promotion running and will assign rewards
-             (new Promotion\Core)->applyPromotion($merchant, $product, Promotion\Event\Constants::SIGN_UP);
+            Tracer::inSpan(['name' => 'product_switch.applyPromotion'], function() use($merchant, $product) {
+                (new Promotion\Core)->applyPromotion($merchant, $product, Promotion\Event\Constants::SIGN_UP);
+            });
         });
 
         // At this point the product switch has happened, and if there were exceptions it
@@ -5546,7 +5559,9 @@ class Service extends Base\Service
         ]);
 
         if ($wasBankingEnabledNow or $wasSwitchToPG) {
-            $this->postProductSwitchActions($wasSwitchToPG, $wasBankingEnabledNow, $merchant);
+            Tracer::inSpan(['name' => 'product_switch.postProductSwitchActions'] , function() use($merchant, $wasSwitchToPG, $wasBankingEnabledNow) {
+                $this->postProductSwitchActions($wasSwitchToPG, $wasBankingEnabledNow, $merchant);
+            });
         }
 
     }

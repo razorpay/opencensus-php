@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Encryption;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Models\State;
 use RZP\Models\Coupon;
 use RZP\Diag\EventCode;
@@ -2372,20 +2373,25 @@ class Core extends Base\Core
 
     public function createResponse(Entity $merchantDetails): array
     {
-        $response = $merchantDetails->toArrayPublic();
-        //
-        // refreshing the merchant relation here as createResponse is called at many places
-        // just after updating the merchant entity
-        //
-        $merchantDetails->load('merchant');
+        list($response, $merchantDetails) = Tracer::inSpan(['name' => 'create_response.refreshing_entities'], function() use($merchantDetails) {
 
-        $merchantDetails->load('avgOrderValue');
+            $response = $merchantDetails->toArrayPublic();
+            //
+            // refreshing the merchant relation here as createResponse is called at many places
+            // just after updating the merchant entity
+            //
+            $merchantDetails->load('merchant');
 
-        $merchantDetails->load('tnc');
+            $merchantDetails->load('avgOrderValue');
 
-        $merchantDetails->load('verificationDetail');
+            $merchantDetails->load('tnc');
 
-        $merchantDetails->load('businessDetail');
+            $merchantDetails->load('verificationDetail');
+
+            $merchantDetails->load('businessDetail');
+
+            return [$response, $merchantDetails];
+        });
 
         $merchant = $merchantDetails->merchant;
         $merchantBusinessDetails = $merchantDetails->businessDetail;
@@ -2414,67 +2420,82 @@ class Core extends Base\Core
             $response[Entity::REJECTION_REASONS] = $rejectionReasons->toArrayPublic();
         }
 
-        $response = $this->setVerificationDetails($merchantDetails, $merchant, $response);
+        $response = Tracer::inSpan(['name' => 'create_response.set_verification_details'], function() use($merchantDetails, $merchant, $response) {
 
-        $hardEscalationLevel4 = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchantAndTypeAndLevel
-        ($merchant->getMerchantId(), Merchant\AutoKyc\Escalations\Constants::HARD_LIMIT, 4);
+            $response = $this->setVerificationDetails($merchantDetails, $merchant, $response);
 
-        $isDedupeBlocked = $this->dedupeCore->isDedupeBlocked($merchant);
+            return $response;
+        });
 
-        if($merchantDetails->getActivationFormMilestone() === DEConstants::L1_SUBMISSION)
-        {
-            /*
-             * After L1 submission we do not want to block users even if they are dedupe-blocked case
-             */
-            $isDedupeBlocked = false;
-        }
 
-        $isDedupeMatch   = $this->dedupeCore->isMerchantImpersonated($merchant);
-        $dedupe          = [
-            'isMatch'       => $isDedupeMatch,
-            'isUnderReview' => !$isDedupeBlocked
-        ];
+        $response = Tracer::inSpan(['name' => 'create_response.adding_relevant_entity_details'], function() use($merchant, $merchantDetails, $response, $merchantBusinessDetails) {
 
-        $response[Merchant\Entity::ACTIVATED]                   = (int) $merchant->isActivated();
-        $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
-        $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
-        $response[Constants::MERCHANT]                          = $merchant->toArrayPublic();
-        $response[Entity::STAKEHOLDER]                          = $merchantDetails->stakeholder;
-        $response[Entity::MERCHANT_AVG_ORDER_VALUE]             = $merchantDetails->avgOrderValue;
-        $response[Entity::ACTIVATION_PROGRESS]                  = $response['verification'][Entity::ACTIVATION_PROGRESS];
-        $response[Entity::MERCHANT_VERIFICATION_DETAIL]         = $merchantDetails->verificationDetail;
-        $response['dedupe']                                     = $dedupe;
-        $response['isDedupe']                                   = $isDedupeBlocked;
-        $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
-        $response['isHardLimitReached']                         = empty($hardEscalationLevel4) ? false : true;
-        $response['activationStatusChangeLogs']                 = $this->getStatusChangeLogs($merchant);
-        $response[Entity::MERCHANT_BUSINESS_DETAIL]             = $merchantBusinessDetails;
+            $hardEscalationLevel4 = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchantAndTypeAndLevel
+            ($merchant->getMerchantId(), Merchant\AutoKyc\Escalations\Constants::HARD_LIMIT, 4);
 
-        $appUrls = ['playstore_url', 'appstore_url'];
+            $isDedupeBlocked = $this->dedupeCore->isDedupeBlocked($merchant);
 
-        foreach ($appUrls as $url){
-            $response[$url] = $merchantBusinessDetails[BusinessDetailEntity::APP_URLS][$url] ?? '';
-        }
+            if($merchantDetails->getActivationFormMilestone() === DEConstants::L1_SUBMISSION)
+            {
+                /*
+                 * After L1 submission we do not want to block users even if they are dedupe-blocked case
+                 */
+                $isDedupeBlocked = false;
+            }
 
-        $isMtuCouponExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::MTU_COUPON_CODE);
+            $isDedupeMatch   = $this->dedupeCore->isMerchantImpersonated($merchant);
+            $dedupe          = [
+                'isMatch'       => $isDedupeMatch,
+                'isUnderReview' => !$isDedupeBlocked
+            ];
 
-        if ($isMtuCouponExperimentEnabled === true)
-        {
-            $response['isMtuCouponApplied'] = (new Coupon\Core)->isCouponApplied($merchant, Coupon\Constants::MTU_COUPON);
-        }
+            $response[Merchant\Entity::ACTIVATED]                   = (int) $merchant->isActivated();
+            $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
+            $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
+            $response[Constants::MERCHANT]                          = $merchant->toArrayPublic();
+            $response[Entity::STAKEHOLDER]                          = $merchantDetails->stakeholder;
+            $response[Entity::MERCHANT_AVG_ORDER_VALUE]             = $merchantDetails->avgOrderValue;
+            $response[Entity::ACTIVATION_PROGRESS]                  = $response['verification'][Entity::ACTIVATION_PROGRESS];
+            $response[Entity::MERCHANT_VERIFICATION_DETAIL]         = $merchantDetails->verificationDetail;
+            $response['dedupe']                                     = $dedupe;
+            $response['isDedupe']                                   = $isDedupeBlocked;
+            $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
+            $response['isHardLimitReached']                         = empty($hardEscalationLevel4) ? false : true;
+            $response['activationStatusChangeLogs']                 = $this->getStatusChangeLogs($merchant);
+            $response[Entity::MERCHANT_BUSINESS_DETAIL]             = $merchantBusinessDetails;
 
-        if ($this->isMerchantTncApplicable($merchant) === true)
-        {
-            $response[Entity::MERCHANT_TNC] = (new Merchant\Tnc\Core)->getTncDetails($merchantDetails->tnc);
-        }
+            return $response;
+        });
 
-        $isSubMerchant = $this->repo->merchant_access_map->fetchSubMerchantOnMerchantId($merchant->getMerchantId());
+        $response = Tracer::inSpan(['name' =>  'create_response.extra_details'], function() use($response, $merchant, $merchantBusinessDetails, $merchantDetails) {
+            $appUrls = ['playstore_url', 'appstore_url'];
 
-        $response['isSubMerchant'] = (empty($isSubMerchant) === false);
+            foreach ($appUrls as $url){
+                $response[$url] = $merchantBusinessDetails[BusinessDetailEntity::APP_URLS][$url] ?? '';
+            }
 
-        $response = $this->appendBankingSpecificDetails($response, $merchant);
+            $isMtuCouponExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable(
+                $merchant->getId(),
+                Merchant\RazorxTreatment::MTU_COUPON_CODE);
+
+            if ($isMtuCouponExperimentEnabled === true)
+            {
+                $response['isMtuCouponApplied'] = (new Coupon\Core)->isCouponApplied($merchant, Coupon\Constants::MTU_COUPON);
+            }
+
+            if ($this->isMerchantTncApplicable($merchant) === true)
+            {
+                $response[Entity::MERCHANT_TNC] = (new Merchant\Tnc\Core)->getTncDetails($merchantDetails->tnc);
+            }
+
+            $isSubMerchant = $this->repo->merchant_access_map->fetchSubMerchantOnMerchantId($merchant->getMerchantId());
+
+            $response['isSubMerchant'] = (empty($isSubMerchant) === false);
+
+            $response = $this->appendBankingSpecificDetails($response, $merchant);
+
+            return $response;
+        });
 
         return $response;
     }
@@ -3619,7 +3640,9 @@ class Core extends Base\Core
 
         $totalFields = count($validationFields) + count($validationSelectiveRequiredFields);
 
-        $documentsResponse = $this->documentCore()->documentResponse($merchant);
+        $documentsResponse = Tracer::inSpan(['name' => 'fetch_document_response'], function() use($merchant) {
+            return $this->documentCore()->documentResponse($merchant);
+        });
 
         $response['documents'] = $documentsResponse;
 
