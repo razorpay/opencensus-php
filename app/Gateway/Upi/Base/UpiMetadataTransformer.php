@@ -3,10 +3,12 @@
 namespace RZP\Gateway\Upi\Base;
 
 use Carbon\Carbon;
+use RZP\Constants\Entity;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
+use RZP\Models\Payment\UpiMetadata\Mode as Mode;
 use RZP\Models\Payment\UpiMetadata\Entity as Metadata;
 use RZP\Models\Payment\UpiMetadata\InternalStatus as InternalStatus;
 
@@ -194,6 +196,7 @@ class UpiMetadataTransformer extends UpiTransanformer
         $action         = $this->upi->getAction();
         $attempt        = $this->upi->getGatewayData()[Constants::ATTEMPT];
         $remindAfter    = null;
+        $mode           = $this->input[Entity::UPI][Metadata::MODE];
 
         // Three attempt for notification, next action is authorization when success
         if ($action === Action::PRE_DEBIT)
@@ -215,8 +218,9 @@ class UpiMetadataTransformer extends UpiTransanformer
             }
         }
 
-        // Three attempt for authorize, no next reminder needed when success
-        if ($action === Action::DEBIT)
+        // Three attempt for authorize (for subsequent debits only i.e. mode === auto),
+        // no next reminder needed when success
+        if ($action === Action::AUTHORIZE and $mode === Mode::AUTO)
         {
             if ($attempt >= 3)
             {

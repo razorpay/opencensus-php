@@ -37,6 +37,11 @@ abstract class UpiTransanformer
      */
     protected $item;
 
+    /**
+     * @var
+     */
+    protected $input;
+
     abstract protected function getResponseArray(): array;
 
     public function __construct(Gateway $context, Anomalies $anomalies)
@@ -48,6 +53,7 @@ abstract class UpiTransanformer
 
     public function from(array $input, Response $response, Entity $upi = null, BaseException $exception = null)
     {
+        $this->input        = $input;
         $this->response     = $response;
         $this->upi          = $upi;
         $this->exception    = $exception;
