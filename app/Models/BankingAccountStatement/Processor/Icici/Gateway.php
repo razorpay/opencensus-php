@@ -78,6 +78,17 @@ class Gateway extends BaseProcessor
     /** @var BasDetails\Entity */
     protected $basDetails;
 
+    protected $statementRecordsToMatch = [
+        Entity::ACCOUNT_NUMBER,
+        Entity::CHANNEL,
+        Entity::POSTED_DATE,
+        Entity::TYPE,
+        Entity::DESCRIPTION,
+        Entity::BANK_SERIAL_NUMBER,
+        Entity::AMOUNT,
+        Entity::BANK_TRANSACTION_ID
+    ];
+
     public function __construct(string $channel,
                                 string $accountNumber,
                                 BasDetails\Entity $basDetails,
@@ -593,6 +604,7 @@ class Gateway extends BaseProcessor
         $totalRecords = 0;
         $skippedRecordCount = 0;
         $processedRecordCount = 0;
+        $bankTransactionRecords = [];
 
         $limit = (int) (new AdminService)->getConfigKey(
             ['key' => ConfigKey::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE]);
@@ -602,7 +614,7 @@ class Gateway extends BaseProcessor
             $limit = self::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE_DEFAULT;
         }
 
-        foreach ($bankTransactions as $bankTransaction)
+        foreach ($bankTransactions as $index => $bankTransaction)
         {
             $recordsToCheck[] = [
                 $bankTransaction[Entity::BANK_TRANSACTION_ID],
@@ -612,6 +624,8 @@ class Gateway extends BaseProcessor
                 $bankTransaction[Entity::CHANNEL],
                 $bankTransaction[Entity::ACCOUNT_NUMBER],
             ];
+
+            $bankTransactionRecords[$index] = $this->formBankTransactionRecordToMatch($bankTransaction);
 
             $totalRecords++;
             $processedRecordCount++;
@@ -631,16 +645,42 @@ class Gateway extends BaseProcessor
                 {
                     $record->setDescription(trim($record->getDescription()));
 
-                    $isPresent = array_search($record->toArray(), $bankTransactions);
+                    $recordToMatch = $this->formBankTransactionRecordToMatch($record->toArray());
+
+                    $isPresent = array_search($recordToMatch, $bankTransactionRecords);
 
                     if ($isPresent !== false)
                     {
+                        // when first record in response is a duplicate record it is observed that the successive transactions
+                        // are having discrepancies in closing balance. The difference is observed to be +/- amount of duplicate
+                        // transaction depending on credit or debit.
+                        if ($isPresent === 0)
+                        {
+                            if ($record->getType() === Type::CREDIT)
+                            {
+                                $difference = $record->getAmount();
+                            }
+                            else
+                            {
+                                $difference = -1 * $record->getAmount();
+                            }
+
+                            if($bankTransactions[0][Entity::BALANCE]-$record->getBalance() === $difference)
+                            {
+                                foreach ($bankTransactions as $index => $bankTransaction)
+                                {
+                                    $bankTransactions[$index][Entity::BALANCE]= $bankTransaction[Entity::BALANCE] - $difference;
+                                }
+                            }
+                        }
+
                         unset($bankTransactions[$isPresent]);
                         $skippedRecordCount++;
                     }
                 }
 
                 $recordsToCheck = [];
+                $bankTransactionRecords = [];
 
                 $processedRecordCount = 0;
             }
@@ -677,6 +717,19 @@ class Gateway extends BaseProcessor
         }
 
         return $bankTransactions;
+    }
+
+    // instead of matching all fields of the duplicate record we will match only some selected fields which will uniquely identify the record.
+    public function formBankTransactionRecordToMatch($bankTransaction)
+    {
+        $tempBankTransactionRecord = [];
+
+        foreach ($this->statementRecordsToMatch as $statementRecordToMatch)
+        {
+            $tempBankTransactionRecord[$statementRecordToMatch] = $bankTransaction[$statementRecordToMatch];
+        }
+
+        return $tempBankTransactionRecord;
     }
 
     public function getUtrForChannel(Entity $basEntity)
