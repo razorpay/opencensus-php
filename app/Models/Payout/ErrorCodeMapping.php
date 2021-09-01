@@ -167,7 +167,8 @@ class ErrorCodeMapping
         'FTS_ATTEMPT_INITIATE_FAILED'           => 'Payout failed due to technical failure. Please retry after 30 min.',
         'FTS_ATTEMPT_CREATE_FAILED'             => 'Payout failed due to technical failure. Please retry after 30 min.',
         'CUSTOMER_DOES_NOT_EXIST'               => 'Customer account does not exist with the wallet provider for the given phone number.',
-        'MERCHANT_INSUFFICIENT_FUND'            => 'Payout failed due to insufficient funds in the bank account.'
+        'MERCHANT_INSUFFICIENT_FUND'            => 'Payout failed due to insufficient funds in the bank account.',
+        'FTS_BANK_TXN_LIMIT_CROSSED'            => 'Payout failed due to extended NEFT window limit exhausted. Please try again in the next NEFT window.'
     ];
 
     public static $alternateFailureReasonMapping = [

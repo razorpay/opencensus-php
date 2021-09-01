@@ -404,6 +404,13 @@
       "description": "Payout failed due to invalid beneficiary account details."
     }
   },
+  "FTS_BANK_TXN_LIMIT_CROSSED": {
+    "failed": {
+      "source": "business",
+      "reason": "neft_247_limit_exhausted",
+      "description": "Payout failed due to extended NEFT window limit exhausted. Please try again in the next NEFT window."
+    }
+  },
   "DEFAULT": {
     "source": "internal",
     "reason": "server_error",
