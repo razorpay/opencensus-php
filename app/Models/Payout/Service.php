@@ -57,6 +57,9 @@ class Service extends Base\Service
      */
     protected $appframeworkCore;
 
+
+    protected $workflowMigration;
+
     protected $workflowConfigService;
 
     protected const IS_VALID_PURPOSE = "is_valid_purpose";
@@ -76,6 +79,8 @@ class Service extends Base\Service
         $this->appframeworkCore = new ApplicationMerchantMaps\Core;
 
         $this->workflowConfigService = new WorkflowConfigService;
+
+        $this->workflowMigration = new WorkflowMigration();
     }
 
     public function createPayoutEntry($input)
@@ -691,7 +696,8 @@ class Service extends Base\Service
      * @return array
      * @throws \Exception
      */
-    public function getWorkflowSummary($skipFetchFromWfs = false): array
+
+    public function getWorkflowSummary()
     {
         // For test mode, we haven't enabled workflows yet
         // therefore returning empty array
@@ -699,39 +705,8 @@ class Service extends Base\Service
         {
             return [];
         }
-
-        // if the flag $skipFetchFromWfs is set to false then we only fetch the workflow summary from the api db's workflow tables. If set true we fetch from Workflow service as well
-
-        if (($skipFetchFromWfs === false) and
-            ($this->isWorkflowServiceEnabled() === true))
-        {
-            return (new WorkflowConfigService)->getConfigByType('payout-approval', $this->merchant->getId());
-        }
-
-        $permissionId = $this->repo
-                             ->permission
-                             ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, Org\Entity::RAZORPAY_ORG_ID)
-                             ->first();
-
-        $workflowRules = $this->repo
-                              ->workflow_payout_amount_rules
-                              ->fetchBankingWorkflowSummaryForPermissionId($permissionId, $this->merchant->getId());
-
-        $data = [];
-
-        foreach ($workflowRules as $wfRule)
-        {
-            $wfRuleData = $wfRule->toArray();
-
-            $hasWorkflow = (empty($wfRuleData['workflow_id']) === false);
-
-            $data[] = array_only($wfRuleData, ['min_amount', 'max_amount', 'workflow_id']) + [
-                    'has_workflow' => $hasWorkflow,
-                    'steps'        => Entity::serializeWorkflowSteps($wfRuleData['workflow']['steps'] ?? []),
-                ];
-        }
-
-        return $data;
+      
+        return $this->core->getFetchWorkflowSummary();
     }
 
     /**

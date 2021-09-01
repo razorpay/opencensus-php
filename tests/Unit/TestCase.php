@@ -114,4 +114,29 @@ class TestCase extends PHPUnitTestCase
         ini_restore('max_execution_time');
     }
 
+    protected function getPrivateProperty(& $object, string $propertyName)
+    {
+        $reflector = new \ReflectionClass(get_class($object));
+
+        $property = $reflector->getProperty($propertyName);
+
+        $property->setAccessible(true);
+
+        $propertyValue = $property->getValue($object);
+
+        return $propertyValue;
+    }
+
+    protected function setPrivateProperty(& $object, string $propertyName, $value)
+    {
+        $reflector = new \ReflectionClass(get_class($object));
+
+        $property = $reflector->getProperty($propertyName);
+
+        $property->setAccessible(true);
+
+        $propertyValue = $property->setValue($object, $value);
+
+        return $propertyValue;
+    }
 }

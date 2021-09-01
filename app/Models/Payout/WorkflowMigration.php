@@ -4,21 +4,29 @@ namespace RZP\Models\Payout;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Exception;
+use RZP\Exception\BadRequestException;
 
 class WorkflowMigration
 {
+    protected $merchant;
+
     protected $merchantId;
 
-    protected $merchant;
+    protected $payoutCore;
+
+    public function __construct()
+    {
+        $this->payoutCore = new Core();
+    }
 
     public function convertOldSummaryIntoNew(Merchant\Entity $merchant, bool $skipFetchFromWfs, bool $returnOld)
     {
         $this->merchant = $merchant;
 
-        $this->merchantId = $merchant['id'];
+        $this->merchantId = $merchant->getId();
 
-        $oldConfigByAmountRules = (new Service())->getWorkflowSummary($skipFetchFromWfs);
+        $oldConfigByAmountRules = $this->payoutCore->getFetchWorkflowSummary($skipFetchFromWfs);
+
         if ($returnOld === true)
         {
             return $oldConfigByAmountRules;
@@ -85,7 +93,7 @@ class WorkflowMigration
 
             if (count($roles) > 1)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MORE_THAN_ONE_ROLE_FOR_A_LEVEL);
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_MORE_THAN_ONE_ROLE_FOR_A_LEVEL);
             }
 
             $role = $roles[0];
