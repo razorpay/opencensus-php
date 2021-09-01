@@ -123,7 +123,7 @@ _dcs.account = '9421167';
 <!-- Blank interface init before loading the project entry file -->
 @include('partials/rzpq-interface')
 
-@if ($newAuthFlow === true and app('request')->input('auth_source') === 'website')
+@if ($newAuthFlow === true and (app('request')->input('auth_source') === 'website' || app('request')->input('auth_source') === 'website_homepage'))
   <script type="text/javascript">
       window.session_id = "{!! $session_id !!}"
       window.isAuthPage = true;
