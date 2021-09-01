@@ -10,20 +10,19 @@ class Core extends Base\Core
 {
     public function createRiskNote($merchantId, $input)
     {
-        $adminId = $this->app['basicauth']->getAdmin()->getId();
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $input = [
             Entity::NOTE          => $input[Entity::NOTE],
-            Entity::ADMIN_ID      => $adminId,
-            Entity::MERCHANT_ID   => $merchantId,
         ];
 
         $riskNote = (new Entity)->build($input);
 
-        // will throw an error if no merchant found.
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
         $riskNote->merchant()->associate($merchant);
+
+        $riskNote->admin()->associate($admin);
 
         $this->repo->merchant_risk_note->saveOrFail($riskNote);
 

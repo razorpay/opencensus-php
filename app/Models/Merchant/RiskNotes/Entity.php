@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const ID                   = 'id';
     const MERCHANT_ID          = 'merchant_id';
     const ADMIN_ID             = 'admin_id';
+    const ADMIN                = 'admin';
     const NOTE                 = 'note';
     const DELETED_BY           = 'deleted_by';
     const UPDATED_AT           = null;
@@ -40,6 +41,8 @@ class Entity extends Base\PublicEntity
         self::DELETED_AT,
         self::DELETED_BY,
     ];
+
+    protected $expanded = [self::ADMIN];
 
     public $timestamps = [self::CREATED_AT];
 

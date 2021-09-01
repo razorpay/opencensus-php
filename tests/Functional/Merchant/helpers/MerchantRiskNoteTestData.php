@@ -14,7 +14,6 @@ return [
         'response' => [
             'content' => [
                 'merchant_id' => '10000000000001',
-                'admin_id'    => 'RzrpySprAdmnId',
                 'note'        => 'Test note #123456',
             ],
         ],
@@ -103,39 +102,8 @@ return [
         ],
         'response' => [
             'content' => [
-                [
-                    'merchant_id' => '10000000000001',
-                    'admin_id'    => 'RzrpySprAdmnId',
-                    'note'        => 'This is a test note',
-                ],
-                [
-                    'merchant_id' => '10000000000001',
-                    'admin_id'    => 'RzrpySprAdmnId',
-                    'note'        => 'This is a test note',
-                ]
-            ],
-            'status_code' => 200,
-        ],
-    ],
-    'testGetAllRiskNotesWithNoDeletes' => [
-        'request'  => [
-            'url'     => '/merchants/10000000000001/risk_notes/',
-            'method'  => 'get',
-            'content' => [
-                'count' => '2'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                [
-                    'merchant_id' => '10000000000001',
-                    'admin_id'    => 'RzrpySprAdmnId',
-                    'note'        => 'This is a test note',
-                ],
-                [
-                    'merchant_id' => '10000000000001',
-                    'admin_id'    => 'RzrpySprAdmnId',
-                    'note'        => 'This is a test note',
+                'count' => 2,
+                'items' => [
                 ]
             ],
             'status_code' => 200,
@@ -151,15 +119,8 @@ return [
         ],
         'response' => [
             'content' => [
-                [
-                    'merchant_id' => '10000000000001',
-                    'admin_id'    => 'RzrpySprAdmnId',
-                    'note'        => 'This is a test note',
-                ],
-                [
-                    'merchant_id' => '10000000000001',
-                    'admin_id'    => 'RzrpySprAdmnId',
-                    'note'        => 'This is a test note',
+                'count' => 2,
+                'items' => [
                 ]
             ],
             'status_code' => 200,
@@ -175,10 +136,8 @@ return [
         ],
         'response' => [
             'content' => [
-                [
-                    'merchant_id' => '10000000000001',
-                    'admin_id'    => 'RzrpySprAdmnId',
-                    'note'        => 'This is a test note',
+                'count' => 1,
+                'items' => [
                 ]
             ],
             'status_code' => 200,

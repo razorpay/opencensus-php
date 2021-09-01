@@ -41,19 +41,23 @@ class MerchantRiskNoteTest extends TestCase
         $createNotesPerm = $this->fixtures->create(Constants\Entity::PERMISSION, [Permission\Entity::NAME => $permissionName]);
 
         $role->permissions()->attach($createNotesPerm->getId());
+
+        return $admin;
     }
 
-    private function createDefaultRiskNote()
+    private function createDefaultRiskNote($merchant)
     {
         $admin = $this->ba->getAdmin();
 
         $input = [
             'note'                       => 'This is a test note',
-            'admin_id'                   => $admin['id'],
-            'merchant_id'                => '10000000000001',
         ];
 
         $riskNote = (new RiskNotes\Entity)->build($input);
+
+        $riskNote->merchant()->associate($merchant);
+
+        $riskNote->admin()->associate($admin);
 
         (new RiskNotes\Repository())->saveOrFail($riskNote);
 
@@ -76,7 +80,7 @@ class MerchantRiskNoteTest extends TestCase
 
     public function testCreateRiskNoteWithPermission()
     {
-        $this->addPermission(Permission\Name::CREATE_MERCHANT_RISK_NOTES);
+        $admin = $this->addPermission(Permission\Name::CREATE_MERCHANT_RISK_NOTES);
 
         $this->fixtures->create('merchant',
             [
@@ -89,34 +93,38 @@ class MerchantRiskNoteTest extends TestCase
         $this->assertNotNull($response['id']);
 
         $this->assertNotNull($response['created_at']);
+
+        $this->assertEquals($response['admin_id'], $admin->getId());
+
+        $this->assertEquals($response['admin']['name'], $admin->getName());
     }
 
     public function testDeleteRiskNoteWithInvalidRiskId()
     {
         $this->addPermission(Permission\Name::DELETE_MERCHANT_RISK_NOTES);
 
-        $this->fixtures->create('merchant',
+        $merchant = $this->fixtures->create('merchant',
             [
                 'id'    => '10000000000001',
             ]
         );
 
-        $this->createDefaultRiskNote();
+        $this->createDefaultRiskNote($merchant);
 
-        s($this->startTest());
+        $this->startTest();
     }
 
     public function testDeleteRiskNoteWithInvalidMerchant()
     {
         $this->addPermission(Permission\Name::DELETE_MERCHANT_RISK_NOTES);
 
-        $this->fixtures->create('merchant',
+        $merchant = $this->fixtures->create('merchant',
             [
                 'id'    => '10000000000001',
             ]
         );
 
-        $createdNoted = $this->createDefaultRiskNote();;
+        $createdNoted = $this->createDefaultRiskNote($merchant);
 
         $riskNoteId = ($createdNoted->toArrayPublic())['id'];
 
@@ -130,13 +138,13 @@ class MerchantRiskNoteTest extends TestCase
     {
         $this->ba->getAdmin();
 
-        $this->fixtures->create('merchant',
+        $merchantId = $this->fixtures->create('merchant',
             [
                 'id'    => '10000000000001',
             ]
         );
 
-        $createdNoted = $this->createDefaultRiskNote();
+        $createdNoted = $this->createDefaultRiskNote($merchantId);
 
         $riskNoteId = ($createdNoted->toArrayPublic())['id'];
 
@@ -150,13 +158,13 @@ class MerchantRiskNoteTest extends TestCase
     {
         $this->addPermission(Permission\Name::DELETE_MERCHANT_RISK_NOTES);
 
-        $this->fixtures->create('merchant',
+        $merchant = $this->fixtures->create('merchant',
             [
                 'id'    => '10000000000001',
             ]
         );
 
-        $createdNotes = $this->createDefaultRiskNote();
+        $createdNotes = $this->createDefaultRiskNote($merchant);
 
         $riskNoteId = ($createdNotes->toArrayPublic())['id'];
 
@@ -168,68 +176,83 @@ class MerchantRiskNoteTest extends TestCase
 
     public function testGetAllRiskNotesWithNoDeletes()
     {
-        $this->fixtures->create('merchant', [
+        $merchant = $this->fixtures->create('merchant', [
            'id'    => '10000000000001',
         ]);
-        $this->createDefaultRiskNote();
-        $this->createDefaultRiskNote();
+        $this->createDefaultRiskNote($merchant);
+        $this->createDefaultRiskNote($merchant);
 
         $response = $this->startTest();
 
-        $this->assertSame(sizeof($response), 2);
+        $items = $response['items'];
 
-        $this->assertNotNull($response[0]['id']);
-        $this->assertNotNull($response[1]['id']);
+        $admin = $this->ba->getAdmin();
 
-        $this->assertNull($response[0]['deleted_at']);
-        $this->assertNull($response[1]['deleted_at']);
+        $this->assertSame(sizeof($items), 2);
 
-        $this->assertNull($response[0]['deleted_by']);
-        $this->assertNull($response[1]['deleted_by']);
+        $this->assertNotNull($items[0]['id']);
+        $this->assertNotNull($items[1]['id']);
+
+        $this->assertEquals($items[0]['admin']['name'], $admin->getName());
+        $this->assertEquals($items[0]['merchant_id'], $merchant->getId());
+
+        $this->assertNull($items[0]['deleted_at']);
+        $this->assertNull($items[1]['deleted_at']);
+
+        $this->assertNull($items[0]['deleted_by']);
+        $this->assertNull($items[1]['deleted_by']);
     }
 
     public function testGetAllRiskNotesShowSoftDeletes()
     {
-        $this->fixtures->create('merchant', [
+        $merchant = $this->fixtures->create('merchant', [
             'id'    => '10000000000001',
         ]);
-        $this->createDefaultRiskNote();
-        $createdNote = $this->createDefaultRiskNote();
+        $this->createDefaultRiskNote($merchant);
+        $createdNote = $this->createDefaultRiskNote($merchant);
 
         $this->deleteRiskNote($createdNote);
 
         $response = $this->startTest();
 
-        $this->assertSame(sizeof($response), 2);
+        $items = $response['items'];
 
-        $this->assertNotNull($response[0]['id']);
-        $this->assertNotNull($response[1]['id']);
+        $admin = $this->ba->getAdmin();
 
-        $this->assertNotNull($response[0]['deleted_at']);
-        $this->assertNull($response[1]['deleted_at']);
+        $this->assertSame(sizeof($items), 2);
 
-        $this->assertNotNull($response[0]['deleted_by']);
-        $this->assertNull($response[1]['deleted_by']);
+        $this->assertNotNull($items[0]['id']);
+        $this->assertNotNull($items[1]['id']);
+
+        $this->assertEquals($items[0]['admin']['name'], $admin->getName());
+
+        $this->assertNotNull($items[0]['deleted_at']);
+        $this->assertNull($items[1]['deleted_at']);
+
+        $this->assertNotNull($items[0]['deleted_by']);
+        $this->assertNull($items[1]['deleted_by']);
     }
 
     public function testGetAllRiskNotesHideSoftDeletes()
     {
-        $this->fixtures->create('merchant', [
+        $merchant = $this->fixtures->create('merchant', [
             'id'    => '10000000000001',
         ]);
-        $this->createDefaultRiskNote();
-        $createdNote = $this->createDefaultRiskNote();
+        $this->createDefaultRiskNote($merchant);
+        $createdNote = $this->createDefaultRiskNote($merchant);
 
         $this->deleteRiskNote($createdNote);
 
         $response = $this->startTest();
 
-        $this->assertSame(sizeof($response), 1);
+        $items = $response['items'];
 
-        $this->assertNotNull($response[0]['id']);
+        $this->assertSame(sizeof($items), 1);
 
-        $this->assertNull($response[0]['deleted_at']);
+        $this->assertNotNull($items[0]['id']);
 
-        $this->assertNull($response[0]['deleted_by']);
+        $this->assertNull($items[0]['deleted_at']);
+
+        $this->assertNull($items[0]['deleted_by']);
     }
 }

@@ -8,16 +8,16 @@ class Service extends Base\Service
 {
     public function create(string $merchantId, array $input)
     {
-        $riskNotes = $this->core()->createRiskNote($merchantId, $input);
+        $riskNote = $this->core()->createRiskNote($merchantId, $input);
 
-        return $riskNotes;
+        return $riskNote->toArrayPublicWithExpand();
     }
 
     public function getAll(string $merchantId, $input)
     {
-        $response = $this->core()->getAll($merchantId, $input);
+        $riskNotes = $this->core()->getAll($merchantId, $input);
 
-        return $response;
+        return $riskNotes->toArrayPublicWithExpand();
     }
 
     public function delete(string $merchantId, string $id)
