@@ -123,8 +123,18 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
-        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        $reconRowAmount = $this->getReconPaymentAmount($row);
+
+        if ($this->payment->getBaseAmount() !== $reconRowAmount)
         {
+            // HDFC returns amount as Rs 1 in mis file but in our db we have Rs 0 registration
+            // hence payment's base amount and recon file amount causes amount mismatch
+            if (($this->payment->isRecurringTypeInitial() === true)
+                and (($reconRowAmount === 100) and ($this->payment->getBaseAmount() === 0)))
+            {
+                return true;
+            }
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
