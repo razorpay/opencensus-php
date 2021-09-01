@@ -1621,6 +1621,11 @@ class Constants
             'display_name'  => 'Custom Recurring Charge Batch for Axis',
             'documentation' => '',
         ],
+        self::RECURRING_CARD_MANDATE => [
+            'feature' => self::RECURRING_CARD_MANDATE,
+            'display_name'  => 'Card mandate for card recurring payments',
+            'documentation' => '',
+        ],
         self::RZP_TRUSTED_BADGE => [
             'feature'       => self::RZP_TRUSTED_BADGE,
             'display_name'  => 'Razorpay Trusted Badge',

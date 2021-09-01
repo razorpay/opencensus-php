@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Card;
 
 use Event;
+use Mockery;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
@@ -503,9 +504,30 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetCardPaymentDomesticIinNATestMode()
+    public function testGetCardPaymentDomesticIinTestMode()
     {
         $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCardPaymentDomesticIinLiveMode()
+    {
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['recurring_card_mandate']);
+
+        $mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
+
+        $this->app->instance('mandateHQ', $mandateHQ);
+
+        $mandateHQ->shouldReceive('isBinSupported')
+            ->andReturnUsing(function ()
+            {
+                return true;
+            });
 
         $this->startTest();
     }

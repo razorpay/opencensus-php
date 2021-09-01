@@ -806,14 +806,19 @@ class Entity extends Base\PublicEntity
                 or ($iin->isAmex() === true))
             and ($isInitial === true))
         {
-            $variant  = app('razorx')->getTreatment($merchant->getId(),
-                RazorxTreatment::RECURRING_CARD_NOT_ENABLED,
-                app('rzp.mode'),
-                3);
-
-            if (strtolower($variant) !== 'control')
+            if ($merchant->isFeatureEnabled(Feature\Constants::RECURRING_CARD_MANDATE) === true)
             {
-                return false;
+                return $app->mandateHQ->isBinSupported($iin);
+            } else {
+                $variant  = app('razorx')->getTreatment($merchant->getId(),
+                    RazorxTreatment::RECURRING_CARD_NOT_ENABLED,
+                    app('rzp.mode'),
+                    3);
+
+                if (strtolower($variant) !== 'control')
+                {
+                    return false;
+                }
             }
         }
 
