@@ -117,13 +117,30 @@ class Validator extends Base\Validator
     ];
 
     protected static $createPlanRules = [
+        Entity::PLAN_NAME   => 'required|string|max:255'
+    ];
+
+    protected static $createPlanNameRules = [
         Entity::PLAN_NAME   => 'required|alpha_num|max:255'
     ];
 
     protected static $createBulkPricingRules = [
-        Entity::PLAN_NAME   => 'required|alpha_num|max:255',
+        Entity::PLAN_NAME   => 'required|string|max:255',
         Entity::RULES       => 'required|array|min:1',
     ];
+
+    protected function validatePlanName($input)
+    {
+        // If no plan name, then set it to null
+        $planInput[Entity::PLAN_NAME] = $input[Entity::PLAN_NAME] ?? null;
+
+        $this->validateInput('createPlan', $planInput);
+
+        if ($input[Entity::TYPE] !== Type::BUY_PRICING)
+        {
+            $this->validateInput('createPlanName', $planInput);
+        }
+    }
 
     protected function validateAddPlanRuleFeature($input)
     {
@@ -757,10 +774,7 @@ class Validator extends Base\Validator
 
     public function createPlanValidate($input)
     {
-        // If no plan name, then set it to null
-        $planInput[Entity::PLAN_NAME] = $input[Entity::PLAN_NAME] ?? null;
-
-        $this->validateInput('createPlan', $planInput);
+        $this->validatePlanName($input);
 
         unset($input[Entity::PLAN_NAME]);
 
