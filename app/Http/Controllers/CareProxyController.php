@@ -13,6 +13,7 @@ class CareProxyController extends Controller
 
     //proxy
     const CHECK_ELIGIBILITY = 'twirp/rzp.care.callback.v1.CallbackService/CheckEligibility';
+    const CHECK_ELIGIBILITY_V2 = 'twirp/rzp.care.callback.v1.CallbackService/CheckEligibilityV2';
     const GET_SLOTS         = 'twirp/rzp.care.callback.v1.CallbackService/GetSlots';
     const CREATE_CALLBACK   = 'twirp/rzp.care.callback.v1.CallbackService/CreateCallback';
     const GET_CALLBACK      = 'twirp/rzp.care.callback.v1.CallbackService/GetCallback';
@@ -50,6 +51,7 @@ class CareProxyController extends Controller
 
     const MERCHANT_ROUTES = [
         self::CHECK_ELIGIBILITY,
+        self::CHECK_ELIGIBILITY_V2,
         self::GET_SLOTS,
         self::CREATE_CALLBACK,
         self::GET_CALLBACK,
