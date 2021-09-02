@@ -14,7 +14,7 @@ const MultiSelect = ({
   disabled,
   additionalFieldMaxLength,
 }) => {
-  const [meta, helpers] = useField(name);
+  const [ignored, meta, helpers] = useField(name);
   const { value: fieldValue, touched } = meta;
   const [selected, setSelected] = useState(fieldValue || []);
   const additionalData = selected.filter((item) => !options.includes(item))[0];

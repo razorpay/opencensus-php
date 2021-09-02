@@ -14,7 +14,7 @@ const CurrencyMultiSelect = ({
   error,
   disabled,
 }) => {
-  const [meta, helpers] = useField(name);
+  const [ignored, meta, helpers] = useField(name);
   const { value, touched } = meta;
   const { setValue, setTouched } = helpers;
 
