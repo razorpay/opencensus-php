@@ -359,14 +359,26 @@ body {
         vertical-align: bottom;
       }
 
+      &:hover, &:focus{
+        color #555
+      }
+
       &.active {
         border-color: $primary-color;
         color: #fff;
         background-color: #252939;
+        &:hover{
+          color #FFF
+        }
       }
 
       .spin-loader {
         margin-top: 10px
+      }
+    }
+    .NavLinkGroup--title{
+      &:hover{
+        color #b4b6bd
       }
     }
   }

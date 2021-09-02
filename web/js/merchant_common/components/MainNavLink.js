@@ -13,6 +13,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
     return {
       baseLocation: state.app.baseLocation,
       isMobileResolution: state.app.isMobileResolution,
+      activePageName: state.app.activePageName,
     };
   },
   { setActivePageName, toggleMobileMenu },
@@ -87,8 +88,8 @@ export default class MainNavLink extends Component {
     return location.pathname === currentLink;
   }
 
-  setActivePageName(match, location) {
-    return this.isActivePath(location);
+  setActivePageName(location, label) {
+    return this.props.activePageName === label || this.isActivePath(location);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -168,7 +169,7 @@ export default class MainNavLink extends Component {
       >
         <NavLink
           {...linkProps}
-          isActive={this.setActivePageName}
+          isActive={() => this.setActivePageName(location, label)}
           onClick={this.handleClick}
           class="NavLink"
         >
