@@ -483,6 +483,7 @@ class Type
         self::BUY_PRICING_RULE              => Name::PAYMENTS_CREATE_BUY_PRICING_PLAN,
         self::BUY_PRICING_ASSIGN            => Name::EDIT_TERMINAL,
         self::TERMINAL_CREATION             => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
+        self::PAYOUT_LINK_BULK              => Name::PAYOUT_LINKS_ADMIN_BULK_CREATE,
         self::CAPTURE_SETTING               => Name::CAPTURE_SETTING_BATCH_UPLOAD,
         self::WEBSITE_CHECKER               => Name::WEBSITE_CHECKER,
     ];

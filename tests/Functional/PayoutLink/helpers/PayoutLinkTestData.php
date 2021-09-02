@@ -2203,4 +2203,48 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testCreateAdminBatchWithoutRequiredPermission' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/admin/batches',
+            'content' => [
+                'type' => 'payout_link_bulk',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Required permission not found',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND
+        ],
+    ],
+
+    'testCreateAdminBatchWithPermission' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/admin/batches',
+            'content' => [
+                'type' => 'payout_link_bulk',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'The file field is required when file id is not present.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ]
 ];

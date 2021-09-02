@@ -415,6 +415,10 @@ return [
                 'description' => 'create terminals in bulk',
                 'assignable'  => true,
             ],
+            Permission::PAYOUT_LINKS_ADMIN_BULK_CREATE => [
+                'description' => 'create payout links in bulk',
+                'assignable'  => true,
+            ],
             Permission::CAPTURE_SETTING_BATCH_UPLOAD        => [
                 'description' => 'Permission to add capture settings in batch',
                 'assignable'  => true
