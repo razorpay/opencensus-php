@@ -59,10 +59,7 @@ export default class ProviderDetails extends Component {
             <div class="SliderPanel__Body">
               <div class="panel-body">
                 <div class="list-group details-row-container">
-                  <EntityDetailRow
-                    label="Description"
-                    value={() => provider.Description}
-                  />
+                  <EntityDetailRow label="Description" value={() => provider.Description} />
                 </div>
                 <div class="list-group details-row-container">
                   <EntityDetailRow
@@ -80,7 +77,7 @@ export default class ProviderDetails extends Component {
                 <div class="list-group details-row-container">
                   <EntityDetailRow
                     label="Methods Enabled"
-                    value={() => provider.Gateway_details['Payment Methods'].join(", ")}
+                    value={() => provider.Gateway_details['Payment Methods'].join(', ')}
                   />
                 </div>
                 <div class="list-group details-row-container">
@@ -89,14 +86,14 @@ export default class ProviderDetails extends Component {
                     value={() => (
                       <div className="provider-api-details">
                         {detailsKeys.map((key, index) => {
-                          if(key != "Payment Methods") {
+                          if (key != 'Payment Methods') {
                             return (
                               <Fragment key={index}>
-                                <div className="key-name">
-                                  {titleCase(key)}
-                                </div>
+                                <div className="key-name">{titleCase(key)}</div>
                                 <div className="key-value">
-                                  {key === 'Salt' ? 'xxxxxxxx' : provider.Gateway_details[key]}
+                                  {provider.Gateway_details[key]
+                                    ? provider.Gateway_details[key]
+                                    : '**********'}
                                 </div>
                               </Fragment>
                             );
