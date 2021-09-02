@@ -13,10 +13,12 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class RecurringPaymentTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected function setUp(): void
     {
@@ -141,6 +143,154 @@ class RecurringPaymentTest extends TestCase
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertEquals('auto', $paymentEntity['recurring_type']);
+    }
+
+    public function testRecurringDomesticCardPaymentSubscriptionRegistration()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $this->fixtures->iin->create([
+            'iin'       => '526731',
+            'country'   => 'IN',
+            'type'      => 'credit',
+            'recurring' => 1,
+        ]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+        $payment['card']['number'] = '5267318187975449';
+        $payment['amount'] = 100000;
+
+        $subr = $this->fixtures->create('subscription_registration',
+            ['method' => 'card', 'max_amount' => 400000, 'expire_at' => 4091958776, 'notes' => []]);
+
+        $order = $this->fixtures->create('order',
+            ['amount' => 100000]);
+
+        $this->fixtures->create('invoice',
+            ['entity_type' => 'subscription_registration', 'entity_id' => $subr->id, 'order_id' => $order->id]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $updatedSubr = $this->getDbEntity('subscription_registration', ['id' => $subr->id]);
+        $token = $this->getDbEntity('token', ['id' => $updatedSubr->token_id]);
+
+        $this->assertEquals($subr->max_amount, $token->max_amount);
+        $this->assertEquals($subr->expire_at, $token->expired_at);
+    }
+
+    public function testRecurringDomesticCardPaymentSubscriptionRegistrationMaxAmountNull()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $this->fixtures->iin->create([
+            'iin'       => '526731',
+            'country'   => 'IN',
+            'type'      => 'credit',
+            'recurring' => 1,
+        ]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+        $payment['card']['number'] = '5267318187975449';
+        $payment['amount'] = 100000;
+
+        $subr = $this->fixtures->create('subscription_registration',
+            ['method' => 'card', 'max_amount' => null, 'expire_at' => 4091958776, 'notes' => []]);
+
+        $order = $this->fixtures->create('order',
+            ['amount' => 100000]);
+
+        $this->fixtures->create('invoice',
+            ['entity_type' => 'subscription_registration', 'entity_id' => $subr->id, 'order_id' => $order->id]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $updatedSubr = $this->getDbEntity('subscription_registration', ['id' => $subr->id]);
+        $token = $this->getDbEntity('token', ['id' => $updatedSubr->token_id]);
+
+        $this->assertEquals(500000, $token->max_amount);
+        $this->assertEquals($subr->expire_at, $token->expired_at);
+    }
+
+    public function testRecurringInternationalCardPaymentSubscriptionRegistrationMaxAmountNull()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $this->fixtures->iin->create([
+            'iin'       => '555555',
+            'country'   => 'US',
+            'type'      => 'credit',
+            'recurring' => 1,
+        ]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+        $payment['card']['number'] = '5555555555554444';
+        $payment['amount'] = 100000;
+
+        $subr = $this->fixtures->create('subscription_registration',
+            ['method' => 'card', 'max_amount' => null, 'expire_at' => 4091958776, 'notes' => []]);
+
+        $order = $this->fixtures->create('order',
+            ['amount' => 100000]);
+
+        $this->fixtures->create('invoice',
+            ['entity_type' => 'subscription_registration', 'entity_id' => $subr->id, 'order_id' => $order->id]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $updatedSubr = $this->getDbEntity('subscription_registration', ['id' => $subr->id]);
+        $token = $this->getDbEntity('token', ['id' => $updatedSubr->token_id]);
+
+        $this->assertEquals(9999900, $token->max_amount);
+        $this->assertEquals($subr->expire_at, $token->expired_at);
+    }
+
+    public function testRecurringDomesticCardPaymentSubscriptionRegistrationMaxAmountLimit()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $this->fixtures->iin->create([
+            'iin'       => '526731',
+            'country'   => 'IN',
+            'type'      => 'credit',
+            'recurring' => 1,
+        ]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+        $payment['card']['number'] = '5267318187975449';
+        $payment['amount'] = 100000;
+
+        $subr = $this->fixtures->create('subscription_registration',
+            ['method' => 'card', 'max_amount' => 600000, 'expire_at' => 4091958776, 'notes' => []]);
+
+        $order = $this->fixtures->create('order',
+            ['amount' => 100000]);
+
+        $this->fixtures->create('invoice',
+            ['entity_type' => 'subscription_registration', 'entity_id' => $subr->id, 'order_id' => $order->id]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            Exception\BadRequestValidationFailureException::class,
+            'Token max amount can not be greater than 500000');
     }
 
     public function testDebitCardRecurringFirstPaymentCreatePublicAuth()

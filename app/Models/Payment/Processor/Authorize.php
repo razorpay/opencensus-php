@@ -4927,6 +4927,47 @@ trait Authorize
 
             $saveMethodInput[Token\Entity::CARD_ID] = $savedCardId;
 
+            $order = $payment->order;
+
+            if ($order !== null)
+            {
+                $tokenRegistration = $order->getTokenRegistration();
+
+                if ($tokenRegistration !== null)
+                {
+                    $inn = $payment->card->iinRelation;
+
+                    $maxAmount = $tokenRegistration->getMaxAmount();
+
+                    if ($maxAmount === null)
+                    {
+                        if (($inn !== null) and
+                            ($inn->isInternational() === false))
+                        {
+                            $tokenRegistration->setMaxAmount(SubscriptionRegistration\Entity::CARD_MANDATE_DEFAULT_MAX_AMOUNT);
+                        }
+                        else
+                        {
+                            $tokenRegistration->setMaxAmount(SubscriptionRegistration\Entity::DEFAULT_MAX_AMOUNT);
+                        }
+
+                        $this->repo->saveOrFail($tokenRegistration);
+                    }
+                    elseif (($inn !== null) and
+                            ($inn->isInternational() === false) and
+                            ($maxAmount > SubscriptionRegistration\Entity::CARD_MANDATE_DEFAULT_MAX_AMOUNT))
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'Token max amount can not be greater than ' . SubscriptionRegistration\Entity::CARD_MANDATE_DEFAULT_MAX_AMOUNT,
+                            Token\Entity::MAX_AMOUNT);
+                    }
+
+                    $saveMethodInput[Token\Entity::MAX_AMOUNT] = $tokenRegistration->getMaxAmount();
+
+                    $saveMethodInput[Token\Entity::EXPIRED_AT] = $tokenRegistration->getExpireAt();
+                }
+            }
+
             if ($payment->isRequiredToCreateNewTokenAlways() === true)
             {
                 $validateExisting = false;

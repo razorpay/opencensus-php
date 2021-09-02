@@ -100,6 +100,57 @@ class CardMandateTest extends TestCase
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
     }
 
+    public function testSubscriptionRegistrationInitialCardMandatePaymentAmountGreaterThanMaxAmount()
+    {
+        $this->mockCheckBin();
+
+        $this->mockRegisterMandate();
+
+        $this->mockReportPayment();
+
+        $paymentInp = $this->paymentInput;
+
+        $paymentInp['amount'] = 800000;
+
+        $subr = $this->fixtures->create('subscription_registration',
+            ['method' => 'card', 'max_amount' => 400000, 'expire_at' => 4091958776, 'notes' => []]);
+
+        $order = $this->fixtures->create('order',
+            ['amount' => 800000, 'payment_capture' => 1]);
+
+        $this->fixtures->create('invoice',
+            ['entity_type' => 'subscription_registration', 'entity_id' => $subr->id, 'order_id' => $order->id]);
+
+        $paymentInp['order_id'] = $order->getPublicId();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $paymentInp,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['razorpay_payment_id'] ?? null);
+
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('initial', $payment->getRecurringType());
+        $this->assertNotNull($payment->getTokenId());
+
+        $token = $payment->localToken;
+        $this->assertNotEmpty($token);
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+        $this->assertEquals($subr['max_amount'], $token->getMaxAmount());
+        $this->assertEquals($subr['expire_at'], $token->getExpiredAt());
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+        $this->assertNotEmpty($cardMandate);
+        $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
+        $this->assertEquals('active', $cardMandate->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+    }
+
     public function testCreateCardMandateForUSDCurrencyPayment()
     {
         $this->mockCheckBin();
@@ -250,6 +301,56 @@ class CardMandateTest extends TestCase
             'payment_capture' => 1,
         ]);
         $paymentInput[Payment::ORDER_ID] = $order->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $content = $this->doS2SRecurringPayment($paymentInput);
+        $this->assertNotEmpty($content['razorpay_payment_id']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('auto', $payment->getRecurringType());
+        $this->assertEquals('created', $payment->getStatus());
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('notified', $cardMandateNotification->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandateNotification->notification_id);
+        $this->assertNotEmpty($cardMandateNotification->notified_at);
+
+        $this->mockPostDebitNotification();
+
+        $this->testData[__FUNCTION__]['request']['content']['payload']['mandate.notification']['entity']['id'] = $cardMandateNotification->notification_id;
+
+        $this->startTest();
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('notified', $cardMandateNotification->getStatus());
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('captured', $payment->getStatus());
+    }
+
+    public function testSubscriptionRegistrationAutoCardMandatePaymentAmountGreaterThanMaxAmountWithAFA()
+    {
+        $this->testSubscriptionRegistrationInitialCardMandatePaymentAmountGreaterThanMaxAmount();
+
+        $this->mockCreatePreDebitNotification(true, true);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        $paymentInput = $this->getDefaultRecurringPaymentArray();
+        unset($paymentInput[Payment::CARD]);
+        unset($paymentInput[Payment::BANK]);
+
+        $paymentInput[Payment::TOKEN] = $tokenId;
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 900000, // Amount greater than Token Max Amount
+            'payment_capture' => 1,
+        ]);
+        $paymentInput[Payment::ORDER_ID] = $order->getPublicId();
+        $paymentInput[Payment::AMOUNT] = $order['amount'];
 
         $this->ba->privateAuth();
 

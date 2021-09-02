@@ -45,7 +45,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_CAPTURE                    => 'filled|boolean',
         Entity::CUSTOMER_ID                        => 'filled|public_id|size:19',
         Entity::NOTES                              => 'sometimes|notes',
-        Entity::METHOD                             => 'sometimes|in:netbanking,emandate,upi,nach',
+        Entity::METHOD                             => 'sometimes|in:netbanking,emandate,upi,nach,card',
         Entity::BANK                               => 'filled',
         Entity::DISCOUNT                           => 'sometimes|boolean',
         Entity::OFFERS                             => 'sometimes|array',

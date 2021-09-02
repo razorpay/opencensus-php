@@ -678,33 +678,127 @@ return [
         ],
     ],
 
-    'testCreateTPVOrderInvalidMethod' => [
+    'testCreateCardTPVOrder' => [
         'request' => [
             'content' => [
-                'amount'         => 50000,
-                'currency'       => 'INR',
-                'receipt'        => 'rcptid42',
-                'method'         => 'card',
-                'account_number' => '040304030403040',
-                'bank'           => 'UTIB',
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'receipt'         => 'rcptid42',
+                'method'          => 'card',
+                'customer_id'     => 'cust_100000customer',
+                'payment_capture' => 1,
+                'token'           => [
+                    'max_amount'   => 300000,
+                    'expire_at'    => 1880118306,
+                ]
             ],
             'method'    => 'POST',
             'url'       => '/orders',
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The selected method is invalid.',
-                ],
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'card',
+                'token'          =>   [
+                    'max_amount'   => 300000,
+                    'expire_at'    => 1880118306,
+                ]
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testCreateTPVOrderWhenMethodNull' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'receipt'         => 'rcptid42',
+                'customer_id'     => 'cust_100000customer',
+                'payment_capture' => 1,
+                'token'           => [
+                    'max_amount'   => 300000,
+                    'expire_at'    => 1880118306,
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         =>  null,
+                'token'          =>   [
+                    'max_amount'   => 300000,
+                    'expire_at'    => 1880118306,
+                ]
+            ],
+        ],
+    ],
+
+    'testCreateCardTPVOrderNoMaxAmount' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'receipt'         => 'rcptid42',
+                'method'          => 'card',
+                'customer_id'     => 'cust_100000customer',
+                'payment_capture' => 1,
+                'token'           => [
+                    'expire_at'    => 1880118306,
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'card',
+                'token'          =>   [
+                    'max_amount'   => null,
+                    'expire_at'    => 1880118306,
+                ]
+            ],
+        ],
+    ],
+
+    'testCreateCardTPVOrderNoExpireAt' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'receipt'         => 'rcptid42',
+                'method'          => 'card',
+                'customer_id'     => 'cust_100000customer',
+                'payment_capture' => 1,
+                'token'           => [
+                    'max_amount'   => 300000,
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'card',
+                'token'          =>   [
+                    'max_amount'   => 300000,
+                    'expire_at'    => null,
+                ]
+            ],
+        ],
+    ],
+
     'testCreateOrderWithBank' => [
         'request' => [
             'content' => [
