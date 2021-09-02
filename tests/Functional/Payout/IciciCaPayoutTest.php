@@ -340,6 +340,29 @@ class IciciCaPayoutTest extends TestCase
         $this->assertNotNull($basDetailsAfterCronRuns->getGatewayBalanceChangeAt());
     }
 
+    public function testProcessGatewayBalanceUpdateInDeleteMode()
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE => True]);
+
+        /** @var Details\Entity $basDetailsBeforeCronRuns */
+        $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                       ['account_number' => 2224440041626905]);
+
+        $this->assertNull($basDetailsBeforeCronRuns->getGatewayBalance());
+        $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
+        $this->assertNull($basDetailsBeforeCronRuns->getGatewayBalanceChangeAt());
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
+        $response = $this->setupIciciDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var Details\Entity $basDetailsAfterCronRuns */
+        $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                      ['account_number' => 2224440041626905]);
+
+        $this->assertEquals($basDetailsBeforeCronRuns->toArray(), $basDetailsAfterCronRuns->toArray());
+    }
+
     public function testGatewayBalanceFetchWithGatewayFailure()
     {
         $exception = new GatewayErrorException("GATEWAY_ERROR_UNKNOWN_ERROR",

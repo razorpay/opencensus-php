@@ -9,7 +9,7 @@ use RZP\Models\Settlement\SlackNotification;
 class RblBankingAccountGatewayBalanceUpdate extends Job
 {
     //TODO: move constants in config
-    const MAX_RETRY_ATTEMPT = 3;
+    const MAX_RETRY_ATTEMPT = 1;
 
     const MAX_RETRY_DELAY = 10;
 
@@ -37,14 +37,29 @@ class RblBankingAccountGatewayBalanceUpdate extends Job
         {
             parent::handle();
 
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_INIT,
-                [
-                    'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
-                    'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
-                ]);
+            $BACore = new BankingAccount\Core;
 
-            $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalanceWrapper($this->params);
+            // Worker will directly delete the message based on output from gatewayBalanceUpdateDeleteMode function.
+            if ($BACore->gatewayBalanceUpdateDeleteMode($this->params[BankingAccount\Entity::CHANNEL]) === true)
+            {
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE,
+                    [
+                        'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
+                        'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
+                    ]);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_INIT,
+                    [
+                        'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
+                        'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
+                    ]);
+
+                $response = $BACore->fetchAndUpdateGatewayBalanceWrapper($this->params);
+            }
 
             $this->delete();
         }

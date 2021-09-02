@@ -1037,6 +1037,24 @@ class Core extends Base\Core
         return $response;
     }
 
+    // returns true if gateway balance update workers have to delete/flush messages.
+    public function gatewayBalanceUpdateDeleteMode(string $channel)
+    {
+        switch ($channel)
+        {
+            case Channel::RBL:
+                return (new AdminService)->getConfigKey(
+                    ['key' => ConfigKey::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE]) ?? false;
+
+            case Channel::ICICI:
+                return (new AdminService)->getConfigKey(
+                        ['key' => ConfigKey::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE]) ?? false;
+
+            default:
+                return false;
+        }
+    }
+
     public function fetchAndUpdateGatewayBalanceWrapper(array $input)
     {
         $validator = new Validator();

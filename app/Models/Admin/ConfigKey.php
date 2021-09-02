@@ -106,6 +106,10 @@ class ConfigKey
     //Banking account current accounts balance update for merchants .limit on number of merchants for which to update in one run
     const RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = self::PREFIX . 'banking_account_gateway_balance_update_rate_limit';
 
+    const RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE = self::PREFIX . 'rbl_banking_account_gateway_balance_update_delete_mode';
+
+    const ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE = self::PREFIX . 'icici_banking_account_gateway_balance_update_delete_mode';
+
     //Merchant gateway balance is maintained at our end to display on dashboard and is updated by cron regularly.
     //This key puts limit on number of merchants for which to update in one run for icici
     const ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = self::PREFIX . 'icici_banking_account_gateway_balance_update_rate_limit';
@@ -290,6 +294,8 @@ class ConfigKey
         self::LOW_BALANCE_RX_EMAIL,
         self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING,
         self::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
+        self::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE,
+        self::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE,
         self::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
         self::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT,
         self::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT,
