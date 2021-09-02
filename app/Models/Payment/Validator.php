@@ -612,14 +612,16 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function isUpiTransfer()
+    protected function isUpiTransferOrBharatQr()
     {
         $app = App::getFacadeRoot();
 
         $routeName = $app['router']->currentRouteName();
 
         return in_array($routeName,['upi_transfer_process',
-                                    'upi_transfer_process_test',]);
+                                    'upi_transfer_process_test',
+                                    'gateway_payment_callback_bharatqr',
+                                    'bharat_qr_pay_test']);
     }
 
     protected function validateVpa($attribute, $vpa)
@@ -639,7 +641,7 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        if ((Reconciliate::$isReconRunning === true) or ($this->isUpiTransfer() === true))
+        if ((Reconciliate::$isReconRunning === true) or ($this->isUpiTransferOrBharatQr()  === true))
         {
             return;
         }
