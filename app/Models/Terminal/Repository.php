@@ -8,6 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
@@ -1015,6 +1016,18 @@ class Repository extends Base\Repository
         }
 
         return $terminals;
+    }
+
+    public function getHitachiTerminalsForCurrencyOrStatusUpdate($limit): PublicCollection
+    {
+        $currencyLength = strlen(json_encode(Currency::SUPPORTED_CURRENCIES));
+
+        return $this->newQuery()
+                     ->where(Entity::GATEWAY, 'hitachi')
+                     ->where(Entity::STATUS, Status::ACTIVATED)
+                     ->whereRaw('LENGTH(currency) < ?', [$currencyLength])
+                     ->limit($limit)
+                     ->get();
     }
 
     public function getAllBankTransferTerminals($gateway, $merchantIds = []): PublicCollection

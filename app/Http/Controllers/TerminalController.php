@@ -225,6 +225,15 @@ class TerminalController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postHitachiTerminalsCurrencyUpdateCron()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->hitachiTerminalsCurrencyUpdateCron($input['count'] ?? 100);
+
+        return ApiResponse::json($response);
+    }
+
     public function syncDeletedTerminalsOnTerminalService()
     {
         $input = Request::all();

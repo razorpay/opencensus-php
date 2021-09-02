@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
@@ -834,6 +835,50 @@ class Service extends Base\Service
 
         return ['successCount' => $succesCount, 'failureCount' => $failureCount];
     }
+
+    public function hitachiTerminalsCurrencyUpdateCron(int $limit)
+    {
+        $successCount = 0;
+        $failedCount = 0;
+        $total = 0;
+        $failedIds = [];
+
+        $terminals = $this->repo->terminal->getHitachiTerminalsForCurrencyOrStatusUpdate($limit);
+
+        foreach ($terminals as $terminal)
+        {
+            $total++;
+            $this->trace->info(
+                TraceCode::HITACHI_TERMINAL_CURRENCY_UPDATE_START,
+                [
+                    'terminal_id' => $terminal->getId(),
+                ]);
+            try
+            {
+                if (in_array(Currency::INR, $terminal->getCurrency()) === false)
+                {
+                    $input = [Entity::STATUS => Status::DEACTIVATED];
+                }
+                else
+                {
+                    $input = [Entity::CURRENCY => Currency::SUPPORTED_CURRENCIES];
+                }
+
+                $this->editTerminal($terminal->getId(), $input);
+
+                $successCount++;
+            }
+            catch (\Throwable $ex)
+            {
+                $failedIds[] = $terminal->getId();
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::HITACHI_TERMINAL_CURRENCY_UPDATE_EXCEPTION, ['terminal_id' => $terminal->getId()]);
+                $failedCount++;
+            }
+        }
+
+        return ["success"=> $successCount, "failed"=> $failedCount,  "total" => $total, "failedIds" => $failedIds];
+    }
+
     /**
      * Add/Remove bank from the oldEnabledBankList adn return the newList.
      *

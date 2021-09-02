@@ -626,6 +626,7 @@ class Validator extends Base\Validator
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::MODE                       => 'sometimes|in:2,3',
+        Entity::CURRENCY                   => 'sometimes|array',
     ];
 
     protected static $fulcrumEditTerminalRules = [

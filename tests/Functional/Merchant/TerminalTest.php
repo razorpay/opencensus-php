@@ -10,6 +10,7 @@ use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 
+use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -1342,6 +1343,47 @@ class TerminalTest extends TestCase
         {
             $this->editTerminal($tid, $data);
         });
+    }
+
+    public function testHitachiTerminalsCurrencyUpdateCron()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $attributes = array(
+            'enabled'             => true,
+            'gateway'             => 'hitachi',
+            'merchant_id'         => $merchant->getId(),
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'visa_mpan'           => '4234564890123456',
+            'currency'            => ['INR'],
+        );
+
+         $t1 = $this->fixtures->create('terminal', $attributes);
+
+        $attributes = array(
+            'enabled'             => true,
+            'gateway'             => 'hitachi',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000002',
+            'status'              => 'activated',
+            'visa_mpan'           => '4234564890123457',
+            'currency'            => ['USD'],
+        );
+
+        $t2 = $this->fixtures->create('terminal', $attributes);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $terminal1 = (new Terminal\Repository)->getById($t1->getId());
+
+        $terminal2 = (new Terminal\Repository)->getById($t2->getId());
+
+        $this->assertEquals(Currency::SUPPORTED_CURRENCIES, $terminal1->getCurrency());
+        $this->assertEquals('activated', $terminal1->getStatus());
+        $this->assertEquals('deactivated', $terminal2->getStatus());
     }
 
     public function testEditCashfreeTerminal()

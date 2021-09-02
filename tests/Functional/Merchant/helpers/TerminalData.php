@@ -2111,6 +2111,23 @@ return [
         ],
     ],
 
+    'testHitachiTerminalsCurrencyUpdateCron' => [
+        'request' => [
+            'url' => '/hitachi_terminals/update_cron',
+            'content' => [
+                'count' => 100
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'success' => 2,
+                'failed'  => 0,
+                'total'   => 2,
+            ]
+        ]
+    ],
+
     'testTerminalSecretCheck' => [
         'request' => [
             'content' => [
