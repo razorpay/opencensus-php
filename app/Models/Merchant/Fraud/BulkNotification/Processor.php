@@ -244,7 +244,7 @@ class Processor extends Base\Core
 
         foreach (array_values($outputMap) as $merchantOutputMap)
         {
-            $outputTable += $merchantOutputMap;
+            array_push($outputTable, ...$merchantOutputMap);
         }
 
         return $outputTable;

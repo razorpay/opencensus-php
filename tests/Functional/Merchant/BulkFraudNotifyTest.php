@@ -48,7 +48,7 @@ class BulkFraudNotifyTest extends TestCase
             [null, $payment->getPublicId(), $payment->getMerchantId(), 123, null]
         ];
 
-        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, true, true);
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
 
     public function testNotifyWithPaymentId(bool $addPermission = true)
@@ -72,7 +72,7 @@ class BulkFraudNotifyTest extends TestCase
             [null, $payment->getPublicId(), $payment->getMerchantId(), 123, null]
         ];
 
-        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, true, $addPermission);
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, $addPermission);
     }
 
     public function testNotifyWithHitachiPrrn()
@@ -101,7 +101,7 @@ class BulkFraudNotifyTest extends TestCase
             [$arn, null, $payment->getMerchantId(), 123, null]
         ];
 
-        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, true, true);
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
 
     public function testNotifyWithPaysecureRrn()
@@ -130,7 +130,7 @@ class BulkFraudNotifyTest extends TestCase
             [$arn, null, $payment->getMerchantId(), 123, null]
         ];
 
-        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, true, true);
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
 
     public function testNotifyWithNpciReferenceId()
@@ -159,7 +159,7 @@ class BulkFraudNotifyTest extends TestCase
             [$arn, null, $payment->getMerchantId(), 123, null]
         ];
 
-        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, true, true);
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
 
     public function testNotifyWithGatewayPaymentId()
@@ -188,7 +188,7 @@ class BulkFraudNotifyTest extends TestCase
             [$arn, null, $payment->getMerchantId(), 123, null]
         ];
 
-        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, true, true);
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
 
     public function testNotifyWithBankUtr()
@@ -217,7 +217,7 @@ class BulkFraudNotifyTest extends TestCase
             [$arn, null, $payment->getMerchantId(), 123, null]
         ];
 
-        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, true, true);
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
 
      public function testNotifyWithNetbankingGatewayPaymentId()
@@ -251,7 +251,7 @@ class BulkFraudNotifyTest extends TestCase
             [$arn, null, $payment->getMerchantId(), 123, null]
         ];
 
-        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, true, true);
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
 
      public function testNotifyNotAbleToResolvePaymentIdCase()
@@ -274,7 +274,7 @@ class BulkFraudNotifyTest extends TestCase
             [$arn, null, null, null, 'Could not resolve payment_id']
         ];
 
-        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, false, true);
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 0, true);
     }
 
     public function testNotifyIgnoreOnSecondCall()
@@ -308,7 +308,7 @@ class BulkFraudNotifyTest extends TestCase
             [null, $payment->getPublicId(), $payment->getMerchantId(), null, $message]
         ];
 
-        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, false, false);
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 0, false);
     }
 
     public function testNotifySingleForOneMerchant()
@@ -344,16 +344,54 @@ class BulkFraudNotifyTest extends TestCase
             [null, $payment2->getPublicId(), $payment2->getMerchantId(), 123, null]
         ];
 
-        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, true, true);
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
     }
 
-    private function prepareAndDoTest(array $fileData, array $expectedOutputFileRows, bool $expectFdCall, bool $addPermission)
+    public function testNotifyForMultipleMerchant()
+    {
+        /** @var Models\Payment\Entity $payment */
+        $payment1 = $this->fixtures->create('payment');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        /** @var Models\Payment\Entity $payment */
+        $payment2 = $this->fixtures->create('payment', ['merchant_id' => $merchant->getId()]);
+
+        $fileData = [
+            [
+                'reported_to_razorpay_at' => '11/08/2021',
+                'payment_method' => '',
+                'reported_by' => 'Visa',
+                'payment_id' => $payment1->getPublicId(),
+                'type' => '',
+                'arn' => ''
+            ],
+            [
+                'reported_to_razorpay_at' => '11/08/2021',
+                'payment_method' => '',
+                'reported_by' => 'Visa',
+                'payment_id' => $payment2->getPublicId(),
+                'type' => '',
+                'arn' => ''
+            ],
+        ];
+
+        $expectedOutputFileRows = [
+            ["arn", "payment_id", "merchant_id", "fd_ticket_id", "error"],
+            [null, $payment1->getPublicId(), $payment1->getMerchantId(), 123, null],
+            [null, $payment2->getPublicId(), $payment2->getMerchantId(), 123, null]
+        ];
+
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 2, true);
+    }
+
+    private function prepareAndDoTest(array $fileData, array $expectedOutputFileRows, int $expectFdCallCount, bool $addPermission)
     {
         $testData = &$this->testData['commonTestData'];
 
         $testData['request']['files']['file'] = $this->getBulkFraudNotifyUploadedXLSXFileFromFileData($fileData);
 
-        $this->mockFreshdesk($expectFdCall);
+        $this->mockFreshdesk($expectFdCallCount);
 
         $this->ba->adminAuth();
 
@@ -416,21 +454,15 @@ class BulkFraudNotifyTest extends TestCase
         return new UploadedFile($filePath, $filePath, $mimeType, $fileSize, null, true);
     }
 
-    private function mockFreshdesk(bool $expectFdCall): void
+    private function mockFreshdesk(int $expectFdCallCount): void
     {
         $freshdeskClientMock = $this->getMockBuilder(FreshdeskTicketClient::class)
                                     ->setConstructorArgs([$this->app])
                                     ->onlyMethods(['sendOutboundEmail'])
                                     ->getMock();
 
-        $fdCallCount = 0;
-        if ($expectFdCall)
-        {
-            $fdCallCount = 1;
-        }
-
         $freshdeskClientMock
-            ->expects($this->exactly($fdCallCount))
+            ->expects($this->exactly($expectFdCallCount))
             ->method('sendOutboundEmail')
             ->willReturn(['id' => 123]);
 
