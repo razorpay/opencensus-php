@@ -48,6 +48,23 @@ There are 3 Ways to set up, you can choose either:
 *PHP*: Please make sure you have the `gmp`, `bcmath` extensions installed. This is on top of what [laravel requires](https://laravel.com/docs/5.5/installation#server-requirements):
 
 - PHP >= 7.2 and PHP<= 7.3
+
+  If PHP is already installed and the version is different then 7.2.xx, do the following:
+
+  1. Check the current version by running `php --version`.
+  2. Using homebrew you can downgrade/upgrade your version by running `brew install php@< desired version>`.
+
+  3. You can uninstall your previous php version by `brew uninstall php@< current version>`.
+  4. If you don’t want to uninstall, you can unlink the previous version by running `brew unlink php@< version number>`.
+  5. After unlinking you can link the version you want to use  by `brew link php@< desired version>`.
+
+For our use, the desired version must be 7.2.XX.
+
+Imp: If you still see some other version installed then you might need to add the php $PATH to your ~/.bash_profile,
+for this Visit [this link](https://vyspiansky.github.io/2018/11/08/set-up-php-7.2-on-macos-mojave-with-homebrew/).
+
+Note: If you face the following error {dyld Library not loaded..} ->
+Visit [this link](https://stackoverflow.com/questions/57851117/homebrew-upgrade-drops-php-dyld-library-not-loaded-usr-local-opt-libpsl-lib).
 - OpenSSL PHP Extension
 - PDO PHP Extension
 - Mbstring PHP Extension
@@ -55,10 +72,14 @@ There are 3 Ways to set up, you can choose either:
 
 * `chmod -R o+wx storage/`
 * `composer install` to install project dependencies # Google online on how to install composer globally.
+
+  If you face `composer unexpected error` after running `composer install` -> Visit [this](https://stackoverflow.com/questions/26691681/composer-unexpectedvalueexception-error-will-trying-to-use-composer-to-install).
 * Create 2 databases (one is for live and another for test accounts). (`api_live`, `api_test` are sample names)
 * Copy over `environment/.env.sample` to `environment/.env.dev` and provide both database usernames and password
 * Copy over `environment/env.sample.php` to `environment/env.php`. This specifies the `dev` environment for local development.
 * `php artisan rzp:dbr --install --seed` (Creates tables and seeds them)
+
+   1. If you face `General error: 1273 Unknown collation: 'utf8mb4_0900_ai_ci'` see [this question](https://stackoverflow.com/questions/29916610/1273-unknown-collation-utf8mb4-unicode-ci-cpanel)
 * Set up pre-commit hooks - `cp scripts/git-hooks/pre-commit .git/hooks/`
 * Install phpcs - http://tedshd.logdown.com/posts/246406-php-install-phpcsphp-codesniffer
 
