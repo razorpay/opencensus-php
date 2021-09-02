@@ -197,7 +197,7 @@ class Service
 
         $settings = (new SettingsService())->getSettingsIfKeyPresent(
             Module::TAX_PAYMENTS,
-            self::TAX_PAYMENT_ENABLED_KEY,
+            $input['tax_feature_key'] ?? self::TAX_PAYMENT_ENABLED_KEY,
             "true",
             $input['offset'] ?? self::DEFAULT_OFFSET,
             $input['limit'] ?? self::DEFAULT_LIMIT

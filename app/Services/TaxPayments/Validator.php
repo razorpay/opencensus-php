@@ -27,8 +27,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $taxPaymentEnabledMerchantsRules = [
-        'offset' => 'filled|integer|min:0',
-        'limit'  => 'filled|integer|min:1|max:100',
+        'offset'           => 'filled|integer|min:0',
+        'limit'            => 'filled|integer|min:1|max:100',
+        'tax_feature_key'  => 'string',
     ];
 
     function validateGRecaptchaResponse($captchaKey, $captchaResponse)
