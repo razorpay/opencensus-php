@@ -8,9 +8,12 @@ import Earnings from './Earnings';
 import Subvention from './Subvention';
 import Applications from './Applications';
 import Reports from './Reports';
-import Activation from './Activation/index';
+import ActivationDesktop from './Activation';
+import ActivationMweb from './Activation/Components/mweb';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 export default function PartnerDashboard() {
+  const ActivationComponent = isMobileDevice() ? ActivationMweb : ActivationDesktop;
   return (
     <Switch>
       <Redirect to="/partners/submerchants" from="/partners" exact />
@@ -53,7 +56,7 @@ export default function PartnerDashboard() {
       <ShowWhenRoute
         additionalCondition={(user) => user.isIndependentPartnerKYCEnabled}
         path="/partners/activation"
-        component={Activation}
+        component={ActivationComponent}
       />
     </Switch>
   );

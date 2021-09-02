@@ -1,0 +1,51 @@
+import React from 'react';
+import styled from 'styled-components';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import Button from '@razorpay/blade-old/src/atoms/Button';
+import Link from '@razorpay/commander-shield/src/shared/Link';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import { Modal, ModalBody } from 'common/components/Modal';
+
+const Container = styled(View)`
+  margin: auto;
+  text-align: center;
+`;
+
+const ExitPopup = ({ isOpen, onClose, exitToDashBoardLink }) => {
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} closeable={false}>
+      <ModalBody>
+        <Container>
+          <Space margin={[1, 0, 1, 0]}>
+            <View>
+              <Text size="medium" weight="bold" _letterSpacing="small" align="center">
+                Are you sure you want to exit?
+              </Text>
+            </View>
+          </Space>
+          <Space margin={[0, 0, 4, 0]}>
+            <View>
+              <Text size="medium" align="center">
+                You are just few steps away. Fill the remaining details and start accepting payments
+                now
+              </Text>
+            </View>
+          </Space>
+          <Button size="large" onClick={onClose} block>
+            Continue filling Details
+          </Button>
+          <Space margin={[2, 0, 0, 0]}>
+            <View>
+              <Link href={exitToDashBoardLink ? exitToDashBoardLink : '/app/partners'}>
+                Exit to Partner Dashboard
+              </Link>
+            </View>
+          </Space>
+        </Container>
+      </ModalBody>
+    </Modal>
+  );
+};
+
+export default ExitPopup;
