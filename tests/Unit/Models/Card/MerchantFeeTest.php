@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Services\RazorXClient;
+use RZP\Models\Order\ProductType;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -30,6 +31,8 @@ class MerchantFeeTest extends TestCase
     ];
 
     protected $qrCode;
+
+    protected $vpa;
 
     protected $sharpTerminal;
 
@@ -59,12 +62,16 @@ class MerchantFeeTest extends TestCase
 
         $this->qrCode = $this->fixtures->create('qr_code');
 
+        $this->vpa = $this->fixtures->create('vpa');
+
         $this->sharpTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->terminalsServiceMock = $this->getTerminalsServiceMock();
     }
 
-    public function getMockPricingRepo($withCreditCardRule = false, $withReceiverRule = false, $withDefault = true, $pricingRules = [], $procurer = true)
+    public function getMockPricingRepo(
+        $withCreditCardRule = false, $withReceiverRule = false, $withDefault = true,
+        $pricingRules = [], $procurer = true, $fallbackPricing = false)
     {
         if (count($pricingRules) === 0)
         {
@@ -75,18 +82,57 @@ class MerchantFeeTest extends TestCase
 
         $mock = Mockery::mock(
             'Models\Pricing\Repository',
-            function($mock) use ($pricingPlan)
+            function($mock) use ($pricingPlan, $fallbackPricing)
             {
                 $mock->shouldReceive('getPricingPlanById')
                      ->andReturn($pricingPlan);
 
                 $mock->shouldReceive('getPricingPlanByIdWithoutOrgId')
-                     ->andReturn($pricingPlan);
+                     ->andReturnUsing(function($planId) use($pricingPlan, $fallbackPricing){
+
+                         if ($fallbackPricing === true)
+                         {
+                             switch ($planId)
+                             {
+                                 case Pricing\Fee::DEFAULT_VIRTUAL_UPI_PLAN_ID:
+                                     return $this->getDefaultVirtualUpiPlan();
+                             }
+                         }
+
+                         return $pricingPlan;
+                     });
             });
 
         return $mock;
     }
 
+    protected function getDefaultVirtualUpiPlan()
+    {
+        $fallbackPricingRuleVPA = new Pricing\Entity([
+            'id'                  => 'E9t4ljM1mW3CwI',
+            'plan_id'             => Pricing\Fee::DEFAULT_VIRTUAL_UPI_PLAN_ID,
+            'plan_name'           => 'VirtualUPIfallback',
+            'type'                => 'pricing',
+            'product'             => 'primary',
+            'feature'             => 'payment',
+            'receiver_type'       => Receiver::VPA,
+            'payment_method'      => 'upi',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'amount_range_active' => false,
+            'amount_range_min'    => 0,
+            'amount_range_max'    => 0,
+            'percent_rate'        => 100,
+            'fixed_rate'          => 0,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => 5000,
+            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
+        ]);
+
+        return new Pricing\Plan([$fallbackPricingRuleVPA]);
+    }
 
     protected function getDefaultPricingRules($withCreditCardRule, $withReceiverRule, $withDefault, $procurer = true)
     {
@@ -1007,6 +1053,32 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantTestForUpi('100', ['payment' => '1nvp2ABMasRLxx'], 'qr_code');
     }
 
+    /**
+     * VPA fallback pricing should be picked, since receiver_type is VPA
+     */
+    public function testUpiRuleForVPAPayments()
+    {
+        $this->fee->setPricingRepo($this->getMockPricingRepo(
+            false, false, true, [], true, true));
+
+        $this->runMerchantTestForUpi('100', ['payment' => 'E9t4ljM1mW3CwI'], Receiver::VPA);
+    }
+
+    /**
+     * For UPI PL payments Default UPI pricing should be picked
+     */
+    public function testUpiRuleForPlPayments()
+    {
+        $this->fee->setPricingRepo($this->getMockPricingRepo(
+            false, false, true, [], true, true));
+
+        $order = $this->fixtures->create('order', [
+            'product_type' => ProductType::PAYMENT_LINK_V2
+        ]);
+
+        $this->runMerchantTestForUpi('100', ['payment' => '1nvp2XPMasRLxx'], Receiver::VPA, $order);
+    }
+
     public function testDebitCardPinRule()
     {
         $this->fee->setPricingRepo($this->getMockPricingRepo(false, false, true));
@@ -1521,7 +1593,7 @@ class MerchantFeeTest extends TestCase
     }
 
 
-    protected function runMerchantTestForUpi($amount, array $expectedRules, $receiver = null)
+    protected function runMerchantTestForUpi($amount, array $expectedRules, $receiver = null, $order = null)
     {
         $paymentArray = $this->getDefaultPaymentEntityArray();
 
@@ -1535,6 +1607,11 @@ class MerchantFeeTest extends TestCase
 
         $payment->setBaseAmount($amount);
 
+        if(empty($order) === false)
+        {
+            $payment->order()->associate($order);
+        }
+
         $merchant = Merchant\Entity::find('10000000000000');
 
         $payment->merchant()->associate($merchant);
@@ -1544,6 +1621,11 @@ class MerchantFeeTest extends TestCase
         if ($receiver == Receiver::QR_CODE)
         {
             $payment->receiver()->associate($this->qrCode);
+        }
+
+        if($receiver === Receiver::VPA)
+        {
+            $payment->receiver()->associate($this->vpa);
         }
 
         list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);

@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Base as BaseModel;
+use RZP\Models\Order\ProductType;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Payment as PaymentModel;
 
@@ -411,7 +412,18 @@ class Payment extends Base
     {
         $payment = $this->entity;
 
+        $order = $payment->order;
+
         $receiverType = $payment->getReceiverType();
+
+        /*
+         * In case of UPI PL payments, order product_type will be payment_link_v2
+         * In such case, we need to fetch default Pricing for UPI (no VPA fallback pricing)
+         */
+        if((empty($order) === false) and ($order->getProductType() === ProductType::PAYMENT_LINK_V2))
+        {
+            $receiverType = null;
+        }
 
         $filters1 = [
             [Pricing\Entity::RECEIVER_TYPE, $receiverType, true, null],
