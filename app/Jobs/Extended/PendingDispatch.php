@@ -55,12 +55,13 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
             app('trace')->traceException($e, Trace::CRITICAL, TraceCode::QUEUE_DISPATCH_JOB_FAILURE, $traceData);
 
             $tokens = explode('\\', get_class($this->job));
+
             $job    = $tokens[count($tokens) - 1];
 
             $dimensions = [
-                'job'        => $job,
-                'queue_name' => $this->getQueue(),
-                'mode'       => app('rzp.mode'),
+                'async_job_name' => $job,
+                'queue_name'     => $this->getQueue(),
+                'mode'           => app('rzp.mode'),
             ];
 
             app('trace')->count(self::JOB_DISPATCH_FAILED, $dimensions);
