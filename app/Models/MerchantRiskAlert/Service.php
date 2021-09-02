@@ -697,8 +697,7 @@ class Service extends Base\Service
 
     private function canSendNotification(string $notificationType, string $rasTriggerReason)
     {
-        if (($notificationType === Constants::FOH_NC_NOTIFICATION) &&
-            ($this->isHealthCheckTriggerReason($rasTriggerReason) === false))
+        if ($notificationType === Constants::FOH_NC_NOTIFICATION)
         {
             return false;
         }
