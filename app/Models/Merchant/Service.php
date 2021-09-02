@@ -162,7 +162,7 @@ class Service extends Base\Service
     const DEFAULT_MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION   =   24;
     // Should be decided by marketing team
     const NEOSTONE_UTM_RULES = [
-        [User\Constants::UTM_CAMPAIGN => 'Facebook_RZPx_CA_Conv_NewAcquisItion_India_Owners_2555_MF_All_24082021_C1', User\Constants::UTM_SOURCE => 'Facebook', User\Constants::UTM_MEDIUM => 'CPC'],
+        [User\Constants::UTM_CAMPAIGN => 'Facebook_RZPx_CA_Conv_NewAcquisItion_India_Owners_2555_MF_All_24082021', User\Constants::UTM_SOURCE => 'Facebook', User\Constants::UTM_MEDIUM => 'CPC'],
         [User\Constants::UTM_CAMPAIGN => '', User\Constants::UTM_SOURCE => 'rx_ca_neostone', User\Constants::UTM_MEDIUM => '']
     ];
 
@@ -7058,7 +7058,7 @@ class Service extends Base\Service
 
                 if (array_key_exists(('final_' . $utmType), $utmParams)) // We check only last click utm parameters
                 {
-                    $ruleSatisfied = ($ruleSatisfied and ($neostoneUtmRule[$utmType] === $utmParams['final_' . $utmType]));
+                    $ruleSatisfied = ($ruleSatisfied and (strtolower($neostoneUtmRule[$utmType]) === strtolower($utmParams['final_' . $utmType])));
                 }
             }
 

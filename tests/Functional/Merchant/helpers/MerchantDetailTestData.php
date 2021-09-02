@@ -958,6 +958,26 @@ return [
         ],
     ],
 
+    'testPutPreSignupDetailsForNeostone' => [
+        'request' => [
+            'content' => [
+                'business_type' => '2',
+                'department'    => '7',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '2',
+                'transaction_volume' => null,
+                'department'         => '7',
+                'contact_mobile'     => null,
+                'role'               => null,
+            ],
+        ],
+    ],
+
     'testPutPreSignupDetailsInXForUnregisteredBusiness' => [
         'request' => [
             'content' => [

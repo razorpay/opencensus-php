@@ -185,7 +185,50 @@ class UserTest extends TestCase
                                                      [
                                                          Constants::UTM_SOURCE   => 'Facebook',
                                                          Constants::UTM_MEDIUM   => 'CPC',
-                                                         Constants::UTM_CAMPAIGN => 'Facebook_RZPx_CA_Conv_NewAcquisItion_India_Owners_2555_MF_All_24082021_C1'
+                                                         Constants::UTM_CAMPAIGN => 'Facebook_RZPx_CA_Conv_NewAcquisItion_India_Owners_2555_MF_All_24082021'
+                                                     ]
+                                                 ]
+                                             ])
+                ]
+            ]
+        ];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testDataToReplace);
+
+        $merchantAttribute = $this->getDbEntity('merchant_attribute');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'product' => 'banking',
+                'group'   => 'x_signup',
+                'type'    => Type::CAMPAIGN_TYPE,
+                'value'   => 'ca_neostone'
+            ],
+            $merchantAttribute->toArrayPublic()
+        );
+
+        $featuresArray = $this->getDbEntity('feature',
+                                            [
+                                                'entity_id' => $merchantAttribute->getMerchantId(),
+                                                'entity_type' => 'merchant'
+                                            ])->pluck('name')->toArray();
+
+        $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
+    }
+
+    public function testPreSignupCampaignInfoStoredAfterRegistrationInSmallCap()
+    {
+        $testDataToReplace = [
+            'request' => [
+                'cookies' => [
+                    'rzp_utm' => json_encode([
+                                                 'attributions' => [
+                                                     [
+                                                         Constants::UTM_SOURCE   => 'Facebook',
+                                                         Constants::UTM_MEDIUM   => 'CPC',
+                                                         Constants::UTM_CAMPAIGN => 'facebook_RZPx_Ca_Conv_NewAcquisItion_India_Owners_2555_MF_all_24082021'
                                                      ]
                                                  ]
                                              ])

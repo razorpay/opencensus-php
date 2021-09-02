@@ -17,6 +17,7 @@ use RZP\Services\HubspotClient;
 use RZP\Mail\Merchant\Rejection;
 use Functional\Helpers\BvsTrait;
 use Illuminate\Http\UploadedFile;
+use RZP\Services\SalesForceClient;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\ServerErrorException;
@@ -774,17 +775,17 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals($merchant->getWebsite(), 'https://www.example.com');
         $this->assertEquals($merchant->getHasKeyAccess() , true);
     }
-    
+
     public function testMerchantUpdateWebsiteDetailsIpv6()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
-        
+
         $merchantId = $merchantDetail['merchant_id'];
-        
+
         $this->ba->proxyAuth('rzp_test_'.$merchantId);
-        
+
         $this->startTest();
-        
+
         $merchant = $this->getDbEntityById('merchant', $merchantId);
         $this->assertEquals($merchant->getWebsite(), 'https://cholasmartedisuat.chola.murugappa.com');
         $this->assertEquals($merchant->getHasKeyAccess() , true);
@@ -1050,6 +1051,57 @@ class MerchantDetailTest extends OAuthTestCase
         $this->mockHubSpotClient('trackPreSignupEvent');
 
         $this->startTest();
+    }
+
+    public function testPutPreSignupDetailsForNeostone()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->verifyOnboardingEvent('banking');
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->fixtures->create('merchant_attribute',
+                                [
+                                    'merchant_id' => $merchantDetail['merchant_id'],
+                                    'product'     => 'banking',
+                                    'group'       => 'x_signup',
+                                    'type'        => 'campaign_type',
+                                    'value'       => 'ca_neostone'
+                                ]);
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $this->mockHubSpotClient('trackPreSignupEvent');
+
+        $this->mockSalesforceEventTracked('sendPreSignupDetails');
+
+        $this->startTest();
+    }
+
+    public function mockSalesforceEventTracked(string $methodName)
+    {
+        $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
+                                     ->setConstructorArgs([$this->app])
+                                     ->setMethods([$methodName])
+                                     ->getMock();
+
+        $this->app->instance('salesforce', $salesforceClientMock);
+
+        if (in_array($methodName, ['captureInterestOfPrimaryMerchantInBanking', 'sendPreSignupDetails']))
+        {
+            $salesforceClientMock->expects($this->exactly(1))
+                                 ->method($methodName)
+                                 ->will($this->returnCallback(function($input){
+
+                                     $this->assertEquals('self_serve', $input['x_onboarding_category']);
+                                 }));
+        }
+        else
+        {
+            $salesforceClientMock->expects($this->exactly(1))
+                                 ->method($methodName);
+        }
     }
 
     public function testPutPreSignupDetailsInXForUnregisteredBusiness()

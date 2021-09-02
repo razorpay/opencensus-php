@@ -189,21 +189,22 @@ class SalesForceClient
         ];
 
         $keyMap = [
-            'business_name'      => 'business_name',
-            'business_type'      => 'business_type',
-            'contact_mobile'     => 'contact_mobile',
-            'transaction_volume' => 'transaction_volume',
-            'website'            => 'Ref_Website',
-            'first_utm_campaign' => 'Traffic_Campaign',
-            'first_utm_medium'   => 'Traffic_Medium',
-            'first_utm_source'   => 'Traffic_Source',
-            'first_page'         => 'Traffic_Page',
-            'first_utm_term'     => 'final_click_attribution_term',
-            'final_utm_medium'   => 'Last_Click_Medium',
-            'final_utm_source'   => 'Last_Click_Source',
-            'final_utm_term'     => 'Last_Click_Term',
-            'final_utm_campaign' => 'Last_Click_Campaign',
-            'final_page'         => 'Last_Click_Page',
+            'business_name'         => 'business_name',
+            'business_type'         => 'business_type',
+            'contact_mobile'        => 'contact_mobile',
+            'transaction_volume'    => 'transaction_volume',
+            'website'               => 'Ref_Website',
+            'first_utm_campaign'    => 'Traffic_Campaign',
+            'first_utm_medium'      => 'Traffic_Medium',
+            'first_utm_source'      => 'Traffic_Source',
+            'first_page'            => 'Traffic_Page',
+            'first_utm_term'        => 'final_click_attribution_term',
+            'final_utm_medium'      => 'Last_Click_Medium',
+            'final_utm_source'      => 'Last_Click_Source',
+            'final_utm_term'        => 'Last_Click_Term',
+            'final_utm_campaign'    => 'Last_Click_Campaign',
+            'final_page'            => 'Last_Click_Page',
+            'x_onboarding_category' => 'x_onboarding_category'
         ];
 
         foreach ($keyMap as $key => $value)
