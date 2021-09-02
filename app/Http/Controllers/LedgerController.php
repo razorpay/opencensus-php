@@ -63,4 +63,11 @@ class LedgerController extends Controller
 
         return ApiResponse::json($response['body'], $response['code']);
     }
+
+    public function fetchAdminFormFieldOptions()
+    {
+        $response = $this->app['ledger']->fetchAdminFormFieldOptions($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
 }

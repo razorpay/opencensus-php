@@ -42,14 +42,15 @@ class Ledger
     const DashboardURL = '/twirp/rzp.ledger.dashboard.v1.DashboardAPI';
 
     const URLS = [
-        'create'        => 'Create',
-        'createInBulk'  => 'CreateInBulk',
-        'activate'      => 'Activate',
-        'update'        => 'Update',
-        'request'       => 'Request',
-        'fetch'         => 'Fetch',
-        'fetchMultiple' => 'FetchMultiple',
-        'fetchFilter'   => 'FetchFilter',
+        'create'                       => 'Create',
+        'createInBulk'                 => 'CreateInBulk',
+        'activate'                     => 'Activate',
+        'update'                       => 'Update',
+        'request'                      => 'Request',
+        'fetch'                        => 'Fetch',
+        'fetchMultiple'                => 'FetchMultiple',
+        'fetchFilter'                  => 'FetchFilter',
+        'fetchAdminFormFieldOptions'   => 'FetchAdminFormFieldOptions',
     ];
 
     // Headers
@@ -200,6 +201,19 @@ class Ledger
     public function fetchFilter($input, bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchFilter'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchAdminFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchAdminFormFieldOptions'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 

@@ -2746,6 +2746,7 @@ class Route
         'fetch_ledger'                            => ['post',      'ledger_service/fetch',                                  'LedgerController@fetch'],
         'fetch_multiple_ledger'                   => ['post',      'ledger_service/fetch_multiple',                         'LedgerController@fetchMultiple'],
         'fetch_filter_ledger'                     => ['post',      'ledger_service/fetch_filter',                           'LedgerController@fetchFilter'],
+        'fetch_admin_form_field_options_ledger'   => ['post',      'ledger_service/fetch_admin_form_field_options',         'LedgerController@fetchAdminFormFieldOptions'],
 
         'merchant_risk_data'                      => ['get',       'merchants/{id}/risk/data',                              'MerchantController@getMerchantRiskData'],
 
@@ -5262,6 +5263,7 @@ class Route
         'fetch_ledger',
         'fetch_multiple_ledger',
         'fetch_filter_ledger',
+        'fetch_admin_form_field_options_ledger',
 
         'merchant_risk_data',
         'complete_submerchant_onboarding',
@@ -6267,6 +6269,7 @@ class Route
         'fetch_ledger'                                    => Permission::LEDGER_VIEW_DASHBOARD,
         'fetch_multiple_ledger'                           => Permission::LEDGER_VIEW_DASHBOARD,
         'fetch_filter_ledger'                             => Permission::LEDGER_VIEW_DASHBOARD,
+        'fetch_admin_form_field_options_ledger'           => Permission::LEDGER_VIEW_DASHBOARD,
 
         'merchant_risk_data'                              => Permission::GET_MERCHANT_RISK_DATA,
         'bulk_fraud_notify'                               => Permission::BULK_FRAUD_NOTIFY,
@@ -9511,6 +9514,7 @@ class Route
             'fetch_ledger',
             'fetch_multiple_ledger',
             'fetch_filter_ledger',
+            'fetch_admin_form_field_options_ledger',
 
             'merchant_risk_data',
             'oauth_application_update_admin',
@@ -10316,6 +10320,7 @@ class Route
             'fetch_ledger',
             'fetch_multiple_ledger',
             'fetch_filter_ledger',
+            'fetch_admin_form_field_options_ledger',
             'ledger_fetch_multiple_transactions',
         ]
     ];
