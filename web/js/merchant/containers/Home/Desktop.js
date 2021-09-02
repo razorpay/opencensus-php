@@ -47,6 +47,7 @@ import { showKYCStatusModal, fetchEscalations } from 'merchant/reducers/home';
 import { isDedupe, getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import NCModal from 'merchant/components/Activation/NCModal';
 import DedupeModal from 'merchant/components/Home/DedupeModal';
+import CongratulatoryBanner from 'merchant/components/Announcements/CongratulatoryBanner';
 
 @withRouter
 @connect(
@@ -326,6 +327,7 @@ class AnalyticsDesktop extends Component {
             !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
           }`}
         >
+          <CongratulatoryBanner user={user} />
           {/* nps banner */}
           {user.isAccepted && <NPSAnnouncement user={user} />}
           {/* onboarding banner */}
