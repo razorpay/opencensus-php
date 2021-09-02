@@ -1878,7 +1878,9 @@ class Gateway
         IFSC::ICIC,
         IFSC::CITI,
         IFSC::KKBK,
-        IFSC::CNRB
+        IFSC::CNRB,
+        IFSC::HSBC,
+        IFSC::ESFB,
     ];
 
     public static $directDebitCardNetworks = [

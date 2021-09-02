@@ -494,6 +494,10 @@ class Service extends Base\Service
             return $processor->failMandateCanceledCardAutoRecurringPayment($payment);
         }
 
+        $paymentAnalytics = $payment->analytics;
+
+        $payment->setMetadataKey('payment_analytics', $paymentAnalytics);
+
         return $processor->processRedirectToAuthorize($payment, $payment->getId());
     }
 
