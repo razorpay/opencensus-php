@@ -235,6 +235,13 @@ class Service extends Base\Service
 
         if($this->user != null)
         {
+            $this->app['trace']->info(TraceCode::PAYOUT_LINK_CREATE_USER_ID,
+                [
+                    'auth_user_id' => $this->user->getId(),
+                    'private_auth' => $this->auth->isPrivateAuth(),
+                    'proxy_auth' => $this->auth->isProxyAuth(),
+                ]);
+
             $input['user_id'] = $this->user->getId();
         }
 
