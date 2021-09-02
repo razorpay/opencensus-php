@@ -36,7 +36,8 @@ import {
 class CongfigurationContainer extends Component {
   state = {
     isLoading: false,
-    showAxisPaypal: false,
+    isPaypalOrg: false,
+    isPaypalMid: false,
   };
 
   componentWillMount() {
@@ -46,31 +47,31 @@ class CongfigurationContainer extends Component {
         message: err.errors,
       });
     });
-  }
 
-  componentDidMount() {
-    if (this.props.org.custom_code === 'axis') {
-      // check paypal org feature
-      if (this.props.org.features.indexOf('axis_paypal') > -1) {
-        // check paypal MID feature
-        this.props
-          .fetchFeatureStatus(this.props.user.id, 'axis_paypal_enable')
-          .then((fetchFeatureStatusResp) => {
-            if (fetchFeatureStatusResp.data.status) {
-              this.setState({
-                showAxisPaypal: true,
-              });
-            }
-          })
-          .catch((err) => {
-            if (err) {
-              this.props.showNotification({
-                type: 'error',
-                message: err.errors[0],
-              });
-            }
-          });
-      }
+    // check paypal org feature
+    if (this.props.org.features.indexOf('axis_paypal') > -1) {
+      this.setState({
+        isPaypalOrg: true,
+      });
+
+      // check paypal MID feature
+      this.props
+        .fetchFeatureStatus(this.props.user.id, 'axis_paypal_enable')
+        .then((fetchFeatureStatusResp) => {
+          if (fetchFeatureStatusResp.data.status) {
+            this.setState({
+              isPaypalMid: true,
+            });
+          }
+        })
+        .catch((err) => {
+          if (err) {
+            this.props.showNotification({
+              type: 'error',
+              message: err.errors[0],
+            });
+          }
+        });
     }
   }
 
@@ -285,8 +286,12 @@ class CongfigurationContainer extends Component {
     } = this.props;
     let showInternationalPaymentsCard = false;
     if (mode === 'live') {
-      if (this.props.org.custom_code === 'axis') {
-        showInternationalPaymentsCard = this.state.showAxisPaypal;
+      if (this.state.isPaypalOrg) {
+        if (this.state.isPaypalMid) {
+          showInternationalPaymentsCard = true;
+        } else {
+          showInternationalPaymentsCard = false;
+        }
       } else if (user.activated_at < 1614105000) {
         // Show international payments card if merchant was activated before 24 February 2021 12:00:00 AM GMT+05:30
         showInternationalPaymentsCard = true;
