@@ -299,7 +299,9 @@ class Core extends Base\Core
             {
                 $shouldSync = false;
 
-                $path = "v1/terminals/" .  $terminal->getId();
+                $terminalId = $terminal->getId();
+
+                $path = "v1/terminals/" .  $terminalId;
 
                 $response = $this->app['terminals_service']->proxyTerminalService($input, "PATCH", $path);
 
@@ -308,6 +310,14 @@ class Core extends Base\Core
                 $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 
                 $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
+
+                // compare terminal data on both service
+                if (Terminal\Service::compareTerminalEntity($terminal, $tsTerminal) === false)
+                {
+                    $data = ['terminal_id' => $terminalId];
+
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_EDIT_MISMATCH, $data);
+                }
 
                 return $tsTerminal;
             }

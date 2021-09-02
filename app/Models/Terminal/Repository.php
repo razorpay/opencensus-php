@@ -806,7 +806,7 @@ class Repository extends Base\Repository
 
             $randomId = (new Entity)->generateId();
 
-            $variantFlag = $this->app->razorx->getTreatment($randomId, "ROUTE_PROXY_TS_5",  $mode);
+            $variantFlag = $this->app->razorx->getTreatment($randomId, "ROUTE_PROXY_TS_6",  $mode);
 
             $data = ["function" => "getByParams", "params" => $params];
 
@@ -816,7 +816,7 @@ class Repository extends Base\Repository
 
                 $content = Terminal\Service::getTerminalServiceRequestFromParam($params);
 
-                $path = "v1/merchants/terminals";
+                $path = "v1/admin/terminals_with_secrets";
 
                 // edge case handling for wallet_paypal
                 if (($content["gateway"] === Payment\Gateway::WALLET_PAYPAL) and (isset($content["status"]) === false))
@@ -1539,7 +1539,7 @@ class Repository extends Base\Repository
 
             try
             {
-                $path = "v1/merchants/terminals";
+                $path = "v1/admin/terminals_with_secrets";
 
                 $input = [
                     'terminal_ids' => $ids,
