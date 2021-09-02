@@ -938,9 +938,15 @@ class PayInitData extends Base\Mock\Server
         $case = str_replace('_v2', '', $entities['payment']['description']);
 
         $response->mergeUpi([
-           UpiEntity::VPA                  =>  $entities['payment']['vpa'] ?? '',
            UpiEntity::MERCHANT_REFERENCE   =>  $entities['payment']['id']
         ]);
+
+        if(!empty($entities['payment']['vpa']))
+        {
+            $response->mergeUpi([
+                'vpa' => $entities['payment']['vpa'],
+            ]);
+        }
 
         $response->setSuccess(true);
 

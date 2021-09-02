@@ -302,7 +302,7 @@ class UpiJuspayGatewayTest extends TestCase
         $payment = $this->getDbLastPayment();
 
         $request = $this->mockServer('upi_juspay')->getCallback($payment->toArray(), [
-            Juspay\Fields::PAYER_VPA => 'customer@vpa',
+            Juspay\Fields::PAYER_VPA => 'varun@abfspay',
         ]);
 
         $response = $this->makeRequestAndGetContent($request);
@@ -314,14 +314,16 @@ class UpiJuspayGatewayTest extends TestCase
         $this->assertArraySubset([
              Entity::STATUS      => 'authorized',
              Entity::REFERENCE16 => '034520388334',
-             Entity::VPA         => 'customer@vpa',
+             Entity::VPA         => 'varun@abfspay',
         ], $payment->toArray());
 
         $upi = $this->getDbLastUpi();
 
         $this->assertArraySubset([
-            'vpa'               => 'customer@vpa',
+            'vpa'               => 'varun@abfspay',
             'npci_reference_id' => '034520388334',
+            'bank'              => 'UTBI',
+            'provider'          => 'abfspay',
         ], $upi->toArray());
     }
 

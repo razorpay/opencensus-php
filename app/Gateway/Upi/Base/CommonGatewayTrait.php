@@ -470,6 +470,8 @@ trait CommonGatewayTrait
     {
         $gatewayPayment->fill($attributes);
 
+        $gatewayPayment->generatePspData($attributes);
+
         $this->upiGetRepository()->save($gatewayPayment);
 
         return $gatewayPayment;

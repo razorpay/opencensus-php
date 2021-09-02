@@ -58,8 +58,10 @@ class PreProcess extends Base\Mock\Server
 
         $response = MozartUpiResponse::getDefaultInstanceForV2();
 
+        $vpa = empty($input[10]) === false ? $input[10]: 'customer@okicici';
+
         $response->mergeUpi([
-            UpiEntity::VPA                  => $input[10],
+            UpiEntity::VPA                  => $vpa,
             UpiEntity::STATUS_CODE          => $input[7],
             UpiEntity::NPCI_REFERENCE_ID    => $input[12],
             UpiEntity::NPCI_TXN_ID          => $input[11],
