@@ -58,6 +58,7 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
+use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 
 /**
  * Class Core
@@ -3669,5 +3670,19 @@ class Core extends Base\Core
         }
 
         return $data;
+    }
+
+    /**
+     * @return bool
+     * @throws \Exception
+     */
+    public function isWorkflowServiceEnabled(): bool
+    {
+        $variant = $this->app['razorx']->getTreatment($this->merchant->getId(),
+            Merchant\RazorxTreatment::PROCESS_VIA_WORKFLOW_SERVICE,
+            $this->mode
+        );
+
+        return (strtolower($variant) === 'on');
     }
 }

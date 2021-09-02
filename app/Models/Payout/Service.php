@@ -705,22 +705,8 @@ class Service extends Base\Service
         {
             return [];
         }
-      
+
         return $this->core->getFetchWorkflowSummary();
-    }
-
-    /**
-     * @return bool
-     * @throws \Exception
-     */
-    public function isWorkflowServiceEnabled(): bool
-    {
-        $variant = $this->app['razorx']->getTreatment($this->merchant->getId(),
-            Merchant\RazorxTreatment::PROCESS_VIA_WORKFLOW_SERVICE,
-            $this->mode
-        );
-
-        return (strtolower($variant) === 'on');
     }
 
     public function processEventNotificationFromFts(array $input)
