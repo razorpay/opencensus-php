@@ -44,6 +44,18 @@ class CreateCardMandateNotificationsTable extends Migration
             $table->unsignedInteger(Entity::VERIFIED_AT)
                   ->nullable();
 
+            $table->unsignedInteger(Entity::DEBIT_AT)
+                  ->nullable();
+
+            $table->tinyInteger(Entity::AFA_REQUIRED)
+                  ->nullable();
+
+            $table->string(Entity::AFA_STATUS, 20)
+                  ->nullable();
+
+            $table->unsignedInteger(Entity::AFA_COMPLETED_AT)
+                  ->nullable();
+
             $table->unsignedInteger(Entity::CREATED_AT);
 
             $table->unsignedInteger(Entity::UPDATED_AT);

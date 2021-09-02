@@ -4,9 +4,12 @@ namespace RZP\Models\CardMandate\MandateHubs;
 
 class Notification
 {
-    const NOTIFICATION_ID = 'notification_id';
-    const STATUS          = 'status';
-    const NOTIFIED_AT     = 'notified_at';
+    const NOTIFICATION_ID  = 'notification_id';
+    const STATUS           = 'status';
+    const NOTIFIED_AT      = 'notified_at';
+    const AFA_REQUIRED     = 'afa_required';
+    const AFA_STATUS       = 'afa_status';
+    const AFA_COMPLETED_AT = 'afa_completed_at';
 
     protected $attributes = [];
 
@@ -38,5 +41,17 @@ class Notification
 
     public function getNotifiedAt(): string {
         return $this->getAttribute(self::NOTIFIED_AT);
+    }
+
+    public function getAfaRequired() {
+        return $this->getAttribute(self::AFA_REQUIRED);
+    }
+
+    public function getAfaStatus(): string {
+        return $this->getAttribute(self::AFA_STATUS);
+    }
+
+    public function getAfaCompletedAt(): string {
+        return $this->getAttribute(self::AFA_COMPLETED_AT);
     }
 }

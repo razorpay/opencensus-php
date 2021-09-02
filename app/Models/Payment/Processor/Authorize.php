@@ -1018,8 +1018,10 @@ trait Authorize
             return [
                 'razorpay_payment_id' => $payment->getPublicId(),
                 'next'                => [
-                    'action' => 'redirect',
-                    'url'    => $mandateUrl,
+                    [
+                        'action' => 'redirect',
+                        'url'    => $mandateUrl,
+                    ],
                 ],
             ];
         }

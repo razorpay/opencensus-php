@@ -103,11 +103,6 @@ class Core extends Base\Core
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_EXPIRED);
         }
 
-        if ($payment->getAmount() > $cardMandate->getMaxAmount())
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_AMOUNT_GREATER_THAN_CARD_MANDATE_MAX_AMOUNT);
-        }
-
         if ($payment->getCurrency() !== Currency::INR)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
@@ -184,6 +179,8 @@ class Core extends Base\Core
 
             (new CardMandateNotification\Core)->updateNotificationFromCallbackResponse($notification);
         }
+
+        return [];
     }
 
     protected function updateMandateFromCallbackResponse(Mandate $mandate)

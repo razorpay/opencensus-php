@@ -17,13 +17,17 @@ use RZP\Models\CardMandate;
  */
 class Entity extends Base\PublicEntity
 {
-    const CARD_MANDATE_ID = 'card_mandate_id';
-    const PAYMENT_ID      = 'payment_id';
-    const NOTIFICATION_ID = 'notification_id';
-    const REMINDER_ID     = 'reminder_id';
-    const STATUS          = 'status';
-    const NOTIFIED_AT     = 'notified_at';
-    const VERIFIED_AT     = 'verified_at';
+    const CARD_MANDATE_ID  = 'card_mandate_id';
+    const PAYMENT_ID       = 'payment_id';
+    const NOTIFICATION_ID  = 'notification_id';
+    const REMINDER_ID      = 'reminder_id';
+    const STATUS           = 'status';
+    const NOTIFIED_AT      = 'notified_at';
+    const VERIFIED_AT      = 'verified_at';
+    const DEBIT_AT         = 'debit_at';
+    const AFA_REQUIRED     = 'afa_required';
+    const AFA_STATUS       = 'afa_status';
+    const AFA_COMPLETED_AT = 'afa_completed_at';
 
     protected $entity = 'card_mandate_notification';
 
@@ -51,6 +55,9 @@ class Entity extends Base\PublicEntity
         self::REMINDER_ID,
         self::NOTIFIED_AT,
         self::VERIFIED_AT,
+        self::AFA_REQUIRED,
+        self::AFA_STATUS,
+        self::AFA_COMPLETED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -85,9 +92,39 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::NOTIFIED_AT, $timestamp);
     }
 
+    public function setAfaRequired($isRequired)
+    {
+        $this->setAttribute(self::AFA_REQUIRED, $isRequired);
+    }
+
+    public function setAfaStatus($status)
+    {
+        $this->setAttribute(self::AFA_STATUS, $status);
+    }
+
+    public function setAfaCompletedAt($completedAt)
+    {
+        $this->setAttribute(self::AFA_COMPLETED_AT, $completedAt);
+    }
+
+    public function setDebitAt($debitAt)
+    {
+        $this->setAttribute(self::DEBIT_AT, $debitAt);
+    }
+
     public function setVerifiedAt($timestamp)
     {
         $this->setAttribute(self::VERIFIED_AT, $timestamp);
+    }
+
+    public function isAfaRequired()
+    {
+        return $this->getAttribute(self::AFA_REQUIRED);
+    }
+
+    public function getAfaStatus()
+    {
+        return $this->getAttribute(self::AFA_STATUS);
     }
 
     public function getStatus()
@@ -109,8 +146,9 @@ class Entity extends Base\PublicEntity
     {
         $notifiedAt = $this->getNotifiedAt();
 
-        if ($notifiedAt === null){
-            return null;
+        if ($notifiedAt === null)
+        {
+            $notifiedAt = Carbon::now()->unix();
         }
 
         $time = Carbon::createFromTimestamp($notifiedAt);

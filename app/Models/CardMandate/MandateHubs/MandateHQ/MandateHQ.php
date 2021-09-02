@@ -4,10 +4,11 @@ namespace RZP\Models\CardMandate\MandateHubs\MandateHQ;
 
 use Carbon\Carbon;
 
-use RZP\Exception\LogicException;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\CardMandate;
+use RZP\Constants\Timezone;
+use RZP\Exception\LogicException;
 use RZP\Models\CardMandate\MandateHubs\Mandate;
 use RZP\Models\CardMandate\MandateHubs\Notification;
 use RZP\Models\CardMandate\MandateHubs\MandateHubs;
@@ -51,9 +52,9 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         return $this->app->mandateHQ->reportPayment($cardMandate->getMandateId(), $mandateHqInput);
     }
 
-    public function CreatePreDebitNotification(CardMandate\Entity $cardMandate, Payment\Entity $payment): Notification
+    public function CreatePreDebitNotification(CardMandate\Entity $cardMandate, Payment\Entity $payment, $debitTime): Notification
     {
-        $mandateHqInput = $this->getCreatePreDebitNotificationInput($payment);
+        $mandateHqInput = $this->getCreatePreDebitNotificationInput($payment, $debitTime);
 
         $response = $this->app->mandateHQ->createPreDebitNotification($cardMandate->getMandateId(), $mandateHqInput);
 
@@ -90,20 +91,27 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
 
     public static function getNotificationFromMandateHqResponse($response): Notification {
         $notificationAttributes = [
-            Notification::NOTIFICATION_ID => $response['id'],
-            Notification::NOTIFIED_AT     => $response['delivered_at'],
-            Notification::STATUS          => self::getNotificationStatusFromHQNotificationStatus($response['status']),
+            Notification::NOTIFICATION_ID  => $response['id'] ?? '',
+            Notification::NOTIFIED_AT      => $response['delivered_at'] ?? '',
+            Notification::STATUS           => self::getNotificationStatusFromHQNotificationStatus($response['status'] ?? ''),
+            Notification::AFA_STATUS       => $response['afa_status'],
+            Notification::AFA_REQUIRED     => $response['afa_required'],
+            Notification::AFA_COMPLETED_AT => $response['afa_completed_at'],
         ];
 
         return (new Notification($notificationAttributes));
     }
 
-    protected function getCreatePreDebitNotificationInput(Payment\Entity $payment)
+    protected function getCreatePreDebitNotificationInput(Payment\Entity $payment, $debitTime)
     {
+        $debitTimeCarbon = Carbon::createFromTimestamp($debitTime, Timezone::IST);
+
         return [
             Constants::NOTIFICATION_TYPE => Constants::NOTIFICATION_TYPE_PRE_DEBIT,
             Constants::NOTIFICATION_PRE_DEBIT_DETAILS => [
                 Constants::NOTIFICATION_PRE_DEBIT_DETAILS_AMOUNT => $payment->getAmount(),
+                Constants::NOTIFICATION_PRE_DEBIT_DETAILS_DEBIT_DAY => $debitTimeCarbon->day,
+                Constants::NOTIFICATION_PRE_DEBIT_DETAILS_DEBIT_MONTH => $debitTimeCarbon->month,
             ]
         ];
     }
@@ -127,15 +135,21 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
 
     protected function getReportSubsequentPaymentInput(Payment\Entity $payment): array
     {
+        $paymentStatus = Payment\Status::CAPTURED;
+        if ($payment->isFailed() === true)
+        {
+            $paymentStatus = Payment\Status::FAILED;
+        }
+
         return [
             Constants::NOTIFICATION_ID      => $payment->cardMandateNotification->getNotificationId(),
             Constants::RECURRING_DEBIT_TYPE => Constants::RECURRING_DEBIT_TYPE_SUBSEQUENT,
             Constants::CURRENCY             => $payment->getCurrency(),
             Constants::AMOUNT               => $payment->getAmount(),
-            Constants::PAYMENT_STATUS       => $payment->getStatus(),
+            Constants::PAYMENT_STATUS       => $paymentStatus,
             Constants::FAILURE_CODE         => $payment->getErrorCode(),
             Constants::FAILURE_DESCRIPTION  => $payment->getErrorDescription(),
-            Constants::CAPTURED_AT          => $payment->getCapturedAt(),
+            Constants::CAPTURED_AT          => $payment->getAuthorizeTimestamp(),
             Constants::AUTHENTICATION       => [
                 Constants::AUTHENTICATION_STATUS          => null,
                 Constants::AUTHENTICATION_ECI             => null,

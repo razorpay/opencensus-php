@@ -60,9 +60,11 @@ class Constants
     const FAILURE_DESCRIPTION = 'failure_description';
     const CAPTURED_AT         = 'captured_at';
 
-    const NOTIFICATION_TYPE                     = 'type';
-    const NOTIFICATION_PRE_DEBIT_DETAILS        = 'pre_debit_details';
-    const NOTIFICATION_PRE_DEBIT_DETAILS_AMOUNT = 'amount';
+    const NOTIFICATION_TYPE                          = 'type';
+    const NOTIFICATION_PRE_DEBIT_DETAILS             = 'pre_debit_details';
+    const NOTIFICATION_PRE_DEBIT_DETAILS_AMOUNT      = 'amount';
+    const NOTIFICATION_PRE_DEBIT_DETAILS_DEBIT_DAY   = 'debit_day';
+    const NOTIFICATION_PRE_DEBIT_DETAILS_DEBIT_MONTH = 'debit_month';
 
     const WEBHOOK_ENTITY                       = 'entity';
     const WEBHOOK_EVENT                        = 'event';
@@ -80,6 +82,8 @@ class Constants
     const WEBHOOK_EVENT_UPDATED                = 'mandate.updated';
     const WEBHOOK_EVENT_NOTIFICATION_DELIVERED = 'notification.delivered';
     const WEBHOOK_EVENT_NOTIFICATION_FAILED    = 'notification.failed';
+    const WEBHOOK_EVENT_NOTIFICATION_APPROVED  = 'notification.2fa_approved';
+    const WEBHOOK_EVENT_NOTIFICATION_REJECTED  = 'notification.2fa_rejected';
 
     const METHOD_CARD                = 'card';
     const DEBIT_TYPE_VARIABLE_AMOUNT = 'variable_amount';
@@ -102,6 +106,8 @@ class Constants
         self::WEBHOOK_EVENT_UPDATED,
         self::WEBHOOK_EVENT_NOTIFICATION_DELIVERED,
         self::WEBHOOK_EVENT_NOTIFICATION_FAILED,
+        self::WEBHOOK_EVENT_NOTIFICATION_APPROVED,
+        self::WEBHOOK_EVENT_NOTIFICATION_REJECTED,
     ];
 
     static $WebhookEntities = [

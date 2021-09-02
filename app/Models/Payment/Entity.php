@@ -244,6 +244,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_NACH              = 86400 * 180;  // 180 Days
     const PAYMENT_TIMEOUT_UPI_RECURRING     = 259200;   // 3 Days
     const PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE = 259200;   // 3 Days
+    const PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE_WITH_AFA = 345600;   // 4 Days
     const MCC_MARKDOWN_PERCENTAGE           = 1;
 
     // payment services
@@ -4294,6 +4295,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
         else if (($this->isCardAutoRecurring() === true) and ($this->cardMandateNotification !== null))
         {
+            if ($this->cardMandateNotification->isAfaRequired())
+            {
+                return self::PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE_WITH_AFA;
+            }
+
             return self::PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE;
         }
 

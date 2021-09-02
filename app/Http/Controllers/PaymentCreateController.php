@@ -741,13 +741,18 @@ class PaymentCreateController extends Controller
 
         $headers = Request::header();
 
-        $receivedSignature = $headers['x-razorpay-signature'][0] ?? '';
+        $env = $this->app->environment();
 
-        $expectedSignature = hash_hmac(HashAlgo::SHA256,  $rawContent, config('applications.mandate_hq.webhook_secret'));
-
-        if ($receivedSignature !== $expectedSignature)
+        if ($env !== 'testing')
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+            $receivedSignature = $headers['x-razorpay-signature'][0] ?? '';
+
+            $expectedSignature = hash_hmac(HashAlgo::SHA256,  $rawContent, config('applications.mandate_hq.webhook_secret'));
+
+            if ($receivedSignature !== $expectedSignature)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+            }
         }
 
         $input = Request::all();

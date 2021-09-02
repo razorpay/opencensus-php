@@ -6353,3 +6353,9 @@ ALTER TABLE disputes
 
 ALTER TABLE paytm
     MODIFY COLUMN banktxnid VARCHAR(30);
+
+ALTER TABLE card_mandate_notifications
+    ADD COLUMN debit_at INTEGER UNSIGNED,
+    ADD COLUMN afa_required TINYINT(1),
+    ADD COLUMN afa_status VARCHAR(20),
+    ADD COLUMN afa_completed_at INTEGER UNSIGNED;

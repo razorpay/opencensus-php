@@ -6,13 +6,10 @@ use App;
 
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Constants\Mode;
-use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\Name;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Type;
-use RZP\Constants\Environment;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\QueryCache\Cacheable;
@@ -322,12 +319,7 @@ class Entity extends Base\PublicEntity
 
         $app = App::getFacadeRoot();
 
-        if ($app['rzp.mode'] === Mode::TEST)
-        {
-            return $app->mandateHQ->isBinSupported($iin);
-        }
-
-        return false;
+        return $app->mandateHQ->isBinSupported($iin);
     }
 
     public function setTrivia($trivia)
