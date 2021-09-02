@@ -410,7 +410,9 @@ class LeafListItem extends React.Component {
                   <div className="detail">
                     <strong>Live Mode</strong>
                     <div class="activated status" style={{ marginRight: '0' }}>
-                      {instrument.status.replace('_', ' ')}
+                      {instrument.status === ACTIVATED_ACTION_REQUIRED
+                        ? ACTIVATED
+                        : instrument.status.replace('_', ' ')}
                       <Popover align="bottom" theme="dark">
                         <PopoverBody>
                           <div style={{ textAlign: 'left', textTransform: 'none' }}>
@@ -484,7 +486,7 @@ class LeafListItem extends React.Component {
           <div className="flex-end instrument-description">
             <div className="instrument-description-container">
               <i className="i i-info-outline" />
-              <p className="est-date-para">
+              <p>
                 Estimated date of enablement:{' '}
                 <strong>
                   {instrumentsTat &&
@@ -520,7 +522,7 @@ class LeafListItem extends React.Component {
             <p>{instrument.comment || 'No comments available'}</p>
           </div>
         )}
-        {instrument.status === ACTIVATED_ACTION_REQUIRED && (
+        {/* {instrument.status === ACTIVATED_ACTION_REQUIRED && (
           <div className="comment">
             <details className="description" open>
               <summary className="title">
@@ -543,7 +545,7 @@ class LeafListItem extends React.Component {
               </div>
             </details>
           </div>
-        )}
+        )} */}
       </li>
     );
   }
