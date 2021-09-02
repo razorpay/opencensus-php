@@ -24,6 +24,7 @@ trait CacheQueries
 
     public function getCacheTtl(): int
     {
-        return E::CACHED_ENTITIES[$this->entity][Constants::TTL] ?? Constants::DEFAULT_QUERY_CACHE_TTL;
+        // Multiplying by 60 since cache put() expect ttl in seconds
+        return (E::CACHED_ENTITIES[$this->entity][Constants::TTL] ?? Constants::DEFAULT_QUERY_CACHE_TTL_MINS) * 60;
     }
 }

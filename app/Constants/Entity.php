@@ -563,6 +563,7 @@ class Entity
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
      * and the specific cache ttl for any entities.
+     * Note: Here TTL is in minutes, we are converting in seconds while calling put method
      */
     const CACHED_ENTITIES = [
         self::KEY      => [

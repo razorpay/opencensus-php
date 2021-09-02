@@ -1104,7 +1104,7 @@ class SharpGatewayTest extends TestCase
 
         Cache::shouldReceive('put')
             ->once()
-            ->with($key, ['status' => 'created'], 0.75)
+            ->with($key, ['status' => 'created'], 45)
             ->andReturn(null);
 
         Cache::shouldReceive('get')

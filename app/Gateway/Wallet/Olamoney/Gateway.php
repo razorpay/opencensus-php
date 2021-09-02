@@ -397,7 +397,8 @@ class Gateway extends Base\Gateway
 
             $key = $this->getBalanceKeyForCache($input['payment']);
 
-            $this->app['cache']->put($key, $userBalance, self::PAYMENT_TTL);
+            // Multiplying by 60 since cache put() expect ttl in seconds
+            $this->app['cache']->put($key, $userBalance, self::PAYMENT_TTL * 60);
         }
 
         if ($input['payment']['amount'] > $userBalance)

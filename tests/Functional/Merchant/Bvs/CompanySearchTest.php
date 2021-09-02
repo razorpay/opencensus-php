@@ -96,7 +96,7 @@ class CompanySearchTest extends TestCase
         $this->app['cache']->put(DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX .
                                  $merchantDetail['merchant_id'],
                                  DetailConstants::COMPANY_SEARCH_MAX_ATTEMPT + 1,
-                                 DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_MIN);
+                                 DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_SEC);
 
         $this->startTest();
     }
@@ -121,7 +121,7 @@ class CompanySearchTest extends TestCase
         $this->app['cache']->put(DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX .
                                  $merchantDetail['merchant_id'],
                                  DetailConstants::COMPANY_SEARCH_MAX_ATTEMPT + 1,
-                                 DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_MIN);
+                                 DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_SEC);
 
         $this->startTest();
     }

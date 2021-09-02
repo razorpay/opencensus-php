@@ -1852,7 +1852,7 @@ class Repository extends Base\Repository
         //
         // caching the data for a minute
         //
-        $this->app['cache']->put($cacheTag, $results, 1);
+        $this->app['cache']->put($cacheTag, $results, 1 * 60); // multiplying by 60, since put() expects in seconds
 
         $this->trace->info(
             TraceCode::SETTLEMENT_AMOUNT_FETCH_TIME_TAKEN,

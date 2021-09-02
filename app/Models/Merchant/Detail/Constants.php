@@ -75,6 +75,7 @@ class Constants
     const IS_NAME_MATCHED                               = 'is_name_matched';
     const PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX  = 'penny_testing_attempt_count';
     const PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_MIN        = 180;
+    const PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_SEC        = 10800;
     const PENNY_TESTING_MAX_ATTEMPT                     = 2;
     const PENNY_TESTING_RETRY_PERIOD_IN_SEC             = 3600;
     const UNREGISTERED                                  = 'unregistered';
@@ -118,7 +119,7 @@ class Constants
     // GSTIN update self serve flow related constants
     const GSTIN_SELF_SERVE_V1_FLOW                          = 'v1';
     const GSTIN_SELF_SERVE_V2_FLOW                          = 'v2';
-    const GSTIN_SELF_SERVE_INPUT_CACHE_TTL                  = 90 * 24 * 60 * 60; // 90 days
+    const GSTIN_SELF_SERVE_INPUT_CACHE_TTL                  = 90 * 24 * 60 * 60; // 90 days (in seconds)
     const GSTIN_SELF_SERVE_INPUT_CACHE_KEY_FORMAT           = 'gstin_self_serve_input_%s';
     const GSTIN_SELF_SERVE_STATUS_NOT_STARTED               = 'not_started';
     const GSTIN_SELF_SERVE_STATUS_IN_PROGRESS               = 'in_progress';
@@ -215,7 +216,7 @@ class Constants
     const  UPDATE_BUSINESS_WEBSITE_CONTROLLER  = 'RZP\Http\Controllers\MerchantController@putBusinessWebsiteUpdatePostWorkflow';
 
     const COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX = 'company_search_attempt_count';
-    const COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_MIN       = 180;
+    const COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_SEC       = 10800;
     const COMPANY_SEARCH_MAX_ATTEMPT                    = 30;
 
     const ACCOUNT_PREFIX    = "account_prefix";

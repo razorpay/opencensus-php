@@ -626,7 +626,8 @@ class Core extends Base\Core
 
         if (empty($idemPotentKey) === false)
         {
-            $this->app['cache']->set($cacheKey = self::TOKEN_CHARGE_IDEMPOTENCY_CACHE_KEY.$idemPotentKey, $order->getId(), 600);
+            // Multiplying by 60, since set accepts ttl in secs
+            $this->app['cache']->set($cacheKey = self::TOKEN_CHARGE_IDEMPOTENCY_CACHE_KEY.$idemPotentKey, $order->getId(), 600 * 60);
         }
 
         $paymentInput = [

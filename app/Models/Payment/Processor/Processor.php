@@ -160,14 +160,15 @@ class Processor
     const CARD_CACHE_TTL = 10;
 
     /**
-     * Timeout to store card details for redirect to authorize
+     * Timeout to store card details for redirect to authorize (in mins)
      */
     const REDIRECT_CACHE_TTL = 20;
 
     /**
      * Timeout to store redirect authorize response cache
+     * Multiplying by 60 since cache put() expect ttl in seconds
      */
-    const REDIRECT_CACHE_RESPONSE_TTL = 2;
+    const REDIRECT_CACHE_RESPONSE_TTL = 2 * 60;
 
     const CACHE_KEY = 'fallback_%s_card_details';
 
@@ -3062,7 +3063,7 @@ class Processor
 
             try
             {
-                $this->app['cache']->put($key, $str, 60 * 25); // 1 day 1 hour
+                $this->app['cache']->put($key, $str, 60 * 25 * 60); // 1 day 1 hour (in seconds)
             }
             catch (\Throwable $e)
             {
@@ -4989,9 +4990,9 @@ class Processor
      *
      * @param string $id
      * @param array  $value
-     * @param float  $ttl
+     * @param float  $ttl (in seconds)
      */
-    protected function setUpiStatus(string $id, array $value, float $ttl = 0.75)
+    protected function setUpiStatus(string $id, array $value, float $ttl = 45)
     {
         $key = Payment\Entity::getCacheUpiStatusKey($id);
 

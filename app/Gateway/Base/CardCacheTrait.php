@@ -58,7 +58,8 @@ trait CardCacheTrait
         }
         else
         {
-            $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, $cacheTtl);
+            // Multiplying by 60 since cache put() expect ttl in seconds
+            $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, $cacheTtl * 60);
         }
     }
 

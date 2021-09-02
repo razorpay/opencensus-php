@@ -593,7 +593,7 @@ class Gateway extends Base\Gateway
     {
         $response = func_get_arg(1);
 
-        $this->cache->put('acs_url_' . $input['payment']['id'], $response[VERes::MESSAGE][VERes::VERES][VERes::URL], 20);
+        $this->cache->put('acs_url_' . $input['payment']['id'], $response[VERes::MESSAGE][VERes::VERES][VERes::URL], 20 * 60);
 
         return parent::getOtpSubmitRequest($input);
     }

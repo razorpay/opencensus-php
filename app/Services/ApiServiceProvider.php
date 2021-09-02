@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use Illuminate\Cache\CacheManager;
 use RZP;
 use Cache;
 use Swift_Mailer;
@@ -60,7 +61,6 @@ use RZP\Models\BankingAccount;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\CreditRepayment;
-use RZP\Base\Cache\CacheManager;
 use RZP\Models\VirtualAccountTpv;
 use RZP\Models\Plan\Subscription;
 use RZP\Base\Http\Psr18ClientMock;
@@ -536,9 +536,9 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerBankingAccountService();
 
-        $this->registerCacheManager();
-
         $this->registerXPayrollService();
+
+        $this->registerCacheManager();
 
         $this->registerLedger();
 
@@ -549,6 +549,20 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerPspx();
     }
 
+    protected function registerCacheManager()
+    {
+        $this->app->singleton('cache', function ($app) {
+            return new CacheManager($app);
+        });
+
+        $this->app->singleton('cache.store', function ($app) {
+            return $app['cache']->driver();
+        });
+
+        $this->app->singleton('cache.psr6', function ($app) {
+            return new Psr16Adapter($app['cache.store']);
+        });
+    }
     /**
      * Get the services provided by the provider.
      *
@@ -1548,20 +1562,6 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $implementation = $mock ? Mock\BankingAccountService::class : BankingAccountService::class;
 
             return new $implementation($app);
-        });
-    }
-    protected function registerCacheManager()
-    {
-        $this->app->singleton('cache', function ($app) {
-            return new CacheManager($app);
-        });
-
-        $this->app->singleton('cache.store', function ($app) {
-            return $app['cache']->driver();
-        });
-
-        $this->app->singleton('cache.psr6', function ($app) {
-            return new Psr16Adapter($app['cache.store']);
         });
     }
 

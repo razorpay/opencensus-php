@@ -4589,7 +4589,7 @@ class MerchantTest extends TestCase
             'set_contact_email'      => $setContactEmail,
         ];
 
-        $app['cache']->put('merchant_email_update_' . $merchant['id'], $cacheData, 60*24);
+        $app['cache']->put('merchant_email_update_' . $merchant['id'], $cacheData, 60*60*24);
 
         $testData = $this->testData['testMerchantEmailUpdateCreateNewUserByExpiredToken'];
 
@@ -4639,7 +4639,7 @@ class MerchantTest extends TestCase
             'set_contact_email'      => $setContactEmail,
         ];
 
-        $app['cache']->put('merchant_email_update_' . $merchant['id'], $cacheData, 60*24);
+        $app['cache']->put('merchant_email_update_' . $merchant['id'], $cacheData, 60*60*24);
 
         $testData = $this->testData['testMerchantEmailUpdateCreateNewUserByExpiredToken'];
 
@@ -4801,7 +4801,7 @@ class MerchantTest extends TestCase
             'reattach_current_owner' => $reAttachCurrentOwner,
             'set_contact_email'      => $setContactEmail,
         ];
-        $app['cache']->put('merchant_email_update_' . $merchant['id'], $cacheData, 60*24);
+        $app['cache']->put('merchant_email_update_' . $merchant['id'], $cacheData, 60*60*24);
 
         $oldOwnerUser = $this->getDbEntityById('user', $oldOwnerUser['id']);
 

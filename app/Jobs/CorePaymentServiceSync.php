@@ -11,7 +11,7 @@ use RZP\Gateway\GatewayManager;
 class CorePaymentServiceSync extends Job
 {
     const REDIS_KEY_PREFIX       = 'cps_sync_timestamp';
-    const REDIS_KEY_TTL          = 30; // Minutes
+    const REDIS_KEY_TTL          = 30 * 60; // Seconds
     const MUTEX_KEY_PREFIX       = 'cps_sync:';
     const MUTEX_TIMEOUT          = 30;
     const RETRY_COUNT            = 10;

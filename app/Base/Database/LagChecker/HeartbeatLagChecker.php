@@ -63,9 +63,6 @@ class HeartbeatLagChecker implements LagChecker
      */
     protected $redis;
 
-    /**
-     * @var CacheManager
-     */
     protected $cache;
 
     /**

@@ -20,7 +20,7 @@ class Core extends Base\Core
 
     protected $redis;
 
-    const CUSTOMER_SUPPORT_OTP_TTL = 5; // 5 minutes
+    const CUSTOMER_SUPPORT_OTP_TTL = 5 * 60; // 5 minutes ( in seconds)
 
     const MAX_OTP_ATTEMPTS = 3;
 
@@ -117,7 +117,7 @@ class Core extends Base\Core
 
         $otp = array_pull($response, Constants::OTP);
 
-        $expires_at = Carbon::now()->addMinutes(self::CUSTOMER_SUPPORT_OTP_TTL)->timestamp;
+        $expires_at = Carbon::now()->addSeconds(self::CUSTOMER_SUPPORT_OTP_TTL)->timestamp;
 
         $otpStore = [
             'otp' => $otp,

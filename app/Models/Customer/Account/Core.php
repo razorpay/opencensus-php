@@ -20,8 +20,8 @@ use RZP\Models\Locale\Core as Locale;
 
 class Core extends Base\Core
 {
-    // In mins
-    const TEMPORARY_SESSION_TIME = 10;
+    // In seconds (Multiplying by 60 since put() takes an argument in secs)
+    const TEMPORARY_SESSION_TIME = 10 * 60;
 
     /**
      * @param array           $input

@@ -24,9 +24,9 @@ class Core extends Base\Core
 
     const MAX_RETRY_COUNT = 3;
 
-    const BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT_TTL_IN_MIN = 180;
+    const BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT_TTL_IN_SEC = 10800;
 
-    const BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_MIN  = 180;
+    const BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_SEC  = 10800;
 
     const DEFAULT_CALLBACK_HANDLER_FUNCTION = 'updateValidationStatusForMerchant';
 
@@ -358,7 +358,7 @@ class Core extends Base\Core
     {
         $bvsValidationProcessingAttemptRedisKey = $this->getbvsValidationProcessingAttemptKey($validationId);
 
-        $this->cache->put($bvsValidationProcessingAttemptRedisKey, $count, self::BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT_TTL_IN_MIN);
+        $this->cache->put($bvsValidationProcessingAttemptRedisKey, $count, self::BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT_TTL_IN_SEC);
     }
 
     /**
@@ -408,7 +408,7 @@ class Core extends Base\Core
 
         $customHandlerKey = $this->getCustomHandlerKey($validation);
 
-        $this->cache->put($customHandlerKey, $customHandler, self::BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_MIN);
+        $this->cache->put($customHandlerKey, $customHandler, self::BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_SEC);
     }
 
     protected function getCustomHandlerKey(Base\Entity $validation)

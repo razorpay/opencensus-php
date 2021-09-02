@@ -28,7 +28,7 @@ class Core extends Base\Core
     {
         $redisKey = $this->getRedisKeyForCouponCount($rewardId);
 
-        $ttl = 365*24*60;//ttl of 1 year
+        $ttl = 365 * 24 * 60 * 60; // ttl of 1 year (in seconds)
 
         $this->app['cache']->put($redisKey, $uniqueCouponAvailableCount, $ttl);
     }

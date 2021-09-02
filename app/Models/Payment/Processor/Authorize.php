@@ -8264,7 +8264,8 @@ trait Authorize
 
         $input['gateway_input'] = $gatewayInput;
 
-        $this->cache->put($key, $input, $ttl);
+        // Multiplying by 60 since cache put() expect ttl in seconds
+        $this->cache->put($key, $input, $ttl * 60);
     }
 
     protected function shouldRedirect(Payment\Entity $payment)
@@ -8504,7 +8505,8 @@ trait Authorize
 
             $key = Payment\Entity::getRedirectToAuthorizeTrackIdKey($trackId);
 
-            $this->cache->put($key, $encryptedPayload, self::REDIRECT_CACHE_TTL);
+            // Multiplying by 60 since cache put() expect ttl in seconds
+            $this->cache->put($key, $encryptedPayload, self::REDIRECT_CACHE_TTL * 60);
 
             $redirectUrl = '';
 

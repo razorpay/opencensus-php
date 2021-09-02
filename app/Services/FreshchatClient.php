@@ -27,7 +27,7 @@ class FreshchatClient
 
     const CACHE_KEY_REPORT_METADATA                  = 'freshchat_extract_report_metadata';
 
-    const REPORT_RETRIEVAL_ID_CACHE_TTL              = 30 * 60; // 30 minutes
+    const REPORT_RETRIEVAL_ID_CACHE_TTL              = 30 * 60; // 30 minutes (in seconds)
 
     // Routes
 

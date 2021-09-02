@@ -5206,7 +5206,8 @@ class Core extends Base\Core
         $monthEnd = Carbon::now()->endOfMonth();
         $ttl = $monthEnd->diffInHours($today);
 
-        $this->app['cache']->put(self::LAST_MONTH_GMV."_".$merchantId, $sumOfCapturedPayments, $ttl*60);
+        // Multiplying by 60 since cache put() expect ttl in seconds
+        $this->app['cache']->put(self::LAST_MONTH_GMV."_".$merchantId, $sumOfCapturedPayments, $ttl * 60 * 60);
 
         return $sumOfCapturedPayments/100;
     }
@@ -5232,7 +5233,7 @@ class Core extends Base\Core
             $count = $customerCount->getAttribute('count');
         }
 
-        $this->app['cache']->put(self::CUSTOMER_COUNT."_".$merchantId, $count, 7*24*60);
+        $this->app['cache']->put(self::CUSTOMER_COUNT."_".$merchantId, $count, 7 * 24 * 60 * 60);
 
         return $count;
     }

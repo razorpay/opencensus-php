@@ -427,8 +427,9 @@ class Service extends Base\Service
         {
             /**
              * Adding 7 minutes as ttl, so next cron(which runs after 5 minutes) can pick it up.
+             * Multiplying by 60, since set accepts ttl in secs
              */
-            $this->app['cache']->set(self::CREATE_GLOBAL_TOKEN_CRON_KEY, $payments->last()->getCreatedAt(), 7);
+            $this->app['cache']->set(self::CREATE_GLOBAL_TOKEN_CRON_KEY, $payments->last()->getCreatedAt(), 7 * 60);
         }
 
         $response = [

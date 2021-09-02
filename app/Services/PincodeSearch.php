@@ -20,7 +20,8 @@ class PincodeSearch
 
     const LIMIT = 1;
 
-    const CACHE_TTL = 86400;
+    // Multiplying by 60 since cache put() expect ttl in seconds
+    const CACHE_TTL = 86400 * 60;
 
     const CACHE_KEY_FORMAT = 'pincode:pincodesearch_%s';
 

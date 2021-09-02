@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Redis;
  */
 class TokenService
 {
-    const TOKEN_EXPIRES_IN_SECONDS = 900; // 15 minutes
+    const TOKEN_EXPIRES_IN_SECONDS = 900; // 15 minutes (in seconds)
 
     const REDIS_EXPIRY_PARAM       = 'ex';
 

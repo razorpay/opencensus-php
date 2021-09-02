@@ -12,9 +12,9 @@ class Service extends Base\Service
 
     const DCC_MARK_UP_PERCENTAGE_KEY = 'dcc_mark_up_percent';
 
-    const HISTORICAL_EXCHANGE_RATE_TTL = 60 * 2; // 2 hours
+    const HISTORICAL_EXCHANGE_RATE_TTL = 60 * 2 * 60; // 2 hours (in seconds)
 
-    const REQUEST_VS_TIME_TTL = 60 * 1; // 1 hours
+    const REQUEST_VS_TIME_TTL = 60 * 1 * 60; // 1 hours (in seconds)
 
     const TIME_INTERVAL_MINS = 60;
 

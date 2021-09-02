@@ -23,7 +23,7 @@ class Gateway extends Base\Gateway
 
     const ACQUIRER = 'icici';
 
-    const CACHE_TTL = 60;
+    const CACHE_TTL_IN_MINS = 60;
 
     const TERMINAL_ID = 'terminal_id';
 
@@ -330,7 +330,8 @@ class Gateway extends Base\Gateway
     {
         $key = $this->getCacheKey($input['payment']['id']);
 
-        Cache::store($this->secureCacheDriver)->put($key, $input, self::CACHE_TTL);
+        // Multiplying by 60 since cache put() expect ttl in seconds
+        Cache::store($this->secureCacheDriver)->put($key, $input, self::CACHE_TTL_IN_MINS * 60);
     }
 
     protected function deleteEncryptedFingerPrintDataFromCache($input)

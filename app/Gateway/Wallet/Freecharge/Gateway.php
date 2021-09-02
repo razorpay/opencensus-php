@@ -830,7 +830,8 @@ class Gateway extends Base\Gateway
 
             $walletBalance = (int) ($content[ResponseFields::WALLET_BALANCE] * 100);
 
-            $this->app['cache']->put($key, $walletBalance, self::PAYMENT_TTL);
+            // Multiplying by 60 since cache put() expect ttl in seconds
+            $this->app['cache']->put($key, $walletBalance, self::PAYMENT_TTL * 60);
 
             return $walletBalance;
         }

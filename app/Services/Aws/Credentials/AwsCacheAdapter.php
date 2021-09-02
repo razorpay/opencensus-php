@@ -59,27 +59,7 @@ class AwsCacheAdapter implements CacheInterface
 
 //        Trace::info(TraceCode::AWS_CACHE_SET, $message);
 
-        $this->getCache()->put($key, $value, $this->convertTtl($ttl));
-    }
-
-    /**
-     * The AWS CacheInterface takes input in seconds, but the Laravel Cache classes use minutes. To support
-     * this intelligently, we round up to one minute for any value less than 60 seconds, and round down to
-     * the nearest whole minute for any value over one minute.
-     *
-     * @param $ttl
-     * @return float|int
-     */
-    protected function convertTtl($ttl)
-    {
-        $minutes = floor($ttl / 60);
-
-        if ($minutes == 0)
-        {
-            $minutes = 1;
-        }
-
-        return $minutes;
+        $this->getCache()->put($key, $value, $ttl);
     }
 
     /**

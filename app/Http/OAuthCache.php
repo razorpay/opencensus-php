@@ -48,7 +48,8 @@ trait OAuthCache
 
     public function getCacheTtl(): string
     {
-        return E::CACHED_ENTITIES[E::AUTH_TOKEN][Constants::TTL] ?? Constants::DEFAULT_QUERY_CACHE_TTL;
+        // Multiplying by 60 since cache put() expect ttl in seconds
+        return (E::CACHED_ENTITIES[E::AUTH_TOKEN][Constants::TTL] ?? Constants::DEFAULT_QUERY_CACHE_TTL_MINS) * 60;
     }
 
     public function getCacheInfo($token): array

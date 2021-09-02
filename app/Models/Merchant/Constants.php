@@ -129,7 +129,7 @@ final class Constants
     const IS_OWNER                                      = 'is_owner';
     const LOGOUT_SESSIONS_FOR_USERS                     = 'logout_sessions_for_users';
     const MERCHANT_EMAIL_UPDATE_CACHE_KEY               = 'merchant_email_update_%s';
-    const MERCHANT_EMAIL_UPDATE_CACHE_TTL               = 60*24;    // 24 hours
+    const MERCHANT_EMAIL_UPDATE_CACHE_TTL               = 60 * 60 * 24;    // 24 hours (Multiplying by 60 since cache put() expect ttl in seconds)
     const CURRENT_OWNER_EMAIL                           = 'current_owner_email';
     const REATTACH_CURRENT_OWNER                        = 'reattach_current_owner';
     const SET_CONTACT_EMAIL                             = 'set_contact_email';

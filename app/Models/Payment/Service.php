@@ -802,8 +802,9 @@ class Service extends Base\Service
             ]
          );
 
-        // put method multiplies $ttl with 60 hence, 0.17 * 60 = 9.6 sec
-        $this->app['cache']->put($trackIdKey, $trackIdKey, 0.17);
+        // Outdated: put method multiplies $ttl with 60 hence, 0.17 * 60 = 9.6 sec
+        // Update: put expects in seconds
+        $this->app['cache']->put($trackIdKey, $trackIdKey, 9.6);
     }
     public function forceAuthorizeFailed($id, $input)
     {
@@ -3040,7 +3041,7 @@ class Service extends Base\Service
 
     public function generateAndSaveOneTimeTokenWithContact($input)
     {
-        $cacheTtl = 15;
+        $cacheTtl = 15 * 60; // multiplying by 60 since put() expects in seconds
 
         $length = 14;
 

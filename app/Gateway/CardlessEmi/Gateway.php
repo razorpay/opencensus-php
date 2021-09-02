@@ -211,7 +211,8 @@ class Gateway extends Base\Gateway
 
     protected function createCacheData($key, $value, $ttl = self::CARD_CACHE_TTL)
     {
-        $this->app['cache']->put($key, $value, $ttl);
+        // Multiplying by 60 since cache put() expect ttl in seconds
+        $this->app['cache']->put($key, $value, $ttl*60);
     }
 
 

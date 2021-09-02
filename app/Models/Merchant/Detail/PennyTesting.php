@@ -674,7 +674,7 @@ class PennyTesting extends Base\Core
     {
         $pennyTestingAttemptRedisKey = $this->getPennyTestingAttemptRedisKey($merchantDetails->getId());
 
-        $this->cache->put($pennyTestingAttemptRedisKey, $pennyTestingAttempt, Constants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_MIN);
+        $this->cache->put($pennyTestingAttemptRedisKey, $pennyTestingAttempt, Constants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_SEC);
     }
 
     /**

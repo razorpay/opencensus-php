@@ -245,7 +245,8 @@ class Service extends Base\Service
                         $this->trace->debug(TraceCode::CAPITAL_TRANSACTION_CREATED, $repaymentBreakup);
                     }
 
-                    $this->cache->put($repaymentCacheKey, $repaymentCacheKey, 24 * 60); // cache response of a repayment for 24hours
+                    // cache response of a repayment for 24hours (in seconds)
+                    $this->cache->put($repaymentCacheKey, $repaymentCacheKey, 24 * 60 * 60);
 
                     return [];
                 });

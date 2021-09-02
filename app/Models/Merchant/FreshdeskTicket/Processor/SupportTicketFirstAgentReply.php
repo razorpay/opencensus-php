@@ -33,6 +33,7 @@ class SupportTicketFirstAgentReply extends Base
     //  cache keys
     const CACHE_KEY_FIRST_RESPONSE_TIME_DATA    = 'support_dashboard_fr_time_data_cache_key_%s_%s';
 
+    // in seconds
     const TTL = 30 * self::DAY;
 
     const RESPONSE_CREATED_AT = 'created_at';

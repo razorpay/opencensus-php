@@ -597,7 +597,7 @@ class BvsValidationTest extends TestCase
     {
         $countkey = 'bvs_validation_processing_attempt_count_' . $capturedBvsValidation->getValidationId();
 
-        $this->app['cache']->put($countkey, 0, 10800);
+        $this->app['cache']->put($countkey, 0, 648000);
 
         $bvsResponse = $this->getBvsResponse(
             $capturedBvsValidation->getValidationId(),

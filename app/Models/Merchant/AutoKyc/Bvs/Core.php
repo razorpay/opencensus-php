@@ -175,7 +175,7 @@ class Core extends Base\Core
 
         $this->app['cache']->put($companySearchAttemptRedisKey,
                                  $companySearchAttempt,
-                                 DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_MIN);
+                                 DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_SEC);
     }
 
 

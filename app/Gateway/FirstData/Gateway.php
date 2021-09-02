@@ -2564,7 +2564,8 @@ class Gateway extends Base\Gateway
             'cvv' => $this->app['encrypter']->encrypt($cvv),
         ];
 
-        $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, static::CARD_CACHE_TTL);
+        // Multiplying by 60 since cache put() expect ttl in seconds
+        $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, static::CARD_CACHE_TTL * 60);
     }
 
     protected function setCardCvv(array & $input)

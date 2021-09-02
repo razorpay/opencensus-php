@@ -3337,7 +3337,7 @@ class ActivationTest extends OAuthTestCase
     {
         $pennyTestingAttemptRedisKey = (new PennyTesting())->getPennyTestingAttemptRedisKey($merchantDetail->getId());
 
-        $this->app['cache']->put($pennyTestingAttemptRedisKey, $count, DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_MIN);
+        $this->app['cache']->put($pennyTestingAttemptRedisKey, $count, DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_SEC);
     }
 
     private function assertPennyTestingAttemptCount(string $merchantId, int $count)

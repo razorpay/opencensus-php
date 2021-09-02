@@ -1545,7 +1545,7 @@ class GatewayController extends Controller
 
         try
         {
-            $this->app['cache']->put($key, $str, 60 * 25); // 1 day 1 hour
+            $this->app['cache']->put($key, $str, 60 * 60 * 25); // 1 day 1 hour
         }
         catch (\Throwable $e)
         {

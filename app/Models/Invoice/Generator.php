@@ -88,7 +88,7 @@ class Generator extends Base\Core
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
 
-    const INVOICE_IDEMPOTENCY_KEY_CACHE_TTL = 30 * 60;  //30 min
+    const INVOICE_IDEMPOTENCY_KEY_CACHE_TTL = 30 * 60;  // 30 min
     const INVOICE_IDEMPOTENCY_REDIS_KEY     = 'invoice_idempotency_key_';
 
     public function __construct(Merchant\Entity $merchant, Entity $invoice = null)

@@ -122,7 +122,7 @@ class Service extends Base\Service
         while($this->cache->has($token));
 
         // Generate One Time Token valid for 5 minutes
-        $this->cache->put($token, ['merchantId' => $this->merchant->getId(), 'mode' => $this->mode], 5);
+        $this->cache->put($token, ['merchantId' => $this->merchant->getId(), 'mode' => $this->mode], 5 * 60);
 
         return [
             Batch::TOKEN =>  $token
