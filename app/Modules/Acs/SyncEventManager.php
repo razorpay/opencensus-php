@@ -150,8 +150,7 @@ class SyncEventManager
 //            $this->publishOutboxJob($accountId, Mode::TEST, $metadata);
 //        }
 
-        $this->liveAccountIds = [];
-        $this->testAccountIds = [];
+        $this->resetAccountParams();
     }
 
     public function publishOutboxJob(string $accountId, string $mode, array $metadata)
@@ -224,6 +223,12 @@ class SyncEventManager
             $context[Metric::LABEL_ASYNC_JOB_NAME] ?? Metric::LABEL_NONE_VALUE;
 
         return $context;
+    }
+
+    public function resetAccountParams()
+    {
+        $this->liveAccountIds = [];
+        $this->testAccountIds = [];
     }
 
 }
