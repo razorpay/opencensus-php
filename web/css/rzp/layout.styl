@@ -69,6 +69,10 @@ body {
   margin-top: 51px;
   @media (max-width $screen-sm-min) {
     margin-left: 0;
+    // if we are in the mobile and test mode to support the test banner this css is added 
+    &.test-mode{
+      margin-top 106px
+    }
   }
 
   .rzp-error-boundary {

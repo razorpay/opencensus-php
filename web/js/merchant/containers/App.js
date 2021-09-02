@@ -799,7 +799,7 @@ class App extends Component {
             <Notifications />
           </TwoFactorVerificationProvider>
         </div>
-        {mode === 'test' && (
+        {mode === 'test' && !isMobileDevice() && (
           <div style={{ position: 'relative' }}>
             <HighlightTestMode />
           </div>

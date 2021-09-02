@@ -1343,7 +1343,15 @@ div.feature-activation-banner {
 
 .layout.rzp {
 
-  > .navbar.navbar-fixed-top {
+  .navbar.navbar-fixed-top {
+    @media (max-width: 768px) {
+      position relative
+    }
+    .navbar-collapse{
+      @media (max-width: 768px) {
+        padding 5px
+      }
+    }
 
     .navbar-toggle-container {
 
@@ -1378,6 +1386,12 @@ div.feature-activation-banner {
       }
     }
   }
+  .nav-wrapper {
+    position fixed;
+    z-index 1030
+    width 100%
+    top 0
+  }
 }
 
 @media (min-width: 0px) {
@@ -1399,7 +1413,7 @@ div.feature-activation-banner {
 
   .layout.rzp {
 
-    > .navbar.navbar-fixed-top {
+    .navbar.navbar-fixed-top {
 
       background-color: $sidebar-bg-color;
 
@@ -1426,12 +1440,14 @@ div.feature-activation-banner {
 
 @media (max-width: 360px) {
 
-  .layout.rzp > .navbar.navbar-fixed-top {
+  .layout.rzp {
+      .navbar.navbar-fixed-top {
 
-    ul.navbar-nav.navbar-right > li:first-child > div.dropdown > a {
+      ul.navbar-nav.navbar-right > li:first-child > div.dropdown > a {
 
-      padding-right: 0;
-      padding-left: 0;
+        padding-right: 0;
+        padding-left: 0;
+      }
     }
   }
 }

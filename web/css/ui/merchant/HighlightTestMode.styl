@@ -11,10 +11,13 @@ $payment-pages-offset = 50px
     opacity 1
 
 .highlight-test-mode-container
-  z-index 9999999
+  z-index 9999
   position absolute
   width 100%
   animation fadein 2s
+  @media (max-width: 768px)
+    z-index 1000
+    position relative
 
   .horizontal-line
     background-color #F9D328
@@ -22,6 +25,8 @@ $payment-pages-offset = 50px
     height 5px
     position fixed
     top $line-top
+    @media (max-width: 768px)
+      position relative
 
     &.shift-line
       top $line-top + 45px
@@ -30,6 +35,9 @@ $payment-pages-offset = 50px
     width 100%
     display flex
     justify-content center
+    position relative
+    @media (max-width: 768px)
+      top -5px
 
     .trapezoid
       height 55px
@@ -44,6 +52,8 @@ $payment-pages-offset = 50px
       padding-left 15px
       color #2D3242
       font-size 12px
+      @media (max-width: 768px)
+        position relative
 
       &.shift-trapezoid
         top $trapezoid-top + 45px
@@ -52,6 +62,8 @@ $payment-pages-offset = 50px
       position fixed
       top $info-top
       padding-right 130px
+      @media (max-width: 768px)
+        position absolute
 
       &.shift-info
         top $info-top + 45px
@@ -70,6 +82,8 @@ $payment-pages-offset = 50px
       font-size 12px
       border-radius 4px
       animation fadein 1s
+      @media (max-width: 768px)
+        position absolute
 
       &.shift-info-content
         top 95px

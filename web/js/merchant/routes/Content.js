@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
 import Slider from 'common/ui/Slider';
@@ -57,9 +58,7 @@ const Customers = lazy(() =>
 const Marketplace = lazy(() =>
   import(/* webpackChunkName: "Marketplace" */ 'merchant/views/Marketplace/Index'),
 );
-const BBPS = lazy(() =>
-  import(/* webpackChunkName: "BBPS" */ 'merchant/views/BBPS'),
-);
+const BBPS = lazy(() => import(/* webpackChunkName: "BBPS" */ 'merchant/views/BBPS'));
 const PaymentButton = lazy(() =>
   import(/* webpackChunkName: "PaymentButton" */ 'merchant/views/PaymentButton'),
 );
@@ -454,7 +453,7 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/bbps"
             component={BBPS}
-            additionalCondition={(user) => user.isAllowedView('bbps') && user.isBbpsEnabled} 
+            additionalCondition={(user) => user.isAllowedView('bbps') && user.isBbpsEnabled}
           />
 
           <ShowWhenRoute
@@ -634,7 +633,13 @@ export default class Content extends Component {
       );
     }
     return (
-      <main class={classList(!fullPageView && 'main-content')}>
+      // to add a new class alognside main-content if we are in the test mode and in m-web
+      <main
+        class={classList(
+          !fullPageView && 'main-content',
+          this.props.mode === 'test' && isMobileDevice() ? 'test-mode' : '',
+        )}
+      >
         <ErrorBoundary resetOnProps>
           <Suspense fallback={<Loader />}>
             {BaseView}

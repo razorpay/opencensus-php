@@ -6,7 +6,9 @@ import RTracking from 'react-tracking';
 import NotificationsDropdown from 'common/ui/NotificationsDropdown';
 import WhatsNew from 'common/ui/WhatsNew/Old';
 import NotificationIcon from 'common/ui/WhatsNew/Icon';
+import HighlightTestMode from 'merchant/components/HighlightTestMode';
 import { toggleMobileMenu } from 'merchant/reducers/app';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import NavFragment from './NavFragment';
@@ -30,7 +32,7 @@ function toggleDropdown() {
 @connect(
   (state) => ({
     activePageName: state.app.activePageName,
-    user: state.session.user
+    user: state.session.user,
   }),
   { toggleMobileMenu },
 )
@@ -94,121 +96,125 @@ export default class HeaderNav extends Component {
       };
 
     return (
-      <nav class="navbar navbar-default navbar-fixed-top">
-        <div class="container-fluid">
-          <div className="navbar-collapse" id="headerNav">
-            {!showMobileNav && !user.isOrgRZP && !user.isOrgAxis && (
-              <img
-                src="/img/branding/powered-by-razorpay-dashboard.png"
-                class="rzp-branding-logo logo-header"
-                alt="Powered by Razorpay"
-              />
-            )}
-            {showMobileNav && (
-              <div className="pull-left navbar-toggle-container">
-                <button type="button" className="navbar-toggle" onClick={this.onToggleAppMenu}>
-                  <span class="i-bar" />
-                  <span class="i-bar" />
-                  <span class="i-bar" />
-                </button>{' '}
-                {activePageName || 'Dashboard'}
-              </div>
-            )}
-            <ul className="nav navbar-nav navbar-right">
-              {(!showMobileNav && (
-                <NavFragment analytics={analytics} {...fragmentSpecificProps} {...commonProps} />
-              )) || (
-                <li>
-                  <ModesDropdown
-                    mode={mode}
-                    modeFormatted={modeFormatted}
-                    onSwitchMode={onSwitchMode}
-                    isTestModeBlocked={user.isTestModeBlocked}
-                  />
-                </li>
+      <div class="nav-wrapper">
+        <nav class="navbar navbar-default navbar-fixed-top">
+          <div class="container-fluid">
+            <div className="navbar-collapse" id="headerNav">
+              {!showMobileNav && !user.isOrgRZP && !user.isOrgAxis && (
+                <img
+                  src="/img/branding/powered-by-razorpay-dashboard.png"
+                  class="rzp-branding-logo logo-header"
+                  alt="Powered by Razorpay"
+                />
               )}
-              <ShowWhen
-                additionalCondition={(user) =>
-                  user.isOrgAllowedFunctionality('external_links') &&
-                  !user.isWhatsNewSectionEnabled &&
-                  !user.isOrgAxis
-                }
-              >
-                <li id="notifications-dropdown">
-                  <NotificationsDropdown
+              {showMobileNav && (
+                <div className="pull-left navbar-toggle-container">
+                  <button type="button" className="navbar-toggle" onClick={this.onToggleAppMenu}>
+                    <span class="i-bar" />
+                    <span class="i-bar" />
+                    <span class="i-bar" />
+                  </button>{' '}
+                  {activePageName || 'Dashboard'}
+                </div>
+              )}
+              <ul className="nav navbar-nav navbar-right">
+                {(!showMobileNav && (
+                  <NavFragment analytics={analytics} {...fragmentSpecificProps} {...commonProps} />
+                )) || (
+                  <li>
+                    <ModesDropdown
+                      mode={mode}
+                      modeFormatted={modeFormatted}
+                      onSwitchMode={onSwitchMode}
+                      isTestModeBlocked={user.isTestModeBlocked}
+                    />
+                  </li>
+                )}
+                <ShowWhen
+                  additionalCondition={(user) =>
+                    user.isOrgAllowedFunctionality('external_links') &&
+                    !user.isWhatsNewSectionEnabled &&
+                    !user.isOrgAxis
+                  }
+                >
+                  <li id="notifications-dropdown">
+                    <NotificationsDropdown
+                      analytics={analytics}
+                      showMobileNav={showMobileNav}
+                      {...commonProps}
+                    />
+                  </li>
+                </ShowWhen>
+                <ShowWhen
+                  additionalCondition={(user) =>
+                    user.isOrgAllowedFunctionality('external_links') &&
+                    (user.isAnnouncementTextEnabled || user.isWhatsNewTextEnabled) &&
+                    !user.isOrgAxis
+                  }
+                >
+                  <li id="whats-new-section">
+                    {user.isWhatsNewLazyEnabled ? (
+                      <NotificationIcon
+                        analytics={analytics}
+                        showMobileNav={showMobileNav}
+                        {...commonProps}
+                      />
+                    ) : (
+                      <WhatsNew
+                        analytics={analytics}
+                        showMobileNav={showMobileNav}
+                        {...commonProps}
+                      />
+                    )}
+                  </li>
+                </ShowWhen>
+                <ShowWhen
+                  additionalCondition={(user) =>
+                    user.isAppSwitcherEnabled && user.isAccepted && !user.isOrgAxis
+                  }
+                >
+                  <li id="app-switcher">
+                    <AppSwitcher analytics={analytics} {...commonProps} />
+                  </li>
+                </ShowWhen>
+                <ShowWhen
+                  additionalCondition={(user) =>
+                    user.isOrgAllowedFunctionality('external_links') &&
+                    user.isWhatsNewSectionEnabled &&
+                    !user.isAnnouncementTextEnabled &&
+                    !user.isWhatsNewTextEnabled &&
+                    !user.isOrgAxis
+                  }
+                >
+                  <li id="whats-new-section">
+                    {user.isWhatsNewLazyEnabled ? (
+                      <NotificationIcon
+                        analytics={analytics}
+                        showMobileNav={showMobileNav}
+                        {...commonProps}
+                      />
+                    ) : (
+                      <WhatsNew
+                        analytics={analytics}
+                        showMobileNav={showMobileNav}
+                        {...commonProps}
+                      />
+                    )}
+                  </li>
+                </ShowWhen>
+                <li id="profile-dropdown">
+                  <ProfileDropdown
                     analytics={analytics}
                     showMobileNav={showMobileNav}
                     {...commonProps}
                   />
                 </li>
-              </ShowWhen>
-              <ShowWhen
-                additionalCondition={(user) =>
-                  user.isOrgAllowedFunctionality('external_links') &&
-                  (user.isAnnouncementTextEnabled || user.isWhatsNewTextEnabled) &&
-                  !user.isOrgAxis
-                }
-              >
-                <li id="whats-new-section">
-                  {user.isWhatsNewLazyEnabled ? (
-                    <NotificationIcon
-                      analytics={analytics}
-                      showMobileNav={showMobileNav}
-                      {...commonProps}
-                    />
-                  ) : (
-                    <WhatsNew
-                      analytics={analytics}
-                      showMobileNav={showMobileNav}
-                      {...commonProps}
-                    />
-                  )}
-                </li>
-              </ShowWhen>
-              <ShowWhen
-                additionalCondition={(user) =>
-                  user.isAppSwitcherEnabled && user.isAccepted && !user.isOrgAxis
-                }
-              >
-                <li id="app-switcher">
-                  <AppSwitcher analytics={analytics} {...commonProps} />
-                </li>
-              </ShowWhen>
-              <ShowWhen
-                additionalCondition={(user) =>
-                  user.isOrgAllowedFunctionality('external_links') &&
-                  user.isWhatsNewSectionEnabled &&
-                  !user.isAnnouncementTextEnabled &&
-                  !user.isWhatsNewTextEnabled && !user.isOrgAxis
-                }
-              >
-                <li id="whats-new-section">
-                  {user.isWhatsNewLazyEnabled ? (
-                    <NotificationIcon
-                      analytics={analytics}
-                      showMobileNav={showMobileNav}
-                      {...commonProps}
-                    />
-                  ) : (
-                    <WhatsNew
-                      analytics={analytics}
-                      showMobileNav={showMobileNav}
-                      {...commonProps}
-                    />
-                  )}
-                </li>
-              </ShowWhen>
-              <li id="profile-dropdown">
-                <ProfileDropdown
-                  analytics={analytics}
-                  showMobileNav={showMobileNav}
-                  {...commonProps}
-                />
-              </li>
-            </ul>
+              </ul>
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+        {mode === 'test' && isMobileDevice() && <HighlightTestMode />}
+      </div>
     );
   }
 }
