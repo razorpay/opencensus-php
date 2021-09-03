@@ -107,6 +107,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_DCB     => ["/RAZORPAY RECON file dt. [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::NETBANKING_DLB     => ["/RazorPay - Dhanalaxmi Bank PG Recon File New/"],
         RequestProcessor\Base::NETBANKING_RBL     => ["/RBL PG Recon File/"],
+        RequestProcessor\Base::CARDLESS_EMI_ZESTMONEY  => ["/Settlement_RazorpayPG_[0-9]{2}-[0-9]{2}-20[0-9]{2}/"]
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -191,6 +192,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_DLB           => 1,
         RequestProcessor\Base::NETBANKING_ICICI         => 1,
         RequestProcessor\Base::NETBANKING_RBL           => 1,
+        RequestProcessor\Base::CARDLESS_EMI_ZESTMONEY   => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -685,6 +687,19 @@ class Validator extends Base\Core
             RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY);
 
         return ($validSubject and $validBody);
+    }
+
+    public function validateCardlessEmiZestMoneyEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::CARDLESS_EMI_ZESTMONEY);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::CARDLESS_EMI_ZESTMONEY);
+
+        return ($validSubject and $validAttachmentCount);
     }
 
     public function validateBajajfinservEmail(array $emailDetails)

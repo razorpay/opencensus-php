@@ -66,6 +66,7 @@ class Mailgun extends Base
         self::NETBANKING_DCB,
         self::NETBANKING_DLB,
         self::NETBANKING_RBL,
+        self::CARDLESS_EMI_ZESTMONEY,
     ];
 
     const LINK_BASED_GATEWAYS = [

@@ -136,6 +136,7 @@ class Base extends Core
     const CRED                   = 'Cred';
     const WALNUT369              = 'Walnut369';
     const TWID                   = 'Twid';
+    const CARDLESS_EMI_ZESTMONEY = 'CardlessEmiZestMoney';
 
     const BT_RBL                 = 'BtRbl';
     const CHECKOUT_DOT_COM       = 'checkout_dot_com';
@@ -235,7 +236,8 @@ class Base extends Core
         self::VIRTUAL_ACC_ICICI      => [],
         self::NETBANKING_DLB         => ['alerts@dhanbank.co.in'],
         self::CHECKOUT_DOT_COM       => [],
-
+        self::CARDLESS_EMI_ZESTMONEY => ['finops.settlements@zestmoney.in'],
+      
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN                  => ['kajol.nigam@razorpay.com'],
@@ -354,6 +356,7 @@ class Base extends Core
         Gateway::CARDLESS_EMI           => [
             CardlessEmi::FLEXMONEY   => self::CARDLESS_EMI_FLEXMONEY,
             CardlessEmi::WALNUT369   => self::WALNUT369,
+            CardlessEmi::ZESTMONEY   => self::CARDLESS_EMI_ZESTMONEY,
         ],
         Gateway::BAJAJFINSERV           => self::BAJAJFINSERV,
         Gateway::HDFC_DEBIT_EMI         => self::HDFC_DEBIT_EMI,
