@@ -46,7 +46,7 @@ const Header = ({ handleOnClick, isSignUpFromWebsite = false }) => {
                 </Size>
                 <Space margin={[3, 0, 0, 8]}>
                   <CustomSecondaryButton size="small" onClick={handleOnClick}>
-                    Sign up
+                    Log in
                   </CustomSecondaryButton>
                 </Space>
               </View>
