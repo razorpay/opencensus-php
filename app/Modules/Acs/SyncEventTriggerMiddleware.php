@@ -20,13 +20,9 @@ class SyncEventTriggerMiddleware
      */
     protected $app;
 
-    /** @var SyncEventManager $syncEventManager */
-    protected $syncEventManager;
-
     public function __construct(Application $app)
     {
         $this->app = $app;
-        $this->syncEventManager = $this->app[SyncEventManager::SINGLETON_NAME];
     }
 
     public function handle(Request $request, Closure $next)
@@ -40,10 +36,6 @@ class SyncEventTriggerMiddleware
         if ($response->getStatusCode() < 300)
         {
             event(new TriggerSyncEvent());
-        }
-        else
-        {
-            $this->syncEventManager->resetAccountParams();
         }
     }
 }
