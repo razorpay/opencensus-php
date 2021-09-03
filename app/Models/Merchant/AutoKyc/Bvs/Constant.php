@@ -91,6 +91,7 @@ class Constant
     // Company Search in BVS
     //
     const COMPANY_SEARCH    = 'company_search';
+    const GET_GST_DETAILS   = 'get_gst_details';
     const SEARCH_DATA       = 'search_data';
     const RESULTS           = 'results';
     const ERROR_CODE        = 'code';

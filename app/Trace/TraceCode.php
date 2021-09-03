@@ -2938,6 +2938,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_COMPANY_SEARCH_FAILED                        = 'MERCHANT_COMPANY_SEARCH_FAILED';
     const COMPANY_SEARCH_EXHAUSTED                              = 'COMPANY_SEARCH_EXHAUSTED';
 
+    const GET_GST_DETAILS_EXHAUSTED                             = 'GET_GST_DETAILS_EXHAUSTED';
+    const GET_GST_DETAILS_FAILED                                = 'GET_GST_DETAILS_FAILED';
+    const AUTO_POPULATE_GST_DETAILS_FAILED                      = 'AUTO_POPULATE_GST_DETAILS_FAILED';
+    const BVS_GET_GST_DETAILS_RESPONSE                          = 'BVS_GET_GST_DETAILS_RESPONSE';
+    const BVS_GET_GST_DETAILS_REQUEST                           = 'BVS_GET_GST_DETAILS_REQUEST';
+    const BVS_GET_GST_DETAILS_ERROR                             = 'BVS_GET_GST_DETAILS_ERROR';
+
     const MERCHANT_POA_VERIFICATION_FAILED                      = 'MERCHANT_POA_VERIFICATION_FAILED';
 
     const FUND_TRANSFER_ATTEMPT_STATUS_UPDATE_FAILED            = 'FUND_TRANSFER_ATTEMPT_STATUS_UPDATE_FAILED';

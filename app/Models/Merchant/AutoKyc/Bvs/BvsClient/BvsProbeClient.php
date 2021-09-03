@@ -23,7 +23,7 @@ class BvsProbeClient extends BaseClient
     {
         parent::__construct();
 
-        $this->ProbeAPIClient = New probeV1\ProbeAPIClient($this->host, $this->httpClient);
+        $this->ProbeAPIClient = new probeV1\ProbeAPIClient($this->host, $this->httpClient);
     }
 
 
@@ -72,5 +72,48 @@ class BvsProbeClient extends BaseClient
         }
     }
 
+    /**
+     * @param string $pan
+     *
+     * @return probeV1\GetGstDetailsResponse
+     * @throws IntegrationException
+     */
+    public function getGstDetails(string $pan): probeV1\GetGstDetailsResponse
+    {
+        $getGstDetailsRequest = new probeV1\GetGstDetailsRequest();
 
+        $getGstDetailsRequest->setPan($pan);
+
+        $requestSuccess = false;
+
+        try
+        {
+            $response = $this->ProbeAPIClient->GetGstDetails($this->apiClientCtx, $getGstDetailsRequest);
+
+            $requestSuccess = true;
+
+            $this->trace->count(Metric::BVS_GET_GST_DETAILS_REQUEST_TOTAL);
+
+            $this->trace->info(
+                TraceCode::BVS_GET_GST_DETAILS_RESPONSE,
+                ['response' => $response->serializeToJsonString()]);
+
+            return $response;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::BVS_GET_GST_DETAILS_ERROR);
+
+            throw new IntegrationException('
+                Could not receive proper response from BVS service for gst details');
+        }
+        finally
+        {
+            $dimension = [
+                Constant::SUCCESS => $requestSuccess,
+            ];
+
+            $this->trace->count(Metric::BVS_GET_GST_DETAILS_RESPONSE_TOTAL, $dimension);
+        }
+    }
 }

@@ -803,6 +803,19 @@ class Service extends Base\Service
     }
 
     /**
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BaseException
+     */
+    public function getGstInList(): array
+    {
+        $gstList = (new Core)->getGSTDetailsList();
+
+        return $gstList;
+    }
+
+    /**
      * This function is used for getting needs clarification reasons for fields
      *
      * @return array

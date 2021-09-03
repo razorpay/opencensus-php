@@ -20,10 +20,10 @@ class BusinessPanStatusUpdaterTest extends TestCase
         $mid = $merchantDetail->getId();
 
         $bvsValidation = $this->fixtures->create('bvs_validation',
-            [
-                'owner_id'      => $mid,
-                'artefact_type' => Constant::BUSINESS_PAN,
-            ]);
+                                                 [
+                                                     'owner_id'      => $mid,
+                                                     'artefact_type' => Constant::BUSINESS_PAN,
+                                                 ]);
 
         $kafkaEventPayload = [
             'data'  => [

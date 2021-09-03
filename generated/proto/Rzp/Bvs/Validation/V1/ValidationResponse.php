@@ -146,7 +146,7 @@ class ValidationResponse extends \Google\Protobuf\Internal\Message
      */
     public function getEnrichmentDetails()
     {
-        return isset($this->enrichment_details) ? $this->enrichment_details : null;
+        return $this->enrichment_details;
     }
 
     public function hasEnrichmentDetails()

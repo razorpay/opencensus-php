@@ -600,11 +600,11 @@ class Route
         'merchant_activation_business_categories'  => ['get',      'merchant/activation/business_categories',        'MerchantController@getBusinessCategories'                          ],
         'merchant_activation_business_details'     => ['get',      'merchant/activation/business_details',           'MerchantController@getBusinessDetails'                             ],
         'merchant_activation_company_search'       => ['get',      'merchant/activation/company_search',             'MerchantController@getCompanySearchList'                           ],
+        'merchant_activation_gst_details'          => ['get',      'merchant/activation/gst_details',                'MerchantController@getGstInList'                                   ],
         'merchant_activation_needs_clarification'  => ['get',      'merchant/activation/clarification_reasons',      'MerchantController@getNeedsClarificationReasons'                   ],
         'merchant_activation_files'                => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_upload_file_admin'    => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'               => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
-
 
         // Api for creating merchant using raw file
         'merchant_upload'                          => ['post',     'merchant/upload',                                'MerchantController@uploadMerchant'                ],
@@ -3967,6 +3967,7 @@ class Route
         'merchant_activation_business_categories',
         'merchant_activation_business_details',
         'merchant_activation_company_search',
+        'merchant_activation_gst_details',
         'merchant_activation_needs_clarification',
         'merchant_razorx_evaluate',
         'merchant_razorx_bulk_evaluate',
@@ -7170,6 +7171,7 @@ class Route
             'merchant_activation_business_categories',
             'merchant_activation_business_details',
             'merchant_activation_company_search',
+            'merchant_activation_gst_details',
             'merchant_activation_details',
             'fetch_merchant_escalation',
             'merchant_activation_needs_clarification',

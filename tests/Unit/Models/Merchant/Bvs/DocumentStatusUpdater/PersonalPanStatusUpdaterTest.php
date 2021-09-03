@@ -22,10 +22,10 @@ class PersonalPanStatusUpdaterTest extends TestCase
         $mid = $merchantDetail->getId();
 
         $bvsValidation = $this->fixtures->create('bvs_validation',
-            [
-                'owner_id'      => $mid,
-                'artefact_type' => Constant::PERSONAL_PAN,
-            ]);
+                                                 [
+                                                     'owner_id'      => $mid,
+                                                     'artefact_type' => Constant::PERSONAL_PAN,
+                                                 ]);
 
         $kafkaEventPayload = [
             'data'  => [
@@ -73,10 +73,10 @@ class PersonalPanStatusUpdaterTest extends TestCase
         ]);
 
         $bvsValidation = $this->fixtures->create('bvs_validation',
-            [
-                'owner_id'      => $mid,
-                'artefact_type' => Constant::PERSONAL_PAN,
-            ]);
+                                                 [
+                                                     'owner_id'      => $mid,
+                                                     'artefact_type' => Constant::PERSONAL_PAN,
+                                                 ]);
 
         $kafkaEventPayload = [
             'data'  => [
@@ -97,13 +97,13 @@ class PersonalPanStatusUpdaterTest extends TestCase
     protected function mockRazorxTreatment(string $returnValue = 'on')
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-            ->willReturn($returnValue);
+                          ->willReturn($returnValue);
     }
 }

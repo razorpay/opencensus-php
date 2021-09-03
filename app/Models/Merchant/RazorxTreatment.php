@@ -4,6 +4,9 @@ namespace RZP\Models\Merchant;
 
 final class RazorxTreatment
 {
+    //Razorx treatment constant, allows system to auto populate gst number from pan.
+    const BVS_GET_GST_DETAILS = "bvs_get_gst_details";
+
     // Razorx treatment constant, allows merchant to submit support call requests.
     const SUPPORT_CALL = 'support_call';
 

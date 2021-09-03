@@ -16,15 +16,17 @@ class ProbeApi
         }
         \GPBMetadata\Platform\Bvs\Probe\V1\CompanySearch::initOnce();
         \GPBMetadata\Platform\Bvs\Probe\V1\AadhaarVerification::initOnce();
+        \GPBMetadata\Platform\Bvs\Probe\V1\GetGstDetails::initOnce();
         $pool->internalAddGeneratedFile(
             '
-ü
-%platform/bvs/probe/v1/probe_api.protoplatform.bvs.probe.v10platform/bvs/probe/v1/aadhaar_verification.proto2Ü
+∏
+%platform/bvs/probe/v1/probe_api.protoplatform.bvs.probe.v10platform/bvs/probe/v1/aadhaar_verification.proto+platform/bvs/probe/v1/get_gst_details.proto2Ú
 ProbeAPIm
 GetCompanySearch+.platform.bvs.probe.v1.CompanySearchRequest,.platform.bvs.probe.v1.CompanySearchResponsev
 AadhaarGetCaptcha/.platform.bvs.probe.v1.AadhaarGetCaptchaRequest0.platform.bvs.probe.v1.AadhaarGetCaptchaResponseù
 AadhaarVerifyCaptchaAndSendOtp<.platform.bvs.probe.v1.AadhaarVerifyCaptchaAndSendOtpRequest=.platform.bvs.probe.v1.AadhaarVerifyCaptchaAndSendOtpResponses
-AadhaarSubmitOtp..platform.bvs.probe.v1.AadhaarSubmitOtpRequest/.platform.bvs.probe.v1.AadhaarSubmitOtpResponseBZprobev1 Rzp\\Bvs\\Probe\\V1bproto3'
+AadhaarSubmitOtp..platform.bvs.probe.v1.AadhaarSubmitOtpRequest/.platform.bvs.probe.v1.AadhaarSubmitOtpResponsej
+GetGstDetails+.platform.bvs.probe.v1.GetGstDetailsRequest,.platform.bvs.probe.v1.GetGstDetailsResponseBZprobev1 Rzp\\Bvs\\Probe\\V1bproto3'
         , true);
 
         static::$is_initialized = true;

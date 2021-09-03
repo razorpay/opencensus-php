@@ -1258,6 +1258,19 @@ class MerchantController extends Controller
     }
 
     /**
+     * Gets list of gst numbers associate to personal pan and company pan of merchant
+     *
+     *  @return mixed
+     */
+    public function getGstInList()
+    {
+        $input = Request::all();
+
+        $results = $this->service(E::MERCHANT_DETAIL)->getGstInList($input);
+
+        return ApiResponse::json($results);
+    }
+    /**
      * Returns clarification reason against each field
      *
      * @return mixed

@@ -13,7 +13,9 @@ use RZP\Models\Merchant\AutoKyc\Response;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BvsProbeClient;
 use RZP\Models\Merchant\AutoKyc\Bvs\ProbeMocks\CompanySearchMock;
+use RZP\Models\Merchant\AutoKyc\Bvs\ProbeMocks\GetGstDetailsMock;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\CompanySearchBaseResponse;
+use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\GetGstDetailsBaseResponse;
 
 class Core extends Base\Core
 {
@@ -206,4 +208,84 @@ class Core extends Base\Core
 
         return $validationObject;
     }
+
+
+    /**
+     * @param string $pan
+     *
+     * @return array
+     * @throws \RZP\Exception\IntegrationException
+     */
+    public function probeGetGstDetails(string $pan): array
+    {
+        $this->trace->info(TraceCode::BVS_GET_GST_DETAILS_REQUEST, ['input' => $pan]);
+
+        $app = App::getFacadeRoot();
+
+        $mock = $app['config']['services.bvs.mock'];
+
+        $response = null;
+
+        if ($mock === true)
+        {
+            //
+            // This config is not defined in application config , this is used in test case only
+            //
+            $mockStatus = $app['config']['services.bvs.response'] ?? Constant::SUCCESS;
+
+            $getGstDetailsMock = new GetGstDetailsMock($pan, $mockStatus);
+
+            $response = $getGstDetailsMock->getResponse();
+        }
+        else
+        {
+            $response = (new BvsProbeClient())->getGstDetails($pan);
+        }
+
+        $getGstDetailsBase = new GetGstDetailsBaseResponse($response);
+
+        return $getGstDetailsBase->geGstDetailsResponse();
+    }
+
+
+    /**
+     * @param string $merchantId
+     *
+     * @return string
+     */
+    public function getGetGstDetailsRateLimiterKey(string $merchantId): string
+    {
+        return DetailConstants::GET_GST_DETAILS_ATTEMPT_COUNT_REDIS_KEY_PREFIX .
+               $merchantId;
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return int
+     */
+    public function getGstDetailsAttempts(string $merchantId): int
+    {
+        $getGetGstDetailsAttemptRedisKey = $this->getGetGstDetailsRateLimiterKey($merchantId);
+
+        $getGetGstDetailsCount = $this->app['cache']->get($getGetGstDetailsAttemptRedisKey) ?? 0;
+
+        return $getGetGstDetailsCount;
+    }
+
+    /**
+     * @param string $merchantId
+     */
+    public function increaseGetGstDetailsAttempt(string $merchantId)
+    {
+        $getGstDetailsAttemptRedisKey = $this->getGetGstDetailsRateLimiterKey($merchantId);
+
+        $getGstDetailsAttempt = $this->getGstDetailsAttempts($merchantId) + 1;
+
+        $this->app['cache']->put($getGstDetailsAttemptRedisKey,
+                                 $getGstDetailsAttempt,
+                                 DetailConstants::GET_GST_DETAILS_ATTEMPT_COUNT_TTL_IN_MIN);
+    }
+
+
 }

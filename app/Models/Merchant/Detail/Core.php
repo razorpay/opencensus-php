@@ -9,6 +9,9 @@ use Carbon\Carbon;
 use RZP\Encryption;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Trace\Tracer;
 use RZP\Models\State;
 use RZP\Models\Coupon;
@@ -69,9 +72,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
-use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Models\Merchant\Request\Constants as RequestConstants;
@@ -4273,6 +4274,89 @@ class Core extends Base\Core
         return $companySearchList;
     }
 
+    /**
+     * @param string $pan
+     *
+     * @return array
+     * @throws BadRequestException
+     */
+    public function getGSTDetailsList(): array
+    {
+        $gstDetails = [];
+
+        $merchantDetail = $this->merchant->merchantDetail;
+
+        if (BusinessType::isGstinVerificationEnableBusinessTypes($merchantDetail->getBusinessTypeValue()) === false)
+        {
+            return [Constant::RESULTS => $gstDetails];;
+        }
+
+        //if experiment is enabled then only probe for gst details
+        $isGetGstDetailsRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+            $this->merchant->getId(),
+            RazorxTreatment::BVS_GET_GST_DETAILS);
+
+        if ($isGetGstDetailsRazorxExperimentEnabled === false)
+        {
+            return [Constant::RESULTS => $gstDetails];;
+        }
+
+        $bvsCore = new AutoKyc\Bvs\Core();
+
+        //rate limiting per merchant
+        $getGstDetailsAttempts = $bvsCore->getGstDetailsAttempts($this->merchant->getId());
+
+        if ($getGstDetailsAttempts > DetailConstants::GET_GST_DETAILS_MAX_ATTEMPT)
+        {
+            $this->trace->count(DetailMetric::GET_GST_DETAILS_EXHAUSTED);
+
+            $this->trace->info(TraceCode::GET_GST_DETAILS_EXHAUSTED);
+
+            return [Constant::RESULTS => $gstDetails];
+        }
+
+        try
+        {
+            $gstDetailsForCompanyPan=[];
+            $gstDetailsForPersonalPan=[];
+
+            //get company pan associated gstin
+            $pan = $merchantDetail->getPan();
+
+            //get business pan associated gstin
+            if(empty($pan)==false && $merchantDetail->getCompanyPanVerificationStatus()==DetailConstants::VERIFIED){
+                $gstDetailsForCompanyPan =
+                    $bvsCore->probeGetGstDetails($pan);
+            }
+
+            //get personal pan associated gstin
+            $pan = $merchantDetail->getPromoterPan();
+
+            if(empty($pan)==false && $merchantDetail->getPoiVerificationStatus()==DetailConstants::VERIFIED){
+                $gstDetailsForPersonalPan =
+                    $bvsCore->probeGetGstDetails($pan);
+            }
+
+            //merge both with company pan associated gstin given more priority
+            $gstDetails = array_unique(array_merge($gstDetailsForCompanyPan,$gstDetailsForPersonalPan));
+        }
+        catch (\Exception $e)
+        {
+            $dimension = AutoKyc\Bvs\Core::getProbeDimension(Constant::GET_GST_DETAILS);
+
+            $this->trace->count(DetailMetric::BVS_PROBE_API_FAILURE, $dimension);
+
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::GET_GST_DETAILS_FAILED,
+                                         [
+                                             DEConstants::PAN_NUMBER => $pan]);
+        }
+
+        $bvsCore->increaseGetGstDetailsAttempt($this->merchant->getId());
+
+        return [Constant::RESULTS => $gstDetails];
+    }
 
     public function getActivationFlowForUnregistered(Merchant\Entity $merchant, Entity $merchantDetails)
     {

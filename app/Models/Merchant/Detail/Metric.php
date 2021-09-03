@@ -15,8 +15,8 @@ final class Metric
     const COMPANY_PAN_VERIFICATION_STATUS_TOTAL = 'company_pan_verification_total';
     const GSTIN_VERIFICATION_STATUS_TOTAL       = 'gstin_verification_status_total';
 
-    const PENNY_TESTING_STATUS_TOTAL              = 'penny_testing_status_total';
-    const PENNY_TESTING_RETRY_COUNT               = 'penny_testing_retry_count';
+    const PENNY_TESTING_STATUS_TOTAL = 'penny_testing_status_total';
+    const PENNY_TESTING_RETRY_COUNT  = 'penny_testing_retry_count';
 
     const EXTERNAL_VERIFIER_API_CALL_SUCCESS_TOTAL = 'external_verifier_api_call_success_total';
     const EXTERNAL_VERIFIER_API_CALL_FAILED_TOTAL  = 'external_verifier_api_call_failed_total';
@@ -38,8 +38,12 @@ final class Metric
     const SHOP_ESTABLISHMENT_NUMBER_LENGTH_MORE_THAN_30 = 'shop_establishment_number_length_more_than_30';
 
     //BVS Company Search Metrics
-    const BVS_COMPANY_SEARCH_RESPONSE_TOTAL = 'bvs_company_search_response_total';
-    const BVS_COMPANY_SEARCH_REQUEST_TOTAL  = 'bvs_company_search_request_total';
-    const BVS_PROBE_API_FAILURE             = 'bvs_probe_api_failure';
-    const COMPANY_SEARCH_EXHAUSTED          = 'company_search_exhausted';
+    const BVS_COMPANY_SEARCH_RESPONSE_TOTAL  = 'bvs_company_search_response_total';
+    const BVS_COMPANY_SEARCH_REQUEST_TOTAL   = 'bvs_company_search_request_total';
+    const BVS_PROBE_API_FAILURE              = 'bvs_probe_api_failure';
+    const COMPANY_SEARCH_EXHAUSTED           = 'company_search_exhausted';
+
+    const BVS_GET_GST_DETAILS_REQUEST_TOTAL  = 'bvs_get_gst_details_request_total';
+    const BVS_GET_GST_DETAILS_RESPONSE_TOTAL = 'bvs_get_gst_details_response_total';
+    const GET_GST_DETAILS_EXHAUSTED          = "get_gst_details_exhausted";
 }
