@@ -72,7 +72,7 @@ const InternationalPayments = ({ mode, user, config, org, paypal_terminals }) =>
               : 'https://razorpay.com/payment-gateway/#go-international'
           }
         >
-          Know more
+          <span>Know more</span>
           <i class="i i-external-link" />
         </a>
         <div class="description">
@@ -105,7 +105,7 @@ const PaypalWrapper = ({ terminals }) => {
             target="_blank"
             href="https://razorpay.com/docs/payment-methods/paypal"
           >
-            Know more
+            <span>Know more</span>
             <i class="i i-external-link" />
           </DocLink>
           {showStatus ? (

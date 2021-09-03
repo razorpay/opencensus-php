@@ -613,7 +613,7 @@ class PaymentSettings extends Component {
               </div>
             </div>
             <div className="capture-details">
-              What is Capturing Payments?
+              <span>What is Capturing Payments?</span>
               <span className="details-toggler" onClick={this.handleDetailsToggle}>
                 {isDetailsToggleActive ? 'Hide Details' : 'Show Details'}
                 <i className={`i i-chevron-${isDetailsToggleActive ? 'up' : 'down'}`} />
@@ -678,7 +678,7 @@ class PaymentSettings extends Component {
                     >
                       Orders API
                     </a>
-                    will override these settings if there is any conflict.
+                    <span>will override these settings if there is any conflict.</span>
                   </strong>
                 </p>
                 {!user.iscaptureSettingsRevampEnabled && (
@@ -823,7 +823,7 @@ class PaymentSettings extends Component {
                     >
                       Orders API
                     </a>
-                    will override these settings if there is any conflict.
+                    <span>will override these settings if there is any conflict.</span>
                   </strong>
                 </div>
                 <p>
