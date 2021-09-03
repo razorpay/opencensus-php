@@ -8,6 +8,7 @@ import {
 } from 'merchant_common/reducers/modals';
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import DisputeDetails from 'merchant/views/Transactions/Disputes/components/Details';
+// eslint-disable-next-line import/no-cycle
 import PaymentDetails from 'merchant/views/Transactions/Payments/Details';
 import DualDetailView, { PrimaryView, SecondaryView } from 'common/new-ui/DualDetailView';
 import { compose } from 'redux';

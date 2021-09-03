@@ -141,14 +141,16 @@ const DisputeDetails = (props) => {
                 <div class="rzp-banner-text">
                   {dispute.phase === 'fraud' ? (
                     <p>
-                      This transaction is reported as fraudulent by the account holder. A good
-                      practice would be to stop processing of the order/service and to reverse the
-                      transaction. If you believe this is a genuine transaction, we request you to
-                      respond before&nbsp;
+                      <span>
+                        This transaction is reported as fraudulent by the account holder. A good
+                        practice would be to stop processing of the order/service and to reverse the
+                        transaction. If you believe this is a genuine transaction, we request you to
+                        respond before&nbsp;
+                      </span>
                       <strong>
                         <Time value={dispute.respond_by} format="ll" />
                       </strong>
-                      &nbsp; with corresponding proofs to avoid losing the dispute.
+                      <span>&nbsp; with corresponding proofs to avoid losing the dispute.</span>
                     </p>
                   ) : (
                     <p>
@@ -162,9 +164,11 @@ const DisputeDetails = (props) => {
                           <Time value={dispute.respond_by} format="ll" />
                         )}
                       </strong>
-                      &nbsp; and help us represent the case in your favour. If no response is
-                      received before the deadline, the dispute will be deemed accepted and the
-                      amount will be deducted from your Razorpay balance.
+                      <span>
+                        &nbsp; and help us represent the case in your favour. If no response is
+                        received before the deadline, the dispute will be deemed accepted and the
+                        amount will be deducted from your Razorpay balance.
+                      </span>
                     </p>
                   )}
                 </div>

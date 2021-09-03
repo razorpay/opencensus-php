@@ -6,6 +6,7 @@ import { withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Amount from 'common/ui/Amount';
 import PaymentDetails from 'merchant/views/Transactions/Payments/components/PaymentDetails';
+// eslint-disable-next-line import/no-cycle
 import DisputeDetails from 'merchant/views/Transactions/Disputes/Details';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import * as PaymentActions from 'merchant/reducers/payments/details';
