@@ -135,10 +135,7 @@ class Core extends Base\Core
             // because this function can accept a card also and we have
             // to set expiry time even then. Like duh.
             //
-            if ($token->getExpiredAt() === null)
-            {
-                $token->setExpiredAt($card->getExpiryTimestamp());
-            }
+            $token->setExpiredAt($card->getExpiryTimestamp());
 
             $token->card()->associate($card);
         }

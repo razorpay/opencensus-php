@@ -605,28 +605,7 @@ class OrderTest extends TestCase
         return $order;
     }
 
-    public function testCreateCardTPVOrder()
-    {
-        $order = $this->startTest();
-
-        return $order;
-    }
-
-    public function testCreateTPVOrderWhenMethodNull()
-    {
-        $order = $this->startTest();
-
-        return $order;
-    }
-
-    public function testCreateCardTPVOrderNoMaxAmount()
-    {
-        $order = $this->startTest();
-
-        return $order;
-    }
-
-    public function testCreateCardTPVOrderNoExpireAt()
+    public function testCreateTPVOrderInvalidMethod()
     {
         $order = $this->startTest();
 
