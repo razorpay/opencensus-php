@@ -441,7 +441,7 @@ export default class User {
   }
 
   get isEsignEnabled() {
-    return this.isFeatureEnabled('esign');
+    return this.findTag('Esign');
   }
 
   get isMerchantRestricted() {
