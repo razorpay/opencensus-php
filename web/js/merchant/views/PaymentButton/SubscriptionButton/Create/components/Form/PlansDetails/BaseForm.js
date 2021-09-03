@@ -51,11 +51,11 @@ export default class BaseForm extends React.Component {
 
     const newField = {
       ...selectedPlanOption,
-      plan_id: selectedPlanOption.id,
+      plan_id: selectedPlanOption?.id,
       product_config: {
         plan_details: {
-          interval: selectedPlanOption.interval,
-          period: selectedPlanOption.period,
+          interval: selectedPlanOption?.interval,
+          period: selectedPlanOption?.period,
         },
         subscription_details: {
           total_count: billing_cycles_total_count,
