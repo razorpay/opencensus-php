@@ -4590,12 +4590,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->cardMandateNotification !== null;
     }
 
-    public function isRequiredToCreateNewTokenAlways(): bool
+    public function isRequiredToCreateNewTokenAlways($token = null): bool
     {
+        $card = $this->card;
+
+        if (($card === null) and ($token !== null)) {
+            $card = $token->card;
+        }
+
         if (($this->isCardRecurring() === true) and
-            ($this->card !== null) and
-            ($this->card->iinRelation !== null) and
-            ($this->card->iinRelation->isCardMandateApplicable($this->merchant) === true) and
+            ($card !== null) and
+            ($card->iinRelation !== null) and
+            ($card->iinRelation->isCardMandateApplicable($this->merchant) === true) and
             ($this->hasSubscription() === false))
         {
             return true;
