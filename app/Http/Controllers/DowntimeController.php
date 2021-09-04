@@ -28,8 +28,33 @@ class DowntimeController extends Controller
     public function fetchResolvedDowntimes()
     {
         $inputs = Request::all();
+
         $data = $this->service(E::PAYMENT_DOWNTIME)->fetchResolvedDowntimes($inputs);
+
         return ApiResponse::json($data);
+    }
+
+    public function refreshOngoingDowntimesCache()
+    {
+        $this->service(E::PAYMENT_DOWNTIME)->refreshOngoingDowntimesCache();
+
+        return ApiResponse::json([]);
+    }
+
+    public function refreshHistoricalDowntimeCache()
+    {
+        $input = Request::all();
+
+        $lookbackPeriod =0;
+
+        if(isset($input['lookbackPeriod']) === true)
+        {
+            $lookbackPeriod = $input['lookbackPeriod'];
+        }
+
+        $this->service(E::PAYMENT_DOWNTIME)->refreshHistoricalDowntimeCache($lookbackPeriod);
+
+        return ApiResponse::json([]);
     }
 
     public function getMethodDowntimeDataByID($id)

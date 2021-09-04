@@ -33,6 +33,16 @@ class Service extends Base\Service
         return $this->core()->createFromGatewayDowntimes($input);
     }
 
+    public function refreshOngoingDowntimesCache()
+    {
+        $this->core()->refreshOngoingDowntimesCache([]);
+    }
+
+    public function refreshHistoricalDowntimeCache($lookbackPeriod=0)
+    {
+        $this->core()->refreshHistoricalDowntimeCache($lookbackPeriod);
+    }
+
     public function getMethodDowntimeDataForMerchant(array $input): array
     {
         $variant = $this->app->razorx->getTreatment(
@@ -64,8 +74,8 @@ class Service extends Base\Service
     public function fetchOngoingDowntimes(): array
     {
         $this->trace->info(TraceCode::FETCH_ONGOING_PLATFORM_LEVEL_DOWNTIMES, ["merchantId" => $this->merchant->getId()]);
-        $downtimes = $this->core()->fetchOngoingDowntimes();
-        return $downtimes->toArrayPublic();
+
+        return $this->core()->fetchOngoingDowntimes();
     }
 
     public function fetchResolvedDowntimes($params): array
@@ -73,8 +83,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::FETCH_RESOLVED_PLATFORM_LEVEL_DOWNTIMES,
                            ["merchantId" => $this->merchant->getId(), "filters" => $params]);
         $this->validateRequestParams($params);
-        $downtimes = $this->core()->fetchResolvedDowntimes($params);
-        return $downtimes->toArrayPublic();
+
+        return $this->core()->fetchResolvedDowntimes($params);
     }
 
     public function getPaymentDowntimeByID(array $input, string $id): array
@@ -403,7 +413,7 @@ class Service extends Base\Service
                 null, null, "startDate should never be greater than endDate");
         }
 
-        if($tDiff > 14)
+        if($tDiff > Constants::MAX_LOOKBACK_PERIOD)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,

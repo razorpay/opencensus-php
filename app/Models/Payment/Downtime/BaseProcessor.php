@@ -78,6 +78,10 @@ class BaseProcessor extends Base\Core
                 $downtime->toArray()
             );
 
+            (new Core)->refreshOngoingDowntimesCache($downtime);
+
+            (new Core)->refreshHistoricalDowntimeCache();
+
             (new Service())->emailDowntime(Constants::RESOLVED, $downtime);
 
             PaymentDowntimeEvent::dispatch($this->mode, Status::RESOLVED, serialize($downtime));

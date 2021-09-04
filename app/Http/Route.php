@@ -126,6 +126,10 @@ class Route
         'mandate_hq_callback'                      => ['post',     'mandate_hq/callback',                            'PaymentCreateController@handleMandateHQCallback'                   ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'payments_downtime'                        => ['get',      'payments/downtimes',                             'DowntimeController@getMethodDowntimeData'                          ],
+        'refresh_payments_ongoing_downtimes_cron'  => ['get',      'payments/downtimes/ongoing/refresh_cache_cron',  'DowntimeController@refreshOngoingDowntimesCache'                   ],
+        'refresh_payments_resolved_downtimes_cron' => ['get',      'payments/downtimes/resolved/refresh_cache_cron', 'DowntimeController@refreshHistoricalDowntimeCache'                 ],
+        'refresh_payments_ongoing_downtimes'       => ['get',      'payments/downtimes/ongoing/refresh_cache',       'DowntimeController@refreshOngoingDowntimesCache'                   ],
+        'refresh_payments_resolved_downtimes'      => ['get',      'payments/downtimes/resolved/refresh_cache',      'DowntimeController@refreshHistoricalDowntimeCache'                 ],
         'fetch_payments_ongoing_downtimes'         => ['get',      'payments/downtimes/ongoing',                     'DowntimeController@fetchOngoingDowntimes'                          ],
         'fetch_payments_resolved_downtimes'        => ['get',      'payments/downtimes/resolved',                    'DowntimeController@fetchResolvedDowntimes'                         ],
         'payments_downtime_by_id'                  => ['get',      'payments/downtimes/{id}',                        'DowntimeController@getMethodDowntimeDataByID'                      ],
@@ -2959,6 +2963,7 @@ class Route
         'payment_fetch_transfers',
         'payment_transfer',
         'payments_downtime',
+        'refresh_payments_resolved_downtimes',
         'fetch_payments_ongoing_downtimes',
         'fetch_payments_resolved_downtimes',
         'payments_downtime_by_id',
@@ -3712,6 +3717,10 @@ class Route
 
         //Tax-payment route
         'tax_payments_reminders_callback',
+
+        // Refresh downtime cache
+        'refresh_payments_ongoing_downtimes_cron',
+        'refresh_payments_resolved_downtimes_cron'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -4639,6 +4648,8 @@ class Route
         'fund_transfer_attempt_bulk_update',
         'gateway_fetch_downtimes',
         'gateway_create_downtime',
+        'refresh_payments_ongoing_downtimes',
+        'refresh_payments_resolved_downtimes',
         'add_downtime_slack_merchant_names',
         'gateway_create_rule',
         'gateway_delete_rule',
@@ -5673,6 +5684,8 @@ class Route
         'scrooge_fetch_merchant_mode_configs'      => Permission::EDIT_MERCHANT,
         'gateway_fetch_downtimes'                  => Permission::VIEW_GATEWAY_DOWNTIME,
         'gateway_create_downtime'                  => Permission::CREATE_GATEWAY_DOWNTIME,
+        'refresh_payments_ongoing_downtimes'       => Permission::CREATE_GATEWAY_DOWNTIME,
+        'refresh_payments_resolved_downtimes'      => Permission::CREATE_GATEWAY_DOWNTIME,
         'fetch_payments_ongoing_downtimes'         => Permission::CREATE_GATEWAY_DOWNTIME,
         'fetch_payments_resolved_downtimes'        => Permission::CREATE_GATEWAY_DOWNTIME,
         'add_downtime_slack_merchant_names'        => Permission::CREATE_GATEWAY_DOWNTIME,
@@ -7447,6 +7460,7 @@ class Route
             'payment_validate_vpa',
             'payment_validate_vpa_old',
             'payments_downtime',
+            'refresh_payments_resolved_downtimes',
             'fetch_payments_ongoing_downtimes',
             'fetch_payments_resolved_downtimes',
             'payments_downtime_by_id',
@@ -8272,6 +8286,8 @@ class Route
             'fund_transfer_attempt_bulk_update',
             'fund_transfer_attempt_initiate_action',
             'gateway_create_downtime',
+            'refresh_payments_ongoing_downtimes',
+            'refresh_payments_resolved_downtimes',
             'add_downtime_slack_merchant_names',
             'gateway_create_rule',
             'gateway_delete_downtime',
@@ -9839,6 +9855,8 @@ class Route
             'merchant_risk_identify_blacklist_country_alerts',
             'payout_send_pending_approval_email',
             'terminal_fill_enabled_wallets',
+            'refresh_payments_ongoing_downtimes_cron',
+            'refresh_payments_resolved_downtimes_cron'
         ],
 
         'subscriptions' => [

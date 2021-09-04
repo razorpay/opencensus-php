@@ -549,19 +549,21 @@ class PaymentDowntimeTest extends TestCase
 
         $this->createDowntime('upi', 'BANK', 'vpa_handle', 'oksbi');
         $paymentDowntime = $this->fetchOngoingDowntimes();
-        $this->assertEquals(1, sizeof($paymentDowntime['items']));
+
+        $this->assertEquals(1, sizeof($paymentDowntime));
 
         $this->createDowntime('upi', 'BANK', 'vpa_handle', 'okhdfc');
         $paymentDowntime = $this->fetchOngoingDowntimes();
-        $this->assertEquals(2, sizeof($paymentDowntime['items']));
+        $this->assertEquals(2, sizeof($paymentDowntime));
 
         $this->createDowntime('card', 'BANK', 'issuer', 'HDFC');
         $paymentDowntime = $this->fetchOngoingDowntimes();
-        $this->assertEquals(3, sizeof($paymentDowntime['items']));
+        $this->assertEquals(3, sizeof($paymentDowntime));
 
         $this->createDowntime('netbanking', 'BANK', 'issuer', 'HDFC');
         $paymentDowntime = $this->fetchOngoingDowntimes();
-        $this->assertEquals(4, sizeof($paymentDowntime['items']));
+        $this->assertEquals(4, sizeof($paymentDowntime));
+
     }
 
     public function testFetchOngoingPayments_ResolveAndCheckCount()
@@ -570,19 +572,20 @@ class PaymentDowntimeTest extends TestCase
 
         $this->createDowntime('upi', 'BANK', 'vpa_handle', 'oksbi');
         $paymentDowntime = $this->fetchOngoingDowntimes();
-        $this->assertEquals(1, sizeof($paymentDowntime['items']));
+        $this->assertEquals(1, sizeof($paymentDowntime));
 
         $this->createDowntime('upi', 'BANK', 'vpa_handle', 'okhdfc');
         $paymentDowntime = $this->fetchOngoingDowntimes();
-        $this->assertEquals(2, sizeof($paymentDowntime['items']));
+        $this->assertEquals(2, sizeof($paymentDowntime));
 
         $this->createDowntime('card', 'BANK', 'issuer', 'HDFC');
         $paymentDowntime = $this->fetchOngoingDowntimes();
-        $this->assertEquals(3, sizeof($paymentDowntime['items']));
+        $this->assertEquals(3, sizeof($paymentDowntime));
 
         $this->createDowntime('netbanking', 'BANK', 'issuer', 'HDFC');
         $paymentDowntime = $this->fetchOngoingDowntimes();
-        $this->assertEquals(4, sizeof($paymentDowntime['items']));
+        $this->assertEquals(4, sizeof($paymentDowntime));
+
 
         $downtime1 = $this->getLastEntity('gateway_downtime', true);
 
@@ -597,7 +600,7 @@ class PaymentDowntimeTest extends TestCase
         $this->makeRequestAndGetContent($resolveDowntimeRequest);
 
         $paymentDowntime = $this->fetchOngoingDowntimes();
-        $this->assertEquals(3, sizeof($paymentDowntime['items']));
+        $this->assertEquals(3, sizeof($paymentDowntime));
     }
 
     public function testFetchResolvedPayments()
@@ -617,7 +620,7 @@ class PaymentDowntimeTest extends TestCase
 
         $paymentDowntime = $this->makeRequestAndGetContent($fetchDowntimeRequest);
 
-        $this->assertEquals(0, sizeof($paymentDowntime['items']));
+        $this->assertEquals(0, sizeof($paymentDowntime));
 
         $downtime1 = $this->getLastEntity('gateway_downtime', true);
 
@@ -643,7 +646,7 @@ class PaymentDowntimeTest extends TestCase
 
         $paymentDowntime = $this->makeRequestAndGetContent($fetchDowntimeRequest);
 
-        $this->assertEquals(1, sizeof($paymentDowntime['items']));
+        $this->assertEquals(1, sizeof($paymentDowntime));
 
         $this->ba->privateAuth();
         $fetchDowntimeRequest = [
@@ -654,7 +657,7 @@ class PaymentDowntimeTest extends TestCase
 
         $paymentDowntime = $this->makeRequestAndGetContent($fetchDowntimeRequest);
 
-        $this->assertEquals(0, sizeof($paymentDowntime['items']));
+        $this->assertEquals(0, sizeof($paymentDowntime));
 
     }
 
@@ -733,6 +736,93 @@ class PaymentDowntimeTest extends TestCase
             $this->assertEquals("Date range should be within 15 days", $e->getMessage());
         }
 
+    }
+
+    public function testRefreshHistoricalDowntimeCache()
+    {
+        $currentDate = date('Y-m-d');
+        $this->ba->adminAuth();
+
+        $this->createDowntime('upi', 'BANK', 'vpa_handle', 'oksbi');
+        $this->resolveLatestDowntime();
+
+        $this->createDowntime('upi', 'BANK', 'vpa_handle', 'okhdfc');
+        $this->resolveLatestDowntime();
+
+        $this->createDowntime('upi', 'BANK', 'vpa_handle', 'okicic');
+        $this->resolveLatestDowntime();
+
+        $this->createDowntime('card', 'BANK', 'issuer', 'SBIN');
+        $this->resolveLatestDowntime();
+
+        $this->ba->adminAuth();
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/resolved/refresh_cache',
+        ];
+
+        $this->ba->adminAuth();
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/resolved/refresh_cache?lookbackPeriod=7',
+        ];
+
+        $this->makeRequestAndGetContent($fetchDowntimeRequest);
+        $this->ba->adminAuth();
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/resolved/refresh_cache?lookbackPeriod=9',
+        ];
+
+        $this->makeRequestAndGetContent($fetchDowntimeRequest);
+
+
+        $this->ba->privateAuth();
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/resolved?startDate='.$currentDate.'&endDate='.$currentDate
+        ];
+
+        $downtimes = $this->makeRequestAndGetContent($fetchDowntimeRequest);
+
+        $this->assertEquals(4, sizeof($downtimes));
+
+        $this->ba->privateAuth();
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/resolved?startDate='.$currentDate.'&endDate='.$currentDate.'&method=netbanking',
+        ];
+
+        $downtimes = $this->makeRequestAndGetContent($fetchDowntimeRequest);
+
+        $this->assertEquals(0, sizeof($downtimes));
+
+        $this->ba->privateAuth();
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/resolved?startDate='.$currentDate.'&endDate='.$currentDate.'&method=upi',
+        ];
+
+        $downtimes = $this->makeRequestAndGetContent($fetchDowntimeRequest);
+
+        $this->assertEquals(3, sizeof($downtimes));
+
+        $this->ba->privateAuth();
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/resolved?startDate='.$currentDate.'&endDate='.$currentDate.'&method=card',
+        ];
+
+        $downtimes = $this->makeRequestAndGetContent($fetchDowntimeRequest);
+
+        $this->assertEquals(1, sizeof($downtimes));
     }
 
     public function testPaymentDowntimeGetByInvalidId()
@@ -2122,5 +2212,19 @@ class PaymentDowntimeTest extends TestCase
         $paymentDowntime = $this->makeRequestAndGetContent($fetchDowntimeRequest);
 
         return $paymentDowntime;
+    }
+
+    private function resolveLatestDowntime(): void
+    {
+        $downtime1              = $this->getLastEntity('gateway_downtime', true);
+        $resolveDowntimeRequest = [
+            'content' => [
+                'end' => Carbon::now()->timestamp,
+            ],
+            'method'  => 'PUT',
+            'url'     => '/gateway/downtimes/' . $downtime1['id']
+        ];
+        $this->ba->adminAuth();
+        $this->makeRequestAndGetContent($resolveDowntimeRequest);
     }
 }
