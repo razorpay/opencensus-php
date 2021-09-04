@@ -83,6 +83,7 @@ class FundAccountValidation extends Base
 
             $payload = [
                 self::TRANSACTOR         => self::X,
+                self::TENANT             => self::X,
                 self::MODE               => $this->mode,
                 self::IDEMPOTENCY_KEY    => gen_uuid(self::UUID_FORMAT),
                 self::MERCHANT_ID        => $fundAccountValidation->getMerchantId(),

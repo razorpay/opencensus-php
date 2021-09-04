@@ -363,6 +363,7 @@ class CreditLogsTest extends TestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('live', $ledgerRequestPayload['mode']);
             $this->assertEquals($creditsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);

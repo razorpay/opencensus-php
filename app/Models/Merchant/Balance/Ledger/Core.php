@@ -18,6 +18,7 @@ class Core extends Base\Core
 
     const MODE                  = 'mode';
     const TRANSACTOR            = 'transactor';
+    const TENANT                = 'tenant';
     const MERCHANT_ID           = 'merchant_id';
     const EVENT                 = 'event';
     const EVENT_NAME            = 'name';
@@ -53,6 +54,7 @@ class Core extends Base\Core
 
         $payload = [
             self::TRANSACTOR        => self::X,
+            self::TENANT            => self::X,
             self::MODE              => $mode,
             self::IDEMPOTENCY_KEY   => gen_uuid(self::UUID_FORMAT),
             self::MERCHANT_ID       => $merchant->getId(),

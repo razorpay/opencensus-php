@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use Request;
 use Requests;
 use RZP\Exception;
 use Requests_Exception;
@@ -54,11 +55,12 @@ class Ledger
     ];
 
     // Headers
-    const ACCEPT        = 'Accept';
-    const X_MODE        = 'X-Mode';
-    const ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
-    const CONTENT_TYPE  = 'Content-Type';
-    const X_REQUEST_ID  = 'X-Request-ID';
+    const ACCEPT               = 'Accept';
+    const X_MODE               = 'X-Mode';
+    const ADMIN_EMAIL          = 'X-Dashboard-Admin-Email';
+    const CONTENT_TYPE         = 'Content-Type';
+    const X_REQUEST_ID         = 'X-Request-ID';
+    const LEDGER_TENANT_HEADER = 'Ledger-Tenant';
 
     const REQUEST_TIMEOUT = 60; // In seconds
 
@@ -255,11 +257,11 @@ class Ledger
     {
         $headers = [];
 
-        $headers[self::ACCEPT]        = 'application/json';
-        $headers[self::CONTENT_TYPE]  = 'application/json';
-        $headers[self::X_MODE]        = $this->mode;
-        $headers[self::ADMIN_EMAIL]   = $this->getAdminEmail();
-        $headers[self::X_REQUEST_ID]  = $this->request->getId();
+        $headers[self::ACCEPT]               = 'application/json';
+        $headers[self::CONTENT_TYPE]         = 'application/json';
+        $headers[self::X_MODE]               = $this->mode;
+        $headers[self::ADMIN_EMAIL]          = $this->getAdminEmail();
+        $headers[self::X_REQUEST_ID]         = $this->request->getId();
 
         $this->headers = $headers;
     }
@@ -359,6 +361,8 @@ class Ledger
             $url = $this->baseTestUrl . $endpoint;
         }
 
+        $this->headers[self::LEDGER_TENANT_HEADER] = $this->getTenant($data);
+
         // json encode if data is must, else ignore.
         if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
         {
@@ -388,5 +392,34 @@ class Ledger
     protected function getAdminEmail(): string
     {
         return $this->auth->getDashboardHeaders()['admin_email'] ?? '';
+    }
+
+    /**
+     * @param array  $data
+     *
+     * @return string
+     */
+    protected function getTenant(array $data): string
+    {
+        $tenant = Request::header(self::LEDGER_TENANT_HEADER);
+
+        // TODO: remove conditional X after everything is in place
+        // reading tenant from header for rest call
+        if ($tenant !== NULL)
+        {
+            return $tenant;
+        }
+        // reading from request if call is internal.
+        // Eg if payout want to trigger some endpoint the header will not contain the tenant
+        elseif (isset($data['tenant']) === true and $data['tenant'] !== NULL)
+        {
+            return $data['tenant'];
+        }
+        // for backward compatibility adding X as default value
+        // As we have only onboarded X use cases till now
+        else
+        {
+            return 'X';
+        }
     }
 }

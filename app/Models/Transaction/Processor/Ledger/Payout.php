@@ -164,6 +164,7 @@ class Payout extends Base
     {
         return [
             self::TRANSACTOR          => self::X,
+            self::TENANT              => self::X,
             self::MODE                => $this->mode,
             self::IDEMPOTENCY_KEY     => gen_uuid(self::UUID_FORMAT),
             self::MERCHANT_ID         => $payout->getMerchantId(),

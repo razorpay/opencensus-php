@@ -595,6 +595,7 @@ class AdjustmentTest extends TestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($adjustmentsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('100abc000abc00', $ledgerRequestPayload['merchant_id']);
@@ -734,6 +735,7 @@ class AdjustmentTest extends TestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($adjustmentsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('100abc000abc00', $ledgerRequestPayload['merchant_id']);
@@ -1029,6 +1031,7 @@ class AdjustmentTest extends TestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('live', $ledgerRequestPayload['mode']);
             $this->assertEquals($adjustmentsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -1117,6 +1120,7 @@ class AdjustmentTest extends TestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('live', $ledgerRequestPayload['mode']);
             $this->assertEquals($adjustmentsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);

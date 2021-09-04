@@ -499,6 +499,7 @@ class PayoutTest extends OAuthTestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -690,6 +691,7 @@ class PayoutTest extends OAuthTestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -1399,6 +1401,7 @@ class PayoutTest extends OAuthTestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -1559,6 +1562,7 @@ class PayoutTest extends OAuthTestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -1818,6 +1822,7 @@ class PayoutTest extends OAuthTestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -1956,6 +1961,7 @@ class PayoutTest extends OAuthTestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -2277,6 +2283,7 @@ class PayoutTest extends OAuthTestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('live', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutCreated->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -4463,6 +4470,7 @@ class PayoutTest extends OAuthTestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutCreated->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -7192,6 +7200,7 @@ class PayoutTest extends OAuthTestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -11119,6 +11128,7 @@ class PayoutTest extends OAuthTestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutCreated->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -12662,6 +12672,7 @@ class PayoutTest extends OAuthTestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($payoutCreated->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);

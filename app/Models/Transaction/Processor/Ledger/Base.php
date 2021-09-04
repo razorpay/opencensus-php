@@ -11,6 +11,7 @@ use RZP\Models\Base\Core;
 class Base extends Core
 {
     const TRANSACTOR            = 'transactor';
+    const TENANT                = 'tenant';
     const MODE                  = 'mode';
     const MERCHANT_ID           = 'merchant_id';
     const BALANCE_ID            = 'balance_id';

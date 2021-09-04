@@ -446,6 +446,7 @@ class FundAccountValidationTest extends TestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -517,6 +518,7 @@ class FundAccountValidationTest extends TestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($fundAccountValidationsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -573,6 +575,7 @@ class FundAccountValidationTest extends TestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($fundAccountValidationsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -1646,6 +1649,7 @@ class FundAccountValidationTest extends TestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('test', $ledgerRequestPayload['mode']);
             $this->assertEquals($fundAccountValidationCreated->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
@@ -1759,6 +1763,7 @@ class FundAccountValidationTest extends TestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['transactor']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('live', $ledgerRequestPayload['mode']);
             $this->assertEquals($fundAccountValidationCreated->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
