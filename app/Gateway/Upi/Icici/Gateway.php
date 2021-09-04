@@ -45,7 +45,7 @@ class Gateway extends Base\Gateway
      * Default request timeout duration in seconds.
      * @var  integer
      */
-    const TIMEOUT = 60;
+    const TIMEOUT = 20;
 
     protected $gateway = 'upi_icici';
 
