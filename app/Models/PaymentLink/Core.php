@@ -22,6 +22,7 @@ use RZP\Models\LineItem;
 use RZP\Models\FileStore;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Timezone;
+use RZP\Jobs\AppsRiskCheck;
 use RZP\Services\UfhService;
 use RZP\Constants\Entity as E;
 use RZP\Models\Invoice\Entity as IE;
@@ -55,6 +56,8 @@ class Core extends Base\Core
     const PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP = 'PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP';
 
     const RAZORX_ASYNC_UPDATE_EXPERIMENT = 'pp_async_update_experiment';
+
+    const RAZORX_PAYMENT_PAGE_PROFANITY_CHECK = "payment_page_profanity_check";
 
     public function __construct()
     {
@@ -111,6 +114,8 @@ class Core extends Base\Core
         $this->trace->count(Metric::PAYMENT_PAGE_CREATED_TOTAL, $paymentLink->getMetricDimensions());
 
         $this->doDedupeAndRiskActions($paymentLink, $merchant);
+
+        $this->dispatchAppRiskCheck($paymentLink);
 
         return $paymentLink;
     }
@@ -1890,5 +1895,38 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::PAYMENT_PAGE_FIRE_WEBHOOK, $payload);
 
         return $payload;
+    }
+
+    private function dispatchAppRiskCheck(Entity $paymentLink)
+    {
+        $mode = $this->app['basicauth']->getMode() ?? Mode::LIVE;
+
+        $variant = $this->app->razorx->getTreatment(
+            $paymentLink->getMerchantId(),
+            self::RAZORX_PAYMENT_PAGE_PROFANITY_CHECK,
+            $mode
+        );
+
+        if ($variant !== 'on')
+        {
+            return;
+        }
+
+        $request = [
+            'entity_id' => $paymentLink->getId(),
+            'checks'    => ['profanity_check']
+        ];
+        try {
+            $this->trace->info(
+                TraceCode::APPS_RISK_CHECK_SQS_PUSH_INIT,
+                $request
+            );
+            AppsRiskCheck::dispatch($this->mode, $request);
+        } catch (\Exception $e) {
+            $this->trace->critical(
+                TraceCode::APPS_RISK_CHECK_SQS_PUSH_FAILED,
+                $request
+            );
+        }
     }
 }

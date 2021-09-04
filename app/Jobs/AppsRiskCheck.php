@@ -4,13 +4,27 @@ namespace RZP\Jobs;
 
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
+use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
 use RZP\Models\VirtualAccount;
 use RZP\Services\MerchantRiskClient;
+use Illuminate\Support\Facades\Config;
 
 class AppsRiskCheck extends Job
 {
     protected $queueConfigKey = "apps_risk_check";
 
+    const MRS_DEPTH             = 1;
+    const MRS_CALLER            = "payment_pages";
+    const MRS_ENTITY_TYPE       = "payment_pages";
+    const MRS_MODERATION_TYPE   = "site";
+
+    /**
+     * @var array Along with other necessary key value pairs based on the usecase, pass "checks" as additional
+     * parameter as list. values for "checks" could be following.
+     * - risk_factor
+     * - profanity_check
+     */
     protected $params;
 
     public function __construct(string $mode, array $params)
@@ -31,9 +45,7 @@ class AppsRiskCheck extends Job
             ]
         );
 
-        $response = (new MerchantRiskClient())->validateRiskFactorForMerchantRequest($this->params);
-
-        $this->validateRiskFactorResponse($response);
+        $response = $this->performNecessaryChecks();
 
         $this->trace->info(
             TraceCode::APPS_RISK_CHECK_QUEUE_COMPLETED,
@@ -41,6 +53,46 @@ class AppsRiskCheck extends Job
                 'Response' => $response,
             ]
         );
+    }
+
+    protected function performNecessaryChecks(): array
+    {
+        $responses = [];
+        foreach (Arr::get($this->params, 'checks', []) as $check)
+        {
+            $handler = "handle" . Str::studly($check);
+            if (method_exists($this, $handler))
+            {
+                $responses[$check] = $this->$handler();
+            }
+        }
+
+        return $responses;
+    }
+
+    protected function handleRiskFactor(): array
+    {
+        $response = (new MerchantRiskClient())->validateRiskFactorForMerchantRequest($this->params);
+
+        $this->validateRiskFactorResponse($response);
+
+        return $response;
+    }
+
+    protected function handleProfanityCheck(): array
+    {
+        $url = $this->getPaymentPageUrl();
+
+        $response = (new MerchantRiskClient())->enqueueProfanityCheckerRequest(
+            self::MRS_MODERATION_TYPE,
+            self::MRS_ENTITY_TYPE,
+            $this->params['entity_id'],
+            $url,
+            self::MRS_DEPTH,
+            self::MRS_CALLER
+        );
+
+        return $response;
     }
 
     protected function validateRiskFactorResponse(array $response)
@@ -106,5 +158,13 @@ class AppsRiskCheck extends Job
             }
         }
         return $dataFields;
+    }
+
+    private function getPaymentPageUrl(): string
+    {
+        return Config::get('app.payment_link_hosted_base_url')
+            . "/"
+            .  $this->params['entity_id']
+            . "/view";
     }
 }

@@ -911,6 +911,7 @@ class Core extends Base\Core
             'client_type' => 'smart_collect',
             'entity_id'   => $virtualAccount->getId(),
             'fields'      => $fields,
+            'checks'      => ['risk_factor']
         ];
 
         try
