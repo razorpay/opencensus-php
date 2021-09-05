@@ -518,16 +518,6 @@ class CardMandateTest extends TestCase
         return $this->mockMandateHQ($callable);
     }
 
-    protected function mockCheckBin()
-    {
-        $callable = function ()
-        {
-            return true;
-        };
-
-        return $this->mockMandateHQ($callable, 'isBinSupported');
-    }
-
     protected function mockReportPayment()
     {
         $callable = function ()
@@ -555,9 +545,4 @@ class CardMandateTest extends TestCase
         return $this->mockMandateHQ($callable, 'createPreDebitNotification');
     }
 
-    protected function mockMandateHQ($callable = null, $method = 'registerMandate')
-    {
-        $this->mandateHQ->shouldReceive($method)
-            ->andReturnUsing($callable);
-    }
 }

@@ -2874,6 +2874,69 @@ class Processor
     }
 
     /**
+     * @param $gatewayData
+     * @param $action
+     * @throws Exception\BadRequestException
+     * Updates related to recurring transactions
+     */
+    protected function addCardMandateDataIfApplicable(& $gatewayData, $action) {
+
+        $token = $this->payment->getGlobalOrLocalTokenEntity();
+
+        if($this->shouldSendCardMandateDetails($action) === true) // Also check if the card has a registered mandate
+        {
+            $cardMandate = $token->cardMandate;
+
+            if(($cardMandate->isActive() === true) || ($cardMandate->isMandateApproved() === true)) {
+                // Set value available from the card_mandates table for the respective transaction
+                $gatewayData['card_mandate']['max_debit_amount']     = $cardMandate->getMaxAmount();
+
+                $gatewayData['card_mandate']['mandate_id']           = $cardMandate->getMandateId();
+
+                $gatewayData['card_mandate']['recurring_frequency']  = $cardMandate->getFrequency();
+
+                // Value sets at Mozart based on, if the payment has passed through some mandate manager like MandateHQ.
+                $gatewayData['card_mandate']['is_mandate_validated'] = $cardMandate->isMandateValidated();
+
+                // Value sets at Mozart based on number of recurring transactions - '99'
+                $gatewayData['card_mandate']['recurring_count']      = $cardMandate->getRecurringCount();
+
+                // Value sets at Mozart based on Fixed Amount or Max Amount for Recurring payment - 1/2
+                $gatewayData['card_mandate']['pay_type']             = $cardMandate->getPayType();
+            }
+            else {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE);
+            }
+
+            $this->trace->info(
+                TraceCode::TRACE_RECURRING_PAYMENT_CARD_MANDATE,
+                [
+                    'payment_id'   => $this->payment->getId(),
+                    'card_mandate' => $gatewayData['card_mandate'],
+                    'traceSlug'    => 'AddCardMandateDataIfApplicable'
+                ]
+            );
+        }
+    }
+
+    /**
+     * @param $action
+     * @return bool
+     */
+    protected function shouldSendCardMandateDetails($action) : bool
+    {
+        $payment = $this->payment;
+
+        if (($action === Payment\Action::PAY and $payment->isCardMandateRecurringInitialPayment() === true) or
+            ($payment->isCardMandateRecurringAutoPayment() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Responsible for calling the gateway function
      *
      * @param  string $action      refund/capture etc.
@@ -2883,6 +2946,7 @@ class Processor
      * @return array or null
      * @throws Exception\GatewayErrorException
      * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
@@ -2968,6 +3032,9 @@ class Processor
                 {
                     $this->persistCardDetails($gateway, $action, $gatewayData);
                 }
+
+                // Card Mandate flow for recurring transactions
+                $this->addCardMandateDataIfApplicable($gatewayData, $action);
             }
 
             // card flow doesn't have any debit action

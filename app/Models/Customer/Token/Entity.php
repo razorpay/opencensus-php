@@ -13,6 +13,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\CardMandate;
 use RZP\Models\UpiMandate;
 use RZP\Constants\Entity as E;
 use RZP\Models\PaymentsUpi\Vpa;
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property Card\Entity $card
  * @property Terminal\Entity $terminal
  * @property Merchant\Entity $merchant
+ * @property CardMandate\Entity $cardMandate
  */
 class Entity extends Base\PublicEntity
 {

@@ -3,9 +3,13 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Redis;
+use Mockery;
 
+use RZP\Constants\Entity as E;
 use RZP\Exception;
+use RZP\Models\Bank\IFSC;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -17,6 +21,10 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 class RecurringPaymentTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
+
+    protected $mandateHQ;
+    protected $mandateConfirm;
 
     protected function setUp(): void
     {
@@ -1282,6 +1290,59 @@ class RecurringPaymentTest extends TestCase
             },
             Exception\BadRequestException::class,
             'Token has expired and cannot be used for recurring payments');
+    }
+
+    public function testRecurringPaymentWithCardMandate()
+    {
+        $this->ba->publicAuth();
+
+        $this->mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
+
+        $this->app->instance('mandateHQ', $this->mandateHQ);
+
+        $this->mandateConfirm = 'true';
+
+        $this->mockRegisterMandate();
+        $this->mockCheckBin();
+
+        $this->mockReportPayment();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $this->fixtures->merchant->addFeatures(['recurring_card_mandate']);
+        $this->fixtures->create('iin', [
+            'iin' => '400018',
+            'type' => 'credit',
+            'recurring' => 1,
+            'issuer' => IFSC::RATN,
+        ]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+        $payment['bank'] = IFSC::RATN;
+        $payment['card']['number'] = '4000184186218826';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $payment,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+
+        $this->assertEquals('authorized', $payment->getStatus());
+        $this->assertEquals('initial', $payment->getRecurringType());
+        $this->assertNotNull($payment->getTokenId());
+
+        $token = $payment->localToken;
+        $this->assertNotEmpty($token);
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+        $this->assertNotEmpty($cardMandate);
+        $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
+        $this->assertEquals('active', $cardMandate->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
     }
 
     protected function assignSubMerchant(string $tid, string $mid)

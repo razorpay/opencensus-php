@@ -78,6 +78,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CONFLICT_ALREADY_EXISTS                                   = 'Duplicate request. This request has already been processed.';
     const BAD_REQUEST_PAYMENT_ALREADY_PROCESSED                                 = 'The payment has already been processed';
     const BAD_REQUEST_CARD_MANDATE_CANCELLED_BY_USER                            = 'Card mandate created for payment has been cancelled by user';
+    const BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE                                = 'Card mandate is not active';
     const BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_CANCELLED                      = 'Card mandate is not active, it is cancelled by user';
     const BAD_REQUEST_AMOUNT_GREATER_THAN_CARD_MANDATE_MAX_AMOUNT               = 'Payment amount is greater than card mandate\'s max amount';
     const BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_PAUSED                         = 'Card mandate is not active, it is paused by user';

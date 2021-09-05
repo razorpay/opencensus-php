@@ -188,9 +188,34 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MANDATE_HUB);
     }
 
+    public function getFrequency()
+    {
+        return $this->getAttribute(self::FREQUENCY);
+    }
+
+    public function getPayType()
+    {
+        return null;
+    }
+
+    public function isMandateValidated()
+    {
+        return null;
+    }
+
+    public function getRecurringCount()
+    {
+        return null;
+    }
+
     public function isActive(): bool
     {
         return $this->getAttribute(self::STATUS) === Status::ACTIVE;
+    }
+
+    public function isMandateApproved(): bool
+    {
+        return $this->getAttribute(self::STATUS) === Status::MANDATE_APPROVED;
     }
 
     // Relations

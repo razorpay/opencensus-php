@@ -2981,4 +2981,45 @@ trait PaymentTrait
 
         return $refundId;
     }
+
+    protected function mockRegisterMandate()
+    {
+        $callable = function ()
+        {
+            return [
+                'redirect_url' => "https://mandate-manager.stage.razorpay.in/issuer/hdfc_GX3VC146gmBVNe/hostedpage",
+                'id' => "ratn_PP3VC146gmBVGG",
+                "status" => "created",
+            ];
+        };
+
+        return $this->mockMandateHQ($callable);
+    }
+
+    protected function mockCheckBin()
+    {
+        $callable = function ()
+        {
+            return true;
+        };
+
+        return $this->mockMandateHQ($callable, 'isBinSupported');
+    }
+
+    protected function mockReportPayment()
+    {
+        $callable = function ()
+        {
+            return [];
+        };
+
+        return $this->mockMandateHQ($callable, 'reportPayment');
+    }
+
+    protected function mockMandateHQ($callable = null, $method = 'registerMandate')
+    {
+        $this->mandateHQ->shouldReceive($method)
+            ->andReturnUsing($callable);
+    }
+
 }
