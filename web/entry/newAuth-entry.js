@@ -5,11 +5,14 @@ function NewAuthEntry() {
       document.write('<script src="' + cdnDashboardUrl + src + '"></script>');
     });
 
-    const script = document.createElement('script');
-    script.src = 'https://apis.google.com/js/api:client.js';
-    script.async = true;
-    script.defer = true;
-    document.documentElement.appendChild(script);
+    // dont load google oauth on axis.razorpay.com
+    if(!window.location.hostname.includes('axis')) {
+      const script = document.createElement('script');
+      script.src = 'https://apis.google.com/js/api:client.js';
+      script.async = true;
+      script.defer = true;
+      document.documentElement.appendChild(script);
+    }
 
     window.loadHubspot = true;
   }

@@ -3,11 +3,12 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import { BANK_NAMES } from '../utils';
 import { THEME } from './theme';
 import { media } from '../breakpoints';
+import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
 
 export const Container = Styled(View)`
   overflow-y: auto;
   background: ${({ org }) =>
-    (org === BANK_NAMES.ICICI && THEME.icici.primary) ||
+    ((org === BANK_NAMES.ICICI || org === BANK_NAMES.AXIS) && theme.colors.background[600]) ||
     'linear-gradient(0deg, rgba(2, 42, 156, 0.3), rgba(2, 42, 156, 0.3)), linear-gradient(247.07deg, #020529 -52%, #000B8E 198.1%);'};
 `;
 
@@ -69,6 +70,7 @@ export const RelativeView = Styled(View)`
   border-radius: 4px;
   display: flex;
   flex-grow: 1;
+
   @media ${media.mobile} {
     height: auto;
     margin-bottom: 30px;
@@ -80,6 +82,27 @@ export const RelativeView = Styled(View)`
     position: relative;
     background: ${({ theme }) => theme.colors.background[400]};
     padding-right: 384px;
-    margin: 48px 0;
+    margin: 32px 0;
   }
+`;
+
+export const Image = Styled.img`
+  width: 100%;
+`;
+
+export const ContentContainer = Styled(View)`
+  margin: 0 auto;
+  @media ${media.smallMobile} {
+    padding: 62px 45px 0 45px;
+  }
+  @media ${media.mobile} {
+    display: block;
+  }
+  @media ${media.tabBig} {
+    padding: 0 32px;
+  }
+   @media ${media.desktop} {
+    padding: 0;
+  }
+
 `;

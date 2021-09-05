@@ -25,5 +25,6 @@ export const transformFetchOrgData = (data) => {
     secondFactorAuthMode: OTP_AUTH_MODE[data.second_factor_auth_mode] || 'phone number/email',
     businessName: data.business_name,
     isSignupAllowed: data.allow_sign_up,
+    backgroundImgUrl: data.background_image_url,
   };
 };
