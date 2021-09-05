@@ -178,9 +178,7 @@ const TncForm: React.FC<FormScreenPropsT> = ({ setApiResponse }) => {
               <Flex alignItems="center">
                 <View>
                   <Link
-                    href={`https://dashboard-${
-                      user.isOrgAxis ? 'axis' : 'tnc'
-                    }.stage.razorpay.in/tnc/${
+                    href={`https://${user.isOrgAxis ? 'axis' : 'tnc'}.razorpay.com/tnc/${
                       formikProps.values.product_type === 'goods'
                         ? '000000000goods'
                         : '000000services'

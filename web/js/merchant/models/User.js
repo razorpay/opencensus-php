@@ -1143,7 +1143,11 @@ export default class User {
   }
 
   get canGenerateTnCPage() {
-    return this.getExpStatus('merchant_tnc') && this.isOrgAxis;
+    // controlling TnC page for both rzp or axis with two seprate experiment.
+    return (
+      (this.getExpStatus('merchant_tnc') && this.isOrgAxis) ||
+      (this.getExpStatus('rzp_merchant_tnc') && this.isOrgRZP)
+    );
   }
 
   get isAadharEkycMandatory() {

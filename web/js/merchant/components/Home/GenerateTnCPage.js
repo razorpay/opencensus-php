@@ -192,7 +192,7 @@ const GenerateTnCPage = ({ onCloseModal, openModal, tracking, updateSession, use
           <div>
             <a
               className="btn-link"
-              href={`https://dashboard-${user.isOrgAxis ? 'axis' : 'tnc'}.stage.razorpay.in/tnc/${
+              href={`https://${user.isOrgAxis ? 'axis' : 'tnc'}.razorpay.com/tnc/${
                 isGoodsType ? '000000000goods' : '000000services'
               }`}
               target="_blank"

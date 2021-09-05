@@ -169,6 +169,10 @@ const App = () => {
     state = states[data.business_registered_state];
     address = `${data.business_registered_address}, ${data.business_registered_city} ${state}, Pin-${data.business_registered_pin}`;
   }
+  let isAxisOrg = false;
+  if (window.org) {
+    isAxisOrg = window.org?.custom_code === 'axis';
+  }
 
   const TnCProps = {
     // set some default value for dummy url content
@@ -177,7 +181,7 @@ const App = () => {
     deliverableType: data?.deliverable_type,
     state,
     address,
-    tncLink: data?.link || 'https://tnc.razorpay.com/tnc/HFO0JH8G98',
+    tncLink: data?.link || `https://${isAxisOrg ? 'axis' : 'tnc'}.razorpay.com/tnc/HFO0JH8G98`,
     subcategory: data?.business_subcategory || 'Horizontal Commerce/Marketplace',
     category: data?.business_category || 'Ecommerce',
     businessModel: data?.business_model || 'My business is used for ecommerce online plateform',

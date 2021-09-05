@@ -1699,6 +1699,7 @@ class Service extends Base\Service
             'pl_description_required',
             'pp_description_required',
             'merchant_tnc',
+            'rzp_merchant_tnc',
             'support_details_2FA',
             'comdel_hdfc_test',
             'rx_icici_ca_onboarding',
