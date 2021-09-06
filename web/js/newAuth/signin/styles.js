@@ -92,11 +92,10 @@ export const Image = Styled.img`
 
 export const ContentContainer = Styled(View)`
   margin: 0 auto;
-  @media ${media.smallMobile} {
-    padding: 62px 45px 0 45px;
-  }
+  height: 100%;
   @media ${media.mobile} {
     display: block;
+    padding: 0;
   }
   @media ${media.tabBig} {
     padding: 0 32px;
