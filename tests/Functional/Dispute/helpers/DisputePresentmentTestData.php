@@ -686,7 +686,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => 'BAD_REQUEST_ERROR',
-                    'description' => 'action not allowed as it will lead to all proof becoming empty',
+                    'description' => 'Please upload atleast one evidence document to support your claim',
                 ],
             ],
             'status_code' => 400,

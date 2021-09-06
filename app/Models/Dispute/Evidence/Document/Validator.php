@@ -51,7 +51,7 @@ class Validator extends Base\Validator
         if ((count($createManyInput) === 0) and
             ($allowEmpty === false))
         {
-            throw new BadRequestValidationFailureException(Constants::ACTION_DISALLOWED_PROOF_BECOMES_EMPTY_EXCEPTION_MESSAGE,
+            throw new BadRequestValidationFailureException(Constants::ATLEAST_ONE_EVIDENCE_DOCUMENT_REQUIRED_ERROR_MESSAGE,
                 Entity::TYPE);
         }
 
@@ -66,7 +66,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        throw new BadRequestValidationFailureException(Constants::ACTION_DISALLOWED_PROOF_BECOMES_EMPTY_EXCEPTION_MESSAGE);
+        throw new BadRequestValidationFailureException(Constants::ATLEAST_ONE_EVIDENCE_DOCUMENT_REQUIRED_ERROR_MESSAGE);
     }
 
     protected function validateDocumentId($attribute, $value)
