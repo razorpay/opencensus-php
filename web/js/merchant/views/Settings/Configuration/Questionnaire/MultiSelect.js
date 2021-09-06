@@ -23,6 +23,7 @@ const MultiSelect = ({
 
   useEffect(() => {
     helpers.setValue(selected);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
 
   useEffect(() => {
@@ -33,6 +34,7 @@ const MultiSelect = ({
     } else {
       setSelected(listSelectedValue);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [additionalField]);
 
   return (

@@ -22,6 +22,7 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification }) => {
   useEffect(() => {
     const [_availableFileTypes] = getAvailableFileTypes(formikProps);
     setFileTypes(_availableFileTypes);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formikProps.values.accepts_intl_txns]);
 
   const handleAddDocument = (event) => {

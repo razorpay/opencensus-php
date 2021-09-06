@@ -24,7 +24,8 @@ const SubmitForm = () => {
                 <a href="https://razorpay.com/privacy" target="_blank" rel="noopener noreferrer">
                   Privacy Policy
                 </a>
-                . By submitting the form, I agree to abide by the rules at all times.
+                {'. '}
+                By submitting the form, I agree to abide by the rules at all times.
               </div>
             </label>
           </div>

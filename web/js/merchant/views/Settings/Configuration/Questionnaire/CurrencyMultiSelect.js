@@ -51,6 +51,7 @@ const CurrencyMultiSelect = ({
       });
     });
     setSelectedCountries(defaultSelected);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -59,6 +60,7 @@ const CurrencyMultiSelect = ({
       return acc;
     }, []);
     setValue(selectedValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
 
   return (

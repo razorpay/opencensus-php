@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { createPopup } from '@typeform/embed';
+import { compose } from 'redux';
 
 import User from 'merchant/models/User';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
@@ -27,21 +28,6 @@ const REJECTED = 'rejected';
 const SCREEN = window.location.pathname.includes('payment-methods') ? 'payment methods' : 'config';
 
 function withInternationalConfig(WrappedComponent) {
-  @connect(
-    (state) => ({
-      user: state.session.user,
-      settlement: state.settlement,
-    }),
-    {
-      openModal,
-      closeModal,
-      fetchSchedule,
-      showNotification,
-      updateSession,
-      fetchAddWebsiteWorkflowStatus,
-    },
-  )
-  @RTracking(() => window.rzpQ.component('InternationalConfig'))
   class InternationalConfig extends React.Component {
     constructor(props) {
       super(props);
@@ -514,7 +500,24 @@ function withInternationalConfig(WrappedComponent) {
     }
   }
 
-  return InternationalConfig;
+  return compose(
+    connect(
+      (state) => ({
+        user: state.session.user,
+        settlement: state.settlement,
+      }),
+      {
+        openModal,
+        closeModal,
+        fetchSchedule,
+        showNotification,
+        updateSession,
+        fetchAddWebsiteWorkflowStatus,
+      },
+    ),
+    // eslint-disable-next-line
+    RTracking(() => window.rzpQ.component('InternationalConfig')),
+  )(InternationalConfig);
 }
 
 export default withInternationalConfig;

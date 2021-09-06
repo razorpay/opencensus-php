@@ -10,11 +10,11 @@ import Button from 'common/new-ui/Button';
 import Loader from 'merchant/components/Activation/components/Loader';
 import { LOADING } from 'merchant/components/Activation/Constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import SuccessModal from './Questionnaire/SuccessModal';
-import ExitConfirmation from './Questionnaire/ExitConfirmation';
+import SuccessModal from './SuccessModal';
+import ExitConfirmation from './ExitConfirmation';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { initialState, reducer } from './Questionnaire/stateHelpers';
+import { initialState, reducer } from './stateHelpers';
 
 import {
   tabsData,
@@ -23,7 +23,7 @@ import {
   modelFormData,
   getProductValue,
   modelFormDataBeforeSave,
-} from './Questionnaire/utils';
+} from './utils';
 
 const SCREEN = window.location.pathname.includes('payment-methods') ? 'payment methods' : 'config';
 
@@ -71,6 +71,7 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
     return () => {
       window.clearTimeout(loaderTimeout); // cleanup
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const validateTab = (formikProps, validateAll, tabIdx) => {
