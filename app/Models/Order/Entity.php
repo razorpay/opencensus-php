@@ -386,6 +386,21 @@ class Entity extends Base\PublicEntity
             $invoice = $this->getMethod() === Payment\Method::NACH ? $this->invoice : null;
 
             $arrayPublic[self::TOKEN] = $token->toArrayTokenFields($invoice);
+
+            // Doing this as per the requirement for the orders api response for CAW Card methods.
+            if (($this->getMethod() === null) or
+                ($this->getMethod() === Payment\Method::CARD))
+            {
+                $arrayPublic[self::METHOD] = $this->getMethod();
+                unset($arrayPublic[self::PAYMENTS]);
+                unset($arrayPublic[self::TOKEN][SubscriptionRegistration\Entity::NOTES]);
+                unset($arrayPublic[self::TOKEN][SubscriptionRegistration\Entity::METHOD]);
+                unset($arrayPublic[self::TOKEN][SubscriptionRegistration\Entity::CURRENCY]);
+                unset($arrayPublic[self::TOKEN][SubscriptionRegistration\Entity::AUTH_TYPE]);
+                unset($arrayPublic[self::TOKEN][SubscriptionRegistration\Entity::FAILURE_REASON]);
+                unset($arrayPublic[self::TOKEN][SubscriptionRegistration\Entity::RECURRING_STATUS]);
+                unset($arrayPublic[self::TOKEN][SubscriptionRegistration\Entity::FIRST_PAYMENT_AMOUNT]);
+            }
         }
 
         return $arrayPublic;

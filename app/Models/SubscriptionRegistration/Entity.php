@@ -78,7 +78,8 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_CONTACT = 'customer_contact';
     const CUSTOMER_EMAIL   = 'customer_email';
 
-    const DEFAULT_MAX_AMOUNT = 9999900;
+    const DEFAULT_MAX_AMOUNT              = 9999900;
+    const CARD_MANDATE_DEFAULT_MAX_AMOUNT = 500000;
 
     protected static $sign = 'subr';
 
@@ -286,6 +287,10 @@ class Entity extends Base\PublicEntity
             case Method::NACH:
                 return PaperMandate\Entity::DEFAULT_AMOUNT;
 
+            case Method::CARD:
+            case null:
+                return null;
+
             default:
                 return self::DEFAULT_MAX_AMOUNT;
         }
@@ -428,7 +433,10 @@ class Entity extends Base\PublicEntity
         {
             $maxAmount = Entity::getDefaultMaxAmountForMethod($subscriptionRegistration->getMethod());
 
-            $subscriptionRegistration->setMaxAmount($maxAmount);
+            if (empty($maxAmount) === false)
+            {
+                $subscriptionRegistration->setMaxAmount($maxAmount);
+            }
         }
 
         return $subscriptionRegistration;
