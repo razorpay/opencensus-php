@@ -345,6 +345,14 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
 
+        $this->mockServerRequestFunction(
+            function (& $request, $action = null)
+            {
+                $this->assertEquals('validate_vpa', $action);
+                $this->assertStringContainsString('/payments/upi_sbi/v2/validate_vpa', $request['url']);
+            }
+        );
+
         $this->ba->privateAuth();
 
         $this->startTest();

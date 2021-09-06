@@ -95,7 +95,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Activation form has been locked for editing by admin.',
+                    'description' => 'Merchant activation form has been locked for editing by admin.',
                 ],
             ],
             'status_code' => 400,

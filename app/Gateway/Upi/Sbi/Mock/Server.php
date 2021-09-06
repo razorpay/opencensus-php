@@ -50,6 +50,8 @@ class Server extends Base\Mock\Server
     {
         $request = json_decode($input, true);
 
+        $this->request($this->mockRequest, 'validate_vpa');
+
         $response = $this->getValidateVpaResponseArray($request);
 
         return $this->makeResponse($response);

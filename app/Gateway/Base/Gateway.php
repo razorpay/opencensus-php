@@ -1844,6 +1844,11 @@ class Gateway
 
     protected function getVersionForAction($input, $action)
     {
+        //upi_sbi v1 is deprecated in mozart
+        if ($this->gateway === Payment\Gateway::UPI_SBI) {
+            return 'v2';
+        }
+
         return 'v1';
     }
 
