@@ -47,9 +47,11 @@ final class Throttle
     public function pushHttpMetrics(Request $request, Response $response, int $duration)
     {
         $dimensions = $this->getMetricDimensions($request, $response);
+        $importantDimensions = $this->getImportantMetricDimensions($request, $response);
 
         app('trace')->count(Metric::HTTP_REQUESTS_TOTAL, $dimensions);
         app('trace')->histogram(Metric::HTTP_REQUEST_DURATION_MILLISECONDS, $duration, $dimensions);
+        app('trace')->histogram(Metric::HTTP_REQUEST_LATENCY_MILLISECONDS, $duration, $importantDimensions);
     }
 
     /**
@@ -80,6 +82,23 @@ final class Throttle
             Metric::LABEL_RZP_PRODUCT           => optional($basicAuth)->getProduct(), // optional because not sure basicAuth is initialized in all flows
             Metric::LABEL_RZP_TEAM              => RouteTeamMap::getTeamNamesForRoute($request->route()->getName()),
             Metric::LABEL_HOST                  => $request->getHttpHost() ?? Metric::LABEL_NONE_VALUE,
+        ];
+    }
+
+    /**
+     * Gets basic dimensions/labels for HTTP metrics
+     * @param  Request  $request
+     * @param  Response $response
+     * @return array
+     */
+    protected function getImportantMetricDimensions(Request $request, Response $response): array
+    {
+        $requestCtx = app('request.ctx');
+
+        return [
+            Metric::LABEL_ROUTE                 => $request->route()->getName(),
+            Metric::LABEL_STATUS                => $response->getStatusCode(),
+            Metric::LABEL_RZP_MODE              => $requestCtx->getMode() ?: Metric::LABEL_NONE_VALUE,
         ];
     }
 }
