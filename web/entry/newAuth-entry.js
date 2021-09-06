@@ -4,8 +4,7 @@ function NewAuthEntry() {
     websiteAssets.js.forEach(function (src) {
       document.write('<script src="' + cdnDashboardUrl + src + '"></script>');
     });
-
-    // dont load google oauth on axis.razorpay.com
+    
     if(!window.location.hostname.includes('axis')) {
       const script = document.createElement('script');
       script.src = 'https://apis.google.com/js/api:client.js';
