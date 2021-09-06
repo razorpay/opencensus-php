@@ -1230,6 +1230,10 @@ class Repository extends Base\Repository
 
                     return $terminal2;
                 }
+                else
+                {
+                    return null;
+                }
             }
             catch (\Throwable $ex)
             {
@@ -1271,6 +1275,12 @@ class Repository extends Base\Repository
                     'enabled' => true,
                 ];
 
+                // edge case handling for wallet_paypal
+                if ($gateway=== Payment\Gateway::WALLET_PAYPAL)
+                {
+                    $content["status"] = Status::ACTIVATED;
+                }
+
                 $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
 
                 if (count($response) > 0) {
@@ -1282,6 +1292,10 @@ class Repository extends Base\Repository
                     }
 
                     return $terminal2;
+                }
+                else
+                {
+                    return null;
                 }
             }
             catch (\Throwable $ex)

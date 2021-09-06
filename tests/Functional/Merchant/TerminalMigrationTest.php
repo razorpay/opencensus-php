@@ -354,6 +354,24 @@ class TerminalMigrationTest extends TestCase
         $this->assertTrue($isEqual);
     }
 
+    public function testPaytmTerminalCompareFunction()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_paytm_terminal', ["international"=> false, "mode"=>3]);
+
+        $terminalArray = $terminal->toArray();
+
+        $terminalArray['enabled'] = "true";
+        $terminalArray['status'] = "activated";
+        $terminalArray['mode'] = 3;
+        $terminalArray['type'] = ["non_recurring"];
+
+        $newTerminaEntity = Terminal\Service::getEntityFromTerminalServiceResponse($terminalArray);
+
+        $isEqual = Terminal\Service::compareTerminalEntity($terminal->reload(), $newTerminaEntity);
+
+        $this->assertTrue($isEqual);
+    }
+
     public function testTerminalCollectionCompareFunction()
     {
         $merchantIds = ['10000000000000'];

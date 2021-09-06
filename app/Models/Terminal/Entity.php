@@ -1072,6 +1072,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::TYPE] = Type::getHexValue($type, $hex);
     }
 
+    public function setType($type)
+    {
+        $this->attributes[self::TYPE] = Type::getHexValue($type, 0);
+    }
+
     protected function setSyncStatusAttribute(string $syncStatusString)
     {
         $this->attributes[self::SYNC_STATUS] = SyncStatus::getValueForSyncStatusString($syncStatusString);

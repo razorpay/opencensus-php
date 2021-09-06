@@ -345,7 +345,7 @@ trait Migrate
 
             $traceData = ["api_count"=> count($apiResponse), "terminals_count" => count($terminalResponse)];
 
-            $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_COUNT, $traceData);
+            $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_ARRAY_COUNT, $traceData);
 
             return false;
         }
@@ -450,6 +450,7 @@ trait Migrate
 
         $terminal->setMerchantId($t["merchant_id"]);
 
+
         if (array_key_exists("enabled",$t) === true)
         {
             $terminal->setEnabled($t["enabled"]);
@@ -478,6 +479,17 @@ trait Migrate
         if (array_key_exists("direct",$t) === true)
         {
             $terminal->setDirectForMerchant($t["direct"]);
+        }
+
+        // mode and type has defined modifiers, need to overwrite it if data present
+        if (array_key_exists("mode",$t) === true)
+        {
+            $terminal->setMode($t["mode"]);
+        }
+
+        if (array_key_exists("type",$t) === true)
+        {
+           $terminal->setType($finalArray["type"]);
         }
 
         $terminal->syncEntity();
