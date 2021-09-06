@@ -47,19 +47,7 @@ class Core extends Base\Core
 
         foreach ($allowedPayers as $allowedPayer)
         {
-            $type = $allowedPayer[Entity::TYPE];
-
-            $payerInput = $allowedPayer[$type];
-
-            $func = 'buildAllowedPayer' . studly_case($type);
-
-            $allowedPayerEntity = $this->$func($payerInput, $virtualAccount->merchant);
-
-            $virtualAccountTpv = $this->create($virtualAccount, $allowedPayerEntity);
-
-            $allowedPayerEntity->source()->associate($virtualAccountTpv);
-
-            $this->repo->saveOrFail($allowedPayerEntity);
+            $this->addAllowedPayer($virtualAccount, $allowedPayer);
         }
 
         $this->trace->info(
@@ -105,5 +93,55 @@ class Core extends Base\Core
         $virtualAccountTpv->deactivate($deactivated_at);
 
         $this->repo->saveOrFail($virtualAccountTpv);
+    }
+
+    public function addAllowedPayer($virtualAccount, $allowedPayer)
+    {
+        $type = $allowedPayer[Entity::TYPE];
+
+        $payerInput = $allowedPayer[$type];
+
+        $func = 'buildAllowedPayer' . studly_case($type);
+
+        $allowedPayerEntity = $this->$func($payerInput, $virtualAccount->merchant);
+
+        $virtualAccountTpv = $this->create($virtualAccount, $allowedPayerEntity);
+
+        $allowedPayerEntity->source()->associate($virtualAccountTpv);
+
+        $this->repo->saveOrFail($allowedPayerEntity);
+    }
+
+    public function addAllowedPayerToExistingVa($virtualAccount, $allowedPayer)
+    {
+        (new Validator())->validateAllowedPayer($allowedPayer);
+
+        $this->validateReceiversForTpv($virtualAccount);
+
+        $this->validateAllowedPayerExists($virtualAccount, $allowedPayer);
+
+        $this->repo->transaction(function() use ($virtualAccount, $allowedPayer)
+        {
+            $this->addAllowedPayer($virtualAccount, $allowedPayer);
+        });
+
+        return $virtualAccount;
+    }
+
+    private function validateAllowedPayerExists($virtualAccount, $allowedPayer)
+    {
+        $existingAllowedPayers = $virtualAccount->virtualAccountTpv()->get();
+
+        foreach ($existingAllowedPayers as $existingAllowedPayer)
+        {
+            $isDuplicate = $existingAllowedPayer->isDuplicate($allowedPayer);
+
+            if ($isDuplicate === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_ALREADY_EXISTS
+                );
+            }
+        }
     }
 }

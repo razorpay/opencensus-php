@@ -170,14 +170,15 @@ class UserRolesScope
             'oauth_token_revoke'               => [Role::OWNER],
 
             // va
-            'virtual_account_create'         => Role::WRITER_ROLES,
-            'virtual_account_fetch'          => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
-            'virtual_account_fetch_multiple' => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
-            'virtual_account_fetch_payments' => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
-            'virtual_account_edit'           => Role::WRITER_ROLES,
-            'virtual_account_close'          => Role::WRITER_ROLES,
-            'virtual_account_add_receivers'  => Role::WRITER_ROLES,
-            'virtual_vpa_prefix_save'        => Role::WRITER_ROLES,
+            'virtual_account_create'                => Role::WRITER_ROLES,
+            'virtual_account_fetch'                 => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
+            'virtual_account_fetch_multiple'        => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
+            'virtual_account_fetch_payments'        => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
+            'virtual_account_edit'                  => Role::WRITER_ROLES,
+            'virtual_account_close'                 => Role::WRITER_ROLES,
+            'virtual_account_add_receivers'         => Role::WRITER_ROLES,
+            'virtual_vpa_prefix_save'               => Role::WRITER_ROLES,
+            'virtual_account_add_allowed_payer'     => Role::WRITER_ROLES,
 
             // qr_codes v2
             'qr_code_create'                 => Role::WRITER_ROLES,

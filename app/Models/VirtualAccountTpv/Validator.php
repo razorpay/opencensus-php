@@ -29,7 +29,12 @@ class Validator extends Base\Validator
     {
         foreach ($payers as $payer)
         {
-            $this->validateInput('add_allowed_payer', $payer);
+            $this->validateAllowedPayer($payer);
         }
+    }
+
+    public function validateAllowedPayer($payer)
+    {
+        $this->validateInput('add_allowed_payer', $payer);
     }
 }

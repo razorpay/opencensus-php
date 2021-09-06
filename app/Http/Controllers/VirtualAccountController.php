@@ -256,4 +256,13 @@ class VirtualAccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function addAllowedPayer(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addAllowedPayer($id, $input);
+
+        return ApiResponse::json($data);
+    }
 }

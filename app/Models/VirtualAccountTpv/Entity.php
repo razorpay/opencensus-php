@@ -100,8 +100,27 @@ class Entity extends Base\PublicEntity
         }
 
         $allowedPayer[self::TYPE]             = $this->getEntityType();
+        $allowedPayer[self::ID]               = $tpvEntity->getPublicId();
         $allowedPayer[$this->getEntityType()] = $tpvEntity->getVirtualAccountTpvData();
 
         return $allowedPayer;
+    }
+
+    public function isDuplicate($allowedPayer)
+    {
+        $type = $allowedPayer[self::TYPE];
+
+        if ($type !== $this->getEntityType())
+        {
+            return false;
+        }
+        $existingPayer = $this->entity()->first()->getVirtualAccountTpvData();
+
+        if (empty(array_diff($allowedPayer[$type], $existingPayer)) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

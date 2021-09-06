@@ -21,6 +21,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
 use RZP\Base\ConnectionType;
 use RZP\Models\Settings\Module;
+use RZP\Models\VirtualAccountTpv;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Settings\Accessor;
@@ -36,6 +37,7 @@ class Service extends Base\Service
     ];
 
     const VA_ADD_RECEIVER            = 'va_add_receiver';
+    const VA_ADD_ALLOWED_PAYER       = 'va_add_allowed_payer';
 
     public function __construct()
     {
@@ -1031,5 +1033,43 @@ class Service extends Base\Service
                            ]);
 
         return is_string($response['settings']) ? (int) $response['settings'] : -1;
+    }
+
+    public function addAllowedPayer($id, $input)
+    {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ALLOWED_PAYER_ADD_REQUEST, $input);
+
+        $virtualAccount = $this->repo
+                               ->virtual_account
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($virtualAccount->isClosed() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_CLOSED);
+        }
+
+        if ($virtualAccount->virtualAccountTpv()->count() >= 10)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_LIMIT_EXCEEDED);
+        }
+
+        $virtualAccount = $this->mutex->acquireAndRelease(
+            self::VA_ADD_ALLOWED_PAYER . "_" . $virtualAccount->getPublicId(),
+            function() use ($input, $virtualAccount)
+            {
+                return (new VirtualAccountTpv\Core())->addAllowedPayerToExistingVa($virtualAccount, $input);
+            },
+            10,
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_IN_PROGRESS,
+            5,
+            200,
+            400
+        );
+
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ALLOWED_PAYER_ADDED, $virtualAccount->toArrayPublic());
+
+        return $virtualAccount->toArrayPublic();
     }
 }

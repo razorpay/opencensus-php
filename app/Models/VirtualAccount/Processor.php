@@ -603,7 +603,7 @@ abstract class Processor extends Base\Core
         {
             $allowedPayerDetails = $allowedPayer->entity->getVirtualAccountTpvData(true);
 
-            if ($payerDetails === $allowedPayerDetails)
+            if (empty(array_diff($payerDetails, $allowedPayerDetails)) === true)
             {
                 return true;
             }
