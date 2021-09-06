@@ -21,8 +21,12 @@ class DisputeDetailsContainer extends Component {
   state = {};
 
   componentWillMount() {
+    const { isDisputePresentmentEnabled } = this.props.user;
+
     this.loadDispute(this.props.id);
-    if (this.props.fileTypes.length === 0) this.props.fetchFileTypes();
+    if (isDisputePresentmentEnabled && this.props.fileTypes.length === 0) {
+      this.props.fetchFileTypes();
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -89,7 +93,7 @@ export default compose(
     (state) => ({
       disputes: state.disputes.items,
       ...state.dispute,
-      ...state.user,
+      user: state.session.user,
     }),
     {
       ...DisputeActions,
