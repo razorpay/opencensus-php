@@ -303,6 +303,15 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::INTERNATIONAL                           => 'sometimes|boolean',
+        Entity::CURRENCY                                => 'sometimes|array',
+    ];
+
+    protected static $checkoutDotComEditTerminalRules = [
+        Entity::GATEWAY                                 => 'sometimes|in:checkout_dot_com',
+        Entity::GATEWAY_MERCHANT_ID                     => 'sometimes|string',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::INTERNATIONAL                           => 'sometimes|boolean',
+        Entity::CURRENCY                                => 'sometimes|array',
     ];
 
     protected static $ccavenueTerminalRules = [
