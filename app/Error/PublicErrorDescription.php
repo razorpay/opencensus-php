@@ -22,7 +22,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_REFUND_RECEIPT_ALREADY_PRESENT                            = 'Duplicate receipt found for this refund request.';
     const GATEWAY_ERROR                                                         = 'Payment processing failed due to error at bank or wallet gateway';
-    const SERVER_ERROR                                                          = 'The server encountered an error. The incident has been reported to admins.';
+    const SERVER_ERROR                                                          = 'Payment was unsuccessful due to a temporary issue. If amount got deducted, it will be refunded within 5-7 working days.';
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                         = 'The gateway request to submit payment information timed out. Please submit your details again';
     const GATEWAY_ERROR_PROCESSING_DECLINED                                     = 'Payment failed due to processing error on gateway';
     const GATEWAY_ERROR_SYSTEM_BUSY                                             = 'Gateway system is busy, please retry.';
@@ -152,12 +152,12 @@ class PublicErrorDescription
     const BAD_REQUEST_APP_TOKEN_ABSENT                                          = 'Customer not logged in';
     const BAD_REQUEST_APP_TOKEN_NOT_GLOBAL                                      = 'Global customer not logged in';
     const BAD_REQUEST_PAYMENT_WALLET_CUSTOMER_TOKEN_NOT_FOUND                   = 'Payment failed';
-    const BAD_REQUEST_PAYMENT_CONTACT_INCORRECT_FORMAT                          = 'Contact number contains invalid characters, only digits and + symbol are allowed';
+    const BAD_REQUEST_PAYMENT_CONTACT_INCORRECT_FORMAT                          = 'Your payment was not successful as phone number is invalid. To pay successfully try using valid phone number.';
     const BAD_REQUEST_PAYMENT_CONTACT_INVALID_COUNTRY_CODE                      = 'Contact number contains invalid country code';
     const BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT                                 = 'Contact number should be at least 8 digits, including country code';
     const BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG                                  = 'Contact number should not be greater than 15 digits, including country code';
-    const BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED                       = 'Contact number needs to be Indian.';
-    const BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED                        = 'Card network not supported';
+    const BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED                       = 'Your payment was not successful as international phone number is not accepted by the seller. To pay successfully try using Indian phone number.';
+    const BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED                        = 'Your payment was not successful as the seller does not accept selected card type.To pay successfully try using another method.';
     const BAD_REQUEST_PAYMENT_CARD_SUBTYPE_NOT_SUPPORTED                        = 'Corporate card is not allowed for this payment';
     const BAD_REQUEST_PAYMENT_CARD_SUBTYPE_CONSUMER_NOT_SUPPORTED               = 'Your payment was unsuccessful as this seller does not accept consumer card payments. Try using another card/method.';
     const BAD_REQUEST_PAYMENT_CARD_SUBTYPE_BUSINESS_NOT_SUPPORTED               = ' Your payment was unsuccessful as this seller does not accept corporate card payments. Try using another card/method.';
@@ -176,7 +176,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_AMEX_CVV_LENGTH_MUST_BE_FOUR                 = 'The American Express card cvv length must be 4 digits';
     const BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED                    = 'International card is not allowed.';
     const BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_INVALID                       = 'Card authentication failed due to invalid response from gateway. Please retry or use another payment method';
-    const BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED                      = 'Recurring is not supported on this card';
+    const BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED                      = 'Your payment was not successful as the seller does not support recurring payments.We suggest contacting the seller for more details.';
     const BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED                      = 'Recurring is not supported on this bank';
     const BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_TOKEN_MAX_AMOUNT              = 'Payment amount exceeds the maximum amount allowed.';
     const BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD                              = 'Payment was blocked because of fraud';
@@ -235,7 +235,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UPI_FUNCTION_NOT_SUPPORTED                        = 'The requested UPI function is not supported';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_MCC_BLOCKED                           = 'UPI Collect is not allowed for your merchant category by NPCI. Please reach out to Razorpay support if you need any help.';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_MCC_AMOUNT_LIMIT_REACHED              = 'UPI Collect payment more than INR 5000 is not allowed on your merchant category by NPCI. Reach out to Razorpay support if you need any help';
-    const BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH                             = 'Payment amount provided does not match with the amount in order';
+    const BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH                             = 'Your payment amount is different from your order amount. To pay successfully, please try using right amount.';
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                 = 'Payment amount is greater than the amount due for order';
     const BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED                      = 'Payment failed since account linked with multiple names';
     const BAD_REQUEST_UPI_INVALID_ATM_PIN                                       = 'Invalid PIN entered.';
@@ -441,7 +441,7 @@ class PublicErrorDescription
     const BAD_REQUEST_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE                           = 'Debit Card EMI offer is not available for the entered details';
 
     // HDFC DC EMI errors
-    const BAD_REQUEST_HDFC_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE                      = 'EMI is not available on your HDFC debit card. To check your eligibility, SMS from your registered mobile number DCEMI<space><last 4 digits of Debit Card number> to <56767>.';
+    const BAD_REQUEST_HDFC_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE                      = 'Your payment was declined as you are not eligible with the provider. To pay successfully try using another method.';
     const BAD_REQUEST_DEBIT_EMI_HDFC_MAXIMUM_AMOUNT_LIMIT                       = 'Transaction Value is greater than pre-approved limit. To check your Debit Card Pre approved limit send SMS, MYHDFC to 5676712';
 
     //on_demand
@@ -1149,7 +1149,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARDLESS_EMI_INVALID_PROVIDER                         = 'Cardless Emi provider is not supported';
     const BAD_REQUEST_EMI_DURATION_NOT_VALID                                        = 'Emi duration is not valid';
     const BAD_REQUEST_EMI_PLANS_DO_NOT_EXIST                                        = 'Emi plans do not exist';
-    const BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST                              = 'User does not have an account with the selected provider';
+    const BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST                              = 'Your payment was declined as you are not registered with the provider. To pay successfully try using another method.';
     const BAD_REQUEST_CARDLESS_EMI_INVALID_TOKEN                                    = 'Invalid token set for cardless emi';
     const BAD_REQUEST_CARDLESS_EMI_INVALID_MERCHANT_NAME                            = 'Invalid merchant name for cardless emi';
     const BAD_REQUEST_CARDLESS_EMI_INVALID_EMI_PLAN_ID                              = 'Invalid Emi plan id selected';
@@ -1161,7 +1161,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_NOT_APPROVED                        = 'Cardless Emi credit limit of customer not approved';
     const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXPIRED                             = 'Cardless Emi credit limit of customer has expired';
 
-    const BAD_REQUEST_PAYLATER_USER_DOES_NOT_EXIST                                  = 'User does not have an account with the selected provider';
+    const BAD_REQUEST_PAYLATER_USER_DOES_NOT_EXIST                                  = 'Your payment was declined as you are not registered with the provider. To pay successfully try using another method.';
     const GATEWAY_ERROR_PAYLATER_INVALID_TOKEN                                      = 'Payment failed due to technical error. Please try again with different provider/method';
     const BAD_REQUEST_PAYLATER_INVALID_MERCHANT_NAME                                = 'Merchant integration with the selected provider is incomplete. Please try again with different provider/method';
     const BAD_REQUEST_PAYLATER_MINIMUM_AMOUNT_REQUIRED                              = 'Amount less than minimum amount required';

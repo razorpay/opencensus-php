@@ -731,7 +731,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'UPI collect transactions are not enabled for the merchant'
+                    'description' => 'Payment was unsuccessful as the seller does not accept UPI payments. Try using another method.'
                 ],
             ],
             'status_code' => 400,
@@ -747,7 +747,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'UPI collect transactions are not enabled for the merchant'
+                    'description' => 'Payment was unsuccessful as the seller does not accept UPI payments. Try using another method.'
                 ],
             ],
             'status_code' => 400,

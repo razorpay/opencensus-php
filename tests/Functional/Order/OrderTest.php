@@ -1667,7 +1667,7 @@ class OrderTest extends TestCase
         $this->expectExceptionCode(
             ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH);
         $this->expectExceptionMessage(
-            'Payment amount provided does not match with the amount in order');
+            'Your payment amount is different from your order amount. To pay successfully, please try using right amount.');
 
         $payment = $this->doAuthAndGetPayment($payment);
     }

@@ -91,7 +91,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => 'SERVER_ERROR',
-                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                    'description' => 'Payment was unsuccessful due to a temporary issue. If amount got deducted, it will be refunded within 5-7 working days.',
                 ],
             ],
             'status_code' => 500,

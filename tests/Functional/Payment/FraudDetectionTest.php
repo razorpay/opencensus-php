@@ -257,7 +257,7 @@ class FraudDetectionTest extends TestCase
                             "block"   => [
                                 [
                                     "rule_id"     => 'rule_F1fgTZ9p7tj2es',
-                                    "rule_code"   => "Payment blocked as website does not match registered website(s)"
+                                    "rule_code"   => "Your payment was not successful as this Seller is not allowed to accept payments. We suggest not going ahead with this transaction."
                                 ],
                             ],
                         ],
@@ -280,7 +280,7 @@ class FraudDetectionTest extends TestCase
             $this->doAuthPayment($testPayment);
         });
 
-        $this->assertEquals("Payment blocked as website does not match registered website(s)", $response['error']['description']);
+        $this->assertEquals("Your payment was not successful as this Seller is not allowed to accept payments. We suggest not going ahead with this transaction.", $response['error']['description']);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -320,7 +320,7 @@ class FraudDetectionTest extends TestCase
             $this->doAuthPayment($testPayment);
         });
 
-        $this->assertEquals("Payment blocked as website does not match registered website(s)", $response['error']['description']);
+        $this->assertEquals("Your payment was not successful as this Seller is not allowed to accept payments. We suggest not going ahead with this transaction.", $response['error']['description']);
 
         $payment = $this->getLastEntity('payment', true);
 

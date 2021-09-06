@@ -57,7 +57,7 @@ return [
             'content'     => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payment blocked as website does not match registered website(s)'
+                    'description' => 'Your payment was not successful as this Seller is not allowed to accept payments. We suggest not going ahead with this transaction.'
                 ],
             ],
             'status_code' => 400,

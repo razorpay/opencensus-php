@@ -133,7 +133,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => \RZP\Error\PublicErrorCode::SERVER_ERROR,
-                    'description' => \RZP\Error\PublicErrorDescription::SERVER_ERROR,
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
                 ],
             ],
             'status_code' => 500,

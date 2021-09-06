@@ -522,7 +522,7 @@ class PGRouter
     {
         $url = $this->baseUrl . $endpoint;
 
-        // json encode if data is must, else ignore.
+        // json encode if data is must, else ignore
         if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
         {
             $data = (empty($data) === false) ? json_encode($data) : null;

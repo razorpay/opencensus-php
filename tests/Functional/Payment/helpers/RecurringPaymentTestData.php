@@ -147,7 +147,7 @@ return [
         ],
         'exception' => [
             'class'               => \RZP\Exception\BadRequestException::class,
-            'message'             => 'Recurring is not supported on this card',
+            'message'             => 'Your payment was not successful as the seller does not support recurring payments.We suggest contacting the seller for more details.',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED,
         ],
     ]

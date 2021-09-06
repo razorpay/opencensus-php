@@ -88,7 +88,7 @@ class CardlessEmiTest extends TestCase
             $this->doAuthPayment($payment);
         },
         BadRequestException::class,
-        'Contact number needs to be Indian.');
+        'Your payment was not successful as international phone number is not accepted by the seller. To pay successfully try using Indian phone number.');
 
         unset($payment['provider']);
 
