@@ -4,11 +4,13 @@ namespace RZP\Tests\Functional\PaymentLink;
 
 use Carbon\Carbon;
 
+use Illuminate\Http\UploadedFile;
 use RZP\Constants\Mode;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Item;
 use RZP\Models\Order;
 use RZP\Models\PaymentLink\Entity;
+use RZP\Services\Mock;
 use RZP\Services\Elfin;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
@@ -17,6 +19,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
+use RZP\Services\UfhService;
 use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
@@ -1430,6 +1433,40 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals('thisisareceipt', $invoice->getReceipt());
     }
 
+    public function testUploadPaymentPageImages()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createAndPutImageFileInRequest(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testPaymentPageItemUpdate()
+    {
+        $this->createPaymentLinkAndOrderForThat();
+
+        $paymentPageItem = $this->getDbEntityById('payment_page_item', 'ppi_10000000000ppi');
+
+        $item = $paymentPageItem->item;
+
+        $this->assertNull($paymentPageItem->getStock());
+
+        $this->assertEquals(5000, $item->getAmount());
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $paymentPageItem = $this->getDbEntityById('payment_page_item', 'ppi_10000000000ppi');
+
+        $item = $paymentPageItem->item;
+
+        $this->assertEquals(2, $paymentPageItem->getStock());
+
+        $this->assertEquals(7500, $item->getAmount());
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity
@@ -1693,5 +1730,27 @@ class PaymentLinkTest extends TestCase
             $this->assertEquals($itemInvoice[LineItem\Entity::CURRENCY], $itemPP[LineItem\Entity::CURRENCY]);
             $this->assertEquals($itemInvoice[LineItem\Entity::QUANTITY], $itemPP[LineItem\Entity::QUANTITY]);
         }
+    }
+
+    protected function createAndPutImageFileInRequest(string $callee, $files = [])
+    {
+        if (empty($files) === true)
+        {
+            $uploadedFile = $this->createUploadedFile(__DIR__ . '/Helpers/' . 'number2.png', 'number2.png', 'image/png');
+
+            $this->testData[$callee]['request']['content']['images'][] = $uploadedFile;
+        }
+    }
+
+    protected function createUploadedFile(string $url, $fileName = 'test.jpeg', $mime = 'image/jpeg'): UploadedFile
+    {
+        return new UploadedFile(
+            $url,
+            $fileName,
+            $mime,
+            filesize($url),
+            null,
+            true
+        );
     }
 }

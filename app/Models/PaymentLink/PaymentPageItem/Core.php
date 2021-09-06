@@ -194,64 +194,6 @@ class Core extends Base\Core
         return $this->repo->line_item->deleteOrFail($paymentPageItem);
     }
 
-    public function migratePaymentPageItem(PaymentLink\Entity $paymentPage)
-    {
-        if ($paymentPage->paymentPageItems()->count() === 0)
-        {
-            $itemInput = $this->getPaymentPageItemInput($paymentPage);
-
-            $paymentPageItem = (new Entity)->generateId();
-
-            $paymentPageItem->forceFill($itemInput);
-
-            $this->upsertSettings(
-                $paymentPageItem,
-                [
-                    Entity::POSITION => 0,
-                ]
-            );
-
-            $this->repo->payment_page_item->saveOrFail($paymentPageItem);
-        }
-    }
-
-    protected function getPaymentPageItemInput(PaymentLink\Entity $paymentPage)
-    {
-        $itemInput = [
-            Item\Entity::MERCHANT_ID => $paymentPage->getMerchantId(),
-            Item\Entity::ACTIVE      => true,
-            Item\Entity::NAME        => 'amount',
-            Item\Entity::TYPE        => Item\Type::PAYMENT_PAGE,
-            Item\Entity::CURRENCY    => $paymentPage->getCurrency(),
-            Item\Entity::AMOUNT      => $paymentPage->getAmount(),
-        ];
-
-        $item = new Item\Entity;
-
-        $item->forceFill($itemInput);
-
-        $this->repo->item->saveOrFail($item);
-
-        $paymentPageItemInput = [
-            Entity::MERCHANT_ID       => $paymentPage->getMerchantId(),
-            Entity::PAYMENT_LINK_ID   => $paymentPage->getId(),
-            Entity::ITEM_ID           => $item->getId(),
-            Entity::MANDATORY         => true,
-            Entity::STOCK             => $paymentPage->getTimesPayable(),
-            Entity::QUANTITY_SOLD     => $paymentPage->getTimesPaid(),
-            Entity::TOTAL_AMOUNT_PAID => $paymentPage->getTotalAmountPaid(),
-        ];
-
-        $allowMultipleUnits = $paymentPage->getSettings()->toArray()[PaymentLink\Entity::ALLOW_MULTIPLE_UNITS] ?? null;
-
-        if ($allowMultipleUnits === '1')
-        {
-            $paymentPageItemInput[Entity::MIN_PURCHASE] = 1;
-        }
-
-        return $paymentPageItemInput;
-    }
-
     protected function deletePaymentPageItemsViaUpdate(
         PaymentLink\Entity $paymentLink,
         array $paymentPageItemsDetails)

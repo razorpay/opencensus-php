@@ -2325,7 +2325,7 @@ return [
             ]
         ]
     ],
-    
+
     'testSendPaymentPageReceipt' => [
         'request'  => [
             'url'     => 'to_be_replaced_from_function',
@@ -2339,6 +2339,37 @@ return [
             'content'   => [
                 'success' => true,
             ]
+        ]
+    ],
+
+    'testUploadPaymentPageImages' => [
+        'request'  => [
+            'url'     => '/payment_pages/images',
+            'method'  => 'post',
+            'content' => [
+                'images' => []
+            ],
+        ],
+        'response'  => [
+            'status_code'   => 200,
+            'content'   => []
+        ]
+    ],
+
+    'testPaymentPageItemUpdate' => [
+        'request'  => [
+            'url'     => '/payment_pages/payment_page_item/ppi_10000000000ppi',
+            'method'  => 'patch',
+            'content' => [
+                'item' => [
+                    'amount' => '7500'
+                ],
+                'stock' => 2,
+            ],
+        ],
+        'response'  => [
+            'status_code'   => 200,
+            'content'   => []
         ]
     ],
 ];

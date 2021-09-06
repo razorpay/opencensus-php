@@ -179,13 +179,6 @@ class PaymentLinkController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function migratePaymentPageItems()
-    {
-        $data = $this->service()->migratePaymentPageItems($this->input);
-
-        return ApiResponse::json($data);
-    }
-
     public function createOrder(string $id)
     {
         $response = $this->service()->createOrder($id, $this->input);

@@ -585,66 +585,6 @@ class Core extends Base\Core
         ];
     }
 
-    public function migratePaymentPageItems(array $input)
-    {
-        $paymentPages = [];
-
-        if (isset($input[Entity::IDS]) === true)
-        {
-            foreach ($input[Entity::IDS] as $id)
-            {
-                $paymentPages[] = $this->repo->payment_link->findByPublicId($id);
-            }
-        }
-        else
-        {
-            $limit = $input['limit'] ?? 1000;
-
-            $paymentPages = $this->repo->payment_link->getAllPaymentPagesForMigration($limit);
-        }
-
-        $this->trace->info(
-            TraceCode::PAYMENT_PAGES_MIGRATION_REQUEST_RECEIVED
-        );
-
-
-        $migratedPaymentPages = [];
-
-        $migrationFailedPaymentPages = [];
-
-        foreach ($paymentPages as $paymentPage)
-        {
-            try
-            {
-                $this->migratePaymentPage($paymentPage);
-
-                $migratedPaymentPages[] = $paymentPage->getId();
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->traceException($e);
-
-                $migrationFailedPaymentPages[] = $paymentPage->getId();
-            }
-        }
-
-        $summary = [
-            'total'                          => count($paymentPages),
-            'migrated_payment_pages'         => $migratedPaymentPages,
-            'migration_failed_payment_pages' => $migrationFailedPaymentPages,
-        ];
-
-        $tracePayload         = $summary;
-        $tracePayload['mode'] = $this->mode;
-
-        $this->trace->info(
-            TraceCode::PAYMENT_PAGES_MIGRATED,
-            $tracePayload
-        );
-
-        return $summary;
-    }
-
     public function setMerchantDetails(array $settings)
     {
         (new Validator())->validateSetMerchantDetails($settings);
@@ -814,22 +754,6 @@ class Core extends Base\Core
         ];
 
         $settings[Entity::PAYMENT_BUTTON_LABEL] = 'Pay';
-    }
-
-    protected function migratePaymentPage(Entity $paymentPage)
-    {
-        (new PaymentPageItem\Core)->migratePaymentPageItem($paymentPage);
-
-        $settings = $paymentPage->getSettings()->toArray();
-
-        $this->addAdditionalDataToSettings($settings);
-
-        $this->upsertSettings($paymentPage, $settings);
-
-        $this->trace->info(
-            TraceCode::PAYMENT_PAGE_MIGRATED,
-            [Entity::ID => $paymentPage->getId()]
-        );
     }
 
     protected function createPaymentPageItems(array $input, Entity $paymentLink)
@@ -1380,7 +1304,9 @@ class Core extends Base\Core
 
             $uploadFilename = 'payment-link/description/' . $filenameWithoutExt . '_' . UniqueIdEntity::generateUniqueId();
 
-            $file = (new UfhService($this->app))->uploadFileAndGetUrl(
+            $ufhService = $this->app['ufh.service'];
+
+            $file = $ufhService->uploadFileAndGetUrl(
                 $image,
                 $uploadFilename,
                 Constants::PAYMENT_LINK_DESCRIPTION,

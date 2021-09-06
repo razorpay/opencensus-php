@@ -235,11 +235,6 @@ class Service extends Base\Service
         }
     }
 
-    public function migratePaymentPageItems(array $input)
-    {
-        return $this->core->migratePaymentPageItems($input);
-    }
-
     public function createOrder(string $id, array $input)
     {
         $paymentLink = $this->getPaymentLinkAndSetModeAndMerchant($id);
