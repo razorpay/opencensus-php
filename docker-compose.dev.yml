@@ -84,6 +84,7 @@ services:
       JAEGER_HOSTNAME: 'jaeger'
   api_db:
     image: mysql:8
+    platform: linux/x86_64
     command: --default-authentication-plugin=mysql_native_password
     ports:
       - 23306:3306
