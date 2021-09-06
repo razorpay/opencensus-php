@@ -415,6 +415,10 @@ return [
                 'description' => 'create terminals in bulk',
                 'assignable'  => true,
             ],
+            Permission::INTERNAL_INSTRUMENT_CREATE_BULK => [
+                'description' => 'create internal instrument in bulk',
+                'assignable'  => true,
+            ],
             Permission::PAYOUT_LINKS_ADMIN_BULK_CREATE => [
                 'description' => 'create payout links in bulk',
                 'assignable'  => true,

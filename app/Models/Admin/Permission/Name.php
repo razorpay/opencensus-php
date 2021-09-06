@@ -395,6 +395,9 @@ class Name
     const OFFLINE_VERIFICATION_SERVICE_VIEW   = 'offline_verification_service_view';
     const OFFLINE_VERIFICATION_SERVICE_EDIT   = 'offline_verification_service_edit';
 
+    // Bulk IIR create Permission
+    const INTERNAL_INSTRUMENT_CREATE_BULK     = "internal_instrument_create_bulk";
+
     // Permission to access capital-los service
     const LOANS_EDIT                          = 'loans_edit';
 
