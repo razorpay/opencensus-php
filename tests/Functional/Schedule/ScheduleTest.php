@@ -229,6 +229,47 @@ class ScheduleTest extends TestCase
         $this->createAndAssignScheduleAndAssertId();
     }
 
+    public function testAssignScheduleWithLinkedAccounts()
+    {
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($actionId, $feature, $mode)
+                {
+                    return 'on';
+
+                }) );
+
+        $schedule = $this->createSchedule();
+
+        $request = $this->testData['testAssignScheduleById'];
+
+        $request['content']['schedule_id'] = $schedule['id'];
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('merchant:marketplace_account');
+
+        $this->makeRequestAndGetContent($request);
+
+        $merchantIds = array('10000000000000');
+
+        $merchants = $this->getDbEntity('merchant', ['parent_id' => '10000000000000'] );
+
+        foreach($merchants as $merchant)
+        {
+            $merchantIds[] = $merchant['id'];
+        }
+
+        $updatedSchedules = $this->getDbEntities('schedule_task', array(['merchant_id', 'in', $merchantIds]));
+
+        foreach($updatedSchedules as $updatedSchedule)
+        {
+            $this->assertEquals($schedule['id'], $updatedSchedule['schedule_id']);
+        }
+
+        return $schedule;
+    }
+
     public function testCreateAssignScheduleWorkflowWithObserverData()
     {
         $this->app->razorx->method('getTreatment')

@@ -70,6 +70,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Partner\RateLimitBatch;
 use RZP\Jobs\CallBackFillMerchantApps;
 use RZP\Models\Merchant\BusinessDetail;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Mail\InstrumentRequest\StatusNotify;
 use RZP\Models\Settlement\SettlementTrait;
 use RZP\Models\Batch\Header as BatchHeader;
@@ -1258,6 +1259,46 @@ class Service extends Base\Service
         return $plan->toArrayPublic();
     }
 
+    public function assignSettlementScheduleIncludingLinkedAccounts($id, $input)
+    {
+        $this->trace->info(TraceCode::SCHEDULE_ASSIGN_RAZORX_SUCCESS, []);
+
+        $merchantIds = $this->repo->merchant->fetchLinkedAccountMids($id);
+
+        array_push($merchantIds, $id);
+
+        $scheduleTaskCore = new ScheduleTask\Core();
+
+        $succeededIds = [];
+
+        $scheduleTask = $this->repo->transaction(function() use($merchantIds, $input, $scheduleTaskCore, & $succeededIds)
+        {
+            $scheduleTask = null;
+
+            foreach ($merchantIds as $merchantId)
+            {
+                $merchant = $this->repo->merchant->findByIdAndOrgId($merchantId, $this->auth->getOrgId());
+
+                $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
+
+                $scheduleTask = $scheduleTaskCore->createOrUpdate($merchant, $merchant, $input);
+
+                array_push($succeededIds, $merchantId);
+            }
+            return $scheduleTask;
+        });
+
+        $this->trace->info(
+            TraceCode::SCHEDULE_ASSIGNED_SUCCESSFULLY,
+            [
+                "count"        => count($succeededIds),
+                "merchant_ids" => $succeededIds
+            ]
+        );
+
+        return $scheduleTask->toArrayPublic();
+    }
+
     public function assignSettlementSchedule($id, $input)
     {
         $this->trace->info(
@@ -1267,13 +1308,22 @@ class Service extends Base\Service
                 'input'       => $input,
             ]);
 
-        $merchant = $this->repo->merchant->findByIdAndOrgId($id, $this->auth->getOrgId());
+        $variant = $this->app->razorx->getTreatment($id, RazorxTreatment::UPDATE_LINKED_ACCOUNT_SCHEDULES_FEATURE, $this->mode ?? Mode::LIVE);
 
-        $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
+        if(strtolower($variant) === 'on')
+        {
+            return $this->assignSettlementScheduleIncludingLinkedAccounts($id, $input);
+        }
+        else
+        {
+            $merchant = $this->repo->merchant->findByIdAndOrgId($id, $this->auth->getOrgId());
 
-        $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
+            $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
 
-        return $scheduleTask->toArrayPublic();
+            $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
+
+            return $scheduleTask->toArrayPublic();
+        }
     }
 
     public function bulkAssignSchedule(array $input): array

@@ -1315,6 +1315,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SCHEDULE_ANCHORED_RESOLUTION                          = 'SCHEDULE_ANCHORED_RESOLUTION';
     const SCHEDULE_UNANCHORED_RESOLUTION                        = 'SCHEDULE_UNANCHORED_RESOLUTION';
     const SCHEDULE_ASSIGN_REQUEST                               = 'SCHEDULE_ASSIGN_REQUEST';
+    const SCHEDULE_ASSIGNED_SUCCESSFULLY                        = 'SCHEDULE_ASSIGNED_SUCCESSFULLY';
+    const SCHEDULE_ASSIGN_RAZORX_SUCCESS                        = 'SCHEDULE_ASSIGN_RAZORX_SUCCESS';
     const SCHEDULE_CREATE_REQUEST                               = 'SCHEDULE_CREATE_REQUEST';
     const SCHEDULE_EDIT_REQUEST                                 = 'SCHEDULE_EDIT_REQUEST';
     const SCHEDULE_DELETE_REQUEST                               = 'SCHEDULE_DELETE_REQUEST';

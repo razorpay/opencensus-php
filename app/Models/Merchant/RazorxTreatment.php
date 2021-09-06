@@ -326,4 +326,7 @@ final class RazorxTreatment
 
     // Experiment to send merchant downtimes to checkout and in fetch api
     const SEND_MERCHANT_DOWNTIMES           = 'send_merchant_downtimes';
+
+    // Experiment to update linked account schedules when parent merchant schedule is updated
+    const UPDATE_LINKED_ACCOUNT_SCHEDULES_FEATURE = 'UPDATE_LINKED_ACCOUNT_SCHEDULES_FEATURE';
 }
