@@ -233,6 +233,11 @@ class Service extends Base\Service
             return $payoutLink->toArrayPublic();
         }
 
+        $this->app['trace']->info(TraceCode::PAYOUT_LINK_CREATE_REQUEST_KEYS,
+            [
+                'input_keys' => array_keys($input),
+            ]);
+
         if($this->user != null)
         {
             $this->app['trace']->info(TraceCode::PAYOUT_LINK_CREATE_USER_ID,
