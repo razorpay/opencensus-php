@@ -34,6 +34,8 @@ import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/componen
 import PaymentsList from './PaymentsList';
 
 import Button from 'common/new-ui/Button';
+import Tooltip from 'common/ui/Tooltip';
+import DropdownSettings from './DropdownSettings';
 
 // import mockPaymentPage from '../../Wysiwyg/data-mock';
 
@@ -264,37 +266,40 @@ export default class PaymentPagesV3Entity extends React.Component {
             <div class="panel-heading">
               <div class="text">{paymentPageEntity.title}</div>
               <div class="btn-toolbar pull-right">
-                {isRoleAllowedEdit && (
-                  <Link
-                    class={classList(
-                      'btn Button--primary--invert',
-                      isMobileResolution ? 'btn-xs' : 'btn-sm',
-                    )}
-                    to={`/paymentpages/new?duplicate_id=${paymentPageEntity.id}`}
-                  >
-                    {isMobileResolution ? <i class="i i-copy" /> : 'Duplicate Page'}
-                  </Link>
-                )}
-
-                {isRoleAllowedEdit && (
-                  <Link
-                    class={classList(
-                      'btn Button--primary--invert',
-                      isMobileResolution ? 'btn-xs' : 'btn-sm',
-                    )}
-                    to={`/paymentpages/${paymentPageEntity.id}/edit`}
-                  >
-                    {isMobileResolution ? <i class="i i-edit" /> : 'Edit'}
-                  </Link>
-                )}
-
                 {isRoleAllowedEdit && isActive && (
-                  <button
-                    class={classList('btn btn-primary', isMobileResolution ? 'btn-xs' : 'btn-sm')}
-                    onClick={this.openShareView}
-                  >
-                    {isMobileResolution ? <i class="i i-share" /> : 'Share'}
-                  </button>
+                  <Button class="Button--primary--invert" onClick={this.openShareView}>
+                    <i class="i i-share-outline" />
+                    <Tooltip theme="dark" align="top">
+                      Share Page
+                    </Tooltip>
+                  </Button>
+                )}
+
+                {isRoleAllowedEdit && (
+                  <Link to={`/paymentpages/new?duplicate_id=${paymentPageEntity.id}`}>
+                    <Button class="Button--primary--invert">
+                      <i className="i i-duplicate" />
+                    </Button>
+                    <Tooltip theme="dark" align="top" className="rzp-tooltip-duplicate">
+                      Duplicate Page
+                    </Tooltip>
+                  </Link>
+                )}
+
+                {isRoleAllowedEdit && (
+                  <DropdownSettings
+                    onShow={this.onShow}
+                    onHide={this.onHide}
+                    paymentPageEntity={paymentPageEntity}
+                  />
+                )}
+
+                {isRoleAllowedEdit && (
+                  <Link to={`/paymentpages/${paymentPageEntity.id}/edit`}>
+                    <Button.Primary>
+                      <i class="i i-edit icon-border-bottom" /> Edit Page
+                    </Button.Primary>
+                  </Link>
                 )}
               </div>
             </div>

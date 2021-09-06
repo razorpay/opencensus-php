@@ -91,7 +91,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   componentWillMount() {
-    this.fetchEntity(this.props.id);
+    this.fetchEntity(this.props.id, true);
 
     // Preload Social media image
     const socialMediaIcons = new Image();
@@ -181,12 +181,24 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }
   }
 
-  fetchEntity = (id) => {
+  fetchEntity = (id, isInitialLoad) => {
     const promise = this.props.fetchPaymentPage(id, this.isIntentDuplicate); // Auto reinitialise store if id doesn't exist.
 
     if (promise instanceof Promise) {
       promise
         .then(({ data }) => {
+          // on page load -> open modal if present in query params
+          if (isInitialLoad) {
+            const { location } = this.props;
+
+            const searchParams = getURLQueryParams(location.search);
+
+            if (searchParams.modal === 'receipt') {
+              this.togglePageReceiptModal();
+            } else if (searchParams.modal === 'page') {
+              this.togglePageSettings();
+            }
+          }
           if (data) {
             if (data.settings) {
               this.changeFETheme(data.settings.theme || 'light');
@@ -204,7 +216,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   componentDidMount() {
     this.props.initDefaultFormItems();
 
-    track.init(this.props.tracking.trackEvent, { payment_page_id: this.props.id, });
+    track.init(this.props.tracking.trackEvent, { payment_page_id: this.props.id });
 
     // Load color.js
     let script = document.createElement('script');
@@ -260,7 +272,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   initSubApps = () => {
-    ReactDOM.render(<DetailsSection supportEmailRef={this.supportEmailRef} supportPhoneRef={this.supportPhoneRef} />, document.getElementById('details-section'));
+    ReactDOM.render(
+      <DetailsSection
+        supportEmailRef={this.supportEmailRef}
+        supportPhoneRef={this.supportPhoneRef}
+      />,
+      document.getElementById('details-section'),
+    );
     ReactDOM.render(<FormSection />, document.getElementById('form-section'));
 
     this.setState({
@@ -639,20 +657,24 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   onSaveSuccessActions = (resp, isEditExistingId) => {
+    const { isPPSuccessPage } = this.props.user;
+
     this.props.markDataSaved();
     this.isIntentDuplicate = false;
 
     const entityId = resp.data.id;
 
-    this.props.history.push(`/paymentpages/${entityId}/edit`);
-
-    this.openSuccessView(
-      entityId,
-      resp.data.short_url,
-      resp.data.title,
-      resp.data.description,
-      isEditExistingId,
-    );
+    if (isPPSuccessPage) {
+      this.props.history.push(`/paymentpages/${entityId}/success`);
+    } else {
+      this.openSuccessView(
+        entityId,
+        resp.data.short_url,
+        resp.data.title,
+        resp.data.description,
+        isEditExistingId,
+      );
+    }
   };
 
   saveReceiptSettings = (entityId, receipt) => {
@@ -703,7 +725,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     const merchantData = {
       name: this.props.user.billing_label || this.props.user.name,
-      brand_color: this.props.config.brand_color || this.props.org?.merchant_styles?.checkout_theme_color,
+      brand_color:
+        this.props.config.brand_color || this.props.org.merchant_styles?.checkout_theme_color,
       image: this.props.user.logo_url,
     };
 
@@ -717,7 +740,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
               type="button"
               style={{ color: '#fff' }}
               onClick={this.togglePageReceiptModal}
+              className="Button--header"
             >
+              <i className="i i-receipt"></i>
               <span>Payment Receipts</span>
             </Button.Transparent>
           )}
@@ -726,20 +751,21 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             type="button"
             style={{ color: '#fff' }}
             onClick={this.togglePageSettings}
+            className="Button--header"
           >
-            <span class="badge bg-success hidden-xs m-r">New</span>
+            <i className="i i-settings-outline"></i>
             Page Settings
           </Button.Transparent>
           <AsyncBtn.Primary
             onClick={(...e) => {
               this.handleSavePublish(
-                payment_page_id ? 'Save and Publish Page' : 'Create and Publish Page',
+                payment_page_id ? 'Save and Update Page' : 'Create and Publish Page',
               );
             }}
             disabled={!isAllowedToSubmit}
             pendingState="Publishing"
           >
-            {payment_page_id ? 'Save and Publish Page' : 'Create and Publish Page'}
+            {payment_page_id ? 'Save and Update Page' : 'Create and Publish Page'}
           </AsyncBtn.Primary>
         </React.Fragment>
       );

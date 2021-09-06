@@ -148,9 +148,12 @@ export default class extends React.Component {
       <ModalMask maskClosable={false} class="paymentpages-settings">
         <Modal showCloseBtn={false}>
           <ModalContent>
-            <div class="main-title">Page Settings</div>
+            <div class="main-title">
+              <i className="i i-settings-outline mr-8"></i>
+              Page Settings
+            </div>
             <Form class="Settings-form" onSubmit={this.onSubmit} onChange={this.onChange}>
-              <div class="settings-section">
+              <div class="settings-section custom-url" tabIndex={-1}>
                 <Input
                   name="slug"
                   class="Input--vTop"

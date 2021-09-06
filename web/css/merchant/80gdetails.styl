@@ -1,22 +1,79 @@
-.80g-details-modal
+.details-modal-80g
+  background-color: white
+  font-family: "Mulish", "Lato", "Lato-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif
+
+  .modal-header
+    .modal-title
+      font-size: 16px
+      color: #58666E
+      font-weight: 700
+
   .modal-body
     .rzp-banner
       border-width: 1px
 
+     .Input-label
+        margin-bottom: 4px
+        color: #58666E
+        font-size: 12px
+        font-weight: 700
+    
+  .Modal__actions
+    display: flex
+    justify-content: flex-end
+    padding-top: 34px
+
+    .Button--Link
+      margin-right: 20px
+
+    .Button--primary
+      margin-right: 0px
+      max-width: 165px
+      
   .m-r
     margin-right: 4px
 
-  .Input-description
-    textarea.Input-el
-      min-height: 100px
-      max-height: unset
-
-  .Input-label
-    margin-bottom: 4px
-
   .Input--FileUpload
-    .Input-label
-      font-weight: normal
+    margin-top: 8px
+
+  .Input-description
+    margin: 8px 0px
+    
+    textarea.Input-el
+      min-height: 75px
+      max-height: unset
+      border: none
+      border-bottom: 1px solid #2B83EA
+      resize: none
+      color: rgba(22, 47, 86, 0.87)
+
+  &--label
+    display: flex
+    justify-content: space-between
+
+    a
+      font-size: 12px
+      font-weight: 400
+
+  .Dropzone-cavity
+    border: 1px dashed #E0E4F9
+    background: #FFFFFF
+    box-sizing: border-box
+
+  .Dropzone-80g-details
+    cursor: pointer
+    color: rgba(22, 47, 86, 0.24)
+    text-align: center
+    font-size: 14px
+    line-height: 18px
+
+    span
+      font-weight: bold
+      color: #2B83EA
+      margin-left: 5px
+
+  .Input-desc
+    color: rgba(22, 47, 86, 0.38)
 
 
 .Modal-mask.Modal-mask--merchant-80g-details
@@ -29,3 +86,7 @@
     .modal-title
       font-weight: bold
       font-size: 16px
+
+.Modal--80g
+  max-width: 475px
+  min-height: 388px

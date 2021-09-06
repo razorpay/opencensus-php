@@ -305,7 +305,7 @@ export default class FileUpload extends React.Component {
             onDragEnter={isDocPreUploaded ? undefined : this.toggleDragWithFile}
           >
             <div class={`Dropzone-content ${size}`}>
-              {children || (
+              {!children ? (
                 <React.Fragment>
                   <img
                     class="Dropzone-file-icon"
@@ -329,6 +329,19 @@ export default class FileUpload extends React.Component {
                       }
                     }}
                   </div>
+                  <input
+                    type="file"
+                    id={`fileInput-${name}`}
+                    onChange={this.handleFileInputChange}
+                    accept={accept && accept.map((fileType) => fileTypesMap[fileType])}
+                    disabled={disabled}
+                    ref={this.fileInputElement}
+                    hidden
+                  />
+                </React.Fragment>
+              ) : (
+                <React.Fragment>
+                  {children}
                   <input
                     type="file"
                     id={`fileInput-${name}`}

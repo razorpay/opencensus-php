@@ -1232,3 +1232,31 @@ export function validateBankDetails(value, type) {
   }
   return null;
 }
+
+/**
+ *
+ * @param {Array} errors - error array from api response
+ * @return {(String|Array|null)} error message
+ */
+export function getErrorMessageFromResponse(errors) {
+  let err = errors;
+
+  if (Array.isArray(err)) {
+    err = [];
+
+    errors.length &&
+      errors.forEach((e) => {
+        if (e && e.toLowerCase().indexOf('status code') === -1) {
+          err.push(e);
+        }
+      });
+
+    err = err.length ? err : null;
+  }
+
+  if (!err) {
+    err = `Some network error has occured`;
+  }
+
+  return err;
+}

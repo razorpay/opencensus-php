@@ -514,6 +514,10 @@ export default class User {
     return this.isFeatureEnabled('pl_first_min_amount');
   }
 
+  get isPPSuccessPage() {
+    return this.getExpStatus('pp_success_page');
+  }
+
   /* Check case-insensitive tag check existence */
   findTag(tag) {
     return this.tags.some((t) => t.toLowerCase() === tag.toLowerCase());

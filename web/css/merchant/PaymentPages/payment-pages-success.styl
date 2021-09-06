@@ -1,0 +1,305 @@
+@import './mulish'
+  
+.pp-success-container
+  background-color: white
+  min-height: 100vh
+  min-width: 900px
+  font-family: "Mulish", "Lato", "Lato-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  .payment-page-nav 
+    display: flex
+    justify-content: space-between
+    background-color: #2F3345
+    height: 56px
+    padding: 0 20px
+    align-items: center
+
+    .nav-left
+      .nav-title
+        font-size: 18px
+        font-weight: 600
+        color: white
+
+    .nav-right
+      button
+        padding: 5px 16px
+        line-height: 18px
+
+  .content
+    width: 100%
+    max-width: 1055px
+    min-width: 900px
+    margin: auto
+    padding-top: 40px
+
+    .edit-page-btn
+      font-size: 10px
+      color: #2B83EA
+      font-weight: 700
+      letter-spacing: 0.5px
+      line-height: 14px
+      
+      .i-chevron-left
+        font-size: 13px
+
+    .divider
+      height: 0px
+      width: 28px
+      margin-top: 12px
+      border: 2px solid #0B70E7
+
+    #hero-box
+      display: flex
+      justify-content: space-between
+      background: #F3F8FE
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15)
+      height: 226px   
+      border-radius: 3px
+      margin-right: 80px
+
+      &--left
+        padding-top: 50px
+        padding-bottom: 50px
+        padding-left: 75px
+
+      &--action
+        display: flex
+        align-items: center
+        margin-top: 22px
+
+        & > div
+          color: #162F56
+          font-size: 14px
+          font-weight: 700
+          line-height: 20px
+          margin-right: 24px
+
+        &-buttons
+          display: flex
+          align-items: center
+          background-color: rgba(224, 228, 249, 0.24)
+          border-bottom: 1px solid rgba(22, 47, 86, 0.24)
+
+          .Button--customise-url
+            background: rgba(11, 112, 231, 0.05)
+            border: 1px solid rgba(11, 112, 231, 0.74)
+            color: #2B83EA
+
+          input
+            color: rgba(22, 47, 86, 0.54)
+            font-size: 14px
+            border: none
+            background: transparent
+
+          .ClipboardCustom
+            & > div
+              display: flex
+              align-items: center
+
+          .Button--small
+            padding: 3px 7.5px
+            border-radius: 2px
+            font-size: 10px
+            text-transform: uppercase
+            letter-spacing: 0.5px
+            line-height: 14px
+            &:disabled
+              cursor: not-allowed !important
+              opacity: 0.5
+              color: rgba(22, 47, 86, 0.48)
+              background: rgba(22, 47, 86, 0.02)
+              border: 1px solid rgba(22, 47, 86, 0.4)
+
+        .short-url 
+          margin-top: 8px
+
+          .Input-elWrapper
+            display: flex
+            align-items: center
+
+          input
+            height: 20px
+            min-width: 248px
+
+      &--page-live
+        color: #162F56
+        font-size: 20px
+        line-height: 30px
+        font-weight: 700
+        margin-top: 6px
+
+        .i-tick
+          color: white
+          background: green
+          border-radius: 50%
+          font-size: 8px
+          padding: 3px
+          margin-right: 7px
+          line-height: 2.5
+
+      &--title
+        font-size: 10px
+        line-height: 14px
+        letter-spacing: 0.5px
+        text-transform: uppercase
+        font-weight: 700
+
+      &--right
+        padding-top: 32px
+        position: relative
+
+        .preview-icon
+          width: 320px
+          height: 150px
+          position: absolute
+          left: -270px
+          z-index: 4
+          display: flex
+          align-items: center
+          justify-content: center
+          cursor: pointer
+          background: rgba(256, 256, 256, 0)
+          transition: 0.3s
+
+          img
+            height: 20px
+            width: 20px
+
+          i
+            font-size: 20px
+            color: #2B83EA
+            opacity: 0
+
+        &:hover
+          .preview-icon
+            background: rgba(256, 256, 256, 0.6)
+            i
+              opacity: 1
+        
+        .image-shadow
+          width: 322px
+          height: 148px
+          background: linear-gradient(250.74deg, #7B64F2 2.05%, #3C9FE6 102.22%)
+          opacity: 0.7
+          box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.15)
+          position: relative
+          top: -125px
+          left: 80px
+          border-radius: 3px
+          z-index: 2
+          position: absolute
+          top: 55px
+          left: -250px
+
+        iframe
+          transform: scale(0.32)
+          transform-origin: 0% 0%
+          position: absolute
+          z-index: 3
+          left: -270px
+          box-sizing: border-box
+          filter: drop-shadow(2px 4px 10px rgba(0, 0, 0, 0.2))
+          border-radius: 10px
+          border: 6px solid #536582
+
+    #next-steps
+      margin: 45px 56px
+
+      &--title
+        font-size: 16px
+        line-height: 24px
+        color: #162F56
+        font-weight: 700
+        padding-left: 20px
+        margin-bottom: 30px
+
+      &--note
+        color: #536582
+        font-size: 12px
+        padding-left: 20px
+        line-height: 18px
+
+      .box
+        background: #FCFCFC
+        border: 1px solid #EBEFF0
+        box-sizing: border-box
+        border-radius: 3px
+        margin-bottom: 25px
+        display: flex
+        justify-content: space-between
+        padding: 24px
+
+        &--left
+          text-align: left
+          font-size: 14px
+          line-height: 20px
+          color: #536582
+        
+        &--right
+          display: flex
+          justify-content: center
+          align-items: center
+
+        &--line
+          margin-bottom: 10px
+
+          i
+            width: 15px
+            display: inline-block
+            text-align: center
+            margin-right 12px
+          
+          .i-redirect
+            font-size: 12px
+
+          .i-signal
+            margin-right: 10px
+
+          img
+            margin-right: 12px
+          
+          .embed-image
+            margin-right: 10px
+
+        &--and-more
+          margin-top: 10px
+
+        &--space, &--and-more
+          margin-left: 28px
+          
+    .button--highlight
+      background: rgba(11, 112, 231, 0.05);
+      border: 1px solid rgba(11, 112, 231, 0.74);
+      box-sizing: border-box;
+      border-radius: 2px;background: rgba(11, 112, 231, 0.05);
+      border: 1px solid rgba(11, 112, 231, 0.74);
+      box-sizing: border-box;
+      border-radius: 2px;
+      padding: 5px 16px
+      display: flex
+      align-items: center
+
+  .rzp-tooltip-80g
+    .rzp-tooltip-title
+      font-weight: 700
+      margin-bottom: 4px
+
+  // Increase the padding for tooltips & add pointed arrow
+  .rzp-tooltip-inner
+    padding: 16px 12px
+    position: relative
+    &:after
+      content: ""
+      position: absolute
+      top: 100%
+      left: 50%
+      margin-left: -10px
+      border-width: 5px
+      border-style: solid
+      border-color: #2c3243 transparent transparent transparent
+      margin-top: -1px
+
+  .error-message
+    width: 80%
+    margin: 30px auto
+    color: #f05050

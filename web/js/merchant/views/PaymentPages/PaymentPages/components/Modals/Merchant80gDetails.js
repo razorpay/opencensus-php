@@ -18,46 +18,23 @@ import {
   upload80gSignatoryImage,
   set80gMerchantDetails,
 } from 'merchant/reducers/profile';
+import UploadImage from '../../../../../../../css/assets/payment_pages/upload.svg';
 
 const THUMBNAIL_SIZE_LIMIT = 500 * 1024; // 500 KB limit
 
 @connect(null, { closeModal, openModal, showNotification })
 @RTracking(() => window.rzpQ.component('Merchant80gDetails'))
 export default class Merchant80gDetails extends React.Component {
-  state = {
-    isLoading: true,
-    text_80g_12a: '',
-    signatoryImageFile: null,
-    signatoryImageFileUrl: null,
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      text_80g_12a: props.data.text_80g_12a || '',
+      signatoryImageFile: null,
+      signatoryImageFileUrl: props.data.image_url_80g,
+    };
+  }
 
   componentDidMount() {
-    // Fetch 80G details of merchant
-    get80gMerchantDetails()
-      .then((res) => {
-        if (res && res.data) {
-          this.setState({
-            isLoading: false,
-            text80g: res.data.text_80g_12a || '',
-            signatoryImageFileUrl: res.data.image_url_80g,
-          });
-
-          this.props.get80gDetails({
-            text_80g_12a: res.data.text_80g_12a,
-          });
-        } else {
-          throw new Error();
-        }
-      })
-      .catch((err) => {
-        this.props.closeModal();
-
-        this.props.showNotification({
-          type: 'error',
-          message: 'Some network error has occurred',
-        });
-      });
-
     track.modal80G.open();
   }
 
@@ -83,8 +60,9 @@ export default class Merchant80gDetails extends React.Component {
           isSaving: false,
         });
 
-        this.props.get80gDetails({
+        this.props.set80gDetails({
           text_80g_12a: reqPayload.text_80g_12a,
+          image_url_80g: reqPayload.image_url_80g,
         });
 
         if (res && res.success) {
@@ -162,77 +140,99 @@ export default class Merchant80gDetails extends React.Component {
     track.modal80G.uploadSave();
   };
 
+  handle80gTextChange = (e) => {
+    this.setState({ text_80g_12a: e.target.value });
+  };
+
+  onFileUploadError = (message) => {
+    this.props.trackFn('80g_upload_fail', {
+      error: message,
+    });
+  };
+
   render() {
     const props = this.props;
 
     return (
-      <div class="80g-details-modal">
-        <ModalHeader title="80G Details" onCloseClick={this.props.closeModal} />
+      <div className="details-modal-80g">
+        <ModalHeader title="80G Details" />
 
         <div class="modal-body">
-          <Banner>
-            These details are required to issue 80G receipts for Payment Page transactions.
-          </Banner>
+          <Form onSubmit={this.onSubmit} onChange={this.onChange}>
+            <Input.Textarea
+              name="text_80g_12a"
+              label={
+                <div className="details-modal-80g--label">
+                  80G Description
+                  <a href="https://razorpay.com/docs/payment-pages/receipt-80g/#pdf-receipt-to-customers">
+                    Sample 80G Receipt
+                    <i class="i i-external-link" />
+                  </a>
+                </div>
+              }
+              class="Input-description Input--vTop"
+              placeholder="All donations made to us are eligible for tax exemption under 80G of IT act ITBA/EXM/S80G/2019-20/1XXXXXXX Dated DD/MM/YYYY.."
+              defaultValue={this.state.text_80g_12a}
+              value={this.state.text_80g_12a}
+              onChange={this.handle80gTextChange}
+              validator={validate80gDescription}
+              autoFocus
+            />
 
-          {this.state.isLoading ? (
-            <div class="page-spinner-container">
-              <Spinner />
-            </div>
-          ) : (
-            <Form onSubmit={this.onSubmit} onChange={this.onChange}>
-              <Input.Textarea
-                name="text_80g_12a"
-                label="80G Description"
-                class="Input-description Input--vTop"
-                description="This 80G description will be shown on receipts"
-                placeholder="All donations made to us are eligible for tax exemption under 80G of IT act ITBA/EXM/S80G/2019-20/1XXXXXXX Dated DD/MM/YYYY.."
-                defaultValue={this.state.text80g}
-                validator={(val) => {
-                  if (val && val.length > 128) {
-                    return 'Field description cannot be more than 128 characters';
-                  }
-                }}
-                autoFocus
+            <br />
+
+            <div class="Input--FileUpload">
+              <Label
+                text={() => (
+                  <div>
+                    <b class="m-r">Signature of Authorised Person</b>(Optional)
+                  </div>
+                )}
               />
+              <FileUpload
+                accept={['png', 'jpg', 'jpeg']}
+                size="large"
+                uploadedFileName="Upload Image here"
+                maxSize={THUMBNAIL_SIZE_LIMIT} // In bytes
+                onBiggerFileSize={this.onBiggerFileSize}
+                onFileChange={this.addFile}
+                onCloseClick={this.removeSignatoryImage}
+                defaultValue={this.state.signatoryImageFileUrl || null}
+                files={[]} // Way to control file in Upload component since we're showing img preview
+                imgFilePreviewUrl={this.state.signatoryImageFileUrl || null}
+                removeFileButtonLabel="Remove Signature"
+                showFileSize={false}
+                onSave={this.onSave}
+                onError={this.onFileUploadError}
+              >
+                <div className="Dropzone-80g-details">
+                  Drag file here or{' '}
+                  <span>
+                    <img src={UploadImage} /> Upload
+                  </span>
+                </div>
+              </FileUpload>
+              <Description text="Upload .png, .jpg or .jpeg file | 500 KB Max" />
+            </div>
 
-              <br />
-
-              <div class="Input--FileUpload">
-                <Label
-                  text={() => (
-                    <div>
-                      <b class="m-r">Signature of Authorised Signatory</b> (Optional)
-                    </div>
-                  )}
-                />
-                <FileUpload
-                  accept={['png', 'jpg', 'jpeg']}
-                  size="large"
-                  uploadedFileName="Upload Image here"
-                  maxSize={THUMBNAIL_SIZE_LIMIT} // In bytes
-                  onBiggerFileSize={this.onBiggerFileSize}
-                  onFileChange={this.addFile}
-                  onCloseClick={this.removeSignatoryImage}
-                  defaultValue={this.state.signatoryImageFileUrl || null}
-                  files={[]} // Way to control file in Upload component since we're showing img preview
-                  imgFilePreviewUrl={this.state.signatoryImageFileUrl || null}
-                  removeFileButtonLabel="Remove Signature"
-                  showFileSize={false}
-                  onSave={this.onSave}
-                  onError={(message) => {
-                    track.modal80G.uploadFail(message);
-                  }}
-                />
-                <Description text="For best results take the signature on a white paper and then scan it" />
-              </div>
-
-              <div class="Modal__actions">
-                <Button.Primary class="btn-block" type="submit" disabled={this.state.isSaving}>
-                  {this.state.isSaving ? 'Updating..' : 'Update'}
-                </Button.Primary>
-              </div>
-            </Form>
-          )}
+            <div class="Modal__actions">
+              <Button.Transparent
+                class="Button--Link"
+                type="submit"
+                disabled={this.state.isSaving}
+                onClick={this.props.closeModal}
+              >
+                Cancel
+              </Button.Transparent>
+              <Button.Primary
+                class="btn-block"
+                type="submit"
+                disabled={this.state.text_80g_12a.length === 0 || this.state.isSaving}
+              >
+                {this.state.isSaving ? 'Saving 80G details' : 'Save 80G details'}
+              </Button.Primary>
+            </div>
+          </Form>
         </div>
         {this.state.signatoryImageFile && !this.state.signatoryImageFileUrl && (
           <ImageCropperModal
@@ -345,5 +345,11 @@ class ImageCropperModal extends React.Component {
         </Modal>
       </ModalMask>
     );
+  }
+}
+
+function validate80gDescription(val) {
+  if (val && val.length > 128) {
+    return 'Field description cannot be more than 128 characters';
   }
 }

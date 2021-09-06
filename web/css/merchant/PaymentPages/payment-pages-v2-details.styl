@@ -1,9 +1,75 @@
 .Entity--paymentpage-v2
-  .panel-heading .btn
-    padding: 5px
-    min-width: 72px
-    line-height: 1.5em
+  .panel > .panel-heading 
+    .btn-toolbar
+      padding-top: 0px
 
+      .Button:last-child
+        margin-right: 12px
+
+      .i-chevron-up 
+        display: none
+
+      .dropdown--active
+        .i-chevron-down
+          display: none
+
+        .i-chevron-up
+          display: inline
+
+    .icon-border-bottom::before
+      border-bottom: 1px solid white
+
+    .dropdown-menu
+      right: 12px
+      left: auto
+      background: #FFFFFF
+      box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.15)
+      border: none
+      top: 85%
+
+      .btn
+        padding: 5px
+        min-width: 72px
+        line-height: 1.5em
+        display: block
+        float: unset
+        padding: 8px 12px
+        text-align: left
+
+        &:hover
+          background: rgba(224, 228, 249, 0.24)
+          
+        button
+          color: #58666E
+          font-size: 14px
+          font-weight: 500
+
+          .i
+            color: #58666E
+
+  .Button--primary--invert
+    height: 36px
+    min-width: 36px
+    background: rgba(11, 112, 231, 0.02);
+
+    i
+      color: #4B95ED
+
+    &:not(:disabled):hover
+      background-color: rgba(11, 112, 231, 0.05)
+      border-color: rgba(11, 112, 231, 0.74)
+
+      i
+        color: #2B83EA
+
+  .dropdown--active
+    .Button--primary--invert, .Button--primary--invert:not(:disabled):hover
+      border: 1px solid #0B70E7
+      background: rgba(11, 112, 231, 0.1)
+
+      i
+        color: #0B70E7
+        
   .panel-heading .btn-xs
     min-width: 40px
 
@@ -32,3 +98,22 @@
       &:before
         vertical-align: middle
         font-size: 20px
+
+  .rzp-tooltip-inner
+    position: relative
+    &:after
+      content: ""
+      position: absolute
+      top: 100%
+      left: 50%
+      margin-left: -10px
+      border-width: 5px
+      border-style: solid
+      border-color: #2c3243 transparent transparent transparent
+      margin-top: -1px
+  
+  .rzp-tooltip-duplicate
+    margin-top: -5px
+        
+.d-inline-block
+  display: inline-block

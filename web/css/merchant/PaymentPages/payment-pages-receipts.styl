@@ -20,9 +20,24 @@
 
     .m-r
       margin-right: 4px
+    
+    .i-info-outline
+      color: #536582
+      margin-left: 3px
 
   .Input-inlineLabel
     vertical-align: top
+
+  .Input--radioLabels
+    label
+      display: flex
+      margin-left: -15px
+
+      input
+        width: auto
+
+      .Input-radio
+        min-width: 18px
 
   .Input--radio
     label
@@ -53,8 +68,71 @@
 
     button:last-of-type
       margin-right: 0
+  
+  .Button--add-80g
+    font-size: 12px
+    color: #528FF0
+    font-weight: 700
+    margin-left: 25px
 
+  .preview_80g
+    border: 1px solid rgba(22, 47, 86, 0.1)
+    box-sizing: border-box
+    border-radius: 4px
+    padding: 15px 20px
+    margin-top: 12px
 
+    &--text
+      font-size: 12px
+      line-height: 18px
+      color: #536582
+      word-break: break-word
+
+    &--container
+      display: flex
+      justify-content: space-between
+      margin-top: 7px
+
+      &-right
+        display: flex
+        align-items: center
+
+      img
+        width: 65px
+        height: auto
+        border: 1px solid rgba(11, 112, 231, 0.1)
+        border-radius: 1px
+
+    .Button--transparent
+      text-transform: uppercase
+      font-weight: bold
+      color: #2B83EA
+      font-size: 10px
+      display: flex
+      align-items: center
+
+      .i-edit-outline
+        margin-right: 5px
+        padding-bottom: 2px
+        border-bottom: 1px solid #2b83ea
+
+      .i-delete-outline
+        margin-right: 5px
+    
+    .vertical-divider
+      height: 0px
+      width: 18px
+      border: 1px solid #58666E
+      transform: rotate(90deg)
+
+  .checkbox-container-80g
+    display: flex
+
+  .rzp-tooltip-80g
+    .rzp-tooltip-title
+      font-weight: 700
+      margin-bottom: 4px
+  
 .PowerSelect-PickField.PowerSelect__Menu
   .PowerSelect__Option
     padding: 8px 12px

@@ -1,6 +1,21 @@
 #paymentpage-container
   min-height: 100vh
+  font-family: "Mulish", "Lato", "Lato-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif
 
+  // Increase the padding for tooltips & add pointed arrow
+  .rzp-tooltip-inner
+    padding: 16px 12px
+    position: relative
+    &:after
+      content: ""
+      position: absolute
+      top: 100%
+      left: 50%
+      margin-left: -10px
+      border-width: 5px
+      border-style: solid
+      border-color: black transparent transparent transparent
+    
   .rzp-whole
     font-weight: bold
 
@@ -328,6 +343,13 @@
 
     button:last-of-type
       margin-right: 0
+  
+  .custom-url
+    border: 3px solid white
+    transition: border 1s
+
+    &.fade-out
+      border: 3px solid #0B70E7
 
 .PluginsAndAddOns
   margin: 120px auto
@@ -424,15 +446,23 @@
           font-weight: 400
 
       .page-action
-        float: right
-        margin-right: 56px
+        display: flex
+        justify-content: flex-end
+        margin-right: 34px
 
         button
           line-height: 10px
           padding: 10px 8px
           //height: 32px
           vertical-align: middle
-          margin-left: 32px
+          margin-left: 20px
+          font-weight: 700
+          display: flex
+          justify-content: center
+          align-items: center
+
+          i
+            margin-right: 4px
 
         .Button--transparent
           padding: 10px 0
@@ -663,7 +693,13 @@
         border-right-color: transparent
         border-bottom-color: #2c3243
 
-
+  .Button--header
+    background: rgba(11, 112, 231, 0.05)
+    border: 1px solid #A2C9F6
+    box-sizing: border-box
+    border-radius: 2px
+    padding: 8px 16px !important
+    
 /* Overriding styles of UI-form */
 .payment-pages-v2 .UI-form
   .wysiwyg-edit-layer

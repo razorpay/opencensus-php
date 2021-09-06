@@ -36,6 +36,11 @@ const PaymentPagesWysiwyg = lazy(() =>
     /* webpackChunkName: "PaymentPagesWysiwyg" */ 'merchant/views/PaymentPages/PaymentPages/Wysiwyg'
   ),
 );
+const PaymentPagesSuccess = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentPagesSuccess" */ 'merchant/views/PaymentPages/PaymentPages/Success'
+  ),
+);
 const PaymentButtonCreate = lazy(() =>
   import(
     /* webpackChunkName: "PaymentButtonCreate" */ 'merchant/views/PaymentButton/PaymentButton/Create'
@@ -457,6 +462,10 @@ const fullPageViewsMap = {
   '/paymentpages/:id(pl_.+)/edit': {
     component: PaymentPagesWysiwyg,
     additionalCondition: (user) => user.isAllowedEdit('payment_pages'),
+  },
+  '/paymentpages/:id(pl_.+)/success': {
+    component: PaymentPagesSuccess,
+    additionalCondition: (user) => user.isAllowedEdit('payment_pages') && user.isPPSuccessPage,
   },
   '/paymentbuttons/new': {
     component: PaymentButtonCreate,
