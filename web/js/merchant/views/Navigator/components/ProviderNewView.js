@@ -14,7 +14,15 @@ export default class ProviderNewView extends React.Component {
           <img src={gatewayLogos[provider.Gateway.toLowerCase()]} />
         </div>
         <div className="gateway-provider-block--details">
-          <h3>{provider.Provider_name ? provider.Provider_name : provider.Gateway}</h3>
+          <h3>
+            {provider.Provider_name ? provider.Provider_name : provider.Gateway}
+            {!rzpGateways.includes(provider.Gateway.toLowerCase()) && (
+              <img
+                src="https://cdn.razorpay.com/static/assets/rewards/rewards_list_up_vector.svg"
+                className="arrow-img arrow-hide"
+              />
+            )}
+          </h3>
           <div className="gateway-provider-block--details--methods">
             <p title={provider.Gateway_details['Payment Methods'].join(', ')}>
               {provider.Gateway_details['Payment Methods'].join(', ')}

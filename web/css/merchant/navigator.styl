@@ -1236,6 +1236,11 @@ tr.is_current {
   border-radius: 4px;
   background-color: rgb(255, 255, 255);
   cursor: pointer;
+
+  &:hover {
+    border: 1px solid #4B95ED;
+  }
+
   .provider-img-holder {
     text-align: center;
     img {
@@ -1271,6 +1276,24 @@ tr.is_current {
 
 .gateway-provider-block-bg {
   background-color: #FAFCFF;
+  &:hover {
+    .arrow-hide {
+      display: inline-block;
+      margin-left: 6px;
+      transform: rotate(90deg);
+      margin-top: -2px;
+      height: 7px;
+    }
+    .gateway-provider-block--details {
+      h3 {
+        color: #2B83EA;
+      }
+    }
+  }
+}
+
+.arrow-hide {
+  display: none;
 }
 
 .selected-gateway-provider {
@@ -1361,6 +1384,7 @@ tr.is_current {
 }
 
 .gateway-details-desc--how-to-modal {
+  background: #ffffff;
   .modal-header {
     .modal-title {
       color: rgba(22, 47, 86, 0.87);
@@ -1377,6 +1401,7 @@ tr.is_current {
       background-color: rgba(205, 130, 20, 0.1);
       padding: 12px 12px 10px 12px;
       border-radius: 4px;
+      margin-top: 10px;
       .i.i-info-outline {
         color: #CD8214;
         margin-right: 5px;
