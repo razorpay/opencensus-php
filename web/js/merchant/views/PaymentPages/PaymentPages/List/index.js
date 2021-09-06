@@ -1,17 +1,15 @@
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import HeaderAction from 'common/ui/HeaderAction';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import RTracking from 'react-tracking';
+import track from './track';
 
 import Pager from 'common/ui/Pager';
 import Spinner from 'common/ui/Spinner';
 import { withRouter } from 'react-router-dom';
 import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
-import { triggerHotjarRecording } from 'common/utils/hotjar';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import EmptyList from 'merchant/components/EmptyList';
@@ -61,6 +59,8 @@ export default class PaymentPagesContainer extends ListContainer {
   componentDidMount() {
     this.fetchAllEntityList();
     this.initPaymentPagesOnboarding();
+
+    track.init(this.props.tracking.trackEvent);
   }
 
   componentWillReceiveProps(nextProps, nextState) {
@@ -80,10 +80,6 @@ export default class PaymentPagesContainer extends ListContainer {
 
     super.componentWillReceiveProps(nextProps);
   }
-
-  trackPaymentPage = (...args) => {
-    return this.props.tracking.trackEvent(window.rzpQ.paymentPages().interaction(...args));
-  };
 
   /* Fetch all payment pages list to find whether first-time user */
   fetchAllEntityList() {
@@ -138,22 +134,22 @@ export default class PaymentPagesContainer extends ListContainer {
     }
 
     if (params.count) {
-      this.trackPaymentPage('pp.search.count');
+      track.searchCount();
     }
 
     if (params.status) {
-      this.trackPaymentPage('pp.search.status');
+      track.searchStatus();
     }
 
     if (params.title) {
-      this.trackPaymentPage('pp.search.title');
+      track.searchTitle();
     }
   };
 
   onClearAnalytics = () => {
     trackListActions('Clear');
 
-    this.trackPaymentPage('pp.search.clear');
+    track.searchClear();
   };
 
   componentWillUnmount() {
@@ -209,27 +205,17 @@ export default class PaymentPagesContainer extends ListContainer {
   };
 
   trackCreatePaymentPage = () => {
-    analyticsTrack({
-      objectName: 'create page',
-      actionName: 'clicked',
-      screen: 'create payment page',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
     this.props.tracking.trackEvent(
       window.rzpQ.onbr().success('dash.pp_action', {
         action: 'Initiate_PP_Creation',
       }),
     );
 
-    this.trackPaymentPage('pp.create.click_create');
-
-    triggerHotjarRecording('PP_Creation');
+    track.createPaymentPage();
   };
 
   onClickPaginate = (params, type) => {
-    this.trackPaymentPage(`pp.browse.${type}`, {
+    track.paginate(type, {
       count: params.count,
     });
 
