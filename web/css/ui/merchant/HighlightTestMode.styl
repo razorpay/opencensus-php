@@ -1,6 +1,6 @@
 $line-top = 0px
 $trapezoid-top = -18px
-$info-top = 8px
+$info-top = 9px
 
 $payment-pages-offset = 50px
 
@@ -11,7 +11,7 @@ $payment-pages-offset = 50px
     opacity 1
 
 .highlight-test-mode-container
-  z-index 1000
+  z-index 1112
   position absolute
   width 100%
   animation fadein 2s
@@ -57,13 +57,21 @@ $payment-pages-offset = 50px
 
       &.shift-trapezoid
         top $trapezoid-top + 45px
+      
+      .test-mode-switch
+        margin-left 5px
+        position relative
+        top -1px
+        cursor pointer
 
     .info
       position fixed
       top $info-top
-      padding-right 130px
+      margin-left 3px
+      cursor pointer
       @media (max-width: 768px)
         position absolute
+        top 27px
 
       &.shift-info
         top $info-top + 45px
@@ -77,6 +85,7 @@ $payment-pages-offset = 50px
       position fixed
       top 50px
       padding 10px
+      margin-right 35px
       background-color #515461
       color #FFFFFF
       font-size 12px
@@ -103,4 +112,8 @@ $payment-pages-offset = 50px
         border-bottom 15px solid #515461
         top -10px
         left 25px
+  &.hide-test-mode 
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s 2s, opacity 2s linear;
 

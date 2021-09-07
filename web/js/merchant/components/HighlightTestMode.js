@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import useLocalStorage from 'merchant/utils/useLocalStorage';
+import SwitchField from 'common/ui/Forms/SwitchField';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 function HighlightTestMode(props) {
-  const { user, highlightMode, location } = props;
+  const { user, highlightMode, location, onSwitchMode } = props;
 
   const [isTestModeFirstTime, setisTestModeFirstTime] = useLocalStorage(
     `isTestModeFirstTime_${user.current}`,
@@ -14,6 +15,7 @@ function HighlightTestMode(props) {
   const [showTooltip, setshowTooltip] = useState(() => {
     return isTestModeFirstTime;
   });
+  const [testModeToggle, setTestModeToggle] = useState(true);
 
   const handleShowTooltip = () => setshowTooltip((prevState) => !prevState);
 
@@ -22,30 +24,36 @@ function HighlightTestMode(props) {
     setisTestModeFirstTime(false);
   };
 
+  const onToggleTestMode = () => {
+    setTestModeToggle(!testModeToggle);
+    // Switching to the live Mode
+    onSwitchMode('live');
+  };
+
   if (highlightMode === false || location.pathname === '/activation') return null;
 
   const isPaymentPages = location.pathname === '/paymentpages/new';
 
   return (
-    <div class="highlight-test-mode-container">
-      <div class={`horizontal-line ${isPaymentPages ? 'shift-line' : null}`} />
+    <div class={`highlight-test-mode-container${!testModeToggle ? ' hide-test-mode' : ''}`}>
+      <div class={`horizontal-line${isPaymentPages ? ' shift-line' : ''}`} />
       <div class="content">
         <div
-          class={`trapezoid ${isPaymentPages ? 'shift-trapezoid' : null}`}
+          class={`trapezoid${isPaymentPages ? ' shift-trapezoid' : ''}`}
           onMouseEnter={handleShowTooltip}
           onMouseLeave={handleShowTooltip}
         >
           YOU&apos;RE IN TEST MODE
-        </div>
-        <div
-          class={`info ${isPaymentPages ? 'shift-info' : null}`}
-          onMouseEnter={handleShowTooltip}
-          onMouseLeave={handleShowTooltip}
-        >
-          <i className="i i-info-circle text-fade" />
+          {/* added Toggle switch to switch between Test and Live Mode */}
+          <span class="test-mode-switch">
+            <SwitchField type="prime round" checked={testModeToggle} onChange={onToggleTestMode} />
+          </span>
+          <div class={`info${isPaymentPages ? ' shift-info' : ''}`}>
+            <i className="i i-info-circle text-fade" />
+          </div>
         </div>
         {showTooltip === true && (
-          <div class={`info-content ${isPaymentPages ? 'shift-info-content' : null}`}>
+          <div class={`info-content${isPaymentPages ? ' shift-info-content' : ''}`}>
             <div>
               Payments in test mode are sample payments, <strong>no real money</strong> is involved
               in these payments.

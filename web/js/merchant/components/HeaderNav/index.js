@@ -213,7 +213,7 @@ export default class HeaderNav extends Component {
             </div>
           </div>
         </nav>
-        {mode === 'test' && isMobileDevice() && <HighlightTestMode />}
+        {mode === 'test' && isMobileDevice() && <HighlightTestMode onSwitchMode={onSwitchMode} />}
       </div>
     );
   }

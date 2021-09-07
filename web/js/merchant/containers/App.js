@@ -801,7 +801,7 @@ class App extends Component {
         </div>
         {mode === 'test' && !isMobileDevice() && (
           <div style={{ position: 'relative' }}>
-            <HighlightTestMode />
+            <HighlightTestMode onSwitchMode={this.switchMode} />
           </div>
         )}
       </Wrapper>
