@@ -48,10 +48,10 @@ module.exports = {
   // An object that configures minimum threshold enforcement for coverage results
   coverageThreshold: {
     './js/merchant/views/onboarding/': {
-      statements: 75,
-      branches: 60,
-      functions: 70,
-      lines: 76,
+      statements: 72,
+      branches: 58,
+      functions: 68,
+      lines: 72,
     },
   },
 
