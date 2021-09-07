@@ -114,9 +114,9 @@ class DisbursalEntity extends Component {
             Back
           </Button.Transparent>
 
-          {/* <NavLink className="btn btn-outline m-l" exact to={`/capital/loans/overview`}>
+          <NavLink className="btn btn-outline m-l" exact to={`/capital/loans/overview`}>
             Go to Repayment Dashboard <i className="i i-chevron-right" />
-          </NavLink> */}
+          </NavLink>
         </div>
       </div>
     );

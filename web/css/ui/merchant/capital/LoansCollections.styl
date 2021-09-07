@@ -1,0 +1,482 @@
+.loans-collections-wrapper
+  .status-pill  
+    display: block;
+    height: 20px;
+    width: 88px;
+    text-align: center;
+    border-radius: 28px;
+    font-size: 11px;
+    font-weight: normal;
+    line-height: 8px;
+    margin-left: 0;
+
+  .status-pill
+      font-weight: normal;
+
+  .status-pill-bg-warning-2
+    background: rgba(205, 130, 20, 0.1);
+    color: #CD8214;
+    border: 1px solid rgba(205, 130, 20, 0.3);
+
+  .status-pill-bg-success-2
+    background: rgba(0, 156, 92, 0.09);;
+    color: #1F890E;
+    border: 1px solid rgba(0, 156, 92, 0.32);
+
+  .status-pill-bg-danger-2
+    background:  rgba(245, 74, 42, 0.09);
+    color: #D12D2D;
+    border: 1px solid rgba(245, 74, 42, 0.32);
+
+  .h-full
+    height: 100%;
+  .w-full
+    width: 100%;
+  
+  .rzp-amount
+    .rzp-currency
+      font-size: 85.71%;
+    .rzp-whole
+      font-weight: 600;
+    .rzp-paise
+      font-weight: 600;
+    //   lg: '1.125rem', // 18px
+    // xl: '1.25rem', // 20px
+    // '2xl': '1.5rem', // 24px
+    // '3xl': '1.875rem', // 30px
+
+  .flex 
+    display: flex;
+  .flex-row
+    flex-direction: row;
+  .flex-col
+    flex-direction: column;
+  .space-between
+    justify-content: space-between;
+  
+
+  .font-bold
+    font-weight: 700
+
+  .justify-center
+    justify-content: center
+  .justify-between
+    justify-content: space-between
+  .items-center
+    align-items: center
+  .items-end
+    align-items: flex-end
+  .leading-none
+    line-height: 1
+  
+
+  .text-xs
+    font-size: 12px;
+  .text-xsm
+    font-size: 13px;
+  .text-sm
+    font-size: 14px; 
+  .text-base
+    font-size: 16px;
+  .text-lg
+    font-size: 18px;
+  .text-xl
+    font-size: 20px;
+  .text-3xl
+    font-size: 30px;
+
+  .text-navy-blue
+    color: rgba(21,45,75,1);
+  .text-navy-blue-o-80
+    color: rgba(21,45,75,0.76);
+  .text-navy-blue-o-70
+    color: rgba(21,45,75,0.67);
+  .text-navy-blue-o-60
+    color: rgba(21,45,75,0.54);
+
+  .text-grey
+    color: rgba(50, 70, 100, 1);
+  .text-grey-o-70
+    color: rgba(50, 70, 100, 0.67);
+  .text-grey-o-60
+    color: rgba(50, 70, 100, 0.54);
+
+  .text-right
+    text-align: right;
+  .text-center
+    text-align: center;
+
+  .text-gray-o-50
+    color: rgba(22, 47, 86, 0.54);
+
+  .text-teal
+    color: rgba(0, 140, 177, 1);
+
+  .loan-collection-summary
+    max-height: 222px;
+    min-height: 222px;
+
+    .heading 
+      padding: 16px 0px 10px 0px;
+      border-bottom: 1px solid rgb(226, 232, 234);
+    span 
+      line-height: 22px;
+    .loan-collection-info
+      .amount-summary
+        .out-of
+          padding: 0px 4px;
+      .progress
+        border-radius: 8px;
+        height: 8px;
+        margin: 10px 0px 6px 0px;
+        .progress-bar
+          background: rgba(0, 134, 89, 0.08);
+      .collection-heading 
+        font-size: 15px;
+        color: rgba(21, 45, 75, 0.54);
+      .progress-bar
+        background: rgba(0, 134, 89, 0.08);
+        border-radius: 8px;
+        height: 8px;
+      padding: 39px 0px;
+
+  .loan-collection-summary, .loan-summary, .poweredby-card
+    padding: 0px 24px;
+    border-radius: 3px;
+    width: 436px;
+    margin-left: 20px;
+
+  .poweredby-card
+    margin-top: 20px;
+    height: 52px;
+    padding: 16px 114px;
+    .capital-logo
+      height: 17px;
+
+  .overview-wrapper
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;    
+    
+    .overview-left
+      flex-grow: 1;
+
+    .overview-left .recent-repayments
+      margin-top: 20px;
+      padding: 16px 24px;
+      height: auto;
+      
+      .table-section
+        transition: all 100ms linear;
+
+      .recent-payment-heading
+        display: flex;
+        justify-content: space-between;
+        cursor: pointer;
+        .i
+          cursor: pointer;
+          align-self: center;
+
+
+    .overview-left, .overview-right
+      display: flex;
+      flex-direction: column;
+
+    .overview-status, .recent-repayments
+      border-radius: 3px;
+    
+      .loans-repayments-list.show-table
+        max-height: 400px;
+        margin-top: 16px;
+        opacity: 1;
+
+      .loans-repayments-list.hide-table
+        max-height: 0;
+        margin-top: 0px;
+        opacity: 0;
+
+    .loan-collection-summary
+      max-height: 222px;
+      min-height: 222px;
+      border-top-left-radius: 3px;
+      border-top-right-radius: 3px;
+
+    .loan-collection-summary, .loan-summary
+      padding: 0px 24px;
+
+    .loan-summary
+      border-radius: 0px 0px 3px 3px;
+      position: relative;
+      .highlight
+        position: absolute;
+        width: 3px;
+        height: 24px;
+        left: 0px;
+        top: 15px;   
+        border-radius: 0px 2px 2px 0px;
+        background: rgba(22, 47, 86, 0.76)   
+      .heading
+        display: flex;
+        padding: 16px 0px;
+        justify-content: space-between;
+        cursor: pointer;
+        .i
+          align-self: center;
+      .loan-summary-info
+        transition: all 320ms linear;
+        padding: 32px 0px 20px 0px;
+        .first-group
+          flex-basis: 60%;
+        .Withdrawal-heading
+          display: inline-block;
+      .loan-summary-info.show-summary
+        max-height: 390px;
+        opacity: 1;
+      .loan-summary-info.hide-summary
+        max-height: 0px;
+        padding: 0px 0px 0px 0px;
+        overflow: hidden;
+        opacity: 0;
+      background-color: #F8F8FB;
+      height: auto;
+  
+  .overview-status
+    display: flex
+    height: 274px;
+    .status-pill
+      border: 1px solid rgba(0, 134, 89, 1);
+      color: rgba(0, 134, 89, 1);
+      padding: 2px 8px;
+      margin-right: 5px;
+      line-height: 14px;
+
+    .status-pill.fill
+      background-color: rgba(0, 134, 89, 1);
+      color: #fff;    
+
+    .Button
+      padding: 12px 28px;
+      font-weight: 600;
+      font-size: 13px;
+
+    footer
+      border-top: 1px solid rgba(3, 28, 58, 0.08);
+      width: calc(100% + 48px);
+      margin-left: -24px;
+      padding: 16px 24px;
+      align-items: center;
+
+    header
+      padding: 10px 0;
+      align-items: center;
+      line-height: 1;  
+      border-bottom:  1px solid rgba(3, 28, 58, 0.08);
+
+    .payment-amount
+      padding: 0 24px;
+      border-top: 3px solid rgba(11, 112, 231, 0.87);
+      border-radius: 3px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      
+      .payment-amount-body
+        align-items: center
+        margin: 24px 0;
+        flex: 1;
+
+        .left
+          flex-direction: column
+          flex: 2;
+
+          .help-content--currency
+            align-self: flex-start;
+
+            .rzp-popover
+              display: none !important
+
+          .text-section
+            display: flex;
+            align-items: flex-end;
+
+          .rzp-whole
+            font-weight: 700
+
+          .footer
+            .ml-50
+              margin-left: 50px;
+
+        .right
+          flex: 1;
+          justify-content: flex-end;
+          .text-size-15
+            font-size: 15px;          
+
+    .payment-method
+      padding: 0 24px;
+      border-radius: 3px;
+      border-top: 3px solid rgba(11, 112, 231, 0.87);
+      width: 100%;
+      display: flex;
+      flex-direction: column;      
+
+      .payment-method-body
+        margin: 48px 0px;
+        align-items: flex-end
+        flex: 1;
+
+        .left
+          flex: 2;
+          flex-direction: column;
+          .Input--checkbox, .Input--radioLabels > label
+            margin: 0;
+            padding: 16px;
+            flex: 1
+            border: 1px solid rgba(11, 112, 231, 0.87)
+          .Input--radioLabels
+            display: flex;
+            .Input-inlineLabel
+              vertical-align: baseline;
+          .Input--radio
+            flex: 1;
+            margin: 0;
+        .right
+          justify-content: flex-end;
+          margin: 15px 24px;
+          margin-right: 0;
+          .cancel-button
+            padding: 12px 0px 12px 28px;
+        
+        .payment-option
+          flex-direction: column;
+
+    .payment-success
+      padding: 0 24px;
+      border-top: 3px solid rgba(0, 134, 89, 0.87);
+      border-radius: 3px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+
+      .payment-success-body
+        margin: 24px 0px
+        height: 100%;
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+
+        .top
+          display: flex
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid rgba(3, 28, 58, 0.08);
+          padding-bottom: 16px;
+
+          .left
+            flex-direction: column;
+            flex: 1
+        
+        .bottom
+          justify-content: space-between;
+          width: 80%;
+          padding-top: 16px;
+          .detail-segment
+            flex-direction: column;
+      footer
+        .Button--transparent
+          padding: 0;
+          margin-left: -16px;
+
+    .payment-failure
+      padding: 0 24px;
+      border-top: 3px solid rgba(178, 87, 87, 0.87);
+      border-radius: 3px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+
+      .payment-failure-body
+        margin: 24px 0px
+        height: 100%;
+        flex: 1;
+        display: flex;
+        align-items: center;
+
+        .top
+          display: flex;
+          flex-direction: column
+
+          .text-content
+            margin: 16px 0;
+            display: flex;
+            flex-direction: column;
+    
+    .closed-loan
+      padding: 0 24px;
+      border-top: 3px solid rgba(0, 134, 89, 0.87);
+      border-radius: 3px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+
+      .closed-loan-body
+        margin: 24px 0px
+        height: 100%
+        flex-direction: column
+        flex: 1
+        display: flex;
+        justify-content: center;
+
+        .breakdown-section
+          flex-direction: column
+          margin-right: 40px;
+
+  .loans-repayments-list
+    transition: all 320ms linear;
+
+  .repayments-history
+    .payment-box-wrapper
+      .overview-status
+        flex: 1
+        height: auto
+
+      .loan-collection-summary
+        min-height: auto
+        max-height: 180px;
+              
+    .filters-wrapper
+      display: flex;
+      justify-content: space-between;
+
+      .export-button
+        align-self: center;
+
+.loan-repayment-details-modal
+  .status-pill  
+    display: block;
+    height: 20px;
+    width: 88px;
+    text-align: center;
+    border-radius: 28px;
+    font-size: 11px;
+    font-weight: normal;
+    line-height: 8px;
+
+  .status-pill
+      font-weight: normal;
+
+  .status-pill-bg-warning-2
+    background: rgba(205, 130, 20, 0.1);
+    color: #CD8214;
+    border: 1px solid rgba(205, 130, 20, 0.3);
+
+  .status-pill-bg-success-2
+    background: rgba(0, 156, 92, 0.09);;
+    color: #1F890E;
+    border: 1px solid rgba(0, 156, 92, 0.32);
+
+  .status-pill-bg-danger-2
+    background:  rgba(245, 74, 42, 0.09);
+    color: #D12D2D;
+    border: 1px solid rgba(245, 74, 42, 0.32);

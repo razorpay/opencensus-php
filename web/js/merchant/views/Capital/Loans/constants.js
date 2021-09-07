@@ -1,4 +1,5 @@
 import React from 'react';
+import { REPAYMENT_STATUES } from '../CashAdvance/constants';
 
 export const BUSINESS_TYPES = {
   1: 'PROPRIETORSHIP',
@@ -390,7 +391,7 @@ export const APPLICATION_STATE_TITLE_MAP = {
   },
   BUSINESS_INFO_PENDING_LOCKED: {
     title: 'Confirm your Business Details & Needs',
-    description: 'Sorry, Loan details cannot be modified after the loan' + ' offer is accepted',
+    description: 'Sorry, Loan details cannot be modified after the loan offer is accepted',
     lockedNote: true,
   },
   PROMOTER_INFO_PENDING: {
@@ -640,3 +641,41 @@ export const PREVERIFICATION_OPTIONS = {
 export const PREVERIFICATION_NETBANKING_RETRY_LIMIT = 3;
 
 export const AVAILABLE_FILE_TYPE_ICONS = ['pdf', 'jpg', 'png', 'csv', 'xlsx'];
+
+export const LOANS_BASE_URL = '/capital/loans/';
+
+export const LOANS_SECTIONS = {
+  OVERVIEW: 'overview',
+  REPAYMENTS_HISTORY: 'history',
+};
+
+export const DEFAULT_COUNT = 25;
+
+export const getBreakupByBalanceType = (breakups, balanceType) => {
+  return breakups
+    .filter((breakup) => breakup.balance_type === balanceType)
+    .reduce((total, currentBreakup) => {
+      return total + Number(currentBreakup.breakup_amount);
+    }, 0);
+};
+
+export const STATUS_LABELS = {
+  [REPAYMENT_STATUES.STATUS_UNKNOWN]: 'Unknown',
+  [REPAYMENT_STATUES.STATUS_PENDING]: 'Pending',
+  [REPAYMENT_STATUES.STATUS_COLLECTED]: 'Repaid',
+  [REPAYMENT_STATUES.STATUS_SETTLED]: 'Repaid',
+  [REPAYMENT_STATUES.STATUS_FAILED]: 'Failed',
+};
+
+export const StatusPillClasses = {
+  [REPAYMENT_STATUES.STATUS_UNKNOWN]: 'bg-light-2',
+  [REPAYMENT_STATUES.STATUS_PENDING]: 'bg-warning-2',
+  [REPAYMENT_STATUES.STATUS_COLLECTED]: 'bg-success-2',
+  [REPAYMENT_STATUES.STATUS_SETTLED]: 'bg-success-2',
+  [REPAYMENT_STATUES.STATUS_FAILED]: 'bg-danger-2',
+};
+
+export const REPAYMENT_FILTER_STATUS_OPTIONS = {
+  [REPAYMENT_STATUES.STATUS_COLLECTED]: STATUS_LABELS[[REPAYMENT_STATUES.STATUS_COLLECTED]],
+  [REPAYMENT_STATUES.STATUS_FAILED]: STATUS_LABELS[[REPAYMENT_STATUES.STATUS_FAILED]],
+};

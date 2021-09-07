@@ -33,6 +33,7 @@ import {
 import DataList from 'merchant/components/OnBoarding/Slides/DataList';
 import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { LOANS_BASE_URL, LOANS_SECTIONS } from '../Loans/constants';
 
 export const PROS = [
   <React.Fragment key={1}>
@@ -77,7 +78,7 @@ const parseApplicationMetaData = (loanApplicationDetails) => {
     resetCapitalLendingData,
   },
 )
-class LoanApplicationOverview extends React.Component {
+export default class LoanApplicationOverview extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -182,6 +183,10 @@ class LoanApplicationOverview extends React.Component {
     this.props.history.push('/capital/cash-advance/');
   }
 
+  redirectLoansOverview() {
+    this.props.history.push(`${LOANS_BASE_URL}${LOANS_SECTIONS.OVERVIEW}`);
+  }
+
   fetchApplications = () => {
     const productDetails = this.getProductDetails();
 
@@ -201,11 +206,19 @@ class LoanApplicationOverview extends React.Component {
 
           const activeApplications = res.data.applications;
           if (activeApplications.length > 0 && activeApplications[0].id) {
-            this.fetchApplicationDetails(activeApplications[0].id).then(() => {
-              this.onLoadHandlers.forEach((callback) => {
-                callback(activeApplications[0]);
-              });
-            });
+            this.fetchApplicationDetails(activeApplications[0].id).then(
+              ({ data: { application: { status = '' } = {} } = {} }) => {
+                this.onLoadHandlers.forEach((callback) => {
+                  callback(activeApplications[0]);
+                });
+                if (
+                  isLoanProduct(this.getProductCode()) &&
+                  status === APPLICATION_STATES.CREDIT_DISBURSED
+                ) {
+                  return this.redirectLoansOverview();
+                }
+              },
+            );
           } else {
             this.props.registerNewLoanApplication();
           }
@@ -475,5 +488,3 @@ class LoanApplicationOverview extends React.Component {
     );
   }
 }
-
-export default LoanApplicationOverview;

@@ -159,6 +159,7 @@ class ApplicationStatusOverview extends Component {
     const descriptiveStep = classList.includes('completed')
       ? STATE_GROUP_COMPLETION_DESCRIPTION[step]
       : this.getStepTobeShown(classList, step);
+    const { meta } = this.props.loanApplicationDetails;
 
     return (
       <MultiLevelStepper.ParentStep

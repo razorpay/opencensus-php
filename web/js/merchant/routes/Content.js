@@ -109,6 +109,9 @@ const CorporateCards = lazy(() =>
     /* webpackChunkName: "CorporateCards" */ 'merchant/views/Capital/CorporateCards/CorporateCards'
   ),
 );
+const LoansCollections = lazy(() =>
+  import(/* webpackChunkName: "Loans" */ 'merchant/views/Capital/Loans/LoansCollections'),
+);
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
@@ -545,12 +548,13 @@ export default class Content extends Component {
           <ShowWhenRoute path="/optimizer" component={Navigator} />
           <ShowWhenRoute path="/paypal_onboard_redirect" component={PaypalOnboardRedirect} />
           <ShowWhenRoute strict path="/capital/:product/apply" component={LoanDetails} />
-          <Redirect from="/capital/loans" to="/capital/loans/apply" />
+          <Redirect exact from="/capital/loans" to="/capital/loans/apply" />
           <ShowWhenRoute
             path="/capital/cash-advance/repayments-schedule"
             component={RepaymentsSchedule}
           />
           <ShowWhenRoute path="/capital/cash-advance/:section" component={CashAdvance} />
+          <ShowWhenRoute path="/capital/loans/:section" component={LoansCollections} />
           <ShowWhenRoute path="/capital/cash-advance" component={FlashCreditLandingPage} />
           <ShowWhenRoute path="/capital/corporate-cards" component={CorporateCards} />
           <Route exact path="/" component={HandleIndex} />
