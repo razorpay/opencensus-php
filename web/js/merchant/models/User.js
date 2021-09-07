@@ -440,6 +440,10 @@ export default class User {
     return this.findTag('Charge_at_will');
   }
 
+  get isCallbackCategoryExpEnabled() {
+    return this.isFeatureEnabled('schedule_callback_category');
+  }
+
   get isEsignEnabled() {
     return this.findTag('Esign');
   }

@@ -1649,6 +1649,7 @@ class Service extends Base\Service
             'rx_tax_payments_payout',
             'rx_payout_links_new_information_flow',
             'capital_loans_announcement_aug2020',
+            'schedule_callback_category',
             'instrument_request_merchant_dashboard',
             'settlement_ux_revamp_p2',
             'rx_view_only_update',

@@ -66,7 +66,9 @@ export const ReplyToConversation = (ticket_id, body) => {
     mode: 'live',
     method: 'post',
     data: body,
-    headers: { 'Content-Type': 'multipart/form-data' },
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
   };
 
   return merchantFetch(params);
@@ -86,10 +88,12 @@ export const CheckCallEligibility = () => {
   );
 };
 
-export const actionCheckScheduleCallConfig = (mode) => {
+export const actionCheckScheduleCallConfig = (v2ExpEnabled) => {
   return merchantFetch({
-    url: `care_service/merchant/twirp/${CALLBACK_SERVICE}/CheckEligibility`,
-    mode: mode || 'live',
+    url: `care_service/merchant/twirp/${CALLBACK_SERVICE}/CheckEligibility${
+      v2ExpEnabled ? 'V2' : ''
+    }`,
+    mode: 'live',
     method: 'POST',
   }).then((res) => {
     return res && res.data ? res.data : DEFAULT_CALL_BACK_SCHEDULE_RESPONSE;
@@ -216,10 +220,10 @@ export const checkCallEligibility = () => {
   };
 };
 
-export const checkScheduleCallConfig = () => {
+export const checkScheduleCallConfig = (v2ExpEnabled) => {
   return {
     type: FETCH_SCHEDULE_CALL_CONFIG,
-    payload: actionCheckScheduleCallConfig(),
+    payload: actionCheckScheduleCallConfig(v2ExpEnabled),
   };
 };
 
@@ -410,7 +414,11 @@ export const updateEmailSettings = (data) => {
 let initialState = {
   loading: true,
   error: null,
-  refund_pricing: { rules: [], custom_pricing: true, not_loaded: true },
+  refund_pricing: {
+    rules: [],
+    custom_pricing: true,
+    not_loaded: true,
+  },
   call_slots: [],
   config: {},
   locale: null,
@@ -438,6 +446,7 @@ let initialState = {
   },
   isCallEnabled: false,
   scheduleCallConfig: DEFAULT_CALL_BACK_SCHEDULE_RESPONSE,
+  scheduleCallConfigCategory: null,
 };
 
 const defaultLocale = {
@@ -484,7 +493,15 @@ export default function (state = initialState, action) {
       return set(state, 'isCallEnabled', !!action.payload);
 
     case `${FETCH_SCHEDULE_CALL_CONFIG}::SUCCESS`:
-      return set(state, 'scheduleCallConfig', action.payload);
+      let payload = action.payload;
+      if (payload.reason) {
+        return set(state, 'scheduleCallConfig', payload);
+      } else {
+        const key = Object.keys(payload)[0];
+        window.scheduleCallConfigCategory = key;
+        set(state, 'scheduleCallConfigCategory', key);
+        return set(state, 'scheduleCallConfig', payload[key]);
+      }
 
     case `${FEATURES_FETCH}::ERROR`:
       return merge(state, {
@@ -555,7 +572,9 @@ export default function (state = initialState, action) {
     case `${LOCALE_UPDATE}`:
       return set(state, 'locale', {
         ...state.locale,
-        config: { language_code: action.payload },
+        config: {
+          language_code: action.payload,
+        },
       });
 
     case `${LOCALE_SAVE}::SUCCESS`:

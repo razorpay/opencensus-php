@@ -51,19 +51,21 @@ export default class Support extends Component {
   componentDidMount() {
     this.props.checkCallEligibility();
     if (this.props.user.isScheduleCallbackEnabled) {
-      this.props.checkScheduleCallConfig().then((response) => {
-        if (response.is_eligible) {
-          analyticsTrack({
-            objectName: 'request a call',
-            actionName: 'viewed',
-            screen: 'home page',
-            properties: {
-              message: response.reason,
-              ...getCommonAnalyticsProperties(window.rzp_user),
-            },
-          });
-        }
-      });
+      this.props
+        .checkScheduleCallConfig(this.props.user.isCallbackCategoryExpEnabled)
+        .then((response) => {
+          if (response.is_eligible) {
+            analyticsTrack({
+              objectName: 'request a call',
+              actionName: 'viewed',
+              screen: 'home page',
+              properties: {
+                message: response.reason,
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
+          }
+        });
     }
     this.bindEvents();
     merchantFetch({
@@ -155,7 +157,7 @@ export default class Support extends Component {
           isOpened={isOpened}
           notifyCount={notifyCount}
           isOnBoardingRevampScreen={isOnBoardingRevampScreen}
-          showComdelPopover = {user.isComdelApiEnabled}
+          showComdelPopover={user.isComdelApiEnabled}
         />
         <SupportBody
           onToggle={this.handleToggle}
