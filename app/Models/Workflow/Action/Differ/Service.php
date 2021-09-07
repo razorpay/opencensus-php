@@ -9,7 +9,7 @@ class Service extends Base\Service
 {
     public function get(string $actionId)
     {
-        Action\Entity::verifyIdAndStripSign($actionId);
+        Action\Entity::verifyIdAndSilentlyStripSign($actionId);
 
         $diff = $this->core()->get($actionId);
 

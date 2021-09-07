@@ -295,6 +295,12 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_RISK_ATTRIBUTES_REQUIRED                         = 'Require atleast one merchant risk attribute.';
     const BAD_REQUEST_MERCHANT_NO_DIFF_IN_RISK_ATTRIBUTES                       = 'No difference in the merchant risk attributes provided.';
 
+    const BAD_REQUEST_ACTION_RISK_ATTRIBUTES_REQUIRED                           = 'Risk Attributes are required';
+    const BAD_REQUEST_INVALID_ACTION_RISK_REASON                                = 'Invalid risk reason provided';
+    const BAD_REQUEST_INVALID_ACTION_RISK_SOURCE                                = 'Invalid risk source provided';
+    const BAD_REQUEST_INVALID_ACTION_RISK_TAG                                   = 'Invalid risk tag provided';
+    const BAD_REQUEST_UNSUPPORTED_COMMUNICATION_TYPE                            = 'Communication type not yet supported';
+
     const BAD_REQUEST_PRODUCT_OFFER_AMOUNT_NOT_SUPPORTED                        = 'Offer Amount is not supported for this product';
     const BAD_REQUEST_AUTO_RECURRING_NOT_SUPPORTED_ON_IIN                       = 'Recurring payments are not supported on this iin';
     const BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT                               = 'This payment could not be authorized by the processing bank.';

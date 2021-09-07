@@ -480,6 +480,25 @@ class Core extends Base\Core
         return $esResponse;
     }
 
+    public function updateDiffForActionId(string $actionId, array $diff)
+    {
+        $documents = $this->getDocumentsFromEs($actionId);
+
+        if (empty($documents) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
+        }
+
+        $document = current($documents);
+
+        $documentId = $document['_id'];
+
+        $esResponse = $this->esDao->updateDiffForActionId(
+            strtolower($this->baseIndex), self::ES_TYPE, $documentId, $diff);
+
+        return $esResponse;
+    }
+
     public function createAllRelationsDiff(
         &$diff,
         $originalDataArray,

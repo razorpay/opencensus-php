@@ -507,6 +507,78 @@ class WorkflowActionTest extends TestCase
         $this->startTest();
     }
 
+    protected function createWorkflowActionForRiskAttributes($permission)
+    {
+        $content = [];
+        // This will create a wf action in Mysql and ES, not using default workflow.
+        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED,$content);
+
+        $this->esClient->indices()->refresh();
+
+        $this->addPermissionToBaAdmin($permission);
+
+        return $workflow;
+    }
+
+    /**
+     * Test edit admin workflow action risk attributes.
+     *
+     */
+    public function testWorkflowActionRiskAttributes()
+    {
+        $workflow = $this->createWorkflowActionForRiskAttributes(AdminPermission\Name::VIEW_WORKFLOW_REQUESTS);
+
+        $this->esClient->indices()->refresh();
+
+        $riskAttributes = [
+            'trigger_communication' => ['sms'],
+            'risk_tag'	            => 'risk_review_suspend',
+            'risk_sources'          => ['high_fts'],
+            'risk_reasons'          => ['high_fts']
+        ];
+
+        (new Action\Core())-> updateActionRiskAttributes($workflow['id'], $riskAttributes);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $workflow['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->esClient->indices()->refresh();
+
+        $this->startTest();
+    }
+
+
+    /**
+     * Test update workflow action risk attributes
+     *
+     */
+    public function testWorkflowActionUpdateRiskAttributes()
+    {
+        $workflow = $this->createWorkflowActionForRiskAttributes(AdminPermission\Name::EDIT_ACTION);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $workflow['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    /**
+     * Test update workflow action risk attributes with incorrect values of risk attributes
+     *
+     */
+    public function testWorkflowActionUpdateRiskAttributesIncorrectAttributes()
+    {
+        $workflow = $this->createWorkflowActionForRiskAttributes(AdminPermission\Name::EDIT_ACTION);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $workflow['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     private function getWorkflowsForRiskAudit()
     {
         $workflows = [];

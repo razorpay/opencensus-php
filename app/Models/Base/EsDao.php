@@ -328,4 +328,23 @@ class EsDao
 
         return $this->es->updateHeimdall($params);
     }
+
+    public function updateDiffForActionId($indexName, $typeName, $documentId, array $diff)
+    {
+        $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'id'    => $documentId,
+            'body'  => [
+                'script'    => [
+                    'inline'    =>  'ctx._source.diff= params.diff',
+                    'params'    => [
+                        'diff'  =>  $diff
+                     ]
+                ]
+            ]
+        ];
+
+        return $this->es->updateHeimdall($params);
+    }
 }

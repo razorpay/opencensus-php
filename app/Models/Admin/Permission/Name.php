@@ -64,6 +64,10 @@ class Name
     const EDIT_MERCHANT_SUSPEND_BULK          = 'edit_merchant_suspend_bulk';
     const EDIT_MERCHANT_UNSUSPEND             = 'edit_merchant_unsuspend';
     const EDIT_MERCHANT_TOGGLE_LIVE_BULK      = 'edit_merchant_toggle_live_bulk';
+    const EDIT_MERCHANT_HOLD_FUNDS_BULK       = 'edit_merchant_hold_funds_bulk';
+    const EXECUTE_MERCHANT_SUSPEND_BULK       = 'execute_merchant_suspend_bulk';
+    const EXECUTE_MERCHANT_TOGGLE_LIVE_BULK   = 'execute_merchant_toggle_live_bulk';
+    const EXECUTE_MERCHANT_HOLD_FUNDS_BULK    = 'execute_merchant_hold_funds_bulk';
     const EDIT_MERCHANT_METHODS               = 'edit_merchant_methods';
     const EDIT_MERCHANT_TERMINAL              = 'edit_merchant_terminal';
     const EDIT_MERCHANT_PRICING               = 'edit_merchant_pricing';
@@ -727,6 +731,8 @@ class Name
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,
         Merchant\Action::SUSPEND                            => self::EDIT_MERCHANT_SUSPEND,
         Merchant\Action::UNSUSPEND                          => self::EDIT_MERCHANT_UNSUSPEND,
+        Merchant\Action::LIVE_DISABLE                       => self::EDIT_MERCHANT_DISABLE_LIVE,
+        Merchant\Action::LIVE_ENABLE                        => self::EDIT_MERCHANT_ENABLE_LIVE,
         Merchant\Action::LOCK                               => self::EDIT_MERCHANT_LOCK_ACTIVATION,
         Merchant\Action::UNLOCK                             => self::EDIT_MERCHANT_UNLOCK_ACTIVATION,
         Merchant\Action::EDIT_COMMENT                       => self::EDIT_MERCHANT_COMMENTS,

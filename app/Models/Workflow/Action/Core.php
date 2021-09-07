@@ -19,6 +19,7 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Helper;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\BulkWorkflowAction;
 
 use RZP\Models\Workflow;
 use RZP\Models\Workflow\Base;
@@ -985,5 +986,65 @@ class Core extends Base\Core
                 }
             }
         }
+    }
+
+    /**
+     * Get action risk attributes from tags of workflow action
+     * @param $action
+     */
+    public function getActionRiskAttributes($actionId)
+    {
+        $diff = (new Differ\Service)->get($actionId);
+        $this->trace->info(TraceCode::ACTION_FETCH_RISK_ATTRIBUTES,
+            [
+                'action' => $actionId,
+                'diff'   => $diff
+            ]);
+
+        if (empty($diff['new']) === false
+            && empty($diff['new'][BulkWorkflowAction\Constants::RISK_ATTRIBUTES]) === false)
+        {
+            return $diff['new'][BulkWorkflowAction\Constants::RISK_ATTRIBUTES];
+        }
+
+        return [];
+    }
+
+    /**
+     * Get action risk attributes from tags of workflow action
+     * @param $actionId
+     * @param $input
+     */
+    public function updateActionRiskAttributes($actionId, $input)
+    {
+        $this->trace->info(TraceCode::ACTION_EDIT_RISK_ATTRIBUTES,
+            [
+                'action' => $actionId,
+                'input'   => $input
+            ]);
+
+        (new BulkWorkflowAction\Validator())->validateActionRiskAttributes($input);
+
+        $riskAttributesOld = $this->getActionRiskAttributes($actionId);
+
+        $this->trace->info(TraceCode::ACTION_EDIT_RISK_ATTRIBUTES,['diff'=>$riskAttributesOld]);
+
+        $differCore = new Differ\Core();
+
+        $diff = $differCore->createDiff($riskAttributesOld, $input);
+
+        //returning if diff attributes are same
+        if (empty($diff) === true)
+        {
+            return $riskAttributesOld;
+        }
+
+        $diff['new']['risk_attributes'] = $input;
+
+        $actionId = Entity::verifyIdAndSilentlyStripSign($actionId);
+
+        $differCore->updateDiffForActionId($actionId, $diff);
+
+        return $input;
     }
 }

@@ -330,5 +330,67 @@ return [
             'content' => [
             ]
         ]
-    ]
+    ],
+
+    'testWorkflowActionRiskAttributes' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/w-actions/%s/risk_attributes',
+        ],
+        'response' => [
+            'content' => [
+                'trigger_communication' => ['sms'],
+                'risk_tag'	            => 'risk_review_suspend',
+                'risk_sources'          => ['high_fts'],
+                'risk_reasons'          => ['high_fts']
+            ],
+        ],
+    ],
+
+    'testWorkflowActionUpdateRiskAttributes' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/w-actions/%s/risk_attributes',
+            'content' => [
+                'trigger_communication' =>['sms'],
+                'risk_tag'	            => 'risk_review_suspend',
+                'risk_sources'          => ['high_fts'],
+                'risk_reasons'          => ['high_fts']
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'trigger_communication' =>['sms'],
+                'risk_tag'	            => 'risk_review_suspend',
+                'risk_sources'          => ['high_fts'],
+                'risk_reasons'          => ['high_fts']
+            ],
+        ],
+    ],
+
+    'testWorkflowActionUpdateRiskAttributesIncorrectAttributes' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/w-actions/%s/risk_attributes',
+            'content' => [
+                'trigger_communication' =>['sms'],
+                'risk_tag'	            => 'risk_review_suspend',
+                'risk_sources'          => ['asdf'],
+                'risk_reasons'          => ['high_fts']
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'BAD_REQUEST_INVALID_ACTION_RISK_SOURCE',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
