@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\PaymentsUpi;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 
 
 trait AppTrait
@@ -37,16 +38,25 @@ trait AppTrait
 
         if (count($terminals) < 1)
         {
-            throw new Exception\RuntimeException(
-                'No Terminal Found',
-                [
-                    Terminal\Entity::MERCHANT_ID => $this->merchant->getId(),
-                    Terminal\Entity::GATEWAY     => $gateway,
-                    Terminal\Entity::ACTION      => $action
-                ],
-                null,
-                ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND
-            );
+            //Check if Shared terminal is available.
+
+            $params[Terminal\Entity::MERCHANT_ID] = Merchant\Account::SHARED_ACCOUNT;
+
+            $terminals = $this->repo->terminal->getByParams($params);
+
+            if (count($terminals) < 1)
+            {
+                throw new Exception\RuntimeException(
+                    'No Terminal Found',
+                    [
+                        Terminal\Entity::MERCHANT_ID => $this->merchant->getId(),
+                        Terminal\Entity::GATEWAY     => $gateway,
+                        Terminal\Entity::ACTION      => $action
+                    ],
+                    null,
+                    ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND
+                );
+            }
         }
 
         $this->app['diag']->trackPaymentEventV2(
