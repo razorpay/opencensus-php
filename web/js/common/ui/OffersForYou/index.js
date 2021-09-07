@@ -45,12 +45,6 @@ const OffersForYou = ({ closeModals, openModals, tracking, canShowOnboardingOffe
         size: 'xlarge',
         className: 'RXPayrollMoonshine--Modal',
       });
-
-      tracking.trackEvent(
-        window.rzpQ.merchantActions().initiated('merchant_dashboard.click_offer_for_you', {
-          ID: nitroCampaignId().version,
-        }),
-      );
     } else if (canShowOnboardingOffers) {
       openModals({
         component: <OnboardingCoupons closeModal={closeModals} />,
@@ -72,16 +66,18 @@ const OffersForYou = ({ closeModals, openModals, tracking, canShowOnboardingOffe
           <RazorpayXNitroAnnouncement hideModal={closeModals} fromWhere="offers-for-you" />
         ),
         size: 'xlarge',
-        className: 'RazorpayXNitroAnnouncement--Modal',
+        className:
+          user.isProjectKeystoneCorporateCardsEnabled || user.isProjectKeystoneCashAdvanceEnabled
+            ? 'Keystone--Modal'
+            : 'RazorpayXNitroAnnouncement--Modal',
       });
-
-      tracking.trackEvent(
-        window.rzpQ.merchantActions().initiated('merchant_dashboard.click_offer_for_you', {
-          ID: nitroCampaignId().version,
-        }),
-      );
     }
 
+    tracking.trackEvent(
+      window.rzpQ.merchantActions().initiated('merchant_dashboard.click_offer_for_you', {
+        ID: nitroCampaignId().version,
+      }),
+    );
     setIsStopped(true);
   };
 

@@ -169,7 +169,9 @@ class NavFragment extends Component {
             canShowOnboardingOffers ||
             user.isProjectNitroEnabled ||
             user.isProjectNitroCorporateCard ||
-            user.isProjectMoonshineEnabled
+            user.isProjectMoonshineEnabled ||
+            user.isProjectKeystoneCorporateCardsEnabled ||
+            user.isProjectKeystoneCashAdvanceEnabled
           }
         >
           <OffersForYou canShowOnboardingOffers={canShowOnboardingOffers} />

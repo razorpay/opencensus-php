@@ -120,6 +120,21 @@ export default {
     'HmF8BO9pvG303W',
   ],
 
+  keystone_corporate_cards_experiment: [
+    // prod
+    'Hs6nlYI2qQCsrD',
+
+    // beta
+    'HpkTnWlc8nrYLo',
+  ],
+  keystone_cash_advance_experiment: [
+    // prod
+    'Hs6oZSmsa2rgey',
+
+    // beta
+    'HpkUfEDckfi6IS',
+  ],
+
   independent_partner_kyc: [
     // beta experiment ids
     'HhTUjZcw4WsE2V',

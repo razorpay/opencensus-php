@@ -17,6 +17,7 @@ import { email as validateEmail, phone as validatePhone } from 'common/utils/val
 import { RadioGroup } from 'common/ui/Forms/RadioGroup';
 import InputField from 'common/ui/Forms/InputField';
 import Textarea from 'common/ui/Forms/AutoResizeTextarea';
+import KeystoneModal from 'common/ui/OffersForYou/components/KeystoneModal';
 
 const BENEFITS = {
   other: [
@@ -566,6 +567,19 @@ class DetailView extends React.Component {
   state = {
     showNitroFormFields: false,
   };
+  showKeystoneModal =
+    this.props.user.isProjectKeystoneCorporateCardsEnabled ||
+    this.props.user.isProjectKeystoneCashAdvanceEnabled;
+
+  getCampaignID = () => {
+    const user = this.props.user;
+
+    if (user.isProjectKeystoneCorporateCardsEnabled) return 'Nitro_Keystone_Card';
+    if (user.isProjectKeystoneCashAdvanceEnabled) return 'Nitro_Keystone_CashAdvance';
+    if (user.isProjectNitroCorporateCard) return 'Nitro_Capital';
+
+    return nitroCampaignId(user).version;
+  };
 
   trackCTAClick = (status) => {
     this.props.tracking.trackEvent(
@@ -600,7 +614,7 @@ class DetailView extends React.Component {
       formID = '';
     const { user } = this.props;
 
-    if (user.isNitroFormFillEnabled) {
+    if (user.isNitroFormFillEnabled && !this.showKeystoneModal) {
       formValues = [
         ...fields.map((field) => ({
           name: field,
@@ -637,9 +651,7 @@ class DetailView extends React.Component {
           ...formValues,
           {
             name: 'campaignid',
-            value: user.isProjectNitroCorporateCard
-              ? 'Nitro_Capital'
-              : nitroCampaignId(user).version,
+            value: this.getCampaignID(),
           },
         ],
         context: {
@@ -661,7 +673,7 @@ class DetailView extends React.Component {
     const SF_MONTHLY_PAYMENTS_RECEIVED = 'how_many_payments_do_you_receive_every_month';
     const { user } = this.props;
 
-    if (user.isNitroFormFillEnabled)
+    if (user.isNitroFormFillEnabled && !this.showKeystoneModal)
       formValues = {
         contact_name: formData[NAME],
         business_name: formData[NAME],
@@ -689,9 +701,7 @@ class DetailView extends React.Component {
         interested_in_current_account: 1,
         product_name: user.isProjectNitroCorporateCard ? 'CARDS' : 'Current_Account',
         source: 'Project Nitro',
-        Campaign_ID: user.isProjectNitroCorporateCard
-          ? 'Nitro_Capital'
-          : nitroCampaignId(user).version,
+        Campaign_ID: this.getCampaignID(),
         form_version: user.isNitroFormFillEnabled ? 'with_fields' : 'without_fields',
         ...formValues,
       },
@@ -740,6 +750,10 @@ class DetailView extends React.Component {
     const { isProjectNitroCorporateCard, isNitroFormFillEnabled } = this.props.user;
     const content = isProjectNitroCorporateCard ? BENEFITS.corporateCards : BENEFITS.other;
 
+    if (this.showKeystoneModal)
+      return (
+        <KeystoneModal user={this.props.user} save={this.save} tracking={this.props.tracking} />
+      );
     if (showNitroFormFields) return <InfoForm save={this.save} tracking={this.props.tracking} />;
 
     return (

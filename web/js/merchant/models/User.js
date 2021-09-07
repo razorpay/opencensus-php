@@ -406,6 +406,18 @@ export default class User {
     );
   }
 
+  get isProjectKeystoneCorporateCardsEnabled() {
+    return (
+      getSplitzExperimentVariant('keystone_corporate_cards_experiment')?.variables?.result === 'on'
+    );
+  }
+
+  get isProjectKeystoneCashAdvanceEnabled() {
+    return (
+      getSplitzExperimentVariant('keystone_cash_advance_experiment')?.variables?.result === 'on'
+    );
+  }
+
   get isProjectNitroCorporateCard() {
     return getSplitzExperimentVariant('nitro_corporate_cards')?.variables?.result === 'on';
   }
