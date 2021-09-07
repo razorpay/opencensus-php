@@ -37,5 +37,9 @@ class SyncEventTriggerMiddleware
         {
             event(new TriggerSyncEvent());
         }
+        else
+        {
+            $this->app[SyncEventManager::SINGLETON_NAME]->resetAccountParams();
+        }
     }
 }

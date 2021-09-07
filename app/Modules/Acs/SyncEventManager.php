@@ -150,6 +150,11 @@ class SyncEventManager
 //            $this->publishOutboxJob($accountId, Mode::TEST, $metadata);
 //        }
 
+        $this->resetAccountParams();
+    }
+
+    public function resetAccountParams()
+    {
         $this->liveAccountIds = [];
         $this->testAccountIds = [];
     }

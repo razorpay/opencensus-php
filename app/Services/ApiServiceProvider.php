@@ -624,6 +624,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'cache.store',
             'cache.psr6',
             'ledger',
+            Acs\SyncEventManager::SINGLETON_NAME,
+            'outbox',
             'splitzService',
             'bbpsService'
         ];
