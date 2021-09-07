@@ -152,7 +152,7 @@ class PublicErrorDescription
     const BAD_REQUEST_APP_TOKEN_ABSENT                                          = 'Customer not logged in';
     const BAD_REQUEST_APP_TOKEN_NOT_GLOBAL                                      = 'Global customer not logged in';
     const BAD_REQUEST_PAYMENT_WALLET_CUSTOMER_TOKEN_NOT_FOUND                   = 'Payment failed';
-    const BAD_REQUEST_PAYMENT_CONTACT_INCORRECT_FORMAT                          = 'Your payment was not successful as phone number is invalid. To pay successfully try using valid phone number.';
+    const BAD_REQUEST_PAYMENT_CONTACT_INCORRECT_FORMAT                          = 'Contact number contains invalid characters, only digits and + symbol are allowed';
     const BAD_REQUEST_PAYMENT_CONTACT_INVALID_COUNTRY_CODE                      = 'Contact number contains invalid country code';
     const BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT                                 = 'Contact number should be at least 8 digits, including country code';
     const BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG                                  = 'Contact number should not be greater than 15 digits, including country code';
