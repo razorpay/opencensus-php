@@ -911,6 +911,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREATING_FEES_BREAKUP                                 = 'CREATING_FEES_BREAKUP';
     const FEES_BREAKUP_CREATION_FAILED                          = 'FEES_BREAKUP_CREATION_FAILED';
     const FEES_BREAKUP_CREATED                                  = 'FEES_BREAKUP_CREATED';
+    const FEES_BREAKUP_DETAILS                                  = 'FEES_BREAKUP_DETAILS';
     const GATEWAY_UPI_REQUEST_CALLBACK                          = 'GATEWAY_UPI_REQUEST_CALLBACK';
     const REFUND_TRANSACTION_CREATE_RECON                       = 'REFUND_TRANSACTION_CREATE_RECON';
     const REFUND_TRANSACTION_CREATE_FAILED                      = 'REFUND_TRANSACTION_CREATE_FAILED';

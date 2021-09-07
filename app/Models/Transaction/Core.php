@@ -1717,6 +1717,14 @@ class Core extends Base\Core
                     $feeSplit->transaction()->associate($txn);
 
                     $this->repo->saveOrFail($feeSplit);
+
+                    $this->trace->info(
+                        TraceCode::FEES_BREAKUP_DETAILS,
+                        [
+                            'id'             => $feeSplit->getId(),
+                            'source_id'      => $txn->source->getPublicId(),
+                            'transaction_id' => $txn->getId(),
+                        ]);
                 }
 
                 $this->trace->info(
