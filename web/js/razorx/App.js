@@ -1,7 +1,6 @@
 import React from 'react';
-import { Route, Switch, Redirect, Link, withRouter, NavLink } from 'react-router-dom';
+import { Route, Switch, Redirect, withRouter, NavLink } from 'react-router-dom';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
-import { ShowWhenRoute } from 'razorx/components/ShowWhen';
 import AsyncButton from 'razorx/components/ui/AsyncButton';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
@@ -23,9 +22,8 @@ import SplitzExperiments from 'razorx/views/Splitz/Experiments';
 import SplitzExperimentTester from 'razorx/views/Splitz/ExperimentTester';
 import SplitzSegments from 'razorx/views/Splitz/Segments';
 
-export default
 @withRouter
-class RazorXApp extends React.Component {
+export default class RazorXApp extends React.Component {
   componentWillMount() {
     loadCodeEditor();
   }
@@ -33,7 +31,7 @@ class RazorXApp extends React.Component {
   handleLogout = () => {
     return adminFetch({
       url: '/admin/user/logout',
-    }).then((r) => {
+    }).then(() => {
       window.location.reload();
     });
   };
@@ -81,6 +79,7 @@ class RazorXApp extends React.Component {
             </TransitionGroup>
           </ErrorBoundary>
         </main>
+        {/* eslint-disable-next-line no-undef */}
         <Sidebar user={user} handleLogout={this.handleLogout} isSplitz={isSplitz} />
         <ModalContainer />
       </div>
@@ -161,6 +160,7 @@ export const Sidebar = ({ user, handleLogout, isSplitz }) => (
           href="https://dashboard.razorpay.com/admin/profile"
           className="btn-default"
           target="_blank"
+          rel="noreferrer"
         >
           Profile
         </a>

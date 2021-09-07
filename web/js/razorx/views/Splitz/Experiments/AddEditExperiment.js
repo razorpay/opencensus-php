@@ -1,23 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import { PowerSelect, TypeAhead } from 'react-power-select';
+import { PowerSelect } from 'react-power-select';
 import * as experimentHelpers from './experimentHelpers';
 import { ModalContent } from 'common/new-ui/Modal';
-import EnumList from 'common/new-ui/Input/EnumList';
 import { closeModal, notifySuccess, notifyError } from 'razorx/components/Modal';
 import Form from 'razorx/components/ui/Form';
 import Field, {
   TextAreaField,
-  SwitchField,
   SelectField,
   SearchableSelectField,
 } from 'razorx/components/ui/Field';
 import { splitzFetch } from 'razorx/helpers/fetch';
 
-export default
 @withRouter
-class AddEditExperiment extends React.Component {
+export default class AddEditExperiment extends React.Component {
   state = this.initState();
 
   initState() {
@@ -805,7 +802,6 @@ class AddEditExperiment extends React.Component {
 }
 
 AddEditExperiment.defaultProps = {
-  environments: [],
   data: {},
   onEdit: () => {},
   isEdit: false,
@@ -814,7 +810,6 @@ AddEditExperiment.defaultProps = {
 AddEditExperiment.propTypes = {
   collection: PropTypes.object.isRequired,
   history: PropTypes.object,
-  environments: PropTypes.array,
   data: PropTypes.object,
   onEdit: PropTypes.func,
   isEdit: PropTypes.bool,

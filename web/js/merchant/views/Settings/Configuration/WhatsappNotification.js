@@ -2,12 +2,12 @@ import { useEffect, useState, useRef } from 'react';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { showNotification as _showNotification } from 'merchant_common/reducers/notifications';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import RTracking from 'react-tracking';
 import { WHATSAPP_NOTIF } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
-import { fetchFeatureStatus } from 'merchant/reducers/config';
+import { fetchFeatureStatus as _fetchFeatureStatus } from 'merchant/reducers/config';
 
 // eslint-disable-next-line no-shadow
 function WhatsappNotification({
@@ -173,8 +173,8 @@ const mapStateToProps = (state) => ({
 });
 export default withRouter(
   connect(mapStateToProps, {
-    showNotification,
-    fetchFeatureStatus,
+    _showNotification,
+    _fetchFeatureStatus,
   })(
     // eslint-disable-next-line babel/new-cap
     RTracking(() => {

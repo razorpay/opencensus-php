@@ -7,9 +7,8 @@ import { formatDate } from 'razorx/helpers/utils';
 import { splitzFetch } from 'razorx/helpers/fetch';
 import ExperimentsModal from 'razorx/views/Experiments/Modal';
 
-export default
 @withRouter
-class ProjectDetails extends React.Component {
+export default class ProjectDetails extends React.Component {
   state = {
     isFetchingProject: false,
     isFetchingEnvironments: false,

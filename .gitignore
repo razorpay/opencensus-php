@@ -6,6 +6,7 @@ selenium-server.jar
 *.swn
 *.swm
 .DS_Store
+web/.nyc_output
 Thumbs.db
 /bootstrap/compiled.php
 apigen

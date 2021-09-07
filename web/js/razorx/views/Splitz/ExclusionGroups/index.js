@@ -9,10 +9,9 @@ import AddEditGroup from './AddEditGroup';
 import GroupList from './GroupList';
 import GroupDetails from './GroupDetails';
 
-export default
 @withRouter
 @observer
-class ExclusionGroups extends React.Component {
+export default class ExclusionGroups extends React.Component {
   collection = new Collection({
     isSplitz: true,
     fetchFn: splitzFetch,
@@ -38,7 +37,7 @@ class ExclusionGroups extends React.Component {
         </div>
         <div className="container-group">
           <GroupList collection={this.collection} />
-          <GroupDetails groupId={groupId} collection={this.collection} />
+          <GroupDetails groupId={groupId} />
         </div>
       </div>
     );

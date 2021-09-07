@@ -9,10 +9,9 @@ import AddEditSegment from './AddEditSegment';
 import SegmentList from './SegmentList';
 import SegmentDetails from './SegmentDetails';
 
-export default
 @withRouter
 @observer
-class Segments extends React.Component {
+export default class Segments extends React.Component {
   collection = new Collection({
     isSplitz: true,
     fetchFn: splitzFetch,

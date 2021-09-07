@@ -7,9 +7,8 @@ import Form from 'razorx/components/ui/Form';
 import { TextAreaField } from 'razorx/components/ui/Field';
 import { splitzFetch } from 'razorx/helpers/fetch';
 
-export default
 @withRouter
-class WhitelistExperiment extends React.Component {
+export default class WhitelistExperiment extends React.Component {
   state = {
     isSaving: false,
     variants: this.props.variants,

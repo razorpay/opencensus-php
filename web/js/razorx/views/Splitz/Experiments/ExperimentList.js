@@ -4,19 +4,13 @@ import { withRouter, Link } from 'react-router-dom';
 import { formatDate } from 'razorx/helpers/utils';
 import { PageTable } from 'razorx/components/ui/Table';
 import Form from 'razorx/components/ui/Form';
-import Field, {
-  TextAreaField,
-  SwitchField,
-  SelectField,
-  SearchableSelectField,
-} from 'razorx/components/ui/Field';
+import { SearchableSelectField } from 'razorx/components/ui/Field';
 import { statusPill } from 'razorx/helpers/data';
 import { splitzFetch } from 'razorx/helpers/fetch';
 
 // @observer
-export default
 @withRouter
-class ExperimentList extends React.Component {
+export default class ExperimentList extends React.Component {
   state = {
     isFetchingProjects: true,
     isFetchingEnvironments: false,

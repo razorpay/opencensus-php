@@ -5,11 +5,9 @@ import { openModal } from 'razorx/components/Modal';
 import { formatDate } from 'razorx/helpers/utils';
 import { splitzFetch } from 'razorx/helpers/fetch';
 import ExperimentsModal from 'razorx/views/Experiments/Modal';
-import AddEditGroup from './AddEditGroup';
 
-export default
 @withRouter
-class GroupDetails extends React.Component {
+export default class GroupDetails extends React.Component {
   state = {
     isFetchingGroup: false,
     isFetchingProject: false,
@@ -192,5 +190,4 @@ class GroupDetails extends React.Component {
 
 GroupDetails.propTypes = {
   groupId: PropTypes.string.isRequired,
-  collection: PropTypes.object.isRequired,
 };

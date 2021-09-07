@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = {
   extends: [
     'kentcdodds',
@@ -47,6 +49,15 @@ module.exports = {
     __APP_NAME__: false,
   },
   overrides: [
+    {
+      files: ['*.js', '*.jsx'],
+      parser: '@babel/eslint-parser',
+      parserOptions: {
+        babelOptions: {
+          configFile: path.resolve(__dirname, './web/.babelrc.json'),
+        },
+      },
+    },
     {
       files: ['**/*.ts?(x)'],
       parser: '@typescript-eslint/parser',

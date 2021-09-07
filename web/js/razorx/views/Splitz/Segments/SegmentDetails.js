@@ -1,13 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import adminFetch from 'razorx/helpers/admin-fetch';
 import { formatDate } from 'razorx/helpers/utils';
 import { splitzFetch } from 'razorx/helpers/fetch';
 
-export default
 @withRouter
-class SegmentDetails extends React.Component {
+export default class SegmentDetails extends React.Component {
   state = {
     data: null,
     isFetchingSegment: true,
@@ -154,5 +153,4 @@ class SegmentDetails extends React.Component {
 
 SegmentDetails.propTypes = {
   segmentId: PropTypes.string.isRequired,
-  collection: PropTypes.object.isRequired,
 };

@@ -3,21 +3,13 @@ import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { ModalContent } from 'common/new-ui/Modal';
 import adminFetch from 'razorx/helpers/admin-fetch';
-import EnumList from 'common/new-ui/Input/EnumList';
 import { closeModal, notifySuccess, notifyError } from 'razorx/components/Modal';
 import Form from 'razorx/components/ui/Form';
-import Field, {
-  TextAreaField,
-  SwitchField,
-  SelectField,
-  SearchableSelectField,
-  FileField,
-} from 'razorx/components/ui/Field';
+import Field, { TextAreaField, FileField } from 'razorx/components/ui/Field';
 import { splitzFetch } from 'razorx/helpers/fetch';
 
-export default
 @withRouter
-class AddEditSegment extends React.Component {
+export default class AddEditSegment extends React.Component {
   state = {
     isSaving: false,
     fileId: null,
@@ -59,7 +51,7 @@ class AddEditSegment extends React.Component {
       });
   };
 
-  isInvalid(form) {
+  isInvalid() {
     if (!this.state.fileId) {
       return 'Input file should be uploaded';
     }
@@ -147,12 +139,9 @@ class AddEditSegment extends React.Component {
   }
 }
 
-AddEditSegment.defaultProps = {
-  data: {},
-};
+AddEditSegment.defaultProps = {};
 
 AddEditSegment.propTypes = {
   collection: PropTypes.object.isRequired,
   history: PropTypes.object.isRequired,
-  data: PropTypes.object,
 };

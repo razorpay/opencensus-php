@@ -1,24 +1,24 @@
-let webpack = require('webpack');
-let argv = require('yargs').argv;
-let projects = [argv['project']];
+const webpack = require('webpack');
+const argv = require('yargs').argv;
+const projects = [argv.project];
 // mini css extract plugin is breaking when builds are running for multiple projects in the same process
 // let projects = ['merchant', 'merchantLA', 'razorx'];
-var async = require('neo-async');
+const async = require('neo-async');
 const paths = require('@universe/configs/paths');
 const chalk = require('chalk');
 const isDevelopment = process.env.STAGE === 'development';
-const babelConfig = require(paths.consumer.babelConfig);
+const babelConfig = require('../.babelrc.json');
 const universeWebpackClientConfig = require(paths.universeConfigs.webpackClientConfig)({
-  babelConfig: babelConfig,
+  babelConfig,
 });
 const statsOptions = require('./stats');
 
-let build = (project) => {
+const build = (project) => {
   const webpackClientConfig = require(paths.consumer.webpackClientConfig)({
     config: universeWebpackClientConfig,
-    project: project,
+    project,
   });
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const finish = (err, stats) => {
       // Handle webpack configuration errors
       if (err) {
@@ -26,6 +26,7 @@ let build = (project) => {
         if (err.details) {
           console.error(chalk.red(err.details));
         }
+        // eslint-disable-next-line no-process-exit
         process.exit(1);
       }
 
@@ -35,6 +36,7 @@ let build = (project) => {
       if (stats.hasErrors()) {
         console.error(chalk.red(info.errors));
         if (!isDevelopment) {
+          // eslint-disable-next-line no-process-exit
           process.exit(1);
         }
       }
@@ -78,7 +80,7 @@ async.eachSeries(
       .then(() => done())
       .catch((err) => done(err));
   },
-  (err, res) => {
+  (err) => {
     if (err) {
       throw err;
     }

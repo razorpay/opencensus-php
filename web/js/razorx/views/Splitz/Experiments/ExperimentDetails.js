@@ -4,16 +4,15 @@ import { withRouter, Link } from 'react-router-dom';
 import AddEditExperiment from './AddEditExperiment';
 import WhitelistExperiment from './WhitelistExperiment';
 import * as experimentHelpers from './experimentHelpers';
-import { openModal, notifySuccess, notifyError } from 'razorx/components/Modal';
+import { openModal, notifyError } from 'razorx/components/Modal';
 import { formatDate } from 'razorx/helpers/utils';
 import { splitzFetch } from 'razorx/helpers/fetch';
 import AsyncButton from 'razorx/components/ui/AsyncButton';
 import ExperimentsModal from 'razorx/views/Experiments/Modal';
 import { statusPill } from 'razorx/helpers/data';
 
-export default
 @withRouter
-class ExperimentDetails extends React.Component {
+export default class ExperimentDetails extends React.Component {
   state = {
     isFetchingExperiment: false,
     isFetchingEnvironment: false,

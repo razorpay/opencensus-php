@@ -9,10 +9,9 @@ import AddEditProject from './AddEditProject';
 import ProjectList from './ProjectList';
 import ProjectDetails from './ProjectDetails';
 
-export default
 @withRouter
 @observer
-class Projects extends React.Component {
+export default class Projects extends React.Component {
   collection = new Collection({
     isSplitz: true,
     fetchFn: splitzFetch,

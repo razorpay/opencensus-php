@@ -11,6 +11,13 @@ eslint web/js/merchant/views/Settlements \
   web/js/common/components \
   web/js/common/services --ext .js,.jsx,.ts,.tsx
 
+if [[ $? != 0 ]] ; then
+    echo "eslint check failed"
+    exit 1
+fi
+
+echo "eslint check successful"
+
 stylelint web/js/merchant/views/TermsAndCondition/**/*.{js,jsx,ts,tsx} \
   web/js/merchant/views/referral/**/*.{js,jsx,ts,tsx} \
   web/js/merchant/views/onboarding/**/*.{js,jsx,ts,tsx} \
@@ -19,3 +26,10 @@ stylelint web/js/merchant/views/TermsAndCondition/**/*.{js,jsx,ts,tsx} \
   web/js/common/components/**/*.{js,jsx,ts,tsx} \
   web/js/common/services/**/*.{js,jsx,ts,tsx} \
   web/js/merchant/views/Settlements/**/*.{js,jsx}
+
+if [[ $? != 0 ]] ; then
+    echo "stylelint check failed"
+    exit 1
+fi
+
+echo "stylelint check successful"

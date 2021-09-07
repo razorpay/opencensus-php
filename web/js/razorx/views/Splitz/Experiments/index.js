@@ -9,10 +9,9 @@ import AddEditExperiment from './AddEditExperiment';
 import ExperimentList from './ExperimentList';
 import ExperimentDetails from './ExperimentDetails';
 
-export default
 @withRouter
 @observer
-class Experiments extends React.Component {
+export default class Experiments extends React.Component {
   state = {
     shouldShowDetails: !!this.props.match.params.id,
   };

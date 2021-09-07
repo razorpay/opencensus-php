@@ -8,9 +8,8 @@ import Form from 'razorx/components/ui/Form';
 import Field, { TextAreaField } from 'razorx/components/ui/Field';
 import { splitzFetch } from 'razorx/helpers/fetch';
 
-export default
 @withRouter
-class AddEditProject extends React.Component {
+export default class AddEditProject extends React.Component {
   state = {
     isSaving: false,
     environments: [],

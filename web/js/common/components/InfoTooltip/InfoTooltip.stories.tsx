@@ -15,7 +15,7 @@ const Container = styled(View)`
   padding: 20px;
 `;
 
-const Template: Story<{}> = () => {
+const Template: Story = () => {
   const overlayText =
     'Mandatory for companies. PAN Details should be of the mentioned business only.';
   return (

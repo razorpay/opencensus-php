@@ -23,11 +23,12 @@ jobs:
           files: |
             .(js|json|jsx|ts|tsx)$
 
-      - name: Run prettier check on changed files
-        if: ${{ steps.changed-files.outputs.all_modified_files != '' }}
+      - name: ESLint PR Check
         run: |
-          npm install --only=dev
-          npx prettier --check --ignore-unknown ${{ steps.changed-files.outputs.all_modified_files }}
+          npm ci
+          npx eslint \
+          --ext .js,.jsx,.ts,.tsx \
+          ${{ steps.changed-files.outputs.all_modified_files }}
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
