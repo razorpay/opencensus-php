@@ -60,13 +60,19 @@ export default class FileUpload extends React.Component {
   }
 
   updateFile = (file) => {
-    // check if file type is allowed
-    if (this.isFileAllowed(file)) {
-      this.props.onDrop && this.props.onDrop(file);
+    /* 
+      added a check to verifiy if any file is dropped or selected to the UI componenet
+      as because there might be a case when on reselection if we cancel this updateFile method is triggered 
+     */
+    if (file) {
+      // check if file type is allowed
+      if (this.isFileAllowed(file)) {
+        this.props.onDrop && this.props.onDrop(file);
 
-      this.setState({ files: [...this.state.files, file] }, () => {
-        this.props.onFileChange && this.onFileChange(file);
-      });
+        this.setState({ files: [...this.state.files, file] }, () => {
+          this.props.onFileChange && this.onFileChange(file);
+        });
+      }
     }
   };
 

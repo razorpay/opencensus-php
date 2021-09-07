@@ -31,8 +31,8 @@ export default ({
             </span>
           )}
         />
-
-        <DetailRow label="Role" value={ROLES[loggedInUserRole].label} />
+        {/* Added check to verify if loggedInUserRole is there or if its a valid role (part of role-list) */}
+        <DetailRow label="Role" value={ROLES[loggedInUserRole]?.label} />
       </div>
     </div>
   );

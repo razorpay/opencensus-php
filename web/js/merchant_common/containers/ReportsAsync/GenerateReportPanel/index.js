@@ -34,17 +34,24 @@ export default class GenerateReportPanel extends React.PureComponent {
   state = {};
 
   onConfigChange = (selectedConfig) => {
-    analyticsTrack({
-      objectName: 'select report type',
-      actionName: 'clicked',
-      screen: 'reports',
-      properties: {
-        location: 'generate reports',
-        reportType: selectedConfig.name,
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-    this.setState({ selectedConfig });
+    /* 
+      added null check for the selectedConfig as the componet allow search ahead 
+      and if no match is found for search and its entered by customer
+      it will be null so in that case we are not changin the sate as well as firing any analytics 
+    */
+    if (selectedConfig) {
+      analyticsTrack({
+        objectName: 'select report type',
+        actionName: 'clicked',
+        screen: 'reports',
+        properties: {
+          location: 'generate reports',
+          reportType: selectedConfig.name,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+      this.setState({ selectedConfig });
+    }
   };
 
   onAccountChange = (selectedAccount) => {

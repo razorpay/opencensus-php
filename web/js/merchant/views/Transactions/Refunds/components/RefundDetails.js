@@ -81,15 +81,17 @@ class PaymentDetailsContainer extends Component {
                   <EntityDetailRow
                     label="Refund Speed"
                     value={() => {
+                      const refundSpeed = this.props.refund.speed_processed;
                       return (
                         <span>
-                          {this.props.refund.speed_processed === 'instant' ||
-                          this.props.refund.speed_processed === null ? (
+                          {refundSpeed === 'instant' || refundSpeed === null ? (
                             <i style={{ fontSize: '18px' }} class="i i-instant-refund" />
                           ) : null}{' '}
-                          {this.props.refund.speed_processed !== null
-                            ? this.props.refund.speed_processed.charAt(0).toUpperCase() +
-                              this.props.refund.speed_processed.slice(1)
+                          {/* added check for if speed_processed = undefined */}
+                          {refundSpeed !== null
+                            ? refundSpeed
+                              ? refundSpeed.charAt(0).toUpperCase() + refundSpeed.slice(1)
+                              : ''
                             : 'Instant'}
                         </span>
                       );
