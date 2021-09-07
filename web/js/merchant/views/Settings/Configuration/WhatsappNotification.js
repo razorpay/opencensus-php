@@ -7,11 +7,22 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 import RTracking from 'react-tracking';
 import { WHATSAPP_NOTIF } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
+import { fetchFeatureStatus } from 'merchant/reducers/config';
 
 // eslint-disable-next-line no-shadow
-function WhatsappNotification({ currentUser, showNotification, location, history, tracking }) {
+function WhatsappNotification({
+  currentUser,
+  showNotification,
+  location,
+  history,
+  tracking,
+  fetchFeatureStatus,
+  org,
+}) {
   const [whatsapp_optin, setWhatsappOptin] = useState(null);
   const whatsappEnableSection = useRef(null);
+  const [isWhatsappOrg, setWhatsappOrg] = useState(false);
+  const [isWhatsappMid, setWhatsappMid] = useState(false);
 
   if (location.hash.startsWith('#whatsapp_enable') && whatsappEnableSection.current) {
     window.rzpAnalytics({
@@ -62,6 +73,26 @@ function WhatsappNotification({ currentUser, showNotification, location, history
       }
     };
     fetchWhatsappState();
+
+    // check paypal org feature
+    if (org.features.indexOf('axis_whatsapp') > -1) {
+      setWhatsappOrg(true);
+      // check paypal MID feature
+      fetchFeatureStatus(currentUser.id, 'axis_whatsapp_enable')
+        .then((fetchFeatureStatusResp) => {
+          if (fetchFeatureStatusResp?.data?.status) {
+            setWhatsappMid(true);
+          }
+        })
+        .catch((err) => {
+          if (err) {
+            showNotification({
+              type: 'error',
+              message: err.errors[0],
+            });
+          }
+        });
+    }
   }, []);
 
   const analytics = (action) => {
@@ -104,19 +135,20 @@ function WhatsappNotification({ currentUser, showNotification, location, history
         <span class="title">
           <TextHighlighter hashedWith={WHATSAPP_NOTIF}>WhatsApp Notifications</TextHighlighter>
         </span>
-
-        <span class="toggler-btn">
-          <SwitchField
-            checked={!!whatsapp_optin}
-            onChange={(_, cb) => toggleWhatsappNotification(!whatsapp_optin, cb)}
-            type="prime"
-          />
-          {whatsapp_optin ? (
-            <b class="text-primary">Enabled</b>
-          ) : (
-            <b class="text-faded">Disabled</b>
-          )}
-        </span>
+        {(!isWhatsappOrg || (isWhatsappOrg && isWhatsappMid)) && (
+          <span class="toggler-btn">
+            <SwitchField
+              checked={!!whatsapp_optin}
+              onChange={(_, cb) => toggleWhatsappNotification(!whatsapp_optin, cb)}
+              type="prime"
+            />
+            {whatsapp_optin ? (
+              <b class="text-primary">Enabled</b>
+            ) : (
+              <b class="text-faded">Disabled</b>
+            )}
+          </span>
+        )}
       </div>
 
       <div class="panel-body">
@@ -137,10 +169,12 @@ function WhatsappNotification({ currentUser, showNotification, location, history
 
 const mapStateToProps = (state) => ({
   currentUser: state.session.user,
+  org: state.session.org,
 });
 export default withRouter(
   connect(mapStateToProps, {
     showNotification,
+    fetchFeatureStatus,
   })(
     // eslint-disable-next-line babel/new-cap
     RTracking(() => {
