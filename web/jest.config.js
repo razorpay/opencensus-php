@@ -39,6 +39,25 @@ module.exports = {
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
   setupFilesAfterEnv: ['<rootDir>/common/services/test/setupTests.js'],
 
+  // Use this configuration option to add custom reporters to Jest
+  reporters: ['default', 'jest-sonar'],
+
+  // Indicates whether the coverage information should be collected while executing the test
+  collectCoverage: true,
+
+  // An object that configures minimum threshold enforcement for coverage results
+  coverageThreshold: {
+    './js/merchant/views/onboarding/': {
+      statements: 75,
+      branches: 60,
+      functions: 70,
+      lines: 76,
+    },
+  },
+
+  // An array of glob patterns indicating a set of files for which coverage information should be collected
+  // collectCoverageFrom: ['**/views/onboarding/**/*.{js,jsx,ts,tsx}'],
+
   // All imported modules in your tests should be mocked automatically
   // automock: false,
 
@@ -47,12 +66,6 @@ module.exports = {
 
   // The directory where Jest should store its cached dependency information
   // cacheDirectory: "/private/var/folders/j9/_gm_d82j2q71v20yv2mx_xrm0000gn/T/jest_dx",
-
-  // Indicates whether the coverage information should be collected while executing the test
-  // collectCoverage: false,
-
-  // An array of glob patterns indicating a set of files for which coverage information should be collected
-  // collectCoverageFrom: undefined,
 
   // An array of regexp pattern strings used to skip coverage collection
   // coveragePathIgnorePatterns: [
@@ -69,9 +82,6 @@ module.exports = {
   //   "lcov",
   //   "clover"
   // ],
-
-  // An object that configures minimum threshold enforcement for coverage results
-  // coverageThreshold: undefined,
 
   // A path to a custom dependency extractor
   // dependencyExtractor: undefined,
@@ -105,9 +115,6 @@ module.exports = {
 
   // Run tests from one or more projects
   // projects: undefined,
-
-  // Use this configuration option to add custom reporters to Jest
-  // reporters: undefined,
 
   // Automatically reset mock state between every test
   // resetMocks: false,
