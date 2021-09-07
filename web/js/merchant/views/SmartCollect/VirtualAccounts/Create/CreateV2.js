@@ -40,6 +40,8 @@ import {
   getStyle_AddOnAfter_VPA,
 } from 'merchant/views/SmartCollect/VirtualAccounts/helpers';
 
+import { fetchFeatureStatus } from 'merchant/reducers/config';
+
 @withRouter
 @connect(
   (state) => {
@@ -51,6 +53,7 @@ import {
       user: state.session.user,
       isTestMode: state.session.mode === 'test',
       va_config: state.virtualaccounts.va_config || {},
+      org: state.session.org,
     };
   },
   {
@@ -60,6 +63,7 @@ import {
     ...ModalActions,
     fetchConfigForVirtualAccount,
     fetchCustomersForAutocomplete,
+    fetchFeatureStatus,
   },
 )
 @RTracking(() => window.rzpQ.component('CreateVirtualAccount'))
@@ -86,6 +90,8 @@ export default class CreateVirtualAccount extends React.Component {
         bank_account: '',
       },
       allowedPayers: [],
+      isTPVOrg: false,
+      isTPVMid: false,
     };
   }
 
@@ -93,6 +99,35 @@ export default class CreateVirtualAccount extends React.Component {
     this.fetchDataForVA();
 
     this.track('open');
+
+    // check TPV org feature
+      if(this.props.org.features.indexOf("axis_tpv") > -1 ){
+        this.setState(
+          {
+            isTPVOrg: true,
+          }
+        );
+        // check TPV MID feature
+        this.props
+        .fetchFeatureStatus(this.props.user.id, 'axis_tpv_enable')
+        .then((detail) => {
+          if(detail["data"]["status"]){
+            this.setState(
+              {
+                isTPVMid: true,
+              }
+            );
+          }
+        })
+        .catch((err) => {
+          if (err) {
+            this.props.showNotification({
+              type: 'error',
+              message: err.errors[0],
+            });
+          }
+        });
+      }
   }
 
   componentWillUnmount() {
@@ -667,10 +702,14 @@ export default class CreateVirtualAccount extends React.Component {
                         showAdditionalOptions ? 'i-chevron-up' : 'i-chevron-down',
                       )}
                     />
-                  </div>
+                  </div> 
 
                   {showAdditionalOptions && (
                     <div class="AdditionalOptions">
+
+                       {((!this.state.isTPVOrg) ||
+              (this.state.isTPVOrg && this.state.isTPVMid)) ? (
+                      <>
                       <div class="third-party-validation">
                         <div>
                           <strong>Third Party Validation</strong>
@@ -740,6 +779,8 @@ export default class CreateVirtualAccount extends React.Component {
                         </div>
                       </div>
 
+                      </>
+                  ) : null }
                       <hr />
 
                       <Input.TextareaAutoResize
@@ -780,6 +821,7 @@ export default class CreateVirtualAccount extends React.Component {
                       />
                     </div>
                   )}
+               
                 </>
               )}
             </div>
