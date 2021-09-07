@@ -1578,6 +1578,16 @@ class Core extends Base\Core
 
         $transaction->setFeeModel($merchant->getFeeModel());
 
+        $this->trace->info(
+            TraceCode::TRANSFER_FEE_DEDUCTION,
+            [
+                'merchant_id'       => $merchant->getId(),
+                'amount_credits'    => $amountCredits,
+                'fee_credits'       => $feeCredits,
+                'fee'               => $fee,
+            ]
+        );
+
         switch (true)
         {
             case ($amountCredits > 0):
