@@ -3,6 +3,8 @@
 namespace RZP\Mail\Dispute;
 
 use Carbon\Carbon;
+use RZP\Models\Feature;
+use RZP\Models\Merchant;
 use RZP\Constants\MailTags;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
@@ -51,7 +53,7 @@ class BulkCreation extends Base
     {
         $this->createViewTableData();
 
-        $this->view('emails.dispute.bulk_creation');
+        $this->view($this->getViewName());
 
         return $this;
     }
@@ -126,6 +128,27 @@ class BulkCreation extends Base
                 return sprintf('Razorpay | Arbritration Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
             case Phase::FRAUD:
                 return sprintf('Razorpay | Fraud Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
+        }
+    }
+
+    protected function getViewName(): string
+    {
+        try
+        {
+            $merchantId = $this->data['merchant']['id'];
+
+            $merchant = (new Merchant\Repository)->findOrFailPublic($merchantId);
+
+            if ($merchant->isFeatureEnabled(Feature\Constants::DISPUTE_PRESENTMENT) === true)
+            {
+                return 'emails.dispute.bulk_creation_dispute_presentment_enabled';
+            }
+
+            return 'emails.dispute.bulk_creation';
+        }
+        catch (\Exception $exception)
+        {
+            return 'emails.dispute.bulk_creation';
         }
     }
 }

@@ -14,6 +14,7 @@ use RZP\Models\Dispute\Entity;
 use RZP\Services\RazorXClient;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Dispute\BulkCreation;
 use RZP\Models\Dispute\Reason\Network;
 use RZP\Services\FreshdeskTicketClient;
 use RZP\Tests\Traits\TestsWebhookEvents;
@@ -1958,7 +1959,21 @@ class DisputeTest extends TestCase
         $this->freshdeskFlow(false, false, ['updateTicketV2', 'postTicketReply'], ['updateTicketV2', 'postTicketReply'], false, false, false, false, false, Subcategory::REPORT_FRAUD_FD, $payment);
     }
 
+    public function testBulkDisputeCreateMailSubjectWithDisputePresentmentEnabled()
+    {
+        $this->fixtures->merchant->addFeatures('dispute_presentment');
+
+        $this->runTestBulkDisputeCreateMailSubject('bulk_creation_dispute_presentment_enabled');
+    }
+
     public function testBulkDisputeCreateMailSubject()
+    {
+        $this->runTestBulkDisputeCreateMailSubject('bulk_creation');
+    }
+
+    // ---------------------------- helper methods-------------------------------
+
+    protected function runTestBulkDisputeCreateMailSubject($expectedMailView)
     {
         Mail::fake();
 
@@ -1970,11 +1985,11 @@ class DisputeTest extends TestCase
         ]);
 
         $disputePhases = [
-            Phase::CHARGEBACK,
-            Phase::PRE_ARBITRATION,
-            Phase::ARBITRATION,
-            Phase::RETRIEVAL,
-            Phase::FRAUD,
+          Phase::CHARGEBACK,
+          Phase::PRE_ARBITRATION,
+          Phase::ARBITRATION,
+          Phase::RETRIEVAL,
+          Phase::FRAUD,
         ];
 
         foreach ($disputePhases as $disputePhase)
@@ -1993,20 +2008,21 @@ class DisputeTest extends TestCase
 
             $this->fixtures->create('dispute', $attributes);
 
-            $testData = &$this->testData[__FUNCTION__];
+            $testData = &$this->testData['testBulkDisputeCreateMailSubject'];
 
             $this->startTest($testData);
 
-            Mail::assertQueued(DisputeBulkCreationMail::class, function ($mail)
+            Mail::assertQueued(DisputeBulkCreationMail::class, function ($mail) use ($expectedMailView)
             {
                 $this->assertEquals($this->getBulkDisputeMailExpectedSubject($mail), $mail->subject);
+
+                $this->assertEquals('emails.dispute.' . $expectedMailView, $mail->view);
 
                 return true;
             });
         }
-    }
 
-    // ---------------------------- helper methods-------------------------------
+    }
 
     protected function freshdeskFlow(
         bool $needAutomationGroupConst,
