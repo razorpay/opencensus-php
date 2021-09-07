@@ -325,6 +325,13 @@ class Authorization
         $this->addProxyAuthHeaders($merchantUser);
     }
 
+    public function merchantRiskAlertsAppAuth()
+    {
+        $this->appAuth('rzp_test', \Config::get('applications.merchant_risk_alerts')['secret']);
+
+        $this->proxy = false;
+    }
+
     public function addProxyAuthHeaders($user)
     {
         if ($user === null)

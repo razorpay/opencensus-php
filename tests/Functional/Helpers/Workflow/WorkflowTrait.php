@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Helpers\Workflow;
 
 use DB;
+use RZP\Models\Base\EsDao;
 use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Entity;
 use RZP\Models\Admin\Permission;
@@ -11,6 +12,10 @@ use RZP\Models\Admin\Org\Repository as OrgRepository;
 
 trait WorkflowTrait
 {
+    protected $esClient;
+
+    protected $esDao;
+
     private function createWorkflow(array $input,string $mode = 'test', $template = [])
     {
         $defaultAttributes = empty($template) ? $this->getDefaultWorkflowArray() : $template;
@@ -19,7 +24,7 @@ trait WorkflowTrait
 
         $workflow = $this->fixtures->on($mode)->create('workflow', [
             'org_id' => $attributes['org_id'],
-            'name'   => $attributes['name']
+            'name'   => $attributes['name'],
             ]);
 
         $permissions = (new Permission\Repository)->retrieveIdsByNames($attributes['permissions']);
@@ -118,6 +123,8 @@ trait WorkflowTrait
 
     public function performWorkflowAction($workflowActionId, bool $shouldApprove = true, $mode= 'test')
     {
+        $this->refreshEsIndices();
+
         $this->ba->adminAuth($mode);
 
         $this->addPermissionToBaAdmin(Permission\Name::EDIT_ACTION);
@@ -150,7 +157,8 @@ trait WorkflowTrait
     {
         $workflowAction = $this->getLastEntity('workflow_action', true, $mode);
 
-        $this->esClient->indices()->refresh();
+        $this->refreshEsIndices();
+
         return $this->esDao->searchByIndexTypeAndActionId('workflow_action_'.$mode.'_testing', 'action',
             substr($workflowAction['id'], 9))[0]['_source'];
     }
@@ -230,5 +238,20 @@ trait WorkflowTrait
         $finalPermissions = array_unique($finalPermissions);
 
         $role->permissions()->sync($finalPermissions);
+    }
+
+    protected function refreshEsIndices()
+    {
+        if ($this->esDao === null)
+        {
+            $this->esDao = (new EsDao);
+        }
+
+        if ($this->esClient === null)
+        {
+            $this->esClient = $this->esDao->getEsClient()->getClient();
+        }
+
+        $this->esClient->indices()->refresh();
     }
 }

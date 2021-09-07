@@ -21,6 +21,7 @@ class Constants
 
     const MANUAL_FOH_TAG = 'manual_foh';
     const AUTO_FOH_TAG   = 'auto_foh';
+    const MANAGED_MERCHANT_TAG = 'ras_managed_merchant';
 
     const MERCHANT_DETAIL_KEY = 'merchant_detail';
 
@@ -52,6 +53,7 @@ class Constants
 
     // Email template identifiers
     const FOH_GENERIC_CONFIRMATION_MAIL_TPL                = 'emails.merchant.risk.generic.funds_on_hold.confirmation';
+    const FOH_ADMIN_TRIGGER_NEEDS_CLARIFICATION_TPL        = 'emails.merchant.risk.generic.admin_trigger_needs_clarification';
     const FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_MAIL_TPL = 'emails.merchant.risk.website_checker.funds_on_hold.needs_clarification';
     const FOH_APP_CHECKER_NEEDS_CLARIFICATION_MAIL_TPL     = 'emails.merchant.risk.app_checker.funds_on_hold.needs_clarification';
     const FOH_WEBSITE_CHECKER_CONFIRMATION_MAIL_TPL        = 'emails.merchant.risk.website_checker.funds_on_hold.confirmation';
@@ -59,6 +61,7 @@ class Constants
 
     // Email subjects
     const FOH_GENERIC_CONFIRMATION_MAIL_SUBJECT                = 'Razorpay Account Review: {merchant_name} | {merchant_id} | Funds under Review';
+    const FOH_ADMIN_TRIGGER_NEEDS_CLARIFICATION_SUBJECT        = 'Razorpay Account Review: {merchant_name} | {merchant_id} | Risk Clarification';
     const FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_MAIL_SUBJECT = 'Razorpay Account Website Clarification: {merchant_name} | {merchant_id}';
     const FOH_APP_CHECKER_NEEDS_CLARIFICATION_MAIL_SUBJECT = 'Razorpay Account Website Clarification: {merchant_name} | {merchant_id}';
 
@@ -114,6 +117,7 @@ class Constants
     const RAS_TRIGGER_REASON_WEBSITE_CHECKER = 'website_checker';
     const RAS_TRIGGER_REASON_APP_CHECKER = 'app_checker';
     const RAS_TRIGGER_REASON_GENERIC         = 'generic';
+    const RAS_TRIGGER_REASON_NC_FLOW         = 'nc_flow';
 
     const  RAS_TRIGGER_REASONS_HEALTH_CHECKER = [
         self::RAS_TRIGGER_REASON_APP_CHECKER,
@@ -123,6 +127,7 @@ class Constants
     // Fd Sub Category
     const FD_SUB_CATEGORY_NEED_CLARIFICATION = 'Need Clarification';
     const FD_SUB_CATEGORY_FUNDS_ON_HOLD      = 'Funds on hold';
+    const FD_SUB_CATEGORY_FRAUD_ALERTS       = 'Fraud alerts';
 
     // FD RAS Tags
     const FD_TAG_RAS_FOH        = 'RAS_FOH';
@@ -133,8 +138,8 @@ class Constants
     const RAS_FD_TICKET_ID_TAG_FMT = self::RAS_FD_TICKET_TAG_PREFIX . '%s';
 
     const REDIS_REMINDER_MAP_NAME = [
-        self::RAS_TRIGGER_REASON_APP_CHECKER        => 'risk:app_checker:reminder_map',
-        self::RAS_TRIGGER_REASON_WEBSITE_CHECKER    => 'risk:web_checker:reminder_map',
+        self::RAS_TRIGGER_REASON_APP_CHECKER     => 'risk:app_checker:reminder_map',
+        self::RAS_TRIGGER_REASON_WEBSITE_CHECKER => 'risk:web_checker:reminder_map',
     ];
 
     const HEALTH_CHECKER_NC_DAYS_TO_FOH          = 7;
@@ -142,4 +147,8 @@ class Constants
 
     const FD_TICKET_ID_KEY          = 'fd_ticket_id';
     const WORKFLOW_ACTION_INPUT_KEY = 'workflow_action_input';
+
+    const RAS_NC_OUTBOUND_EMAIL_FRESHDESK_TICKET_URL_FORMAT = 'RAS NC Outbound email freshdesk ticket url: https://razorpay-ind.freshdesk.com/a/tickets/%s'; //hardcoding url as its the only instance being used
+    const RAS_NC_WORKFLOW_CACHE_KEY                         = 'ras_nc_workflow_key_%s';
+    const RAS_NC_WORKFLOW_CACHE_TTL                         = 120 * (60 * 60 * 24); // 120days
 }

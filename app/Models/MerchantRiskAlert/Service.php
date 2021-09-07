@@ -5,12 +5,17 @@ namespace RZP\Models\MerchantRiskAlert;
 use View;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
+use RZP\Models\Comment;
 use RZP\Services\Stork;
+use RZP\Models\Dispute;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Permission;
 use RZP\Trace\TraceCode;
 use RZP\lib\TemplateEngine;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Merchant\Risk as MerchantRiskEmailer;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Workflow\Action;
@@ -165,7 +170,7 @@ class Service extends Base\Service
             return;
         }
 
-        $workflowTags = $this->getWorkflowTagsFromInput($input);
+        $workflowTags = $this->getWorkflowTags($input, $merchant);
 
         try
         {
@@ -216,7 +221,7 @@ class Service extends Base\Service
             (new Action\Core)->close($workflowAction, $maker, true);
         }
 
-        $workflowTags = $this->getWorkflowTagsFromInput($input);
+        $workflowTags = $this->getWorkflowTags($input, $merchant);
 
         try
         {
@@ -301,7 +306,7 @@ class Service extends Base\Service
             return;
         }
 
-        list($template, $params, $notificationType, $rasTriggerReason) = $content;
+        [$template, $params, $notificationType, $rasTriggerReason] = $content;
 
         $payload = [
             'receiver' => $receiver,
@@ -341,7 +346,7 @@ class Service extends Base\Service
 
         $receiver = $merchant->merchantDetail->getContactMobile();
 
-        list($templateName, $template, $params, $notificationType, $rasTriggerReason) = $content;
+        [$templateName, $template, $params, $notificationType, $rasTriggerReason] = $content;
 
         $whatsAppPayload = [
             'ownerId'       => $merchant->getId(),
@@ -362,9 +367,11 @@ class Service extends Base\Service
     {
         try
         {
-            list($subject, $viewTemplate, $data, $fdSubcategory, $notificationType, $rasTriggerReason) = $content;
+            [$subject, $viewTemplate, $data, $fdSubcategory, $notificationType, $rasTriggerReason] = $content;
 
             $merchantEmail = $merchant->merchantDetail->getContactEmail();
+
+            $ccEmails = (new Dispute\Service)->getDefaultDisputeEmails($merchant->getId());
 
             $mailSubject = (new TemplateEngine)->render($subject, $data);
 
@@ -388,13 +395,18 @@ class Service extends Base\Service
                     'tags'            => $fdTags,
                     'group_id'        => (int) $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
                     'email_config_id' => (int) $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
-                    'custom_fields' => [
+                    'custom_fields'  => [
                         'cf_ticket_queue' => 'Merchant',
                         'cf_category'     => 'Risk Report_Merchant',
                         'cf_subcategory'  => $fdSubcategory,
                         'cf_product'      => 'Payment Gateway',
                     ],
                 ];
+
+                if (empty($ccEmails) === false)
+                {
+                    $fdOutboundEmailRequest['cc_emails'] = $ccEmails;
+                }
 
                 $response = $this->app['freshdesk_client']->sendOutboundEmail(
                     $fdOutboundEmailRequest, FreshdeskConstants::URLIND);
@@ -440,6 +452,25 @@ class Service extends Base\Service
         {
             $this->app['cache']->connection()->hdel($redisMap, $merchantId);
         }
+    }
+
+    private function getWorkflowTags($input, $merchant = null)
+    {
+        $tags = $this->getWorkflowTagsFromInput($input);
+
+        if ($merchant === null)
+        {
+            return $tags;
+        }
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::APPS_EXTEMPT_RISK_CHECK) === false)
+        {
+            return $tags;
+        }
+
+        $tags[] = Constants::MANAGED_MERCHANT_TAG;
+
+        return $tags;
     }
 
     private function getWorkflowTagsFromInput(array $input)
@@ -778,5 +809,75 @@ class Service extends Base\Service
     public function identifyBlacklistCountryAlerts(array $input)
     {
         return $this->app['merchant_risk_alerts']->identifyBlacklistCountryAlerts($input);
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function triggerNeedsClarification(string $workflowActionId)
+    {
+        $this->trace->info(TraceCode::MERCHANT_RISK_ALERT_TRIGGER_NC_FOR_WORKFLOW, [
+            'workflow_action_id' => $workflowActionId,
+        ]);
+
+        $workflowActionId = Action\Entity::verifyIdAndStripSign($workflowActionId);
+
+        $action = $this->repo->workflow_action->findOrFailPublic($workflowActionId);
+
+        (new Validator)->validateTriggerNeedsClarificationRequest($action);
+
+        $ticketId = $this->sendOutboundEmailForTriggerNeedsClarification($action);
+
+        $this->addCommentToWorkflowForTriggerNeedsClarification($action, $ticketId);
+
+        $this->markNeedsClarificationAsTriggeredForAction($action);
+
+        return ['success' => true];
+    }
+
+    protected function sendOutboundEmailForTriggerNeedsClarification($action)
+    {
+        $merchant = (new Merchant\Repository)->findOrFail($action->getEntityId());
+
+        $subject = Constants::FOH_ADMIN_TRIGGER_NEEDS_CLARIFICATION_SUBJECT;
+
+        $viewTemplate = Constants::FOH_ADMIN_TRIGGER_NEEDS_CLARIFICATION_TPL;
+
+        $data = [
+            Merchant\Entity::MERCHANT_ID => $merchant->getId(),
+            'merchant_name'              => $merchant->getName() ?? '',
+        ];
+
+        return $this->sendEmail($merchant, [
+            $subject, $viewTemplate, $data,
+            Constants::FD_SUB_CATEGORY_FRAUD_ALERTS,
+            Constants::FOH_NC_NOTIFICATION,
+            Constants::RAS_TRIGGER_REASON_NC_FLOW,
+        ], []);
+    }
+
+    protected function addCommentToWorkflowForTriggerNeedsClarification($action, $ticketId = ''): void
+    {
+        $comment = sprintf(Constants::RAS_NC_OUTBOUND_EMAIL_FRESHDESK_TICKET_URL_FORMAT, $ticketId);
+
+        $commentEntity = (new Comment\Core())->create([
+            Comment\Entity::COMMENT => $comment,
+        ]);
+
+        $commentEntity->entity()->associate($action);
+
+        $this->repo->saveOrFail($commentEntity);
+    }
+
+    public function getCacheKeyForNeedsClarificationRequest($action): string
+    {
+        return Constants::RAS_NC_WORKFLOW_CACHE_KEY . $action->getId();
+    }
+
+    protected function markNeedsClarificationAsTriggeredForAction($action): void
+    {
+        $cacheKey = $this->getCacheKeyForNeedsClarificationRequest($action);
+
+        $this->app['cache']->put($cacheKey, true, Constants::RAS_NC_WORKFLOW_CACHE_TTL);
     }
 }

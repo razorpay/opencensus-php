@@ -2644,6 +2644,11 @@ class Route
             'merchant_risk_alerts/merchant/foh/workflow',
             'MerchantRiskAlertController@createFOHWorkflow'
         ],
+        'merchant_risk_alerts_foh_workflow_trigger_nc'    => [
+            'post',
+            'merchant_risk_alerts/merchant/foh/workflow/{workflow_action_id}/needs_clarification',
+            'MerchantRiskAlertController@postTriggerNeedsClarification',
+        ],
         'merchant_risk_alerts_details' => [
             'get',
             'merchant_risk_alerts/merchant/{mid}/details',
@@ -3242,6 +3247,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'merchant_risk_alerts_foh_workflow_trigger_nc',
         'buy_pricing_assign_bulk',
         'external_bvs_validation_request',
         'bas_banking_accounts_create',
@@ -4396,6 +4402,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'merchant_risk_alerts_foh_workflow_trigger_nc',
         'rbl_current_account_serviceability_get_admin',
         'merchant_business_detail_fetch',
         'merchant_business_detail_save',
@@ -6314,6 +6321,7 @@ class Route
         'merchant_risk_notes_get'                         => Permission::GET_MERCHANT_RISK_NOTES,
         'merchant_risk_notes_create'                      => Permission::CREATE_MERCHANT_RISK_NOTES,
         'merchant_risk_notes_delete'                      => Permission::DELETE_MERCHANT_RISK_NOTES,
+        'merchant_risk_alerts_foh_workflow_trigger_nc'    => Permission::MERCHANT_RISK_ALERT_FOH,
 
         // Risk Audit Workflow Actions
         'w-actions_merchant_risk_audit_get'               => Permission::VIEW_ALL_WORKFLOW,
@@ -8553,6 +8561,7 @@ class Route
             'merchant_edit_email_la',
             'merchant_edit_free_credits',
             'merchant_edit_pre_signup_details',
+            'merchant_risk_alerts_foh_workflow_trigger_nc',
             'mtu_coupon_apply',
             'merchant_edit_risk_attributes',
             'merchant_features_fetch',

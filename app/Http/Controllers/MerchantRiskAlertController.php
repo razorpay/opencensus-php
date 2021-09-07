@@ -51,4 +51,11 @@ class MerchantRiskAlertController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function postTriggerNeedsClarification(string $workflowActionId)
+    {
+        $response = $this->service()->triggerNeedsClarification($workflowActionId);
+
+        return ApiResponse::json($response);
+    }
 }
