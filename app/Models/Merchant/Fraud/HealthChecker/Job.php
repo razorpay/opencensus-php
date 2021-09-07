@@ -304,6 +304,12 @@ class Job extends Base\Core
             $category = $checkerType . '_checker';
             $entityType = ($checkerType === Constants::WEBSITE_CHECKER) ? 'transaction_websites' : 'transaction_apps';
 
+            if ($checkerType === Constants::WEBSITE_CHECKER && $eventType === Constants::RISK_SCORE_CHECKER_EVENT)
+            {
+                $category = Constants::RISK_SCORE_CHECKER_EVENT;
+                $eventType = Constants::TRANSACTION_DEDUPE;
+            }
+
             $rasAlertRequest = [
                 'merchant_id'     => $merchantId,
                 'entity_type'     => $entityType,

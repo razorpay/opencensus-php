@@ -124,6 +124,8 @@ class Constants
 
     const APP_CHECKER_QUEUE_DELAY_LIMIT = 600;
 
+    const TRANSACTION_DEDUPE = 'transaction_dedupe';
+
     public static function eventAndCheckerTypeRedisMap($eventType, $checkerType): string
     {
         if ($eventType === Constants::PERIODIC_CHECKER_EVENT)
