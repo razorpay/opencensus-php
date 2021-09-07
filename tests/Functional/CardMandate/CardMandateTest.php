@@ -637,7 +637,7 @@ class CardMandateTest extends TestCase
                 'id' => 'ratn_PP3VC146gmBVGG',
                 'status' => $success ? 'delivered' : 'failed',
                 'delivered_at' => Carbon::now()->timestamp,
-                'afa_status' => $success ? 'approved' : 'rejected',
+                'afa_status' => 'created',
                 'afa_required' => $afaRequired,
                 'afa_completed_at' => 0,
             ];

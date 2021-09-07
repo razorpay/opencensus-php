@@ -125,8 +125,10 @@ class Core extends Base\Core
 
         $status = $this->getStatusFromNotificationStatus($notification->getStatus());
 
+        $isApproved = false;
+
         $this->repo->transaction(
-            function () use ($cardMandateNotification, $status, $notification) {
+            function () use ($cardMandateNotification, $status, $notification, &$isApproved) {
                 $this->repo->card_mandate_notification->lockForUpdateAndReload($cardMandateNotification);
 
                 if ($cardMandateNotification->getStatus() === Status::CREATED or
@@ -140,15 +142,23 @@ class Core extends Base\Core
                     }
                 }
 
-                if ($cardMandateNotification->isAfaRequired())
+                if ($cardMandateNotification->isAfaRequired() and
+                    $cardMandateNotification->getAfaStatus() === AfaStatus::CREATED)
                 {
                     $cardMandateNotification->setAfaStatus($notification->getAfaStatus());
+
+                    if ($cardMandateNotification->getAfaStatus() === AfaStatus::APPROVED)
+                    {
+                        $isApproved = true;
+                    }
 
                     $cardMandateNotification->setAfaCompletedAt($notification->getAfaCompletedAt());
                 }
 
                 $cardMandateNotification->saveOrFail();
             });
+
+        $payment = $cardMandateNotification->payment;
 
         if (!$cardMandateNotification->isAfaRequired() and
             $cardMandateNotification->getStatus() === Status::NOTIFIED)
@@ -159,15 +169,20 @@ class Core extends Base\Core
 
             $cardMandateNotification->saveOrFail();
         }
-        else if ($cardMandateNotification->isAfaRequired() and
-            $cardMandateNotification->getAfaStatus() === AfaStatus::APPROVED)
+        else if (($cardMandateNotification->isAfaRequired() and
+            $cardMandateNotification->getAfaStatus() === AfaStatus::APPROVED and
+            $isApproved === true) and ($payment->getStatus() === Payment\Status::CREATED))
         {
             $namespace  = Reminders\ReminderProcessor::CARD_AUTO_RECURRING;
             $paymentId  = $cardMandateNotification->payment->GetId();
             (new Reminders\CardAutoRecurringReminderProcessor)->process(E::PAYMENT, $namespace, $paymentId, []);
         }
 
-        if ($cardMandateNotification->getStatus() === Status::FAILED)
+        if (((!$cardMandateNotification->isAfaRequired() and $cardMandateNotification->getStatus() === Status::FAILED) or
+            ($cardMandateNotification->isAfaRequired() and
+                ($cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED ||
+                    $cardMandateNotification->getAfaStatus() === AfaStatus::EXPIRED))) and
+            ($payment->getStatus() === Payment\Status::CREATED))
         {
             $this->handleNotificationFailed($cardMandateNotification, $cardMandateNotification->payment);
         }
