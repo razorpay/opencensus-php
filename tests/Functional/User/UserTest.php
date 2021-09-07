@@ -228,7 +228,7 @@ class UserTest extends TestCase
                                                      [
                                                          Constants::UTM_SOURCE   => 'Facebook',
                                                          Constants::UTM_MEDIUM   => 'CPC',
-                                                         Constants::UTM_CAMPAIGN => 'facebook_RZPx_Ca_Conv_NewAcquisItion_India_Owners_2555_MF_all_24082021'
+                                                         Constants::UTM_CAMPAIGN => 'facebook_RZPx_CA_Conv_NewAcquisItion_India_Entrepreneurship_2555_M_All_07092021'
                                                      ]
                                                  ]
                                              ])

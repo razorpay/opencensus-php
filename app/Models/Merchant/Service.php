@@ -164,7 +164,8 @@ class Service extends Base\Service
     // Should be decided by marketing team
     const NEOSTONE_UTM_RULES = [
         [User\Constants::UTM_CAMPAIGN => 'Facebook_RZPx_CA_Conv_NewAcquisItion_India_Owners_2555_MF_All_24082021', User\Constants::UTM_SOURCE => 'Facebook', User\Constants::UTM_MEDIUM => 'CPC'],
-        [User\Constants::UTM_CAMPAIGN => '', User\Constants::UTM_SOURCE => 'rx_ca_neostone', User\Constants::UTM_MEDIUM => '']
+        [User\Constants::UTM_CAMPAIGN => '', User\Constants::UTM_SOURCE => 'rx_ca_neostone', User\Constants::UTM_MEDIUM => ''],
+        [User\Constants::UTM_CAMPAIGN => 'Facebook_RZPx_CA_Conv_NewAcquisItion_India_Entrepreneurship_2555_M_All_07092021', User\Constants::UTM_SOURCE => 'Facebook', User\Constants::UTM_MEDIUM => 'CPC'],
     ];
 
     /**
