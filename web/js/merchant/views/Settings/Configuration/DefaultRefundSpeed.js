@@ -6,6 +6,7 @@ import {
   updateConfig,
   fetchRefundPricing,
   createLateAuthConfig,
+  fetchFeatureStatus,
 } from 'merchant/reducers/config';
 import PropTypes from 'prop-types';
 
@@ -16,7 +17,6 @@ import { showWhenUtil } from 'merchant/components/ShowWhen';
 import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/components/EnableInstantRefundsModal';
 import { openModal } from 'merchant_common/reducers/modals';
 import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
-
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -56,6 +56,8 @@ class DefaultRefundSpeed extends Component {
     super(props);
     this.state = {
       default_refund_speed: this.props.default_refund_speed,
+      isInstantRefundOrg: false,
+      isInstantRefundMid: false,
     };
   }
   analytics = (action) => {
@@ -65,6 +67,34 @@ class DefaultRefundSpeed extends Component {
     });
   };
   hovered = false;
+
+  componentWillMount() {
+    // check paypal org feature
+    if (this.props.org?.features.indexOf('enable_refunds') > -1) {
+      this.setState({
+        isInstantRefundOrg: true,
+      });
+
+      // check paypal MID feature
+      this.props
+        .fetchFeatureStatus(this.props.user.id, 'axis_enable_refunds')
+        .then((fetchFeatureStatusResp) => {
+          if (fetchFeatureStatusResp?.data?.status) {
+            this.setState({
+              isInstantRefundMid: true,
+            });
+          }
+        })
+        .catch((err) => {
+          if (err) {
+            this.props.showNotification({
+              type: 'error',
+              message: err.errors[0],
+            });
+          }
+        });
+    }
+  }
 
   componentDidMount() {
     this.props.fetchRefundPricing();
@@ -140,7 +170,7 @@ class DefaultRefundSpeed extends Component {
       error,
     } = this.props.lateAuthConfig;
 
-    if (error || items.length === 0) return;
+    if (error || !items || items.length === 0) return;
     const capture_config = items[0];
     capture_config.config.capture_options.refund_speed = speed;
     delete capture_config.name;
@@ -162,6 +192,8 @@ class DefaultRefundSpeed extends Component {
   };
 
   render() {
+    const { isInstantRefundOrg, isInstantRefundMid } = this.state;
+
     return (
       <div id="default-refund-container" class="panel panel-default refund-panel">
         <div class="panel-heading pl10" style={{ paddingTop: 0 }}>
@@ -257,98 +289,100 @@ class DefaultRefundSpeed extends Component {
                 </span>
               </div>
             </div>
-            <div class="col-sm-6 p5">
-              <div
-                class={`refund-panel-col ${
-                  this.state.default_refund_speed == 'optimum' ? 'active' : ''
-                }`}
-                id="instant-refund-panel-col"
-              >
-                <h4>
-                  <i class="i i-instant-refund" />
-                  <b>Instant Refund</b>
+            {(!isInstantRefundOrg || (isInstantRefundOrg && isInstantRefundMid)) && (
+              <div class="col-sm-6 p5">
+                <div
+                  class={`refund-panel-col ${
+                    this.state.default_refund_speed == 'optimum' ? 'active' : ''
+                  }`}
+                  id="instant-refund-panel-col"
+                >
+                  <h4>
+                    <i class="i i-instant-refund" />
+                    <b>Instant Refund</b>
 
+                    {!showWhenUtil({
+                      featureEnabled: 'disable_instant_refunds',
+                    }) ? (
+                      <input
+                        type="radio"
+                        class="radio-pointer refund-speed-change-permission"
+                        checked={this.state.default_refund_speed == 'optimum'}
+                        name="default_instant"
+                        onChange={(e) => {
+                          const speed = e.target.checked ? 'optimum' : 'normal';
+                          this.checkDefaultRefundSpeed(speed);
+                        }}
+                      />
+                    ) : null}
+                  </h4>
+                  <p>
+                    At a{' '}
+                    <strong
+                      class="pointer"
+                      onClick={() => {
+                        this.props.tracking.trackEvent(
+                          window.rzpQ.merchantActions().initiated(`Click - Minimal Fee`, {
+                            label: `Setting Page`,
+                            session_id: window.session_id,
+                            category: 'Merchant Dashboard - IR',
+                          }),
+                        );
+                        this.props.openModal({
+                          component: <InstantRefundFee pricing={this.props.refund_pricing} />,
+                          size: 'small',
+                        });
+                      }}
+                      style={{ color: '#528ff0' }}
+                    >
+                      minimal fee
+                    </strong>
+                    , your customer will get refunds instantly.
+                  </p>
+
+                  <br />
                   {!showWhenUtil({
                     featureEnabled: 'disable_instant_refunds',
                   }) ? (
-                    <input
-                      type="radio"
-                      class="radio-pointer refund-speed-change-permission"
-                      checked={this.state.default_refund_speed == 'optimum'}
-                      name="default_instant"
-                      onChange={(e) => {
-                        const speed = e.target.checked ? 'optimum' : 'normal';
-                        this.checkDefaultRefundSpeed(speed);
-                      }}
-                    />
-                  ) : null}
-                </h4>
-                <p>
-                  At a{' '}
-                  <strong
-                    class="pointer"
-                    onClick={() => {
-                      this.props.tracking.trackEvent(
-                        window.rzpQ.merchantActions().initiated(`Click - Minimal Fee`, {
-                          label: `Setting Page`,
-                          session_id: window.session_id,
-                          category: 'Merchant Dashboard - IR',
-                        }),
-                      );
-                      this.props.openModal({
-                        component: <InstantRefundFee pricing={this.props.refund_pricing} />,
-                        size: 'small',
-                      });
-                    }}
-                    style={{ color: '#528ff0' }}
-                  >
-                    minimal fee
-                  </strong>
-                  , your customer will get refunds instantly.
-                </p>
-
-                <br />
-                {!showWhenUtil({
-                  featureEnabled: 'disable_instant_refunds',
-                }) ? (
-                  <span class="refunds-speed-tag">
-                    OPTIMUM SPEED &nbsp;
-                    <span>
-                      <i class="i i-help" />
-                      <Popover align="bottom" theme="dark">
-                        <PopoverBody>
-                          <div style={{ textAlign: 'left' }}>
-                            All your refund API calls will have speed set to `optimum` by default
-                            unless it is set to `normal` explicitly{' '}
-                          </div>
-                        </PopoverBody>
-                      </Popover>
+                    <span class="refunds-speed-tag">
+                      OPTIMUM SPEED &nbsp;
+                      <span>
+                        <i class="i i-help" />
+                        <Popover align="bottom" theme="dark">
+                          <PopoverBody>
+                            <div style={{ textAlign: 'left' }}>
+                              All your refund API calls will have speed set to `optimum` by default
+                              unless it is set to `normal` explicitly{' '}
+                            </div>
+                          </PopoverBody>
+                        </Popover>
+                      </span>
                     </span>
-                  </span>
-                ) : (
-                  <p>
-                    {' '}
-                    To enable it, please{' '}
-                    <a
-                      onClick={() => {
-                        raiseTicket();
-                        window.rzpAnalytics({
-                          eventCategory: 'Dashboard - Instant Refund',
-                          eventAction: 'Contact Support',
-                          eventLabel: `Setting Page | Contact Support`,
-                        });
-                      }}
-                      class="highlight know-more"
-                      style={{ marginLeft: 0 }}
-                      // target="_blank"
-                      // href="https://razorpay.com/support/#request"
-                    >
-                      <strong style={{ color: '#528ff0' }}>contact support</strong>
-                    </a>
-                  </p>
-                )}
+                  ) : (
+                    <p>
+                      {' '}
+                      To enable it, please{' '}
+                      <a
+                        onClick={() => {
+                          raiseTicket();
+                          window.rzpAnalytics({
+                            eventCategory: 'Dashboard - Instant Refund',
+                            eventAction: 'Contact Support',
+                            eventLabel: `Setting Page | Contact Support`,
+                          });
+                        }}
+                        class="highlight know-more"
+                        style={{ marginLeft: 0 }}
+                        // target="_blank"
+                        // href="https://razorpay.com/support/#request"
+                      >
+                        <strong style={{ color: '#528ff0' }}>contact support</strong>
+                      </a>
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>{' '}
+            )}{' '}
           </div>
         </div>
       </div>
@@ -365,6 +399,7 @@ export default compose(
         features: state.config.features,
         default_refund_speed: state.config.config.default_refund_speed,
         lateAuthConfig: state.config.lateAuthConfig,
+        org: state.session.org,
       };
     },
     {
@@ -374,6 +409,7 @@ export default compose(
       openModal,
       fetchRefundPricing,
       createLateAuthConfig,
+      fetchFeatureStatus,
     },
   ),
   // eslint-disable-next-line babel/new-cap
