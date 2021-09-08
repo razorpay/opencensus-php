@@ -609,6 +609,7 @@ class WorkflowActionTest extends TestCase
                 'entity_id'     => $merchantId,
                 'entity_name'   => 'merchant',
                 'approved'      => 1,
+                'state'         => 'executed',
                 'workflow_id'   => $workflow->getId(),
             ]);
 
@@ -654,12 +655,11 @@ class WorkflowActionTest extends TestCase
         $workflowActionIds = array_map(
             function ($action)
             {
-                return $action->getId();
+                $actionId = $action->getId();
+                return sprintf('w_action_%s', $actionId);
             },
             $workflowActions
         );
-
-        $this->createActionStatesForWfAction($workflowActions);
 
         return $workflowActionIds;
     }

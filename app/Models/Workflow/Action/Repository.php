@@ -16,7 +16,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Workflow\Constants;
 use RZP\Models\Workflow\Action\Checker;
-use RZP\Trace\TraceCode;
+use RZP\Models\Workflow\Action\State\Entity as ActionStateEntity;
 
 class Repository extends Base\Repository
 {
@@ -475,37 +475,62 @@ class Repository extends Base\Repository
 
     protected function filterByApprovalTimestampRange($input, $query)
     {
-        $approvalStartTime = $input[Constants::APPROVAL_START_TIME] ?? null;
-
-        $approvalEndTime = $input[Constants::APPROVAL_END_TIME] ?? null;
-
-        if (($approvalStartTime === null) or
-            ($approvalEndTime === null))
+        if (isset($input[Constants::APPROVAL_START_TIME]) === true)
         {
-            return;
+            $query->where(Table::WORKFLOW_ACTION . '.' . Entity::UPDATED_AT, '>=', (int)$input[Constants::APPROVAL_START_TIME]);
         }
 
-        $query->where(Table::ACTION_STATE . '.' . Entity::CREATED_AT, '>=', $approvalStartTime);
+        if (isset($input[Constants::APPROVAL_END_TIME]) === true)
+        {
+            $query->where(Table::WORKFLOW_ACTION . '.' . Entity::UPDATED_AT, '<=', (int)$input[Constants::APPROVAL_END_TIME]);
+        }
+    }
 
-        $query->where(Table::ACTION_STATE . '.' . Entity::CREATED_AT, '<=', $approvalEndTime);
+    protected function getCountAndSkip($input): array
+    {
+        $count = $input['count'] ?? 20;
+
+        if ($count <= 1) {
+            $count = 1;
+        }
+
+        if ($count >= 100) {
+            $count = 100;
+        }
+
+        $skip = $input['skip'] ?? 0;
+
+        if ($skip <= 0) {
+            $skip = 0;
+        }
+
+        return [$count, $skip];
     }
 
     public function getActionIdsForRiskAudit($merchantId, $input)
     {
-        $workflowIds = $input[Constants::WORKFLOW_IDS] ?? Constants::getRiskAuditWorkflowIds();
+        $riskAuditWfIds = Constants::getRiskAuditWorkflowIds();
+
+        $workflowIds = $input[Constants::WORKFLOW_IDS] ?? $riskAuditWfIds;
+
+        list($count, $skip) = $this->getCountAndSkip($input);
+
+        $workflowIds = array_filter($workflowIds, function($value) use ($riskAuditWfIds)
+        {
+            return in_array($value, $riskAuditWfIds) === true;
+        });
 
         $query = $this->newQuery()
                     ->select(Table::WORKFLOW_ACTION . '.' . Entity::ID)
                     ->distinct()
-                    ->join(Table::ACTION_STATE, Table::ACTION_STATE . '.' . State\Entity::ACTION_ID, Table::WORKFLOW_ACTION . '.' . Entity::ID)
-                    ->join(Table::WORKFLOW, Table::WORKFLOW . '.' . Entity::ID, Entity::WORKFLOW_ID)
                     ->where(Entity::ENTITY_NAME, 'merchant')
-                    ->where(Table::WORKFLOW_ACTION . '.' . Entity::ENTITY_ID, $merchantId)
-                    ->where(Table::ACTION_STATE . '.' . State\Entity::NAME, Entity::APPROVED)
+                    ->where(Entity::ENTITY_ID, $merchantId)
+                    ->where(Entity::STATE, ActionStateEntity::EXECUTED)
+                    ->where(Entity::APPROVED, 1)
                     ->whereIn(Entity::WORKFLOW_ID, $workflowIds);
 
         $this->filterByApprovalTimestampRange($input, $query);
 
-        return $query->get()->pluck(Entity::ID)->toArray();
+        return $query->skip($skip)->take($count)->get()->pluck(Entity::ID)->toArray();
     }
 }

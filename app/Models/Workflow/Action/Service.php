@@ -90,9 +90,13 @@ class Service extends Base\Service
     {
         $actionIds = $this->repo->workflow_action->getActionIdsForRiskAudit($merchantId, $input);
 
+        $wfActionIds = array_map(function($id) {
+            return sprintf('%s_%s', Entity::getSign(), $id);
+        }, $actionIds);
+
         return [
             Constants::RISK_AUDIT_WORKFLOWS_FOR_QUERY           =>  Constants::getRiskAuditWorkflows(),
-            Constants::WORKFLOW_ACTION_IDS                      =>  $actionIds,
+            Constants::WORKFLOW_ACTION_IDS                      =>  $wfActionIds,
         ];
     }
 
