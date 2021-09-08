@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
@@ -34,6 +36,7 @@ export default class ActivationContainer extends Component {
       additionalModalClass: null,
       aovRange: null,
       clarificationReasons: null,
+      gstinDetails: null,
     };
 
     this.fetchActivationDetails = this.fetchActivationDetails.bind(this);
@@ -123,10 +126,20 @@ export default class ActivationContainer extends Component {
       }),
       !accountId && merchantFetch('merchant/activation/business_categories'),
       !this.isSourceRX && merchantFetch('merchant/aov-config'),
-    ]).then(([data, categories, aov_list]) => {
+      this.props.user.isGstinAutoPopulate && merchantFetch('merchant/activation/gst_details'),
+    ]).then(([data, categories, aov_list, gst_details]) => {
       data = data.data;
       categories = categories && categories.data;
       aov_list = aov_list && aov_list.data;
+      gst_details = gst_details && gst_details.data;
+      let gstinDetails = null;
+
+      if (gst_details?.results && gst_details.results.length) {
+        gstinDetails = {
+          gstinList: gst_details.results,
+          defaultGstin: gst_details.results[0],
+        };
+      }
 
       if (data.activation_status === 'needs_clarification' && data.kyc_clarification_reasons) {
         merchantFetch('merchant/activation/clarification_reasons').then((clarification_reasons) => {
@@ -136,6 +149,7 @@ export default class ActivationContainer extends Component {
             categories,
             aovRange: aov_list,
             clarificationReasons,
+            gstinDetails,
           });
 
           return [data, categories];
@@ -146,6 +160,7 @@ export default class ActivationContainer extends Component {
           categories,
           aovRange: aov_list,
           clarificationReasons: {},
+          gstinDetails,
         });
 
         return [data, categories];
@@ -224,7 +239,14 @@ export default class ActivationContainer extends Component {
   };
 
   render() {
-    const { data, categories, additionalModalClass, aovRange, clarificationReasons } = this.state;
+    const {
+      data,
+      categories,
+      additionalModalClass,
+      aovRange,
+      clarificationReasons,
+      gstinDetails,
+    } = this.state;
     const { user } = this.props;
     const commonProps = {
       accountId: this.props.accountId,
@@ -236,6 +258,7 @@ export default class ActivationContainer extends Component {
       handleUIUpdate: this.handleUIUpdate,
       rpc: this.rpc,
       aovRange,
+      gstinDetails,
     };
     const isLoading = !data;
     // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.

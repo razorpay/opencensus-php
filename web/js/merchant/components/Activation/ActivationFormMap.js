@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import Input from 'common/new-ui/Input';
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 import {
@@ -797,9 +799,9 @@ const businessDetails = [
       description: (activation) => {
         const {
           props: { data },
-          state: { gstin, showGstinDescription },
+          state: { gstin, showGstinDescription, gstinDetails },
         } = activation;
-        const defaultGstin = data?.merchant_business_detail?.gst_details?.default_gst_in;
+        const defaultGstin = gstinDetails?.defaultGstin;
         if (
           !activation.isOnKYCTab() &&
           defaultGstin &&
@@ -1212,9 +1214,9 @@ const uploadFields = [
     description: (activation) => {
       const {
         props: { data },
-        state: { gstin, showGstinDescription },
+        state: { gstin, showGstinDescription, gstinDetails },
       } = activation;
-      const defaultGstin = data?.merchant_business_detail?.gst_details?.default_gst_in;
+      const defaultGstin = gstinDetails?.defaultGstin;
       if (
         !activation.isOnKYCTab() &&
         defaultGstin &&

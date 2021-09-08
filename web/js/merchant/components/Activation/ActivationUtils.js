@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { addPrefixToObjectKeys, isPresent } from 'common/utils/rzp-utils';
 import QueryString from 'query-string';
@@ -378,9 +380,9 @@ function canShowEAadharComponent(activation) {
 
 function canShowCustomGstinField(activation) {
   const {
-    props: { data },
+    props: { gstinDetails },
   } = activation;
-  const gstinList = data?.merchant_business_detail?.gst_details?.gst_in_list;
+  const gstinList = gstinDetails?.gstinList;
   if (
     activation.props.user.isGstinAutoPopulate &&
     !activation.isOnKYCTab() &&

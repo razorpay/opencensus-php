@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, ReactElement } from 'react';
 import styled from 'styled-components';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import Text from '@razorpay/blade-old/src/atoms/Text';
@@ -10,13 +10,18 @@ import { FormikErrors } from 'formik';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import { debounce } from '../../services/utils';
 
+interface GstinDetailsPropsT {
+  gstinList?: any;
+  defaultGstin?: string;
+}
+
 interface GstinAutoPopulatePropsT {
   gstin: string;
-  merchantBusinessDetail: any;
   updateGstin: (value: string) => void;
   hasGSTIN: boolean;
   errorText?: string | false | string[] | FormikErrors<any> | FormikErrors<any>[] | undefined;
   disabled?: boolean;
+  gstinDetails?: GstinDetailsPropsT;
 }
 
 const StyledSeparator = styled(View)`
@@ -27,17 +32,18 @@ const StyledSeparator = styled(View)`
 
 const GstinAutoPopulate: React.FC<GstinAutoPopulatePropsT> = ({
   gstin,
-  merchantBusinessDetail,
   errorText,
   disabled = false,
   updateGstin,
   hasGSTIN,
+  gstinDetails,
 }) => {
-  const defaultGstin = merchantBusinessDetail?.value?.gst_details?.default_gst_in || '';
+  const defaultGstin = gstinDetails?.defaultGstin || '';
   const gstinValue = gstin || defaultGstin;
   const [isDescriptionVisible, setIsDescriptionVisible] = useState(!gstin && !!defaultGstin);
   const [inputValue, setInputValue] = useState(gstinValue);
-  const gstinList = merchantBusinessDetail?.value?.gst_details?.gst_in_list || [];
+  const showFullList = useRef(true);
+  const gstinList = gstinDetails?.gstinList || [];
 
   useEffect(() => {
     if (!gstin && !!defaultGstin && !hasGSTIN) {
@@ -49,6 +55,7 @@ const GstinAutoPopulate: React.FC<GstinAutoPopulatePropsT> = ({
   }, [gstin, hasGSTIN]);
 
   const onInputChange = debounce((val) => {
+    showFullList.current = false;
     setInputValue(val);
   }, 200);
 
@@ -56,11 +63,35 @@ const GstinAutoPopulate: React.FC<GstinAutoPopulatePropsT> = ({
     if (isDescriptionVisible) {
       setIsDescriptionVisible(false);
     }
+    showFullList.current = true;
     setInputValue(val);
     updateGstin(val);
   };
 
   const getOptions = () => {
+    if (showFullList.current) {
+      const list: Array<ReactElement> = [];
+      if (!gstinList.includes(gstinValue)) {
+        list.push(
+          <Option key={gstinValue} label={gstinValue} value={gstinValue}>
+            <Text size="medium" color="shade.970">
+              {gstinValue}
+            </Text>
+          </Option>,
+        );
+      }
+      list.push(
+        gstinList.map((_el) => (
+          <Option key={_el} label={_el} value={_el}>
+            <Text size="medium" color="shade.970">
+              {_el}
+            </Text>
+          </Option>
+        )),
+      );
+      return list;
+    }
+
     if (!gstinList.includes(gstinValue) && inputValue === gstinValue) {
       return (
         <Option key={gstinValue} label={gstinValue} value={gstinValue}>

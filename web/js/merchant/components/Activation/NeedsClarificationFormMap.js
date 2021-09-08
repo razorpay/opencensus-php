@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { ndcFields } from 'merchant/components/Activation/ActivationFormMap';
 import { LLPIN_BusinessTypes } from './ActivationFormMap';
 

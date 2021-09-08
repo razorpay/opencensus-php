@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { Link, withRouter } from 'react-router-dom';
 import Form from 'common/new-ui/Form';
 import debounce from 'common/utils/debounce';
@@ -162,9 +164,7 @@ export default class ActivationWizard extends React.Component {
     app_website_url: this.props.data && this.props.data.business_website === '' ? '0' : '1',
     app_url: this.props.data && this.props.data.playstore_url === '' ? '0' : '1',
     has_gstin:
-      this.props.data &&
-      this.props.data.gstin === '' &&
-      !this.props.data?.merchant_business_detail?.gst_details?.default_gst_in
+      this.props.data && this.props.data.gstin === '' && !this.props.gstinDetails?.defaultGstin
         ? '1'
         : '0', // '0' => 0th radio button, value exists
     gstin: this.props.data && this.props.data.gstin,
@@ -205,6 +205,7 @@ export default class ActivationWizard extends React.Component {
     this.formName = 'KYC Form';
     this.formDescription = 'Complete and submit the form to accept payments.';
     this.trackingType = 'act';
+    this.showFullGstinList = true;
     if (props.user.showInstantActivation && props.user.instantActivation.isL1Submitted) {
       this.formName = 'KYC Form';
       this.formDescription = 'Complete and submit the form to enable settlements.';
@@ -1414,6 +1415,7 @@ export default class ActivationWizard extends React.Component {
     }
 
     if (placeholder === 'Enter GSTIN') {
+      this.showFullGstinList = false;
       this.setState((prevState) => ({
         ...prevState,
         gstin: fieldValue,
@@ -2273,9 +2275,9 @@ function ActivationField(field) {
 
   if (field.name === 'gstin' && rest.customField) {
     const {
-      props: { data },
+      props: { data, gstinDetails },
     } = this;
-    const defaultGstin = data?.merchant_business_detail?.gst_details?.default_gst_in;
+    const defaultGstin = gstinDetails?.defaultGstin;
     if (!this.state.gstin && defaultGstin) {
       this.setState((prevState) => ({
         ...prevState,
@@ -2286,9 +2288,10 @@ function ActivationField(field) {
         },
       }));
     }
-    rest.options = data?.merchant_business_detail?.gst_details?.gst_in_list || [];
+    rest.options = gstinDetails?.gstinList || [];
     rest.selected = this.state.gstin || defaultGstin;
     rest.onChange = ({ option }) => {
+      this.showFullGstinList = true;
       this.setState((prevState) => ({
         ...prevState,
         gstin: option,
@@ -2302,6 +2305,8 @@ function ActivationField(field) {
     rest.description = rest.description(this);
     rest.gstinInputError =
       rest.checkValidityFromAPI && !this.isOnKYCTab() && rest.checkValidityFromAPI(this);
+    rest.showFullGstinList = this.showFullGstinList;
+    rest.gstinInputValue = this.state.gstin;
   }
 
   if (field.name === 'e_aadhar' && rest.customField) {
@@ -2545,6 +2550,8 @@ function CustomField(props) {
     companyPanError,
     gstinInputError,
     description,
+    gstinInputValue = '',
+    showFullGstinList = true,
   } = props;
   let error = '';
 
@@ -2581,11 +2588,15 @@ function CustomField(props) {
         </div>
       );
     case 'gstin':
+      let updatedOptions = props.options;
       if (typeof validator === 'function' && isPresent(selected)) {
         error = validator(selected);
       }
       if (gstinInputError) {
         error = gstinInputError;
+      }
+      if (!showFullGstinList) {
+        updatedOptions = props.options.filter((el) => el.includes(gstinInputValue));
       }
       return (
         <div
@@ -2598,6 +2609,7 @@ function CustomField(props) {
           <div className="Input-content">
             <TypeAhead
               {...props}
+              options={updatedOptions}
               showClear={false}
               optionComponent={({ option }) => (
                 <div className="activation-power-select-option">{option}</div>

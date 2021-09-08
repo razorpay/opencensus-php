@@ -1735,7 +1735,8 @@ class Service extends Base\Service
             'inv_create_flow_ux',
             'loans_collections_dashboard',
             'rx_ca_portal',
-            'pp_success_page'
+            'pp_success_page',
+            'gstin_auto_populate'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

@@ -12,6 +12,7 @@ import { Select, Option } from 'common/components/Select';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isVisible, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
+import useGstin from '../hooks/useGstin';
 import {
   getLabel,
   isUnregisteredBusiness,
@@ -143,6 +144,7 @@ interface BusinessDetailsProps {
 const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
   const { data, postData } = useActivation();
   const { user, experiments } = useApp();
+  const { gstinDetails } = useGstin();
   const snackbar = useSnackbar();
   const [pinCode, setPinCodeValue] = useState('');
   const [isRegisteredPin, setIsRegisteredPin] = useState(true);
@@ -354,7 +356,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
         business_operation_state: businessDetails.business_operation_state.value || '',
         business_operation_city: businessDetails.business_operation_city.value || '',
         business_operation_pin: businessDetails.business_operation_pin.value,
-        merchant_business_detail: businessDetails.merchant_business_detail,
         ...addressFormikValue,
       }}
       validationSchema={businessDetailsSchema({ hasGSTIN, businessOverviewDetails })}
@@ -690,11 +691,10 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
           }) ? (
             <FormSection title="Company Details" last disabled={isFormLocked}>
               <Field last>
-                {experiments.isGstinAutoPopulate &&
-                formikProps.values.merchant_business_detail?.gst_details?.gst_in_list ? (
+                {experiments.isGstinAutoPopulate && gstinDetails?.gstinList ? (
                   <GstinAutoPopulate
                     gstin={formikProps.values.gstin}
-                    merchantBusinessDetail={formikProps.values.merchant_business_detail}
+                    gstinDetails={gstinDetails}
                     errorText={formikProps.touched.gstin && formikProps.errors.gstin}
                     updateGstin={(value) => {
                       formikProps.setFieldTouched('gstin');

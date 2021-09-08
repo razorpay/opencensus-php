@@ -36,6 +36,7 @@ import { analyticsTrack } from 'common/services/tracking/segment';
 import ShopEstablishmentNumber from './ShopEstablishmentNumber';
 import { useApp } from 'common/context/App';
 import GstinAutoPopulate from '../Fields/GstinAutoPopulate';
+import useGstin from '../hooks/useGstin';
 
 const StyledSeparator = styled(View)`
   height: 1px;
@@ -60,6 +61,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
     user,
     experiments: { isGstinMandatory, isGstinAutoPopulate },
   } = useApp();
+  const { gstinDetails } = useGstin();
   const documents = data.documents;
   const businessDetails = data.business_details;
 
@@ -263,7 +265,6 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       <Formik
         initialValues={{
           gstin: businessDetails.gstin.value,
-          merchant_business_detail: businessDetails.merchant_business_detail,
           aadhar_front: getFormikInitialValues(documents.aadhar_front),
           aadhar_back: getFormikInitialValues(documents.aadhar_back),
           passport_front: getFormikInitialValues(documents.passport_front),
@@ -446,11 +447,10 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                 </Field>
                 {businessDoc === 'gst_certificate' && (
                   <Field last>
-                    {isGstinAutoPopulate &&
-                    formikProps.values.merchant_business_detail?.gst_details?.gst_in_list ? (
+                    {isGstinAutoPopulate && gstinDetails?.gstinList ? (
                       <GstinAutoPopulate
                         gstin={formikProps.values.gstin}
-                        merchantBusinessDetail={formikProps.values.merchant_business_detail}
+                        gstinDetails={gstinDetails}
                         errorText={formikProps.touched.gstin && formikProps.errors.gstin}
                         updateGstin={(value) => {
                           postData({ gstin: value });

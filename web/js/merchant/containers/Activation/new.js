@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { connect } from 'react-redux';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -570,7 +572,7 @@ export default class ActivationContainer extends React.Component {
   render() {
     const accountId = this.props.accountId; // If accountId present, then Welcome screen and Success screen are not required.
 
-    let { data, categories, aovRange, clarificationReasons } = this.props;
+    let { data, categories, aovRange, clarificationReasons, gstinDetails } = this.props;
     let content, modalClass;
 
     if (!accountId && this.state.showSuccessScreen) {
@@ -611,6 +613,7 @@ export default class ActivationContainer extends React.Component {
           aovRange={aovRange}
           trackEvent={this.props.tracking.trackEvent}
           fetchMerchantDetails={this.fetchMerchantDetails}
+          gstinDetails={gstinDetails}
         />
       );
     }
