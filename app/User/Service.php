@@ -1734,6 +1734,7 @@ class Service extends Base\Service
             'csm_experince_survey',
             'inv_create_flow_ux',
             'loans_collections_dashboard',
+            'optimizer_emi_duration',
             'rx_ca_portal',
             'pp_success_page',
             'gstin_auto_populate'

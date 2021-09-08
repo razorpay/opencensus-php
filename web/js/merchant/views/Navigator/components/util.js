@@ -1,7 +1,7 @@
 import { Operand } from '../models/Operand';
 
 const getExpStatus = (name) => {
-  return ((window.rzp_user.experiments || {})[name] || {}).result === 'on';
+  return (((window.rzp_user && window.rzp_user.experiments) || {})[name] || {}).result === 'on';
 };
 
 export const getValue = (type, value) => {
@@ -178,6 +178,68 @@ const customIdentifierParameter = [
   },
 ];
 
+const emiDurationParameter = getExpStatus('optimizer_emi_duration')
+  ? [
+      {
+        name: 'EMI Duration',
+        value: '$payment.optimizer_emi_duration',
+        description: 'In months',
+        id: 13,
+        values: [
+          {
+            value: '3',
+          },
+          {
+            value: '6',
+          },
+          {
+            value: '9',
+          },
+          {
+            value: '12',
+          },
+          {
+            value: '15',
+          },
+          {
+            value: '18',
+          },
+          {
+            value: '24',
+          },
+          {
+            value: '36',
+          },
+        ],
+        operators: {
+          '==': {
+            multiple: false,
+            type: 'dropdown',
+          },
+          '>': {
+            multiple: false,
+            type: 'dropdown',
+          },
+          '<': {
+            multiple: false,
+            type: 'dropdown',
+          },
+          '>=': {
+            multiple: false,
+            type: 'dropdown',
+          },
+          '<=': {
+            multiple: false,
+            type: 'dropdown',
+          },
+        },
+        type: 'numeric',
+      },
+    ]
+  : [];
+
+const emiMethod = getExpStatus('optimizer_emi_duration') ? [{ value: 'emi' }] : [];
+
 export const parameters = [
   {
     name: 'Channels',
@@ -229,6 +291,7 @@ export const parameters = [
       {
         value: 'upi_collect',
       },
+      ...emiMethod,
     ],
     operators: {
       '==': {
@@ -576,6 +639,7 @@ export const parameters = [
     type: 'numeric',
   },
   ...customIdentifierParameter,
+  ...emiDurationParameter,
 ];
 export const PROVIDERS = [
   { name: 'Smart Router1', id: 1, value: 'smartrouter' },
