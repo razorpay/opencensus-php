@@ -14,14 +14,13 @@ import {
   activatePaymentPage,
   deactivatePaymentPage,
 } from '../model';
-import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import Spinner from 'common/ui/Spinner';
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { updateItem } from 'common/utils/immutable';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../ga';
+import track from './track';
 
 import NoEntityResultsFound from 'common/ui/NoEntityResultsFound';
 
@@ -30,7 +29,7 @@ import PaymentPagesV3Entity from './V3';
 import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ActivateAgain';
 
 @withRouter
-@connect(state => ({}), {
+@connect((state) => ({}), {
   updatePPInReduxList,
   showNotification,
   closeModal,
@@ -52,6 +51,8 @@ export default class extends React.Component {
   componentWillMount() {
     this.fetchEntity(this.entityId);
     this.fetchEntityPayments(this.entityId);
+
+    track.init(this.props.tracking.trackEvent);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -73,7 +74,7 @@ export default class extends React.Component {
     });
 
     return fetchPaymentPageEntity(id)
-      .then(resp => {
+      .then((resp) => {
         if (resp) {
           this.setState({
             paymentPageEntity: resp.data,
@@ -85,7 +86,7 @@ export default class extends React.Component {
 
         return resp;
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -99,7 +100,7 @@ export default class extends React.Component {
 
   fetchEntityPayments(id) {
     return fetchPaymentsListForPaymentPage(id)
-      .then(resp => {
+      .then((resp) => {
         if (resp) {
           this.setState({ paymentPagePayments: resp.data.items });
         }
@@ -108,7 +109,7 @@ export default class extends React.Component {
 
         return resp;
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -121,16 +122,12 @@ export default class extends React.Component {
   editPaymentPage = (data, paymentPageItemId) => {
     const isEntityPaymentPageItem = !!paymentPageItemId;
 
-    const _updateFn = isEntityPaymentPageItem
-      ? editPaymentPageItem
-      : editPaymentPage;
+    const _updateFn = isEntityPaymentPageItem ? editPaymentPageItem : editPaymentPage;
 
-    const id = isEntityPaymentPageItem
-      ? paymentPageItemId
-      : this.state.paymentPageEntity.id;
+    const id = isEntityPaymentPageItem ? paymentPageItemId : this.state.paymentPageEntity.id;
 
     return _updateFn(id, data)
-      .then(resp => {
+      .then((resp) => {
         if (resp.data) {
           const keys = { ...data };
 
@@ -141,8 +138,7 @@ export default class extends React.Component {
 
           let newPaymentPageEntity;
           if (isEntityPaymentPageItem) {
-            let paymentPageItems = this.state.paymentPageEntity
-              .payment_page_items;
+            let paymentPageItems = this.state.paymentPageEntity.payment_page_items;
             let itemIndexInArray;
 
             paymentPageItems.find((pi, ix) => {
@@ -156,7 +152,7 @@ export default class extends React.Component {
               newPaymentPageEntity.payment_page_items = updateItem(
                 paymentPageItems,
                 itemIndexInArray,
-                resp.data
+                resp.data,
               );
             } else {
               throw 'Please Reload the page'; // index must index, so this Shouldn't happen though
@@ -182,7 +178,7 @@ export default class extends React.Component {
           err = [];
 
           errors.length &&
-            errors.forEach(e => {
+            errors.forEach((e) => {
               if (e && e.toLowerCase().indexOf('status code') === -1) {
                 err.push(e);
               }
@@ -213,15 +209,9 @@ export default class extends React.Component {
     const statusReason = this.state.paymentPageEntity.status_reason;
 
     const isActive = status === 'active';
-    const isDeactivated =
-      statusReason && statusReason.toLowerCase() === 'deactivated';
+    const isDeactivated = statusReason && statusReason.toLowerCase() === 'deactivated';
 
-    let apiAction,
-      header,
-      message,
-      affirmativeLabel,
-      affirmativePendingLabel,
-      successMsg;
+    let apiAction, header, message, affirmativeLabel, affirmativePendingLabel, successMsg;
 
     if (isActive) {
       /* Wants manual deactivation */
@@ -237,8 +227,7 @@ export default class extends React.Component {
 
       apiAction = activatePaymentPage;
       header = 'Activate Page?';
-      message =
-        'Once you activate the page, you will be able to accept payments.';
+      message = 'Once you activate the page, you will be able to accept payments.';
       affirmativeLabel = 'Yes, activate';
       affirmativePendingLabel = 'Activating..';
       successMsg = `${this.state.paymentPageEntity.id} is now Active`;
@@ -256,7 +245,7 @@ export default class extends React.Component {
       abortLabel: "No, don't!",
       action: () => {
         return apiAction(this.state.paymentPageEntity.id)
-          .then(resp => {
+          .then((resp) => {
             if (resp.data) {
               this.props.showNotification({
                 type: 'success',
@@ -270,18 +259,9 @@ export default class extends React.Component {
               this.setState({
                 paymentPageEntity: resp.data,
               });
-              trackDetailViewEdits(
-                'Toggle Status',
-                isActive ? 'deactivate' : 'activate'
-              );
+              trackDetailViewEdits('Toggle Status', isActive ? 'deactivate' : 'activate');
 
-              this.props.tracking.trackEvent(
-                window.rzpQ
-                  .paymentPages()
-                  .interaction(
-                    `pp.deactivate.${isActive ? 'deactivate' : 'activate'}`
-                  )
-              );
+              track.pageStatus(isActive ? 'deactivate' : 'activate');
             }
             return resp;
           })
@@ -292,7 +272,7 @@ export default class extends React.Component {
               err = [];
 
               errors.length &&
-                errors.forEach(e => {
+                errors.forEach((e) => {
                   if (e && e.toLowerCase().indexOf('status code') === -1) {
                     err.push(e);
                   }
@@ -331,8 +311,7 @@ export default class extends React.Component {
     const reactivationTimeGap = 15 * 60;
     const hasExpiredInCompletedState =
       this.state.paymentPageEntity.expire_by &&
-      this.state.paymentPageEntity.expire_by <
-        currentTimeStamp + reactivationTimeGap; // within 15 minutes
+      this.state.paymentPageEntity.expire_by < currentTimeStamp + reactivationTimeGap; // within 15 minutes
 
     this.props.openModal({
       size: 'medium',
@@ -346,9 +325,9 @@ export default class extends React.Component {
           }
           isCompleted={isCompleted}
           handleClose={this.props.closeModal}
-          handleClick={data => {
+          handleClick={(data) => {
             return activatePaymentPage(this.state.paymentPageEntity.id, data)
-              .then(resp => {
+              .then((resp) => {
                 if (resp.data) {
                   this.props.updatePPInReduxList(resp.data, false);
 
@@ -373,7 +352,7 @@ export default class extends React.Component {
                   err = [];
 
                   errors.length &&
-                    errors.forEach(e => {
+                    errors.forEach((e) => {
                       if (e && e.toLowerCase().indexOf('status code') === -1) {
                         err.push(e);
                       }

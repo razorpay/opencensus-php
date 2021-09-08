@@ -21,6 +21,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../ga';
 import { sendLink, exportReportCSV } from '../model';
 import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
+import track from './track';
 
 import EditStock from 'merchant/views/PaymentPages/PaymentPages/components/EditStock';
 
@@ -70,12 +71,8 @@ export default class PaymentPagesV3Entity extends React.Component {
       this.props.saveReportConfigs();
     }
 
-    this.trackPaymentPageDetailsView('pp.details.page_open');
+    track.pageOpen();
   }
-
-  trackPaymentPageDetailsView = (event) => {
-    return this.props.tracking.trackEvent(window.rzpQ.paymentPages().interaction(event));
-  };
 
   getStatsTable(paymentPageEntity) {
     return [
@@ -193,31 +190,31 @@ export default class PaymentPagesV3Entity extends React.Component {
 
   trackDateUpdate = (date, type) => {
     if (type === 'Cancel Expiry') {
-      this.trackPaymentPageDetailsView('pp.details.expiry_cancel');
+      track.cancelExpiry();
 
       return;
     }
 
     if (!date) {
-      this.trackPaymentPageDetailsView('pp.details.expiry_tick');
+      track.tickExpiry();
     }
   };
 
   onClickDuplicatePage = () => {
-    this.trackPaymentPageDetailsView('pp.details.duplicate_page');
+    track.duplicatePage();
   };
 
   trackEditNotes = (changeType, modified) => {
     if (changeType === 'Save Notes') {
-      this.trackPaymentPageDetailsView(`pl.details.notes`, { modified });
+      track.saveNotes(modified);
     }
 
     if (changeType === 'Delete Notes (Confirmed)') {
-      this.trackPaymentPageDetailsView(`pl.details.notes_closed`);
+      track.confirmDeleteNotes();
     }
 
     if (changeType === 'Delete Notes (Cancelled)') {
-      this.trackPaymentPageDetailsView(`pl.details.notes.close`);
+      track.cancelDeleteNotes();
     }
   };
 
@@ -276,7 +273,10 @@ export default class PaymentPagesV3Entity extends React.Component {
                 )}
 
                 {isRoleAllowedEdit && (
-                  <Link to={`/paymentpages/new?duplicate_id=${paymentPageEntity.id}`}>
+                  <Link
+                    to={`/paymentpages/new?duplicate_id=${paymentPageEntity.id}`}
+                    onClick={this.onClickDuplicatePage}
+                  >
                     <Button class="Button--primary--invert">
                       <i className="i i-duplicate" />
                     </Button>
