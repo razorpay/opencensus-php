@@ -457,6 +457,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                         }}
                         hasGSTIN={false}
                         disabled={isFormLocked}
+                        location="Document Upload Tab"
                       />
                     ) : (
                       <TextInput

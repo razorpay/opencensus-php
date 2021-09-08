@@ -798,8 +798,8 @@ const businessDetails = [
       customField: canShowCustomGstinField,
       description: (activation) => {
         const {
-          props: { data },
-          state: { gstin, showGstinDescription, gstinDetails },
+          props: { data, gstinDetails },
+          state: { gstin, showGstinDescription },
         } = activation;
         const defaultGstin = gstinDetails?.defaultGstin;
         if (
@@ -809,6 +809,16 @@ const businessDetails = [
           gstin === defaultGstin &&
           showGstinDescription
         ) {
+          analyticsTrack({
+            objectName: 'default value from autopopulated gstin',
+            actionName: 'displayed',
+            screen: 'home page',
+            properties: {
+              location: 'Business Details Tab',
+              gstinListLength: gstinDetails.gstinList && gstinDetails.gstinList.length,
+              ...getCommonAnalyticsProperties(),
+            },
+          });
           return 'Your GSTIN was fetched based on your PAN details, please recheck to avoid any delays in KYC updation and review.';
         }
       },
@@ -1213,8 +1223,8 @@ const uploadFields = [
     customField: canShowCustomGstinField,
     description: (activation) => {
       const {
-        props: { data },
-        state: { gstin, showGstinDescription, gstinDetails },
+        props: { data, gstinDetails },
+        state: { gstin, showGstinDescription },
       } = activation;
       const defaultGstin = gstinDetails?.defaultGstin;
       if (
@@ -1224,6 +1234,16 @@ const uploadFields = [
         gstin === defaultGstin &&
         showGstinDescription
       ) {
+        analyticsTrack({
+          objectName: 'default value from autopopulated gstin',
+          actionName: 'displayed',
+          screen: 'home page',
+          properties: {
+            location: 'Document Upload Tab',
+            gstinListLength: gstinDetails.gstinList && gstinDetails.gstinList.length,
+            ...getCommonAnalyticsProperties(),
+          },
+        });
         return 'Your GSTIN was fetched based on your PAN details, please recheck to avoid any delays in KYC updation and review.';
       }
     },

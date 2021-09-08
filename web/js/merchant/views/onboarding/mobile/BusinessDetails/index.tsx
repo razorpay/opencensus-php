@@ -703,6 +703,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     }}
                     hasGSTIN={hasGSTIN}
                     disabled={isFormLocked || hasGSTIN}
+                    location="Business Details Tab"
                   />
                 ) : (
                   <TextInput

@@ -9,6 +9,8 @@ import { Select, Option } from 'common/components/Select';
 import { FormikErrors } from 'formik';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import { debounce } from '../../services/utils';
+import { analyticsTrack } from 'common/services/tracking/segment';
+import { useApp } from 'common/context/App';
 
 interface GstinDetailsPropsT {
   gstinList?: any;
@@ -22,6 +24,7 @@ interface GstinAutoPopulatePropsT {
   errorText?: string | false | string[] | FormikErrors<any> | FormikErrors<any>[] | undefined;
   disabled?: boolean;
   gstinDetails?: GstinDetailsPropsT;
+  location?: string;
 }
 
 const StyledSeparator = styled(View)`
@@ -37,7 +40,9 @@ const GstinAutoPopulate: React.FC<GstinAutoPopulatePropsT> = ({
   updateGstin,
   hasGSTIN,
   gstinDetails,
+  location = '',
 }) => {
+  const { user } = useApp();
   const defaultGstin = gstinDetails?.defaultGstin || '';
   const gstinValue = gstin || defaultGstin;
   const [isDescriptionVisible, setIsDescriptionVisible] = useState(!gstin && !!defaultGstin);
@@ -53,6 +58,22 @@ const GstinAutoPopulate: React.FC<GstinAutoPopulatePropsT> = ({
       updateGstin(defaultGstin);
     }
   }, [gstin, hasGSTIN]);
+
+  useEffect(() => {
+    if (isDescriptionVisible) {
+      analyticsTrack({
+        objectName: 'Default value from autopopulated gstin',
+        actionName: 'displayed',
+        screen: 'home page',
+        user,
+        eventAction: 'initiated',
+        properties: {
+          location,
+          gstinListLength: gstinList.length,
+        },
+      });
+    }
+  }, []);
 
   const onInputChange = debounce((val) => {
     showFullList.current = false;
