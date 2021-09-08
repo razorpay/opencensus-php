@@ -8,9 +8,9 @@ import Loader from 'common/ui/Loader';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ModalDialog from 'common/ui/ModalDialog';
 import { analyticsTrack, initAnalytics } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, classList, isPresent } from 'common/utils/rzp-utils';
 import Notifications from 'common/ui/Notifications';
-import LocalStorageService from 'common/utils/localStorage';
+import { getItem, setItem, removeItem } from 'common/utils/localStorage';
 import debounce from 'common/utils/debounce';
 import Sidebar from 'merchant/components/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
@@ -26,13 +26,11 @@ import * as ConfigActions from 'merchant/reducers/config';
 import { applyTheme } from 'merchant_common/helpers/themes';
 import TwoFactorVerificationProvider from 'common/ui/TwoFactorVerification/TwoFactorVerificationProvider';
 import User, { setFeatures } from 'merchant/models/User';
-import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import { fetchGST } from 'merchant/reducers/profile';
 import { fireAnalyticsEvents, setTrackData } from 'common/utils/googleAnalytics';
 import { resizeWindow, updateMerchantLiveTransactionFlag } from 'merchant/reducers/app';
 import { matchFullPageView } from 'merchant/routes';
-import { classList, isPresent } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import rolesList from 'merchant/helpers/permissions/roles-list';
@@ -40,9 +38,7 @@ import initChat from 'merchant/components/Support/chat';
 import RTracking from 'react-tracking';
 import qs from 'query-string';
 import Wrapper from 'common/components/Bootstrap/Wrapper';
-import { fetchActiveTickets } from 'merchant/reducers/config.js';
 import LogoutDialog from 'merchant/components/LogoutDialog';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { fetchInstantSettlements } from 'merchant/reducers/collection';
 import { bindActionCreators, compose } from 'redux';
 
@@ -54,17 +50,17 @@ class App extends Component {
     super(props);
 
     const oldModeToken = 'rzp_mode';
-    const oldModeValue = LocalStorageService.getItem(oldModeToken);
+    const oldModeValue = getItem(oldModeToken);
 
     // localizing mode for each merchant so that different modes can be maintained
     // across logins/merchants
     if (oldModeValue) {
-      window.rzp_user &&
+      if (window.rzp_user) {
         Object.keys(window.rzp_user.merchants).forEach((merchantId) => {
-          LocalStorageService.setItem(`${oldModeToken}--${merchantId}`, oldModeValue);
+          setItem(`${oldModeToken}--${merchantId}`, oldModeValue);
         });
-
-      LocalStorageService.removeItem(oldModeToken);
+      }
+      removeItem(oldModeToken);
     }
 
     this.modeToken = null;
@@ -125,7 +121,7 @@ class App extends Component {
         const kycStatus = user.activated ? 'activated' : 'not activated';
         const activatedAt = user.activated_at;
 
-        analytics.identify(user.user.id, {
+        window.analytics.identify(user.user.id, {
           id: user.user.id,
           userId: user.user.id,
           emailId: user.email,
@@ -135,14 +131,14 @@ class App extends Component {
           kycStatus,
           merchantId: user.current,
           businessCategory: user.businessCategory,
-          phone: '+91' + user.contact_mobile,
+          phone: `+91${user.contact_mobile}`,
         });
       }
     });
 
     const self = this;
-    window.addEventListener('NOT_AUTHENTICATED', function (e) {
-      if (this.logoutPopupShown) {
+    window.addEventListener('NOT_AUTHENTICATED', () => {
+      if (self.logoutPopupShown) {
         return;
       }
       self.props.closeModal();
@@ -150,13 +146,13 @@ class App extends Component {
         size: 'large',
         component: <LogoutDialog user={user} />,
       });
-      this.logoutPopupShown = true;
+      self.logoutPopupShown = true;
     });
 
-    window.addEventListener('REQUEST_ERROR', function (e) {
+    window.addEventListener('REQUEST_ERROR', (e) => {
       const errorCode = e.detail.response ? e.detail.response.status : 'UNKNOWN STATUS';
 
-      window.ga &&
+      if (window.ga) {
         window.ga(
           'send',
           'event',
@@ -164,10 +160,11 @@ class App extends Component {
           e.detail.url,
           e.detail.response,
         );
+      }
     });
 
-    let currentMode = LocalStorageService.getItem(this.modeToken);
-    let isActivated = LocalStorageService.getItem(`is_activated--${user?.current}`);
+    let currentMode = getItem(this.modeToken);
+    let isActivated = getItem(`is_activated--${user?.current}`);
     const isUnregBiz = ['2', '11'].indexOf(user?.business_type) !== -1;
 
     if (
@@ -181,7 +178,7 @@ class App extends Component {
           user.poi_verification_status === 'verified' &&
           user.activation_status === 'instantly_activated'))
     ) {
-      LocalStorageService.setItem(`is_activated--${user.current}`, 'true');
+      setItem(`is_activated--${user.current}`, 'true');
       isActivated = 'true';
     }
 
@@ -191,31 +188,32 @@ class App extends Component {
 
     Promise.all([
       this.fetchUser().then(({ data }) => {
-        const user = data;
-        const role = user.userRole;
+        const currentUser = data;
+        const role = currentUser.userRole;
 
         if (!currentMode) {
-          currentMode = user.isActivated ? 'live' : 'test';
+          currentMode = currentUser.isActivated ? 'live' : 'test';
         } else if (this.canMerchantMoveToLiveMode(currentMode, isActivated, user)) {
           currentMode = 'live';
-        } else if (!user.isActivated) {
+        } else if (!currentUser.isActivated) {
           currentMode = 'test';
         }
 
         this.props.updateSession({ mode: currentMode });
         this.props.updateTwoFactorVerified({
-          twoFactorVerified: user.isTwoFactorVerified,
+          twoFactorVerified: currentUser.isTwoFactorVerified,
         });
         this.redirectToRoute(role);
-        this.setLiveTransactionDone(user);
+        this.setLiveTransactionDone(currentUser);
 
         setTimeout(() => {
-          initChat(user);
+          initChat(currentUser);
         });
         return data;
       }),
       this.fetchOrg().then(({ data }) => {
-        const orgCode = (this.orgCode = data.custom_code);
+        this.orgCode = data.custom_code;
+        const orgCode = this.orgCode;
         if (orgCode && orgCode !== 'rzp') {
           applyTheme(data);
         }
@@ -238,13 +236,14 @@ class App extends Component {
         }
 
         // Fetch features before displaying other views
-        fetchFeaturesAjax(response[0].current)
+        this.props
+          .fetchFeaturesAjax(response[0].current)
           .catch((_) => _)
           .then((data) => {
-            const user = new User(response[0]);
-            user.features = setFeatures(data.success ? data.data.features : []);
+            const userObj = new User(response[0]);
+            userObj.features = setFeatures(data.success ? data.data.features : []);
 
-            this.props.updateSession({ user, mode: currentMode });
+            this.props.updateSession({ userObj, mode: currentMode });
             this.renderFullPageView = this.getFPView(this.props.location);
 
             removeSplashLoader();
@@ -277,6 +276,7 @@ class App extends Component {
           onSubmit: this.closeGoLiveSurvey,
         },
       );
+      /* eslint-disable react/no-direct-mutation-state */
       this.state.GoLiveNPSEnableTypeForm = GoLiveNPSEnableTypeForm; // saving reference typeform
 
       const NonGoLiveNPSEnableTypeForm = createSidetab(
@@ -290,13 +290,14 @@ class App extends Component {
           onSubmit: this.closeNonGoLiveSurvey,
         },
       );
+      /* eslint-disable react/no-direct-mutation-state */
       this.state.NonGoLiveNPSEnableTypeForm = NonGoLiveNPSEnableTypeForm; // saving reference typeform
 
       if (
-        ((user.experiments || {})['csm_experince_survey'] || {}).result === 'on' &&
-        !LocalStorageService.getItem('csm_experience_survey_showed')
+        ((user.experiments || {}).csm_experince_survey || {}).result === 'on' &&
+        !getItem('csm_experience_survey_showed')
       ) {
-        LocalStorageService.setItem('csm_experience_survey_showed');
+        setItem('csm_experience_survey_showed');
         createPopup('Sl6YqLtE', {
           hideHeaders: true,
           hideFooters: true,
@@ -304,9 +305,7 @@ class App extends Component {
         }).open();
       }
 
-      const merchantsSettlementStatus = JSON.parse(
-        LocalStorageService.getItem('merchantsSettlementStatus'),
-      );
+      const merchantsSettlementStatus = JSON.parse(getItem('merchantsSettlementStatus'));
 
       const esOndemandSettlementDisabled = (user.features || []).indexOf('es_on_demand') === -1;
       if (esOndemandSettlementDisabled) return;
@@ -324,16 +323,13 @@ class App extends Component {
             ...merchantsSettlementStatus,
             [user.current]: 'disableAnimationOnReload',
           };
-          LocalStorageService.setItem(
-            'merchantsSettlementStatus',
-            JSON.stringify(updatedMerchantSettlementStatus),
-          );
+          setItem('merchantsSettlementStatus', JSON.stringify(updatedMerchantSettlementStatus));
         }
       }
     }
   }
 
-  componentWillReceiveProps({ user, history, location, baseLocation, org }) {
+  componentWillReceiveProps({ user, location, baseLocation, org }) {
     if (user.isAuthenticated) {
       const role = user.userRole;
       this.redirectToRoute(role);
@@ -341,9 +337,7 @@ class App extends Component {
       this.renderFullPageView = this.getFPView(baseLocation || location);
     }
     if (org && user) {
-      const goLiveSurveyShowed = !!LocalStorageService.getItem(
-        'razorpay_go_live_nps_survey_showed',
-      );
+      const goLiveSurveyShowed = !!getItem('razorpay_go_live_nps_survey_showed');
       if (
         org &&
         org.custom_code &&
@@ -359,9 +353,7 @@ class App extends Component {
         this.setState({ goLiveNPSSurveyPopup: takeGoLiveNPSSurvey });
       }
 
-      const nonGoLiveSurveyShowed = !!LocalStorageService.getItem(
-        'razorpay_non_go_live_nps_survey_showed',
-      );
+      const nonGoLiveSurveyShowed = !!getItem('razorpay_non_go_live_nps_survey_showed');
       if (
         org &&
         org.custom_code &&
@@ -386,28 +378,21 @@ class App extends Component {
   }
 
   getSettlementDetails = (merchantId) => {
-    const { fetchInstantSettlements } = this.props;
-
     fetchInstantSettlements({ count: 1 }).then(({ data: { items = [] } = {} } = {}) => {
-      const merchantsSettlementStatus = JSON.parse(
-        LocalStorageService.getItem('merchantsSettlementStatus'),
-      );
+      const merchantsSettlementStatus = JSON.parse(getItem('merchantsSettlementStatus'));
       const updatedMerchantSettlementStatus = {
         ...merchantsSettlementStatus,
         [merchantId]: items.length > 0,
       };
-      LocalStorageService.setItem(
-        'merchantsSettlementStatus',
-        JSON.stringify(updatedMerchantSettlementStatus),
-      );
+      setItem('merchantsSettlementStatus', JSON.stringify(updatedMerchantSettlementStatus));
     });
   };
 
   /**
    * this function check wether the date is inside any of the date ranges or not
-   * @param {String} inputDate - this date should be in unix timestamp format
-   * @param {Object} dateRanges - this array contain arrays of date ranges date format should be YYYY-MM-DD
-   * @returns {boolean}
+   * @param {String} input - this date should be in unix timestamp format
+   * @param {Object} ranges - this array contain arrays of date ranges date format should be YYYY-MM-DD
+   * @returns {boolean} - this returns the results
    */
   dateIsInRange = (input, ranges) => {
     if (ranges) {
@@ -490,13 +475,14 @@ class App extends Component {
   };
 
   setLiveTransactionDone = (user) => {
-    let { live_transaction_done, id } = user;
+    let { live_transaction_done } = user;
+    const { id } = user;
 
     if (!isPresent(live_transaction_done)) {
       return;
     }
 
-    live_transaction_done = parseInt(live_transaction_done);
+    live_transaction_done = parseInt(live_transaction_done, 10);
     switch (live_transaction_done) {
       case 1:
         updateMerchantLiveTransactionFlag(id)
@@ -505,10 +491,12 @@ class App extends Component {
               this.fireMTUFunnelEvents(user);
             }
           })
-          .catch((err) => {});
+          .catch(() => {});
         break;
       case 2:
         this.fireMTUAudienceEvents(user);
+        break;
+      default:
         break;
     }
   };
@@ -521,14 +509,14 @@ class App extends Component {
 
       // if the user is live but chose to browse in test mode,
       // it will be stored in rzp_mode
-      let currentMode = LocalStorageService.getItem(this.modeToken);
-      const isActivated = LocalStorageService.getItem(`is_activated--${user.current}`);
+      let currentMode = getItem(this.modeToken);
+      const isActivated = getItem(`is_activated--${user.current}`);
 
       if (!currentMode) {
         currentMode = user.isActivated ? 'live' : 'test';
       } else if (this.canMerchantMoveToLiveMode(currentMode, isActivated, user)) {
         currentMode = 'live';
-        LocalStorageService.setItem(`is_activated--${user.current}`, 'true');
+        setItem(`is_activated--${user.current}`, 'true');
       } else if (!user.isActivated) {
         currentMode = 'test';
       }
@@ -536,7 +524,7 @@ class App extends Component {
       // making sure his current mode is remembered so that when he gets
       // activated, he wont be switched to live mode automatically
       // which may lead to mass confusion for merchants
-      LocalStorageService.setItem(this.modeToken, currentMode);
+      setItem(this.modeToken, currentMode);
 
       if (user && user.user) {
         if (window.setRavenContext) {
@@ -585,25 +573,29 @@ class App extends Component {
   }
 
   redirectToRoute(role) {
+    /* 
+      Added a default fallback return null but i think don't even need
+      any retun in the first place any stakeholder do check this logic once
+     */
     const pathname = this.props.history.location.pathname;
 
     if (pathname === '/' || pathname === '/dashboard' || pathname === '/dashboard_v2') {
       switch (role) {
         case [rolesList.SELLERAPP]:
         case [rolesList.AGENT]:
-          const url = '/paymentlinks';
-          return this.props.history.replace(url);
-
+          return this.props.history.replace('/paymentlinks');
         case [rolesList.SUPPORT]:
           return this.props.history.replace('/payments');
-
         case null:
           return this.props.history.replace('/profile');
+        default:
+          return null;
       }
     }
+    return null;
   }
 
-  switchMode = (mode) => {
+  switchMode = (mode, callback) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Header',
       eventAction: 'Switch - Mode',
@@ -628,7 +620,8 @@ class App extends Component {
         ),
       });
     } else {
-      LocalStorageService.setItem(this.modeToken, mode);
+      if (callback) callback();
+      setItem(this.modeToken, mode);
       location.reload();
 
       window.trackHubs({
@@ -710,20 +703,18 @@ class App extends Component {
       this.state.NonGoLiveNPSEnableTypeForm.unmount();
     return (
       <>
-        {goLiveNPSSurveyPopup &&
-          !LocalStorageService.getItem('razorpay_go_live_nps_survey_showed') && (
-            <>
-              {LocalStorageService.setItem('razorpay_go_live_nps_survey_showed', 1)}
-              {this.state.GoLiveNPSEnableTypeForm.open()}
-            </>
-          )}
-        {nonGoLiveNPSSurveyPopup &&
-          !LocalStorageService.getItem('razorpay_non_go_live_nps_survey_showed') && (
-            <>
-              {LocalStorageService.setItem('razorpay_non_go_live_nps_survey_showed', 1)}
-              {this.state.NonGoLiveNPSEnableTypeForm.open()}
-            </>
-          )}
+        {goLiveNPSSurveyPopup && !getItem('razorpay_go_live_nps_survey_showed') && (
+          <>
+            {setItem('razorpay_go_live_nps_survey_showed', 1)}
+            {this.state.GoLiveNPSEnableTypeForm.open()}
+          </>
+        )}
+        {nonGoLiveNPSSurveyPopup && !getItem('razorpay_non_go_live_nps_survey_showed') && (
+          <>
+            {setItem('razorpay_non_go_live_nps_survey_showed', 1)}
+            {this.state.NonGoLiveNPSEnableTypeForm.open()}
+          </>
+        )}
       </>
     );
   };
@@ -743,7 +734,7 @@ class App extends Component {
   };
 
   render() {
-    const { user, config, org, mode, modeFormatted, merchant_gst } = this.props;
+    const { user, config, org, mode, modeFormatted } = this.props;
 
     const hasGSTIN = this.props.merchant_gst.p_gstin || this.props.merchant_gst.gstin;
 
@@ -763,7 +754,7 @@ class App extends Component {
         <div className={classList('layout', this.orgCode, this.renderFullPageView && 'layout--fp')}>
           <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
             {!this.renderFullPageView && (
-              <React.Fragment>
+              <>
                 <HeaderNav
                   user={user}
                   mode={mode}
@@ -779,7 +770,7 @@ class App extends Component {
                   config={config.config}
                   org_custom_code={org.custom_code}
                 />
-              </React.Fragment>
+              </>
             )}
 
             {this.getSurveyForm()}
@@ -835,10 +826,7 @@ const mapDispatchToProps = (dispatch) =>
       ...NotificationActions,
       updateTwoFactorVerified,
       fetchGST,
-      fetchActiveTickets,
       resizeWindow,
-      openModal,
-      closeModal,
       fetchInstantSettlements,
     },
     dispatch,
