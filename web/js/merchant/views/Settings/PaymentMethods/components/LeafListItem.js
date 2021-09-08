@@ -410,9 +410,7 @@ class LeafListItem extends React.Component {
                   <div className="detail">
                     <strong>Live Mode</strong>
                     <div class="activated status" style={{ marginRight: '0' }}>
-                      {instrument.status === ACTIVATED_ACTION_REQUIRED
-                        ? ACTIVATED
-                        : instrument.status.replace('_', ' ')}
+                      {instrument.status.replace('_', ' ')}
                       <Popover align="bottom" theme="dark">
                         <PopoverBody>
                           <div style={{ textAlign: 'left', textTransform: 'none' }}>
@@ -468,7 +466,9 @@ class LeafListItem extends React.Component {
               instrument.path !== 'pg.wallet.paytm' && (
                 <div className="flex-end">
                   <div class={ctaClass[instrument.status]}>
-                    {instrument.status.replace('_', ' ')}
+                    {instrument.status === ACTIVATED_ACTION_REQUIRED
+                      ? ACTIVATED
+                      : instrument.status.replace('_', ' ')}
                     <Popover align="bottom" theme="dark">
                       <PopoverBody>
                         <div style={{ textAlign: 'left', textTransform: 'none' }}>
