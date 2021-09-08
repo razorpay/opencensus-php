@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Helpers\Payment;
 
 use RZP\Models\CardMandate;
+use RZP\Constants\Entity as E;
 
 trait PaymentMandateHQTrait
 {
@@ -14,9 +15,9 @@ trait PaymentMandateHQTrait
         $this->assertEquals('get', $method);
         $this->assertEmpty($content);
 
-        $content = $this->getJsonContentFromResponse($response, $callback);
+        $payment = $this->getDbLastEntity(E::PAYMENT);
 
-        $paymentId = $content['payment_id'];
+        $paymentId = $payment->getPublicId();
 
         $url = (new CardMandate\MandateHubs\MandateHQ\MandateHQ)->getRedirectUrlForPayment($paymentId);
 

@@ -1035,7 +1035,7 @@ trait Authorize
             'version'    => 1,
             'type'       => 'first',
             'payment_id' => $payment->getPublicId(),
-            'gateway'    => Crypt::encrypt('mandate_hq'),
+            'gateway'    => Crypt::encrypt('mandate_hq__' . Carbon::now()->unix()),
         ];
     }
 

@@ -100,6 +100,40 @@ class CardMandateTest extends TestCase
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
     }
 
+    public function testCreateCardMandatePaymentViaPaymentCheckoutApi()
+    {
+        $this->mockCheckBin();
+
+        $this->mockRegisterMandate();
+
+        $this->mockReportPayment();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/checkout',
+            'content' => $this->paymentInput,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['razorpay_payment_id'] ?? null);
+
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('initial', $payment->getRecurringType());
+        $this->assertNotNull($payment->getTokenId());
+
+        $token = $payment->localToken;
+        $this->assertNotEmpty($token);
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+        $this->assertNotEmpty($cardMandate);
+        $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
+        $this->assertEquals('active', $cardMandate->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+    }
+
     public function testSubscriptionRegistrationInitialCardMandatePaymentAmountGreaterThanMaxAmount()
     {
         $this->mockCheckBin();

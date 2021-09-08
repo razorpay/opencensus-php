@@ -196,7 +196,8 @@ trait PaymentCreationTrait
 
         if ($request['url'] === '/payments/create/checkout')
         {
-            $this->assertTrue($this->isResponseInstanceType($response, 'http'));
+            $this->assertTrue($this->isResponseInstanceType($response, 'http') or
+                $this->isResponseInstanceType($response, 'redirect'));
             $this->assertEquals($response->headers->get('content-type'), 'text/html; charset=UTF-8');
 
             $marker = '// Callback data //';
