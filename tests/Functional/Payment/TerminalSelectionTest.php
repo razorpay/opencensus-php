@@ -3,8 +3,11 @@
 namespace RZP\Tests\Functional\Payment;
 
 use RZP\Constants\Environment;
+use RZP\Exception\BadRequestException;
+use RZP\Gateway\Hdfc\ErrorCodes\ErrorCodeDescriptions;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Models\Card;
+use RZP\Models\WalletAccount;
 use RZP\Constants\Mode;
 use RZP\Models\Gateway\Terminal\GatewayProcessor\Hitachi\GatewayProcessor;
 use RZP\Models\Payment;
@@ -2617,6 +2620,80 @@ class TerminalSelectionTest extends TestCase
         $terminal = $selectedTerminals[0];
 
         $this->assertEquals('payu', $terminal->getGateway());
+    }
+
+    /**
+     *
+     * For wallet payment if smart router selects no terminal ,
+     * It should not fallback to API filters and sorters
+     *
+     * @throws RuntimeException
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function testNoTerminalFoundFallbackForWallet(){
+        //for production we will set the mode as LIVE
+        $this->app['rzp.mode']=Mode::LIVE;
+        $this->app['env']=Environment::PRODUCTION;
+
+        $paymentArray=$this->getDefaultWalletPaymentArray();
+
+        //Setting random payment id to allow hitting the smart router
+        $paymentArray['id']='randomid';
+
+        $payment=(new Payment\Entity)->fill($paymentArray);
+        $merchant=Merchant\Entity::find('10000000000000');
+        $payment->merchant()->associate($merchant);
+
+        $input = [
+            'payment' =>$payment,
+            'merchant'=>$payment->merchant
+        ];
+        $options = new Options;
+        $selector=new Selector($input,$options);
+
+        $this->makeRequestAndCatchException(
+            function () use($selector){
+                $selector->select();
+            },
+            RuntimeException::class,'No terminal found.');
+    }
+    /**
+     *
+     * For Net Banking payment if smart router selects no terminal ,
+     * It should not fallback to API filters and sorters
+     *
+     * @throws RuntimeException
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function testNoTerminalFoundFallbackForNB(){
+
+        $paymentArray=$this->getDefaultNetbankingPaymentArray("HDFC");
+
+        $paymentArray['id']='randomid';
+
+        $payment=(new Payment\Entity)->fill($paymentArray);
+
+        $merchant=Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+        $this->setMerchantBanks(['HDFC']);  //this sets the mode as TEST
+
+        //for production we will set the mode as LIVE
+        $this->app['rzp.mode']=Mode::LIVE;
+
+        $this->app['env']=Environment::PRODUCTION;
+        $input = [
+            'payment' =>$payment,
+            'merchant'=>$payment->merchant
+        ];
+        $options = new Options;
+        $selector=new Selector($input,$options);
+
+        $this->makeRequestAndCatchException(
+            function () use($selector){
+                $selector->select();
+            },
+            BadRequestException::class,PublicErrorDescription::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
     }
 
 }
