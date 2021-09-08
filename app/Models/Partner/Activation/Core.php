@@ -6,15 +6,17 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Partner\Metric;
 use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\State\Reason;
+use RZP\Models\Partner\Metric;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Partner\Activation;
 use RZP\Models\Workflow\Action\Core as ActionCore;
-use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
+use RZP\Mail\Merchant\PartnerActivationRejection as RejectionMail;
+use RZP\Mail\Merchant\PartnerActivationConfirmation as ActivationMail;
+use RZP\Mail\Merchant\PartnerNeedsClarificationEmail as ClarificationEmail;
 use RZP\Models\Merchant\Detail\NeedsClarification\UpdateContextRequirements as Requirements;
 
 class Core extends Base\Core
@@ -346,7 +348,7 @@ class Core extends Base\Core
             {
                 $partnerActivation->deactivate();
 
-                $detailCore->sendRejectionEmail($merchant);
+                $this->sendRejectionEmail($merchant);
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Constants::NEEDS_CLARIFICATION)
@@ -355,8 +357,7 @@ class Core extends Base\Core
                 {
                     $partnerActivation->setLocked(false);
 
-                    //TODO - once notifications are finalized, use the below function for needs clarification email
-                    //$this->sendNeedsClarificationEmail($merchant, $partnerActivation);
+                    $this->sendNeedsClarificationEmail($merchant, $partnerActivation);
                 }
             }
 
@@ -433,12 +434,28 @@ class Core extends Base\Core
         return ($merchantDetail->hasBankAccountDetails() === true);
     }
 
+    private function sendRejectionEmail(Merchant\Entity $merchant)
+    {
+        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+
+        $data = [
+            'name'  => $merchant->getName(),
+            'email' => $merchant->getEmail(),
+            'id'    => $merchant->getId(),
+        ];
+
+        $rejectionMail = new RejectionMail($data, $org->toArray());
+
+        Mail::queue($rejectionMail);
+    }
+
     /**
      * This function would format the needs clarification reasons and sends an email to the partner
+     *
      * @param Merchant\Entity $merchant
      * @param Entity          $partnerActivation
      */
-    public function sendNeedsClarificationEmail(Merchant\Entity $merchant, Entity $partnerActivation)
+    private function sendNeedsClarificationEmail(Merchant\Entity $merchant, Entity $partnerActivation)
     {
         $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
@@ -455,16 +472,13 @@ class Core extends Base\Core
     }
 
     /**
-     * TODO:
-     * 1. Add events specific to partner activation
-     * 2. Send notifications to partner when partner gets activated.
-     *    Once template text is finalized, will use the PartnerActivationMail accordingly
-     *
      * @param Merchant\Entity $merchant
      */
     private function sendPartnerActivationEvents(Merchant\Entity $merchant)
     {
-        //Mail::queue(new PartnerActivationMail($merchant->getId()));
+        $email = new ActivationMail($merchant->getId());
+
+        Mail::queue($email);
     }
 
     protected function isPartnerActivationReqFulFilled(array $requiredVerificationFields, Detail\Entity $merchantDetails): bool

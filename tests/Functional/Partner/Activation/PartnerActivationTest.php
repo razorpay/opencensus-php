@@ -8,6 +8,9 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Mail\Merchant\PartnerActivationRejection;
+use RZP\Mail\Merchant\PartnerActivationConfirmation;
+use RZP\Mail\Merchant\PartnerNeedsClarificationEmail;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Models\Admin\Permission\Repository as PermissionRepository;
@@ -193,7 +196,6 @@ class PartnerActivationTest extends OAuthTestCase
         $testData = $this->testData['testActivatePartnerFromUnderReview'];
         $testData['request']['url'] = '/partner/activation/'. self::MERCHANT_ID . '/status';
         $this->runRequestResponseFlow($testData);
-
         $actionStates = $this->getDbEntities('action_state');
         $this->assertEquals(2, count($actionStates));
         $this->assertEquals('under_review', $actionStates->get(0)['name']); // for partner_activation entity
@@ -201,6 +203,7 @@ class PartnerActivationTest extends OAuthTestCase
         $this->assertEquals('open', $actionStates->get(1)['name']); // for workflow_action entity
         $this->assertEquals('workflow_action', $actionStates->get(1)['entity_type']); // for workflow_action entity
 
+        // Mail::assertQueued(PartnerActivationConfirmation::class);
     }
 
     public function testPartnerNeedsClarification()
@@ -218,6 +221,7 @@ class PartnerActivationTest extends OAuthTestCase
         $this->assertEquals('under_review', $actionStates->get(0)['name']);
         $this->assertEquals('needs_clarification', $actionStates->get(1)['name']);
 
+        Mail::assertQueued(PartnerNeedsClarificationEmail::class);
     }
 
     public function testPartnerNeedsClarificationResponded()
@@ -261,7 +265,6 @@ class PartnerActivationTest extends OAuthTestCase
         $testData['request']['url'] = '/partner/activation/' . self::MERCHANT_ID. '/status';
         $this->runRequestResponseFlow($testData);
 
-
         $partnerActivation = $this->getDbEntity('partner_activation');
         $this->assertNotNull($partnerActivation['submitted_at']);
         $this->assertNull($partnerActivation['activated_at']);
@@ -277,6 +280,8 @@ class PartnerActivationTest extends OAuthTestCase
         $this->assertEquals(2, count($reasons));
         $this->assertEquals($rejectedActionState->getId(), $reasons->get(0)['state_id']);
         $this->assertEquals($rejectedActionState->getId(), $reasons->get(1)['state_id']);
+
+        Mail::assertQueued(PartnerActivationRejection::class);
     }
 
     public function testInvalidExtraFieldsPartnerDetailsFormSave()

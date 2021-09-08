@@ -1,16 +1,16 @@
 <?php
 
-namespace RZP\Models\Partner\Activation;
+namespace RZP\Mail\Merchant;
 
 use App;
 use RZP\Mail\Base;
 use RZP\Mail\Base\Mailable;
 
-class PartnerActivationMail extends Mailable
+class PartnerActivationConfirmation extends Mailable
 {
-    const SUBJECT = "Partner Activation";
+    const SUBJECT = "Partner Activation Successful";
 
-    const TEMPLATE_PATH = "emails.mjml.merchant.partner.activation.partner_activation_confirmation";
+    const TEMPLATE_PATH = "emails.mjml.merchant.partner.activation.activation_confirmation";
 
     protected $merchantId;
 
