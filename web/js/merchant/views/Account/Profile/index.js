@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-
 import Alert from 'common/ui/Forms/Alert';
 import Spinner from 'common/ui/Spinner';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -9,27 +8,22 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import * as ProfileActions from 'merchant/reducers/profile';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
-
 import User from 'merchant/models/User';
 import MerchantDetails from 'merchant/views/Account/Profile/components/MerchantDetails';
-import GST from 'merchant/views/Account/Profile/components/GST';
+import Gst from 'merchant/views/Account/Profile/components/GST';
 import BankAccountDetails from 'merchant/views/Account/Profile/components/BankAccountDetails';
 import LoggedInUserDetails from 'merchant/views/Account/Profile/components/LoggedInUserDetails';
 import Invitations from 'merchant/views/Account/Profile/components/Invitations';
 import BankAccountDetailsChange from 'merchant/views/Account/Profile/components/BankAccountDetailsChange';
-import { fetchUser } from 'merchant/reducers/session';
+import { fetchUser, updateSession } from 'merchant/reducers/session';
 import PasswordForm from 'merchant/views/Account/Profile/components/PasswordForm';
 import MerchantConfigForm from 'merchant/views/Account/Profile/components/MerchantConfigForm';
 import UpgradeMerchantForm from 'merchant/views/Account/Profile/components/UpgradeMerchantForm';
 import SettlementDetails from 'merchant/views/Account/Profile/components/SettlementDetails';
-import { updateMerchantConfig, updateBillingLabel } from 'merchant/reducers/profile';
-import { updateSession } from 'merchant/reducers/session';
 import { fetchSettlementAmount } from 'merchant/reducers/home';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import SupportDetails from 'merchant/views/Account/Profile/components/SupportDetails';
-import { openModal } from 'merchant_common/reducers/modals';
 import EmailSelfServeModal from 'merchant/views/Settings/EmailSelfServe/EmailInput';
-
 import User2FASettings from './components/User2FASettings';
 import PurposeCode from './components/PurposeCode';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
@@ -39,30 +33,9 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import IntoView from 'common/ui/IntoView';
 import { SUPPORT_DETAILS, UPDATE_BANK_ACC, SETTELEMENT_CYCLE } from './deeplink-constants';
 import { CreateTicketEmitter } from '../../TicketSupport/utils';
+import { compose, bindActionCreators } from 'redux';
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      profile: state.profile,
-      config: state.config.config,
-      settlement_amount: state.home.settlement_amount,
-    };
-  },
-  {
-    ...ProfileActions,
-    ...ModalActions,
-    showNotification,
-    fetchUser,
-    updateMerchantConfig,
-    updateBillingLabel,
-    updateSession,
-    fetchSettlementAmount,
-    openModal,
-  },
-)
-@RTracking(() => window.rzpQ.component('Profile'))
-export default class Profile extends Component {
+class Profile extends Component {
   state = {
     loggedInUser: {},
     //by default this feature is not available
@@ -74,7 +47,7 @@ export default class Profile extends Component {
 
   componentWillMount() {
     this.props.fetchUser().then((reponse) => {
-      let user = reponse.data;
+      const user = reponse.data;
       if (!user.current) {
         this.setState({
           errors:
@@ -98,19 +71,16 @@ export default class Profile extends Component {
             isBankAccountChangeAllowed: !data,
           });
         })
-        .catch((errors) => {
+        .catch(() => {
           console.log('ERROR: Failed to fetch bank account change status');
         });
     }
 
-    this.props
-      .fetchAddWebsiteWorkflowStatus()
-      .then(({ data }) => {
-        this.setState({
-          isWebsiteInWorkflow: data,
-        });
-      })
-      .catch((err) => {});
+    this.props.fetchAddWebsiteWorkflowStatus().then(({ data }) => {
+      this.setState({
+        isWebsiteInWorkflow: data,
+      });
+    });
   }
 
   isAdminOrOwner() {
@@ -124,9 +94,9 @@ export default class Profile extends Component {
   handleUpdateClick = () => {
     const { user } = this.props;
     analyticsTrack({
-      objectName: 'edit email',
-      actionName: 'clicked',
-      screen: 'my account',
+      objectName: 'Edit email',
+      actionName: 'Clicked',
+      screen: 'My account',
       properties: {
         location: 'profile',
         currentEmailId: user.email,
@@ -140,6 +110,27 @@ export default class Profile extends Component {
           size: 'small',
           component: <EmailSelfServeModal />,
         });
+        analyticsTrack({
+          objectName: `Email 2fa result`,
+          actionName: '2FA request',
+          screen: 'My account',
+          properties: {
+            result: 'Success',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+      },
+      onWrongOtpCallback: () => {
+        analyticsTrack({
+          objectName: `Email 2fa result`,
+          actionName: '2FA request',
+          screen: 'My account',
+          properties: {
+            result: 'Failure',
+            reason: 'Wrong OTP submitted',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
       },
     });
   };
@@ -152,8 +143,9 @@ export default class Profile extends Component {
     // Show notification if user not assiciated with active merchant account
     let hasMerchant = false;
     // Does the user have an associated merchant account
-    for (let i in user.user.merchants) {
-      var merchant = user.user.merchants[i];
+    // eslint-disable-next-line guard-for-in
+    for (const i in user.user.merchants) {
+      const merchant = user.user.merchants[i];
       if (merchant.email && merchant.email.toLowerCase() === user.user.email.toLowerCase()) {
         hasMerchant = true;
       }
@@ -168,7 +160,7 @@ export default class Profile extends Component {
   }
 
   acceptInvitation = (invite) => {
-    let message = 'You have accepted the invite.';
+    const message = 'You have accepted the invite.';
 
     return this.props
       .acceptInvitation(invite.id)
@@ -190,7 +182,7 @@ export default class Profile extends Component {
   };
 
   rejectInvitation = (invite) => {
-    let message = 'You have rejected the invite.';
+    const message = 'You have rejected the invite.';
 
     return this.props
       .rejectInvitation(invite.id, this.props.user.user.id)
@@ -339,7 +331,7 @@ export default class Profile extends Component {
       component: (
         <UpdateBillingLabel
           attribute="billing_label"
-          value={this.props.user['billing_label']}
+          value={this.props.user.billing_label}
           updateMerchantConfig={this.updateBillingLabel}
         />
       ),
@@ -391,8 +383,8 @@ export default class Profile extends Component {
 
   saveBankAccountChanges = (data) => {
     const { user } = this.props;
-    let body = { ...data };
-    let formdata = new FormData();
+    const body = { ...data };
+    const formdata = new FormData();
 
     //not needed
     delete body.account_number_confirmation;
@@ -408,7 +400,7 @@ export default class Profile extends Component {
     body.beneficiary_email = this.props.user.email;
     body.beneficiary_mobile = this.props.user.contact_mobile;
 
-    for (let prop in body) {
+    for (const prop in body) {
       if (body.hasOwnProperty(prop)) {
         formdata.append(prop, body[prop]);
       }
@@ -423,7 +415,7 @@ export default class Profile extends Component {
     if (user.bankAccountAutoUpdateOrWorkflow()) {
       return this.props
         .saveBankAccountChangesAutomate(user.id, formdata) //user.id is merchant_id not user_id
-        .then((response) => {
+        .then(() => {
           this.props.closeModal();
           this.props.showNotification({
             type: 'success',
@@ -441,7 +433,7 @@ export default class Profile extends Component {
 
     return this.props
       .saveBankAccountChanges(user.id, formdata) //user.id is merchant_id not user_id
-      .then((response) => {
+      .then(() => {
         this.props.closeModal();
         this.props.showNotification({
           type: 'success',
@@ -472,9 +464,9 @@ export default class Profile extends Component {
   };
 
   render() {
-    let { user, profile, settlement_amount } = this.props;
-    let { bankAccount } = profile;
-    let invitations = user.user.invitations;
+    const { user, profile, settlement_amount } = this.props;
+    const { bankAccount } = profile;
+    const invitations = user.user.invitations;
 
     if (!user.isAuthenticated) {
       return (
@@ -516,11 +508,11 @@ export default class Profile extends Component {
           </IntoView>
 
           <ShowWhen
-            additionalCondition={(user) =>
-              user.isAllowedView('profile_gst') && !user.isUnregisteredBusiness
+            additionalCondition={(usr) =>
+              usr.isAllowedView('profile_gst') && !usr.isUnregisteredBusiness
             }
           >
-            <GST />
+            <Gst />
           </ShowWhen>
 
           {bankAccount ? (
@@ -569,3 +561,32 @@ export default class Profile extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+    profile: state.profile,
+    config: state.config.config,
+    settlement_amount: state.home.settlement_amount,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      ...ProfileActions,
+      ...ModalActions,
+      showNotification,
+      fetchUser,
+      updateSession,
+      fetchSettlementAmount,
+    },
+    dispatch,
+  );
+};
+
+export default compose(
+  connect(mapStateToProps, mapDispatchToProps),
+  // eslint-disable-next-line babel/new-cap
+  RTracking(() => window.rzpQ.component('Profile')),
+)(Profile);

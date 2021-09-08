@@ -1,12 +1,11 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import {
   triggerTwoFactorVerificationOtp,
   verifyTwoFactorOtp,
 } from 'merchant_common/reducers/twoFactor';
-
 import TwoFactorVerificationOTP from './TwoFactorVerificationOTP';
 import TwoFaVerificationContext from './TwoFactorVerificationContext';
 import TwoFactorVerificationSetup from './TwoFactorVerificationSetup';
@@ -74,6 +73,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     onFlowTermination,
     modes = ['test', 'live'],
     onBankAccountUpdateReq = false,
+    onWrongOtpCallback = () => {},
   }) => {
     this.onCloseCallback = onFlowTermination;
 
@@ -102,7 +102,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
           }),
         });
       } else if (!twoFactorVerified || onBankAccountUpdateReq) {
-        this.verifyUserViaTwoFactorOtp({ onUserTwoFaVerified });
+        this.verifyUserViaTwoFactorOtp({ onUserTwoFaVerified, onWrongOtpCallback });
       } else {
         onUserTwoFaVerified();
       }
@@ -110,6 +110,8 @@ export default class TwoFaVerificationContextProvider extends React.Component {
       this.emitTwoFaSkippedEvent();
       onUserTwoFaVerified();
     }
+
+    return '';
   };
 
   completeTwoFactorVerificationSetup = ({ onContactMobileUpdated }) => {
@@ -121,7 +123,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     });
   };
 
-  verifyUserViaTwoFactorOtp = ({ onUserTwoFaVerified }) => {
+  verifyUserViaTwoFactorOtp = ({ onUserTwoFaVerified, onWrongOtpCallback }) => {
     const { user } = this.props;
     triggerTwoFactorVerificationOtp().then(() => {
       this.props.openModal({
@@ -132,7 +134,10 @@ export default class TwoFaVerificationContextProvider extends React.Component {
             onResend={this.onOtpResend}
             onClose={this.onClose}
             onSuccess={this.onUserTwoFaVerified({ onUserTwoFaVerified })}
-            onWrongOtp={this.emitWrongOtpEvent}
+            onWrongOtp={() => {
+              this.emitWrongOtpEvent();
+              onWrongOtpCallback();
+            }}
             title="2-Step Verification"
             renderMessage={() => (
               <>

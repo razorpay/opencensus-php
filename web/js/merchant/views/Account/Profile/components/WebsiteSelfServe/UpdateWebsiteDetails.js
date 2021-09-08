@@ -7,6 +7,8 @@ import { Popover, PopoverBody } from 'common/ui/Popover';
 import { bindActionCreators } from 'redux';
 import Input from 'common/new-ui/Input';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 function WebsiteFields() {
   return (
@@ -38,6 +40,7 @@ function UpdateWebsiteDetails(props) {
     }, {});
 
     const payload = {};
+    let urlDetails = {};
 
     if (type === 'website') {
       payload.business_website_main_page = formData.website_url;
@@ -47,6 +50,7 @@ function UpdateWebsiteDetails(props) {
       payload.business_website_privacy_policy = formData.privacy_policy;
       payload.business_website_tnc = formData.terms_conditions;
       payload.business_website_refund_policy = formData.refund_policy;
+      urlDetails = { ...payload };
 
       if (doesNeedCreds) {
         payload.business_website_username = formData.username;
@@ -54,12 +58,27 @@ function UpdateWebsiteDetails(props) {
       }
     } else {
       payload.business_app_url = formData.app_url;
+      urlDetails = { ...payload };
 
       if (doesNeedCreds) {
         payload.business_app_username = formData.username;
         payload.business_app_password = formData.passwd;
       }
     }
+
+    const { user } = props;
+
+    analyticsTrack({
+      objectName: `Website submit`,
+      actionName: 'clicked',
+      screen: 'My account',
+      properties: {
+        flow: user.has_key_access ? 'Website edit' : 'Website add',
+        currentWebsite: `${user.business_website}`,
+        urlDetails,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
 
     try {
       const response = await merchantFetch({
@@ -79,11 +98,33 @@ function UpdateWebsiteDetails(props) {
 
         props.getWebsiteWorkflowStatus();
         props.closeModal();
+        analyticsTrack({
+          objectName: `Website submit result`,
+          actionName: 'Submit request',
+          screen: 'My account',
+          properties: {
+            flow: user.has_key_access ? 'Website edit' : 'Website add',
+            result: `Success`,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
       }
     } catch ({ errors }) {
       props.showNotification({
         type: 'error',
         message: errors,
+      });
+
+      analyticsTrack({
+        objectName: `Website submit result`,
+        actionName: 'Submit request',
+        screen: 'My account',
+        properties: {
+          flow: user.has_key_access ? 'Website edit' : 'Website add',
+          result: `Failure`,
+          failureReason: `${errors}`,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
       });
     }
   };
@@ -91,6 +132,37 @@ function UpdateWebsiteDetails(props) {
   const onTypeCheckboxClick = (typeValue) => {
     settype(typeValue);
     setdoesNeedCreds(true);
+
+    let analyticsObject;
+    const { user } = props;
+
+    // Edit flow
+    if (user.has_key_access) {
+      analyticsObject = {
+        objectName: `Url type selected`,
+        actionName: 'Toggled',
+        screen: 'My account',
+        properties: {
+          flow: 'Website edit',
+          urlType: `${typeValue}`,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      };
+    } else {
+      // Add flow
+      analyticsObject = {
+        objectName: `Url type selected`,
+        actionName: 'Toggled',
+        screen: 'My account',
+        properties: {
+          flow: 'Website add',
+          urlType: `${typeValue}`,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      };
+    }
+
+    analyticsTrack(analyticsObject);
   };
 
   const onNeedsCredsClick = (value) => setdoesNeedCreds(value);
@@ -169,7 +241,7 @@ function UpdateWebsiteDetails(props) {
                   defaultValue={doesNeedCreds}
                   value={doesNeedCreds}
                   onChange={(e) => {
-                    const value = e.target.value === '1' ? true : false;
+                    const value = e.target.value === '1';
                     onNeedsCredsClick(value);
                   }}
                 />
@@ -183,7 +255,7 @@ function UpdateWebsiteDetails(props) {
                   defaultValue={doesNeedCreds}
                   value={doesNeedCreds}
                   onChange={(e) => {
-                    const value = e.target.value === '1' ? true : false;
+                    const value = e.target.value === '1';
                     onNeedsCredsClick(value);
                   }}
                 />
@@ -215,7 +287,7 @@ function UpdateWebsiteDetails(props) {
 
 const mapStateToProps = (state) => {
   return {
-    session: state.session,
+    user: state.session.user,
   };
 };
 

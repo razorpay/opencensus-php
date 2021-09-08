@@ -4,11 +4,24 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import { bindActionCreators } from 'redux';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 function FeeBearerSelfserver(props) {
   const [feeBearer, setfeeBearer] = useState(props.user.merchant.fee_bearer);
 
   const handleToggle = async (type) => {
+    // Track fee bearer toggle
+    analyticsTrack({
+      objectName: 'Fee bearer',
+      actionName: 'Fee bearer toggled',
+      screen: 'settings',
+      properties: {
+        currentFeeBearer: `${props.user.merchant.fee_bearer}`,
+        NewFeeBearer: `${type}`,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     try {
       const response = await merchantFetch({
         url: `merchant/toggle_fee_bearer`,
@@ -25,11 +38,34 @@ function FeeBearerSelfserver(props) {
           type: 'success',
           message: `Configuration updated successfully`,
         });
+        analyticsTrack({
+          objectName: 'Fee bearer',
+          actionName: 'Fee bearer result',
+          screen: 'settings',
+          properties: {
+            currentFeeBearer: `${props.user.merchant.fee_bearer}`,
+            NewFeeBearer: `${type}`,
+            result: 'Success',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
       }
     } catch ({ errors }) {
       props.showNotification({
         type: 'error',
         message: errors,
+      });
+      analyticsTrack({
+        objectName: 'Fee bearer',
+        actionName: 'Fee bearer result',
+        screen: 'settings',
+        properties: {
+          currentFeeBearer: `${props.user.merchant.fee_bearer}`,
+          NewFeeBearer: `${type}`,
+          result: 'Failure',
+          failureMessage: `${errors}`,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
       });
     }
   };

@@ -2,23 +2,82 @@ import { useContext } from 'react';
 import ModalHeader from 'common/ui/ModalHeader';
 import UpdateWebsiteDetails from './UpdateWebsiteDetails';
 import TwoFactorVerificaionContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 function InitiateWebsiteChange(props) {
   const context = useContext(TwoFactorVerificaionContext);
 
-  const onContactVerified = () =>
+  const onContactVerified = () => {
+    const { user } = props;
+
     props.openModal({
       size: 'small',
       component: <UpdateWebsiteDetails getWebsiteWorkflowStatus={props.getWebsiteWorkflowStatus} />,
     });
 
-  const onProceedClick = () =>
+    analyticsTrack({
+      objectName: `Website 2fa result`,
+      actionName: '2FA request',
+      screen: 'My account',
+      properties: {
+        flow: user.has_key_access ? 'Website edit' : 'Website add',
+        result: 'Success',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  };
+
+  const onProceedClick = () => {
+    const { user } = props;
+    let analyticsObject;
+
     context.criticalFlow({
       modes: ['test', 'live'],
       onUserTwoFaVerified: () => {
         onContactVerified();
       },
+      onWrongOtpCallback: () => {
+        analyticsTrack({
+          objectName: `Website 2fa result`,
+          actionName: '2FA request',
+          screen: 'My account',
+          properties: {
+            flow: user.has_key_access ? 'Website edit' : 'Website add',
+            result: 'Failure',
+            reason: 'Wrong OTP submitted',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+      },
     });
+
+    // Edit flow
+    if (user.has_key_access) {
+      analyticsObject = {
+        objectName: `Bmc acknowledged`,
+        actionName: 'Proceed clicked',
+        screen: 'My account',
+        properties: {
+          flow: 'Website edit',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      };
+    } else {
+      // Add flow
+      analyticsObject = {
+        objectName: `Bmc acknowledged`,
+        actionName: 'Proceed clicked',
+        screen: 'My account',
+        properties: {
+          flow: 'Website add',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      };
+    }
+
+    analyticsTrack(analyticsObject);
+  };
 
   return (
     <div class="website-self-serve-initiate-modal">

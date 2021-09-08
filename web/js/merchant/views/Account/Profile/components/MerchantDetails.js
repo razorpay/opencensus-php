@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import Time from 'common/ui/Time';
-import ProgressBar from 'common/ui/ProgressBar';
+import { ProgressBar } from 'common/ui/ProgressBar';
 import { Popover, PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
 import { titleCase, isPresent, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -114,6 +114,33 @@ const MerchantDetails = ({
         />
       ),
     });
+
+    let analyticsObject;
+
+    // Edit flow
+    if (user.has_key_access) {
+      analyticsObject = {
+        objectName: `Website edit`,
+        actionName: 'Edit clicked',
+        screen: 'My account',
+        properties: {
+          currentWebsite: `${user.business_website}`,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      };
+    } else {
+      // Add flow
+      analyticsObject = {
+        objectName: `Website add`,
+        actionName: 'Add clicked',
+        screen: 'My account',
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      };
+    }
+
+    analyticsTrack(analyticsObject);
   };
 
   const showGenerateTnCModal = (eventName) => {
@@ -489,4 +516,5 @@ export default connect(null, {
   openModal: fnOpenModal,
   closeModal: fnCloseModal,
   showNotification: fnShowNotification,
+  // eslint-disable-next-line babel/new-cap
 })(RTracking()(MerchantDetails));

@@ -51,6 +51,7 @@ const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmai
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+
     return getEmailStatus(email, setContactEmail)
       .then((res) => {
         setDisabled(false);
@@ -90,6 +91,7 @@ const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmai
         });
       });
   };
+
   return (
     <div className="e-self-serve">
       <div className="e-self-serve-heading">
