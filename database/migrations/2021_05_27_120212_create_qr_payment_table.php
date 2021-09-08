@@ -28,6 +28,9 @@ class CreateQrPaymentTable extends Migration
             $table->string(Entity::PAYMENT_ID, Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->string(Entity::PAYER_BANK_ACCOUNT_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Entity::PAYER_VPA, 255)
                   ->nullable();
 

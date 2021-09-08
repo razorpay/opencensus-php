@@ -4,6 +4,7 @@ namespace RZP\Models\QrPayment;
 
 use App;
 use RZP\Models\Base;
+use RZP\Models\BankAccount;
 
 class Entity extends Base\PublicEntity
 {
@@ -18,6 +19,7 @@ class Entity extends Base\PublicEntity
     const PROVIDER_REFERENCE_ID = 'provider_reference_id';
     const MERCHANT_REFERENCE    = 'merchant_reference';
     const TRANSACTION_TIME      = 'transaction_time';
+    const PAYER_BANK_ACCOUNT_ID = 'payer_bank_account_id';
 
     protected static $sign = 'qp';
 
@@ -39,6 +41,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_TIME,
         self::GATEWAY,
         self::UNEXPECTED_REASON,
+        self::PAYER_BANK_ACCOUNT_ID,
     ];
 
     protected $visible = [
@@ -54,6 +57,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_REFERENCE,
         self::TRANSACTION_TIME,
         self::GATEWAY,
+        self::PAYER_BANK_ACCOUNT_ID,
     ];
 
     protected $public = [
@@ -70,6 +74,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_TIME,
         self::CREATED_AT,
         self::GATEWAY,
+        self::PAYER_BANK_ACCOUNT_ID,
     ];
 
     protected $casts = [
@@ -108,6 +113,11 @@ class Entity extends Base\PublicEntity
     public function qrCode()
     {
         return $this->belongsTo('RZP\Models\QrCode\NonVirtualAccountQrCode\Entity', self::QR_CODE_ID, self::ID);
+    }
+
+    public function payerBankAccount()
+    {
+        return $this->belongsTo('RZP\Models\BankAccount\Entity', self::PAYER_BANK_ACCOUNT_ID, BankAccount\Entity::ID);
     }
 
     public function setExpected(bool $paymentExpected)

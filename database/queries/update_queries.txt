@@ -3797,3 +3797,5 @@ Rename table
      payment_analytics_tmp to new_payment_analytics;
 
 Drop table new_payment_analytics;
+
+ALTER TABLE qr_payment ADD payer_bank_account_id char(14) DEFAULT NULL;
