@@ -105,7 +105,8 @@ class UserController extends Controller
         {
             if (empty($details) === false)
             {
-                $data['notifications'] = json_encode((new Merchant\Notifications\Service)->getNotificationsForUser($details));
+                $data['old_notifications'] = json_encode((new Merchant\Notifications\Service)->getOldNotificationsForUser($details));
+                $data['new_notifications'] = json_encode((new Merchant\Notifications\Service)->getNewNotificationsForUser($details));
             }
 
             $currentMerchantId = $details['current'];

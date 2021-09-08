@@ -141,50 +141,6 @@ class Constants
             ],
         ],
         [
-            'title'       => 'Get 1.65% pricing with RazorpayX',
-            'description' => 'Open a current account with RazorpayX & reduce your platform fee to 1.65%.',
-            'start_ts'    => 1626159840,
-            'end_ts'      => 1636787040,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
-            'id'          => 'projectNitro',
-            'campaign'    => 'nitro',
-            "target_product_feature" => 'XCA',
-            "target_metric" => 'MTU',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Learn More',
-                    'url'   => '',
-                    'id'    => 'announcement-projectNitro-cta1',
-                ],
-            ],
-            'filters'     => [
-                'splitz_experiments'         => self::nitroSplitzExperimentsList,
-            ],
-        ],
-        [
-            'title'       => 'Avail Reduced Transaction Fee!',
-            'description' => 'Reduce transaction fee to 1.65% & get a corporate card by switching to Razorpay Current Accounts!',
-            'start_ts'    => 1626159840,
-            'end_ts'      => 1636787040,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
-            'id'          => 'projectNitro',
-            'campaign'    => 'nitro',
-            "target_product_feature" => 'XCA+CCC',
-            "target_metric" => 'MTU',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Learn More',
-                    'url'   => '',
-                    'id'    => 'announcement-projectNitro-cta1',
-                ],
-            ],
-            'filters'     => [
-                'splitz_experiments'         => self::nitroCorporateCardsSplitzExperimentsList,
-            ],
-        ],
-        [
             'title'       => 'Introducing Payment Buttons',
             'description' => 'Start accepting payments on your website or blog in less than 5 minutes. No coding needed.',
             'start_ts'    => 1598941800,
@@ -773,68 +729,6 @@ class Constants
             ],
         ],
         [
-            'id'          => 'APR23-DX-CSAT',
-            'title'       => 'Developers, we want to hear you!',
-            'description' => 'Help us deliver the best developer experience for you. All we need is your valuable feedback. This won’t take more than a minute.',
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/csat-survey.svg',
-            'track_event' => true,
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Let’s begin',
-                    'id'    => '',
-                    'url'   => 'https://razorpay.typeform.com/to/Kzw8bOUb',
-                    'url_query_params' => ["mid", "email"]
-                ],
-            ],
-            'start_ts'    => 1619481600,
-            'end_ts'      => 1620432000,
-            'filters'     => ['splitz_experiments' => ['ANNOUNCEMENT_DX_CSAT_APRIL2021_SPLITZ']],
-        ],
-        [
-            'id'          => 'whats-new-april21-m2mrewards-gtm',
-            'title'       => 'Introducing Checkout Rewards! 🎁',
-            'description' => 'Give your customers exciting rewards with every purchase! Watch your sales grow with higher conversions and higher repeat purchase.',
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/checkout_rewards.svg',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Try Now',
-                    'url'   => '/checkout-rewards',
-                ],
-                [
-                    'type'  => 'primary-inverted',
-                    'label' => 'Read More',
-                    'id'    => 'announcement-details-l2',
-                    'url'   => '/announcements/whats-new-april21-m2mrewards-gtm/'
-                ],
-            ],
-            'l2_content'  => [
-                'content'     => "<div class='paragraph'> <b>What are Checkout Rewards?</b><p> Checkout Rewards are essentially FREE rewards that your customers will receive upon completing each successful payment from your website/app.</p><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/checkout_rewards.svg' /></div></div><div> <b>How does Checkout Rewards work?</b><p>The GIF below shows what the flow looks like from an end users’ perspective.</p><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/checkout-rewards-flow.gif' /></div><p>The flow is as simple as it can be. Here’s an overview:</p><ol><li>User arrives on the checkout page of a merchant (Acme Corp in this example)</li><li>User selects their preferred payment type and completes the payment</li><li> User receives an email & SMS with payment confirmation and details about the reward</li><li>User can directly redeem the reward on the website/app of reward provider</li></ol><p> Just to make it obvious, the customer did NOT have to select any reward manually. A customer will automatically receive 1 exciting reward on completing a payment.</p> <br /><p> Please Note - Checkout Rewards is completely <b>Free</b> for you and your end users!</p></div><div class='paragraph'> <b>What to expect from Checkout Rewards</b><ol><li>Increase in sales volume 🚀</li><li>Better user experience 😃</li><li>Higher conversion rates 📈</li></ol></div><div> <b>How to activate Checkout Rewards?</b><p> Well, the beauty of Checkout Rewards lies in its simplicity. You can activate Checkout Rewards in less than 30 seconds. All you have to do is:</p><ol><li>Navigate to “Checkout Rewards” on the left panel</li><li>Click “Activate” to activate a Reward</li><li>That’s it. Your customers will start receiving rewards within 24 hours</li></ol><div class='paragraph'> So, what are you waiting for? Click “Try Now” to start using Checkout Rewards!</div></div>",
-                'buttons'     => [
-                    [
-                        'type'  => 'button',
-                        'label' => 'Try Now',
-                        'url'   => '/checkout-rewards',
-                    ],
-                    [
-                        'type'  => 'primary-inverted',
-                        'label' => 'Read More',
-                        'url'   => 'https://razorpay.com/docs/payment-gateway/checkout-rewards/',
-                    ],
-                ],
-            ],
-            'campaign' => 'M2M Rewards',
-            'version_description' => 'Cross Selling M2M rewards feature',
-            'target_product_feature'=> 'Checkout Rewards',
-            'target_metric' => 'Adoption',
-            'start_ts'    => 1620604800,
-            'end_ts'      => 1628553600,
-            'filters'     => [
-                'splitz_experiments' => ['ANNOUNCEMENT_CHECKOUT_REWARDS_ENABLED_SPLITZ','ANNOUNCEMENT_CHECKOUT_REWARDS_INTERESTED_SPLITZ','ANNOUNCEMENT_CHECKOUT_REWARDS_LIVE_SPLITZ', 'ANNOUNCEMENT_CHECKOUT_REWARDS_INTERESTED_SEGMENT2_SPLITZ', 'ANNOUNCEMENT_CHECKOUT_REWARDS_GO_LIVE_READY_SPLITZ']
-            ],
-        ],
-        [
             'id'          => 'whats-new-may21-reten2-dashboard',
             'title'       => 'Win Rs. 40000 worth free credits',
             'description' => 'Accept payments from your customers between 24th - 30th May and win Rs.40,000* worth Razorpay Credits. *T&Cs Apply',
@@ -928,29 +822,6 @@ class Constants
             ]
         ],
         [
-            'id'          => 'June21-QR-GTM',
-            'title'       => 'Collect payments using QR Codes!',
-            'description' => 'Create your own QR code in a min - Download and Collect payments easily. Choose from 7+ features-Get unlimited QR codes for free.',
-            'start_ts'    => 1623824237,
-            'end_ts'      => 1633112999,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/qr-code.svg',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Create QR code now',
-                    'url'   => '/qr_codes/new',
-                ],
-                [
-                    'type'  => 'primary-inverted',
-                    'label' => 'Know more',
-                    'url'   => 'https://razorpay.com/docs/qr-codes-beta/',
-                ]
-            ],
-            'filters'     => [
-                'splitz_experiments' => ['ANNOUNCEMENT_QR_CODE_V1_SPLITZ'],
-            ]
-        ],
-        [
             'id'          => 'whats-new-JUN21-RXCC-GROWTH',
             'title'       => 'Qualified for Corporate Cards!',
             'description' => 'Make recurring and international spends with exclusive access to a credit card for your business.',
@@ -986,6 +857,160 @@ class Constants
                     ],
                 ],
             ],
+        ],
+        [
+            'id'          => 'JUL21-CC-FEATURELAUNCH',
+            'title'       => 'New on Corporate Cards!',
+            'description' => 'Physical Cards, Rewards & Add-on cards are here now!',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/corporate-cards.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Know more',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/JUL21-CC-FEATURELAUNCH/'
+                ],
+            ],
+            'start_ts'    => 1625184000,
+            'end_ts'      => 1633132800,
+            'filters'     => [
+                'features' => ['capital_cards'],
+            ],
+            'l2_content'  => [
+                'content'     => "<div><div>Your Corporate Card just got better. Your repayments are now faster with no delay in processing and we launched physical and add-on cards for you!</div> <br /><div> <b>Rewards</b><p>You can now access 100+ rewards with RazorpayX Corporate Card. The rewards are attuned to your business growth with names like AWS, Cleartax, Freshworks, Microsoft, Google Ads, Twitter, and many more!</p> <a href='https://lp.razorpay.com/rxcc-rewards' target='_blank'>Check them out</a></div><div class='paragraph'> <b>Add-on cards</b><p>Get add-on cards tailored to different roles of your team members right from your dashboard. Apply easily and quickly from the Card dashboard, empower your team and avoid hassles of reimbursement or approvals for different teams.</p> <a href='https://x.razorpay.com/cards' target='_blank'>Do it now</a></div><div> <b>Physical Cards</b><p> Due to pandemic and lockdown conditions at our manufacturer, your physical cards were delayed. Confirm your physical card delivery address and other details by just filling up the information below. We will prioritize the delivery for the merchants who fill this form</p> <a href='https://razorpay.typeform.com/to/hKPzCtEl' target='_blank'>Fill your details</a></div></div>",
+            ],
+        ],
+    ];
+
+    const SPLITZ_NOTIFICATION = [
+        [
+            'title'       => 'Get 1.65% pricing with RazorpayX',
+            'description' => 'Open a current account with RazorpayX & reduce your platform fee to 1.65%.',
+            'start_ts'    => 1626159840,
+            'end_ts'      => 1636787040,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
+            'id'          => 'projectNitro',
+            'campaign'    => 'nitro',
+            "target_product_feature" => 'XCA',
+            "target_metric" => 'MTU',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Learn More',
+                    'url'   => '',
+                    'id'    => 'announcement-projectNitro-cta1',
+                ],
+            ],
+            'filters'     => [
+                'splitz_experiments'         => self::nitroSplitzExperimentsList,
+            ],
+        ],
+        [
+            'title'       => 'Avail Reduced Transaction Fee!',
+            'description' => 'Reduce transaction fee to 1.65% & get a corporate card by switching to Razorpay Current Accounts!',
+            'start_ts'    => 1626159840,
+            'end_ts'      => 1636787040,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
+            'id'          => 'projectNitro',
+            'campaign'    => 'nitro',
+            "target_product_feature" => 'XCA+CCC',
+            "target_metric" => 'MTU',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Learn More',
+                    'url'   => '',
+                    'id'    => 'announcement-projectNitro-cta1',
+                ],
+            ],
+            'filters'     => [
+                'splitz_experiments'         => self::nitroCorporateCardsSplitzExperimentsList,
+            ],
+        ],
+        [
+            'id'          => 'APR23-DX-CSAT',
+            'title'       => 'Developers, we want to hear you!',
+            'description' => 'Help us deliver the best developer experience for you. All we need is your valuable feedback. This won’t take more than a minute.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/csat-survey.svg',
+            'track_event' => true,
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Let’s begin',
+                    'id'    => '',
+                    'url'   => 'https://razorpay.typeform.com/to/Kzw8bOUb',
+                    'url_query_params' => ["mid", "email"]
+                ],
+            ],
+            'start_ts'    => 1619481600,
+            'end_ts'      => 1620432000,
+            'filters'     => ['splitz_experiments' => ['ANNOUNCEMENT_DX_CSAT_APRIL2021_SPLITZ']],
+        ],
+        [
+            'id'          => 'whats-new-april21-m2mrewards-gtm',
+            'title'       => 'Introducing Checkout Rewards! 🎁',
+            'description' => 'Give your customers exciting rewards with every purchase! Watch your sales grow with higher conversions and higher repeat purchase.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/checkout_rewards.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Try Now',
+                    'url'   => '/checkout-rewards',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Read More',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/whats-new-april21-m2mrewards-gtm/'
+                ],
+            ],
+            'l2_content'  => [
+                'content'     => "<div class='paragraph'> <b>What are Checkout Rewards?</b><p> Checkout Rewards are essentially FREE rewards that your customers will receive upon completing each successful payment from your website/app.</p><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/checkout_rewards.svg' /></div></div><div> <b>How does Checkout Rewards work?</b><p>The GIF below shows what the flow looks like from an end users’ perspective.</p><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/checkout-rewards-flow.gif' /></div><p>The flow is as simple as it can be. Here’s an overview:</p><ol><li>User arrives on the checkout page of a merchant (Acme Corp in this example)</li><li>User selects their preferred payment type and completes the payment</li><li> User receives an email & SMS with payment confirmation and details about the reward</li><li>User can directly redeem the reward on the website/app of reward provider</li></ol><p> Just to make it obvious, the customer did NOT have to select any reward manually. A customer will automatically receive 1 exciting reward on completing a payment.</p> <br /><p> Please Note - Checkout Rewards is completely <b>Free</b> for you and your end users!</p></div><div class='paragraph'> <b>What to expect from Checkout Rewards</b><ol><li>Increase in sales volume 🚀</li><li>Better user experience 😃</li><li>Higher conversion rates 📈</li></ol></div><div> <b>How to activate Checkout Rewards?</b><p> Well, the beauty of Checkout Rewards lies in its simplicity. You can activate Checkout Rewards in less than 30 seconds. All you have to do is:</p><ol><li>Navigate to “Checkout Rewards” on the left panel</li><li>Click “Activate” to activate a Reward</li><li>That’s it. Your customers will start receiving rewards within 24 hours</li></ol><div class='paragraph'> So, what are you waiting for? Click “Try Now” to start using Checkout Rewards!</div></div>",
+                'buttons'     => [
+                    [
+                        'type'  => 'button',
+                        'label' => 'Try Now',
+                        'url'   => '/checkout-rewards',
+                    ],
+                    [
+                        'type'  => 'primary-inverted',
+                        'label' => 'Read More',
+                        'url'   => 'https://razorpay.com/docs/payment-gateway/checkout-rewards/',
+                    ],
+                ],
+            ],
+            'campaign' => 'M2M Rewards',
+            'version_description' => 'Cross Selling M2M rewards feature',
+            'target_product_feature'=> 'Checkout Rewards',
+            'target_metric' => 'Adoption',
+            'start_ts'    => 1620604800,
+            'end_ts'      => 1628553600,
+            'filters'     => [
+                'splitz_experiments' => ['ANNOUNCEMENT_CHECKOUT_REWARDS_ENABLED_SPLITZ','ANNOUNCEMENT_CHECKOUT_REWARDS_INTERESTED_SPLITZ','ANNOUNCEMENT_CHECKOUT_REWARDS_LIVE_SPLITZ', 'ANNOUNCEMENT_CHECKOUT_REWARDS_INTERESTED_SEGMENT2_SPLITZ', 'ANNOUNCEMENT_CHECKOUT_REWARDS_GO_LIVE_READY_SPLITZ']
+            ],
+        ],
+        [
+            'id'          => 'June21-QR-GTM',
+            'title'       => 'Collect payments using QR Codes!',
+            'description' => 'Create your own QR code in a min - Download and Collect payments easily. Choose from 7+ features-Get unlimited QR codes for free.',
+            'start_ts'    => 1623824237,
+            'end_ts'      => 1633112999,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/qr-code.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Create QR code now',
+                    'url'   => '/qr_codes/new',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know more',
+                    'url'   => 'https://razorpay.com/docs/qr-codes-beta/',
+                ]
+            ],
+            'filters'     => [
+                'splitz_experiments' => ['ANNOUNCEMENT_QR_CODE_V1_SPLITZ'],
+            ]
         ],
         [
             'id'          => 'whats-new-JUL21-RXCC-ULTRA',
@@ -1063,28 +1088,6 @@ class Constants
             'filters'     => [
                 'splitz_experiments' => ['SELF_SERVE_ANNOUNCEMENT_SPLITZ'],
             ]
-        ],
-        [
-            'id'          => 'JUL21-CC-FEATURELAUNCH',
-            'title'       => 'New on Corporate Cards!',
-            'description' => 'Physical Cards, Rewards & Add-on cards are here now!',
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/corporate-cards.svg',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Know more',
-                    'id'    => 'announcement-details-l2',
-                    'url'   => '/announcements/JUL21-CC-FEATURELAUNCH/'
-                ],
-            ],
-            'start_ts'    => 1625184000,
-            'end_ts'      => 1633132800,
-            'filters'     => [
-                'features' => ['capital_cards'],
-            ],
-            'l2_content'  => [
-                'content'     => "<div><div>Your Corporate Card just got better. Your repayments are now faster with no delay in processing and we launched physical and add-on cards for you!</div> <br /><div> <b>Rewards</b><p>You can now access 100+ rewards with RazorpayX Corporate Card. The rewards are attuned to your business growth with names like AWS, Cleartax, Freshworks, Microsoft, Google Ads, Twitter, and many more!</p> <a href='https://lp.razorpay.com/rxcc-rewards' target='_blank'>Check them out</a></div><div class='paragraph'> <b>Add-on cards</b><p>Get add-on cards tailored to different roles of your team members right from your dashboard. Apply easily and quickly from the Card dashboard, empower your team and avoid hassles of reimbursement or approvals for different teams.</p> <a href='https://x.razorpay.com/cards' target='_blank'>Do it now</a></div><div> <b>Physical Cards</b><p> Due to pandemic and lockdown conditions at our manufacturer, your physical cards were delayed. Confirm your physical card delivery address and other details by just filling up the information below. We will prioritize the delivery for the merchants who fill this form</p> <a href='https://razorpay.typeform.com/to/hKPzCtEl' target='_blank'>Fill your details</a></div></div>",
-            ],
         ],
         [
             'id'          => 'May21-PLMApp-GTM',
@@ -1389,6 +1392,11 @@ class Constants
     public static function getNotifications(): array
     {
         return self::NOTIFICATIONS;
+    }
+
+    public static function getSplitzBasedNotifications(): array
+    {
+        return self::SPLITZ_NOTIFICATION;
     }
 
     public static function getAnnouncementToSubCampaignDetailsMapping(): array

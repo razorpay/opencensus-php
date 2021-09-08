@@ -422,6 +422,12 @@ export default class User {
     return getSplitzExperimentVariant('nitro_corporate_cards')?.variables?.result === 'on';
   }
 
+  get isGrowthServiceEnabled() {
+    return (
+      getSplitzExperimentVariant('growth_service_rollout_experiment')?.variables?.result === 'on'
+    );
+  }
+
   get isProjectMoonshineEnabled() {
     return getSplitzExperimentVariant('project_moonshine')?.variables?.result === 'on';
   }

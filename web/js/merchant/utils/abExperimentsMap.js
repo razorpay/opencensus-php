@@ -110,6 +110,15 @@ export default {
     'Hb3p41OFV4RKzs',
   ],
 
+  growth_service_rollout_experiment: [
+    // prod
+    'HjnC4NvQhMA1u3',
+
+    // beta
+    'HjnDnqN0s8GXnV',
+    'HjnHKyoeyjvoRJ',
+  ],
+
   project_moonshine: [
     // prod
     'HmypdLPF5UusXz',

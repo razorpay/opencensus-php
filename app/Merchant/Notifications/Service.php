@@ -8,15 +8,29 @@ use App\Lib\Util;
 class Service extends Base\Service
 {
     /**
-     * To get the list of notifications to be shown to a user.
+     * To get the list of old notifications to be shown to a user.
      *
      * @param array $user User details.
      *
      * @return array List of notifications for a user.
      */
-    public function getNotificationsForUser(array $user): array
+    public function getOldNotificationsForUser(array $user): array
     {
         $notifications = Constants::getNotifications();
+
+        return $this->notificationsFiltered($notifications, $user);
+    }
+
+    /**
+     * To get the list of new notifications to be shown to a user.
+     *
+     * @param array $user User details.
+     *
+     * @return array List of notifications for a user.
+     */
+    public function getNewNotificationsForUser(array $user): array
+    {
+        $notifications = Constants::getSplitzBasedNotifications();
 
         return $this->notificationsFiltered($notifications, $user);
     }
