@@ -499,7 +499,7 @@ class Entity extends Base\PublicEntity
 
     // ------------ End Accessors ------------
 
-    protected function getAccountDetails(string $accountType)
+    public function getAccountDetails(string $accountType)
     {
         $accountAttributes = $this->account->toArrayPublic();
 

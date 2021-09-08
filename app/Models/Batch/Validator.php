@@ -1371,6 +1371,13 @@ class Validator extends Base\Validator
             $expectedAmountType = BatchHelper::PAISE;
         }
 
+        // Since Payouts Batch uses an API for MFN, we allow paise for MFN merchants
+        if (($app['api.route']->getCurrentRouteName() === 'payouts_batch_create') and
+            ($merchant->isFeatureEnabled(Feature::PAYOUTS_BATCH)))
+        {
+            $expectedAmountType = BatchHelper::PAISE;
+        }
+
         $actualAmountType = $this->getActualAmountTypeBasedOnUploadedData($entries[0]);
 
         if ($actualAmountType != $expectedAmountType)

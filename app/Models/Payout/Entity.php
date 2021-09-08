@@ -37,6 +37,7 @@ use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Payout\Mode as PayoutMode;
+use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Exception\UserWorkflowNotApplicableException;
 use RZP\Models\PayoutMeta\Entity as PayoutMetaEntity;
@@ -2282,6 +2283,24 @@ class Entity extends Base\PublicEntity
         }
 
         return $payoutArray;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function toArrayWebhook()
+    {
+        $filteredAttributes = parent::toArrayWebhook();
+
+        // Add new fields in webhook for MFN only when the payout was created within a batch
+        if (($this->merchant->isFeatureEnabled(Features::PAYOUTS_BATCH)) and
+            ($this->merchant->isFeatureEnabled(Features::MFN)) and
+            (empty($filteredAttributes[self::BATCH_ID]) === false))
+        {
+            return (new PayoutsBatch\Core())->fillOtherPayoutWebhooksWithDataRequiredForMfn($filteredAttributes, $this);
+        }
+
+        return $filteredAttributes;
     }
 
     /**

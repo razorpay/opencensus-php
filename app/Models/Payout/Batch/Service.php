@@ -7,6 +7,16 @@ use RZP\Models\Base\Traits\ServiceHasCrudMethods;
 
 class Service extends BaseService
 {
+    /**
+     * @var Repository
+     */
+    protected $entityRepo;
+
+    /**
+     * @var Core
+     */
+    protected $core;
+
     public function __construct()
     {
         parent::__construct();

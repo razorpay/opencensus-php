@@ -230,7 +230,7 @@ class Base
     {
         $filePrefix = 'payouts/' . $uniqueId . '/';
 
-        $name = $filePrefix . self::FILE_NAME;
+        $name = $filePrefix . static::FILE_NAME;
 
         $ufh = new FileStore\Creator;
 

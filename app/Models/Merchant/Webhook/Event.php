@@ -720,6 +720,7 @@ class Event
         self::PAYOUT_FAILED                     => Feature\Constants::PAYOUT,
         self::PAYOUT_QUEUED                     => Feature\Constants::PAYOUT,
         self::PAYOUT_INITIATED                  => Feature\Constants::PAYOUT,
+        self::PAYOUT_CREATION_FAILED            => Feature\Constants::PAYOUTS_BATCH,
         self::TRANSFER_PROCESSED                => Feature\Constants::MARKETPLACE,
         self::TRANSFER_SETTLED                  => Feature\Constants::TRANSFER_SETTLED_WEBHOOK,
         self::TRANSFER_FAILED                   => Feature\Constants::TRANSFER_FAILED_WEBHOOK,

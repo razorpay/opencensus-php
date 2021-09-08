@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Payout\Batch;
 
+use App;
+use Ramsey\Uuid\Uuid;
+
 use RZP\Error\Error;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
@@ -12,13 +15,18 @@ use Razorpay\Trace\Logger;
 use RZP\Models\Payout\Bulk;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Services\BatchMicroService;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Event\Entity as EventEntity;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\Status as PayoutStatus;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\FundAccount\Entity as FaEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
+use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
+use RZP\Models\FundAccount\BatchHelper as FaBatchHelper;
 
 class Core extends BaseCore
 {
@@ -34,7 +42,7 @@ class Core extends BaseCore
             ]
         );
 
-        if ($this->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::PAYOUTS_BATCH) === false)
+        if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_BATCH) === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUTS_BATCH_NOT_ALLOWED,
@@ -140,7 +148,7 @@ class Core extends BaseCore
                             PayoutEntity::REFERENCE_ID    => $item[PayoutEntity::PAYOUT][PayoutEntity::REFERENCE_ID] ??
                                                              '',
                             PayoutEntity::NARRATION       => $item[PayoutEntity::PAYOUT][PayoutEntity::NARRATION] ?? '',
-                            Entity::BATCH_ID              => $exceptionData[Entity::BATCH_ID],
+                            Entity::BATCH_ID              => 'batch_' . $exceptionData[Entity::BATCH_ID],
                             PayoutEntity::FAILURE_REASON  => $exceptionData['error']['description'],
                             'error'                       => [
                                 'description' => $exceptionData['error'][Error::DESCRIPTION],
@@ -151,6 +159,12 @@ class Core extends BaseCore
                     ],
                 ],
             ];
+
+            if($merchant->isFeatureEnabled(Features::MFN))
+            {
+                $this->fillPayoutCreationFailedPayloadWithDataRequiredForMfn(
+                    $webhookPayload, $item, $exceptionData[Entity::BATCH_ID]);
+            }
 
             $service = $this->app['stork_service'];
 
@@ -191,5 +205,162 @@ class Core extends BaseCore
                     'message'  => $e->getMessage(),
                 ]);
         }
+    }
+
+    public function updateEntityFromBatchService($batchId)
+    {
+        // Re-adding prefix here to avoid rejection at batch service
+        if (str_starts_with($batchId, 'batch_') === false)
+        {
+            $batchId = 'batch_' . $batchId;
+        }
+
+        $this->trace->info(
+            TraceCode::PAYOUTS_BATCH_STATUS_UPDATE_CALL,
+            [
+                'batch_id' => $batchId,
+            ]);
+
+        $batchResponse = (new BatchMicroService())->fetch(BatchMicroService::BATCH_SERVICE, $batchId, []);
+
+        if (is_null($batchResponse))
+        {
+            $this->trace->info(
+                TraceCode::PAYOUTS_BATCH_BATCH_STATUS_UPDATE_NULL_RECEIVED,
+                [
+                    'batch_id' => $batchId,
+                    'message'  => 'There was an exception while calling the Batch service. Please check logs using ' .
+                                  'tracecodes BATCH_SERVICE_BAD_REQUEST or SERVER_ERROR_BATCH_SERVICE_NOT_FOUND',
+                ]);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::PAYOUTS_BATCH_STATUS_UPDATE_RESPONSE,
+                [
+                    'batch_id'     => $batchId,
+                    'batch_entity' => $batchResponse,
+                ]);
+        }
+
+        return $batchResponse;
+    }
+
+    public function fillPayoutCreationFailedPayloadWithDataRequiredForMfn(
+        array &$webhook, array $item, $batchId)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUTS_BATCH_PAYOUT_CREATION_FAILED_WEBHOOK_BATCH_STATUS_CHECK,
+            [
+                'batch_id'  => $batchId,
+                'webhook'   => $webhook,
+            ]);
+
+        // Check batch status
+        $status = $this->checkPayoutsBatchStatus($batchId);
+
+        $webhook[EventEntity::PAYLOAD][PayoutEntity::PAYOUT][PayoutEntity::ENTITY][Constants::BATCH_STATUS] = $status;
+
+        // set razorpay X acc number in payload
+        $webhook[EventEntity::PAYLOAD][PayoutEntity::PAYOUT][PayoutEntity::ENTITY][PayoutEntity::ACCOUNT_NUMBER]
+            = $item[PayoutBatchHelper::RAZORPAYX_ACCOUNT_NUMBER];
+
+        // We need to check if fund account stuff is available, as it is possible that only FA ID is provided.
+        if ((empty($item[FaBatchHelper::FUND_ACCOUNT][FaBatchHelper::NAME]) === false) and
+            (empty($item[FaBatchHelper::FUND_ACCOUNT][FaBatchHelper::NUMBER]) === false) and
+            (empty($item[FaBatchHelper::FUND_ACCOUNT][FaBatchHelper::ID]) === true))
+        {
+            $webhook[EventEntity::PAYLOAD][PayoutEntity::PAYOUT][PayoutEntity::ENTITY]
+            [PayoutEntity::FUND_ACCOUNT][FaEntity::BANK_ACCOUNT][FaEntity::NAME]
+                = $item[FaBatchHelper::FUND_ACCOUNT][FaBatchHelper::NAME];
+
+            $webhook[EventEntity::PAYLOAD][PayoutEntity::PAYOUT][PayoutEntity::ENTITY]
+            [PayoutEntity::FUND_ACCOUNT][FaEntity::BANK_ACCOUNT][FaEntity::ACCOUNT_NUMBER]
+                = $item[FaBatchHelper::FUND_ACCOUNT][FaBatchHelper::NUMBER];
+        }
+
+        $webhook[EventEntity::PAYLOAD][PayoutEntity::PAYOUT][PayoutEntity::ENTITY]
+        [PayoutEntity::NOTES][Constants::CORRELATION_ID]
+            = $this->generateCorrelationId();
+
+        $this->trace->info(
+            TraceCode::PAYOUTS_BATCH_PAYOUT_CREATION_FAILED_NEW_WEBHOOK,
+            [
+                'batch_id'  => $batchId,
+                'webhook'   => $webhook,
+            ]);
+    }
+
+    public function fillOtherPayoutWebhooksWithDataRequiredForMfn(array $webhookPayload, PayoutEntity $payoutEntity)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUTS_BATCH_PAYOUT_WEBHOOK_BATCH_STATUS_CHECK,
+            [
+                'batch_id'          => $payoutEntity->getBatchId(),
+                'webhook_payload'   => $webhookPayload,
+            ]);
+
+        // Check batch status
+        $status = $this->checkPayoutsBatchStatus($payoutEntity->getBatchId());
+
+        $webhookPayload[Constants::BATCH_STATUS] = $status;
+
+        // get debit account number
+        $accNumber = $payoutEntity->getAccountNumberAttribute();
+
+        $webhookPayload[PayoutEntity::ACCOUNT_NUMBER] = $accNumber;
+
+        $fundAcc = $payoutEntity->fundAccount;
+
+        $fundAccType = $fundAcc->getAccountType();
+
+        // Fill fund account details in the webhook
+        $webhookPayload[PayoutEntity::FUND_ACCOUNT] = [$fundAccType => $fundAcc->getAccountDetails($fundAccType)];
+
+        $webhookPayload[PayoutEntity::NOTES][Constants::CORRELATION_ID] = $this->generateCorrelationId();
+
+        $this->trace->info(
+            TraceCode::PAYOUTS_BATCH_PAYOUT_WEBHOOK_NEW_MFN_PAYLOAD,
+            [
+                'batch_id'          => $payoutEntity->getBatchId(),
+                'webhook_payload'   => $webhookPayload,
+            ]);
+
+        return $webhookPayload;
+    }
+
+    public function checkPayoutsBatchStatus($batchId)
+    {
+        // Removing prefix here to avoid rejection when fetching payouts_batch entity
+        if (str_starts_with($batchId, 'batch_') === true)
+        {
+            $batchId = substr($batchId, strlen('batch_'));
+        }
+
+        /**
+         * @var Entity
+         */
+        $payoutsBatchEntity = (new Repository())->findOrFail($batchId);
+
+        return $payoutsBatchEntity->updateStatusFromBatchService();
+    }
+
+    /**
+     * Used in MFN to generate the correlation ID for MFN callback
+     * MFN will use this for request idempotency when we call the MFN Callback API
+     *
+     * @return string
+     * @throws \Exception
+     */
+    private function generateCorrelationId() : string
+    {
+        $app = App::getFacadeRoot();
+
+        if ($app['env'] === 'testing')
+        {
+            return '67d30314-f9b7-11eb-ab60-acde48001122';
+        }
+
+        return Uuid::uuid1();
     }
 }

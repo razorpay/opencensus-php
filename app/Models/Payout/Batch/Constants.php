@@ -10,5 +10,9 @@ class Constants
 
     const PAYOUTS = 'payouts';
 
+    const CORRELATION_ID = 'correlation_id';
+
+    const BATCH_STATUS = 'batch_status';
+
     const EXTENSION_CSV = 'csv';
 }

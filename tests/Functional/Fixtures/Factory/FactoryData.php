@@ -1860,5 +1860,14 @@ final class FactoryData
             'mode'          => 'test',
             'time'          => 123,
         ]);
+
+        $factory(\RZP\Models\Payout\Batch\Entity::class, [
+            'batch_id'     => $faker->uniqueid,
+            'reference_id' => $faker->word,
+            'status'       => 'accepted',
+            'merchant_id'  => '10000000000000',
+            'created_at'   => $faker->timestamp,
+            'updated_at'   => $faker->timestamp,
+        ]);
     }
 }

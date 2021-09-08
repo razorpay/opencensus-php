@@ -16,7 +16,7 @@ class Validator extends Base\Validator
     const FUND_ACCOUNT_PAYOUT_COMPOSITE = 'fund_account_payout_composite';
 
     protected static $createRules = [
-        Constants::REFERENCE_ID => 'sometimes|string',
+        Constants::REFERENCE_ID => 'sometimes|nullable|string|max:40',
         Constants::PAYOUTS      => 'required|array|custom',
     ];
 

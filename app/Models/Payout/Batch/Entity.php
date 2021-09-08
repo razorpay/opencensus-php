@@ -115,6 +115,33 @@ class Entity extends BasePublicEntity
     // Batch service related functions
     public function updateStatusFromBatchService()
     {
-        //TODO: Call Batch service with a get request with the batch ID
+        $status = $this->getStatus();
+
+        // If the batch is already in a terminal state, then no updates are needed
+        if (($status === Status::PROCESSED) or
+            ($status === Status::FAILED))
+        {
+            return $status;
+        }
+
+        $response = (new Core())->updateEntityFromBatchService($this->getId());
+
+        // Batch service doesn't throw an exception, just returns null if an exception is observed
+        if (is_null($response))
+        {
+            return $status;
+        }
+
+        $newStatus = Status::$statusMapBetweenPayoutsBatchAndBatchService[$response[self::STATUS]];
+
+        // If there's no status change, we can save a DB call by not updating the batch entity
+        if ($newStatus !== $status)
+        {
+            $this->setStatus($newStatus);
+
+            $this->saveOrFail();
+        }
+
+        return $newStatus;
     }
 }

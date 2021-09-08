@@ -53,22 +53,10 @@ class PayoutsBatchTest extends TestCase
 
         $this->mockStorkService();
 
-        $this->mockRazorxTreatment(
-            'yesbank',
-            'off',
-            'off',
-            'off',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'off',
-            'control'
-        );
+        $this->mockRazorxTreatment();
 
-        $this->app['config']->set('applications.banking_account_service.mock', true);
+        $this->app['config']->set('applications.batch.mock', true);
+        $this->app['config']->set('applications.fts.mock', true);
 
         $this->fixtures->merchant->addFeatures([Features::PAYOUTS_BATCH, Features::MFN]);
     }
@@ -316,12 +304,12 @@ class PayoutsBatchTest extends TestCase
         $this->assertEquals($initialFileCount, $finalFileCount);
     }
 
-    public function testPayoutCreationFailedWebhook()
+    public function testPayoutWebhooks()
     {
         $customTestCase = $this->testData[__FUNCTION__];
 
         $headers = [
-            'HTTP_' . RequestHeader::X_Batch_Id => 'HjTgKBno3owAgv',
+            'HTTP_' . RequestHeader::X_Batch_Id => 'C3fzDCb4hA4F6b',
         ];
 
         // Add idempotency header to test data
@@ -329,15 +317,39 @@ class PayoutsBatchTest extends TestCase
 
         $this->ba->batchAuth();
 
-        $eventTestDataKey = 'testFiringOfWebhookOnPayoutCreationFailure';
+        $this->expectWebhookEventWithContents('payout.creation.failed', 'testFiringOfWebhookOnPayoutCreationFailure');
 
-        $this->expectWebhookEventWithContents('payout.creation.failed', $eventTestDataKey);
+        $this->expectWebhookEventWithContents('payout.initiated', 'testFiringOfWebhookOnPayoutCreation');
+
+        $this->fixtures->create('payouts_batch', [
+            'batch_id'     => 'C3fzDCb4hA4F6b',
+            'reference_id' => 'whu2i2830923ieni',
+            'merchant_id'  => '10000000000000',
+            'status'       => 'processed',
+        ]);
 
         $this->startTest($customTestCase);
     }
 
+    // This is to test if existing proxy auth based bulk payouts are not breaking in the new validations flow
     public function testBatchesCreateWithProxyAuthWhenOtpIsSent()
     {
+        // To remove errors due to rupee/paise header validations
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'off',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'control'
+        );
+
         //create the file by replicating payouts_batch core code
         $refId = $this->testData['testCreatePayoutsBatchWithoutIdemKey']['request']['content']['reference_id'];
         $payouts = $this->testData['testCreatePayoutsBatchWithoutIdemKey']['request']['content']['payouts'];
@@ -362,6 +374,7 @@ class PayoutsBatchTest extends TestCase
         $this->startTest($customTestData);
     }
 
+    // This is to test that OTP validations are not checked in private auth during batch create
     public function testBatchesCreateWithPrivateAuthWhenOtpIsSent()
     {
         // Pre-initialising App facade to mock a private auth
@@ -405,28 +418,27 @@ class PayoutsBatchTest extends TestCase
             = 'RazorpayX Account Number,Payout Amount,Payout Currency,Payout Mode,Payout Purpose,' .
               'Payout Narration,Payout Reference Id,Fund Account Id,Fund Account Type,Fund Account Name,' .
               'Fund Account Ifsc,Fund Account Number,Fund Account Vpa,Fund Account Phone Number,Fund Account Email,' .
-              'Contact Name,Contact Email,Contact Mobile,Contact Type,Contact Reference Id,notes[batch_reference_id],' .
-              'notes[correlation_id],notes[fund_account_name],notes[fund_account_number]';
+              'Contact Name,Contact Email,Contact Mobile,Contact Type,Contact Reference Id,notes[batch_reference_id]';
 
         $expectedDataRows = [
             '2224440041626905,1000,INR,NEFT,payout,Acme Corp Fund Transfer,MFN1234,,bank_account,Gaurav Kumar,' .
             'HDFC0001234,1121431121541121,,,,Gaurav Kumar,gaurav.kumar@example.com,9876543210,vendor,' .
-            'Acme Contact ID 12345,whu2i2830923ieni,67d30314-f9b7-11eb-ab60-acde48001122,Gaurav Kumar,1121431121541121',
+            'Acme Contact ID 12345,whu2i2830923ieni',
 
             '2224440041626905,1000,INR,IMPS,payout,Acme Corp Fund Transfer,Acme Transaction ID 12345,,bank_account,' .
             'Gaurav Kumar,HDFC0001234,1121431121541121,,,,Gaurav Kumar,gaurav.kumar@example.com,9999999999,vendor,' .
-            'Acme Contact ID 12345,whu2i2830923ieni,67d30314-f9b7-11eb-ab60-acde48001122,Gaurav Kumar,1121431121541121',
+            'Acme Contact ID 12345,whu2i2830923ieni',
 
             '2224440041626905,1000,INR,NEFT,payout,Acme Corp Fund Transfer,MFN12345,fa_TheTestFundAcc,,,,,,,,,,,,,' .
-            'whu2i2830923ieni,67d30314-f9b7-11eb-ab60-acde48001122,,',
+            'whu2i2830923ieni',
 
             '2224440041626905,1000,INR,amazonpay,refund,Acme Corp Fund Transfer,Acme Transaction ID 12345,,wallet,' .
             'Gaurav Kumar,,,,+919876543210, gaurav.kumar@example.com,Gaurav Kumar,gaurav.kumar@example.com,' .
-            '9876543210,employee,Acme Contact ID 12345,whu2i2830923ieni,67d30314-f9b7-11eb-ab60-acde48001122,,',
+            '9876543210,employee,Acme Contact ID 12345,whu2i2830923ieni',
 
             '2224440041626905,1000,INR,UPI,refund,Acme Corp Fund Transfer,Acme Transaction ID 12345,,vpa,,,,' .
             'gauravkumar@exampleupi,,,Gaurav Kumar,gaurav.kumar@example.com,9876543210,self,Acme Contact ID 12345,' .
-            'whu2i2830923ieni,67d30314-f9b7-11eb-ab60-acde48001122,,',
+            'whu2i2830923ieni',
         ];
 
         $this->assertEquals(count($expectedDataRows) + 1, count($fileContent));

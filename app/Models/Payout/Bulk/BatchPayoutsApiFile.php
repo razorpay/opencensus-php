@@ -2,15 +2,12 @@
 
 namespace RZP\Models\Payout\Bulk;
 
-use App;
-use Ramsey\Uuid\Uuid;
-
 use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore;
+use RZP\Exception\LogicException;
 use RZP\Models\Vpa\Entity as VpaEntity;
-use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Contact\Entity as ContEntity;
 use RZP\Models\FundAccount\Entity as FaEntity;
 use RZP\Models\BankAccount\Entity as BaEntity;
@@ -18,6 +15,8 @@ use RZP\Models\WalletAccount\Entity as WalletEntity;
 
 class BatchPayoutsApiFile extends Base
 {
+    const FILE_NAME     = 'payouts_batch';
+
     /**
      * @var array This will store the batch reference ID. Will be initialised in the constructor
      */
@@ -51,26 +50,6 @@ class BatchPayoutsApiFile extends Base
                 $singleRowData = $this->createMappingForNormalPayouts($payoutData);
             }
 
-            if ($merchant->isFeatureEnabled(Feature::MFN))
-            {
-                $singleRowData[Batch\Header::NOTES_CORRELATION_ID] = $this->generateCorrelationId();
-
-                if ((array_key_exists(Payout\Entity::FUND_ACCOUNT, $payoutData)) and
-                    ($payoutData[Payout\Entity::FUND_ACCOUNT][FaEntity::ACCOUNT_TYPE] === FaEntity::BANK_ACCOUNT))
-                {
-                    $singleRowData[Batch\Header::NOTES_FUND_ACCOUNT_NAME]
-                        = $payoutData[Payout\Entity::FUND_ACCOUNT][FaEntity::BANK_ACCOUNT][BaEntity::NAME];
-
-                    $singleRowData[Batch\Header::NOTES_FUND_ACCOUNT_NUMBER]
-                        = $payoutData[Payout\Entity::FUND_ACCOUNT][FaEntity::BANK_ACCOUNT][BaEntity::ACCOUNT_NUMBER];
-                }
-                else
-                {
-                    $singleRowData[Batch\Header::NOTES_FUND_ACCOUNT_NAME]   = '';
-                    $singleRowData[Batch\Header::NOTES_FUND_ACCOUNT_NUMBER] = '';
-                }
-            }
-
             $data[] = $singleRowData;
         }
 
@@ -91,6 +70,38 @@ class BatchPayoutsApiFile extends Base
             self::SIGNED_URL       => $ufhSignedUrl['url'],
             FileStore\Entity::NAME => $ufhFile->getFullFileName(),
         ];
+    }
+
+    /**
+     * Inherited from Payout\Bulk\Base.php to add the call addBucketConfigForBatchService().
+     * This ensures that the proper bucket and region are picked up while creating the ufh file.
+     * Removal of this call will cause the batch to fail at Batch microservice on production.
+     *
+     * @param string $filePath
+     * @param string $ext
+     * @param Merchant\Entity $merchant
+     *
+     * @return FileStore\Creator
+     *
+     * @throws LogicException
+     */
+    protected function saveFile(string $uniqueId, string $filePath, string $ext, Merchant\Entity $merchant): FileStore\Creator
+    {
+        $filePrefix = 'payouts/' . $uniqueId . '/';
+
+        $name = $filePrefix . static::FILE_NAME;
+
+        $ufh = new FileStore\Creator;
+
+        $ufh->localFilePath($filePath)
+            ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][0])
+            ->name($name)
+            ->extension($ext)
+            ->merchant($merchant)
+            ->type(FileStore\Type::PAYOUT_SAMPLE)
+            ->addBucketConfigForBatchService(FileStore\Type::BATCH_SERVICE);
+
+        return $ufh->save();
     }
 
     protected function createMappingForCompositePayouts($payoutData)
@@ -166,24 +177,5 @@ class BatchPayoutsApiFile extends Base
             Batch\Header::CONTACT_REFERENCE_ID      => '',
             Batch\Header::NOTES_BATCH_REFERENCE_ID  => $this->batchReferenceId ?? '',
         ];
-    }
-
-    /**
-     * Used in MFN to generate the correlation ID for MFN callback
-     * MFN will use this for request idempotency when we call the MFN Callback API
-     *
-     * @return string
-     * @throws \Exception
-     */
-    private function generateCorrelationId() : string
-    {
-        $app = App::getFacadeRoot();
-
-        if ($app['env'] === 'testing')
-        {
-            return '67d30314-f9b7-11eb-ab60-acde48001122';
-        }
-
-        return Uuid::uuid1();
     }
 }

@@ -155,7 +155,7 @@ return [
         ],
     ],
 
-    'testPayoutCreationFailedWebhook' => [
+    'testPayoutWebhooks' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/bulk',
@@ -184,10 +184,7 @@ return [
                         'reference_id' => ''
                     ],
                     'notes'                    => [
-                        'batch_reference_id'  => 'whu2i2830923ieni',
-                        'correlation_id'      => '67d30314-f9b7-11eb-ab60-acde48001122',
-                        'fund_account_name'   => 'Gaurav Kumar',
-                        'fund_account_number' => '1121431121541121',
+                        'batch_reference_id' => 'whu2i2830923ieni',
                     ],
                     'idempotency_key'          => 'batch_abc123'
                 ],
@@ -214,6 +211,9 @@ return [
                         'mobile'       => '9988998899',
                         'reference_id' => ''
                     ],
+                    'notes'                    => [
+                        'batch_reference_id' => 'whu2i2830923ieni',
+                    ],
                     'idempotency_key'          => 'batch_abc1234'
                 ],
             ],
@@ -224,7 +224,7 @@ return [
                 'count'  => 2,
                 'items'  => [
                     [
-                        'batch_id'         => 'HjTgKBno3owAgv',
+                        'batch_id'         => 'C3fzDCb4hA4F6b',
                         'idempotency_key'  => 'batch_abc123',
                         'error'            => [
                             'description' => 'Invalid purpose: payment',
@@ -252,23 +252,68 @@ return [
                     'amount'          => '1000',
                     'currency'        => 'INR',
                     'notes'           => [
-                        'batch_reference_id'  => 'whu2i2830923ieni',
-                        'correlation_id'      => '67d30314-f9b7-11eb-ab60-acde48001122',
-                        'fund_account_name'   => 'Gaurav Kumar',
-                        'fund_account_number' => '1121431121541121',
+                        'batch_reference_id' => 'whu2i2830923ieni',
+                        'correlation_id'     => '67d30314-f9b7-11eb-ab60-acde48001122',
                     ],
                     'status'          => 'failed',
                     'purpose'         => 'payment',
                     'mode'            => 'NEFT',
                     'reference_id'    => 'MFN1234',
                     'narration'       => 'Acme Corp Fund Transfer',
-                    'batch_id'        => 'HjTgKBno3owAgv',
+                    'batch_id'        => 'batch_C3fzDCb4hA4F6b',
                     'failure_reason'  => 'Invalid purpose: payment',
+                    'fund_account'    =>
+                        [
+                            'bank_account' =>
+                                [
+                                    'name'           => 'Gaurav Kumar',
+                                    'account_number' => '1121431121541121'
+                                ],
+                        ],
+                    'account_number'  => '2224440041626905',
+                    'batch_status'    => 'processed',
                     'error'           => [
                         'description' => 'Invalid purpose: payment',
                         'source'      => 'business',
                         'reason'      => 'BAD_REQUEST_ERROR',
                     ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFiringOfWebhookOnPayoutCreation' => [
+        'entity'   => 'event',
+        'event'    => 'payout.initiated',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'amount'         => 1000,
+                    'currency'       => 'INR',
+                    'notes'          => [
+                        'batch_reference_id' => 'whu2i2830923ieni',
+                        'correlation_id'     => '67d30314-f9b7-11eb-ab60-acde48001122',
+                    ],
+                    'status'         => 'processing',
+                    'purpose'        => 'payout',
+                    'mode'           => 'IMPS',
+                    'reference_id'   => 'MFN1234',
+                    'narration'      => 'Acme Corp Fund Transfer',
+                    'batch_id'       => 'batch_C3fzDCb4hA4F6b',
+                    'fund_account'   =>
+                        [
+                            'bank_account' =>
+                                [
+                                    'name'           => 'Gaurav Kumar',
+                                    'account_number' => '1121431121541121'
+                                ],
+                        ],
+                    'account_number' => '2224440041626905',
+                    'batch_status'   => 'processed',
                 ],
             ],
         ],
