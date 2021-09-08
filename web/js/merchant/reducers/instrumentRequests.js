@@ -1,5 +1,5 @@
 import React from 'react';
-import ajax, { merchantFetch } from 'merchant/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import { set } from 'common/utils/immutable';
 import lodashset from 'lodash/set';
 import cloneDeep from 'lodash/cloneDeep';
@@ -81,7 +81,7 @@ export const setLoading = () => {
   };
 };
 
-let initialState = {
+const initialState = {
   pg: [
     {
       name: 'Cards',
@@ -832,28 +832,33 @@ let initialState = {
 
 function findPath(pathToFind, pg) {
   let str = 'pg';
-  let root = pathToFind.shift();
-  let rootIndex = pg.findIndex((_) => _.slug === root);
+  const root = pathToFind.shift();
+  const rootIndex = pg.findIndex((_) => _.slug === root);
+
+  function setIntermediateList(intermediateIndex, index, leafIndex) {
+    str = `${str}.intermediateList[${intermediateIndex}]`;
+    str = `${str}.leafList[${index}].list[${leafIndex}]`;
+  }
 
   if (rootIndex !== -1) {
-    str = str + `[${rootIndex}]`;
+    str = `${`${str}[${rootIndex}]`}`;
     if (
       pg[rootIndex].intermediateList &&
       Array.isArray(pg[rootIndex].intermediateList) &&
       pg[rootIndex].intermediateList.some((_) => _.slug)
     ) {
-      let intermediate = pathToFind.shift();
-      let intermediateIndex = pg[rootIndex].intermediateList.findIndex(
+      const intermediate = pathToFind.shift();
+      const intermediateIndex = pg[rootIndex].intermediateList.findIndex(
         (_) => _.slug === intermediate,
       );
-      str = str + `.intermediateList[${intermediateIndex}]`;
+      str = `${`${str}.intermediateList[${intermediateIndex}]`}`;
       if (pg[rootIndex].intermediateList[intermediateIndex].leafList) {
-        let leafSlug = pathToFind.shift();
+        const leafSlug = pathToFind.shift();
         let leafIndex;
         pg[rootIndex].intermediateList[intermediateIndex].leafList.every((leaf, index) => {
           leafIndex = leaf.list.findIndex((_) => _.slug === leafSlug);
           if (leafIndex !== -1) {
-            str = str + `.leafList[${index}].list[${leafIndex}]`;
+            str = `${`${str}.leafList[${index}].list[${leafIndex}]`}`;
             return false;
           }
           return true;
@@ -864,7 +869,7 @@ function findPath(pathToFind, pg) {
       Array.isArray(pg[rootIndex].intermediateList) &&
       !pg[rootIndex].intermediateList.some((_) => _.slug)
     ) {
-      let leafSlug = pathToFind.shift();
+      const leafSlug = pathToFind.shift();
       for (
         let intermediateIndex = 0;
         intermediateIndex < pg[rootIndex].intermediateList.length;
@@ -875,8 +880,7 @@ function findPath(pathToFind, pg) {
           pg[rootIndex].intermediateList[intermediateIndex].leafList.every((leaf, index) => {
             leafIndex = leaf.list.findIndex((_) => _.slug === leafSlug);
             if (leafIndex !== -1) {
-              str = str + `.intermediateList[${intermediateIndex}]`;
-              str = str + `.leafList[${index}].list[${leafIndex}]`;
+              setIntermediateList(intermediateIndex, index, leafIndex);
               return false;
             }
             return true;
@@ -884,12 +888,12 @@ function findPath(pathToFind, pg) {
         }
       }
     } else if (!pg[rootIndex].intermediateList) {
-      let leafSlug = pathToFind.join('.');
+      const leafSlug = pathToFind.join('.');
       let leafIndex;
       pg[rootIndex].leafList.every((leaf, index) => {
         leafIndex = leaf.list.findIndex((_) => _.slug === leafSlug);
         if (leafIndex !== -1) {
-          str = str + `.leafList[${index}].list[${leafIndex}]`;
+          str = `${str}.leafList[${index}].list[${leafIndex}]`;
           return false;
         }
         return true;
@@ -897,11 +901,11 @@ function findPath(pathToFind, pg) {
     }
     return str;
   }
+  return str;
 }
 
-export default function (state = initialState, action) {
-  let pg = state.pg;
-  let stateClone;
+export default function instrumentRequestsReducer(state = initialState, action) {
+  const pg = state.pg;
   switch (action.type) {
     case SET_LEAF_INSTRUMENT:
       return set(state, 'leafInstrument', action.payload);
@@ -915,16 +919,13 @@ export default function (state = initialState, action) {
       return set(state, 'loading', true);
     case `${FETCH_ALL_MERCHANT_INSTRUMENTS}::ERROR`:
       return set(state, 'loading', false);
-    case `${FETCH_ALL_MERCHANT_INSTRUMENTS}::SUCCESS`:
-      stateClone = cloneDeep(state);
+    case `${FETCH_ALL_MERCHANT_INSTRUMENTS}::SUCCESS`: {
+      const stateClone = cloneDeep(state);
       action.payload.data.forEach((s) => {
-        let pathToFind = s.instrument.replace('pg.', '').split('.');
-        let path = findPath(pathToFind, pg);
-        if (
-          s.comment &&
-          ['action_required', 'rejected', 'activated_action_required'].includes(s.status)
-        ) {
-          let rootPath = path.split('.')[0];
+        const pathToFind = s.instrument.replace('pg.', '').split('.');
+        const path = findPath(pathToFind, pg);
+        if (s.comment && ['action_required', 'rejected'].includes(s.status)) {
+          const rootPath = path.split('.')[0];
           lodashset(stateClone, `${rootPath}.actionItems["${s.instrument}"]`, s.comment);
         }
         lodashset(
@@ -946,18 +947,19 @@ export default function (state = initialState, action) {
       lodashset(stateClone, 'leafInstrument', null);
       lodashset(stateClone, 'loading', false);
       return stateClone;
-    case `${FETCH_REQUESTED_MERCHANT_INSTRUMENTS}::SUCCESS`:
-      stateClone = cloneDeep(state);
-      let instrumentsTat = {};
+    }
+    case `${FETCH_REQUESTED_MERCHANT_INSTRUMENTS}::SUCCESS`: {
+      const stateClone = cloneDeep(state);
+      const instrumentsTat = {};
       action.payload.data.forEach(({ instrument, tat }) => {
         instrumentsTat[instrument] = tat;
       });
       lodashset(stateClone, 'instrumentsTat', instrumentsTat);
       return stateClone;
-    case `${CREATE_INSTRUMENT_REQUEST}::SUCCESS`:
-      let updatedLeafIndex;
-      let pathToUpdate;
-      let stateClone = cloneDeep(state);
+    }
+    case `${CREATE_INSTRUMENT_REQUEST}::SUCCESS`: {
+      let updatedLeafIndex, pathToUpdate;
+      const stateClone = cloneDeep(state);
       stateClone.leafInstrument.leafList.every((leaf, index) => {
         updatedLeafIndex = leaf.list.findIndex((_) => {
           return _.slug.includes(action.payload.data.instrument.split('.').pop());
@@ -979,11 +981,10 @@ export default function (state = initialState, action) {
         return stateClone;
       }
       return state;
-
-    case `${CANCEL_INSTRUMENT_REQUEST}::SUCCESS`:
-      let cancelLeafIndex;
-      let pathToCancel;
-      stateClone = cloneDeep(state);
+    }
+    case `${CANCEL_INSTRUMENT_REQUEST}::SUCCESS`: {
+      let cancelLeafIndex, pathToCancel;
+      const stateClone = cloneDeep(state);
       stateClone.leafInstrument.leafList.every((leaf, index) => {
         cancelLeafIndex = leaf.list.findIndex((_) => {
           return _.slug.includes(action.payload.data.instrument.split('.').pop());
@@ -1000,7 +1001,7 @@ export default function (state = initialState, action) {
         return stateClone;
       }
       return state;
-
+    }
     default:
       return state;
   }
