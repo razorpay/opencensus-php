@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Unit\Models\Merchant\Detail;
-
 
 use Carbon\Carbon;
 use RZP\Constants\Mode;
@@ -22,9 +20,17 @@ use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields;
+use RZP\Models\Merchant\Detail\Constants as DetailConstant;
 
 class CoreTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/CoreTestData.php';
+
+        parent::setUp();
+    }
+
     protected function createAndFetchMocks()
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)
@@ -294,6 +300,103 @@ class CoreTest extends TestCase
         $response = $core->setVerificationDetails($merchantDetails, $merchant, []);
 
         $this->assertEquals(10, $response['verification']['activation_progress']);
+    }
+
+    public function testGroupBankDetails()
+    {
+        $core = new DetailCore();
+
+        $testData = $this->testData['testGroupBankDetailsInput'];
+
+        $merchantDetails = $this->fixtures->create('merchant_detail',$testData);
+
+        $output= $core->getUpdatedKycClarificationReasons(
+            [],
+            $merchantDetails->getId()
+        );
+
+        $expectedOutput = $this->testData['testGroupBankDetailsOutput'];
+
+        $this->assertEquals($expectedOutput, $output);
+    }
+
+    public function testGroupPromoterPanDetails()
+    {
+        $core = new DetailCore();
+
+        $testData = $this->testData['testGroupedPromoterPanDetailsInput'];
+
+        $merchantDetails = $this->fixtures->create('merchant_detail',$testData);
+
+        $output= $core->getUpdatedKycClarificationReasons(
+            [],
+            $merchantDetails->getId()
+        );
+
+        $expectedOutput = $this->testData['testGroupedPromoterPanDetailsOutput'];
+
+        $this->assertEquals($expectedOutput, $output);
+    }
+
+    public function testGroupCompanyPanDetails()
+    {
+        $core = new DetailCore();
+
+        $testData = $this->testData['testGroupedCompanyPanDetailsInput'];
+
+        $merchantDetails = $this->fixtures->create('merchant_detail',$testData);
+
+        $output= $core->getUpdatedKycClarificationReasons(
+            [],
+            $merchantDetails->getId()
+        );
+
+        $expectedOutput = $this->testData['testGroupedCompanyPanDetailsOutput'];
+
+        $this->assertEquals($expectedOutput, $output);
+    }
+
+    public function testAddToExistingClarificationReasonV2()
+    {
+        $core = new DetailCore();
+
+        $testData = $this->testData['existingClarificationReasonV2Data'];
+
+        $merchantDetails = $this->fixtures->create('merchant_detail',$testData);
+
+        $newClarificationReasonV2 = $this->testData['newClarificationReasonV2Data'];
+
+        $fixedTime = (new Carbon())->timestamp(1583548200);
+
+        Carbon::setTestNow($fixedTime);
+
+        $this->fixtures->create('state', [
+            'entity_id'   =>  $merchantDetails->getId(),
+            'entity_type' => 'merchant_detail',
+            'name'        => 'under_review'
+        ]);
+
+        $this->fixtures->create('state', [
+            'entity_id'   =>  $merchantDetails->getId(),
+            'entity_type' => 'merchant_detail',
+            'name'        => 'needs_clarification'
+        ]);
+
+        $this->fixtures->create('state', [
+            'entity_id'   =>  $merchantDetails->getId(),
+            'entity_type' => 'merchant_detail',
+            'name'        => 'under_review'
+        ]);
+
+        $output= $core->getUpdatedKycClarificationReasons(
+            $newClarificationReasonV2,
+            $merchantDetails->getId(),
+            DetailConstant::ADMIN
+        );
+
+        $expectedOutput = $this->testData['updatedClarificationReasonV2Output'];
+
+        $this->assertEquals($expectedOutput, $output);
     }
 
     public function testActivationProgressL1Filled()

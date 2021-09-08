@@ -82,6 +82,7 @@ use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\Fraud\HealthChecker\Constants as HealthCheckerConstants;
+use RZP\Models\Merchant\Detail\NeedsClarification\Constants as NCConstants;
 
 class Core extends Base\Core
 {
@@ -1384,32 +1385,154 @@ class Core extends Base\Core
     {
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
 
-        $existingKycClarifications = $merchantDetails->getKycClarificationReasons() ?? [];
-        $existingReasons           = $existingKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
-        $existingAdditionalDetails = $existingKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
+        $existingKycClarifications         = $merchantDetails->getKycClarificationReasons() ?? [];
+        $existingReasons                   = $existingKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
+        $existingAdditionalDetails         = $existingKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
+        $existingClarificationReasonsV2    = $existingKycClarifications[Entity::CLARIFICATION_REASONS_V2] ?? null;
 
-        $newKycClarifications      = $input[Entity::KYC_CLARIFICATION_REASONS] ?? [];
-        $newAdditionalDetails      = $newKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
-        $newReasons                = $newKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
+        $newKycClarifications              = $input[Entity::KYC_CLARIFICATION_REASONS] ?? [];
+        $newAdditionalDetails              = $newKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
+        $newReasons                        = $newKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
 
-        if ((empty($newReasons) === true) and
-            (empty($newAdditionalDetails) === true))
+        if((empty($existingClarificationReasonsV2) === true)
+            && ((empty($existingReasons) === false) || (empty($existingAdditionalDetails) === false))) {
+            //add existing clarificationReasons And AdditionalDetails in clarification_reasons_v2
+            $existingClarificationReasonsV2 = $this->getClarificationReasonsV2($existingReasons ?? [],$existingAdditionalDetails ?? []);
+            $existingKycClarifications[Entity::CLARIFICATION_REASONS_V2] = $existingClarificationReasonsV2;
+        }
+
+        if ((empty($newReasons) === true) and (empty($newAdditionalDetails) === true))
         {
             return $existingKycClarifications;
         }
 
+        $newClarificationReasonsV2 = $this->getClarificationReasonsV2($newReasons ?? [],$newAdditionalDetails ?? []);
+
         $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchantDetails->merchant);
 
         $ncCount = $this->getStatusChangeCount($statusChangeLogs, Status::UNDER_REVIEW);
-
         $clarificationReasons = $this->getClarificationReasons($existingReasons, $newReasons, $ncCount, $source);
         $additionalDetails = $this->getClarificationReasons($existingAdditionalDetails, $newAdditionalDetails, $ncCount, $source);
+        $clarificationReasonsV2 = $this->getClarificationReasons($existingClarificationReasonsV2, $newClarificationReasonsV2, $ncCount, $source);
 
         return [
-            Entity::CLARIFICATION_REASONS   =>  $clarificationReasons,
-            Entity::ADDITIONAL_DETAILS      =>  $additionalDetails,
-            Merchant\Constants::NC_COUNT    =>  $ncCount
+            Entity::CLARIFICATION_REASONS    =>  $clarificationReasons,
+            Entity::ADDITIONAL_DETAILS       =>  $additionalDetails,
+            Entity::CLARIFICATION_REASONS_V2 => $clarificationReasonsV2,
+            Merchant\Constants::NC_COUNT     =>  $ncCount
         ];
+    }
+
+    protected function getClarificationReasonsV2(array $clarificationReasons,array $additionalDetails)
+    {
+        $fieldsWhichAreQueriedUpon = array_unique(array_merge(array_keys($clarificationReasons), array_keys($additionalDetails)));
+        $fieldsWhichCannotExistIndependently = $this->getFieldsWhichCannotExistIndependently($fieldsWhichAreQueriedUpon);
+        foreach($fieldsWhichCannotExistIndependently as $field){
+            if(in_array($field, $fieldsWhichAreQueriedUpon) === true) {
+                unset($fieldsWhichAreQueriedUpon[array_search($field, $fieldsWhichAreQueriedUpon)]);
+            }
+        }
+        return $this->createClarificationReasonsV2($clarificationReasons, $additionalDetails, $fieldsWhichAreQueriedUpon);
+    }
+
+    protected function getFieldsWhichCannotExistIndependently(array $fieldsWhichAreQueriedUpon)
+    {
+        $fieldsWhichCannotExistIndependently = [];
+        foreach($fieldsWhichAreQueriedUpon as $field){
+            $related_fields_data = NeedsClarificationMetaData::RELATED_FIELDS_METADATA[$field][NCConstants::RELATED_FIELDS] ?? null;
+            if(empty($related_fields_data) === false){
+                foreach($related_fields_data as $related_field_data){
+                    if($related_field_data[NCConstants::CAN_RF_EXIST_INDEPENDENTLY] === false){
+                        array_push($fieldsWhichCannotExistIndependently,$related_field_data[NCConstants::FIELD_NAME]);
+                    }
+                }
+            }
+        }
+        return $fieldsWhichCannotExistIndependently;
+    }
+
+    protected function createClarificationReasonsV2(array $clarificationReasons, array $additionalDetails, array $fieldsToBePresentInV2)
+    {
+        $modifiedGroupedDetails = [];
+        foreach($additionalDetails as $additionalDetail => $values){
+            if(in_array($additionalDetail, $fieldsToBePresentInV2) === true){
+                if (isset($modifiedGroupedDetails[$additionalDetail]) === true) {
+                    array_push($modifiedGroupedDetails[$additionalDetail], ...$values);
+                } else {
+                    $modifiedGroupedDetails[$additionalDetail] = $values;
+                }
+            }
+        }
+        foreach($clarificationReasons as $clarificationReason => $values){
+            if(in_array($clarificationReason, $fieldsToBePresentInV2) === true){
+                if (isset($modifiedGroupedDetails[$clarificationReason]) === true) {
+                    array_push($modifiedGroupedDetails[$clarificationReason], ...$values);
+                } else {
+                    $modifiedGroupedDetails[$clarificationReason] = $values;
+                }
+            }
+        }
+        return $this->addRelatedFieldsInV2($modifiedGroupedDetails);
+    }
+
+    protected function addRelatedFieldsInV2(array $clarification_reasons_v2)
+    {
+        foreach($clarification_reasons_v2 as $clarification_reason_v2 => $values) {
+            $related_fields_data = NeedsClarificationMetaData::RELATED_FIELDS_METADATA[$clarification_reason_v2][NCConstants::RELATED_FIELDS] ?? null;
+            if(empty($related_fields_data) === false){
+                $ncCountReferenceArray = $this->getNcCountRefernceArray($clarification_reasons_v2, $related_fields_data);
+                foreach($values as &$value){
+                    $value[NCConstants::RELATED_FIELDS] = [];
+                    foreach($related_fields_data as $related_field_data){
+                        $related_field = $related_field_data[NCConstants::FIELD_NAME];
+                        $can_rf_exist_independently = $related_field_data[NCConstants::CAN_RF_EXIST_INDEPENDENTLY];
+                        if($can_rf_exist_independently === false){
+                            array_push($value[NCConstants::RELATED_FIELDS],[
+                                Merchant\Constants::FIELD_NAME => $related_field,
+                            ]);
+                        }
+                        else{
+                            if(isset($value[Merchant\Constants::NC_COUNT]) === true){
+                                $currNcCount = $value[Merchant\Constants::NC_COUNT];
+                                if(in_array($currNcCount.'$'.$value[Entity::CREATED_AT],$ncCountReferenceArray[$related_field]) === false){
+                                    array_push($value[NCConstants::RELATED_FIELDS], [
+                                            Merchant\Constants::FIELD_NAME => $related_field,
+                                    ]);
+                                }
+                            }
+                            else{
+                                if(array_key_exists($related_field, $clarification_reasons_v2) === false){
+                                    array_push($value[NCConstants::RELATED_FIELDS],[
+                                        Merchant\Constants::FIELD_NAME => $related_field,
+                                    ]);
+                                }
+                            }
+                        }
+                    }
+                }
+                $clarification_reasons_v2[$clarification_reason_v2] = $values;
+            }
+        }
+        return $clarification_reasons_v2;
+    }
+
+    protected function getNcCountRefernceArray(array $clarification_reasons_v2, array  $related_fields_data)
+    {
+        $refArray = [];
+        foreach($related_fields_data as $related_field_data){
+            $related_field = $related_field_data[NCConstants::FIELD_NAME];
+            $can_rf_exist_independently = $related_field_data[NCConstants::CAN_RF_EXIST_INDEPENDENTLY];
+            $refArray[$related_field]=[];
+            if(($can_rf_exist_independently === true) && (array_key_exists($related_field,$clarification_reasons_v2)) === true){
+                $relatedFieldObjs = $clarification_reasons_v2[$related_field];
+                foreach($relatedFieldObjs as $relatedFieldObj){
+                    if(isset($relatedFieldObj[Merchant\Constants::NC_COUNT]) === true) {
+                        array_push($refArray[$related_field], $relatedFieldObj[Merchant\Constants::NC_COUNT].'$'.$relatedFieldObj[Entity::CREATED_AT]);
+                    }
+                }
+            }
+        }
+        return $refArray;
     }
 
     protected function getClarificationReasons($existingReasons, $newReasons, $ncCount, $source = null)
@@ -2450,20 +2573,21 @@ class Core extends Base\Core
                 'isUnderReview' => !$isDedupeBlocked
             ];
 
-            $response[Merchant\Entity::ACTIVATED]                   = (int) $merchant->isActivated();
-            $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
-            $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
-            $response[Constants::MERCHANT]                          = $merchant->toArrayPublic();
-            $response[Entity::STAKEHOLDER]                          = $merchantDetails->stakeholder;
-            $response[Entity::MERCHANT_AVG_ORDER_VALUE]             = $merchantDetails->avgOrderValue;
-            $response[Entity::ACTIVATION_PROGRESS]                  = $response['verification'][Entity::ACTIVATION_PROGRESS];
-            $response[Entity::MERCHANT_VERIFICATION_DETAIL]         = $merchantDetails->verificationDetail;
-            $response['dedupe']                                     = $dedupe;
-            $response['isDedupe']                                   = $isDedupeBlocked;
-            $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
-            $response['isHardLimitReached']                         = empty($hardEscalationLevel4) ? false : true;
-            $response['activationStatusChangeLogs']                 = $this->getStatusChangeLogs($merchant);
-            $response[Entity::MERCHANT_BUSINESS_DETAIL]             = $merchantBusinessDetails;
+        $response[Merchant\Entity::ACTIVATED]                   = (int) $merchant->isActivated();
+        $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
+        $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
+        $response[Constants::MERCHANT]                          = $merchant->toArrayPublic();
+        $response[Entity::STAKEHOLDER]                          = $merchantDetails->stakeholder;
+        $response[Entity::MERCHANT_AVG_ORDER_VALUE]             = $merchantDetails->avgOrderValue;
+        $response[Entity::ACTIVATION_PROGRESS]                  = $response['verification'][Entity::ACTIVATION_PROGRESS];
+        $response[Entity::MERCHANT_VERIFICATION_DETAIL]         = $merchantDetails->verificationDetail;
+        $response['dedupe']                                     = $dedupe;
+        $response['isDedupe']                                   = $isDedupeBlocked;
+        $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
+        $response['isHardLimitReached']                         = empty($hardEscalationLevel4) ? false : true;
+        $response['activationStatusChangeLogs']                 = $this->getStatusChangeLogs($merchant);
+        $response[Entity::MERCHANT_BUSINESS_DETAIL]             = $merchantBusinessDetails;
+        $response[Entity::KYC_CLARIFICATION_REASONS]            = $this->getUpdatedKycClarificationReasons([], $merchantDetails->getMerchantId());
 
             return $response;
         });

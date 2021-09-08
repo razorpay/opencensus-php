@@ -19,6 +19,8 @@ class Constants
     const ACKNOWLEDGED                      = 'acknowledged';
 
     // needs clarification field names
+    const PROMOTER_PAN                      = 'promoter_pan';
+    const BUSINESS_PAN_NAME                 = 'business_pan_name';
     const BANK_ACCOUNT_NUMBER               = 'bank_account_number';
     const PERSONAL_PAN_IDENTIFIER           = 'personal_pan_identifier';
     const COMPANY_PAN_IDENTIFIER            = 'company_pan_identifier';
@@ -31,6 +33,11 @@ class Constants
     const IS_SIGNATORY_NAME_MATCHED         = 'isSignatoryNameMatched';
     const IS_COMPANY_NAME_MATCHED           = 'isCompanyNameMatched';
     const ADDITIONAL_DETAILS                = 'additional_Details';
+    const RELATED_FIELDS                    = 'related_fields';
+    const CAN_RF_EXIST_INDEPENDENTLY        = 'can_rf_exist_independently';
+    /* CAN_RF_EXIST_INDEPENDENTLY signifies whether related fields
+    can exist as an independent clarification query or not
+     * */
     const BUSINESS_TYPE_REASON_CODE_MAPPING = 'business_type_reason_code_mapping';
     const REASON_TYPE                       = 'reason_type';
 }

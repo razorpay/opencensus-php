@@ -151,6 +151,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const KYC_CLARIFICATION_REASONS                = 'kyc_clarification_reasons';
     const KYC_ADDITIONAL_DETAILS                   = 'kyc_additional_details';
     const CLARIFICATION_REASONS                    = 'clarification_reasons';
+    const CLARIFICATION_REASONS_V2                 = 'clarification_reasons_v2';
     const ADDITIONAL_DETAILS                       = 'additional_details';
     const KYC_ID                                   = 'kyc_id';
     const ESTD_YEAR                                = 'estd_year';

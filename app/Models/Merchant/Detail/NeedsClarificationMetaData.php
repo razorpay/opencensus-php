@@ -117,6 +117,40 @@ class NeedsClarificationMetaData
      *  V1 : If Verification is done by any system other than bvs
      *  V2 : If verification is done by bvs
      */
+    const RELATED_FIELDS_METADATA = [
+        Constants::PROMOTER_PAN => [
+            Constants::RELATED_FIELDS => [
+                [
+                    Constants::FIELD_NAME                              => Entity::PROMOTER_PAN_NAME,
+                    Constants::CAN_RF_EXIST_INDEPENDENTLY              => true,
+                ],
+            ],
+        ],
+        Constants::BANK_ACCOUNT_NUMBER => [
+            Constants::RELATED_FIELDS => [
+                    [
+                        Constants::FIELD_NAME                          => DocumentType::CANCELLED_CHEQUE,
+                        Constants::CAN_RF_EXIST_INDEPENDENTLY          => false,
+                    ],
+                    [
+                        Constants::FIELD_NAME                          => Entity::BANK_ACCOUNT_NAME,
+                        Constants::CAN_RF_EXIST_INDEPENDENTLY          => false,
+                    ],
+                    [
+                        Constants::FIELD_NAME                          => Entity::BANK_BRANCH_IFSC,
+                        Constants::CAN_RF_EXIST_INDEPENDENTLY          => false,
+                    ],
+            ],
+        ],
+        Entity::COMPANY_PAN => [
+            Constants::RELATED_FIELDS => [
+                [
+                    Constants::FIELD_NAME                          => Entity::COMPANY_PAN_NAME,
+                    Constants::CAN_RF_EXIST_INDEPENDENTLY          => true,
+                ],
+            ],
+        ]
+    ];
 
     const SYSTEM_BASED_NEEDS_CLARIFICATION_METADATA = [
         Constants::PERSONAL_PAN_IDENTIFIER  => [

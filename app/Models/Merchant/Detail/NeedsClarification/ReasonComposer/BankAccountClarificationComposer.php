@@ -53,9 +53,11 @@ class BankAccountClarificationComposer extends BaseClarificationReasonComposer
                         NCConstants::REASON_CODE=>NeedsClarificationMetaData::BUSINESS_TYPE_REASON_CODE_MAPPING[$this->merchantDetails->getBusinessType()]
                     ]];
                 }
+
                 return [
                     $this->merchantDetails::ADDITIONAL_DETAILS => $response
                 ];
+
             default:
                 throw  new LogicException("Unhandled bank detail verification status");
 
