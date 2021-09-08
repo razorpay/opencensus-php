@@ -52,7 +52,7 @@ const Header = ({ handleOnClick, orgData }) => {
           <FullHeightFlex justifyContent="space-around" alignItems="center">
             <View>
               <Size maxWidth="120px">
-                <img src="/img/logo_full.png" alt="Razorpay" />
+                <img src={orgData.logo} alt="Company Logo" />
               </Size>
               {orgData.isSignupAllowed && SignupButtonMobileView}
             </View>
