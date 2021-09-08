@@ -13,7 +13,9 @@ class GenericMerchant
 
     const TEST_MERCHANT_IDS = [
         '10000000000000',
-        '100DemoAccount'
+        '100DemoAccount',
+        'Hrw2ujXW6LGEk7', // Demo banking user merchant account - Beta
+        'HpoQK4cqkegpKO'  // Demo banking user merchant account - Prod
     ];
 
     /**
