@@ -96,21 +96,6 @@ class Activate extends Base\Core
                 ->handle();
         }
 
-        $isMerchantTncApplicable = (new Merchant\Detail\Core)->isMerchantTncApplicable($merchant);
-        $shouldActivate = (new Merchant\Detail\Core)->shouldActivateIfTncApplicable($merchant, $isMerchantTncApplicable);
-
-        if (($isMerchantTncApplicable === true) and
-            ($merchantDetail->tnc === null) and
-            ($triggerWorkflow === true) and
-            ($shouldActivate === false))
-        {
-            $shouldSave = false;
-
-            (new Merchant\Core)->appendTag($merchant, 'activated_by_ops');
-
-            return $merchantDetail;
-        }
-
         if ($this->shouldCreateBankAccount($merchantDetail) === true)
         {
             (new Detail\Core)->setBankAccountForMerchant($merchant);
@@ -269,21 +254,6 @@ class Activate extends Base\Core
             // Triggering workflow for the activation_status change in merchantDetail entity
             $this->app['workflow']
                 ->handle();
-        }
-
-        $isMerchantTncApplicable = (new Merchant\Detail\Core)->isMerchantTncApplicable($merchant);
-        $shouldActivate = (new Merchant\Detail\Core)->shouldActivateIfTncApplicable($merchant, $isMerchantTncApplicable);
-
-        if (($isMerchantTncApplicable === true) and
-            ($merchantDetail->tnc === null) and
-            ($triggerWorkflow === true) and
-            ($shouldActivate === false))
-        {
-            $shouldSave = false;
-
-            (new Merchant\Core)->appendTag($merchant, 'activated_by_ops');
-
-            return $merchantDetail;
         }
 
         if ($this->shouldCreateBankAccount($merchantDetail) === true)

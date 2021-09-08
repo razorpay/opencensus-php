@@ -222,6 +222,7 @@ final class RazorxTreatment
 
     // experiment to add merchant TnC urls for their website
     const MERCHANT_TNC = 'merchant_tnc';
+    const RAZORPAY_TNC = 'rzp_merchant_tnc';
 
     // experiment to enable whatsapp notifications for settlements
     const WHATSAPP_NOTIFICATIONS_SETTLEMENTS = 'whatsapp_notification_enablement';

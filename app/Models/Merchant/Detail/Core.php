@@ -4714,7 +4714,7 @@ class Core extends Base\Core
     {
         $org = $merchant->getOrgId() ?: $this->app['basicauth']->getOrgId();
 
-        if($org !== ORG_ENTITY::AXIS_ORG_ID)
+        if(array_key_exists($org, DEConstants::TNC_ORG_ID_EXP_MAP) === false)
         {
             return false;
         }
@@ -4730,29 +4730,16 @@ class Core extends Base\Core
             return false;
         }
 
+        $experimentName = DEConstants::TNC_ORG_ID_EXP_MAP[$org];
+
         if ((new Merchant\Core())->isRazorxExperimentEnable(
                 $merchant->getId(),
-                RazorxTreatment::MERCHANT_TNC) === false)
+                $experimentName) === false)
         {
             return false;
         }
-
+        
         return true;
-    }
-
-    public function shouldActivateIfTncApplicable(Merchant\Entity $merchant, bool $isTncApplicable)
-    {
-        if ($isTncApplicable === false) {
-            return true;
-        }
-
-        $org = $merchant->getOrgId() ?: $this->app['basicauth']->getOrgId();
-
-        if ($org === ORG_ENTITY::AXIS_ORG_ID) {
-            return true;
-        }
-
-        return false;
     }
 
     private function addCommentForBusinessWebsiteSave(string $urlType, string $permissionName, Entity $merchantDetails, string $dedupeFlaggedMIDs, array  $input)

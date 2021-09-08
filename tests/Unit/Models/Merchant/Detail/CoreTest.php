@@ -17,6 +17,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -226,6 +227,32 @@ class CoreTest extends TestCase
         ];
 
         (new DetailEntity)->build($input);
+    }
+
+    public function testIsMerchantTncApplicableSuccess()
+    {
+        $core = new DetailCore();
+
+        $merchantId = '2cXSLlUU8V9sXl';
+
+        $this->fixtures->create('org',[
+            'id' => ORG_ENTITY::AXIS_ORG_ID,
+        ]);
+
+        $merchant = $this->fixtures->create('merchant',[
+            'org_id'      => ORG_ENTITY::AXIS_ORG_ID,
+            'id'          => $merchantId,
+        ]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id'      => $merchant->getId(),
+        ]);
+
+        $this->mockRazorxTreatment();
+
+        $isMerchantTncApplicable = $core->isMerchantTncApplicable($merchant);
+
+        $this->assertEquals(true, $isMerchantTncApplicable);
     }
 
     public function testBusinessRegisteredStateCodeValidationOnInvalid2DigitCode()

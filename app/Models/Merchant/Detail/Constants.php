@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\Detail;
 
 
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Merchant\Tnc\Entity as TncEntity;
 use RZP\Models\Merchant\Email\Entity as EmailEntity;
 
@@ -271,6 +273,11 @@ class Constants
             self::ACCOUNT_PREFIX => "567890",
             self::IFSC_PREFIX    => IFSC::RATN
         ]
+    ];
+
+    const TNC_ORG_ID_EXP_MAP = [
+        ORG_ENTITY::AXIS_ORG_ID      => RazorxTreatment::MERCHANT_TNC,
+        ORG_ENTITY::RAZORPAY_ORG_ID  => RazorxTreatment::RAZORPAY_TNC,
     ];
 
     const PUBLIC_TNC_DETAILS = [
