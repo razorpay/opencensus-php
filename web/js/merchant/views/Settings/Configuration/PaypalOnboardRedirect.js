@@ -1,10 +1,7 @@
 import React from 'react';
+import { Redirect } from 'react-router-dom';
 export default class PaypalOnboardRedirect extends React.Component {
-  componentWillMount() {
-    (window.opener || window.parent).postMessage('paypal_onboard_redirect', {});
-  }
-
   render() {
-    return null;
+    return <Redirect to="/config" />;
   }
 }

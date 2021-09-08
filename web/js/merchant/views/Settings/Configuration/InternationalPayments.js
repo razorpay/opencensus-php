@@ -9,7 +9,7 @@ export const getClassName = (status) => {
   if (status === 'activated') {
     return 'success';
   }
-  if (['pending', 'created', 'permission_missing'].includes(status)) {
+  if (['pending', 'created', 'requested', 'permission_missing'].includes(status)) {
     return 'warning';
   }
   return '';
@@ -18,13 +18,13 @@ export const getClassName = (status) => {
 export const getStatusMessage = (status) => {
   switch (status) {
     case 'activated':
-      return 'PayPal has been activated as a payment method.';
+      return 'You are now accepting payments via Paypal.';
 
     case 'permission_missing':
       return 'Please provide the necessary permission to Razorpay from your paypal account. Please contact the PayPal customer support team for any queries.';
 
     case 'requested':
-      return 'There was an issue with linking your account with PayPal. We request you to register for your Paypal account again';
+      return 'There was an issue with linking your account with PayPal. We request you to register for your Paypal account again.';
 
     case 'pending':
       return (
@@ -94,7 +94,13 @@ const InternationalPayments = ({ mode, user, config, org, paypal_terminals }) =>
 
 const PaypalWrapper = ({ terminals }) => {
   const status = terminals.length && terminals[0].terminal.status;
-  const showStatus = ['created', 'activated', 'permission_missing', 'pending'].includes(status);
+  const showStatus = [
+    'created',
+    'activated',
+    'requested',
+    'permission_missing',
+    'pending',
+  ].includes(status);
   return (
     <div class="paypal-auto-onboarding" id="paypal-auto-onboarding">
       <div class="heading">
@@ -111,11 +117,12 @@ const PaypalWrapper = ({ terminals }) => {
           {showStatus ? (
             <a className={`status-pill status-pill-${getClassName(status)}`}>
               <span className="status-text">
-                {['created', 'pending', 'permission_missing'].includes(status) ? 'pending' : status}
+                {['created', 'pending', 'permission_missing', 'requested'].includes(status)
+                  ? 'pending'
+                  : status}
               </span>{' '}
               {status === 'activated' && (
                 <span>
-                  <i className="i i-info-circle" />
                   <Popover theme="dark" align="bottom">
                     <PopoverBody>
                       <div>{getStatusMessage(status)}</div>
@@ -125,14 +132,26 @@ const PaypalWrapper = ({ terminals }) => {
               )}
             </a>
           ) : null}
+          {terminals.length > 0 && (
+            <a className="merchant-id">
+              {terminals[0].terminal.merchant_id}
+              <Popover align="right" theme="dark">
+                <PopoverBody>
+                  <div className="disabled-text">Paypal generated Merchant ID</div>
+                </PopoverBody>
+              </Popover>
+            </a>
+          )}
         </li>
-        <PaypalOnboardingButton status={status} />
+        <PaypalOnboardingButton isInternationalPayment={false} status={status} />
       </div>
 
       <div class="body">
-        <div class="description">
-          Accept international payments using PayPal on Razorpay Checkout.
-        </div>
+        {terminals.length === 0 && (
+          <div class="description">
+            Accept international payments using PayPal on Razorpay Checkout.
+          </div>
+        )}
 
         <div className="alert alert-info">
           <h4>International Payments Only</h4>

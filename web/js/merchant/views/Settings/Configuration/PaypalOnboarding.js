@@ -96,19 +96,24 @@ class PaypalOnboardingButton extends Component {
       openModal,
       closeModal,
       /* eslint-disable no-shadow */
-      isInternationalPayment = false,
+      isInternationalPayment,
     } = this.props;
 
     const status = terminals.length && terminals[0].terminal.status;
-    const showLinkButtonOnly = status === 'requested' || terminals.length === 0;
+    const showLinkButtonOnly = terminals.length === 0;
     return (
       <div className={showLinkButtonOnly ? 'link-account' : 'change-account'}>
         {isInternationalPayment && !showLinkButtonOnly && status !== 'activated' && (
           <div className="change-account-action">
-            <p>
-              {/* <i className="i i-user-circle" style={{ margin: '10px 25px 0px 7px' }}></i>{' '}
-                {user.email} */}
-            </p>
+            <a className="merchant-id">
+              <i className="i i-user-circle" /> {terminals[0].terminal.merchant_id}
+              <Popover align="right" theme="dark">
+                <PopoverBody>
+                  <div className="disabled-text">Paypal generated Merchant ID</div>
+                </PopoverBody>
+              </Popover>
+            </a>
+
             <a
               onClick={() =>
                 openModal({
@@ -129,7 +134,7 @@ class PaypalOnboardingButton extends Component {
           </div>
         )}
 
-        {['pending', 'created', 'permission_missing'].includes(status) && (
+        {['pending', 'created', 'requested', 'permission_missing'].includes(status) && (
           <p className={`status status-${getClassName(status)}`}>
             <i className="i i-info-circle" /> {getStatusMessage(status)}
           </p>
@@ -161,7 +166,6 @@ class PaypalOnboardingButton extends Component {
         ) : null}
         {!isInternationalPayment && !showLinkButtonOnly && status !== 'activated' && (
           <div className="change-account-action">
-            {/* <p style={{ fontStyle: 'italic', fontSize: '12px' }}>{user.email}</p> */}
             <a
               onClick={() =>
                 openModal({

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PaypalOnboardingButton from 'merchant/views/Settings/Configuration/PaypalOnboarding';
 import { getIcon } from './InstrumentIcons';
 import { GREYED } from '../constants';
@@ -8,9 +8,21 @@ import { connect } from 'react-redux';
 
 const Paypal = ({ instrument, terminals }) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
-  const [status, setStatus] = useState(terminals.length && terminals[0].terminal.status);
+  const [status, setStatus] = useState(null);
   const disabled = status === GREYED;
-  const showStatus = ['created', 'activated', 'permission_missing', 'pending'].includes(status);
+  const showStatus = [
+    'created',
+    'activated',
+    'permission_missing',
+    'requested',
+    'pending',
+  ].includes(status);
+
+  useEffect(() => {
+    if (terminals.length) {
+      setStatus(terminals[0].terminal.status);
+    }
+  }, [terminals]);
 
   return (
     <li class="paypal-leaf-item">
@@ -45,7 +57,6 @@ const Paypal = ({ instrument, terminals }) => {
               </span>{' '}
               {status === 'activated' && (
                 <span>
-                  <i className="i i-info-circle" />
                   <Popover theme="dark" align="bottom">
                     <PopoverBody>
                       <div>{getStatusMessage(status)}</div>
@@ -65,7 +76,9 @@ const Paypal = ({ instrument, terminals }) => {
           setStatus={(st) => setStatus(st)}
         />
       </div>
-      {/* {instrument.description && <p class="desc">{instrument.description}</p>} */}
+      {terminals.length === 0 && instrument.description && (
+        <p class="desc">{instrument.description}</p>
+      )}
 
       {!disabled && (
         <div class="paypal-info mt20">
