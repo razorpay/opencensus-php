@@ -743,6 +743,16 @@ class Base extends BaseCore
 
         $payout->setQueueFlag($queueFlag);
 
+        if (($payout->hasFundAccount() === true) and
+            ($payout->hasCustomer() === false) and
+            ($payout->isBalanceTypeBanking() === true) and
+            ($this->isPayoutToFtsSyncModeEnabled($payout) === true) and
+            ($payout->getIsPayoutService() === false))
+        {
+            // By setting this flag we can skip sending the request to queue and making a sync call.
+            $payout->setSyncFtsFundTransferFlag(true);
+        }
+
         try
         {
             $payout = $this->repo->transaction(
@@ -786,7 +796,6 @@ class Base extends BaseCore
                     return $payout;
                 });
         }
-
         catch (\Throwable $ex)
         {
             $this->trace->traceException(
@@ -829,6 +838,24 @@ class Base extends BaseCore
             }
 
             $this->repo->saveOrFail($payout);
+        }
+
+        if ($payout->makeSyncFtsFundTransfer() === true)
+        {
+            $isFts = false;
+
+            $fta = $payout->fundTransferAttempts->first();
+
+            // fta can be null in some cases like queued payout of CA, on hold payouts.
+            if ($fta !== null)
+            {
+                $isFts = $fta->getIsFts();
+            }
+
+            if ($isFts === true)
+            {
+                $this->syncFTSFundTransfer($payout);
+            }
         }
 
         if ($payout->getIsPayoutService() === false)
