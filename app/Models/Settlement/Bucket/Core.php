@@ -255,15 +255,17 @@ class Core extends Base\Core
             return;
         }
 
+        //$settledBy by should be passed mandatory by the txn pushing service.
+        $settledBy = 'Razorpay';
+
         // currently meta details present only for payment type
         if ($txn->isTypePayment() === true)
         {
             $payment = $txn->source;
 
-            // Only transactions settlable by razorpay are considered
             if ($payment->getSettledBy() !== 'Razorpay')
             {
-                return;
+                $settledBy = $payment->getSettledBy();
             }
 
             $meta = [
@@ -306,6 +308,7 @@ class Core extends Base\Core
             'debit'             => $txn->getDebit(),
             'fee'               => $txn->getFee(),
             'tax'               => $txn->getTax(),
+            'settled_by'        => $settledBy,
             'on_hold'           => $txn->getOnHold(),
             'on_hold_reason'    => $onHoldReason,
             'meta'              => $meta,
