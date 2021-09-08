@@ -148,9 +148,68 @@ class VirtualAccountTpvTest extends TestCase
 
     public function addTpvToVirtualAccount($virtualAccountId, $function)
     {
+        $this->ba->privateAuth();
+
         $testData = $this->testData[$function];
 
         $testData['request']['url'] = '/virtual_accounts/' . $virtualAccountId . '/allowed_payers';
         $this->startTest($testData);
+    }
+
+    public function deleteTpvForVirtualAccount($virtualAccountId, $tpvId)
+    {
+        $this->ba->privateAuth();
+
+        $request = [
+            'method' => 'DELETE',
+            'url'    => '/virtual_accounts/' . $virtualAccountId . '/allowed_payers/' . $tpvId,
+        ];
+
+        return $this->makeRequestAndGetRawContent($request);
+    }
+
+    public function testDeleteTpvForVirtualAccount()
+    {
+        $response = $this->createVirtualAccount($this->testData['createVAWithAllowedPayer']);
+
+        $tpvId = $response['allowed_payers'][0]['id'];
+
+        $deleteResponse = $this->deleteTpvForVirtualAccount($response['id'], $tpvId);
+
+        $this->assertEquals('204', $deleteResponse->getStatusCode());
+
+        $virtualAccount = $this->fetchVirtualAccount($response['id']);
+
+        $this->assertCount(1, $virtualAccount['allowed_payers']);
+    }
+
+    public function testDeleteTpvForClosedVirtualAccount()
+    {
+        $response = $this->createVirtualAccount($this->testData['createVAWithAllowedPayer']);
+
+        $this->closeVirtualAccount($response['id']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($expectedResponse, function() use ($response)
+        {
+            $tpvId = $response['allowed_payers'][0]['id'];
+
+            $this->deleteTpvForVirtualAccount($response['id'], $tpvId);
+        });
+    }
+
+    public function testDeleteTpvForVirtualAccountWithInvalidAllowedPayerId()
+    {
+        $response = $this->createVirtualAccount($this->testData['createVAWithAllowedPayer']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($expectedResponse, function() use ($response)
+        {
+            $tpvId = 'ba_HuceCC9CHQWics';
+
+            $this->deleteTpvForVirtualAccount($response['id'], $tpvId);
+        });
     }
 }

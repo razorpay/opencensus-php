@@ -19,4 +19,13 @@ class Repository extends Base\Repository
 
         return ($count > 0);
     }
+
+    public function fetchByVirtualAccountIdAndEntityId($virtualAccountId, $entityId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::VIRTUAL_ACCOUNT_ID, '=', $virtualAccountId)
+                    ->where(Entity::ENTITY_ID, '=', $entityId)
+                    ->first();
+    }
+
 }

@@ -6359,3 +6359,6 @@ ALTER TABLE card_mandate_notifications
     ADD COLUMN afa_required TINYINT(1),
     ADD COLUMN afa_status VARCHAR(20),
     ADD COLUMN afa_completed_at INTEGER UNSIGNED;
+
+ALTER TABLE virtual_account_tpv
+    ADD COLUMN deleted_at INTEGER DEFAULT NULL;

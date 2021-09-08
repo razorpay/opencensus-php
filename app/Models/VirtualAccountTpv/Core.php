@@ -144,4 +144,28 @@ class Core extends Base\Core
             }
         }
     }
+
+    public function deleteAllowedPayer(Base\PublicEntity $virtualAccount, $tpvEntityId)
+    {
+        $entityId = BankAccount\Entity::verifyIdAndStripSign($tpvEntityId);
+
+        $virtualAccountTpv = $this->repo
+                                  ->virtual_account_tpv
+                                  ->fetchByVirtualAccountIdAndEntityId($virtualAccount->getId(), $entityId);
+
+        if ($virtualAccountTpv === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_ALLOWED_PAYER_ID,
+                'allowed_payer_id'
+            );
+        }
+
+        $this->repo->transaction(function() use ($virtualAccountTpv)
+        {
+            $this->repo->deleteOrFail($virtualAccountTpv->entity);
+
+            $this->repo->deleteOrFail($virtualAccountTpv);
+        });
+    }
 }

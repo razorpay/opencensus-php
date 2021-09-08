@@ -5,9 +5,12 @@ namespace RZP\Models\VirtualAccountTpv;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const VIRTUAL_ACCOUNT_ID            = 'virtual_account_id';
     const ENTITY_TYPE                   = 'entity_type';
     const ENTITY_ID                     = 'entity_id';

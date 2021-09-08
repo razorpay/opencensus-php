@@ -24,7 +24,6 @@ use RZP\Models\Settings\Module;
 use RZP\Models\VirtualAccountTpv;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants;
-use RZP\Models\Settings\Accessor;
 use RZP\Models\VirtualAccountProducts;
 use RZP\Models\Offline\Device as OfflineDevice;
 
@@ -38,6 +37,7 @@ class Service extends Base\Service
 
     const VA_ADD_RECEIVER            = 'va_add_receiver';
     const VA_ADD_ALLOWED_PAYER       = 'va_add_allowed_payer';
+    const VA_DELETE_ALLOWED_PAYER    = 'va_delete_allowed_payer';
 
     public function __construct()
     {
@@ -1071,5 +1071,35 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ALLOWED_PAYER_ADDED, $virtualAccount->toArrayPublic());
 
         return $virtualAccount->toArrayPublic();
+    }
+
+    public function deleteAllowedPayer($virtualAccountId, $tpvId)
+    {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ALLOWED_PAYER_DELETE_REQUEST);
+
+        $virtualAccount = $this->repo
+                               ->virtual_account
+                               ->findByPublicIdAndMerchant($virtualAccountId, $this->merchant);
+
+        if ($virtualAccount->isClosed() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_CLOSED,
+            'virtual_account_id');
+        }
+
+        $this->mutex->acquireAndRelease(
+            self::VA_DELETE_ALLOWED_PAYER . "_" . $virtualAccount->getPublicId(),
+            function() use ($tpvId, $virtualAccount)
+            {
+                return (new VirtualAccountTpv\Core())->deleteAllowedPayer($virtualAccount, $tpvId);
+            },
+            10,
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_RECEIVER_IN_PROGRESS,
+            5,
+            200,
+            400
+        );
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ALLOWED_PAYER_DELETED);
+
     }
 }

@@ -43,6 +43,10 @@ class CreateVirtualAccountTpv extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
+            $table->integer(Entity::DELETED_AT)
+                  ->nullable()
+                  ->default(null);
+
             $table->index(Entity::VIRTUAL_ACCOUNT_ID);
             $table->index(Entity::ENTITY_ID);
         });

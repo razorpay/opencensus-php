@@ -265,4 +265,11 @@ class VirtualAccountController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function deleteAllowedPayer(string $virtualAccountId, string $tpvId)
+    {
+        $this->service()->deleteAllowedPayer($virtualAccountId, $tpvId);
+
+        return ApiResponse::json([], 204);
+    }
 }

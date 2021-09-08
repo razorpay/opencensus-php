@@ -426,5 +426,37 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_CLOSED,
         ],
     ],
+
+    'testDeleteTpvForClosedVirtualAccount' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The virtual account is closed.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_CLOSED,
+        ],
+    ],
+
+    'testDeleteTpvForVirtualAccountWithInvalidAllowedPayerId' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The allowed_payer id provided is incorrect.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_ALLOWED_PAYER_ID,
+        ],
+    ],
 ];
 
