@@ -28,6 +28,7 @@ const isWhatsNewSection = (id) => {
 @connect(
   (state) => ({
     user: state.session.user,
+    ...state.growthService.announcements,
   }),
   { popSlider, emptySliderStack },
 )
@@ -41,15 +42,17 @@ export default class AnnouncementDetails extends React.Component {
 
   getCommonNotificationTrackingProperties() {
     const notification =
-      window.notifications.find((notification) => notification.id === this.props.id) || {};
+      this.props.announcements?.find((notification) => notification.id === this.props.id) || {};
 
     return {
-      version: notification.version,
+      id: notification.id,
       campaign: notification.campaign,
-      version_description: notification.version_description,
+      campaign_description: notification.campaign_description,
+      version: notification.sub_campaign || notification.version,
+      version_description:
+        notification.sub_campaign_description || notification.version_description,
       target_product_feature: notification.target_product_feature,
       target_metric: notification.target_metric,
-      lazy: this.lazy,
     };
   }
 
@@ -58,7 +61,8 @@ export default class AnnouncementDetails extends React.Component {
     tracking.trackEvent(
       window.rzpQ.merchantActions().success('dashboard.notification_section.card.l2.display', {
         card_id: id,
-        title: window.notifications.find((notification) => notification.id === id).l2_content.title,
+        title: this.props.announcements?.find((notification) => notification.id === id)?.l2_content
+          ?.title,
         whats_new: isWhatsNewSection(id),
         ...this.getCommonNotificationTrackingProperties(),
       }),
@@ -116,8 +120,7 @@ export default class AnnouncementDetails extends React.Component {
         }),
     );
 
-    if (this.lazy && !isExternal)
-      this.props.emptySliderStack();
+    if (this.lazy && !isExternal) this.props.emptySliderStack();
     if (button.id) this.handleCTA({ id: button.id, url: URL });
     else window.open(urlPath, isExternal ? '_blank' : '_self');
   };
@@ -170,24 +173,27 @@ export default class AnnouncementDetails extends React.Component {
 
     if (this.lazy)
       return (
-        <i className="i i-chevron-left" onClick={() => {
-          this.handleBackButtonClick();
-          popSlider();
-        }}></i>
+        <i
+          className="i i-chevron-left"
+          onClick={() => {
+            this.handleBackButtonClick();
+            popSlider();
+          }}
+        ></i>
       );
-    else if (closeUrl) 
+    else if (closeUrl)
       return (
         <Link to={closeUrl} onClick={this.handleBackButtonClick}>
           <i className="i i-chevron-left"></i>
         </Link>
       );
-  }
+  };
 
   render() {
     const { id: notificationId } = this.props;
-    const { buttons, title, content } = window.notifications.find(
-      (notification) => notification.id === notificationId,
-    ).l2_content;
+    const { buttons, title, content } =
+      this.props.announcements?.find((notification) => notification.id === notificationId)
+        ?.l2_content || {};
 
     return (
       <div className="content-wrapper content-sm announcement-details">

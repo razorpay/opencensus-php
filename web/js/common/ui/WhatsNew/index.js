@@ -24,6 +24,7 @@ import {
   getExperimentVersion,
 } from './common';
 import MobileAppQRCode from 'merchant/components/MobileAppQRCode';
+import { fetchAnnouncements } from 'merchant/reducers/growthService';
 import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
 
 const WhatsNewDetailsPage = lazy(() =>
@@ -40,6 +41,7 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
     return {
       ...state.session,
       ...state.config.config,
+      ...state.growthService.announcements,
     };
   },
   {
@@ -48,6 +50,7 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
     showAcceptPaymentsModal,
     pushSlider,
     emptySliderStack,
+    fetchAnnouncements,
   },
 )
 @RTracking(() => window.rzpQ.component('WhatsNew'))
@@ -58,30 +61,18 @@ class WhatsNew extends Component {
   id = this.props.user.current;
   whatsNew = false;
 
-  componentWillMount() {
-    let notifications = [...window.notifications] || [];
-
-    //sort notifications in most recent order using start_timestamp
-    if (notifications.length > 1) {
-      notifications = notifications.sort((first, second) => {
-        if (first.id === 'projectNitro') return -1;
-        if (first.id === 'whats-new-JUL21-RXCC-ULTRA' && second.id !== 'projectNitro') return -1;
-        if (second.id === 'projectNitro') return 1;
-        if (second.id === 'whats-new-JUL21-RXCC-ULTRA') return 1;
-        return second.start_ts - first.start_ts;
-      });
-    }
-
-    this.setState({
-      notifications,
-    });
-
+  componentWillMount = () => {
+    this.props.fetchAnnouncements(this.id, 'home');
     this.setLastReadTS();
-  }
+  };
+
+  componentDidUpdate = (prevProps) => {
+    if (prevProps.loading != this.props.loading && this.props.loading === false) {
+      this.setUnreadMsgs();
+    }
+  };
 
   componentDidMount() {
-    this.setUnreadMsgs();
-
     this.setTooltipVisibility();
 
     // add jquery for hubspot
@@ -94,14 +85,6 @@ class WhatsNew extends Component {
     tag.src = 'https://www.youtube.com/iframe_api';
     const firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-    this.props.tracking.trackEvent(
-      window.rzpQ &&
-        window.rzpQ.merchantActions().success('merchant_dashboard.display_notification', {
-          experimentVersion: getExperimentVersion(this.props.user),
-          lazy: true,
-        }),
-    );
   }
 
   setUnreadMsgs() {
@@ -236,6 +219,7 @@ class WhatsNew extends Component {
         unreadID: this.state.unreadID,
         count_unread_IDs: this.state.unreadID.length,
         lazy: true,
+        growth_service: this.props.user.isGrowthServiceEnabled,
       }),
     );
 
@@ -252,6 +236,7 @@ class WhatsNew extends Component {
         unreadID,
         experimentVersion: getExperimentVersion(this.props.user),
         lazy: true,
+        growth_service: this.props.user.isGrowthServiceEnabled,
       }),
     );
 
@@ -259,7 +244,7 @@ class WhatsNew extends Component {
     LocalStorageService.setItem(`announcements-slider-${this.id}`, String(newLastReadTS));
 
     // Mark all notifications as read
-    this.state.notifications.forEach((notif) => {
+    this.props.announcements?.forEach((notif) => {
       const gaAction = notif.ga && notif.ga.action ? notif.ga.action : notif.title;
 
       trackAnnouncement(gaAction, 'Marked as read');
@@ -284,6 +269,7 @@ class WhatsNew extends Component {
         ...getNotificationTrackingProperties(notification),
         id,
         lazy: true,
+        growth_service: this.props.user.isGrowthServiceEnabled,
       }),
     );
   };
@@ -305,6 +291,7 @@ class WhatsNew extends Component {
         window.rzpQ.merchantActions().success('dashboard.notification_section.tool_tip.display', {
           tooltip_display_count: tooltipViewCount + 1,
           lazy: true,
+          growth_service: this.props.user.isGrowthServiceEnabled,
         }),
       );
 
@@ -312,53 +299,11 @@ class WhatsNew extends Component {
     }
   };
 
-  render() {
-    const { lastReadTS, showTooltip } = this.state;
-    const { user, history } = this.props;
+  renderNotifications = () => {
+    const { lastReadTS } = this.state;
+    const { user, history, announcements } = this.props;
 
-    const eventTrackingRequired = [
-      'Payments-Mobile-App',
-      'TwoStepVerification2020',
-      'upiAutopay',
-      'projectNitro',
-      'paymentButton_GTM',
-      'IR_update_DC',
-      'NOV20-RZP-FESTIVEOFFER',
-      'NOV20-VP-C1',
-      'NOV20-PG-BANKUPDATE',
-      'DEC20-PayPal-GTM',
-      'whats-new-upi-pl-jan2021',
-      'whats-new-subs-btn-jan2021',
-      'whats-new-pp-80gReciepts-jan2021',
-      'whats-new-subs-pause-jan2021',
-      'whats-new-paypal-nocode-jan2021',
-      'JAN21-PG-GTM1',
-      'JAN21-PG-GTM1-V2',
-      'Feb20-ES1-PILOT',
-      'Feb20-ES1-PILOT_V2',
-      'projectNitro-hyderabad',
-      'whats-new-mar21-credpay-gtm',
-      'whats-new-mar21-upiintentios-gtm',
-      'trusted-badge-mar2021',
-      'trusted-badge-enabled',
-      'whats-new-april21-m2mrewards-gtm',
-      'whats-new-MAY21-CA-GROWTH',
-      'whats-new-may21-reten1-dashboard',
-      'whats-new-may21-remar2a-dashboard',
-      'whats-new-may21-remar1-dashboard',
-      'whats-new-may21-reten2-dashboard',
-      'whats-new-may21-remar2-dashboard',
-      'June21-QR-GTM',
-      'whats-new-JUN21-RXCC-GROWTH',
-      'july-ssl-certificate-update',
-      'JUL21-CC-FEATURELAUNCH',
-      'JUN21-SELFSERVE-CR&BL',
-      'May21-PLMApp-GTM',
-      'whats-new-JUL21-RXCC-ULTRA',
-      'Aug25-AppStore-Intent-Zapier',
-    ];
-
-    const cardsList = this.state.notifications.map((card, idx) => (
+    const cardsList = announcements?.map((card, idx) => (
       <div className="media media-action" key={idx}>
         <NotificationCard
           {...card}
@@ -366,7 +311,7 @@ class WhatsNew extends Component {
           user={user}
           lastReadTS={lastReadTS}
           trackAnnouncement={trackAnnouncement}
-          trackEvents={card.id && eventTrackingRequired.includes(card.id) ? this.trackEvents : null}
+          trackEvents={this.trackEvents}
           onCTAClick={this.handleCTA}
           history={history}
           tracking={this.props.tracking}
@@ -375,6 +320,25 @@ class WhatsNew extends Component {
         />
       </div>
     ));
+
+    return cardsList;
+  };
+
+  render() {
+    const { announcements, loading } = this.props;
+    const { showTooltip } = this.state;
+    let contentToShow = null;
+
+    if (loading) contentToShow = <Loader />;
+    else if (announcements?.length) contentToShow = this.renderNotifications();
+    else {
+      contentToShow = (
+        <div class="Notifications-content-empty">
+          <img src="/img/notifications/no-notification.png" width="72px" />
+          <div class="title">No announcements right now</div>
+        </div>
+      );
+    }
 
     return (
       <div className="whats-new">
@@ -401,16 +365,7 @@ class WhatsNew extends Component {
               </div>
               <div class="SliderPanel__Body">
                 <div class="panel-body">
-                  <div class="whats-new-content">
-                    {cardsList.length ? (
-                      cardsList
-                    ) : (
-                      <div class="Notifications-content-empty">
-                        <img src="/img/notifications/no-notification.png" width="72px" />
-                        <div class="title">No announcements right now</div>
-                      </div>
-                    )}
-                  </div>
+                  <div class="whats-new-content">{contentToShow}</div>
                 </div>
               </div>
             </div>
@@ -455,6 +410,7 @@ const NotificationCard = ({
             card_id: id,
             video_url,
             lazy: true,
+            growth_service: user.isGrowthServiceEnabled,
           }),
         );
       }
@@ -578,7 +534,7 @@ const NotificationCard = ({
         ) : null}
         <div class="description">{description}</div>
         <div class="action-buttons">
-          {buttons.map((btn, idx) => {
+          {buttons?.map((btn, idx) => {
             const isExternal = /^http(s)?:\/\//.test(btn.url);
             const isHash = !isExternal && btn.url.indexOf('#') === 0;
 

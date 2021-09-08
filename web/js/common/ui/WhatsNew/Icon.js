@@ -30,12 +30,22 @@ const WhatsNewIcon = ({ user, showMobileNav, tracking, pushSlider }) => {
           unreadID,
           experimentVersion: getExperimentVersion(user),
           lazy: true,
+          growth_service: user.isGrowthServiceEnabled,
         }),
       );
     }
   };
 
   useEffect(() => {
+    tracking.trackEvent(
+      window.rzpQ &&
+        window.rzpQ.merchantActions().success('merchant_dashboard.display_notification', {
+          experimentVersion: getExperimentVersion(user),
+          lazy: true,
+          growth_service: user.isGrowthServiceEnabled,
+        }),
+    );
+
     setUnreadMsgs();
   }, []);
 

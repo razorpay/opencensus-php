@@ -18,6 +18,8 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { sendDataToSalesForce } from 'common/utils/common-api';
 import './Old.styl';
 import MobileAppQRCode from 'merchant/components/MobileAppQRCode';
+import Loader from 'common/ui/Loader';
+import { fetchAnnouncements } from 'merchant/reducers/growthService';
 import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
@@ -30,6 +32,7 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
     return {
       ...state.session,
       ...state.config.config,
+      ...state.growthService.announcements,
     };
   },
   {
@@ -37,6 +40,7 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
     closeModal,
     showAcceptPaymentsModal,
     openSlider,
+    fetchAnnouncements,
   },
 )
 @RTracking(() => window.rzpQ.component('WhatsNew'))
@@ -48,30 +52,12 @@ class WhatsNewOld extends Component {
   id = this.props.user.current;
   whatsNew = false;
 
-  componentWillMount() {
-    let notifications = [...window.notifications] || [];
-
-    //sort notifications in most recent order using start_timestamp
-    if (notifications.length > 1) {
-      notifications = notifications.sort((first, second) => {
-        if (first.id === 'projectNitro') return -1;
-        if (first.id === 'whats-new-JUL21-RXCC-ULTRA' && second.id !== 'projectNitro') return -1;
-        if (second.id === 'projectNitro') return 1;
-        if (second.id === 'whats-new-JUL21-RXCC-ULTRA') return 1;
-        return second.start_ts - first.start_ts;
-      });
-    }
-
-    this.setState({
-      notifications,
-    });
-
+  componentWillMount = () => {
+    this.props.fetchAnnouncements(this.id, 'home');
     this.setLastReadTS();
-  }
+  };
 
-  componentDidMount() {
-    this.setUnreadMsgs();
-
+  componentDidMount = async () => {
     // add jquery for hubspot
     const scriptJQ = document.createElement('script');
     scriptJQ.src = 'https://code.jquery.com/jquery-3.5.1.min.js';
@@ -88,11 +74,12 @@ class WhatsNewOld extends Component {
         window.rzpQ.merchantActions().success('merchant_dashboard.display_notification', {
           experimentVersion: this.getExperimentVersion(),
           whats_new: this.whatsNew,
+          growth_service: this.props.user.isGrowthServiceEnabled,
         }),
     );
 
     document.addEventListener('click', this.handleDocumentClick, true);
-  }
+  };
 
   componentWillUnmount() {
     document.removeEventListener('click', this.handleDocumentClick, true);
@@ -110,37 +97,47 @@ class WhatsNewOld extends Component {
   getNotificationTrackingProperties(notification) {
     return {
       id: notification.id,
-      version: notification.version,
       campaign: notification.campaign,
-      version_description: notification.version_description,
+      campaign_description: notification.campaign_description,
+      version: notification.sub_campaign || notification.version,
+      version_description:
+        notification.sub_campaign_description || notification.version_description,
       target_product_feature: notification.target_product_feature,
       target_metric: notification.target_metric,
     };
   }
 
+  componentDidUpdate = (prevProps) => {
+    if (prevProps.loading !== this.props.loading) {
+      this.setUnreadMsgs();
+
+      if (this.state.isOpenSlider1) this.onShow();
+    }
+  };
+
   setUnreadMsgs() {
     const lastReadTS = this.state.lastReadTS;
-    const { notifications } = this.state;
-    const ID = [];
-    const readID = [];
-    const unreadID = [];
+    const { announcements } = this.props;
+    const ID = [],
+      readID = [],
+      unreadID = [];
 
     let totalUnread = 0;
-    for (let i = 0; i < notifications.length; i++) {
-      const notifStartTS = notifications[i].start_ts;
-      const notifEndTS = notifications[i].end_ts;
-      const notifID = notifications[i].id;
+    for (let i = 0; i < announcements.length; i++) {
+      const notifStartTS = announcements[i].start_ts;
+      const notifEndTS = announcements[i].end_ts;
+      const notifID = announcements[i].id;
 
       this.whatsNew =
         (notifID && notifID.length >= 9 && notifID.substring(0, 9) === 'whats-new') ||
         this.whatsNew;
 
-      if (notifID) ID.push(this.getNotificationTrackingProperties(notifications[i]));
+      if (notifID) ID.push(this.getNotificationTrackingProperties(announcements[i]));
       if (lastReadTS < notifStartTS && moment().unix() < notifEndTS) {
         totalUnread++;
 
-        if (notifID) unreadID.push(this.getNotificationTrackingProperties(notifications[i]));
-      } else if (notifID) readID.push(this.getNotificationTrackingProperties(notifications[i]));
+        if (notifID) unreadID.push(this.getNotificationTrackingProperties(announcements[i]));
+      } else if (notifID) readID.push(this.getNotificationTrackingProperties(announcements[i]));
     }
 
     trackLoad(totalUnread);
@@ -155,6 +152,7 @@ class WhatsNewOld extends Component {
           unreadID,
           experimentVersion: this.getExperimentVersion(),
           ...(this.whatsNew && { whats_new: true }),
+          growth_service: this.props.user.isGrowthServiceEnabled,
         }),
       );
     }
@@ -286,6 +284,7 @@ class WhatsNewOld extends Component {
         unreadID: this.state.unreadID,
         count_unread_IDs: this.state.unreadID.length,
         ...(this.whatsNew && { whats_new: true }),
+        growth_service: this.props.user.isGrowthServiceEnabled,
       }),
     );
 
@@ -293,7 +292,7 @@ class WhatsNewOld extends Component {
     const readID = [];
     const unreadID = [];
 
-    this.state.notifications.forEach((notification) => {
+    this.props.announcements?.forEach((notification) => {
       const notifID = notification.id;
 
       if (notifID) {
@@ -313,6 +312,7 @@ class WhatsNewOld extends Component {
         unreadID,
         experimentVersion: this.getExperimentVersion(),
         ...(this.whatsNew && { whats_new: true }),
+        growth_service: this.props.user.isGrowthServiceEnabled,
       }),
     );
 
@@ -320,7 +320,7 @@ class WhatsNewOld extends Component {
     LocalStorageService.setItem(`announcements-slider-${this.id}`, String(newLastReadTS));
 
     // Mark all notifications as read
-    this.state.notifications.forEach((notif) => {
+    this.props.announcements?.forEach((notif) => {
       const gaAction = notif.ga && notif.ga.action ? notif.ga.action : notif.title;
 
       trackAnnouncement(gaAction, 'Marked as read');
@@ -346,6 +346,7 @@ class WhatsNewOld extends Component {
         ...this.getNotificationTrackingProperties(notification),
         id,
         ...(whatsNew && { whats_new: true }),
+        growth_service: this.props.user.isGrowthServiceEnabled,
       }),
     );
   };
@@ -386,6 +387,7 @@ class WhatsNewOld extends Component {
         window.rzpQ.merchantActions().success('dashboard.notification_section.tool_tip.display', {
           tooltip_display_count: tooltipViewCount + 1,
           ...(this.whatsNew && { whats_new: true }),
+          growth_service: this.props.user.isGrowthServiceEnabled,
         }),
       );
       this.showTooltip();
@@ -404,7 +406,7 @@ class WhatsNewOld extends Component {
     this.props.openSlider();
     this.setTooltipVisibility();
     this.setState({ isOpenSlider1: true });
-    this.onShow();
+    if (!this.props.loading) this.onShow();
   };
 
   handleSliderToggleClick = () => {
@@ -437,52 +439,11 @@ class WhatsNewOld extends Component {
     );
   };
 
-  render() {
-    const { lastReadTS, isOpenSlider1, showTooltip } = this.state;
-    const { user, history } = this.props;
+  renderNotifications = () => {
+    const { lastReadTS } = this.state;
+    const { user, history, announcements } = this.props;
 
-    const eventTrackingRequired = [
-      'Payments-Mobile-App',
-      'TwoStepVerification2020',
-      'upiAutopay',
-      'projectNitro',
-      'paymentButton_GTM',
-      'IR_update_DC',
-      'NOV20-RZP-FESTIVEOFFER',
-      'NOV20-VP-C1',
-      'NOV20-PG-BANKUPDATE',
-      'DEC20-PayPal-GTM',
-      'whats-new-upi-pl-jan2021',
-      'whats-new-subs-btn-jan2021',
-      'whats-new-pp-80gReciepts-jan2021',
-      'whats-new-subs-pause-jan2021',
-      'whats-new-paypal-nocode-jan2021',
-      'JAN21-PG-GTM1',
-      'JAN21-PG-GTM1-V2',
-      'Feb20-ES1-PILOT',
-      'Feb20-ES1-PILOT_V2',
-      'projectNitro-hyderabad',
-      'whats-new-mar21-credpay-gtm',
-      'whats-new-mar21-upiintentios-gtm',
-      'trusted-badge-mar2021',
-      'trusted-badge-enabled',
-      'whats-new-april21-m2mrewards-gtm',
-      'whats-new-MAY21-CA-GROWTH',
-      'whats-new-may21-reten1-dashboard',
-      'whats-new-may21-remar2a-dashboard',
-      'whats-new-may21-remar1-dashboard',
-      'whats-new-may21-reten2-dashboard',
-      'whats-new-may21-remar2-dashboard',
-      'july-ssl-certificate-update',
-      'JUL21-CC-FEATURELAUNCH',
-      'JUN21-SELFSERVE-CR&BL',
-      'May21-PLMApp-GTM',
-      'whats-new-JUL21-RXCC-ULTRA',
-      'June21-QR-GTM',
-      'Aug25-AppStore-Intent-Zapier',
-    ];
-
-    const cardsList = this.state.notifications.map((card, idx) => (
+    const cardsList = announcements?.map((card, idx) => (
       <div className="media media-action" key={idx}>
         <NotificationCard
           {...card}
@@ -490,13 +451,34 @@ class WhatsNewOld extends Component {
           user={user}
           lastReadTS={lastReadTS}
           trackAnnouncement={trackAnnouncement}
-          trackEvents={card.id && eventTrackingRequired.includes(card.id) ? this.trackEvents : null}
+          trackEvents={this.trackEvents}
           onCTAClick={this.handleCTA}
           history={history}
           tracking={this.props.tracking}
+          pushSlider={this.props.pushSlider}
+          emptySliderStack={this.props.emptySliderStack}
         />
       </div>
     ));
+
+    return cardsList;
+  };
+
+  render() {
+    const { announcements, loading } = this.props;
+    const { isOpenSlider1, showTooltip } = this.state;
+    let contentToShow = null;
+
+    if (loading) contentToShow = <Loader />;
+    else if (announcements?.length) contentToShow = this.renderNotifications();
+    else {
+      contentToShow = (
+        <div class="Notifications-content-empty">
+          <img src="/img/notifications/no-notification.png" width="72px" />
+          <div class="title">No announcements right now</div>
+        </div>
+      );
+    }
 
     return (
       <main className={classList('whats-new-old', isOpenSlider1 && 'whats-new--active')}>
@@ -531,16 +513,7 @@ class WhatsNewOld extends Component {
                   </div>
                   <div class="SliderPanel__Body">
                     <div class="panel-body">
-                      <div class="whats-new-content">
-                        {cardsList.length ? (
-                          cardsList
-                        ) : (
-                          <div class="Notifications-content-empty">
-                            <img src="/img/notifications/no-notification.png" width="72px" />
-                            <div class="title">No announcements right now</div>
-                          </div>
-                        )}
-                      </div>
+                      <div class="whats-new-content">{contentToShow}</div>
                     </div>
                   </div>
                 </div>
@@ -576,7 +549,6 @@ const NotificationCard = ({
   ...notification
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
-  const [isLoading, setIsLoading] = useState(true);
 
   const onYouTubePlayer = () => {
     const onPlayerStateChange = (event) => {
@@ -588,6 +560,7 @@ const NotificationCard = ({
             card_id: id,
             video_url,
             ...(whatsNew && { whats_new: true }),
+            growth_service: user.isGrowthServiceEnabled,
           }),
         );
       }
@@ -695,7 +668,7 @@ const NotificationCard = ({
         ) : null}
         <div class="description">{description}</div>
         <div class="action-buttons">
-          {buttons.map((btn, idx) => {
+          {buttons?.map((btn, idx) => {
             const isExternal = /^http(s)?:\/\//.test(btn.url);
             const isHash = !isExternal && btn.url.indexOf('#') === 0;
 
