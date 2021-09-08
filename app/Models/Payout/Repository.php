@@ -56,6 +56,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchMultiple(array $input, string $merchantId)
+    {
+        $this->setBaseQueryIfApplicable($merchantId);
+
+        return parent::fetch($input, $merchantId);
+    }
+
+    protected function setBaseQueryIfApplicable(string $merchantId)
+    {
+        $this->baseQuery = $this->newQueryWithConnection($this->getSlaveConnection());
+    }
+
     public function fetchReversedPayouts(array $ids)
     {
         return $this->newQuery()

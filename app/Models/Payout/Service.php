@@ -543,7 +543,7 @@ class Service extends Base\Service
 
         $merchantValidator->validateAndTranslateToAccountNumberForBankingIfApplicable($input);
 
-        $payouts = $this->repo->payout->fetch($input, $this->merchant->getId());
+        $payouts = $this->repo->payout->fetchMultiple($input, $this->merchant->getId());
 
         // Since pending payouts can be on both the api workflow system and workflow service
         // therefore we need to fetch and merge payouts from both systems
@@ -1667,7 +1667,7 @@ class Service extends Base\Service
                 unset($input[Entity::PENDING_ON_ME]);
             }
 
-            $pendingPayoutsViaWfs = $this->repo->payout->fetch($input, $this->merchant->getId());
+            $pendingPayoutsViaWfs = $this->repo->payout->fetchMultiple($input, $this->merchant->getId());
         }
 
         $uniquePayouts = [];
