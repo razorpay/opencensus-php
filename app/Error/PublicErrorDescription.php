@@ -1019,6 +1019,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_COMMISSIONS_ALREADY_ON_HOLD                           = 'partner commissions already on hold';
     const BAD_REQUEST_PARTNER_COMMISSIONS_ALREADY_RELEASED                          = 'partner commissions already released';
     const BAD_REQUEST_PARTNER_IS_NOT_ACTIVATED                                      = 'partner is not activated';
+    const BAD_REQUEST_MERCHANT_FORM_UNDER_NEEDS_CLARIFICATION                       = 'Cannot save partner form details since merchant form is under needs clarification';
 
     // Free payout
     const BAD_REQUEST_FREE_PAYOUT_SUPPORTED_MODES_ARRAY_DUPLICATE_VALUE         = 'Value in free payout supported modes array is duplicate.';

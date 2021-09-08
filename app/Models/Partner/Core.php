@@ -14,6 +14,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\AutoKyc;
+use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Partner\Activation;
 use RZP\lib\ConditionParser\Parser;
@@ -280,7 +281,7 @@ class Core extends Detail\Core
      * @param Merchant\Entity $merchant
      *
      * @return mixed
-     * @throws \RZP\Exception\LogicException
+     * @throws LogicException
      * @throws \Throwable
      */
     public function processPartnerActivation(array $input, Detail\Entity $merchantDetails, Merchant\Entity $merchant)
@@ -294,17 +295,22 @@ class Core extends Detail\Core
                     $merchantDetails,
                     $merchant
                 ) {
-                    $verificationResponse = $this->getPartnerKycVerificationDetails($merchant);
-
                     $partnerActivation = $this->getPartnerActivation($merchant);
 
                     $this->repo->partner_activation->lockForUpdate($merchant->getId());
+
+                    $kycClarificationReasons = $this->getUpdatedPartnerKycClarificationReasons($input, $merchant->getId());
+
+                    if (empty($kycClarificationReasons) === false)
+                    {
+                        $partnerActivation->setKycClarificationReasons($kycClarificationReasons);
+                    }
 
                     $oldPartnerActivationStatus = $partnerActivation->getActivationStatus();
 
                     $response = $this->createPartnerResponse($merchantDetails);
 
-                    if ($this->canSubmit($input, $verificationResponse) === true)
+                    if ($this->canSubmit($input, $response[E::PARTNER_ACTIVATION]) === true)
                     {
                         $response = $this->submitPartnerActivationForm($merchant, $merchantDetails, $partnerActivation);
 
@@ -539,15 +545,15 @@ class Core extends Detail\Core
     /**
      * This function would return the applicable activation status based on the partner KYC verification
      * If all the requirements are verified, partner gets auto activated, if not will be sent to under_review
-     * @param Entity $merchantDetails
      *
+     * @param Entity $merchantDetails
      * @return string
      */
-    public function getApplicablePartnerActivationStatus(Entity $merchantDetails)
+    public function getApplicablePartnerActivationStatus(Entity $merchantDetails): string
     {
         $isAutoKycDone = $this->isPartnerKycDone($merchantDetails);
 
-        if($isAutoKycDone === true)
+        if ($isAutoKycDone === true)
         {
             return Activation\Constants::ACTIVATED;
         }
@@ -558,23 +564,42 @@ class Core extends Detail\Core
     /**
      * This function would validate the partner requirements are validated or not and returns a boolean flag accordingly
      *
-     * @param $merchantDetails
+     * @param Entity $merchantDetails
      *
      * @return bool
      */
-    public function isPartnerKycDone($merchantDetails)
+    public function isPartnerKycDone(Detail\Entity $merchantDetails): bool
     {
-        $conditions = AutoKyc\Constants::PARTNER_KYC_VERIFICATION_CONDITIONS;
+        $businessType = $merchantDetails->getBusinessType();
+
+        if (empty($businessType) === true)
+        {
+            return false;
+        }
+
+        $conditions = AutoKyc\Constants::PARTNER_KYC_VERIFICATION_CONDITIONS[Constants::DEFAULT];
+
+        if (isset(AutoKyc\Constants::PARTNER_KYC_VERIFICATION_CONDITIONS[$businessType]) === true)
+        {
+            $conditions = AutoKyc\Constants::PARTNER_KYC_VERIFICATION_CONDITIONS[$businessType];
+        }
 
         return (new Parser)->parse($conditions, function ($key, $condition) use ($merchantDetails){
 
             $entity = $condition[AutoKyc\Constants::ENTITY];
             $in = $condition[AutoKyc\Constants::IN];
 
+            // since GST is optional for partner activation, if it is not provided in the input then its verification
+            // status should be null
+            if (($key === Entity::GSTIN_VERIFICATION_STATUS) and (empty($merchantDetails->getGstin()) === true))
+            {
+                $in = [null];
+            }
+
             switch ($entity)
             {
                 case E::MERCHANT_DETAIL:
-                    return in_array($merchantDetails->getAttribute($key), $in, true);
+                    return $this->verifyMerchantDetailCondition($merchantDetails, $key, $in);
                 case E::STAKEHOLDER:
                     return $this->verifyStakeHolderCondition($merchantDetails, $key, $in);
                 case E::MERCHANT_VERIFICATION_DETAIL:

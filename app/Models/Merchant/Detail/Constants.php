@@ -8,6 +8,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Merchant\Tnc\Entity as TncEntity;
 use RZP\Models\Merchant\Email\Entity as EmailEntity;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 
 class Constants
 {
@@ -92,6 +93,8 @@ class Constants
     const REQUIRED_FIELDS = 'required_fields';
 
     const DUMMY_ACTIVATION_FILE = '100000000Dummy';
+
+    const LOCK_COMMON_FIELDS = 'lock_common_fields';
 
     //kyc integration constants
     const ENTITY_ID              = 'entity_id';
@@ -305,16 +308,41 @@ class Constants
     ];
 
     const COMMON_FIELDS_WITH_PARTNER_ACTIVATION = [
-        Entity::CONTACT_NAME,
-        Entity::CONTACT_MOBILE,
-        Entity::CONTACT_EMAIL,
-        Entity::COMPANY_PAN,
-        Entity::PROMOTER_PAN,
-        Entity::PROMOTER_PAN_NAME,
-        Entity::BANK_ACCOUNT_NUMBER,
-        Entity::BANK_ACCOUNT_NAME,
-        Entity::BANK_BRANCH_IFSC,
-        Entity::GSTIN
+        BusinessType::NOT_YET_REGISTERED => [
+            Entity::CONTACT_NAME,
+            Entity::CONTACT_MOBILE,
+            Entity::CONTACT_EMAIL,
+            Entity::BUSINESS_TYPE,
+            Entity::BANK_ACCOUNT_NAME,
+            Entity::BANK_ACCOUNT_NUMBER,
+            Entity::BANK_BRANCH_IFSC,
+            Entity::PROMOTER_PAN,
+            Entity::PROMOTER_PAN_NAME
+        ],
+        BusinessType::PROPRIETORSHIP => [
+            Entity::CONTACT_NAME,
+            Entity::CONTACT_MOBILE,
+            Entity::CONTACT_EMAIL,
+            Entity::BUSINESS_TYPE,
+            Entity::BANK_ACCOUNT_NAME,
+            Entity::BANK_ACCOUNT_NUMBER,
+            Entity::BANK_BRANCH_IFSC,
+            Entity::PROMOTER_PAN,
+            Entity::PROMOTER_PAN_NAME,
+            Entity::GSTIN
+        ],
+        MerchantConstants::DEFAULT => [
+            Entity::CONTACT_NAME,
+            Entity::CONTACT_MOBILE,
+            Entity::CONTACT_EMAIL,
+            Entity::BUSINESS_TYPE,
+            Entity::BANK_ACCOUNT_NAME,
+            Entity::BANK_ACCOUNT_NUMBER,
+            Entity::BANK_BRANCH_IFSC,
+            Entity::COMPANY_PAN,
+            Entity::BUSINESS_NAME,
+            Entity::GSTIN
+        ]
     ];
 
     // For both app url and business website url we use business_website key.

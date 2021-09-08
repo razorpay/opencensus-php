@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Partner\Activation;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Partner;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail;
 
 class Validator extends Detail\Validator
@@ -28,15 +30,20 @@ class Validator extends Detail\Validator
     ];
 
     protected static $savePartnerActivationRules = [
-        Detail\Entity::COMPANY_PAN         => 'filled|companyPan',
-        Detail\Entity::PROMOTER_PAN        => 'sometimes|personalPan',
-        Detail\Entity::PROMOTER_PAN_NAME   => 'sometimes|max:255',
-        Detail\Entity::BANK_ACCOUNT_NUMBER => 'sometimes|regex:/^[a-zA-Z0-9]+$/|between:5,20|custom',
-        Detail\Entity::BANK_ACCOUNT_NAME   => 'sometimes|regex:/^[a-zA-Z0-9\s]+$/|min:4|max:120',
-        Detail\Entity::BANK_BRANCH_IFSC    => 'sometimes|alpha_num|max:11|custom',
-        Detail\Entity::GSTIN               => 'sometimes|string|size:15|nullable',
-        Detail\Entity::SUBMIT              => 'sometimes|boolean',
-
+        Detail\Entity::CONTACT_NAME              => 'sometimes|alpha_space|max:255',
+        Detail\Entity::CONTACT_EMAIL             => 'filled|email|max:255',
+        Detail\Entity::CONTACT_MOBILE            => 'sometimes|numeric|digits_between:8,11',
+        Detail\Entity::BUSINESS_TYPE             => 'filled|numeric|digits_between:1,10',
+        Detail\Entity::COMPANY_PAN               => 'filled|companyPan',
+        Detail\Entity::BUSINESS_NAME             => 'sometimes|max:255',
+        Detail\Entity::PROMOTER_PAN              => 'sometimes|personalPan',
+        Detail\Entity::PROMOTER_PAN_NAME         => 'sometimes|max:255',
+        Detail\Entity::BANK_ACCOUNT_NUMBER       => 'sometimes|regex:/^[a-zA-Z0-9]+$/|between:5,20|custom',
+        Detail\Entity::BANK_ACCOUNT_NAME         => 'sometimes|regex:/^[a-zA-Z0-9\s]+$/|min:4|max:120',
+        Detail\Entity::BANK_BRANCH_IFSC          => 'sometimes|alpha_num|max:11|custom',
+        Detail\Entity::GSTIN                     => 'sometimes|string|size:15|nullable',
+        Detail\Entity::KYC_CLARIFICATION_REASONS => 'sometimes|array|custom',
+        Detail\Entity::SUBMIT                    => 'sometimes|boolean',
     ];
 
     protected static $actionRules = [
@@ -93,6 +100,34 @@ class Validator extends Detail\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PARTNER_COMMISSIONS_ALREADY_RELEASED);
+        }
+    }
+
+    /**
+     * This function does some validation checks with merchant and partner activation entities before
+     * saving/submitting the partner form
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validatePartnerFormSaveAndSubmit(Merchant\Entity $merchant)
+    {
+        (new Merchant\Validator())->validateIsPartner($merchant);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        // do not allow partner form to be submitted when merchant form is under needs clarification
+        if ($merchantDetails->getActivationStatus() === Constants::NEEDS_CLARIFICATION)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_FORM_UNDER_NEEDS_CLARIFICATION);
+        }
+
+        $partnerActivation = (new Partner\Core())->getPartnerActivation($merchant);
+
+        if($partnerActivation->isLocked() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_ACTIVATION_ALREADY_LOCKED);
         }
     }
 }

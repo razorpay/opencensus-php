@@ -8,6 +8,7 @@ use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Detail\POIStatus;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\Stakeholder\Entity as SEntity;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\VerificationDetail\Entity as VDEntity;
 
 
@@ -131,14 +132,27 @@ class Constants
     ];
 
     const PARTNER_KYC_VERIFICATION_CONDITIONS = [
-        Operator:: AND => [
-            Operator:: OR  => [
+        BusinessType::NOT_YET_REGISTERED => [
+            Operator:: AND => [
+                Entity::POI_VERIFICATION_STATUS => self::POI_CONDITION,
+                Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION
+            ]
+        ],
+
+        BusinessType::PROPRIETORSHIP => [
+            Operator:: AND => [
+                Entity::POI_VERIFICATION_STATUS     => self::POI_CONDITION,
+                Entity::GSTIN_VERIFICATION_STATUS   => self::GSTIN_CONDITION,
+                Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION
+            ]
+        ],
+
+        MerchantConstants:: DEFAULT => [
+            Operator:: AND => [
                 Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
-                Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
                 Entity::GSTIN_VERIFICATION_STATUS       => self::GSTIN_CONDITION,
-                'gstin|doc'                             => self::GST_CERTIFICATE_VERIFICATION_CONDITION
-            ],
-            Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION
+                Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION
+            ]
         ]
     ];
 }

@@ -480,53 +480,5 @@ class Core extends Base\Core
 
         Mail::queue($email);
     }
-
-    protected function isPartnerActivationReqFulFilled(array $requiredVerificationFields, Detail\Entity $merchantDetails): bool
-    {
-        $allReqFulFilled = true;
-
-        foreach ($requiredVerificationFields as $requirementGroup)
-        {
-            foreach ($requirementGroup as $requirements)
-            {
-                $statusKey = $requirements[Requirements::STATUS_KEY];
-
-                $verificationStatus = $merchantDetails->getAttribute($statusKey);
-
-                // ignore GSTIN verification status if it is not provided by the partner since it is optional
-                if (($statusKey === Detail\Entity::GSTIN_VERIFICATION_STATUS) and
-                    ($verificationStatus === null) and
-                    ($merchantDetails->getAttribute(Detail\Entity::GSTIN) === null))
-                {
-                    continue;
-                }
-
-                $allReqFulFilled = ($allReqFulFilled and ($verificationStatus === Detail\Constants::VERIFIED));
-            }
-        }
-
-        return $allReqFulFilled and !empty($requiredVerificationFields);
-    }
-
-    public function getApplicablePartnerActivationStatus(Entity $partnerActivation): ?string
-    {
-        if ($partnerActivation->isSubmitted() === false)
-        {
-            return null;
-        }
-
-        $merchantDetails = $partnerActivation->merchantDetail;
-
-        $requiredVerificationFields = (new Requirements())->getUpdateContextRequirement($partnerActivation);
-
-        $activationReqFulFilled = $this->isPartnerActivationReqFulFilled($requiredVerificationFields, $merchantDetails);
-
-        if ($activationReqFulFilled === true)
-        {
-            return Detail\Status::ACTIVATED;
-        }
-
-        return Detail\Status::UNDER_REVIEW;
-    }
 }
 

@@ -212,7 +212,9 @@ class GstCertificateDocVerificationTest extends TestCase
 
         $merchantDetail = $fixtures['merchant_detail'];
         $isAutoKycDone  = $core->isPartnerKycDone($merchantDetail);
-        $this->assertTrue($isAutoKycDone);
+
+        // since POI and GSTIN verification failed, partner auto KYC is not done
+        $this->assertFalse($isAutoKycDone);
 
     }
 
@@ -231,9 +233,12 @@ class GstCertificateDocVerificationTest extends TestCase
 
         $merchantDetail = $fixtures['merchant_detail'];
         $isAutoKycDone  = $core->isPartnerKycDone($merchantDetail);
-        $this->assertTrue($isAutoKycDone);
+
+        // since POI verification failed, partner auto kyc is not done
+        $this->assertFalse($isAutoKycDone);
 
     }
+
     public function testPartnerAutoKycForProprietorshipIfGstCertificateDocIsnotVerifiedPoiIsVerified()
     {
         $this->mockRazorxTreatment();
@@ -249,9 +254,64 @@ class GstCertificateDocVerificationTest extends TestCase
 
         $merchantDetail = $fixtures['merchant_detail'];
         $isAutoKycDone  = $core->isPartnerKycDone($merchantDetail);
-        $this->assertTrue($isAutoKycDone);
 
+        //since GSTIN verification failed, partner auto kyc is not done
+        $this->assertFalse($isAutoKycDone);
     }
 
+    public function testPartnerAutoKycForProprietorshipIfGstinAndPoiAreVerified()
+    {
+        $this->mockRazorxTreatment();
 
+        $fixtures = $this->createAndFetchFixtures([
+                                                     Detail\Entity::GSTIN_VERIFICATION_STATUS       => 'verified',
+                                                     Detail\Entity::POI_VERIFICATION_STATUS         => 'verified',
+                                                  ], [
+                                                    VerificationDetail\Entity::STATUS => 'failed'
+                                                  ]);
+        $core     = new PartnerCore();
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone  = $core->isPartnerKycDone($merchantDetail);
+        $this->assertTrue($isAutoKycDone);
+    }
+
+    public function testPartnerAutoKycForProprietorshipIfGstinIsNullAndPoiIsVerified()
+    {
+        $this->mockRazorxTreatment();
+
+        $fixtures = $this->createAndFetchFixtures([
+                                                     Detail\Entity::GSTIN                           => null,
+                                                     Detail\Entity::GSTIN_VERIFICATION_STATUS       => null,
+                                                     Detail\Entity::POI_VERIFICATION_STATUS         => 'verified',
+                                                  ], [
+                                                        VerificationDetail\Entity::STATUS => 'failed'
+                                                  ]);
+        $core     = new PartnerCore();
+
+        $merchantDetail = $fixtures['merchant_detail'];
+
+        // since GSTIN is not provided and it is optional, we will ignore GSTIN verification status
+        $isAutoKycDone  = $core->isPartnerKycDone($merchantDetail);
+        $this->assertTrue($isAutoKycDone);
+    }
+
+    public function testPartnerAutoKycForPvtLtdIfGstinAndCompanyPanAreVerified()
+    {
+        $this->mockRazorxTreatment();
+
+        $fixtures = $this->createAndFetchFixtures([
+                                                     Detail\Entity::GSTIN_VERIFICATION_STATUS       => 'verified',
+                                                     Detail\Entity::COMPANY_PAN_VERIFICATION_STATUS => 'verified',
+                                                     Detail\Entity::BUSINESS_TYPE                   => 4
+                                                  ], [
+                                                        VerificationDetail\Entity::STATUS => 'failed'
+                                                  ]);
+        $core     = new PartnerCore();
+
+        $merchantDetail = $fixtures['merchant_detail'];
+
+        $isAutoKycDone  = $core->isPartnerKycDone($merchantDetail);
+        $this->assertTrue($isAutoKycDone);
+    }
 }

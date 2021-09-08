@@ -179,8 +179,6 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
-        $merchantDetails->getValidator()->validateCommonFieldsWithPartnerActivation($input, $oldMerchantDetails);
-
         $activationFormMilestone = $input[Entity::ACTIVATION_FORM_MILESTONE] ?? null;
 
         //isolating business details
@@ -1610,7 +1608,6 @@ class Core extends Base\Core
 
         // dual write promoter related fields to stakeholder entity
         (new Stakeholder\Core)->syncMerchantDetailFieldsToStakeholder($merchantDetails, $input);
-
 
         if(isset($input['stakeholder']) === true)
         {
@@ -4868,6 +4865,50 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    /**
+     * Fetch common fields to be locked in the partner/merchant activation form (based on the entity passed)
+     *
+     * @param Entity
+     *
+     * @return array
+     */
+    public function fetchCommonFieldsToBeLocked(Base\PublicEntity $entity): array
+    {
+        $merchantDetail = ($entity->getEntityName() === E::PARTNER_ACTIVATION) ? $entity->merchantDetail : $entity;
+
+        $businessType = $merchantDetail->getBusinessType();
+
+        $commonFields = [];
+
+        if ($entity->isLocked() === true)
+        {
+            $commonFields = DEConstants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION[Constants::DEFAULT];
+
+            if (isset(DEConstants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION[$businessType]) === true)
+            {
+                $commonFields = DEConstants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION[$businessType];
+            }
+        }
+        else if ($entity->getEntityName() === E::MERCHANT_DETAIL)
+        {
+            // if L1 form is submitted then do not allow verified PAN fields to be editable in the partner KYC form
+            if ($merchantDetail->getActivationFormMilestone() === DetailConstants::L1_SUBMISSION)
+            {
+                if ($merchantDetail->getPoiVerificationStatus() === DetailConstants::VERIFIED)
+                {
+                    array_push($commonFields, DetailEntity::PROMOTER_PAN, DetailEntity::PROMOTER_PAN_NAME);
+                }
+
+                if ($merchantDetail->getCompanyPanVerificationStatus() === DetailConstants::VERIFIED)
+                {
+                    array_push($commonFields, DetailEntity::COMPANY_PAN, DetailEntity::BUSINESS_NAME);
+                }
+            }
+        }
+
+        return $commonFields;
     }
 
     private function addCommentForBusinessWebsiteSave(string $urlType, string $permissionName, Entity $merchantDetails, string $dedupeFlaggedMIDs, array  $input)

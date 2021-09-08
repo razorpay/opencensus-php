@@ -1274,39 +1274,6 @@ class Validator extends Base\Validator
     }
 
     /**
-     * In merchant activation form, do not allow common fields between partner & merchant activation to be edited
-     * if partner activation form is submitted
-     *
-     * @param array $input
-     * @param Entity $merchantDetails
-     *
-     * @return void
-     * @throws Exception\BadRequestException
-     */
-    public function validateCommonFieldsWithPartnerActivation(array $input, Entity $merchantDetails)
-    {
-        $merchant = $merchantDetails->merchant;
-
-        $partnerActivation = (new PartnerCore())->getPartnerActivation($merchant);
-
-        // TODO: Skip this validation if merchant form is unlocked for now. But when partner onboarding feature goes live,
-        //  we may not allow common fields to be updated if partner activation form is locked
-        if ($partnerActivation === null or $partnerActivation->isLocked() === false or $merchantDetails->isLocked() === false)
-        {
-            return;
-        }
-
-        $commonActivationFields = DetailConstants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION;
-
-        $commonFieldsFromInput = array_intersect(array_keys($input), $commonActivationFields);
-
-        if (count($commonFieldsFromInput) > 0)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CANNOT_UPDATE_COMMON_FIELDS);
-        }
-    }
-    
-    /**
      * custom validation for business website to enable ipv6 and ipv4 urls
      * @param array $input
      *
@@ -1317,7 +1284,7 @@ class Validator extends Base\Validator
     {
         $this->validateURL($value, "Invalid Business website");
     }
-    
+
     /**
      * custom validation for additional website to enable ipv6 and ipv4 urls
      * @param array $input
@@ -1329,8 +1296,7 @@ class Validator extends Base\Validator
     {
         $this->validateURL($value, "Invalid Additional website");
     }
-    
-    
+
     /**
      * validate any url - supports IPV6 and IPV4
      * @throws Exception\BadRequestValidationFailureException
@@ -1341,13 +1307,13 @@ class Validator extends Base\Validator
         {
             return;
         }
-        
+
         if (filter_var($value, FILTER_VALIDATE_URL) === false) {
-           
+
             $host = parse_url($value, PHP_URL_HOST);
-            
+
             $ipv = trim($host, '[]'); // trim potential enclosing tags for IPV6
-            
+
             if (filter_var($ipv, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false AND
                 filter_var($ipv, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false)
             {
@@ -1355,5 +1321,5 @@ class Validator extends Base\Validator
             }
         }
     }
-    
+
 }

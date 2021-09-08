@@ -4,11 +4,10 @@ namespace RZP\Models\Partner;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Partner\Activation;
-use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -31,13 +30,14 @@ class Service extends Base\Service
         parent::__construct();
     }
 
+    /**
+     * @throws \Throwable
+     * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
+     */
     public function savePartnerDetailsForActivation(array $input)
     {
-        $submit = $input[Detail\Entity::SUBMIT] ?? "0";
-
-        $isFormSubmit = ($submit === "1") and count($input) === 1; // input should contain only submit in it
-
-        $this->validatePartnerFormSaveAndSubmit($this->merchant, $isFormSubmit);
+        $this->partnerActivationValidator->validatePartnerFormSaveAndSubmit($this->merchant);
 
         $this->partnerActivationValidator->validateInput('savePartnerActivation', $input);
 
@@ -45,10 +45,12 @@ class Service extends Base\Service
 
         $merchantDetail = $this->merchant->merchantDetail;
 
-        if ($merchantDetail->isLocked() === false and $isFormSubmit === false)
-        {
-            (new Detail\Core())->saveMerchantDetails($input, $this->merchant);
-        }
+        $merchantInput = $input;
+
+        unset($merchantInput[Detail\Entity::SUBMIT]);
+        unset($merchantInput[Detail\Entity::KYC_CLARIFICATION_REASONS]);
+
+        (new Detail\Core())->saveMerchantDetails($merchantInput, $this->merchant);
 
         return $this->core->processPartnerActivation($input, $merchantDetail, $this->merchant);
     }
@@ -59,7 +61,11 @@ class Service extends Base\Service
 
         $merchantDetails = $this->merchant->merchantDetail;
 
-        return $this->core->createPartnerResponse($merchantDetails);
+        $response = $this->core->createPartnerResponse($merchantDetails);
+
+        $response[Detail\Constants::LOCK_COMMON_FIELDS] = (new Detail\Core())->fetchCommonFieldsToBeLocked($merchantDetails);
+
+        return $response;
     }
 
     public function updatePartnerActivationStatus(string $merchantId, array $input)
@@ -87,26 +93,6 @@ class Service extends Base\Service
         $this->core->editPartnerActivation($merchant, $input);
 
         return $this->core->createPartnerResponse($merchant->merchantDetail);
-    }
-
-    private function validatePartnerFormSaveAndSubmit(Merchant\Entity $merchant, bool $isPartnerFormSubmit)
-    {
-        $this->merchantValidator->validateIsPartner($merchant);
-
-        $merchantDetails = $merchant->merchantDetail;
-
-        // partner can submit the form even merchant activation is locked.
-        if($merchantDetails->isLocked() === true and $isPartnerFormSubmit === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
-        }
-
-        $partnerActivation = $this->core->getPartnerActivation($merchant);
-
-        if($partnerActivation->isLocked() === true)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_ACTIVATION_ALREADY_LOCKED);
-        }
     }
 
     public function performAction(string $id, array $input)

@@ -134,14 +134,6 @@ class PartnerActivationTest extends OAuthTestCase
         $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
 
         $this->startTest();
-
-        $state = $this->getDbEntity('action_state');
-
-        $this->assertEquals(self::MERCHANT_ID, $state['merchant_id']);
-
-        $this->assertEquals('under_review', $state['name']);
-
-        $this->assertEquals('partner_activation', $state['entity_type']);
     }
 
     public function testSavePartnerActivationWhenMerchantActivationLocked()
@@ -415,6 +407,11 @@ class PartnerActivationTest extends OAuthTestCase
             'contact_mobile'    => '8888888888',
             'activation_status' => $activationStatus
         ]);
+
+        if ($activationStatus === 'activated' or $activationStatus === 'under_review')
+        {
+            $this->fixtures->edit('merchant_detail', $merchantId, ['locked' => true]);
+        }
 
         $this->fixtures->create('stakeholder',
                                 [
