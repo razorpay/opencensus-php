@@ -182,14 +182,39 @@ class Checkout
     {
         $data['methods']['app_meta'] = [];
 
+        $this->fillCredAppDetails($input, $merchant, $data, $mode);
+    }
+
+    protected function fillCredAppDetails(array $input, Entity $merchant, array &$data, $mode)
+    {
+        $cred_meta = [];
+
+        if (empty($data[Entity::METHODS][Payment\Method::APP][Payment\Gateway::CRED]) === false)
+        {
+            unset($data['methods']['custom_text']['cred']);
+
+            if (isset($input['cred_offer_experiment']) === true)
+            {
+                $experimentResult = $input['cred_offer_experiment'];
+            }
+            else
+            {
+                $experimentResult = $this->app->razorx->getTreatment(
+                    $this->app['request']->getTaskId(),
+                    Merchant\RazorxTreatment::CRED_OFFER_SUBTEXT,
+                    $mode
+                );
+            }
+
+            $cred_meta['experiment'] = $experimentResult;
+        }
+
         if ((empty($data[Entity::METHODS][Payment\Method::APP][Payment\Gateway::CRED]) === false) and
             (empty($data['customer']['contact']) === false) and
             ($merchant->isFeatureEnabled(Feature\Constants::CRED_MERCHANT_CONSENT) === true) and
             ($this->isCredEligibilityConfigEnabled() === true))
         {
             $hit_eligibility = true;
-
-            $cred_meta = [];
 
             try {
                 list($credInput, $options) = $this->getInputAndOptionsForCred($input, $data, $merchant);
@@ -199,26 +224,10 @@ class Checkout
                 if (($response['success'] === true) and
                     (empty($response['data']['offer']) === false))
                 {
-                    if (isset($input['cred_offer_experiment']) === true)
-                    {
-                        $experimentResult = $input['cred_offer_experiment'];
-                    }
-                    else
-                    {
-                        $experimentResult = $this->app->razorx->getTreatment(
-                            $this->app['request']->getTaskId(),
-                            Merchant\RazorxTreatment::CRED_OFFER_SUBTEXT,
-                            $mode
-                        );
-                    }
-
-                    if ($experimentResult === 'offer_tile')
-                    {
-                        $cred_meta['offer'] = $response['data']['offer'];
-                    }
+                    $cred_meta['offer'] = $response['data']['offer'];
 
                     // setting custom text in all cases
-                    $data['methods']['custom_text']['cred'] = $response['data']['offer']['description'];
+                    //$data['methods']['custom_text']['cred'] = $response['data']['offer']['description'];
                 }
 
                 $hit_eligibility = false;
@@ -243,7 +252,10 @@ class Checkout
             }
 
             $cred_meta['hit_eligibility'] = $hit_eligibility;
+        }
 
+        if (empty($cred_meta) === false)
+        {
             $data['methods']['app_meta']['cred'] = $cred_meta;
         }
     }

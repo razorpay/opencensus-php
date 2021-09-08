@@ -11101,9 +11101,12 @@ class MerchantTest extends TestCase
         $response = $this->mockCredEligibilityResponse($gatewayResponse);
 
         $this->assertEquals(1, $response['methods']['app']['cred']);
-        $this->assertEquals($credOffer, $response['methods']['custom_text']['cred']);
+        $this->assertEquals('sub_text', $response['methods']['app_meta']['cred']['experiment']);
+
         $this->assertEquals(false, $response['methods']['app_meta']['cred']['hit_eligibility']);
-        $this->assertArrayNotHasKey('offer', $response['methods']['app_meta']['cred']);
+
+        $this->assertEquals($credOffer, $response['methods']['app_meta']['cred']['offer']['description']);
+
         $this->assertEquals(true, $response['methods']['app_meta']['cred']['user_eligible']);
     }
 
@@ -11136,9 +11139,12 @@ class MerchantTest extends TestCase
         $response = $this->mockCredEligibilityResponse($gatewayResponse, null, $request);
 
         $this->assertEquals(1, $response['methods']['app']['cred']);
-        $this->assertEquals($credOffer, $response['methods']['custom_text']['cred']);
+        $this->assertEquals('subtext', $response['methods']['app_meta']['cred']['experiment']);
+
+        $this->assertEquals($credOffer, $response['methods']['app_meta']['cred']['offer']['description']);
+
         $this->assertEquals(false, $response['methods']['app_meta']['cred']['hit_eligibility']);
-        $this->assertArrayNotHasKey('offer', $response['methods']['app_meta']['cred']);
+
         $this->assertEquals(true, $response['methods']['app_meta']['cred']['user_eligible']);
     }
 
