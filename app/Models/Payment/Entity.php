@@ -3778,6 +3778,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $data['amount'] = $this->getGatewayAmount();
             $data['currency'] = $this->getGatewayCurrency();
+            $merchant = $this->merchant;
+            if($merchant->isFeatureEnabled(Feature\Constants::SEND_DCC_COMPLIANCE) === true){
+                $data['dcc'] = $this->isDCC();
+                $data['merchant_pay_amount'] = $this->getAmount(); // amount to be settled to merchant in his home currency
+            }
 
             if ($this->isAVSSupportedForPayment() === true)
             {

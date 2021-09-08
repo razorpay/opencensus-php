@@ -793,6 +793,12 @@ class Constants
 
     const AXIS_PAYPAL_ENABLE = 'axis_paypal_enable';
 
+    /**
+     * Feature flag to send Compliance changes in a request
+     */
+    const SEND_DCC_COMPLIANCE = 'send_dcc_compliance';
+
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1149,6 +1155,7 @@ class Constants
         self::AXIS_PAYPAL_ENABLE              => true,
         self::AVS                             => true,
         self::MFN                             => true,
+        self::SEND_DCC_COMPLIANCE             => true,
         self::SOURCED_BY_WALNUT369            => true,
     ];
     // Entity type constants
