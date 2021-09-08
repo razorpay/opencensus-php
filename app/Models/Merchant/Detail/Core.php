@@ -1416,10 +1416,10 @@ class Core extends Base\Core
         $clarificationReasonsV2 = $this->getClarificationReasons($existingClarificationReasonsV2, $newClarificationReasonsV2, $ncCount, $source);
 
         return [
-            Entity::CLARIFICATION_REASONS    =>  $clarificationReasons,
-            Entity::ADDITIONAL_DETAILS       =>  $additionalDetails,
-            Entity::CLARIFICATION_REASONS_V2 => $clarificationReasonsV2,
-            Merchant\Constants::NC_COUNT     =>  $ncCount
+            Entity::CLARIFICATION_REASONS     =>  $clarificationReasons,
+            Entity::ADDITIONAL_DETAILS        =>  $additionalDetails,
+            Entity::CLARIFICATION_REASONS_V2  => $clarificationReasonsV2,
+            Merchant\Constants::NC_COUNT      =>  $ncCount
         ];
     }
 
@@ -2587,7 +2587,11 @@ class Core extends Base\Core
         $response['isHardLimitReached']                         = empty($hardEscalationLevel4) ? false : true;
         $response['activationStatusChangeLogs']                 = $this->getStatusChangeLogs($merchant);
         $response[Entity::MERCHANT_BUSINESS_DETAIL]             = $merchantBusinessDetails;
-        $response[Entity::KYC_CLARIFICATION_REASONS]            = $this->getUpdatedKycClarificationReasons([], $merchantDetails->getMerchantId());
+
+        if(empty($merchantDetails->getKycClarificationReasons()) === false)
+        {
+            $response[Entity::KYC_CLARIFICATION_REASONS] = $this->getUpdatedKycClarificationReasons([], $merchantDetails->getMerchantId());
+        }
 
             return $response;
         });
@@ -4862,7 +4866,7 @@ class Core extends Base\Core
         {
             return false;
         }
-        
+
         return true;
     }
 
