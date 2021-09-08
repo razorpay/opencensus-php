@@ -11,8 +11,13 @@ class Status
     const REVERSED                  = 'reversed';
     const PARTIALLY_REVERSED        = 'partially_reversed';
 
+    public static $forSettlementStatusUpdate = [
+        self::PROCESSED,
+        self::PARTIALLY_REVERSED,
+    ];
+
     public static function isStatusValid($status)
     {
-        return (defined(__CLASS__ . '::' . strtolower($status)));
+        return (defined(__CLASS__ . '::' . strtoupper($status)));
     }
 }

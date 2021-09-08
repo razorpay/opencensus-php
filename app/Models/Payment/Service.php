@@ -1239,7 +1239,27 @@ class Service extends Base\Service
     {
         Payment\Entity::verifyIdAndStripSign($id);
 
-        $transferStatus = Transfer\Constant::FETCH_STATUS;
+        $variant = $this->app['razorx']->getTreatment(
+            $this->merchant->getId(),
+            Merchant\RazorxTreatment::ROUTE_TRANSFER_STATE,
+            $this->mode
+        );
+
+        $this->trace->info(
+            TraceCode::ROUTE_TRANSFER_STATE_RAZORX_REQUEST,
+            [
+                'merchant_id'   => $this->merchant->getId(),
+                'mode'          => $this->mode,
+                'variant'       => $variant,
+            ]
+        );
+
+        $transferStatus = [];
+
+        if (strtolower($variant) !== 'on')
+        {
+            $transferStatus = Transfer\Constant::FETCH_STATUS;
+        }
 
         $transfers = (new Transfer\Core())->getForPayment($id, $transferStatus);
 
@@ -2958,6 +2978,8 @@ class Service extends Base\Service
             $transfer->setOnHold(false);
 
             $transfer->setOnHoldUntil(null);
+
+            $transfer->setSettlementStatus(Transfer\SettlementStatus::PENDING);
 
             $this->repo->saveOrFail($transfer);
         }

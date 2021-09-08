@@ -210,6 +210,10 @@ class Core extends Base\Core
      */
     public function edit(Transfer\Entity $transfer, array $input) : Entity
     {
+        $currentOnHold = (bool)$transfer->getOnHold();
+        $newOnHold = (bool)$input[Entity::ON_HOLD];
+
+        // This flow may have a bug. Reversed transfers shouldn't be editable, check what happens.
         $transfer->edit($input);
 
         //
@@ -225,6 +229,16 @@ class Core extends Base\Core
         if (isset($input[Entity::ON_HOLD_UNTIL]) === false)
         {
             $transfer->setOnHoldUntil(null);
+        }
+
+        // Cannot use status = processed here since status can also be partially_reversed.
+        if (($transfer->getProcessedAt() !== null) and
+            ($transfer->getSettlementStatus() !== null) and
+            ($currentOnHold !== $newOnHold))
+        {
+            $settlementStatus = ($newOnHold === true) ? SettlementStatus::ON_HOLD : SettlementStatus::PENDING;
+
+            $transfer->setSettlementStatus($settlementStatus);
         }
 
         list($transfer, $payment) = $this->repo->transaction(function () use ($transfer, $input)
@@ -847,6 +861,30 @@ class Core extends Base\Core
         return false;
     }
 
+    public function updateSettlementStatusInTransfers(string $settlementId)
+    {
+        $transferIds = $this->repo->transfer->getIdsByRecipientSettlementId($settlementId, Status::$forSettlementStatusUpdate);
+
+        $this->traceTransferIdsFetchedForSettlementStatusUpdate($settlementId, $transferIds);
+
+        foreach ($transferIds as $transferId)
+        {
+            $transfer = $this->repo->transfer->find($transferId);
+
+            $transfer->setSettlementStatus(SettlementStatus::SETTLED);
+
+            $transfer->saveOrFail();
+        }
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_STATUS_UPDATE_IN_TRANSFERS_SUCCESS,
+            [
+                'settlement_id' => $settlementId,
+                'count'         => count($transferIds),
+            ]
+        );
+    }
+
     public function trackTransferProcessingTime(Entity $transfer, Payment\Entity $payment = null)
     {
         $transfer->reload();
@@ -938,5 +976,21 @@ class Core extends Base\Core
         }
 
         TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType);
+    }
+
+    protected function traceTransferIdsFetchedForSettlementStatusUpdate(string $settlementId, array $transferIds)
+    {
+        $transferIdChunks = array_chunk($transferIds, 1000);
+
+        foreach ($transferIdChunks as $transferIdChunk)
+        {
+            $this->trace->info(
+                TraceCode::TRANSFER_IDS_FETCHED_FOR_SETTLEMENT_STATUS_UPDATE,
+                [
+                    'settlement_id' => $settlementId,
+                    'transfer_ids'  => $transferIdChunk,
+                ]
+            );
+        }
     }
 }

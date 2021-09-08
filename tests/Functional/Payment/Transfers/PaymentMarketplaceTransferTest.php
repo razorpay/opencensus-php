@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment\Transfers;
 
+use Carbon\Carbon;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
@@ -442,5 +443,130 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertNotNull($transfer);
         $this->assertEquals('processed', $transfer['status']);
         $this->assertTrue($transfer['on_hold']);
+    }
+
+    public function testSettlementStatusForPaymentTransfer()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $transfers[0] = [
+            'account'  => 'acc_10000000000001',
+            'amount'   => $this->payment['amount'],
+            'currency' => 'INR',
+        ];
+
+        $this->transferPayment($this->payment['id'], $transfers);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('pending', $transfer['settlement_status']);
+    }
+
+    public function testSettlementStatusForPaymentTransferWithOnHold()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $transfers[0] = [
+            'account'       => 'acc_10000000000001',
+            'amount'        => $this->payment['amount'],
+            'currency'      => 'INR',
+            'on_hold'       => true,
+        ];
+
+        $this->transferPayment($this->payment['id'], $transfers);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('on_hold', $transfer['settlement_status']);
+    }
+
+    public function testSettlementStatusForPaymentTransferWithOnHoldUntil()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $transfers[0] = [
+            'account'       => 'acc_10000000000001',
+            'amount'        => $this->payment['amount'],
+            'currency'      => 'INR',
+            'on_hold'       => true,
+            'on_hold_until' => Carbon::tomorrow()->getTimestamp(),
+        ];
+
+        $this->transferPayment($this->payment['id'], $transfers);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('on_hold', $transfer['settlement_status']);
+    }
+
+    public function testErrorCodeForTransferWithInsufficientBalance()
+    {
+        $this->mockRazorxTreatment('on');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->merchant->editBalance(100);
+
+        $transfers[0] = [
+            'account'   => 'acc_10000000000001',
+            'amount'    => $this->payment['amount'],
+            'currency'  => 'INR',
+        ];
+
+        $response = $this->transferPayment($this->payment['id'], $transfers);
+
+        $this->assertArrayHasKey('error', $response['items'][0]);
+        $this->assertArrayHasKey('code', $response['items'][0]['error']);
+        $this->assertArrayHasKey('description', $response['items'][0]['error']);
+        $this->assertArrayHasKey('reason', $response['items'][0]['error']);
+        $this->assertArrayHasKey('field', $response['items'][0]['error']);
+        $this->assertArrayHasKey('step', $response['items'][0]['error']);
+        $this->assertArrayHasKey('id', $response['items'][0]['error']);
+        $this->assertArrayHasKey('source', $response['items'][0]['error']);
+        $this->assertArrayHasKey('metadata', $response['items'][0]['error']);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('failed', $transfer['status']);
+        $this->assertEquals('BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE', $transfer['error_code']);
+    }
+
+    public function testErrorFieldInGetTransfer()
+    {
+        $this->mockRazorxTreatment('on');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->merchant->editBalance(100);
+
+        $transfers[0] = [
+            'account'   => 'acc_10000000000001',
+            'amount'    => $this->payment['amount'],
+            'currency'  => 'INR',
+        ];
+
+        $response = $this->transferPayment($this->payment['id'], $transfers);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('failed', $transfer['status']);
+        $this->assertEquals('BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE', $transfer['error_code']);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $testData['request']['url'] . '/' . $response['items'][0]['id'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    protected function mockRazorxTreatment(string $variant = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')->willReturn($variant);
     }
 }

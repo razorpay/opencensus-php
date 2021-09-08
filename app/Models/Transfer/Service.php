@@ -37,9 +37,27 @@ class Service extends Base\Service
                           ->transfer
                           ->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
-        if ($transfer->isCreated() or $transfer->isFailed())
+        $variant = $this->app['razorx']->getTreatment(
+            $this->merchant->getId(),
+            Merchant\RazorxTreatment::ROUTE_TRANSFER_STATE,
+            $this->mode
+        );
+
+        $this->trace->info(
+            TraceCode::ROUTE_TRANSFER_STATE_RAZORX_REQUEST,
+            [
+                'merchant_id'   => $this->merchant->getId(),
+                'mode'          => $this->mode,
+                'variant'       => $variant,
+            ]
+        );
+
+        if (strtolower($variant) !== 'on')
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            if ($transfer->isCreated() or $transfer->isFailed())
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            }
         }
 
         return $transfer->toArrayPublicWithExpand();
@@ -165,7 +183,25 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
-        $input[Entity::STATUS] = Constant::FETCH_STATUS;
+        $variant = $this->app['razorx']->getTreatment(
+            $this->merchant->getId(),
+            Merchant\RazorxTreatment::ROUTE_TRANSFER_STATE,
+            $this->mode
+        );
+
+        $this->trace->info(
+            TraceCode::ROUTE_TRANSFER_STATE_RAZORX_REQUEST,
+            [
+                'merchant_id'   => $this->merchant->getId(),
+                'mode'          => $this->mode,
+                'variant'       => $variant,
+            ]
+        );
+
+        if (strtolower($variant) !== 'on')
+        {
+            $input[Entity::STATUS] = Constant::FETCH_STATUS;
+        }
 
         $transfers = $this->repo->transfer->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE);
 

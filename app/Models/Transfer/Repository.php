@@ -256,13 +256,17 @@ class Repository extends Base\Repository
         return $query;
     }
 
-    public function getIdsByRecipientSettlementId(string $settlementId)
+    public function getIdsByRecipientSettlementId(string $settlementId, array $status = [])
     {
         $query = $this->newQuery()
                       ->select(Entity::ID)
-                      ->where(Entity::RECIPIENT_SETTLEMENT_ID, $settlementId)
-                      ->pluck(Entity::ID);
+                      ->where(Entity::RECIPIENT_SETTLEMENT_ID, $settlementId);
 
-        return $query->toArray();
+        if (empty($status) === false)
+        {
+            $query = $query->whereIn(Entity::STATUS, $status);
+        }
+
+        return $query->pluck(Entity::ID)->toArray();
     }
 }

@@ -560,6 +560,108 @@ class OrderTransferTest extends TestCase
         $this->assertEquals(2, $transfer['attempts']);
     }
 
+    public function testSettlementStatusForOrderTransfer()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $payment = $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('pending', $transfer['settlement_status']);
+    }
+
+    public function testSettlementStatusForOrderTransferWithOnHold()
+    {
+        $testData = $this->testData['testCreateOrderTransfers'];
+        $testData['request']['content']['transfers'][0]['on_hold'] = true;
+        $order = $this->runRequestResponseFlow($testData);
+
+        $payment = $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('on_hold', $transfer['settlement_status']);
+    }
+
+    public function testSettlementStatusForOrderTransferWithOnHoldUntil()
+    {
+        $testData = $this->testData['testCreateOrderTransfers'];
+        $testData['request']['content']['transfers'][0]['on_hold'] = true;
+        $testData['request']['content']['transfers'][0]['on_hold_until'] = Carbon::tomorrow()->getTimestamp();
+        $order = $this->runRequestResponseFlow($testData);
+
+        $payment = $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('on_hold', $transfer['settlement_status']);
+    }
+
+    public function testErrorCodeForOrderTransferWithInsufficientBalance()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $this->fixtures->merchant->editBalance(100);
+
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('failed', $transfer['status']);
+        $this->assertEquals('BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE', $transfer['error_code']);
+
+        for ($i = 1; $i < 4; $i++)
+        {
+            $timestamp = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+            $this->fixtures->transfer->editProcessedAt($timestamp - 10, $transfer['id']);
+
+            $data = $this->testData['testCronProcessFailedOrderTransfers'];
+
+            $this->ba->cronAuth();
+
+            $this->runRequestResponseFlow($data);
+        }
+
+        $transfer->reload();
+
+        $this->assertEquals(4, $transfer['attempts']);
+        $this->assertEquals('failed', $transfer['status']);
+        $this->assertEquals('BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE', $transfer['error_code']);
+    }
+
+    public function testErrorCodeForOrderTransferWithInsufficientBalanceAfterRetrySuccess()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $this->fixtures->merchant->editBalance(100);
+
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('failed', $transfer['status']);
+        $this->assertEquals('BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE', $transfer['error_code']);
+
+        $this->fixtures->merchant->editBalance(1000000);
+
+        $timestamp = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        $this->fixtures->transfer->editProcessedAt($timestamp - 10, $transfer['id']);
+
+        $data = $this->testData['testCronProcessFailedOrderTransfers'];
+
+        $this->ba->cronAuth();
+
+        $this->runRequestResponseFlow($data);
+
+        $transfer->reload();
+
+        $this->assertEquals('processed', $transfer['status']);
+        $this->assertNull($transfer['error_code']);
+    }
+
     protected function capturePaymentProcessOrderTransfers($order, $paymentAmount = null)
     {
         $payment = $this->getDefaultPaymentArray();

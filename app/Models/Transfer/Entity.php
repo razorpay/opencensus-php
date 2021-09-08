@@ -53,6 +53,8 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_CODE_USED         = 'account_code_used';
     const ERROR_CODE                = 'error_code';
 
+    const ERROR = 'error';
+
     // Report fields
     const SETTLEMENT_INITIATED_ON = 'settlement_initiated_on';
     const SETTLEMENT_UTR          = 'settlement_utr';
@@ -114,16 +116,19 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::LINKED_ACCOUNT_NOTES,
         self::STATUS,
+        self::SETTLEMENT_STATUS,
         self::ATTEMPTS,
         self::PROCESSED_AT,
         self::MESSAGE,
         self::ACCOUNT_CODE,
         self::ACCOUNT_CODE_USED,
+        self::ERROR_CODE,
     ];
 
     protected $public = [
         self::ID,
         self::ENTITY,
+        self::STATUS,
         self::SOURCE,
         self::RECIPIENT,
         self::RECIPIENT_DETAILS,
@@ -131,16 +136,18 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::AMOUNT_REVERSED,
-        self::NOTES,
         self::FEES,
         self::TAX,
+        self::NOTES,
+        self::LINKED_ACCOUNT_NOTES,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
+        self::SETTLEMENT_STATUS,
         self::RECIPIENT_SETTLEMENT_ID,
         self::RECIPIENT_SETTLEMENT,
         self::CREATED_AT,
-        self::LINKED_ACCOUNT_NOTES,
         self::PROCESSED_AT,
+        self::ERROR,
     ];
 
     protected $publicSetters = [
@@ -153,6 +160,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::LINKED_ACCOUNT_NOTES,
         self::PARENT_PAYMENT_ID,
+        self::ERROR,
     ];
 
     protected $appends = [
@@ -383,6 +391,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PROCESSED_AT);
     }
 
+    public function getErrorCode()
+    {
+        return $this->getAttribute(self::ERROR_CODE);
+    }
+
+    public function getSettlementStatus()
+    {
+        return $this->getAttribute(self::SETTLEMENT_STATUS);
+    }
+
     // -------------------- End Getters ---------------------------
 
     // -------------------- Setters ---------------------------
@@ -458,6 +476,16 @@ class Entity extends Base\PublicEntity
     public function setAmount(int $amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setErrorCode($errorCode)
+    {
+        return $this->setAttribute(self::ERROR_CODE, $errorCode);
+    }
+
+    public function setSettlementStatus(string $settlementStatus)
+    {
+        $this->setAttribute(self::SETTLEMENT_STATUS, $settlementStatus);
     }
 
     // -------------------- End Setters ---------------------------
@@ -655,6 +683,11 @@ class Entity extends Base\PublicEntity
         $attributes[self::RECIPIENT_SETTLEMENT_ID] = Settlement\Entity::getSignedIdOrNull($setld);
     }
 
+    public function setPublicErrorAttribute(array & $attributes)
+    {
+        $attributes[self::ERROR] = ErrorCodeMapping::getPublicErrorAttribute($this);
+    }
+
     public function toArrayReport()
     {
         app('trace')->info(
@@ -702,19 +735,7 @@ class Entity extends Base\PublicEntity
 
     public function toArrayPublic()
     {
-        if ($this->isCreated() === true)
-        {
-            $this->public = [
-                self::RECIPIENT,
-                self::ACCOUNT_CODE,
-                self::AMOUNT,
-                self::CURRENCY,
-                self::NOTES,
-                self::LINKED_ACCOUNT_NOTES,
-                self::ON_HOLD,
-                self::ON_HOLD_UNTIL,
-            ];
-        }
+        $this->modifyPublicArray();
 
         $data = parent::toArrayPublic();
 
@@ -728,19 +749,7 @@ class Entity extends Base\PublicEntity
 
     public function toArrayPublicWithExpand()
     {
-        if ($this->isCreated() === true)
-        {
-            $this->public = [
-                self::RECIPIENT,
-                self::ACCOUNT_CODE,
-                self::AMOUNT,
-                self::CURRENCY,
-                self::NOTES,
-                self::LINKED_ACCOUNT_NOTES,
-                self::ON_HOLD,
-                self::ON_HOLD_UNTIL,
-            ];
-        }
+        $this->modifyPublicArray();
 
         $data = parent::toArrayPublicWithExpand();
 
@@ -765,5 +774,55 @@ class Entity extends Base\PublicEntity
         }
 
         return parent::build($input);
+    }
+
+    protected function modifyPublicArray()
+    {
+        $variant = app('razorx')->getTreatment(
+            $this->getMerchantId(),
+            Merchant\RazorxTreatment::ROUTE_TRANSFER_STATE,
+            app('rzp.mode')
+        );
+
+        if (strtolower($variant) !== 'on')
+        {
+            if ($this->isCreated() === true)
+            {
+                $this->public = [
+                    self::RECIPIENT,
+                    self::ACCOUNT_CODE,
+                    self::AMOUNT,
+                    self::CURRENCY,
+                    self::NOTES,
+                    self::LINKED_ACCOUNT_NOTES,
+                    self::ON_HOLD,
+                    self::ON_HOLD_UNTIL,
+                ];
+            }
+            else
+            {
+                $this->public = [
+                    self::ID,
+                    self::ENTITY,
+                    self::SOURCE,
+                    self::RECIPIENT,
+                    self::RECIPIENT_DETAILS,
+                    self::ACCOUNT_CODE,
+                    self::AMOUNT,
+                    self::CURRENCY,
+                    self::AMOUNT_REVERSED,
+                    self::NOTES,
+                    self::FEES,
+                    self::TAX,
+                    self::ON_HOLD,
+                    self::ON_HOLD_UNTIL,
+                    self::RECIPIENT_SETTLEMENT_ID,
+                    self::RECIPIENT_SETTLEMENT,
+                    self::CREATED_AT,
+                    self::LINKED_ACCOUNT_NOTES,
+                    self::PROCESSED_AT,
+                ];
+            }
+        }
     }
 }

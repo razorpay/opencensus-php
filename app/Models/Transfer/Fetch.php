@@ -4,6 +4,7 @@ namespace RZP\Models\Transfer;
 
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Http\BasicAuth\Type as AuthType;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Fetch extends BaseFetch
 {
@@ -16,8 +17,13 @@ class Fetch extends BaseFetch
             Entity::MERCHANT_ID             => 'sometimes|alpha_num|size:14',
             Entity::SOURCE                  => 'sometimes|string|min:14',
             Entity::STATUS                  => 'sometimes|array',
+            Entity::SETTLEMENT_STATUS       => 'sometimes|array',
             Entity::ACCOUNT_CODE            => 'sometimes|string|min:3|max:20',
             Entity::ACCOUNT_CODE_USED       => 'sometimes|boolean',
+        ],
+        AuthType::PROXY_AUTH => [
+            Entity::STATUS                  => 'sometimes|custom',
+            Entity::SETTLEMENT_STATUS       => 'sometimes|string',
         ],
     ];
 
@@ -35,6 +41,16 @@ class Fetch extends BaseFetch
             Entity::RECIPIENT_SETTLEMENT_ID,
             self::EXPAND_EACH,
             Entity::STATUS,
+            Entity::SETTLEMENT_STATUS,
         ],
     ];
+
+    protected function validateStatus($key, $value)
+    {
+        if ((is_array($value) === false) and
+            (is_string($value) === false))
+        {
+            throw new BadRequestValidationFailureException('Invalid status attribute');
+        }
+    }
 }

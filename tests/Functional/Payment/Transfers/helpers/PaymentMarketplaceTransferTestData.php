@@ -212,4 +212,28 @@ return [
             ],
         ],
     ],
+
+    'testErrorFieldInGetTransfer' => [
+        'request' => [
+            'url' => '/transfers',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'recipient' => 'acc_10000000000001',
+                'amount'    => 50000,
+                'currency'  => 'INR',
+                'error'     => [
+                    'code'          => 'BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE',
+                    'description'   => 'Transfer amount was greater than available balance',
+                    'reason'        => NULL,
+                    'field'         => 'amount',
+                    'step'          => NULL,
+                    'source'        => NULL,
+                    'metadata'      => NULL,
+                ]
+            ],
+        ],
+    ],
 ];

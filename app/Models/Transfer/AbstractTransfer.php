@@ -4,6 +4,7 @@ namespace RZP\Models\Transfer;
 
 use Illuminate\Support\Facades\App;
 use RZP\Constants;
+use RZP\Error\ErrorCode;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Adjustment;
 use RZP\Models\Merchant;
@@ -106,9 +107,12 @@ abstract class AbstractTransfer
                             'transfermode' => $this->transfermode,
                         ]
                     );
+
                     $transfer->setFailed();
 
                     $transfer->setMessage($e->getMessage());
+
+                    $this->verifyAndSetErrorCode($transfer, $e->getCode());
 
                     $transfer->incrementAttempts();
 
@@ -170,6 +174,10 @@ abstract class AbstractTransfer
                 $this->createTransferredEntity($transfer, $payment);
 
                 $transfer->setProcessed();
+
+                $transfer->setErrorCode(null);
+
+                $this->setSettlementStatus($transfer);
 
                 $transfer->incrementAttempts();
 
@@ -337,6 +345,28 @@ abstract class AbstractTransfer
         $payment->transferAmount($amount);
 
         $this->repo->saveOrFail($payment);
+    }
+
+    protected function verifyAndSetErrorCode(Entity $transfer, string $errorCode)
+    {
+        if (ErrorCodeMapping::isErrorCodePublic($errorCode) === true)
+        {
+            $transfer->setErrorCode($errorCode);
+
+            return;
+        }
+
+        $transfer->setErrorCode(ErrorCode::BAD_REQUEST_ERROR);
+    }
+
+    protected function setSettlementStatus(Entity $transfer)
+    {
+        $transfer->setSettlementStatus(SettlementStatus::PENDING);
+
+        if ($transfer->getOnHold() === true)
+        {
+            $transfer->setSettlementStatus(SettlementStatus::ON_HOLD);
+        }
     }
 
     protected function fireTransferProcessedWebhookIfApplicable(Entity $transfer)

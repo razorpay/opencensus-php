@@ -330,4 +330,7 @@ final class RazorxTreatment
 
     // Experiment to update linked account schedules when parent merchant schedule is updated
     const UPDATE_LINKED_ACCOUNT_SCHEDULES_FEATURE = 'UPDATE_LINKED_ACCOUNT_SCHEDULES_FEATURE';
+
+    // Experiment for transfers state machine.
+    const ROUTE_TRANSFER_STATE = 'route_transfer_state';
 }

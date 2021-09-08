@@ -28,6 +28,7 @@ use RZP\Models\Merchant as MerchantModel;
 use RZP\Models\Settlement\Bucket\Preference;
 use RZP\Models\Schedule\Task as scheduleTask;
 use RZP\Models\Settlement\Bucket as BucketModel;
+use RZP\Jobs\Transfers\TransferSettlementStatus;
 use RZP\Models\Settlement\Details as SetlDetails;
 use RZP\Jobs\Settlement\TransactionMigrationBatch;
 use RZP\Mail\Merchant\SettlementsProcessedNotification;
@@ -312,6 +313,8 @@ class Core extends Base\Core
      */
     public function triggerSettlementWebhook(Entity $settlement, $redactedBaNumber = null, $sendFailureSms = false)
     {
+        $this->updateSettlementStatusInTransfer($settlement);
+
         $this->triggerSettlementNotification($settlement, $redactedBaNumber, $sendFailureSms);
 
         if ($this->shouldSendWebhook($settlement) === false)
@@ -1021,5 +1024,13 @@ class Core extends Base\Core
         }
 
         return [false, ''];
+    }
+
+    protected function updateSettlementStatusInTransfer(Entity $settlement)
+    {
+        if ($settlement->merchant->isLinkedAccount() === true)
+        {
+            TransferSettlementStatus::dispatch($this->mode, $settlement->getId());
+        }
     }
 }
