@@ -84,6 +84,11 @@ app.controller('ResetPasswordCtrl', [
       submitData($scope.data);
     };
 
+    $scope.handleSignInClick = function(){
+      window.location.href = '#/access/signin';
+      window.location.reload();
+    };
+
     // Change logo
     organization.fetchCurrentOrg().then(function (data) {
       $scope.login_logo = data.login_logo_url || 'img/logo_black.png';
