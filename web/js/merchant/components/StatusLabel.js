@@ -1,7 +1,7 @@
 import { titleCase } from 'common/utils/rzp-utils';
 
-const StatusLabel = (statusMap) => ({ status = '', className }) => (
-  <span class={`status-label label ${statusMap[status.toLowerCase()]} ${className}`}>
+const statusLabel = (statusMap) => ({ status = '', className }) => (
+  <span class={`status-label label ${statusMap[status?.toLowerCase()]} ${className}`}>
     {status === 'activated_mcc_pending' ? 'Activated' : titleCase(status)}
   </span>
 );
@@ -179,23 +179,23 @@ const entityMap = {
   commissionInvoice: commissionInvoiceStatusMap,
 };
 
-export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap);
-export const PaymentPagesStatusLabel = StatusLabel(paymentPagesStatusMap);
-export const OrderStatusLabel = StatusLabel(orderStatusMap);
-export const PaymentStatusLabel = StatusLabel(paymentStatusMap);
-export const SettlementStatusLabel = StatusLabel(settlementStatusMap);
-export const BatchUploadStatusLabel = StatusLabel(batchUploadStatusMap);
-export const VirtualAccountStatusLabel = StatusLabel(virtualAccountStatusMap);
-export const SubscriptionStatusLabel = StatusLabel(subscriptionStatusMap);
-export const PlanStatusLabel = StatusLabel(planStatusMap);
-export const ActivationStatusLabel = StatusLabel(activationStatusMap);
-export const DisputeStatusLabel = StatusLabel(disputeStatusMap);
-export const TokenStatusLabel = StatusLabel(tokenStatusMap);
-export const OfferStatusLabel = StatusLabel(offerStatusMap);
-export const RefundStatusLabel = StatusLabel(refundStatusMap);
-export const CommissionInvoiceStatusLabel = StatusLabel(commissionInvoiceStatusMap);
-export const SubmerchantSettlementLabel = StatusLabel(SubmerchantSettlementStatusMap);
-export const QRCodeStatusLabel = StatusLabel(qrCOdeStatusMap);
-export const XSubmerchantCAStatusLabel = StatusLabel(XSubmerchantCAStatusMap);
-export const XSubmerchantVAStatusLabel = StatusLabel(XSubmerchantVAStatusMap);
-export default (item) => StatusLabel(entityMap[item.entity])(item);
+export const InvoiceStatusLabel = statusLabel(invoiceStatusMap);
+export const PaymentPagesStatusLabel = statusLabel(paymentPagesStatusMap);
+export const OrderStatusLabel = statusLabel(orderStatusMap);
+export const PaymentStatusLabel = statusLabel(paymentStatusMap);
+export const SettlementStatusLabel = statusLabel(settlementStatusMap);
+export const BatchUploadStatusLabel = statusLabel(batchUploadStatusMap);
+export const VirtualAccountStatusLabel = statusLabel(virtualAccountStatusMap);
+export const SubscriptionStatusLabel = statusLabel(subscriptionStatusMap);
+export const PlanStatusLabel = statusLabel(planStatusMap);
+export const ActivationStatusLabel = statusLabel(activationStatusMap);
+export const DisputeStatusLabel = statusLabel(disputeStatusMap);
+export const TokenStatusLabel = statusLabel(tokenStatusMap);
+export const OfferStatusLabel = statusLabel(offerStatusMap);
+export const RefundStatusLabel = statusLabel(refundStatusMap);
+export const CommissionInvoiceStatusLabel = statusLabel(commissionInvoiceStatusMap);
+export const SubmerchantSettlementLabel = statusLabel(SubmerchantSettlementStatusMap);
+export const QRCodeStatusLabel = statusLabel(qrCOdeStatusMap);
+export const XSubmerchantCAStatusLabel = statusLabel(XSubmerchantCAStatusMap);
+export const XSubmerchantVAStatusLabel = statusLabel(XSubmerchantVAStatusMap);
+export default (item) => statusLabel(entityMap[item.entity])(item);
