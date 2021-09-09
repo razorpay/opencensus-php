@@ -1925,6 +1925,7 @@ class Route
         'banking_account_service_cron_routes'                   => ['any',      'bas/banking_application/cron/{path?}',                  'BasController@forwardCronRequest'              ],
 
         'banking_account_service_pincode_serviceability_check'   => ['get',     'bas/banking_application/check_pin_code_serviceability', 'BasController@checkPinCodeServiceability'      ],
+        'banking_account_service_common_serviceability_check' =>    ['post',    'bas/allocate_lead',                                     'BasController@checkCommonServiceability'       ],
 
 
         //creates balance and banking_account_statement_details
@@ -4377,6 +4378,7 @@ class Route
         //Banking account service
         'banking_account_service_routes',
         'banking_account_service_pincode_serviceability_check',
+        'banking_account_service_common_serviceability_check',
 
         //Partner Activation routes
         'partner_activation_details',
@@ -6610,6 +6612,7 @@ class Route
         //Banking account service
         'banking_account_service_routes'                        => '*',
         'banking_account_service_pincode_serviceability_check'  => '*',
+        'banking_account_service_common_serviceability_check'   => '*',
 
         // Payout Links - Shopify Integration
         'payout_links_integrate_app'                   => '*',
@@ -7848,6 +7851,7 @@ class Route
             'workflow_payout_amount_rules',
             'banking_account_service_routes',
             'banking_account_service_pincode_serviceability_check',
+            'banking_account_service_common_serviceability_check',
             'bbps_bill_payments',
             'merchant_international_enablement_preview',
             'merchant_international_enablement_get',

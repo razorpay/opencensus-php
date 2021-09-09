@@ -9,6 +9,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base\Core;
 use RZP\Trace\TraceCode;
 use RZP\Services\BankingAccountService;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
@@ -385,6 +386,11 @@ class Service extends Base\Service
         return $this->bankingAccountService->sendRequestAndProcessResponse($basPinCodeServiceabilityPath, 'GET', $input);
     }
 
+    public function checkCommonServiceability($input)
+    {
+        return $this->bankingAccountService->sendRequestAndProcessResponse(Constants::ALLOCATE_LEAD, 'POST', $input);
+
+    }
     /**
      * @param $input
      * @param $personId

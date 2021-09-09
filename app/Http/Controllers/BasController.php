@@ -83,9 +83,21 @@ class BasController extends Controller
 
     public function checkPinCodeServiceability()
     {
+        // We are keeping this for now for backward compatability, TODO: Remove this once everything moves to common serviceability
         $input = Request::all();
 
         $data =  $this->service->checkPinCodeServiceability($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function checkCommonServiceability(){
+
+        $input = Request::all();
+        
+        $input["merchant_id"] = optional($this->ba->getMerchant())->getId() ?? '';
+
+        $data =  $this->service->checkCommonServiceability($input);
 
         return ApiResponse::json($data);
     }
