@@ -100,6 +100,90 @@ class Ledger extends BaseLedger
      *
      * @return array
      */
+    public function deactivateAccount($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response =  [
+            "merchant_id"       => "sampleMerchant",
+            "status"            => "LIVE",
+            "name"              => "test name",
+            "parent_account_id" => "Parent00000002",
+            "currency"          => "INR",
+            "description"       => "sample description",
+            "account_category"  => "asset",
+            "business_category" => "nominal",
+            "entities"          => [
+                "product" => ["card"]
+            ]
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function archiveAccount($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response =  [
+            "merchant_id"       => "sampleMerchant",
+            "status"            => "LIVE",
+            "name"              => "test name",
+            "parent_account_id" => "Parent00000002",
+            "currency"          => "INR",
+            "description"       => "sample description",
+            "account_category"  => "asset",
+            "business_category" => "nominal",
+            "entities"          => [
+                "product" => ["card"]
+            ]
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function updateAccount($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response =  [
+            "merchant_id"       => "sampleMerchant",
+            "status"            => "IN_REVIEW",
+            "name"              => "test name",
+            "parent_account_id" => "Parent00000002",
+            "currency"          => "INR",
+            "description"       => "sample description",
+            "account_category"  => "asset",
+            "business_category" => "nominal",
+            "entities"          => [
+                "product" => ["card"]
+            ]
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
     public function updateAccountDetail($input, bool $throwExceptionOnFailure = false): array
     {
         $response =  [

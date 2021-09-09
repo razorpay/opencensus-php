@@ -46,6 +46,8 @@ class Ledger
         'create'                       => 'Create',
         'createInBulk'                 => 'CreateInBulk',
         'activate'                     => 'Activate',
+        'deactivate'                   => 'Deactivate',
+        'archive'                      => 'Archive',
         'update'                       => 'Update',
         'request'                      => 'Request',
         'fetch'                        => 'Fetch',
@@ -136,6 +138,48 @@ class Ledger
     public function activateAccount($input, bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['activate'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function deactivateAccount($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['deactivate'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function archiveAccount($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['archive'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function updateAccount($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['update'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 

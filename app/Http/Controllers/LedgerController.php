@@ -29,6 +29,27 @@ class LedgerController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
+    public function deactivateAccount()
+    {
+        $response = $this->app['ledger']->deactivateAccount($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function archiveAccount()
+    {
+        $response = $this->app['ledger']->archiveAccount($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function updateAccount()
+    {
+        $response = $this->app['ledger']->updateAccount($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
     public function updateAccountDetail()
     {
         $response = $this->app['ledger']->updateAccountDetail($this->input);
