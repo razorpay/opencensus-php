@@ -34,9 +34,6 @@ class DimensionsProcessor implements Processor
             $ec2->allowDummy();
         }
 
-        // Must use getMultiple() method because that only uses the cache
-        $dimensions['instance'] = $ec2->getMultiple(['LocalIpv4'])['LocalIpv4'] ?? 'other';
-
         // Adds rzp_mode dimension, if doesn't exists already
         if (isset($dimensions['rzp_mode']) === false)
         {
