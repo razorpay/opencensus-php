@@ -118,11 +118,15 @@ const ContestDispute = (props) => {
         <div class="p-l bold">Supporting evidence</div>
         <p class="m-t p-l">
           Please upload supporting evidence like Invoice or Reciept / Proof of delivery / Customer
-          signature, etc. Check more information on what documents to upload{' '}
-          <a target="_blank" rel="noopener noreferrer" href="https://razorpay.com/docs">
+          signature, etc. The supported document types are: PDF, PNG and JPG. Click{' '}
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://razorpay.com/docs/payments/disputes/presentments/dashboard/#contest-disputes-and-submit-evidence"
+          >
             here
-          </a>
-          {'.'}
+          </a>{' '}
+          to know more.
         </p>
 
         <EvidenceUpload
