@@ -8,14 +8,14 @@ import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import View from '@razorpay/blade-old/src/atoms/View';
 import { fetchOrg, transformFetchOrgData } from './apis';
 import { getTheme } from './theme';
-import { BANK_NAMES, ROUTES } from '../utils';
+import { BANK_NAMES } from '../utils';
 import { DesktopOnlyView } from '../commonStyles';
 import { Container, AbsoluteView, RelativeView, Image, ContentContainer } from './styles';
 import DefaultView from './components/DefaultView';
 import OrgView from './components/OrgView';
 import Header from './components/Header';
 
-const Signin = ({ onRouteChange }) => {
+const Signin = () => {
   const [oneTapInfo, setOneTapInfo] = useState({
     isExpOn: true,
     isScriptFailed: window.isOneTapScriptFailed,
@@ -51,7 +51,7 @@ const Signin = ({ onRouteChange }) => {
   }, [setOneTapInfo]);
 
   const handleSignUpClick = () => {
-    onRouteChange(ROUTES.SIGNUP);
+    window.location.href = '/signup';
   };
 
   if (!showNewSignIn) {

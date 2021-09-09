@@ -5,7 +5,6 @@ import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
 import Auth from '@razorpay/commander-shield/src/bootstrap/SignUpWrapper';
 import Size from '@razorpay/blade-old/src/atoms/Size';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
-import { ROUTES } from '../utils';
 import { ContentContainer } from '../commonStyles';
 import { AbsoluteView, RelativeView, Container } from './styles';
 import Header from './components/Header';
@@ -13,7 +12,7 @@ import InfoContainer from './components/InfoContainer';
 import { getURLQueryParams } from 'common/utils/rzp-utils';
 import { setCookie } from 'common/utils/cookies';
 
-const SignUp = ({ onRouteChange }) => {
+const SignUp = () => {
   const [oneTapInfo, setOneTapInfo] = useState({
     isExpOn: true,
     isScriptFailed: window.isOneTapScriptFailed,
