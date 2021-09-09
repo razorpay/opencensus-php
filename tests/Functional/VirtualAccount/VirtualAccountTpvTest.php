@@ -41,6 +41,8 @@ class VirtualAccountTpvTest extends TestCase
 
     public function testCreateVirtualVpaWithTpv()
     {
+        self::markTestSkipped();
+
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($expectedResponse, function()
@@ -123,6 +125,27 @@ class VirtualAccountTpvTest extends TestCase
         $this->addTpvToVirtualAccount($response['id'], __FUNCTION__);
     }
 
+    public function testAddTpvToExistingVirtualAccountWithoutIfsc()
+    {
+        $response = $this->createVirtualAccount();
+
+        $this->addTpvToVirtualAccount($response['id'],__FUNCTION__);
+    }
+
+    public function testAddTpvToExistingVirtualAccountWithoutBankAccountNumber()
+    {
+        $response = $this->createVirtualAccount();
+
+        $this->addTpvToVirtualAccount($response['id'],__FUNCTION__);
+    }
+
+    public function testAddTpvToExistingVirtualAccountWithInvalidIfsc()
+    {
+        $response = $this->createVirtualAccount();
+
+        $this->addTpvToVirtualAccount($response['id'],__FUNCTION__);
+    }
+
     public function testAddTpvToExistingVirtualAccountWithTpv()
     {
         $response = $this->createVirtualAccount($this->testData['createVAWithAllowedPayer']);
@@ -132,6 +155,8 @@ class VirtualAccountTpvTest extends TestCase
 
     public function testDuplicateAddTpvToExistingVirtualAccountWithTpv()
     {
+        self::markTestSkipped();
+
         $response = $this->createVirtualAccount($this->testData['createVAWithAllowedPayer']);
 
         $this->addTpvToVirtualAccount($response['id'], __FUNCTION__);

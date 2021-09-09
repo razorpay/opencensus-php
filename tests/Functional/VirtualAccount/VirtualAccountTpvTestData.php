@@ -60,7 +60,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Third Party Validation is not supported for UPI Transfers.',
+                    'description' => 'Account validation is only applicable on bank account as a receiver type',
                 ],
             ],
             'status_code' => 400,
@@ -321,6 +321,85 @@ return [
         ],
     ],
 
+    'testAddTpvToExistingVirtualAccountWithoutIfsc' => [
+        'request'   => [
+            'url'     => '/virtual_accounts/{va_id}/allowed_payers',
+            'method'  => 'post',
+            'content' => [
+                'type'         => 'bank_account',
+                'bank_account' => [
+                    'account_number' => '765432123456789'
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'IFSC is required for account validation'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_IFSC_REQUIRED,
+        ]
+    ],
+
+    'testAddTpvToExistingVirtualAccountWithInvalidIfsc' => [
+        'request'   => [
+            'url'     => '/virtual_accounts/{va_id}/allowed_payers',
+            'method'  => 'post',
+            'content' => [
+                'type'         => 'bank_account',
+                'bank_account' => [
+                    'account_number' => '765432123456789',
+                    'ifsc'           => 'HDFC00000',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The ifsc must be 11 characters.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_INVALID_IFSC,
+        ]
+    ],
+
+    'testAddTpvToExistingVirtualAccountWithoutBankAccountNumber' => [
+        'request'   => [
+            'url'     => '/virtual_accounts/{va_id}/allowed_payers',
+            'method'  => 'post',
+            'content' => [
+                'type'         => 'bank_account',
+                'bank_account' => [
+                    'ifsc' => 'HDFC0000053' ,
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Bank account number is required for account validation.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_BANK_ACCOUNT_REQUIRED,
+        ],
+    ],
+
     'testAddTpvToExistingVirtualAccountWithTpv' => [
         'request'  => [
             'url'     => '/virtual_accounts/{va_id}/allowed_payers',
@@ -389,7 +468,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payer detail already exist for virtual account',
+                    'description' => 'Allowed payer details already exist',
                 ],
             ],
             'status_code' => 400,
