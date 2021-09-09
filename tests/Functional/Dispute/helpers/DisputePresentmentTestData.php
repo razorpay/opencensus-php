@@ -123,6 +123,93 @@ return [
         ],
     ],
 
+    'testDisputeLifecycleAttributesInProxyAuthActionPerformedInPrivateAuth' => [
+        'request'  => [
+            'url'     => '/disputes/disp_0123456789abcd/',
+            'method'  => 'GET',
+            'content' => [
+                'amount'         => 1000,
+                'summary'        => 'sample contest summary',
+                'shipping_proof' => ['doc_shippingProfId'],
+                'action'         => 'submit',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'        => 'disp_0123456789abcd',
+                'entity'    => 'dispute',
+                'lifecycle' => [
+                    [
+                        'change' => [
+                            'new' => [
+                                'status'          => 'lost',
+                                'amount_deducted' => 1000000,
+                            ],
+                            'old' => [
+                                'status'          => 'open',
+                                'amount_deducted' => 0,
+                            ],
+                        ],
+                        'user_id'     => null,
+                        'merchant_id' => '10000000000000',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testDisputeLifecycleAttributesInProxyAuthActionPerformedInProxyAuth' => [
+        'request'  => [
+            'url'     => '/disputes/disp_0123456789abcd/',
+            'method'  => 'GET',
+            'content' => [
+                'amount'         => 1000,
+                'summary'        => 'sample contest summary',
+                'shipping_proof' => ['doc_shippingProfId'],
+                'action'         => 'submit',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'        => 'disp_0123456789abcd',
+                'entity'    => 'dispute',
+                'lifecycle' => [
+                    [
+                        'change'      => [
+                            'new' => [
+                                'status'          => 'lost',
+                                'amount_deducted' => 1000000,
+                            ],
+                            'old' => [
+                                'status'          => 'open',
+                                'amount_deducted' => 0,
+                            ],
+                        ],
+                        'user_id'     => 'MerchantUser01',
+                        'merchant_id' => '10000000000000',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testDisputeContestInProxyAuthBlockedRoles' => [
+        'request'  => [
+            'url'     => '/disputes/disp_0123456789abcd/contest',
+            'method'  => 'PATCH',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Unauthorized Action',
+                ],
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
     'testInitiateDraftEvidenceNoAmountProvided' => [
         'request'  => [
             'url'     => '/disputes/disp_0123456789abcd/contest',
@@ -165,7 +252,7 @@ return [
     ],
 
     'testInitiateDraftEvidenceNoProofSubmitted' => [
-        'request'   => [
+        'request'  => [
             'url'     => '/disputes/disp_0123456789abcd/contest',
             'method'  => 'PATCH',
             'content' => [
@@ -174,8 +261,8 @@ return [
                 'action'  => 'draft',
             ],
         ],
-        'response'  => [
-            'content'     => [
+        'response' => [
+            'content' => [
                 'id'       => 'disp_0123456789abcd',
                 'evidence' => [
                     'amount'                     => 1000,
@@ -193,15 +280,15 @@ return [
     ],
 
     'testInitiateDraftEvidenceOnlyActionSubmitted' => [
-        'request'   => [
+        'request'  => [
             'url'     => '/disputes/disp_0123456789abcd/contest',
             'method'  => 'PATCH',
             'content' => [
-                'action'  => 'draft',
+                'action' => 'draft',
             ],
         ],
-        'response'  => [
-            'content'     => [
+        'response' => [
+            'content' => [
                 'id'       => 'disp_0123456789abcd',
                 'evidence' => [
                     'amount'                     => 1000000,
@@ -541,7 +628,7 @@ return [
     ],
 
     'testUpdateDraftEvidenceLeadingToNoProofSubmitted' => [
-        'request'   => [
+        'request'  => [
             'url'     => '/disputes/disp_0123456789abcd/contest',
             'method'  => 'PATCH',
             'content' => [
@@ -552,8 +639,8 @@ return [
                 'summary'            => 'test summary',
             ],
         ],
-        'response'  => [
-            'content'     => [
+        'response' => [
+            'content' => [
                 'id'       => 'disp_0123456789abcd',
                 'evidence' => [
                     'amount'                     => 1000,

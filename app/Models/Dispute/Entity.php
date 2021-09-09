@@ -192,6 +192,7 @@ class Entity extends Base\PublicEntity
         self::PHASE,
         self::COMMENTS,
         self::EVIDENCE,
+        self::LIFECYCLE,
         self::CREATED_AT,
         self::REASON,
     ];
@@ -209,6 +210,7 @@ class Entity extends Base\PublicEntity
         self::REASON_DESCRIPTION,
         self::EVIDENCE,
         self::REASON,
+        self::LIFECYCLE,
     ];
 
     protected $casts = [
@@ -473,6 +475,29 @@ class Entity extends Base\PublicEntity
         $attributes[self::EVIDENCE] = $this->evidence->toArrayPublic();
     }
 
+    public function setPublicLifecycleAttribute(array &$attributes)
+    {
+        $app = App::getFacadeRoot();
+
+        $basicAuth = $app['basicauth'];
+
+        if ($basicAuth->isProxyAuth() === true)
+        {
+            $attributes[self::LIFECYCLE] = $this->getLifecyclePublic();
+
+            return;
+        }
+
+        if ($basicAuth->isAdminAuth() === true)
+        {
+            $attributes[self::LIFECYCLE] = $this->getLifecycle();
+
+            return;
+        }
+
+        unset($attributes[self::LIFECYCLE]);
+    }
+
     public function setComments(string $comments = null)
     {
         $this->setAttribute(self::COMMENTS, $comments);
@@ -673,6 +698,29 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIFECYCLE) ?? [];
     }
 
+    protected function getLifecyclePublic() : array
+    {
+        $lifecycle =  $this->getLifecycle();
+
+        $result = [];
+
+        foreach ($lifecycle as $entry)
+        {
+            $isPublic = $this->isPublicLifecycleEntry($entry);
+
+            if ($isPublic === false)
+            {
+                continue;
+            }
+
+            $entry = $this->filterNonPublicAttributesFromLifecycleEntry($entry);
+
+            $result[] = $entry;
+        }
+
+        return $result;
+    }
+
 
     // ----------------------- Getters Ends-------------------------------------
 
@@ -851,5 +899,44 @@ class Entity extends Base\PublicEntity
             ];
         }
 
+    }
+
+    protected function isPublicLifecycleEntry($entry): bool
+    {
+        // actions performed by admins should not be shown to merchant
+        if (isset($entry[self::ADMIN_ID]) === true)
+        {
+            return false;
+        }
+
+        // dispute creation irrespective of source should not be shown to merchant
+        if ($entry[self::CHANGE][self::LIFECYCLE_OLD] === null)
+        {
+            return false;
+        }
+
+        // dispute actions from apps/integrations should not be shown
+        if (isset($entry[self::MERCHANT_ID]) === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function filterNonPublicAttributesFromLifecycleEntry($entry)
+    {
+        unset($entry[self::ADMIN_ID], $entry[self::AUTH_TYPE], $entry[self::APP]);
+
+        $filter =  function ($value, $key)
+        {
+            return in_array($key, $this->public) == true;
+        };
+
+        $entry[self::CHANGE][self::LIFECYCLE_NEW] = array_filter($entry[self::CHANGE][self::LIFECYCLE_NEW], $filter, ARRAY_FILTER_USE_BOTH);
+
+        $entry[self::CHANGE][self::LIFECYCLE_OLD] = array_filter($entry[self::CHANGE][self::LIFECYCLE_OLD], $filter, ARRAY_FILTER_USE_BOTH);
+
+        return $entry;
     }
 }

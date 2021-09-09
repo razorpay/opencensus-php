@@ -812,7 +812,6 @@ class DisputeTest extends TestCase
                   'deduction_source_id',
                   'internal_status',
                   'internal_respond_by',
-                  'lifecycle',
                  ] as $keysNotVisibleToMerchant)
         {
             $this->assertArrayNotHasKey($keysNotVisibleToMerchant, $content);
@@ -839,7 +838,9 @@ class DisputeTest extends TestCase
 
         $content = $this->runRequestResponseFlow($testData);
 
-        $this->assertArrayNotHasKey('reason', $content);
+        $this->assertArrayNotHasKey('reason', $content['items'][0]);
+
+        $this->assertArrayNotHasKey('lifecycle', $content['items'][0]);
 
         $this->checkDisputeFetchForMerchant($disputes, $content);
     }

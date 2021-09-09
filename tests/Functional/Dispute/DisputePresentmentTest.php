@@ -6,6 +6,7 @@ namespace Functional\Dispute;
 use DB;
 use Config;
 use RZP\Models\Dispute;
+use RZP\Models\User\Role;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
@@ -125,6 +126,9 @@ class DisputePresentmentTest extends TestCase
 
         $this->assertEquals($beforeEvidenceDocumentCount + 6, $afterEvidenceDocumentCount);
 
+
+        //Ensure lifecycle attribute is not present when request is made in private. reason: its not part of the public facing API contract
+        $this->assertArrayNotHasKey('lifecycle', $response);
     }
 
     /**
@@ -188,6 +192,109 @@ class DisputePresentmentTest extends TestCase
         foreach ($responses as $response)
         {
             $this->assertArrayNotHasKey('error', $response);
+        }
+    }
+
+    /**
+     * Ensure that only those actions performed in private auth are displayed to merchant in proxy auth
+     * Only those fields should be displayed in diff which are public fields in the dispute entity
+     * In this test, we perform action via private auth and fetch dispute in proxy auth
+     */
+    public function testDisputeLifecycleAttributesInProxyAuthActionPerformedInPrivateAuth()
+    {
+        $this->setUpForInitiateDraftEvidenceTest();
+
+        //action is performed in private auth
+        $this->acceptDispute('disp_0123456789abcd');
+
+        //retrieval in proxyAuth
+        $this->ba->proxyAuth();
+
+        $lifecycle = $this->startTest()['lifecycle'];
+
+        //if same request was from admin dashboard, there would be 2 entries
+        $this->assertEquals(1, count($lifecycle));
+    }
+
+    /**
+     * Ensure that only those actions performed in proxy/private auth are displayed to merchant in proxy auth
+     * Only those fields should be displayed in diff which are public fields in the dispute entity
+     * In this test, we perform action via proxy auth and fetch dispute in proxy auth
+     */
+    public function testDisputeLifecycleAttributesInProxyAuthActionPerformedInProxyAuth()
+    {
+        $this->setUpForInitiateDraftEvidenceTest();
+
+        $this->ba->proxyAuth();
+
+        //action is performed in proxy auth
+        $this->acceptDispute('disp_0123456789abcd');
+
+        //retrieval in proxyAuth
+        $lifecycle = $this->startTest()['lifecycle'];
+
+        //if same request was from admin dashboard, there would be 2 entries
+        $this->assertEquals(1, count($lifecycle));
+
+        $entry = $lifecycle[0];
+
+        $this->assertArrayNotHasKey('internal_status', $entry['change']['new']);
+        $this->assertArrayNotHasKey('internal_status', $entry['change']['old']);
+    }
+
+
+
+
+    /**
+     * Only the following user roles should be able to accept/contest dispute in proxy auth from merchant dashboard
+     * Owner
+     * Admin
+     * Manager
+     * Operations
+     * Finance
+     *
+     * This test asserts that other roles fail if they try to contest/accept dispute from proxy auth
+     */
+    public function testDisputeContestInProxyAuthBlockedRoles()
+    {
+        $blockedRoles = array_values(array_diff(Role::ALL_ROLES, ['owner', 'admin', 'manager', 'operations', 'finance']));
+
+        $this->setUpForInitiateDraftEvidenceTest();
+
+        foreach ($blockedRoles as $blockedRole)
+        {
+            $user = $this->fixtures->create('user');
+
+            DB::table('merchant_users')
+                ->insert([
+                    'merchant_id'    => '10000000000000',
+                    'user_id'        => $user->getId(),
+                    'product'        => 'primary',
+                    'role'           => $blockedRole,
+                    'created_at'     => time(),
+                    'updated_at'     => time(),
+                ]);
+
+            $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+
+            $contestResponse = $this->makeRequestAndGetContent([
+                'url'     => '/disputes/disp_0123456789abcd/contest',
+                'method'  => 'PATCH',
+                'content' => [
+                ],
+            ]);
+
+            $acceptResponse = $this->makeRequestAndGetContent([
+                'url'     => '/disputes/disp_0123456789abcd/accept',
+                'method'  => 'POST',
+                'content' => [
+                ],
+            ]);
+
+            $this->assertEquals('Authentication failed', $contestResponse['error']['description']);
+
+            $this->assertEquals('Authentication failed', $acceptResponse['error']['description']);
         }
     }
 

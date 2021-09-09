@@ -264,6 +264,9 @@ class UserRolesScope
             'payment_page_get_invoice_details'         => Role::WRITER_ROLES,
             'payment_page_send_receipt'                => Role::WRITER_ROLES,
             'payment_page_save_receipt_for_payment'    => Role::WRITER_ROLES,
+
+            'patch_dispute_contest_by_id'              => Role::READER_ROLES,
+            'post_dispute_accept_by_id'                => Role::READER_ROLES,
         ];
 
         /*
