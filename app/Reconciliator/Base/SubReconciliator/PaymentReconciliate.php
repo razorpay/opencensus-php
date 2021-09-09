@@ -161,6 +161,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      */
     protected $isPaymentIdRevalidatedOnGateway;
 
+    /**
+     * This flag is updated when the  payment is updated or when the new unexpected payment is created for amount mismatch.
+     * @var bool
+     */
+    protected $shouldPaymentBeReloaded = false;
+
     public function __construct(string $gateway = null, Entity $batch = null)
     {
         parent::__construct($gateway);
@@ -1094,8 +1100,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         try
         {
-            $this->payment = null; //For every row $this->payment should be initialized to null.
-            $this->payment = $this->paymentRepo->findOrFail($paymentId);
+            $this->payment = $this->fetchOrGetPaymentById($paymentId);
             $this->paymentTransaction = $this->getPaymentTransaction();
 
             //
@@ -2739,5 +2744,33 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $rrn = ltrim($rrn, '0');
 
         $rrn = str_pad($rrn, 12, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Checks already set paymentEntity is valid and can avoid additional fetch operation
+     * if the payment is already set in the context and
+     * the passed paymentId should be same as the paymentEntity Id and
+     * the shouldPaymentBeReloaded flag is not updated then
+     * return payment Entity
+     *
+     * @param $paymentId
+     * @return \RZP\Models\Base\Entity|Payment\Entity
+     * @throws \Throwable
+     */
+    protected function fetchOrGetPaymentById($paymentId)
+    {
+        if (($this->payment instanceof Payment\Entity) and
+            ($this->payment->getId() === $paymentId) and
+            ($this->shouldPaymentBeReloaded === false))
+        {
+            return $this->payment;
+        }
+
+        // Now the payment entity is not set or the new unexpected payment might be created,
+        // fetch the new paymentEntity by paymentId
+        $this->payment = null;// we have to reset the payment to null, so that any undesired payment is not set previously
+        $this->payment = $this->paymentRepo->findOrFail($paymentId);
+        return $this->payment;
+
     }
 }
