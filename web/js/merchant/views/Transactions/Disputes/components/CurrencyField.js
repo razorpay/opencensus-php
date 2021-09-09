@@ -6,7 +6,7 @@ import { getFormattedAmount } from 'common/utils/rzp-utils';
 import { isAmount } from 'common/utils/validators';
 
 const CurrencyField = (props) => {
-  const { dispute, handleInput } = props;
+  const { dispute, handleInput, disabled } = props;
   const [showEditDisputeAmount, setShowEditDisputeAmount] = useState(false);
   const isDipsuteOpen = dispute.status === 'open';
 
@@ -15,6 +15,7 @@ const CurrencyField = (props) => {
       <CurrencyInput
         name="amount"
         required
+        disabled={disabled}
         defaultValue={getFormattedAmount(dispute?.evidence?.amount || dispute.amount)}
         description={
           <>
@@ -48,7 +49,7 @@ const CurrencyField = (props) => {
       <>
         <Amount value={dispute?.evidence?.amount || dispute.amount} currency={dispute.currency} />
         <input type="hidden" value={dispute.amount} name="amount" />
-        {isDipsuteOpen && (
+        {isDipsuteOpen && !disabled && (
           <div>
             <a class="bold" onClick={() => setShowEditDisputeAmount(true)}>
               Edit

@@ -10,11 +10,31 @@ import { fetchDisputes } from 'merchant/reducers/collection';
 import { fetchOpen, contest } from 'merchant/reducers/disputes/details';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { rupeesToPaise, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import roleList from 'merchant/helpers/permissions/roles-list';
 
 const ContestDispute = (props) => {
-  const { dispute, onCancelContest, dispatch, showNotification, fileTypesMap } = props;
+  const {
+    dispute,
+    onCancelContest,
+    dispatch,
+    showNotification,
+    fileTypesMap,
+    user: { role },
+  } = props;
   const isDipsuteOpen = dispute.status === 'open';
+
+  const canUserTakeAction = [
+    roleList.OWNER,
+    roleList.ADMIN,
+    roleList.MANAGER,
+    roleList.OPERATIONS,
+    roleList.FINANCE,
+  ].includes(role);
+
   const submitEvidence = (data) => {
+    if (!canUserTakeAction) {
+      return null;
+    }
     if (data?.amount?.includes('.00')) {
       data.amount = rupeesToPaise(data.amount);
     }
@@ -63,9 +83,13 @@ const ContestDispute = (props) => {
         message: 'Please upload atleast one evidence document to support your claim',
       });
     }
+    return null;
   };
 
   const saveAsDraft = (data) => {
+    if (!canUserTakeAction) {
+      return null;
+    }
     return dispatch(contest(dispute.id, { ...data, action: 'draft' })).catch((err) => {
       showNotification({
         type: 'error',
@@ -99,7 +123,11 @@ const ContestDispute = (props) => {
         }}
       >
         <EntityDetailRow label="Dispute Amount">
-          <CurrencyField dispute={dispute} handleInput={handleInput} />
+          <CurrencyField
+            dispute={dispute}
+            handleInput={handleInput}
+            disabled={!canUserTakeAction}
+          />
         </EntityDetailRow>
 
         <EntityDetailRow label="Explanation">
@@ -107,6 +135,7 @@ const ContestDispute = (props) => {
             key="summary"
             name="summary"
             required
+            disabled={!canUserTakeAction}
             defaultValue={dispute?.evidence?.summary}
             readOnly={dispute.status !== 'open'}
             placeholder="Reason why the dispute is invalid..."
@@ -133,16 +162,18 @@ const ContestDispute = (props) => {
           dispute={dispute}
           saveAsDraft={saveAsDraft}
           showNotification={showNotification}
+          canUserTakeAction={canUserTakeAction}
         />
 
         {isDipsuteOpen && (
           <div class="dispute-cta">
-            <button class="btn btn-primary" type="submit">
+            <button class="btn btn-primary" type="submit" disabled={!canUserTakeAction}>
               Submit Evidence
             </button>
             <button
               class="btn btn-outline"
               type="button"
+              disabled={!canUserTakeAction}
               onClick={() => {
                 analyticsTrack({
                   objectName: 'dispute presentment',
@@ -173,7 +204,7 @@ ContestDispute.propTypes = {
 };
 
 export default connect(
-  (state) => ({ fileTypesMap: state.dispute.fileTypesMap }),
+  (state) => ({ fileTypesMap: state.dispute.fileTypesMap, user: state.session.user }),
   (dispatch) => ({
     dispatch,
   }),

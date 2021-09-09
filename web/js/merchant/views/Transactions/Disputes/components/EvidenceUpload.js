@@ -10,7 +10,7 @@ import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils'
 import { analyticsTrack } from 'common/utils/analytics';
 
 const EvidenceUpload = (props) => {
-  const { dispute, saveAsDraft, showNotification, fileTypes } = props;
+  const { dispute, saveAsDraft, showNotification, fileTypes, canUserTakeAction } = props;
   const [docTypes, setDocTypes] = useState(fileTypes.filter((item) => item.name !== 'others'));
   const [userSelectedDocs, setUserSelectedDocs] = useState([]);
 
@@ -36,6 +36,9 @@ const EvidenceUpload = (props) => {
   const isOtherFile = (fileType) => fileTypes.filter((item) => item.name === fileType).length === 0;
 
   const removeDocument = (fileName) => {
+    if (!canUserTakeAction) {
+      return null;
+    }
     setUserSelectedDocs((docs) => docs.filter((d) => d.name !== fileName));
 
     // Adding doc type back
@@ -57,6 +60,7 @@ const EvidenceUpload = (props) => {
       };
       saveAsDraft(data);
     }
+    return null;
   };
 
   const uploadFile = (file, progressTracker, fileType) => {
@@ -114,6 +118,7 @@ const EvidenceUpload = (props) => {
         onFileRemove={removeDocument}
         showNotification={showNotification}
         disputeStatus={dispute.status}
+        canUserTakeAction={canUserTakeAction}
       />
     ) : (
       dispute?.evidence?.others?.map((item, idx) => (
@@ -126,6 +131,7 @@ const EvidenceUpload = (props) => {
           onFileRemove={removeDocument}
           showNotification={showNotification}
           disputeStatus={dispute.status}
+          canUserTakeAction={canUserTakeAction}
         />
       ))
     ),
@@ -134,7 +140,7 @@ const EvidenceUpload = (props) => {
   return (
     <div class="evidence-upload">
       {documents}
-      {dispute.status === 'open' && (
+      {dispute.status === 'open' && canUserTakeAction && (
         <EntityDetailRow label="Add Document">
           <PowerSelect
             options={docTypes}
@@ -169,6 +175,7 @@ const DismissableFileInput = ({
   onFileRemove,
   showNotification,
   disputeStatus,
+  canUserTakeAction,
   ...rest
 }) => {
   return (
@@ -178,7 +185,7 @@ const DismissableFileInput = ({
           name={name}
           accept={['jpg', 'png', 'pdf']}
           maxSize={2102000}
-          showCloseBtn={disputeStatus === 'open'}
+          showCloseBtn={disputeStatus === 'open' && canUserTakeAction}
           showFileSize={false}
           showAcceptInfo={false}
           showStagedFileStatus={true}
@@ -206,6 +213,7 @@ EvidenceUpload.propTypes = {
   saveAsDraft: PropTypes.func.isRequired,
   showNotification: PropTypes.func.isRequired,
   fileTypes: PropTypes.array.isRequired,
+  canUserTakeAction: PropTypes.bool,
 };
 
 export default connect((state) => ({ fileTypes: state.dispute.fileTypes }), null)(EvidenceUpload);

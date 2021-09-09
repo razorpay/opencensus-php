@@ -12,6 +12,7 @@ import { connect } from 'react-redux';
 import { analyticsTrack } from 'common/utils/analytics';
 import { titleCase, daysFromToday, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import StatusBanner from './StatusBanner';
+import roleList from 'merchant/helpers/permissions/roles-list';
 
 export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
   const daysLeft = daysFromToday(expiresOn);
@@ -39,8 +40,16 @@ const DisputeDetails = (props) => {
   } = props;
   const [showContest, setShowContest] = useState(!!dispute?.evidence);
   const contestRef = React.createRef();
-  const { isDisputePresentmentEnabled } = props.user;
+  const { isDisputePresentmentEnabled, userRole } = props.user;
   const isDisputeOpen = dispute.status === 'open';
+
+  const canUserTakeAction = [
+    roleList.OWNER,
+    roleList.ADMIN,
+    roleList.MANAGER,
+    roleList.OPERATIONS,
+    roleList.FINANCE,
+  ].includes(userRole);
 
   useEffect(() => {
     if (dispute?.evidence) {
@@ -51,34 +60,38 @@ const DisputeDetails = (props) => {
   }, [dispute.evidence, dispute.id]);
 
   const acceptDispute = () => {
-    openModal({
-      size: 'small',
-      component: (
-        <ConfirmModal
-          context="accept"
-          closeModal={closeModal}
-          dispute={dispute}
-          showNotification={showNotification}
-        />
-      ),
-    });
+    if (canUserTakeAction) {
+      openModal({
+        size: 'small',
+        component: (
+          <ConfirmModal
+            context="accept"
+            closeModal={closeModal}
+            dispute={dispute}
+            showNotification={showNotification}
+          />
+        ),
+      });
+    }
   };
 
   const contestDispute = () => {
-    analyticsTrack({
-      objectName: 'dispute presentment',
-      actionName: 'contest begin',
-      screen: 'disputes',
-      properties: {
-        timestamp: Date.now(),
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-    setShowContest(true);
-    // Scrolling contest section into view
-    setTimeout(() => {
-      document.getElementById('contest-dispute').scrollIntoView({ behavior: 'smooth' });
-    }, 0);
+    if (canUserTakeAction) {
+      analyticsTrack({
+        objectName: 'dispute presentment',
+        actionName: 'contest begin',
+        screen: 'disputes',
+        properties: {
+          timestamp: Date.now(),
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+      setShowContest(true);
+      // Scrolling contest section into view
+      setTimeout(() => {
+        document.getElementById('contest-dispute').scrollIntoView({ behavior: 'smooth' });
+      }, 0);
+    }
   };
 
   return (
@@ -174,10 +187,18 @@ const DisputeDetails = (props) => {
                 </div>
                 {daysFromToday(dispute.respond_by) >= 0 && (
                   <div class="dispute-cta">
-                    <button class="btn btn-primary" onClick={contestDispute}>
+                    <button
+                      class="btn btn-primary"
+                      disabled={!canUserTakeAction}
+                      onClick={contestDispute}
+                    >
                       Contest &amp; upload evidence
                     </button>
-                    <button class="btn btn-outline" onClick={acceptDispute}>
+                    <button
+                      class="btn btn-outline"
+                      disabled={!canUserTakeAction}
+                      onClick={acceptDispute}
+                    >
                       Accept Dispute
                     </button>
                   </div>
