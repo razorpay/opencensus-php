@@ -21,8 +21,11 @@ const updateAnnouncements = (status) => (state, action) => {
     case 'ERROR': {
       return set(state, 'announcements', {
         loading: false,
-        items: [],
+        announcements: [],
       });
+    }
+    default: {
+      return state;
     }
   }
 };
@@ -35,7 +38,7 @@ export const fetchAnnouncements = (merchant_id, fromWhere = 'home') => {
   };
 };
 
-let initialState = {
+const initialState = {
   announcements: {
     loading: false,
     announcements: [],

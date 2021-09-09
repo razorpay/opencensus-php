@@ -135,6 +135,7 @@ _dcs.account = '9421167';
     window.rzp_org = {!! $org !!};
     window.old_notifications = {!! $old_notifications !!};
     window.new_notifications = {!! $new_notifications !!};
+    window.notifications = {!! $notifications !!};
     window.api_host = "{!! $api_host !!}"
     window.custom_notes = {!! $custom_notes !!};
     window.pl_expiry_in_hrs = {!! $pl_expiry_in_hrs !!};

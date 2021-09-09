@@ -16,10 +16,12 @@ export default class GrowthService extends GenericEntity {
   routeToChannelIDMap = {
     default: {
       beta: 'HTdu8cC7FJEIHC',
+      stage: 'HTdu8cC7FJEIHC',
       production: 'HpP3cspZ3AcuV2',
     },
     home: {
       beta: 'HTdu8cC7FJEIHC',
+      stage: 'HTdu8cC7FJEIHC',
       production: 'HpP3cspZ3AcuV2',
     },
   };
