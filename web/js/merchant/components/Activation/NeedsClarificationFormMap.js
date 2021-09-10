@@ -1,7 +1,5 @@
 /* eslint-disable */
-
-import { ndcFields } from 'merchant/components/Activation/ActivationFormMap';
-import { LLPIN_BusinessTypes } from './ActivationFormMap';
+import { ndcFields, LLPIN_BusinessTypes } from 'merchant/components/Activation/ActivationFormMap';
 
 export const getNeedsClarificationTabsData = (
   allFieldsMap,
@@ -26,14 +24,30 @@ export const getNeedsClarificationTabsData = (
       allFieldsHash[name] = f;
     }
   };
-  const addToKYCTab = (field) => {
+
+  const groupFields = (relatedFields) => {
+    relatedFields.forEach((field) => {
+      if (field.field_name === 'cancelled_cheque' || field.field_name === 'bank_statement') {
+        // bank_proof and bank_proof_doc won't come from BE and its defined on FE only
+        kycTabContent.push(allFieldsHash.bank_proof, allFieldsHash.bank_proof_doc);
+      } else {
+        kycTabContent.push(allFieldsHash[field.field_name]);
+      }
+      kycFieldsMap[field.field_name] = true;
+    });
+  };
+
+  const addToKYCTab = (field, fieldValue) => {
     if (!kycFieldsMap[field]) {
       kycTabContent.push(allFieldsHash[field]);
       kycFieldsMap[field] = true;
+      if (fieldValue?.related_fields?.length) {
+        groupFields(fieldValue.related_fields);
+      }
     }
   };
   const scanFields = (fields) => {
-    for (let f of fields) {
+    for (const f of fields) {
       if (Array.isArray(f)) {
         scanFields(f);
       } else {
@@ -43,8 +57,9 @@ export const getNeedsClarificationTabsData = (
   };
 
   const prepareField = (field, clarificationDetails, forceMap) => {
-    let reasons = [];
+    const reasons = [];
     const latestNc = needsKyc.nc_count; // latest needs clarrification
+    let latestClarificationField = {};
 
     const origKey = field;
     if (!allFieldsHash[field] || Boolean(forceMap)) {
@@ -77,30 +92,9 @@ export const getNeedsClarificationTabsData = (
                 console.log(error);
               }
             }
+            latestClarificationField = { ...latestClarificationField, ...key };
           }
         });
-      } else {
-        // support for the additional_details
-        for (let r of clarificationDetails[origKey]) {
-          if (r.reason_type === 'predefined') {
-            try {
-              if (
-                clarificationReasons[origKey] &&
-                clarificationReasons[origKey].reasons[key.reason_code]
-              ) {
-                reasons.push(clarificationReasons[origKey].reasons[r.reason_code].description);
-              }
-            } catch (error) {
-              console.log(error);
-            }
-          } else if (r.reason_type === 'custom') {
-            try {
-              reasons.push(r.reason_code);
-            } catch (error) {
-              console.log(error);
-            }
-          }
-        }
       }
 
       if (
@@ -117,14 +111,12 @@ export const getNeedsClarificationTabsData = (
             addToKYCTab(dField);
           }
         });
-      } else {
+      } else if (reasons.length > 0) {
         //Add reasons to main field if there are no dependent fields
-        if (reasons.length > 0) {
-          allFieldsHash[field].reasons = reasons;
-        }
+        allFieldsHash[field].reasons = reasons;
       }
       if (reasons.length > 0) {
-        addToKYCTab(field);
+        addToKYCTab(field, latestClarificationField);
       }
     }
   };
@@ -167,9 +159,9 @@ export const getNeedsClarificationTabsData = (
     scanFields(ndcFields);
 
     const bankDetailsforNC = {};
-    let removedBankDetailsFromNC = needsKyc.clarification_reasons;
-    if (needsKyc.clarification_reasons) {
-      for (const [key, value] of Object.entries(needsKyc.clarification_reasons)) {
+    let removedBankDetailsFromNC = needsKyc.clarification_reasons_v2;
+    if (needsKyc.clarification_reasons_v2) {
+      for (const [key, value] of Object.entries(needsKyc.clarification_reasons_v2)) {
         if (
           key === 'bank_account_name' ||
           key === 'bank_branch_ifsc' ||
@@ -185,12 +177,8 @@ export const getNeedsClarificationTabsData = (
 
     const newClarificationDetails = { ...removedBankDetailsFromNC, ...bankDetailsforNC };
 
-    for (let field in newClarificationDetails) {
-      prepareField(field, newClarificationDetails);
-    }
-    for (let field in needsKyc.additional_details) {
-      // const newFieldName = generateNewField(field, needsKyc.additional_details[field]);
-      prepareField(field, needsKyc.additional_details, true);
+    for (const field in newClarificationDetails) {
+      prepareField(field, newClarificationDetails, true);
     }
 
     return kycTabContent;
@@ -198,4 +186,3 @@ export const getNeedsClarificationTabsData = (
     console.log(error);
   }
 };
-

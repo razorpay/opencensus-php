@@ -842,7 +842,6 @@ const bankAccountFields = [
       isUnregisteredBusiness(activation) || activation.props.user.isRegAutoKYCEnabled
         ? 'We will deposit a small amount of money in your account to verify the account.'
         : '',
-    linkedfields: ['bank_proof', 'bank_proof_doc'],
   },
   {
     name: 'bank_branch_ifsc',
@@ -854,7 +853,6 @@ const bankAccountFields = [
       return getDetailsForIFSC(e.target.value);
     },
     validator: validateIFSC,
-    linkedfields: ['bank_proof', 'bank_proof_doc'],
   },
   [
     {
@@ -874,7 +872,6 @@ const bankAccountFields = [
           }
         }
       },
-      linkedfields: ['bank_proof', 'bank_proof_doc'],
     },
     {
       _name: 'account_no',
@@ -1397,7 +1394,6 @@ export const ndcFields = [
       return activation.isNeedsClarificationMode() && activation.isOnKYCTab(); //Some improvements are possible here regarding placement of this field
     },
     isNotDeletable: true,
-    linkedfields: ['bank_proof'],
   },
 ];
 
