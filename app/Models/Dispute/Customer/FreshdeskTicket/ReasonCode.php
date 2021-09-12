@@ -17,11 +17,11 @@ class ReasonCode
             ],
             'unauthorized_transaction' => [
                 DisputeReasonEntity::GATEWAY_CODE => 'RZP02',
-                DisputeEntity::PHASE => Phase::FRAUD
+                DisputeEntity::PHASE => Phase::CHARGEBACK
             ],
             'potential_fraud' => [
                 DisputeReasonEntity::GATEWAY_CODE => 'RZP03',
-                DisputeEntity::PHASE => Phase::FRAUD
+                DisputeEntity::PHASE => Phase::CHARGEBACK
             ],
             'refund_not_processed' => [
                 DisputeReasonEntity::GATEWAY_CODE => 'RZP04',
@@ -39,7 +39,7 @@ class ReasonCode
         Subcategory::REPORT_FRAUD => [
             'potential_fraud' => [
                 DisputeReasonEntity::GATEWAY_CODE => 'RZP03',
-                DisputeEntity::PHASE => Phase::FRAUD
+                DisputeEntity::PHASE => Phase::CHARGEBACK
             ],
         ],
     ];
