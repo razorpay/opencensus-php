@@ -12077,4 +12077,11 @@ class MerchantTest extends TestCase
 
         $this->assertEquals(true, $merchant->isFundsOnHold());
     }
+
+    public function testBulkAssignTag()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 }

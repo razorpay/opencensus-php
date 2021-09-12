@@ -9267,4 +9267,29 @@ return [
             ],
         ],
     ],
+
+    'testBulkAssignTag' => [
+        'request' => [
+            'content' => [
+                'name'   => 'test',
+                'action' => 'insert',
+                'merchant_ids' => [
+                    '10000000000000',
+                    '10000000000000',
+                    'randInvalid_Id',
+                ],
+            ],
+            'url' => '/merchants/tags/bulk',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'total_count' => 3,
+                'failed_count'=> 1,
+                'failed_ids'  => [
+                    'randInvalid_Id',
+                ],
+           ],
+        ],
+    ],
 ];

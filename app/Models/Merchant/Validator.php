@@ -224,7 +224,7 @@ class Validator extends Base\Validator
         'action'         => 'required|string|filled|max:10|in:insert,delete',
         'name'           => 'required|string|filled',
         'merchant_ids'   => 'required|array',
-        'merchant_ids.*' => 'required|string|filled|size:1000'
+        'merchant_ids.*' => 'required|string|filled|size:14'
     ];
 
     protected static $bulkAssignScheduleRules = [
