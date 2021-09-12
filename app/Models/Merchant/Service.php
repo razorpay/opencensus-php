@@ -3520,11 +3520,15 @@ class Service extends Base\Service
             }
         }
 
-        return [
+        $result =  [
             'total_count'  => count($merchantIds),
             'failed_count' => count($failedIds),
             'failed_ids'   => $failedIds
         ];
+
+        $this->trace->info(TraceCode::MERCHANT_TAGS_BULK_RESPONSE, $result);
+
+        return $result;
     }
 
     /**

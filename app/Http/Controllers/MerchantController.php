@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Partner;
+use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
@@ -1344,6 +1345,10 @@ class MerchantController extends Controller
 
     public function bulkTagMerchants()
     {
+        RuntimeManager::setTimeLimit(1800);
+
+        RuntimeManager::setMemoryLimit("1024M");
+
         $input = Request::all();
 
         $response = $this->service()->bulkTag($input);
