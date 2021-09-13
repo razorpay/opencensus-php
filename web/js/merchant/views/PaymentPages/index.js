@@ -1,3 +1,4 @@
+import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
@@ -11,7 +12,7 @@ import QuickGuide from './QuickGuide';
 
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
-import PaymentPageAnalyticsBanner from 'merchant/components/Announcements/PaymentPageAnalytics';
+import PaymentPagePluginsBanner from 'merchant/components/Announcements/PaymentPagePlugins';
 
 @connect((state) => {
   return {
@@ -19,7 +20,7 @@ import PaymentPageAnalyticsBanner from 'merchant/components/Announcements/Paymen
     user: state.session.user,
   };
 })
-export default class PaymentPagesContainer extends React.Component {
+export default class PaymentPagesContainer extends Component {
   render() {
     const { user } = this.props;
     const { isQuickGuideOpen, showOnboarding } = this.props.paymentPageProductOnBoarding;
@@ -31,7 +32,7 @@ export default class PaymentPagesContainer extends React.Component {
     return (
       <>
         <div className="banner-container">
-          <PaymentPageAnalyticsBanner bannerKey={`payment-pages-analytics-${user.current}`} />
+          <PaymentPagePluginsBanner bannerKey={`payment-pages-plugins-${user.current}`} />
         </div>
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
