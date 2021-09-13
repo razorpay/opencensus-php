@@ -4410,12 +4410,7 @@ class Core extends Base\Core
         $gstDetails = [];
 
         $merchantDetail = $this->merchant->merchantDetail;
-
-        if (BusinessType::isGstinVerificationEnableBusinessTypes($merchantDetail->getBusinessTypeValue()) === false)
-        {
-            return [Constant::RESULTS => $gstDetails];;
-        }
-
+        
         //if experiment is enabled then only probe for gst details
         $isGetGstDetailsRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
             $this->merchant->getId(),
