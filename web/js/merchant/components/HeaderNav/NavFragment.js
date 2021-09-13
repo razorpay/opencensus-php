@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import storage from 'common/utils/localStorage';
+import * as storage from 'common/utils/localStorage';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ModesDropdown from './SwitchMode';
 import SwitchMerchant from './SwitchMerchant';
@@ -8,19 +8,20 @@ import OffersForYou from 'common/ui/OffersForYou';
 import SuccessFullCreditModal from 'common/ui/OnboardingCoupons/SuccessFullCreditModal';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { daysFromToday, paiseToRupees } from 'common/utils/rzp-utils';
+import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 
 const TRANSACTION_TIMESTAMP = 1628015429; // 4th aug,2021
-const POST_INSTANTLY_ACTIVATED_DAYS_TO_SHOW_OFFER = 3; //offer allowed to show post payment activated
+const POST_INSTANTLY_ACTIVATED_DAYS_TO_SHOW_OFFER = 2; //offer allowed to show post payment activated
 
 class NavFragment extends Component {
   constructor(props) {
     super(props);
 
-    var hideModePopoverToken = (this.hideModePopoverToken = 'hide-mode-dd-popover'),
-      showModePopoverToken = (this.showModePopoverToken = 'show-mode-dd-popover');
+    this.hideModePopoverToken = 'hide-mode-dd-popover';
+    this.showModePopoverToken = 'show-mode-dd-popover';
 
-    const hideSwitchModeTooltip = storage.getItem(hideModePopoverToken),
-      showSwitchModeTooltip = storage.getItem(showModePopoverToken);
+    const hideSwitchModeTooltip = storage.getItem(this.hideModePopoverToken);
+    const showSwitchModeTooltip = storage.getItem(this.showModePopoverToken);
 
     const { user, mode } = props;
     //number of day when payment get activated date to current date
@@ -30,7 +31,7 @@ class NavFragment extends Component {
     this.canShowOnboardingOffers =
       user.activated &&
       mode === 'live' &&
-      numberOfDaysPaymentActivated > POST_INSTANTLY_ACTIVATED_DAYS_TO_SHOW_OFFER &&
+      numberOfDaysPaymentActivated >= POST_INSTANTLY_ACTIVATED_DAYS_TO_SHOW_OFFER &&
       !user.isMtuCouponApplied &&
       user.isOnboardingCouponEnabled;
 
@@ -41,6 +42,7 @@ class NavFragment extends Component {
       showSwitchModeTooltip: !hideSwitchModeTooltip && showSwitchModeTooltip,
       transactionAmount: null,
       isSuccessfullyCouponApplied: false,
+      mtuOfferCount: null,
     };
 
     if (hideSwitchModeTooltip && showSwitchModeTooltip) {
@@ -105,11 +107,24 @@ class NavFragment extends Component {
     return false;
   };
 
+  fetchMTUOfferCount = async () => {
+    const namespace = 'onboarding';
+    const res = await fetchModalConfigDetails(namespace);
+    if (res?.data) {
+      const count = Number(res.data?.mtu_coupon_popup_count);
+      this.setState({ mtuOfferCount: count });
+      return count;
+    }
+    return 0;
+  };
+
   applyMTUCoupon = async () => {
     const { user } = this.props;
     const isMerchantAlreadyMTU = await this.isMerchantAlreadyMTU();
 
     if (!isMerchantAlreadyMTU && this.canShowOnboardingOffers) {
+      const mtuCount = await this.fetchMTUOfferCount();
+
       const from = this.isNewMerchantPostMTUCouponLive ? user.created_at : TRANSACTION_TIMESTAMP;
 
       merchantFetch({
@@ -142,7 +157,7 @@ class NavFragment extends Component {
           this.setState({
             transactionAmount: payment,
           });
-          if (payment > 0 && this.isMtuOfferShowed === 'visited') {
+          if (payment > 0 && (this.isMtuOfferShowed === 'visited' || mtuCount > 0)) {
             this.redeemOnboardingCoupon();
           }
         }
@@ -158,13 +173,19 @@ class NavFragment extends Component {
 
   render() {
     const { user, mode, modeFormatted, onSwitchMode, onSwitchMerchant } = this.props;
-    const { showSwitchModeTooltip, transactionAmount, isSuccessfullyCouponApplied } = this.state;
+    const {
+      showSwitchModeTooltip,
+      transactionAmount,
+      isSuccessfullyCouponApplied,
+      mtuOfferCount,
+    } = this.state;
 
     const canShowOnboardingOffers = this.canShowOnboardingOffers && transactionAmount == 0;
 
     return (
       <React.Fragment>
         <ShowWhen
+          // eslint-disable-next-line no-shadow
           additionalCondition={(user) =>
             canShowOnboardingOffers ||
             user.isProjectNitroEnabled ||
@@ -174,7 +195,10 @@ class NavFragment extends Component {
             user.isProjectKeystoneCashAdvanceEnabled
           }
         >
-          <OffersForYou canShowOnboardingOffers={canShowOnboardingOffers} />
+          <OffersForYou
+            canShowOnboardingOffers={canShowOnboardingOffers}
+            mtuOfferCount={mtuOfferCount}
+          />
         </ShowWhen>
         <li>
           <ModesDropdown

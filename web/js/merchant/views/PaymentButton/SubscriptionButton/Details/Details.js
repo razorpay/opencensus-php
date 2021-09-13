@@ -13,7 +13,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import PaymentReceipt from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
-import { Popover, PopoverBody } from 'common/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import TabsContainer from 'common/ui/Tabs';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';

@@ -11,7 +11,7 @@ import {
 import PropTypes from 'prop-types';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { Popover, PopoverBody } from 'common/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/components/EnableInstantRefundsModal';

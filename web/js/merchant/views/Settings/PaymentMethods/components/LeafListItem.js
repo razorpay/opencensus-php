@@ -6,7 +6,7 @@ import moment from 'moment';
 
 import PropTypes from 'prop-types';
 
-import { Popover, PopoverBody } from 'common/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   createMerchantInstrumentRequest,

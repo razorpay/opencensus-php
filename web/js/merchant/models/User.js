@@ -1203,6 +1203,10 @@ export default class User {
     return this.getExpStatus('mtu_coupon_code') && !!this.isOrgRZP;
   }
 
+  get autoOpenOnboardingCoupon() {
+    return this.getExpStatus('auto_open_mtu_coupon') && !!this.isOrgRZP;
+  }
+
   get isIndependentPartnerKYCEnabled() {
     const variant = getSplitzExperimentVariant('independent_partner_kyc');
     return variant?.name === 'exposed';

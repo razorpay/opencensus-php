@@ -3,7 +3,7 @@ import PaypalOnboardingButton from 'merchant/views/Settings/Configuration/Paypal
 import { getIcon } from './InstrumentIcons';
 import { GREYED } from '../constants';
 import { getClassName, getStatusMessage } from '../../Configuration/InternationalPayments';
-import { Popover, PopoverBody } from 'common/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { connect } from 'react-redux';
 
 const Paypal = ({ instrument, terminals }) => {

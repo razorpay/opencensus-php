@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import Time from 'common/ui/Time';
 import { ProgressBar } from 'common/ui/ProgressBar';
-import { Popover, PopoverBody } from 'common/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
 import { titleCase, isPresent, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import DetailRow from 'merchant/components/DetailRow';
@@ -292,21 +292,12 @@ const MerchantDetails = ({
                   });
                 }}
               >
-                {do {
-                  if (
-                    user.activated ||
-                    user.locked ||
-                    user.submitted ||
-                    user.showActivationMobileForm
-                  ) {
-                    ('View');
-                  } else if (user.activation_progress == 100 && !user.submitted) {
-                    ('Submit');
-                  } else {
-                    ('Fill');
-                  }
-                }}{' '}
-                {activationName} Form
+                {user.activated || user.locked || user.submitted || user.showActivationMobileForm
+                  ? 'View'
+                  : user.activation_progress == 100 && !user.submitted
+                  ? 'Submit'
+                  : 'Fill'}
+                {` ${activationName}`} Form
               </Link>
             </span>
           )}
@@ -516,5 +507,4 @@ export default connect(null, {
   openModal: fnOpenModal,
   closeModal: fnCloseModal,
   showNotification: fnShowNotification,
-  // eslint-disable-next-line babel/new-cap
-})(RTracking()(MerchantDetails));
+})(rTracking()(MerchantDetails));

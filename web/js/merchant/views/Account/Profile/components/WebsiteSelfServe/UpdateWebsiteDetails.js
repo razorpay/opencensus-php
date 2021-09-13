@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import ModalHeader from 'common/ui/ModalHeader';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { Popover, PopoverBody } from 'common/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { bindActionCreators } from 'redux';
 import Input from 'common/new-ui/Input';
 import { merchantFetch } from 'merchant/utils/ajax';

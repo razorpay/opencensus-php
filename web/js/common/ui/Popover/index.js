@@ -9,30 +9,24 @@ import { isChildSameType, checkChildrenType } from 'common/utils/react-utils';
 import Tooltip from 'common/ui/Tooltip';
 
 class PopoverTitle extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     const { children, ...otherProps } = this.props;
 
-    otherProps.className =
-      (otherProps.className ? otherProps.className + ' ' : '') + 'rzp-popover-title';
+    otherProps.className = `${
+      otherProps.className ? `${otherProps.className} ` : ''
+    }rzp-popover-title`;
 
     return <div {...otherProps}>{children}</div>;
   }
 }
 
 class PopoverBody extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     const { children, ...otherProps } = this.props;
 
-    otherProps.className =
-      (otherProps.className ? otherProps.className + ' ' : '') + 'rzp-popover-body';
+    otherProps.className = `${
+      otherProps.className ? `${otherProps.className} ` : ''
+    }rzp-popover-body`;
 
     return <div {...otherProps}>{children}</div>;
   }
@@ -66,11 +60,11 @@ class Popover extends Component {
   }
 
   render() {
-    const { children, ...otherProps } = this.props,
-      { leftAdjustment, topAdjustment, resultantAlignment } = this.state;
+    const { children, ...otherProps } = this.props;
+    const { leftAdjustment, topAdjustment, resultantAlignment } = this.state;
 
-    let popoverTitle = null,
-      popoverBody = null;
+    let popoverTitle = null;
+    let popoverBody = null;
 
     React.Children.forEach(children, (child) => {
       if (!popoverTitle && isChildSameType(child, PopoverTitle)) {
@@ -83,10 +77,8 @@ class Popover extends Component {
     });
 
     otherProps.className =
-      (otherProps.className ? otherProps.className + ' ' : '') +
-      'rzp-popover ' +
-      ' align-' +
-      (resultantAlignment || otherProps.align);
+      `${otherProps.className ? `${otherProps.className} ` : ''}rzp-popover ` +
+      ` align-${resultantAlignment || otherProps.align}`;
 
     return (
       <Tooltip
@@ -118,6 +110,7 @@ class Popover extends Component {
 
 Popover.propTypes = {
   children: ({ children }) => checkChildrenType(children, [PopoverTitle, PopoverBody]),
+  // eslint-disable-next-line react/forbid-foreign-prop-types
   ...Tooltip.propTypes,
 };
 
@@ -125,6 +118,6 @@ Popover.defaultProps = {
   ...Tooltip.defaultProps,
 };
 
-export { PopoverTitle, PopoverBody, Popover };
+export { PopoverTitle, PopoverBody };
 
 export default Popover;

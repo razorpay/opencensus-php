@@ -16,7 +16,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import Merchant80gDetails from './Merchant80gDetails';
 import { get80gMerchantDetails, set80gMerchantDetails } from 'merchant/reducers/profile';
 import Spinner from 'common/ui/Spinner';
-import { Popover, PopoverBody } from 'common/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 @connect(null, { openModal, showNotification })
 @RTracking(() => window.rzpQ.component('PaymentReceipt'))

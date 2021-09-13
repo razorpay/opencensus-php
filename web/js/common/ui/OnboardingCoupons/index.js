@@ -1,13 +1,21 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
+import rTracking from 'react-tracking';
 import Button from 'common/new-ui/Button';
 import { showProductsModal } from 'merchant/reducers/home';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import RTracking from 'react-tracking';
-import { compose } from 'redux';
+import { updateModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 
-const OnboardingCoupons = ({ closeModal, showProductModal, tracking }) => {
+const OnboardingCoupons = ({
+  closeModal,
+  showProductModal,
+  tracking,
+  mtuCouponCount,
+  autoOpenOnboardingCoupon,
+  isButtonClicked,
+}) => {
   useEffect(() => {
     analyticsTrack({
       objectName: 'Limited time MTU offer popup',
@@ -15,6 +23,7 @@ const OnboardingCoupons = ({ closeModal, showProductModal, tracking }) => {
       screen: 'home page',
       properties: {
         location: 'top header',
+        popupCount: mtuCouponCount,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
@@ -23,6 +32,14 @@ const OnboardingCoupons = ({ closeModal, showProductModal, tracking }) => {
         ID: 'AUG21-1LFREECREDITS-PL',
       }),
     );
+
+    if (!autoOpenOnboardingCoupon && mtuCouponCount < 1) {
+      updateModalConfigDetails({ mtu_coupon_popup_count: 1 }, 'onboarding');
+    }
+    if (typeof mtuCouponCount === 'number' && autoOpenOnboardingCoupon && !isButtonClicked) {
+      const payload = { mtu_coupon_popup_count: mtuCouponCount + 1 }; //increase the current count by 1
+      updateModalConfigDetails(payload, 'onboarding');
+    }
   }, []);
 
   return (
@@ -56,9 +73,11 @@ const OnboardingCoupons = ({ closeModal, showProductModal, tracking }) => {
                 },
               });
               tracking.trackEvent(
-                window.rzpQ.merchantActions().success('merchant_dashboard.click_onboarding_coupons_cta1', {
-                  ID: 'AUG21-1LFREECREDITS-PL',
-                }),
+                window.rzpQ
+                  .merchantActions()
+                  .success('merchant_dashboard.click_onboarding_coupons_cta1', {
+                    ID: 'AUG21-1LFREECREDITS-PL',
+                  }),
               );
             }}
           >
@@ -71,11 +90,8 @@ const OnboardingCoupons = ({ closeModal, showProductModal, tracking }) => {
 };
 
 export default compose(
-  RTracking(() => window.rzpQ.component('OnboardingCoupons')),
-  connect(
-    null,
-    {
-      showProductModal: showProductsModal,
-    },
-  ),
+  rTracking(() => window.rzpQ.component('OnboardingCoupons')),
+  connect(null, {
+    showProductModal: showProductsModal,
+  }),
 )(OnboardingCoupons);

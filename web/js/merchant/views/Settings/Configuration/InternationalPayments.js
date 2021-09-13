@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 import InternationalCards from './InternationalCards';
 import PaypalOnboardingButton from './PaypalOnboarding';
 import { DocLink } from 'merchant/components/DocsLink';
-import { Popover, PopoverBody } from 'common/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 export const getClassName = (status) => {
   if (status === 'activated') {

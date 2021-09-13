@@ -4,7 +4,7 @@ import Input from 'common/new-ui/Input';
 import TimeInput from './TimeInput';
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { parseTimeoutValues, renderTimeoutAsString, capitalize } from './util';
-import { Popover, PopoverBody } from 'common/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { analyticsTrack } from 'common/utils/analytics';
 
 const refund_options = [

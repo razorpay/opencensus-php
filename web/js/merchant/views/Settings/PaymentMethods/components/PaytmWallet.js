@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Popover, PopoverBody } from 'common/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { ACCOUNT_LINKABLE } from '../constants';
 
 const ProductionAccount = () => {

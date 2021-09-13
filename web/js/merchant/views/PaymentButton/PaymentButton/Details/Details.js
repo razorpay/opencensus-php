@@ -15,7 +15,7 @@ import TestModeBanner from 'merchant/components/TestModeBanner';
 import EditStock from 'merchant/views/PaymentPages/PaymentPages/components/EditStock';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import PaymentReceipt from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
-import { Popover, PopoverBody } from 'common/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { addPollInstance, saveReportConfigs } from 'merchant/reducers/reports';

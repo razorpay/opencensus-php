@@ -8,12 +8,22 @@ import RXPayrollMoonshineModal from 'common/ui/RXPayrollMoonshineModal';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import RTracking from 'react-tracking';
-import LocalStorageService from 'common/utils/localStorage';
+import rTracking from 'react-tracking';
+import * as LocalStorageService from 'common/utils/localStorage';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-const OffersForYou = ({ closeModals, openModals, tracking, canShowOnboardingOffers, user }) => {
+// number of times to show MTU offer
+const COUNT_TO_SHOW_MTU_OFFER = 5;
+
+const OffersForYou = ({
+  closeModals,
+  openModals,
+  tracking,
+  canShowOnboardingOffers,
+  user,
+  mtuOfferCount,
+}) => {
   const offersForYouState = LocalStorageService.getItem('offers_for_you_state');
   let showAnimation = true;
   if (offersForYouState === 'animationShown' || offersForYouState === 'hasAppliedCA')
@@ -32,8 +42,51 @@ const OffersForYou = ({ closeModals, openModals, tracking, canShowOnboardingOffe
       LocalStorageService.setItem('offers_for_you_state', 'animationShown');
   }, []);
 
+  const showMTUOffer = (isButtonClicked = false) => {
+    openModals({
+      component: (
+        <OnboardingCoupons
+          closeModal={closeModals}
+          mtuCouponCount={mtuOfferCount}
+          autoOpenOnboardingCoupon={user.autoOpenOnboardingCoupon}
+          isButtonClicked={isButtonClicked}
+        />
+      ),
+      size: 'xlarge',
+    });
+    LocalStorageService.setItem(`showed_popup--${window.rzp_user.current}`, 'visited');
+  };
+
+  useEffect(() => {
+    //show MTU offer 5 times on each new session
+    const prevSessionID = LocalStorageService.getItem(`prev_session`);
+    if (
+      canShowOnboardingOffers &&
+      window.session_id !== prevSessionID &&
+      typeof mtuOfferCount === 'number' &&
+      mtuOfferCount < COUNT_TO_SHOW_MTU_OFFER &&
+      user.autoOpenOnboardingCoupon
+    ) {
+      showMTUOffer();
+      LocalStorageService.setItem('prev_session', window.session_id);
+    }
+  }, []);
+
   const handleClick = () => {
-    if (user.isProjectMoonshineEnabled) {
+    /* onboarding offer will be the priority over the other offers.
+    if two offer enable at the same time */
+    if (canShowOnboardingOffers) {
+      showMTUOffer(true);
+      analyticsTrack({
+        objectName: 'Exclusive Offer',
+        actionName: 'clicked',
+        screen: 'home page',
+        properties: {
+          location: 'top header',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    } else if (user.isProjectMoonshineEnabled) {
       openModals({
         component: (
           <RXPayrollMoonshineModal
@@ -44,21 +97,6 @@ const OffersForYou = ({ closeModals, openModals, tracking, canShowOnboardingOffe
         ),
         size: 'xlarge',
         className: 'RXPayrollMoonshine--Modal',
-      });
-    } else if (canShowOnboardingOffers) {
-      openModals({
-        component: <OnboardingCoupons closeModal={closeModals} />,
-        size: 'xlarge',
-      });
-      LocalStorageService.setItem(`showed_popup--${window.rzp_user.current}`, 'visited');
-      analyticsTrack({
-        objectName: 'Exclusive Offer',
-        actionName: 'clicked',
-        screen: 'home page',
-        properties: {
-          location: 'top header',
-          ...getCommonAnalyticsProperties(window.rzp_user),
-        },
       });
     } else {
       openModals({
@@ -92,7 +130,7 @@ const OffersForYou = ({ closeModals, openModals, tracking, canShowOnboardingOffe
 };
 
 export default compose(
-  RTracking(() => window.rzpQ.component('OffersForYou')),
+  rTracking(() => window.rzpQ.component('OffersForYou')),
   connect(
     (state) => {
       return {
