@@ -26,7 +26,7 @@ export default ({
 
   function onDateRangeChanges(startAt, endAt) {
     const difference = endAt.diff(startAt, 'days');
-    const error = '';
+    let error = '';
 
     if (difference < 0) {
       error = "Start at date can't exceed end at date";
@@ -36,9 +36,10 @@ export default ({
   }
 
   function onSubmitWrapper(data) {
-    const [from, to] = dateRef.getDateRange() || [];
-
-    onSubmit({ ...data, from, to });
+    if (dateRef?.getDateRange) {
+      const [from, to] = dateRef.getDateRange() || [];
+      onSubmit({ ...data, from, to });
+    } else onSubmit(data);
   }
 
   return (
@@ -51,8 +52,10 @@ export default ({
         <label>Status</label>
         <Field name="status" component="select" class="form-control input-sm">
           <option value="">All</option>
-          {Object.entries(STATUS_OPTIONS).map(([value, label]) => (
-            <option value={value}>{label}</option>
+          {Object.entries(STATUS_OPTIONS).map(([value, label], idx) => (
+            <option value={value} key={idx}>
+              {label}
+            </option>
           ))}
         </Field>
       </div>

@@ -17,7 +17,7 @@ import GromorAgreementModal from 'merchant/views/Capital/components/Modals/Gromo
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import LegalSignIcon from '../../../../../icons/merchant/legal.svg';
 import RoundTick from '../../../../../icons/merchant/tick-round.svg';
-import LocalStorageService from 'common/utils/localStorage';
+import { getItem, removeItem } from 'common/utils/localStorage';
 import { checkifDateExpired } from 'merchant/views/Capital/utils';
 
 const Loader = () => {
@@ -63,61 +63,63 @@ class CashAdvance extends React.Component {
     this.state = {
       isLoading: !data,
       isGromorModalOpen: true,
+      withdrawalSkip: 0,
     };
   }
 
   componentDidMount() {
     const {
       user: { current },
-      fetchWithdrawals,
-      fetchFunctionalWithdrawalConfigByMerchantID,
-      fetchMerchantDetails,
     } = this.props;
 
-    fetchFunctionalWithdrawalConfigByMerchantID({
-      owner_id: current,
-      owner_type: 'RZP_MERCHANT',
-    }).then(
-      ({
-        data: {
-          withdrawal_config: {
-            configuration: { custom_partner_fields: { partner_id = '' } = {} } = {},
+    this.props
+      .fetchFunctionalWithdrawalConfigByMerchantID({
+        owner_id: current,
+        owner_type: 'RZP_MERCHANT',
+      })
+      .then(
+        ({
+          data: {
+            withdrawal_config: {
+              configuration: { custom_partner_fields: { partner_id = '' } = {} } = {},
+            } = {},
           } = {},
-        } = {},
-      }) => {
-        const locEsignEnabled = this.props.user.isFeatureEnabled('loc_esign');
+        }) => {
+          const locEsignEnabled = this.props.user.isFeatureEnabled('loc_esign');
 
-        if (locEsignEnabled && partner_id !== 'GROMOR')
-          fetchMerchantDetails({
-            owner_id: current,
-          }).then(({ data: { due_at } = {} } = {}) => {
-            const isDateExpired = checkifDateExpired(new Date(due_at));
-            if (!isDateExpired) {
-              this.setState({ isGromorModalOpen: true });
-              this.openGromorSignModal();
-            }
-          });
-      },
-    );
-
-    fetchWithdrawals({
-      reference: [
-        {
-          reference_id: current,
-          reference_type: 'OWNER_ID',
+          if (locEsignEnabled && partner_id !== 'GROMOR')
+            this.props
+              .fetchMerchantDetails({
+                owner_id: current,
+              })
+              .then(({ data: { due_at } = {} } = {}) => {
+                const isDateExpired = checkifDateExpired(new Date(due_at));
+                if (!isDateExpired) {
+                  this.setState({ isGromorModalOpen: true });
+                  this.openGromorSignModal();
+                }
+              });
         },
-      ],
-      skip: 0,
-      count: 20,
-      order_by: 'CREATED_AT',
-      order_direction: 'desc',
-    }).finally(() => this.setState({ isLoading: false }));
+      );
+
+    this.props
+      .fetchWithdrawals({
+        reference: [
+          {
+            reference_id: current,
+            reference_type: 'OWNER_ID',
+          },
+        ],
+        skip: 0,
+        count: 25,
+        order_by: 'CREATED_AT',
+        order_direction: 'desc',
+      })
+      .finally(() => this.setState({ isLoading: false }));
   }
 
   openGromorSignModal = () => {
     const {
-      closeModal,
-      openModal,
       withdrawalConfiguration,
       merchantGromorEsignDetails: {
         data: { due_at, email_id = '', name = 'You', leegality_url = '' } = {},
@@ -126,10 +128,10 @@ class CashAdvance extends React.Component {
 
     const handleModalClose = () => {
       this.setState({ isGromorModalOpen: false });
-      closeModal();
+      this.props.closeModal();
     };
 
-    openModal({
+    this.props.openModal({
       component: (
         <GromorAgreementModal
           onClose={handleModalClose}
@@ -149,15 +151,15 @@ class CashAdvance extends React.Component {
       'Kindly review and sign the new lender agreement by June 10th, to continue using your Cash Advance withdrawals';
     const signedText = 'Great job on signing the new lender agreement. ';
 
+    const handleClose = () => {
+      removeItem('loc_esign_clicked');
+    };
+
     if (state === 'signed') {
       setTimeout(() => {
         handleClose();
       }, 2000);
     }
-
-    const handleClose = () => {
-      LocalStorageService.removeItem('loc_esign_clicked');
-    };
 
     return (
       <div className="cash-advance-gromor-esign-wrapper">
@@ -198,6 +200,16 @@ class CashAdvance extends React.Component {
     );
   };
 
+  setSkip = ({ skip }, callback) => {
+    this.setState(
+      (prev) => ({
+        ...prev,
+        withdrawalSkip: skip,
+      }),
+      callback,
+    );
+  };
+
   renderSection() {
     const {
       match: {
@@ -211,7 +223,7 @@ class CashAdvance extends React.Component {
         return <Overview />;
       }
       case CASH_ADVANCE_SECTIONS.WITHDRAWALS: {
-        return <Withdrawals />;
+        return <Withdrawals skip={this.state.withdrawalSkip} setSkip={this.setSkip} />;
       }
       case CASH_ADVANCE_SECTIONS.REPAYMENTS: {
         return <Repayments />;
@@ -247,7 +259,7 @@ class CashAdvance extends React.Component {
 
     const showLoader = isLoading || withdrawalsLoading || withdrawalConfigurationLoading;
 
-    const locEsignClicked = LocalStorageService.getItem('loc_esign_clicked');
+    const locEsignClicked = getItem('loc_esign_clicked');
     const isDateExpired = checkifDateExpired(new Date(due_at));
     const partner_id =
       this.props.withdrawalConfiguration && this.props.withdrawalConfiguration.data

@@ -1,7 +1,8 @@
+import moment from 'moment';
 import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Amount from 'common/ui/Amount';
-import { STATUS_LABELS, StatusPillClasses, STATUSES } from './constants';
+import { STATUS_LABELS, StatusPillClasses } from './constants';
 import { Link, withRouter } from 'react-router-dom';
 
 const ListItem = ({ withdrawal, onEdit, history, trackGA }) => {
@@ -50,7 +51,7 @@ const ListItem = ({ withdrawal, onEdit, history, trackGA }) => {
 
 const ListItemWrapper = withRouter(ListItem);
 
-export default ({ withdrawals, loading, viewWithdrawal, trackGA }) => {
+export default ({ withdrawals, loading, trackGA }) => {
   return (
     <div className="table-responsive">
       <table className="table table-hover">
@@ -85,12 +86,7 @@ export default ({ withdrawals, loading, viewWithdrawal, trackGA }) => {
           }
         >
           {withdrawals.map((withdrawal) => (
-            <ListItemWrapper
-              key={withdrawal.id}
-              withdrawal={withdrawal}
-              viewWithdrawal={viewWithdrawal}
-              trackGA={trackGA}
-            />
+            <ListItemWrapper key={withdrawal.id} withdrawal={withdrawal} trackGA={trackGA} />
           ))}
         </TableBody>
       </table>

@@ -69,49 +69,6 @@ function SummaryCarousel(props) {
     data: [],
   });
 
-  const fetchWithdrawals = (withdrawalInstance) => {
-    withdrawalInstance
-      .fetchWithdrawals({
-        reference: [
-          {
-            reference_type: 'OWNER_ID',
-            reference_id: props.user.current,
-          },
-        ],
-        order_by: 'CREATED_AT',
-        order_direction: 'desc',
-        skip: 0,
-        count: 20,
-      })
-      .then(({ data: { withdrawal = [] } = {} } = {}) => {
-        setWithdrawals((state) => ({
-          ...state,
-          loading: false,
-          data: withdrawal,
-        }));
-
-        if (withdrawal.length) return fetchInstallments(withdrawalInstance);
-        else {
-          setInstallments((state) => ({
-            ...state,
-            loading: false,
-          }));
-        }
-      })
-      .catch(() => {
-        setWithdrawals((state) => ({
-          ...state,
-          loading: false,
-          error: true,
-        }));
-        setInstallments((state) => ({
-          ...state,
-          loading: false,
-          error: true,
-        }));
-      });
-  };
-
   const fetchInstallments = (withdrawal) => {
     withdrawal
       .fetchInstallments({
@@ -135,6 +92,49 @@ function SummaryCarousel(props) {
       });
   };
 
+  const fetchWithdrawals = (withdrawalInstance) => {
+    withdrawalInstance
+      .fetchWithdrawals({
+        reference: [
+          {
+            reference_type: 'OWNER_ID',
+            reference_id: props.user.current,
+          },
+        ],
+        order_by: 'CREATED_AT',
+        order_direction: 'desc',
+        skip: 0,
+        count: 25,
+      })
+      .then(({ data: { withdrawal = [] } = {} } = {}) => {
+        setWithdrawals((state) => ({
+          ...state,
+          loading: false,
+          data: withdrawal,
+        }));
+
+        if (withdrawal.length) return fetchInstallments(withdrawalInstance);
+        else {
+          return setInstallments((state) => ({
+            ...state,
+            loading: false,
+          }));
+        }
+      })
+      .catch(() => {
+        setWithdrawals((state) => ({
+          ...state,
+          loading: false,
+          error: true,
+        }));
+        setInstallments((state) => ({
+          ...state,
+          loading: false,
+          error: true,
+        }));
+      });
+  };
+
   const fetchRepayments = (repayment) => {
     repayment
       .fetchRepayments({
@@ -143,11 +143,11 @@ function SummaryCarousel(props) {
         order_by_type: 'ORDER_BY_TYPE_DESC',
         order_by_field: 'ORDER_BY_FIELD_CREATED_AT',
       })
-      .then(({ data: { repayments = [] } = {} } = {}) => {
+      .then(({ data: { repayments: list = [] } = {} } = {}) => {
         setRepayments((state) => ({
           ...state,
           loading: false,
-          data: repayments,
+          data: list,
         }));
       })
       .catch(() => {
@@ -191,6 +191,7 @@ function SummaryCarousel(props) {
     fetchWithdrawals(withdrawal);
     fetchRepayments(repayment);
     fetchPlanBalances(repayment);
+    // eslint-disable-next-line
   }, [props.withdrawalConfigurationDetails.data.configuration.principal_outstanding_balance]);
 
   useEffect(() => {
@@ -209,18 +210,21 @@ function SummaryCarousel(props) {
     }
   }, []);
 
+  // eslint-disable-next-line
   const carouselActionHandler = (actionId) => {
     switch (actionId) {
       case 'WITHDRAW':
         if (props.location.pathname.includes('repayments')) {
           return props.history.push('/capital/cash-advance/withdrawals');
         }
+        // eslint-disable-next-line
         const withdrawalContainer = document.querySelector('.withdrawals__action-container');
         withdrawalContainer.classList.add('woggle');
         setTimeout(() => withdrawalContainer.classList.remove('woggle'), 1000);
         break;
 
       case 'REPAY':
+        // eslint-disable-next-line
         const repaymentContainer = document.querySelector('.repay-container');
         repaymentContainer.classList.add('woggle');
         setTimeout(() => repaymentContainer.classList.remove('woggle'), 1000);

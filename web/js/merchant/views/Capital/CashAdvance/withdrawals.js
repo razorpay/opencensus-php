@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import moment from 'moment';
 import AmountWithdraw from './AmountWithdraw';
 import WithdrawalListFilter from './CommonListFilter';
 import WithdrawalsTable from './WithdrawalsTable';
@@ -12,7 +13,7 @@ import {
 import Amount from 'common/ui/Amount';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import RepaymentTicketSuccessModal from './RepaymentTicketSuccessModal';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Pager from 'common/ui/Pager';
 import WithdrawalsRoot from './index';
 import { Redirect } from 'react-router-dom';
 
@@ -33,20 +34,16 @@ import { Redirect } from 'react-router-dom';
   },
 )
 class Withdrawals extends Component {
-  state = {
-    isDrawerOpen: false,
-  };
-
   gaEventDispatcher = (eventObject) => {
     const { state: { eventCategory = null } = {} } = this.props.location || {};
-    eventObject['eventCategory'] = eventCategory ? eventCategory : 'Dashboard CA - Withdraw';
+    eventObject.eventCategory = eventCategory ? eventCategory : 'Dashboard CA - Withdraw';
     window.rzpAnalytics(eventObject);
   };
 
   search = (filters) => {
     const payload = {
       skip: 0,
-      count: filters.count ? parseInt(filters.count) : 20,
+      count: filters.count ? parseInt(filters.count, 10) : 25,
       order_by: 'CREATED_AT',
       order_direction: 'desc',
       reference: [
@@ -76,6 +73,7 @@ class Withdrawals extends Component {
     }
 
     this.props.fetchWithdrawals(payload);
+    this.props.setSkip({ skip: 0 });
   };
 
   onSearchAnalytics = () => {
@@ -90,35 +88,30 @@ class Withdrawals extends Component {
     });
   };
 
+  fetchWithdrawals = ({ skip = 0, count = 25 }) => {
+    this.props.fetchWithdrawals({
+      reference: [
+        {
+          reference_id: this.props.user.current,
+          reference_type: 'OWNER_ID',
+        },
+      ],
+      skip,
+      count,
+      order_by: 'CREATED_AT',
+      order_direction: 'desc',
+    });
+  };
+
   componentDidMount() {
     const {
       list: { loading, data },
-      fetchWithdrawals,
-      user: { current },
     } = this.props;
 
     if (!loading && !data) {
-      fetchWithdrawals({
-        reference: [
-          {
-            reference_id: current,
-            reference_type: 'OWNER_ID',
-          },
-        ],
-        skip: 0,
-        count: 20,
-        order_by: 'CREATED_AT',
-        order_direction: 'desc',
-      });
+      this.fetchWithdrawals();
     }
   }
-
-  setActiveWithdrawal = (withdrawal) => {
-    this.setState({
-      isDrawerOpen: true,
-      activeWithdrawalId: withdrawal.id,
-    });
-  };
 
   getRepaidAmount = (withdrawalDetails) => {
     if (!withdrawalDetails.repayments || withdrawalDetails.repayments.length === 0) {
@@ -130,19 +123,19 @@ class Withdrawals extends Component {
     }
 
     const totalAmount = withdrawalDetails.repayments.reduce(
-      (acc, curr) => acc + parseInt(curr.amount),
+      (acc, curr) => acc + parseInt(curr.amount, 10),
       0,
     );
 
     const totalPrincipal = withdrawalDetails.repayments
       .reduce((acc, curr) => [...acc, ...curr.repayment_breakdowns], [])
       .filter((repayment) => repayment.category === 'PRINCIPAL')
-      .reduce((acc, curr) => acc + parseInt(curr.amount), 0);
+      .reduce((acc, curr) => acc + parseInt(curr.amount, 10), 0);
 
     const totalInterest = withdrawalDetails.repayments
       .reduce((acc, curr) => [...acc, ...curr.repayment_breakdowns], [])
       .filter((repayment) => repayment.category === 'INTEREST')
-      .reduce((acc, curr) => acc + parseInt(curr.amount), 0);
+      .reduce((acc, curr) => acc + parseInt(curr.amount, 10), 0);
 
     return {
       total: totalAmount,
@@ -153,7 +146,7 @@ class Withdrawals extends Component {
 
   getDueAmount = (withdrawalDetails, withdrawalConfigurationDetails) => {
     const { configuration } = withdrawalConfigurationDetails;
-    const principal = parseInt(withdrawalDetails.amount);
+    const principal = parseInt(withdrawalDetails.amount, 10);
     const repaidSoFar = this.getRepaidAmount(withdrawalDetails).total;
 
     const lastRepaid =
@@ -166,7 +159,7 @@ class Withdrawals extends Component {
         ? moment(withdrawalDetails.due_date).diff(lastRepaid, 'days')
         : 0;
 
-    const interest = (((diffDays * parseInt(configuration.interest)) / 100) * principal) / 100;
+    const interest = (((diffDays * parseInt(configuration.interest, 10)) / 100) * principal) / 100;
 
     return {
       principal: principal - repaidSoFar,
@@ -199,15 +192,14 @@ class Withdrawals extends Component {
   };
 
   repay = (withdrawal) => {
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
+    const isRepaymentForWithdrawal = withdrawal && withdrawal.id;
+
     this.gaEventDispatcher({
       eventAction: isRepaymentForWithdrawal
         ? 'List View | Repay Specific'
         : 'List View | Repay Dues',
     });
-
-    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
-
-    const isRepaymentForWithdrawal = withdrawal && withdrawal.id;
 
     const amount = isRepaymentForWithdrawal
       ? this.getDueAmount(withdrawal, withdrawalConfigurationDetails).interest +
@@ -220,6 +212,10 @@ class Withdrawals extends Component {
         eventAction: 'Repayment Request | Done',
       });
     });
+  };
+
+  paginate = (params) => {
+    this.props.setSkip(params, () => this.fetchWithdrawals({ skip: this.props.skip }));
   };
 
   render() {
@@ -248,8 +244,10 @@ class Withdrawals extends Component {
                 ) : (
                   <div
                     className={`flex repay-cta-container right-border warning thick ${
-                      parseInt(withdrawalConfigurationDetails.principal_outstanding_balance || 0) >
-                      0
+                      parseInt(
+                        withdrawalConfigurationDetails.principal_outstanding_balance || 0,
+                        10,
+                      ) > 0
                         ? 'block-note'
                         : 'm-r'
                     }`}
@@ -270,9 +268,14 @@ class Withdrawals extends Component {
                 paginate={false}
                 withdrawals={this.props.list.data || []}
                 loading={this.props.list.loading}
-                viewWithdrawal={this.setActiveWithdrawal}
                 repay={this.repay}
                 trackGA={this.gaEventDispatcher}
+              />
+              <Pager
+                count={25}
+                skip={this.props.skip}
+                length={this.props.list.data.length}
+                onClick={this.paginate}
               />
             </div>
           </content>
