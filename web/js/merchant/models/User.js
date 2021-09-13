@@ -1,3 +1,4 @@
+/* eslint-disable */
 import ajax from 'merchant/utils/ajax';
 import QueryString from 'query-string';
 import { filterBy, getURLQueryParams } from 'common/utils/rzp-utils';
@@ -1201,7 +1202,7 @@ export default class User {
   }
 
   get isOnboardingCouponEnabled() {
-    return this.getExpStatus('mtu_coupon_code');
+    return this.getExpStatus('mtu_coupon_code') && !!this.isOrgRZP;
   }
 
   get isIndependentPartnerKYCEnabled() {

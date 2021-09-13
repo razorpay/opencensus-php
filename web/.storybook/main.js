@@ -1,7 +1,7 @@
 process.env.STAGE = 'development';
 const path = require('path');
 const paths = require('@universe/configs/paths');
-const babelConfig = require('.babelrc.json');
+const babelConfig = require('../.babelrc.json');
 const universeWebpackClientConfig = require(paths.universeConfigs.webpackClientConfig)({
   babelConfig: babelConfig,
 });

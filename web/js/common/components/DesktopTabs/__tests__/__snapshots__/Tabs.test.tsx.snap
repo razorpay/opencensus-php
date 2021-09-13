@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Desktop Tabs should change the content of tabs on click 1`] = `<App />`;
+
+exports[`Desktop Tabs should render all five tab and default contact details tab content 1`] = `<App />`;
