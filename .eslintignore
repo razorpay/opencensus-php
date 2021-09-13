@@ -10,3 +10,5 @@ lerna-debug.log*
 node_modules
 
 public/dist
+web/js/merchant/containers/App.js
+web/js/merchantLA/containers/App.js

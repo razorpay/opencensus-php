@@ -4,7 +4,7 @@ import { withRouter } from 'react-router';
 
 import ModalDialog from 'common/ui/ModalDialog';
 import Notifications from 'common/ui/Notifications';
-import { getItem, setItem, removeItem } from 'common/utils/localStorage';
+import LocalStorageService from 'common/utils/localStorage';
 import debounce from 'common/utils/debounce';
 import Sidebar from 'merchantLA/containers/Sidebar';
 import HeaderNav from 'merchantLA/components/HeaderNav';
@@ -15,10 +15,11 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import * as SessionActions from 'merchantLA/reducers/session';
 import { applyTheme } from 'merchant_common/helpers/themes';
-import User from 'merchantLA/models/User';
+import User, { setFeatures } from 'merchantLA/models/User';
 import { resizeWindow } from 'merchantLA/reducers/app';
 import rolesList from 'merchantLA/helpers/permissions/roles-list';
 import LogoutDialog from '../../merchant/components/LogoutDialog';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
 @withRouter
 @connect(
@@ -31,6 +32,8 @@ import LogoutDialog from '../../merchant/components/LogoutDialog';
     ...SessionActions,
     ...NotificationActions,
     resizeWindow,
+    openModal,
+    closeModal,
   },
 )
 export default class App extends Component {
@@ -39,17 +42,17 @@ export default class App extends Component {
   constructor(props) {
     super(props);
 
-    const oldModeToken = 'rzp_mode';
-    const oldModeValue = getItem(oldModeToken);
+    const oldModeToken = 'rzp_mode',
+      oldModeValue = LocalStorageService.getItem(oldModeToken);
 
     // localizing mode for each merchant so that different modes can be maintained
     // across logins/merchants
     if (oldModeValue) {
       Object.keys(window.rzp_user.merchants).forEach((merchantId) => {
-        setItem(`${oldModeToken}--${merchantId}`, oldModeValue);
+        LocalStorageService.setItem(`${oldModeToken}--${merchantId}`, oldModeValue);
       });
 
-      removeItem(oldModeToken);
+      LocalStorageService.removeItem(oldModeToken);
     }
 
     this.modeToken = `${oldModeToken}--${window.rzp_user.current}`;
@@ -65,8 +68,8 @@ export default class App extends Component {
     // Event Based method to lock dashboard screen
     const user = window.rzp_user;
     const self = this;
-    window.addEventListener('NOT_AUTHENTICATED', () => {
-      if (self.logoutPopupShown) {
+    window.addEventListener('NOT_AUTHENTICATED', function (e) {
+      if (this.logoutPopupShown) {
         return;
       }
       self.props.closeModal();
@@ -74,12 +77,13 @@ export default class App extends Component {
         size: 'large',
         component: <LogoutDialog user={user} />,
       });
-      self.logoutPopupShown = true;
+      this.logoutPopupShown = true;
     });
 
-    window.addEventListener('REQUEST_ERROR', (e) => {
+    window.addEventListener('REQUEST_ERROR', function (e) {
       const errorCode = e.detail.response ? e.detail.response.status : 'UNKNOWN STATUS';
-      if (window.ga) {
+
+      window.ga &&
         window.ga(
           'send',
           'event',
@@ -87,19 +91,18 @@ export default class App extends Component {
           e.detail.url,
           e.detail.response,
         );
-      }
     });
 
-    let currentMode = getItem(this.modeToken);
+    let currentMode = LocalStorageService.getItem(this.modeToken);
 
     Promise.all([
       this.fetchUser().then(({ data }) => {
-        const currentUser = data;
-        const role = currentUser.userRole;
+        let user = data;
+        let role = user.userRole;
 
         if (!currentMode) {
-          currentMode = currentUser.isActivated ? 'live' : 'test';
-        } else if (!currentUser.isActivated) {
+          currentMode = user.isActivated ? 'live' : 'test';
+        } else if (!user.isActivated) {
           currentMode = 'test';
         }
 
@@ -109,16 +112,15 @@ export default class App extends Component {
         return data;
       }),
       this.fetchOrg().then(({ data }) => {
-        this.orgCode = data.custom_code;
-        const orgCode = this.orgCode;
+        let orgCode = (this.orgCode = data.custom_code);
         if (orgCode && orgCode !== 'rzp') {
           applyTheme(orgCode);
         }
       }),
-    ]).then(() => {
+    ]).then((response) => {
       this.props.updateSession({ mode: currentMode });
 
-      const $splash = document.getElementById('splash');
+      let $splash = document.getElementById('splash');
       if ($splash) {
         $splash.parentElement.removeChild($splash);
       }
@@ -131,9 +133,9 @@ export default class App extends Component {
     window.addEventListener('resize', this.handleResize);
   }
 
-  componentWillReceiveProps({ user }) {
+  componentWillReceiveProps({ user, history }) {
     if (user.isAuthenticated) {
-      const role = user.userRole;
+      let role = user.userRole;
       this.redirectToRoute(role);
     }
   }
@@ -143,14 +145,14 @@ export default class App extends Component {
   }
 
   fetchUser() {
-    const user = new User(window.rzp_user);
+    let user = new User(window.rzp_user);
 
     if (user) {
       this.props.updateSession({ user });
 
       // if the user is live but chose to browse in test mode,
       // it will be stored in rzp_mode
-      let currentMode = getItem(this.modeToken);
+      let currentMode = LocalStorageService.getItem(this.modeToken);
 
       if (!currentMode) {
         currentMode = user.isActivated ? 'live' : 'test';
@@ -161,7 +163,7 @@ export default class App extends Component {
       // making sure his current mode is remembered so that when he gets
       // activated, he wont be switched to live mode automatically
       // which may lead to mass confusion for merchants
-      setItem(this.modeToken, currentMode);
+      LocalStorageService.setItem(this.modeToken, currentMode);
 
       if (user && user.user) {
         if (window.setRavenContext) {
@@ -195,7 +197,7 @@ export default class App extends Component {
   }
 
   fetchOrg() {
-    const org = window.rzp_org;
+    let org = window.rzp_org;
     if (org) {
       delete window.rzp_org;
       this.props.updateSession({ org });
@@ -206,34 +208,29 @@ export default class App extends Component {
   }
 
   redirectToRoute(role) {
-    /* 
-      Added a default fallback return null but i think don't even need
-      any retun in the first place any stakeholder do check this logic once
-     */
-    const pathname = this.props.history.location.pathname;
+    let pathname = this.props.history.location.pathname;
 
     if (pathname === '/' || pathname === '/dashboard' || pathname === '/dashboard_v2') {
       switch (role) {
         case [rolesList.SELLERAPP]:
-          return this.props.history.replace('/paymentlinks');
+          let url = '/paymentlinks';
+          return this.props.history.replace(url);
         case [rolesList.SUPPORT]:
           return this.props.history.replace('/payments');
+
         case null:
           return this.props.history.replace('/profile');
-        default:
-          return null;
       }
     }
-    return null;
   }
 
-  switchMode = (mode, callback) => {
+  switchMode = (mode) => {
     window.rzpAnalytics({
       eventCategory: 'LA Dashboard - Header',
       eventAction: 'Switch - Mode',
       eventLabel: mode,
     });
-    const user = this.props.user;
+    let user = this.props.user;
     if (mode === 'live' && !user.isActivated) {
       this.props.showNotification({
         type: 'error',
@@ -241,8 +238,7 @@ export default class App extends Component {
           'Your account has not been activated yet. Your parent merchant needs to add your bank details to enable this.',
       });
     } else {
-      if (callback) callback();
-      setItem(this.modeToken, mode);
+      LocalStorageService.setItem(this.modeToken, mode);
       location.reload();
     }
   };
@@ -266,7 +262,7 @@ export default class App extends Component {
   };
 
   render() {
-    const { user, org, mode, modeFormatted } = this.props;
+    let { user, org, mode, modeFormatted } = this.props;
 
     if (this.state.isLoading || !user.isAuthenticated) {
       return null;

@@ -25,10 +25,9 @@ function HighlightTestMode(props) {
   };
 
   const onToggleTestMode = () => {
+    setTestModeToggle(!testModeToggle);
     // Switching to the live Mode
-    onSwitchMode('live', () => {
-      setTestModeToggle(!testModeToggle);
-    });
+    onSwitchMode('live');
   };
 
   if (highlightMode === false || location.pathname === '/activation') return null;
