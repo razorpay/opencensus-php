@@ -198,6 +198,26 @@ const DismissableFileInput = ({
           }}
           onFileChange={(file, progressTracker) => onFileChange(file, progressTracker, name)}
           onCloseClick={() => onFileRemove(name)}
+          fileName={
+            <span
+              onClick={() => {
+                merchantFetch(`documents/${rest.defaultValue[0]}`)
+                  .then((res) => {
+                    if (res?.data.url) {
+                      window.open(res.data.url);
+                    }
+                  })
+                  .catch((err) => {
+                    showNotification({
+                      type: 'error',
+                      message: err?.errors || err,
+                    });
+                  });
+              }}
+            >
+              Click here to view file
+            </span>
+          }
           {...rest}
         />
         {!rest.defaultValue && (
