@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use App;
+use Mail;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
@@ -47,6 +48,7 @@ use RZP\Jobs\OnHoldPayoutsProcess;
 use RZP\Jobs\QueuedPayoutsInitiate;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Payout\Notifications;
+use RZP\Mail\Payout\PendingApprovals;
 use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
@@ -3684,5 +3686,68 @@ class Core extends Base\Core
         );
 
         return (strtolower($variant) === 'on');
+    }
+
+    public function prepareTemplateAndDispatchEmail($approverList)
+    {
+        $count = 0;
+
+        if(empty($approverList) === false)
+        {
+            //User wise grouping the merchant - user information.
+            // We will be sending separate emails to a user for different merchants on whom user has payouts awaiting their approval.
+            $dataGroupedByUserId = $approverList->groupBy(Merchant\MerchantUser\Entity::USER_ID);
+
+            //picking a user one by one
+            foreach ($dataGroupedByUserId as $userData)
+            {
+                //Merchant wise grouping the information for the picked up user.
+                $dataGroupedByMerchantId = $userData->groupBy(Merchant\MerchantUser\Entity::MERCHANT_ID);
+
+                //Picking information specific to the selected merchant-user combination.
+                foreach ($dataGroupedByMerchantId as $merchantId => $data) {
+                    $input = [
+                        'user_id'       => $data->first()['user_id'],
+                        'merchant_id'   => $data->first()['merchant_id'],
+                        'email'         => $data->first()['email'],
+                        'name'          => $data->first()['name'],
+                        'business_name' => $data->first()['business_name'],
+                        'role'          => $data->first()['role'],
+                        'amount_total'  => $data->first()['payout_total'],
+                        'total_count'   => $data->first()['payout_count'],
+                        'data'          => []
+                    ];
+
+                    //Fetching top 5 pending payouts in chronological order for selected merchant-user combination
+                    $payouts = $this->repo->payout->fetchPendingPayoutsToDisplay($merchantId, $input['role']);
+                    $payouts = $payouts->sortByDesc(Entity::CREATED_AT, 1);
+                    $payoutsGroupedByPurpose = $payouts->groupBy(Entity::PURPOSE);
+
+                    $data = $payoutsGroupedByPurpose->toArray();
+
+                    foreach ($payoutsGroupedByPurpose as $purpose => $payout)
+                    {
+                        foreach ($payoutsGroupedByPurpose[$purpose] as $index => $p)
+                        {
+                            $data[$purpose][$index]['contact_name'] = $p['contact_name'];
+                            $data[$purpose][$index]['created_at']   = Carbon::createFromTimestamp($data[$purpose][$index]['created_at'], Timezone::IST)->format('d M\'y . g:i A');
+                            $data[$purpose][$index]['amount']       = $data[$purpose][$index]['amount'];
+                        }
+                    }
+
+                    $input['data'] = $data;
+
+                    $mailable = new PendingApprovals($input);
+
+                    Mail::queue($mailable);
+
+                    $this->trace->info(TraceCode::EMAIL_DISPATCHED_FOR_PENDING_PAYOUTS, [$input]);
+
+                    $count = $count + 1;
+                }
+            }
+        }
+
+        return ['Queued email count' => $count];
     }
 }

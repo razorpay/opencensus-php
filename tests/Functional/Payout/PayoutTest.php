@@ -1088,10 +1088,6 @@ class PayoutTest extends OAuthTestCase
 
         $this->liveSetUp();
 
-        $secondBankingBalance = $this->createDirectBankingBalance();
-
-        // Creating 2 banking accounts. First for the existing bankingBalance and second for the secondBankingBalance
-
         $bankingAccountAttributes = [
             'id'                    =>  'ABCde1234ABCde',
             'account_number'        =>  '2224440041626998',
@@ -1099,51 +1095,15 @@ class PayoutTest extends OAuthTestCase
             'account_type'          =>  'nodal',
         ];
 
-        $bankingAccount = $this->createBankingAccount($bankingAccountAttributes, 'live');
-
-        $secondBankingAccountAttributes = [
-            'id'                    =>  'DEcba4321DEcba',
-            'account_number'        =>  '2224440041626999',
-            'balance_id'            =>  $secondBankingBalance->getId(),
-            'account_type'          =>  'current',
-        ];
-
-        $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes, 'live');
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $p = $this->createPayoutWithWorkflow(
-            [
-                'account_number'        =>  '2224440041626905',
-                'amount'                =>  54321,
-            ],
-            'rzp_live_TheLiveAuthKey');
-
-        $we = $this->fixtures->on('live')->create('workflow_entity_map', ['entity_id' => substr($p['id'], 5), 'workflow_id' => 'FXMwu4HMK7ZT0A', 'entity_type' => 'payout', ])->toArray();
-
-        $ws = $this->fixtures->on('live')->create('workflow_state_map', ['workflow_id' => $we['workflow_id'], 'actor_type_value' => 'owner', 'status' => 'pending' ])->toArray();
-
-        $p = $this->createPayoutWithWorkflow(
-            [
-                'account_number'        =>  '2224440041626906',
-                'amount'                =>  12345,
-            ],
-            'rzp_live_TheLiveAuthKey');
-
-        $we = $this->fixtures->on('live')->create('workflow_entity_map', ['entity_id' => substr($p['id'], 5), 'workflow_id' => 'FXMwu4HMK7ZT0B', 'entity_type' => 'payout', ])->toArray();
-
-        $ws = $this->fixtures->on('live')->create('workflow_state_map', ['workflow_id' => $we['workflow_id'], 'actor_type_value' => 'owner', 'status' => 'pending'])->toArray();
-
-        $p = $this->createPayoutWithWorkflow(
-            [
-                'account_number'        =>  '2224440041626906',
-                'amount'                =>  11111,
-            ],
-            'rzp_live_TheLiveAuthKey');
-
-        $we = $this->fixtures->on('live')->create('workflow_entity_map', ['entity_id' => substr($p['id'], 5), 'workflow_id' => 'FXMwu4HMK7ZT0C', 'entity_type' => 'payout', ])->toArray();
-
-        $ws = $this->fixtures->on('live')->create('workflow_state_map', ['workflow_id' => $we['workflow_id'], 'actor_type_value' => 'owner', 'status' => 'pending'])->toArray();
+        $this->createPayoutWithWorkflowEntities(12345,'2224440041626905',Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0C');
+        $this->createPayoutWithWorkflowEntities(23456,'2224440041626905',Payout\Purpose::CASHBACK,'FXMwu4HMK7ZT0D');
+        $this->createPayoutWithWorkflowEntities(11111,'2224440041626905',Payout\Purpose::SALARY,'FXMwu4HMK7ZT0F');
+        $this->createPayoutWithWorkflowEntities(50000,'2224440041626905',Payout\Purpose::SALARY,'FXMwu4HMK7ZT0G');
+        $this->createPayoutWithWorkflowEntities(65432,'2224440041626905',Payout\Purpose::REFUND,'FXMwu4HMK7ZT0H');
 
         $this->ba->cronAuth('live');
 
@@ -1161,38 +1121,34 @@ class PayoutTest extends OAuthTestCase
 
             $mail->hasTo('merchantuser01@razorpay.com');
 
-            $data = [
-                [
-                    'account_number' => 'XXXXXXXXXXXX6906',
-                    'payout_count' => 2,
-                    'payout_total' => '23456',
-                ],
-                [
-                    'account_number' => 'XXXXXXXXXXXX6905',
-                    'payout_count' => 1,
-                    'payout_total' => '54321',
-                ]
-            ];
+            $this->assertArrayHasKey('refund', $mail->viewData['data']);
+            $this->assertArrayHasKey('cashback', $mail->viewData['data']);
+            $this->assertArrayHasKey('salary', $mail->viewData['data']);
 
-            $account  = array_column($data, 'account_number');
-            array_multisort($account, SORT_DESC, $data);
-
-            $account  = array_column($mail->viewData['data'], 'account_number');
-            array_multisort($account, SORT_DESC, $mail->viewData['data']);
-
-            $this->assertEquals($mail->viewData['data'][0]['account_number'], $data[0]['account_number']);
-            $this->assertEquals($mail->viewData['data'][0]['payout_count'], $data[0]['payout_count']);
-            $this->assertEquals($mail->viewData['data'][0]['payout_total'], $data[0]['payout_total']);
-
-            $this->assertEquals($mail->viewData['data'][1]['account_number'], $data[1]['account_number']);
-            $this->assertEquals($mail->viewData['data'][1]['payout_count'], $data[1]['payout_count']);
-            $this->assertEquals($mail->viewData['data'][1]['payout_total'], $data[1]['payout_total']);
-
-            $this->assertEquals($mail->viewData['amount_total'], ($data[1]['payout_total']+$data[0]['payout_total']));
-            $this->assertEquals($mail->viewData['total_count'], ($data[1]['payout_count']+$data[0]['payout_count']));
+            $this->assertEquals(count($mail->viewData['data']['refund']), 1);
+            $this->assertEquals(count($mail->viewData['data']['cashback']), 2);
+            $this->assertEquals(count($mail->viewData['data']['salary']), 2);
 
             return true;
         });
+
+    }
+
+    public function createPayoutWithWorkflowEntities($amount, $account, $purpose, $workflowId)
+    {
+        $p = $this->createPayoutWithWorkflow(
+            [
+                'account_number'        =>  $account ?? '2224440041626905',
+                'amount'                =>  $amount ?? 1000,
+                'purpose'               =>  $purpose ?? 'refund',
+                'status'                =>  'pending'
+
+            ],
+            'rzp_live_TheLiveAuthKey');
+
+        $we = $this->fixtures->on('live')->create('workflow_entity_map', ['entity_id' => substr($p['id'], 5), 'workflow_id' => $workflowId, 'entity_type' => 'payout', ])->toArray();
+
+        $ws = $this->fixtures->on('live')->create('workflow_state_map', ['workflow_id' => $we['workflow_id'], 'actor_type_value' => 'owner', 'status' => 'created'])->toArray();
 
     }
 

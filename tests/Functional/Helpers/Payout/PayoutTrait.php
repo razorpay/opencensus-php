@@ -340,7 +340,7 @@ trait PayoutTrait
             'account_number'        => $attributes['account_number'] ?? '2224440041626905',
             'amount'                => $attributes['amount'] ?? 10000,
             'currency'              => 'INR',
-            'purpose'               => 'refund',
+            'purpose'               => $attributes['purpose'] ?? 'refund',
             'fund_account_id'       => $attributes['fund_account_id'] ?? 'fa_100000000000fa',
             'mode'                  => 'NEFT',
             'queue_if_low_balance'  => $attributes['queue_if_low_balance'] ?? 0,

@@ -1766,27 +1766,25 @@ class Repository extends Base\Repository
         return $query->count();
     }
 
-    public function fetchPendingPayoutsByApprover()
+    public function fetchMerchantUserDataHavingPendingPayouts()
     {
         /*
-select users.id, users.name, users.email, pa.merchant_id as pmid, ba.account_number, min(pa.updated_at),
-count(pa.id) as payout_count,
-sum(pa.amount) as payout_total
-from payouts pa
-join balance ba on pa.balance_id = ba.id
-join workflow_entity_map we on pa.id = we.entity_id
-join workflow_state_map ws on we.workflow_id = ws.workflow_id
-join merchant_users mu on ws.merchant_id = mu.merchant_id
-join users on mu.user_id = users.id
-where
-ws.actor_type_value = mu.role and
-pa.status = 'pending' and
-we.entity_type = 'payout' and
-mu.product = 'banking'
-group by users.id, pmid, ba.account_number;
-*/
+         select distinct `merchant_users`.`user_id`, `users`.`name`, `users`.`email`, `merchants`.`name` as `business_name`,
+            `payouts`.`merchant_id`, `merchant_users`.`role`, COUNT( payouts.id) AS payout_count, SUM( payouts.amount) AS payout_total
+        from `payouts`
+        inner join `workflow_entity_map` on `payouts`.`id` = `workflow_entity_map`.`entity_id`
+               and `workflow_entity_map`.`entity_type` = ?
+        inner join `workflow_state_map` on `workflow_entity_map`.`workflow_id` = `workflow_state_map`.`workflow_id`
+            and `workflow_state_map`.`status` = ?
+        inner join `merchant_users` on `workflow_state_map`.`merchant_id` = `merchant_users`.`merchant_id`
+        inner join `merchants` on `merchant_users`.`merchant_id` = `merchants`.`id`
+        inner join `users` on `merchant_users`.`user_id` = `users`.`id`
+        where `merchant_users`.`role` = `workflow_state_map`.`actor_type_value`
+            and `merchant_users`.`product` = ?
+            and `payouts`.`status` = ?
+        group by `merchant_id`, `name`, `user_id`, `name`, `email`, `role`, `business_name`
+        */
 
-        $workflowEntityMapEntityType             = $this->repo->workflow_entity_map->dbColumn(WorkflowEntityMap::ENTITY_TYPE);
 
         $workflowStateMapMerchantId               = $this->repo->workflow_state_map->dbColumn(WorkflowStateMap::MERCHANT_ID);
         $workflowStateMapActorTypeValue           = $this->repo->workflow_state_map->dbColumn(WorkflowStateMap::ACTOR_TYPE_VALUE);
@@ -1803,37 +1801,104 @@ group by users.id, pmid, ba.account_number;
         $merchantIdColumn           = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $merchantNameColumn         = $this->repo->merchant->dbColumn(Merchant\Entity::NAME);
 
-        $balanceAccountNumberColumn          = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_NUMBER);
+        $payoutStatus         = $this->dbColumn(Entity::STATUS);
+        $payoutMerchantId     = $this->dbColumn(Entity::MERCHANT_ID);
 
         $userAttrs = [
             $merchantUserUserIdColumn,
             $userNameColumn,
             $userEmailColumn,
             $merchantNameColumn.' AS business_name',
-            $merchantUserMerchantIdColumn,
-            $balanceAccountNumberColumn.' AS bank_account_number',
+            $payoutMerchantId,
+            $merchantUserRoleColumn
         ];
 
         $query = $this->newQuery()
-                ->select($this->getTableName() . '.*')
-                ->select($userAttrs)
-                ->selectRaw('COUNT( payouts.' . Entity::ID . ') AS payout_count,
-                                SUM( payouts.' . Entity::AMOUNT . ') AS payout_total,
-                                MIN( payouts.' . Entity::UPDATED_AT . ') AS first_payout_pending_since')
-                ->with(['balance', 'merchant']);
+            ->select($this->getTableName() . '.*')
+            ->select($userAttrs)
+            ->selectRaw('COUNT( payouts.' . Entity::ID . ') AS payout_count,
+                           SUM( payouts.' . Entity::AMOUNT . ') AS payout_total')
+            ->with(['merchant']);
 
-        $this->joinQueryBalance($query);
+        //Workflow state map has only two status processed/created
+        $this->joinQueryWorkflowServiceEntities($query, [],Status::CREATED);
 
-        $this->joinQueryWorkflowServiceEntities($query, [],Status::PENDING);
-
-        $query->where($workflowEntityMapEntityType,Entity::PAYOUT)
-                ->whereColumn($merchantUserRoleColumn, '=', $workflowStateMapActorTypeValue);
+        $query->whereColumn($merchantUserRoleColumn, '=', $workflowStateMapActorTypeValue);
 
         $query->join(Table::MERCHANT_USER, $workflowStateMapMerchantId, '=', $merchantUserMerchantIdColumn)
-                ->join(Table::MERCHANT, $merchantUserMerchantIdColumn, '=', $merchantIdColumn)
-                ->join(Table::USER, $merchantUserUserIdColumn, '=', $userIdColumn)
-                ->where($merchantUserProductColumn, Merchant\Balance\Type::BANKING)
-                ->groupBy($merchantUserUserIdColumn, $merchantUserMerchantIdColumn, $balanceAccountNumberColumn);
+            ->join(Table::MERCHANT, $merchantUserMerchantIdColumn, '=', $merchantIdColumn)
+            ->join(Table::USER, $merchantUserUserIdColumn, '=', $userIdColumn)
+            ->where($merchantUserProductColumn, Merchant\Balance\Type::BANKING)
+            ->where($payoutStatus, Status::PENDING)
+            ->groupBy(
+                Entity::MERCHANT_ID,
+                Merchant\Entity::NAME,
+                Merchant\MerchantUser\Entity::USER_ID,
+                User\Entity::NAME, User\Entity::EMAIL,
+                Merchant\MerchantUser\Entity::ROLE,
+                'business_name'
+            )
+            ->distinct();
+
+        return $query->get();
+    }
+
+    public function fetchPendingPayoutsToDisplay($merchantId, $userRole)
+    {
+/*
+        select `payouts`.`id`, `contacts`.`name` as `contact_name`, `payouts`.`amount`, `payouts`.`purpose`, `payouts`.`created_at`
+        from `payouts`
+        inner join `workflow_entity_map` on `payouts`.`id` = `workflow_entity_map`.`entity_id`
+            and `workflow_entity_map`.`entity_type` = ?
+        inner join `workflow_state_map` on `workflow_entity_map`.`workflow_id` = `workflow_state_map`.`workflow_id`
+            and `workflow_state_map`.`status` = ?
+            and `workflow_state_map`.`actor_type_value` in (?)
+        inner join `fund_accounts` on `payouts`.`fund_account_id` = `fund_accounts`.`id`
+        inner join `contacts` on `fund_accounts`.`source_id` = `contacts`.`id`
+        where `payouts`.`merchant_id` = ?
+            and `fund_accounts`.`source_type` = ?
+            and `payouts`.`status` = ?
+        order by `payouts`.`created_at` desc
+        limit 5
+*/
+
+        $payoutId               =       $this->dbColumn(Entity::ID);
+        $payoutStatus           =       $this->dbColumn(Entity::STATUS);
+        $payoutMerchantId       =       $this->dbColumn(Entity::MERCHANT_ID);
+        $payoutAmount           =       $this->dbColumn(Entity::AMOUNT);
+        $payoutPurpose          =       $this->dbColumn(Entity::PURPOSE);
+        $payoutCreatedAt        =       $this->dbColumn(Entity::CREATED_AT);
+        $payoutFundAccountId    =       $this->dbColumn(Entity::FUND_ACCOUNT_ID);
+
+        $fundAccountId              =       $this->repo->fund_account->dbColumn(FundAccount\Entity::ID);
+        $fundAccountSourceId        =       $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
+        $fundAccountSourceType      =       $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_TYPE);
+
+        $contactId                  =       $this->repo->contact->dbColumn(Contact\Entity::ID);
+        $contactName                =       $this->repo->contact->dbColumn(Contact\Entity::NAME);
+
+        $selectAttr = [
+            $payoutId,
+            $contactName.' AS contact_name',
+            $payoutAmount,
+            $payoutPurpose,
+            $payoutCreatedAt
+        ];
+
+        $query = $this->newQuery()
+            ->select($this->getTableName() . '.*')
+            ->select($selectAttr)
+            ->where($payoutMerchantId,'=',$merchantId);
+
+        //Workflow state map has only two status processed/created
+        $this->joinQueryWorkflowServiceEntities($query, [$userRole],Status::CREATED);
+
+        $query->join(Table::FUND_ACCOUNT,$payoutFundAccountId,'=',$fundAccountId)
+            ->join(Table::CONTACT,$fundAccountSourceId,'=',$contactId)
+            ->where($fundAccountSourceType,'=','contact')
+            ->where($payoutStatus, Status::PENDING)
+            ->orderBy($payoutCreatedAt,'desc')
+            ->limit(5);
 
         return $query->get();
     }

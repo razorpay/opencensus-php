@@ -10,7 +10,7 @@ class PendingApprovals extends Mailable
 {
     const EMAIL_TEMPLATE = 'emails.payout.pending_approvals';
 
-    const SUBJECT = 'Payouts Awaiting Approval for %.';
+    const SUBJECT = 'Payouts Awaiting Approval for %s.';
 
     protected $input;
 

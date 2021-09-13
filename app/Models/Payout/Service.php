@@ -229,59 +229,9 @@ class Service extends Base\Service
 
     public function sendPendingPayoutApprovalEmails()
     {
+        $approverList = $this->repo->payout->fetchMerchantUserDataHavingPendingPayouts();
 
-        $emailData = $this->repo->payout->fetchPendingPayoutsByApprover();
-
-        $count = 0;
-
-        if(empty($emailData) === false)
-        {
-            $dataGroupedByUserId = $emailData->groupBy(Merchant\MerchantUser\Entity::USER_ID);
-            foreach($dataGroupedByUserId as $userData)
-            {
-                $dataGroupedByMerchantId = $userData->groupBy(Merchant\MerchantUser\Entity::MERCHANT_ID);
-
-                foreach ($dataGroupedByMerchantId as $merchantId => $data)
-                {
-                    $input = [
-                        'user_id'       => $data->first()['user_id'],
-                        'merchant_id'   => $data->first()['merchant_id'],
-                        'email'         => $data->first()['email'],
-                        'name'          => $data->first()['name'],
-                        'business_name' => $data->first()['business_name'],
-                        'data'          => []
-                    ];
-
-                    $totalAmount = 0;
-                    $totalCount = 0;
-
-                    foreach ($data as $d)
-                    {
-                        $payoutData =[
-                            'account_number'                => 'XXXXXXXXXXXX'.substr($d['bank_account_number'],12),
-                            'payout_count'                  => $d['payout_count'],
-                            'payout_total'                  => $d['payout_total'],
-                            'first_payout_pending_since'    => Carbon::createFromTimestamp($d['first_payout_pending_since'], Timezone::IST)->format('d-M-Y'),
-                        ];
-
-                        $totalAmount = $totalAmount + $payoutData['payout_total'];
-                        $totalCount = $totalCount + $payoutData['payout_count'];
-                        $input['data'][] = $payoutData;
-                    }
-
-                    $input['amount_total'] = $totalAmount;
-                    $input['total_count']  = $totalCount;
-                }
-
-                $mailable = new PendingApprovals($input);
-
-                Mail::queue($mailable);
-
-                $count = $count + 1;
-            }
-        }
-
-        return ['Queued email count' => $count];
+        return $this->core->prepareTemplateAndDispatchEmail($approverList);
     }
 
     public function bulkApproveFundAccountPayouts(array $input)

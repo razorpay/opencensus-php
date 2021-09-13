@@ -669,6 +669,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVOICE_RAVEN_REQUEST                                 = 'INVOICE_RAVEN_REQUEST';
     const INVOICE_BULK_NOTIFICATION_SUMMARY                     = 'INVOICE_BULK_NOTIFICATION_SUMMARY';
     const EMAIL_SENDING_FAILED                                  = 'EMAIL_SENDING_FAILED';
+    const EMAIL_DISPATCHED_FOR_PENDING_PAYOUTS                  = 'EMAIL_DISPATCHED_FOR_PENDING_PAYOUTS';
     const INVOICE_SEND_NOTIFICATION                             = 'INVOICE_SEND_NOTIFICATION';
     const INVOICE_EMAIL_ISSUED_REQUEST                          = 'INVOICE_EMAIL_ISSUED_REQUEST';
     const INVOICE_MERCHANT_EMAIL_ISSUED_REQUEST                 = 'INVOICE_MERCHANT_EMAIL_ISSUED_REQUEST';
