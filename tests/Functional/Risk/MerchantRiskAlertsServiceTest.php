@@ -119,7 +119,7 @@ class MerchantRiskAlertsServiceTest extends TestCase
                     'cf_subcategory'  => 'Fraud alerts',
                     'cf_product'      => 'Payment Gateway',
                 ],
-                'subject'         => 'Razorpay Account Review: test merchant | 10000000000000 | Risk Clarification'
+                'subject'         => 'Razorpay Account Review: test merchant | 10000000000000 | Risk Clarification',
             ],
             [
                 'id' => '1234',
