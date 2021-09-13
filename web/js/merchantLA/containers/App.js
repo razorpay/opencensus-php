@@ -224,7 +224,7 @@ export default class App extends Component {
     }
   }
 
-  switchMode = (mode) => {
+  switchMode = (mode, callback = () => {}) => {
     window.rzpAnalytics({
       eventCategory: 'LA Dashboard - Header',
       eventAction: 'Switch - Mode',
@@ -238,6 +238,7 @@ export default class App extends Component {
           'Your account has not been activated yet. Your parent merchant needs to add your bank details to enable this.',
       });
     } else {
+      callback();
       LocalStorageService.setItem(this.modeToken, mode);
       location.reload();
     }

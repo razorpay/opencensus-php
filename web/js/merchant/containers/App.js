@@ -603,7 +603,7 @@ class App extends Component {
     }
   }
 
-  switchMode = (mode) => {
+  switchMode = (mode, callback = () => {}) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Header',
       eventAction: 'Switch - Mode',
@@ -628,6 +628,7 @@ class App extends Component {
         ),
       });
     } else {
+      callback();
       LocalStorageService.setItem(this.modeToken, mode);
       location.reload();
 
