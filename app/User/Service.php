@@ -1030,6 +1030,16 @@ class Service extends Base\Service
             {
                 $data['pre_signup_complete'] = true;
             }
+
+            if($data['pre_signup_complete'] === false)
+            {
+                $skipPreSignup = $merchantService->getTreatment('remove_presignup_functionality');
+
+                if($skipPreSignup['result'] === 'on')
+                {
+                    $data['pre_signup_complete'] = true;
+                }
+            }
         }
 
         // This is to stop leads assigning to sales poc on salesforce
