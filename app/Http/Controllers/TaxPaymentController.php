@@ -236,4 +236,8 @@ class TaxPaymentController extends Controller
         return $this->service->reminderCallback($mode, $type, $entityId);
     }
 
+    public function fetchPendingGstPayments()
+    {
+        return $this->service->fetchPendingGstPayments($this->ba->getMerchant(), $this->ba->getUser());
+    }
 }

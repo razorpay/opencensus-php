@@ -52,6 +52,7 @@ class Service
     const GET_INVALID_TAN_STATUS    = 'GetInvalidTanStatus';
     const GET_DOWNTIME_SCHEDULE     = 'GetDowntimeSchedule';
     const ICICI_RETRY_CALLBACK      = 'IciciRetryCallback';
+    const FETCH_PENDING_GST         = 'FetchPendingGst';
     const UFH_BULK_DOWNLOAD         = 'InitiateBulkChallanDownload';
 
     // general constants
@@ -487,6 +488,22 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ICICI_RETRY_CALLBACK);
 
         return $this->makeRequest(null, $url, $input,[],'POST', $mode);
+    }
+
+    public function fetchPendingGstPayments(MerchantEntity $merchant, UserEntity $user = null)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::FETCH_PENDING_GST);
+
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+
+        $data = [
+            'user_id' => $user->getPublicId(),
+        ];
+
+        return $this->makeRequest($merchant, $url, $data);
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,

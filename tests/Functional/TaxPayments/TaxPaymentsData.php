@@ -849,4 +849,14 @@ return [
             'content' => []
         ]
     ],
+
+    'testFetchPendingGstCallsServiceMethod' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/tax-payments/gst/fetch',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

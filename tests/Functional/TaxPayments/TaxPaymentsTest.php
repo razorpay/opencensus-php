@@ -774,4 +774,19 @@ class TaxPaymentsTest extends TestCase
 
         $tpMock->shouldHaveReceived('reminderCallback');
     }
+
+    public function testFetchPendingGstCallsServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('fetchPendingGstPayments')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('fetchPendingGstPayments');
+    }
 }

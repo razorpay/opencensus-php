@@ -1425,6 +1425,7 @@ class Route
         'tax_payments_update_challan_file_id'      => ['post',    'tax-payments/{id}/edit',                          'TaxPaymentController@updateChallanFileId'                          ],
         'tax_payments_edit'                        => ['patch',   'tax-payments/{id}',                               'TaxPaymentController@edit'                                         ],
         'tax_payments_cancel'                      => ['post',    'tax-payments/{id}/cancel',                        'TaxPaymentController@cancel'                                       ],
+        'tax_payments_fetch_pending_gst'           => ['get',     'tax-payments/gst/fetch',                          'TaxPaymentController@fetchPendingGstPayments'                      ],
         'tax_payments_challan_download'            => ['post',    'tax-payments/challans/download',                  'TaxPaymentController@bulkChallanDownload'                          ],
 
 
@@ -4319,6 +4320,7 @@ class Route
         'tax_payments_monthly_summary',
         'tax_payments_get_by_id',
         'tax_payments_create',
+        'tax_payments_fetch_pending_gst',
         'tax_payments_invalid_tan_status',
         'tax_payments_downtime_schedule',
         'payouts_scheduled_time_slots',
@@ -6600,6 +6602,7 @@ class Route
         'tax_payments_create'                          => Permission::CREATE_TAX_PAYMENTS,
         'tax_payments_invalid_tan_status'              => Permission::CREATE_TAX_PAYMENTS,
         'tax_payments_downtime_schedule'               => Permission::CREATE_TAX_PAYMENTS,
+        'tax_payments_fetch_pending_gst'               => Permission::CREATE_TAX_PAYMENTS,
         'salesforce_event'                             => '*',
         'salesforce_opportunity_details'               => '*',
 
@@ -7733,6 +7736,7 @@ class Route
             'tax_payments_invalid_tan_status' ,
             'tax_payments_downtime_schedule',
             'tax_update',
+            'tax_payments_fetch_pending_gst',
             'terminal_disable',
             'terminal_enable',
             'terminal_fetch',
@@ -9373,6 +9377,7 @@ class Route
             'tax_payments_update_challan_file_id',
             'tax_payments_invalid_tan_status',
             'tax_payments_downtime_schedule',
+            'tax_payments_fetch_pending_gst',
             'tax_update',
             'templating_create_namespace',
             'templating_create_template_config',
@@ -11032,6 +11037,7 @@ class Route
         'tax_payments_challan_download',
         'tax_payments_invalid_tan_status',
         'tax_payments_downtime_schedule',
+        'tax_payments_fetch_pending_gst',
 
         // NPS routes
         'survey_create',

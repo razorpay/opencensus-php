@@ -151,6 +151,7 @@ class Tracing
             'tax_payments_update_challan_file_id',
             'tax_payments_edit',
             'tax_payments_cancel',
+            'tax_payments_fetch_pending_gst',
 
             // direct tax payments API routes
             'direct_tax_payments_tds_category_public',
