@@ -1467,6 +1467,26 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals(7500, $item->getAmount());
     }
 
+    /**
+     * @group pp_line_item_amount
+     */
+    public function testCreatePaymentPageOrderWithFloatAmountShouldThrowValidationError()
+    {
+        $this->createPaymentLink();
+        $this->createPaymentPageItem();
+        $this->startTest();
+    }
+
+    /**
+     * @group pp_line_item_amount
+     */
+    public function testCreatePaymentPageOrderWithOutOfScopeIntegerAmountShouldThrowValidationError()
+    {
+        $this->createPaymentLink();
+        $this->createPaymentPageItem();
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity

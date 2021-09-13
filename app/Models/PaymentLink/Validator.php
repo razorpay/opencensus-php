@@ -123,7 +123,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $minAmountCheckRules = [
-        Entity::AMOUNT => 'required|integer|min_amount'
+        Entity::AMOUNT => 'required|mysql_unsigned_int|min_amount'
     ];
 
     protected static $createSubscriptionRules = [
@@ -172,7 +172,10 @@ class Validator extends Base\Validator
         Invoice\Entity::RECEIPT => 'sometimes|string|min:1|max:40',
     ];
 
-
+    /**
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\BadRequestException
+     */
     public function validateLineItems(string $attribute, $value)
     {
         if(is_array($value) === false)
@@ -219,6 +222,16 @@ class Validator extends Base\Validator
 
         foreach ($value as $lineItem)
         {
+            if (filter_var($lineItem[Entity::AMOUNT], FILTER_VALIDATE_INT) === false)
+            {
+                throw new BadRequestValidationFailureException(
+                    trans("validation.mysql_unsigned_int", ['attribute' => Entity::AMOUNT]),
+                    $attribute. "." . Entity::AMOUNT,
+                    [
+                        $attribute. "." . Entity::AMOUNT => $lineItem[Entity::AMOUNT]
+                    ]);
+            }
+
             $this->validateInput('create_order_line_item', $lineItem);
 
             if (isset($PPItemId[$lineItem[Entity::PAYMENT_PAGE_ITEM_ID]]) === true)

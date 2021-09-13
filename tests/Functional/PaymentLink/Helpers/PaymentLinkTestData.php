@@ -2372,4 +2372,58 @@ return [
             'content'   => []
         ]
     ],
+    'testCreatePaymentPageOrderWithFloatAmountShouldThrowValidationError' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_10000000000ppi',
+                        'amount'               => 100.99,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => trans("validation.mysql_unsigned_int", ['attribute' => 'amount']),
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testCreatePaymentPageOrderWithOutOfScopeIntegerAmountShouldThrowValidationError' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_10000000000ppi',
+                        'amount'               => 1000000000000000000000000000,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => trans("validation.mysql_unsigned_int", ['attribute' => 'amount']),
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
