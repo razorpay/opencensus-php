@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
@@ -75,6 +76,10 @@ const ERROR = {
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
 export default class PaymentPagesWysiwyg extends React.PureComponent {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   isIntentDuplicate = false;
   supportPhoneRef = React.createRef();
   supportEmailRef = React.createRef();

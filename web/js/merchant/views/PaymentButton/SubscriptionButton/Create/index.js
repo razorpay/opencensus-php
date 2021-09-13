@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
@@ -59,6 +60,10 @@ const docTitles = {
 )
 @RTracking(() => window.rzpQ.component('SubscriptionButtonCreate'))
 export default class SubscriptionButtonCreate extends React.Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   isIntentDuplicate = false;
 
   state = {
