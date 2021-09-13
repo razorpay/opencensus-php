@@ -48,6 +48,10 @@ class Validator extends Base\Validator
         Constants::FEATURES     => "required|array"
     ];
 
+    protected static $merchantsWithFeaturesRules = [
+        Constants::FEATURES     => "required|array"
+    ];
+
     protected static $onboardingSubmissionsFetchRules = [
         Fetch::TO           => 'sometimes|epoch',
         Fetch::FROM         => 'sometimes|epoch',

@@ -606,4 +606,20 @@ class Service extends Base\Service
             $this->repo->merchant_detail->saveOrFail($merchantDetail);
         }
     }
+
+    /**
+     *
+     * Gets merchant IDs having the given features
+     *
+     * @param array $input
+     * @return array
+     */
+    public function getMerchantIdsHavingFeatures(array $input)
+    {
+        (new Validator)->validateInput('merchants_with_features', $input);
+
+        $featureNames = $input[Constants::FEATURES];
+
+        return $this->repo->feature->findMerchantIdsHavingFeatures($featureNames);
+    }
 }

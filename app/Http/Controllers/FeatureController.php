@@ -241,4 +241,13 @@ class FeatureController extends Controller
     {
         $this->service()->handleSuggestedOptIn();
     }
+
+    public function getMerchantIdsHavingFeatures()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getMerchantIdsHavingFeatures($input);
+
+        return ApiResponse::json($response);
+    }
 }

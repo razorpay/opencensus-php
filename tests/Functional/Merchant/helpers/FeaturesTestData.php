@@ -1638,4 +1638,21 @@ return [
             'description'         => 'Cannot Enable Trusted Badge feature, since merchant has not been activated for 4 months',
         ],
     ],
+
+    'testMerchantsWithFeatures' => [
+        'request'   => [
+            'content' => [
+                'features'       => ['raas']
+            ],
+            'url'     => '/internal/feature/merchants',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content' => [
+                '10000000000000'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
 ];

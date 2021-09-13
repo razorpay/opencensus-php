@@ -2209,4 +2209,12 @@ class FeaturesTest extends OAuthTestCase
 
         $method->invoke($merchantActivateMock, $featureParams);
     }
+
+    public function testMerchantsWithFeatures()
+    {
+        $this->fixtures->merchant->addFeatures(['raas']);
+        $this->ba->appAuth();
+        $this->startTest();
+    }
+
 }

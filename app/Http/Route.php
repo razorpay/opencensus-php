@@ -2014,6 +2014,7 @@ class Route
         'feature_bulk_remove'                      => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'feature_delete_entity'                    => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
         'feature_delete_entity_internal'           => ['delete',   'internal/{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                    ],
+        'feature_get_merchants_internal'           => ['post',     'internal/feature/merchants',                     'FeatureController@getMerchantIdsHavingFeatures'                    ],
 
         //Recon summary
         'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                            'AdminController@getDailyReconciliationStatusSummary'               ],
@@ -3743,8 +3744,10 @@ class Route
         // Refresh downtime cache
         'refresh_payments_ongoing_downtimes_cron',
         'refresh_payments_resolved_downtimes_cron',
-        'refresh_payments_scheduled_downtimes_cron'
-    ];
+        'refresh_payments_scheduled_downtimes_cron',
+
+        'feature_get_merchants_internal'
+];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
     // User context is taken from the provided header.
@@ -10284,7 +10287,8 @@ class Route
             'internal_merchant_checkout_preferences',
             'internal_merchant_auto_disabled_methods',
             'terminal_edit_internal',
-            'internal_send_merchant_email'
+            'internal_send_merchant_email',
+            'feature_get_merchants_internal'
         ],
         'spinnaker' => [
             'throttle_create_config_spinnaker',
