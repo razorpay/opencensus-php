@@ -114,6 +114,7 @@ class UserRolePermissionsMap
 
                  Permission::PAY_TAX_PAYMENTS,
                  Permission::CREATE_TAX_PAYMENTS,
+                 Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::UPDATE_TAX_PAYMENT_SETTINGS,
                  Permission::VIEW_TAX_PAYMENTS,
                  Permission::MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES,
@@ -222,6 +223,7 @@ class UserRolePermissionsMap
 
                  Permission::PAY_TAX_PAYMENTS,
                  Permission::CREATE_TAX_PAYMENTS,
+                 Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::UPDATE_TAX_PAYMENT_SETTINGS,
                  Permission::VIEW_TAX_PAYMENTS,
                  Permission::MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES,
@@ -305,6 +307,7 @@ class UserRolePermissionsMap
 
                  Permission::PAY_TAX_PAYMENTS,
                  Permission::CREATE_TAX_PAYMENTS,
+                 Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::VIEW_TAX_PAYMENTS,
 
                  Permission::SYNC_ACCOUNTING_INTEGRATION,
@@ -354,7 +357,7 @@ class UserRolePermissionsMap
 
                  Permission::VIEW_TAX_PAYMENTS,
                  Permission::CREATE_TAX_PAYMENTS,
-
+                 Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::SYNC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
@@ -391,6 +394,7 @@ class UserRolePermissionsMap
                  Permission::SUMMARY_PAYOUT_LINKS,
                  Permission::VIEW_VENDOR_PAYMENTS,
                  Permission::VIEW_TAX_PAYMENTS,
+                 Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
              ],

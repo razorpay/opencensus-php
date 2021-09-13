@@ -684,6 +684,17 @@ return [
             'content' => []
         ]
     ],
+    'testbulkChallanDownload'                                                => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/tax-payments/challans/download',
+        ],
+        'response' => [
+            'content' => [
+                'zip_file_id' => "file_HjPPzIGMCbahkO"
+            ]
+        ]
+    ],
     'testTaxPaymentMarkAsPaidNegative'                                    => [
         'request'   => [
             'method'  => 'POST',
@@ -751,7 +762,9 @@ return [
             ],
         ],
         'response' => [
-            'content' => []
+            'content' => [
+
+            ]
         ]
     ],
     'testTaxPaymentCreateTPCallsServiceMethod'                         => [

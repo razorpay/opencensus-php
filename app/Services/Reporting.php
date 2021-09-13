@@ -88,6 +88,9 @@ class Reporting implements ExternalService
     //RazorX Experiments
     const ENABLE_REPORT_REQUEST_VALIDATION = "enable_report_request_validation";
 
+    //Allowed Report-names to skip email validation
+    const ALLOWED_REPORT_NAMES_TO_SKIP_VALIDATION = ["RX Payouts", "RX Account Statement", "RX vendor payments"];
+
     /**
      * @var array
      */
@@ -353,7 +356,13 @@ class Reporting implements ExternalService
             $input = $this->buildCaTransactionRawQueryParams($input);
         }
 
-        $this->validateInput($input);
+        $configByIdpath = self::CONFIG_PATH . '/' . $input['config_id'];
+
+        $config =  $this->createAndSendRequest(Requests::GET, $configByIdpath);
+
+        if (!in_array(array_get($config,'name',''), self::ALLOWED_REPORT_NAMES_TO_SKIP_VALIDATION)) {
+            $this->validateInput($input);
+        }
 
         return $this->createAndSendRequest(Requests::POST, $path, $input);
     }

@@ -140,7 +140,7 @@ class Route
         'batch_create'                             => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
         'batch_create_admin'                       => ['post',     'admin/batches',                                  'AdminController@createAdminBatch'                                  ],
         'update_admin_through_batch'               => ['post',     'admin/update_admin_through_batch',               'AdminController@updateAdminThroughBatch'                           ],
-        'validate_file_name'                       => ['get',      'batches/validateFileName',                       'BatchController@validateFileName'                                         ],
+        'validate_file_name'                       => ['get',      'batches/validateFileName',                       'BatchController@validateFileName'                                  ],
         'batch_validate_file'                      => ['post',     'batches/validate',                               'BatchController@validateFile'                                      ],
         'batch_validate_file_admin'                => ['post',     'admin/batches/validate',                         'AdminController@validateFile'                                      ],
         'batch_send_mail'                          => ['post',     'batch/sendmail',                                 'BatchController@sendMail'                                          ],
@@ -1425,6 +1425,7 @@ class Route
         'tax_payments_update_challan_file_id'      => ['post',    'tax-payments/{id}/edit',                          'TaxPaymentController@updateChallanFileId'                          ],
         'tax_payments_edit'                        => ['patch',   'tax-payments/{id}',                               'TaxPaymentController@edit'                                         ],
         'tax_payments_cancel'                      => ['post',    'tax-payments/{id}/cancel',                        'TaxPaymentController@cancel'                                       ],
+        'tax_payments_challan_download'            => ['post',    'tax-payments/challans/download',                  'TaxPaymentController@bulkChallanDownload'                          ],
 
 
         // Direct Tax Payment
@@ -4308,6 +4309,7 @@ class Route
         'tax_payments_challan_upload',
         'tax_payments_edit',
         'tax_payments_cancel',
+        'tax_payments_challan_download',
         'tax_payments_update_challan_file_id',
         'merchant_credits_balance_fetch',
         'tax_payments_list',
@@ -6591,6 +6593,7 @@ class Route
         'tax_payments_update_challan_file_id'          => Permission::PAY_TAX_PAYMENTS,
         'tax_payments_edit'                            => Permission::CREATE_TAX_PAYMENTS,
         'tax_payments_cancel'                          => Permission::CREATE_TAX_PAYMENTS,
+        'tax_payments_challan_download'                => Permission::GENERATE_TDS_CHALLAN_ZIP,
         'tax_payments_create'                          => Permission::CREATE_TAX_PAYMENTS,
         'tax_payments_invalid_tan_status'              => Permission::CREATE_TAX_PAYMENTS,
         'tax_payments_downtime_schedule'               => Permission::CREATE_TAX_PAYMENTS,
@@ -7713,6 +7716,7 @@ class Route
             'tax_payments_add_or_update_settings',
             'tax_payments_bulk_pay',
             'tax_payments_cancel',
+            'tax_payments_challan_download',
             'tax_payments_challan_upload',
             'tax_payments_create',
             'tax_payments_edit',
@@ -9353,6 +9357,7 @@ class Route
             'tax_payments_admin_auth_api',
             'tax_payments_bulk_pay',
             'tax_payments_cancel',
+            'tax_payments_challan_download',
             'tax_payments_challan_upload',
             'tax_payments_create',
             'tax_payments_edit',
@@ -11020,6 +11025,7 @@ class Route
         'tax_payments_update_challan_file_id',
         'tax_payments_edit',
         'tax_payments_cancel',
+        'tax_payments_challan_download',
         'tax_payments_invalid_tan_status',
         'tax_payments_downtime_schedule',
 

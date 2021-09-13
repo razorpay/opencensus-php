@@ -577,6 +577,21 @@ class TaxPaymentsTest extends TestCase
         $tpMock->shouldHaveReceived('updateChallanFileId');
     }
 
+    public function testbulkChallanDownload()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('bulkChallanDownload')->andReturn(['zip_file_id'=> "file_HjPPzIGMCbahkO"]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('bulkChallanDownload');
+    }
+
     public function testTaxPaymentMarkAsPaidNegative()
     {
         $this->ba->proxyAuth();

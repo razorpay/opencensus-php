@@ -52,6 +52,7 @@ class Service
     const GET_INVALID_TAN_STATUS    = 'GetInvalidTanStatus';
     const GET_DOWNTIME_SCHEDULE     = 'GetDowntimeSchedule';
     const ICICI_RETRY_CALLBACK      = 'IciciRetryCallback';
+    const UFH_BULK_DOWNLOAD         = 'InitiateBulkChallanDownload';
 
     // general constants
     const DATA             = 'data';
@@ -109,6 +110,13 @@ class Service
         $input['tax_payment_id'] = $taxPaymentId;
 
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CANCEL_MANUAL_TAX_PAYMENT);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function bulkChallanDownload(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UFH_BULK_DOWNLOAD);
 
         return $this->makeRequest($merchant, $url, $input);
     }

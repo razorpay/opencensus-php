@@ -154,7 +154,11 @@ class TaxPaymentController extends Controller
         return $this->service->cancel($this->ba->getMerchant(), $taxPaymentId, $this->input, $this->ba->getUser());
     }
 
-
+    public function bulkChallanDownload()
+    {
+        return $this->service->bulkChallanDownload($this->ba->getMerchant(), $this->input);
+    }
+    
     public function listTaxPayments()
     {
         return $this->service->listTaxPayments($this->ba->getMerchant(), $this->input);
