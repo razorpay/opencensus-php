@@ -979,7 +979,16 @@ class Selector extends Base\Core
             ($payment[Entity::BANK] === IFSC::HDFC) and
             ($card[Card\Entity::TYPE] === Card\Type::DEBIT))
         {
-            return false;
+            $variantFlag = $this->app->razorx->getTreatment($paymentId, "ROUTER_HDFC_DEBIT_EMI",  $this->mode);
+
+            if ($variantFlag === 'on_hdfc_debit_emi')
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         // Route payments to router in Prod and stage
