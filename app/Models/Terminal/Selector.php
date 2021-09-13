@@ -1122,11 +1122,22 @@ class Selector extends Base\Core
     {
         $merchant = $this->input['merchant'];
 
+
         $terminalUpdated = (new Terminal\Service())->checkAndAddMswipeTerminals($terminals, $merchant);
 
         if ($terminalUpdated === true) {
 
-            $terminals = $this->getTerminals();
+            // This flow should not trigger ideally, adding log here to verify, will remove the code once confirmed
+            $this->trace->info(
+                TraceCode::PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT,
+                [
+                    'merchant'           => $merchant->getId(),
+                ]);
+
+            $terminals = $this->repo->useSlave(function ()
+            {
+                return $this->getTerminals();
+            });
         }
     }
 

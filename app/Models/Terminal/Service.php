@@ -1299,7 +1299,10 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $terminals = (new Terminal\Repository())->getTerminalsForMerchantAndSharedMerchant($merchant);
+        $terminals = $this->repo->useSlave(function () use ($merchant)
+        {
+            return (new Terminal\Repository())->getTerminalsForMerchantAndSharedMerchant($merchant);
+        });
 
         $this->checkAndAddMswipeTerminals($terminals, $merchant);
     }
