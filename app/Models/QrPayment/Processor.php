@@ -12,6 +12,7 @@ use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BharatQr\GatewayResponseParams;
 use RZP\Models\QrCode\NonVirtualAccountQrCode;
+use RZP\Models\QrPayment\UnexpectedPaymentReason;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Processor extends Base\Core
@@ -60,7 +61,29 @@ class Processor extends Base\Core
         $this->merchant = $this->qrCode->merchant;
 
         // 4. process payment
-        $qrPayment = $this->processPayment($qrPayment);
+        try
+        {
+            $qrPayment = $this->processPayment($qrPayment);
+        }
+        catch(\Exception $ex)
+        {
+            if (UnexpectedPaymentReason::shouldCreateUnexpectedPayment($ex->getMessage()) === true)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    TraceCode::QR_CODE_FAILED_PAYMENT_REROUTED_TO_SHARED
+                );
+
+                $qrPayment->setExpected(false);
+
+                $qrPayment->setUnexpectedReason($ex->getMessage());
+
+                return $this->createUnexpectedPayment($qrPayment);
+            }
+
+            throw $ex;
+        }
 
         $this->trace->info(TraceCode::QR_CODE_V2_PAYMENT_SUCCESSFUL, $qrPayment->toArrayTrace());
 
@@ -134,9 +157,22 @@ class Processor extends Base\Core
         {
             $this->trace->traceException($e, Trace::INFO, TraceCode::QR_CODE_PAYMENT_FAILED,
                                          ['input' => $input]);
+            throw $e;
         }
     }
 
+    protected function createUnexpectedPayment(Entity $qrPayment)
+    {
+        $this->qrCode = (new NonVirtualAccountQrCode\Core)->createOrFetchSharedQrCode();
+
+        $qrPayment->qrCode()->associate($this->qrCode);
+
+        $this->merchant = $this->qrCode->merchant;
+
+        $this->paymentProcessor = new Payment\Processor\Processor($this->merchant);
+
+        return $this->processPayment($qrPayment);
+    }
 
     protected function getTerminal()
     {

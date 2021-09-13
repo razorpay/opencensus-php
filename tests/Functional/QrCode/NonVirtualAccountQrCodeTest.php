@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Exception\BadRequestException;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\QrPayment\UnexpectedPaymentReason;
@@ -40,6 +41,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
 
         $this->fixtures->merchant->createAccount('LiveAccountMer');
+
         $this->fixtures->on('live')->merchant->edit('LiveAccountMer', ['activated' => true, 'live' => true]);
         $this->fixtures->on('live')->merchant->addFeatures(['qr_codes', 'bharat_qr'], 'LiveAccountMer');
         $this->fixtures->on('live')->merchant->enableMethod('LiveAccountMer', 'upi');
@@ -322,6 +324,43 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->assertEquals(0, $qrPayment['expected']);
         $this->assertEquals(UnexpectedPaymentReason::QR_PAYMENT_AMOUNT_MISMATCH, $qrPayment['unexpected_reason']);
+
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+    }
+
+    public function testProcessIciciQrPaymentWithCustomerFeeBearerModel()
+    {
+        $this->fixtures->merchant->edit('LiveAccountMer',['fee_bearer' => FeeBearer::CUSTOMER]);
+
+        $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer');
+
+        $qrCodeId = $qrCode['id'];
+        $this->fixtures->stripSign($qrCodeId);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getDbLastEntityToArray('qr_payment','live');
+        $payment = $this->getDbLastEntityToArray('payment','live');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals('FallbackQrCode', $qrPayment['qr_code_id']);
+        $this->assertEquals('10000000000000', $payment['merchant_id']);
+
+        $this->assertEquals(0, $qrPayment['expected']);
+        $this->assertEquals(UnexpectedPaymentReason::QR_CODE_PAYMENT_FAILED_FEE_OR_TAX_TAMPERED, $qrPayment['unexpected_reason']);
 
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);
