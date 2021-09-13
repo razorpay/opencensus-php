@@ -1,13 +1,12 @@
 function _track() {
-  let track;
-  let buttonId;
+  let track, buttonId;
 
   function send(event, options) {
     track(
       window.rzpQ.paymentButtons().interaction(`button.${event}`, {
         options,
         button_id: buttonId,
-      })
+      }),
     );
   }
 
@@ -28,12 +27,12 @@ function _track() {
       send('details.options.open.duplicate');
     },
 
-    trackOptionsOpenSettings() {
-      send('details.options.open.settings');
+    trackOptionsOpenSettings(source) {
+      send('details.options.open.settings', { via: source });
     },
 
-    trackSettingsCustomMessage(message) {
-      send('details.options.settings.custom_message', { message });
+    trackSettingsCustomMessage(via, message) {
+      send('details.options.settings.custom_message', { message, via });
     },
 
     trackSettingsReceiptConfigure() {
@@ -68,6 +67,41 @@ function _track() {
       send('details.review.open_docs');
     },
 
+    trackTestButton() {
+      send('details.review.test_button');
+    },
+
+    trackPaymentReceiptsOpen() {
+      send('details.payment_receipts.open');
+    },
+
+    trackReceiptsType(via, type) {
+      send(`details.payment_receipts.type.${type}`, { via });
+    },
+
+    trackInputFieldCheckbox(via, status) {
+      send(`details.payment_receipts.customer_input_field.${status ? 'checked' : 'unchecked'}`, {
+        via,
+      });
+    },
+
+    track80gDetailsCheckbox(via, status) {
+      send(`details.payment_receipts.80g_details.${status ? 'checked' : 'unchecked'}`, { via });
+    },
+
+    trackCustomMessageCheckbox(via, status) {
+      send(`details.button_settings.custom_message.${status ? 'checked' : 'unchecked'}`, { via });
+    },
+
+    trackRedirectURLCheckbox(via, status) {
+      send(`details.button_settings.redirect_url.${status ? 'checked' : 'unchecked'}`, { via });
+    },
+
+    trackPluginClick(plugin) {
+      send(`details.plugins.${plugin}`);
+    },
+
+    // eslint-disable-next-line no-shadow
     init: ({ track: _track, button_id }) => {
       track = _track;
       buttonId = button_id;

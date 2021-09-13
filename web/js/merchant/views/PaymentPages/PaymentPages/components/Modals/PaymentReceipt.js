@@ -1,26 +1,22 @@
+import React from 'react';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import track from '../../Wysiwyg/track';
+import trackPB from '../../../../PaymentButton/PaymentButton/Details/track';
 
 import Form from 'common/new-ui/Form';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Button from 'common/new-ui/Button';
 import Input, { Label, Description } from 'common/new-ui/Input';
 import { PowerSelect } from 'react-power-select';
 import { openModal } from 'merchant_common/reducers/modals';
-import { classList } from 'common/utils/rzp-utils';
 import { DocLink } from 'merchant/components/DocsLink';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import Merchant80gDetails from './Merchant80gDetails';
-import {
-  get80gMerchantDetails,
-  upload80gSignatoryImage,
-  set80gMerchantDetails,
-} from 'merchant/reducers/profile';
+import { get80gMerchantDetails, set80gMerchantDetails } from 'merchant/reducers/profile';
 import Spinner from 'common/ui/Spinner';
-import Tooltip from 'common/ui/Tooltip';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import { Popover, PopoverBody } from 'common/ui/Popover';
 
 @connect(null, { openModal, showNotification })
 @RTracking(() => window.rzpQ.component('PaymentReceipt'))
@@ -75,14 +71,14 @@ export default class PaymentReceipt extends React.Component {
       .then((res) => {
         if (res && res.data) {
           // disable 80g checkbox if text_80g_12a is empty string
-          this.setState({
+          this.setState((prevState) => ({
             isLoading: false,
             '80_details': {
               text_80g_12a: res.data.text_80g_12a,
               image_url_80g: res.data.image_url_80g,
             },
-            is80GDetailsChecked: this.state.is80GDetailsChecked && res.data.text_80g_12a,
-          });
+            is80GDetailsChecked: prevState.is80GDetailsChecked && res.data.text_80g_12a,
+          }));
         } else {
           throw new Error();
         }
@@ -93,12 +89,13 @@ export default class PaymentReceipt extends React.Component {
         if (Array.isArray(err)) {
           err = [];
 
-          errors.length &&
+          if (errors.length) {
             errors.forEach((e) => {
               if (e && e.toLowerCase().indexOf('status code') === -1) {
                 err.push(e);
               }
             });
+          }
 
           err = err.length ? err : null;
         }
@@ -135,7 +132,7 @@ export default class PaymentReceipt extends React.Component {
   set80gDetails = (data) => {
     this.setState({
       '80_details': data,
-      is80GDetailsChecked: data.text_80g_12a.length ? true : false,
+      is80GDetailsChecked: !!data.text_80g_12a.length,
     });
   };
 
@@ -153,7 +150,7 @@ export default class PaymentReceipt extends React.Component {
     const promise = this.props.handleSave(data);
 
     if (promise && promise.then) {
-      promise.then((resp) => {
+      promise.then(() => {
         this.props.handleClose();
       });
     } else {
@@ -168,18 +165,41 @@ export default class PaymentReceipt extends React.Component {
   };
 
   trackSendingOptions = (event) => {
-    track.receipt.clickSendingOption(event.target.value === '0' ? 'automated' : 'manual');
+    const { trackingDetails } = this.props;
+
+    if (trackingDetails.isPaymentPage) {
+      track.receipt.clickSendingOption(event.target.value === '0' ? 'automated' : 'manual');
+    } else {
+      trackPB.lj.trackReceiptsType(
+        trackingDetails.via,
+        event.target.value === '0' ? 'automated' : 'manual',
+      );
+    }
   };
 
   handleInputFieldChecked = (e) => {
-    track.receipt.checkInputFields();
+    const { trackingDetails } = this.props;
+
+    if (trackingDetails.isPaymentPage) {
+      track.receipt.checkInputFields();
+    } else {
+      trackPB.lj.trackInputFieldCheckbox(trackingDetails.via, e.target.checked);
+    }
+
     this.setState({
       isInputFieldChecked: e.target.checked,
     });
   };
 
   handle80GDetails = (e) => {
-    track.receipt.check80GDetails(e.target.checked ? '80g_on' : '80g_off');
+    const { trackingDetails } = this.props;
+
+    if (trackingDetails.isPaymentPage) {
+      track.receipt.check80GDetails(e.target.checked ? '80g_on' : '80g_off');
+    } else {
+      trackPB.lj.track80gDetailsCheckbox(trackingDetails.via, e.target.checked);
+    }
+
     this.setState({
       is80GDetailsChecked: e.target.checked,
     });
@@ -232,7 +252,7 @@ export default class PaymentReceipt extends React.Component {
         <Modal class="PaymentpagesReceipt" onClose={props.handleClose} showCloseBtn={false}>
           <ModalContent>
             <div class="main-title">
-              <i className="i i-receipt mr-8"></i>
+              <i className="i i-receipt mr-8" />
               Payment Receipts Settings
             </div>
 
@@ -341,8 +361,8 @@ export default class PaymentReceipt extends React.Component {
                       defaultChecked={this.state.is80GDetailsChecked}
                     />
                     <span className="rzp-tooltip-80g">
-                      <i className="i i-info-outline"></i>
-                      <Popover align="top" theme="dark" parentQuerySelector={`.Modal-body`}>
+                      <i className="i i-info-outline" />
+                      <Popover align="top" theme="dark" parentQuerySelector=".Modal-body">
                         <PopoverBody>
                           <div className="rzp-tooltip-title">For Donations</div>
                           80G-registered organisations can add their details on receipts to help
@@ -364,27 +384,23 @@ export default class PaymentReceipt extends React.Component {
                       <div className="preview_80g">
                         <div className="preview_80g--text">{text_80g_12a}</div>
                         <div className="preview_80g--container">
-                          {image_url_80g ? (
-                            <img src={image_url_80g} alt="signature" />
-                          ) : (
-                            <div></div>
-                          )}
+                          {image_url_80g ? <img src={image_url_80g} alt="signature" /> : <div />}
                           <div className="preview_80g--container-right">
                             <Button
                               type="button"
                               class="Button--transparent"
                               onClick={this.open80gDetailsModal}
                             >
-                              <i className="i i-edit-outline"></i>
+                              <i className="i i-edit-outline" />
                               Edit
                             </Button>
-                            <div className="vertical-divider"></div>
+                            <div className="vertical-divider" />
                             <Button
                               type="button"
                               class="Button--transparent"
                               onClick={this.remove80gDetails}
                             >
-                              <i className="i i-delete-outline"></i>
+                              <i className="i i-delete-outline" />
                               Remove
                             </Button>
                           </div>

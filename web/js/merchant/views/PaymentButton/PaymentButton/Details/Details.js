@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
@@ -14,7 +15,7 @@ import TestModeBanner from 'merchant/components/TestModeBanner';
 import EditStock from 'merchant/views/PaymentPages/PaymentPages/components/EditStock';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import PaymentReceipt from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import { Popover, PopoverBody } from 'common/ui/Popover';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { addPollInstance, saveReportConfigs } from 'merchant/reducers/reports';
@@ -107,13 +108,15 @@ export default class PaymentButtonEntity extends React.Component {
     }
 
     for (const idx in reportConfigs) {
-      const config = reportConfigs[idx];
-      if (
-        config.type === 'payment_links' &&
-        config.name.toLowerCase() === 'payment button report'
-      ) {
-        configId = config.id;
-        break;
+      if (Object.prototype.hasOwnProperty.call(reportConfigs, idx)) {
+        const config = reportConfigs[idx];
+        if (
+          config.type === 'payment_links' &&
+          config.name.toLowerCase() === 'payment button report'
+        ) {
+          configId = config.id;
+          break;
+        }
       }
     }
 
@@ -141,7 +144,7 @@ export default class PaymentButtonEntity extends React.Component {
         });
 
         if (data.error || !data.url) {
-          return this.props.showNotification({
+          this.props.showNotification({
             type: 'error',
             message: data.error || 'Some error in downloading report',
           });
@@ -180,7 +183,7 @@ export default class PaymentButtonEntity extends React.Component {
   };
 
   openSettingsModal = () => {
-    track.lj.trackOptionsOpenSettings();
+    track.lj.trackOptionsOpenSettings('details');
 
     this.props.openModal({
       size: 'medium',
@@ -192,10 +195,12 @@ export default class PaymentButtonEntity extends React.Component {
           }
           editPaymentButton={this.props.editPaymentButton}
           track={{
-            customMessage: track.lj.trackSettingsCustomMessage,
+            customMessage: track.lj.trackSettingsCustomMessage.bind(null, 'details'),
             closeModal: track.lj.trackSettingsCancel,
             save: track.lj.trackSettingsSave,
             saveFail: track.lj.trackSettingsSaveFail,
+            customMessageCheckbox: track.lj.trackCustomMessageCheckbox.bind(null, 'details'),
+            redirectURLCheckbox: track.lj.trackRedirectURLCheckbox.bind(null, 'details'),
           }}
         />
       ),
@@ -207,9 +212,9 @@ export default class PaymentButtonEntity extends React.Component {
       track.lj.trackSettingsReceiptConfigure();
     }
 
-    this.setState({
-      isPageReceiptModalOpened: !this.state.isPageReceiptModalOpened,
-    });
+    this.setState((prevState) => ({
+      isPageReceiptModalOpened: !prevState.isPageReceiptModalOpened,
+    }));
   };
 
   handleSavePaymentReceipt = (receipt) => {
@@ -302,7 +307,7 @@ export default class PaymentButtonEntity extends React.Component {
                     {highlightButtonSettings && (
                       <Popover align="top" theme="dark" persistent={true}>
                         <PopoverBody>
-                          Configure payment receipts, post payment message from options here.
+                          Configure payment receipts, post payment message from options here.
                         </PopoverBody>
                       </Popover>
                     )}
@@ -417,7 +422,9 @@ export default class PaymentButtonEntity extends React.Component {
           <button
             type="button"
             class="btn-primary btn-sm panel-collapser collapsable-btn"
-            onClick={(_) => this.setState({ detailsCollapse: !this.state.detailsCollapse })}
+            onClick={() =>
+              this.setState((prevState) => ({ detailsCollapse: !prevState.detailsCollapse }))
+            }
           >
             {this.state.detailsCollapse ? (
               <span>
@@ -477,6 +484,10 @@ export default class PaymentButtonEntity extends React.Component {
               formItems={formItems}
               handleClose={this.togglePageReceiptModal}
               handleSave={this.handleSavePaymentReceipt}
+              trackingDetails={{
+                isPaymentPage: false,
+                via: 'details',
+              }}
             />
           )}
         </div>

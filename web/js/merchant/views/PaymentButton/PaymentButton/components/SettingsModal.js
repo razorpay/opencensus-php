@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
@@ -39,15 +40,26 @@ export default class SettingsModal extends React.Component {
   };
 
   handleShowCustomMessage = () => {
-    this.setState({
-      showCustomMessage: !this.state.showCustomMessage,
-    });
+    const { track } = this.props;
+
+    if (track && track.hasOwnProperty('customMessageCheckbox')) {
+      track.customMessageCheckbox(!this.state.showCustomMessage);
+    }
+    this.setState((prevState) => ({
+      showCustomMessage: !prevState.showCustomMessage,
+    }));
   };
 
   handleShowRedirectUrl = () => {
-    this.setState({
-      showRedirectUrl: !this.state.showRedirectUrl,
-    });
+    const { track } = this.props;
+
+    if (track && track.hasOwnProperty('redirectURLCheckbox')) {
+      track.redirectURLCheckbox(!this.state.showRedirectUrl);
+    }
+
+    this.setState((prevState) => ({
+      showRedirectUrl: !prevState.showRedirectUrl,
+    }));
   };
 
   onClickSave = () => {
@@ -77,28 +89,38 @@ export default class SettingsModal extends React.Component {
         if (resp && resp.data) {
           const track = this.props.track;
 
-          track && track.save();
+          if (track) {
+            track.save();
+          }
 
           this.props.closeModal();
         }
       })
       .catch((err) => {
+        const track = this.props.track;
+
         this.setState({
           isUpdating: false,
         });
 
-        track && track.saveFail(err);
+        if (track) {
+          track.saveFail(err);
+        }
       });
   };
 
   onCustomInputBlur = (e) => {
-    this.props.track && this.props.track.customMessage(e.target.value);
+    if (this.props.track) {
+      this.props.track.customMessage(e.target.value);
+    }
   };
 
   closeModal = () => {
     this.props.closeModal();
 
-    this.props.track && this.props.track.closeModal();
+    if (this.props.track) {
+      this.props.track.closeModal();
+    }
   };
 
   render() {
@@ -128,6 +150,7 @@ export default class SettingsModal extends React.Component {
             placeholder="Add your message here."
             defaultValue={paymentSuccessMessage}
             maxLength="80"
+            // eslint-disable-next-line consistent-return
             validator={(value) => {
               if (value && value.length < 5) {
                 return 'Success message must contain at least 5 characters.';
@@ -136,7 +159,7 @@ export default class SettingsModal extends React.Component {
             description={
               <div>
                 <span class="chars-pressed">
-                  {(paymentSuccessMessage ? paymentSuccessMessage.length : '0') + ' / 80'}
+                  {`${paymentSuccessMessage ? paymentSuccessMessage.length : '0'} / 80`}
                 </span>
                 This message is shown after Successful payment and on Payment receipt
               </div>

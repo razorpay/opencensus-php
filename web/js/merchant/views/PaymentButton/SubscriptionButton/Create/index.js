@@ -1,9 +1,9 @@
+import React from 'react';
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
 import { Link } from 'react-router-dom';
-import Button from 'common/new-ui/Button';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import Spinner from 'common/ui/Spinner';
 
@@ -34,6 +34,12 @@ import { getURLQueryParams, rupeesToPaise } from 'common/utils/rzp-utils';
 
 import track from './track';
 
+const docTitles = {
+  DEFAULT: 'Razorpay Dashboard',
+  CREATE: 'Create New Subscription Button',
+  EDIT: 'Edit Subscription Button',
+};
+
 @withRouter
 @connect(
   (state) => ({
@@ -53,10 +59,6 @@ import track from './track';
 )
 @RTracking(() => window.rzpQ.component('SubscriptionButtonCreate'))
 export default class SubscriptionButtonCreate extends React.Component {
-  static contextTypes = {
-    confirm: PropTypes.func,
-  };
-
   isIntentDuplicate = false;
 
   state = {
@@ -155,7 +157,7 @@ export default class SubscriptionButtonCreate extends React.Component {
       promise
         .then(({ data }) => {
           if (data) {
-            setWindowTitle(docTitles.EDIT + ' - ' + this.subscriptionButtonId);
+            setWindowTitle(`${docTitles.EDIT} - ${this.subscriptionButtonId}`);
           }
         })
         .catch(() => {});
@@ -181,12 +183,12 @@ export default class SubscriptionButtonCreate extends React.Component {
     return requestAPIPromiseForReceipt
       .then((res) => {
         if (!res || !res.success) {
-          throw new Error(resp.errors);
+          throw new Error(res.errors);
         }
 
         return res;
       })
-      .catch((err) => {
+      .catch(() => {
         this.props.showNotification({
           type: 'error',
           message: 'Receipt settings could not be saved. Please try again.',
@@ -203,9 +205,9 @@ export default class SubscriptionButtonCreate extends React.Component {
    * */
 
   handleTogglePageReceiptModal = () => {
-    this.setState({
-      isPageReceiptModalOpened: !this.state.isPageReceiptModalOpened,
-    });
+    this.setState((prevState) => ({
+      isPageReceiptModalOpened: !prevState.isPageReceiptModalOpened,
+    }));
   };
 
   handleClose = () => {
@@ -224,13 +226,14 @@ export default class SubscriptionButtonCreate extends React.Component {
     });
   };
 
+  // eslint-disable-next-line consistent-return
   handleSavePaymentReceipt = (data) => {
     const isEditExistingId = !!this.subscriptionButtonId;
 
     this.props.updateReceiptDetails(data); // Updating in the store
 
     if (isEditExistingId) {
-      return this.saveReceiptSettings(this.subscriptionButtonId, data).then((resp) => {
+      return this.saveReceiptSettings(this.subscriptionButtonId, data).then(() => {
         this.props.showNotification({
           type: 'success',
           message: 'Receipt settings are updated.',
@@ -244,8 +247,8 @@ export default class SubscriptionButtonCreate extends React.Component {
     const { subscriptionButtonEntity, paymentFields, udfFields } = this.props.subscription_button;
     const currency = subscriptionButtonEntity.currency;
 
-    let udfSchema = [],
-      paymentPageItems = [];
+    const udfSchema = [];
+    const paymentPageItems = [];
 
     // 1. Validate UDF schema
     const isValidSchema = validateUISchema(udfFields);
@@ -256,9 +259,7 @@ export default class SubscriptionButtonCreate extends React.Component {
         message: 'Customer details fields are of invalid format',
       });
 
-      throw 'UI Schema is not valid'; // This scenario implies, there is some frontend issue / not user action error
-
-      return;
+      throw new Error('UI Schema is not valid'); // This scenario implies, there is some frontend issue / not user action error
     }
 
     // 2. Check if atleast 1 amount item is present
@@ -367,6 +368,7 @@ export default class SubscriptionButtonCreate extends React.Component {
 
     // Note: Receipt call is made after main api call, bcoz they modify same entity in DB table which gets locked, so parallel calls might fail.
 
+    // eslint-disable-next-line consistent-return
     return requestAPIPromise
       .then((resp) => {
         if (resp.data) {
@@ -380,7 +382,7 @@ export default class SubscriptionButtonCreate extends React.Component {
               .then(() => {
                 this.onSaveSuccessActions(resp, isEditExistingId);
               })
-              .catch((err) => {
+              .catch(() => {
                 this.onSaveSuccessActions(resp, isEditExistingId);
               });
           } else {
@@ -398,12 +400,13 @@ export default class SubscriptionButtonCreate extends React.Component {
         if (Array.isArray(err)) {
           err = [];
 
-          errors.length &&
+          if (errors.length) {
             errors.forEach((e) => {
               if (e && e.toLowerCase().indexOf('status code') === -1) {
                 err.push(e);
               }
             });
+          }
 
           err = err.length ? err : null;
         }
@@ -512,8 +515,6 @@ export default class SubscriptionButtonCreate extends React.Component {
   }
 
   get actionButtons() {
-    const { user } = this.props;
-
     const actionButtons = (
       <React.Fragment>
         {/*
@@ -546,6 +547,10 @@ export default class SubscriptionButtonCreate extends React.Component {
         handleClose={this.handleTogglePageReceiptModal}
         handleSave={this.handleSavePaymentReceipt}
         saveBtnLabel={this.subscriptionButtonId ? 'Save & Update' : 'Save'}
+        trackingDetails={{
+          isPaymentPage: false,
+          via: 'create',
+        }}
       />
     );
   }
@@ -620,12 +625,6 @@ export default class SubscriptionButtonCreate extends React.Component {
     );
   }
 }
-
-const docTitles = {
-  DEFAULT: 'Razorpay Dashboard',
-  CREATE: 'Create New Subscription Button',
-  EDIT: 'Edit Subscription Button',
-};
 
 function setWindowTitle(title) {
   if (!title) {

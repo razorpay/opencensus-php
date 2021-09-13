@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
@@ -12,7 +13,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import PaymentReceipt from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+import { Popover, PopoverBody } from 'common/ui/Popover';
 import TabsContainer from 'common/ui/Tabs';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
@@ -58,8 +59,8 @@ const inActiveStatusReasonMap = {
     updateHighlightButtonSettings,
   },
 )
-@RTracking(() => window.rzpQ.component('subscriptionButtonEntity'))
-export default class subscriptionButtonEntity extends React.Component {
+@RTracking(() => window.rzpQ.component('SubscriptionButtonEntityComponent'))
+export default class SubscriptionButtonEntityComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -81,6 +82,7 @@ export default class subscriptionButtonEntity extends React.Component {
   };
 
   downloadReport = (extension) => {
+    // eslint-disable-next-line no-shadow
     const { user, subscriptionButtonEntity, reportConfigs } = this.props;
     let configId;
 
@@ -89,13 +91,15 @@ export default class subscriptionButtonEntity extends React.Component {
     }
 
     for (const idx in reportConfigs) {
-      const config = reportConfigs[idx];
-      if (
-        config.type === 'payment_links' &&
-        config.name.toLowerCase() === 'payment button report'
-      ) {
-        configId = config.id;
-        break;
+      if (Object.prototype.hasOwnProperty.call(reportConfigs, idx)) {
+        const config = reportConfigs[idx];
+        if (
+          config.type === 'payment_links' &&
+          config.name.toLowerCase() === 'payment button report'
+        ) {
+          configId = config.id;
+          break;
+        }
       }
     }
 
@@ -123,7 +127,7 @@ export default class subscriptionButtonEntity extends React.Component {
         });
 
         if (data.error || !data.url) {
-          return this.props.showNotification({
+          this.props.showNotification({
             type: 'error',
             message: data.error || 'Some error in downloading report',
           });
@@ -225,7 +229,6 @@ export default class subscriptionButtonEntity extends React.Component {
     const {
       createdByUser,
       subscriptionButtonEntity,
-      editPaymentButton,
       formItems,
       currentHighlightedButtonSettings,
     } = this.props;
@@ -354,7 +357,9 @@ export default class subscriptionButtonEntity extends React.Component {
           <button
             type="button"
             class="btn-primary btn-sm panel-collapser collapsable-btn"
-            onClick={(_) => this.setState({ detailsCollapse: !this.state.detailsCollapse })}
+            onClick={(_) =>
+              this.setState((prevState) => ({ detailsCollapse: !prevState.detailsCollapse }))
+            }
           >
             {this.state.detailsCollapse ? (
               <span>
@@ -372,7 +377,10 @@ export default class subscriptionButtonEntity extends React.Component {
 
           <TabsContainer
             class="item-details"
-            tabNames={[<b>Subscription Payments</b>, <b>One-Time Payments</b>]}
+            tabNames={[
+              <b key="subscription-payments">Subscription Payments</b>,
+              <b key="one-time-Payments">One-Time Payments</b>,
+            ]}
           >
             <SubscriptionsList entity={subscriptionButtonEntity} />
 
@@ -389,6 +397,10 @@ export default class subscriptionButtonEntity extends React.Component {
               formItems={formItems}
               handleClose={this.togglePageReceiptModal}
               handleSave={this.handleSavePaymentReceipt}
+              trackingDetails={{
+                isPaymentPage: false,
+                via: 'details',
+              }}
             />
           )}
         </div>

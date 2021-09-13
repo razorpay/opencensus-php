@@ -1,3 +1,4 @@
+import React from 'react';
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
@@ -5,7 +6,6 @@ import ReactDOM from 'react-dom';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import Svelte from './Svelte';
 import DetailsSection from './DetailsSection';
 import FormSection from './FormSection';
@@ -20,7 +20,7 @@ import PPShareView from 'merchant/views/PaymentPages/PaymentPages/components/Mod
 import MerchantLogoTooltip from 'merchant/views/PaymentPages/PaymentPages/components/MerchantLogoTooltip';
 import { createPaymentPage, editPaymentPage, sendLink, setReceiptDetails } from '../model';
 
-import { autoPrefixUrls, classList, getURLQueryParams } from 'common/utils/rzp-utils';
+import { autoPrefixUrls, getURLQueryParams, rupeesToPaise } from 'common/utils/rzp-utils';
 
 import {
   initDefaultFormItems,
@@ -38,7 +38,6 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 // TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
 import { validateUISchema } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
 
-import { rupeesToPaise } from 'common/utils/rzp-utils';
 import {
   trackWYSIWYGCloseIntent,
   trackConfirmWYSIWYGCloseIntent,
@@ -79,10 +78,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   isIntentDuplicate = false;
   supportPhoneRef = React.createRef();
   supportEmailRef = React.createRef();
-
-  static contextTypes = {
-    confirm: PropTypes.func,
-  };
 
   state = {
     isPageReady: false,
@@ -205,7 +200,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             }
           }
         })
-        .catch((err) => {
+        .catch(() => {
           this.setState({
             isPageLoadError: ERROR.INVALID_ENTITY,
           });
@@ -300,7 +295,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           showNotification={this.props.showNotification}
           title={title}
           url={shortUrl}
-          trackerFn={function () {}}
+          trackerFn={noop}
           trackClickOnCreateEmbedButton={(_) => trackClickOnCreateEmbedButton('new')}
           closeModal={this.props.closeModal}
           isEditExistingId={isEditExistingId}
@@ -325,7 +320,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           title={title}
           url={shortUrl}
           description={description}
-          trackerFn={function () {}}
+          trackerFn={noop}
           trackClickOnCreateEmbedButton={trackClickOnCreateEmbedButton}
           closeModal={this.props.closeModal}
           isEditExistingId={isEditExistingId}
@@ -397,11 +392,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     const {
       currency,
-      amount,
       title,
       description,
       template_type,
-      quantity,
       terms,
       support_email,
       support_contact,
@@ -411,8 +404,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       receipt,
     } = paymentPageEntity;
 
-    const udf_schema = [],
-      paymentPageItems = [];
+    const udf_schema = [];
+    const paymentPageItems = [];
 
     // Separate UDF and amount fields from FORM ITEMS.
     FORM_ITEMS.forEach((fi, ix) => {
@@ -430,9 +423,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           min_amount,
           max_amount,
           item,
+          // eslint-disable-next-line no-shadow
           settings,
           stock,
         } = fi;
+        // eslint-disable-next-line no-shadow
         const { name, description, amount } = item;
 
         const prunedFi = {
@@ -492,7 +487,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         });
 
         const descriptionElement = document.querySelector('#description-quill .ql-editor');
-        descriptionElement && descriptionElement.focus();
+        if (descriptionElement) {
+          descriptionElement.focus();
+        }
 
         return;
       }
@@ -503,8 +500,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     // console.log('udf_schema......', udf_schema);
 
     if (!isValidSchema) {
-      throw 'UI Schema is not valid';
-      return;
+      throw new Error('UI Schema is not valid');
     }
 
     //check if contact details are filled
@@ -513,8 +509,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         type: 'error',
         message: 'Please add your support contact details on this page',
       });
-      !support_email && this.supportEmailRef?.current?.el.focus();
-      support_email && !support_contact && this.supportPhoneRef?.current?.el.focus();
+      if (!support_email) {
+        this.supportEmailRef?.current?.el.focus();
+      }
+      if (support_email && !support_contact) {
+        this.supportPhoneRef?.current?.el.focus();
+      }
 
       return;
     }
@@ -582,7 +582,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }
 
     if (udf_schema) {
-      trackData.push('form_fields: ' + udf_schema.length); // count of total form fields
+      trackData.push(`form_fields: ${udf_schema.length}`); // count of total form fields
     }
 
     const searchQueryNext = getURLQueryParams(this.props.location.search);
@@ -609,6 +609,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     // Note: Don't make this call and save receipt call in parallel bcoz they modify the same DB table which gets locked.
 
+    // eslint-disable-next-line consistent-return
     return requestAPIPromise
       .then((resp) => {
         if (resp.data) {
@@ -622,7 +623,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
               this.onSaveSuccessActions(resp, isEditExistingId);
             })
-            .catch((err) => {
+            .catch(() => {
               this.onSaveSuccessActions(resp, isEditExistingId);
             });
         } else {
@@ -635,12 +636,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         if (Array.isArray(err)) {
           err = [];
 
-          errors.length &&
+          if (errors.length) {
             errors.forEach((e) => {
               if (e && e.toLowerCase().indexOf('status code') === -1) {
                 err.push(e);
               }
             });
+          }
 
           err = err.length ? err : null;
         }
@@ -683,12 +685,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     return requestAPIPromiseForReceipt
       .then((res) => {
         if (!res || !res.success) {
-          throw new Error(resp.errors);
+          throw new Error(res.errors);
         }
 
         return res;
       })
-      .catch((err) => {
+      .catch(() => {
         this.props.showNotification({
           type: 'error',
           message: 'Receipt settings could not be saved. Please try again.',
@@ -699,29 +701,33 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   handleIntroClose = () => {
     this.setState({ isTemplatesViewOpened: false });
 
-    setTimeout(function () {
+    setTimeout(() => {
       const titleEle = document.querySelector('#description-details .Input-el[name="title"]');
-      titleEle && titleEle.focus();
+      if (titleEle) {
+        titleEle.focus();
+      }
     }, 100);
   };
 
   togglePageSettings = () => {
-    !this.state.isSettingsOpened && track.settings.open();
-    this.setState({
-      isSettingsOpened: !this.state.isSettingsOpened,
-    });
+    if (!this.state.isSettingsOpened) {
+      track.settings.open();
+    }
+    this.setState((prevState) => ({
+      isSettingsOpened: !prevState.isSettingsOpened,
+    }));
   };
 
   togglePageReceiptModal = () => {
-    this.setState({
-      isPageReceiptModalOpened: !this.state.isPageReceiptModalOpened,
-    });
+    this.setState((prevState) => ({
+      isPageReceiptModalOpened: !prevState.isPageReceiptModalOpened,
+    }));
   };
 
   render() {
     const { isPageReady, isPageLoadError, onSvelteAppMount } = this.state;
     const { paymentPageEntity, id: payment_page_id, user, FORM_ITEMS } = this.props;
-    let isAllowedToSubmit, actionBtns, themeColor;
+    let isAllowedToSubmit, actionBtns, themeColor, content;
 
     const merchantData = {
       name: this.props.user.billing_label || this.props.user.name,
@@ -742,7 +748,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
               onClick={this.togglePageReceiptModal}
               className="Button--header"
             >
-              <i className="i i-receipt"></i>
+              <i className="i i-receipt" />
               <span>Payment Receipts</span>
             </Button.Transparent>
           )}
@@ -753,11 +759,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             onClick={this.togglePageSettings}
             className="Button--header"
           >
-            <i className="i i-settings-outline"></i>
+            <i className="i i-settings-outline" />
             Page Settings
           </Button.Transparent>
           <AsyncBtn.Primary
-            onClick={(...e) => {
+            onClick={() => {
               this.handleSavePublish(
                 payment_page_id ? 'Save and Update Page' : 'Create and Publish Page',
               );
@@ -782,8 +788,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     ) : (
       'Create New Payment Page'
     );
-
-    let content;
 
     if (isPageLoadError) {
       if (isPageLoadError === ERROR.SCRIPT) {
@@ -844,6 +848,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             formItems={FORM_ITEMS}
             handleClose={this.togglePageReceiptModal}
             handleSave={this.handleSavePaymentReceipt}
+            trackingDetails={{
+              isPaymentPage: true,
+            }}
           />
         )}
 
@@ -882,14 +889,4 @@ const Header = ({ title, actionBtns, handleClose, isPageReady, children }) => {
   );
 };
 
-function dataURLtoFile(dataurl, filename) {
-  var arr = dataurl.split(','),
-    mime = arr[0].match(/:(.*?);/)[1],
-    bstr = atob(arr[1]),
-    n = bstr.length,
-    u8arr = new Uint8Array(n);
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n);
-  }
-  return new File([u8arr], filename, { type: mime });
-}
+function noop() {}
