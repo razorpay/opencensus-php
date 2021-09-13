@@ -287,6 +287,8 @@ class Service extends Base\Service
      */
     public function createOnboardingWk(array $input, string $accountId)
     {
+        $this->setPartnerContext();
+
         $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
 
         $this->validator->validateOnboardingWkInput($input);
@@ -315,6 +317,8 @@ class Service extends Base\Service
     {
         $timeStarted = microtime(true);
 
+        $this->setPartnerContext();
+
         $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
 
         $res = $this->get($webhookId, $accountId);
@@ -331,6 +335,17 @@ class Service extends Base\Service
 
     }
 
+    private function setPartnerContext()
+    {
+        $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
+
+        if (empty($partnerMerchantId) === false)
+        {
+            $this->merchant = (new Merchant\Repository())->findOrFailPublic($partnerMerchantId);
+        }
+
+    }
+
     /**
      * @param array|null $input
      * @param string $accountId
@@ -341,6 +356,8 @@ class Service extends Base\Service
     public function listOnboardingWk(array $input, string $accountId)
     {
         $timeStarted = microtime(true);
+
+        $this->setPartnerContext();
 
         $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
 
@@ -370,6 +387,8 @@ class Service extends Base\Service
      */
     public function updateOnboardingWk(string $webhookId, array $input, string $accountId)
     {
+        $this->setPartnerContext();
+
         $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
 
         $this->validator->validateOnboardingWkInput($input);
@@ -396,6 +415,8 @@ class Service extends Base\Service
      */
     public function deleteOnboardingWk(string $webhookId, string $accountId)
     {
+        $this->setPartnerContext();
+
         $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
 
         $this->delete($webhookId, $accountId);

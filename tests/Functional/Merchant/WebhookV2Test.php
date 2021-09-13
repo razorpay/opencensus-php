@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factory;
 use Mail;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Traits\TestsWebhookEvents;
@@ -646,5 +647,93 @@ class WebhookV2Test extends TestCase
         return [
             'partner_type' => $partner->getPartnerType()
         ];
+    }
+
+    public function testCreateOnboardingWebhookForPureplatform()
+    {
+        $this->setPurePlatformContext();
+
+        $testData = $this->testData['testCreateOnboardingWebhookForPurePlatform'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID .'/webhooks';
+
+        $this->expectStorkServiceRequestForAction('createWebhookForOnboardingForPurePlatform');
+
+        // creating a sub-merchant webhook
+        $response = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testGetOnboardingWebhookForPurePlatform'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID . '/webhooks/' . $response['id'];
+
+        $this->expectStorkServiceRequestForAction('getWebhookForOnboardingForPurePlatform');
+
+        // fetching a sub-merchant webhook
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testListOnboardingWebhookForPurePlatform'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID . '/webhooks?skip=0&count=25';
+
+        $this->expectStorkServiceRequestForAction('listWebhookForOnboardingForPurePlatform');
+
+        // fetching all sub-merchant webhooks
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdateOnboardingWebhookForPureplatform()
+    {
+        $this->setPurePlatformContext();
+
+        $testData = $this->testData['testCreateOnboardingWebhookForPurePlatform'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID .'/webhooks';
+
+        $this->expectStorkServiceRequestForAction('createWebhookForOnboardingForPurePlatform');
+
+        // creating a sub-merchant webhook
+        $response = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testUpdateOnboardingWebhookForPurePlatform'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID . '/webhooks/' . $response['id'];
+
+        $this->expectStorkServiceRequestForAction('updateWebhookForOnboardingForPurePlatform');
+
+        // updating a sub-merchant webhook
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testDeleteOnboardingWebhookForPureplatform()
+    {
+        $this->setPurePlatformContext();
+
+        $testData = $this->testData['testCreateOnboardingWebhookForPurePlatform'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID .'/webhooks';
+
+        $this->expectStorkServiceRequestForAction('createWebhookForOnboardingForPurePlatform');
+
+        // creating a sub-merchant webhook
+        $response = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testDeleteOnboardingWebhookForPurePlatform'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID . '/webhooks/' . $response['id'];
+
+        $this->expectStorkServiceRequestForAction('deleteWebhookForOnboardingForPurePlatform');
+
+        // deleting a sub-merchant webhook
+        $this->runRequestResponseFlow($testData);
+    }
+
+    private function setPurePlatformContext(): void
+    {
+        list($application) = $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $client = $this->getAppClientByEnv($application);
+
+        $token = $this->generateOAuthAccessTokenForClient(
+            [
+                'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                'scopes' => ['read_write'],
+                'mode' => 'live',
+            ],
+            $client);
+
+        $this->ba->oauthBearerAuth($token);
     }
 }

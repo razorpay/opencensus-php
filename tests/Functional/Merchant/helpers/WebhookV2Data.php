@@ -80,6 +80,36 @@ $sampleApiWebhookResponseForOnboarding = [
     ]
 ];
 
+$sampleApiWebhookRequestForOnboardingPurePlatform = [
+    'url'    => 'http://webhook.com/v1/dummy/route',
+    'secret' => 'xxxxx',
+    'owner_id'    => '100submerchant',
+    'owner_type'  => 'merchant',
+    'alert_email' => 'alertemail@gmail.com',
+    'events'      => [
+        'payment.authorized',
+        'payment.failed',
+        'payment.dispute.created'
+    ]
+];
+
+$sampleApiWebhookResponseForOnboardingPurePlatform = [
+    'entity'      => 'webhook',
+    'id'          => 'webhook0000001',
+    'owner_id'    => '100submerchant',
+    'owner_type'  => 'merchant',
+    'url'              => 'http://webhook.com/v1/dummy/route',
+    'secret_exists'    => true,
+    'active'      => true,
+    'alert_email' => 'alertemail@gmail.com',
+    'events'      => [
+        'payment.authorized',
+        'payment.failed',
+        'payment.dispute.created'
+    ]
+];
+
+
 $sampleStorkWebhookRequest = [
     'service'       => 'api-test',
     'owner_id'      => '10000000000000',
@@ -169,6 +199,47 @@ $sampleStorkWebhookRequestForOnboarding = [
 $sampleStorkWebhookResponseForOnboarding = [
     'id'            => 'webhook0000001',
     'owner_id'      => 'submerchantNum',
+    'owner_type'    => 'merchant',
+    'alert_email'   => 'alertemail@gmail.com',
+    'url'           => 'http://webhook.com/v1/dummy/route',
+    'secret_exists' => true,
+    'subscriptions' => [
+        [
+            'eventmeta'  => ['name' => 'payment.authorized'],
+        ],
+        [
+            'eventmeta'  => ['name' => 'payment.failed'],
+        ],
+        [
+            'eventmeta'  => ['name' => 'payment.dispute.created'],
+        ]
+    ],
+];
+
+
+$sampleStorkWebhookRequestForOnboardingPurePlatform = [
+    'service'       => 'api-live',
+    'owner_id'      => '100submerchant',
+    'owner_type'    => 'merchant',
+    'alert_email'   => 'alertemail@gmail.com',
+    'url'           => 'http://webhook.com/v1/dummy/route',
+    'secret'        => 'xxxxx',
+    'subscriptions' => [
+        [
+            'eventmeta'  => ['name' => 'payment.authorized'],
+        ],
+        [
+            'eventmeta'  => ['name' => 'payment.failed'],
+        ],
+        [
+            'eventmeta'  => ['name' => 'payment.dispute.created'],
+        ]
+    ],
+];
+
+$sampleStorkWebhookResponseForOnboardingPurePlatform = [
+    'id'            => 'webhook0000001',
+    'owner_id'      => '100submerchant',
     'owner_type'    => 'merchant',
     'alert_email'   => 'alertemail@gmail.com',
     'url'           => 'http://webhook.com/v1/dummy/route',
@@ -1329,6 +1400,147 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateOnboardingWebhookForPurePlatform' => [
+        'request' => [
+            'url' => '/accounts/{account_id}/webhooks',
+            'method' => 'POST',
+            'content' => $sampleApiWebhookRequestForOnboardingPurePlatform,
+        ],
+        'response' => [
+            'content' => $sampleApiWebhookResponseForOnboardingPurePlatform,
+        ],
+    ],
+
+    'createWebhookForOnboardingForPurePlatformStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create',
+            'payload' => [
+                'webhook' => $sampleStorkWebhookRequestForOnboardingPurePlatform,
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => $sampleStorkWebhookResponseForOnboardingPurePlatform,
+            ],
+        ],
+    ],
+
+
+    'testGetOnboardingWebhookForPurePlatform' => [
+        'request' => [
+            'url' => '/accounts/{account_id}/webhooks/{wk_id}?webhook_id={wk_id}',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => $sampleApiWebhookResponseForOnboardingPurePlatform,
+        ],
+    ],
+
+    'getWebhookForOnboardingForPurePlatformStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Get',
+            'payload' => [
+                'webhook_id' => 'webhook0000001',
+                'service'    => 'api-live',
+                'owner_id'   => '100submerchant',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => $sampleStorkWebhookResponseForOnboardingPurePlatform,
+            ],
+        ],
+    ],
+
+    'testListOnboardingWebhookForPurePlatform' => [
+        'request' => [
+            'url' => '/accounts/{account_id}/webhooks?skip=0&count=25',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    $sampleApiWebhookResponseForOnboardingPurePlatform,
+                ],
+            ]
+        ],
+    ],
+
+    'listWebhookForOnboardingForPurePlatformStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/List',
+            'payload' => [
+                'service'  => 'api-live',
+                'owner_id' => '100submerchant',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhooks' => [
+                    $sampleStorkWebhookResponseForOnboardingPurePlatform,
+                ],
+            ],
+        ],
+    ],
+
+    'testUpdateOnboardingWebhookForPurePlatform' => [
+        'request' => [
+            'url' => '/accounts/{account_id}/webhooks/{wk_id}',
+            'method'  => 'PATCH',
+            'content' => array_merge($sampleApiWebhookRequestForOnboardingPurePlatform, ['alert_email' => 'newalertemail@gmail.com', 'secret' => 'yyyyy'])
+        ],
+        'response' => [
+            'content' => array_merge($sampleApiWebhookResponseForOnboardingPurePlatform, ['alert_email' => 'newalertemail@gmail.com', 'secret' => 'yyyyy']),
+        ],
+    ],
+
+    'updateWebhookForOnboardingForPurePlatformStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Update',
+            'payload' => [
+                'webhook' => array_merge($sampleStorkWebhookRequestForOnboardingPurePlatform,  ['id' => 'webhook0000001',
+                    'alert_email' => 'newalertemail@gmail.com', 'secret' => 'yyyyy']),
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => array_merge($sampleStorkWebhookResponseForOnboardingPurePlatform, ['alert_email' => 'newalertemail@gmail.com', 'secret' => 'yyyyy']),
+            ],
+        ],
+    ],
+
+    'testDeleteOnboardingWebhookForPurePlatform' => [
+        'request' => [
+            'url' => '/accounts/{account_id}/webhooks/{wk_id}',
+            'method'  => 'DELETE',
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'deleteWebhookForOnboardingForPurePlatformStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Delete',
+            'payload' => [
+                'webhook_id' => 'webhook0000001',
+                'service'    => 'api-live',
+                'owner_id'   => '100submerchant',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+            ],
         ],
     ],
 ];
