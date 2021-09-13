@@ -34,9 +34,23 @@ class DowntimeController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchScheduledDowntimes()
+    {
+        $data = $this->service(E::PAYMENT_DOWNTIME)->fetchScheduledDowntimes();
+
+        return ApiResponse::json($data);
+    }
+
     public function refreshOngoingDowntimesCache()
     {
         $this->service(E::PAYMENT_DOWNTIME)->refreshOngoingDowntimesCache();
+
+        return ApiResponse::json([]);
+    }
+
+    public function refreshScheduledDowntimesCache()
+    {
+        $this->service(E::PAYMENT_DOWNTIME)->refreshScheduledDowntimesCache();
 
         return ApiResponse::json([]);
     }

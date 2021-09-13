@@ -7,6 +7,7 @@ use Mockery;
 use Carbon\Carbon;
 use Requests_Response;
 
+use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
@@ -605,7 +606,8 @@ class PaymentDowntimeTest extends TestCase
 
     public function testFetchResolvedPayments()
     {
-        $currentDate = date('Y-m-d');
+        $currentDate = $this->getCurrentDate();
+
         $this->ba->adminAuth();
 
         $downtime = $this->createDowntime('upi', 'BANK', 'vpa_handle', 'oksbi');
@@ -740,7 +742,7 @@ class PaymentDowntimeTest extends TestCase
 
     public function testRefreshHistoricalDowntimeCache()
     {
-        $currentDate = date('Y-m-d');
+        $currentDate = $this->getCurrentDate();
         $this->ba->adminAuth();
 
         $this->createDowntime('upi', 'BANK', 'vpa_handle', 'oksbi');
@@ -823,6 +825,56 @@ class PaymentDowntimeTest extends TestCase
         $downtimes = $this->makeRequestAndGetContent($fetchDowntimeRequest);
 
         $this->assertEquals(1, sizeof($downtimes));
+    }
+
+
+    public function testFetchScheduledDowntimes()
+    {
+        $this->ba->adminAuth();
+
+        $addDowntimeRequest = [
+            'content' => [
+                'begin'       => Carbon::now()->addMinutes(60)->timestamp,
+                'end'         => Carbon::now()->addMinutes(240)->timestamp,
+                'gateway'     => 'ALL',
+                'reason_code' => 'HIGHER_DECLINES',
+                'method'      => 'netbanking',
+                'source'      => 'BANK',
+                'issuer'      => 'SBIN',
+                'scheduled'   => true
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('netbanking',$downtime['method']);
+        $this->assertEquals('SBIN',$downtime['issuer']);
+        $this->assertEquals('scheduled',$downtime['status']);
+
+        $this->ba->adminAuth();
+        $refreshCache = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/scheduled/refresh_cache',
+        ];
+
+       $r =  $this->makeRequestAndGetContent($refreshCache);
+
+        $this->ba->privateAuth();
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/scheduled/',
+        ];
+
+        $downtimes = $this->makeRequestAndGetContent($fetchDowntimeRequest);
+
+        $this->assertEquals(1,sizeof($downtimes));
+
     }
 
     public function testPaymentDowntimeGetByInvalidId()
@@ -2226,5 +2278,13 @@ class PaymentDowntimeTest extends TestCase
         ];
         $this->ba->adminAuth();
         $this->makeRequestAndGetContent($resolveDowntimeRequest);
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getCurrentDate()
+    {
+        return Carbon::now(Timezone::IST)->format('Y-m-d');
     }
 }

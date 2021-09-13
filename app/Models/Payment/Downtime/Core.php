@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Payment\Downtime;
 
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -106,11 +108,27 @@ class Core extends Base\Core
         }
     }
 
+    public function refreshScheduledDowntimesCache()
+    {
+        try
+        {
+            $this->trace->info(TraceCode::REFRESH_SCHEDULED_DOWNTIME_CACHE);
+
+            $downtimes = $this->fetchScheduledDowntimesFromDB();
+
+            $this->redis->HMSET("scheduled_downtimes", ['scheduled_downtimes' => json_encode($downtimes)]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::FAILED_TO_REFRESH_SCHEDULED_PAYMENT_DOWNTIME_CACHE);
+        }
+    }
+
     public function refreshHistoricalDowntimeCache( $lookbackPeriod = 0 )
     {
         try{
             $remainingDays = $lookbackPeriod;
-            $endDate = date('Y-m-d');
+            $endDate = Carbon::now(Timezone::IST)->format('Y-m-d');
 
             while($remainingDays >=0)
             {
@@ -181,6 +199,20 @@ class Core extends Base\Core
         }
     }
 
+    public function fetchScheduledDowntimes()
+    {
+        try
+        {
+            return $this->fetchScheduledDowntimesFromCache();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::FAILED_TO_FETCH_SCHEDULED_DOWNTIMES_FROM_CACHE);
+
+            return $this->fetchScheduledDowntimesFromDB();
+        }
+    }
+
     public function fetchOngoingDowntimesFromDB()
     {
         $this->trace->info(TraceCode::FETCH_ONGOING_DOWNTIMES_FROM_DB);
@@ -195,6 +227,15 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::FETCH_RESOLVED_DOWNTIMES_FROM_DB, ['params' =>$params]);
 
         $downtimes = (new Repository())->fetchResolvedDowntimes($params)->toArrayPublic();
+
+        return $downtimes['items'];
+    }
+
+    public function fetchScheduledDowntimesFromDB()
+    {
+        $this->trace->info(TraceCode::FETCH_SCHEDULED_DOWNTIMES_FROM_DB);
+
+        $downtimes = (new Repository())->fetchScheduledDowntimes()->toArrayPublic();
 
         return $downtimes['items'];
     }
@@ -377,4 +418,21 @@ class Core extends Base\Core
 
         return $downtimes;
     }
+
+    private function fetchScheduledDowntimesFromCache()
+    {
+        $downtimes = $this->redis->HGETALL('scheduled_downtimes');
+
+        if (empty($downtimes) === false)
+        {
+            $downtimes = json_decode($downtimes['scheduled_downtimes']);
+        }
+        else
+        {
+            $downtimes = [];
+        }
+
+        return $downtimes;
+    }
+
 }

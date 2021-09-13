@@ -39,6 +39,19 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+
+    public function fetchScheduledDowntimes(): PublicCollection
+    {
+        $query = $this->newQuery();
+
+        $query->where(Entity::BEGIN, '>', Carbon::now()->getTimestamp())
+              ->where(Entity::END, '>', Carbon::now()->getTimestamp())
+              ->where(Entity::SCHEDULED, '=', true)
+              ->whereNull(Entity::MERCHANT_ID);
+
+        return $query->get();
+    }
+
     public function fetchOngoingPlatformAndMerchantDowntimes(string $mid): PublicCollection
     {
         $query = $this->newQuery();

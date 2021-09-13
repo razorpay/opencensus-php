@@ -43,6 +43,11 @@ class Service extends Base\Service
         $this->core()->refreshHistoricalDowntimeCache($lookbackPeriod);
     }
 
+    public function refreshScheduledDowntimesCache()
+    {
+        $this->core()->refreshScheduledDowntimesCache();
+    }
+
     public function getMethodDowntimeDataForMerchant(array $input): array
     {
         $variant = $this->app->razorx->getTreatment(
@@ -85,6 +90,12 @@ class Service extends Base\Service
         $this->validateRequestParams($params);
 
         return $this->core()->fetchResolvedDowntimes($params);
+    }
+
+    public function fetchScheduledDowntimes()
+    {
+        $this->trace->info(TraceCode::FETCH_PLATFORM_SCHEDULED_DOWNTIMES,  ["merchantId" => $this->merchant->getId()]);
+        return $this->core()->fetchScheduledDowntimes();
     }
 
     public function getPaymentDowntimeByID(array $input, string $id): array

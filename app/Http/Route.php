@@ -128,10 +128,13 @@ class Route
         'payments_downtime'                        => ['get',      'payments/downtimes',                             'DowntimeController@getMethodDowntimeData'                          ],
         'refresh_payments_ongoing_downtimes_cron'  => ['get',      'payments/downtimes/ongoing/refresh_cache_cron',  'DowntimeController@refreshOngoingDowntimesCache'                   ],
         'refresh_payments_resolved_downtimes_cron' => ['get',      'payments/downtimes/resolved/refresh_cache_cron', 'DowntimeController@refreshHistoricalDowntimeCache'                 ],
+        'refresh_payments_scheduled_downtimes_cron'=> ['get',      'payments/downtimes/scheduled/refresh_cache_cron', 'DowntimeController@refreshScheduledDowntimesCache'                ],
         'refresh_payments_ongoing_downtimes'       => ['get',      'payments/downtimes/ongoing/refresh_cache',       'DowntimeController@refreshOngoingDowntimesCache'                   ],
         'refresh_payments_resolved_downtimes'      => ['get',      'payments/downtimes/resolved/refresh_cache',      'DowntimeController@refreshHistoricalDowntimeCache'                 ],
+        'refresh_payments_scheduled_downtimes'     => ['get',      'payments/downtimes/scheduled/refresh_cache',      'DowntimeController@refreshScheduledDowntimesCache'                ],
         'fetch_payments_ongoing_downtimes'         => ['get',      'payments/downtimes/ongoing',                     'DowntimeController@fetchOngoingDowntimes'                          ],
         'fetch_payments_resolved_downtimes'        => ['get',      'payments/downtimes/resolved',                    'DowntimeController@fetchResolvedDowntimes'                         ],
+        'fetch_payments_scheduled_downtimes'       => ['get',      'payments/downtimes/scheduled',                   'DowntimeController@fetchScheduledDowntimes'                        ],
         'payments_downtime_by_id'                  => ['get',      'payments/downtimes/{id}',                        'DowntimeController@getMethodDowntimeDataByID'                      ],
         'payments_downtime_trigger_cron'           => ['post',     'payments/downtimes/trigger/{status}',            'DowntimeController@triggerDowntimes'                               ],
         'batch_create'                             => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
@@ -2977,8 +2980,10 @@ class Route
         'payment_transfer',
         'payments_downtime',
         'refresh_payments_resolved_downtimes',
+        'refresh_payments_scheduled_downtimes',
         'fetch_payments_ongoing_downtimes',
         'fetch_payments_resolved_downtimes',
+        'fetch_payments_scheduled_downtimes',
         'payments_downtime_by_id',
         'payment_fetch_by_id',
         'payment_fetch_multiple',
@@ -3736,7 +3741,8 @@ class Route
 
         // Refresh downtime cache
         'refresh_payments_ongoing_downtimes_cron',
-        'refresh_payments_resolved_downtimes_cron'
+        'refresh_payments_resolved_downtimes_cron',
+        'refresh_payments_scheduled_downtimes_cron'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -4670,6 +4676,7 @@ class Route
         'gateway_create_downtime',
         'refresh_payments_ongoing_downtimes',
         'refresh_payments_resolved_downtimes',
+        'refresh_payments_scheduled_downtimes',
         'add_downtime_slack_merchant_names',
         'gateway_create_rule',
         'gateway_delete_rule',
@@ -5711,8 +5718,10 @@ class Route
         'gateway_create_downtime'                  => Permission::CREATE_GATEWAY_DOWNTIME,
         'refresh_payments_ongoing_downtimes'       => Permission::CREATE_GATEWAY_DOWNTIME,
         'refresh_payments_resolved_downtimes'      => Permission::CREATE_GATEWAY_DOWNTIME,
+        'refresh_payments_scheduled_downtimes'     => Permission::CREATE_GATEWAY_DOWNTIME,
         'fetch_payments_ongoing_downtimes'         => Permission::CREATE_GATEWAY_DOWNTIME,
         'fetch_payments_resolved_downtimes'        => Permission::CREATE_GATEWAY_DOWNTIME,
+        'fetch_payments_scheduled_downtimes'       => Permission::CREATE_GATEWAY_DOWNTIME,
         'add_downtime_slack_merchant_names'        => Permission::CREATE_GATEWAY_DOWNTIME,
         'gateway_file_acknowledge'                 => Permission::CREATE_GATEWAY_FILE,
         'gateway_file_retry'                       => Permission::CREATE_GATEWAY_FILE,
@@ -7493,8 +7502,10 @@ class Route
             'payment_validate_vpa_old',
             'payments_downtime',
             'refresh_payments_resolved_downtimes',
+            'refresh_payments_scheduled_downtimes',
             'fetch_payments_ongoing_downtimes',
             'fetch_payments_resolved_downtimes',
+            'fetch_payments_scheduled_downtimes',
             'payments_downtime_by_id',
             'payout_approve',
             'payout_approve_bulk',
@@ -8323,6 +8334,7 @@ class Route
             'gateway_create_downtime',
             'refresh_payments_ongoing_downtimes',
             'refresh_payments_resolved_downtimes',
+            'refresh_payments_scheduled_downtimes',
             'add_downtime_slack_merchant_names',
             'gateway_create_rule',
             'gateway_delete_downtime',
@@ -8936,6 +8948,7 @@ class Route
             'payments_downtime',
             'fetch_payments_ongoing_downtimes',
             'fetch_payments_resolved_downtimes',
+            'fetch_payments_scheduled_downtimes',
             'payments_downtime_by_id',
             'payments_multiple_authorize_refund',
             'payout_approve',
@@ -9899,7 +9912,8 @@ class Route
             'payout_send_pending_approval_email',
             'terminal_fill_enabled_wallets',
             'refresh_payments_ongoing_downtimes_cron',
-            'refresh_payments_resolved_downtimes_cron'
+            'refresh_payments_resolved_downtimes_cron',
+            'refresh_payments_scheduled_downtimes_cron'
         ],
 
         'subscriptions' => [
