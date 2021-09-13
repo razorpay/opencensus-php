@@ -88,8 +88,8 @@ class TransactionsContainer extends Component {
     const { user, mode, openDisputes } = this.props;
     const { role, activation_status } = user;
 
-    const nextSettlement = !this.props.settlement_amount.data.next_settlement_time;
-
+    /* Added a check for if the settlement_amount is present or not otherwile it will be false as default*/
+    const nextSettlement = !this.props?.settlement_amount?.data?.next_settlement_time;
     const { no_settlement } = this.props.settlement_amount.data;
 
     const pathname = this.props.location.pathname;

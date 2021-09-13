@@ -340,7 +340,7 @@ class SettlementsListContainer extends ListContainer {
       currentBalanceClassName += ' negative-balance';
     }
 
-    const nextSettlement = this.props.settlement_amount.data.next_settlement_time;
+    const nextSettlement = this.props?.settlement_amount?.data?.next_settlement_time;
     const checkIfSettlementDisabled =
       isSettleNowRestricted || current_balance.loading || balance < 100;
 
