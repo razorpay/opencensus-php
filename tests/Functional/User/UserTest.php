@@ -32,6 +32,7 @@ use RZP\Models\Feature\Constants as Features;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Mail\User\AccountVerification;
+use RZP\Models\User\Constants as UserConstants;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -637,6 +638,49 @@ class UserTest extends TestCase
         ];
 
         $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+
+    public function testCaptchaBypassForDemoUserInX()
+    {
+        $user = $this->fixtures->create('user', ['email' => UserConstants::BANKING_DEMO_USER_EMAIL, 'password' => 'hello123']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha'               => 'foo',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['request']['headers']['X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testCaptchaBypassForDemoUserInPg()
+    {
+        $user = $this->fixtures->create('user', ['email' => UserConstants::BANKING_DEMO_USER_EMAIL, 'password' => 'hello123']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha'               => 'foo',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['request']['headers']['X-Request-Origin'] = config('applications.dashboard.url');
 
         $this->ba->dashboardGuestAppAuth();
 

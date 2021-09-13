@@ -32,6 +32,7 @@ use RZP\Http\UserRolePermissionsMap;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountService;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
@@ -529,6 +530,14 @@ class Core extends Base\Core
         if ($user !== null)
         {
             return $user;
+        }
+
+        // temporary solution for restricting banking demo user for demo v0.5
+        if ($input[Entity::EMAIL] === Constants::BANKING_DEMO_USER_EMAIL and
+            $this->app['basicauth']->getRequestOriginProduct() !== ProductType::BANKING)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
 
         $this->getUserEntity()->getValidator()->validateInput('login', $input);
