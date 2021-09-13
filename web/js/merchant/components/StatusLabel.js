@@ -24,6 +24,15 @@ export const paymentPagesStatusMap = {
   inactive: 'label-muted',
 };
 
+export const routeTransfersStatusMap = {
+  created: 'label-muted',
+  pending: 'label-muted',
+  processed: 'label-info',
+  failed: 'label-danger',
+  reversed: 'bg-primary',
+  partially_reversed: 'bg-primary',
+};
+
 export const orderStatusMap = {
   created: 'bg-light',
   attempted: 'label-info',
@@ -181,6 +190,7 @@ const entityMap = {
 
 export const InvoiceStatusLabel = statusLabel(invoiceStatusMap);
 export const PaymentPagesStatusLabel = statusLabel(paymentPagesStatusMap);
+export const RouteTransfersStatusLabel = statusLabel(routeTransfersStatusMap);
 export const OrderStatusLabel = statusLabel(orderStatusMap);
 export const PaymentStatusLabel = statusLabel(paymentStatusMap);
 export const SettlementStatusLabel = statusLabel(settlementStatusMap);

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-find-dom-node */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { findDOMNode } from 'react-dom';
@@ -10,7 +11,7 @@ import {
   fetchTransfer,
   fetchReversals,
   updateTransfer,
-} from 'merchant/reducers/marketplace/transfer';
+} from 'merchant/reducers/marketplace/transfers/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 
@@ -23,6 +24,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
   showNotification,
   expandSlider,
   compactSlider,
+  updateTransfer,
   ...ModalActions,
 })
 export default class TransferDetailsContainer extends Component {
@@ -70,7 +72,7 @@ export default class TransferDetailsContainer extends Component {
   }
 
   onTransferUpdate = (patch) => {
-    return updateTransfer(this.props.entity.id, patch);
+    return this.props.updateTransfer(this.props.entity.id, patch);
   };
 
   // Open modal for reversing transfer
@@ -82,7 +84,8 @@ export default class TransferDetailsContainer extends Component {
   };
 
   onReversalDetailsClose = () => {
-    let { compactSlider, history, location } = this.props;
+    // eslint-disable-next-line no-shadow
+    const { compactSlider, history, location } = this.props;
 
     if (this.reversalsView) {
       findDOMNode(this.reversalsView).classList.toggle('toggle-slider');
@@ -91,22 +94,24 @@ export default class TransferDetailsContainer extends Component {
     compactSlider();
 
     // Going back to initial detail view mode. Remove the chunk in url after the last /.
+    // eslint-disable-next-line no-useless-escape
     history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
   };
 
   render() {
-    let {
-        entity,
-        loading,
-        errors,
-        reversals,
-        onClose,
-        onReverse,
-        showNotification,
-        reversal_id,
-        isDirectTransferEnabled,
-      } = this.props,
-      statusMsg = {};
+    const {
+      entity,
+      loading,
+      errors,
+      reversals,
+      onClose,
+      onReverse,
+      // eslint-disable-next-line no-shadow
+      showNotification,
+      reversal_id,
+      isDirectTransferEnabled,
+    } = this.props;
+    let statusMsg = {};
 
     if (errors) {
       statusMsg = {

@@ -33,7 +33,7 @@ import activationReducer from 'merchant/reducers/activation';
 import activationWizardReducer from 'merchant/reducers/activationWizard';
 import refundReducer from 'merchant/reducers/refunds/details';
 import paymentReducer from 'merchant/reducers/payments/details';
-import transferReducer from 'merchant/reducers/marketplace/transfer';
+import transferReducer from 'merchant/reducers/marketplace/transfers/details';
 import reversalReducer from 'merchant/reducers/marketplace/reversal';
 import mpAccountsReducer from 'merchant/reducers/marketplace/accounts';
 import referralsReducer from 'merchant/reducers/referrals';
@@ -184,8 +184,8 @@ export default combineReducers({
   invitations: invitationsReducer,
   onboarding: onboardingReducer,
   reminders: remindersReducer,
-  commissionInvoices: commissionInvoices,
-  commissionInvoice: commissionInvoice,
+  commissionInvoices,
+  commissionInvoice,
   loanApplicationDetails: LoanApplicationReducer,
   twoFactor: twoFactorReducer,
   withdrawals: WithdrawalsReducer,

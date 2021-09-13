@@ -2,13 +2,11 @@ import AsyncButton from 'react-async-button';
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
-import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Alert from 'common/ui/Forms/Alert';
 import Amount from 'common/ui/Amount';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import Definition from 'common/ui/Definition';
-import RadioButton from 'common/ui/Forms/RadioButton';
 import Spinner from 'common/ui/Spinner';
 import Time from 'common/ui/Time';
 import { SingleDatePicker } from 'react-dates';
@@ -19,6 +17,8 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Fee from './Fee';
 import TransferReversal from 'merchant/views/Marketplace/Transfers/components/TransferReversal';
 import TransferSource from './TransferSource';
+import { RouteTransfersStatusLabel } from 'merchant/components/StatusLabel';
+import { updateTranferInList } from 'merchant/reducers/marketplace/transfers/list';
 
 let initialState = {
   onHold: 'false',
@@ -28,6 +28,21 @@ let initialState = {
   dateError: null,
   errors: null,
   editView: false,
+};
+
+const ERROR_CODE_CTAS_MAP = {
+  BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT: 'Please create another transfer.',
+  BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE: (
+    <span>
+      Please <Link to="/addfunds">add funds</Link> to your account and then create a transfer.
+    </span>
+  ),
+  INTERNAL_SERVER_ERROR:
+    'Please create the transfer again. If the issue persists, please contact Razorpay Support.',
+};
+
+const SETTLEMENT_STATUS_COLOR_MAP = {
+  settled: 'text-success',
 };
 
 const SettlementText = ({ data, transfer, onEdit }) => {
@@ -66,11 +81,70 @@ const SettlementText = ({ data, transfer, onEdit }) => {
   );
 };
 
-@connect((state) => {
-  return {
-    user: state.session.user,
-  };
-}, null)
+const SettlementTextV2 = ({ data, transfer, onEdit }) => {
+  let status;
+  let showBusinessHolidaysInfo = false;
+  let showChangeButton = false;
+
+  const isSettlementOnHold = transfer.settlement_status === 'on_hold';
+  const isSettlementOnHoldUntil = transfer.settlement_status === 'on_hold' && data.holdUntil;
+  const isSettlementPending = transfer.settlement_status === 'pending';
+
+  if (isSettlementOnHoldUntil) {
+    showBusinessHolidaysInfo = true;
+    showChangeButton = true;
+  } else if (isSettlementOnHold) {
+    showChangeButton = true;
+  } else if (isSettlementPending) {
+    showBusinessHolidaysInfo = true;
+  }
+
+  if (isSettlementOnHoldUntil) {
+    status = (
+      <span>
+        On Hold until <Time value={data.date.toDate() / 1000} format="Do MMM YYYY" />
+      </span>
+    );
+  } else {
+    status = (
+      <span class={SETTLEMENT_STATUS_COLOR_MAP[transfer.settlement_status]}>
+        {titleCase(transfer.settlement_status) || 'Not Applicable'}
+      </span>
+    );
+  }
+
+  return (
+    <div>
+      <div>
+        {status}
+        <span>&nbsp;&nbsp;</span>
+        <ShowWhen
+          additionalCondition={(user) => user.isAllowedEdit('payments') && showChangeButton}
+        >
+          <a href class="btn-link" onClick={onEdit}>
+            Change
+          </a>
+        </ShowWhen>
+      </div>
+      {showBusinessHolidaysInfo && (
+        <div class="text-fade">
+          Transfers scheduled to settle on bank holidays will get settled on the next working day.
+        </div>
+      )}
+    </div>
+  );
+};
+
+@connect(
+  (state) => {
+    return {
+      user: state.session.user,
+    };
+  },
+  {
+    updateTranferInList,
+  },
+)
 export default class TransferDetails extends Component {
   constructor(props) {
     super(props);
@@ -108,7 +182,7 @@ export default class TransferDetails extends Component {
   onDateChange(date) {
     this.setState({
       date,
-      holdUntil: ((date.startOf('day').toDate() - 600000) / 1000) | 0,
+      holdUntil: (date.startOf('day').toDate() - 600000) / 1000 || 0,
     });
   }
 
@@ -138,10 +212,10 @@ export default class TransferDetails extends Component {
     }
 
     if (typeof this.props.onTransferUpdate !== 'function') {
-      return;
+      return '';
     }
 
-    let data = {};
+    const data = {};
 
     if (this.state.onHold !== 'false') {
       data.on_hold = 1;
@@ -155,7 +229,7 @@ export default class TransferDetails extends Component {
 
     return this.props
       .onTransferUpdate(data)
-      .then(() => {
+      .then((response) => {
         initialState = {
           ...initialState,
           ...this.state,
@@ -166,6 +240,8 @@ export default class TransferDetails extends Component {
           message: 'Transfer schedule changed successfully',
         });
         this.setState(initialState);
+
+        this.props.updateTranferInList(response.data);
       })
       .catch(({ errors }) => {
         this.setState({ errors });
@@ -178,8 +254,7 @@ export default class TransferDetails extends Component {
   }
 
   render() {
-    const { transfer, isLoading, statusMsg, openReversalModal, reversals, onClose } = this.props;
-
+    const { transfer, isLoading, openReversalModal, reversals, onClose } = this.props;
     const nextWorkingDate = nextWorkingDay(moment().startOf('day').toDate(), 3);
 
     return (
@@ -235,13 +310,25 @@ export default class TransferDetails extends Component {
                   )}
                 />
 
+                {this.props.user.isRouteTransferStateEnabled && (
+                  <EntityDetailRow label="Transfer Status">
+                    <RouteTransfersStatusLabel status={transfer.status} />
+                    {transfer.status === 'failed' && transfer.error?.description && (
+                      <div class="text-danger m-t">{transfer.error.description}.</div>
+                    )}
+                    {transfer.status === 'failed' && ERROR_CODE_CTAS_MAP[transfer.error?.code] && (
+                      <div class="text-danger">{ERROR_CODE_CTAS_MAP[transfer.error.code]}</div>
+                    )}
+                  </EntityDetailRow>
+                )}
+
                 {/* {transfer.transaction && this.props.user.isUxRevampPhase2Enabled && (
                   <EntityDetailRow label="Settlement Details">
                     <SettlementInfo data={transfer} />
                   </EntityDetailRow>
                 )} */}
 
-                <EntityDetailRow label="Settlement">
+                <EntityDetailRow label="Settlement Status">
                   {this.state.editView ? (
                     <form onSubmit={this.onSubmit} name="updatePaymentTransfer">
                       <p>
@@ -315,7 +402,7 @@ export default class TransferDetails extends Component {
                           <input
                             type="radio"
                             name="onHold"
-                            value={'false'}
+                            value="false"
                             checked={this.state.onHold === 'false'}
                             onChange={this.onScheduleChange}
                           />
@@ -354,6 +441,8 @@ export default class TransferDetails extends Component {
                         />
                       </div>
                     </form>
+                  ) : this.props.user.isRouteTransferStateEnabled ? (
+                    <SettlementTextV2 data={this.state} transfer={transfer} onEdit={this.onEdit} />
                   ) : (
                     <SettlementText data={this.state} transfer={transfer} onEdit={this.onEdit} />
                   )}

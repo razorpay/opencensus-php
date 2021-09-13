@@ -6,6 +6,7 @@ import { getAmount, getTime } from 'common/ui/item';
 import { makeIdLink } from 'common/ui/item/id';
 import { getIntervalCycle, subString } from 'common/utils/rzp-utils';
 import { roles, agentRole, RBLRoles, RegistrationLinkRoles } from 'merchant/helpers/data';
+import { RefundStatusLabel, OfferStatusLabel } from 'merchant/components/StatusLabel';
 
 const allRoles = {
   ...roles,
@@ -13,7 +14,6 @@ const allRoles = {
   ...RBLRoles,
   ...RegistrationLinkRoles,
 };
-import { RefundStatusLabel, OfferStatusLabel } from 'merchant/components/StatusLabel';
 
 export const withClick = (onClick) => ({ value, ...rest }) => {
   return {
@@ -97,7 +97,7 @@ export const settlementId = { title: 'Settlemt Id', value: id.settlement };
 export const transferId = { title: 'Transfer Id', value: id.transfer };
 export const reversalId = { title: 'Reversal Id', value: id.reversal };
 export const source = { title: 'Source', value: id.source };
-export const recipient = { title: 'Recipient', value: id.recipient };
+export const recipient = { title: 'Recipient Id', value: id.recipient };
 export const batchId = { title: 'Batch Id', value: id.batch };
 export const batchIdLink = { title: 'Batch Id', value: id.batchLink };
 export const disputeId = { title: 'Dispute Id', value: id.dispute };
@@ -211,14 +211,18 @@ export const itemName = {
   title: 'Item Name',
   value: (item) =>
     item.payment_page_items.map((payment_page_item) => (
-      <div class="item-ellipsis">{payment_page_item.item.name}</div>
+      <div key={payment_page_item.item.id} class="item-ellipsis">
+        {payment_page_item.item.name}
+      </div>
     )),
 };
 export const unitsSold = {
   title: 'Units Sold',
   value: (item) =>
     item.payment_page_items.map((payment_page_item) => (
-      <div class="item-ellipsis">{payment_page_item.quantity_sold}</div>
+      <div key={payment_page_item.id} class="item-ellipsis">
+        {payment_page_item.quantity_sold}
+      </div>
     )),
 };
 
@@ -271,7 +275,7 @@ export const description = {
 
 export const qrUsage = {
   title: 'QR Usage',
-  value: (item) => <div class="qr_usage">{item.usage.replace('_', ' ')}</div>
+  value: (item) => <div class="qr_usage">{item.usage.replace('_', ' ')}</div>,
 };
 
 export const amountReceived = {

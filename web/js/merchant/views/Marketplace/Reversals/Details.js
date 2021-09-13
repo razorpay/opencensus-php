@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { fetchReversal } from 'merchant/reducers/marketplace/reversal';
-import { fetchTransfer } from 'merchant/reducers/marketplace/transfer';
+import { fetchTransfer } from 'merchant/reducers/marketplace/transfers/details';
 
 import ReversalDetails from 'merchant/views/Marketplace/Reversals/components/Details';
 
 @connect(
-  state => ({
+  (state) => ({
     reversal: state.reversal,
     transfer: state.transfer,
     user: state.session.user,
@@ -14,7 +14,7 @@ import ReversalDetails from 'merchant/views/Marketplace/Reversals/components/Det
   {
     fetchTransfer,
     fetchReversal,
-  }
+  },
 )
 export default class ReversalDetailsContainer extends Component {
   fetchData(reversalId) {
@@ -22,14 +22,12 @@ export default class ReversalDetailsContainer extends Component {
       return;
     }
 
-    this.props.fetchReversal(reversalId).then(resp => {
+    this.props.fetchReversal(reversalId).then((resp) => {
       if (this.props.notAllowFetchTransfer) return;
 
       if (resp) {
         this.props.fetchTransfer(resp.transfer_id);
       }
-
-      return resp;
     });
   }
 

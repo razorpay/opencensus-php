@@ -6,11 +6,10 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 import isEmpty from '@universe/utils/isEmpty';
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
-import { getOrg } from 'merchant/store';
+import { getOrg, getMode } from 'merchant/store';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import LocalStorageService from 'common/utils/localStorage';
-import { getMode } from 'merchant/store';
+import { getItem } from 'common/utils/localStorage';
 
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
@@ -111,6 +110,8 @@ export default class User {
     if (org && org.custom_code && org.custom_code.toLowerCase() === 'rzp') {
       return true;
     }
+
+    return false;
   }
 
   isProductHiddenForWhiteLabelledOrg(moduleName) {
@@ -284,7 +285,7 @@ export default class User {
 
   // KYC form submitted
   get isSubmitted() {
-    return !!parseInt(this.submitted);
+    return !!parseInt(this.submitted, 10);
   }
 
   get isRejected() {
@@ -551,6 +552,7 @@ export default class User {
    * If check has to be made for specific type of partners,
    * then send the types for which check has to be done in arguments
    */
+
   isPartner(...args) {
     const partnerTypes = [...args];
     return !!partnerTypes.length
@@ -905,7 +907,7 @@ export default class User {
       return true;
     }
 
-    const status = !!LocalStorageService.getItem(`QR-codes-${getMode()}-${this.current}`);
+    const status = !!getItem(`QR-codes-${getMode()}-${this.current}`);
 
     return status;
   }
@@ -933,6 +935,10 @@ export default class User {
 
   get isRouteBatchUploadEnabled() {
     return this.getExpStatus('route_batch_upload');
+  }
+
+  get isRouteTransferStateEnabled() {
+    return this.getExpStatus('route_transfer_state');
   }
 
   get isSubscriptionPauseAndResumeEnabled() {
@@ -1103,18 +1109,6 @@ export default class User {
     return this.getExpStatus(`disable-edit-${moduleName}`);
   }
 
-  isProductHiddenForWhiteLabelledOrg(moduleName) {
-    if (!PRODUCT_KEY_MAPS.includes(moduleName)) {
-      return false;
-    }
-
-    if (!this.isWhiteLabelledOrg) {
-      return false;
-    }
-
-    return !this.findTag(`white_labelled_${moduleName}`);
-  }
-
   isInstrumentRequestAllowed() {
     return this.getExpStatus('instrument_request_merchant_dashboard');
   }
@@ -1150,6 +1144,14 @@ export default class User {
 
   set secondFactorAuthOfUser(secondFactorAuth) {
     this.user.second_factor_auth = secondFactorAuth;
+  }
+
+  get secondFactorAuthOfCurrentMerchant() {
+    return this.merchants[this.current].second_factor_auth;
+  }
+
+  get secondFactorAuthOfUser() {
+    return this.user.second_factor_auth;
   }
 
   isWhatsappNotificationEnabled() {
@@ -1229,7 +1231,7 @@ export default class User {
 
 function _isAllowed(userRole, moduleName, permissionsMap) {
   if (!moduleName) {
-    return;
+    return false;
   }
 
   const restrictedModulesForOrg = antiOrgsModules[getOrg().custom_code];

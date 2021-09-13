@@ -1,4 +1,4 @@
-import { set, merge, unshift } from 'common/utils/immutable';
+import { set } from 'common/utils/immutable';
 import Transfer from 'merchant/models/Transfer';
 import { makeEntityReducer } from 'merchant_common/reducers/entity';
 
@@ -8,7 +8,7 @@ const TRANSFER_FETCH_REVERSAL = 'TRANSFER_FETCH_REVERSAL';
 const UPDATE_TRANSFER = 'UPDATE_TRANSFER';
 
 export const fetchTransfer = (id) => {
-  let transfer = new Transfer();
+  const transfer = new Transfer();
 
   return {
     type: TRANSFER_FETCH,
@@ -44,10 +44,13 @@ export const createTransfer = (data) => {
 export const updateTransfer = (id, data) => {
   const transfer = new Transfer({ id });
 
-  return transfer.update(data);
+  return {
+    type: UPDATE_TRANSFER,
+    payload: transfer.update(data),
+  };
 };
 
-let defaultInitialState = {
+const defaultInitialState = {
   loading: true,
   error: null,
   entity: {},
@@ -62,7 +65,7 @@ let defaultInitialState = {
 const transferReducer = makeEntityReducer(
   TRANSFER_FETCH,
   {
-    [`${TRANSFER_FETCH_REVERSAL}::PENDING`]: (state, action) => {
+    [`${TRANSFER_FETCH_REVERSAL}::PENDING`]: (state) => {
       return set(state, 'reversals', {
         loading: true,
         items: [],
@@ -84,6 +87,10 @@ const transferReducer = makeEntityReducer(
         items: [],
         error: action.payload.errors,
       });
+    },
+
+    [`${UPDATE_TRANSFER}::SUCCESS`]: (state, action) => {
+      return set(state, 'entity', action.payload.data);
     },
   },
   defaultInitialState,

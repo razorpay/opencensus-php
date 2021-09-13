@@ -13,10 +13,13 @@ import Dispute from 'merchant/models/Dispute';
 import Submerchant from 'merchant/models/Submerchant';
 import Token from 'merchant/models/Token';
 import Commission from 'merchant/models/Commission';
-import Team from 'merchant/models/Team';
 import Invitation from 'merchant/models/Invitation';
 
 import RegistrationLink from 'merchant/models/RegistrationLink';
+
+export const getActionName = (namespace) => {
+  return `${namespace}_FETCH`;
+};
 
 // useEntityReducer tells whether to use common reducer or entity-specific
 export const fetchAll = (params, Entity, namespace) => {
@@ -33,7 +36,7 @@ export const fetchAll = (params, Entity, namespace) => {
   };
 };
 
-let defaultInitialState = {
+const defaultInitialState = {
   loading: true,
   items: [],
   error: null,
@@ -64,17 +67,13 @@ export const appendEntityToList = (state, action) => {
 };
 
 export const updateEntityInList = (state, action) => {
-  let itemIndex = state.items.findIndex((item) => item.id === action.payload.id);
+  const itemIndex = state.items.findIndex((item) => item.id === action.payload.id);
   return set(state, `items.${itemIndex}`, action.payload);
 };
 
 export const removeEntityFromList = (state, action) => {
-  let itemsList = remove(state.items, (item) => item.id === action.payload.id);
+  const itemsList = remove(state.items, (item) => item.id === action.payload.id);
   return set(state, 'items', itemsList);
-};
-
-export const getActionName = (namespace) => {
-  return namespace + '_FETCH';
 };
 
 export const makeCollectionReducer = (
@@ -82,7 +81,7 @@ export const makeCollectionReducer = (
   actionHandlers = {},
   initialState = defaultInitialState,
 ) => {
-  let fetchActionName = getActionName(namespace);
+  const fetchActionName = getActionName(namespace);
   const defaultHandlers = {
     [`${fetchActionName}::PENDING`]: listFetchPendingState,
     [`${fetchActionName}::SUCCESS`]: listFetchSuccessState,
@@ -101,7 +100,7 @@ export const makeActionCollectionReducer = (
   actionHandlers = {},
   initialState = defaultInitialState,
 ) => {
-  let singularNamespace = namespace.slice(0, namespace.length - 1);
+  const singularNamespace = namespace.slice(0, namespace.length - 1);
 
   const defaultHandlers = {
     [`${singularNamespace}_CREATE::SUCCESS`]: appendEntityToList,
@@ -128,7 +127,7 @@ export const fetchOrders = (params) => fetchAll(params, Order, 'ORDERS');
 export const ordersReducer = makeCollectionReducer('ORDERS');
 
 export const fetchTransfers = (params) => fetchAll(params, Transfer, 'TRANSFERS');
-export const transfersReducer = makeCollectionReducer('TRANSFERS');
+export const transfersReducer = makeActionCollectionReducer('TRANSFERS');
 
 export const fetchReversals = (params) => fetchAll(params, Reversal, 'REVERSALS');
 export const reversalsReducer = makeCollectionReducer('REVERSALS');
@@ -146,9 +145,6 @@ export const refundsReducer = makeCollectionReducer(
   // ignore( do not send to API ) "ref" param if seen present the url
   { ...defaultInitialState, blacklistQueryParams: ['ref'] },
 );
-
-export const fetchLinkBatches = (params) => fetchAll(params, LinkBatch, 'BATCHLINKS');
-export const linkBatchesReducer = makeCollectionReducer('BATCHLINKS');
 
 export const fetchSettlements = (params) => fetchAll(params, Settlement, 'SETTLEMENTS');
 export const settlementsReducer = makeCollectionReducer('SETTLEMENTS');
@@ -195,6 +191,6 @@ export const smartCollectPaymentsReducer = makeCollectionReducer('SC_PAYMENTS');
 
 // QR codes
 export const fetchQRCodesPayments = (params) => {
-  return fetchAll(params,   QRPayment, 'QR_CODE_PAYMENTS');
+  return fetchAll(params, QRPayment, 'QR_CODE_PAYMENTS');
 };
 export const qrCodePaymentsReducer = makeCollectionReducer('QR_CODE_PAYMENTS');
