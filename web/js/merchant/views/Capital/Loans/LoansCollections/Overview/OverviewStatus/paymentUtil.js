@@ -25,7 +25,7 @@ function createRepayment(payload) {
     currency: 'INR',
     credit_id: creditId,
     product_entity_reference_id: disbursalId,
-    product_entity_type: disbursalId ? COLLECTIONS_PRODUCT_ENTITY_TYPE.DISBURSEMENT : null,
+    product_entity_type: disbursalId ? COLLECTIONS_PRODUCT_ENTITY_TYPE.DISBURSAL : null,
     product_type: COLLECTIONS_PRODUCT_TYPE.LOANS,
     amount: Number(amount),
     payment_reference_type: type,

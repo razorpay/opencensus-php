@@ -1,4 +1,5 @@
 import { merchantFetch } from 'merchant/utils/ajax';
+import { COLLECTIONS_PRODUCT_ENTITY_TYPE } from './constants';
 
 const COLLECTIONS_BASE_URL = 'capital_collections/service/v1';
 
@@ -44,7 +45,7 @@ export default {
           count,
           skip,
           product_entity_reference_id,
-          product_entity_type: 'PRODUCT_ENTITY_TYPE_DISBURSEMENT',
+          product_entity_type: COLLECTIONS_PRODUCT_ENTITY_TYPE.DISBURSAL,
         },
       },
       'get',
