@@ -93,6 +93,8 @@ class UserRolePermissionsMap
                  Permission::UPDATE_MERCHANT_BANK_ACCOUNT_STATUS,
                  Permission::UPDATE_MERCHANT_2FA_SETTING,
                  Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::GET_SIGNED_URL,
+                 Permission::GENERATE_VP_INVOICE_ZIP,
                  Permission::CREATE_VENDOR_PAYMENTS,
                  Permission::CREATE_VENDOR_PAYMENTS_EMAIL,
                  Permission::ENABLE_EMAIL_IMPORT,
@@ -208,6 +210,8 @@ class UserRolePermissionsMap
                  Permission::DELETE_MERCHANT_DOCUMENT,
                  Permission::UPDATE_MERCHANT_BANK_ACCOUNT_STATUS,
                  Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::GET_SIGNED_URL,
+                 Permission::GENERATE_VP_INVOICE_ZIP,
                  Permission::CREATE_VENDOR_PAYMENTS,
                  Permission::CREATE_VENDOR_PAYMENTS_EMAIL,
                  Permission::ENABLE_EMAIL_IMPORT,
@@ -298,6 +302,8 @@ class UserRolePermissionsMap
                  Permission::UPDATE_TEST_MERCHANT_BALANCE,
                  Permission::VIEW_VIRTUAL_ACCOUNT,
                  Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::GET_SIGNED_URL,
+                 Permission::GENERATE_VP_INVOICE_ZIP,
                  Permission::CREATE_VENDOR_PAYMENTS,
                  Permission::CREATE_VENDOR_PAYMENTS_EMAIL,
                  Permission::ENABLE_EMAIL_IMPORT,
@@ -313,6 +319,8 @@ class UserRolePermissionsMap
                  Permission::SYNC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
+
+                 Permission::CREATE_INVITATION,
              ],
 
              BankingRole::OPERATIONS => [
@@ -349,6 +357,8 @@ class UserRolePermissionsMap
                   * Following are the new permissions added for Vendor-Payments micro-service
                   */
                  Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::GET_SIGNED_URL,
+                 Permission::GENERATE_VP_INVOICE_ZIP,
                  Permission::CREATE_VENDOR_PAYMENTS,
                  Permission::CREATE_VENDOR_PAYMENTS_EMAIL,
                  Permission::ENABLE_EMAIL_IMPORT,
@@ -362,6 +372,24 @@ class UserRolePermissionsMap
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_PAYOUT_WORKFLOW_SUMMARY,
+             ],
+
+             BankingRole::CHARTERED_ACCOUNTANT => [
+
+                 //Miscellaneous API's needed for any user
+                 Permission::VIEW_MERCHANT_ANALYTICS,
+                 Permission::VIEW_MERCHANT_USER,
+                 Permission::UPDATE_USER_PROFILE,
+
+                 //BankingRoute permissions for reporting API's
+                 Permission::GET_SELF_SERVE_REPORT,
+                 Permission::VIEW_REPORTING,
+                 Permission::CREATE_REPORTING,
+
+                 //BankingRoute permissions for VP Zip download API's
+                 Permission::GENERATE_VP_INVOICE_ZIP,
+                 Permission::GENERATE_TDS_CHALLAN_ZIP,
+                 Permission::GET_SIGNED_URL,
              ],
 
              BankingRole::VIEW_ONLY => [
@@ -393,6 +421,8 @@ class UserRolePermissionsMap
                  Permission::ONBOARDING_PAYOUT_LINKS,
                  Permission::SUMMARY_PAYOUT_LINKS,
                  Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::GET_SIGNED_URL,
+                 Permission::GENERATE_VP_INVOICE_ZIP,
                  Permission::VIEW_TAX_PAYMENTS,
                  Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::VIEW_ACCOUNTING_INTEGRATION,

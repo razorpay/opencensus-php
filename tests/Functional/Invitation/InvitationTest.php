@@ -83,6 +83,23 @@ class InvitationTest extends TestCase
         });
     }
 
+    public function testPostSendInvitationToNonExistingUserInXForCARole()
+    {
+        Mail::fake();
+
+        $xMerchantUser = $this->createXMerchantUser();
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
+
+        $this->startTest();
+
+        Mail::assertQueued(xInvitationMail::class, function ($mail) {
+            $this->assertEquals('emails.invitation.razorpayx.ca-invitation', $mail->view);
+
+            return true;
+        });
+    }
+
     public function testPostSendInvitationToNewUserInX()
     {
         Mail::fake();

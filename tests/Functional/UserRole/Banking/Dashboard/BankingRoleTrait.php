@@ -91,6 +91,9 @@ trait BankingRoleTrait
                 'merchant_bank_account_change_status',
                 'merchant_2fa_change_setting',
                 'user_account_unlock',
+                'vendor_payment_reporting_info',
+                'vendor_payment_bulk_invoice_download',
+                'vendor_payment_get_invoice_zip_file'
             ],
             BankingRole::ADMIN => [
                 'payout_bulk_create',
@@ -229,6 +232,7 @@ trait BankingRoleTrait
                 'reporting_log_create',
                 'reporting_log_update',
                 'bank_transfer_process_test',
+                'invitation_create'
             ],
 
             BankingRole::OPERATIONS => [
@@ -282,6 +286,18 @@ trait BankingRoleTrait
                 'payout_links_merchant_summary',
                 'payout_links_merchant_on_boarding_status',
                 'user_edit_self',
+            ],
+
+            BankingRole::CHARTERED_ACCOUNTANT => [
+                'reporting_config_list',
+                'reporting_log_get',
+                'reporting_log_list',
+                'vendor_payment_reporting_info',
+                'vendor_payment_bulk_invoice_download',
+                'vendor_payment_get_invoice_zip_file',
+                'merchant_analytics',
+                'merchant_fetch_users',
+                'user_edit_self'
             ]
         ];
     }

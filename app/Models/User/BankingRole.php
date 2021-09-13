@@ -17,10 +17,11 @@ use RZP\Trace\TraceCode;
 class BankingRole
 {
     // Static Roles
-    const OWNER      = Role::OWNER;
-    const ADMIN      = Role::ADMIN;
-    const VIEW_ONLY  = Role::VIEW_ONLY;
-    const OPERATIONS = Role::OPERATIONS;
+    const OWNER                = Role::OWNER;
+    const ADMIN                = Role::ADMIN;
+    const VIEW_ONLY            = Role::VIEW_ONLY;
+    const OPERATIONS           = Role::OPERATIONS;
+    const CHARTERED_ACCOUNTANT = Role::CHARTERED_ACCOUNTANT;
 
     //
     // Dynamic Roles:
@@ -34,7 +35,8 @@ class BankingRole
         self::OWNER,
         self::ADMIN,
         self::VIEW_ONLY,
-        self::OPERATIONS
+        self::OPERATIONS,
+        self::CHARTERED_ACCOUNTANT
     ];
 
     protected static $workflowRoles = [

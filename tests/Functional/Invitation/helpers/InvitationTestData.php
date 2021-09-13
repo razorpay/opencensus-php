@@ -27,6 +27,28 @@ return [
         ]
     ],
 
+    'testPostSendInvitationToNonExistingUserInXForCARole' => [
+        'request' => [
+            'url'    => '/invitations',
+            'method' => 'POST',
+            'content' => [
+                'email'       => 'testnonexistentuserinvite@razorpay.com',
+                'role'        => 'chartered_accountant',
+                'sender_name' => 'sender_name'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '100XInviteMerc',
+                'email'       => 'testnonexistentuserinvite@razorpay.com',
+                'role'        => 'chartered_accountant'
+            ]
+        ]
+    ],
+
     'testPostSendInvitationToNewUserInX' => [
         'request' => [
             'url'    => '/invitations',

@@ -10,6 +10,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Admin\Service;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Feature\Constants;
+use RZP\Models\User\BankingRole;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -288,6 +289,32 @@ class VendorPaymentTest extends TestCase
         $vpMock->shouldHaveReceived('getReportingInfo');
     }
 
+    public function testGetReportingInfoFromCARole()
+    {
+        $user = $this->fixtures->create('user', ['id' => '20000000000006']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => BankingRole::CHARTERED_ACCOUNTANT,
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('getReportingInfo')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getReportingInfo');
+    }
+
     public function testBulkInvoiceDownload()
     {
         $this->ba->proxyAuth();
@@ -316,6 +343,27 @@ class VendorPaymentTest extends TestCase
         $this->startTest();
 
         $vpMock->shouldHaveReceived('updateInvoiceFileId');
+    }
+
+    public function testEditInvoiceFromCARole()
+    {
+        $user = $this->fixtures->create('user', ['id' => '20000000000006']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => BankingRole::CHARTERED_ACCOUNTANT,
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+
     }
 
     public function testGetUfhFileStatus()

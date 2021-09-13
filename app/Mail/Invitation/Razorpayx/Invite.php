@@ -6,6 +6,7 @@ use App;
 use RZP\Constants\Product;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
+use RZP\Models\User\Role;
 
 class Invite extends Mailable
 {
@@ -19,6 +20,8 @@ class Invite extends Mailable
 
     const EXISTING_USER_TEMPLATE_PATH      = 'emails.invitation.razorpayx.invite_existing_user';
 
+    const CA_PORTAL_INVITE_TEMPLATE_PATH      = 'emails.invitation.razorpayx.ca-invitation';
+
     const INVITE_LINK_FORMAT = '%s/auth?invitation=%s';
 
     protected $invitation;
@@ -31,7 +34,9 @@ class Invite extends Mailable
 
     protected $allMerchantsForInvitedUser;
 
-    public function __construct($invitationId, $senderName, bool $invitedUserExists, $allMerchantsForInvitedUser = null)
+    protected $role;
+
+    public function __construct($invitationId, $senderName, bool $invitedUserExists, $allMerchantsForInvitedUser = null, $role = null)
     {
         parent::__construct();
 
@@ -46,6 +51,8 @@ class Invite extends Mailable
         $this->invitedUserExists = $invitedUserExists;
 
         $this->allMerchantsForInvitedUser = $allMerchantsForInvitedUser;
+
+        $this->role = $role;
     }
 
     protected function addSender()
@@ -125,10 +132,16 @@ class Invite extends Mailable
     protected function addHtmlView()
     {
         /*
+         * If the invitation is for CA role, then send in new invite template
+         */
+        if(empty($this->role) === false && $this->role == Role::CHARTERED_ACCOUNTANT){
+            $this->view(self::CA_PORTAL_INVITE_TEMPLATE_PATH);
+        }
+        /*
          * Case where invited user is already registered on X
          * Invited user has a record in merchant_user table with product as banking
          */
-        if ($this->isAnExistingUserOnX($this->allMerchantsForInvitedUser))
+        else if ($this->isAnExistingUserOnX($this->allMerchantsForInvitedUser))
         {
             $this->view(self::EXISTING_X_USER_TEMPLATE_PATH);
         }

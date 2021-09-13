@@ -87,6 +87,10 @@ class RoleAccessTest extends TestCase
 
         // Validate for View_Only role
         $this->validateAccesses(BankingRole::VIEW_ONLY);
+
+        //Validate for Chartered_Accountant role
+        $this->validateAccesses(BankingRole::CHARTERED_ACCOUNTANT);
+
     }
 
     protected function validateAccesses(string $role)

@@ -229,6 +229,23 @@ return [
         ]
     ],
 
+    'testGetReportingInfoFromCARole' => [
+        'request'  => [
+            'method' => 'GET',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000006',
+            ],
+            'url'    => '/vendor-payments/_meta/get-reporting-info',
+            'content' => [
+                'status'      => 'unpaid',
+                'payout_mode' => 'IMPS',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testBulkInvoiceDownload' => [
         'request'  => [
             'method' => 'POST',
@@ -260,6 +277,29 @@ return [
         'response' => [
             'content' => []
         ]
+    ],
+
+    'testEditInvoiceFromCARole' => [
+        'request'  => [
+            'method' => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000006',
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'    => '/vendor-payments/vp_id/update-invoice-file-id',
+            'content' => [
+                'invoice_file_id'   => 'id1'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_AUTHENTICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
     ],
 
     'testGetUfhFileStatus' => [

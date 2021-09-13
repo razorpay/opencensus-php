@@ -23,6 +23,7 @@ class Role
     const RBL_SUPERVISOR        = 'rbl_supervisor';
     const RBL_AGENT             = 'rbl_agent';
     const VIEW_ONLY             = 'view_only';
+    const CHARTERED_ACCOUNTANT  = 'chartered_accountant';
     const AUTH_LINK_SUPERVISOR  = 'auth_link_supervisor';
     const AUTH_LINK_AGENT       = 'auth_link_agent';
 
@@ -127,7 +128,7 @@ class Role
 
         return array_diff($allRoles, [self::SELLERAPP]);
     }
-    
+
     public static function allExceptPaymentLinkRoles()
     {
         $allRoles = array_merge(self::ALL_ROLES, BankingRole::getAllRoles());
