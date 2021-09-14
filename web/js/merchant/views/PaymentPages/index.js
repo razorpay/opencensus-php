@@ -32,7 +32,11 @@ export default class PaymentPagesContainer extends Component {
     return (
       <>
         <div className="banner-container">
-          <PaymentPagePluginsBanner bannerKey={`payment-pages-plugins-${user.current}`} />
+          <PaymentPagePluginsBanner
+            bannerKey={`payment-pages-plugins-${user.current}`}
+            merchantId={user.current}
+            email={user.email}
+          />
         </div>
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
