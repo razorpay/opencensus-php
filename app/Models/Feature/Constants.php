@@ -625,6 +625,11 @@ class Constants
     const ORG_FRESHDESK_CREATE_TICKET        = 'freshdesk_create_ticket';
     const ORG_SUB_MERCHANT_CREATE            = 'sub_merchant_create';
 
+    /*
+     * Org level feature to hide activation form by deafult
+     */
+    const ORG_HIDE_ACTIVATION_FORM  = 'hide_activation_form';
+
     /**
      * Marks the seller eligible for automated loc as per https://jira.corp.razorpay.com/browse/CAP-519
      */
@@ -1142,6 +1147,7 @@ class Constants
         self::PAYMENT_SHOW_DCC_MARKUP         => true,
         self::EXPOSE_SETTLED_BY               => true,
         self::PAYPAL_CC                       => true,
+        self::ORG_HIDE_ACTIVATION_FORM        => true,
         self::ORG_HDFC_VAS_CARDS_SURCHARGE    => true,
         self::SHOW_OLD_ERROR_DESC             => true,
         self::PAYOUT_SYNC_FTS_TRANSFER        => true,

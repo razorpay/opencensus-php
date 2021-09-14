@@ -1261,6 +1261,19 @@ class Service extends Base\Service
         return $plan->toArrayPublic();
     }
 
+    public function isAdminLoggedInAsMerchant()
+    {
+        $isAdminLoggedInAsMerchant = $this->app['basicauth']->isAdminLoggedInAsMerchantOnDashboard();
+
+        $this->trace->info(TraceCode::IS_ADMIN_LOGGED_IN_AS_MERCHANT, ["isAdminLoggedInAsMerchant" => $isAdminLoggedInAsMerchant]);
+
+        if ( $isAdminLoggedInAsMerchant === true )
+        {
+            return ["is_admin_as_merchant" => true];
+        }
+        return ["is_admin_as_merchant" => false];
+    }
+    
     public function assignSettlementScheduleIncludingLinkedAccounts($id, $input)
     {
         $this->trace->info(TraceCode::SCHEDULE_ASSIGN_RAZORX_SUCCESS, []);

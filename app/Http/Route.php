@@ -601,6 +601,7 @@ class Route
         'decrypt_merchant_website_comment'         => ['get',      'merchant/{actionId}/decrypt_website_comment',    'MerchantController@getDecryptedWebsiteCommentForWebsiteSelfServe'  ],
         'merchant_activation_details'              => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
         'merchant_activation_save'                 => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
+        'is_admin_as_merchant'                     => ['get',      'merchant/is_admin_as_merchant',                  'MerchantController@isAdminLoggedInAsMerchant'                      ],
         'merchant_activation_upload_file'          => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
         'merchant_activation_reviewers'            => ['get',      'merchant/activation/reviewers',                  'MerchantController@getMerchantActivationReviewers'                 ],
         'merchant_activation_bulk_assign_reviewer' => ['post',     'merchant/activation/bulk_assign_reviewer',       'MerchantController@bulkAssignReviewer'                             ],
@@ -3860,6 +3861,7 @@ class Route
         'bbps_bill_payments',
         'merchant_balance_fetch_by_id',
         'merchant_rtb_details_fetch',
+        'is_admin_as_merchant',
         'merchant_fire_hubspot_event',
         'merchant_create_lead_to_salesforce',
         'freshchat_get_chat_timings_config_proxy',
@@ -6934,6 +6936,7 @@ class Route
             'addon_fetch',
             'addon_fetch_multiple',
             'adj_fetch_by_id',
+            'is_admin_as_merchant',
             'adj_fetch_multiple',
             'app_delete_token',
             'app_fetch_payments',
@@ -10578,6 +10581,7 @@ class Route
         'fd_create_ticket'             => [Feature::ORG_FRESHDESK_CREATE_TICKET],
         'fd_reserve_balance_ticket'    => [Feature::ORG_FRESHDESK_CREATE_TICKET],
         'merchant_sub_create'          => [Feature::ORG_SUB_MERCHANT_CREATE],
+        'merchant_activation_save'     => [Feature::ORG_HIDE_ACTIVATION_FORM],
     ];
 
     /*

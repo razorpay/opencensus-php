@@ -1506,6 +1506,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BENEFICIARY_REGISTRATION_FAILED                       = 'BENEFICIARY_REGISTRATION_FAILED';
     const BENEFICIARY_REGISTRATION_SUMMARY                      = 'BENEFICIARY_REGISTRATION_SUMMARY';
 
+    const IS_ADMIN_LOGGED_IN_AS_MERCHANT                        = 'IS_ADMIN_LOGGED_IN_AS_MERCHANT';
+
     const MERCHANT_REPORT_GENERATION                            = 'MERCHANT_REPORT_GENERATION';
     const MERCHANT_REPORT_FILE_MAX_LIMIT_EXCEED                 = 'MERCHANT_REPORT_FILE_MAX_LIMIT_EXCEED';
     const MERCHANT_NOTIFY_HOLIDAY                               = 'MERCHANT_NOTIFY_HOLIDAY';

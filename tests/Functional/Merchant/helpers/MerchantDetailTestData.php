@@ -36,6 +36,19 @@ return [
         ],
     ],
 
+    'testIsAdminLoggedInAsMerchant' => [
+        'request'  => [
+            'url'    => '/merchant/is_admin_as_merchant',
+            'method' => 'GET',
+            'headers'=> [ 'X-Dashboard-AdminLoggedInAsMerchant' => 'true' ],
+        ],
+        'response' => [
+            'content' => [
+                'is_admin_as_merchant' =>  true,
+            ],
+        ],
+    ],
+
     'testIfSubMerchant' => [
         'request'  => [
             'url'    => '/merchant/activation',
@@ -45,6 +58,47 @@ return [
             'content' => [
                 'isSubMerchant' => true,
             ],
+        ],
+    ],
+
+    'testCanAccessActivationFormRoute' => [
+        'request'  => [
+            'content' => [
+                'bank_branch_ifsc'          => 'ICIC0000002'
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'headers'=> [ 'X-Dashboard-AdminLoggedInAsMerchant' => 'true' ],
+        ],
+        'response' => [
+            'content' => [
+                'bank_branch_ifsc'          => 'ICIC0000002',
+                'verification'              => [
+                    'status'          => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                ],
+                'can_submit'                => false,
+            ],
+        ],
+    ],
+
+    'testActivationFormRouteBlockedByFeature' => [
+        'request'  => [
+            'content' => [
+                'business_registered_state' => 'JAMMU AND KASHMIR',
+                'bank_branch_ifsc'          => 'ICIC0000002'
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response'  =>[
+            'content' =>[
+                'error'  => [
+                    'code' =>  ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
         ],
     ],
 

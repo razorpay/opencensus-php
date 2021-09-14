@@ -142,6 +142,43 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testIsAdminLoggedInAsMerchant()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCanAccessActivationFormRoute()
+    {
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id'     => '100000razorpay',
+                'name'          => 'hide_activation_form',
+                'entity_type'   => 'org',
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testActivationFormRouteBlockedByFeature()
+    {
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id'     => '100000razorpay',
+                'name'          => 'hide_activation_form',
+                'entity_type'   => 'org',
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testSubmitAutoActivate()
     {
         $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');

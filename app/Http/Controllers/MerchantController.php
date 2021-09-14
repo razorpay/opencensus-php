@@ -1022,6 +1022,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function isAdminLoggedInAsMerchant()
+    {
+        $response = $this->service(E::MERCHANT)->isAdminLoggedInAsMerchant();
+
+        return ApiResponse::json($response);
+    }
+
     public function postUploadActivationFile()
     {
         $input = Request::all();
