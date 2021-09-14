@@ -14,6 +14,10 @@ class Type
     const TEAM_SIZE                     = 'team_size';
     const MONTHLY_PAYOUT_COUNT          = 'monthly_payout_count';
 
+    // CA Account Status Types
+    const CA_ALLOCATED_BANK             = 'ca_allocated_bank';
+    const CA_PROCEEDED_BANK             = 'ca_proceeded_bank';
+
     //INTENT Types
     const CURRENT_ACCOUNT               = 'current_account';
     const PAYOUTS                       = 'payouts';

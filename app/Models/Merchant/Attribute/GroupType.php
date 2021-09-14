@@ -19,6 +19,11 @@ class GroupType
             Type::MONTHLY_PAYOUT_COUNT
         ],
 
+        Group::X_MERCHANT_CURRENT_ACCOUNTS => [
+            Type::CA_ALLOCATED_BANK,
+            Type::CA_PROCEEDED_BANK
+        ],
+
         Group::X_MERCHANT_INTENT => [
             Type::CURRENT_ACCOUNT,
             Type::PAYOUTS,

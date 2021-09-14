@@ -171,6 +171,35 @@ return [
         ],
     ],
 
+    'testMerchantUpsertingPreferencesForCa' => [
+        'request' => [
+            'content' => [
+                [
+                    'type' => 'ca_allocated_bank',
+                    'value' => 'true'
+                ],
+                [
+                    'type' => 'ca_proceeded_bank',
+                    'value' => 'true'
+                ]
+            ],
+            'url' => '/merchant/preferences/x_merchant_current_accounts',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type' => 'ca_allocated_bank',
+                    'value' => 'true'
+                ],
+                [
+                    'type' => 'ca_proceeded_bank',
+                    'value' => 'true'
+                ]
+            ]
+        ],
+    ],
+
     'testMerchantUpsertingPreferencesForIntent' => [
         'request' => [
             'content' => [
