@@ -4,18 +4,18 @@ namespace RZP\Services\TaxPayments;
 
 use Mail;
 use RZP\Constants\Mode;
-use RZP\Http\Request\Requests;
-use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Models\User\Entity;
-use RZP\Models\Settings\Module;
-use RZP\Http\Response\StatusCode;
-use RZP\Models\Settings\Accessor;
 use RZP\Exception\BadRequestException;
-use RZP\Models\User\Entity as UserEntity;
+use RZP\Http\Request\Requests;
+use RZP\Http\Response\StatusCode;
 use RZP\Mail\TaxPayments\GenericTaxPaymentEmail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Settings\Accessor;
+use RZP\Models\Settings\Module;
 use RZP\Models\Settings\Service as SettingsService;
+use RZP\Models\User\Entity;
+use RZP\Models\User\Entity as UserEntity;
+use RZP\Trace\TraceCode;
 
 /**
  * Class TaxPayments
@@ -26,27 +26,27 @@ use RZP\Models\Settings\Service as SettingsService;
 class Service
 {
     // MS endpoints
-    const BASE_PATH                 = 'twirp/razorpay.vendorpayments.taxpayments.Taxpayments';
-    const GET_ALL_SETTINGS          = 'GetAllSettings';
-    const ADD_OR_UPDATE_SETTINGS    = 'AddOrUpdateSettings';
-    const GET_TAX_PAYMENT_BY_ID     = 'GetTaxPayment';
-    const LIST_TAX_PAYMENTS         = 'ListTaxPayments';
-    const PAY_TAX_PAYMENTS          = 'PayTaxPayment';
-    const BULK_PAY_TAX_PAYMENTS     = 'BulkPayTaxPayments';
-    const INITIATE_MONTHLY_PAYOUTS  = 'InitiateMonthlyPayouts';
+    const BASE_PATH = 'twirp/razorpay.vendorpayments.taxpayments.Taxpayments';
+    const GET_ALL_SETTINGS = 'GetAllSettings';
+    const ADD_OR_UPDATE_SETTINGS = 'AddOrUpdateSettings';
+    const GET_TAX_PAYMENT_BY_ID = 'GetTaxPayment';
+    const LIST_TAX_PAYMENTS = 'ListTaxPayments';
+    const PAY_TAX_PAYMENTS = 'PayTaxPayment';
+    const BULK_PAY_TAX_PAYMENTS = 'BulkPayTaxPayments';
+    const INITIATE_MONTHLY_PAYOUTS = 'InitiateMonthlyPayouts';
     const CANCEL_QUEUED_PAYOUT_CRON = 'CancelQueuedPayoutCron';
-    const TAX_PAYMENT_ENABLED_KEY   = 'tax_payment_enabled';
-    const MONTHLY_SUMMARY           = 'MonthlySummary';
-    const ADD_PENALTY_CRON          = 'AddPenaltyCron';
-    const MARK_AS_PAID              = 'MarkAsPaid';
-    const UPLOAD_CHALLAN            = 'UploadChallan';
-    const UPDATE_CHALLAN_FILE_ID    = 'UpdateChallanFileId';
-    const ADMIN_ACTIONS             = 'AdminActions';
-    const EMAIL_CRON                = 'EmailCron';
+    const TAX_PAYMENT_ENABLED_KEY = 'tax_payment_enabled';
+    const MONTHLY_SUMMARY = 'MonthlySummary';
+    const ADD_PENALTY_CRON = 'AddPenaltyCron';
+    const MARK_AS_PAID = 'MarkAsPaid';
+    const UPLOAD_CHALLAN = 'UploadChallan';
+    const UPDATE_CHALLAN_FILE_ID = 'UpdateChallanFileId';
+    const ADMIN_ACTIONS = 'AdminActions';
+    const EMAIL_CRON = 'EmailCron';
     const CREATE_MANUAL_TAX_PAYMENT = 'CreateManualTaxPayment';
     const CREATE_DIRECT_TAX_PAYMENT = 'CreateDirectTaxPayment';
-    const PG_WEBHOOK_HANDLER        = 'WebHookHandler';
-    const EDIT_MANUAL_TAX_PAYMENT   = 'EditManualTaxPayment';
+    const PG_WEBHOOK_HANDLER = 'WebHookHandler';
+    const EDIT_MANUAL_TAX_PAYMENT = 'EditManualTaxPayment';
     const CANCEL_MANUAL_TAX_PAYMENT = 'CancelManualTaxPayment';
     const GET_TDS_CATEGORIES        = 'GetTdsCategories';
     const GET_INVALID_TAN_STATUS    = 'GetInvalidTanStatus';
@@ -56,23 +56,24 @@ class Service
     const UFH_BULK_DOWNLOAD         = 'InitiateBulkChallanDownload';
 
     // general constants
-    const DATA             = 'data';
-    const TEMPLATE_NAME    = 'template_name';
-    const SUBJECT          = 'subject';
-    const NAME             = 'name';
-    const TYPE             = 'type';
-    const ACCOUNT_NUMBER   = 'account_number';
-    const BALANCE          = 'balance';
-    const MERCHANT_ID      = 'merchant_id';
-    const SETTINGS         = 'settings';
-    const BANKING_ACCOUNT  = 'banking_account';
-    const MERCHANT_EMAIL   = 'merchant_email';
-    const CONTENT_TYPE     = 'Content-Type';
-    const X_TASK_ID        = 'X-Task-ID';
-    const X_APP_MODE       = 'X-App-Mode';
+    const DATA = 'data';
+    const TEMPLATE_NAME = 'template_name';
+    const SUBJECT = 'subject';
+    const NAME = 'name';
+    const TYPE = 'type';
+    const ACCOUNT_NUMBER = 'account_number';
+    const BALANCE = 'balance';
+    const MERCHANT_ID = 'merchant_id';
+    const SETTINGS = 'settings';
+    const BANKING_ACCOUNT = 'banking_account';
+    const MERCHANT_EMAIL = 'merchant_email';
+    const CONTENT_TYPE = 'Content-Type';
+    const X_TASK_ID = 'X-Task-ID';
+    const X_APP_MODE = 'X-App-Mode';
+    const CC_EMAILS = 'cc_emails';
     const DROPPING_REQUEST = 0;
-    const DEFAULT_OFFSET   = 0;
-    const DEFAULT_LIMIT    = 10;
+    const DEFAULT_OFFSET = 0;
+    const DEFAULT_LIMIT = 10;
 
     protected $app;
 
@@ -96,14 +97,13 @@ class Service
 
     public function cancel(MerchantEntity $merchant, string $taxPaymentId, array $input, UserEntity $user = null)
     {
-        if ($user === null)
-        {
+        if ($user === null) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
-                                          null,
-                                          [
-                                              'data'        => $input,
-                                              'merchant_id' => $merchant->getPublicId()
-                                          ]);
+                null,
+                [
+                    'data' => $input,
+                    'merchant_id' => $merchant->getPublicId()
+                ]);
         }
 
         $input['user_id'] = $user->getPublicId();
@@ -127,9 +127,10 @@ class Service
         (new Validator())->validateInput(Validator::SEND_MAIL, $input);
 
         Mail::queue(new GenericTaxPaymentEmail($input[self::MERCHANT_EMAIL],
-                                               $input[self::SUBJECT],
-                                               $input[self::TEMPLATE_NAME],
-                                               $input[self::DATA]));
+            $input[self::SUBJECT],
+            $input[self::TEMPLATE_NAME],
+            $input[self::DATA],
+            $input[self::CC_EMAILS]));
 
         return ['success' => true];
     }
@@ -143,14 +144,13 @@ class Service
 
     public function edit(MerchantEntity $merchant, string $taxPaymentId, array $input, UserEntity $user = null)
     {
-        if ($user === null)
-        {
+        if ($user === null) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
-                                          null,
-                                          [
-                                              'data'        => $input,
-                                              'merchant_id' => $merchant->getPublicId()
-                                          ]);
+                null,
+                [
+                    'data' => $input,
+                    'merchant_id' => $merchant->getPublicId()
+                ]);
         }
 
         $input['user_id'] = $user->getPublicId();
@@ -164,14 +164,13 @@ class Service
 
     public function create(MerchantEntity $merchant, array $input, UserEntity $user = null)
     {
-        if ($user === null)
-        {
+        if ($user === null) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
-                                          null,
-                                          [
-                                              'data'        => $input,
-                                              'merchant_id' => $merchant->getPublicId()
-                                          ]);
+                null,
+                [
+                    'data' => $input,
+                    'merchant_id' => $merchant->getPublicId()
+                ]);
         }
 
         $input['user_id'] = $user->getPublicId();
@@ -214,8 +213,7 @@ class Service
 
         $settingsOfEnabledMerchants = [];
 
-        foreach ($settings as $setting)
-        {
+        foreach ($settings as $setting) {
             $merchant = $this->repo->merchant->find($setting['entity_id']);
 
             $settingsAccessor = Accessor::for($merchant, Module::TAX_PAYMENTS);
@@ -226,37 +224,34 @@ class Service
 
             $bankingAccountInfo = null;
 
-            if (empty($accountNumber) === false)
-            {
+            if (empty($accountNumber) === false) {
                 $bankingAccount = $this->repo
                     ->banking_account
                     ->findByMerchantAndAccountNumberPublic($merchant, $accountNumber);
-                if ($bankingAccount !== null)
-                {
+                if ($bankingAccount !== null) {
                     $bankingAccountInfo = [
-                        self::NAME           => $bankingAccount->getBankName(),
-                        self::TYPE           => $bankingAccount->getAccountType(),
+                        self::NAME => $bankingAccount->getBankName(),
+                        self::TYPE => $bankingAccount->getAccountType(),
                         self::ACCOUNT_NUMBER => $bankingAccount->getAccountNumber(),
-                        self::BALANCE        => $bankingAccount->balance->getBalance()
+                        self::BALANCE => $bankingAccount->balance->getBalance()
                     ];
                 }
             }
 
             array_push($settingsOfEnabledMerchants,
                 [
-                    self::MERCHANT_ID     => $merchant->getId(),
-                    self::SETTINGS        => $settings,
+                    self::MERCHANT_ID => $merchant->getId(),
+                    self::SETTINGS => $settings,
                     self::BANKING_ACCOUNT => $bankingAccountInfo,
-                    self::MERCHANT_EMAIL  => $merchant->getEmail(),
+                    self::MERCHANT_EMAIL => $merchant->getEmail(),
                 ]);
         }
         return $settingsOfEnabledMerchants;
     }
 
-    public function getBooleanValue(string $value) :bool
+    public function getBooleanValue(string $value): bool
     {
-        if (empty($value) === true)
-        {
+        if (empty($value) === true) {
             return false;
         }
 
@@ -265,8 +260,7 @@ class Service
 
         $jsonDecoded = json_decode($jsonStr, true);
 
-        if ($jsonDecoded === null )
-        {
+        if ($jsonDecoded === null) {
             return false;
         }
 
@@ -279,20 +273,17 @@ class Service
         // we are expecting a json string in the body here
         $jsonInput = array_pull($input, 'json_data', null);
 
-        if ($jsonInput === null )
-        {
+        if ($jsonInput === null) {
             return ['message' => 'empty data'];
         }
 
         $parsedData = json_decode($jsonInput, true);
 
-        if ($parsedData == null)
-        {
+        if ($parsedData == null) {
             return ['message' => 'json could not be decoded'];
         }
 
-        if (empty($_FILES) === false)
-        {
+        if (empty($_FILES) === false) {
             $parsedData['file'] = base64_encode(file_get_contents($_FILES['file']['tmp_name']));
 
             $parsedData['file_name'] = $_FILES['file']['name'];
@@ -319,14 +310,13 @@ class Service
 
     public function payTaxPayment(MerchantEntity $merchant, string $taxPaymentId, array $input, UserEntity $user = null)
     {
-        if ($user === null)
-        {
+        if ($user === null) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
-                                          null,
-                                          [
-                                              'tax_payment_id' => $taxPaymentId,
-                                              'merchant_id'    => $merchant->getPublicId()
-                                          ]);
+                null,
+                [
+                    'tax_payment_id' => $taxPaymentId,
+                    'merchant_id' => $merchant->getPublicId()
+                ]);
         }
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::PAY_TAX_PAYMENTS);
 
@@ -339,8 +329,7 @@ class Service
 
     public function bulkPayTaxPayment(MerchantEntity $merchant, array $input, UserEntity $user = null)
     {
-        if ($user == null)
-        {
+        if ($user == null) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
         }
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::BULK_PAY_TAX_PAYMENTS);
@@ -359,8 +348,7 @@ class Service
 
     public function addOrUpdateSettings(MerchantEntity $merchant, array $input, UserEntity $user = null)
     {
-        if ($user === null)
-        {
+        if ($user === null) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
         }
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ADD_OR_UPDATE_SETTINGS);
@@ -399,8 +387,7 @@ class Service
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::MARK_AS_PAID);
 
-        if ($user === null)
-        {
+        if ($user === null) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
         }
 
@@ -428,8 +415,7 @@ class Service
     {
         $secret = array_get(getallheaders(), 'X-Razorpay-Signature', '');
 
-        if ($secret == '')
-        {
+        if ($secret == '') {
             return self::DROPPING_REQUEST;
         }
 
@@ -455,8 +441,8 @@ class Service
     }
 
     public function updateChallanFileId(MerchantEntity $merchant,
-                         string $taxPaymentId,
-                         array $input)
+                                        string $taxPaymentId,
+                                        array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPDATE_CHALLAN_FILE_ID);
 
@@ -476,7 +462,7 @@ class Service
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_DOWNTIME_SCHEDULE);
 
-        return $this->makeRequest(null, $url, ['time'=> now()]);
+        return $this->makeRequest(null, $url, ['time' => now()]);
     }
 
     public function reminderCallback(string $mode, string $entityType, string $entityId)

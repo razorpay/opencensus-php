@@ -21,7 +21,9 @@ class GenericTaxPaymentEmail extends Mailable
 
     protected $customSubject;
 
-    public function __construct(string $merchantEmail, string $subject, string $templateName, array $data)
+    protected $ccEmails;
+
+    public function __construct(string $merchantEmail, string $subject, string $templateName, array $data, array $ccEmails = [])
     {
         parent::__construct();
 
@@ -32,6 +34,8 @@ class GenericTaxPaymentEmail extends Mailable
         $this->templateName = $templateName;
 
         $this->merchantEmail = $merchantEmail;
+
+        $this->ccEmails = $ccEmails;
     }
 
     protected function addAttachments()
@@ -55,6 +59,15 @@ class GenericTaxPaymentEmail extends Mailable
     {
         $this->to($this->merchantEmail);
 
+        return $this;
+    }
+
+    protected function addCc()
+    {
+        if(!empty($this->ccEmails))
+        {
+            $this->cc($this->ccEmails);
+        }
         return $this;
     }
 
