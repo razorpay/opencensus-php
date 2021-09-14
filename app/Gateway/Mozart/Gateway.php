@@ -1413,6 +1413,26 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
+    /**
+     * @param $verify
+     * @return string
+     *
+     * Sample v2 verify response :
+     *  {
+        "data": {
+            "upi": {
+                "gateway_data": {
+                    "id": "Hv4iga1CmfWU3F0execte1"
+                },
+                "gateway_payment_id": "125227393136",
+                "merchant_reference": "Hv4iga1CmfWU3F0execte1",
+                "npci_reference_id": "125227393136",
+                "status_code": "0"
+                },
+            "version": "v2"
+            }
+        }
+     */
     protected function verifyUpiRecurringPayment($verify)
     {
         $input = $verify->input;
@@ -1440,7 +1460,15 @@ class Gateway extends Base\Gateway
             $action = Action::MANDATE_CREATE;
         }
 
-        $attributes = array_only($content['data'], (new UpiEntity())->getFillable());
+        if ((isset($content['data']['version']) === true) and
+            ($content['data']['version'] === 'v2'))
+        {
+            $attributes = array_only($content['data']['upi'], (new UpiEntity())->getFillable());
+        }
+        else
+        {
+            $attributes = array_only($content['data'], (new UpiEntity())->getFillable());
+        }
 
         $new = array_pull($attributes, UpiEntity::GATEWAY_DATA);
 
