@@ -447,40 +447,11 @@ class MerchantTest extends TestCase
         $response = $this->startTest();
 
         $this->assertArrayKeysExist($response, ['rtb_details']);
-        $this->assertEquals(0, $response['rtb_details']['target_gmv']);
-        $this->assertEquals(0, $response['rtb_details']['#customers_since_activation']);
+        $this->assertEquals(true, $response['rtb_details']);
     }
 
     public function testGetBadgeDetailsForRTBEnabledCustomRedis()
     {
-        $start = new Carbon('first day of last month');
-        $end = new Carbon('last day of last month');
-
-        $payment1 = $this->fixtures->create('payment', [
-            'id'            => 'PAY12345678900',
-            'status'        => 'captured',
-            'amount'        => 5000,
-            'captured_at'   => $start->getTimestamp(),
-            'contact'       => '+911212121212',
-        ]);
-
-        $payment2 = $this->fixtures->create('payment', [
-            'id'            => 'PAY00987654321',
-            'status'        => 'captured',
-            'amount'        => 8000,
-            'captured_at'   => $end->getTimestamp(),
-            'contact'       => '+911212121212',
-        ]);
-
-        $this->assertEquals($start->getTimestamp(), $payment1['captured_at']);
-        $this->assertEquals($end->getTimestamp(), $payment2['captured_at']);
-
-        $pay1 = $this->getDbEntityById('payment', 'PAY12345678900');
-        $pay2 = $this->getDbEntityById('payment', 'PAY00987654321');
-
-        $this->assertEquals($payment1['captured_at'], $pay1['captured_at']);
-        $this->assertEquals($payment2['captured_at'], $pay2['captured_at']);
-
         $this->fixtures->create('feature', [
             'name'      => 'rzp_trusted_badge',
             'entity_id' => '10000000000000',
@@ -495,8 +466,7 @@ class MerchantTest extends TestCase
         $response = $this->startTest();
 
         $this->assertArrayKeysExist($response, ['rtb_details']);
-        $this->assertEquals(136.5, $response['rtb_details']['target_gmv']);
-        $this->assertEquals(1, $response['rtb_details']['#customers_since_activation']);
+        $this->assertEquals(true, $response['rtb_details']);
     }
 
     public function testMerchantFetchCardEnabled()

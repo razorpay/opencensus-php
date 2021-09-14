@@ -6845,19 +6845,10 @@ class Service extends Base\Service
 
     public function getRZPTrustedBadgeDetails()
     {
-        $rtbDetails = [];
-
         if ($this->merchant->isFeatureEnabled(Feature\Constants::RZP_TRUSTED_BADGE)) {
 
-            $targetGMV = 1.05 * (new Core())->getLastMonthGMV($this->merchant->getMerchantId());
-
-            $customersCount = (new Core())->getMerchantCustomerCount($this->merchant->getId());
-
-            $rtbDetails['target_gmv'] = $targetGMV;
-            $rtbDetails['#customers_since_activation'] = $customersCount;
-
             return [
-                'rtb_details' => $rtbDetails,
+                'rtb_details' => true,
             ];
         }
         else

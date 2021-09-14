@@ -144,24 +144,7 @@ class Checkout
     protected function fillRTBDetails(Entity $merchant, array & $data)
     {
         if ($merchant->isFeatureEnabled(Feature\Constants::RZP_TRUSTED_BADGE) === true) {
-            $rtb = [];
-
-            $latestDispute = $this->repo->dispute->getLatestLostOrClosedDisputeByMerchantId($merchant->getId());
-            $customersCount = (new Merchant\Core())->getMerchantCustomerCount($merchant->getId());
-            $activeSince = $merchant->getActivatedAt();
-
-            $lastDisputeAt = null;
-
-            if ($latestDispute !== null)
-            {
-                $lastDisputeAt = $latestDispute->getUpdatedAt();
-            }
-
-            $rtb['latest_dispute_at'] = $lastDisputeAt;
-            $rtb['customers_served'] = $customersCount;
-            $rtb['active_since'] = $activeSince;
-
-            $data['rtb'] = $rtb;
+            $data['rtb'] = true;
         }
     }
 

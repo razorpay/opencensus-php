@@ -1676,34 +1676,6 @@ class CheckoutPreferencesTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
-        $dispute = $this->fixtures->create('dispute',
-            [
-                'id' => '1000000dispute',
-                'merchant_id' => $merchant['id'],
-                'status' => 'lost',
-            ]
-        );
-
-        $this->fixtures->create('payment', [
-            'status'        => 'captured',
-            'contact'       => '+911212121212',
-        ]);
-
-        $this->fixtures->create('payment', [
-            'status'        => 'captured',
-            'contact'       => '+911212121212',
-        ]);
-
-        $this->fixtures->create('payment', [
-            'status'        => 'captured',
-            'contact'       => '+911212121213',
-        ]);
-
-        $this->fixtures->create('payment', [
-            'status'        => 'captured',
-            'contact'       => '+911212121214',
-        ]);
-
         $this->fixtures->merchant->addFeatures(['rzp_trusted_badge']);
 
         $testData = $this->testData[__FUNCTION__];
@@ -1711,19 +1683,8 @@ class CheckoutPreferencesTest extends TestCase
         $response = $this->runRequestResponseFlow($testData);
 
         $this->assertArrayHasKey('rtb', $response);
-        $this->assertArrayHasKey('latest_dispute_at', $response['rtb']);
-        $this->assertArrayHasKey('customers_served', $response['rtb']);
-        $this->assertArrayHasKey('active_since', $response['rtb']);
 
-        $this->assertEquals(4, $response['rtb']['customers_served']);
-
-        $activeSicnce = $merchant['activated_at'];
-
-        $this->assertEquals($activeSicnce, $response['rtb']['active_since']);
-
-        $lastDisputeAt = $dispute['updated_at'];
-
-        $this->assertEquals($lastDisputeAt, $response['rtb']['latest_dispute_at']);
+        $this->assertEquals(true, $response['rtb']);
     }
 
     public function testGetCheckoutPreferencesWithoutRTB()

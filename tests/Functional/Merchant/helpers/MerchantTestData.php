@@ -8236,8 +8236,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'rtb' => [
-                ]
+                'rtb' => true,
             ],
         ],
     ],

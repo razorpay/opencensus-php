@@ -5179,65 +5179,6 @@ class Core extends Base\Core
         return $returnArray;
     }
 
-    public function getLastMonthGMV(string $merchantId): int
-    {
-        $lastMonthGMV = $this->app['cache']->get(self::LAST_MONTH_GMV."_".$merchantId);
-
-        if ($lastMonthGMV !== null)
-        {
-            $this->trace->info(TraceCode::REDIS_KEY_FETCH,
-                ['msg' => 'found last month gmv from cache',]);
-            return $lastMonthGMV/100;
-        }
-
-        $start = new Carbon('first day of last month');
-        $end = new Carbon('last day of last month');
-
-        $sumOfCapturedQuery = $this->repo->payment->fetchTotalOfCapturedBetweenTimestamp($start->startOfMonth()->getTimestamp(), $end->endOfMonth()->getTimestamp(), $merchantId);
-
-        $sumOfCapturedPayments = 0;
-
-        if ($sumOfCapturedQuery !== null)
-        {
-            $sumOfCapturedPayments = $sumOfCapturedQuery->getAttribute('gmv');
-        }
-
-        $today = Carbon::today(Timezone::IST);
-        $monthEnd = Carbon::now()->endOfMonth();
-        $ttl = $monthEnd->diffInHours($today);
-
-        // Multiplying by 60 since cache put() expect ttl in seconds
-        $this->app['cache']->put(self::LAST_MONTH_GMV."_".$merchantId, $sumOfCapturedPayments, $ttl * 60 * 60);
-
-        return $sumOfCapturedPayments/100;
-    }
-
-    public function getMerchantCustomerCount($merchantId) : int
-    {
-        $customerCount = $this->app['cache']->get(self::CUSTOMER_COUNT."_".$merchantId);
-
-        if ($customerCount !== null)
-        {
-            $this->trace->info(TraceCode::REDIS_KEY_FETCH,
-                ['msg' => 'found customer count from cache',]);
-
-            return $customerCount;
-        }
-
-        $customerCount = $this->repo->payment->getTotalCustomerByMerchantId($merchantId);
-
-        $count = 0;
-
-        if ($customerCount !== null)
-        {
-            $count = $customerCount->getAttribute('count');
-        }
-
-        $this->app['cache']->put(self::CUSTOMER_COUNT."_".$merchantId, $count, 7 * 24 * 60 * 60);
-
-        return $count;
-    }
-
     /**
      * @param Base\Entity $merchant
      * @throws Exception\RuntimeException
