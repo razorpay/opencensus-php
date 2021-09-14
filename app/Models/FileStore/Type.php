@@ -212,6 +212,7 @@ class Type
     const ICICI_EMI_FILE_MAIL               = 'icici_emi_file_mail';
     const SBI_EMI_FILE                      = 'sbi_emi_file';
     const SBI_EMI_OUTPUT_FILE               = 'sbi_emi_output_file';
+    const ONECARD_EMI_FILE                  = 'onecard_emi_file';
     const CITI_EMI_FILE                     = 'citi_emi_file';
     const BOB_EMI_FILE                      = 'bob_emi_file';
 
@@ -335,6 +336,7 @@ class Type
             self::RBL_EMI_FILE,
             self::SBI_EMI_FILE,
             self::SBI_EMI_OUTPUT_FILE,
+            self::ONECARD_EMI_FILE,
             self::CITI_EMI_FILE,
             self::SCBL_EMI_FILE,
             self::BOB_EMI_FILE,
@@ -424,6 +426,7 @@ class Type
         self::RBL_EMI_FILE,
         self::SBI_EMI_FILE,
         self::SBI_EMI_OUTPUT_FILE,
+        self::ONECARD_EMI_FILE,
         self::BOB_EMI_FILE,
         self::CITI_EMI_FILE,
         self::SCBL_EMI_FILE,
@@ -595,6 +598,7 @@ class Type
 
         self::BEAM_BUCKET_CONFIG => [
             self::SBI_EMI_FILE,
+            self::ONECARD_EMI_FILE,
             self::SCBL_EMI_FILE,
             self::ICICI_EMI_FILE_SFTP,
             self::ICICI_EMI_REFUND_FILE,

@@ -16,6 +16,7 @@ class Constants
     const IDFC             = 'idfc';
     const VIJAYA           = 'vijaya';
     const INDUSIND         = 'indusind';
+    const ONECARD          = 'onecard';
     const RBL              = 'rbl';
     const SCBL             = 'scbl';
     const UPI_ICICI        = 'upi_icici';
@@ -106,6 +107,7 @@ class Constants
             self::SBI,
             self::CITI,
             self::BOB,
+            self::ONECARD,
         ],
         Type::COMBINED => [
             self::KOTAK,
@@ -299,7 +301,6 @@ class Constants
             self::RBL      => ['Rblcards.emi@razorpay.com'],
             self::SCBL     => ['scbl.emi@razorpay.com'],
             self::SBI      => ['emi.ops@sbicard.com', 'deepak.semwal@sbicard.com', 'settlements@razorpay.com', 'Divya.Verma@sbicard.com', 'albin.george@razorpay.com'],
-            // todo: Add the recepients to the bank group
             self::CITI     => ['emi-citibank@razorpay.com'],
             self::BOB      => ['bob.cc.emi@razorpay.com'],
         ],

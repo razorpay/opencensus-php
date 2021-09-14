@@ -118,7 +118,8 @@ class Entity extends Base\PublicEntity
 
     protected function generateRecipients(array $input)
     {
-        if (empty($input[self::RECIPIENTS]) === true)
+        if ((empty($input[self::RECIPIENTS]) === true) and
+            (isset(Constants::RECIPIENTS_MAP[$input[Entity::TYPE]][$input[Entity::TARGET]]) === true))
         {
             $recipients = Constants::RECIPIENTS_MAP[$input[Entity::TYPE]][$input[Entity::TARGET]];
 

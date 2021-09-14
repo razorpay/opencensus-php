@@ -7,10 +7,12 @@ use RZP\Models\Merchant;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Emi\Entity as EmiEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class EmiTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
 
     protected function setUp(): void
     {
@@ -279,5 +281,52 @@ class EmiTest extends TestCase
         $this->fixtures->create('emi_plan');
 
         $this->startTest();
+    }
+
+    public function testAddCobrandingPartnerEmiPlan()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testAddMultipleEmiPlansWithSameDuration()
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'content' => [
+                'cobranding_partner' => 'onecard',
+                'duration'           => 3,
+                'rate'               => 1045,
+                'methods'            => 'card',
+                'min_amount'         => 400000,
+                'merchant_id'        => '100000Razorpay',
+                'type'               => 'credit',
+            ],
+            'url'    => '/emi',
+            'method' => 'post',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $plan = $this->getDbLastEntityToArray('emi_plan');
+        $this->assertEquals($plan['id'], $content['id']);
+
+        unset($request['content']['cobranding_partner']);
+        $request['content']['bank'] = 'KKBK';
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $plan = $this->getDbLastEntityToArray('emi_plan');
+        $this->assertEquals($plan['id'], $content['id']);
+
+        unset($request['content']['bank']);
+        $request['content']['network'] = 'AMEX';
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $plan = $this->getDbLastEntityToArray('emi_plan');
+        $this->assertEquals($plan['id'], $content['id']);
     }
 }

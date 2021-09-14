@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const METHODS               = 'methods';
     const MIN_AMOUNT            = 'min_amount';
     const ISSUER_NAME           = 'issuer_name';
+    const COBRANDING_PARTNER    = 'cobranding_partner';
     const ISSUER_PLAN_ID        = 'issuer_plan_id';
     const SUBVENTION            = 'subvention';
     const MERCHANT_PAYBACK      = 'merchant_payback';
@@ -45,6 +46,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::BANK,
         self::NETWORK,
+        self::COBRANDING_PARTNER,
         self::TYPE,
         self::RATE,
         self::DURATION,
@@ -60,6 +62,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::BANK,
         self::NETWORK,
+        self::COBRANDING_PARTNER,
         self::TYPE,
         self::ISSUER,
         self::ISSUER_NAME,
@@ -81,13 +84,14 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::MIN_AMOUNT       => 300000,
-        self::BANK             => null,
-        self::NETWORK          => null,
-        self::TYPE             => Type::CREDIT,
-        self::ISSUER_PLAN_ID   => null,
-        self::SUBVENTION       => Subvention::CUSTOMER,
-        self::MERCHANT_PAYBACK => 0,
+        self::MIN_AMOUNT         => 300000,
+        self::BANK               => null,
+        self::NETWORK            => null,
+        self::TYPE               => Type::CREDIT,
+        self::ISSUER_PLAN_ID     => null,
+        self::COBRANDING_PARTNER => null,
+        self::SUBVENTION         => Subvention::CUSTOMER,
+        self::MERCHANT_PAYBACK   => 0,
     ];
 
     protected $casts = [
@@ -136,6 +140,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BANK);
     }
 
+    public function getCobrandingPartner()
+    {
+        return $this->getAttribute(self::COBRANDING_PARTNER);
+    }
+
     public function getNetwork()
     {
         return $this->getAttribute(self::NETWORK);
@@ -182,7 +191,7 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Issuer is either a bank or a network
+     * Issuer is a bank, a network or a cobranding partner
      *
      * @return string
      */
@@ -190,12 +199,18 @@ class Entity extends Base\PublicEntity
     {
         $bank = $this->getBank();
 
+        $network = $this->getNetwork();
+
         if (is_null($bank) === false)
         {
             return $bank;
         }
+        else if (is_null($network) === false)
+        {
+            return $network;
+        }
 
-        return $this->getNetwork();
+        return $this->getCobrandingPartner();
     }
 
     /**

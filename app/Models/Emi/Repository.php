@@ -9,6 +9,7 @@ use RZP\Models\Card\IIN;
 use RZP\Models\Card\Network;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Card\CobrandingPartner;
 
 class Repository extends Base\Repository
 {
@@ -17,8 +18,9 @@ class Repository extends Base\Repository
     protected $entity = 'emi_plan';
 
     protected $appFetchParamRules = array(
-        Entity::BANK            => 'sometimes|string|size:4',
-        Entity::NETWORK         => 'sometimes|string|max:12',
+        Entity::BANK               => 'sometimes|string|size:4',
+        Entity::NETWORK            => 'sometimes|string|max:12',
+        Entity::COBRANDING_PARTNER => 'sometimes|string',
     );
 
     private function fetchEmiPlansFromCardPaymentsService(string $merchantId): PublicCollection
@@ -66,6 +68,8 @@ class Repository extends Base\Repository
 
         $network = $iin->getNetworkCode();
 
+        $cobrandingPartner = $iin->getCobrandingPartner();
+
         $query = $this->newQuery()
                       ->where(Entity::DURATION, '=', $duration);
 
@@ -73,7 +77,13 @@ class Repository extends Base\Repository
             Entity::DURATION => $duration,
         ];
 
-        if ($bank)
+        if ($cobrandingPartner === CobrandingPartner::ONECARD)
+        {
+            $query->where(Entity::COBRANDING_PARTNER, '=', $cobrandingPartner);
+
+            $cpsQuery[Entity::COBRANDING_PARTNER] = $cobrandingPartner;
+        }
+        else if ($bank)
         {
             $query->where(Entity::BANK, '=', $bank);
 

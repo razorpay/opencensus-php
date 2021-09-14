@@ -339,6 +339,17 @@ class MethodsTest extends TestCase
         $this->startTest();
     }
 
+    public function testOnecardMerchantMethods()
+    {
+        $this->fixtures->merchant->enableEmi('10000000000000');
+
+        $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchGooglePayForCardsMethod()
     {
         $this->ba->proxyAuth();

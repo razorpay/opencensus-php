@@ -661,6 +661,65 @@ class GatewayEmiFileTest extends TestCase
         Mail::assertQueued(EmiMail\File::class);
     }
 
+    public function testGenerateEmiFileForOneCard()
+    {
+        Mail::fake();
+
+        $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
+
+        // Enable EMI on iin
+        $this->fixtures->create('iin',
+            [
+                'iin'                => '402275',
+                'category'           => 'STANDARD',
+                'network'            => 'MasterCard',
+                'type'               => 'credit',
+                'country'            => 'IN',
+                'issuer_name'        => 'SBM Bank',
+                'issuer'             => 'STCB',
+                'cobranding_partner' => 'onecard',
+                'emi'                => 1,
+                'trivia'             => 'random trivia'
+            ]);
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('4022750600094037', 3);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status' => 'captured',
+                'method' => 'emi',
+            ],
+            $payment
+        );
+
+        $this->ba->adminAuth();
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->setCardPaymentMockResponse(
+            [
+                $payment['id'] => [
+                    'rrn' => '654321',
+                ],
+            ]
+        );
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+    }
+
     protected function makeEmiPaymentOnCard($card, $emiDuration,
         $save = 0, $appToken = null, $customerId = null, $merchantSubvention = false)
     {
@@ -770,5 +829,16 @@ class GatewayEmiFileTest extends TestCase
             ->mock();
 
         $this->app['beam']->setMockService($service);
+    }
+
+    protected function setCardPaymentMockResponse($mockedResponse)
+    {
+        $mock = Mockery::mock(CardPaymentService::class)->makePartial();
+
+        $mock->shouldReceive([
+            'fetchAuthorizationData' => $mockedResponse
+        ]);
+
+        $this->app->instance('card.payments', $mock);
     }
 }

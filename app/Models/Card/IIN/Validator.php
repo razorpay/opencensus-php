@@ -10,41 +10,43 @@ use RZP\Models\Card;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::IIN            => 'required|string|regex:/^[0-9]{6}$/',
-        Entity::NETWORK        => 'required',
-        Entity::TYPE           => 'required',
-        Entity::SUBTYPE        => 'filled|string|custom',
-        Entity::PRODUCT_CODE     => 'sometimes',
-        Entity::COUNTRY        => 'sometimes|nullable|size:2',
-        Entity::CATEGORY       => 'sometimes',
-        Entity::ISSUER         => 'sometimes',
-        Entity::TRIVIA         => 'sometimes',
-        Entity::ISSUER_NAME    => 'sometimes',
-        Entity::EMI            => 'sometimes|integer|in:0,1',
-        Entity::ENABLED        => 'sometimes|integer|in:0,1',
-        Entity::FLOWS          => 'sometimes|array|custom',
-        Entity::MESSAGE_TYPE   => 'sometimes|string|custom',
-        Entity::RECURRING      => 'sometimes|integer|in:0,1',
-        Entity::MANDATE_HUBS   => 'sometimes|array|custom',
+        Entity::IIN                => 'required|string|regex:/^[0-9]{6}$/',
+        Entity::NETWORK            => 'required',
+        Entity::TYPE               => 'required',
+        Entity::SUBTYPE            => 'filled|string|custom',
+        Entity::PRODUCT_CODE       => 'sometimes',
+        Entity::COUNTRY            => 'sometimes|nullable|size:2',
+        Entity::CATEGORY           => 'sometimes',
+        Entity::ISSUER             => 'sometimes',
+        Entity::TRIVIA             => 'sometimes',
+        Entity::ISSUER_NAME        => 'sometimes',
+        Entity::COBRANDING_PARTNER => 'sometimes',
+        Entity::EMI                => 'sometimes|integer|in:0,1',
+        Entity::ENABLED            => 'sometimes|integer|in:0,1',
+        Entity::FLOWS              => 'sometimes|array|custom',
+        Entity::MESSAGE_TYPE       => 'sometimes|string|custom',
+        Entity::RECURRING          => 'sometimes|integer|in:0,1',
+        Entity::MANDATE_HUBS       => 'sometimes|array|custom',
     );
 
     protected static $editRules = array(
-        Entity::NETWORK        => 'required_with:category',
-        Entity::TYPE           => 'required_with:category',
-        Entity::SUBTYPE        => 'filled|string|custom',
-        Entity::PRODUCT_CODE     => 'sometimes',
-        Entity::COUNTRY        => 'sometimes|nullable|size:2',
-        Entity::CATEGORY       => 'sometimes',
-        Entity::ISSUER         => 'sometimes',
-        Entity::TRIVIA         => 'sometimes',
-        Entity::ISSUER_NAME    => 'sometimes',
-        Entity::EMI            => 'sometimes|integer|in:0,1',
-        Entity::ENABLED        => 'sometimes|integer|in:0,1',
-        Entity::FLOWS          => 'sometimes|array|filled|custom',
-        Entity::LOCKED         => 'sometimes|integer|in:0,1',
-        Entity::MESSAGE_TYPE   => 'sometimes|string|custom',
-        Entity::RECURRING      => 'sometimes|integer|in:0,1',
-        Entity::MANDATE_HUBS   => 'sometimes|array|filled|custom',
+        Entity::NETWORK            => 'required_with:category',
+        Entity::TYPE               => 'required_with:category',
+        Entity::SUBTYPE            => 'filled|string|custom',
+        Entity::PRODUCT_CODE       => 'sometimes',
+        Entity::COUNTRY            => 'sometimes|nullable|size:2',
+        Entity::CATEGORY           => 'sometimes',
+        Entity::ISSUER             => 'sometimes',
+        Entity::TRIVIA             => 'sometimes',
+        Entity::ISSUER_NAME        => 'sometimes',
+        Entity::COBRANDING_PARTNER => 'sometimes',
+        Entity::EMI                => 'sometimes|integer|in:0,1',
+        Entity::ENABLED            => 'sometimes|integer|in:0,1',
+        Entity::FLOWS              => 'sometimes|array|filled|custom',
+        Entity::LOCKED             => 'sometimes|integer|in:0,1',
+        Entity::MESSAGE_TYPE       => 'sometimes|string|custom',
+        Entity::RECURRING          => 'sometimes|integer|in:0,1',
+        Entity::MANDATE_HUBS       => 'sometimes|array|filled|custom',
     );
 
     protected static $editBulkRules = [
@@ -71,6 +73,7 @@ class Validator extends Base\Validator
         Entity::CATEGORY,
         Entity::ISSUER,
         Entity::COUNTRY,
+        Entity::COBRANDING_PARTNER,
     ];
 
     protected static $editValidators = [
@@ -79,6 +82,7 @@ class Validator extends Base\Validator
         Entity::CATEGORY,
         Entity::ISSUER,
         Entity::COUNTRY,
+        Entity::COBRANDING_PARTNER,
     ];
 
     protected static $binListValidationRules = [
@@ -119,6 +123,20 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid category: ' . $input[Entity::CATEGORY]);
+        }
+    }
+
+    protected function validateCobrandingPartner($input)
+    {
+        if (!isset($input[Entity::COBRANDING_PARTNER]))
+        {
+            return;
+        }
+
+        if (Card\CobrandingPartner::isValid($input[Entity::COBRANDING_PARTNER]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid cobranding parter: ' . $input[Entity::COBRANDING_PARTNER]);
         }
     }
 

@@ -46,6 +46,9 @@ class CardPaymentService
     const ERROR     = 'error';
     const AUTHORIZE = 'authorize';
 
+    // Entities fetch params
+    const RRN = 'rrn';
+
     // admin path
     const ADMIN_PATH = 'admin/entities/';
 
@@ -514,6 +517,7 @@ class CardPaymentService
                 'emi_plan_fetch.type'               => 'content.type',
                 'emi_plan_fetch.duration'           => 'content.duration',
                 'emi_plan_fetch.durations'          => 'content.durations',
+                'emi_plan_fetch.cobranding_partner' => 'content.cobranding_partner',
             ];
 
             $requestTrace = [];

@@ -48,6 +48,9 @@ class CreateIins extends Migration
             $table->string(IIN\Entity::ISSUER_NAME)
                   ->nullable();
 
+            $table->string(IIN\Entity::COBRANDING_PARTNER, 20)
+                ->nullable();
+
             $table->tinyInteger(IIN\Entity::EMI)
                   ->default(0);
 
@@ -80,6 +83,7 @@ class CreateIins extends Migration
 
             $table->index(IIN\Entity::OTP_READ);
             $table->index(IIN\Entity::EMI);
+            $table->index(IIN\Entity::COBRANDING_PARTNER);
             $table->index(IIN\Entity::CREATED_AT);
         });
     }

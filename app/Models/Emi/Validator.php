@@ -13,8 +13,9 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::MERCHANT_ID             => 'required|string|size:14',
-        Entity::BANK                    => 'required_without:network|size:4',
-        Entity::NETWORK                 => 'required_without:bank|max:5|in:AMEX,BAJAJ',
+        Entity::BANK                    => 'required_without_all:network,cobranding_partner|size:4',
+        Entity::NETWORK                 => 'required_without_all:bank,cobranding_partner|max:5|in:AMEX,BAJAJ',
+        Entity::COBRANDING_PARTNER      => 'required_without_all:bank,network|in:onecard',
         Entity::TYPE                    => 'sometimes|in:credit,debit',
         Entity::DURATION                => 'required|integer|in:3,6,9,12,18,24',
         Entity::RATE                    => 'required|integer|min:0',
@@ -57,13 +58,17 @@ class Validator extends Base\Validator
             Entity::TYPE        => $newEmiPlan->getType(),
         ];
 
-        if ($newEmiPlan->getNetwork() === null)
+        if (($newEmiPlan->getNetwork() === null) && ($newEmiPlan->getCobrandingPartner() === null))
         {
             $params[Entity::BANK] = $newEmiPlan->getBank();
         }
-        else
+        else if (($newEmiPlan->getBank() === null) && ($newEmiPlan->getCobrandingPartner() === null))
         {
             $params[Entity::NETWORK] = $newEmiPlan->getNetwork();
+        }
+        else
+        {
+            $params[Entity::COBRANDING_PARTNER] = $newEmiPlan->getCobrandingPartner();
         }
 
         $repo = App::getFacadeRoot()['repo'];

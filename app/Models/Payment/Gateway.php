@@ -2424,6 +2424,8 @@ class Gateway
         IFSC::SBIN,
         IFSC::CITI,
         IFSC::BARB,
+        IFSC::STCB,
+        IFSC::IDFB,
     ];
 
     public static $emiBanksUsingCardAndEmiTerminals = [

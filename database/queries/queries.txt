@@ -6344,7 +6344,6 @@ ALTER TABLE merchant_business_details
 ALTER TABLE iins
     ADD COLUMN mandate_hubs INTEGER UNSIGNED DEFAULT 0;
 
-
 ALTER TABLE merchant_banks
     ADD COLUMN additional_wallets json DEFAULT NULL;
 
@@ -6362,3 +6361,9 @@ ALTER TABLE card_mandate_notifications
 
 ALTER TABLE virtual_account_tpv
     ADD COLUMN deleted_at INTEGER DEFAULT NULL;
+
+ALTER TABLE iins
+    ADD COLUMN cobranding_partner VARCHAR(20);
+
+ALTER TABLE emi_plans
+    ADD COLUMN cobranding_partner VARCHAR(20);

@@ -14,6 +14,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Mail\Emi as EmiMail;
 use RZP\Models\Gateway\File\Status;
+use RZP\Services\CardPaymentService;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
@@ -197,6 +198,18 @@ class Base extends BaseProcessor
         $cardNumber = (new Card\CardVault)->getCardNumber($cardToken);
 
         return $cardNumber;
+    }
+
+    protected function fetchRrnDetails($data)
+    {
+        $paymentIds = array_pluck($data['items'], 'id');
+
+        $request = [
+            'fields'      => [CardPaymentService::RRN],
+            'payment_ids' => $paymentIds,
+        ];
+
+        return $this->app['card.payments']->fetchAuthorizationData($request);
     }
 
     protected function getAuthCode(Payment\Entity $payment)

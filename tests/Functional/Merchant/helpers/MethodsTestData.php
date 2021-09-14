@@ -267,6 +267,35 @@ return [
         ],
     ],
 
+    'testOnecardMerchantMethods' => [
+        'request' => [
+            'url' => '/merchant/methods',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'emi' => true,
+                'emi_plans' => [
+                    'onecard' => [
+                        'min_amount' =>300000,
+                        'plans' => [
+                            '3' => 12,
+                        ],
+                    ],
+                ],
+                'emi_options' => [
+                    'onecard' => [
+                        [
+                            'duration'   => 3,
+                            'interest'   => 12,
+                            'min_amount' => 300000,
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testFetchGooglePayForCardsMethod' => [
         'request' => [
             'url' => '/merchant/methods',

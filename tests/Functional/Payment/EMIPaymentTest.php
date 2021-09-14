@@ -335,6 +335,42 @@ class EMIPaymentTest extends TestCase
         Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
+    public function testOneCardEmiPayment()
+    {
+        $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
+
+        // Enable EMI on iin
+        $this->fixtures->create('iin',
+            [
+                'iin'                => '402275',
+                'category'           => 'STANDARD',
+                'network'            => 'MasterCard',
+                'type'               => 'credit',
+                'country'            => 'IN',
+                'issuer_name'        => 'SBM Bank',
+                'issuer'             => 'STCB',
+                'cobranding_partner' => 'onecard',
+                'emi'                => 1,
+                'trivia'             => 'random trivia'
+            ]);
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('4022750600094037', 3);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status' => 'captured',
+                'method' => 'emi',
+            ],
+            $payment
+        );
+    }
+
     private function zipFileName($filePath)
     {
         $pathinfo = pathinfo($filePath);

@@ -481,6 +481,50 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchEmiPaymentsOfCobrandingPartnerWithRelationsBetween($from, $to, $cobrandingPartner, $relations)
+    {
+        $tRepo = $this->repo->terminal;
+
+        $tTableName = $tRepo->getTableName();
+
+        $cardTableName = $this->repo->card->getTableName();
+
+        $iinTableName = $this->repo->iin->getTableName();
+
+        $terminalEmi = $tRepo->dbColumn(Terminal\Entity::EMI);
+
+        $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+
+        $paymentCardId = $this->dbColumn(Entity::CARD_ID);
+
+        $cardIin = $this->repo->card->dbColumn(Card\Entity::IIN);
+
+        $iin = $this->repo->iin->dbColumn(Card\IIN\Entity::IIN);
+
+        $iinCobrandingPartner = $this->repo->iin->dbColumn(Card\IIN\Entity::COBRANDING_PARTNER);
+
+        $paymentData = $this->dbColumn('*');
+
+        $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
+
+        $cardId = $this->repo->card->dbColumn(Card\Entity::ID);
+
+        $paymentStatus = $this->dbColumn(Entity::STATUS);
+
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+            ->join($tTableName, $paymentTerminalId, '=', $terminalId)
+            ->join($cardTableName, $paymentCardId, '=', $cardId)
+            ->join($iinTableName, $cardIin, '=', $iin)
+            ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+            ->where($paymentStatus, '=', Status::CAPTURED)
+            ->where($iinCobrandingPartner, '=', $cobrandingPartner)
+            ->where(Entity::METHOD, '=', Method::EMI)
+            ->where($terminalEmi, '=', false)
+            ->with($relations)
+            ->select($paymentData)
+            ->get();
+    }
+
     public function fetchCreatedPaymentsWithInternalError($timestamp)
     {
         return $this->newQuery()

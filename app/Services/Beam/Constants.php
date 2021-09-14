@@ -18,6 +18,8 @@ class Constants
 
     const SBI_EMI_FILE_JOB_NAME        = 'sbi_emi';
 
+    const ONECARD_EMI_FILE_JOB_NAME    = 'onecard_emi';
+
     const SBI_UPI_REFUND_FILE_JOB_NAME = 'sbi_upi_refund';
 
     const ICIC_EMI_FILE_JOB_NAME       = 'icici_emi';

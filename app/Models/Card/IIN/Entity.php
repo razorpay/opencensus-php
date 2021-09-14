@@ -18,24 +18,25 @@ class Entity extends Base\PublicEntity
 {
     use Cacheable;
 
-    const IIN           = 'iin';
-    const CATEGORY      = 'category';
-    const NETWORK       = 'network';
-    const TYPE          = 'type';
-    const SUBTYPE       = 'sub_type';
-    const PRODUCT_CODE  = 'product_code';
-    const COUNTRY       = 'country';
-    const ISSUER        = 'issuer';
-    const ISSUER_CODE   = 'issuer_code';
-    const ISSUER_NAME   = 'issuer_name';
-    const EMI           = 'emi';
-    const OTP_READ      = 'otp_read';
-    const TRIVIA        = 'trivia';
-    const FLOWS         = 'flows';
-    const ENABLED       = 'enabled';
-    const LOCKED        = 'locked';
-    const NUMBER        = 'number';
-    const MANDATE_HUBS  = 'mandate_hubs';
+    const IIN                = 'iin';
+    const CATEGORY           = 'category';
+    const NETWORK            = 'network';
+    const TYPE               = 'type';
+    const SUBTYPE            = 'sub_type';
+    const PRODUCT_CODE       = 'product_code';
+    const COUNTRY            = 'country';
+    const ISSUER             = 'issuer';
+    const ISSUER_CODE        = 'issuer_code';
+    const ISSUER_NAME        = 'issuer_name';
+    const COBRANDING_PARTNER = 'cobranding_partner';
+    const EMI                = 'emi';
+    const OTP_READ           = 'otp_read';
+    const TRIVIA             = 'trivia';
+    const FLOWS              = 'flows';
+    const ENABLED            = 'enabled';
+    const LOCKED             = 'locked';
+    const NUMBER             = 'number';
+    const MANDATE_HUBS       = 'mandate_hubs';
 
     const INTERNATIONAL = 'international';
     const MESSAGE_TYPE  = 'message_type';
@@ -76,6 +77,7 @@ class Entity extends Base\PublicEntity
         self::COUNTRY,
         self::ISSUER,
         self::ISSUER_NAME,
+        self::COBRANDING_PARTNER,
         self::TRIVIA,
         self::EMI,
         self::ENABLED,
@@ -97,6 +99,7 @@ class Entity extends Base\PublicEntity
         self::COUNTRY,
         self::ISSUER,
         self::ISSUER_NAME,
+        self::COBRANDING_PARTNER,
         self::EMI,
         self::OTP_READ,
         self::TRIVIA,
@@ -120,6 +123,7 @@ class Entity extends Base\PublicEntity
         self::COUNTRY,
         self::ISSUER,
         self::ISSUER_NAME,
+        self::COBRANDING_PARTNER,
         self::MESSAGE_TYPE
     ];
 
@@ -129,18 +133,19 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::EMI            => false,
-        self::FLOWS          => [
+        self::EMI                => false,
+        self::FLOWS              => [
             '3ds' => '1'
         ],
-        self::ENABLED        => true,
-        self::LOCKED         => false,
-        self::MESSAGE_TYPE   => null,
-        self::SUBTYPE        => Card\SubType::CONSUMER,
-        self::CATEGORY       => null,
-        self::ISSUER         => null,
-        self::PRODUCT_CODE   => null,
-        self::MANDATE_HUBS   => [],
+        self::ENABLED            => true,
+        self::LOCKED             => false,
+        self::MESSAGE_TYPE       => null,
+        self::SUBTYPE            => Card\SubType::CONSUMER,
+        self::CATEGORY           => null,
+        self::ISSUER             => null,
+        self::COBRANDING_PARTNER => null,
+        self::PRODUCT_CODE       => null,
+        self::MANDATE_HUBS       => [],
     ];
 
     protected $casts = [
@@ -224,6 +229,11 @@ class Entity extends Base\PublicEntity
     public function getMessageType()
     {
         return $this->getAttribute(self::MESSAGE_TYPE);
+    }
+
+    public function getCobrandingPartner()
+    {
+        return $this->getAttribute(self::COBRANDING_PARTNER);
     }
 
     public function isRupaySMS()
