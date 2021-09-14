@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import React, { Fragment, Component, createRef } from 'react';
 import PropTypes from 'prop-types';
 import RTracking from 'react-tracking';
 
@@ -53,7 +53,27 @@ class Announcement extends Component {
     }
 
     this.handleClose = this.handleClose.bind(this);
+    this.bannerRef = createRef();
+    this.observer = new IntersectionObserver(this.checkIfInViewport, { threshold: 1 });
   }
+
+  checkIfInViewport = (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting && entry.intersectionRatio === 1)
+        this.timeoutID = setTimeout(() => {
+          const { title, card_id, tracking } = this.props;
+
+          tracking?.trackEvent(
+            window.rzpQ?.merchantActions().success('merchant_dashboard.impression_banner', {
+              title,
+              card_id,
+            }),
+          );
+          if (this.bannerRef?.current) this.observer.unobserve(this.bannerRef.current);
+        }, 5000);
+      else if (this.timeoutID) clearTimeout(this.timeoutID);
+    });
+  };
 
   componentDidMount() {
     const { card_id, tracking } = this.props;
@@ -67,7 +87,12 @@ class Announcement extends Component {
         card_id,
       }),
     );
+    if (this.bannerRef.current) this.observer.observe(this.bannerRef.current);
   }
+
+  componentWillUnmount = () => {
+    if (this.bannerRef?.current) this.observer.unobserve(this.bannerRef.current);
+  };
 
   getTitle = () => {
     const { card_id } = this.props;
@@ -84,6 +109,20 @@ class Announcement extends Component {
       window.rzpQ?.merchantActions().success('merchant_dashboard.banner_close', {
         title,
         banner_text: bannerContainer?.querySelector('.content')?.textContent,
+        card_id,
+      }),
+    );
+  };
+
+  trackOnHover = () => {
+    const { title, card_id, tracking } = this.props;
+    this.setState({
+      hovered: true,
+    });
+
+    tracking.trackEvent(
+      window.rzpQ?.merchantActions().success('merchant_dashboard.hover_banner', {
+        title,
         card_id,
       }),
     );
@@ -158,7 +197,13 @@ class Announcement extends Component {
     };
 
     return (
-      <div {...props} onClick={this.handleCtaClick} id={`announcement-banner-${card_id}`}>
+      <div
+        {...props}
+        onClick={this.handleCtaClick}
+        id={`announcement-banner-${card_id}`}
+        onMouseEnter={this.state.hovered ? null : this.trackOnHover}
+        ref={this.bannerRef}
+      >
         {title && !fullPage && (
           <div className="title" style={titleStyle}>
             <div className="title-content" style={titleContentStyle}>
@@ -197,4 +242,5 @@ Announcement.propTypes = {
   title: PropTypes.string,
 };
 
+// eslint-disable-next-line babel/new-cap
 export default RTracking(() => window.rzpQ.component('DashboardBanner'))(Announcement);

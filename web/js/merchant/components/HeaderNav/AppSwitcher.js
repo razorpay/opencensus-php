@@ -42,6 +42,7 @@ const appListBusinessBanking = [
   },
 ];
 
+// eslint-disable-next-line no-unused-vars
 const appListRiskAndFraud = [
   {
     icon: '/dist/css/assets/products/thirdwatch.svg',
@@ -80,12 +81,25 @@ const appListLending = [
 @RTracking(() => window.rzpQ.component('AppSwitcher'))
 class AppSwitcher extends Component {
   handleShow = () => {
-    const { tracking } = this.props;
+    const { tracking, user } = this.props;
     tracking.trackEvent(
       window.rzpQ.onbr().clicked('dashboard.appswitcher', {
         menu_title: 'App Switcher',
         session_id: window.session_id,
       }),
+    );
+
+    [...appListBusinessBanking, ...appListLending].forEach(
+      ({ name, showForUnregisteredBusiness }) => {
+        if (user.isUnregisteredBusiness && !showForUnregisteredBusiness) return;
+
+        tracking.trackEvent(
+          window.rzpQ.onbr().success('dashboard.appswitcher.app_shown', {
+            app_name: name,
+            session_id: window.session_id,
+          }),
+        );
+      },
     );
   };
 
@@ -111,6 +125,7 @@ class AppSwitcher extends Component {
         key={app.name}
         onClick={() => this.handleClick(app.name)}
         className="item"
+        rel="noreferrer"
       >
         <img className="icon" src={app.icon} alt={app.name} />
         <div className="info">

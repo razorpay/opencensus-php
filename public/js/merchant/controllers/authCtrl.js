@@ -1,3 +1,31 @@
+/* eslint-disable max-lines */
+/* eslint-disable prefer-rest-params */
+/* eslint-disable default-case */
+/* eslint-disable guard-for-in */
+/* eslint-disable yoda */
+/* eslint-disable no-empty */
+/* eslint-disable one-var */
+/* eslint-disable dot-notation */
+/* eslint-disable no-lonely-if */
+/* eslint-disable no-unneeded-ternary */
+/* eslint-disable no-div-regex */
+/* eslint-disable no-unused-vars */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable no-shadow */
+/* eslint-disable radix */
+/* eslint-disable prefer-template */
+/* eslint-disable consistent-return */
+/* eslint-disable prefer-const */
+/* eslint-disable no-use-before-define */
+/* eslint-disable babel/no-unused-expressions */
+/* eslint-disable no-useless-escape */
+/* eslint-disable object-shorthand */
+/* eslint-disable vars-on-top */
+/* eslint-disable max-params */
+/* eslint-disable no-var */
+/* eslint-disable func-names */
+/* eslint-disable no-undef */
+// eslint-disable-next-line strict
 'use strict';
 
 //Signin Controller
@@ -63,6 +91,9 @@ app
         }
         return Object.keys(obj);
       };
+
+      const LoginCardIDs = ['login_instant_settlements', 'login_payment_buttons'];
+      const actionToCardIDMap = {};
       const COOKIE_POLICY_DOCS = {
         CHROME:
           'https://support.google.com/chrome/answer/95647?co=GENIE.Platform%3DDesktop&hl=en-GB',
@@ -308,6 +339,9 @@ app
 
       $scope.init = function () {
         initializeGAPI();
+        LoginCardIDs.forEach((loginCardID) => {
+          $scope.trackLoginCardEvents(loginCardID, 'shown');
+        });
       };
 
       $scope.updateOneTap = function (isEnabled) {
@@ -1386,6 +1420,19 @@ app
         });
       };
 
+      $scope.trackLoginCardEvents = function (CardID, actionType) {
+        if ((actionType === 'hover' && !actionToCardIDMap[CardID]) || actionType === 'shown') {
+          tracking.pushEvents({
+            event_name: `non_login_card.${actionType}`,
+            event_type: 'success',
+            properties: {
+              CardID,
+            },
+          });
+          if (actionType === 'hover') actionToCardIDMap[CardID] = true;
+        }
+      };
+
       $scope.handlePromotionClick = function (data) {
         tracking.pushEvents({
           event_name: 'non_login_actions',
@@ -1393,6 +1440,7 @@ app
           properties: {
             action: 'click Promotion ' + data.order + ' CTA',
             promotion_title: data.title,
+            CardID: data.CardID,
           },
         });
       };

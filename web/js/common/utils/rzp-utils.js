@@ -1,3 +1,19 @@
+/* eslint-disable babel/no-unused-expressions */
+/* eslint-disable guard-for-in */
+/* eslint-disable no-useless-escape */
+/* eslint-disable func-names */
+/* eslint-disable consistent-return */
+/* eslint-disable no-unneeded-ternary */
+/* eslint-disable no-shadow */
+/* eslint-disable vars-on-top */
+/* eslint-disable no-var */
+/* eslint-disable prefer-template */
+/* eslint-disable no-unused-vars */
+/* eslint-disable one-var */
+/* eslint-disable no-multi-assign */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable no-use-before-define */
+/* eslint-disable prefer-const */
 import moment from 'moment';
 import axios from 'axios';
 import { acronyms, shortenText } from './acronyms';
@@ -1232,6 +1248,39 @@ export function validateBankDetails(value, type) {
   }
   return null;
 }
+
+/**
+ *
+ * @param {HTML element} element - HTML element to check
+ * @param {Number} percentVisible - Percent of the HTML element that should be visible
+ * @param {Number} offsetTop - Starting point off top of the window to check if in view
+ * @param {Number} offsetBottom - Starting point off bottom of the window to check if in view
+ * @returns {Boolean} - true if the specified percent of the element is in the viewport discounting the offsets
+ */
+export const isElementXPercentInViewport = (
+  element,
+  percentVisible,
+  offsetTop = 0,
+  offsetBottom = 0,
+) => {
+  let elementTop, elementHeight, elementBottom, percentCutFromTop, percentCutFromBottom;
+  let rect, windowHeight;
+
+  rect = element.getBoundingClientRect();
+  windowHeight = window.innerHeight || document.documentElement.clientHeight;
+
+  elementTop = rect.top - offsetTop >= 0 ? 0 : offsetTop - rect.top;
+  elementHeight = rect.height;
+  percentCutFromTop = (elementTop / elementHeight) * 100;
+
+  elementBottom = rect.bottom + offsetBottom - windowHeight;
+  percentCutFromBottom = (elementBottom / elementHeight) * 100;
+
+  return !(
+    Math.floor(100 - percentCutFromTop) < percentVisible ||
+    Math.floor(100 - percentCutFromBottom) < percentVisible
+  );
+};
 
 /**
  *

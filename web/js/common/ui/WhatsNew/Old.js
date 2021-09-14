@@ -1,11 +1,19 @@
-import { Component, useEffect, useState } from 'react';
+import { Component, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
-import LocalStorageService from 'common/utils/localStorage';
-import { classList, getCommonAnalyticsProperties, isMobileAndTablet } from 'common/utils/rzp-utils';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { trackLoad, trackExpand, trackAnnouncement, track } from '../NotificationsDropdown/ga';
+import { getItem, setItem } from 'common/utils/localStorage';
+import {
+  classList,
+  getCommonAnalyticsProperties,
+  isMobileAndTablet,
+  isElementXPercentInViewport,
+} from 'common/utils/rzp-utils';
+import {
+  closeModal as closeModalx,
+  openModal as openModalx,
+} from 'merchant_common/reducers/modals';
+import { trackLoad, trackExpand, trackAnnouncement } from '../NotificationsDropdown/ga';
 import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
 import { showAcceptPaymentsModal } from 'merchant/reducers/home';
 import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnouncementV2';
@@ -18,9 +26,12 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { sendDataToSalesForce } from 'common/utils/common-api';
 import './Old.styl';
 import MobileAppQRCode from 'merchant/components/MobileAppQRCode';
+import debounce from 'common/utils/debounce';
 import Loader from 'common/ui/Loader';
 import { fetchAnnouncements } from 'merchant/reducers/growthService';
 import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
+import moment from 'moment';
+import { getButtonClass, iconMap, getQueryData } from './common';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -36,8 +47,8 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
     };
   },
   {
-    openModal,
-    closeModal,
+    openModal: openModalx,
+    closeModal: closeModalx,
     showAcceptPaymentsModal,
     openSlider,
     fetchAnnouncements,
@@ -49,6 +60,7 @@ class WhatsNewOld extends Component {
     isOpenSlider1: false,
     showTooltip: false,
   };
+  notificationsRefsList = [];
   id = this.props.user.current;
   whatsNew = false;
 
@@ -57,7 +69,7 @@ class WhatsNewOld extends Component {
     this.setLastReadTS();
   };
 
-  componentDidMount = async () => {
+  componentDidMount = () => {
     // add jquery for hubspot
     const scriptJQ = document.createElement('script');
     scriptJQ.src = 'https://code.jquery.com/jquery-3.5.1.min.js';
@@ -118,9 +130,9 @@ class WhatsNewOld extends Component {
   setUnreadMsgs() {
     const lastReadTS = this.state.lastReadTS;
     const { announcements } = this.props;
-    const ID = [],
-      readID = [],
-      unreadID = [];
+    const ID = [];
+    const readID = [];
+    const unreadID = [];
 
     let totalUnread = 0;
     for (let i = 0; i < announcements.length; i++) {
@@ -141,7 +153,7 @@ class WhatsNewOld extends Component {
     }
 
     trackLoad(totalUnread);
-    this.setState({ totalUnread, ID, unreadID, readID });
+    this.setState({ totalUnread, unreadID });
 
     if (totalUnread && window.rzpQ && window.rzpQ.merchantActions) {
       const tracking = this.props.tracking;
@@ -221,6 +233,9 @@ class WhatsNewOld extends Component {
         event = 'ultra-campaign';
         break;
       }
+      default: {
+        return;
+      }
     }
 
     sendDataToSalesForce(event, this.props.user);
@@ -258,12 +273,14 @@ class WhatsNewOld extends Component {
       case 'Aug25-AppStore-Intent-Zapier-cta':
         this.openZapierIntentForm();
         break;
+      default:
+        break;
     }
   };
 
   setLastReadTS() {
     this.setState({
-      lastReadTS: LocalStorageService.getItem(`announcements-slider-${this.id}`) || 0,
+      lastReadTS: getItem(`announcements-slider-${this.id}`) || 0,
     });
   }
 
@@ -303,7 +320,7 @@ class WhatsNewOld extends Component {
 
     trackExpand(this.state.totalUnread);
 
-    this.setState({ totalUnread: 0, ID, unreadID, readID });
+    this.setState({ totalUnread: 0, unreadID });
 
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('dashboard.click.notification.tab', {
@@ -317,7 +334,7 @@ class WhatsNewOld extends Component {
     );
 
     const newLastReadTS = moment().unix();
-    LocalStorageService.setItem(`announcements-slider-${this.id}`, String(newLastReadTS));
+    setItem(`announcements-slider-${this.id}`, String(newLastReadTS));
 
     // Mark all notifications as read
     this.props.announcements?.forEach((notif) => {
@@ -379,10 +396,10 @@ class WhatsNewOld extends Component {
   };
 
   setTooltipVisibility = () => {
-    const tooltipCookie = Number(LocalStorageService.getItem(`whats-new-tooltip-count-${this.id}`));
-    const tooltipViewCount = tooltipCookie === NaN ? 0 : tooltipCookie;
+    const tooltipCookie = Number(getItem(`whats-new-tooltip-count-${this.id}`));
+    const tooltipViewCount = isNaN(tooltipCookie) ? 0 : tooltipCookie;
     if (tooltipViewCount < 3) {
-      LocalStorageService.setItem(`whats-new-tooltip-count-${this.id}`, tooltipViewCount + 1);
+      setItem(`whats-new-tooltip-count-${this.id}`, tooltipViewCount + 1);
       this.props.tracking.trackEvent(
         window.rzpQ.merchantActions().success('dashboard.notification_section.tool_tip.display', {
           tooltip_display_count: tooltipViewCount + 1,
@@ -439,6 +456,25 @@ class WhatsNewOld extends Component {
     );
   };
 
+  trackOnCardView = () => {
+    let index = this.notificationsRefsList.length - 1;
+    while (index >= 0) {
+      const cardElement = this.notificationsRefsList[index]?.ref?.current;
+      const position = this.notificationsRefsList[index]?.position;
+      if (cardElement && isElementXPercentInViewport(cardElement, 75, 116)) {
+        this.props.tracking.trackEvent(
+          window.rzpQ.merchantActions().success('dashboard.click.notification.card.viewed', {
+            Card_ID: cardElement.getAttribute('id'),
+            position,
+          }),
+        );
+        this.notificationsRefsList.splice(index, 1);
+      }
+      if (!cardElement) this.notificationsRefsList.splice(index, 1);
+      index--;
+    }
+  };
+
   renderNotifications = () => {
     const { lastReadTS } = this.state;
     const { user, history, announcements } = this.props;
@@ -450,11 +486,13 @@ class WhatsNewOld extends Component {
           index={idx}
           user={user}
           lastReadTS={lastReadTS}
-          trackAnnouncement={trackAnnouncement}
           trackEvents={this.trackEvents}
           onCTAClick={this.handleCTA}
           history={history}
           tracking={this.props.tracking}
+          addOwnRef={(ref, position) => {
+            this.notificationsRefsList.push({ ref, position });
+          }}
           pushSlider={this.props.pushSlider}
           emptySliderStack={this.props.emptySliderStack}
         />
@@ -511,7 +549,7 @@ class WhatsNewOld extends Component {
                       </div>
                     </div>
                   </div>
-                  <div class="SliderPanel__Body">
+                  <div class="SliderPanel__Body" onScroll={debounce(this.trackOnCardView, 100)}>
                     <div class="panel-body">
                       <div class="whats-new-content">{contentToShow}</div>
                     </div>
@@ -535,7 +573,6 @@ const NotificationCard = ({
   description,
   buttons,
   lastReadTS,
-  trackAnnouncement,
   trackEvents,
   ga,
   id,
@@ -546,15 +583,17 @@ const NotificationCard = ({
   onCTAClick,
   history,
   tracking,
+  addOwnRef,
   ...notification
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
+  const ref = useRef();
 
   const onYouTubePlayer = () => {
     const onPlayerStateChange = (event) => {
       const whatsNew = id && id.length >= 9 && id.substring(0, 9) === 'whats-new';
 
-      if (event.data == YT.PlayerState.PLAYING) {
+      if (event.data == window.YT.PlayerState.PLAYING) {
         tracking.trackEvent(
           window.rzpQ.merchantActions().success('dashboard.notification_section.card.display', {
             card_id: id,
@@ -566,6 +605,8 @@ const NotificationCard = ({
       }
     };
 
+    // eslint-disable-next-line babel/new-cap
+    // eslint-disable-next-line no-unused-vars
     const player = new window.YT.Player(`player-${id}`, {
       videoId: video_url.split('/').slice(-1)[0],
       events: {
@@ -576,7 +617,7 @@ const NotificationCard = ({
 
   useEffect(() => {
     if (video_url && video_url.length) {
-      if (typeof YT == 'undefined' || typeof YT.Player == 'undefined') {
+      if (typeof window.YT == 'undefined' || typeof window.YT.Player == 'undefined') {
         window.onYouTubePlayerAPIReady = () => {
           onYouTubePlayer();
         };
@@ -584,6 +625,14 @@ const NotificationCard = ({
         onYouTubePlayer();
       }
     }
+    if (isElementXPercentInViewport(ref.current, 75, 116)) {
+      tracking.trackEvent(
+        window.rzpQ.merchantActions().success('dashboard.click.notification.card.viewed', {
+          Card_ID: id,
+          position: index + 1,
+        }),
+      );
+    } else addOwnRef(ref, index + 1);
   }, []);
 
   const handleCTAClick = (e, btn, urlPath) => {
@@ -605,7 +654,7 @@ const NotificationCard = ({
       ga ? ga.action : title,
       `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`,
     );
-    trackEvents && trackEvents(btn.label, urlPath, btn.type, id, notification);
+    trackEvents(btn.label, urlPath, btn.type, id, notification);
     // distinguish between links and buttons that open modals
     if (btn.id === 'announcement-details-l2') {
       e.preventDefault();
@@ -622,6 +671,8 @@ const NotificationCard = ({
         'NotificationCard',
         isUnread ? 'active' : 'inactive', // Notification is not read and also not expiry
       )}
+      ref={ref}
+      id={id}
     >
       <span class="NotificationCard-icon">
         {iconMap[icon] ? (
@@ -700,6 +751,7 @@ const NotificationCard = ({
                 onClick={(e) => handleCTAClick(e, btn, urlPath)}
                 href={urlPath}
                 target={isExternal ? '_blank' : ''}
+                rel="noreferrer"
               >
                 <b>
                   {btn.label} {isExternal && <i class="i i-external-link" />}
@@ -711,46 +763,6 @@ const NotificationCard = ({
       </div>
     </div>
   );
-};
-
-const BUTTON_CLASSES = {
-  button: 'btn-primary',
-  'primary-inverted': 'btn-primary--invert',
-};
-
-const getButtonClass = (type) => {
-  return !!BUTTON_CLASSES[type] ? BUTTON_CLASSES[type] : 'btn-link';
-};
-
-const iconMap = {
-  transactions: 'i-repeat',
-  settlements: 'i-done-all',
-  paymentpages: 'i-payment-pages',
-  invoices: 'i-notes',
-  paymentlinks: 'i-link',
-  marketplace: 'i-store',
-  subscription: 'i-refresh',
-  smartcollect: 'i-account-balance',
-  reports: 'i-books',
-};
-
-const getQueryData = (param, user) => {
-  switch (param) {
-    case 'mid': {
-      const merchant = user.merchants[user.current];
-
-      return merchant.id;
-    }
-    case 'business_name': {
-      return user.business_name;
-    }
-    case 'email': {
-      return user.email;
-    }
-    default: {
-      return null;
-    }
-  }
 };
 
 export default WhatsNewOld;

@@ -90,20 +90,23 @@
           </div>
         </div>
         <div class="login-messaging" ng-if="isOrgRZP === true">
-          <img src="img/is-login-card.svg" alt="Instant Settlements" style="margin-bottom: 4px; width: 100%" />
-          <div class="messaging-text">
-            With Settle Now button on your dashboard, transfer your customer payments into your account in 10 seconds!
+          <div ng-mouseenter="trackLoginCardEvents('login_instant_settlements', 'hover')">
+            <img src="img/is-login-card.svg" alt="Instant Settlements" style="margin-bottom: 4px; width: 100%" />
+            <div class="messaging-text">
+              With Settle Now button on your dashboard, transfer your customer payments into your account in 10 seconds!
+            </div>
+            <a href="https://razorpay.com/capital/instant-settlements/?ref=login-cards" target="_blank" ng-click="handlePromotionClick({order : 1, title : 'instant settlements', CardID: 'login_instant_settlements'})" class="messaging-link">Learn More <span>→</span></a>
           </div>
-          <a href="https://razorpay.com/capital/instant-settlements/?ref=login-cards" target="_blank" ng-click="handlePromotionClick({order : 1, title : 'instant settlements'})" class="messaging-link">Learn More <span>→</span></a>
 
-          <div class="messaging-heading" style="margin-top: 24px;">
-            Payment Buttons
+          <div ng-mouseenter="trackLoginCardEvents('login_payment_buttons', 'hover')">
+            <div class="messaging-heading" style="margin-top: 24px;">
+              Payment Buttons
+            </div>
+            <div class="messaging-text">
+              Start accepting payments on your website or blog in less than 5 minutes. No coding needed.
+            </div>
+            <a href="https://razorpay.com/payment-buttons/?utm_source=signup&utm_medium=banner&utm_campaign=paymentbuttons" target="_blank" ng-click="handlePromotionClick({order : 2, title : 'payment buttons', CardID: 'login_payment_buttons'})" class="messaging-link">Learn More <span>→</span></a>
           </div>
-          <div class="messaging-text">
-            Start accepting payments on your website or blog in less than 5 minutes. No coding needed.
-          </div>
-          <a href="https://razorpay.com/payment-buttons/?utm_source=signup&utm_medium=banner&utm_campaign=paymentbuttons" target="_blank" ng-click="handlePromotionClick({order : 2, title : 'payment buttons'})" class="messaging-link">Learn More <span>→</span></a>
-
 
           <div class="subtext subtext-captcha-outside" ng-if="!isOrgAXIS">
             Protected by reCAPTCHA. Google

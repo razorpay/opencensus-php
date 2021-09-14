@@ -1,12 +1,23 @@
-import { Component, useEffect, Suspense } from 'react';
+import { Component, useEffect, Suspense, useRef } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
-import LocalStorageService from 'common/utils/localStorage';
-import { classList, getCommonAnalyticsProperties, isMobileAndTablet } from 'common/utils/rzp-utils';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { pushSlider, emptySliderStack } from 'merchant_common/reducers/multiSlider';
-import { trackLoad, trackExpand, trackAnnouncement, track } from '../NotificationsDropdown/ga';
+import { getItem, setItem } from 'common/utils/localStorage';
+import {
+  classList,
+  getCommonAnalyticsProperties,
+  isMobileAndTablet,
+  isElementXPercentInViewport,
+} from 'common/utils/rzp-utils';
+import {
+  closeModal as closeModalx,
+  openModal as openModalx,
+} from 'merchant_common/reducers/modals';
+import {
+  pushSlider as pushSliderx,
+  emptySliderStack as emptySliderStackx,
+} from 'merchant_common/reducers/multiSlider';
+import { trackExpand, trackAnnouncement } from '../NotificationsDropdown/ga';
 import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
 import { showAcceptPaymentsModal } from 'merchant/reducers/home';
 import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnouncementV2';
@@ -22,10 +33,15 @@ import {
   getNotificationsReadData,
   getNotificationTrackingProperties,
   getExperimentVersion,
+  getButtonClass,
+  iconMap,
+  getQueryData,
 } from './common';
 import MobileAppQRCode from 'merchant/components/MobileAppQRCode';
+import debounce from 'common/utils/debounce';
 import { fetchAnnouncements } from 'merchant/reducers/growthService';
 import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
+import moment from 'moment';
 
 const WhatsNewDetailsPage = lazy(() =>
   import(/* webpackChunkName: "WhatsNewDetailsPage" */ 'merchant/views/WhatsNew/Details'),
@@ -45,11 +61,11 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
     };
   },
   {
-    openModal,
-    closeModal,
+    openModal: openModalx,
+    closeModal: closeModalx,
     showAcceptPaymentsModal,
-    pushSlider,
-    emptySliderStack,
+    pushSlider: pushSliderx,
+    emptySliderStack: emptySliderStackx,
     fetchAnnouncements,
   },
 )
@@ -58,6 +74,7 @@ class WhatsNew extends Component {
   state = {
     showTooltip: false,
   };
+  notificationsRefsList = [];
   id = this.props.user.current;
   whatsNew = false;
 
@@ -88,8 +105,8 @@ class WhatsNew extends Component {
   }
 
   setUnreadMsgs() {
-    const { totalUnread, ID, readID, unreadID } = getNotificationsReadData(this.id);
-    this.setState({ totalUnread, ID, unreadID, readID }, () => this.onShow());
+    const { totalUnread, unreadID } = getNotificationsReadData(this.id);
+    this.setState({ totalUnread, unreadID }, () => this.onShow());
   }
 
   showOpfinAnnouncementV2 = (id) => {
@@ -155,6 +172,9 @@ class WhatsNew extends Component {
         event = 'ultra-campaign';
         break;
       }
+      default: {
+        return;
+      }
     }
 
     sendDataToSalesForce(event, this.props.user);
@@ -193,12 +213,14 @@ class WhatsNew extends Component {
       case 'Aug25-AppStore-Intent-Zapier-cta':
         this.openZapierIntentForm();
         break;
+      default:
+        break;
     }
   };
 
   setLastReadTS() {
     this.setState({
-      lastReadTS: LocalStorageService.getItem(`announcements-slider-${this.id}`) || 0,
+      lastReadTS: getItem(`announcements-slider-${this.id}`) || 0,
     });
   }
 
@@ -227,7 +249,7 @@ class WhatsNew extends Component {
 
     trackExpand(this.state.totalUnread);
 
-    this.setState({ totalUnread: 0, ID, unreadID, readID });
+    this.setState({ totalUnread: 0, unreadID });
 
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('dashboard.click.notification.tab', {
@@ -241,7 +263,7 @@ class WhatsNew extends Component {
     );
 
     const newLastReadTS = moment().unix();
-    LocalStorageService.setItem(`announcements-slider-${this.id}`, String(newLastReadTS));
+    setItem(`announcements-slider-${this.id}`, String(newLastReadTS));
 
     // Mark all notifications as read
     this.props.announcements?.forEach((notif) => {
@@ -283,10 +305,10 @@ class WhatsNew extends Component {
   };
 
   setTooltipVisibility = () => {
-    const tooltipCookie = Number(LocalStorageService.getItem(`whats-new-tooltip-count-${this.id}`));
-    const tooltipViewCount = tooltipCookie === NaN ? 0 : tooltipCookie;
+    const tooltipCookie = Number(getItem(`whats-new-tooltip-count-${this.id}`));
+    const tooltipViewCount = isNaN(tooltipCookie) ? 0 : tooltipCookie;
     if (tooltipViewCount < 3) {
-      LocalStorageService.setItem(`whats-new-tooltip-count-${this.id}`, tooltipViewCount + 1);
+      setItem(`whats-new-tooltip-count-${this.id}`, tooltipViewCount + 1);
       this.props.tracking.trackEvent(
         window.rzpQ.merchantActions().success('dashboard.notification_section.tool_tip.display', {
           tooltip_display_count: tooltipViewCount + 1,
@@ -296,6 +318,25 @@ class WhatsNew extends Component {
       );
 
       setTimeout(() => this.showTooltip(), 500); // for the tooltip animation
+    }
+  };
+
+  trackOnCardView = () => {
+    let index = this.notificationsRefsList.length - 1;
+    while (index >= 0) {
+      const cardElement = this.notificationsRefsList[index]?.ref?.current;
+      const position = this.notificationsRefsList[index]?.position;
+      if (cardElement && isElementXPercentInViewport(cardElement, 75, 116)) {
+        this.props.tracking.trackEvent(
+          window.rzpQ.merchantActions().success('dashboard.click.notification.card.viewed', {
+            Card_ID: cardElement.getAttribute('id'),
+            position,
+          }),
+        );
+        this.notificationsRefsList.splice(index, 1);
+      }
+      if (!cardElement) this.notificationsRefsList.splice(index, 1);
+      index--;
     }
   };
 
@@ -310,13 +351,15 @@ class WhatsNew extends Component {
           index={idx}
           user={user}
           lastReadTS={lastReadTS}
-          trackAnnouncement={trackAnnouncement}
           trackEvents={this.trackEvents}
           onCTAClick={this.handleCTA}
           history={history}
           tracking={this.props.tracking}
           pushSlider={this.props.pushSlider}
           emptySliderStack={this.props.emptySliderStack}
+          addOwnRef={(ref, position) => {
+            this.notificationsRefsList.push({ ref, position });
+          }}
         />
       </div>
     ));
@@ -363,7 +406,7 @@ class WhatsNew extends Component {
                   </div>
                 </div>
               </div>
-              <div class="SliderPanel__Body">
+              <div class="SliderPanel__Body" onScroll={debounce(this.trackOnCardView, 100)}>
                 <div class="panel-body">
                   <div class="whats-new-content">{contentToShow}</div>
                 </div>
@@ -385,7 +428,6 @@ const NotificationCard = ({
   description,
   buttons,
   lastReadTS,
-  trackAnnouncement,
   trackEvents,
   ga,
   id,
@@ -398,13 +440,15 @@ const NotificationCard = ({
   tracking,
   pushSlider,
   emptySliderStack,
+  addOwnRef,
   ...notification
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
+  const ref = useRef();
 
   const onYouTubePlayer = () => {
     const onPlayerStateChange = (event) => {
-      if (event.data == YT.PlayerState.PLAYING) {
+      if (event.data == window.YT.PlayerState.PLAYING) {
         tracking.trackEvent(
           window.rzpQ.merchantActions().success('dashboard.notification_section.card.display', {
             card_id: id,
@@ -416,7 +460,8 @@ const NotificationCard = ({
       }
     };
 
-    new window.YT.Player(`player-${id}`, {
+    // eslint-disable-next-line no-unused-vars
+    const player = new window.YT.Player(`player-${id}`, {
       videoId: video_url.split('/').slice(-1)[0],
       events: {
         onStateChange: onPlayerStateChange,
@@ -426,7 +471,7 @@ const NotificationCard = ({
 
   useEffect(() => {
     if (video_url && video_url.length) {
-      if (typeof YT == 'undefined' || typeof YT.Player == 'undefined') {
+      if (typeof YT == 'undefined' || typeof window.YT.Player == 'undefined') {
         window.onYouTubePlayerAPIReady = () => {
           onYouTubePlayer();
         };
@@ -434,6 +479,14 @@ const NotificationCard = ({
         onYouTubePlayer();
       }
     }
+    if (isElementXPercentInViewport(ref.current, 75, 116)) {
+      tracking.trackEvent(
+        window.rzpQ.merchantActions().success('dashboard.click.notification.card.viewed', {
+          Card_ID: id,
+          position: index + 1,
+        }),
+      );
+    } else addOwnRef(ref, index + 1);
   }, []);
 
   const handleCTAClick = (e, btn, urlPath, isExternal) => {
@@ -455,7 +508,7 @@ const NotificationCard = ({
       ga ? ga.action : title,
       `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`,
     );
-    trackEvents && trackEvents(btn.label, urlPath, btn.type, id, notification);
+    trackEvents(btn.label, urlPath, btn.type, id, notification);
     if (!(isExternal || btn.id === 'announcement-details-l2')) emptySliderStack();
     // distinguish between links and buttons that open modals
     if (btn.id === 'announcement-details-l2') {
@@ -465,10 +518,10 @@ const NotificationCard = ({
       let notifID = null;
       if (urlPartsLength) {
         if (urlParts[urlPartsLength - 1].length) notifID = urlParts[urlPartsLength - 1];
-        else urlParts[urlPartsLength - 2].length;
+        else notifID = urlParts[urlPartsLength - 2].length;
         notifID = urlParts[urlPartsLength - 2];
       }
-      notifID &&
+      if (notifID)
         pushSlider({
           component: (
             <Suspense fallback={<Loader />}>
@@ -488,6 +541,8 @@ const NotificationCard = ({
         'NotificationCard',
         isUnread ? 'active' : 'inactive', // Notification is not read and also not expiry
       )}
+      ref={ref}
+      id={id}
     >
       <span class="NotificationCard-icon">
         {iconMap[icon] ? (
@@ -566,6 +621,7 @@ const NotificationCard = ({
                 onClick={(e) => handleCTAClick(e, btn, urlPath, isExternal)}
                 href={urlPath}
                 target={isExternal ? '_blank' : ''}
+                rel="noreferrer"
               >
                 <b>
                   {btn.label} {isExternal && <i class="i i-external-link" />}
@@ -577,46 +633,6 @@ const NotificationCard = ({
       </div>
     </div>
   );
-};
-
-const BUTTON_CLASSES = {
-  button: 'btn-primary',
-  'primary-inverted': 'btn-primary--invert',
-};
-
-const getButtonClass = (type) => {
-  return !!BUTTON_CLASSES[type] ? BUTTON_CLASSES[type] : 'btn-link';
-};
-
-const iconMap = {
-  transactions: 'i-repeat',
-  settlements: 'i-done-all',
-  paymentpages: 'i-payment-pages',
-  invoices: 'i-notes',
-  paymentlinks: 'i-link',
-  marketplace: 'i-store',
-  subscription: 'i-refresh',
-  smartcollect: 'i-account-balance',
-  reports: 'i-books',
-};
-
-const getQueryData = (param, user) => {
-  switch (param) {
-    case 'mid': {
-      const merchant = user.merchants[user.current];
-
-      return merchant.id;
-    }
-    case 'business_name': {
-      return user.business_name;
-    }
-    case 'email': {
-      return user.email;
-    }
-    default: {
-      return null;
-    }
-  }
 };
 
 export default WhatsNew;

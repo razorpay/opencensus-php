@@ -23,7 +23,7 @@ export const getNotificationTrackingProperties = (notification) => {
 
 export const getNotificationsReadData = (merchant_id) => {
   const lastReadTS = getItem(`announcements-slider-${merchant_id}`) || 0;
-  let notifications = [];
+  const notifications = [];
   const user = store.getState().session.user;
   const { announcements } = store.getState().growthService.announcements;
 
@@ -59,4 +59,44 @@ export const getNotificationsReadData = (merchant_id) => {
     unreadID,
     totalUnread,
   };
+};
+
+const BUTTON_CLASSES = {
+  button: 'btn-primary',
+  'primary-inverted': 'btn-primary--invert',
+};
+
+export const getButtonClass = (type) => {
+  return !!BUTTON_CLASSES[type] ? BUTTON_CLASSES[type] : 'btn-link';
+};
+
+export const iconMap = {
+  transactions: 'i-repeat',
+  settlements: 'i-done-all',
+  paymentpages: 'i-payment-pages',
+  invoices: 'i-notes',
+  paymentlinks: 'i-link',
+  marketplace: 'i-store',
+  subscription: 'i-refresh',
+  smartcollect: 'i-account-balance',
+  reports: 'i-books',
+};
+
+export const getQueryData = (param, user) => {
+  switch (param) {
+    case 'mid': {
+      const merchant = user.merchants[user.current];
+
+      return merchant.id;
+    }
+    case 'business_name': {
+      return user.business_name;
+    }
+    case 'email': {
+      return user.email;
+    }
+    default: {
+      return null;
+    }
+  }
 };
