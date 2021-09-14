@@ -1,9 +1,7 @@
-import ajax, { merchantFetch } from 'merchant/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
 import { deepClone } from 'common/utils/rzp-utils';
-import { param_to_qs } from 'merchant/views/TicketSupport/components/data';
-import { ACTIVE_TICKETS } from '../views/TicketSupport/components/data';
-
+import moment from 'moment';
 const CONFIG_FETCH = 'CONFIG_FETCH';
 const LOCALE_FETCH = 'CONFIG_LOCALE_FETCH';
 const LOCALE_UPDATE = 'CONFIG_LOCALE_UPDATE';
@@ -39,12 +37,7 @@ export const fetchConfigAjax = () => {
   return merchantFetch('account/config');
 };
 
-export const FetchSupportTickets = (params) => {
-  let query;
-  if (params) {
-    query = param_to_qs(params);
-  }
-
+export const fetchSupportTicketsApiCall = (params) => {
   return merchantFetch({
     url: TICKET_BASE_URL,
     mode: 'live',
@@ -56,11 +49,11 @@ export const FetchSupportTickets = (params) => {
   });
 };
 
-export const FetchRefundPricing = () => {
+export const fetchRefundPricingApiCall = () => {
   return merchantFetch('instant_refunds/pricing');
 };
 
-export const ReplyToConversation = (ticket_id, body) => {
+export const replyToConversationApiCal = (ticket_id, body) => {
   const params = {
     url: `${TICKET_BASE_URL}/${ticket_id}/reply`,
     mode: 'live',
@@ -74,7 +67,7 @@ export const ReplyToConversation = (ticket_id, body) => {
   return merchantFetch(params);
 };
 
-export const FetchActiveTickets = () => {
+export const fetchActiveTicketsApiCall = () => {
   const url = TICKET_BASE_URL;
   return merchantFetch({
     url,
@@ -82,7 +75,7 @@ export const FetchActiveTickets = () => {
   }).then((res) => res.data.results);
 };
 
-export const CheckCallEligibility = () => {
+export const checkCallEligibilityApiCall = () => {
   return merchantFetch('merchants/support_call/can_submit').then(
     (res) => res && res.success && res.data && res.data.response === true,
   );
@@ -111,7 +104,7 @@ export const fetchSlots = (mode) => {
 };
 
 export const fetchFeaturesAjax = (currentUserId, mode) => {
-  let params = {
+  const params = {
     url: `merchants/me/features`,
   };
 
@@ -122,11 +115,11 @@ export const fetchFeaturesAjax = (currentUserId, mode) => {
 };
 
 export const onboardTerminal = (gateway) => {
-  let params = {
+  const params = {
     url: `terminals/onboard`,
     method: 'post',
     data: {
-      gateway: gateway,
+      gateway,
     },
   };
 
@@ -141,12 +134,12 @@ export const onboardPaytmTerminal = (
   website,
   mode,
 ) => {
-  let params = {
+  const params = {
     url: `terminals/onboard`,
     method: 'post',
-    mode: mode,
+    mode,
     data: {
-      gateway: gateway,
+      gateway,
       secrets: {
         gateway_secure_secret: merchant_provided_paytm_key,
       },
@@ -162,7 +155,7 @@ export const onboardPaytmTerminal = (
 };
 
 export const getPaytmCredentials = (mid) => {
-  let params = {
+  const params = {
     url: `terminals/credentials`,
     method: 'POST',
     data: {
@@ -209,14 +202,14 @@ export const saveLocale = (data) => {
 export const fetchRefundPricing = () => {
   return {
     type: FETCH_REFUND_PRICING,
-    payload: FetchRefundPricing(),
+    payload: fetchRefundPricingApiCall(),
   };
 };
 
 export const checkCallEligibility = () => {
   return {
     type: FETCH_CALL_ELIGIBILITY,
-    payload: CheckCallEligibility(),
+    payload: checkCallEligibilityApiCall(),
   };
 };
 
@@ -237,19 +230,19 @@ export const fetchCallSlots = () => {
 export const fetchActiveTickets = () => {
   return {
     type: FETCH_ACTIVE_TICKETS,
-    payload: FetchActiveTickets(),
+    payload: fetchActiveTicketsApiCall(),
   };
 };
 
 export const replyToConversation = (ticket, body) => {
   return {
     type: REPLY_TO_CONVERSATION,
-    payload: ReplyToConversation(ticket, body),
+    payload: replyToConversationApiCal(ticket, body),
   };
 };
 
 export const fetchOnboardingStatus = (gateway) => {
-  let params = {
+  const params = {
     url: `proxy/terminal/onboard/status?gateway=${gateway}`,
   };
   if (gateway) {
@@ -270,17 +263,17 @@ export const fetchFeatures = (currentUserId) => {
 export const fetchSupportTickets = (params) => {
   return {
     type: FETCH_SUPPORT_TICKETS,
-    payload: FetchSupportTickets(params),
+    payload: fetchSupportTicketsApiCall(params),
   };
 };
 
-export const updateFeatures = (data, currentUserId) => {
+export const updateFeatures = (data) => {
   return {
     type: FEATURES_SAVE,
     payload: merchantFetch({
       url: `merchants/me/features`,
       method: 'post',
-      data: data,
+      data,
     }),
   };
 };
@@ -318,7 +311,7 @@ export const getRefundPricing = (gateway) => {
 };
 
 export const uploadLogo = (file, fieldName) => {
-  let formData = new FormData();
+  const formData = new FormData();
   formData.append(fieldName, file);
   return {
     type: MERCHANT_LOGO_UPLOADED,
@@ -354,7 +347,7 @@ const normalizeConfig = (config) => {
    * so we need to translate it into a valid URL
    */
   if (logoUrl !== null && !/^http/.test(logoUrl)) {
-    logoUrl = `https://cdn.razorpay.com${logoUrl.replace(/\.([^\.]+$)/, '_medium.$1')}`;
+    logoUrl = `https://cdn.razorpay.com${logoUrl.replace(/\.([^.]+$)/, '_medium.$1')}`;
   }
   config.logo_url = logoUrl;
 
@@ -373,7 +366,7 @@ export const createLateAuthConfig = (payload, method) => {
     type: CREATE_LATE_AUTH_CONFIG,
     payload: merchantFetch({
       url: `payment/config`,
-      method: method,
+      method,
       data: payload,
     }),
   };
@@ -411,7 +404,7 @@ export const updateEmailSettings = (data) => {
 
 // end updateEmailSettings
 
-let initialState = {
+const initialState = {
   loading: true,
   error: null,
   refund_pricing: {
@@ -456,7 +449,7 @@ const defaultLocale = {
   name: '_',
 };
 
-export default function (state = initialState, action) {
+const configReducer = (state = initialState, action) => {
   switch (action.type) {
     case `${FEATURES_FETCH}::PENDING`:
       return set(state, 'loading', true);
@@ -492,8 +485,8 @@ export default function (state = initialState, action) {
     case `${FETCH_CALL_ELIGIBILITY}::SUCCESS`:
       return set(state, 'isCallEnabled', !!action.payload);
 
-    case `${FETCH_SCHEDULE_CALL_CONFIG}::SUCCESS`:
-      let payload = action.payload;
+    case `${FETCH_SCHEDULE_CALL_CONFIG}::SUCCESS`: {
+      const payload = action.payload.category_vs_eligibility;
       if (payload.reason) {
         return set(state, 'scheduleCallConfig', payload);
       } else {
@@ -502,6 +495,7 @@ export default function (state = initialState, action) {
         set(state, 'scheduleCallConfigCategory', key);
         return set(state, 'scheduleCallConfig', payload[key]);
       }
+    }
 
     case `${FEATURES_FETCH}::ERROR`:
       return merge(state, {
@@ -565,9 +559,10 @@ export default function (state = initialState, action) {
       return set(state, 'config', normalizeConfig(action.payload.data));
     case `${REMOVE_LOGO}::SUCCESS`:
       return set(state, 'config', normalizeConfig(action.payload.data));
-    case `${LOCALE_FETCH}::SUCCESS`:
+    case `${LOCALE_FETCH}::SUCCESS`: {
       const locale = action.payload.data.items[0];
       return set(state, 'locale', locale || defaultLocale);
+    }
 
     case `${LOCALE_UPDATE}`:
       return set(state, 'locale', {
@@ -589,31 +584,34 @@ export default function (state = initialState, action) {
     case 'UPDATE_BRAND_COLOR_CONTRAST':
       return set(state, 'isBrandColorDark', !!action.payload);
 
-    case `${FETCH_SUPPORT_TICKETS}::PENDING`:
-      let support_tickets = deepClone(state.support_tickets);
+    case `${FETCH_SUPPORT_TICKETS}::PENDING`: {
+      const support_tickets = deepClone(state.support_tickets);
       support_tickets.loading = true;
       return merge(state, {
-        support_tickets: support_tickets,
+        support_tickets,
       });
+    }
 
-    case `${FETCH_SUPPORT_TICKETS}::SUCCESS`:
-      let st = deepClone(state.support_tickets);
+    case `${FETCH_SUPPORT_TICKETS}::SUCCESS`: {
+      const st = deepClone(state.support_tickets);
       st.data[action.payload.query.page] = action.payload.data;
       st.loading = false;
       return merge(state, {
         support_tickets: st,
       });
+    }
 
-    case `${FETCH_SUPPORT_TICKETS}::ERROR`:
-      let S = deepClone(state.support_tickets);
+    case `${FETCH_SUPPORT_TICKETS}::ERROR`: {
+      const S = deepClone(state.support_tickets);
       S.loading = false;
       S.error = true;
       return merge(state, {
         support_tickets: S,
       });
+    }
 
-    case `${FETCH_ACTIVE_TICKETS}::SUCCESS`:
-      let ST = deepClone(state.support_tickets);
+    case `${FETCH_ACTIVE_TICKETS}::SUCCESS`: {
+      const ST = deepClone(state.support_tickets);
       ST.active = action.payload;
       ST.active = ST.active.map((t) => {
         t.created_at = moment(t.created_at).fromNow();
@@ -624,6 +622,7 @@ export default function (state = initialState, action) {
       return merge(state, {
         support_tickets: ST,
       });
+    }
 
     case `${FETCH_INTERNATIONAL_PRODUCTS_STATUS}::PENDING`:
       return merge(state, {
@@ -650,4 +649,6 @@ export default function (state = initialState, action) {
     default:
       return state;
   }
-}
+};
+
+export default configReducer;
