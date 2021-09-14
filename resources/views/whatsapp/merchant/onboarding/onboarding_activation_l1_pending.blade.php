@@ -1,0 +1,1 @@
+Hi {{{$merchantName}}}, your email is already verified, get started with filling your KYC form now. We promise it is super short and easy. Resume your KYC activation now on your Razorpay Dashboard at https://dashboard.razorpay.com to start accepting payments right away.

@@ -15,7 +15,7 @@ class Events
     const NEEDS_CLARIFICATION                         = 'NEEDS_CLARIFICATION';
     const PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   = 'PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION';
     const PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED = 'PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED';
-    const L1_ACTIVATION_NOT_STARTED_IN_1_DAY          = 'L1_ACTIVATION_NOT_STARTED_IN_1_DAY';
+    const ONBOARDING_ACTIVATION_L1_PENDING            = 'ONBOARDING_ACTIVATION_L1_PENDING';
     const ACTIVATED_MCC_PENDING                       = "ACTIVATED_MCC_PENDING";
     const FUNDS_ON_HOLD                               = 'FUNDS_ON_HOLD';
     const FUNDS_ON_HOLD_REMINDER                      = 'FUNDS_ON_HOLD_REMINDER';
@@ -25,7 +25,7 @@ class Events
     const ACTIVATED_MCC_PENDING_ACTION_REQUIRED       = 'ACTIVATED_MCC_PENDING_ACTION_REQUIRED';
 
     const SMS_TEMPLATES = [
-        self::PAYMENTS_ENABLED                 => 'sms.onboarding.payments_enabled',
+        self::PAYMENTS_ENABLED                            => 'sms.onboarding.payments_enabled',
         self::NEEDS_CLARIFICATION                         => 'sms.onboarding.needs_clarification',
         self::UNREGISTERED_PAYMENTS_ENABLED               => 'sms.onboarding.unregistered.payments_enabled',
         self::UNREGISTERED_SETTLEMENTS_ENABLED            => 'sms.onboarding.unregistered.settlements_enabled',
@@ -40,7 +40,8 @@ class Events
         self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => 'sms.onboarding.activated_mcc_pending_hard_limit_breach',
         self::FUNDS_ON_HOLD                               => 'sms.onboarding.funds_on_hold',
         self::FUNDS_ON_HOLD_REMINDER                      => 'sms.onboarding.funds_on_hold_reminder',
-        self::L1_ACTIVATION_NOT_STARTED_IN_1_DAY   => 'sms.onboarding.l1_activation_not_started_in_1_day'];
+        self::ONBOARDING_ACTIVATION_L1_PENDING            => 'sms.onboarding.l1_activation_not_started_in_1_day',
+    ];
 
 
     const WHATSAPP_TEMPLATES = [
@@ -62,9 +63,8 @@ class Events
         self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => 'whatsapp.merchant.onboarding.activated_mcc_pending_hard_limit_breach',
         self::FUNDS_ON_HOLD                               => 'whatsapp.merchant.onboarding.funds_on_hold',
         self::FUNDS_ON_HOLD_REMINDER                      => 'whatsapp.merchant.onboarding.funds_on_hold_reminder',
-        self::L1_ACTIVATION_NOT_STARTED_IN_1_DAY          => 'whatsapp.merchant.onboarding.l1_activation_not_started_in_1_day',
+        self::ONBOARDING_ACTIVATION_L1_PENDING            => 'whatsapp.merchant.onboarding_activation_l1_pending',
         self::PAYMENTS_ENABLED                            => 'whatsapp.merchant.onboarding.payments_enabled',
-
     ];
 
     const EMAIL_TEMPLATES = [

@@ -359,7 +359,7 @@ class Core extends Base\Core
             ];
 
             (new OnboardingNotificationHandler($args))
-                ->sendEventNotificationForMerchant($merchantId, Events::L1_ACTIVATION_NOT_STARTED_IN_1_DAY);
+                ->sendEventNotificationForMerchant($merchantId, Events::ONBOARDING_ACTIVATION_L1_PENDING);
 
         }
     }

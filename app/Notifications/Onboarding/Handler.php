@@ -29,8 +29,8 @@ class Handler extends BaseHandler
         Events::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::FUNDS_ON_HOLD                               => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::FUNDS_ON_HOLD_REMINDER                      => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
-        Events::L1_ACTIVATION_NOT_STARTED_IN_1_DAY          => [Channel::SMS, Channel::WHATSAPP],
-        Events::PAYMENTS_ENABLED                     => [Channel::SMS, Channel::WHATSAPP],
+        Events::ONBOARDING_ACTIVATION_L1_PENDING            => [Channel::SMS, Channel::WHATSAPP],
+        Events::PAYMENTS_ENABLED                            => [Channel::SMS, Channel::WHATSAPP],
         Events::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL]
     ];
