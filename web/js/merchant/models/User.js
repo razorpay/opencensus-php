@@ -1225,7 +1225,7 @@ export default class User {
   }
 
   get isGstinAutoPopulate() {
-    return this.getExpStatus('gstin_auto_populate');
+    return this.getExpStatus('bvs_get_gst_details');
   }
 }
 

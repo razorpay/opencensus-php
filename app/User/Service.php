@@ -1747,8 +1747,8 @@ class Service extends Base\Service
             'optimizer_emi_duration',
             'rx_ca_portal',
             'pp_success_page',
-            'gstin_auto_populate',
-            'route_transfer_state',
+            'bvs_get_gst_details',
+            'route_transfer_state'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
