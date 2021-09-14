@@ -320,6 +320,71 @@ return [
         ],
     ],
 
+    'testCreateSubMerchantBatchWithActivatedMccPending' => [
+        'request'  => [
+            'url'     => '/admin/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'partner_id'                => '10000000000000',
+                    'use_email_as_dummy'        => 1,
+                    'auto_activate'             => 1,
+                    'auto_submit'               => 1,
+                    'skip_ba_registration'      => 1,
+                    'auto_enable_international' => 1,
+                    'autofill_details'          => 1,
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'sub_merchant',
+                'status'           => 'created',
+                'total_count'      => 3,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testCreateSubMerchantBatchAndRunDedupeWithInvalidPermission' => [
+        'request'   => [
+            'url'     => '/admin/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'partner_id'                => '10000000000000',
+                    'use_email_as_dummy'        => 1,
+                    'auto_activate'             => 1,
+                    'auto_submit'               => 1,
+                    'skip_ba_registration'      => 1,
+                    'auto_enable_international' => 1,
+                    'autofill_details'          => 1,
+                    'dedupe'                    => 1,
+                ]
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND,
+        ],
+    ],
+
     'testProcessSubMerchantBatchForNotEnablingInternational' => [
         'request'  => [
             'url'     => '/admin/batches',

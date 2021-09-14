@@ -18,6 +18,7 @@ use RZP\Constants\Entity as CE;
 use RZP\Models\Merchant\Preferences;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Entity as ME;
+use RZP\Models\Merchant\Detail\DeDupe;
 use RZP\Models\Merchant\Account\Entity as Account;
 use RZP\Models\Batch\Helpers\SubMerchant as Helper;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -75,6 +76,13 @@ class SubMerchantBatchUtility extends Base\Core
     protected $autoActivate = false;
 
     /**
+     * Used to check if dedupe need to be performed on Sub Merchant or not.
+     *
+     * @var bool
+     */
+    protected $dedupe = false;
+
+    /**
      * Used to check if the sub-merchants need to be instantly activated.
      *
      * @var bool
@@ -98,6 +106,17 @@ class SubMerchantBatchUtility extends Base\Core
 
     public function processSubMerchantEntry(array & $entry, array $configs)
     {
+        /**
+         * If dedupe entry value is not send from front end then unset it from being logged in Sumo.
+         * Otherwise it will be create unnecessarily confusion because it is not public accessible only some specific
+         * User who has dedupe permission can pass its value.
+         */
+        if (isset($entry[ME::DEDUPE]) === false)
+        {
+            unset($entry[ME::DEDUPE]);
+            unset($configs[ME::DEDUPE]);
+        }
+
         $this->trace->info(
             TraceCode::BATCH_SERVICE_SUBMERCHANT_CREATE_ENTRY,
             [
@@ -153,6 +172,8 @@ class SubMerchantBatchUtility extends Base\Core
         $this->autoActivate = (empty($this->settings[ME::AUTO_ACTIVATE]) === false);
 
         $this->instantlyActivate = (empty($this->settings[ME::INSTANTLY_ACTIVATE]) === false);
+
+        $this->dedupe = (empty($this->settings[ME::DEDUPE]) === false);
 
         //
         // This is true by default and needs to be overridden only when an input
@@ -342,11 +363,7 @@ class SubMerchantBatchUtility extends Base\Core
 
                 $this->merchantCore->edit($subMerchant, $websiteUpdateData);
 
-                $activationStatusData = [
-                    MerchantDetail::ACTIVATION_STATUS => Merchant\Detail\Status::ACTIVATED
-                ];
-
-                $response = $this->merchantDetailCore->updateActivationStatus($subMerchant, $activationStatusData, $subMerchant);
+                $response = $this->setMerchantActivationStatus($subMerchant,$response, $this->dedupe);
 
                 if ($response[ME::ACTIVATED] === false)
                 {
@@ -374,6 +391,60 @@ class SubMerchantBatchUtility extends Base\Core
 
         return $subMerchant;
     }
+
+    /**
+     * This check Dedupe 1st if it's run and return true, don't update merchant status because here
+     * Merchant will be already in expected state i.e Under Review.
+     * If Dedupe return false that means merchant is not found as impersonated then update status.
+     *
+     * @param ME $subMerchant
+     * @param $response
+     * @param bool $force
+     * @return MerchantDetail
+     * @throws \Throwable
+     */
+    protected function setMerchantActivationStatus(Merchant\Entity $subMerchant,$response, $force = false)
+    {
+        [$isImpersonated, $action] = (new DeDupe\Core())->match($subMerchant, $force);
+
+        if($isImpersonated === true)
+        {
+            $this->trace->info(
+                TraceCode::DEDUPE_SUCCESS_SUB_MERCHANT_IS_IMPERSONATE,
+                [
+                    'orgId'         => $subMerchant->getOrgId(),
+                    'merchant_id'   => $subMerchant->getId(),
+                    'dedupe'        => $force,
+                ]
+            );
+
+            return $response;
+        }
+
+        $activationStatusData = $this->getApplicableActivationStatusForPartner($subMerchant);
+
+        $response = $this->merchantDetailCore->updateActivationStatus($subMerchant, $activationStatusData, $subMerchant);
+
+        return $response;
+    }
+
+    /**
+     * This returns merchant status to be updated. If feature flag is enabled on org,
+     * Then return activate with mcc pending otherwise return activated, as this is a regular flow.
+     *
+     * @param ME $subMerchant
+     * @return array
+     */
+    protected function getApplicableActivationStatusForPartner(Merchant\Entity $subMerchant)
+    {
+        if($subMerchant->org->isFeatureEnabled(Feature\Constants::ORG_SUB_MERCHANT_MCC_PENDING) === true)
+        {
+            return [MerchantDetail::ACTIVATION_STATUS => Merchant\Detail\Status::ACTIVATED_MCC_PENDING];
+        }
+
+        return [MerchantDetail::ACTIVATION_STATUS => Merchant\Detail\Status::ACTIVATED];
+    }
+
 
     protected function unsetExtraOutputKeys(array & $entry)
     {

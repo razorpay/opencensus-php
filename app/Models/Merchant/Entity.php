@@ -262,6 +262,7 @@ class Entity extends Base\PublicEntity
     const SKIP_BA_REGISTRATION      = 'skip_ba_registration';
     const AUTO_ENABLE_INTERNATIONAL = 'auto_enable_international';
     const CREATE_SUBMERCHANT        = 'create_submerchant';
+    const DEDUPE                    = 'dedupe';
 
     const BANKING_ACTIVATED_AT      = 'banking_activated_at';
     const PROMOTION                 = 'promotion';

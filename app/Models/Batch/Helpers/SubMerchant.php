@@ -127,6 +127,7 @@ class SubMerchant
                 Merchant::AUTO_SUBMIT,
                 Merchant::SKIP_BA_REGISTRATION,
                 Merchant::AUTO_ENABLE_INTERNATIONAL,
+                Merchant::DEDUPE,
             ]
         ];
     }

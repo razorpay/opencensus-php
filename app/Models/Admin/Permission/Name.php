@@ -612,6 +612,7 @@ class Name
 
     // Dedupe Permission
     const VIEW_MERCHANT_DEDUPE                = 'view_merchant_dedupe';
+    const SUB_MERCHANT_DEDUPE                 = 'submerchant_dedupe';
 
     // Permission for merchants to view free payouts attributes
     const MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES = 'merchant_view_free_payouts_attributes';

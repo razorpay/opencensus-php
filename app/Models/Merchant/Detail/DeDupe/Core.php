@@ -3,13 +3,14 @@
 
 namespace RZP\Models\Merchant\Detail\DeDupe;
 
-use RZP\Constants\Mode;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Partner;
+use RZP\Models\Feature;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Models\Merchant;
 use \RZP\Models\User\Entity as UserEntity;
 use RZP\Models\User\Service as UserService;
 use RZP\Services\MerchantRiskClient;
@@ -40,8 +41,17 @@ class Core extends Base\Core
         return ($variant === 'on');
     }
 
-    public function isDedupeRequired(Merchant\Entity $merchant)
+    public function isDedupeRequired(Merchant\Entity $merchant, $force = false)
     {
+        /**
+         * If feature flag is enabled on Org and dedupe flag is set then return true,
+         * To perform dedupe on Merchant irrespective of Org.
+         */
+        if(($merchant->org->isFeatureEnabled(Feature\Constants::ORG_SUB_MERCHANT_MCC_PENDING) === true) and ($force === true))
+        {
+            return true;
+        }
+
         if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
         {
             return false;
@@ -128,9 +138,9 @@ class Core extends Base\Core
         return false;
     }
 
-    public function match(Merchant\Entity $merchant): array
+    public function match(Merchant\Entity $merchant, $force = false): array
     {
-        if ($this->isDedupeRequired($merchant) === false)
+        if ($this->isDedupeRequired($merchant, $force) === false)
         {
             return [false, null];
         }

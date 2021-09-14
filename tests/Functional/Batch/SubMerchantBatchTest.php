@@ -10,10 +10,12 @@ use RZP\Models\Batch\Header;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Mail\Merchant\Activation as ActivationMail;
+use RZP\Models\Merchant\Detail\Status as MerchantStatus;
 use RZP\Mail\Admin\NotifyActivationSubmission as AdminSubmitMail;
 use RZP\Mail\Merchant\NotifyActivationSubmission as MerchantSubmitMail;
 
@@ -576,6 +578,58 @@ class SubMerchantBatchTest extends TestCase
         $this->assertEquals($success, $batch['success_count']);
         $this->assertEquals($failed, $batch['failure_count']);
         $this->assertEquals('processed', $batch['status']);
+    }
+
+    public function testCreateSubMerchantBatchWithActivatedMccPending()
+    {
+        $this->setUpForProcessing(__FUNCTION__);
+
+        $this->fixtures->merchant->editPricingPlanId(Pricing::DEFAULT_PRICING_PLAN_ID);
+
+        $orgId = '100000razorpay';
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::ORG_SUB_MERCHANT_MCC_PENDING,
+            'entity_id'     =>$orgId,
+            'entity_type'   => 'org',
+        ]);
+
+        $this->startTest();
+
+        $this->assertProcessedCounts(3, 3, 0);
+
+        $merchantDetail = $this->getLastEntity('merchant_detail', true);
+
+        $this->assertTrue($merchantDetail['submitted']);
+        $this->assertNotNull($merchantDetail);
+        $this->assertNotNull($merchantDetail['merchant_id']);
+        $this->assertEquals(MerchantStatus::ACTIVATED_MCC_PENDING, $merchantDetail['activation_status']);
+
+        $this->assertArraySubset([
+            MerchantStatus::NEEDS_CLARIFICATION,
+            MerchantStatus::ACTIVATED
+        ], $merchantDetail['allowed_next_activation_statuses']);
+    }
+
+    public function testCreateSubMerchantBatchAndRunDedupeWithInvalidPermission()
+    {
+        $this->setUpForProcessing(__FUNCTION__);
+
+        $orgId = '100000razorpay';
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::ORG_SUB_MERCHANT_MCC_PENDING,
+            'entity_id'     => $orgId,
+            'entity_type'   =>'org',
+        ]);
+
+        $this->startTest();
+
+        $merchantDetail = $this->getLastEntity('merchant_detail', true);
+
+        $this->assertFalse($merchantDetail['submitted']);
+        $this->assertNull($merchantDetail['activation_status']);
+        $this->assertEmpty($merchantDetail['allowed_next_activation_statuses']);
     }
 
     protected function markPartnerAndCreateApplication()

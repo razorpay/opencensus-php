@@ -8,6 +8,7 @@ use Mockery;
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Services\MerchantRiskClient;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Models\Merchant\Detail\DeDupe\Constants;
@@ -96,6 +97,25 @@ class DedupeTest extends OAuthTestCase
         $merchant = $this->fixtures->create('merchant', ['org_id' => $dummyOrg['id']]);
 
         $this->assertEquals(false, $core->isDedupeRequired($merchant));
+    }
+
+    public function testDedupeBeingNotSkippedForNonRazorpayOrgIfOrgFeatureEnabled()
+    {
+        $core = new DedupeCore();
+
+        $dedupe = true;
+
+        $dummyOrg = $this->fixtures->create('org', ['custom_code' => 'dummy']);
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::ORG_SUB_MERCHANT_MCC_PENDING,
+            'entity_id'     => $dummyOrg['id'],
+            'entity_type'   => 'org',
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', ['org_id' => $dummyOrg['id']]);
+
+        $this->assertEquals(true, $core->isDedupeRequired($merchant,$dedupe));
     }
 
     public function testDedupeBeingSkippedForFullyManagedSubmerchant()

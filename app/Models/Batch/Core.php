@@ -47,6 +47,8 @@ class Core extends Base\Core
 
         $this->validateAdminRoleIfApplicable($input);
 
+        $this->validatePermissionForBatchType($input);
+
         $batch = (new Entity)->build($input);
 
         $batch->creator()->associate($creator);
@@ -94,6 +96,29 @@ class Core extends Base\Core
         if ($auth->isAdminAuth() === true)
         {
             (new Validator)->validateAdminRoleIfApplicable($auth->getAdmin(), $input[Entity::TYPE]);
+        }
+    }
+
+    /**
+     * If dedupe is set from FE or curl then pass its value in validate function,
+     * To perform required permission validation on.
+     * @param $input
+     * @throws BadRequestException
+     */
+    private function validatePermissionForBatchType($input)
+    {
+        $auth = $this->app['basicauth'];
+
+        if($auth->isAdminAuth() === true)
+        {
+            if($input[Entity::TYPE] === Type::SUB_MERCHANT)
+            {
+                $partnerOrgId = $this->repo->merchant->getMerchantOrg($input['config']['partner_id']);
+
+                $org = $this->repo->org->findOrFail($partnerOrgId);
+
+                (new Validator)->validatePermissionForDedupe($auth->getAdmin(), $input, $org);
+            }
         }
     }
 

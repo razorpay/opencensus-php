@@ -749,6 +749,11 @@ class Constants
     const ORG_HDFC_VAS_CARDS_SURCHARGE  =   'hdfc_vas_cards_surcharge';
 
     /**
+     * Org level feature flag for sub merchant activation with MCC Pending status.
+     */
+    const ORG_SUB_MERCHANT_MCC_PENDING  =   'sub_merchant_mcc_pending';
+
+    /**
      * Show old error desc to merchant based on feature value
      */
     const SHOW_OLD_ERROR_DESC = 'show_old_error_desc';
@@ -1156,6 +1161,7 @@ class Constants
         self::AVS                             => true,
         self::MFN                             => true,
         self::SEND_DCC_COMPLIANCE             => true,
+        self::ORG_SUB_MERCHANT_MCC_PENDING    => true,
         self::SOURCED_BY_WALNUT369            => true,
     ];
     // Entity type constants

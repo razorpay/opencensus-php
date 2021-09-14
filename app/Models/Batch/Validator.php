@@ -31,6 +31,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Contact as ContactModel;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch\Helpers\OauthMigration as OMHelper;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
@@ -411,6 +412,7 @@ class Validator extends Base\Validator
         ME::AUTO_ENABLE_INTERNATIONAL => 'filled|boolean',
         ME::SKIP_BA_REGISTRATION      => 'filled|boolean',
         ME::CREATE_SUBMERCHANT        => 'filled|boolean',
+        ME::DEDUPE                    => 'sometimes|boolean',
     ];
 
     protected static $oauthMigrationTokenCreateRules = [
@@ -1871,6 +1873,31 @@ class Validator extends Base\Validator
             if (in_array(Type::$batchToAdminPermissionMapping[$batchType], $admin->getPermissionsList(), true) === false)
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND);
+            }
+        }
+    }
+
+    /**
+     * If user has not required permission to trigger dedupe workflow then throw an error.
+     * @param Admin\Admin\Entity $admin
+     * @param array $input
+     * @param $org
+     * @throws BadRequestException
+     */
+    public function validatePermissionForDedupe(Admin\Admin\Entity $admin, array $input, $org)
+    {
+        if (isset($input['config']['dedupe']) === true)
+        {
+            if(($input['config']['dedupe'] == '1') and ($org->isFeatureEnabled(Feature::ORG_SUB_MERCHANT_MCC_PENDING) === true))
+            {
+                if (in_array(Permission::SUB_MERCHANT_DEDUPE, $admin->getPermissionsList(), true) === false)
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND ,
+                        "dedupe",$input['config']['dedupe'],
+                        "User does not have required permission to perform dedupe"
+                    );
+                }
             }
         }
     }
