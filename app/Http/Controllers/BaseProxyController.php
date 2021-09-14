@@ -13,6 +13,7 @@ use OpenCensus\Trace\Propagator\ArrayHeaders;
 use Psr\Http\Message\RequestInterface;
 use RZP\Http\Controllers\Processors\PostProcessor;
 use RZP\Http\Controllers\Processors\PreProcessor;
+use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
 
 abstract class BaseProxyController extends Controller {
@@ -27,6 +28,10 @@ abstract class BaseProxyController extends Controller {
     protected $postProcessor;
 
     protected $maskErrors;
+
+    protected $defaultTimeout;
+
+    protected $pathTimeoutMap;
 
     public function __construct(string $service, $maskErrors=false)
     {
@@ -61,6 +66,20 @@ abstract class BaseProxyController extends Controller {
         $this->postProcessor = $postProcessor;
     }
 
+    /**
+     * Setting default timeout for all paths in seconds
+     * @param $timeout
+     */
+    protected function setDefaultTimeout($timeout)
+    {
+        $this->defaultTimeout = $timeout;
+    }
+
+    protected function setPathTimeoutMap($pathTimeoutMap)
+    {
+        $this->pathTimeoutMap = $pathTimeoutMap;
+    }
+
     protected function getHeadersForDashboardRequest(array $body = [])
     {
         return [
@@ -92,7 +111,7 @@ abstract class BaseProxyController extends Controller {
         return '';
     }
 
-    protected function handleDashboardProxyRequests($path = null){
+    public function handleDashboardProxyRequests($path = null){
         $request = Request::instance();
         $body    = $request->all();
 
@@ -127,11 +146,13 @@ abstract class BaseProxyController extends Controller {
             $body = $this->preProcessor->process($route, $body, []);
         }
 
-        $resp = $this->sendRequest($headers, $path, $method, $body);
+        $options = array_merge($options, $this->getOptions($route));
 
-        $parsedResponse = $this->parseResponse($resp->getStatusCode(), $resp->getBody());
+        $resp = $this->sendRequest($headers, $path, $method, $body, $options);
 
-        if($resp->getStatusCode() === 200 and empty($this->postProcessor) === false)
+        $parsedResponse = $this->parseResponse($resp->status_code, $resp->body);
+
+        if($resp->status_code === 200 and empty($this->postProcessor) === false)
         {
             return $this->postProcessor->process($route, $body, $parsedResponse);
         }
@@ -141,12 +162,13 @@ abstract class BaseProxyController extends Controller {
         }
     }
 
-    protected function sendRequest($headers, $path, $method, $body)
+    protected function sendRequest($headers, $path, $method, $body, $options = [])
     {
         $this->trace->info(TraceCode::PROXY_REQUEST, [
             'path'      => $path,
             'method'    => $method,
-            'service'   => $this->service
+            'service'   => $this->service,
+            'options'   => $options
         ]);
 
         $arrHeaders = new ArrayHeaders($headers);
@@ -156,20 +178,25 @@ abstract class BaseProxyController extends Controller {
         $url = $baseUrl.'/'.$path;
         $body = empty($body) ? '{}' : json_encode($body);
 
-        $req = $this->newRequest($method, $url, $body , $headers);
-
-        $httpClient = Psr18ClientDiscovery::find();
-
-        $resp = $httpClient->sendRequest($req);
+        $resp = Requests::request($url, $headers, $body, $method, $options);
 
         $this->trace->info(TraceCode::PROXY_RESPONSE, [
-            'status_code'   => $resp->getStatusCode(),
-            'path'      => $path,
-            'method'    => $method,
-            'service'   => $this->service
+            'status_code'   => $resp->status_code,
+            'path'          => $path,
+            'method'        => $method,
+            'service'       => $this->service
         ]);
 
         return $resp;
+    }
+
+    protected function getOptions($routeName)
+    {
+        $timeout = $this->pathTimeoutMap[$routeName] ?? $this->defaultTimeout;
+
+        return [
+            'timeout'   => $timeout
+        ];
     }
 
     protected function newRequest( string $method, string $url, string $reqBody, array $headers): RequestInterface

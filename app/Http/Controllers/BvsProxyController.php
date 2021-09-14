@@ -25,16 +25,29 @@ class BvsProxyController extends BaseProxyController {
 
     const ADMIN_ROUTES      = [];
 
+    /*
+     * timeout in seconds
+     */
+    const PATH_TIMEOUT_MAP  = [
+        self::GET_CAPTCHA_API           => 10,
+        self::VERIFY_CAPTCHA_GET_OTP    => 10
+    ];
+
     public function __construct()
     {
         parent::__construct("business_verification_service");
 
         $this->registerRoutesMap(self::ROUTES_URL_MAP);
         $this->registerMerchantRoutes(self::MERCHANT_ROUTES);
+
+        $this->setPathTimeoutMap(self::PATH_TIMEOUT_MAP);
+        $this->setDefaultTimeout(30);
+
         $this->registerProcessors(
             new BvsProxyPreProcessors($this->app),
             new BvsProxyPostProcessors($this->app)
         );
+
     }
 
     protected function getAuthorizationHeader()
