@@ -3,11 +3,9 @@
 namespace RZP\Models\Workflow\Action\Differ;
 
 use RZP\Base;
-use RZP\Error;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Action;
-use RZP\Models\Merchant\FreshdeskTicket\Constants;
 
 class Validator extends Base\Validator
 {
@@ -41,10 +39,4 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_ACTION_INVALID_TYPE);
         }
     }
-
-    protected static $updateObserverDataRules = [
-        Constants::TICKET_ID        => 'sometimes|integer',
-        Constants::FD_INSTANCE      => 'sometimes|string',
-    ];
-
 }

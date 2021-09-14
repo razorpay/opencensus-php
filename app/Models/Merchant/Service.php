@@ -87,6 +87,7 @@ use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Pricing\Entity as PricingEntity;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -7091,12 +7092,35 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    public function getBusinessWebsiteWorkflowStatus()
+    private function getWebsiteSelfServeWorkflowAction()
     {
-        $status = ($this->openWorkflowExists(Constants::ADDITIONAL_WEBSITE) or
-            $this->openWorkflowExists(Constants::UPDATE_BUSINESS_WEBSITE));
+        $merchantCore = new Merchant\Core;
 
-        return $status;
+        $merchant = $this->merchant;
+
+        [$entityId, $entity] = $merchantCore->fetchWorkflowData(Constants::ADDITIONAL_WEBSITE, $merchant);
+
+        $this->trace->info(
+            TraceCode::GET_WEBSITE_SELF_SERVE_WORKFLOW_ACTION,
+            [
+                'entity_id'  => $entityId,
+                'entity'     => $entity
+            ]);
+
+        $action = (new Action\Core())->fetchLastUpdatedWorkflowActionInPermissionList(
+            $entityId,
+            $entity,
+            [Constants::MERCHANT_WORKFLOWS[Constants::ADDITIONAL_WEBSITE][Constants::PERMISSION],
+             Constants::MERCHANT_WORKFLOWS[Constants::UPDATE_BUSINESS_WEBSITE][Constants::PERMISSION]]);
+
+        return $action;
+    }
+
+    public function getWebsiteSelfServeWorkflowDetails()
+    {
+        $action = $this->getWebsiteSelfServeWorkflowAction();
+
+        return (new WorkflowService)->getWorkflowDetailsWithRejectionMessage($action);
     }
 
     private function findCampaignType(array $utmParams): ?string

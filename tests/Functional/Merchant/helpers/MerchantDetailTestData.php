@@ -2341,7 +2341,7 @@ return [
         ],
     ],
 
-    'testBusinessWebsiteWorkflowStatus' => [
+    'testBusinessWebsiteOpenWorkflowStatus' => [
         'request'  => [
             'content' => [
             ],
@@ -2353,7 +2353,8 @@ return [
         ],
         'response' => [
             'content'     => [
-                'status' => true
+                'workflow_exists' => true,
+                'workflow_status' => 'open'
             ],
             'status_code' => 200,
         ],
@@ -2425,6 +2426,26 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_ENCRYPTED_COMMENT_NOT_FOUND,
+        ],
+    ],
+
+    'testRejectionReasonMerchantNotificationForWebsiteSelfServe' => [
+        'request'  => [
+            'content' => [
+            ],
+            'url'     => '/merchant/business_website_status',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'workflow_exists'          => true,
+                'workflow_status'          => 'rejected',
+                'rejection_reason_message' => 'Test body'
+            ],
+            'status_code' => 200,
         ],
     ],
 ];

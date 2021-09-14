@@ -988,6 +988,25 @@ class Core extends Base\Core
         }
     }
 
+    public function fetchLastUpdatedWorkflowActionInPermissionList(
+        string $entityId,
+        string $entityName,
+        array $permissionNameList,
+        string $orgId = null)
+    {
+        $permissionIdList = $this->fetchPermissionListId($permissionNameList, $orgId);
+
+        $this->trace->info(
+            TraceCode::GET_LAST_UPDATED_WORKFLOW_ACTION_IN_PERMISSION_IDS,
+            ['permission_ids' => $permissionIdList]);
+
+        $action = $this->repo
+            ->workflow_action
+            ->fetchLastUpdatedWorkflowActionInPermissionIds($entityId, $entityName, $permissionIdList);
+
+        return $action;
+    }
+
     /**
      * Get action risk attributes from tags of workflow action
      * @param $action

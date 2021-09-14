@@ -236,6 +236,8 @@ class MailTags
     const MERCHANT_BUSINESS_WEBSITE_ADD                 = 'merchant_business_website_add';
 
     const MERCHANT_BUSINESS_WEBSITE_UPDATE              = 'merchant_business_website_update';
+
+    const WEBSITE_SELF_SERVE_REJECTION_REASON           = 'website_self_serve_rejection_reason';
     /**
      * Email tags that should respond to the mailgun failure webhook
      * @var array Email tags

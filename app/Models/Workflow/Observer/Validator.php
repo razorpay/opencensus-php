@@ -1,0 +1,41 @@
+<?php
+
+namespace RZP\Models\Workflow\Observer;
+
+use RZP\Models\Workflow\Base;
+use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
+use RZP\Models\Merchant\FreshdeskTicket\Constants as FDConstants;
+
+class Validator extends Base\Validator
+{
+
+    protected static $updateObserverDataRules = [
+        FDConstants::TICKET_ID        => 'sometimes|integer',
+        FDConstants::FD_INSTANCE      => 'sometimes|string',
+    ];
+
+    protected static $rejectionReasonDataRules = [
+        FDConstants::TICKET_ID                                             => 'sometimes|integer',
+        FDConstants::FD_INSTANCE                                           => 'sometimes|string',
+        Constants::REJECTION_REASON                                        => 'sometimes|array|size:2',
+        Constants::REJECTION_REASON . '.' . Constants::MESSAGE_SUBJECT     => 'sometimes|string',
+        Constants::REJECTION_REASON . '.' . Constants::MESSAGE_BODY        => 'sometimes|string',
+    ];
+
+    protected $routeValidatorMapping = [
+        Constants::MERCHANT_SAVE_BUSINESS_WEBSITE => 'rejection_reason_data',
+    ];
+
+    public function validateWorkflowObserverData($differEntity, array $input)
+    {
+        $validatorRules = 'update_observer_data';
+
+        if (key_exists($differEntity[DifferEntity::ROUTE], $this->routeValidatorMapping) === true)
+        {
+            $validatorRules = $this->routeValidatorMapping[$differEntity[DifferEntity::ROUTE]];
+        }
+
+        $this->validateInput($validatorRules , $input);
+    }
+
+}

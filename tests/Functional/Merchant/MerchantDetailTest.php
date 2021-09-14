@@ -30,6 +30,7 @@ use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Mail\Merchant\MerchantBusinessWebsiteAdd;
+use RZP\Mail\Merchant\RejectionReasonNotification;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Mail\Merchant\MerchantBusinessWebsiteUpdate;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -3563,6 +3564,22 @@ class MerchantDetailTest extends OAuthTestCase
 
     private function validateBusinessWebsiteWorkflowReject($merchantId, $workflowActionId)
     {
+        $rejectionReason = ['subject' => 'Test subject', 'body' => 'Test body'];
+
+        $observerData = [ 'rejection_reason' => $rejectionReason, 'ticket_id' => '123', 'fd_instance' => 'rzp' ];
+
+        $this->updateObserverData('w_action_' . $workflowActionId, $observerData);
+
+        $insertedObserverData = $this->getWorkflowData();
+
+        $this->assertNotEmpty($insertedObserverData);
+
+        $insertedObserverData = $insertedObserverData['workflow_observer_data'];
+
+        $expectedObserverData = ['rejection_reason' => json_encode($rejectionReason), 'ticket_id' => '123', 'fd_instance' => 'rzp' ];
+
+        $this->assertArraySelectiveEquals($expectedObserverData, $insertedObserverData);
+
         $this->performWorkflowAction('w_action_'.$workflowActionId, false );
 
         $merchant = $this->getDbEntityById('merchant_detail', $merchantId);
@@ -3662,7 +3679,7 @@ class MerchantDetailTest extends OAuthTestCase
         Mail::assertNotQueued(MerchantBusinessWebsiteUpdate::class);
     }
 
-    public function testBusinessWebsiteWorkflowStatus()
+    public function testBusinessWebsiteOpenWorkflowStatus()
     {
         $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
@@ -3716,4 +3733,33 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testRejectionReasonMerchantNotificationForWebsiteSelfServe()
+    {
+        Mail::fake();
+
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::UPDATE_MERCHANT_WEBSITE);
+
+        [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
+
+        $this->validateBusinessWebsiteWorkflowReject($merchantId, $workflowActionId);
+
+        $user = $this->getDbLastEntity('user');
+
+        Mail::assertQueued(RejectionReasonNotification::class, function ($mail) use($user)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('Test body', $data['messageBody']);
+
+            $this->assertEquals('emails.merchant.rejection_reason_notification', $mail->view);
+
+            $mail->hasTo($user['email']);
+
+            return true;
+        });
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $user['id'] );
+
+        $this->startTest();
+    }
 }

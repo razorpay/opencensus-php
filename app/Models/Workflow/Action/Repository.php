@@ -533,4 +533,17 @@ class Repository extends Base\Repository
 
         return $query->skip($skip)->take($count)->get()->pluck(Entity::ID)->toArray();
     }
+
+    public function fetchLastUpdatedWorkflowActionInPermissionIds(
+        string $entityId,
+        string $entityName,
+        array $permissionIdList)
+    {
+        return $this->newQuery()
+            ->where(Entity::ENTITY_ID, $entityId)
+            ->where(Entity::ENTITY_NAME, $entityName)
+            ->whereIn(Entity::PERMISSION_ID, $permissionIdList)
+            ->orderBy(Entity::UPDATED_AT, 'desc')
+            ->first();
+    }
 }

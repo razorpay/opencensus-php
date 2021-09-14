@@ -14,10 +14,11 @@ use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\RazorxTreatment;
-use \RZP\Models\Workflow\Observer as Observer;
+use RZP\Models\Workflow\Observer as Observer;
+use RZP\Models\Workflow\Action\Differ\Core as DifferCore;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\Workflow\Action\Differ\Service as DifferService;
-use RZP\Models\Merchant\FreshdeskTicket\Service as FreshdeskService;
+
 
 class Service extends Base\Service
 {
@@ -175,17 +176,6 @@ class Service extends Base\Service
 
     public function performActionOnObserver(string $actionId, string $state)
     {
-
-        $variant  = $this->app['razorx']->getTreatment(
-            $actionId,
-            RazorxTreatment::PERFORM_ACTION_ON_WORKFLOW_OBSERVER_DATA,
-            $this->app['rzp.mode'] ?? Mode::LIVE);
-
-        if ($variant === 'control')
-        {
-            return;
-        }
-
         $workflowRequestData = (new DifferService)->fetchRequest($actionId);
 
         $routeName = $workflowRequestData[DifferEntity::ROUTE];
@@ -195,6 +185,19 @@ class Service extends Base\Service
         if (empty($observerClass) === true)
         {
             return;
+        }
+
+        if (key_exists($routeName,Observer\Constants::ROUTE_VS_RAZORX_EXPERIMENT) === true)
+        {
+            $variant  = $this->app['razorx']->getTreatment(
+                $actionId,
+                Observer\Constants::ROUTE_VS_RAZORX_EXPERIMENT[$routeName],
+                $this->app['rzp.mode'] ?? Mode::LIVE);
+
+            if ($variant === 'control')
+            {
+                return;
+            }
         }
 
         $observerData = $workflowRequestData[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [];
@@ -274,7 +277,6 @@ class Service extends Base\Service
             DifferEntity::ACTION_ID                 => $actionId,
         ]);
 
-        (new Action\Differ\Validator)->validateInput('updateObserverData', $input);
 
         $orgId = $this->app['workflow']->getWorkflowMaker()->getOrgId();
 
@@ -290,7 +292,20 @@ class Service extends Base\Service
         // $action can be null because we don't validate the result after fetching from the collection.
         if (empty($action) === false)
         {
-            $core->updateObserverDataForActionId($actionId, $input);
+            $differEntity = (new DifferService())->fetchRequest($actionId);
+
+            (new Observer\Validator())->validateWorkflowObserverData($differEntity, $input);
+
+            if (empty($input[Observer\Constants::REJECTION_REASON]) === false)
+            {
+                $input[Observer\Constants::REJECTION_REASON] = json_encode($input[Observer\Constants::REJECTION_REASON]);
+            }
+
+            $previousObserverData = $differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [];
+
+            $updatedObserverData = array_filter(array_merge($previousObserverData , $input));
+
+            $core->updateObserverDataForActionId($actionId, $updatedObserverData);
         }
         else
         {
@@ -302,4 +317,42 @@ class Service extends Base\Service
             DifferEntity::WORKFLOW_OBSERVER_DATA    => $input,
         ];
     }
+
+    protected function getWorkflowRejectionReason(Action\Entity $actionEntity)
+    {
+        $differEntity = (new DifferCore)->fetchRequest($actionEntity->getId());
+
+        $this->trace->info(TraceCode::GET_WORKFLOW_REJECTION_REASON, [
+            DifferEntity::WORKFLOW_OBSERVER_DATA    => $differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [],
+            DifferEntity::ACTION_ID                 => $actionEntity->getId(),
+        ]);
+
+        if (key_exists(Observer\Constants::REJECTION_REASON, $differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA]) === true)
+        {
+            return json_decode($differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA][Observer\Constants::REJECTION_REASON],true);
+        }
+    }
+
+    public function getWorkflowDetailsWithRejectionMessage(?Action\Entity $actionEntity)
+    {
+        if (empty($actionEntity) === true)
+        {
+            return [Observer\Constants::WORKFLOW_EXISTS => false];
+        }
+
+        $response = [Observer\Constants::WORKFLOW_EXISTS => true, Observer\Constants::WORKFLOW_STATUS => $actionEntity->getState()];
+
+        if ($actionEntity->getState() === Name::REJECTED)
+        {
+            $rejectionReason = $this->getWorkflowRejectionReason($actionEntity);
+            if ((empty($rejectionReason) === false) and
+                (empty($rejectionReason[Observer\Constants::MESSAGE_BODY]) === false))
+            {
+                $response = array_merge($response, [Observer\Constants::REJECTION_REASON_MESSAGE => $rejectionReason[Observer\Constants::MESSAGE_BODY]]);
+            }
+        }
+
+        return $response;
+    }
+
 }

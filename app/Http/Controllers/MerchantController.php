@@ -2380,11 +2380,11 @@ class MerchantController extends Controller
     /**
      * @return mixed
      */
-    public function getBusinessWebsiteWorkflowStatus()
+    public function getWebsiteSelfServeWorkflowDetails()
     {
-        $status = $this->service(E::MERCHANT)->getBusinessWebsiteWorkflowStatus();
+        $workflowInfo = $this->service(E::MERCHANT)->getWebsiteSelfServeWorkflowDetails();
 
-        return ApiResponse::json(['status' => $status]);
+        return ApiResponse::json($workflowInfo);
     }
 
     public function getDecryptedWebsiteCommentForWebsiteSelfServe(string $actionId)
