@@ -40,6 +40,8 @@ class Ledger
 
     const GovernorURL = '/twirp/rzp.ledger.governor.v1.GovernorAPI';
 
+    const CommonDashboardURL = '/twirp/rzp.common.dashboard.v1.Dashboard';
+
     const DashboardURL = '/twirp/rzp.ledger.dashboard.v1.DashboardAPI';
 
     const URLS = [
@@ -220,7 +222,7 @@ class Ledger
      */
     public function fetch($input, bool $throwExceptionOnFailure = false): array
     {
-        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetch'],
+        return $this->sendRequest(self::CommonDashboardURL . '/' . self::URLS['fetch'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 
@@ -233,7 +235,7 @@ class Ledger
      */
     public function fetchMultiple($input, bool $throwExceptionOnFailure = false): array
     {
-        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchMultiple'],
+        return $this->sendRequest(self::CommonDashboardURL . '/' . self::URLS['fetchMultiple'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 
