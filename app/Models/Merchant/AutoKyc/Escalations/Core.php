@@ -11,6 +11,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Partner\Core as PartnerCore;
+use RZP\Models\Admin\Org\Entity as OrgEntity ;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Mail\Merchant\HardLimitLevelThreeEmail;
 use RZP\Models\Merchant\Constants as MConstants;
@@ -78,7 +79,7 @@ class Core extends Base\Core
         ]);
         // fetch all the merchants who are in activated_mcc_pending state
         $merchantIdList = $this->repo->merchant_detail->fetchMerchantIdsByActivationStatus(
-            [DetailStatus::ACTIVATED_MCC_PENDING]
+            [DetailStatus::ACTIVATED_MCC_PENDING], OrgEntity::ORG_ID_LIST
         );
 
         // filter merchants who have not escalated to soft limit already

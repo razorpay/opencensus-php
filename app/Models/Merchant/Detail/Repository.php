@@ -300,7 +300,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchMerchantIdsByActivationStatus(array $activationStatusList, int $createdAt = null): array
+    public function fetchMerchantIdsByActivationStatus(array $activationStatusList, array $orgIdList = [Org\Entity::RAZORPAY_ORG_ID], int $createdAt = null): array
     {
         $detailMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantIdColumn       = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
@@ -309,7 +309,7 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery()
                       ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
-                      ->where($merchantOrgIdColumn, '=', Org\Entity::RAZORPAY_ORG_ID)
+                      ->whereIn($merchantOrgIdColumn, $orgIdList)
                       ->where($merchantParentIdColumn, '=', null)
                       ->select(Entity::MERCHANT_ID)
                       ->whereIn(Entity::ACTIVATION_STATUS, $activationStatusList);

@@ -45,9 +45,12 @@ class MerchantOnboardingEmail extends Mailable
 
     protected function addSender()
     {
-        if ($this->org[Org\Entity::ID] !== Org\Entity::RAZORPAY_ORG_ID) {
+        if($this->org[Org\Entity::ID] !== Org\Entity::RAZORPAY_ORG_ID)
+        {
             $this->from($this->org['from_email'], $this->org['display_name']);
-        } else {
+        }
+        else
+        {
             $senderEmail = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
             $senderName = Constants::HEADERS[Constants::NOREPLY];
 
@@ -59,7 +62,8 @@ class MerchantOnboardingEmail extends Mailable
 
     protected function addBcc()
     {
-        if ($this->org[Org\Entity::ID] === Org\Entity::RAZORPAY_ORG_ID) {
+        if($this->org[Org\Entity::ID] === Org\Entity::RAZORPAY_ORG_ID)
+        {
             $this->cc(Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK]);
         }
 

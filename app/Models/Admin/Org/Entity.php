@@ -57,6 +57,15 @@ class Entity extends Base\Entity
     const HDFC_ORG_ID     = '6dLbNSpv5XbCOG';
     const BOB_ORG_ID      = '7ia1ttoyqIL8sw';
     const AXIS_ORG_ID     = 'CLTnQqDj9Si8bx';
+    const ICICI_ORG_ID    = 'EKUZMBUtgInwi0';
+
+    /**
+     * Org Id list on which Merchant on boarding escalation has to be triggered.
+     */
+    const ORG_ID_LIST = [
+        self::RAZORPAY_ORG_ID,
+        self::ICICI_ORG_ID,
+    ];
 
     /**
      * Key used to send hostname of org for other services
