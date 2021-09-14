@@ -97,6 +97,7 @@ class PersonalisationService
             "is_customer_identified"    => true,
             "user_aggregates_available" => false,
             'preferences' => $instruments,
+            'versionID'   => 'v2',
         ];
 
         if ( isset($input['app_token']) === false && isset($input['customer_id']) === false)

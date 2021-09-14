@@ -7949,7 +7949,8 @@ return [
                             ],
                         ],
                         "is_customer_identified"    => true,
-                        "user_aggregates_available" => false
+                        "user_aggregates_available" => false,
+                        'versionID'                 => 'v2',
                     ],
                 ]
             ],
@@ -7986,7 +7987,8 @@ return [
                             ],
                         ],
                         'is_customer_identified'   => true,
-                        "user_aggregates_available" => false
+                        "user_aggregates_available" => false,
+                        'versionID'                 => 'v2',
                     ],
                 ]
             ],
@@ -8173,7 +8175,8 @@ return [
 
                         ],
                         "is_customer_identified"    => true,
-                        "user_aggregates_available" => false
+                        "user_aggregates_available" => false,
+                        'versionID'                 => 'v2',
                     ],
                 ]
             ],
@@ -8301,6 +8304,7 @@ return [
                         ],
                         "is_customer_identified"    => false,
                         "user_aggregates_available" => false,
+                        'versionID'                 => 'v2',
                     ],
                 ]
             ],

@@ -1476,19 +1476,14 @@ class Checkout
                     $pos = $pos + 1;
                 }
 
-                if (isset($contact) === true) {
-                    $data['preferred_methods'][$contact]['instruments'] = $preferences;
+                $contact = $contact ?: 'default';
 
-                    $data['preferred_methods'][$contact]['is_customer_identified'] = $responseBody['is_customer_identified'];
-
-                    $data['preferred_methods'][$contact]['user_aggregates_available'] = $responseBody['user_aggregates_available'];
-                } else {
-                    $data['preferred_methods']['default']['instruments'] = $preferences;
-
-                    $data['preferred_methods']['default']['is_customer_identified'] = $responseBody['is_customer_identified'];
-
-                    $data['preferred_methods']['default']['user_aggregates_available'] = $responseBody['user_aggregates_available'];
-                }
+                $data['preferred_methods'][$contact] = [
+                    'instruments'               => $preferences,
+                    'is_customer_identified'    => $responseBody['is_customer_identified'],
+                    'user_aggregates_available' => $responseBody['user_aggregates_available'],
+                    'versionID'                 => $responseBody['versionID'] ?? 'v2',
+                ];
             }
         }
         catch (\Exception $e)
