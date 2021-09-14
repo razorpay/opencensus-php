@@ -34,11 +34,14 @@ function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
           {user.business_website}
         </a>
       </span>
-      {isWebsiteInWorkflow === false && user.role === 'owner' && user.isWebsiteSelfServeOn && (
-        <Button.Transparent onClick={handleEditWebsite}>
-          <i class="i i-edit p-l" />
-        </Button.Transparent>
-      )}
+      {(isWebsiteInWorkflow.workflow_exists === false ||
+        isWebsiteInWorkflow.workflow_status === 'rejected') &&
+        user.role === 'owner' &&
+        user.isWebsiteSelfServeOn && (
+          <Button.Transparent onClick={handleEditWebsite}>
+            <i class="i i-edit p-l" />
+          </Button.Transparent>
+        )}
     </div>
   ) : null;
 
@@ -78,7 +81,7 @@ const MerchantDetails = ({
         },
       });
 
-      if (response) setisWebsiteInWorkflow(response.data.status);
+      if (response) setisWebsiteInWorkflow(response.data);
     } catch ({ errors }) {
       showNotification({
         type: 'error',
@@ -88,7 +91,8 @@ const MerchantDetails = ({
   };
 
   useEffect(() => {
-    getWebsiteWorkflowStatus();
+    // Only fetch request if user is owner, other users shouldn't see the error
+    if (user.role === 'owner') getWebsiteWorkflowStatus();
   }, []);
 
   let activationName = 'KYC';
@@ -369,13 +373,20 @@ const MerchantDetails = ({
                     </PopoverBody>
                   </Popover>
                 </small>
-                {isWebsiteInWorkflow === true && (
-                  <div class="website-self-serve__change-info">
-                    {user.has_key_access === true
-                      ? 'Your request to update the website is under review.'
-                      : 'Your request to update the website is under review. We will provide the API keys for the new website once the review is complete.'}
-                  </div>
-                )}
+                {isWebsiteInWorkflow.workflow_status &&
+                  ['open', 'activated'].includes(isWebsiteInWorkflow.workflow_status) && (
+                    <div class="website-self-serve__change-info">
+                      {user.has_key_access === true
+                        ? 'Your request to update the website is under review.'
+                        : 'Your request to update the website is under review. We will provide the API keys for the new website once the review is complete.'}
+                    </div>
+                  )}
+                {isWebsiteInWorkflow.workflow_status &&
+                  ['rejected'].includes(isWebsiteInWorkflow.workflow_status) && (
+                    <div class="website-self-serve__change-info reject">
+                      {isWebsiteInWorkflow.rejection_reason_message}
+                    </div>
+                  )}
               </div>
             )}
             value={() => renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow)}
