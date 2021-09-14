@@ -59,6 +59,7 @@ class Constants
     const KOTAK_CORP       = 'kotak_corp';
     const DLB              = 'dlb';
     const NSDL             = 'nsdl';
+    const BDBL             = 'bdbl';
     const ICICI_EMI        = 'icici_emi';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
@@ -142,6 +143,7 @@ class Constants
             self::KOTAK_CORP,
             self::DLB,
             self::NSDL,
+            self::BDBL,
         ],
         Type::EMANDATE_CANCEL => [
             self::ENACH_NPCI_NETBANKING,
@@ -253,6 +255,7 @@ class Constants
             self::KOTAK_CORP  => ['kotak-corp-netbanking-refunds@razorpay.com'],
             self::DLB         => ['dlb-netbanking-refunds@razorpay.com'],
             self::NSDL        => ['nsdl-netbanking-refunds@razorpay.com'],
+            self::BDBL        => ['bdbl-netbanking-refunds@razorpay.com']
         ],
 
         Type::EMANDATE_REGISTER => [

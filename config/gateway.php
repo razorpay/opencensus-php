@@ -78,6 +78,7 @@ return [
         'netbanking_dcb',
         'netbanking_ausf',
         'netbanking_nsdl',
+        'netbanking_bdbl',
         'paytm',
         'sharp',
         'twid',

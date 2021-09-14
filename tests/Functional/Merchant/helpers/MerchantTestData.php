@@ -3693,7 +3693,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 28,
+                'count' => 27,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -3707,13 +3707,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'BBKM',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'BDBL',
                         ],
                     ],
                     [
@@ -3904,7 +3897,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 29,
+                'count' => 28,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -3925,13 +3918,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'BBKM',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'BDBL',
                         ],
                     ],
                     [
@@ -4327,7 +4313,6 @@ return [
                             'issuer'      => [
                                 'BACB',
                                 'BBKM',
-                                'BDBL',
                                 'COSB',
                                 'ESAF',
                                 'HSBC',

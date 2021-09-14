@@ -154,6 +154,7 @@ class Validator extends Base\Validator
         Payment\Gateway::CHECKOUT_DOT_COM,
         Payment\Gateway::BILLDESK_SIHUB,
         Payment\Gateway::MANDATE_HQ,
+        Payment\Gateway::NETBANKING_BDBL,
     ];
 
     protected static $createValidators = [
@@ -1139,6 +1140,20 @@ class Validator extends Base\Validator
         Entity::GATEWAY                 => 'required|in:netbanking_nsdl',
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
         Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $netbankingBdblTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_bdbl',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::TPV                     => 'sometimes|in:0,1,2',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $netbankingBdblEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::TPV                     => 'sometimes|in:0,1,2',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::TYPE                    => 'sometimes|array',
     ];
 
     protected static $netbankingCubEditTerminalRules = [

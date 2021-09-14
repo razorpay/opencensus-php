@@ -171,6 +171,8 @@ class Type
 
     const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
 
+    const BDBL_NETBANKING_REFUND            = 'bdbl_netbanking_refund';
+
     const GATEWAY_FAILED_REFUNDS            = 'gateway_failed_refunds';
 
     const BULK_DISPUTES_FILE                = 'bulk_disputes_file';
@@ -363,6 +365,7 @@ class Type
             self::DLB_NETBAKING_REFUND,
             self::KOTAK_CORP_NETBANKING_REFUND,
             self::RECON_INPUT,
+            self::BDBL_NETBANKING_REFUND,
         ],
 
         Constants\Entity::BATCH => [
@@ -499,6 +502,7 @@ class Type
         self::DCB_NETBANKING_REFUND,
         self::NSDL_NETBANKING_REFUND,
         self::NSDL_NETBANKING_CLAIM,
+        self::BDBL_NETBANKING_REFUND,
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
@@ -675,6 +679,7 @@ class Type
             self::AXIS_EMANDATE_DEBIT,
             self::ENACH_NPCI_NB_DEBIT_ICICI,
             self::ENACH_NPCI_NB_DEBIT,
+            self::BDBL_NETBANKING_REFUND,
         ],
 
         self::DATA_LAKE_SEGMENTS_BUCKET_CONFIG => [

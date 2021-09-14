@@ -177,5 +177,14 @@ return [
         'bank_payment_id'       => '12345678',
         'transaction_date'      => Carbon::today()->format("Y-m-d H:i:s"),
         'error_description'     => '-'
-    ]
+    ],
+
+    'testBdblSuccessRecon'  => [
+        'MerchantReferenceNumber'       => '',
+        'BankTransactionReferenceNo'    => '123456',
+        'TransactionAmount'             => '500.00',
+        'STATUS'                        => '1',
+        'TransactionDate'               => Carbon::today()->format("Ymd"),
+        'Account_Number'                => '123456',
+    ],
 ];

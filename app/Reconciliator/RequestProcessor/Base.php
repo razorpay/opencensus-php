@@ -98,6 +98,7 @@ class Base extends Core
     const NETBANKING_DLB         = 'NetbankingDlb';
     const NETBANKING_KOTAK_V2    = 'NetbankingKotakV2';
     const NETBANKING_NSDL        = 'NetbankingNsdl';
+    const NETBANKING_BDBL        = 'NetbankingBdbl';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
     const VIRTUAL_ACC_RBL        = 'VirtualAccRbl';
@@ -237,7 +238,9 @@ class Base extends Core
         self::NETBANKING_DLB         => ['alerts@dhanbank.co.in'],
         self::CHECKOUT_DOT_COM       => [],
         self::CARDLESS_EMI_ZESTMONEY => ['finops.settlements@zestmoney.in'],
-      
+
+        self::NETBANKING_BDBL        => ['imps.dispute@bandhanbank.com'],
+
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN                  => ['kajol.nigam@razorpay.com'],
@@ -316,6 +319,7 @@ class Base extends Core
         Gateway::WORLDLINE              => self::VAS_AXIS,
         Gateway::NETBANKING_DLB         => self::NETBANKING_DLB,
         Gateway::NETBANKING_NSDL        => self::NETBANKING_NSDL,
+        Gateway::NETBANKING_BDBL        => self::NETBANKING_BDBL,
 
         Gateway::AMEX                   => [
             Gateway::ACQUIRER_AMEX   => self::AMEX,

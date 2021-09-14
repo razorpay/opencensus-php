@@ -138,6 +138,7 @@ class Netbanking
         IFSC::DLXB,
         IFSC::NSPB,
         IFSC::VIJB,
+        IFSC::BDBL,
     ];
 
     protected static $selfCorp = [
@@ -180,6 +181,7 @@ class Netbanking
         IFSC::AUBL,
         IFSC::DLXB,
         self::PUNB_R,
+        IFSC::BDBL,
     ];
 
     protected static $defaultGatewayDisabledBanks = [
@@ -1003,7 +1005,15 @@ class Netbanking
             'retail' => [
                 IFSC::NSPB,
             ]
-        ]
+        ],
+        Gateway::NETBANKING_BDBL => [
+            'retail' => [
+                IFSC::BDBL,
+            ],
+            'tpv'    => [
+                IFSC::BDBL,
+            ]
+        ],
     ];
 
     protected static $defaultDisabled = [

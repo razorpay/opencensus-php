@@ -91,6 +91,7 @@ class Gateway
     const NETBANKING_AUSF        = 'netbanking_ausf';
     const NETBANKING_DLB         = 'netbanking_dlb';
     const NETBANKING_NSDL        = 'netbanking_nsdl';
+    const NETBANKING_BDBL        = 'netbanking_bdbl';
     const NACH_CITI              = 'nach_citi';
     const NACH_ICICI             = 'nach_icici';
     const PAYTM                  = 'paytm';
@@ -420,6 +421,7 @@ class Gateway
         self::NETBANKING_NSDL,
         self::TWID,
         self::NETBANKING_CSB,
+        self::NETBANKING_BDBL,
     ];
 
     /**
@@ -1038,6 +1040,7 @@ class Gateway
         Payment\Gateway::PAYSECURE,
         Payment\Gateway::NETBANKING_KOTAK,
         Payment\Gateway::NETBANKING_AUSF,
+        Payment\Gateway::NETBANKING_BDBL,
         Payment\Gateway::EBS,
         Payment\Gateway::PAYTM,
         Payment\Gateway::MPGS,
@@ -1118,6 +1121,7 @@ class Gateway
         Payment\Gateway::NETBANKING_PNB         => 1609936200,
         Payment\Gateway::NETBANKING_DLB         => 1609936200,
         Payment\Gateway::NETBANKING_NSDL        => 1618511400,
+        Payment\Gateway::NETBANKING_BDBL        => 1618511400,
     ];
 
     public static $channels = [
@@ -1234,6 +1238,7 @@ class Gateway
             self::NETBANKING_AUSF,
             self::NETBANKING_DLB,
             self::NETBANKING_NSDL,
+            self::NETBANKING_BDBL,
         ],
 
         //
@@ -2281,6 +2286,7 @@ class Gateway
         IFSC::AUBL         => Gateway::NETBANKING_AUSF,
         IFSC::DLXB         => Gateway::NETBANKING_DLB,
         IFSC::NSPB         => Gateway::NETBANKING_NSDL,
+        IFSC::BDBL         => Gateway::NETBANKING_BDBL,
     ];
 
     /**
@@ -2349,6 +2355,7 @@ class Gateway
         IFSC::JSFB => Gateway::NETBANKING_JSB,
         IFSC::DLXB => Gateway::NETBANKING_DLB,
         IFSC::NSPB => Gateway::NETBANKING_NSDL,
+        IFSC::BDBL => Gateway::NETBANKING_BDBL,
     ];
 
     /**
@@ -3457,6 +3464,7 @@ class Gateway
             self::NETBANKING_CSB,
             self::NETBANKING_KVB,
             self::TWID,
+            self::NETBANKING_BDBL,
         ];
 
         $isRouted = in_array($gateway, $gateways, true);
@@ -3557,6 +3565,7 @@ class Gateway
             self::NETBANKING_NSDL,
             self::TWID,
             self::NETBANKING_PNB,
+            self::NETBANKING_BDBL,
         ];
 
         $acquirerGateways = [
