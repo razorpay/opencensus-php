@@ -125,6 +125,23 @@ return [
         ],
     ],
 
+    'testBusinessIdAssigmentInLMSWhileApplyToBankingAccount' => [
+        'request'  => [
+            'url'     => '/bas/lms/admin/apply',
+            'method'  => 'POST',
+            'content' => [
+                'application_type' => 'ICICI_ONBOARDING_APPLICATION',
+                'merchant_id' => '10000000000000',
+                'pincode' => '324010',
+                'sales_team' => 'X_GROWTH'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testLmsErrorFromBas' => [
         'request'  => [
             'url'     => '/bas/lms/search/wrongUrl/',

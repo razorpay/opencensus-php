@@ -62,4 +62,6 @@ class Constants
     const APPLICATION_ID                = 'application_id';
 
     const APPLICATION_PATH              = 'application';
+
+    const ADMIN_BANKING_ACCOUNT_APPLY_PATH  = 'admin/apply';
 }

@@ -158,7 +158,37 @@ class Service extends Base\Service
                 'path'    => $path
             ]);
 
-        return $this->forwardRequest($path, $input);
+        $response = $this->forwardRequest($path, $input);
+
+        if($this->request->getMethod() === Request::METHOD_POST and
+            $path === Constants::ADMIN_BANKING_ACCOUNT_APPLY_PATH)
+        {
+            if(isset($response['data']['business_id']) === true)
+            {
+                $this->trace->info(TraceCode::ASSIGN_BUSINESS_ID_FOR_ADMIN_APPLY_FOR_BANKING_ACCOUNT_IN_LMS,
+                    [
+                        'merchant_id' => $input['merchant_id'],
+                        'business_id' => $response['data']['business_id'],
+                    ]);
+
+                //attaching businessId to the merchant_details entity
+                $this->assignBusinessId($input[Constants::MERCHANT_ID], [Constants::BUSINESS_ID => $response['data']['business_id']]);
+            }
+            else
+            {
+                $this->trace->error(
+                    TraceCode::BANKING_ACCOUNT_SERVICE_ERROR_BUSINESS_ID_NOT_RETURNED_IN_RESPONSE,
+                    [
+                        'data' => $response['data'],
+                    ]);
+
+                throw new Exception\ServerErrorException(
+                    'Internal Server Error occurred',
+                    ErrorCode::SERVER_ERROR);
+            }
+        }
+
+        return $response;
     }
 
     protected function forwardRequest($path, $input)

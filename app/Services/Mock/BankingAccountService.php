@@ -81,6 +81,27 @@ class BankingAccountService
             ];
         }
 
+        else if($path === 'admin/apply' and $method === 'POST')
+        {
+            $result = [
+                'data' => [
+                    'created_at' => '1630662462212',
+                    'updated_at' => '1631102675392',
+                    'business_id' => '10000000000000',
+                    'banking_account_id' => '80000000000000',
+                    'application_number' => '777-000011044',
+                    'application_status' => 'created',
+                    'bank_status' => '',
+                    'workflow_version_number' => '',
+                    'metadata' => [
+                        'drop_off_reason' => ''
+                    ],
+                    'application_type' => 'ICICI_ONBOARDING_APPLICATION',
+                    'sales_team' => 'X_GROWTH'
+                ]
+            ];
+        }
+
         else if($path === 'poll/status/123456' and $method === 'GET')
         {
             $result = [
