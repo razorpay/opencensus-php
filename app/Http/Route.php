@@ -64,6 +64,9 @@ class Route
         'merchant_autokyc_hard_limit'              => ['post',     'merchants/auto-kyc-cron/hard-limit',             'MerchantController@postHardLimitBreachOnAutoKYC'                 ],
         'merchant_autokyc_escalation'              => ['post',     'merchants/auto-kyc-cron/escalations',            'MerchantController@handleAutoKycEscalationCron'                  ],
 
+        'merchant_store_add'                       => ['post',     'merchants/config/store',                                'MerchantController@updateMerchantStore'   ],
+        'merchant_store_fetch'                     => ['get',      'merchants/config/store',                                'MerchantController@fetchMerchantStore'    ],
+
         'merchant_report'                          => ['post',     'merchants/admin/report',                         'MerchantController@handleReport'                          ],
         'merchant_onboarding_escalations'          => ['post',     'merchants/onboarding/escalations',               'MerchantController@handleOnboardingEscalationsCron'],
         'fetch_merchant_escalation'                => ['get',      'merchants/onboarding/escalations',               'MerchantController@fetchOnboardingEscalations'],
@@ -3858,6 +3861,8 @@ class Route
     ];
 
     public static $proxy = [
+        'merchant_store_add',
+        'merchant_store_fetch',
         'bbps_bill_payments',
         'merchant_balance_fetch_by_id',
         'merchant_rtb_details_fetch',
@@ -6362,6 +6367,8 @@ class Route
     ];
 
     public static $bankingRoutePermissions = [
+        'merchant_store_add'                           => Permission::EDIT_MERCHANT,
+        'merchant_store_fetch'                         => Permission::VIEW_MERCHANT,
         'merchant_activation_needs_clarification'      => '*',
 
         'merchant_fire_hubspot_event'                  => '*',
@@ -6894,6 +6901,8 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'merchant_store_add',
+            'merchant_store_fetch',
             'merchant_edit_email_self_serve',
             'email_user_status_for_email_update',
             'merchant_fire_hubspot_event',

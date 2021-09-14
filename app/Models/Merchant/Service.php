@@ -6537,6 +6537,16 @@ class Service extends Base\Service
         return (new Escalations\Core())->handleEscalationsCron();
     }
 
+    public function updateMerchantStore(array $input)
+    {
+        return (new Store\Core())->updateMerchantStore($this->merchant->getId(), $input);
+    }
+
+    public function fetchMerchantStore(array $input)
+    {
+        return (new Store\Core())->fetchMerchantStore($this->merchant->getId(), $input);
+    }
+
     public function handleReport(array $input)
     {
         return (new Detail\Report\Core)->sendReport($input);

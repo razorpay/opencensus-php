@@ -2136,6 +2136,24 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function updateMerchantStore()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateMerchantStore($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchMerchantStore()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchMerchantStore($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function handleReport()
     {
         $input = Request::all();

@@ -1,0 +1,60 @@
+<?php
+
+
+namespace Functional\Merchant\Store;
+
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+
+return [
+    'testInvalidCreateStore' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchants/config/store',
+            'content' => [
+                'some_invalid_key'  => 'value'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
+    'testValidCreateStore' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchants/config/store',
+            'content' => [
+                'namespace'                 => 'onboarding',
+                'mtu_coupon_popup_count'    => '1'
+            ]
+        ],
+        'response' => [
+            'content' => [],
+        ],
+        'status_code' => 200,
+    ],
+
+    'fetchOnboardingStore' => [
+        'request'   => [
+            'method'  => 'GET',
+            'url'     => '/merchants/config/store?namespace=onboarding',
+        ],
+        'response' => [
+            'content' => [
+                'mtu_coupon_popup_count'    => '1'
+            ]
+        ],
+        'status_code' => 200,
+    ],
+
+];
