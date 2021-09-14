@@ -172,7 +172,7 @@ class EnachRbl extends Base
 
         $data = [
             BeamService::BEAM_PUSH_FILES   => $fileInfo,
-            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::RBL_ENACH_FILE_JOB_NAME
+            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::RBL_ENACH_REGISTER_FILE_JOB_NAME
         ];
 
         // In seconds

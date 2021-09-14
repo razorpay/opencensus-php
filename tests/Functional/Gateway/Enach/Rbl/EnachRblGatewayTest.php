@@ -779,6 +779,9 @@ class EnachRblGatewayTest extends TestCase
         $content = $this->startTest();
         $content = $content['items'][0];
 
+        $this->assertNotNull($content['file_generated_at']);
+        $this->assertEquals("file_sent", $content['status']);
+
         $file = $this->getLastEntity('file_store', true);
 
         $expectedFileContent = [

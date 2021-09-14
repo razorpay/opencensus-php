@@ -30,17 +30,19 @@ class Constants
 
     const CITIBANK_NACH_FILE_JOB_NAME  = 'citibank_nach';
 
-    const RBL_ENACH_FILE_JOB_NAME      = 'rbl_mandate';
+    const RBL_ENACH_REGISTER_FILE_JOB_NAME  = 'rbl_mandate';
 
-    const FIRST_DATA_PARES_FILE_JOB_NAME = 'firstdata_pares_data_push';
+    const RBL_ENACH_DEBIT_FILE_JOB_NAME     = 'rbl_txn';
 
-    const PNB_NB_COMBINED_FILE_JOB_NAME  = 'pnb_net_banking';
+    const FIRST_DATA_PARES_FILE_JOB_NAME    = 'firstdata_pares_data_push';
 
-    const JKB_NB_REFUND_FILE_JOB_NAME = 'jkb_netbanking_refund_file';
+    const PNB_NB_COMBINED_FILE_JOB_NAME     = 'pnb_net_banking';
 
-    const UBI_NB_REFUND_FILE_JOB_NAME = 'ubi_netbanking_refund_prod';
+    const JKB_NB_REFUND_FILE_JOB_NAME       = 'jkb_netbanking_refund_file';
 
-    const NSDL_NB_COMBINED_FILE_JOB_NAME  = 'nsdl_netbanking_refund_prod';
+    const UBI_NB_REFUND_FILE_JOB_NAME       = 'ubi_netbanking_refund_prod';
 
-    const AXIS_NB_COMBINED_FILE_JOB_NAME = 'axis_netbanking_refund_prod';
+    const NSDL_NB_COMBINED_FILE_JOB_NAME    = 'nsdl_netbanking_refund_prod';
+
+    const AXIS_NB_COMBINED_FILE_JOB_NAME    = 'axis_netbanking_refund_prod';
 }

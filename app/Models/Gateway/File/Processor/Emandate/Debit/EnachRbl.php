@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emandate\Debit;
 
+use Mail;
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -9,10 +10,15 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base as ModelBase;
+use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
+use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Services\Beam\Service as BeamService;
 use RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Mail\Gateway\EMandate\Base as EMandateMail;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as Headings;
 
 use Carbon\Carbon;
@@ -37,11 +43,103 @@ class EnachRbl extends Base
         'mode'  => '33188'
     ];
 
+    protected $fileStore;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->gatewayRepo = $this->repo->enach;
+    }
+
+    public function createFile($data)
+    {
+        // Don't process further if file is already generated
+        if ($this->isFileGenerated() === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $fileData = $this->formatDataForFile($data);
+
+            $fileName = $this->getFileToWriteNameWithoutExt([]);
+
+            $creator = new FileStore\Creator;
+
+            $creator->extension(self::EXTENSION)
+                    ->content($fileData)
+                    ->name($fileName)
+                    ->store(FileStore\Store::S3)
+                    ->type(self::FILE_TYPE)
+                    ->entity($this->gatewayFile)
+                    ->metadata(self::FILE_METADATA)
+                    ->save();
+
+            $file = $creator->getFileInstance();
+
+            $fileStoreIds[] = $file->getId();
+
+            $this->fileStore = $fileStoreIds;
+
+            $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
+
+            $this->gatewayFile->setStatus(Status::FILE_GENERATED);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id' => $this->gatewayFile->getId(),
+                ],
+                $e);
+        }
+    }
+
+    public function sendFile($data)
+    {
+        $fileInfo = [];
+
+        $files = $this->gatewayFile
+                      ->files()
+                      ->whereIn(FileStore\Entity::ID, $this->fileStore)
+                      ->get();
+
+        foreach ($files as $file)
+        {
+            $fullFileName = $file->getName() . '.' . $file->getExtension();
+            $fileInfo[] = $fullFileName;
+        }
+
+        $data = [
+            BeamService::BEAM_PUSH_FILES   => $fileInfo,
+            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::RBL_ENACH_DEBIT_FILE_JOB_NAME
+        ];
+
+        // In seconds
+        $timelines = [60, 300, 900, 1800, 3600];
+
+        $mailInfo = [
+            'fileInfo'  => $fileInfo,
+            'channel'   => 'nach',
+            'filetype'  => FileStore\Type::RBL_ENACH_DEBIT,
+            'subject'   => 'Enach RBL Debit File Beam Send failure',
+            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NBPLUS_TECH]
+        ];
+
+        $this->sendBeamRequest($data, $timelines, $mailInfo, true);
+
+        $mailData = $this->formatDataForMail($files);
+
+        $type = static::GATEWAY . '_' . static::STEP;
+
+        $mailable = new EMandateMail($mailData, $type, $this->gatewayFile->getRecipients());
+
+        Mail::queue($mailable);
     }
 
     protected function formatDataForFile($tokens)
