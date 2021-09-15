@@ -1,21 +1,24 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, paiseToRupees } from 'common/utils/rzp-utils';
 import { isMandatoryToBool } from '../Amount/helpers';
 import FIELD_TYPES from '../Amount/helpers/fieldTypes';
 import FieldOptionsDropdown, { OptionsItem } from '../FieldOptionsDropdown';
+// eslint-disable-next-line import/no-named-as-default
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
-import { paiseToRupees } from 'common/utils/rzp-utils';
 import { getCurrency } from 'common/ui/Amount';
 import { validateAmount } from 'common/utils/validators';
 
 import ModalHeader from 'common/ui/ModalHeader';
+
+import track from '../../track';
 
 @connect(null, {
   openModal,
@@ -27,9 +30,9 @@ export default class BaseForm extends React.PureComponent {
     super(props);
     const field = props.field;
 
-    const name = field.item.name,
-      disableSubmit = !name,
-      hasDescription = !!field.item.description;
+    const name = field.item.name;
+    const disableSubmit = !name;
+    const hasDescription = !!field.item.description;
 
     this.state = {
       disableSubmit,
@@ -43,13 +46,13 @@ export default class BaseForm extends React.PureComponent {
     setTimeout(this.toggleSubmitBtn);
   }
 
-  onChange = ({ target }) => {
+  onChange = () => {
     setTimeout(this.toggleSubmitBtn); // Validate form for input errors via class change in DOM, hence delayed.
   };
 
   toggleSubmitBtn = () => {
     const form = this.formEl;
-    let disableSubmit = !!form.querySelectorAll('.is-invalid').length;
+    const disableSubmit = !!form.querySelectorAll('.is-invalid').length;
 
     this.setState({ disableSubmit });
   };
@@ -71,17 +74,17 @@ export default class BaseForm extends React.PureComponent {
   };
 
   toggleDescriptionField = (_) => {
-    this.setState({
-      hasDescription: !this.state.hasDescription,
-    });
+    this.setState((prevState) => ({
+      hasDescription: !prevState.hasDescription,
+    }));
   };
 
   toggleIsMandatory = (_) => {
     const isMandatory = !this.state.isMandatory;
 
-    this.setState({
-      isMandatory,
-    });
+    this.setState((prevState) => ({
+      isMandatory: !prevState.isMandatory,
+    }));
 
     this.props.onChangeIsMandatory(isMandatory);
   };
@@ -95,7 +98,7 @@ export default class BaseForm extends React.PureComponent {
       mirrorDisplayName: target.value,
     });
 
-    this.props.tracking.trackEvent(window.rzpQ.paymentPages().interaction('pp.create.edit_field'));
+    track.wysiwyg.inputFieldName();
   };
 
   onChangeCurrency = (selectedCurrency) => {
@@ -198,6 +201,7 @@ export default class BaseForm extends React.PureComponent {
     );
   }
 
+  // eslint-disable-next-line getter-return, consistent-return
   get amountRepresentationForFieldType() {
     const { field } = this.props;
     const fieldType = this.props.fieldType;
@@ -268,6 +272,7 @@ export default class BaseForm extends React.PureComponent {
             </div>
           </React.Fragment>
         );
+      default:
     }
   }
 
@@ -291,7 +296,8 @@ export default class BaseForm extends React.PureComponent {
           placeholder="Enter field label"
           onInput={this.onInputName}
           autoRender
-          validator={function (val) {
+          // eslint-disable-next-line consistent-return
+          validator={(val) => {
             if (!val) {
               return 'Field title is required';
             }
@@ -327,6 +333,7 @@ export default class BaseForm extends React.PureComponent {
               name="description"
               placeholder="Enter description"
               defaultValue={field.item.description || ''}
+              // eslint-disable-next-line consistent-return
               validator={(val) => {
                 if (val && val.length > 128) {
                   return 'Field description cannot be more than 128 characters';

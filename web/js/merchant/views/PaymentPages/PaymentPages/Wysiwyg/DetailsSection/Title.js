@@ -1,7 +1,23 @@
-import { classList } from 'common/utils/rzp-utils';
-import Input from 'common/new-ui/Input';
-import debounce from 'common/utils/debounce';
+import React from 'react';
 
+import Input from 'common/new-ui/Input';
+
+import { classList } from 'common/utils/rzp-utils';
+import debounce from 'common/utils/debounce';
+import track from '../track/';
+
+const callTrackers = () => {
+  return (event) => {
+    const value = event?.target?.value;
+    const errorElement = document.querySelector('#title .Input-error');
+
+    if (errorElement) {
+      track.wysiwyg.titleEnterError(value, errorElement.innerText);
+    } else {
+      track.wysiwyg.titleEnterSuccess(value);
+    }
+  };
+};
 export default class extends React.Component {
   autoAdjustHeight(target) {
     if (!target) {
@@ -14,7 +30,7 @@ export default class extends React.Component {
     fakeEle.value = content;
     const newHeight = fakeEle.scrollHeight;
 
-    target.style.height = newHeight + 'px';
+    target.style.height = `${newHeight}px`;
   }
 
   componentDidMount() {
@@ -54,6 +70,7 @@ export default class extends React.Component {
           defaultValue={this.props.title}
           onInput={this.handleOnInput}
           required
+          // eslint-disable-next-line consistent-return
           validator={(val) => {
             if (!val.trim()) {
               return 'Page title cannot be empty';
@@ -65,9 +82,9 @@ export default class extends React.Component {
           onKeyPress={(e) => {
             if (e.which === 13) {
               e.preventDefault();
-              return;
             }
           }}
+          onBlur={callTrackers()}
         />
         <div class="title-underline" />
       </div>

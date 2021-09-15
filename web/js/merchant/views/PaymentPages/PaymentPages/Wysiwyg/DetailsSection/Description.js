@@ -1,11 +1,14 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { classList } from 'common/utils/rzp-utils';
 import debounce from 'common/utils/debounce';
 import { showNotification } from 'merchant_common/reducers/notifications';
+// eslint-disable-next-line import/no-named-as-default
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { uploadImageInDescription } from '../../model';
 import { validateEmbeddedVideoUrl, isUrlLenient } from 'common/utils/validators';
+import track from '../track/';
 
 const FILE_SIZE_LIMIT = 2; // 2MB limit
 const COLORS_LIST = [
@@ -37,7 +40,7 @@ const QUILL_OPTIONS = {
 
 @connect(null, { showNotification })
 export default class extends React.PureComponent {
-  state = { isScriptLoaded: null };
+  state = { isFocused: false };
 
   constructor(props) {
     super(props);
@@ -54,7 +57,6 @@ export default class extends React.PureComponent {
   componentDidMount() {
     this.loadStep++;
 
-
     if (window.Quill) {
       this.loadStep++;
     }
@@ -65,13 +67,12 @@ export default class extends React.PureComponent {
   safeInitDescription() {
     // If Quill not present, then initDescription, only after both DOM and quill are loaded.
     if (this.loadStep === 2) {
-      
       try {
         this.initDescription();
-      } catch(error) {
+      } catch (error) {
         // if quill throws error due to delay in DOM container rendering, executing again with significant delay
         setTimeout(() => this.initDescription(), 500);
-      } 
+      }
     }
   }
 
@@ -81,9 +82,11 @@ export default class extends React.PureComponent {
 
   componentWillUpdate(nextProps) {
     if (this.props.description !== nextProps.description && !this.props.isPageDirty && this.QUILL) {
-      nextProps.description
-        ? this.QUILL.setContents(JSON.parse(nextProps.description).value)
-        : this.QUILL.setText('');
+      if (nextProps.description) {
+        this.QUILL.setContents(JSON.parse(nextProps.description).value);
+      } else {
+        this.QUILL.setText('');
+      }
     }
   }
 
@@ -92,7 +95,9 @@ export default class extends React.PureComponent {
     this.QUILL = new window.Quill('#description-quill', QUILL_OPTIONS);
 
     /* Pre-fill description */
-    this.props.description && this.QUILL.setContents(JSON.parse(this.props.description).value);
+    if (this.props.description) {
+      this.QUILL.setContents(JSON.parse(this.props.description).value);
+    }
 
     /* Update description via debounce */
     this.QUILL.on('text-change', (delta, oldDelta, source) => {
@@ -117,14 +122,16 @@ export default class extends React.PureComponent {
 
     /* Fix keyboard bindings */
     const keyboard = this.QUILL.getModule('keyboard');
-    for (let key in keyboard.hotkeys) {
-      delete keyboard.hotkeys[key];
+    for (const key in keyboard.hotkeys) {
+      if (Object.prototype.hasOwnProperty.call(keyboard.hotkeys, key)) {
+        delete keyboard.hotkeys[key];
+      }
     }
 
     const bodyEditor = document.getElementById('description-quill');
 
     // Allow only certain hotkeys. Quilljs is adding hotkeys for unused modules, hence explicit handling.
-    bodyEditor.addEventListener('keydown', function (e) {
+    bodyEditor.addEventListener('keydown', (e) => {
       let ret = true;
 
       if (e.ctrlKey || e.metaKey) {
@@ -141,6 +148,7 @@ export default class extends React.PureComponent {
           case 117:
             ret = false;
             break;
+          default:
         }
       }
       return ret;
@@ -148,15 +156,14 @@ export default class extends React.PureComponent {
   }
 
   addHookForUrlValidation() {
-    const self = this;
     const tooltipSave = this.QUILL.theme.tooltip.save;
 
-    this.QUILL.theme.tooltip.save = function () {
+    this.QUILL.theme.tooltip.save = function save() {
       // overwrite save link functionality
-      var url = this.textbox.value;
+      let url = this.textbox.value;
 
       if (url.indexOf('http') === -1) {
-        url = 'https://' + url;
+        url = `https://${url}`;
       }
 
       // validate url according to mode type
@@ -166,14 +173,20 @@ export default class extends React.PureComponent {
 
         if (isLink && isUrlLenient(url)) {
           tooltipSave.call(this);
-        } else if (isVideo && validateEmbeddedVideoUrl(url)) {
-          tooltipSave.call(this);
+        } else if (isVideo) {
+          if (validateEmbeddedVideoUrl(url)) {
+            tooltipSave.call(this);
+
+            track.wysiwyg.addVideoSuccess();
+          } else {
+            track.wysiwyg.addVideoFail(url);
+          }
         }
       }
     };
   }
 
-  handleImageInsert(f) {
+  handleImageInsert() {
     const self = this;
     const range = self.QUILL.getSelection();
 
@@ -210,23 +223,33 @@ export default class extends React.PureComponent {
               const url = res.data[0];
 
               self.QUILL.insertEmbed(range.index, 'image', url, 'user');
+
+              track.wysiwyg.addImageSuccess();
             } else {
-              throw { errors: ['Some network error occurred'] };
+              const errorMessage = 'Some network error occurred';
+
+              track.wysiwyg.addImageFail(errorMessage);
+
+              throw new Error({ errors: [errorMessage] });
             }
           })
           .catch(({ errors }) => {
+            track.wysiwyg.addImageFail(errors[0]);
+
             self.props.showNotification({
               type: 'error',
               message: errors[0],
             });
           });
       } else {
+        const errorMessage = 'Select a valid image';
+
+        track.wysiwyg.addImageFail(errorMessage);
+
         self.props.showNotification({
           type: 'error',
-          message: 'Select a valid Image',
+          message: errorMessage,
         });
-
-        return;
       }
     };
   }
@@ -265,12 +288,12 @@ export default class extends React.PureComponent {
 function customizeIcons() {
   const icons = window.Quill.import('ui/icons');
 
-  icons['bold'] = '<i class="i i-bold" />';
-  icons['italic'] = '<i class="i i-italics" />';
-  icons['underline'] = '<i class="i i-underline" />';
-  icons['link'] = '<i class="i i-link" />';
-  icons['image'] = '<i class="i i-image" />';
-  icons['video'] = '<i class="i i-video" />';
-  icons['list']['bullet'] = '<i class="i i-ul-list" />';
-  icons['list']['ordered'] = '<i class="i i-ol-list" />';
+  icons.bold = '<i class="i i-bold" />';
+  icons.italic = '<i class="i i-italics" />';
+  icons.underline = '<i class="i i-underline" />';
+  icons.link = '<i class="i i-link" />';
+  icons.image = '<i class="i i-image" />';
+  icons.video = '<i class="i i-video" />';
+  icons.list.bullet = '<i class="i i-ul-list" />';
+  icons.list.ordered = '<i class="i i-ol-list" />';
 }

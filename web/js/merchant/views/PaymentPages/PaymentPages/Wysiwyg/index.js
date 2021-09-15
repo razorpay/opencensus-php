@@ -43,7 +43,6 @@ import {
   trackWYSIWYGCloseIntent,
   trackConfirmWYSIWYGCloseIntent,
   trackPageSettingsClick,
-  trackPageSave,
   trackClickOnCreateEmbedButton,
 } from '../ga';
 
@@ -389,8 +388,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }),
   )
   handleSavePublish = (label) => {
-    track.publishPaymentPage(label);
-
     const isEditExistingId = !!this.props.id;
     const { paymentPageEntity, FORM_ITEMS } = this.props;
     // console.log('Handle Create..', paymentPageEntity);
@@ -592,25 +589,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     const searchQueryNext = getURLQueryParams(this.props.location.search);
 
-    if (isEditExistingId) {
-      trackPageSave('save', trackData);
-
-      this.props.tracking.trackEvent(
-        window.rzpQ.paymentPages().interaction('pp.create.publish_page', {
-          is_new_page: false,
-          clone: !!searchQueryNext.duplicate_id,
-        }),
-      );
-    } else {
-      trackPageSave('create', trackData);
-
-      this.props.tracking.trackEvent(
-        window.rzpQ.paymentPages().interaction('pp.create.publish_page', {
-          is_new_page: true,
-          clone: !!searchQueryNext.duplicate_id,
-        }),
-      );
-    }
+    track.publishPaymentPage(label, !isEditExistingId, !!searchQueryNext.duplicate_id);
 
     // Note: Don't make this call and save receipt call in parallel bcoz they modify the same DB table which gets locked.
 

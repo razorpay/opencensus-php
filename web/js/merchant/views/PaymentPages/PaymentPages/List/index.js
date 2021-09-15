@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import HeaderAction from 'common/ui/HeaderAction';
@@ -63,7 +64,7 @@ export default class PaymentPagesContainer extends ListContainer {
     track.init(this.props.tracking.trackEvent);
   }
 
-  componentWillReceiveProps(nextProps, nextState) {
+  componentWillReceiveProps(nextProps) {
     if (this.props.paymentPages.length !== nextProps.paymentPages.length) {
       const newLength = nextProps.paymentPages.length;
 
@@ -195,7 +196,7 @@ export default class PaymentPagesContainer extends ListContainer {
       showOnboarding = getIsAllowedPaymentPagesResetOnBoarding(data);
     }
 
-    let paymentPageProductOnBoarding = {
+    const paymentPageProductOnBoarding = {
       ...props.paymentPageProductOnBoarding,
       showOnboarding,
       isQuickGuideOpen: !getPaymentPageQuickGuideIsClosed(props),
@@ -296,17 +297,16 @@ export default class PaymentPagesContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
-              <TakeATourButton feature={RZPFeatures.PP} />
+            <ShowWhen additionalCondition={() => !user.isOrgAxis}>
+              <TakeATourButton feature={RZPFeatures.PP} onClick={track.takeTour} />
             </ShowWhen>
 
-            <ShowWhen
-              additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
-            >
+            <ShowWhen additionalCondition={() => user.isOrgAllowedFunctionality('external_links')}>
               <DocLink
                 class="btn btn-link settlement-doc-btn"
                 href="https://razorpay.com/docs/payment-pages/"
                 target="_blank"
+                onClick={track.viewDoc}
               >
                 Documentation&nbsp;
                 <span class="icon i-external-link" />

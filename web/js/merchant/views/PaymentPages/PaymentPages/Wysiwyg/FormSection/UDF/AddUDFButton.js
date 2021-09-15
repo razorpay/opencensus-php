@@ -1,41 +1,22 @@
+import React from 'react';
 import RTracking from 'react-tracking';
 
 import Button from 'common/new-ui/Button';
 import FieldsDropdown from '../FieldsDropdown';
 import { getFieldTypes } from '../UDF/helpers';
 import CreatorManager from './CreatorManager';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import track from '../../track';
 
 @RTracking(() => window.rzpQ.component('AddUDFButton'))
 class AddUDFButton extends React.PureComponent {
   onSelectFieldType = (field) => {
-    analyticsTrack({
-      objectName: 'input item',
-      actionName: 'chosen',
-      screen: 'create payment page',
-      properties: {
-        type: field.label,
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
+    track.wysiwyg.chosenInputField();
+
     this.props.openBaseForm(field.schema);
   };
 
   trackInputField = () => {
-    analyticsTrack({
-      objectName: 'input item',
-      actionName: 'added',
-      screen: 'create payment page',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-    window.rzpQ.push(
-      window.rzpQ.now().paymentPages().interaction('pp.create.field', {
-        button_type: 'Input Field',
-      }),
-    );
+    track.wysiwyg.addInputField();
   };
 
   render() {
@@ -52,6 +33,7 @@ class AddUDFButton extends React.PureComponent {
   }
 }
 
+// eslint-disable-next-line babel/new-cap
 export default CreatorManager(AddUDFButton);
 
 export const UDFDropdown = ({ children, onSelect, selectedOption, beforeOptionsTxt }) => (

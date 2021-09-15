@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import Button from 'common/new-ui/Button';
@@ -9,8 +10,7 @@ import {
   trackTemplateSelection,
   trackStartCreation,
 } from '../../ga';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import track from '../track/';
 
 const createYourOwn = {
   card: {
@@ -33,6 +33,7 @@ export default class extends React.PureComponent {
         templateTitle: title,
       });
 
+      track.wysiwyg.selectTemplate(title);
       trackTemplateSelection(title || createYourOwn.card.title);
     };
   };
@@ -78,15 +79,6 @@ export default class extends React.PureComponent {
                         description={META[m].card.description}
                         img={META[m].card.img}
                         selectTemplate={(...e) => {
-                          analyticsTrack({
-                            objectName: 'template',
-                            actionName: 'selected',
-                            screen: 'create payment page',
-                            properties: {
-                              templateName: META[m].card.title,
-                              ...getCommonAnalyticsProperties(window.rzp_user),
-                            },
-                          });
                           return this.selectTemplate(
                             META[m].key,
                             META[m].label,
@@ -97,6 +89,7 @@ export default class extends React.PureComponent {
                       />
                     );
                   }
+                  return '';
                 })}
               </div>
             </ModalContent>
@@ -153,18 +146,12 @@ export default class extends React.PureComponent {
 class TemplateCard extends React.PureComponent {
   state = {};
 
-  componentDidMount() {
-    this.setState({
-      isLoaded: true,
-    });
-  }
-
   render() {
     const { title, description, img, selectTemplate } = this.props;
 
     return (
       <div class="TemplateCard" onClick={selectTemplate}>
-        <img src={this.state.isLoaded ? img : null} />
+        <img src={img} />
         <div class="TemplateCard-details">
           {title}
           <div class="TemplateCard-desc">{description}</div>

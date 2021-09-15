@@ -51,6 +51,14 @@ function _track() {
       sendToLumberjack(`browse.${type}`, data);
       sendToSegment(`browse ${type}`, 'click', data);
     },
+    takeTour: () => {
+      sendToLumberjack('list.take_tour');
+      sendToSegment('take tour', 'clicked');
+    },
+    viewDoc: () => {
+      sendToLumberjack('list.view_documentation');
+      sendToSegment('view documentation', 'clicked');
+    },
 
     init(_lumberjackTrack) {
       lumberjackTrack = _lumberjackTrack;

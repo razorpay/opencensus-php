@@ -36,7 +36,10 @@ function _track() {
   }
 
   return {
-    publishPaymentPage: (label) => sendToSegment(label, 'clicked'),
+    publishPaymentPage: (label, is_new_page, clone) => {
+      sendToLumberjack('publish_page', { is_new_page, clone });
+      sendToSegment(label, 'clicked');
+    },
 
     plugins: {
       save: (fb, ga) => {
@@ -111,12 +114,12 @@ function _track() {
       },
       close: () => sendToSegment('settings', 'closed'),
       checkCustomMessage: (value) => {
-        let label = value ? 'checked' : 'unchecked';
+        const label = value ? 'checked' : 'unchecked';
         sendToLumberjack(`settings.custom_message.${label}`);
         sendToSegment('settings', `custom message ${label}`);
       },
       checkRedirect: (value) => {
-        let label = value ? 'checked' : 'unchecked';
+        const label = value ? 'checked' : 'unchecked';
         sendToLumberjack(`settings.redirect.${label}`);
         sendToSegment('settings', `redirect ${label}`);
       },
@@ -147,10 +150,63 @@ function _track() {
       getHyperlinkButton: () => sendToSegment('success', 'get hyperlink'),
     },
 
-    init(_lumberjackTrack, config) {
+    wysiwyg: {
+      reorderField: () => {
+        sendToLumberjack('reorder_field');
+        sendToSegment('form section field', 'reorder');
+      },
+      addPriceField: () => {
+        sendToLumberjack('field', { button_type: 'Price Field' });
+        sendToSegment('amount item', 'added');
+      },
+      chosenPriceField: () => {
+        sendToSegment('amount item', 'chosen');
+      },
+      addInputField: () => {
+        sendToLumberjack('field', { button_type: 'Input Field' });
+        sendToSegment('input item', 'added');
+      },
+      chosenInputField: () => {
+        sendToSegment('input item', 'chosen');
+      },
+      inputFieldName: () => {
+        sendToLumberjack('edit_field');
+        sendToSegment('field name', 'input');
+      },
+      selectTemplate: (template) => {
+        sendToLumberjack('choose_template', { template });
+        sendToSegment('template', 'selected', { templateName: template });
+      },
+      titleEnterSuccess: (title) => {
+        sendToLumberjack('title.success', { title });
+        sendToSegment('title success', 'input', { title });
+      },
+      titleEnterError: (title, error) => {
+        sendToLumberjack('title.fail', { title, error });
+        sendToSegment('title fail', 'input', { title, error });
+      },
+      addImageSuccess: () => {
+        sendToLumberjack('description.image_upload.success');
+        sendToSegment(' description image upload', 'success');
+      },
+      addImageFail: (error) => {
+        sendToLumberjack('description.image_upload.fail', { error });
+        sendToSegment('description image upload', 'fail', { error });
+      },
+      addVideoSuccess: () => {
+        sendToLumberjack('description.video_upload.success');
+        sendToSegment('description video upload', 'success');
+      },
+      addVideoFail: (video_url) => {
+        sendToLumberjack('description.video_upload.fail', { video_url });
+        sendToSegment('description video upload', 'fail', { video_url });
+      },
+    },
+
+    init(_lumberjackTrack, _config) {
       lumberjackTrack = _lumberjackTrack;
 
-      setConfig(config);
+      setConfig(_config);
     },
   };
 }
