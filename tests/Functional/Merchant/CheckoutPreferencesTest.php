@@ -1554,13 +1554,21 @@ class CheckoutPreferencesTest extends TestCase
 
     public function testGetCheckoutPreferencesForMORdisplay()
     {
+        $this->fixtures->merchant->addFeatures(Constants::ENABLE_SIFT_JS);
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals($response['features']['enable_sift_js'],true);
+    }
+
+    public function testGetCheckoutPreferencesForSiftJSIntegration()
+    {
         $this->fixtures->merchant->addFeatures(Constants::SHOW_MOR_TNC);
 
         $response = $this->getPreferences();
 
         $this->assertEquals($response['features']['show_mor_tnc'],true);
     }
-
 
     protected function getPreferences($orderId = null, $currency = 'INR')
     {
