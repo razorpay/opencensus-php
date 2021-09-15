@@ -199,6 +199,8 @@ class Service extends Base\Service
         // discussion: https://razorpay.slack.com/archives/C012KKG1STS/p1629710183131700?thread_ts=1627835655.011700&cid=C012KKG1STS
         unset($input['user_id']);
 
+        unset($input['userId']);
+
         if ($this->auth->isStrictPrivateAuth() === false)
         {
             // if this is not strictly Private, then we enforce OTP verification
@@ -240,13 +242,6 @@ class Service extends Base\Service
 
         if($this->user != null)
         {
-            $this->app['trace']->info(TraceCode::PAYOUT_LINK_CREATE_USER_ID,
-                [
-                    'auth_user_id' => $this->user->getId(),
-                    'private_auth' => $this->auth->isPrivateAuth(),
-                    'proxy_auth' => $this->auth->isProxyAuth(),
-                ]);
-
             $input['user_id'] = $this->user->getId();
         }
 
