@@ -1948,7 +1948,16 @@ app
         return $scope.onShowSignup && $scope.onShowSignup();
       };
 
-      const isCaptchaV3Enabled = () => window.isCaptchaV3Enabled && !isMerchantX;
+      const isProdMerchantDashboard = window.location.hostname === 'dashboard.razorpay.com';
+      const isBetaMerchantDashboard =
+        window.location.hostname === 'beta-dashboard.stage.razorpay.in' ||
+        window.location.hostname === 'dashboard.dev.razorpay.in';
+      const isLocalhostDashboard = window.location.hostname === 'localhost';
+
+      // Enabled for merchant dashboard. Disabled for bank URLs and X
+      const isCaptchaV3Enabled = () =>
+        (isProdMerchantDashboard || isBetaMerchantDashboard || isLocalhostDashboard) &&
+        !isMerchantX;
       // Captcha Variant 2: New v3 + v2 flow
       // Captcha Variant 1: Old v2 flow
       const getCaptchaVariant = () => (isCaptchaV3Enabled() ? 2 : 1);
