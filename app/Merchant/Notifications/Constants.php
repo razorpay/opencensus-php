@@ -893,6 +893,7 @@ class Constants
             'campaign'    => 'nitro',
             "target_product_feature" => 'XCA',
             "target_metric" => 'MTU',
+            'video_url'   => 'https://cdn.razorpay.com/videos/RazorpayX_Explainer_video_2.mp4',
             'buttons'     => [
                 [
                     'type'  => 'button',

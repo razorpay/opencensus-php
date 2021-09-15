@@ -1309,3 +1309,7 @@ export function getErrorMessageFromResponse(errors) {
 
   return err;
 }
+
+export const linkFromSource = (link = '', source = '') => {
+  return link.indexOf(source) >= 0;
+};

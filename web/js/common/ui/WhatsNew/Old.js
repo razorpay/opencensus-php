@@ -8,6 +8,7 @@ import {
   getCommonAnalyticsProperties,
   isMobileAndTablet,
   isElementXPercentInViewport,
+  linkFromSource,
 } from 'common/utils/rzp-utils';
 import {
   closeModal as closeModalx,
@@ -129,7 +130,7 @@ class WhatsNewOld extends Component {
 
   setUnreadMsgs() {
     const lastReadTS = this.state.lastReadTS;
-    const { announcements } = this.props;
+    const { announcements, tracking } = this.props;
     const ID = [];
     const readID = [];
     const unreadID = [];
@@ -156,7 +157,6 @@ class WhatsNewOld extends Component {
     this.setState({ totalUnread, unreadID });
 
     if (totalUnread && window.rzpQ && window.rzpQ.merchantActions) {
-      const tracking = this.props.tracking;
       tracking.trackEvent(
         window.rzpQ.merchantActions().success('display.notification.bubble', {
           ID,
@@ -589,19 +589,22 @@ const NotificationCard = ({
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
   const ref = useRef();
 
+  const trackVideoEvents = () => {
+    const whatsNew = id && id.length >= 9 && id.substring(0, 9) === 'whats-new';
+
+    tracking.trackEvent(
+      window.rzpQ.merchantActions().success('dashboard.notification_section.card.display', {
+        card_id: id,
+        video_url,
+        ...(whatsNew && { whats_new: true }),
+      }),
+    );
+  };
+
   const onYouTubePlayer = () => {
     const onPlayerStateChange = (event) => {
-      const whatsNew = id && id.length >= 9 && id.substring(0, 9) === 'whats-new';
-
       if (event.data == window.YT.PlayerState.PLAYING) {
-        tracking.trackEvent(
-          window.rzpQ.merchantActions().success('dashboard.notification_section.card.display', {
-            card_id: id,
-            video_url,
-            ...(whatsNew && { whats_new: true }),
-            growth_service: user.isGrowthServiceEnabled,
-          }),
-        );
+        trackVideoEvents();
       }
     };
 
@@ -616,7 +619,7 @@ const NotificationCard = ({
   };
 
   useEffect(() => {
-    if (video_url && video_url.length) {
+    if (video_url && video_url.length && linkFromSource(video_url, 'youtube')) {
       if (typeof window.YT == 'undefined' || typeof window.YT.Player == 'undefined') {
         window.onYouTubePlayerAPIReady = () => {
           onYouTubePlayer();
@@ -707,15 +710,15 @@ const NotificationCard = ({
           </div>
         ) : null}
         {video_url && video_url.length ? (
-          <div id={`player-${id}`} className="whats-new__video-small">
-            <iframe
-              src={video_url}
-              frameBorder="0"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-              title={title}
-            />
-          </div>
+          linkFromSource(video_url, 'youtube') ? (
+            <div id={`player-${id}`} className="whats-new__video-small">
+              <iframe src={video_url} frameBorder="0" allowFullScreen title={title} />
+            </div>
+          ) : (
+            <video controls className="whats-new__video-small" onPlay={trackVideoEvents}>
+              <source src={video_url} type="video/mp4" />
+            </video>
+          )
         ) : null}
         <div class="description">{description}</div>
         <div class="action-buttons">
