@@ -63,7 +63,7 @@ class Events
         self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => 'whatsapp.merchant.onboarding.activated_mcc_pending_hard_limit_breach',
         self::FUNDS_ON_HOLD                               => 'whatsapp.merchant.onboarding.funds_on_hold',
         self::FUNDS_ON_HOLD_REMINDER                      => 'whatsapp.merchant.onboarding.funds_on_hold_reminder',
-        self::ONBOARDING_ACTIVATION_L1_PENDING            => 'whatsapp.merchant.onboarding_activation_l1_pending',
+        self::ONBOARDING_ACTIVATION_L1_PENDING            => 'whatsapp.merchant.onboarding.onboarding_activation_l1_pending',
         self::PAYMENTS_ENABLED                            => 'whatsapp.merchant.onboarding.payments_enabled',
     ];
 
@@ -76,7 +76,6 @@ class Events
         self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => 'emails.merchant.onboarding.activated_mcc_pending_hard_limit_breach',
         self::FUNDS_ON_HOLD                               => 'emails.merchant.onboarding.funds_on_hold',
         self::FUNDS_ON_HOLD_REMINDER                      => 'emails.merchant.onboarding.funds_on_hold_reminder',
-
     ];
 
     const EMAIL_SUBJECTS = [
