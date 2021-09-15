@@ -428,7 +428,7 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestException(
                 ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
-                null, null, "Date range should be within 15 days");
+                null, null, "Date range should be within 30 days");
         }
     }
 }

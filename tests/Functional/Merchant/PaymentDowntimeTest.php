@@ -604,6 +604,147 @@ class PaymentDowntimeTest extends TestCase
         $this->assertEquals(3, sizeof($paymentDowntime));
     }
 
+    public function testFetchDowntimeWithPagination()
+    {
+
+        $currentDate = $this->getCurrentDate();
+        $this->createDowntime('upi', 'BANK', 'vpa_handle', 'oksbi');
+        $this->resolveDowntime();
+        sleep(1);
+
+        $this->createDowntime('card', 'BANK', 'issuer', 'JAKA');
+        $this->resolveDowntime();
+        sleep(1);
+
+        $this->createDowntime('netbanking', 'BANK', 'issuer', 'SBIN');
+        $this->resolveDowntime();
+        sleep(1);
+
+        $this->ba->privateAuth();
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/resolved?startDate='.$currentDate.'&endDate='.$currentDate,
+        ];
+
+        $paymentDowntime = $this->makeRequestAndGetContent($fetchDowntimeRequest);
+        $this->assertEquals(3, sizeof($paymentDowntime));
+
+        $this->ba->privateAuth();
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/resolved?startDate='.$currentDate.'&endDate='.$currentDate.'&skip=0&count=0',
+        ];
+
+        $paymentDowntime = $this->makeRequestAndGetContent($fetchDowntimeRequest);
+        $this->assertEquals(0, sizeof($paymentDowntime));
+
+        $this->createDowntime('upi', 'BANK', 'vpa_handle', 'okhdfc');
+        $this->resolveDowntime();
+        sleep(1);
+        $this->createDowntime('upi', 'BANK', 'vpa_handle', 'okicici');
+        $this->resolveDowntime();
+        sleep(1);
+        $this->createDowntime('card', 'BANK', 'issuer', 'SBIN');
+        $this->resolveDowntime();
+        sleep(1);
+        $this->createDowntime('upi', 'BANK', 'vpa_handle', 'okaxis');
+        $this->resolveDowntime();
+        sleep(1);
+        $this->createDowntime('upi', 'BANK', 'vpa_handle', 'ybl');
+        $this->resolveDowntime();
+        sleep(1);
+        $this->createDowntime('upi', 'BANK', 'vpa_handle', 'paytm');
+        $this->resolveDowntime();
+        sleep(1);
+        $this->createDowntime('card', 'BANK', 'issuer', 'HDFC');
+        $this->resolveDowntime();
+        sleep(1);
+        $this->createDowntime('card', 'BANK', 'issuer', 'KKBK');
+        $this->resolveDowntime();
+        sleep(1);
+        $this->createDowntime('card', 'BANK', 'issuer', 'IDIB');
+        $this->resolveDowntime();
+
+        $this->ba->privateAuth();
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/resolved?startDate='.$currentDate.'&endDate='.$currentDate,
+        ];
+
+        $paymentDowntime = $this->makeRequestAndGetContent($fetchDowntimeRequest);
+        $this->assertEquals(12, sizeof($paymentDowntime));
+
+
+        $this->ba->privateAuth();
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/resolved?startDate='.$currentDate.'&endDate='.$currentDate.'&skip=0&count=3',
+        ];
+
+        $paymentDowntime = $this->makeRequestAndGetContent($fetchDowntimeRequest);
+        $this->assertEquals(3, sizeof($paymentDowntime));
+
+        $dt1 = $paymentDowntime[0];
+        $this->assertEquals('card', $dt1['method']);
+        $this->assertEquals('IDIB', $dt1['instrument']['issuer']);
+
+        $dt1 = $paymentDowntime[1];
+        $this->assertEquals('card', $dt1['method']);
+        $this->assertEquals('KKBK', $dt1['instrument']['issuer']);
+
+        $dt1 = $paymentDowntime[2];
+        $this->assertEquals('card', $dt1['method']);
+        $this->assertEquals('HDFC', $dt1['instrument']['issuer']);
+
+
+        $this->ba->privateAuth();
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/resolved?startDate='.$currentDate.'&endDate='.$currentDate.'&skip=3&count=4',
+        ];
+
+        $paymentDowntime = $this->makeRequestAndGetContent($fetchDowntimeRequest);
+        $this->assertEquals(4, sizeof($paymentDowntime));
+
+
+        $dt1 = $paymentDowntime[0];
+        $this->assertEquals('card', $dt1['method']);
+        $this->assertEquals('SBIN', $dt1['instrument']['issuer']);
+
+        $dt1 = $paymentDowntime[1];
+        $this->assertEquals('card', $dt1['method']);
+        $this->assertEquals('JAKA', $dt1['instrument']['issuer']);
+
+        $dt1 = $paymentDowntime[2];
+        $this->assertEquals('netbanking', $dt1['method']);
+        $this->assertEquals('SBIN', $dt1['instrument']['bank']);
+
+        $dt1 = $paymentDowntime[3];
+        $this->assertEquals('upi', $dt1['method']);
+        $this->assertEquals('paytm', $dt1['instrument']['psp']);
+
+        $this->ba->privateAuth();
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method'  => 'GET',
+            'url'     => '/payments/downtimes/resolved?startDate='.$currentDate.'&endDate='.$currentDate.'&skip=3&count=15',
+        ];
+
+        $paymentDowntime = $this->makeRequestAndGetContent($fetchDowntimeRequest);
+        $this->assertEquals(9, sizeof($paymentDowntime));
+
+        $dt1 = $paymentDowntime[8];
+        $this->assertEquals('upi', $dt1['method']);
+        $this->assertEquals('oksbi', $dt1['instrument']['vpa_handle']);
+
+
+    }
+
     public function testFetchResolvedPayments()
     {
         $currentDate = $this->getCurrentDate();
@@ -674,6 +815,7 @@ class PaymentDowntimeTest extends TestCase
 
         try {
              $this->makeRequestAndGetContent($fetchDowntimeRequest);
+            $this->assertTrue(false);
         }
         catch (\Exception $e)
         {
@@ -690,6 +832,7 @@ class PaymentDowntimeTest extends TestCase
 
         try {
             $this->makeRequestAndGetContent($fetchDowntimeRequest);
+            $this->assertTrue(false);
         }
         catch (\Exception $e)
         {
@@ -715,6 +858,7 @@ class PaymentDowntimeTest extends TestCase
 
         try {
             $this->makeRequestAndGetContent($fetchDowntimeRequest);
+            $this->assertTrue(false);
         }
         catch (\Exception $e)
         {
@@ -726,16 +870,17 @@ class PaymentDowntimeTest extends TestCase
         $fetchDowntimeRequest = [
             'content' => [],
             'method'  => 'GET',
-            'url'     => '/payments/downtimes/resolved?startDate=2021-08-01&endDate=2021-08-16',
+            'url'     => '/payments/downtimes/resolved?startDate=2021-08-01&endDate=2021-09-01',
         ];
 
         try {
             $this->makeRequestAndGetContent($fetchDowntimeRequest);
+            $this->assertTrue(false);
         }
         catch (\Exception $e)
         {
             $this->assertExceptionClass($e, BadRequestException::class);
-            $this->assertEquals("Date range should be within 15 days", $e->getMessage());
+            $this->assertEquals("Date range should be within 30 days", $e->getMessage());
         }
 
     }
@@ -2286,5 +2431,20 @@ class PaymentDowntimeTest extends TestCase
     private function getCurrentDate()
     {
         return Carbon::now(Timezone::IST)->format('Y-m-d');
+    }
+
+    private function resolveDowntime(): void
+    {
+        $downtime1 = $this->getLastEntity('gateway_downtime', true);
+
+        $resolveDowntimeRequest = [
+            'content' => [
+                'end' => Carbon::now()->timestamp,
+            ],
+            'method'  => 'PUT',
+            'url'     => '/gateway/downtimes/' . $downtime1['id']
+        ];
+        $this->ba->adminAuth();
+        $this->makeRequestAndGetContent($resolveDowntimeRequest);
     }
 }

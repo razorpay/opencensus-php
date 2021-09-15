@@ -109,7 +109,7 @@ class Repository extends Base\Repository
         $query->whereNull(Entity::MERCHANT_ID);
         $query->where(Entity::STATUS, '=', 'resolved');
 
-        $query->orderBy(Entity::CREATED_AT, 'desc');
+        $query->orderBy(Entity::BEGIN, 'desc');
         return $query->get();
     }
 

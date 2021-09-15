@@ -5257,6 +5257,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_SCHEDULED_DOWNTIMES_FROM_DB                   = 'FETCH_SCHEDULED_DOWNTIMES_FROM_DB';
     const REFRESH_SCHEDULED_DOWNTIME_CACHE                    = 'REFRESH_SCHEDULED_DOWNTIME_CACHE';
     const FAILED_TO_REFRESH_SCHEDULED_PAYMENT_DOWNTIME_CACHE  = 'FAILED_TO_REFRESH_SCHEDULED_PAYMENT_DOWNTIME_CACHE';
+    const RETURN_PAGE_DOWNTIMES_FROM_CACHE                    = 'RETURN_PAGE_DOWNTIMES_FROM_CACHE';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

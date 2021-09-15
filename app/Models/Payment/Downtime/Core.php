@@ -380,9 +380,20 @@ class Core extends Base\Core
 
         $method = "";
 
+        $maxCount = -1;
+        $skip = -1;
+        $count = -1;
+
         if (isset($params['method']))
         {
             $method = $params['method'];
+        }
+
+        if(isset($params['skip']) and isset($params['count']))
+        {
+            $maxCount = $params['skip'] + $params['count'];
+            $skip = $params['skip'];
+            $count = $params['count'];
         }
 
         $endDateEpoch = strtotime($endDate);
@@ -413,9 +424,20 @@ class Core extends Base\Core
 
                 $downtimes = array_merge($downtimes, $dTimes);
             }
+
+            if($maxCount !== -1 and sizeof($downtimes) >= $maxCount)
+            {
+                $this->trace->info(TraceCode::RETURN_PAGE_DOWNTIMES_FROM_CACHE, ['params' => $params, 'beyondMaxSize' => false]);
+                return array_slice($downtimes, $skip, $count);
+            }
             $endDateEpoch = $endDateEpoch - (Constants::SECONDS_IN_A_DAY);
         }
 
+        if($maxCount !== -1)
+        {
+            $this->trace->info(TraceCode::RETURN_PAGE_DOWNTIMES_FROM_CACHE, ['params' => $params, 'beyondMaxSize' => true]);
+            return array_slice($downtimes, $skip, $count);
+        }
         return $downtimes;
     }
 

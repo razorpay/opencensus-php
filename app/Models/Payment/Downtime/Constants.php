@@ -40,7 +40,7 @@ class Constants
     const RESOLVED  = 'RESOLVED';
     const SECONDS_IN_A_DAY = 86400;
     const HISTORY_REFRESH_BATCH_SIZE = 7;
-    const MAX_LOOKBACK_PERIOD        = 15;
+    const MAX_LOOKBACK_PERIOD        = 30;
 
     public static function getMethodQueryInstrument($method)
     {
