@@ -6,6 +6,7 @@ import Size from '@razorpay/blade-old/src/atoms/Size';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import View from '@razorpay/blade-old/src/atoms/View';
+import Text from '@razorpay/blade-old/src/atoms/Text';
 import { fetchOrg, transformFetchOrgData } from './apis';
 import { getTheme } from './theme';
 import { BANK_NAMES } from '../utils';
@@ -51,6 +52,13 @@ const Signin = () => {
   }, [setOneTapInfo]);
 
   const handleSignUpClick = () => {
+    window.rzpQ.push(
+      window.rzpQ.now().onbr().initiated('login.non_login_actions', {
+        action: 'click sign up',
+      }),
+    );
+    window.analytics.track('Login Non Login Actions Initiated', { action: 'click sign up' });
+
     window.location.href = '/signup';
   };
 
@@ -86,6 +94,41 @@ const Signin = () => {
                       theme={getTheme(orgData.orgName)}
                       isGoogleOauthEnabled={orgData.orgName !== BANK_NAMES.AXIS}
                     />
+                    <DesktopOnlyView>
+                      <Flex>
+                        <Space padding={[2, 0]} margin="auto">
+                          <Size maxWidth="232px">
+                            <Flex flexWrap="wrap" justifyContent="center">
+                              <View>
+                                <Text color="light.970" size="xsmall">
+                                  Protected by reCAPTCHA. Google
+                                </Text>
+                                <Space padding={[0, 0.25]}>
+                                  <Text color="primary.900" size="xsmall">
+                                    Privacy Policy
+                                  </Text>
+                                </Space>
+                                <Space padding={[0, 0.25]}>
+                                  <Text color="light.970" size="xsmall">
+                                    &
+                                  </Text>
+                                </Space>
+                                <Space padding={[0, 0.25]}>
+                                  <Text color="primary.900" size="xsmall">
+                                    Terms of Service
+                                  </Text>
+                                </Space>
+                                <Space padding={[0, 0.25]}>
+                                  <Text color="light.970" size="xsmall">
+                                    apply.
+                                  </Text>
+                                </Space>
+                              </View>
+                            </Flex>
+                          </Size>
+                        </Space>
+                      </Flex>
+                    </DesktopOnlyView>
                   </AbsoluteView>
                 </RelativeView>
               </ContentContainer>

@@ -1,7 +1,7 @@
+/* eslint-disable */
 import Styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
 import { BANK_NAMES } from '../utils';
-import { THEME } from './theme';
 import { media } from '../breakpoints';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
 
@@ -104,4 +104,9 @@ export const ContentContainer = Styled(View)`
     padding: 0;
   }
 
+`;
+
+export const ContactUsLinkButton = Styled(View)`
+  display: inline-block;
+  text-decoration: none;
 `;

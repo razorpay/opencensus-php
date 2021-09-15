@@ -1,3 +1,4 @@
+/* eslint-disable */
 import Styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Link from '@razorpay/commander-shield/src/shared/Link';

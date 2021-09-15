@@ -29,7 +29,7 @@ const bankPrimaryColors = {
 };
 
 const createPrimaryColors = (org) => {
-  let obj = {};
+  const obj = {};
   for (let i = 0; i < colorScale.length; i++) {
     obj[colorScale[i]] = bankPrimaryColors[org];
   }
@@ -37,7 +37,7 @@ const createPrimaryColors = (org) => {
 };
 
 export const getTheme = (org) => {
-  let customTheme = theme;
+  const customTheme = theme;
   switch (org) {
     case BANK_NAMES.AXIS:
       customTheme.colors.primary = createPrimaryColors(org);
