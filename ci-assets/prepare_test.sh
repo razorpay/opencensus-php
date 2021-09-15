@@ -17,5 +17,5 @@ git init --quiet
 git config core.sparseCheckout true
 cp ../error_modules .git/info/sparse-checkout
 git remote add origin https://$GIT_TOKEN@github.com/razorpay/error-mapping-module
-git fetch origin fix_server_error_desc --quiet
-git checkout origin/fix_server_error_desc --quiet
+git fetch origin master --quiet
+git checkout origin/master --quiet
