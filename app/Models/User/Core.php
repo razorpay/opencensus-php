@@ -533,7 +533,7 @@ class Core extends Base\Core
         }
 
         // temporary solution for restricting banking demo user for demo v0.5
-        if ($input[Entity::EMAIL] === Constants::BANKING_DEMO_USER_EMAIL and
+        if ((in_array($input[Entity::EMAIL], Constants::BANKING_DEMO_USER_EMAILS, true) === true) and
             $this->app['basicauth']->getRequestOriginProduct() !== ProductType::BANKING)
         {
             throw new Exception\BadRequestException(

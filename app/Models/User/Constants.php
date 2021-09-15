@@ -241,7 +241,8 @@ class Constants
         "qa.testing+workflow@razorpay.com",
         "qa+uiautomation+1@razorpay.com",
         "qa+uiautomation+2@razorpay.com",
-        Constants::BANKING_DEMO_USER_EMAIL
+        Constants::BANKING_DEMO_USER_EMAILS[0],
+        Constants::BANKING_DEMO_USER_EMAILS[1]
     ];
 
     // Only in these environments we will verify the captcha repsonse with google
@@ -252,5 +253,8 @@ class Constants
     ];
 
     //Email id used for banking demo mode
-    const BANKING_DEMO_USER_EMAIL = 'razorpayx.demo@gmail.com';
+    const BANKING_DEMO_USER_EMAILS = [
+        "razorpayx.demo@gmail.com",
+        "razorpayx.demo+user@gmail.com"
+    ];
 }

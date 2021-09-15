@@ -647,7 +647,7 @@ class UserTest extends TestCase
 
     public function testCaptchaBypassForDemoUserInX()
     {
-        $user = $this->fixtures->create('user', ['email' => UserConstants::BANKING_DEMO_USER_EMAIL, 'password' => 'hello123']);
+        $user = $this->fixtures->create('user', ['email' => UserConstants::BANKING_DEMO_USER_EMAILS[0], 'password' => 'hello123']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -668,7 +668,7 @@ class UserTest extends TestCase
 
     public function testCaptchaBypassForDemoUserInPg()
     {
-        $user = $this->fixtures->create('user', ['email' => UserConstants::BANKING_DEMO_USER_EMAIL, 'password' => 'hello123']);
+        $user = $this->fixtures->create('user', ['email' => UserConstants::BANKING_DEMO_USER_EMAILS[0], 'password' => 'hello123']);
 
         $testData = & $this->testData[__FUNCTION__];
 
