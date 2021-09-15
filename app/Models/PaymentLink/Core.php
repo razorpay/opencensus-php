@@ -1839,7 +1839,7 @@ class Core extends Base\Core
         }
 
         $request = [
-            'entity_id' => $paymentLink->getId(),
+            'entity_id' => $paymentLink->getPublicId(),
             'checks'    => ['profanity_check']
         ];
         try {
