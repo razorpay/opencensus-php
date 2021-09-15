@@ -486,10 +486,11 @@ const configReducer = (state = initialState, action) => {
       return set(state, 'isCallEnabled', !!action.payload);
 
     case `${FETCH_SCHEDULE_CALL_CONFIG}::SUCCESS`: {
-      const payload = action.payload.category_vs_eligibility;
+      let payload = action.payload;
       if (payload.reason) {
         return set(state, 'scheduleCallConfig', payload);
       } else {
+        payload = payload.category_vs_eligibility;
         const key = Object.keys(payload)[0];
         window.scheduleCallConfigCategory = key;
         set(state, 'scheduleCallConfigCategory', key);
