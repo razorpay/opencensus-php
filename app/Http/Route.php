@@ -10115,6 +10115,7 @@ class Route
             'refund_scrooge_fetch_fee',
             'refund_scrooge_payment_update',
             'refund_scrooge_transaction_create',
+            'payout_create_internal',
         ],
 
         'thirdwatch_reports' => [

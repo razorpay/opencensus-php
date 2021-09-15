@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Requests;
 use RZP\Exception;
+use RZP\Models\Payout\Entity;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -67,6 +68,7 @@ class Scrooge
         'retry_custom_fund_transfers'          => 'retry/custom_fund_transfers',
         'retry_with_attempt_appended_id'       => 'retry/with_attempt_appended_id',
         'create_new_refund_v2'                 => 'create-new-refund-v2',
+        'payouts_status_update'                => 'payouts/status_update',
     ];
 
     // Headers
@@ -714,5 +716,42 @@ class Scrooge
     protected function getAdminEmail(): string
     {
         return $this->auth->getDashboardHeaders()['admin_email'] ?? '';
+    }
+
+    /**
+     * Status update upon receiving webhook from payout
+     * @param array $input
+     * @param string $mode
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function sendStatusUpdate(array $input, string $mode) : array
+    {
+        return $this->sendRequest(self::RefundBaseURL . '/' . self::URLS['payouts_status_update'],
+            Requests::POST, $input, true);
+    }
+
+    public function pushPayoutStatusUpdate(Entity $payout, string $mode)
+    {
+        $dataToSend = $this->getDataFromPayout($payout);
+
+        $this->sendStatusUpdate($dataToSend, $mode);
+    }
+
+    //TODO: add payload for refunds update
+    protected function getDataFromPayout(Entity $payout): array
+    {
+        return [
+            'id'                => $payout->getId(),
+            'status'            => $payout->getStatus(),
+            'rrn'               => $payout->getUtr(),
+            'mode'              => $payout->getMode(),
+            'channel'           => $payout->getChannel(),
+            'reference_id'      => $payout->getReferenceId(),
+            'error_code'        => $payout->getStatusCode(),
+            'error_description' => $payout->getFailureReason(),
+        ];
     }
 }

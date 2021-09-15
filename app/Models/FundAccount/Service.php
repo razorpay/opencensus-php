@@ -298,7 +298,8 @@ class Service extends Base\Service
     {
         return ($this->auth->isPayoutLinkApp() or
                 $this->auth->isVendorPaymentApp() or
-                $this->auth->isSettlementsApp());
+                $this->auth->isSettlementsApp() or
+                $this->auth->isScroogeApp());
     }
 
     protected function handleFundAccountCreationForCustomer(array $input)

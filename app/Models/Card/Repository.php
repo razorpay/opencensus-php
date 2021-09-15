@@ -297,4 +297,14 @@ class Repository extends Base\Repository
                     ->where(Entity::ID, $cardId)
                     ->first();
     }
+
+    public function fetchLatestCardWithVaultTokenOnly(string $vaultToken)
+    {
+        // Query Executed - select `*` from `cards` where `vault_token` = ?
+        return $this->newQuery()
+                    ->where(Entity::VAULT_TOKEN, '=', $vaultToken)
+                    ->orderBy(Entity::CREATED_AT, 'asc')
+                    ->get()
+                    ->last();
+    }
 }

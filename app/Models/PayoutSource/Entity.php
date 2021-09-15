@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const TAX_PAYMENTS    = 'tax_payments';
     const SETTLEMENTS     = 'settlements';
     const XPAYROLL        = 'xpayroll';
+    const REFUND          = 'refund';
 
     // Relations
     const PAYOUT = 'payout';

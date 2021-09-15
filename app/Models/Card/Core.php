@@ -467,4 +467,72 @@ class Core extends Base\Core
 
         return false;
     }
+
+    public function fillCardDetailsWithVaultToken($input): array
+    {
+        $cardNumber = null;
+
+        $vaultToken = $input[Entity::TOKEN];
+
+        try
+        {
+            $cardVault = (new Card\CardVault);
+
+            $cardNumber = $cardVault->getCardNumber($vaultToken);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::CARD_VAULT_REQUEST,
+                [
+                    'token'         => $vaultToken,
+                    'message'       => 'failed to get card number from vault token'
+                ]
+            );
+
+            throw $e;
+        }
+
+        //Add card number
+        $input[Entity::NUMBER] = $cardNumber;
+
+        //Unset vault token as we have fetched card number
+        unset($input[Entity::TOKEN]);
+
+        //fetch other card details like expiry month/year etc. from vault token.
+        $card = $this->repo->card->fetchLatestCardWithVaultTokenOnly($vaultToken);
+
+        if (isset($card) === false)
+        {
+            $this->trace->info(
+                TraceCode::CARD_FETCH_WITH_VAULT_TOKEN_FAILED,
+                [
+                    'token'         => $vaultToken,
+                    'message'       => 'failed to fetch card entity from vault token',
+                ]
+            );
+
+            return $input;
+        }
+
+        //fill card details into input array
+        if (isset($card[Card\Entity::NAME]) === true)
+        {
+            $input[Card\Entity::NAME] = $card[Card\Entity::NAME];
+        }
+
+        if (isset($card[Card\Entity::EXPIRY_MONTH]) === true)
+        {
+            $input[Card\Entity::EXPIRY_MONTH] = $card[Card\Entity::EXPIRY_MONTH];
+        }
+
+        if (isset($card[Card\Entity::EXPIRY_YEAR]) === true)
+        {
+            $input[Card\Entity::EXPIRY_YEAR] = $card[Card\Entity::EXPIRY_YEAR];
+        }
+
+        return $input;
+    }
 }

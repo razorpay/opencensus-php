@@ -47,9 +47,12 @@ class Validator extends Base\Validator
         // This is required to even create the card because we need to fill a
         // dummy cvv and that requires network and that requires card number.
         // The other card details are validated as part of card creation.
-        Entity::CARD . '.' . Card\Entity::NUMBER    => 'required_with:card|numeric|luhn|digits_between:12,19',
+        Entity::CARD . '.' . Card\Entity::NUMBER    => 'sometimes:card|required_without:card.token|numeric|luhn|digits_between:12,19',
         Entity::CARD . '.' . Card\Entity::NAME      => 'sometimes:card|regex:([a-zA-Z-.\' ]+$)|max:100',
         Entity::IDEMPOTENCY_KEY                     => 'sometimes|string',
+        //Validation if vault token is received for payout creation
+        //If card number is not present then vault token must be there
+        Entity::CARD . '.' . Card\Entity::TOKEN    => 'sometimes:card|required_without:card.number|string',
     ];
 
     protected static $beforeCreateRules = [
@@ -139,6 +142,16 @@ class Validator extends Base\Validator
                 [
                     'message' => 'payout_to_cards feature not enabled',
                 ]);
+        }
+
+        //Validating here if token and card number both has been received in the request.
+        //There shall be either of them.
+        //Validating it here as could not find any inbuilt validator for the use case.
+        if ((isset($value[Card\Entity::NUMBER]) === true) and
+            (isset($value[Card\Entity::TOKEN]) === true)) {
+            throw new Exception\BadRequestValidationFailureException(
+                'both card.token and card.number should not be sent'
+            );
         }
     }
 

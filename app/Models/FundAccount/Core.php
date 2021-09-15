@@ -301,6 +301,12 @@ class Core extends Base\Core
                 break;
 
             case Type::CARD:
+                if (isset($accountInput[Card\Entity::TOKEN]) === true)
+                {
+                    // we will fetch the card details from vault token and modify the input so that rest of the
+                    // account creation flow can be used same as account creation with card number.
+                    $accountInput = (new Card\Core)->fillCardDetailsWithVaultToken($accountInput);
+                }
                 // Card number is validated as part of fund_account create validator itself.
                 $network = Card\Network::detectNetwork(substr($accountInput[Card\Entity::NUMBER], 0, 6));
 

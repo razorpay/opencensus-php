@@ -2557,6 +2557,441 @@ return [
         ],
     ],
 
+    'testCreatePayoutWithVaultTokenForNonRefundsApp' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                "account_number"    => '2224440041626905',
+                "amount"            => 1000000,
+                "currency"          => "INR",
+                "mode"              => "NEFT",
+                "purpose"           => "refund",
+                "fund_account"  => [
+                    "account_type"  => "card",
+                    "card" => [
+                        "token"  => "NDAwMDQwMDAwMDAwMDAwNA==",
+                    ],
+                    "contact"  => [
+                        "name"          => "Gaurav Kumar",
+                        "email"         => "gaurav.kumar@example.com",
+                        "contact"       => "9876543210",
+                        "type"          => "employee",
+                        "reference_id"  => "188181269",
+                        "notes"  => [
+                            "notes_key_1"  => "Tea, Earl Grey, Hot",
+                            "notes_key_2"  => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "source_details"  =>  [
+                    [
+                        "source_id"     =>  "HYKmlGHHyEhZuM", // refund id
+                        "source_type"   =>  "refund",
+                        "priority"      =>  1
+                    ]
+                ],
+                "queue_if_low_balance"  => true,
+                "reference_id"          => "can be use to store refund id",
+                "narration"             => "Acme Corp Fund Transfer",
+                "notes"  => [
+                    "notes_key_1"  => "Beam me up Scotty",
+                    "notes_key_2"  => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'card.token is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testCreatePayoutWithVaultTokenAndCardNumberForRefundsApp' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                "account_number"    => '2224440041626905',
+                "amount"            => 1000000,
+                "currency"          => "INR",
+                "mode"              => "NEFT",
+                "purpose"           => "refund",
+                "fund_account"  => [
+                    "account_type"  => "card",
+                    "card" => [
+                        "token"        => "NDAwMDQwMDAwMDAwMDAwNA==",
+                        "number"       => "340169570990137",
+                    ],
+                    "contact"  => [
+                        "name"      => "Gaurav Kumar",
+                        "email"     => "gaurav.kumar@example.com",
+                        "contact"   => "9876543210",
+                        "type"      => "employee",
+                        "reference_id"  => "188181269",
+                        "notes"  => [
+                            "notes_key_1"  => "Tea, Earl Grey, Hot",
+                            "notes_key_2"  => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "source_details"  =>  [
+                    [
+                        "source_id"     =>  "HYKmlGHHyEhZuM", // refund id
+                        "source_type"   =>  "refund",
+                        "priority"      =>  1
+                    ]
+                ],
+                "queue_if_low_balance"  => true,
+                "reference_id"          => "can be use to store refund id",
+                "narration"             => "Acme Corp Fund Transfer",
+                "notes"  => [
+                    "notes_key_1"  => "Beam me up Scotty",
+                    "notes_key_2"  => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'both card.token and card.number should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testCreatePayoutWithCardNumberForRefundsApp' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                "account_number"    => '2224440041626905',
+                "amount"            => 1000000,
+                "currency"          => "INR",
+                "mode"              => "NEFT",
+                "purpose"           => "refund",
+                "fund_account"  => [
+                    "account_type"  => "card",
+                    "card" => [
+                        "number"       => "340169570990137",
+                    ],
+                    "contact"  => [
+                        "name"          => "Gaurav Kumar",
+                        "email"         => "gaurav.kumar@example.com",
+                        "contact"       => "9876543210",
+                        "type"          => "employee",
+                        "reference_id"  => "188181269",
+                        "notes"  => [
+                            "notes_key_1"  => "Tea, Earl Grey, Hot",
+                            "notes_key_2"  => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "source_details"  =>  [
+                    [
+                        "source_id"     =>  "HYKmlGHHyEhZuM", // refund id
+                        "source_type"   =>  "refund",
+                        "priority"      =>  1
+                    ]
+                ],
+                "queue_if_low_balance"  => true,
+                "reference_id"          => "can be use to store refund id",
+                "narration"             => "Acme Corp Fund Transfer",
+                "notes"  => [
+                    "notes_key_1"  => "Beam me up Scotty",
+                    "notes_key_2"  => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity"   =>  "payout",
+                "fund_account"   =>  [
+                    "entity"    =>  "fund_account",
+                    "contact"   =>  [
+                        "entity"        =>  "contact",
+                        "name"          =>  "Gaurav Kumar",
+                        "contact"       =>  "9876543210",
+                        "email"         =>  "gaurav.kumar@example.com",
+                        "type"          =>  "employee",
+                        "reference_id"  =>  "188181269",
+                        "batch_id"      =>  null,
+                        "active"        =>  true,
+                        "notes"   =>  [
+                            "notes_key_1"   =>  "Tea, Earl Grey, Hot",
+                            "notes_key_2"   =>  "Tea, Earl Grey... decaf."
+                        ],
+                    ],
+                    "account_type"   =>  "card",
+                    "card"   =>  [
+                        "iin"       =>  "340169",
+                        "last4"     =>  "0137",
+                        "network"   =>  "American Express",
+                        "type"      =>  "credit",
+                        "issuer"    =>  null,
+                        "sub_type"  =>  null
+                    ],
+                    "batch_id"      =>  null,
+                    "active"        =>  true,
+                ],
+                "amount"   =>  1000000,
+                "currency"   =>  "INR",
+                "notes"   =>  [
+                    "notes_key_1"   =>  "Beam me up Scotty",
+                    "notes_key_2"   =>  "Engage"
+                ],
+                "status"                =>  "processing",
+                "purpose"               =>  "refund",
+                "mode"                  =>  "NEFT",
+                "reference_id"          =>  "can be use to store refund id",
+                "narration"             =>  "Acme Corp Fund Transfer",
+                "batch_id"              =>  null,
+                "banking_account_id"    =>  "bacc_ABCde1234ABCde",
+                "failure_reason"        =>  null,
+                "fee_type"              =>  null,
+                "origin"                =>  "api",
+                "source_details"   =>  [[
+                    "source_type"       =>  "refund",
+                    "priority"          =>  1
+                ]],
+                "remarks"   =>  null,
+                "cancellation_user_id"   =>  null,
+                "cancellation_user"      =>  []
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                "account_number"    => '2224440041626905',
+                "amount"            => 1000000,
+                "currency"          => "INR",
+                "mode"              => "NEFT",
+                "purpose"           => "refund",
+                "fund_account"  => [
+                    "account_type"  => "card",
+                    "card" => [
+                        "token"  => "MzQwMTY5NTcwOTkwMTM3==",
+                    ],
+                    "contact"  => [
+                        "name"          => "Gaurav Kumar",
+                        "email"         => "gaurav.kumar@example.com",
+                        "contact"       => "9876543210",
+                        "type"          => "employee",
+                        "reference_id"  => "188181269",
+                        "notes"  => [
+                            "notes_key_1"  => "Tea, Earl Grey, Hot",
+                            "notes_key_2"  => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "source_details"  =>  [
+                    [
+                        "source_id"     =>  "HYKmlGHHyEhZuM", // refund id
+                        "source_type"   =>  "refund",
+                        "priority"      =>  1
+                    ]
+                ],
+                "queue_if_low_balance"  => true,
+                "reference_id"          => "can be use to store refund id",
+                "narration"             => "Acme Corp Fund Transfer",
+                "notes"  => [
+                    "notes_key_1"  => "Beam me up Scotty",
+                    "notes_key_2"  => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity"   =>  "payout",
+                "fund_account"   =>  [
+                    "entity"     =>  "fund_account",
+                    "contact"   =>  [
+                        "entity"        =>  "contact",
+                        "name"          =>  "Gaurav Kumar",
+                        "contact"       =>  "9876543210",
+                        "email"         =>  "gaurav.kumar@example.com",
+                        "type"          =>  "employee",
+                        "reference_id"  =>  "188181269",
+                        "batch_id"      =>  null,
+                        "active"        =>  true,
+                        "notes"   =>  [
+                            "notes_key_1"   =>  "Tea, Earl Grey, Hot",
+                            "notes_key_2"   =>  "Tea, Earl Grey... decaf."
+                        ],
+                    ],
+                    "account_type"   =>  "card",
+                    "card"   =>  [
+                        "iin"           =>  "340169",
+                        "last4"         =>  "0137",
+                        "network"       =>  "American Express",
+                        "type"          =>  "credit",
+                        "issuer"        =>  null,
+                        "sub_type"      =>  null
+                    ],
+                    "batch_id"      =>  null,
+                    "active"        =>  true,
+                ],
+                "amount"   =>  1000000,
+                "currency"   =>  "INR",
+                "notes"   =>  [
+                    "notes_key_1"   =>  "Beam me up Scotty",
+                    "notes_key_2"   =>  "Engage"
+                ],
+                "status"                =>  "processing",
+                "purpose"               =>  "refund",
+                "mode"                  =>  "NEFT",
+                "reference_id"          =>  "can be use to store refund id",
+                "narration"             =>  "Acme Corp Fund Transfer",
+                "batch_id"              =>  null,
+                "banking_account_id"    =>  "bacc_ABCde1234ABCde",
+                "failure_reason"        =>  null,
+                "fee_type"              =>  null,
+                "origin"                =>  "api",
+                "source_details"   =>  [[
+                    "source_type"   =>  "refund",
+                    "priority"   =>  1
+                ]],
+                "remarks"   =>  null,
+                "cancellation_user_id"  =>  null,
+                "cancellation_user"     =>  []
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreatePayoutWithVaultTokenAndNonDummyNameForRefundsApp' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                "account_number"    => '2224440041626905',
+                "amount"            => 1000000,
+                "currency"          => "INR",
+                "mode"              => "NEFT",
+                "purpose"           => "refund",
+                "fund_account"  => [
+                    "account_type"  => "card",
+                    "card" => [
+                        "token"  => "MzQwMTY5NTcwOTkwMTM3==",
+                    ],
+                    "contact"  => [
+                        "name"          => "Gaurav Kumar",
+                        "email"         => "gaurav.kumar@example.com",
+                        "contact"       => "9876543210",
+                        "type"          => "employee",
+                        "reference_id"  => "188181269",
+                        "notes"  => [
+                            "notes_key_1"  => "Tea, Earl Grey, Hot",
+                            "notes_key_2"  => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "source_details"  =>  [
+                    [
+                        "source_id"     =>  "HYKmlGHHyEhZuM", // refund id
+                        "source_type"   =>  "refund",
+                        "priority"      =>  1
+                    ]
+                ],
+                "queue_if_low_balance"  => true,
+                "reference_id"          => "can be use to store refund id",
+                "narration"             => "Acme Corp Fund Transfer",
+                "notes"  => [
+                    "notes_key_1"  => "Beam me up Scotty",
+                    "notes_key_2"  => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity"   =>  "payout",
+                "fund_account"   =>  [
+                    "entity"     =>  "fund_account",
+                    "contact"   =>  [
+                        "entity"        =>  "contact",
+                        "name"          =>  "Gaurav Kumar",
+                        "contact"       =>  "9876543210",
+                        "email"         =>  "gaurav.kumar@example.com",
+                        "type"          =>  "employee",
+                        "reference_id"  =>  "188181269",
+                        "batch_id"      =>  null,
+                        "active"        =>  true,
+                        "notes"   =>  [
+                            "notes_key_1"   =>  "Tea, Earl Grey, Hot",
+                            "notes_key_2"   =>  "Tea, Earl Grey... decaf."
+                        ],
+                    ],
+                    "account_type"   =>  "card",
+                    "card"   =>  [
+                        "iin"           =>  "340169",
+                        "last4"         =>  "0137",
+                        "network"       =>  "American Express",
+                        "type"          =>  "credit",
+                        "issuer"        =>  null,
+                        "sub_type"      =>  null
+                    ],
+                    "batch_id"      =>  null,
+                    "active"        =>  true,
+                ],
+                "amount"   =>  1000000,
+                "currency"   =>  "INR",
+                "notes"   =>  [
+                    "notes_key_1"   =>  "Beam me up Scotty",
+                    "notes_key_2"   =>  "Engage"
+                ],
+                "status"                =>  "processing",
+                "purpose"               =>  "refund",
+                "mode"                  =>  "NEFT",
+                "reference_id"          =>  "can be use to store refund id",
+                "narration"             =>  "Acme Corp Fund Transfer",
+                "batch_id"              =>  null,
+                "banking_account_id"    =>  "bacc_ABCde1234ABCde",
+                "failure_reason"        =>  null,
+                "fee_type"              =>  null,
+                "origin"                =>  "api",
+                "source_details"   =>  [[
+                    "source_type"   =>  "refund",
+                    "priority"   =>  1
+                ]],
+                "remarks"   =>  null,
+                "cancellation_user_id"  =>  null,
+                "cancellation_user"     =>  []
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testCreatePayoutFundsOnHoldOnTestMode' => [
         'request'  => [
             'method'  => 'POST',

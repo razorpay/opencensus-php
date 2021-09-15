@@ -177,7 +177,8 @@ class Service extends Base\Service
         return $this->auth->isPayoutLinkApp() or
                $this->auth->isVendorPaymentApp() or
                $this->auth->isSettlementsApp() or
-               $this->auth->isXPayrollApp();
+               $this->auth->isXPayrollApp() or
+               $this->auth->isScroogeApp();
     }
 
     public function isSettlementsApp(): bool
@@ -188,6 +189,11 @@ class Service extends Base\Service
     public function isXPayrollApp(): bool
     {
         return $this->auth->isXPayrollApp();
+    }
+
+    public function isScroogeApp(): bool
+    {
+        return $this->auth->isScroogeApp();
     }
 
     public function approveFundAccountPayout(string $id, array $input): array

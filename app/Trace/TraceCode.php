@@ -3442,6 +3442,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VAULT_TOKEN_MIGRATION_CRON_DISPATCH_FAILED            = 'VAULT_TOKEN_MIGRATION_CRON_DISPATCH_FAILED';
     const VAULT_TOKEN_MIGRATION_CRON_REQUEST_INIT               = 'VAULT_TOKEN_MIGRATION_CRON_REQUEST_INIT';
 
+    const CARD_FETCH_WITH_VAULT_TOKEN_FAILED                    = 'CARD_FETCH_WITH_VAULT_TOKEN_FAILED';
+
     const PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC             = 'PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC';
     const NETBANKING_TERMINAL_NOT_FOUND                         = 'NETBANKING_TERMINAL_NOT_FOUND';
 
@@ -4292,6 +4294,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENTS_REQUEST                                   = 'SETTLEMENTS_REQUEST';
     const SETTLEMENTS_RESPONSE                                  = 'SETTLEMENTS_RESPONSE';
     const SETTLEMENTS_REQUEST_EXCEPTION                         = 'SETTLEMENTS_REQUEST_EXCEPTION';
+
+    // Refunds service
+    const REFUNDS_PAYOUT_UPDATER_ERROR                      = 'REFUNDS_PAYOUT_UPDATER_ERROR';
 
     // EInvoice client
     const EINVOICE_REQUEST                                      = 'EINVOICE_REQUEST';

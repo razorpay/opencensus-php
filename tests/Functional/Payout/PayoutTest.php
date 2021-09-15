@@ -3366,6 +3366,202 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutWithVaultTokenForNonRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.settlements_service.secret']);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->mockCardVault();
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutWithVaultTokenAndCardNumberForRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->mockCardVault();
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutWithCardNumberForRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->mockCardVault();
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->mockCardVault();
+
+        $cardsCountBeforeRequest = count($this->getDbEntities('card'));
+
+        $this->startTest();
+
+        $cardsCountAfterRequest = count($this->getDbEntities('card'));
+
+        $this->assertEquals($cardsCountBeforeRequest + 1, $cardsCountAfterRequest);
+
+        $card = $this->getDbLastEntity('card');
+
+        $this->assertEquals("0137", $card["last4"]);
+
+        $this->assertEquals("dummy card", $card["name"]);
+
+        $this->assertNotEmpty($card['iin']);
+
+        $this->assertNotEmpty($card['expiry_month']);
+
+        $this->assertNotEmpty($card['expiry_month']);
+
+        $this->assertNotEmpty($card['expiry_year']);
+
+        $this->assertNotEmpty($card['vault_token']);
+
+        $this->assertNotEmpty($card['global_fingerprint']);
+    }
+
+    public function testCreatePayoutWithVaultTokenAndNonDummyNameForRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('card', [
+            'merchant_id'           =>'10000000000000',
+            'name'                  =>'name1',
+            'expiry_month'          =>4,
+            'expiry_year'           =>2024,
+            'vault_token'           =>'MzQwMTY5NTcwOTkwMTM3==',
+        ]);
+
+        $this->fixtures->create('card', [
+            'merchant_id'           =>'10000000000000',
+            'name'                  =>'name2',
+            'expiry_month'          =>9,
+            'expiry_year'           =>2030,
+            'vault_token'           =>'MzQwMTY5NTcwOTkwMTM3==',
+        ]);
+
+        $this->mockCardVault();
+
+        $cardsCountBeforeRequest = count($this->getDbEntities('card'));
+
+        $this->startTest();
+
+        $cardsCountAfterRequest = count($this->getDbEntities('card'));
+
+        $this->assertEquals($cardsCountBeforeRequest + 1, $cardsCountAfterRequest);
+
+        $card = $this->getDbLastEntity('card');
+
+        $this->assertEquals("0137", $card["last4"]);
+
+        $this->assertEquals("name2", $card["name"]);
+
+        $this->assertEquals(9, $card["expiry_month"]);
+
+        $this->assertEquals(2030, $card["expiry_year"]);
+
+        $this->assertNotEmpty($card['iin']);
+
+        $this->assertNotEmpty($card['vault_token']);
+
+        $this->assertNotEmpty($card['global_fingerprint']);
+    }
+
+    public function testPayoutSetStatusQueuePushForRefundsPayout()
+    {
+        $this->app->instance('rzp.mode', "live");
+
+        Queue::fake();
+
+        $payout = $this->fixtures->create('payout', [
+            'status'            =>      'created',
+            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+        ]);
+
+        $payout->setStatus(Status::PROCESSING);
+
+        Queue::assertNotPushed(PayoutSourceUpdaterJob::class);
+
+        // now adding payout source and QueuePush Should Happen
+        $this->fixtures->create('payout_source',
+            [
+                'payout_id'   => $payout->getId(),
+                'source_id'   => 'vdpm_1',
+                'source_type' => 'refund',
+                'priority'    => 1
+            ]);
+
+        $payout->setStatus(Status::PROCESSED);
+
+        Queue::assertPushed(PayoutSourceUpdaterJob::class);
+    }
+
     public function testCreatePayoutFundsOnHoldOnTestMode()
     {
         $contactId = $this->getDbLastEntity('contact')->getId();

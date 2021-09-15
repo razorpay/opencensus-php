@@ -1677,6 +1677,11 @@ class BasicAuth
         return $this->internalApp === 'xpayroll';
     }
 
+    public function isScroogeApp()
+    {
+        return $this->internalApp === 'scrooge';
+    }
+
     public function isPayoutLinkApp()
     {
         return $this->internalApp === 'payout_links';
@@ -1709,6 +1714,7 @@ class BasicAuth
                 ($this->isCapitalCardsApp() === true) or
                 ($this->isCapitalLOCApp() === true) or
                 ($this->isSettlementsApp() === true) or
+                ($this->isScroogeApp() === true) or
                 (($this->isBatchApp() === true) and
                  $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user'));
     }

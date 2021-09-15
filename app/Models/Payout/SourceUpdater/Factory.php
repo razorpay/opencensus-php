@@ -47,6 +47,12 @@ class Factory
                     array_push($subscriberList, (new XPayrollUpdater($payout, $mode)));
 
                     break;
+
+                case PayoutSourceEntity::REFUND:
+
+                    array_push($subscriberList, (new RefundsUpdater($payout, $mode)));
+
+                    break;
             }
         }
 

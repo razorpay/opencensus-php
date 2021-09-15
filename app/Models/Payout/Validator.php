@@ -954,7 +954,8 @@ class Validator extends Base\Validator
         // In settlements & XPayroll service, all payouts will be made via composite API,
         // so we'll allow composite API for these apps
         if (((new Service)->isSettlementsApp() === true) or
-            ((new Service)->isXPayrollApp() === true))
+            ((new Service)->isXPayrollApp() === true) or
+            ((new Service)->isScroogeApp() === true))
         {
             return;
         }
@@ -967,6 +968,21 @@ class Validator extends Base\Validator
                 [
                     $fieldName => $fieldValue,
                 ]
+            );
+        }
+    }
+
+    protected function validateIfCardTokenReceivedForScroogeAppOnly(array $input)
+    {
+        //For instant refunds migration vault token will be received instead of card details.
+        //Allowing vault token only for refund service for now.
+        if ((isset($input[Entity::FUND_ACCOUNT]) === true) and
+            (isset($input[Entity::FUND_ACCOUNT][Entity::CARD]) === true) and
+            (isset($input[Entity::FUND_ACCOUNT][Entity::CARD][Card\Entity::TOKEN]) === true) and
+            ((new Service)->isScroogeApp() === false)) {
+
+            throw new Exception\BadRequestValidationFailureException(
+                Entity::CARD . '.' . Card\Entity::TOKEN . " is/are not required and should not be sent"
             );
         }
     }
@@ -996,6 +1012,8 @@ class Validator extends Base\Validator
             $this->validateIfFieldShouldBeSentBasedOnAuth(Entity::SOURCE_DETAILS, $sourceDetails);
 
             $this->validatePrioritySequence($input[Entity::SOURCE_DETAILS]);
+
+            $this->validateIfCardTokenReceivedForScroogeAppOnly($input);
         }
     }
 

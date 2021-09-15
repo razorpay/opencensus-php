@@ -76,6 +76,8 @@ class Entity extends Base\PublicEntity
 
     const NETWORK_CODE = 'network_code';
 
+    const TOKEN = 'token';
+
     protected static $sign = 'card';
 
     protected $entity = 'card';
