@@ -815,6 +815,12 @@ class Constants
     const SEND_DCC_COMPLIANCE = 'send_dcc_compliance';
 
 
+    /**
+     * Feature flag to give access to 'bulk payout approval using file' from admin dashboard
+     * 'rx_bulk_approvals' is there from razorx dashboard
+     */
+    const API_BULK_APPROVALS = 'api_bulk_approvals';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1177,6 +1183,7 @@ class Constants
         self::ORG_SUB_MERCHANT_MCC_PENDING    => true,
         self::SOURCED_BY_WALNUT369            => true,
         self::ENABLE_SIFT_JS                  => true,
+        self::API_BULK_APPROVALS              => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';
@@ -1711,6 +1718,11 @@ class Constants
         self::DISPUTE_PRESENTMENT => [
             'feature'       => self::DISPUTE_PRESENTMENT,
             'display_name'  => 'Enable dispute presentment',
+            'documentation' => '',
+        ],
+        self::API_BULK_APPROVALS => [
+            'feature'       => self::API_BULK_APPROVALS,
+            'display_name'  => 'Enable API bulk Approvals for the merchant',
             'documentation' => '',
         ],
     ];

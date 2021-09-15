@@ -1165,6 +1165,12 @@ class FeaturesTest extends OAuthTestCase
         $this->assertEquals($featuresWithValues, $featuresInResponse);
     }
 
+    public function testFetchMerchantFeaturesCheckBulkApproval()
+    {
+        $content = $this->startTest();
+        $this->assertContains(Constants::API_BULK_APPROVALS, $content['all_features']);
+    }
+
     /*
      * Helpers
      */
