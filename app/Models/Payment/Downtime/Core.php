@@ -83,6 +83,10 @@ class Core extends Base\Core
     {
         try
         {
+            $timeStarted = millitime();
+            $this->trace->count(Metric::ECO_SYSTEM_CACHE_REFRESH_COUNT,
+                                ['cache_type' => 'ongoing_downtimes']);
+
             if((empty($downtime) === false) and (isset($downtime['merchant_id']) === true))
             {
                 return;
@@ -101,6 +105,10 @@ class Core extends Base\Core
                 10,
                 ErrorCode::BAD_REQUEST_PAYMENT_DOWNTIME_MUTEX_TIMED_OUT
             );
+
+            $this->trace->histogram(Metric::ECO_SYSTEM_CACHE_REFRESH_DURATION,
+                                    millitime() - $timeStarted,
+                                    ['cache_type' => 'ongoing_downtimes']);
         }
         catch (\Exception $e)
         {
@@ -112,11 +120,19 @@ class Core extends Base\Core
     {
         try
         {
+            $timeStarted = millitime();
+            $this->trace->count(Metric::ECO_SYSTEM_CACHE_REFRESH_COUNT,
+                                ['cache_type' => 'scheduled_downtimes']);
+
             $this->trace->info(TraceCode::REFRESH_SCHEDULED_DOWNTIME_CACHE);
 
             $downtimes = $this->fetchScheduledDowntimesFromDB();
 
             $this->redis->HMSET("scheduled_downtimes", ['scheduled_downtimes' => json_encode($downtimes)]);
+
+            $this->trace->histogram(Metric::ECO_SYSTEM_CACHE_REFRESH_DURATION,
+                                    millitime() - $timeStarted,
+                                    ['cache_type' => 'scheduled_downtimes']);
         }
         catch (\Exception $e)
         {
@@ -127,6 +143,10 @@ class Core extends Base\Core
     public function refreshHistoricalDowntimeCache( $lookbackPeriod = 0 )
     {
         try{
+            $timeStarted = millitime();
+            $this->trace->count(Metric::ECO_SYSTEM_CACHE_REFRESH_COUNT,
+                                    ['cache_type' => 'resolved_downtimes']);
+
             $remainingDays = $lookbackPeriod;
             $endDate = Carbon::now(Timezone::IST)->format('Y-m-d');
 
@@ -164,6 +184,10 @@ class Core extends Base\Core
 
                 $endDate = date("Y-m-d", $endDateEpoch);
             }
+
+            $this->trace->histogram(Metric::ECO_SYSTEM_CACHE_REFRESH_DURATION,
+                                    millitime() - $timeStarted,
+                                    ['cache_type' => 'resolved_downtimes']);
         }
         catch (\Exception $e)
         {
