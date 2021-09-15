@@ -22,8 +22,6 @@ const Signin = () => {
     isScriptFailed: window.isOneTapScriptFailed,
   });
   const [orgData, setOrgData] = useState({});
-  // @TODO: Remove this after we go live
-  const showNewSignIn = new URLSearchParams(window.location.search).get('newSignIn');
 
   useEffect(() => {
     fetchOrg()
@@ -61,10 +59,6 @@ const Signin = () => {
 
     window.location.href = '/signup';
   };
-
-  if (!showNewSignIn) {
-    return null;
-  }
 
   return (
     <ThemeProvider theme={theme}>
