@@ -288,6 +288,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttributeValue(self::BUSINESS_CATEGORY);
     }
 
+    public function getMerchantPocEmail()
+    {
+        return $this->getAttributeValue(self::MERCHANT_POC_EMAIL);
+    }
+
+    public function getMerchantPocPhoneNumber()
+    {
+        return $this->getAttributeValue(self::MERCHANT_POC_PHONE_NUMBER);
+    }
+
     public function setPanVerificationStatus(string $status)
     {
         $this->setAttribute(self::BUSINESS_PAN_VALIDATION, $status);
@@ -296,6 +306,16 @@ class Entity extends Base\PublicEntity
     public function setContactMobileVerified(bool $verified)
     {
         $this->setAttribute(self::CONTACT_VERIFIED, $verified);
+    }
+
+    public function setSalesTeam(string $salesTeam)
+    {
+        $this->setAttribute(self::SALES_TEAM, $salesTeam);
+    }
+
+    public function getSalesTeam()
+    {
+        return $this->getAttribute(self::SALES_TEAM);
     }
 
     public function getAssigneeName()

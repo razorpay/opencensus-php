@@ -64,4 +64,20 @@ class Constants
     const APPLICATION_PATH              = 'application';
 
     const ADMIN_BANKING_ACCOUNT_APPLY_PATH  = 'admin/apply';
+
+    const CA_PARTNER_BANK               = 'CA_Partner_Bank';
+
+    const CA_PREFERRED_EMAIL            = 'CA_Preferred_Email';
+
+    const CA_PREFERRED_PHONE            = 'CA_Preferred_Phone';
+
+    const PRODUCT_NAME                  = 'product_name';
+
+    const SOURCE                        = 'source';
+
+    const RBL                           = 'RBL';
+
+    const X_CA_UNIFIED                  = 'X-CA-Unified';
+
+    const CURRENT_ACCOUNT               = 'Current_Account';
 }

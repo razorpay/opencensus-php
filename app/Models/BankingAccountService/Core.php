@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccountService;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 use RZP\Exception;
@@ -357,5 +358,64 @@ class Core extends Base\Core
         }
 
         return $status;
+    }
+
+    public function sendCaLeadToSalesForce($input)
+    {
+        $this->trace->info(TraceCode::BAS_SALESFORCE_REQUEST);
+
+        /* @var Detail\Entity $merchantDetails*/
+        $merchantDetails = $this->repo->merchant_detail->findByPublicId($input[Constants::MERCHANT_ID]);
+
+        if(empty($input[Constants::CA_PREFERRED_EMAIL]) === true)
+        {
+            $input[Constants::CA_PREFERRED_EMAIL] = $merchantDetails->getContactEmail();
+        }
+
+        if(empty($input[Constants::CA_PREFERRED_PHONE]) === true)
+        {
+            $input[Constants::CA_PREFERRED_PHONE] = $merchantDetails->getContactMobile();
+        }
+
+        $this->app->salesforce->sendCaLeadDetails($input);
+
+        return ['success' => true];
+    }
+
+    public function sendRblApplicationInProgressLeadsToSalesForce()
+    {
+        $last24hrs = Carbon::now()->subDay()->getTimestamp();
+
+        $bankingAccountActivationDetail = (new BankingAccount\Activation\Detail\Repository())->fetchRblApplicationSubmissionInProgress($last24hrs);
+
+        foreach ($bankingAccountActivationDetail as $detail)
+        {
+            $bankingAccountId = $detail->getBankingAccountId();
+
+            $bankingAccount = $this->repo->banking_account->findOrFail($bankingAccountId);
+
+            $input = [
+                Constants::CA_PARTNER_BANK    => Constants::RBL,
+                Constants::CA_PREFERRED_EMAIL => $detail->getMerchantPocEmail(),
+                Constants::CA_PREFERRED_PHONE => $detail->getMerchantPocPhoneNumber(),
+                Constants::SOURCE             => Constants::X_CA_UNIFIED,
+                Constants::MERCHANT_ID        => $bankingAccount->getMerchantId(),
+                Constants::PRODUCT_NAME       => Constants::CURRENT_ACCOUNT,
+            ];
+
+            //details contain senstive details so id is logged
+            $this->trace->info(TraceCode::BAS_SALESFORCE_RBL_DETAIL, [
+                'banking_account_activation_detail_id' => $detail->getId(),
+            ]);
+
+            //front end converts SME to X-SME at the admin dashboard.
+            $detail->setSalesTeam(BankingAccount\Activation\Detail\Validator::SME);
+
+            $this->repo->banking_account_detail->saveOrFail($detail);
+
+            $this->sendCaLeadToSalesForce($input);
+        }
+
+        return ['success' => true];
     }
 }

@@ -508,4 +508,14 @@ class SalesForceClient
                                        $traceCodeResponse,
                                        $traceCodeError);
     }
+
+    public function sendCaLeadDetails($data)
+    {
+        $url = $this->generateUrlForOpportunityUpsert();
+
+        $this->dispatchRequestJob($url, $data, TraceCode::SALESFORCE_CA_EVENT_REQUEST,
+                                  TraceCode::SALESFORCE_CA_EVENT_RESPONSE,
+                                  TraceCode::SALESFORCE_CA_EVENT_ERROR
+        );
+    }
 }

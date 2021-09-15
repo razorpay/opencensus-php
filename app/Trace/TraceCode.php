@@ -3638,9 +3638,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SALESFORCE_EVENT_REQUEST                              = 'SALESFORCE_EVENT_REQUEST';
     const SALESFORCE_EVENT_RESPONSE                             = 'SALESFORCE_EVENT_RESPONSE';
     const SALESFORCE_EVENT_ERROR                                = 'SALESFORCE_EVENT_ERROR';
+    const BAS_SALESFORCE_REQUEST                                = 'BAS_SALESFORCE_REQUEST';
+    const BAS_SALESFORCE_RBL_DETAIL                             = 'BAS_SALESFORCE_RBL_DETAIL';
     // This is for tracing any other error that happens during the event raise request to salesforce
     const SALESFORCE_EVENT_REQUEST_FAILED                       = 'SALESFORCE_EVENT_REQUEST_FAILED';
 
+    //sf ca lead
+    const SALESFORCE_CA_EVENT_REQUEST                              = 'SALESFORCE_CA_EVENT_REQUEST';
+    const SALESFORCE_CA_EVENT_RESPONSE                             = 'SALESFORCE_CA_EVENT_RESPONSE';
+    const SALESFORCE_CA_EVENT_ERROR                                = 'SALESFORCE_CA_EVENT_ERROR';
 
     // Banking account
     const BANKING_ACCOUNT_USER_PERMISSION_ERROR                = 'BANKING_ACCOUNT_USER_PERMISSION_ERROR';

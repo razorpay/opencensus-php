@@ -1940,6 +1940,8 @@ class Route
         //creates balance and banking_account_statement_details
         'bas_banking_accounts_create'              => ['post',     'bas/merchant/{id}/banking_accounts',             'BasController@createCurrentAccountBankingDependencies'             ],
         'external_bvs_validation_request'          => ['post',     'bas/bvs_validation',                             'BasController@initiateExternalBvsValidation'                       ],
+        'bas_ca_lead_to_sales_force'               => ['post',     'bas/ca_lead_to_salesforce',                      'BasController@sendCaLeadToSalesForce'                              ],
+        'rbl_in_progress_lead_to_sales_force'      => ['post',     'cron/rbl/lead_to_salesforce',                    'BasController@sendRblApplicationInProgressLeadsToSalesForce'       ],
 
         //splitz service
         'splitz_route'                             => ['any',      'service/splitz',                                 'SplitzController@sendRequest'                                      ],
@@ -3268,6 +3270,8 @@ class Route
         'merchant_risk_alerts_foh_workflow_trigger_nc',
         'buy_pricing_assign_bulk',
         'external_bvs_validation_request',
+        'bas_ca_lead_to_sales_force',
+        'rbl_in_progress_lead_to_sales_force',
         'bas_banking_accounts_create',
         'banking_account_service_cron_routes',
         'merchant_update_fraud_type',
@@ -9938,7 +9942,8 @@ class Route
             'terminal_fill_enabled_wallets',
             'refresh_payments_ongoing_downtimes_cron',
             'refresh_payments_resolved_downtimes_cron',
-            'refresh_payments_scheduled_downtimes_cron'
+            'refresh_payments_scheduled_downtimes_cron',
+            'rbl_in_progress_lead_to_sales_force',
         ],
 
         'subscriptions' => [
@@ -10399,6 +10404,7 @@ class Route
 
         'banking_account_service' => [
             'external_bvs_validation_request',
+            'bas_ca_lead_to_sales_force',
             'bas_banking_accounts_create',
             'merchant_fetch_internal',
         ],

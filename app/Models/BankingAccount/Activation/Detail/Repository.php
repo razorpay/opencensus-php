@@ -17,4 +17,17 @@ class Repository extends Base\Repository
                     ->where(Entity::BANKING_ACCOUNT_ID, '=', $bankingAccountId)
                     ->first();
     }
+
+    //Fetches applications that are not submitted within the last XX(timestamp)
+    public function fetchRblApplicationSubmissionInProgress($timestamp)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CREATED_AT, '<', $timestamp)
+                    ->where(function ($query)
+                        {
+                             $query->where(Entity::DECLARATION_STEP, '=', 0)
+                                   ->orWhereNull(Entity::DECLARATION_STEP);
+                        })
+                    ->get();
+    }
 }

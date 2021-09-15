@@ -632,4 +632,14 @@ class Service extends Base\Service
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BAS_PATCH_APPLICATION_API_FAILURE);
     }
+
+    public function sendCaLeadToSalesForce($input)
+    {
+        return $this->core()->sendCaLeadToSalesForce($input);
+    }
+
+    public function sendRblApplicationInProgressLeadsToSalesForce()
+    {
+        return $this->core()->sendRblApplicationInProgressLeadsToSalesForce();
+    }
 }

@@ -94,10 +94,26 @@ class BasController extends Controller
     public function checkCommonServiceability(){
 
         $input = Request::all();
-        
+
         $input["merchant_id"] = optional($this->ba->getMerchant())->getId() ?? '';
 
         $data =  $this->service->checkCommonServiceability($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function sendCaLeadToSalesForce()
+    {
+        $input = Request::all();
+
+        $data =  $this->service->sendCaLeadToSalesForce($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function sendRblApplicationInProgressLeadsToSalesForce()
+    {
+        $data =  $this->service->sendRblApplicationInProgressLeadsToSalesForce();
 
         return ApiResponse::json($data);
     }
