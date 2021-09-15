@@ -1666,8 +1666,17 @@ class Core extends Base\Core
                 $merchant[Constants::PERMISSIONS] = $userMerchantPermissions;
 
                 // Attach merchant attributes of specific groups
-                $attributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId($merchant['id'], Product::BANKING, Merchant\Attribute\Group::X_SIGNUP);
-                $merchant['attributes'] = $attributes->toArrayPublic();
+                $signupAttributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId($merchant['id'], Product::BANKING, Merchant\Attribute\Group::X_SIGNUP)->toArrayPublic();
+                $currentAccountAttributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId($merchant['id'], Product::BANKING, Merchant\Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS)->toArrayPublic();
+
+                // This is a hack, to unblock for now, need to figure out how to merge public arrays
+                $settableAttributes['entity'] = "collection";
+                $settableAttributes['count'] = count($signupAttributes['items']?? []) + count($currentAccountAttributes['items'] ?? []);
+                $settableAttributes['items'] = array_merge($signupAttributes['items'] ?? [], $currentAccountAttributes['items'] ?? []);
+
+                $this->trace->info(TraceCode::USERS_SEND_OTP_FOR_ACTION_WITH_CONTACT, $settableAttributes);
+
+                $merchant['attributes'] = $settableAttributes;
 
 
                 /** @var Merchant\Balance\Entity $balance */
