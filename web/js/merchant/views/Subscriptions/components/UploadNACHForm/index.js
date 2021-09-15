@@ -1,5 +1,7 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+import PropTypes from 'prop-types';
 import { findBy, normalizeDate, classList } from 'common/utils/rzp-utils';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -135,7 +137,6 @@ export default class UploadNACHForm extends React.Component {
       message:
         'The attached NACH form will be discarded and you will need to re-upload a new image.',
       affirmativeLabel: 'Yes, Remove',
-      abort: () => {},
       action: () => {
         this.setState(initState);
 
@@ -208,7 +209,7 @@ export default class UploadNACHForm extends React.Component {
         if (this.props.onClose) {
           this.props.onClose();
         } else {
-          const redirectUrl = '/registration_links/' + this.props.id;
+          const redirectUrl = `/registration_links/${this.props.id}`;
 
           this.props.history.push(redirectUrl);
         }
@@ -231,7 +232,7 @@ export default class UploadNACHForm extends React.Component {
     if (uploading) {
       return (
         <React.Fragment>
-          <i class="i i-info-circle" /> Please weight while we upload NACH form.
+          <i class="i i-info-circle" /> Please wait while we upload NACH form.
         </React.Fragment>
       );
     }
@@ -265,6 +266,7 @@ export default class UploadNACHForm extends React.Component {
         </React.Fragment>
       );
     }
+    return '';
   };
 
   renderNachFieldData = (key) => {
@@ -277,11 +279,11 @@ export default class UploadNACHForm extends React.Component {
 
   renderNachDetails = () => {
     if (!this.state.extractedData.extracted_data.length || this.state.uploading) {
-      return;
+      return '';
     }
 
-    let endAt = this.renderNachFieldData('end_at'),
-      startAt = this.renderNachFieldData('start_at');
+    let endAt = this.renderNachFieldData('end_at');
+    const startAt = this.renderNachFieldData('start_at');
 
     endAt = endAt && normalizeDate(endAt);
 
@@ -340,10 +342,10 @@ export default class UploadNACHForm extends React.Component {
   };
 
   render() {
-    const { uploading, file, errors } = this.state,
-      isDataAval = this.state.extractedData.extracted_data.length || this.state.errors.heading,
-      disabled =
-        uploading || !!this.errorsList.length || !this.state.extractedData.extracted_data.length;
+    const { uploading, file, errors } = this.state;
+    const isDataAval = this.state.extractedData.extracted_data.length || this.state.errors.heading;
+    const disabled =
+      uploading || !!this.errorsList.length || !this.state.extractedData.extracted_data.length;
 
     const isModalView = this.props.onClose;
 
@@ -417,7 +419,7 @@ export default class UploadNACHForm extends React.Component {
   }
 }
 
-const getErrorMessage = ([error, status]) => {
+function getErrorMessage([error, status]) {
   if (status === 500) {
     return {
       heading: 'Apologies, an error occurred on our end',
@@ -449,4 +451,4 @@ const getErrorMessage = ([error, status]) => {
   return {
     heading: error,
   };
-};
+}
