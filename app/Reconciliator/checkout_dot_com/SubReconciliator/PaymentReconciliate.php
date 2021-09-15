@@ -33,16 +33,16 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
-        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        if ($this->payment->getGatewayAmount() !== $this->getReconPaymentAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
                     'payment_id'      => $this->payment->getId(),
-                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'expected_amount' => $this->payment->getGatewayAmount(),
                     'recon_amount'    => $this->getReconPaymentAmount($row),
-                    'currency'        => $this->payment->getCurrency(),
+                    'currency'        => $this->payment->getGatewayCurrency(),
                     'gateway'         => $this->gateway
                 ]);
 
