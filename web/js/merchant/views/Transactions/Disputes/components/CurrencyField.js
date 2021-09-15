@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import CurrencyInput from 'common/new-ui/Input';
 import Amount from 'common/ui/Amount';
-import { getFormattedAmount } from 'common/utils/rzp-utils';
+import { paiseToRupees } from 'common/utils/rzp-utils';
 import { isAmount } from 'common/utils/validators';
 
 const CurrencyField = (props) => {
@@ -14,9 +14,11 @@ const CurrencyField = (props) => {
     return (
       <CurrencyInput
         name="amount"
+        type="number"
+        step="0.01"
         required
         disabled={disabled}
-        defaultValue={getFormattedAmount(dispute?.evidence?.amount || dispute.amount)}
+        defaultValue={paiseToRupees(dispute?.evidence?.amount || dispute?.amount)?.toFixed(2)}
         description={
           <>
             Enter amount less than&nbsp;
@@ -37,7 +39,7 @@ const CurrencyField = (props) => {
             }
           }
 
-          if (val > getFormattedAmount(dispute.amount)) {
+          if (val > paiseToRupees(dispute.amount)) {
             return `Amount can't be more than the total dispute amount`;
           }
           return '';
@@ -48,7 +50,11 @@ const CurrencyField = (props) => {
     return (
       <>
         <Amount value={dispute?.evidence?.amount || dispute.amount} currency={dispute.currency} />
-        <input type="hidden" value={dispute.amount} name="amount" />
+        <input
+          type="hidden"
+          name="amount"
+          value={paiseToRupees(dispute?.evidence?.amount || dispute?.amount)}
+        />
         {isDipsuteOpen && !disabled && (
           <div>
             <a class="bold" onClick={() => setShowEditDisputeAmount(true)}>

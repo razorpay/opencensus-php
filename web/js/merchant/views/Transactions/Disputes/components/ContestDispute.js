@@ -11,6 +11,8 @@ import { fetchOpen, contest } from 'merchant/reducers/disputes/details';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { rupeesToPaise, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import roleList from 'merchant/helpers/permissions/roles-list';
+import Amount from 'common/ui/Amount';
+import ConfirmModal from './ConfirmModal';
 
 const ContestDispute = (props) => {
   const {
@@ -19,6 +21,8 @@ const ContestDispute = (props) => {
     dispatch,
     showNotification,
     fileTypesMap,
+    openModal,
+    closeModal,
     user: { role },
   } = props;
   const isDipsuteOpen = dispute.status === 'open';
@@ -35,54 +39,40 @@ const ContestDispute = (props) => {
     if (!canUserTakeAction) {
       return null;
     }
-    if (data?.amount?.includes('.00')) {
+    if (data?.amount?.includes('.')) {
       data.amount = rupeesToPaise(data.amount);
     }
-    let canUserSubmit = false;
 
-    if (dispute.evidence)
-      Object.keys(fileTypesMap).forEach((file) => {
-        if (dispute.evidence[file]) {
-          canUserSubmit = true;
-        }
-      });
-
-    if (canUserSubmit) {
-      analyticsTrack({
-        objectName: 'dispute presentment',
-        actionName: 'submit',
-        screen: 'disputes',
-        properties: {
-          timestamp: Date.now(),
-          ...getCommonAnalyticsProperties(window.rzp_user),
-        },
-      });
-      dispatch(contest(dispute.id, { ...data, action: 'submit' }))
-        .then((_) => {
-          analyticsTrack({
-            objectName: 'dispute presentment',
-            actionName: 'submit success',
-            screen: 'disputes',
-            properties: {
-              timestamp: Date.now(),
-              ...getCommonAnalyticsProperties(window.rzp_user),
-            },
-          });
-          dispatch(fetchOpen());
-          dispatch(fetchDisputes({ skip: 0, count: 25 }));
-        })
-        .catch((err) => {
-          showNotification({
-            type: 'error',
-            message: err.errors || err,
-          });
+    analyticsTrack({
+      objectName: 'dispute presentment',
+      actionName: 'submit',
+      screen: 'disputes',
+      properties: {
+        timestamp: Date.now(),
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+    dispatch(contest(dispute.id, { ...data, action: 'submit' }))
+      .then((_) => {
+        analyticsTrack({
+          objectName: 'dispute presentment',
+          actionName: 'submit success',
+          screen: 'disputes',
+          properties: {
+            timestamp: Date.now(),
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
         });
-    } else {
-      showNotification({
-        type: 'error',
-        message: 'Please upload atleast one evidence document to support your claim',
+        dispatch(fetchOpen());
+        dispatch(fetchDisputes({ skip: 0, count: 25 }));
+      })
+      .catch((err) => {
+        showNotification({
+          type: 'error',
+          message: err.errors || err,
+        });
       });
-    }
+
     return null;
   };
 
@@ -107,13 +97,65 @@ const ContestDispute = (props) => {
     if (isDipsuteOpen) saveAsDraft({ [name]: value, action: 'draft' });
   };
 
+  const handleSubmit = (data) => {
+    let canUserSubmit = false;
+    let amount = Number(data.amount).toFixed(2);
+    amount = rupeesToPaise(amount);
+
+    if (dispute.evidence) {
+      Object.keys(fileTypesMap).forEach((file) => {
+        if (dispute.evidence[file]) {
+          canUserSubmit = true;
+        }
+      });
+    }
+
+    if (canUserSubmit) {
+      openModal({
+        size: 'small',
+        component: (
+          <ConfirmModal
+            context="submit"
+            closeModal={closeModal}
+            dispute={dispute}
+            title="Are you sure you want to contest this chargeback?"
+            description={
+              <>
+                {amount !== dispute.amount ? (
+                  <>
+                    <Amount value={amount} currency={dispute.currency} /> will be deducted from your
+                    Razorpay account balance. The documents submitted will be represented with the
+                    bank to contest the remaining{' '}
+                    <Amount value={dispute.amount - amount} currency={dispute.currency} /> of the
+                    dispute
+                  </>
+                ) : (
+                  <>
+                    The documents submitted will be represented with the bank to contest the dispute
+                  </>
+                )}
+              </>
+            }
+            onConfirm={() => submitEvidence(data)}
+            showNotification={showNotification}
+          />
+        ),
+      });
+    } else {
+      showNotification({
+        type: 'error',
+        message: 'Please upload atleast one evidence document to support your claim',
+      });
+    }
+  };
+
   return (
     <div id="contest-dispute">
       <hr />
       <div class="subheading p-l">Contest dispute</div>
 
       <Form
-        onSubmit={submitEvidence}
+        onSubmit={handleSubmit}
         validator={(data) => {
           if (data.amount && data.summary) {
             return false;

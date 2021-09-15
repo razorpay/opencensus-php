@@ -69,6 +69,13 @@ const DisputeDetails = (props) => {
             closeModal={closeModal}
             dispute={dispute}
             showNotification={showNotification}
+            title="Are you sure you want to accept this chargeback?"
+            description={
+              <>
+                <Amount value={dispute.amount} currency={dispute.currency} /> will be immediately
+                deducted from your Razorpay account balance
+              </>
+            }
           />
         ),
       });
@@ -287,6 +294,8 @@ const DisputeDetails = (props) => {
                   ref={contestRef}
                   showNotification={showNotification}
                   onCancelContest={acceptDispute}
+                  openModal={openModal}
+                  closeModal={closeModal}
                 />
               )}
               {isDisputePresentmentEnabled && dispute.status !== 'open' && (
