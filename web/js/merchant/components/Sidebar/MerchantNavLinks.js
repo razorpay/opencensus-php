@@ -3,7 +3,7 @@ import QueryString from 'query-string';
 import { connect } from 'react-redux';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
-import LocalStorageService from 'common/utils/localStorage';
+import * as LocalStorageService from 'common/utils/localStorage';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
 
 const RECOMMANDED_PRODUCT_LIST = [
@@ -28,6 +28,13 @@ function MerchantNavLinks(props) {
     props.payment === 0 &&
     user.isProductRecommendationEnabled;
 
+  const checkIfFirstEverSettlement = () => {
+    const settlementStatus = getSettlementStatus(user.current);
+    const isDisabled =
+      settlementStatus === 'disableAnimation' || settlementStatus === 'disableAnimationOnReload';
+    setSettlementExists(isDisabled ? false : settlementStatus);
+  };
+
   useEffect(() => {
     checkIfFirstEverSettlement();
   }, []);
@@ -47,13 +54,6 @@ function MerchantNavLinks(props) {
     }
   }, []);
 
-  const checkIfFirstEverSettlement = () => {
-    const settlementStatus = getSettlementStatus(user.current);
-    const isDisabled =
-      settlementStatus === 'disableAnimation' || settlementStatus === 'disableAnimationOnReload';
-    setSettlementExists(isDisabled ? false : settlementStatus);
-  };
-
   return (
     <>
       <MainNavLink
@@ -62,14 +62,16 @@ function MerchantNavLinks(props) {
         to="/dashboard"
         exact
         type="general"
-        additionalCondition={(user) => user.isAllowedView('home')}
+        additionalCondition={(currentUser) => currentUser.isAllowedView('home')}
       />
       <MainNavLink
         label="Transactions"
         icon="i i-repeat text-primary"
         type="general"
         to={routes.transactions}
-        additionalCondition={(user) => user.isAllowedMultiple('payments orders refunds')}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedMultiple('payments orders refunds')
+        }
       />
       <MainNavLink
         isNew={!settlementExists && esOndemandSettlementEnabled && !isRecommendProduct}
@@ -78,7 +80,7 @@ function MerchantNavLinks(props) {
         type="general"
         to="/settlements"
         isSettlementEnabled={isSettlementEnabled && !isRecommendProduct}
-        additionalCondition={(user) => user.isAllowedView('settlements')}
+        additionalCondition={(currentUser) => currentUser.isAllowedView('settlements')}
       />
 
       <div class="divider" />
@@ -88,14 +90,14 @@ function MerchantNavLinks(props) {
         icon="i i-notes text-warning"
         type="product"
         to={routes.invoices}
-        additionalCondition={(user) => user.isAllowedView('invoices')}
+        additionalCondition={(currentUser) => currentUser.isAllowedView('invoices')}
       />
       <MainNavLink
         label="Payment Links"
         type="product"
         icon="i i-link text-primary"
         to={routes.paymentlinks}
-        additionalCondition={(user) => user.isAllowedView('payment_links')}
+        additionalCondition={(currentUser) => currentUser.isAllowedView('payment_links')}
         customBadge={
           getLandingProduct === 'payment_link' &&
           props.payment === 0 &&
@@ -109,7 +111,7 @@ function MerchantNavLinks(props) {
         type="product"
         icon="i i-payment-pages text-warm temp-icon-style"
         to={routes.paymentpages}
-        additionalCondition={(user) => user.isAllowedView('payment_pages')}
+        additionalCondition={(currentUser) => currentUser.isAllowedView('payment_pages')}
         customBadge={
           getLandingProduct === 'payment_page' &&
           props.payment === 0 &&
@@ -125,9 +127,9 @@ function MerchantNavLinks(props) {
         to={
           user.isPaymentButtonEnabledByRazorX ? routes.paymentbuttons : routes.subscription_buttons
         }
-        additionalCondition={(user) =>
-          user.isAllowedMultiple('payment_buttons subscription_buttons') &&
-          (user.isPaymentButtonEnabledByRazorX || user.isSubscriptionButtonEnabled)
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedMultiple('payment_buttons subscription_buttons') &&
+          (currentUser.isPaymentButtonEnabledByRazorX || currentUser.isSubscriptionButtonEnabled)
         }
         customBadge={
           ['payment_button', 'payment_gateway'].includes(getLandingProduct) &&
@@ -142,7 +144,7 @@ function MerchantNavLinks(props) {
         type="product"
         to={routes.marketplace}
         icon="i i-route text-success"
-        additionalCondition={(user) => user.isAllowedView('marketplace')}
+        additionalCondition={(currentUser) => currentUser.isAllowedView('marketplace')}
         customBadge={
           getLandingProduct === 'route' &&
           props.payment === 0 &&
@@ -155,7 +157,7 @@ function MerchantNavLinks(props) {
         label="Subscriptions"
         type="product"
         icon="i i-refresh text-info"
-        additionalCondition={(user) => user.isAllowedView('subscriptions')}
+        additionalCondition={(currentUser) => currentUser.isAllowedView('subscriptions')}
         to={routes[isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions']}
         customBadge={
           getLandingProduct === 'subscriptions' &&
@@ -170,7 +172,9 @@ function MerchantNavLinks(props) {
         label="QR Codes"
         type="product"
         icon="i i-qr-code text-warm"
-        additionalCondition={(user) => user.isAllowedView('qr_codes') && user.isQRCodesEnabled}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('qr_codes') && currentUser.isQRCodesEnabled
+        }
         to={routes.qrCodes}
         isNew={user.isQRCodeProductEnabled && !isRecommendProduct}
         isComingSoon={
@@ -183,7 +187,7 @@ function MerchantNavLinks(props) {
         type="product"
         icon="i i-account-balance text-danger"
         to={routes.smartCollect}
-        additionalCondition={(user) => user.isAllowedView('virtual_accounts')}
+        additionalCondition={(currentUser) => currentUser.isAllowedView('virtual_accounts')}
         customBadge={
           getLandingProduct === 'smart_collect' &&
           props.payment === 0 &&
@@ -198,15 +202,9 @@ function MerchantNavLinks(props) {
         type="product"
         image="/dist/css/assets/bbps.png"
         to={routes.bbps}
-        additionalCondition={(user) => user.isAllowedView('bbps') && user.isBbpsEnabled}
-      />
-
-      <MainNavLink
-        label="BBPS"
-        type="product"
-        image="/dist/css/assets/bbps.png"
-        to={routes.bbps}
-        additionalCondition={(user) => user.isAllowedView('bbps') && user.isBbpsEnabled}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('bbps') && currentUser.isBbpsEnabled
+        }
       />
 
       <ShowWhen featureEnabled="raas">
@@ -223,7 +221,7 @@ function MerchantNavLinks(props) {
         type="general"
         icon="i i-people text-warning"
         to="/customers"
-        additionalCondition={(user) => user.isAllowedView('customers')}
+        additionalCondition={(currentUser) => currentUser.isAllowedView('customers')}
       />
 
       <MainNavLink
@@ -231,14 +229,14 @@ function MerchantNavLinks(props) {
         icon="i i-offer text-success"
         type="general"
         to="/offers"
-        additionalCondition={(user) => user.isAllowedView('offers')}
+        additionalCondition={(currentUser) => currentUser.isAllowedView('offers')}
       />
 
       <MainNavLink
         label="Checkout Rewards"
         icon="i i-rewards text-danger"
         to="/checkout-rewards"
-        additionalCondition={(user) => user.isAllowedView('checkoutrewards')}
+        additionalCondition={(currentUser) => currentUser.isAllowedView('checkoutrewards')}
         isNew={!isRecommendProduct}
       />
 
@@ -247,7 +245,9 @@ function MerchantNavLinks(props) {
         icon="i fa fa-inr text-warm"
         to="/capital/loans/apply"
         isNew={!isRecommendProduct}
-        additionalCondition={(user) => user.isAllowedView('loans') && user.isLoansEnabled}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('loans') && currentUser.isLoansEnabled
+        }
       />
 
       <MainNavLink
@@ -255,9 +255,11 @@ function MerchantNavLinks(props) {
         icon="i fa fa-star text-warning"
         to="/capital/cash-advance/"
         isNew={!isRecommendProduct}
-        additionalCondition={(user) =>
-          user.isAllowedView('cash_advance') &&
-          (user.isLOCEnabled || user.isCashAdvanceStage2Enabled || user.isWithdrawFeatureEnabled)
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('cash_advance') &&
+          (currentUser.isLOCEnabled ||
+            currentUser.isCashAdvanceStage2Enabled ||
+            currentUser.isWithdrawFeatureEnabled)
         }
       />
 
@@ -266,7 +268,7 @@ function MerchantNavLinks(props) {
         icon="i fa fa-credit-card text-warm"
         to="/capital/corporate-cards/"
         isNew={!isRecommendProduct}
-        additionalCondition={(user) => user.isCardsLOSEnabled}
+        additionalCondition={(currentUser) => currentUser.isCardsLOSEnabled}
       />
 
       <div class="divider" />
@@ -276,15 +278,15 @@ function MerchantNavLinks(props) {
         icon="i i-books text-danger"
         type="general"
         to="/reports"
-        additionalCondition={(user) => user.isAllowedView('reports')}
+        additionalCondition={(currentUser) => currentUser.isAllowedView('reports')}
         isPending={isReportsPending}
       />
       <MainNavLink
         label="My Account"
         type="general"
         icon="i i-account text-primary"
-        additionalCondition={(user) =>
-          user.isAllowedMultiple('profile credits add_funds team referrals')
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedMultiple('profile credits add_funds team referrals')
         }
         to={routes.account}
         customBadge={
@@ -302,8 +304,8 @@ function MerchantNavLinks(props) {
         icon="i i-settings text-warning"
         type="general"
         to={routes.settings}
-        additionalCondition={(user) =>
-          user.isAllowedMultiple('webhooks applications configuration api_keys')
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedMultiple('webhooks applications configuration api_keys')
         }
       />
     </>
