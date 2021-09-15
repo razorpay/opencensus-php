@@ -7,6 +7,7 @@ use RZP\Models\Merchant\Detail as MerchantDetail;
 class Constants
 {
     const ENTITY_IDS                      = 'entity_ids';
+    const ENTITY_TYPE                     = 'entity_type';
     const NAMES                           = 'names';
     const DUMMY                           = 'dummy';
     const WEBHOOKS                        = 'webhooks';

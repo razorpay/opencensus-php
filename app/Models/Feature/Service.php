@@ -268,6 +268,8 @@ class Service extends Base\Service
 
         $opsResponse = $successResponse = $failedResponse = [];
 
+        $entityType = $input[Constants::ENTITY_TYPE] ?? Constants::MERCHANT;
+
         foreach ($names as $featureName)
         {
             $failedMerchant = $successfulMerchant = [];
@@ -277,7 +279,7 @@ class Service extends Base\Service
                 try
                 {
                     $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
-                        Constants::MERCHANT,
+                        $entityType,
                         $entityId,
                         $featureName);
 
