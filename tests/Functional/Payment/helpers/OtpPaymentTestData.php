@@ -26,7 +26,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'Payment was unsuccessful due to a temporary issue. If amount got deducted, it will be refunded within 5-7 working days.'
+                    'description' => 'We are facing some trouble completing your request at the moment. Please try again shortly.'
                 ],
             ],
             'status_code' => 500,

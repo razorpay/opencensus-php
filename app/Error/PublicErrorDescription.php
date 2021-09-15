@@ -19,10 +19,10 @@ class PublicErrorDescription
     //        %x72 /          ; r    carriage return U+000D
     //        %x74 /          ; t    tab             U+0009
     //
-
+    
     const BAD_REQUEST_REFUND_RECEIPT_ALREADY_PRESENT                            = 'Duplicate receipt found for this refund request.';
     const GATEWAY_ERROR                                                         = 'Payment processing failed due to error at bank or wallet gateway';
-    const SERVER_ERROR                                                          = 'Payment was unsuccessful due to a temporary issue. If amount got deducted, it will be refunded within 5-7 working days.';
+    const SERVER_ERROR                                                          = 'We are facing some trouble completing your request at the moment. Please try again shortly.';
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                         = 'The gateway request to submit payment information timed out. Please submit your details again';
     const GATEWAY_ERROR_PROCESSING_DECLINED                                     = 'Payment failed due to processing error on gateway';
     const GATEWAY_ERROR_SYSTEM_BUSY                                             = 'Gateway system is busy, please retry.';

@@ -38,7 +38,7 @@ ERROR_MODULE_GIT_URL = $(DRONE_ERROR_MODULE_GIT_URL)
 endif
 
 # Change this branch name for local testing
-ERROR_MODULE_BRANCH := master
+ERROR_MODULE_BRANCH := fix_server_error_desc
 # Do not Change below code till endif
 API_BRANCH := $(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}")
 ifeq ($(API_BRANCH),master)
