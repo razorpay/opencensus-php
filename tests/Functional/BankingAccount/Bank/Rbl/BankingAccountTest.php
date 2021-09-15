@@ -307,7 +307,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertNotNull($activationDetailEntity);
 
-        Mail::assertQueued(XProActivation::class);
+        Mail::assertNotQueued(XProActivation::class);
 
         Mail::assertNotQueued(StatusUpdateMailerFactory::class);
 
@@ -337,6 +337,46 @@ class BankingAccountTest extends TestCase
         ]);
 
         $this->assertNotNull($activationDetailEntity);
+
+        Mail::assertNotQueued(XProActivation::class);
+    }
+
+    public function testCreateBankingAccountAndSubmitFormMerchantDashboard()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $bankingAccount = $this->createBankingAccountFromDashboard();
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        Mail::fake();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_dashboard/' . $bankingAccountId,
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        $this->assertEquals(null, $bankingAccount['last_statement_attempt_at']);
+
+        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        $this->assertNotNull($activationDetailEntity);
+
+        Mail::assertQueued(XProActivation::class);
     }
 
     public function testCreateBankingAccountWithUnserviceableBusinessCategoryFormDashboard()
@@ -2706,6 +2746,8 @@ class BankingAccountTest extends TestCase
             'content' => $data
         ];
 
+        Mail::fake();
+
         $hubspotClient = $this->mockHubSpotClient('trackHubspotEvent');
 
         $hubspotClient->expects($this->atLeast(1))
@@ -2713,6 +2755,8 @@ class BankingAccountTest extends TestCase
 
 
         $response = $this->makeRequestAndGetContent($request);
+
+        Mail::assertNotQueued(XProActivation::class);
 
         return $response;
     }

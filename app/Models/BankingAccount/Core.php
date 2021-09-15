@@ -345,10 +345,10 @@ class Core extends Base\Core
 
         });
 
-        $this->notifyOpsAboutProActivation($bankingAccount);
-
         if ($validatorOP !== 'create_dashboard')
         {
+            $this->notifyOpsAboutProActivation($bankingAccount);
+
             $this->notifyMerchantAboutUpdatedStatus($bankingAccount);
 
             $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
@@ -654,6 +654,8 @@ class Core extends Base\Core
             // Updating BankingAccountActivation Details
             if (empty($activationDetailInput) === false)
             {
+                $this->checkAndSendFreshDeskEmailIfFormIsSubmitted($bankingAccount, $activationDetailInput);
+
                 // if ActivationDetail is passed with comment in input, entity will always be admin, not merchant.
                 $this->activationDetailService->updateForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $isAutomatedUpdate, $entity);
             }
@@ -667,6 +669,17 @@ class Core extends Base\Core
         $bankingAccount->load('bankingAccountActivationDetails');
 
         return $bankingAccount;
+    }
+
+    protected function checkAndSendFreshDeskEmailIfFormIsSubmitted(Entity $bankingAccount, array $activationDetailInput)
+    {
+        if (isset($activationDetailInput[ActivationDetail\Entity::DECLARATION_STEP]) === true)
+        {
+            if ($activationDetailInput[ActivationDetail\Entity::DECLARATION_STEP] === 1)
+            {
+                $this->notifyOpsAboutProActivation($bankingAccount);
+            }
+        }
     }
 
     public function resetAccountInfoWebhookData(Entity $bankingAccount, State\Entity $stateChangeLogBeforeProcessedState, Base\PublicEntity $entity = null)
