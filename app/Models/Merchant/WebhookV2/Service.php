@@ -894,7 +894,16 @@ class Service extends Base\Service
      */
     public function getWebhookEvents(): array
     {
-        return array_keys(Merchant\Webhook\Event::filterForPublicApi($this->merchant));
+        $webhookEvents = array_keys(Merchant\Webhook\Event::filterForPublicApi($this->merchant));
+
+        $this->removeWebhookEventsFromResponse($webhookEvents);
+
+        return $webhookEvents;
+    }
+
+    protected function removeWebhookEventsFromResponse(array & $webhookEvents)
+    {
+        $webhookEvents = array_diff($webhookEvents, Merchant\Webhook\Event::getEventsSkippedFromListingApi());
     }
 
     private function getDimensionsForWebhookData(): array

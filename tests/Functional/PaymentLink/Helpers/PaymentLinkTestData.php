@@ -2426,4 +2426,16 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testZapierWebhookNotPresentInEventsList' => [
+        'request'  => [
+            'url'     => '/webhooks/events/all',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response'  => [
+            'status_code'   => 200,
+            'content'   => []
+        ]
+    ],
 ];

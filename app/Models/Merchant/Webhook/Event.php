@@ -574,6 +574,7 @@ class Event
         self::PAYOUT_DOWNTIME_STARTED           => [Product::BANKING],
         self::PAYOUT_DOWNTIME_RESOLVED          => [Product::BANKING],
         self::PAYOUT_CREATION_FAILED            => [Product::BANKING],
+        self::ZAPIER_PAYMENT_PAGE_PAID_V1       => [Product::PRIMARY],
 
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED           => [Product::PRIMARY],
         self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION => [Product::PRIMARY],
@@ -773,6 +774,17 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW          => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
     ];
 
+    /**
+     * Defines the list of webhooks that needs to be hidden from fetch events api
+     * This is to stop merchants from manually subscribing to these webhooks.
+     * OAuth applications, if they have the name of the webhook can directly subscribe.
+     *
+     * @var array
+     */
+    public static $eventsSkippedFromListingApi = [
+        self::ZAPIER_PAYMENT_PAGE_PAID_V1,
+    ];
+
     public static function getLaunchedEventNames()
     {
         return self::$launchedEvents;
@@ -850,5 +862,10 @@ class Event
         }
 
         return $eventNames;
+    }
+
+    public static function getEventsSkippedFromListingApi(): array
+    {
+        return self::$eventsSkippedFromListingApi;
     }
 }

@@ -1395,6 +1395,17 @@ class PaymentLinkTest extends TestCase
         $this->makePaymentForPaymentLinkWithOrderAndAssert($paymentLink, $order);
     }
 
+    public function testZapierWebhookNotPresentInEventsList()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertContains("invoice.paid", $response);
+
+        $this->assertNotContains("zapier.payment_page.paid.v1", $response);
+    }
+
     public function testFetchPaymentsForPaymentPage()
     {
         $data = $this->createPaymentLinkAndOrderForThat(['view_type' => 'page']);
