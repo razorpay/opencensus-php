@@ -125,12 +125,13 @@ class Service
     public function sendMail(array $input)
     {
         (new Validator())->validateInput(Validator::SEND_MAIL, $input);
+        $cc = array_get($input, self::CC_EMAILS, []);
 
         Mail::queue(new GenericTaxPaymentEmail($input[self::MERCHANT_EMAIL],
             $input[self::SUBJECT],
             $input[self::TEMPLATE_NAME],
             $input[self::DATA],
-            $input[self::CC_EMAILS]));
+            $cc));
 
         return ['success' => true];
     }
