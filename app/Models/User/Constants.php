@@ -255,6 +255,6 @@ class Constants
     //Email id used for banking demo mode
     const BANKING_DEMO_USER_EMAILS = [
         "razorpayx.demo@gmail.com",
-        "razorpayx.demo+user@gmail.com"
+        "acmecorporation2021@gmail.com"
     ];
 }
