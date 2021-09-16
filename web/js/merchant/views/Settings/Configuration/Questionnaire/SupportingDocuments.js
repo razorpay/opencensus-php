@@ -225,7 +225,7 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification }) => {
                 return (
                   <AddOtherDoc
                     label="+Others, Specify"
-                    placeholder="Document name"
+                    placeholder="Please enter document name"
                     showActionBtn={true}
                     onActionClick={(name) => {
                       handleAddDocument({
@@ -268,7 +268,12 @@ const AddOtherDoc = ({
             onChange={(e) => setInput(e.target.value)}
             autoFocus
           />
-          <button class="btn btn-link add" onClick={() => onActionClick(input)}>
+          <button
+            class="btn btn-link add"
+            onClick={() => {
+              if (input) onActionClick(input);
+            }}
+          >
             +Add
           </button>
         </>
