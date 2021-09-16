@@ -15,9 +15,9 @@ class GenericMerchant
         '10000000000000',
         '100DemoAccount',
         'Hrw2ujXW6LGEk7', // Demo banking user merchant account - Beta
-        'HxkEbyIrQQsBbf', // Demo banking user merchant account - Beta
-        'HpoQK4cqkegpKO',  // Demo banking user merchant account - Prod
-        'HxhLvOJVj2h3MT'  // Demo banking user 2 merchant account - Prod
+        'HxkEbyIrQQsBbf', // Demo banking user 2 merchant account - Beta
+        'HpoQK4cqkegpKO', // Demo banking user merchant account - Prod
+        'Hy5Vxj9TTVm4Oi'  // Demo banking user 2 merchant account - Prod
     ];
 
     /**
