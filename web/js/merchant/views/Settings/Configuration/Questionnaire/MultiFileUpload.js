@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import Input from 'common/new-ui/Input';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import uuid from 'uuid';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { showNotification as displayNotification } from 'merchant_common/reducers/notifications';
+import { connect } from 'react-redux';
 
 const MultiFileUpload = ({
   name,
@@ -11,6 +14,7 @@ const MultiFileUpload = ({
   required,
   onFileRemove,
   defaultFiles,
+  showNotification,
   ...rest
 }) => {
   const preUploadedFiles =
@@ -62,9 +66,28 @@ const MultiFileUpload = ({
             required={required && idx === 0}
             defaultValue={file.display_name}
             removeFileType={() => removeAdditionalFile(file.id)}
-            fileName={file.display_name}
+            fileName={
+              <span
+                class="btn-link"
+                onClick={() => {
+                  merchantFetch(`documents/${file.id}`)
+                    .then((res) => {
+                      if (res?.data?.url) {
+                        window.open(res.data.url);
+                      }
+                    })
+                    .catch((err) => {
+                      showNotification({
+                        type: 'error',
+                        message: err?.errors || err,
+                      });
+                    });
+                }}
+              >
+                {file.display_name}
+              </span>
+            }
             showRemoveButton={!file.display_name} // don't show remove button if file is uploaded
-            downloadUrl={`/merchant/api/live/documents/${file.id}/content`}
             {...rest}
           />
         );
@@ -121,4 +144,4 @@ const DismissableInput = ({
   );
 };
 
-export default MultiFileUpload;
+export default connect(null, { showNotification: displayNotification })(MultiFileUpload);
