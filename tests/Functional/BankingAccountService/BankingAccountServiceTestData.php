@@ -431,6 +431,20 @@ return [
         ],
     ],
 
+    'testSendRblApplicationLeadsToSalesForce' => [
+        'request'  => [
+            'url'     => '/cron/rbl/lead_to_salesforce',
+            'method'  => 'POST',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
     'testUpdateSignatory' => [
         'request'  => [
             'url'     => '/merchant/banking_application/business/10000000000000/applications/10000000000000',

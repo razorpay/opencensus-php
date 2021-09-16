@@ -392,28 +392,33 @@ class Core extends Base\Core
         {
             $bankingAccountId = $detail->getBankingAccountId();
 
+            /* @var BankingAccountEntity $bankingAccount*/
             $bankingAccount = $this->repo->banking_account->findOrFail($bankingAccountId);
 
-            $input = [
-                Constants::CA_PARTNER_BANK    => Constants::RBL,
-                Constants::CA_PREFERRED_EMAIL => $detail->getMerchantPocEmail(),
-                Constants::CA_PREFERRED_PHONE => $detail->getMerchantPocPhoneNumber(),
-                Constants::SOURCE             => Constants::X_CA_UNIFIED,
-                Constants::MERCHANT_ID        => $bankingAccount->getMerchantId(),
-                Constants::PRODUCT_NAME       => Constants::CURRENT_ACCOUNT,
-            ];
+            //check is required since declaration_step property added recently. Relying on it will lead to sending of applications irrespective of the state.
+            if($bankingAccount->getStatus() === BankingAccount\Status::CREATED)
+            {
+                $input = [
+                    Constants::CA_PARTNER_BANK    => Constants::RBL,
+                    Constants::CA_PREFERRED_EMAIL => $detail->getMerchantPocEmail(),
+                    Constants::CA_PREFERRED_PHONE => $detail->getMerchantPocPhoneNumber(),
+                    Constants::SOURCE             => Constants::X_CA_UNIFIED,
+                    Constants::MERCHANT_ID        => $bankingAccount->getMerchantId(),
+                    Constants::PRODUCT_NAME       => Constants::CURRENT_ACCOUNT,
+                ];
 
-            //details contain senstive details so id is logged
-            $this->trace->info(TraceCode::BAS_SALESFORCE_RBL_DETAIL, [
-                'banking_account_activation_detail_id' => $detail->getId(),
-            ]);
+                //details contain senstive details so id is logged
+                $this->trace->info(TraceCode::BAS_SALESFORCE_RBL_DETAIL, [
+                    'banking_account_activation_detail_id' => $detail->getId(),
+                ]);
 
-            //front end converts SME to X-SME at the admin dashboard.
-            $detail->setSalesTeam(BankingAccount\Activation\Detail\Validator::SME);
+                $this->sendCaLeadToSalesForce($input);
 
-            $this->repo->banking_account_detail->saveOrFail($detail);
+                //front end converts SME to X-SME at the admin dashboard.
+                $detail->setSalesTeam(BankingAccount\Activation\Detail\Validator::SME);
 
-            $this->sendCaLeadToSalesForce($input);
+                $this->repo->banking_account_detail->saveOrFail($detail);
+            }
         }
 
         return ['success' => true];
