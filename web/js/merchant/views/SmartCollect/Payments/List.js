@@ -78,9 +78,9 @@ export default class VAPaymentsListContainer extends ListContainer {
       });
   };
 
-  trackPaymentIdCol = ({ id, status }) => {
+  trackPaymentIdCol = ({ id, paymentStatus }) => {
     return () => {
-      const options = { id, status };
+      const options = { id, paymentStatus };
 
       this.track('list.payment_id', options);
 
@@ -140,7 +140,6 @@ export default class VAPaymentsListContainer extends ListContainer {
         <PaymentsTable
           count={this.state.count}
           skip={this.state.skip}
-          paginate={this.paginate}
           {...this.props}
           paginate={(params, type) => {
             this.track(`list.${type}`, {

@@ -1615,6 +1615,7 @@ class Service extends Base\Service
             'nps_survey_banner',
             'new_pp_success_modal',
             'va_search',
+            'smart_collect_search_v1',
             'hide_company_name',
             'batch_cancel',
             'rev_up_chennai_announcement',

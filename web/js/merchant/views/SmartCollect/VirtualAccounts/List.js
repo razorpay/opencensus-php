@@ -37,6 +37,17 @@ import { getVAQuickGuideIsClosed } from '../QuickGuide';
 
 import EmptyList from 'merchant/components/EmptyList';
 
+const EmptyComponent = () => (
+  <EmptyList
+    description={
+      <React.Fragment>
+        <div>There are no virtual accounts yet!!</div>
+        <div>Start creating new account now.</div>
+      </React.Fragment>
+    }
+  />
+);
+
 @connect(
   (state) => {
     return {
@@ -121,7 +132,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
       showOnboarding = getIsAllowedResetVAOnBoarding(data);
     }
 
-    let VAProductOnBoarding = {
+    const VAProductOnBoarding = {
       ...props.VAProductOnBoarding,
       showOnboarding,
       isQuickGuideOpen: !getVAQuickGuideIsClosed(props),
@@ -215,7 +226,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
           onEleBlur={this.onSearchEleBlur}
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
-          showAdvancedFilters={this.props.user.isSmartCollectAdvancedSearchFeaturesEnabled}
+          showAdvancedFilters={this.props.user.isNewSmartCollectSearchFeatureEnabled}
         />
 
         <DataTable
@@ -238,14 +249,3 @@ export default class VirtualAccountsListContainer extends ListContainer {
     );
   }
 }
-
-const EmptyComponent = () => (
-  <EmptyList
-    description={
-      <React.Fragment>
-        <div>There are no virtual accounts yet!!</div>
-        <div>Start creating new account now.</div>
-      </React.Fragment>
-    }
-  />
-);
