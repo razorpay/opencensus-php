@@ -120,39 +120,7 @@ class MySqlConnection extends BaseMySqlConnection
             return false;
        }
 
-       $result = $this->checkStaticRouteList($routeName);
-
-       if ($result === true)
-       {
-            return $result;
-       }
-
-       return $this->checkRedisRouteList($routeName);
-    }
-
-    protected function checkRedisRouteList($routeName)
-    {
-        $routes = [];
-
-        try
-        {
-           $routes = Cache::get(ConfigKey::SLAVE_ROUTES);
-
-           if (empty($routes) === true)
-           {
-             return false;
-           }
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::CRITICAL,
-                TraceCode::SLAVE_ROUTES_FETCH_FAILED);
-
-        }
-
-        return (in_array($routeName, $routes, true) === true);
+       return $this->checkStaticRouteList($routeName);
     }
 
     protected function checkStaticRouteList($routeName)

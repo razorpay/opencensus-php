@@ -11610,7 +11610,9 @@ class Route
         'reminder_next_run',
         'user_fetch_for_merchant',
         'get_merchant_data_for_segment',
-        'user_fetch_entity'
+        'user_fetch_entity',
+        'payment_refund_authorized',
+        'order_refund_multiple_authorized',
     ];
 
     /**

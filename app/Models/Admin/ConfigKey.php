@@ -243,8 +243,6 @@ class ConfigKey
 
     const REQUEST_LOG_STATE = self::PREFIX . 'request_log_state';
 
-    const SLAVE_ROUTES = self::PREFIX.'slave_routes';
-
     const REARCH_CARD_PAYMENTS = self::PREFIX.'rearch_card_payments';
 
     //Admin config used to control visibility of dcc markup on frontend
@@ -354,7 +352,6 @@ class ConfigKey
         self::RBL_STATEMENT_CLOSING_BALANCE_DIFF,
         self::REQUEST_LOG_STATE,
         self::RBL_BANKING_ACCOUNT_STATEMENT_CRON_ATTEMPT_DELAY,
-        self::SLAVE_ROUTES,
         self::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE,
         self::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE,
         self::RBL_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY,
