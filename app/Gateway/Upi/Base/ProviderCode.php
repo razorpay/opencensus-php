@@ -20,6 +20,8 @@ class ProviderCode
      * You can run php artisan upi:verify_providers
      * on the command line to check against
      * the spreadsheet
+     *
+     * Helpful link: https://www.npci.org.in/what-we-do/upi/3rd-party-apps
      */
     const ABFSPAY            = 'abfspay';
     const AIRTEL             = 'airtel';
@@ -310,7 +312,7 @@ class ProviderCode
     ];
 
     /**
-     * PSP handle to app mapping
+     * PSP handle to psp mapping
      */
 
     protected static $psp = [
@@ -324,6 +326,8 @@ class ProviderCode
         self::YBL           => ProviderPsp::PHONEPE,
         self::IBL           => ProviderPsp::PHONEPE,
         self::AXL           => ProviderPsp::PHONEPE,
+        self::APL           => ProviderPsp::AMAZON_PAY,
+        self::BARODAMPAY    => ProviderPsp::BHIM_BARODAPAY,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
@@ -374,6 +378,27 @@ class ProviderCode
         ProviderPsp::BHIM,
         ProviderPsp::PAYTM,
         ProviderPsp::PHONEPE,
+        ProviderPsp::AMAZON_PAY,
+        ProviderPsp::GOOGLE_PAY,
+        ProviderPsp::BHIM_BARODAPAY,
+    ];
+
+    /**
+     * @var array VPA handles to psp mapping for AutoPay
+     */
+    protected static $pspForAutopay = [
+        self::UPI           => ProviderPsp::BHIM,
+        self::PAYTM         => ProviderPsp::PAYTM,
+        self::ICICI         => ProviderPsp::WHATSAPP,
+        self::IBL           => ProviderPsp::PHONEPE,
+        self::YBL           => ProviderPsp::PHONEPE,
+        self::AXL           => ProviderPsp::PHONEPE,
+        self::OKHDFCBANK    => ProviderPsp::GOOGLE_PAY,
+        self::APL           => ProviderPsp::AMAZON_PAY,
+        self::BARODAMPAY    => ProviderPsp::BHIM_BARODAPAY,
+
+        // used only for testing
+        self::RAZORPAY      => ProviderPsp::RAZORPAY,
     ];
 
     public static function getBankCode($provider)
@@ -381,17 +406,22 @@ class ProviderCode
         return self::$bankCodes[$provider] ?? null;
     }
 
-    public static function getPsp($vpaHandle)
+    public static function getPsp($vpaHandle, $isAutopay=false)
     {
+        if($isAutopay === true)
+        {
+            return self::$pspForAutopay[$vpaHandle] ?? null;
+        }
+
         return self::$psp[$vpaHandle] ?? null;
     }
 
-    public static function getPspForVpa($vpa)
+    public static function getPspForVpa($vpa, $isAutopay=false)
     {
         // Anything after @ is handle
         $code = substr($vpa, (strpos($vpa, '@') + 1));
 
-        return self::getPsp(strtolower($code));
+        return self::getPsp(strtolower($code), $isAutopay);
     }
 
     /**
@@ -433,7 +463,7 @@ class ProviderCode
 
     public static function validateAutoPayPspProvider(string $vpa, bool $isTestMode = false)
     {
-        $psp = self::getPspForVpa($vpa);
+        $psp = self::getPspForVpa($vpa, true);
 
         $testModeProvider = [
             ProviderPsp::RAZORPAY,
