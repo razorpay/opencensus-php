@@ -2517,6 +2517,23 @@ trait Authorize
         }
     }
 
+    protected function isTpvPreProcessingApplicable($payment)
+    {
+        if($payment->merchant->isTPVRequired() === false)
+        {
+            return false;
+        }
+        if($payment->isUpiTransfer() === true)
+        {
+            return false;
+        }
+        if(($payment->isNetbanking() === false) and ($payment->getMethod() !== Method::UPI))
+        {
+            return false;
+        }
+        return true;
+    }
+
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
         // Fees validation can only happen after international validation has gone through
@@ -2587,8 +2604,7 @@ trait Authorize
 
         // modify account number in gateway input for some banks
         // to be called only in case of upi tpv transactions
-        if ((($payment->getMethod() == Method::UPI) or ($payment->isNetbanking() == true)) and
-            ($payment->merchant->isTPVRequired() === true))
+        if ($this->isTpvPreProcessingApplicable($payment) === true)
         {
             $this->modifyAccountNumberForSpecificBanks($payment, $gatewayInput);
         }

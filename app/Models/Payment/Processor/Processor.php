@@ -58,6 +58,7 @@ use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Locale\Core as LocaleCore;
@@ -3560,12 +3561,39 @@ class Processor
         return false;
     }
 
+    protected function isUpiTransferPayment($input)
+    {
+        if(array_key_exists('receiver',$input) === false)
+        {
+            return false;
+        }
+        if(array_key_exists('type',$input['receiver']) === false)
+        {
+            return false;
+        }
+        if($input['receiver']['type'] !== Receiver::VPA)
+        {
+            return false;
+        }
+        if($input['method'] !== Payment\Method::UPI)
+        {
+            return false;
+        }
+        
+        return true;
+    }
+
     protected function validateAndSetOrderDetailsIfApplicable(
         Payment\Entity $payment,
         array $input)
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
+            if($this->isUpiTransferPayment($input))
+            {
+                return;
+            }
+
             $tpvRequired = (($payment->isTpvMethod() === true) and
                             ($this->merchant->isTPVRequired() === true));
 
