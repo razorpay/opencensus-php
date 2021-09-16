@@ -1,15 +1,11 @@
 import React from 'react';
-import { classList } from 'common/utils/rzp-utils';
 import Button from 'common/new-ui/Button';
-import Image from 'common/ui/Image';
-import Spinner from 'common/ui/Spinner';
-import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 
-const QRCodePreviewModal = React.memo(({ id, previewImg, closeModal, history, onDownloadQRCode }) => {
+const QRCodePreviewModal = React.memo(({ previewImg, closeModal, history, onDownloadQRCode }) => {
   function downloadQRCode() {
     window.open(previewImg);
 
-    onDownloadQRCode && onDownloadQRCode();
+    if (onDownloadQRCode) onDownloadQRCode();
   }
 
   function toToDashboard() {
@@ -24,6 +20,9 @@ const QRCodePreviewModal = React.memo(({ id, previewImg, closeModal, history, on
     <div>
       <div class="heading">
         <img src="/dist/css/assets/onboarding/done.png" class="m-r" /> QR Code Created Successfully
+        <button type="button" class="close" onClick={toToDashboard}>
+          <i class="i i-close" />
+        </button>
       </div>
       <div class="content">
         <img src={previewImg} alt="qr-code" download />
