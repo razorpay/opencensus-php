@@ -3,6 +3,7 @@
 namespace RZP\Models\PaymentLink;
 
 use Request;
+use RZP\Trace\Tracer;
 use Illuminate\Http\Request  as CurrentRequest;
 
 use RZP\Models\Base;
@@ -77,7 +78,9 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        $entity = $this->core->create($input, $this->merchant, $this->user);
+        $entity = Tracer::inSpan(['name' => 'payment_page.create'], function() use ($input) {
+            return $this->core->create($input, $this->merchant, $this->user);
+        });
 
         return $entity->toArrayPublic();
     }
@@ -172,13 +175,22 @@ class Service extends Base\Service
     public function getViewNameAndPayload(string $id)
     {
         /** @var Entity $paymentLink */
-        $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
+        $paymentLink = Tracer::inSpan(['name' => 'payment_page.hosted.find'], function() use ($id) {
+            return $this->repo->payment_link->findActiveByPublicId($id);
+        });
 
-        (new Validator)->validatePageViewable($paymentLink);
+        Tracer::inSpan(['name' => 'payment_page.hosted.validate'], function() use ($paymentLink) {
+            (new Validator)->validatePageViewable($paymentLink);
+        });
 
-        $viewPayload = $this->core->getHostedViewPayload($paymentLink);
+        $viewPayload = Tracer::inSpan(['name' => 'payment_page.hosted.get.payload'], function() use
+        ($paymentLink) {
+            return $this->core->getHostedViewPayload($paymentLink);
+        });
 
-        $view = $this->core->getHostedViewTemplate($paymentLink);
+        $view = Tracer::inSpan(['name' => 'payment_page.hosted.get.template'], function() use ($paymentLink) {
+            return $this->core->getHostedViewTemplate($paymentLink);
+        });
 
         $this->trace->count(Metric::PAYMENT_PAGE_VIEW_TOTAL, $paymentLink->getMetricDimensions());
 
@@ -274,9 +286,13 @@ class Service extends Base\Service
 
     public function setReceiptDetails(string $id, array $input)
     {
-        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+        $paymentLink = Tracer::inSpan(['name' => 'payment_page.recipts.entity.find'], function() use ($id) {
+            return $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+        });
 
-        return $this->core->setReceiptDetails($paymentLink, $input);
+        return Tracer::inSpan(['name' => 'payment_page.recipts.create'], function() use ($paymentLink, $input) {
+            return $this->core->setReceiptDetails($paymentLink, $input);
+        });
     }
 
     public function getInvoiceDetails(string $paymentId)

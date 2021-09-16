@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use View;
 use Request;
 use ApiResponse;
+use RZP\Trace\Tracer;
 use Illuminate\Http\Request  as CurrentRequest;
 use RZP\Error\ErrorCode;
 use RZP\Models\PaymentLink\Entity;
@@ -139,7 +140,11 @@ class PaymentLinkController extends Controller
     {
         // Retrieves slug's metadata from Gimli which contains entity, id & mode
         $gimli        = $this->app['elfin']->driver('gimli');
-        $slugMetadata = $gimli->expandAndGetMetadata($slug);
+        $slugMetadata = Tracer::inSpan([
+            'name' => 'payment_pages.hosted.pages.slug.get.template'],
+            function() use ($slug, $gimli) {
+                return $gimli->expandAndGetMetadata($slug);
+        });
 
         // Renders 404 if no metadata available(error/exception at Gimli side)
         if ($slugMetadata === null)
@@ -148,7 +153,9 @@ class PaymentLinkController extends Controller
         }
 
         // Sets api's mode & invokes view()
-        $this->ba->setModeAndDbConnection($slugMetadata['mode']);
+        Tracer::inSpan(['name' => 'payment_pages.hosted.pages.slug.set_mode'], function() use ($slugMetadata) {
+            $this->ba->setModeAndDbConnection($slugMetadata['mode']);
+        });
 
         return $this->view($slugMetadata['id']);
     }

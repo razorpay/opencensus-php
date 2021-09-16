@@ -177,8 +177,14 @@ class Tracing
             'merchant_activation_details',
             'user_fetch_admin',
             'fetch_partner_intent',
-            'credits_fetch_multiple'
+            'credits_fetch_multiple',
 
+            //payment page create
+            'payment_page_create',
+            'payment_page_set_receipt_details',
+            'pages_view',
+            'pages_view_by_slug',
+            'payment_page_view_get',
     ]);
     }
 

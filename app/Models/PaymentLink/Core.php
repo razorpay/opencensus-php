@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\User;
 use RZP\Models\Order;
+use RZP\Trace\Tracer;
 use RZP\Models\Invoice;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment;
@@ -81,41 +82,64 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::PAYMENT_LINK_CREATE_REQUEST, $input);
 
-        $paymentLink = (new Entity)->generateId();
+        $paymentLink = Tracer::inSpan(['name' => 'payment_page.create.generate_id'], function() {
+            return (new Entity)->generateId();
+        });
 
         // Association of merchant must happens before build() call as the same is needed in validations
-        $paymentLink->merchant()->associate($merchant);
+        Tracer::inSpan(['name' => 'payment_page.create.associate_merchant'], function() use ($paymentLink, $merchant) {
+            $paymentLink->merchant()->associate($merchant);
+        });
 
-        $paymentLink->user()->associate($user);
+        Tracer::inSpan(['name' => 'payment_page.create.associate_user'], function() use ($paymentLink, $user) {
+            $paymentLink->user()->associate($user);
+        });
 
         $settings = $input[Entity::SETTINGS] ?? [];
 
         $settings[Entity::VERSION] = Version::V2;
 
-        $paymentLink->build($input);
+        Tracer::inSpan(['name' => 'payment_page.create.build'], function() use ($paymentLink, $input) {
+            $paymentLink->build($input);
+        });
 
-        $this->createAndSetShortUrl($paymentLink, $input[Entity::SLUG] ?? null);
+        Tracer::inSpan(['name' => 'payment_page.create.short_url'], function() use ($paymentLink, $input) {
+            $this->createAndSetShortUrl($paymentLink, $input[Entity::SLUG] ?? null);
+        });
 
         $this->repo->transaction(function() use ($paymentLink, $settings, $input)
         {
-            $this->upsertSettings($paymentLink, $settings);
+            Tracer::inSpan(['name' => 'payment_page.create.upsert_settings'], function() use ($paymentLink, $settings) {
+                $this->upsertSettings($paymentLink, $settings);
+            });
 
-            $this->repo->saveOrFail($paymentLink);
+            Tracer::inSpan(['name' => 'payment_page.create.create_page'], function() use ($paymentLink) {
+                $this->repo->saveOrFail($paymentLink);
+            });
 
-            $this->createPaymentPageItems($input, $paymentLink);
+            Tracer::inSpan(['name' => 'payment_page.create.create_items'], function() use ($input, $paymentLink) {
+                $this->createPaymentPageItems($input, $paymentLink);
+            });
         });
 
-        $this->repo->loadRelations($paymentLink);
-
+        Tracer::inSpan(['name' => 'payment_page.create.load_relations'], function() use ($paymentLink) {
+            $this->repo->loadRelations($paymentLink);
+        });
         $this->trace->info(TraceCode::PAYMENT_LINK_CREATED, $paymentLink->toArrayPublic());
 
-        $this->trackPaymentPageCreatedEvent($paymentLink, $input);
+        Tracer::inSpan(['name' => 'payment_page.create.events'], function() use ($input, $paymentLink) {
+            $this->trackPaymentPageCreatedEvent($paymentLink, $input);
+        });
 
         $this->trace->count(Metric::PAYMENT_PAGE_CREATED_TOTAL, $paymentLink->getMetricDimensions());
 
-        $this->doDedupeAndRiskActions($paymentLink, $merchant);
+        Tracer::inSpan(['name' => 'payment_page.create.dedupe_actions'], function() use ($paymentLink, $merchant) {
+            $this->doDedupeAndRiskActions($paymentLink, $merchant);
+        });
 
-        $this->dispatchAppRiskCheck($paymentLink);
+        Tracer::inSpan(['name' => 'payment_page.create.dispatch.app_risk_check'], function() use ($paymentLink) {
+            $this->dispatchAppRiskCheck($paymentLink);
+        });
 
         return $paymentLink;
     }
@@ -610,9 +634,14 @@ class Core extends Base\Core
     public function setReceiptDetails(Entity $paymentLink, array $input)
     {
         $validator = new Validator($paymentLink);
-        $validator->validateSetInvoiceDetails($input);
 
-        $this->upsertSettings($paymentLink, $input);
+        Tracer::inSpan(['name' => 'payment_page.recipts.create.validate'], function() use ($validator, $input) {
+            $validator->validateSetInvoiceDetails($input);
+        });
+
+        Tracer::inSpan(['name' => 'payment_page.recipts.create.upsert.settings'], function() use ($input, $paymentLink) {
+            $this->upsertSettings($paymentLink, $input);
+        });
 
         $receiptSettings = Settings\Accessor::for($paymentLink, Settings\Module::PAYMENT_LINK)
             ->all();
@@ -1221,10 +1250,14 @@ class Core extends Base\Core
     public function getHostedViewPayload(Entity $paymentLink): array
     {
         // Fetch serialized view data for the view to consume
-        $payload['data'] = (new ViewSerializer($paymentLink))->serializeForHosted();
+        $payload['data'] = Tracer::inSpan(['name' => 'payment_page.hosted.pages.serialize'], function() use ($paymentLink) {
+            return (new ViewSerializer($paymentLink))->serializeForHosted();
+        });
 
         // Append UDF Schema as a JSON string, if defined
-        $payload[Entity::UDF_SCHEMA] = (new UdfSchema($paymentLink))->getSchema();
+        $payload[Entity::UDF_SCHEMA] = Tracer::inSpan(['name' => 'payment_page.hosted.pages.get.schema'], function() use ($paymentLink) {
+            return (new UdfSchema($paymentLink))->getSchema();
+        });
 
         return $payload;
     }
@@ -1570,9 +1603,16 @@ class Core extends Base\Core
 
             $riskCheckInput = $this->getRiskCheckInput($paymentLink);
 
-            $riskCheckOutput = $this->merchantRiskService->validateRiskFactorForMerchantRequest($riskCheckInput);
-
-            $alertInput = $this->validateRiskFactorResponseAndGetAlertInput($riskCheckOutput, $paymentLink);
+            $riskCheckOutput = Tracer::inSpan(
+                ['name' => 'payment_page.create.dedupe_actions.validate.risk_factor.request'],
+                function() use ($riskCheckInput) {
+                return $this->merchantRiskService->validateRiskFactorForMerchantRequest($riskCheckInput);
+            });
+            $alertInput = Tracer::inSpan(
+                ['name' => 'payment_page.create.dedupe_actions.validate.risk_factor.response'],
+                function () use ($riskCheckOutput, $paymentLink) {
+                return $this->validateRiskFactorResponseAndGetAlertInput($riskCheckOutput, $paymentLink);
+            });
 
             if (empty($alertInput) === true)
             {
