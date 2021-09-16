@@ -61,7 +61,8 @@ class Announcement extends Component {
     entries.forEach((entry) => {
       if (entry.isIntersecting && entry.intersectionRatio === 1)
         this.timeoutID = setTimeout(() => {
-          const { title, card_id, tracking } = this.props;
+          const { card_id, tracking } = this.props;
+          const title = this.getTitle();
 
           tracking?.trackEvent(
             window.rzpQ?.merchantActions().success('merchant_dashboard.impression_banner', {
@@ -115,7 +116,8 @@ class Announcement extends Component {
   };
 
   trackOnHover = () => {
-    const { title, card_id, tracking } = this.props;
+    const { card_id, tracking } = this.props;
+    const title = this.getTitle();
     this.setState({
       hovered: true,
     });
