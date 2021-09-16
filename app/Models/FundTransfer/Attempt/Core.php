@@ -81,6 +81,8 @@ class Core extends Base\Core
             if (($fundTransferAttempt->getSourceType() === Type::PAYOUT) and
                 ($fundTransferAttempt->source->makeSyncFtsFundTransfer() === true))
             {
+                $fundTransferAttempt->source->setFta($fundTransferAttempt);
+
                 return;
             }
 

@@ -294,6 +294,9 @@ class Entity extends Base\PublicEntity
     // This flag will be used to decide if FTS fund transfer has to be async call.
     protected $syncFtsFundTransfer = false;
 
+    /** @var FundTransfer\Attempt\Entity $fta */
+    protected $fta = null;
+
     protected $composite = false;
 
     /*
@@ -872,6 +875,11 @@ class Entity extends Base\PublicEntity
         return ($this->syncFtsFundTransfer === true);
     }
 
+    public function getFta()
+    {
+        return $this->fta;
+    }
+
     /**
      * FeeCalculator calls `$entity->getFee()` for all the pricing entity
      *
@@ -1247,6 +1255,11 @@ class Entity extends Base\PublicEntity
     public function setSyncFtsFundTransferFlag($flag)
     {
         $this->syncFtsFundTransfer = $flag;
+    }
+
+    public function setFta (FundTransfer\Attempt\Entity $fta)
+    {
+        $this->fta = $fta;
     }
 
     public function setPayoutLinkId($payoutlinkid)

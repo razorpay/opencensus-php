@@ -313,7 +313,7 @@ class Base extends BaseCore
         {
             $isFts = false;
 
-            $fta = $payout->fundTransferAttempts->first();
+            $fta = $payout->getFta();
 
             // fta can be null in some cases like queued payout of CA, on hold payouts.
             if ($fta !== null)
@@ -361,7 +361,12 @@ class Base extends BaseCore
 
     public function syncFTSFundTransfer(Entity $payout)
     {
-        $fta = $payout->fundTransferAttempts->first();
+        $fta = $payout->getFta();
+
+        if ($fta === null)
+        {
+            return;
+        }
 
         try
         {
@@ -844,7 +849,7 @@ class Base extends BaseCore
         {
             $isFts = false;
 
-            $fta = $payout->fundTransferAttempts->first();
+            $fta = $payout->getFta();
 
             // fta can be null in some cases like queued payout of CA, on hold payouts.
             if ($fta !== null)
