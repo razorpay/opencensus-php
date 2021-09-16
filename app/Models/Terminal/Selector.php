@@ -732,7 +732,9 @@ class Selector extends Base\Core
      */
     protected function isVerboseLogEnabled(): bool
     {
-        try
+        return false;
+        //commenting this for IPL
+        /*try
         {
             $verbose = (bool) Cache::get(ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE);
         }
@@ -743,7 +745,8 @@ class Selector extends Base\Core
             $verbose = false;
         }
 
-        return $verbose;
+        return $verbose;*/
+
     }
 
     protected function getRulesForSorting(Base\PublicCollection $rules): array

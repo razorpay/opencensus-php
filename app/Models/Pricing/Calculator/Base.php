@@ -549,6 +549,9 @@ abstract class Base extends BaseModel\Core
      */
     protected function isVerboseLogEnabled(): bool
     {
+        return false;
+        //commenting this for IPL
+        /*
         try
         {
             $verbose = (bool) Cache::get(ConfigKey::PRICING_RULE_SELECTION_LOG_VERBOSE);
@@ -561,6 +564,7 @@ abstract class Base extends BaseModel\Core
         }
 
         return $verbose;
+        */
     }
 
     protected function createFeeBreakup($name, $percent, $amount, $pricingRule = null)
