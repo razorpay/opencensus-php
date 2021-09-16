@@ -33,7 +33,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function validateRefundCurrencyEqualsReconCurrency(array $row) : bool
     {
-        $expectedCurrency = $this->payment->getCurrency();
+        $expectedCurrency = $this->payment->getGatewayCurrency();
 
         $reconCurrency = $row[ReconciliationFields::PROCESSING_CURRENCY] ?? null;
 
