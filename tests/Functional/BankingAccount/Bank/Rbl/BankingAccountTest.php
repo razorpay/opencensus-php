@@ -530,6 +530,17 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testCheckWhitelistPincodeServiceableByIcic()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->startTest();
+    }
+
     public function testCheckServiceableByRBLFromAdminDashboard()
     {
         $this->app['config']->set('applications.banking_account.mock', true);

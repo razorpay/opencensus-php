@@ -725,9 +725,22 @@ class Service extends Base\Service
         return multidim_array_unique($admins, Admin\Entity::ID);
     }
 
-    public function CheckServiceableByRBL($pinCode): array
+    public function CheckServiceableByRBL($pinCode, bool $includeIcici = false): array
     {
         $errorMessage = "PINCODE is not valid";
+
+        $isAdmin = $this->app['basicauth']->isAdminAuth();
+
+        if ($includeIcici === true and $isAdmin === false)
+        {
+            $isWhiteListed = (new ServiceablePincodes())->checkIfPincodeIsWhitelisted($pinCode);
+
+            if ($isWhiteListed === true)
+            {
+                return ['serviceability' => true,
+                        'errorMessage'   => null];
+            }
+        }
 
         try
         {
@@ -844,7 +857,7 @@ class Service extends Base\Service
         {
             $pincode = $input[Entity::PINCODE];
 
-            $serviceability = $this->CheckServiceableByRBL($pincode);
+            $serviceability = $this->CheckServiceableByRBL($pincode, false);
         }
 
         $businessTypeSupported = true;

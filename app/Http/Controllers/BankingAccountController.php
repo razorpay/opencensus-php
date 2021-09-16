@@ -175,7 +175,7 @@ class BankingAccountController extends Controller
 
     public function checkPincodeServiceabilityByRBL($pincode)
     {
-        $data =  $this->service()->CheckServiceableByRBL($pincode);
+        $data =  $this->service()->CheckServiceableByRBL($pincode, true);
 
         return ApiResponse::json($data);
     }

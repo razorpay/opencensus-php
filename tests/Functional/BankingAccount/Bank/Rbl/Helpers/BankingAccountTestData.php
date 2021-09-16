@@ -280,6 +280,19 @@ return [
         ],
     ],
 
+    'testCheckWhitelistPincodeServiceableByIcic' => [
+        'request'  => [
+            'url'     => '/banking_accounts/serviceability/rbl/pincode/421004',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                "serviceability" => true,
+                "errorMessage" => null
+            ],
+        ],
+    ],
+
     'testCheckServiceableByRBLFromAdminDashboard' => [
         'request'  => [
             'url'     => '/banking_accounts_admin/serviceability/rbl/pincode/221002',
