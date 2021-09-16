@@ -13,13 +13,17 @@
 @endif
 
 @if ($newAuthFlow === true)
+  @include('partials/new-auth')
+@else
+  @include('partials/common')
+@endif
+
+@if ($newAuthRoute === 'signup')
   <title>Create your Razorpay Account - Razorpay</title>
   <meta name="description" content="Welcome to Razorpay! Create your free Razorpay account today. Sign up for free to join the millions of users that trust us with their payments, banking & working capital." />
-  @include('partials/new-auth')
 @else
   <title>Razorpay Dashboard</title>
   <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
-  @include('partials/common')
 @endif
 
 <script>

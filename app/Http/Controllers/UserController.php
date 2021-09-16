@@ -90,10 +90,14 @@ class UserController extends Controller
         $data['rootPath']       = self::ROOT_PATH;
 
         $data['newAuthFlow'] = false;
+        $data['newAuthRoute'] = 'signup';
 
         if (empty($currentRouteName) === false and ($currentRouteName === "signup" || $currentRouteName === "signin"))
         {
-            $data['newAuthFlow'] = true; // new pre-signup flow
+            $data['newAuthFlow'] = true; // new signup/signin flow
+            if ($currentRouteName === 'signin') {
+                $data['newAuthRoute'] = 'signin'; // new signin flow
+            }
         }
 
         // $data is used to run diferent pieces of JS
