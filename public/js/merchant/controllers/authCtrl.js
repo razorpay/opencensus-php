@@ -1876,6 +1876,10 @@ app
         fireDLInitiatedEvents('signup.create_account', { mode: $scope.eventsMode });
       };
       $scope.goToSigninLayout = function () {
+        if (window.isNewSigninEnabled && $scope.currentService !== 'X') {
+          // doing reload to trigger the Google Optimize experiment
+          window.location.href = '/signin';
+        }
         $scope.goToSignupStep(0); // reset signup step
         $scope.goToLoginStep(1); // reset login step
         $scope.rightLayout = true;

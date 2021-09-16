@@ -173,6 +173,16 @@ _dcs.account = '9421167';
     @if(env('APP_ENV') === 'production')
         @include('partials/sentry')
     @endif
+    <script>
+      if (window.isNewSigninEnabled) {
+        var newUrl = location.href.replace('/#/access/signin', '');
+        var parserAnchor = document.createElement('a');
+        parserAnchor.href = newUrl;
+        if (location.hash.includes('#/access/signin') || location.hash === '') {
+          location.href = "/signin" + parserAnchor.search;
+        }
+      }
+    </script>
     <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
   @endif
 
