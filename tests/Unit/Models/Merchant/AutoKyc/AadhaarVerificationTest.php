@@ -16,7 +16,7 @@ class AadhaarVerificationTest extends TestCase
             ->setMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
-        $mockMC->expects($this->exactly(2))
+        $mockMC->expects($this->any())
             ->method('isRazorxExperimentEnable')
             ->willReturn(true);
 
@@ -116,7 +116,7 @@ class AadhaarVerificationTest extends TestCase
 
     public function testAutoKycForProprietorshipAadhaarNotLinked()
     {
-        $fixtures = $this->createAndFetchFixtures(BusinessType::NOT_YET_REGISTERED, [], [
+        $fixtures = $this->createAndFetchFixtures(BusinessType::PROPRIETORSHIP, [], [
             "aadhaar_linked"        => 0,
             "aadhaar_esign_status"  => null
         ]);
@@ -131,7 +131,7 @@ class AadhaarVerificationTest extends TestCase
 
     public function testAutoKycForProprietorshipAadhaarLinkedAndNotVerified()
     {
-        $fixtures = $this->createAndFetchFixtures(BusinessType::NOT_YET_REGISTERED, [], [
+        $fixtures = $this->createAndFetchFixtures(BusinessType::PROPRIETORSHIP, [], [
             "aadhaar_linked"        => 1,
             "aadhaar_esign_status"  => null
         ]);
@@ -146,7 +146,7 @@ class AadhaarVerificationTest extends TestCase
 
     public function testAutoKycForProprietorshipAadhaarLinkedAndXmlNotVerified()
     {
-        $fixtures = $this->createAndFetchFixtures(BusinessType::NOT_YET_REGISTERED, [], [
+        $fixtures = $this->createAndFetchFixtures(BusinessType::PROPRIETORSHIP, [], [
             "aadhaar_linked"        => 1,
             "aadhaar_esign_status"  => 'verified',
             "aadhaar_verification_with_pan_status"  => null
@@ -162,11 +162,60 @@ class AadhaarVerificationTest extends TestCase
 
     public function testAutoKycForProprietorshipAadhaarLinkedAndVerified()
     {
-        $fixtures = $this->createAndFetchFixtures(BusinessType::NOT_YET_REGISTERED, [], [
+        $fixtures = $this->createAndFetchFixtures(BusinessType::PROPRIETORSHIP, [], [
             "aadhaar_linked"        => 1,
             "aadhaar_esign_status"  => 'verified',
             "aadhaar_verification_with_pan_status"  => 'verified'
         ]);
+        $mocks = $this->createAndFetchMocks();
+        $core = new DetailCore();
+        $core->setMerchantCoreForRazorx($mocks['merchantCoreMock']);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone = $core->isAutoKycDone($merchantDetail);
+        $this->assertTrue($isAutoKycDone);
+    }
+
+    /*
+     * Scenario:
+     *  - proprietorship business type
+     *  - aadhaar is not verified but poa is verified
+     */
+    public function testAutoKycForProprietorshipAadhaarNotVerifiedPoaVerified()
+    {
+        $fixtures = $this->createAndFetchFixtures(
+            BusinessType::PROPRIETORSHIP,
+            [
+                "poa_verification_status"               => 'verified'
+            ],
+            [
+                "aadhaar_linked"        => 0,
+                "aadhaar_esign_status"  => null,
+                "aadhaar_verification_with_pan_status"  => null,
+            ]);
+
+        $mocks = $this->createAndFetchMocks();
+        $core = new DetailCore();
+        $core->setMerchantCoreForRazorx($mocks['merchantCoreMock']);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone = $core->isAutoKycDone($merchantDetail);
+        $this->assertTrue($isAutoKycDone);
+    }
+
+    public function testAutoKycForUnregAadhaarNotVerifiedPoaVerified()
+    {
+        $fixtures = $this->createAndFetchFixtures(
+            BusinessType::NOT_YET_REGISTERED,
+            [
+            "poa_verification_status"               => 'verified'
+            ],
+            [
+            "aadhaar_linked"        => 0,
+            "aadhaar_esign_status"  => null,
+            "aadhaar_verification_with_pan_status"  => null,
+            ]);
+
         $mocks = $this->createAndFetchMocks();
         $core = new DetailCore();
         $core->setMerchantCoreForRazorx($mocks['merchantCoreMock']);

@@ -206,6 +206,8 @@ final class RazorxTreatment
     // experiment to enable gst in doc verification through OCR;
     const GST_IN_DOC_VERIFICATION = 'gst_in_doc_verification';
 
+    const POA_VERIFICATION_AUTO_KYC = 'poa_verification_auto_kyc';
+
     // experiment to skip poa documents if aadhaar esign is done
     const SKIP_POA_DOCUMENT_FUNCTIONALITY = "SKIP_POA_DOCUMENT_FUNCTIONALITY";
 

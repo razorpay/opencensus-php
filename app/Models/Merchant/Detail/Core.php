@@ -3191,6 +3191,19 @@ class Core extends Base\Core
 
     protected function verifyMerchantDetailCondition(Entity $merchantDetails, string $key, array $in)
     {
+        $isAadhaarEsignRequired = $this->isAadhaarEsignVerificationRequired($merchantDetails);
+
+        if($isAadhaarEsignRequired === true and $key === DetailEntity::POA_VERIFICATION_STATUS)
+        {
+            $isExperimentEnabled = $this->mcore->isRazorxExperimentEnable(
+                $merchantDetails->getMerchantId(), RazorxTreatment::POA_VERIFICATION_AUTO_KYC);
+
+            if($isExperimentEnabled === false)
+            {
+                return false;
+            }
+        }
+
         return in_array($merchantDetails->getAttribute($key), $in, true);
     }
 
@@ -4410,7 +4423,7 @@ class Core extends Base\Core
         $gstDetails = [];
 
         $merchantDetail = $this->merchant->merchantDetail;
-        
+
         //if experiment is enabled then only probe for gst details
         $isGetGstDetailsRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
             $this->merchant->getId(),
