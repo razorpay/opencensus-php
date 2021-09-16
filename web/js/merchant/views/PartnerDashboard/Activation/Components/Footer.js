@@ -23,6 +23,17 @@ const SubmitL1Form = ({ canSubmitL1Form, submitL1 }) => (
   </AsyncBtn.Primary>
 );
 
+const SubmitClarifications = ({ canSubmitNeedsClarification, submitClarifications }) => (
+  <AsyncBtn.Primary
+    disabled={!canSubmitNeedsClarification()}
+    onClick={submitClarifications}
+    pendingState="Submitting..."
+    name="Submit Clarifications"
+  >
+    Submit Clarifications
+  </AsyncBtn.Primary>
+);
+
 const Footer = ({
   isSaving,
   defaultMsg,
@@ -31,8 +42,19 @@ const Footer = ({
   canSubmitL1Form,
   footerButtons,
   saveCurrentTab,
+  canSubmitNeedsClarification,
+  submitClarifications,
 }) => {
   const buttons = [];
+
+  if (footerButtons.includes(FOOTER_BUTTONS.SUBMIT_CLARIFICATIONS)) {
+    buttons.push(
+      <SubmitClarifications
+        canSubmitNeedsClarification={canSubmitNeedsClarification}
+        submitClarifications={submitClarifications}
+      />,
+    );
+  }
 
   if (footerButtons.includes(FOOTER_BUTTONS.SAVE)) {
     buttons.push(<Save saveCurrentTab={saveCurrentTab} key="0" />);

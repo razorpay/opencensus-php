@@ -10,12 +10,13 @@ import { Tabs, Tab } from 'common/components/Tabs';
 import { FullPageLoader } from 'common/components/Loader';
 import ActivationModal from './ActivationModal';
 import SaveAndExitModal from './SaveAndExitModal';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ContactDetails from './ContactDetails';
 import BusinessDetails from './BusinessDetails';
 import useActivation from '../../Hooks/useActivation';
 import { useActivationFormState } from '../../Hooks/store';
 import { SnackbarProvider } from 'common/components/SnackBar/SnackbarContext';
+import { withRouter } from 'react-router-dom';
 
 const RenderMwebActivationForm = (props) => {
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
@@ -28,9 +29,21 @@ const RenderMwebActivationForm = (props) => {
   );
   const [activeTabId, setActiveTabId] = useState('contact_details');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('');
+  const [modalType] = useState('');
 
-  const { locked: isFormLocked, submitted: isFormSubmitted } = data?.partner_activation || {};
+  const { submitted: isFormSubmitted } = data?.partner_activation || {};
+  const isFormLocked =
+    data?.partner_activation?.isFormLocked ||
+    data?.partner_activation?.activation_status === 'needs_clarification';
+
+  useEffect(() => {
+    if (data?.partner_activation?.activation_status === 'needs_clarification') {
+      // since the route is modal route, it goes into infinite loops as tries to render the background route as well.
+      if (props.location.pathname !== '/partners/activation') {
+        props.history.push('/partners/activation');
+      }
+    }
+  }, [data, props.location.pathname, props.history]);
 
   const StyledFooter = styled(View)`
     box-sizing: border-box;
@@ -52,7 +65,7 @@ const RenderMwebActivationForm = (props) => {
   `;
 
   const onBack = () => {
-    history.push('/partners');
+    props.history.push('/partners');
   };
 
   const getTabs = () => {
@@ -152,7 +165,7 @@ const RenderMwebActivationForm = (props) => {
                   if (!props.submitted) {
                     setIsSaveAndExitModalOpen(true);
                   } else {
-                    history.push('/dashboard');
+                    props.history.push('/dashboard');
                   }
                 }}
                 size="xsmall"
@@ -206,4 +219,4 @@ const RenderMwebActivationForm = (props) => {
   );
 };
 
-export default RenderMwebActivationForm;
+export default withRouter(RenderMwebActivationForm);

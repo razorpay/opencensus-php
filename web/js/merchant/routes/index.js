@@ -27,7 +27,7 @@ const PaymentLinkDetails = lazy(() =>
 
 const PaymentLinkCreate = lazy(() =>
   import(
-    /* webpackChunkName: "PaymentLinkCreate" */ 'merchant/views/PaymentLinks/PaymentLinks/New.js'
+    /* webpackChunkName: "PaymentLinkCreate" */ 'merchant/views/PaymentLinks/PaymentLinks/New'
   ),
 );
 
@@ -254,6 +254,18 @@ const GenerateTnC = lazy(() =>
   ),
 );
 
+const PartnerActivationForm = lazy(() =>
+  import(
+    /* webpackChunkName: "PartnerActivationForm" */ 'merchant/views/PartnerDashboard/Activation'
+  ),
+);
+
+const PartnerActivationFormMweb = lazy(() =>
+  import(
+    /* webpackChunkName: "PartnerActivationMweb" */ 'merchant/views/PartnerDashboard/Activation/Components/mweb'
+  ),
+);
+
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
  * */
@@ -451,6 +463,10 @@ const entityModalsMap = {
   '/route/transfers/direct_transfer': {
     component: DirectTransfers,
   },
+  '/partners/activation': {
+    component: PartnerActivationForm,
+    additionalCondition: (user) => user.isIndependentPartnerKYCEnabled,
+  },
 };
 
 export const supportHashMapping = {
@@ -513,6 +529,10 @@ const fullPageViewsMap = {
   '/tncform': {
     component: GenerateTnC,
     additionalCondition: (user) => user.canGenerateTnCPage,
+  },
+  '/partners/onboarding': {
+    component: PartnerActivationFormMweb,
+    additionalCondition: (user) => user.isIndependentPartnerKYCEnabled,
   },
 };
 

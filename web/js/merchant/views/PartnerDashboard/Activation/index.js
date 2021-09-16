@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { connect } from 'react-redux';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { merchantFetch } from 'merchant/utils/ajax';
 import ContactDetails from './Components/ContactDetails';
@@ -15,9 +16,20 @@ import {
   validateCompanyAB,
   validatePersonalPAN,
 } from 'common/utils/validators';
-import { isValidGSTIN } from 'common/utils/rzp-utils';
+import { isValidGSTIN, checkIsObjectEmpty, classList } from 'common/utils/rzp-utils';
+import mainFormTabsContent from 'merchant/components/Activation/ActivationFormMap';
+import { getNeedsClarificationTabsData } from './Components/NeedsClarificationsMap';
+import useActivation from './Hooks/useActivation';
+import NeedsClarification from './Components/NeedsClarifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { showKYCStatusModal } from 'merchant/reducers/home';
+import Button from 'common/new-ui/Button';
+import NoticeMessage from './Components/NoticeMessage';
+import { Modal, ModalContent, ModalMask } from 'common/new-ui/Modal';
+import { addDropShield, removeDropShield } from 'merchant/components/File/Upload';
+import { withRouter } from 'react-router-dom';
 
-const Activation = () => {
+const Activation = (props) => {
   const [activeTab, setActiveTab] = useState(0);
   const [contactDetails, setContactDetails] = useState({});
   const [businessDetails, setBusinessDetails] = useState({});
@@ -30,6 +42,16 @@ const Activation = () => {
   const [isContactDetailsValid, setIsContactDetailsValid] = useState(false);
   const [isBusinessDetailsValid, setIsBusinessDetailsValid] = useState(false);
   const [canSubmitFormAPI, setCanSubmitFormAPI] = useState(false);
+  const [NCFields, setNCFields] = useState();
+  const { data } = useActivation();
+  const [commentlist, setCommentlist] = useState([]);
+  const [tabs, setTabs] = useState(['Contact Details', 'Business Details']);
+  const currentTabsValidity = useMemo(() => {
+    return [isContactDetailsValid, isBusinessDetailsValid];
+  }, [isContactDetailsValid, isBusinessDetailsValid]);
+  const [ncFormResponse, setNCFormResponse] = useState({
+    bank_proof: 'cancelled_cheque',
+  });
 
   const handleTabChange = ({ target }) => {
     const currentTab = Number(target.dataset.index);
@@ -56,45 +78,68 @@ const Activation = () => {
     return response;
   };
 
-  const postPartnerActivation = (data) =>
-    merchantFetch({ url: 'partner/activation', method: 'POST', data, mode: 'live' });
+  const postPartnerActivation = (postData) =>
+    merchantFetch({ url: 'partner/activation', method: 'POST', data: postData, mode: 'live' });
 
-  const updateActivationState = (data) => {
+  const updateActivationState = (activationData) => {
     setContactDetails({
-      contact_name: data.contact_name,
-      contact_email: data.contact_email,
-      contact_mobile: data.contact_mobile,
+      contact_name: activationData.contact_name,
+      contact_email: activationData.contact_email,
+      contact_mobile: activationData.contact_mobile,
     });
     setBusinessDetails({
-      business_type: data.business_type,
-      contact_name: data.contact_name,
-      business_name: data.business_name,
-      company_pan: data.company_pan,
-      promoter_pan: data.promoter_pan,
-      promoter_pan_name: data.promoter_pan_name,
-      bank_account_number: data.bank_account_number,
-      bank_account_name: data.bank_account_name,
-      bank_branch_ifsc: data.bank_branch_ifsc,
+      business_type: activationData.business_type,
+      contact_name: activationData.contact_name,
+      business_name: activationData.business_name,
+      company_pan: activationData.company_pan,
+      promoter_pan: activationData.promoter_pan,
+      promoter_pan_name: activationData.promoter_pan_name,
+      bank_account_number: activationData.bank_account_number,
+      bank_account_name: activationData.bank_account_name,
+      bank_branch_ifsc: activationData.bank_branch_ifsc,
       // has_gstin is radio button with foll. options
       // 0th index have gstin
       // 1st index - doesn't have gstin
-      has_gstin: data.gstin && data.gstin === '' ? '0' : '1',
-      gstin: data.gstin,
+      has_gstin: activationData.gstin && activationData.gstin !== '' ? '0' : '1',
+      gstin: activationData.gstin,
     });
-    setIsFormLocked(data.partner_activation?.locked);
-    setIsFormSubmitted(data.partner_activation?.submitted);
-    setCanSubmitFormAPI(data.partner_activation?.can_submit);
+    setIsFormLocked(
+      activationData.partner_activation?.locked ||
+        activationData.partner_activation?.activation_status === 'needs_clarification',
+    );
+    setIsFormSubmitted(activationData.partner_activation?.submitted);
+    setCanSubmitFormAPI(activationData.partner_activation?.can_submit);
   };
 
   useEffect(() => {
     async function fetchData() {
-      const data = await fetchPartnerActivationDetails();
-      if (data.success) {
-        updateActivationState(data.data);
+      const activationData = await fetchPartnerActivationDetails();
+      if (activationData.success) {
+        updateActivationState(activationData.data);
+
+        if (activationData.data.partner_activation?.activation_status === 'needs_clarification') {
+          const clarification_reasons = await merchantFetch(
+            'merchant/activation/clarification_reasons',
+          );
+          const clarificationReasons = clarification_reasons && clarification_reasons.data;
+          const ndcFields =
+            getNeedsClarificationTabsData(
+              mainFormTabsContent,
+              activationData.data.partner_activation,
+              clarificationReasons,
+            ) || [];
+          setNCFields(ndcFields);
+          setTabs((currentTabs) => [...currentTabs, 'Needs Clarification']);
+          setActiveTab(2);
+        }
       }
       setLoading(false);
     }
     fetchData();
+    addDropShield('.Activation--wizard');
+    return () => {
+      removeDropShield('.Activation--wizard');
+    };
   }, []);
 
   useEffect(() => {
@@ -160,6 +205,11 @@ const Activation = () => {
     const isLastTab = activeTab === 1;
     // const isBusinessDetailsStep = activeTab === 1;
 
+    if (activeTab === 2) {
+      footerButtons.push(FOOTER_BUTTONS.SUBMIT_CLARIFICATIONS);
+      return footerButtons;
+    }
+
     if (isFormLocked || isFormSubmitted) {
       return [];
     }
@@ -182,7 +232,7 @@ const Activation = () => {
         contact_email: formState.contact_email,
         contact_mobile: formState.contact_mobile,
       };
-    } else {
+    } else if (activeTab === 1) {
       reqData = {
         business_type: formState.business_type,
         contact_name: formState.contact_name,
@@ -193,6 +243,7 @@ const Activation = () => {
         bank_account_number: formState.bank_account_number,
         bank_branch_ifsc: formState.bank_branch_ifsc,
         bank_account_name: formState.bank_account_name,
+        gstin: formState.gstin,
       };
     }
     return reqData;
@@ -201,9 +252,9 @@ const Activation = () => {
   const saveCurrentTab = async () => {
     setIsSaving(true);
     const reqData = getRequestData();
-    const data = await postPartnerActivation(reqData);
-    if (data.success) {
-      updateActivationState(data.data);
+    const activationData = await postPartnerActivation(reqData);
+    if (activationData.success) {
+      updateActivationState(activationData.data);
     }
     setIsSaving(false);
   };
@@ -218,54 +269,223 @@ const Activation = () => {
     reqData.submit = 1;
     await saveCurrentTab();
     setIsSaving(true);
-    const data = await merchantFetch({
+    const activationData = await merchantFetch({
       url: 'partner/activation',
       method: 'POST',
       data: reqData,
       mode: 'live',
     });
-    if (data.success) {
-      updateActivationState(data.data);
+    if (activationData.success) {
+      updateActivationState(activationData.data);
     }
     setIsSaving(false);
   };
 
+  const isOnKYCTab = () => {
+    return activeTab === 2;
+  };
+
+  const hasFilledClarificationDetails = () => {
+    if (isOnKYCTab()) {
+      const dynamicFieldName = {
+        bank_proof_doc: () => {
+          return ncFormResponse.bank_proof;
+        },
+      };
+      const hasFilledEverything = NCFields.every((field) => {
+        let fieldName = field.name || field?._name;
+        if (dynamicFieldName[fieldName]) {
+          fieldName = dynamicFieldName[fieldName]();
+        }
+
+        return Boolean(
+          ncFormResponse[fieldName] ||
+            (commentlist.hasOwnProperty(fieldName) && commentlist[fieldName] !== ''),
+        );
+      });
+
+      return hasFilledEverything;
+    }
+    return false;
+  };
+
+  const submitClarifications = async () => {
+    const reqData = {};
+
+    if (hasFilledClarificationDetails()) {
+      const fieldNames = NCFields.map((field) => field.name);
+      fieldNames.forEach((fieldName) => {
+        if (ncFormResponse[fieldName]) {
+          reqData[fieldName] = ncFormResponse[fieldName];
+        }
+      });
+    }
+
+    if (!checkIsObjectEmpty(commentlist)) {
+      reqData.kyc_clarification_reasons = {
+        clarification_reasons: {},
+      };
+    }
+
+    for (const prop in commentlist) {
+      if (commentlist.hasOwnProperty(prop) && commentlist[prop] !== '') {
+        reqData.kyc_clarification_reasons.clarification_reasons[prop] = [
+          {
+            reason_type: 'custom',
+            reason_code: commentlist[prop],
+          },
+        ];
+      }
+    }
+
+    // State will contain file fields which have already been uploaded
+    // Delete file field from request data
+    Object.keys(reqData).forEach((key) => {
+      if (reqData[key] === 'fakepath') {
+        delete reqData[key];
+      }
+    });
+
+    try {
+      setIsSaving(true);
+      // save updated fields
+      await postPartnerActivation(reqData);
+
+      // submit the form
+      const response = await postPartnerActivation({
+        submit: '1',
+      });
+
+      if (response.success) {
+        props.showKYCStatusModal({
+          modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
+          activationDuration: '3 days',
+        });
+      }
+      return response;
+    } catch (err) {
+      if (err.errors && err.errors.length && err.errors[0]) {
+        props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      }
+      return err;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const prevTab = async () => {
+    await saveCurrentTab();
+    setActiveTab((tab) => tab - 1);
+  };
+
   return (
-    <div className="Activation--wizard Wizard">
-      <ModalAsideNav
-        title="Partner KYC Form"
-        description="Complete and submit the form to accept payments."
-        tabs={['Contact Details', 'Business Details']}
-        tabClickHandler={handleTabChange}
-        tabsValidity={[isContactDetailsValid, isBusinessDetailsValid]}
-        activeTab={activeTab}
-      />
-      <main>
-        {loading ? (
-          <span className="Loader" />
-        ) : (
-          <div>
-            <RenderActivationFrom
-              activeTab={activeTab}
-              contactDetails={contactDetails}
-              setFormState={setFormState}
-              formState={formState}
-              businessDetails={businessDetails}
-              onFormChange={onFormChange}
-              isFormLocked={isFormLocked}
-            />
-          </div>
-        )}
-      </main>
-      <Footer
-        isSaving={isSaving}
-        footerButtons={getFooterButtons()}
-        canSubmitL1Form={canSubmitL1Form}
-        submitL1={submitForm}
-        next={next}
-        saveCurrentTab={saveCurrentTab}
-      />
-    </div>
+    <ModalMask>
+      <div>
+        <Modal
+          class="animate-down Activation--wizard"
+          onClose={() => {
+            props.history.push('/partners');
+          }}
+          onCloseCB={() => {}}
+        >
+          <ModalContent>
+            <div className="Activation--wizard Wizard">
+              <ModalAsideNav
+                title="Partner KYC Form"
+                description={
+                  !isFormSubmitted && (
+                    <p>Complete and submit the form to start getting commissions.</p>
+                  )
+                }
+                tabs={tabs}
+                tabClickHandler={handleTabChange}
+                tabsValidity={currentTabsValidity}
+                activeTab={activeTab}
+              />
+              <main>
+                {loading ? (
+                  <span className="Loader" />
+                ) : (
+                  <div>
+                    <main-title class="main-title">
+                      {activeTab != 0 && (
+                        <Button
+                          class="device--mobile btn--back"
+                          iconBefore="arrow-back"
+                          onClick={prevTab}
+                        />
+                      )}
+                      <span
+                        className={classList(
+                          'device--mobile main-title-icon',
+                          currentTabsValidity[activeTab] && 'text-success ',
+                        )}
+                      >
+                        <i
+                          className={classList(
+                            'i-check',
+                            currentTabsValidity[activeTab] && 'drishy',
+                          )}
+                        />
+                        {tabs[activeTab]}
+                      </span>
+
+                      <span className="device--desktop">
+                        {tabs[activeTab]}
+                        {tabs[activeTab] === 'Documents Verification' && (
+                          <div className="onboarding-tab-subtitle">
+                            {isUnregisteredBusiness
+                              ? ''
+                              : 'You can upload JPG/PNG of max. size 4MB or PDF of max. size 2 MB'}
+                          </div>
+                        )}
+                      </span>
+                    </main-title>
+                    <NoticeMessage
+                      isFormLocked={isFormLocked}
+                      isFormSubmitted={isFormSubmitted}
+                      activeTab={activeTab}
+                      activationStatus={data?.partner_activation?.activation_status}
+                      isOnKYCTab={isOnKYCTab}
+                    />
+                    {
+                      <RenderActivationFrom
+                        activeTab={activeTab}
+                        contactDetails={contactDetails}
+                        setFormState={setFormState}
+                        formState={formState}
+                        businessDetails={businessDetails}
+                        onFormChange={onFormChange}
+                        isFormLocked={isFormLocked}
+                        data={data}
+                        NCFields={NCFields}
+                        commentlist={commentlist}
+                        setCommentlist={setCommentlist}
+                        ncFormResponse={ncFormResponse}
+                        setNCFormResponse={setNCFormResponse}
+                      />
+                    }
+                  </div>
+                )}
+              </main>
+              <Footer
+                isSaving={isSaving}
+                footerButtons={getFooterButtons()}
+                canSubmitL1Form={canSubmitL1Form}
+                submitL1={submitForm}
+                next={next}
+                saveCurrentTab={saveCurrentTab}
+                canSubmitNeedsClarification={hasFilledClarificationDetails}
+                submitClarifications={submitClarifications}
+              />
+            </div>
+          </ModalContent>
+        </Modal>
+      </div>
+    </ModalMask>
   );
 };
 
@@ -275,9 +495,11 @@ const RenderActivationFrom = (props) => {
       return <ContactDetails contactDetails={props.contactDetails} {...props} />;
     case 1:
       return <BusinessDetails {...props} />;
+    case 2:
+      return <NeedsClarification {...props} />;
     default:
       return <ContactDetails contactDetails={props.contactDetails} {...props} />;
   }
 };
 
-export default Activation;
+export default connect(null, { showNotification, showKYCStatusModal })(withRouter(Activation));

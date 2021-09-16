@@ -2183,7 +2183,7 @@ export default class ActivationWizard extends React.Component {
   }
 }
 
-function defaultFieldProps(f) {
+export function defaultFieldProps(f) {
   const self = this;
 
   if (Array.isArray(f)) {
@@ -2213,7 +2213,7 @@ function defaultFieldProps(f) {
   }
 }
 
-function ActivationField(field) {
+export function ActivationField(field) {
   const {
     _cmp: Component,
     _name,

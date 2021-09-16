@@ -176,7 +176,12 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted }) => {
               <BusinessType
                 value={formikProps.values.business_type}
                 errorText={formikProps.touched.business_type && formikProps.errors.business_type}
-                onChange={(value) => setCurrentBusinessType(Number(value))}
+                onChange={(value) => {
+                  setCurrentBusinessType(Number(value));
+                  formikProps.setFieldTouched('business_type');
+                  formikProps.setFieldValue('business_type', value);
+                  setIsBlurCalled(true);
+                }}
                 disabled={isFormLocked}
               />
               {showUnregisteredText()}
