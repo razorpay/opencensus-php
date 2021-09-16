@@ -1,4 +1,3 @@
-/* eslint-disable */
 import ajax from 'merchant/utils/ajax';
 import QueryString from 'query-string';
 import { filterBy, getURLQueryParams } from 'common/utils/rzp-utils';
