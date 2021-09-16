@@ -1476,24 +1476,24 @@ class Entity extends Base\PublicEntity
                     $tsTerminalSecret = $response["terminal"]["secrets"][Entity::GATEWAY_SECURE_SECRET];
                     $tsTerminalSecret2 = $response["terminal"]["secrets"][Entity::GATEWAY_SECURE_SECRET2];
 
-                    if ($apiTerminalPassword !== $tsTerminalPassword)
+                    if ((empty($apiTerminalPassword) === false) and ($apiTerminalPassword !== $tsTerminalPassword))
                     {
-                        $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_terminal_password"]);
+                        $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_terminal_password", "id" => $terminalId]);
                     }
 
-                    if ($apiTerminalPassword2 !== $tsTerminalPassword2)
+                    if ((empty($apiTerminalPassword2) === false) and ($apiTerminalPassword2 !== $tsTerminalPassword2))
                     {
-                        $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_terminal_password2"]);
+                        $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_terminal_password2", "id" => $terminalId]);
                     }
 
-                    if ($apiTerminalSecret !== $tsTerminalSecret)
+                    if ((empty($apiTerminalSecret) === false) and ($apiTerminalSecret !== $tsTerminalSecret))
                     {
-                        $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_secure_secret"]);
+                        $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_secure_secret", "id" => $terminalId]);
                     }
 
-                    if ($apiTerminalSecret2 !== $tsTerminalSecret2)
+                    if ((empty($apiTerminalSecret2) === false) and ($apiTerminalSecret2 !== $tsTerminalSecret2))
                     {
-                        $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_secure_secret2"]);
+                        $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_secure_secret2", "id" => $terminalId]);
                     }
 
                     $terminal[self::GATEWAY_TERMINAL_PASSWORD] = $tsTerminalPassword;
