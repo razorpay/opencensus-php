@@ -278,7 +278,7 @@ class Base
             'account_number'      => $ba->getAccountNumber(),
             'account_type'        => $ba->getAccountType() !== null ? $ba->getAccountType() : 'current',
             'ifsc_code'           => $ba->getIfscCode(),
-            'beneficiary_name'    => $ba->getBeneficiaryName(),
+            'beneficiary_name'    => trim($ba->getBeneficiaryName()),
             'beneficiary_address' => $ba->getBeneficiaryAddress1(),
             'beneficiary_city'    => $ba->getBeneficiaryCity(),
             'beneficiary_state'   => $ba->getBeneficiaryState(),
