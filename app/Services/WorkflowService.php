@@ -155,6 +155,7 @@ class WorkflowService
         $this->trace->count(self::WORKFLOW_SERVICE_REQUEST_SUCCESS);
 
         $this->trace->info(TraceCode::WORKFLOW_SERVICE_RESPONSE_DETAILS, [
+            'path'      => $path,
             'status'    => $res->status_code,
             'content'   => $res->body
         ]);
