@@ -105,7 +105,7 @@ class IciciGatewayTest extends TestCase
 
         $zipArchive->close();
 
-        $fileName = 'MMS-CREATE-ICIC-ICIC401790-{$date}-{$count}';
+        $fileName = 'MMS-CREATE-ICIC-ICIC406434-{$date}-{$count}';
 
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
@@ -294,7 +294,7 @@ class IciciGatewayTest extends TestCase
 
         Mail::assertQueued(NachMail::class, function ($mail)
         {
-            $fileName = 'ACH-DR-ICIC-ICIC401790-{$date}-RZ0001-INP.txt';
+            $fileName = 'ACH-DR-ICIC-ICIC406434-{$date}-RZ0001-INP.txt';
 
             $date = Carbon::now(Timezone::IST)->format('dmY');
 
@@ -538,13 +538,13 @@ class IciciGatewayTest extends TestCase
 
         $actualFile = zip_read($actualZipFile);
 
-        $expectedFile = file_get_contents(__DIR__ . '/MMS-CANCEL-ICIC-ICIC401790-11022020-API000001-INP.xml');
+        $expectedFile = file_get_contents(__DIR__ . '/MMS-CANCEL-ICIC-ICIC406434-11022020-API000001-INP.xml');
 
         $expectedFileData = strtr($expectedFile, ['$tokenId' => $paymentEntity->getTokenId()]);
 
         $this->assertEquals(zip_entry_read($actualFile), $expectedFileData);
 
-        $this->assertEquals('MMS-CANCEL-ICIC-ICIC401790-11022020-API000001-INP.xml', zip_entry_name($actualFile));
+        $this->assertEquals('MMS-CANCEL-ICIC-ICIC406434-11022020-API000001-INP.xml', zip_entry_name($actualFile));
 
         zip_close($actualZipFile);
     }
@@ -690,15 +690,15 @@ class IciciGatewayTest extends TestCase
 
         $date = now(Timezone::IST)->format('dmY');
 
-        $zip->open(__DIR__ . '/MMS-CREATE-ICIC-ICIC401790-' . $date . '-100004-INP-ACK.zip', ZipArchive::CREATE);
+        $zip->open(__DIR__ . '/MMS-CREATE-ICIC-ICIC406434-' . $date . '-100004-INP-ACK.zip', ZipArchive::CREATE);
 
-        $zip->addFromString( 'MMS-CREATE-ICIC-ICIC401790-'. $date . '-200001-INP-ACK.xml', $responseXml);
+        $zip->addFromString( 'MMS-CREATE-ICIC-ICIC406434-'. $date . '-200001-INP-ACK.xml', $responseXml);
 
         $zip->close();
 
-        $handle = fopen(__DIR__ . '/MMS-CREATE-ICIC-ICIC401790-' . $date . '-100004-INP-ACK.zip', 'r');
+        $handle = fopen(__DIR__ . '/MMS-CREATE-ICIC-ICIC406434-' . $date . '-100004-INP-ACK.zip', 'r');
 
-        $file = (new TestingFile('MMS-CREATE-ICIC-ICIC401790-' . $date . '-100004-INP-ACK.zip', $handle));
+        $file = (new TestingFile('MMS-CREATE-ICIC-ICIC406434-' . $date . '-100004-INP-ACK.zip', $handle));
 
         return $file;
     }

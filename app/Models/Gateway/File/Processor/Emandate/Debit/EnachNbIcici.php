@@ -32,7 +32,7 @@ class EnachNbIcici extends Debit\Base
 {
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::ENACH_NPCI_NB_DEBIT_ICICI;
-    const FILE_NAME              = 'icici/nach/debit/ACH-DR-ICIC-ICIC401790-{$date}-{$batchCode}-INP';
+    const FILE_NAME              = 'icici/nach/debit/ACH-DR-ICIC-ICIC406434-{$date}-{$batchCode}-INP';
     const STEP                   = 'debit';
     const GATEWAY                = Payment\Gateway::ENACH_NPCI_NETBANKING;
     const USER_NAME              = 'RZP';
