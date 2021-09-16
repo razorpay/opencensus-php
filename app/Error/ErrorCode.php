@@ -2279,6 +2279,9 @@ class ErrorCode
 
     const BAD_REQUEST_ENCRYPTED_COMMENT_NOT_FOUND = 'BAD_REQUEST_ENCRYPTED_COMMENT_NOT_FOUND';
 
+    // Dispute presentment
+    const BAD_REQUEST_DISPUTE_DEADLINE_ELAPSED                                       = 'BAD_REQUEST_DISPUTE_DEADLINE_ELAPSED';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

@@ -101,7 +101,6 @@ return [
                 'currency'        => 'INR',
                 'amount_deducted' => 0,
                 'reason_code'     => 'chargeback',
-                'respond_by'      => 1610000000,
                 'status'          => 'open',
                 'phase'           => 'chargeback',
                 'evidence'        => [
@@ -524,7 +523,6 @@ return [
                 'currency'        => 'INR',
                 'amount_deducted' => 0,
                 'reason_code'     => 'chargeback',
-                'respond_by'      => 1610000000,
                 'status'          => 'open',
                 'phase'           => 'chargeback',
                 'evidence'        => [
@@ -584,7 +582,6 @@ return [
                 'currency'        => 'INR',
                 'amount_deducted' => 0,
                 'reason_code'     => 'chargeback',
-                'respond_by'      => 1610000000,
                 'status'          => 'open',
                 'phase'           => 'chargeback',
                 'evidence'        => [
@@ -613,7 +610,6 @@ return [
                 'currency'        => 'INR',
                 'amount_deducted' => 0,
                 'reason_code'     => 'chargeback',
-                'respond_by'      => 1610000000,
                 'status'          => 'open',
                 'phase'           => 'chargeback',
                 'evidence'        => [
@@ -861,7 +857,6 @@ return [
                 'currency'        => 'INR',
                 'amount_deducted' => 0,
                 'reason_code'     => 'chargeback',
-                'respond_by'      => 1610000000,
                 'status'          => 'open',
                 'phase'           => 'chargeback',
                 'created_at'      => 1600000000,
@@ -888,6 +883,50 @@ return [
         ],
     ],
 
+    'testAcceptDisputeBeyondRespondByDateShouldFail' => [
+        'request'  => [
+            'url'     => '/disputes/disp_0123456789abcd/accept',
+            'method'  => 'POST',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Action not allowed as deadline to respond has elapsed.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => 'BAD_REQUEST_DISPUTE_DEADLINE_ELAPSED',
+        ],
+    ],
+
+    'testContestDisputeBeyondRespondByDateShouldFail' => [
+        'request'  => [
+            'url'     => '/disputes/disp_0123456789abcd/contest',
+            'method'  => 'PATCH',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Action not allowed as deadline to respond has elapsed.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => 'BAD_REQUEST_DISPUTE_DEADLINE_ELAPSED',
+        ],
+    ],
+
     'testAcceptDispute' => [
         'request'  => [
             'url'     => '/disputes/disp_0123456789abcd/accept',
@@ -905,7 +944,6 @@ return [
                 'currency'        => 'INR',
                 'amount_deducted' => 1000000, //todo: needs to be dispute amount. functionality will be added in later PR
                 'reason_code'     => 'chargeback',
-                'respond_by'      => 1610000000,
                 'status'          => 'lost',
                 'phase'           => 'chargeback',
                 'evidence'        => [

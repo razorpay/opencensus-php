@@ -133,6 +133,8 @@ class Core extends Base\Core
         $validator->validateAmount($dispute, $createInput);
 
         $validator->validateActionForDisputeStatus($dispute, $createInput[Constants::ACTION]);
+
+        $validator->validateDisputeHasNotExpired($dispute);
     }
 
     protected function updateForDispute(Dispute\Entity $dispute, array $updateInput): Entity

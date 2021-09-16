@@ -67,7 +67,7 @@ class DisputePresentmentTest extends TestCase
             'payment_id'       => 'randomPayId123',
             'reason_code'      => 'chargeback',
             'created_at'       => 1600000000,
-            'expires_on'       => 1610000000,
+            'expires_on'       => time() + 10000,
             'base_amount'      => 1000000,
             'base_currency'    => 'INR',
             'amount'           => 1000000,
@@ -575,6 +575,24 @@ class DisputePresentmentTest extends TestCase
         $this->setUpForInitiateDraftEvidenceTest();
 
         $this->fixtures->merchant->removeFeatures(['dispute_presentment']);
+
+        $this->startTest();
+    }
+
+    public function testAcceptDisputeBeyondRespondByDateShouldFail()
+    {
+        $this->setUpForInitiateDraftEvidenceTest([
+            'expires_on' => time() - 10000,
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testContestDisputeBeyondRespondByDateShouldFail()
+    {
+        $this->setUpForInitiateDraftEvidenceTest([
+            'expires_on' => time() - 10000,
+        ]);
 
         $this->startTest();
     }

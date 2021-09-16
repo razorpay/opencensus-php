@@ -5,6 +5,9 @@ namespace RZP\Models\Dispute\Evidence;
 
 use RZP\Base;
 use RZP\Models\Dispute;
+use RZP\Error\ErrorCode;
+use Razorpay\Trace\TraceCode;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -94,5 +97,17 @@ class Validator extends Base\Validator
         }
 
         throw new BadRequestValidationFailureException('Summary cannot be empty');
+    }
+
+    public function validateDisputeHasNotExpired(Dispute\Entity $dispute)
+    {
+        $currentTimestamp = time();
+
+        if ($dispute->getExpiresOn() > $currentTimestamp)
+        {
+            return;
+        }
+
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_DISPUTE_DEADLINE_ELAPSED, Dispute\Entity::EXPIRES_ON);
     }
 }
