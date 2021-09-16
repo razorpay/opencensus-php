@@ -1339,6 +1339,10 @@ return [
                 'description'   => 'Allows to set globally whitelisted payer accounts for fund loading for RazorpayX',
                 'assignable'    => true,
             ],
+            Permission::SET_PAYER_ACCOUNT_INVALID_REGEX => [
+                'description'   => 'Allows to set invalid regexes that might come as part of Payer Account Number in Fund Loading',
+                'assignable'    => true,
+            ],
         ],
 
         PermissionCategory::UPI => [

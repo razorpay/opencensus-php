@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Batch;
 use RZP\Models\Base;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -81,6 +82,8 @@ class Service extends Base\Service
                 $this->checkAndReplaceForIfsc($input, $provider ?? $this->provider);
             }
 
+            $this->removeInvalidRegexFromPayerAccount($input);
+
             $bankTransferRequest = (new BankTransferRequest\Core())->create(
                 $input,
                 $provider ?? $this->provider,
@@ -119,6 +122,25 @@ class Service extends Base\Service
         }
 
         return $this->process($input, $provider, $checkForIfsc);
+    }
+
+    public function removeInvalidRegexFromPayerAccount(& $input)
+    {
+        if (isset($input[Entity::PAYER_ACCOUNT]) === true)
+        {
+            $payerAccountNumber = $input[Entity::PAYER_ACCOUNT];
+
+            $payerAccountInvalidRegexes = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::PAYER_ACCOUNT_NUMBER_INVALID_REGEXES]);
+
+            foreach ($payerAccountInvalidRegexes as $invalidRegex)
+            {
+                $invalidPrefixRegex = '/' . $invalidRegex . '/i';
+
+                $payerAccountNumber = preg_replace($invalidPrefixRegex, '', $payerAccountNumber);
+            }
+
+            $input[Entity::PAYER_ACCOUNT] = $payerAccountNumber;
+        }
     }
 
     public function processBankTransfer(BankTransferRequest\Entity $bankTransferRequest)

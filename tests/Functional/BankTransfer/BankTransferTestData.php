@@ -1301,6 +1301,30 @@ return [
         ],
     ],
 
+    'testBankTransferIciciWithInvalidPrefixForPayerAccount' => [
+        'request'  => [
+            'url'     => '/ecollect/validate/icici/internal',
+            'method'  => 'post',
+            'content' => [
+                'payee_account'  => '3434123412341234',
+                'payee_ifsc'     => 'ICIC0000104',
+                'payer_name'     => 'Name of account holder',
+                'payer_account'  => 'INHSBC073-523524-001',
+                'payer_ifsc'     => 'HSBC0560002',
+                'mode'           => 'IMPS',
+                'time'           => 148415544000,
+                'transaction_id' => 'RANDOMUTR012345',
+                'amount'         => 50000,
+                'description'    => 'IMPS payment of 50,000 rupees',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'valid'   => true,
+            ],
+        ],
+    ],
+
     'testBankTransferIciciWithIfscAsBankCode' => [
         'url'     => '/ecollect/validate/icici/internal',
         'method'  => 'post',

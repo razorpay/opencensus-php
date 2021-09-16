@@ -141,6 +141,8 @@ class ConfigKey
 
     const RX_ACCOUNT_NUMBER_SERIES_PREFIX       = self::PREFIX . 'rx_account_number_series_prefix';
 
+    const PAYER_ACCOUNT_NUMBER_INVALID_REGEXES  = self::PREFIX . 'payer_account_number_invalid_regexes';
+
     const RX_SHARED_ACCOUNT_ALLOWED_CHANNELS    = self::PREFIX . 'rx_shared_account_allowed_channels';
 
     const RBL_STATEMENT_FETCH_WINDOW_LENGTH     = self::PREFIX . 'rbl_statement_fetch_window_length';
@@ -368,6 +370,7 @@ class ConfigKey
         self::RX_FUND_LOADING_REFUNDS_VIA_X,
         self::PAYMENT_SHOW_DCC_MARKUP,
         self::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS,
+        self::PAYER_ACCOUNT_NUMBER_INVALID_REGEXES,
     ];
 
     const REDIS_CONFIG_MAP = [
@@ -388,6 +391,7 @@ class ConfigKey
         self::ENABLE_PAYMENT_DOWNTIME_PHONEPE => [Name::CREATE_GATEWAY_DOWNTIME],
         self::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING => [Name::SET_RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS],
         self::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS => [Name::EDIT_DESTINATION_MIDS_TO_WHITELIST_VA_TO_VA_PAYOUTS],
+        self::PAYER_ACCOUNT_NUMBER_INVALID_REGEXES => [Name::SET_PAYER_ACCOUNT_INVALID_REGEX],
     ];
 
     /**
