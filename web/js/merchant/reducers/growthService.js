@@ -1,4 +1,4 @@
-import GrowthService from 'merchant/models/GrowthService';
+import GrowthService from 'merchant/models/GrowthService/GrowthService';
 import { makeEntityReducer } from 'merchant_common/reducers/entity';
 import { set } from 'common/utils/immutable';
 

@@ -77,7 +77,6 @@ class WhatsNew extends Component {
   };
   notificationsRefsList = [];
   id = this.props.user.current;
-  whatsNew = false;
 
   componentWillMount = () => {
     this.props.fetchAnnouncements(this.id, 'home');
@@ -236,13 +235,13 @@ class WhatsNew extends Component {
       },
     });
 
-    const tracking = this.props.tracking;
+    const { tracking, user, announcements } = this.props;
     tracking.trackEvent(
       window.rzpQ.merchantActions().success('dashboard.notification_section.read', {
         unreadID: this.state.unreadID,
-        count_unread_IDs: this.state.unreadID.length,
+        count_unread_IDs: this.state.unreadID?.length,
         lazy: true,
-        growth_service: this.props.user.isGrowthServiceEnabled,
+        growth_service: user.isGrowthServiceEnabled,
       }),
     );
 
@@ -257,9 +256,9 @@ class WhatsNew extends Component {
         ID,
         readID,
         unreadID,
-        experimentVersion: getExperimentVersion(this.props.user),
+        experimentVersion: getExperimentVersion(user),
         lazy: true,
-        growth_service: this.props.user.isGrowthServiceEnabled,
+        growth_service: user.isGrowthServiceEnabled,
       }),
     );
 
@@ -267,7 +266,7 @@ class WhatsNew extends Component {
     setItem(`announcements-slider-${this.id}`, String(newLastReadTS));
 
     // Mark all notifications as read
-    this.props.announcements?.forEach((notif) => {
+    announcements?.forEach((notif) => {
       const gaAction = notif.ga && notif.ga.action ? notif.ga.action : notif.title;
 
       trackAnnouncement(gaAction, 'Marked as read');
@@ -279,7 +278,7 @@ class WhatsNew extends Component {
   };
 
   trackEvents = (value, url, type, id, notification) => {
-    const tracking = this.props.tracking;
+    const { tracking, user } = this.props;
 
     const eventName =
       type === 'button'
@@ -292,7 +291,7 @@ class WhatsNew extends Component {
         ...getNotificationTrackingProperties(notification),
         id,
         lazy: true,
-        growth_service: this.props.user.isGrowthServiceEnabled,
+        growth_service: user.isGrowthServiceEnabled,
       }),
     );
   };

@@ -347,6 +347,7 @@ class Service extends Base\Service
 
         if (!isset($value['filters']) or
             !isset($value['filters']['experiments']) or
+            !isset($value['id']) or
             !array_key_exists($value['id'], $announcementToCampaignDetailMap))
             return;
 
@@ -386,6 +387,7 @@ class Service extends Base\Service
 
         if (!isset($value['filters']) or
             !isset($value['filters']['splitz_experiments']) or
+            !isset($value['id']) or
             !array_key_exists($value['id'], $announcementToCampaignDetailMap))
             return;
 

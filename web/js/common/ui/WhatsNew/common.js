@@ -32,7 +32,7 @@ export const getNotificationsReadData = (merchant_id) => {
   } else {
     if (window.old_notifications) notifications.push(...window.old_notifications);
     if (window.new_notifications) notifications.push(...window.new_notifications);
-    notifications.sort((first, second) => second.start_ts - first.start_ts);
+    notifications.sort((first, second) => second?.start_ts - first?.start_ts);
   }
 
   const ID = [];
@@ -41,9 +41,9 @@ export const getNotificationsReadData = (merchant_id) => {
 
   let totalUnread = 0;
   for (let i = 0; i < notifications.length; i++) {
-    const notifStartTS = notifications[i].start_ts;
-    const notifEndTS = notifications[i].end_ts;
-    const notifID = notifications[i].id;
+    const notifStartTS = notifications[i]?.start_ts;
+    const notifEndTS = notifications[i]?.end_ts;
+    const notifID = notifications[i]?.id;
 
     if (notifID) ID.push(getNotificationTrackingProperties(notifications[i]));
     if (lastReadTS < notifStartTS && moment().unix() < notifEndTS) {

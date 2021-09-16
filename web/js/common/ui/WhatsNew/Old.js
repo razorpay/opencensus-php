@@ -63,7 +63,6 @@ class WhatsNewOld extends Component {
   };
   notificationsRefsList = [];
   id = this.props.user.current;
-  whatsNew = false;
 
   componentWillMount = () => {
     this.props.fetchAnnouncements(this.id, 'home');
@@ -86,7 +85,6 @@ class WhatsNewOld extends Component {
       window.rzpQ &&
         window.rzpQ.merchantActions().success('merchant_dashboard.display_notification', {
           experimentVersion: this.getExperimentVersion(),
-          whats_new: this.whatsNew,
           growth_service: this.props.user.isGrowthServiceEnabled,
         }),
     );
@@ -141,10 +139,6 @@ class WhatsNewOld extends Component {
       const notifEndTS = announcements[i].end_ts;
       const notifID = announcements[i].id;
 
-      this.whatsNew =
-        (notifID && notifID.length >= 9 && notifID.substring(0, 9) === 'whats-new') ||
-        this.whatsNew;
-
       if (notifID) ID.push(this.getNotificationTrackingProperties(announcements[i]));
       if (lastReadTS < notifStartTS && moment().unix() < notifEndTS) {
         totalUnread++;
@@ -163,7 +157,6 @@ class WhatsNewOld extends Component {
           readID,
           unreadID,
           experimentVersion: this.getExperimentVersion(),
-          ...(this.whatsNew && { whats_new: true }),
           growth_service: this.props.user.isGrowthServiceEnabled,
         }),
       );
@@ -295,13 +288,12 @@ class WhatsNewOld extends Component {
       },
     });
 
-    const tracking = this.props.tracking;
+    const { tracking, announcements, user } = this.props;
     tracking.trackEvent(
       window.rzpQ.merchantActions().success('dashboard.notification_section.read', {
         unreadID: this.state.unreadID,
-        count_unread_IDs: this.state.unreadID.length,
-        ...(this.whatsNew && { whats_new: true }),
-        growth_service: this.props.user.isGrowthServiceEnabled,
+        count_unread_IDs: this.state.unreadID?.length,
+        growth_service: user.isGrowthServiceEnabled,
       }),
     );
 
@@ -309,7 +301,7 @@ class WhatsNewOld extends Component {
     const readID = [];
     const unreadID = [];
 
-    this.props.announcements?.forEach((notification) => {
+    announcements?.forEach((notification) => {
       const notifID = notification.id;
 
       if (notifID) {
@@ -328,8 +320,7 @@ class WhatsNewOld extends Component {
         readID,
         unreadID,
         experimentVersion: this.getExperimentVersion(),
-        ...(this.whatsNew && { whats_new: true }),
-        growth_service: this.props.user.isGrowthServiceEnabled,
+        growth_service: user.isGrowthServiceEnabled,
       }),
     );
 
@@ -337,7 +328,7 @@ class WhatsNewOld extends Component {
     setItem(`announcements-slider-${this.id}`, String(newLastReadTS));
 
     // Mark all notifications as read
-    this.props.announcements?.forEach((notif) => {
+    announcements?.forEach((notif) => {
       const gaAction = notif.ga && notif.ga.action ? notif.ga.action : notif.title;
 
       trackAnnouncement(gaAction, 'Marked as read');
@@ -349,8 +340,7 @@ class WhatsNewOld extends Component {
   };
 
   trackEvents = (value, url, type, id, notification) => {
-    const tracking = this.props.tracking;
-    const whatsNew = id && id.length >= 9 && id.substring(0, 9) === 'whats-new';
+    const { tracking, user } = this.props;
 
     const eventName =
       type === 'button'
@@ -362,8 +352,7 @@ class WhatsNewOld extends Component {
         url,
         ...this.getNotificationTrackingProperties(notification),
         id,
-        ...(whatsNew && { whats_new: true }),
-        growth_service: this.props.user.isGrowthServiceEnabled,
+        growth_service: user.isGrowthServiceEnabled,
       }),
     );
   };
@@ -403,7 +392,6 @@ class WhatsNewOld extends Component {
       this.props.tracking.trackEvent(
         window.rzpQ.merchantActions().success('dashboard.notification_section.tool_tip.display', {
           tooltip_display_count: tooltipViewCount + 1,
-          ...(this.whatsNew && { whats_new: true }),
           growth_service: this.props.user.isGrowthServiceEnabled,
         }),
       );
@@ -590,13 +578,10 @@ const NotificationCard = ({
   const ref = useRef();
 
   const trackVideoEvents = () => {
-    const whatsNew = id && id.length >= 9 && id.substring(0, 9) === 'whats-new';
-
     tracking.trackEvent(
       window.rzpQ.merchantActions().success('dashboard.notification_section.card.display', {
         card_id: id,
         video_url,
-        ...(whatsNew && { whats_new: true }),
       }),
     );
   };
