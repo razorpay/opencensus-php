@@ -6,6 +6,13 @@
   min-width: 900px
   font-family: "Mulish", "Lato", "Lato-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
 
+  .page-nav-container
+    position: fixed
+    z-index: 10
+    width: 100%
+    top: 0
+    left: 0
+
   .payment-page-nav 
     display: flex
     justify-content: space-between
@@ -30,7 +37,8 @@
     max-width: 1055px
     min-width: 900px
     margin: auto
-    padding-top: 40px
+    padding-top: 20px
+    margin-top: 56px
 
     .edit-page-btn
       font-size: 10px
@@ -38,6 +46,7 @@
       font-weight: 700
       letter-spacing: 0.5px
       line-height: 14px
+      margin-bottom: 4px
       
       .i-chevron-left
         font-size: 13px
@@ -53,13 +62,13 @@
       justify-content: space-between
       background: #F3F8FE
       box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15)
-      height: 226px   
+      height: 214px   
       border-radius: 3px
       margin-right: 80px
 
       &--left
-        padding-top: 50px
-        padding-bottom: 50px
+        padding-top: 40px
+        padding-bottom: 40px
         padding-left: 75px
 
       &--action
@@ -86,7 +95,7 @@
             color: #2B83EA
 
           input
-            color: rgba(22, 47, 86, 0.54)
+            color: rgba(22, 47, 86, 0.74)
             font-size: 14px
             border: none
             background: transparent
@@ -106,7 +115,7 @@
             &:disabled
               cursor: not-allowed !important
               opacity: 0.5
-              color: rgba(22, 47, 86, 0.48)
+              color: rgba(22, 47, 86, 0.68)
               background: rgba(22, 47, 86, 0.02)
               border: 1px solid rgba(22, 47, 86, 0.4)
 
@@ -145,7 +154,7 @@
         font-weight: 700
 
       &--right
-        padding-top: 32px
+        padding-top: 22px
         position: relative
 
         .preview-icon
@@ -183,12 +192,10 @@
           opacity: 0.7
           box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.15)
           position: relative
-          top: -125px
-          left: 80px
           border-radius: 3px
           z-index: 2
           position: absolute
-          top: 55px
+          top: 42px
           left: -250px
 
         iframe
@@ -203,7 +210,7 @@
           border: 6px solid #536582
 
     #next-steps
-      margin: 45px 56px
+      margin: 24px 56px
 
       &--title
         font-size: 16px
@@ -211,23 +218,24 @@
         color: #162F56
         font-weight: 700
         padding-left: 20px
-        margin-bottom: 30px
+        margin-bottom: 24px
 
       &--note
         color: #536582
         font-size: 12px
         padding-left: 20px
         line-height: 18px
+        margin-top: 20px
 
       .box
         background: #FCFCFC
         border: 1px solid #EBEFF0
         box-sizing: border-box
         border-radius: 3px
-        margin-bottom: 25px
+        margin-bottom: 15px
         display: flex
         justify-content: space-between
-        padding: 24px
+        padding: 20px 22px
 
         &--left
           text-align: left
@@ -241,7 +249,7 @@
           align-items: center
 
         &--line
-          margin-bottom: 10px
+          margin-bottom: 6px
 
           i
             width: 15px

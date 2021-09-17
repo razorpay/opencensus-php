@@ -1,6 +1,8 @@
+import React from 'react';
+import moment from 'moment';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import Form from 'common/new-ui/Form';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Button from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { lenientUrl, validateSlug } from 'common/utils/validators';
@@ -34,7 +36,7 @@ export default class extends React.Component {
     this.setState({ expire_by: newDate });
   };
 
-  onChange = ({ target }) => {
+  onChange = () => {
     setTimeout(() => {
       const form = document.getElementsByClassName('Settings-form')[0];
       const disableSubmit = form.querySelectorAll('.is-invalid').length;
@@ -149,179 +151,183 @@ export default class extends React.Component {
         <Modal showCloseBtn={false}>
           <ModalContent>
             <div class="main-title">
-              <i className="i i-settings-outline mr-8"></i>
+              <i className="i i-settings-outline mr-8" />
               Page Settings
             </div>
             <Form class="Settings-form" onSubmit={this.onSubmit} onChange={this.onChange}>
-              <div class="settings-section custom-url" tabIndex={-1}>
-                <Input
-                  name="slug"
-                  class="Input--vTop"
-                  label="Choose custom URL for this page"
-                  defaultValue={slug}
-                  addonValueBefore="https://pages.razorpay.com/"
-                  disabled={isTestMode}
-                  validator={(val) => {
-                    const isEditMode = !!this.props.paymentPageEntity.id;
-                    const toValidate = !isTestMode && isEditMode; // Validate only when live mode and editing page
+              <div class="Settings-form--body">
+                <div class="settings-section custom-url" tabIndex={-1}>
+                  <Input
+                    name="slug"
+                    class="Input--vTop"
+                    label="Choose custom URL for this page"
+                    defaultValue={slug}
+                    addonValueBefore="https://pages.razorpay.com/"
+                    disabled={isTestMode}
+                    validator={(val) => {
+                      const isEditMode = !!this.props.paymentPageEntity.id;
+                      const toValidate = !isTestMode && isEditMode; // Validate only when live mode and editing page
 
-                    if (toValidate) {
-                      if (val && !validateSlug(val.trim())) {
-                        return 'Please enter valid Url';
+                      if (toValidate) {
+                        if (val && !validateSlug(val.trim())) {
+                          return 'Please enter valid Url';
+                        }
+
+                        if (val.length < 4) {
+                          return 'Url must be at least 4 characters long';
+                        } else if (val.length > 30) {
+                          return 'Url must be maximum 30 characters long';
+                        }
                       }
-
-                      if (val.length < 4) {
-                        return 'Url must be at least 4 characters long';
-                      } else if (val.length > 30) {
-                        return 'Url must be maximum 30 characters long';
-                      }
-                    }
-                  }}
-                />
-                {isTestMode && (
-                  <div style={{ marginTop: 4, fontSize: 13 }}>
-                    Custom slug is only available in <b>Live Mode</b>
-                  </div>
-                )}
-              </div>
-              <div class="settings-section">
-                <Input.Radio
-                  name="theme"
-                  label="Theme"
-                  options={['Dark', 'Light']}
-                  class="Input--vTop Input--theme"
-                  defaultValue={theme}
-                />
-              </div>
-              <div class="settings-section">
-                <input name="expire_by" value={expire_by || ''} readOnly hidden />
-                <Input.DateTime
-                  label="Page Expiry Date"
-                  checkboxFieldLabel="No Expiry"
-                  class="Input--vTop Input--expiryby"
-                  value={expire_by}
-                  defaultValue={expire_by}
-                  onChange={this.updateDate}
-                  isInline
-                />
-              </div>
-
-              <div class="settings-section">
-                <div class="InputGroup InputGroup--vTop InputGroup--near Input">
-                  <div class="Input-label">Action after successful payment?</div>
-                  <div class="Input-content">
-                    <Input.Check
-                      fieldLabel="Show custom message"
-                      defaultValue={_hasSuccessMsg ? '1' : '0'}
-                      onChange={(e) => {
-                        const isChecked = e.target.value == '1';
-
-                        this.setState({ _hasSuccessMsg: isChecked }, () => {
-                          if (isChecked) {
-                            document.getElementsByName('payment_success_message')[0].focus();
-                          }
-                        });
-
-                        track.settings.checkCustomMessage(isChecked);
-                      }}
-                    />
-
-                    {_hasSuccessMsg && (
-                      <div class="custom-success-msg">
-                        <Input.Textarea
-                          name="payment_success_message"
-                          maxLength="80"
-                          value={payment_success_message}
-                          onChange={this.onSuccessMsgChange}
-                        />
-                        <span class="chars-pressed">
-                          {(payment_success_message ? payment_success_message.length : '0') +
-                            ' / 80'}
-                        </span>
-                      </div>
-                    )}
-
-                    <Input.Check
-                      fieldLabel="Redirect to your website"
-                      defaultValue={_hasRedirectUrl ? '1' : '0'}
-                      onChange={(e) => {
-                        const isChecked = e.target.value == '1';
-
-                        this.setState({ _hasRedirectUrl: isChecked }, () => {
-                          if (isChecked) {
-                            document.getElementsByName('payment_success_redirect_url')[0].focus();
-                          }
-                        });
-
-                        track.settings.checkRedirect(isChecked);
-                      }}
-                    />
-
-                    {_hasRedirectUrl && (
-                      <Input
-                        name="payment_success_redirect_url"
-                        validator={lenientUrl('Please enter a valid URL')}
-                        defaultValue={payment_success_redirect_url}
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div class="settings-section">
-                <b>Get Hyperlink Button</b>
-                <div class="cta-section">
-                  <div class="body">
-                    Put a hyperlink button on your website
-                    <span class="help-content">
-                      <i class="i i-info-outline" style={{ marginLeft: 4 }} />
-                      <Popover
-                        align="top"
-                        theme="dark"
-                        parentQuerySelector={`.Modal-mask--paymentpages-settings .Modal-body`}
-                      >
-                        <PopoverBody>
-                          Your customers can pay from your website by clicking on this Payment
-                          Button
-                        </PopoverBody>
-                      </Popover>
-                    </span>
-                  </div>
-                  {!(paymentPageEntity.id && typeof paymentPageEntity.title !== 'undefined') ? (
-                    <span class="help-content action">
-                      <span>{EmbedBtn}</span>
-                      <Popover
-                        align="top"
-                        theme="dark"
-                        parentQuerySelector={`.Modal-mask--paymentpages-settings .Modal-body`}
-                      >
-                        <PopoverBody>
-                          You can customize Embed Button after creating Payment Page
-                        </PopoverBody>
-                      </Popover>
-                    </span>
-                  ) : (
-                    <span class="action">{EmbedBtn}</span>
+                      return '';
+                    }}
+                  />
+                  {isTestMode && (
+                    <div style={{ marginTop: 4, fontSize: 13 }}>
+                      Custom slug is only available in <b>Live Mode</b>
+                    </div>
                   )}
                 </div>
-              </div>
-              <div class="settings-section">
-                <div class="Input-label">
-                  Plugins and Add ons <span class="badge bg-success hidden-xs m-r">New</span>
+                <div class="settings-section">
+                  <Input.Radio
+                    name="theme"
+                    label="Theme"
+                    options={['Dark', 'Light']}
+                    class="Input--vTop Input--theme"
+                    defaultValue={theme}
+                  />
                 </div>
-                <div class="cta-section">
-                  <div class="body">
-                    {isPluginConfigured ? (
-                      <div>
-                        Facebook ID: {paymentPageEntity.settings.pp_fb_pixel_tracking_id || '-'}
-                        <br />
-                        GA ID: {paymentPageEntity.settings.pp_ga_pixel_tracking_id || '-'}
-                      </div>
+                <div class="settings-section">
+                  <input name="expire_by" value={expire_by || ''} readOnly hidden />
+                  <Input.DateTime
+                    label="Page Expiry Date"
+                    checkboxFieldLabel="No Expiry"
+                    class="Input--vTop Input--expiryby"
+                    value={expire_by}
+                    defaultValue={expire_by}
+                    onChange={this.updateDate}
+                    isInline
+                  />
+                </div>
+
+                <div class="settings-section">
+                  <div class="InputGroup InputGroup--vTop InputGroup--near Input">
+                    <div class="Input-label">Action after successful payment?</div>
+                    <div class="Input-content">
+                      <Input.Check
+                        fieldLabel="Show custom message"
+                        defaultValue={_hasSuccessMsg ? '1' : '0'}
+                        onChange={(e) => {
+                          const isChecked = e.target.value == '1';
+
+                          this.setState({ _hasSuccessMsg: isChecked }, () => {
+                            if (isChecked) {
+                              document.getElementsByName('payment_success_message')[0].focus();
+                            }
+                          });
+
+                          track.settings.checkCustomMessage(isChecked);
+                        }}
+                      />
+
+                      {_hasSuccessMsg && (
+                        <div class="custom-success-msg">
+                          <Input.Textarea
+                            name="payment_success_message"
+                            maxLength="80"
+                            value={payment_success_message}
+                            onChange={this.onSuccessMsgChange}
+                          />
+                          <span class="chars-pressed">
+                            {`${
+                              payment_success_message ? payment_success_message.length : '0'
+                            } / 80`}
+                          </span>
+                        </div>
+                      )}
+
+                      <Input.Check
+                        fieldLabel="Redirect to your website"
+                        defaultValue={_hasRedirectUrl ? '1' : '0'}
+                        onChange={(e) => {
+                          const isChecked = e.target.value == '1';
+
+                          this.setState({ _hasRedirectUrl: isChecked }, () => {
+                            if (isChecked) {
+                              document.getElementsByName('payment_success_redirect_url')[0].focus();
+                            }
+                          });
+
+                          track.settings.checkRedirect(isChecked);
+                        }}
+                      />
+
+                      {_hasRedirectUrl && (
+                        <Input
+                          name="payment_success_redirect_url"
+                          validator={lenientUrl('Please enter a valid URL')}
+                          defaultValue={payment_success_redirect_url}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="settings-section">
+                  <b>Get Hyperlink Button</b>
+                  <div class="cta-section">
+                    <div class="body">
+                      Put a hyperlink button on your website
+                      <span class="help-content">
+                        <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+                        <Popover
+                          align="top"
+                          theme="dark"
+                          parentQuerySelector=".Modal-mask--paymentpages-settings .Modal-body"
+                        >
+                          <PopoverBody>
+                            Your customers can pay from your website by clicking on this Payment
+                            Button
+                          </PopoverBody>
+                        </Popover>
+                      </span>
+                    </div>
+                    {!(paymentPageEntity.id && typeof paymentPageEntity.title !== 'undefined') ? (
+                      <span class="help-content action">
+                        <span>{EmbedBtn}</span>
+                        <Popover
+                          align="top"
+                          theme="dark"
+                          parentQuerySelector=".Modal-mask--paymentpages-settings .Modal-body"
+                        >
+                          <PopoverBody>
+                            You can customize Embed Button after creating Payment Page
+                          </PopoverBody>
+                        </Popover>
+                      </span>
                     ) : (
-                      'Add your Facebook Pixel or Google tracking ID to track your page metrics'
+                      <span class="action">{EmbedBtn}</span>
                     )}
                   </div>
-                  <span class="action">{PluginsBtn}</span>
+                </div>
+                <div class="settings-section">
+                  <div class="Input-label">
+                    Plugins and Add ons <span class="badge bg-success hidden-xs m-r">New</span>
+                  </div>
+                  <div class="cta-section">
+                    <div class="body">
+                      {isPluginConfigured ? (
+                        <div>
+                          Facebook ID: {paymentPageEntity.settings.pp_fb_pixel_tracking_id || '-'}
+                          <br />
+                          GA ID: {paymentPageEntity.settings.pp_ga_pixel_tracking_id || '-'}
+                        </div>
+                      ) : (
+                        'Add your Facebook Pixel or Google tracking ID to track your page metrics'
+                      )}
+                    </div>
+                    <span class="action">{PluginsBtn}</span>
+                  </div>
                 </div>
               </div>
               <footer>
