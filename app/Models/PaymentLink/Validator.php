@@ -222,7 +222,7 @@ class Validator extends Base\Validator
 
         foreach ($value as $lineItem)
         {
-            if (filter_var($lineItem[Entity::AMOUNT], FILTER_VALIDATE_INT) === false)
+            if (isset($lineItem[Entity::AMOUNT]) === true && filter_var($lineItem[Entity::AMOUNT], FILTER_VALIDATE_INT) === false)
             {
                 throw new BadRequestValidationFailureException(
                     trans("validation.mysql_unsigned_int", ['attribute' => Entity::AMOUNT]),

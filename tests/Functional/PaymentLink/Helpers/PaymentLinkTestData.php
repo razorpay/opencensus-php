@@ -2438,4 +2438,31 @@ return [
             'content'   => []
         ]
     ],
+
+    'testCreatePaymentPageOrderWithOutAmountShouldThrowValidationError' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_10000000000ppi',
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => trans("validation.required", ['attribute' => 'amount']),
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
