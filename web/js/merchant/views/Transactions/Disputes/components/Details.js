@@ -13,6 +13,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { titleCase, daysFromToday, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import StatusBanner from './StatusBanner';
 import roleList from 'merchant/helpers/permissions/roles-list';
+import UpdatedBy from './UpdatedBy';
 
 export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
   const daysLeft = daysFromToday(expiresOn);
@@ -287,6 +288,14 @@ const DisputeDetails = (props) => {
                   '--'
                 }
               />
+
+              {dispute?.lifecycle?.length ? (
+                <EntityDetailRow label="Updated by">
+                  <UpdatedBy dispute={dispute} />
+                </EntityDetailRow>
+              ) : (
+                ''
+              )}
 
               {isDisputePresentmentEnabled && showContest && (
                 <ContestDispute
