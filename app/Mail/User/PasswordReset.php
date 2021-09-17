@@ -86,4 +86,33 @@ class PasswordReset extends Base\Mailable
 
         return $this;
     }
+    //The email should be sent via stork only if the product is banking.
+    protected function shouldSendEmailViaStork(): bool
+    {
+        $isProductBanking = $this->product === Product::BANKING;
+
+        return $isProductBanking;
+    }
+
+    protected function getParamsForStork(): array
+    {
+        $storkParams = [
+            'template_namespace'            => 'razorpayx_payouts_core',
+            'template_name'                 => 'razorpayx.password_reset',
+            'params'                        => [
+                'password_reset_url'    => 'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)
+                                            .'/forgot-password#token='. $this->token . '&email=' . $this->user['email'],
+                'display_name'          => $this->org['display_name'],
+                'login_logo_url'        => $this->org['login_logo_url'],
+            ]
+        ];
+
+        if ($this->org['showAxisSupportUrl'] !== true)
+        {
+            $storkParams['template_name'] = 'razorpayx.password_reset.show_axis_support_url';
+        }
+
+        return $storkParams;
+    }
 }
+
