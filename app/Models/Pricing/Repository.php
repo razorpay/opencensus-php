@@ -226,19 +226,31 @@ class Repository extends Base\Repository
     }
 
     // called in pricing fee calculation flow
-    public function getPricingPlanByIdWithoutOrgId($id)
+    public function getPricingPlanByIdWithoutOrgId($id, $merchant = null)
     {
-        $cacheTags = Entity::getCacheTags($this->entity, $id);
+        return $this->repo->useSlave(function() use ($merchant, $id)
+        {
+            $cacheTags = Entity::getCacheTags($this->entity, $id);
 
-        return $this->newQuery()
-                    ->where(Pricing\Entity::PLAN_ID, '=', $id)
-                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
-                    ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
-                    ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
-                    ->orderBy(Pricing\Entity::ID, 'desc')
-                    ->remember($this->getCacheTtl())
-                    ->cacheTags($cacheTags)
-                    ->get();
+            $query = $this->newQuery()
+                ->where(Pricing\Entity::PLAN_ID, '=', $id)
+                ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
+                ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
+                ->orderBy(Pricing\Entity::ID, 'desc')
+                ->remember($this->getCacheTtl())
+                ->cacheTags($cacheTags);
+
+            // see comment in config/pricing.php
+            if ($this->shouldDistributeQueryCacheLoad($merchant) === true)
+            {
+                $prefix = $this->getQueryCachePrefixForDistributingLoad();
+
+                $query = $query->prefix($prefix);
+            }
+
+            return $query->get();
+        });
     }
 
     public function getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgId(string $id,
@@ -608,5 +620,26 @@ class Repository extends Base\Repository
         }
 
          return $query->first();
+    }
+
+    protected function shouldDistributeQueryCacheLoad($merchant) : bool
+    {
+        if ($merchant === null)
+        {
+            return false;
+        }
+
+        $config = $this->app['config']->get('pricing.query_cache_distribution');
+
+        return in_array($merchant->getId(), $config['merchant_ids']) === true;
+    }
+
+    protected function getQueryCachePrefixForDistributingLoad(): string
+    {
+        $config = $this->app['config']->get('pricing.query_cache_distribution');
+
+        $prefix = rand(1, $config['factor']);
+
+        return strval($prefix);
     }
 }

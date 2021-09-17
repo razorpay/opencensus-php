@@ -147,7 +147,7 @@ class Fee extends Base\Core
 
         $merchant = $entity->merchant;
 
-        $pricing = $this->repo->getPricingPlanByIdWithoutOrgId($pricingPlanId);
+        $pricing = $this->repo->getPricingPlanByIdWithoutOrgId($pricingPlanId, $merchant);
 
         $pricing = $this->addFallbackPricingRules($pricing, $entity);
 
