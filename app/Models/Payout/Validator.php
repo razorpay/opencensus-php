@@ -121,7 +121,7 @@ class Validator extends Base\Validator
         Entity::BALANCE_ID                           => 'sometimes|filled|size:14',
         Entity::MODE                                 => 'required|string|custom',
         Entity::REFERENCE_ID                         => 'sometimes|nullable|string|max:40',
-        Entity::NARRATION                            => 'sometimes|nullable|string|max:30|alpha_space_num',
+        Entity::NARRATION                            => 'sometimes|nullable|string|max:30|regex:/^[a-zA-Z0-9 ]*$/',
         Entity::PAYOUT_LINK_ID                       => 'sometimes|filled|public_id',
         Entity::QUEUE_IF_LOW_BALANCE                 => 'sometimes|filled|boolean',
         Entity::SKIP_WORKFLOW                        => 'filled|boolean',
@@ -150,7 +150,7 @@ class Validator extends Base\Validator
         Entity::FUND_ACCOUNT_ID      => 'required|public_id',
         Entity::MODE                 => 'required|string|custom',
         Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
-        Entity::NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
+        Entity::NARRATION            => 'sometimes|nullable|string|max:30|regex:/^[a-zA-Z0-9 ]*$/',
         Entity::IDEMPOTENCY_KEY      => 'sometimes|nullable|string',
         Entity::PAYOUT_LINK_ID       => 'sometimes|filled|public_id',
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
@@ -166,7 +166,7 @@ class Validator extends Base\Validator
         Entity::BALANCE_ID      => 'sometimes|filled|size:14',
         Entity::FUND_ACCOUNT_ID => 'required|public_id',
         Entity::REFERENCE_ID    => 'sometimes|nullable|string|max:40',
-        Entity::NARRATION       => 'sometimes|nullable|string|max:30|alpha_space_num',
+        Entity::NARRATION       => 'sometimes|nullable|string|max:30|regex:/^[a-zA-Z0-9 ]*$/',
     ];
 
     protected static $beforeCreateFundAccountPayoutRules = [

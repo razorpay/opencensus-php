@@ -478,6 +478,30 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutWithNarrationAsArray()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCompositePayoutWithNarrationAsArray()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCustomerWalletPayoutWithNarrationAsArray()
+    {
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 1000]);
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutWithoutFundAccountId()
     {
         $ledgerSnsPayloadArray = [];

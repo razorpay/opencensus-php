@@ -254,6 +254,121 @@ return [
         ],
     ],
 
+    'testCreatePayoutWithNarrationAsArray' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => [
+                    'abc'   =>  'xyz',
+                ],
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The narration must be a string.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCompositePayoutWithNarrationAsArray' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 2000000,
+                'currency'       => 'INR',
+                'purpose'        => 'refund',
+                'narration'       => [
+                    'abc'   =>  'xyz',
+                ],
+                'mode'           => 'IMPS',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Name of account holder',
+                        'ifsc'           => 'ICIC0000104',
+                        'account_number' => '3434000111000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'contact name',
+                        'email'   => 'contact@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The narration must be a string.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+
+    ],
+
+    'testCustomerWalletPayoutWithNarrationAsArray' => [
+        'request'  => [
+            'url'     => '/customers/cust_100000customer/payouts',
+            'method'  => 'post',
+            'content' => [
+                'amount'          => 800,
+                'purpose'         => 'refund',
+                'fund_account_id' => 'fa_100000000000fa',
+                'currency'        => 'INR',
+                'narration'       => [
+                    'abc'   =>  'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The narration must be a string.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+
+    ],
+
     'testUpdatePayoutToSomeIntermediateStatus' => [
         'request' => [
             'method'    => 'PATCH',
