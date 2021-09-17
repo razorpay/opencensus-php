@@ -1087,6 +1087,14 @@ return [
             Permission::CREDITS_BATCH_UPLOAD => [
                 'description' => 'Upload batch file to assign credits to merchants in bulk',
                 'assignable'  => true,
+            ],
+            Permission::EMANDATE_BATCH_UPLOAD => [
+                'description' => 'Upload batch file to process e-mandate payments',
+                'assignable'  => true,
+            ],
+            Permission::NACH_BATCH_UPLOAD => [
+                'description' => 'Upload batch file to process nach payments',
+                'assignable'  => true,
             ]
         ],
 

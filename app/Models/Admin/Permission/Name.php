@@ -731,6 +731,9 @@ class Name
     const CALLBACK_SLOT_CONFIG_VIEW                    = 'callback_slot_config_view';
     const CALLBACK_SLOT_CONFIG_EDIT                    = 'callback_slot_config_edit';
 
+    const NACH_BATCH_UPLOAD     = 'nach_batch_upload';
+    const EMANDATE_BATCH_UPLOAD = 'emandate_batch_upload';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,
