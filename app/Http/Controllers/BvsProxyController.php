@@ -29,8 +29,8 @@ class BvsProxyController extends BaseProxyController {
      * timeout in seconds
      */
     const PATH_TIMEOUT_MAP  = [
-        self::GET_CAPTCHA_API           => 10,
-        self::VERIFY_CAPTCHA_GET_OTP    => 10
+        self::GET_CAPTCHA_API           => 25,
+        self::VERIFY_CAPTCHA_GET_OTP    => 25
     ];
 
     public function __construct()
