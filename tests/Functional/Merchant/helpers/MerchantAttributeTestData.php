@@ -90,11 +90,15 @@ return [
         'request' => [
             'content' => [
                 [
-                    'type' => 'current_account',
+                    'type'  => 'current_account',
                     'value' => 'true'
                 ],
                 [
-                    'type' => 'vendor_payments',
+                    'type'  => 'vendor_payments',
+                    'value' => 'true'
+                ],
+                [
+                    'type'  => 'instant_settlements',
                     'value' => 'true'
                 ]
             ],
@@ -107,11 +111,15 @@ return [
         'response' => [
             'content' => [
                 [
-                    'type' => 'current_account',
+                    'type'  => 'current_account',
                     'value' => 'true'
                 ],
                 [
-                    'type' => 'vendor_payments',
+                    'type'  => 'instant_settlements',
+                    'value' => 'true'
+                ],
+                [
+                    'type'  => 'vendor_payments',
                     'value' => 'true'
                 ]
             ]

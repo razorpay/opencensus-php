@@ -25,6 +25,7 @@ class Type
     const TAX_PAYMENTS                  = 'tax_payments';
     const VENDOR_PAYMENTS               = 'vendor_payments';
     const CORPORATE_CARDS               = 'corporate_cards';
+    const INSTANT_SETTLEMENTS           = 'instant_settlements';
     const UNKNOWN                       = 'unknown';
 
     //SOURCE Types

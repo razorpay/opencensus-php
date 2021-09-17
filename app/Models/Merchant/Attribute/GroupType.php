@@ -31,6 +31,7 @@ class GroupType
             Type::TAX_PAYMENTS,
             Type::VENDOR_PAYMENTS,
             Type::CORPORATE_CARDS,
+            Type::INSTANT_SETTLEMENTS,
             Type::UNKNOWN
         ],
 
