@@ -186,7 +186,7 @@ class Onecard extends Base
                 'Issuer'                       => 'One Card',
                 'RRN'                          => $rrns[$emiPayment['id']]['rrn'] ?? '',
                 'Auth Code'                    => $this->getAuthCode($emiPayment),
-                'Tx Amount'                    => $emiPayment->getAmount(),
+                'Tx Amount'                    => ($emiPayment->getAmount() / 100),
                 'EMI_Offer'                    => $emiTenure,
                 'Merchant Name'                => $merchantDbaName,
                 'Address1'                     => '',
