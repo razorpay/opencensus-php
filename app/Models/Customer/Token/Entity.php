@@ -640,7 +640,7 @@ class Entity extends Base\PublicEntity
     {
         if ($aadhaarNumber !== null)
         {
-            $aadhaarNumber = Crypt::encrypt($aadhaarNumber);
+            $aadhaarNumber = Crypt::encrypt($aadhaarNumber, true, $this);
         }
 
         $this->attributes[self::AADHAAR_NUMBER] = $aadhaarNumber;
@@ -650,7 +650,7 @@ class Entity extends Base\PublicEntity
     {
         if ($aadhaarVid !== null)
         {
-            $aadhaarVid = Crypt::encrypt($aadhaarVid);
+            $aadhaarVid = Crypt::encrypt($aadhaarVid, true, $this);
         }
 
         $this->attributes[self::AADHAAR_VID] = $aadhaarVid;
@@ -744,7 +744,7 @@ class Entity extends Base\PublicEntity
             return $aadhaarNumber;
         }
 
-        return Crypt::decrypt($aadhaarNumber);
+        return Crypt::decrypt($aadhaarNumber, true, $this);
     }
 
     protected function getAadhaarVidAttribute($aadhaarVid)
@@ -754,7 +754,7 @@ class Entity extends Base\PublicEntity
             return $aadhaarVid;
         }
 
-        return Crypt::decrypt($aadhaarVid);
+        return Crypt::decrypt($aadhaarVid, true, $this);
     }
 
     public function setPublicRecurringDetailsAttribute(array & $array)

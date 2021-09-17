@@ -137,7 +137,7 @@ class Core extends Base\Core
 
         $key = $this->repo->key->findOrFailPublic($keyId);
 
-        $secret = Crypt::decrypt($key->getSecret());
+        $secret = $key->getDecryptedSecret();
 
         return [
             'secret'      => $secret,

@@ -28,7 +28,7 @@ class InvoiceMetricTest extends TestCase
 
         $mock = $this->createMetricsMock();
 
-        $mock->expects($this->at(11))
+        $mock->expects($this->at(12))
              ->method('count')
              ->withConsecutive(
                 [
@@ -123,96 +123,6 @@ class InvoiceMetricTest extends TestCase
         $expectedHttpMetricTags = $this->testData[__FUNCTION__ . 'ExpectedMetricTags'];
 
         $mock = $this->createMetricsMock();
-
-        $mock->expects($this->at(14))
-             ->method('count')
-             ->withConsecutive(
-                [
-                    'cache_misses_total',
-                    1,
-                    [
-                        'version' => 'v1',
-                        'entity'  => 'key',
-                        'type'    => 'query_cache',
-                    ],
-                ],
-                [
-                    'cache_writes_total',
-                    1,
-                    [
-                        'version' => 'v1',
-                        'entity'  => 'key',
-                        'type'    => 'query_cache',
-                    ],
-                ],
-                [
-                    'cache_misses_total',
-                    1,
-                    [
-                        'version' => 'v1',
-                        'entity'  => 'merchant',
-                        'type'    => 'query_cache',
-                    ],
-                ],
-                [
-                    'cache_writes_total',
-                    1,
-                    [
-                        'version' => 'v1',
-                        'entity'  => 'merchant',
-                        'type'    => 'query_cache',
-                    ],
-                ],
-                [
-                    'cache_misses_total',
-                    1,
-                    [
-                        'version' => 'v1',
-                        'entity'  => 'feature',
-                        'type'    => 'query_cache',
-                    ],
-                ],
-                [
-                    'cache_writes_total',
-                    1,
-                    [
-                        'version' => 'v1',
-                        'entity'  => 'feature',
-                        'type'    => 'query_cache',
-                    ],
-                ],
-                [
-                    'async_jobs_received_total',
-                    1,
-                    [
-                        'async_job_connection' => 'sync',
-                        'async_job_queue'      => 'sync',
-                        'async_job_name'       => 'RZP_Jobs_EsSync',
-                    ],
-                ],
-                [
-                    'async_jobs_processed_total',
-                    1,
-                    [
-                        'async_job_connection' => 'sync',
-                        'async_job_queue'      => 'sync',
-                        'async_job_name'       => 'RZP_Jobs_EsSync',
-                    ],
-                ],
-                [
-                    'invoice_created_total',
-                    1,
-                    [
-                        'type'             => 'invoice',
-                        'has_batch'        => 0,
-                        'has_subscription' => 0,
-                    ],
-                ],
-                [
-                    'http_requests_total',
-                    1,
-                    $expectedHttpMetricTags,
-                ]);
 
         $mock->expects($this->at(0))
              ->method('histogram')

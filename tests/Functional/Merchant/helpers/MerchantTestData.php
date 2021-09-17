@@ -23,6 +23,21 @@ return [
         ]
     ],
 
+    'testCreateKeyForAxisOrgMerchantShouldUseAxisKeyForEncryption' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/keys',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'key',
+                'expired_at' => null,
+            ]
+        ]
+    ],
+
     'testSuspendMerchantBulk' => [
         'request'  => [
             'method'  => 'PUT',

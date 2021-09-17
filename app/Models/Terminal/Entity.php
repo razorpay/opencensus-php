@@ -1216,20 +1216,25 @@ class Entity extends Base\PublicEntity
         return $terminal;
     }
 
-    // This is called from parent Entity class's build()
-    public function modify(& $input)
+    /**
+     * This is called from parent class Entity's build()
+     * This is needed so that org_id and merchant_id gets set first as we need to do  $entity->getMerchantId() and $entity->getOrgId() for getting org key while setting and encrypting sensitive fields.
+     * If this is not done, we will get error when doing $entity->getMerchantId() and $entity->getOrgId() in Encryption/Facade.php
+     * Relevant test = testEncryptionDecryptionAxisOrg, testTerminalEncryptionAxisOrg
+     */
+    public function generate($input)
     {
-        // sorting so that org_id gets set first as we need to do $entity->getOrgId() for getting org key while setting and encrypting sensitive fields.
-        // E.g. relevant test: testTerminalEncryptionAxisOrg
-        uksort($input, function($a, $b) {
-            if ($a === 'org_id')
-            {
-                return false;
-            }
-            return true;
-        });
+        if (isset($input[Entity::MERCHANT_ID]) === true)
+        {
+            $this->setAttribute(Entity::MERCHANT_ID, $input[Entity::MERCHANT_ID]);
+        }
 
-        parent::modify($input);
+        if (isset($input[Entity::ORG_ID]) === true)
+        {
+            $this->setAttribute(Entity::ORG_ID, $input[Entity::ORG_ID]);
+        }
+
+        parent::generate($input);
     }
 
     public function buildFromTerminalServiceResponse(array $input = array())

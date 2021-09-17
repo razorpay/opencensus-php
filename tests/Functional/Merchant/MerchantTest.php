@@ -7,6 +7,7 @@ use App;
 use Mail;
 use Event;
 use Redis;
+use Crypt;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Services\Mock;
@@ -17,6 +18,7 @@ use Functional\Helpers\BvsTrait;
 use Illuminate\Http\UploadedFile;
 use RZP\Jobs\FundAccountValidation;
 use Illuminate\Hashing\BcryptHasher;
+use Illuminate\Encryption\Encrypter;
 use Illuminate\Cache\Events\CacheHit;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\BankAccount\Repository;
@@ -254,6 +256,58 @@ class MerchantTest extends TestCase
 
         // Assert insertion of api key
         $this->assertCount(2, $this->getDbEntities('key'), 'key present in database');
+
+        // assert that key got encrypted using rzp key
+        $keyFromDb = $this->getDbEntityById('key', $res['id']);
+        $decryptedSecret = Crypt::decrypt($keyFromDb['secret']);
+        $this->assertEquals($decryptedSecret, $res['secret']);
+        $this->assertEquals($decryptedSecret, $keyFromDb->getDecryptedSecret());
+    }
+
+    // Test that when we create key for axis org, it should be encrypted using axis key as BYOK is enabled on axis org
+    public function testCreateKeyForAxisOrgMerchantShouldUseAxisKeyForEncryption()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+        ->setConstructorArgs([$this->app])
+        ->setMethods(['getTreatment'])
+        ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+        ->will($this->returnCallback(
+            function ($actionId, $feature, $mode)
+            {
+                return 'on';
+            }) );
+
+        $merchantId = '1X4hRFHFx4UiXt';
+        
+        $this->createMerchant();
+
+        $user = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
+
+        $orgId = MerchantEntity::AXIS_ORG_ID; // axis orgId
+
+        $this->fixtures->create('org', ['id' => $orgId]);
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id' => $orgId,
+        ]);
+
+        $res = $this->startTest();
+
+        $keyFromDb = $this->getDbEntityById('key', $res['id']);
+
+        // assert that key got encrypted using axis key
+        $orgKey = '5dlTd5lQhN56CkSrnyrRBtRMsXS9exWS'; // ENCRYPTION_KEY_AXIS
+        $newEncrypter = new Encrypter($orgKey, 'AES-256-CBC');
+        $decryptedSecret = $newEncrypter->decrypt($keyFromDb['secret'], true);
+        $this->assertEquals($decryptedSecret, $res['secret']);
+
+        $this->assertEquals($decryptedSecret, $keyFromDb->getDecryptedSecret());
     }
 
     public function testCreateKeyForNonActivatedMerchant()

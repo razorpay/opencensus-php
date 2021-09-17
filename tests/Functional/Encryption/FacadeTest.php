@@ -23,9 +23,9 @@ class FacadeTest extends TestCase
 
         $dataToEncrypt = 'somerandomdata';
 
-        $encryptedData = Crypt::encrypt($dataToEncrypt, $terminal);
+        $encryptedData = Crypt::encrypt($dataToEncrypt, true,  $terminal);
 
-        $decryptedData = Crypt::decrypt($encryptedData, $terminal);
+        $decryptedData = Crypt::decrypt($encryptedData, true, $terminal);
 
         $this->assertEquals($dataToEncrypt, $decryptedData);
     }

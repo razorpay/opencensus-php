@@ -2268,7 +2268,7 @@ class BasicAuth
         }
         else
         {
-        	$secret = Crypt::decrypt($key->getSecret());
+        	$secret = $key->getDecryptedSecret();
         }
 
         return hash_hmac(self::HMAC_ALGO, $str, $secret);
@@ -2318,7 +2318,7 @@ class BasicAuth
 
             if (isset($key) === true)
             {
-                $secret = Crypt::decrypt($key->getSecret());
+                $secret = $key->getDecryptedSecret();
 
                 return $secret;
             }

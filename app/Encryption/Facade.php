@@ -22,18 +22,16 @@ class Facade extends BaseFacade
 {
     public static function encrypt($data, $serialize = true,  Base\PublicEntity $entity = null)
     {
-        $app = App::getFacadeRoot();
+        $shouldUseByok = self::shouldUseByok($entity);
 
-        $mode = $app['rzp.mode'] ?? Mode::LIVE;
-
-        $variantFlag = $app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), "BYOK_USE_ORG_KEY_FOR_ENCRYPTION_API", $mode);
-
-        if ($variantFlag === 'on')
+        if ($shouldUseByok === true)
         {
             $orgKey = self::getOrgKeyForCrypt($entity);
 
             if (empty($orgKey) === true)
             {
+                self::traceInfo(TraceCode::BYOK_ENCRYPTION_USING_DEFAULT_KEY);
+
                 return parent::encrypt($data, $serialize);
             }
 
@@ -44,7 +42,9 @@ class Facade extends BaseFacade
             return $newEncrypter->encrypt($data, $serialize);
         }
 
-        // If razorx is off
+        // If $shouldUseByok is false, use default encryption
+        self::traceInfo(TraceCode::BYOK_ENCRYPTION_USING_DEFAULT_KEY);
+
         return parent::encrypt($data, $serialize);
     }
 
@@ -67,10 +67,64 @@ class Facade extends BaseFacade
         }
         catch(DecryptException $ex) // If above we try to decrypt data that was encrypted by default key
         {
-            self::traceInfo(TraceCode::BYOK_DECRYPTION_USING_ORG_KEY_FAILED);
+            self::traceInfo(TraceCode::BYOK_DECRYPTION_FAILED_FALLING_BACK_TO_DEFAULT_KEY);
 
             return parent::decrypt($data, $unserialize);
         }
+    }
+
+    // BYOK = "Bring Your Own Key", i.e. use separate key while encrypting data of different orgs. Currently, going live with axis org first
+    protected static function shouldUseByok(Base\PublicEntity $entity = null)
+    {
+        // Entities for which BYOK will be used viz terminals, key, tokens, bank_account will be passed while calling encrypt()/decrypt() and should not be null here
+        if (empty($entity) === true)
+        {
+            return false;
+        }
+
+        $app = App::getFacadeRoot();
+
+        $mode = $app['rzp.mode'] ?? Mode::LIVE;
+
+        $razorxMid = "";
+
+        $shouldCallRazorx = true;
+
+        try
+        {
+            $razorxMid = $entity->getMerchantId();
+        }
+        catch (\Throwable $ex)
+        {
+            self::traceException($ex, TraceCode::BYOK_ALERT_ERROR_WHILE_GETTING_MERCHANT_ID);
+
+            $shouldCallRazorx = false;
+        }
+
+        if (empty($razorxMid) === true)
+        {
+            $ex = new Exception\ServerErrorException(
+                'Failed to get merchant_id',
+                ErrorCode::SERVER_ERROR);
+
+            self::traceException($ex, TraceCode::BYOK_ALERT_ERROR_WHILE_GETTING_MERCHANT_ID);
+
+            $shouldCallRazorx = false;
+        }
+
+
+        if ($shouldCallRazorx === true)
+        {
+            $variantFlag = $app->razorx->getTreatment($razorxMid, "BYOK_USE_ORG_KEY_FOR_ENCRYPTION_API", $mode);
+
+            self::traceInfo(TraceCode::BYOK_RAZORX_VARIANT,  ['variant' => $variantFlag]);
+
+            if ($variantFlag === 'on')
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected static function getOrgKeyForCrypt($entity)
@@ -103,43 +157,46 @@ class Facade extends BaseFacade
             return null;
         }
 
-        $orgId = self::getOrgIdFromEntity($entity);
+        try
+        {
+            $orgId = self::getOrgIdFromEntity($entity);
 
-        $orgId = Org\Entity::silentlyStripSign($orgId);
+            $orgId = Org\Entity::silentlyStripSign($orgId);
 
-        return $orgId;
+            return $orgId;
+        }
+        catch (\Throwable $ex) // If entity's org_id is null, then $entity->getOrgId() can throw TypeError. This will happen for unit tests where org_id is not passed in fixture
+        {
+            // should not happen in production, add an alert for this
+            self::traceException($ex, TraceCode::BYOK_ALERT_ERROR_WHILE_GETTING_ORG_ID);
+
+            return null;
+        }
     }
 
     protected static function getOrgIdFromEntity(Base\Entity $entity)
     {
         $entityName = $entity->getEntityName();
 
-        if ($entityName !== Entity::TERMINAL)
+        switch ($entityName)
         {
-            // should not reach here, getOrgIdFromEntity not implemented for the entity, please implement
-            throw new Exception\ServerErrorException(
-                'Failed to get orgId from entity',
-                ErrorCode::SERVER_ERROR);
-
-            return null;
+            case Entity::TERMINAL:
+                return $entity->getOrgId();
+            case Entity::KEY:
+            case Entity::TOKEN:
+            case Entity::BANK_ACCOUNT:
+                return $entity->merchant->getOrgId();
+            default:
+                // should not reach here, getOrgIdFromEntity not implemented for the entity, please implement
+                throw new Exception\ServerErrorException(
+                    'Failed to get orgId from entity',
+                    ErrorCode::SERVER_ERROR);
         }
-
-        try
-        {
-            return $entity->getOrgId();
-        }
-        catch(\TypeError $ex) // If entity's org_id is null, then $entity->getOrgId() can throw TypeError. This will happen for unit tests where org_id is not passed in fixture
-        {
-            // should not happen in production, add an alert for this
-            self::traceException($ex, TraceCode::BYOK_GET_ORG_ID_FAILED_WITH_TYPE_ERROR);
-        }
-
-        return null;
     }
 
     protected static function getOrgKeyFromOrgId($orgId)
     {
-        self::traceInfo(TraceCode::BYOK_DECRYPTING_USING_ORG_KEY, ['org_id' => $orgId]);
+        self::traceInfo(TraceCode::BYOK_GETTING_ORG_KEY_FROM_ORG_ID, ['org_id' => $orgId]);
 
         $configKey = 'app.byok_nonrzp_orgs_encryption_keys.encryption_key_' . $orgId;
 

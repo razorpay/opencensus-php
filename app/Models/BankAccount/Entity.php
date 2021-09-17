@@ -275,7 +275,7 @@ class Entity extends Base\PublicEntity
 
         $mpin = $this->attributes[self::MPIN];
 
-        return Crypt::decrypt($mpin);
+        return Crypt::decrypt($mpin, true, $this);
     }
 
     protected function getNameAttribute()
@@ -487,7 +487,7 @@ class Entity extends Base\PublicEntity
             $mpin = '';
         }
 
-        $this->attributes[self::MPIN] = Crypt::encrypt($mpin);
+        $this->attributes[self::MPIN] = Crypt::encrypt($mpin, true, $this);
     }
 
     protected function getIfscCodeAttribute()

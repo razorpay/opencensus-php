@@ -235,7 +235,7 @@ class Entity extends Base\PublicEntity
             $secret = substr($secret, 0, self::SECRET_LENGTH);
         }
 
-        $hash = Crypt::encrypt($secret);
+        $hash = Crypt::encrypt($secret, true, $this);
         $this->setAttribute(self::SECRET, $hash);
 
         assertTrue(strlen($secret) === self::SECRET_LENGTH);
@@ -293,6 +293,11 @@ class Entity extends Base\PublicEntity
      */
     public function toArrayPublicWithSecret(): array
     {
-        return $this->toArrayPublic() + [self::SECRET => Crypt::decrypt($this->getSecret())];
+        return $this->toArrayPublic() + [self::SECRET => $this->getDecryptedSecret()];
+    }
+
+    public function getDecryptedSecret()
+    {
+        return Crypt::decrypt($this->getSecret(), true, $this);
     }
 }

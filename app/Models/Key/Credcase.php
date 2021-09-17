@@ -93,7 +93,7 @@ function newMigrateApiKeyRequest(Entity $key, string $mode)
 {
     $req                      = array();
     $req[Entity::ID]          = $key->getId();
-    $req[Entity::SECRET]      = Crypt::decrypt($key->getSecret());
+    $req[Entity::SECRET]      = $key->getDecryptedSecret();
     $req["mode"]              = constant(Mode::class . '::' . $mode);
     $req[Entity::MERCHANT_ID] = $key->getMerchantId();
     $req[Entity::CREATED_AT]  = $key->getCreatedAt();

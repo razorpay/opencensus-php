@@ -73,7 +73,7 @@ class KeyAuthCreds extends AuthCreds
 
         $keyEntity = $this->key;
 
-        if (Crypt::decrypt($keyEntity->getSecret()) !== $secret)
+        if ($keyEntity->getDecryptedSecret() !== $secret)
         {
             $this->trace->info(
                 TraceCode::BAD_REQUEST_INVALID_API_SECRET, [self::KEY_ID => $this->getKey()]);
