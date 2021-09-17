@@ -18,11 +18,11 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    //Fetches applications that are not submitted within the last XX(timestamp)
-    public function fetchRblApplicationSubmissionInProgress($timestamp)
+    public function fetchRblApplicationsBySalesTeamCreatedAtNotSubmitted($salesTeam, $timestamp)
     {
         return $this->newQuery()
-                    ->where(Entity::CREATED_AT, '<', $timestamp)
+                    ->where(Entity::SALES_TEAM, '=', $salesTeam)
+                    ->where(Entity::CREATED_AT, '>', $timestamp)
                     ->where(function ($query)
                         {
                              $query->where(Entity::DECLARATION_STEP, '=', 0)

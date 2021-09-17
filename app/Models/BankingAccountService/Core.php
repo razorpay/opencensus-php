@@ -384,9 +384,21 @@ class Core extends Base\Core
 
     public function sendRblApplicationInProgressLeadsToSalesForce()
     {
-        $last24hrs = Carbon::now()->subDay()->getTimestamp();
+        $config = app('config')->get('applications.banking_account_service');
 
-        $bankingAccountActivationDetail = (new BankingAccount\Activation\Detail\Repository())->fetchRblApplicationSubmissionInProgress($last24hrs);
+        if(empty($config) === false and empty($config['rbl_leads_sf_time_filter']) === false)
+        {
+            $timestamp = (int) $config['rbl_leads_sf_time_filter'];
+        }
+        else
+        {
+            //setting the value to 18th Sep 2021
+            $timestamp = 1631903400;
+        }
+
+        $salesTeam = BankingAccount\Activation\Detail\Validator::SELF_SERVE;
+
+        $bankingAccountActivationDetail = (new BankingAccount\Activation\Detail\Repository())->fetchRblApplicationsBySalesTeamCreatedAtNotSubmitted($salesTeam, $timestamp);
 
         foreach ($bankingAccountActivationDetail as $detail)
         {

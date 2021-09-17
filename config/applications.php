@@ -1066,10 +1066,11 @@ return [
     ],
 
     'banking_account_service' => [
-        'url'           => env('APP_BANKING_ACCOUNT_SERVICE_URL'),
-        'secret'        => env('APP_BANKING_ACCOUNT_SERVICE_SECRET'),
-        'timeout'       => env('APP_BANKING_ACCOUNT_SERVICE_TIMEOUT_SECS', 15),
-        'mock'          => env('MOCK_BANKING_ACCOUNT_SERVICE', false),
+        'url'                      => env('APP_BANKING_ACCOUNT_SERVICE_URL'),
+        'secret'                   => env('APP_BANKING_ACCOUNT_SERVICE_SECRET'),
+        'timeout'                  => env('APP_BANKING_ACCOUNT_SERVICE_TIMEOUT_SECS', 15),
+        'mock'                     => env('MOCK_BANKING_ACCOUNT_SERVICE', false),
+        'rbl_leads_sf_time_filter' => env('RBL_LEADS_SF_TIME_FILTER', 1631903400),
     ],
 
     'acs' => [

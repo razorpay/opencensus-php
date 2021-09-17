@@ -16,6 +16,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\BankingAccount\Activation\Detail\Validator;
 
 class BankingAccountServiceTest extends TestCase
 {
@@ -24,6 +25,8 @@ class BankingAccountServiceTest extends TestCase
     use RequestResponseFlowTrait;
 
     protected $config;
+
+    protected $sfLeadsTimeStamp;
 
     public function setUp(): void
     {
@@ -36,6 +39,8 @@ class BankingAccountServiceTest extends TestCase
         $this->app['config']->set('applications.banking_account_service.mock', true);
 
         $this->config = App::getFacadeRoot()['config'];
+
+        $this->sfLeadsTimeStamp = (int) $this->config['applications.banking_account_service.rbl_leads_sf_time_filter'];
     }
 
     protected function setupDefaultScheduleForFeeRecovery()
@@ -473,7 +478,7 @@ class BankingAccountServiceTest extends TestCase
             'contact_mobile'             => '1234567890',
         ];
 
-        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailArray);
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $this->mockSalesForce('sendCaLeadDetails', 1);
 
@@ -515,6 +520,7 @@ class BankingAccountServiceTest extends TestCase
             'banking_account_id'        => $ba1->getId(),
             'merchant_poc_email'        => 'rzp@gmail.com',
             'merchant_poc_phone_number' => '9177278079',
+            'sales_team'                => Validator::SELF_SERVE,
         ]);
 
         $ba2 = $this->fixtures->create('banking_account', [
@@ -536,29 +542,10 @@ class BankingAccountServiceTest extends TestCase
             'declaration_step'          => 1,
         ]);
 
-        $ba3 = $this->fixtures->create('banking_account', [
-            'id'                    => 'randomBaAccId6',
-            'account_number'        => '1090212334',
-            'account_type'          => 'current',
-            'merchant_id'           => '10000000000002',
-            'channel'               => 'rbl',
-            'status'                => 'created',
-            'pincode'               => '1',
-            'bank_reference_number' => '',
-            'account_ifsc'          => 'RATN0000156',
-        ]);
-
-        $baad3 = $this->fixtures->create('banking_account_activation_detail', [
-            'banking_account_id'        => $ba3->getId(),
-            'merchant_poc_email'        => 'rzp3@gmail.com',
-            'merchant_poc_phone_number' => '9876543210',
-            'declaration_step'          => 0,
-        ]);
-
         $this->fixtures->edit('banking_account_activation_detail',
                               $baad1->getId(),
                               [
-                                  'created_at' => Carbon::now()->subDays(3)->getTimestamp(),
+                                  'created_at' => Carbon::now()->addDays(5)->getTimestamp(),
                               ]);
 
         $this->fixtures->edit('banking_account_activation_detail',
@@ -567,13 +554,7 @@ class BankingAccountServiceTest extends TestCase
                                   'created_at' => Carbon::now()->subDays(2)->getTimestamp(),
                               ]);
 
-        $this->fixtures->edit('banking_account_activation_detail',
-                              $baad3->getId(),
-                              [
-                                  'created_at' => Carbon::now()->subHour()->getTimestamp(),
-                              ]);
-
-        //only one application since $baad2 application is fully submitted and $baad3 created just one hour ago
+        //only one application since $baad2 application is fully submitted
         $this->mockSalesForce('sendCaLeadDetails', 1);
 
         $this->startTest();
@@ -630,7 +611,6 @@ class BankingAccountServiceTest extends TestCase
                                   'created_at' => Carbon::now()->subDays(3)->getTimestamp(),
                               ]);
 
-        //only one application since $baad2 application is fully submitted and $baad3 created just one hour ago
         $this->mockSalesForce('sendCaLeadDetails', 0);
 
         $this->startTest();
@@ -640,7 +620,63 @@ class BankingAccountServiceTest extends TestCase
                                         'id'    => $baad1->getId(),
                                     ]);
 
-        $this->assertNull( $baad1->getSalesTeam());
+        $this->assertNull($baad1->getSalesTeam());
+    }
+
+    public function testSendRblApplicationLeadsHavingXSMEStateToSalesForce()
+    {
+        $this->ba->cronAuth();
+
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560034,
+            'business_dba'               => 'test',
+            'business_name'              => 'INTERNET BANKING CA',
+            'business_operation_city'    => 'Bangalore',
+            'activation_status'          => 'activated'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'id'                    => 'randomBaAccId8',
+            'account_number'        => '567890123',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => Status::CREATED,
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $baad1 = $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba1->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'sales_team'                => Validator::SME,
+        ]);
+
+        $this->fixtures->edit('banking_account_activation_detail',
+                              $baad1->getId(),
+                              [
+                                  'created_at' => Carbon::now()->addDays(3)->getTimestamp(),
+                              ]);
+
+        $this->mockSalesForce('sendCaLeadDetails', 0);
+
+        $this->startTest();
+
+        $baad1 = $this->getDbEntity('banking_account_activation_detail',
+                                    [
+                                        'id'    => $baad1->getId(),
+                                    ]);
+
+        $this->assertEquals(Validator::SME, $baad1->getSalesTeam());
     }
 
     public function mockSalesForce(string $method, int $count)
