@@ -126,13 +126,20 @@ export default class ActivationContainer extends Component {
       }),
       !accountId && merchantFetch('merchant/activation/business_categories'),
       !this.isSourceRX && merchantFetch('merchant/aov-config'),
-      this.props.user.isGstinAutoPopulate && merchantFetch('merchant/activation/gst_details'),
-    ]).then(([data, categories, aov_list, gst_details]) => {
+    ]).then(async ([data, categories, aov_list]) => {
       data = data.data;
       categories = categories && categories.data;
       aov_list = aov_list && aov_list.data;
-      gst_details = gst_details && gst_details.data;
+
+      let gst_details;
       let gstinDetails = null;
+
+      try {
+        if (this.props.user.isGstinAutoPopulate) {
+          gst_details = await merchantFetch('merchant/activation/gst_details');
+          gst_details = gst_details?.data;
+        }
+      } catch {}
 
       if (gst_details?.results && gst_details.results.length) {
         gstinDetails = {

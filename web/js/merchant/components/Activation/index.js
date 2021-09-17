@@ -2278,7 +2278,7 @@ export function ActivationField(field) {
       props: { data, gstinDetails },
     } = this;
     const defaultGstin = gstinDetails?.defaultGstin;
-    if (!this.state.gstin && defaultGstin) {
+    if (!this.state.gstin && defaultGstin && this.showFullGstinList) {
       this.setState((prevState) => ({
         ...prevState,
         gstin: defaultGstin,
@@ -2289,7 +2289,7 @@ export function ActivationField(field) {
       }));
     }
     rest.options = gstinDetails?.gstinList || [];
-    rest.selected = this.state.gstin || defaultGstin;
+    rest.selected = this.state.gstin;
     rest.onChange = ({ option }) => {
       this.showFullGstinList = true;
       this.setState((prevState) => ({
@@ -2304,7 +2304,8 @@ export function ActivationField(field) {
     };
     rest.description = rest.description(this);
     rest.gstinInputError =
-      rest.checkValidityFromAPI && !this.isOnKYCTab() && rest.checkValidityFromAPI(this);
+      (rest.checkValidityFromAPI && !this.isOnKYCTab() && rest.checkValidityFromAPI(this)) ||
+      (!this.state.gstin && 'Please fill out this field');
     rest.showFullGstinList = this.showFullGstinList;
     rest.gstinInputValue = this.state.gstin;
   }

@@ -358,7 +358,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
         business_operation_pin: businessDetails.business_operation_pin.value,
         ...addressFormikValue,
       }}
-      validationSchema={businessDetailsSchema({ hasGSTIN, businessOverviewDetails })}
+      validationSchema={businessDetailsSchema.bind(null, { hasGSTIN, businessOverviewDetails })}
       enableReinitialize
       onSubmit={() => console.log('onSubmit')}
     >
