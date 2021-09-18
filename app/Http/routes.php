@@ -35,13 +35,16 @@ Route::group(['middleware' => ['web']], function () {
     Route::options('/{path?}', 'GenericController@handleAny')
         ->where(['path' => '.*']);
 
-    Route::get('/', 'UserController@getIndex')->name('dashboard');
-    Route::get('/signup', 'UserController@getIndex')->name('signup');
-    Route::get('/signin', 'UserController@getIndex')->name('signin');
-    Route::get('/app/{path?}', 'UserController@getIndex')->name('dashboard')
-        ->where(['path' => '.*']);
 
-    Route::get('/tnc/{id}', 'UserController@getTnc')->name('tnc');
+    Route::group(['middleware'  =>  ['set_csp_header']], function () {
+        Route::get('/', 'UserController@getIndex')->name('dashboard');
+        Route::get('/signup', 'UserController@getIndex')->name('signup');
+        Route::get('/signin', 'UserController@getIndex')->name('signin');
+        Route::get('/app/{path?}', 'UserController@getIndex')->name('dashboard')
+            ->where(['path' => '.*']);
+
+        Route::get('/tnc/{id}', 'UserController@getTnc')->name('tnc');
+    });
 
     // User (guest auth route)
     Route::any('/user/api/{mode}/{path?}', 'GenericController@handleAny')
