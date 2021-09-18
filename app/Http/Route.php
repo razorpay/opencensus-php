@@ -5355,6 +5355,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'merchant_activation_gst_details'           => Permission::VIEW_MERCHANT,
         'merchant_business_detail_fetch'            => Permission::VIEW_MERCHANT,
         'merchant_business_detail_save'             => Permission::EDIT_MERCHANT,
         'los_service_dev_admin'                    => Permission::CAPITAL_DEVELOPER,
@@ -7904,6 +7905,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'merchant_activation_gst_details',
             'merchant_upload',
             'rbl_current_account_serviceability_get_admin',
             'merchant_business_detail_fetch',

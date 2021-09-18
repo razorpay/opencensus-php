@@ -4422,42 +4422,43 @@ class Core extends Base\Core
     {
         $gstDetails = [];
 
-        $merchantDetail = $this->merchant->merchantDetail;
-
-        //if experiment is enabled then only probe for gst details
-        $isGetGstDetailsRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-            $this->merchant->getId(),
-            RazorxTreatment::BVS_GET_GST_DETAILS);
-
-        if ($isGetGstDetailsRazorxExperimentEnabled === false)
-        {
-            return [Constant::RESULTS => $gstDetails];;
-        }
-
-        $bvsCore = new AutoKyc\Bvs\Core();
-
-        //rate limiting per merchant
-        $getGstDetailsAttempts = $bvsCore->getGstDetailsAttempts($this->merchant->getId());
-
-        if ($getGstDetailsAttempts > DetailConstants::GET_GST_DETAILS_MAX_ATTEMPT)
-        {
-            $this->trace->count(DetailMetric::GET_GST_DETAILS_EXHAUSTED);
-
-            $this->trace->info(TraceCode::GET_GST_DETAILS_EXHAUSTED);
-
-            return [Constant::RESULTS => $gstDetails];
-        }
-
         try
         {
-            $gstDetailsForCompanyPan=[];
-            $gstDetailsForPersonalPan=[];
+            $merchantDetail = $this->merchant->merchantDetail;
+
+            //if experiment is enabled then only probe for gst details
+            $isGetGstDetailsRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+                $this->merchant->getId(),
+                RazorxTreatment::BVS_GET_GST_DETAILS);
+
+            if ($isGetGstDetailsRazorxExperimentEnabled === false)
+            {
+                return [Constant::RESULTS => $gstDetails];;
+            }
+
+            $bvsCore = new AutoKyc\Bvs\Core();
+
+            //rate limiting per merchant
+            $getGstDetailsAttempts = $bvsCore->getGstDetailsAttempts($this->merchant->getId());
+
+            if ($getGstDetailsAttempts > DetailConstants::GET_GST_DETAILS_MAX_ATTEMPT)
+            {
+                $this->trace->count(DetailMetric::GET_GST_DETAILS_EXHAUSTED);
+
+                $this->trace->info(TraceCode::GET_GST_DETAILS_EXHAUSTED);
+
+                return [Constant::RESULTS => $gstDetails];
+            }
+
+            $gstDetailsForCompanyPan  = [];
+            $gstDetailsForPersonalPan = [];
 
             //get company pan associated gstin
             $pan = $merchantDetail->getPan();
 
             //get business pan associated gstin
-            if(empty($pan)==false && $merchantDetail->getCompanyPanVerificationStatus()==DetailConstants::VERIFIED){
+            if (empty($pan) == false && $merchantDetail->getCompanyPanVerificationStatus() == DetailConstants::VERIFIED)
+            {
                 $gstDetailsForCompanyPan =
                     $bvsCore->probeGetGstDetails($pan);
             }
@@ -4465,13 +4466,16 @@ class Core extends Base\Core
             //get personal pan associated gstin
             $pan = $merchantDetail->getPromoterPan();
 
-            if(empty($pan)==false && $merchantDetail->getPoiVerificationStatus()==DetailConstants::VERIFIED){
+            if (empty($pan) == false && $merchantDetail->getPoiVerificationStatus() == DetailConstants::VERIFIED)
+            {
                 $gstDetailsForPersonalPan =
                     $bvsCore->probeGetGstDetails($pan);
             }
 
             //merge both with company pan associated gstin given more priority
-            $gstDetails = array_unique(array_merge($gstDetailsForCompanyPan,$gstDetailsForPersonalPan));
+            $gstDetails = array_unique(array_merge($gstDetailsForCompanyPan, $gstDetailsForPersonalPan));
+
+            $bvsCore->increaseGetGstDetailsAttempt($this->merchant->getId());
         }
         catch (\Exception $e)
         {
@@ -4486,10 +4490,9 @@ class Core extends Base\Core
                                              DEConstants::PAN_NUMBER => $pan]);
         }
 
-        $bvsCore->increaseGetGstDetailsAttempt($this->merchant->getId());
-
         return [Constant::RESULTS => $gstDetails];
     }
+
 
     public function getActivationFlowForUnregistered(Merchant\Entity $merchant, Entity $merchantDetails)
     {
