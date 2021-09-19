@@ -73,7 +73,7 @@ class Service extends QrCode\Service
     {
         $input[Entity::ENTITY_TYPE] = 'qr_code';
 
-        $qrCodes = (new Repository)->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE);
+        $qrCodes = (new Repository)->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_ADMIN);
 
         return $qrCodes->toArrayPublic();
     }

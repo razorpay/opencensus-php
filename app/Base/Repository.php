@@ -57,6 +57,7 @@ class Repository extends \Razorpay\Spine\Repository
     // Data Warehouse
     const ADMIN_FETCH         = "data_warehouse_admin_fetch";
     const MERCHANT_FETCH      = "data_warehouse_merchant_fetch";
+    const REARCH_TIDB_EXPERIMENT = 'rearch_fetch_tidb_or_slave';
 
     protected $app;
 
@@ -510,9 +511,9 @@ class Repository extends \Razorpay\Spine\Repository
         assertTrue ($this->isTransactionActive());
     }
 
-    public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $count, $skip = 0, $relations = [])
+    public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $count, $skip = 0, $relations = [], $useWarehouse = false)
     {
-        $query = $this->getFetchBetweenTimestampQuery($merchantId, $from, $to);
+        $query = $this->getFetchBetweenTimestampQuery($merchantId, $from, $to, $useWarehouse);
 
         if (count($relations) > 0)
         {
@@ -627,10 +628,20 @@ class Repository extends \Razorpay\Spine\Repository
         return $query->findOrFail($id);
     }
 
-    protected function getFetchBetweenTimestampQuery($merchantId, $from, $to)
+    protected function getFetchBetweenTimestampQuery($merchantId, $from, $to, $useWarehouse = false)
     {
-        return $this->newQuery()
-                    ->betweenTime($from, $to)
+        $query = null;
+
+        if ($useWarehouse === false)
+        {
+            $query = $this->newQuery();
+        }
+        else
+        {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));;
+        }
+
+        return $query->betweenTime($from, $to)
                     ->merchantId($merchantId);
     }
 
@@ -1048,7 +1059,7 @@ class Repository extends \Razorpay\Spine\Repository
         return false;
     }
 
-    protected function getDataWarehouseConnection()
+    protected function getDataWarehouseConnection(string $cluster = null)
     {
         if (in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER], true) === true)
         {
@@ -1057,24 +1068,24 @@ class Repository extends \Razorpay\Spine\Repository
 
         $mode = $mode ?? $this->app['rzp.mode'];
 
-        $connection = ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::DATA_WAREHOUSE_LIVE;
-
-        return $connection;
-    }
-
-    protected function getDataWarehouseConnectionNoFallback()
-    {
-        if ($this->app['env'] === Environment::TESTING)
-        {
-            return Config::get('database.default');
-        }
-
-        $mode = $this->app['rzp.mode'];
-
+        // default connection is to Data warehouse live, can switch connection to different clusters as required.
         $connection = ($mode === Mode::TEST) ? Connection::DATA_WAREHOUSE_TEST : Connection::DATA_WAREHOUSE_LIVE;
 
+        if (is_null($cluster) === false)
+        {
+            if ($cluster === ConnectionType::DATA_WAREHOUSE_ADMIN)
+            {
+                $connection = ($mode === Mode::TEST) ? Connection::DATA_WAREHOUSE_ADMIN_TEST : Connection::DATA_WAREHOUSE_ADMIN_LIVE;
+            }
+            if ($cluster === ConnectionType::DATA_WAREHOUSE_MERCHANT)
+            {
+                $connection = ($mode === Mode::TEST) ? Connection::DATA_WAREHOUSE_MERCHANT_TEST : Connection::DATA_WAREHOUSE_MERCHANT_LIVE;
+            }
+        }
+
         return $connection;
     }
+
 
     public function getSlaveConnection(string $mode = null)
     {

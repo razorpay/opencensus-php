@@ -1542,7 +1542,7 @@ class Service extends Base\Service
 
         (new Payment\Validator)->validateInput('fetch_status_count', $input);
 
-        $paymentsStatusCounts = $this->repo->payment->fetchPaymentsStatusCountBetweenTimestamps($input, $merchantId, true);
+        $paymentsStatusCounts = $this->repo->payment->fetchPaymentsStatusCountBetweenTimestamps($input, $merchantId, false);
 
         $statusItem = [];
 

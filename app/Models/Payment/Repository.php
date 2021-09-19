@@ -209,6 +209,10 @@ class Repository extends Base\Repository
         {
             $query = $this->newQueryWithConnection($this->getSlaveConnection());
         }
+        else
+        {
+            $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        }
 
         $this->addCommonQueryParamMerchantId($query, $merchantId);
 
@@ -234,7 +238,7 @@ class Repository extends Base\Repository
 
     public function fetchPaymentsWithStatus($from, $to, $gateway, $status)
     {
-        return $this->newQueryOnSlave(600000)
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->from(\DB::raw('`payments` FORCE INDEX (payments_authorized_at_index)'))
                     ->whereBetween(Payment\Entity::AUTHORIZED_AT, array($from, $to))
                     ->whereIn('status', $status)
@@ -307,23 +311,22 @@ class Repository extends Base\Repository
 
         $expands = $this->getExpandsForQueryFromInput($params);
 
-        $connection = $this->getSlaveConnection();
+        $connection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
         if (!is_null($merchantId) &&
-            count(array_diff(array_keys($params), ["skip", "count", "from", "to"])) === 0) {
+            count(array_diff(array_keys($params), ["skip", "count", "from", "to"])) === 0)
+        {
             $app = App::getFacadeRoot();
 
-            $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
-                'payment_fetch_tidb_or_replica', $app['basicauth']->getMode() ?? Mode::LIVE);
-
-            $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_TIDB_EXPERIMENT_VARIANT, [
-                'variant' => $variant,
-            ]);
-
-            if (($variant === 'on') or
+            // The variant is used for switching between tidb admin / merchant -> slave
+            // and also for reverting back to ES and slave in case admin tibd is not able
+            // to support queries
+            if (($this->isExperimentEnabled(self::REARCH_TIDB_EXPERIMENT) === true) or
                 (app()->isEnvironmentProduction() === false))
             {
-                $connection = $this->getDataWarehouseConnection();
+
+                // TiDB Merchant here because part of bulk fetch will be accessible by merchant only
+                $connection = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
                 $query = $this->newQueryWithConnection($connection);
             }
@@ -372,7 +375,8 @@ class Repository extends Base\Repository
         }
         else
         {
-            $connection = $this->getSlaveConnection();
+
+            $connection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
             $query = $this->newQueryWithConnection($connection);
         }
@@ -1078,7 +1082,7 @@ class Repository extends Base\Repository
 
     public function fetchPaymentsForCustomerMethod($customer, $method, $skip)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->where(Payment\Entity::METHOD, '=', $method)
                     ->where(Payment\Entity::GLOBAL_CUSTOMER_ID, '=', $customer->getId())
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
@@ -1118,8 +1122,8 @@ class Repository extends Base\Repository
 
         $transactionReconciledAt = $txnRepo->dbColumn(Transaction\Entity::RECONCILED_AT);
 
-        // replication lag threshold of 5 minutes
-        return $this->newQueryOnSlave(300000)
+        // Queries go to admin tidb cluster due to rearch
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->select($paymentAttrs)
                     ->from(\DB::raw('`payments`, `transactions` USE INDEX (transactions_reconciled_at_index)'))
                     ->where($paymentId, '=', \DB::raw('`transactions`.`entity_id`'))
@@ -1143,7 +1147,7 @@ class Repository extends Base\Repository
 
         $transactionReconciledAt = $txnRepo->dbColumn(Transaction\Entity::RECONCILED_AT);
 
-        return $this->newQueryOnSlave(600000)
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->select($paymentAttrs)
             ->from(\DB::raw('`payments`, `transactions` USE INDEX (transactions_reconciled_at_index)'))
             ->where($paymentId, '=', \DB::raw('`transactions`.`entity_id`'))
@@ -1248,8 +1252,8 @@ class Repository extends Base\Repository
         $terminalTpv = $tRepo->dbColumn(Terminal\Entity::TPV);
         $terminalCorporate = $tRepo->dbColumn(Terminal\Entity::CORPORATE);
 
-        // replication lag threshold of 5 minutes
-        return $this->newQueryOnSlave(300000)
+        // Queries go to admin tidb cluster due to rearch
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->select($paymentAttrs)
                     ->join($txnRepo->getTableName(), $paymentId, '=', $transactionPaymentId)
                     ->join($tRepo->getTableName(), $paymentTerminalId, '=', $terminalId)

@@ -218,7 +218,7 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
-        $settlements = $this->repo->settlement->fetch($input, $this->merchant->getKey(), ConnectionType::DATA_WAREHOUSE);
+        $settlements = $this->repo->settlement->fetch($input, $this->merchant->getKey(), ConnectionType::DATA_WAREHOUSE_ADMIN);
 
         return $settlements->toArrayPublic();
     }

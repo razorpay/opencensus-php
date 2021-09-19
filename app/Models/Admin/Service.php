@@ -301,7 +301,14 @@ class Service extends Base\Service
 
         Entity::validateEntityOrFailPublic($entity);
 
-        $entities = $this->repo->$entity->fetch($input, null, ConnectionType::REPLICA);
+        if ($entity === Entity::PAYMENT || $entity === Entity::ORDER)
+        {
+            $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN);
+        }
+        else
+        {
+            $entities = $this->repo->$entity->fetch($input, null, ConnectionType::REPLICA);
+        }
 
         $this->traceActiveDbConnections();
 

@@ -203,7 +203,7 @@ class Service extends Base\Service
             $input[Entity::STATUS] = Constant::FETCH_STATUS;
         }
 
-        $transfers = $this->repo->transfer->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE);
+        $transfers = $this->repo->transfer->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_ADMIN);
 
         $this->trace->info(
             TraceCode::TRANSFER_FETCH_MULTIPLE_RESPONSE,

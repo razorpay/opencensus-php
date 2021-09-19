@@ -321,7 +321,7 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
-        $orders = $this->repo->order->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE);
+        $orders = $this->repo->order->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $orders->toArrayPublic();
     }
@@ -330,7 +330,7 @@ class Service extends Base\Service
     {
         $input[Payment\Entity::ORDER_ID] = $id;
 
-        $payments = $this->repo->payment->fetch($input, $this->merchant->getId());
+        $payments = $this->repo->payment->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $payments->toArrayPublic();
     }

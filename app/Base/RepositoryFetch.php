@@ -6,6 +6,8 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Constants\Es;
+use RZP\Constants\Mode;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use Database\Connection;
@@ -204,7 +206,7 @@ trait RepositoryFetch
         if ($queryDuration > 3000)
         {
             $this->trace->info(TraceCode::DATA_WAREHOUSE_RESPONSE_DURATION, [
-                'data_warehouse' => ($connection === Connection::DATA_WAREHOUSE_LIVE || $connection === Connection::DATA_WAREHOUSE_TEST),
+                'data_warehouse' => in_array($connection , Connection::DATA_WAREHOUSE_CONNECTIONS),
                 'connection'     => $connection,
                 'query_ctx'      => is_null($merchantId) ? 'admin' : 'merchant',
                 'duration_ms'    => $queryDuration,
@@ -232,18 +234,42 @@ trait RepositoryFetch
             case ConnectionType::SLAVE:
                 return $this->getSlaveConnection();
 
-            case ConnectionType::DATA_WAREHOUSE:
-                if ($this->useDataWarehouseConnection(Repository::MERCHANT_FETCH) === true)
+            case ConnectionType::DATA_WAREHOUSE_ADMIN:
+
+                if ($this->isExperimentEnabled(self::REARCH_TIDB_EXPERIMENT) === true)
                 {
-                    return $this->getDataWarehouseConnection();
+                    return $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
                 }
+
                 return $this->getSlaveConnection();
 
-            case ConnectionType::DATA_WAREHOUSE_NO_FALLBACK:
-                return $this->getDataWarehouseConnectionNoFallback();
+            case ConnectionType::DATA_WAREHOUSE_MERCHANT:
+
+                if ($this->isExperimentEnabled(self::REARCH_TIDB_EXPERIMENT) === true)
+                {
+                    return $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+                }
+
+                return $this->getSlaveConnection();
+
         }
 
         return null;
+    }
+
+    protected function isExperimentEnabled($experiment)
+    {
+        $app = $this->app;
+
+        $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
+            $experiment, $app['basicauth']->getMode() ?? Mode::LIVE);
+
+        $this->trace->info(TraceCode::REARCH_TIDB_EXPERIMENT_VARIANT, [
+            'variant' => $variant,
+            'experiment' => $experiment,
+        ]);
+
+        return ($variant === 'on');
     }
 
     protected function getPaginated(BuilderEx $query, array $params = [])
@@ -936,7 +962,7 @@ trait RepositoryFetch
 
     protected function addQueryOrder($query)
     {
-        if (($query->getConnection()->getName() !== Connection::DATA_WAREHOUSE_LIVE) and ($query->getConnection()->getName() !== Connection::DATA_WAREHOUSE_TEST))
+        if (!in_array($query->getConnection()->getName(), Connection::DATA_WAREHOUSE_CONNECTIONS, true))
         {
             $query->orderBy($this->dbColumn(Common::CREATED_AT), 'desc');
         }

@@ -6,6 +6,7 @@ use DB;
 use Cache;
 use Carbon\Carbon;
 
+use RZP\Base\ConnectionType;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
@@ -411,7 +412,7 @@ class Repository extends Base\Repository
 
     public function fetchDataForInvoice($merchantId, $from, $to)
     {
-        $fee = $this->newQuery()
+        $fee = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                     ->where('transactions.merchant_id', $merchantId)
                     ->where('type', 'payment')
                     ->join('payments', 'transactions.entity_id', '=', 'payments.id')
@@ -419,7 +420,7 @@ class Repository extends Base\Repository
                     ->betweenTime($from, $to)
                     ->sum('transactions.fee');
 
-        $tax = $this->newQuery()
+        $tax = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                     ->where('transactions.merchant_id', $merchantId)
                     ->where('type', 'payment')
                     ->join('payments', 'transactions.entity_id', '=', 'payments.id')
@@ -886,7 +887,7 @@ class Repository extends Base\Repository
 
         $transactionData = $this->dbColumn('*');
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                     ->select($transactionData)
                     ->join(Table::PAYMENT, $paymentId, '=', $transactionEntityId)
                     ->join(Table::BILLDESK, $billdeskPaymentId, '=', $paymentId)
@@ -925,7 +926,7 @@ class Repository extends Base\Repository
 
         $transactionData = $this->dbColumn('*');
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                     ->select($transactionData)
                     ->join(Table::REFUND, $refundId, '=', $transactionEntityId)
                     ->join(Table::PAYMENT, $refundPaymentId, '=', $paymentId)
@@ -962,7 +963,7 @@ class Repository extends Base\Repository
 
     public function getTransactionsToBeMigrated()
     {
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                     ->select('transactions.*')
                     ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
                     ->where(Entity::TYPE, 'payment')
@@ -980,7 +981,7 @@ class Repository extends Base\Repository
 
     public function getTransactionForReport($merchantId, $from, $to)
     {
-        $txnIds = $this->newQuery()
+        $txnIds = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                        ->where("transactions.merchant_id", $merchantId)
                        ->where(Entity::TYPE, 'payment')
                        ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
@@ -994,7 +995,7 @@ class Repository extends Base\Repository
 
     public function getTransactionsToSetPricingId()
     {
-        $transactions = $this->newQuery()
+        $transactions = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                             ->select('transactions.*')
                             ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
                             ->where(Entity::TYPE, 'payment')
@@ -1704,7 +1705,7 @@ class Repository extends Base\Repository
 
         $selectParams .= implode(',', [$paymentParams, $gatewayCol, $gatewayTerminalIdColumn]);
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                       ->selectRaw($selectParams);
 
         return $query;
