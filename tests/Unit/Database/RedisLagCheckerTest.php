@@ -17,6 +17,8 @@ class RedisLagCheckerTest extends TestCase
     {
         $lagChecker = new RedisLagChecker([
                                               'flag'  => ConfigKey::MASTER_PERCENT,
+                                              'read_from_config' => false,
+                                              'percentage' => 0,
         ]);
 
         Cache::shouldReceive('get')
@@ -41,6 +43,8 @@ class RedisLagCheckerTest extends TestCase
     {
         $lagChecker = new RedisLagChecker([
                                               'flag' => ConfigKey::MASTER_PERCENT,
+                                              'read_from_config' => false,
+                                              'percentage' => 0,
         ]);
 
         Cache::shouldReceive('get')
@@ -57,6 +61,8 @@ class RedisLagCheckerTest extends TestCase
     {
         $lagChecker = new RedisLagChecker([
                                               'flag' => ConfigKey::MASTER_PERCENT,
+                                              'read_from_config' => false,
+                                              'percentage' => 0,
         ]);
 
         Cache::shouldReceive('get')
@@ -76,6 +82,8 @@ class RedisLagCheckerTest extends TestCase
     {
         $lagChecker = new RedisLagChecker([
                                               'flag' => ConfigKey::MASTER_PERCENT,
+                                              'read_from_config' => false,
+                                              'percentage' => 0,
         ]);
 
         Cache::shouldReceive('get')

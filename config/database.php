@@ -70,6 +70,8 @@ return array(
             'lag_check' => [
                 'driver' => 'redis',
                 'flag'   => ConfigKey::MASTER_PERCENT,
+                'percentage' =>  env('DB_MASTER_PERCENTAGE'),
+                'read_from_config' =>  env('DB_MASTER_PERCENTAGE_READ_FROM_CONFIG'),
              ],
             'heartbeat_check' => [
                 'driver'               => 'heartbeat',

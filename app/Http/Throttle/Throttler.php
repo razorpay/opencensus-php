@@ -98,6 +98,13 @@ class Throttler
                 return;
             }
 
+            // skip if idSettingKey is empty or request is made from internal app
+            if ((empty($this->getIdSettingsKey()) === true) or
+                (empty($this->reqCtx->getInternalAppName()) === false))
+            {
+                return;
+            }
+
             $this->initRedisConnection();
             $this->initThrottleSettings();
             $this->blockIfApplicable();

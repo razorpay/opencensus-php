@@ -79,7 +79,15 @@ class RedisLagChecker implements LagChecker
     {
         $useMaster = true;
 
-        $masterRoutePercentage = (int) Cache::get($this->config['flag']);
+        if ((empty($this->config['read_from_config']) === false) and
+            ((bool) ($this->config['read_from_config']) === true))
+        {
+            $masterRoutePercentage = (int) ($this->config['percentage']);
+        }
+        else
+        {
+            $masterRoutePercentage = (int) Cache::get($this->config['flag']);
+        }
 
         //
         // If master_percent config is set to 0 or any non integer character, it will always go to master
