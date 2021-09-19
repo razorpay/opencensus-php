@@ -242,9 +242,9 @@ class Repository extends Base\Repository
                 ->cacheTags($cacheTags);
 
             // see comment in config/pricing.php
-            if ($this->shouldDistributeQueryCacheLoad($merchant) === true)
+            if (self::shouldDistributeQueryCacheLoad($merchant) === true)
             {
-                $prefix = $this->getQueryCachePrefixForDistributingLoad();
+                $prefix = self::getQueryCachePrefixForDistributingLoad();
 
                 $query = $query->prefix($prefix);
             }
@@ -622,21 +622,25 @@ class Repository extends Base\Repository
          return $query->first();
     }
 
-    protected function shouldDistributeQueryCacheLoad($merchant) : bool
+    public static function shouldDistributeQueryCacheLoad($merchant) : bool
     {
         if ($merchant === null)
         {
             return false;
         }
 
-        $config = $this->app['config']->get('pricing.query_cache_distribution');
+        $app = App::getFacadeRoot();
+
+        $config = $app['config']->get('pricing.query_cache_distribution');
 
         return in_array($merchant->getId(), $config['merchant_ids']) === true;
     }
 
-    protected function getQueryCachePrefixForDistributingLoad(): string
+    public static function getQueryCachePrefixForDistributingLoad(): string
     {
-        $config = $this->app['config']->get('pricing.query_cache_distribution');
+        $app = App::getFacadeRoot();
+
+        $config = $app['config']->get('pricing.query_cache_distribution');
 
         $prefix = rand(1, $config['factor']);
 

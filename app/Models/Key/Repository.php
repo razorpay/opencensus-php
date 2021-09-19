@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base\QueryCache\CacheQueries;
+use RZP\Models\Pricing;
 
 class Repository extends Base\Repository
 {
@@ -16,6 +17,18 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
     ];
+
+    public function find($id, $columns = ['*'])
+    {
+        $cacheTtl = $this->getCacheTtl();
+
+        $prefix = Pricing\Repository::getQueryCachePrefixForDistributingLoad();
+
+        return $this->newQuery()
+                    ->remember($cacheTtl)
+                    ->cacheTags($prefix . '_' . $this->entity . '_'. $id)
+                    ->find($id, $columns);
+    }
 
     public function getKeysForMerchant($merchantId, $expired = false)
     {

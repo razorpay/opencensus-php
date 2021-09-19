@@ -5,6 +5,7 @@ namespace RZP\Models\Feature;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
+use RZP\Models\Pricing;
 use RZP\Models\Base\Traits\HardDeletes;
 use RZP\Models\Base\QueryCache\Cacheable;
 
@@ -155,5 +156,12 @@ class Entity extends Base\PublicEntity
     public static function getCacheTagsForNames(string $entityType, string $entityId): string
     {
         return implode('_', [Entity::FEATURE , 'names', $entityType, $entityId]);
+    }
+
+    public static function getDistrubutedCacheTagsForNames(string $entityType, string $entityId): string
+    {
+        $prefix = Pricing\Repository::getQueryCachePrefixForDistributingLoad();
+
+        return implode('_', [$prefix, Entity::FEATURE , 'names', $entityType, $entityId]);
     }
 }

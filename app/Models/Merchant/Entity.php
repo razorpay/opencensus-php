@@ -17,6 +17,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\BankAccount;
 use RZP\Models\BankingAccount;
+use RZP\Models\Pricing;
 use RZP\Models\Base;
 use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -996,7 +997,14 @@ class Entity extends Base\PublicEntity
 
         $cacheTtl = app('repo')->feature->getCacheTtl(Feature\Entity::FEATURE);
 
-        $cacheTags = Feature\Entity::getCacheTagsForNames($this->entity, $this->getId());
+        if (Pricing\Repository::shouldDistributeQueryCacheLoad($this) === true)
+        {
+            $cacheTags = Feature\Entity::getDistrubutedCacheTagsForNames($this->entity, $this->getId());
+        }
+        else
+        {
+            $cacheTags = Feature\Entity::getCacheTagsForNames($this->entity, $this->getId());
+        }
 
         $this->loadedFeatures = $this->features()
                                      ->remember($cacheTtl)
