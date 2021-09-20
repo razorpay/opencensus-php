@@ -506,6 +506,9 @@ class Entity
 
     const PAYOUTS_BATCH = 'payouts_batch';
 
+    //user device details
+    const USER_DEVICE_DETAIL = 'user_device_detail';
+
     //merchant on-boarding
     const MERCHANT_DETAIL   = 'merchant_detail';
     const MERCHANT_DOCUMENT = 'merchant_document';
@@ -984,11 +987,12 @@ class Entity
         self::INSTALLMENT       => \RZP\Models\CapitalTransaction::class,
         self::CHARGE            => \RZP\Models\CapitalTransaction::class,
 
+        self::USER_DEVICE_DETAIL              => \RZP\Models\DeviceDetail::class,
         self::MERCHANT_AUTO_KYC_ESCALATIONS   => \RZP\Models\Merchant\AutoKyc\Escalations::class,
         self::MERCHANT_AVG_ORDER_VALUE        => \RZP\Models\Merchant\AvgOrderValue::class,
         self::MERCHANT_TNC                    => \RZP\Models\Merchant\Tnc::class,
         self::MERCHANT_VERIFICATION_DETAIL    => \RZP\Models\Merchant\VerificationDetail::class,
-        self::MERCHANT_BUSINESS_DETAIL         => \RZP\Models\Merchant\BusinessDetail::class,
+        self::MERCHANT_BUSINESS_DETAIL        => \RZP\Models\Merchant\BusinessDetail::class,
 
         self::MERCHANT_ONBOARDING_ESCALATIONS   => \RZP\Models\Merchant\Escalations::class,
         self::ONBOARDING_ESCALATION_ACTIONS     => \RZP\Models\Merchant\Escalations\Actions::class,

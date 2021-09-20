@@ -430,4 +430,13 @@ class UserController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function postSaveDeviceDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->saveDeviceDetails($input);
+
+        return ApiResponse::json($response);
+    }
 }

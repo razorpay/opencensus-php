@@ -1575,6 +1575,9 @@ class Route
         'user_details_unified'                     => ['get',      'users_unified',                                  'UserController@getUserDetailsUnified'                                     ],
         'user_delete_incorrect_password_count'     => ['post',     'users/incorrect_password_count',                 'UserController@removeIncorrectPasswordCount'                       ],
 
+        //user device details
+        'user_device_detail_save'                  => ['post',     'user/device-details',                            'UserController@postSaveDeviceDetails'                          ],
+
         // mobile setup for 2fa
         'user_login_2fa_setup_mobile'              => ['patch',    'users/2fa_setup/contact_mobile',                 'UserController@setup2faContactMobile'                              ],
         'user_login_2fa_setup_verify_mobile'       => ['post',     'users/login/2fa_setup/verify-mobile',            'UserController@setup2faVerifyMobileOnLogin'                        ],
@@ -3930,6 +3933,7 @@ class Route
         'merchant_document_fetch',
         'merchant_document_upload',
         'merchant_document_delete',
+        'user_device_detail_save',
         'enable_es_scheduled',
         'get_es_pricing_merchant',
         'get_scheduled_es_pricing_merchant',
@@ -7813,6 +7817,7 @@ class Route
             'user_access',
             'user_account_unlock',
             'user_change_password',
+            'user_device_detail_save',
             'user_edit_self',
             'user_fetch',
             'user_fetch_for_merchant',
@@ -9515,6 +9520,7 @@ class Route
             'user_confirm_by_data',
             'user_create',
             'user_delete_incorrect_password_count',
+            'user_device_detail_save',
             'user_edit_self',
             'user_fetch',
             'user_fetch_admin',

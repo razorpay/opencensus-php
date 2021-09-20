@@ -161,6 +161,9 @@ class Table
     const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';
     const PAYMENT_META              = 'payment_meta';
 
+    //user device details
+    const USER_DEVICE_DETAIL = 'user_device_details';
+
     const MERCHANT_AUTO_KYC_ESCALATIONS = 'merchant_auto_kyc_escalations';
     const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
     const MERCHANT_TNC                  = 'merchant_tnc';

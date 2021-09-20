@@ -21,6 +21,7 @@ use RZP\Models\Invitation;
 use RZP\Models\Admin\Admin;
 use RZP\Constants\Timezone;
 use RZP\Http\RequestHeader;
+use RZP\Models\DeviceDetail;
 use RZP\Mail\User as UserMail;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\AdminLead;
@@ -1435,5 +1436,10 @@ class Service extends Base\Service
         $merchant = $this->merchant;
 
         return $this->core()->sendXMobileAppDownloadLinkSms($input, $merchant);
+    }
+
+    public function saveDeviceDetails(array $input)
+    {
+        return (new DeviceDetail\Core)->createUserDeviceDetail($input);
     }
 }

@@ -2252,6 +2252,7 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
     public function getMerchantBusinessDetail($merchantId)
     {
         $response = $this->service(E::MERCHANT_BUSINESS_DETAIL)->fetchBusinessDetailsForMerchant($merchantId);
@@ -2267,6 +2268,7 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+    
     public function createPartnerActivationForPartners()
     {
         $input = Request::all();

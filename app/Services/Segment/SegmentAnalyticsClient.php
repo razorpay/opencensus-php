@@ -73,7 +73,7 @@ class SegmentAnalyticsClient extends AbstractEventClient
             $properties += [
                 Merchant\Entity::MERCHANT_ID    => $merchant->getId(),
                 'event_category'                => Constants::SEGMENT_EVENT_CATEGORY,
-                'event_action'                  => $eventName
+                'event_action'                  => $eventName,
             ];
 
             $eventLabel = EventCode::EVENT_LABELS[$eventName] ?? "";

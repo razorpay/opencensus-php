@@ -2349,6 +2349,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_CONTACT_MOBILE_UPDATE                            = 'USER_CONTACT_MOBILE_UPDATE';
     const USER_ACCOUNT_LOCK_UNLOCK_ACTION                       = 'USER_ACCOUNT_LOCK_UNLOCK_ACTION';
 
+    //Trace codes for user device details
+    const USER_DEVICE_DETAIL_DOES_NOT_EXIST                     = 'USER_DEVICE_DETAIL_DOES_NOT_EXIST';
+    const USER_DEVICE_CREATE_DETAIL                             = 'USER_DEVICE_CREATE_DETAIL';
+    const USER_DEVICE_DETAIL_SAVE_FAILED                        = 'USER_DEVICE_DETAIL_SAVE_FAILED';
+
     //Trace codes for 2fa features
     const LOCKED_USER_LOGIN                                     = 'LOCKED_USER_LOGIN';
     const USER_LOGIN_2FA_ENABLED                                = 'USER_LOGIN_2FA_ENABLED';

@@ -306,6 +306,7 @@ class RouteTeamMap
         'proxy_merchant_get_pricing'                      => [self::TEAM_PAYMENTS_GROWTH],
         'pricing_supported_networks'                      => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_edit_pre_signup_details'                => [self::TEAM_PAYMENTS_GROWTH],
+        'user_device_detail_save'                         => [self::TEAM_PAYMENTS_GROWTH],
 
         // Risk team
         'shield_rules_get_multiple'                       => [self::TEAM_PAYMENTS_RISK],
