@@ -104,7 +104,7 @@ const PaytmWalletIntegration = (props) => {
             return setValues({
               ...values,
               merchant_id: identifiers.gateway_merchant_id,
-              merchant_key: secrets.gateway_secure_secret,
+              merchant_key: '',
               industry_type: identifiers.gateway_terminal_id,
               website_name: identifiers.gateway_access_code,
             });
@@ -113,7 +113,7 @@ const PaytmWalletIntegration = (props) => {
         });
       }
     }
-  }, []);
+  }, [props.status, props.step, props.user.id, values]);
 
   useEffect(() => {
     switch (activeStep) {
