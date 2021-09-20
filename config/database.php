@@ -158,7 +158,7 @@ return array(
             'read'  => [
                 'host'      => env('DB_WAREHOUSE_HOST'),
                 'port'      => env('DB_WAREHOUSE_PORT'),
-                'database'  => env('DB_WAREHOUSE_DATABASE'),
+                'database'  => env('DB_WAREHOUSE_DATABASE_LIVE'),
                 'username'  => env('DB_WAREHOUSE_USERNAME'),
                 'password'  => env('DB_WAREHOUSE_PASSWORD'),
             ],
@@ -188,7 +188,7 @@ return array(
             'read'  => [
                 'host'      => env('DB_WAREHOUSE_HOST'),
                 'port'      => env('DB_WAREHOUSE_PORT'),
-                'database'  => env('DB_WAREHOUSE_DATABASE'),
+                'database'  => env('DB_WAREHOUSE_DATABASE_TEST'),
                 'username'  => env('DB_WAREHOUSE_USERNAME'),
                 'password'  => env('DB_WAREHOUSE_PASSWORD'),
             ],
@@ -217,8 +217,8 @@ return array(
         'data-warehouse-merchant-live' => [
             'read'  => [
                 'host'      => env('DB_WAREHOUSE_MERCHANT_HOST'),
-                'port'      => env('DB_WAREHOUSE_PORT'),
-                'database'  => env('DB_WAREHOUSE_DATABASE'),
+                'port'      => env('DB_WAREHOUSE_MERCHANT_PORT'),
+                'database'  => env('DB_WAREHOUSE_DATABASE_LIVE'),
                 'username'  => env('DB_WAREHOUSE_USERNAME'),
                 'password'  => env('DB_WAREHOUSE_PASSWORD'),
             ],
@@ -247,8 +247,8 @@ return array(
         'data-warehouse-merchant-test' => [
             'read'  => [
                 'host'      => env('DB_WAREHOUSE_MERCHANT_HOST'),
-                'port'      => env('DB_WAREHOUSE_PORT'),
-                'database'  => env('DB_WAREHOUSE_DATABASE'),
+                'port'      => env('DB_WAREHOUSE_MERCHANT_PORT'),
+                'database'  => env('DB_WAREHOUSE_DATABASE_TEST'),
                 'username'  => env('DB_WAREHOUSE_USERNAME'),
                 'password'  => env('DB_WAREHOUSE_PASSWORD'),
             ],
@@ -278,7 +278,7 @@ return array(
             'read'  => [
                 'host'      => env('DB_WAREHOUSE_HOST'),
                 'port'      => env('DB_WAREHOUSE_PORT'),
-                'database'  => env('DB_WAREHOUSE_DATABASE'),
+                'database'  => env('DB_WAREHOUSE_DATABASE_LIVE'),
                 'username'  => env('DB_WAREHOUSE_USERNAME'),
                 'password'  => env('DB_WAREHOUSE_PASSWORD'),
             ],
@@ -306,9 +306,9 @@ return array(
 
         'data-warehouse-admin-test' => [
             'read'  => [
-                'host'      => env('DB_WAREHOUSE_HOST'),
-                'port'      => env('DB_WAREHOUSE_PORT'),
-                'database'  => env('DB_WAREHOUSE_DATABASE'),
+                'host'      => env('DB_WAREHOUSE_ADMIN_HOST'),
+                'port'      => env('DB_WAREHOUSE_ADMIN_PORT'),
+                'database'  => env('DB_WAREHOUSE_DATABASE_TEST'),
                 'username'  => env('DB_WAREHOUSE_USERNAME'),
                 'password'  => env('DB_WAREHOUSE_PASSWORD'),
             ],
