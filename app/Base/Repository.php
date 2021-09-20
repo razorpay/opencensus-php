@@ -1069,17 +1069,17 @@ class Repository extends \Razorpay\Spine\Repository
         $mode = $mode ?? $this->app['rzp.mode'];
 
         // default connection is to Data warehouse live, can switch connection to different clusters as required.
-        $connection = ($mode === Mode::TEST) ? Connection::DATA_WAREHOUSE_TEST : Connection::DATA_WAREHOUSE_LIVE;
+        $connection = ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::DATA_WAREHOUSE_LIVE;
 
         if (is_null($cluster) === false)
         {
             if ($cluster === ConnectionType::DATA_WAREHOUSE_ADMIN)
             {
-                $connection = ($mode === Mode::TEST) ? Connection::DATA_WAREHOUSE_ADMIN_TEST : Connection::DATA_WAREHOUSE_ADMIN_LIVE;
+                $connection = ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::DATA_WAREHOUSE_ADMIN_LIVE;
             }
             if ($cluster === ConnectionType::DATA_WAREHOUSE_MERCHANT)
             {
-                $connection = ($mode === Mode::TEST) ? Connection::DATA_WAREHOUSE_MERCHANT_TEST : Connection::DATA_WAREHOUSE_MERCHANT_LIVE;
+                $connection = ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::DATA_WAREHOUSE_MERCHANT_LIVE;
             }
         }
 
