@@ -1713,6 +1713,7 @@ class BasicAuth
                 ($this->isVendorPaymentApp() === true) or
                 ($this->isCapitalCardsApp() === true) or
                 ($this->isCapitalLOCApp() === true) or
+                ($this->isCapitalCollectionsApp() === true) or
                 ($this->isSettlementsApp() === true) or
                 ($this->isScroogeApp() === true) or
                 (($this->isBatchApp() === true) and
@@ -1779,6 +1780,11 @@ class BasicAuth
     public function isCapitalLOCApp(): bool
     {
         return ($this->getInternalApp() === 'loc');
+    }
+
+    public function isCapitalCollectionsApp(): bool
+    {
+        return ($this->getInternalApp() === 'capital_collections_client');
     }
 
     public function isPaymentLinkServiceApp(): bool

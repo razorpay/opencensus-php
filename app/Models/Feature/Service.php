@@ -19,7 +19,6 @@ class Service extends Base\Service
         string $entityId = null): array
     {
         $entityType = null;
-
         if ($routeEndpoint !== null)
         {
             $entityType = Type::getEntityTypeFromRoute($routeEndpoint);
@@ -75,7 +74,8 @@ class Service extends Base\Service
         // Allow only the admins to provide the entity_type and entity_id from the input.
         // If the merchant is hitting the route directly, only allow him to update his own account features.
         //
-        if ($this->app['basicauth']->isAdminAuth() === true)
+        if (($this->app['basicauth']->isAdminAuth() === true) or
+            ($this->app['basicauth']->isCapitalCollectionsApp() === true))
         {
             $entityType = Type::getEntityTypeFromRoute($routeEndpoint);
         }
@@ -456,7 +456,8 @@ class Service extends Base\Service
         // If the merchant is hitting the route directly, only allow him to update his own account features.
         //Allowing Banking account service to add the feature
         if (($this->app['basicauth']->isAdminAuth() === true) or
-            ($this->app['basicauth']->isBankingAccountServiceApp() === true))
+            ($this->app['basicauth']->isBankingAccountServiceApp() === true) or
+            ($this->app['basicauth']->isCapitalCollectionsApp() === true) )
         {
             $entityType = $entityType ?? $input[Entity::ENTITY_TYPE];
 

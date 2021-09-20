@@ -505,6 +505,81 @@ return [
         ]
     ],
 
+    'testCreateOndemandForMaxBalanceWhenDisabledByCollectionsForLoc' => [
+            'request'  => [
+                'url'     => '/settlements/ondemand',
+                'method'  => 'post',
+                'content' => [
+                    'settle_full_balance' => true,
+                    'description' => 'Demo Narration - optional',
+                ],
+            ],
+            'response' => [
+                         'content' => [
+                             'error' => [
+                                 'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                                 'description' => 'BAD_REQUEST_ES_ON_DEMAND_DISABLED_BY_COLLECTIONS',
+                             ],
+                         ],
+                         'status_code' => 400,
+                     ],
+            'exception' => [
+                 'class' => RZP\Exception\BadRequestValidationFailureException::class,
+                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+             ]
+
+    ],
+
+    'testCreateOndemandForMaxBalanceWhenDisabledByCollectionsForLoan' => [
+            'request'  => [
+                'url'     => '/settlements/ondemand',
+                'method'  => 'post',
+                'content' => [
+                    'settle_full_balance' => true,
+                    'description' => 'Demo Narration - optional',
+                ],
+            ],
+            'response' => [
+                         'content' => [
+                             'error' => [
+                                 'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                                 'description' => 'BAD_REQUEST_ES_ON_DEMAND_DISABLED_BY_COLLECTIONS',
+                             ],
+                         ],
+                         'status_code' => 400,
+                     ],
+            'exception' => [
+                 'class' => RZP\Exception\BadRequestValidationFailureException::class,
+                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+             ]
+
+    ],
+
+    'testCreateOndemandForMaxBalanceWhenDisabledByCollectionsForCard' => [
+            'request'  => [
+                'url'     => '/settlements/ondemand',
+                'method'  => 'post',
+                'content' => [
+                    'settle_full_balance' => true,
+                    'description' => 'Demo Narration - optional',
+                ],
+            ],
+            'response' => [
+                         'content' => [
+                             'error' => [
+                                 'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                                 'description' => 'BAD_REQUEST_ES_ON_DEMAND_DISABLED_BY_COLLECTIONS',
+                             ],
+                         ],
+                         'status_code' => 400,
+                     ],
+            'exception' => [
+                 'class' => RZP\Exception\BadRequestValidationFailureException::class,
+                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+             ]
+
+    ],
+
     'testCreateOndemandOnLowBalance' => [
         'request'  => [
             'url'     => '/settlements/ondemand',

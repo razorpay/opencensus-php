@@ -97,6 +97,8 @@ class Core extends Base\Core
 
         $this->checkAuthTypeIfApplicable($feature);
 
+        $this->checkCollectionsAuthTypeForCreationIfApplicable($feature);
+
         $this->repo->feature->saveAndSyncIfApplicableOrFail(
             $feature,
             $assignedFeatureNames,
@@ -164,6 +166,8 @@ class Core extends Base\Core
             ['feature' => $feature->getName()],
             ['feature' => null],
         ];
+
+        $this->checkCollectionsAuthTypeForDeletionIfApplicable($feature);
 
         $this->app['workflow']
              ->setEntity($feature->getEntity())
@@ -939,5 +943,38 @@ class Core extends Base\Core
             );
         }
 
+    }
+
+    private function checkCollectionsAuthTypeForDeletionIfApplicable($feature){
+
+        $disableOndemandInvalidAuth = (  ( ($feature->getName() === Feature::DISABLE_ONDEMAND_FOR_LOAN)||
+                                         ($feature->getName() === Feature::DISABLE_ONDEMAND_FOR_LOC) )&&
+                                         ($feature->getEntityType() === Constants::MERCHANT) &&
+                                         ($this->app['basicauth']->isCapitalCollectionsApp() === false));
+
+       if ($disableOndemandInvalidAuth)
+       {
+           throw new Exception\BadRequestException(
+               ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+                     $feature
+           );
+       }
+    }
+
+    private function checkCollectionsAuthTypeForCreationIfApplicable($feature){
+
+        $disableOndemandInvalidAuth = (  ( ($feature->getName() === Feature::DISABLE_ONDEMAND_FOR_LOAN)||
+                                         ($feature->getName() === Feature::DISABLE_ONDEMAND_FOR_LOC) ||
+                                         ($feature->getName() === Feature::DISABLE_ONDEMAND_FOR_CARD) ) &&
+                                         ($feature->getEntityType() === Constants::MERCHANT) &&
+                                         ($this->app['basicauth']->isCapitalCollectionsApp() === false));
+
+       if ($disableOndemandInvalidAuth)
+       {
+           throw new Exception\BadRequestException(
+               ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+                     $feature
+           );
+       }
     }
 }

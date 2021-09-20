@@ -445,6 +445,24 @@ class Constants
      */
     const LOC_STAGE_2 = 'loc_stage_2';
 
+    /*
+     *  Disables ondemand since LOC is in DPD
+     * Controlled by collection service
+     */
+    const DISABLE_ONDEMAND_FOR_LOC = 'disable_ondemand_for_loc';
+
+    /*
+     *  Disables ondemand since Loans is in DPD
+     * Controlled by collection service
+     */
+    const DISABLE_ONDEMAND_FOR_LOAN = 'disable_ondemand_for_loan';
+
+    /*
+     *  Disables ondemand since Cards is in DPD
+     * Controlled by collection service
+     */
+    const DISABLE_ONDEMAND_FOR_CARD = 'disable_ondemand_for_card';
+
     /**
      * Flag to use settlement/ondemand route for ondemand settlement .
      */
@@ -1086,6 +1104,9 @@ class Constants
         self::LOC_ESIGN                       => true,
         self::LOC_FIRST_WITHDRAWAL            => true,
         self::CAPITAL_CARDS                   => true,
+        self::DISABLE_ONDEMAND_FOR_CARD       => true,
+        self::DISABLE_ONDEMAND_FOR_LOAN       => true,
+        self::DISABLE_ONDEMAND_FOR_LOC        => true,
         self::LOC_STAGE_1                     => true,
         self::LOC_STAGE_2                     => true,
         self::NPS_SURVEY_PAYMENT_PAGES        => true,
@@ -1725,6 +1746,21 @@ class Constants
             'display_name'  => 'Enable API bulk Approvals for the merchant',
             'documentation' => '',
         ],
+        self::DISABLE_ONDEMAND_FOR_CARD =>  [
+            'feature'       => self::DISABLE_ONDEMAND_FOR_CARD,
+            'display_name'  => 'Disable ondemand for card',
+            'documentation' =>  '',
+        ],
+        self::DISABLE_ONDEMAND_FOR_LOAN =>  [
+            'feature'       =>  self::DISABLE_ONDEMAND_FOR_LOAN,
+            'display_name'  =>  'Disable ondemand for loan',
+            'documentation' =>  '',
+        ],
+        self::DISABLE_ONDEMAND_FOR_LOC  =>  [
+            'feature'       =>  self::DISABLE_ONDEMAND_FOR_LOC,
+            'display_name'  =>  'Disable ondemand for loc',
+            'documentation' =>  '',
+        ]
     ];
 
     /**

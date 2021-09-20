@@ -73,6 +73,8 @@ class Service extends Base\Service
 
                 $this->validateIfOndemandMerchant();
 
+                $this->validateIfDisabledByCollections();
+
                 $amount = $this->core()->getSettlementAmount($input, $this->merchant);
 
                 $input[Entity::AMOUNT] = $amount;
@@ -204,6 +206,16 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_NON_ES_ON_DEMAND_MERCHANTS_NOT_ALLOWED);
         }
+    }
+
+    public function validateIfDisabledByCollections()
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::DISABLE_ONDEMAND_FOR_LOC)=== true ||
+            $this->merchant->isFeatureEnabled(Feature\Constants::DISABLE_ONDEMAND_FOR_LOAN) === true ||
+            $this->merchant->isFeatureEnabled(Feature\Constants::DISABLE_ONDEMAND_FOR_CARD) === true )
+            {
+                throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_ES_ON_DEMAND_DISABLED_BY_COLLECTIONS);
+            }
     }
 
     public function fetch(string $id, array $input): array

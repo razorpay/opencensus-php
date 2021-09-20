@@ -2791,6 +2791,93 @@ class SettlementOndemandTest extends TestCase
         $this->startTest();
     }
 
+    //merchant request with max_balance as 1
+    public function testCreateOndemandForMaxBalanceWhenDisabledByCollectionsForLoc()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'disable_ondemand_for_loc']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 20030000]);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $this->app['config']->set('applications.razorpayx_client.test.mock_webhook', false);
+
+        $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', false);
+
+        //set time as banking hour for testing
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
+
+        $this->startTest();
+    }
+
+    //merchant request with max_balance as 1
+    public function testCreateOndemandForMaxBalanceWhenDisabledByCollectionsForLoan()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'disable_ondemand_for_loan']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 20030000]);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $this->app['config']->set('applications.razorpayx_client.test.mock_webhook', false);
+
+        $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', false);
+
+        //set time as banking hour for testing
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
+
+        $this->startTest();
+    }
+
+    //merchant request with max_balance as 1
+    public function testCreateOndemandForMaxBalanceWhenDisabledByCollectionsForCard()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'disable_ondemand_for_card']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 20030000]);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $this->app['config']->set('applications.razorpayx_client.test.mock_webhook', false);
+
+        $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', false);
+
+        //set time as banking hour for testing
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
+
+        $this->startTest();
+    }
+
     //merchant request amount > balance
     public function testCreateOndemandOnLowBalance()
     {

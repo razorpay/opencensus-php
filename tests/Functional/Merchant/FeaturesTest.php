@@ -950,6 +950,223 @@ class FeaturesTest extends OAuthTestCase
     }
 
     /**
+     * This function tests updating of merchant feature disable_ondemand_for_loc.
+     */
+    public function testAddMerchantDisableOnDemandForLocFeatureInternalAuth()
+    {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+        $this->startTest();
+    }
+
+     /**
+     * This function tests updating of merchant feature disable_ondemand_for_loc.
+     */
+    public function testFailureAddMerchantDisableOnDemandForLocFeatureAdminAuth()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature disable_ondemand_for_loan.
+     */
+    public function testFailureAddMerchantDisableOnDemandForLoanFeatureAdminAuth()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature disable_ondemand_for_card.
+     */
+    public function testFailureAddMerchantDisableOnDemandForCardFeatureAdminAuth()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature disable_ondemand_for_loan.
+     */
+    public function testAddMerchantDisableOnDemandForLoanFeatureInternalAuth()
+    {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature disable_ondemand_for_card.
+     */
+    public function testAddMerchantDisableOnDemandForCardFeatureInternalAuth()
+    {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+        $this->startTest();
+    }
+
+    /**
+     * This function tests getting the features using internal auth
+     */
+    public function testGetMultipleFeaturesInternalAuth()
+    {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $content = $this->startTest();
+
+        $featuresWithValues = count(Constants::$featureValueMap);
+
+        $featuresInResponse = count($content['all_features']);
+
+        $this->assertEquals($featuresWithValues, $featuresInResponse);
+
+    }
+
+      /**
+      * Add Disable ondemand for loc feature to live and sync it to test
+      * Delete the feature from the live database via internal auth
+      * Verify - Any feature deleted from live should not be deleted from test
+      */
+    public function testDeleteDisableOndemandForLocFeatureUsingInternalAuth()
+    {
+
+        $this->testAddMerchantDisableOnDemandForLocFeatureInternalAuth();
+
+        $this->verifyFeaturePresence(Mode::TEST,[Constants::DISABLE_ONDEMAND_FOR_LOC]);
+
+        $this->verifyFeaturePresence(Mode::LIVE,[Constants::DISABLE_ONDEMAND_FOR_LOC]);
+
+        $this->deleteFeatureInternal(Mode::LIVE, true,Constants::DISABLE_ONDEMAND_FOR_LOC);
+
+        $this->verifyFeatureAbsence(Mode::LIVE,[Constants::DISABLE_ONDEMAND_FOR_LOC]);
+
+        $this->verifyFeatureAbsence(Mode::TEST,[Constants::DISABLE_ONDEMAND_FOR_LOC]);
+    }
+
+    /**
+    * Add Disable ondemand for loc feature to live and sync it to test
+    * Fails deleting the feature from the live database via admin auth
+    */
+    public function testFailureDeleteDisableOndemandForLocFeatureUsingAdminAuth()
+    {
+
+        $this->testAddMerchantDisableOnDemandForLocFeatureInternalAuth();
+
+        $this->verifyFeaturePresence(Mode::TEST,[Constants::DISABLE_ONDEMAND_FOR_LOC]);
+
+        $this->verifyFeaturePresence(Mode::LIVE,[Constants::DISABLE_ONDEMAND_FOR_LOC]);
+
+        $this->deleteFeatureFailure(Mode::LIVE, true,Constants::DISABLE_ONDEMAND_FOR_LOC);
+
+
+    }
+
+    /**
+    * Add Disable ondemand for loan feature to live and sync it to test
+    * Fails deleting the feature from the live database via admin auth
+    */
+    public function testFailureDeleteDisableOndemandForLoanFeatureUsingAdminAuth()
+    {
+
+        $this->testAddMerchantDisableOnDemandForLoanFeatureInternalAuth();
+
+        $this->verifyFeaturePresence(Mode::TEST,[Constants::DISABLE_ONDEMAND_FOR_LOAN]);
+
+        $this->verifyFeaturePresence(Mode::LIVE,[Constants::DISABLE_ONDEMAND_FOR_LOAN]);
+
+        $this->deleteFeatureFailure(Mode::LIVE, true,Constants::DISABLE_ONDEMAND_FOR_LOAN);
+
+
+    }
+
+    /**
+    * Add Disable ondemand for card feature to live and sync it to test
+    * Fails deleting the feature from the live database via admin auth
+    */
+    public function testSuccessDeleteDisableOndemandForCardFeatureUsingAdminAuth()
+    {
+
+        $this->testAddMerchantDisableOnDemandForCardFeatureInternalAuth();
+
+        $this->verifyFeaturePresence(Mode::TEST,[Constants::DISABLE_ONDEMAND_FOR_CARD]);
+
+        $this->verifyFeaturePresence(Mode::LIVE,[Constants::DISABLE_ONDEMAND_FOR_CARD]);
+
+        $this->deleteFeature(Mode::LIVE, true,Constants::DISABLE_ONDEMAND_FOR_CARD);
+
+    }
+
+  /**
+     * Deletes a feature via internal auth
+     * the params received
+     *
+     * @param string $deleteFromMode
+     * @param bool   $shouldSync
+     * @param string $featureName
+     * @deprecated by getDataToDeleteFeaturesFromEntity
+     */
+    protected function deleteFeatureInternal(
+        string $deleteFromMode,
+        bool $shouldSync = false,
+        string $featureName = 'dummy'
+    ) {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/internal/features/' . self::DEFAULT_MERCHANT_ID . '/' . $featureName;
+
+        if ($shouldSync === true) {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Fails deleting a feature as an admin based on
+     * the params received
+     *
+     * @param string $deleteFromMode
+     * @param bool   $shouldSync
+     * @param string $featureName
+     * @deprecated by getDataToDeleteFeaturesFromEntity
+     */
+    protected function deleteFeatureFailure(
+        string $deleteFromMode,
+        bool $shouldSync = false,
+        string $featureName = 'dummy'
+    ) {
+        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
+
+        $testData = $this->testData[__FUNCTION__];
+
+
+        $testData['request']['url'] = '/features/' . self::DEFAULT_MERCHANT_ID . '/' . $featureName;
+
+        if ($shouldSync === true) {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
      * This function tests updating of merchant feature loc_stage_1.
      */
     public function testAddMerchantLocFeatureAdminAuth()
@@ -1771,7 +1988,7 @@ class FeaturesTest extends OAuthTestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        if ($featureName === null)
+        if ($featureName !== null)
         {
             $testData['request']['url'] = '/features/' . self::DEFAULT_MERCHANT_ID . '/' . $featureName;
         }

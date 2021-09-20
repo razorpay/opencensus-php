@@ -2010,10 +2010,14 @@ class Route
 
         // Deprecated feature routes - maintaining for BC - Remove after dashboard changes
         'feature_get_multiple'                     => ['get',      'features/{entityId}',                            'FeatureController@getMerchantFeatures'                             ],
+        'feature_get_multiple_internal'            => ['get',      'internal/features/{entityId}',                   'FeatureController@getMerchantFeatures'                             ],
+
         'feature_delete'                           => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
+        'feature_delete_internal'                  => ['delete',   'internal/features/{entityId}/{featureName}',     'FeatureController@deleteFeature'                                   ],
 
         // Features
         'feature_add'                              => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
+        'feature_add_internal'                     => ['post',     'internal/features',                              'FeatureController@addFeatures'                                     ],
         'feature_get'                              => ['get',      'features/{entityType}/{entityId}',               'FeatureController@getFeatures'                                     ],
         'feature_get_all'                          => ['get',      'feature/{entityType}/{entityId}',                'FeatureController@getFeatures'                                     ],
         'feature_get_status'                       => ['get',      'feature/{entityType}/{entityId}/{featureName}',  'FeatureController@getFeatureStatus'                                ],
@@ -3545,12 +3549,17 @@ class Route
         'account_service_details_fetch',
 
         // Razorpay Capital
+        // Capital Collections
+        'feature_get_multiple_internal',
         // Financial Data Service
         'financial_data_service_perfios_webhook',
         // Capital Cards
         'capital_cards_m2p_webhook',
         'payout_approve_internal',
         'payout_reject_internal',
+
+        'feature_add_internal',
+        'feature_delete_internal',
 
         // Capital LOC
         'feature_delete_entity_internal',
@@ -10076,6 +10085,9 @@ class Route
             'internal_balance_fetch_multiple_by_ids',
             'user_fetch_entity',
             'merchant_fetch_internal_users',
+            'feature_add_internal',
+            'feature_delete_internal',
+            'feature_get_multiple_internal'
         ],
 
         'loc'  => [
