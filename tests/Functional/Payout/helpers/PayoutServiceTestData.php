@@ -71,6 +71,39 @@ return [
         ],
     ],
 
+    'testCreatePayoutServicePaymentCreation' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts_service/payments/create/axis',
+            'content' => [
+                "amount" => 50000,
+                "currency" => "INR",
+                "email" => "gaurav.kumar@example.com",
+                "contact" => 9123456789,
+                "method" => "card",
+                "card" =>
+                    [
+                        "number" => "5104060000000008",
+                        "name" => "Gaurav Kumar",
+                        "expiry_month" => "01",
+                        "expiry_year" => "22"
+                    ],
+                "auth_type" => "skip"
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "org_logo" => null,
+                "org_name" => "Razorpay",
+                "checkout_logo" => null,
+                "custom_branding" => false
+            ],
+        ],
+    ],
+
     'testCreatePayout' => [
         'request'  => [
             'method'  => 'POST',
@@ -165,6 +198,7 @@ return [
                 'status'              => 'PROCESSED',
                 'utr'                 => 928337183,
             ],
+
         ],
         'response' => [
             'content' => [

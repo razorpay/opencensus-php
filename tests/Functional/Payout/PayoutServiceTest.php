@@ -321,6 +321,28 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutServicePaymentCreation()
+    {
+        $this->fixtures->merchant->addFeatures(['direct_debit']);
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+                'moto' => '1'
+            ]
+        ]);
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true, 'live');
+
+        $this->assertEquals($payment['status'], 'authorized');
+        $this->assertNull($payment['order_id']);
+        $this->assertEquals($payment['merchant_id'], '10000000000000');
+    }
+
     public function testCreatePayout(): array
     {
         $this->mockPayoutServiceCreate();
@@ -1231,7 +1253,7 @@ class PayoutServiceTest extends TestCase
 
         $this->assertEquals(Status::QUEUED, $queuedPayout['status']);
     }
-  
+
     public function testCreateLedgerForStatusCodeValueFowLowBalance()
     {
         $this->testCreatePayoutEntry();

@@ -2754,6 +2754,7 @@ class Route
         'create_reversal_entry'                   => ['post',     'payouts_service/reversal/create',                        'ReversalController@createReversalEntryForPayoutService'       ],
         'payout_service_process_scheduled_payout' => ['post',     'payouts_service/scheduled/process',                      'PayoutController@processSchedulePayoutOnPayoutService'        ],
         'retry_payouts_on_service'                => ['post',     'payouts_service/retry',                                  'PayoutController@retryPayoutsOnPayoutService'                 ],
+        'create_payment_payout_service_axis_cc'   => ['post',     'payouts_service/payments/create/axis',                   'PaymentCreateController@postCreateS2SPayment'                 ],
 
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
 
@@ -3725,6 +3726,7 @@ class Route
         'create_FTA_payout_service',
         'create_ledger_payout_service',
         'payout_purpose_get_internal',
+        'create_payment_payout_service_axis_cc',
 
         // payment analytics cron creates a new partition and drops oldest partition, runs daily
         'payment_analytics_partition_cron',
@@ -10424,6 +10426,7 @@ class Route
             'create_ledger_payout_service',
             'internal_merchant_fetch',
             'payout_purpose_get_internal',
+            'create_payment_payout_service_axis_cc'
         ],
 
         'ledger' => [
