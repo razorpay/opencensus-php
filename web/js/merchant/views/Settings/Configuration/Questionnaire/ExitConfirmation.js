@@ -1,15 +1,17 @@
 import React from 'react';
+import Questionnaire from './index';
 import { connect } from 'react-redux';
-import { merchantFetch } from 'merchant/utils/ajax';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import {
+  openModal as openModalFn,
+  closeModal as closeModalFn,
+} from 'merchant_common/reducers/modals';
 
 const SCREEN = window.location.pathname.includes('payment-methods') ? 'payment methods' : 'config';
 
-// eslint-disable-next-line no-shadow
-const ExitConfirmation = ({ closeModal, saveFormData, showNotification }) => {
+const ExitConfirmation = ({ closeModal, openModal, saveFormData, triggerSource }) => {
   const saveDraft = () => {
     saveFormData();
     closeModal();
@@ -22,32 +24,6 @@ const ExitConfirmation = ({ closeModal, saveFormData, showNotification }) => {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-  };
-
-  const discardData = () => {
-    analyticsTrack({
-      objectName: 'intl enablement form',
-      actionName: `click close Discard form data`,
-      screen: SCREEN,
-      properties: {
-        timestamp: Date.now(),
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-    merchantFetch({
-      url: 'international_enablement',
-      method: 'delete',
-    })
-      .then(() => {
-        closeModal();
-      })
-      .catch((err) => {
-        showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-        closeModal();
-      });
   };
 
   return (
@@ -64,11 +40,25 @@ const ExitConfirmation = ({ closeModal, saveFormData, showNotification }) => {
         </main>
         <br />
         <footer>
-          <button onClick={discardData} class="btn btn-link">
-            Discard
+          <button
+            onClick={() => {
+              saveFormData().then(() => {
+                openModal({
+                  component: <Questionnaire triggerSource={triggerSource} />,
+                  overlayStyles: {
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  },
+                });
+              });
+            }}
+            class="btn btn-link"
+          >
+            Cancel
           </button>
           <button onClick={saveDraft} class="btn btn-primary">
-            Save As Draft
+            Save and Exit
           </button>
         </footer>
       </ModalContent>
@@ -76,4 +66,7 @@ const ExitConfirmation = ({ closeModal, saveFormData, showNotification }) => {
   );
 };
 
-export default connect(null, { showNotification })(ExitConfirmation);
+export default connect(null, {
+  openModal: openModalFn,
+  closeModal: closeModalFn,
+})(ExitConfirmation);

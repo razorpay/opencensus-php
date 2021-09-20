@@ -187,13 +187,7 @@ function withInternationalConfig(WrappedComponent) {
 
       if (questionnaireStatus?.new_flow) {
         modalOptions = {
-          component: (
-            <Questionnaire
-              closeModal={this.closeModal}
-              openModal={this.props.openModal}
-              triggerSource={triggerSource}
-            />
-          ),
+          component: <Questionnaire triggerSource={triggerSource} />,
           overlayStyles: { display: 'flex', justifyContent: 'center', alignItems: 'center' },
         };
       }

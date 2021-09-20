@@ -15,7 +15,10 @@ import ExitConfirmation from './ExitConfirmation';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { initialState, reducer } from './stateHelpers';
-
+import {
+  openModal as openModalFn,
+  closeModal as closeModalFn,
+} from 'merchant_common/reducers/modals';
 import {
   tabsData,
   schema,
@@ -138,7 +141,7 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
   const saveFormData = (formikProps, skipDirtyCheck) => {
     // save only if dirty
     if (!skipDirtyCheck && (!formikProps.dirty || isDisabled)) {
-      return;
+      return null;
     }
     validateTab(formikProps, false, activeTab);
     dispatch({ type: 'IS_SAVING_FORM', payload: LOADING.PENDING });
@@ -154,7 +157,7 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
 
     formData = modelFormDataBeforeSave(formData);
 
-    merchantFetch({
+    return merchantFetch({
       url: 'international_enablement/draft',
       method: 'post',
       data: formData,
@@ -336,10 +339,8 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
       openModal({
         component: (
           <ExitConfirmation
-            closeModal={closeModal}
-            saveFormData={() => {
-              saveFormData(formikProps);
-            }}
+            triggerSource={triggerSource}
+            saveFormData={() => saveFormData(formikProps)}
           />
         ),
         size: 'small',
@@ -455,4 +456,8 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
   );
 };
 
-export default connect(null, { showNotification })(Questionnaire);
+export default connect(null, {
+  showNotification,
+  openModal: openModalFn,
+  closeModal: closeModalFn,
+})(Questionnaire);
