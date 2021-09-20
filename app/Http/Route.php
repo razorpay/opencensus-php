@@ -2494,6 +2494,7 @@ class Route
         'fd_fetch_converations'                   => ['get',       'fd/{type}/ticket/{id}/conversations',                       'FreshdeskTicketController@getConversations'                   ],
         'fd_fetch_ticket'                         => ['get',       'fd/{type}/ticket/{id}',                                     'FreshdeskTicketController@getTicket'                          ],
         'fd_post_ticket_reply'                    => ['post',      'fd/{type}/ticket/{id}/reply',                               'FreshdeskTicketController@postTicketReply'                    ],
+        'internal_fd_post_ticket_reply'           => ['post',      'internal/fd/{type}/ticket/{id}/reply',                      'FreshdeskTicketController@postTicketReply'                    ],
         'fd_post_ticket_grievance'                => ['post',      'fd/{type}/ticket/{id}/grievance',                           'FreshdeskTicketController@postTicketGrievance'                ],
 
         'fd_consume_webhook'                      => ['post',      'fd/webhook/{event}',                                        'FreshdeskTicketController@postWebhook'                        ],
@@ -3711,6 +3712,8 @@ class Route
         'care_service_myoperator_webhook_proxy',
         'care_service_chat_proxy',
         'segment_create_update',
+        'internal_fd_post_ticket_reply',
+
         // IPL bot
         'throttle_create_config_spinnaker',
 
@@ -10416,6 +10419,7 @@ class Route
             'fd_fetch_tickets',
             'user_fetch_internal',
             'internal_fd_create_ticket',
+            'internal_fd_post_ticket_reply',
         ],
 
         'banking_account_service' => [

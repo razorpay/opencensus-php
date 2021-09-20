@@ -882,4 +882,50 @@ return [
         ],
     ],
 
+    'testInternalReplyToTicket' => [
+        'request' => [
+            'url'     => '/internal/fd/support_dashboard/ticket/razorpayid0012/reply',
+            'method'  => 'POST',
+            'content' => [
+                'account_id' => '10000000000000',
+                'user_id'=> '890',
+                'body'   => 'random reply',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'        => 'redacted',
+                'user_id'   => 890,
+                'body'      => 'random reply',
+                'ticket_id' => 'razorpayid0012',
+
+            ],
+        ],
+    ],
+
+    'testInternalReplyToTicketProhibitedShouldFail' => [
+        'request' => [
+            'url'     => '/internal/fd/support_dashboard/ticket/razorpayid0012/reply',
+            'method'  => 'POST',
+            'content' => [
+                'account_id' => '10000000000000',
+                'user_id'=> '890',
+                'body'   => 'random reply',
+            ],
+        ],
+        'response' => [
+            'content'       => [
+                'error' => [
+                    'description' => 'No db records found.',
+                    'code'        => 'BAD_REQUEST_ERROR',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => 'BAD_REQUEST_NO_RECORDS_FOUND',
+        ],
+    ],
+
 ];

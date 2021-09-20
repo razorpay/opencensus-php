@@ -64,6 +64,7 @@ class RouteTeamMap
         'can_merchant_submit_support_call_request' => [self::TEAM_PAYMENTS_CARE],
         'fd_post_ticket_grievance'                 => [self::TEAM_PAYMENTS_CARE],
         'fd_post_ticket_reply'                     => [self::TEAM_PAYMENTS_CARE],
+        'internal_fd_post_ticket_reply'            => [self::TEAM_PAYMENTS_CARE],
         'action_comment_create'                    => [self::TEAM_PAYMENTS_CARE],
         'workflow_action_update'                   => [self::TEAM_PAYMENTS_CARE],
         'workflow_action_close'                    => [self::TEAM_PAYMENTS_CARE],

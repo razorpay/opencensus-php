@@ -328,6 +328,47 @@ class FreshdeskTicketV2Test extends TestCase
         $this->startTest();
     }
 
+    public function testInternalReplyToTicket()
+    {
+        $this->ba->careAppAuth();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/12/reply', 'post',
+            [
+                'body' => 'random reply',
+            ],
+            [
+                'id'        => 567,
+                'user_id'   => 890,
+                'account_id' => '10000000000000',
+                'body'      => 'random reply',
+                'ticket_id' => '12',
+
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testInternalReplyToTicketProhibitedShouldFail()
+    {
+        $this->ba->careAppAuth();
+
+        $this->shouldNotReceiveFresdeskRequest();
+
+        // other ticket type
+        $this->fixtures->edit('merchant_freshdesk_tickets', 'razorpayid0012', [
+            'type'           => 'reserve_balance_activate',
+        ]);
+
+        $this->startTest();
+
+        // belongs to other merchant
+        $this->fixtures->edit('merchant_freshdesk_tickets', 'razorpayid0012', [
+            'merchant_id'           => '20000000000000',
+        ]);
+
+        $this->startTest();
+    }
+
     public function testRaiseGrievanceOnTicket()
     {
         $this->expectFreshdeskRequestAndRespondWith('tickets/12?include=requester', 'get',
