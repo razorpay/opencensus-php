@@ -36,6 +36,11 @@ export function merchantFetch(params) {
   return ajax(params);
 }
 
+// Replaces consecutive & trailing slashes from the URL
+const normalizeUrl = (url) => {
+  return url.replace(/([^:]\/)\/+/g, '$1').replace(/\/$/, '');
+};
+
 export default (url, params = {}, baseUrl = '') => {
   if (typeof url === 'object') {
     params = url;
@@ -43,12 +48,8 @@ export default (url, params = {}, baseUrl = '') => {
     params.url = url;
   }
 
-  let {
-    appendModeInURL = true,
-    appendModeInQueryParam,
-    ...ajaxParams
-  } = params;
-  let mode = (params.data && params.data.mode) || getMode();
+  const { appendModeInURL = true, appendModeInQueryParam, ...ajaxParams } = params;
+  const mode = (params.data && params.data.mode) || getMode();
   ajaxParams.url = normalizeUrl(params.url);
   if (appendModeInQueryParam) {
     ajaxParams.data.mode = mode;
@@ -61,9 +62,4 @@ export default (url, params = {}, baseUrl = '') => {
   }
 
   return ajax(ajaxParams, getMode());
-};
-
-// Replaces consecutive & trailing slashes from the URL
-const normalizeUrl = url => {
-  return url.replace(/([^:]\/)\/+/g, '$1').replace(/\/$/, '');
 };

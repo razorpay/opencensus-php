@@ -1,6 +1,5 @@
 import Entity from './Entity';
 import ajax from 'merchant/utils/ajax';
-import { merchantFetch } from 'merchant/utils/ajax';
 
 /*
   Abstract class for most CRUD entities. The base Entity has methods like
@@ -16,8 +15,8 @@ export default class GenericEntity extends Entity {
 
   fetchAll(params = {}) {
     const Klass = this.constructor;
-    let { id, ...queryParams } = params;
-    let data = this.listRouteName
+    const { id, ...queryParams } = params;
+    const data = this.listRouteName
       ? { query_params: JSON.stringify(queryParams) }
       : { ...queryParams };
 
@@ -52,10 +51,10 @@ export default class GenericEntity extends Entity {
   save(params = null, httpData, noPayloadDiffFromStash) {
     const Klass = this.constructor;
     params = params || this.serialize(noPayloadDiffFromStash);
-    let method = this.getResourceMethod();
-    let { id = this.id, ...bodyParams } = params;
-    let url = `${this.resourceUrl}/${id || ''}`;
-    let data = { ...bodyParams };
+    const method = this.getResourceMethod();
+    const { id = this.id, ...bodyParams } = params;
+    const url = `${this.resourceUrl}/${id || ''}`;
+    const data = { ...bodyParams };
 
     return this.makeGenericAjaxCall({
       url,

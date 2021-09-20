@@ -17,6 +17,7 @@
         "loose": true
       }
     ],
-    ["babel-plugin-graphql-tag"]
+    ["babel-plugin-graphql-tag"],
+    "react-require"
   ]
 }

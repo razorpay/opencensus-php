@@ -23,17 +23,17 @@ const SettlementInfo = (props) => {
   }, [props.error]);
 
   async function settlementInfo() {
-    const data = await props.fetchItem(props.settlementId);
     const objectName = 'settlement details fetched';
     const actionName = 'status';
     const screen = 'settlement details';
     try {
+      const data = await props.fetchItem(props.settlementId);
       const properties = { ...propertiesPayload('settlement', data), status: 'success' };
       handleAnalytics(objectName, actionName, properties, screen);
     } catch (e) {
       const properties = {
         status: 'failure',
-        failureReason: e.errors[0],
+        failureReason: e.errors?.[0],
       };
       handleAnalytics(objectName, actionName, properties, screen);
     }

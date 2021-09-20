@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default ({ label, value, children, pairClass = '', ...otherProps }) => {
   if (value === null || value === undefined || value === '') {
     value = '--';
@@ -5,11 +7,7 @@ export default ({ label, value, children, pairClass = '', ...otherProps }) => {
 
   return (
     <div class={`pair-group-item ${pairClass}`} {...otherProps}>
-      {typeof label === 'function' ? (
-        label()
-      ) : (
-        <div class="pair-label">{label}</div>
-      )}
+      {typeof label === 'function' ? label() : <div class="pair-label">{label}</div>}
       {/*<span class="pair-separator">:</span>*/}
       <div class="pair-value">
         {children ? (
@@ -17,7 +15,7 @@ export default ({ label, value, children, pairClass = '', ...otherProps }) => {
         ) : typeof value === 'function' ? (
           value()
         ) : (
-          <span class="label--primary">{value + ''}</span>
+          <span class="label--primary">{`${value}`}</span>
         )}
       </div>
     </div>

@@ -55,4 +55,5 @@ _ide_helper.php
 .devspace
 
 # test coverage
+.nyc_output
 web/js/coverage

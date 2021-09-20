@@ -1,6 +1,5 @@
 import Base from './Base';
 import ajax from 'merchant/utils/ajax';
-import store from 'merchant/store';
 
 /*
   Abstract class for most CRUD entities. The base Entity has methods like
@@ -16,10 +15,10 @@ export default class Entity extends Base {
   */
   fetchAll(params = {}) {
     const Klass = this.constructor;
-    let { id, appendModeInURL, appendModeInQueryParam, ...data } = params;
+    const { id, appendModeInURL, appendModeInQueryParam, ...data } = params;
 
     if (id) {
-      return this.fetch(id, data).then(response => {
+      return this.fetch(id, data).then((response) => {
         return {
           data: {
             items: [response],
@@ -32,28 +31,26 @@ export default class Entity extends Base {
       appendModeInURL,
       appendModeInQueryParam,
       data,
-    }).then(response => {
-      response.data.items = response.data.items.map(item =>
-        new Klass(item).deserialize()
-      );
+    }).then((response) => {
+      response.data.items = response.data.items.map((item) => new Klass(item).deserialize());
       return response;
     });
   }
 
   fetch(id, data = {}) {
     const Klass = this.constructor;
-    return ajax(`${this.resourceUrl}/${id}`, { data }).then(response => {
+    return ajax(`${this.resourceUrl}/${id}`, { data }).then((response) => {
       return new Klass(response.data.items[0]).deserialize();
     });
   }
 
   save() {
     const Klass = this.constructor;
-    let params = this.serialize();
-    let { id, ...data } = params;
-    let [url, method] = this.getResourceUrlAndMethod();
+    const params = this.serialize();
+    const { id, ...data } = params;
+    const [url, method] = this.getResourceUrlAndMethod();
 
-    return ajax({ url, method, data }).then(response => {
+    return ajax({ url, method, data }).then((response) => {
       return new Klass(response.data).deserialize();
     });
   }
@@ -63,9 +60,5 @@ export default class Entity extends Base {
       url: this.getResourceUrl(),
       method: 'delete',
     });
-  }
-
-  getSession() {
-    return store.getState().session;
   }
 }

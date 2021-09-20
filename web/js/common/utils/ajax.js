@@ -1,4 +1,9 @@
+// TODO: Remove these with refactor
+/* eslint-disable no-lonely-if */
+/* eslint-disable max-depth */
+/* eslint-disable no-shadow */
 import { getCookie } from './cookies';
+import axios from 'axios';
 // import { captureXhrResponseMetrics } from './perf';
 
 // axios.interceptors.response.use(function(response) {
@@ -8,26 +13,23 @@ import { getCookie } from './cookies';
 
 export default function ajax(params = {}) {
   return new Promise((resolve, reject) => {
-    let { headers = {} } = params;
+    const { headers = {} } = params;
     headers['X-XSRF-TOKEN'] = getCookie('XSRF-TOKEN');
     headers['X-Requested-With'] = 'XMLHttpRequest';
-    headers['Accept'] = 'application/json, text/plain, */*';
+    headers.Accept = 'application/json, text/plain, */*';
     params.headers = headers;
-    if (
-      (!params.method || String(params.method).toLowerCase() === 'get') &&
-      params.data
-    ) {
+    if ((!params.method || String(params.method).toLowerCase() === 'get') && params.data) {
       params.params = params.data;
       delete params.data;
     }
 
-    params.paramsSerializer = function(params) {
-      const encodedParams = _flattenSearchParams(params);
+    params.paramsSerializer = (currentParams) => {
+      const encodedParams = _flattenSearchParams(currentParams);
       return encodedParams.join('&'); // Build the encoded query string
     };
 
     axios(params).then(
-      resp => {
+      (resp) => {
         const { data } = resp;
         // Error code is verified to handle api resolution to HTML doc / raw text.
         // Eg: For downloading csv file for api key-secret comes as raw text.
@@ -40,7 +42,7 @@ export default function ajax(params = {}) {
           });
         }
       },
-      err => {
+      (err) => {
         document.body.dispatchEvent(
           new CustomEvent('REQUEST_ERROR', {
             bubbles: true,
@@ -48,43 +50,41 @@ export default function ajax(params = {}) {
               url: params.url,
               response: err.response,
             },
-          })
+          }),
         );
 
         let message = '';
 
+        function continueAjax() {
+          if (!params.method || params.method.toLowerCase() === 'get') {
+            axios(params).then(({ data }) => {
+              if (data.success) {
+                resolve(data);
+              } else {
+                reject({
+                  code: 'UNKNOWN_ERROR_CODE',
+                  ...data,
+                });
+              }
+            });
+            // Not calling error section Again, the catch block is upto the component to handle
+          } else {
+            reject({
+              code: err.status,
+              errors: ['Your recent action was not completed. Please Try again'],
+              ...err.responseJSON,
+            });
+          }
+        }
+
         if (err.response && err.response.status === 401) {
           message = 'Unauthorized';
-
-          function continueAjax() {
-            if (!params.method || params.method.toLowerCase() === 'get') {
-              axios(params).then(({ data }) => {
-                if (data.success) {
-                  resolve(data);
-                } else {
-                  reject({
-                    code: 'UNKNOWN_ERROR_CODE',
-                    ...data,
-                  });
-                }
-              });
-              // Not calling error section Again, the catch block is upto the component to handle
-            } else {
-              reject({
-                code: err.status,
-                errors: [
-                  'Your recent action was not completed. Please Try again',
-                ],
-                ...err.responseJSON,
-              });
-            }
-          }
 
           document.body.dispatchEvent(
             new CustomEvent('NOT_AUTHENTICATED', {
               bubbles: true,
               detail: { continueAjax },
-            })
+            }),
           );
         } else {
           reject({
@@ -93,7 +93,7 @@ export default function ajax(params = {}) {
             ...err.responseJSON,
           });
         }
-      }
+      },
     );
   });
 }
@@ -115,14 +115,10 @@ function _flattenSearchParams(data) {
           if (data[key] != null) {
             if (parentKey) {
               searchParams.push(
-                `${encodeURIComponent(
-                  `${parentKey}[${key}]`
-                )}=${encodeURIComponent(data[key])}`
+                `${encodeURIComponent(`${parentKey}[${key}]`)}=${encodeURIComponent(data[key])}`,
               );
             } else {
-              searchParams.push(
-                `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`
-              );
+              searchParams.push(`${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`);
             }
           }
         }

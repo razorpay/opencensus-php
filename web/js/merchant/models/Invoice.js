@@ -1,5 +1,4 @@
 import GenericEntity from './GenericEntity';
-import ajax from 'merchant/utils/ajax';
 import { getFixedINRAmount, isBlank, rupeesToPaise } from 'common/utils/rzp-utils';
 import Payment from 'merchant/models/Payment';
 
@@ -77,8 +76,8 @@ export default class Invoice extends GenericEntity {
   }
 
   fetchPayments() {
-    let payment = new Payment();
-    return payment.fetchAll({
+    const payment = new Payment();
+    return payment?.fetchAll({
       invoice_id: this.id,
     });
   }
@@ -95,9 +94,9 @@ export default class Invoice extends GenericEntity {
     }
 
     // Serialize the `this.customer` property.
-    if (this.type === 'invoice' && prop === 'customer' && typeof this['customer'] === 'object') {
-      let keys = Object.keys(this[prop]);
-      let obj = {};
+    if (this.type === 'invoice' && prop === 'customer' && typeof this.customer === 'object') {
+      const keys = Object.keys(this[prop]);
+      const obj = {};
       for (let i = 0; i < keys.length; i++) {
         obj[keys[i]] = super.serializeProperty.call(this[prop], keys[i]);
       }
@@ -111,7 +110,7 @@ export default class Invoice extends GenericEntity {
       }
 
       // Invoice type 'link' will have this.notes in object form
-      let notes = this.notes || [];
+      const notes = this.notes || [];
 
       // Convert [{key: key1, value: value1}, {key: key2, value: value2}] into single Object like {key1: value}
       return notes.reduce((prev, curr) => {
@@ -131,8 +130,8 @@ export default class Invoice extends GenericEntity {
       } else if (this.type === 'invoice') {
         return this.line_items
           .filter((item) => !!(item.item_id || item.id || item.name))
-          .map((item, index) => {
-            let lineItem = {
+          .map((item) => {
+            const lineItem = {
               quantity: item.quantity,
               description: item.description,
               amount: rupeesToPaise(item.amountInINR),
@@ -181,7 +180,7 @@ export default class Invoice extends GenericEntity {
 
   deserializeProperty(prop, value) {
     switch (prop) {
-      case 'customer_details':
+      case 'customer_details': {
         // Get address IDs.
         let billingAddressID = value.billing_address;
         let shippingAddressID = value.shipping_address;
@@ -202,6 +201,7 @@ export default class Invoice extends GenericEntity {
           gstin: value.gstin,
         };
         break;
+      }
 
       case 'amount':
         this.amountInINR = getFixedINRAmount(value);
@@ -220,6 +220,9 @@ export default class Invoice extends GenericEntity {
 
       case 'email_status':
         this.email_notify = !isBlank(value);
+        break;
+
+      default:
         break;
     }
 

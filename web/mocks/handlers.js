@@ -1,11 +1,13 @@
 import { rest, graphql } from 'msw';
-import * as ActivationDB from '../js/merchant/views/onboarding/mobile/services/data/ActivationDB';
-import * as PaymentsDB from '../js/merchant/views/onboarding/mobile/services/data/PaymentsDB';
-import * as WebsiteWorkflowDB from '../js/merchant/views/onboarding/mobile/services/data/WebsiteWorkflowDB';
-import * as InternationalWorkflowDB from '../js/merchant/views/onboarding/mobile/services/data/InternationalWorkflowDB';
-import * as BusinessCategoryDB from '../js/merchant/views/onboarding/mobile/services/data/BusinessCategoryDB';
-import * as PaymentEscalationDB from '../js/merchant/views/onboarding/mobile/services/data/PaymentEscalationDB';
-import * as TermsAndConditionDB from '../js/merchant/views/TermsAndCondition/services/TermsAndConditionDB';
+import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
+import * as PaymentsDB from 'merchant/views/onboarding/mobile/services/data/PaymentsDB';
+import * as WebsiteWorkflowDB from 'merchant/views/onboarding/mobile/services/data/WebsiteWorkflowDB';
+import * as InternationalWorkflowDB from 'merchant/views/onboarding/mobile/services/data/InternationalWorkflowDB';
+import * as BusinessCategoryDB from 'merchant/views/onboarding/mobile/services/data/BusinessCategoryDB';
+import * as PaymentEscalationDB from 'merchant/views/onboarding/mobile/services/data/PaymentEscalationDB';
+import * as TermsAndConditionDB from 'merchant/views/TermsAndCondition/services/TermsAndConditionDB';
+
+import * as SettlementsDB from 'merchant/views/Settlements/tests/data/mockData';
 
 export const handlers = [
   // Handles a "Login" mutation
@@ -292,6 +294,18 @@ export const handlers = [
         status_code: 200,
         data: { city: 'Noida', state: 'UP' },
       }),
+    );
+  }),
+
+  // Setllements
+  rest.get('*/merchant/api/test/settlements/:id', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        data: SettlementsDB.settlementsInfo,
+      }),
+      ctx.delay(50),
     );
   }),
 ];

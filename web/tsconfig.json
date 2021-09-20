@@ -28,6 +28,7 @@
     "js/merchant/views/TermsAndCondition",
     "js/merchant/views/referral",
     "js/merchant/views/onboarding",
+    "js/merchant/views/Settlements",
     "js/common/hooks",
     "js/common/context",
     "js/common/services",

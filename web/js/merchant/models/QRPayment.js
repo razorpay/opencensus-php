@@ -1,7 +1,5 @@
 import GenericEntity from './GenericEntity';
 import Refund from './Refund';
-import { getFixedINRAmount } from 'common/utils/rzp-utils';
-import ajax from 'merchant/utils/ajax';
 
 export default class QRPayment extends GenericEntity {
   // listRouteName = 'payment_fetch_multiple';
@@ -36,7 +34,6 @@ export default class QRPayment extends GenericEntity {
       paymentId: payment.id,
       paymentStatus: payment.status,
       paymentMethod: payment.method,
-      paymentStatus: payment.status,
       createdAt: payment.created_at,
       description: payment.description,
       totalFee: payment.fee,
@@ -91,7 +88,6 @@ export default class QRPayment extends GenericEntity {
   }
 
   didDeserialize() {
-    let session = this.getSession();
     this.capturableAmount = this.amount;
     if (this.fee_bearer == 'customer') {
       this.capturableAmount = this.amount - this.fee;
@@ -103,7 +99,7 @@ export default class QRPayment extends GenericEntity {
     const url = `/refunds/fee/`;
     const data = {
       payment_id: id,
-      amount: amount,
+      amount,
     };
 
     return this.makeGenericAjaxCall({ url, data, method });
