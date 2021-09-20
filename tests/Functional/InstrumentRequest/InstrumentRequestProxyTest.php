@@ -127,7 +127,8 @@ class InstrumentRequestProxyTest extends TestCase
                 'url'      => '/merchant_instrument_request_fetch',
                 'method'   => \Requests::POST,
                 'content'  => [
-                    'query' =>"merchant_ids=a&status=activated"
+                    'merchant_ids' => ['a'],
+                    'status'       => 'activated',
                 ]
             ],
         ];
@@ -209,14 +210,28 @@ class InstrumentRequestProxyTest extends TestCase
                     'url'      => '/internal_instrument_request_fetch',
                     'method'   => \Requests::POST,
                     'content'  => [
-                        'query' => 'hitachi&merchant_ids=a&method=cards&start_time=123&end_time=456&has_special_pricing_request=true',
-                        'count' => '40',
-                        'skip'  => '4',
+                        'merchant_ids' => ['testMID'],
+                        'gateway'      => 'hitachi',
+                        'method'       => 'cards',
+                        'start_time'   => '123',
+                        'end_time'     => '456',
+                        'count'        => '40',
+                        'skip'         => '4',
+                        'has_special_pricing_request' => true
                     ],
                 ],
-                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/internal_instrument_request?hitachi&merchant_ids=a&method=cards&start_time=123&end_time=456&has_special_pricing_request=true&count=40&skip=4',
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/internal_instrument_request',
                 self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::GET,
-                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => '',
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => [
+                    'merchant_ids' => ['testMID'],
+                    'gateway'      => 'hitachi',
+                    'method'       => 'cards',
+                    'start_time'   => '123',
+                    'end_time'     => '456',
+                    'count'        => 40,
+                    'skip'         => 4,
+                    'has_special_pricing_request' => true
+                ],
             ],
             [
                 self::REQUEST                              => [
@@ -490,16 +505,25 @@ class InstrumentRequestProxyTest extends TestCase
                     'url'       => '/merchant_instrument_request_fetch?count=50',
                     'method'    => \Requests::POST,
                     'content' => [
-                        'query' => "status=activated&start_time=123&end_time=456&has_special_pricing_request=true",
+                        'status'       => 'activated',
                         'merchant_ids' => [
                             "10000000000000"
                         ],
+                        'start_time'   => '123',
+                        'end_time'     => '456',
+                        'has_special_pricing_request' => true,
                     ],
                 ],
-                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/composite_instrument_request?status=activated&start_time=123&end_time=456&has_special_pricing_request=true&count=50',
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/composite_instrument_request',
                 self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::POST,
                 self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => [
-                    'merchant_ids'=>["10000000000000"]
+                    'merchant_ids' => ["10000000000000"],
+                    'status'       => 'activated',
+                    'start_time'   => '123',
+                    'end_time'     => '456',
+                    'count'        => 50,
+                    'skip'         => 0,
+                    'has_special_pricing_request' => '1',
                 ],
 
             ],

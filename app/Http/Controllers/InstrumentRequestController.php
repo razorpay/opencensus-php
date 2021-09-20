@@ -73,17 +73,15 @@ class InstrumentRequestController extends BaseController
     {
         $input = Request::all();
 
-        $query = $input['query'];
+        $input['count'] = (int)($input['count'] ?? 500);
 
-        unset($input['query']);
-
-        $query = $query . '&' . http_build_query($input);
+        $input['skip'] = (int)($input['skip'] ?? 0);
 
         $response = $this->app['terminals_service']->proxyTerminalService(
-            [],
+            $input,
             \Requests::GET,
-            'v2/internal_instrument_request?' . $query,
-            ['timeout' => 1],
+            'v2/internal_instrument_request',
+            ['timeout' => 1, 'data_format' => 'body'],
             $this->getAdminHeadersForInstrumentRequest());
 
         return ApiResponse::json($response);
@@ -332,17 +330,11 @@ class InstrumentRequestController extends BaseController
     {
         $input = Request::all();
 
-        $query = $input['query'];
+        $input['count'] = (int)($input['count'] ?? 500);
 
-        $merchantIds = $input['merchant_ids'];
+        $input['skip'] = (int)($input['skip'] ?? 0);
 
-        unset($input['query'], $input['merchant_ids']);
-
-        $query = $query . '&' . http_build_query($input);
-
-        $instrumentHeaders = $this->getAdminHeadersForInstrumentRequest();
-
-        $response = $this->app['terminals_service']->getMerchantInstruments($merchantIds, $query, $instrumentHeaders);
+        $response = $this->app['terminals_service']->getMerchantInstruments($input, $this->getAdminHeadersForInstrumentRequest());
 
         return ApiResponse::json($response);
 

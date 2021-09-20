@@ -347,15 +347,17 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
-    public function getMerchantInstruments(array $merchantIds, string $query, array $headers): array
+    public function getMerchantInstruments(array $input, array $headers): array
     {
+        $merchantIds = $input['merchant_ids'];
+
        if ($this->areMerchantIdsAccessible($merchantIds))
        {
            $response = $this->proxyTerminalService(
-               ['merchant_ids' => $merchantIds],
+               $input,
                \Requests::POST,
-               'v2/composite_instrument_request?' . $query,
-               [],
+               'v2/composite_instrument_request',
+               ['data_format' => 'body'],
                $headers
            );
            return $response;
