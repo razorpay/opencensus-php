@@ -1135,73 +1135,88 @@ class Core extends Base\Core
             return $this->processActionOnPayoutViaWorkflowService($payout, $approve, $input);
         }
 
-        /** @var Workflow\Action\Entity|null $workflowAction */
-        $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
+        $payoutId = $payout->getId();
 
-        $action = ($approve === true) ? 'approve' : 'reject';
-
-        if ($workflowAction === null)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'No further actions can be performed on this payout',
-                null,
-                ['action' => $action, 'payout_id' => $payout->getId()]);
-        }
-
-        $payout = $this->repo->transaction(
-            function() use ($payout, $workflowAction, $approve, $action, $input)
+        // Adding this mutex here to handle concurrent requests.
+        $payout = $this->mutex->acquireAndRelease(
+            'process_workflow_action_on_' . $payoutId,
+            function() use ($payout, $approve, $input)
             {
-                $userComment = $input[Workflow\Action\Checker\Entity::USER_COMMENT] ?? null;
+                // Reload $payout here if needed.
 
-                $actionCheckerCreateParams = [
-                    Workflow\Action\Checker\Entity::ACTION_ID    => $workflowAction->getId(),
-                    Workflow\Action\Checker\Entity::APPROVED     => ($approve === true) ? 1 : 0, // 1 = true
-                ];
+                /** @var Workflow\Action\Entity|null $workflowAction */
+                $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
 
-                if (empty($userComment) === false)
+                $action = ($approve === true) ? 'approve' : 'reject';
+
+                if ($workflowAction === null)
                 {
-                    $actionCheckerCreateParams[Workflow\Action\Checker\Entity::USER_COMMENT] = $userComment;
-                }
-
-                $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
-
-                if (empty($actionChecker) === true && $this->app['basicauth']->getAdmin()->isSuperAdmin() === false)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED,
+                    throw new Exception\BadRequestValidationFailureException(
+                        'No further actions can be performed on this payout',
                         null,
-                        [
-                            'create_params'       => $actionCheckerCreateParams,
-                            'payout_id'           => $payout->getId(),
-                            'workflows_action_id' => $workflowAction->getId(),
-                            'action'              => $action,
-                        ]);
+                        ['action' => $action, 'payout_id' => $payout->getId()]);
                 }
 
-                //
-                // Reload the workflow_action entity. Changes from the previous function calls
-                // may not have been sync'd
-                //
-                $workflowAction->reload();
+                $payout = $this->repo->transaction(
+                    function() use ($payout, $workflowAction, $approve, $action, $input) {
+                        $userComment = $input[Workflow\Action\Checker\Entity::USER_COMMENT] ?? null;
 
-                $this->trace->info(
-                    TraceCode::PAYOUT_WORKFLOW_ACTION_INFO,
-                    [
-                        'workflow_action' => $workflowAction,
-                        'action'          => $action,
-                        'payout_id'       => $payout->getId(),
-                    ]);
+                        $actionCheckerCreateParams = [
+                            Workflow\Action\Checker\Entity::ACTION_ID => $workflowAction->getId(),
+                            Workflow\Action\Checker\Entity::APPROVED  => ($approve === true) ? 1 : 0, // 1 = true
+                        ];
 
-                if (($approve === true) and
-                    ($workflowAction->getApproved() === true))
-                {
-                    $payout = $this->processApprovePayout($payout, $input);
-                }
-                else if (($approve === false) and
-                         ($workflowAction->isRejected() === true))
-                {
-                    $payout = $this->processRejectPayout($payout);
-                }
+                        if (empty($userComment) === false)
+                        {
+                            $actionCheckerCreateParams[Workflow\Action\Checker\Entity::USER_COMMENT] = $userComment;
+                        }
+
+                        $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
+
+                        if ((empty($actionChecker) === true) and
+                            ($this->app['basicauth']->getAdmin()->isSuperAdmin() === false))
+                        {
+                            throw new Exception\BadRequestException(
+                                ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED,
+                                null,
+                                [
+                                    'create_params'       => $actionCheckerCreateParams,
+                                    'payout_id'           => $payout->getId(),
+                                    'workflows_action_id' => $workflowAction->getId(),
+                                    'action'              => $action,
+                                ]);
+                        }
+
+                        //
+                        // Reload the workflow_action entity. Changes from the previous function calls
+                        // may not have been sync'd
+                        //
+                        $workflowAction->reload();
+
+                        $this->trace->info(
+                            TraceCode::PAYOUT_WORKFLOW_ACTION_INFO,
+                            [
+                                'workflow_action' => $workflowAction,
+                                'action'          => $action,
+                                'payout_id'       => $payout->getId(),
+                            ]);
+
+                        if (($approve === true) and
+                            ($workflowAction->getApproved() === true))
+                        {
+                            $payout = $this->processApprovePayout($payout, $input);
+                        }
+                        else
+                        {
+                            if (($approve === false) and
+                                ($workflowAction->isRejected() === true))
+                            {
+                                $payout = $this->processRejectPayout($payout);
+                            }
+                        }
+
+                        return $payout;
+                    });
 
                 return $payout;
             });
