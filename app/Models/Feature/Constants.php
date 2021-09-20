@@ -839,6 +839,12 @@ class Constants
      */
     const API_BULK_APPROVALS = 'api_bulk_approvals';
 
+    /**
+     * Feature flag to enable network tokenization apis
+     */
+    const NETWORK_TOKENIZATION = 'network_tokenization';
+
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1205,6 +1211,7 @@ class Constants
         self::SOURCED_BY_WALNUT369            => true,
         self::ENABLE_SIFT_JS                  => true,
         self::API_BULK_APPROVALS              => true,
+        self::NETWORK_TOKENIZATION            => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';

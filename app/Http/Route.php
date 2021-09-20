@@ -2807,6 +2807,12 @@ class Route
 
         // Risk Audit Workflow Actions
         'w-actions_merchant_risk_audit_get'       => ['get',        'merchants/{merchant_id}/risk-audit/w-actions',           'WorkflowController@getActionsForRiskAudit'                   ],
+
+        // network tokenization
+        'token_create'                            => ['post',        'tokens',                                                   'TokenController@create'                                   ],
+        'token_fetch'                             => ['post',        'tokens/fetch',                                             'TokenController@fetch'                                    ],
+        'token_fetch_cryptogram'                  => ['post',        'tokens/cryptogram',                                        'TokenController@fetchCryptoGram'                          ],
+        'token_delete'                            => ['post',        'tokens/delete',                                            'TokenController@delete'                                   ],
     ];
 
     public static $public = [
@@ -3271,6 +3277,12 @@ class Route
         'product_config_create_v2',
         'product_config_tnc_fetch_v2',
         'product_config_tnc_accept_v2',
+
+        // network tokenization routes
+        'token_create',
+        'token_fetch',
+        'token_fetch_cryptogram',
+        'token_delete',
     ];
 
     // Only routes defined in internalApps go here
@@ -10615,6 +10627,10 @@ class Route
         'bbps_bill_payments'                   => [Feature::FEATURE_BBPS],
         'patch_dispute_contest_by_id'          => [Feature::DISPUTE_PRESENTMENT],
         'post_dispute_accept_by_id'            => [Feature::DISPUTE_PRESENTMENT],
+        'token_create'                         => [Feature::NETWORK_TOKENIZATION],
+        'token_fetch'                          => [Feature::NETWORK_TOKENIZATION],
+        'token_fetch_cryptogram'               => [Feature::NETWORK_TOKENIZATION],
+        'token_delete'                         => [Feature::NETWORK_TOKENIZATION],
     ];
 
     /**
