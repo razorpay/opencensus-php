@@ -25,25 +25,31 @@ import TextHighlighter from 'common/ui/TextHighlighter';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 import InitiateWebsiteChange from './WebsiteSelfServe/InitiateWebsiteChange';
+import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 
 function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
-  const businessWebsite = user.business_website ? (
+  const businessWebsite = (
     <div>
-      <span className="text-primary m-r">
-        <a href={user.business_website} target="_blank" rel="noopener noreferrer">
-          {user.business_website}
-        </a>
-      </span>
+      {user.business_website ? (
+        <span className="text-primary m-r">
+          <a href={user.business_website} target="_blank" rel="noopener noreferrer">
+            {user.business_website}
+          </a>
+        </span>
+      ) : (
+        '--'
+      )}
       {(isWebsiteInWorkflow.workflow_exists === false ||
-        isWebsiteInWorkflow.workflow_status === 'rejected') &&
+        !['open', 'approved'].includes(isWebsiteInWorkflow.workflow_status)) &&
         user.role === 'owner' &&
+        user.isAccepted &&
         user.isWebsiteSelfServeOn && (
           <Button.Transparent onClick={handleEditWebsite}>
             <i class="i i-edit p-l" />
           </Button.Transparent>
         )}
     </div>
-  ) : null;
+  );
 
   return (
     <div>
@@ -107,17 +113,28 @@ const MerchantDetails = ({
   }
 
   const handleEditWebsite = () => {
-    openModal({
-      size: 'small',
-      component: (
-        <InitiateWebsiteChange
-          user={user}
-          openModal={openModal}
-          closeModal={closeModal}
-          getWebsiteWorkflowStatus={getWebsiteWorkflowStatus}
-        />
-      ),
-    });
+    const hasWebsite = user.has_key_access; // If true => edit website flow; otherwise add flow
+
+    if (hasWebsite) {
+      openModal({
+        size: 'small',
+        component: (
+          <InitiateWebsiteChange
+            user={user}
+            openModal={openModal}
+            closeModal={closeModal}
+            getWebsiteWorkflowStatus={getWebsiteWorkflowStatus}
+          />
+        ),
+      });
+    } else {
+      openModal({
+        size: 'small',
+        component: (
+          <EditWebsiteDetailsModal onClose={closeModal} onWebsiteAdd={getWebsiteWorkflowStatus} />
+        ),
+      });
+    }
 
     let analyticsObject;
 
