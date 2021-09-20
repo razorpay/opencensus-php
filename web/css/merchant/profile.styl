@@ -144,12 +144,67 @@ $light-blue-color = #2B83EA;
   margin-top: 5px;
 }
 
-.transaction-limit {
-  text-align: right;
-  .help-content {
-    padding-left: 5px;
-  }
-}
+.transaction-limit
+  width 50%
+
+  .help-content
+    padding-left 5px
+
+  .transaction-limit__change-info
+    width 200%
+    margin-top 10px
+    padding-left 10px
+
+    &.inprogress
+      border-left 4px solid #CD8214
+
+    &.rejected
+      border-left 4px solid #D12D2D
+
+    &.success
+      border-left 4px solid #1F890E
+
+.transaction-limit-update-form
+
+  .highlight-limit
+    color #414b50
+    font-weight bold
+    display block
+    margin-top 5px
+
+  input
+    border none
+    border-radius 0px
+    background-color rgba(224, 228, 249, 0.1)
+
+  textarea
+    overflow scroll
+    background-color rgba(224, 228, 249, 0.1)
+    border none
+    border-bottom 2px solid rgba(22, 47, 86, 0.1)
+
+  textarea.Input-el
+    max-height 150px
+    resize none
+    height 140px
+
+
+  .Input-label
+    margin-bottom 9px
+    margin-top -7px
+    font-size 12px
+    color rgba(22, 47, 86, 0.54)
+
+  .note
+    color rgba(22, 47, 86, 0.54)
+    margin 15px 0px
+    font-size 13px
+
+  .transactionlimit-fileupload
+    margin-bottom 20px
+
+  .notify-error
+    color #f05050
 
 .gst-invoice-note
   border-left 3px solid #CD8214

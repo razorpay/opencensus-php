@@ -25,6 +25,7 @@ import TextHighlighter from 'common/ui/TextHighlighter';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 import InitiateWebsiteChange from './WebsiteSelfServe/InitiateWebsiteChange';
+import UpdateTransactionLimit from './UpdateTransactionLimit';
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 
 function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
@@ -76,6 +77,7 @@ const MerchantDetails = ({
   showNotification,
 }) => {
   const [isWebsiteInWorkflow, setisWebsiteInWorkflow] = useState(false);
+  const [transactionLimitWorkflowStatus, settransactionLimitWorkflowStatus] = useState(false);
 
   const getWebsiteWorkflowStatus = async () => {
     try {
@@ -96,9 +98,33 @@ const MerchantDetails = ({
     }
   };
 
+  const getTransactionLimitWorkflowStatus = async () => {
+    try {
+      const response = await merchantFetch({
+        url: `merchant/increase_transaction_limit/details`,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response) settransactionLimitWorkflowStatus(response.data);
+    } catch ({ errors }) {
+      showNotification({
+        type: 'error',
+        message: errors,
+      });
+    }
+  };
+
   useEffect(() => {
     // Only fetch request if user is owner, other users shouldn't see the error
     if (user.role === 'owner') getWebsiteWorkflowStatus();
+  }, []);
+
+  useEffect(() => {
+    // Only fetch request if user is owner, other users shouldn't see the error
+    if (user.role === 'owner') getTransactionLimitWorkflowStatus();
   }, []);
 
   let activationName = 'KYC';
@@ -164,6 +190,24 @@ const MerchantDetails = ({
     analyticsTrack(analyticsObject);
   };
 
+  const onUpdateTransactionLimitClick = () => {
+    openModal({
+      size: 'small',
+      component: <UpdateTransactionLimit onComplete={getTransactionLimitWorkflowStatus} />,
+    });
+
+    // Track when user click on edit limit
+    analyticsTrack({
+      objectName: 'Transaction limit edit',
+      actionName: 'Merchant clicks on edit',
+      screen: 'My account screen',
+      properties: {
+        currentLimit: `${user.merchant.max_payment_amount}`,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  };
+
   const showGenerateTnCModal = (eventName) => {
     openModal({
       size: 'small',
@@ -185,9 +229,28 @@ const MerchantDetails = ({
     });
   };
 
-  const labelHandler = (hashedWith, content) => {
-    return <TextHighlighter hashedWith={hashedWith}>{content}</TextHighlighter>;
+  const labelHandler = (hashedWith, content) => (
+    <TextHighlighter hashedWith={hashedWith}>{content}</TextHighlighter>
+  );
+
+  const isMerchantAllowedToEditLimit = () => {
+    // Unregistered government and gaming merchants aren't allowed to edit transaction limit
+    if (
+      user.isUnregisteredBusiness &&
+      (user.business_category === 'government' || user.business_category === 'gaming')
+    )
+      return false;
+
+    return true;
   };
+
+  const showTransactionLimitEdit =
+    user.role === 'owner' &&
+    user.isOrgRZP &&
+    user.isTransactionLimitUpdateSelfServeOn &&
+    (transactionLimitWorkflowStatus.workflow_exists === false ||
+      !['open', 'approved'].includes(transactionLimitWorkflowStatus.workflow_status)) &&
+    isMerchantAllowedToEditLimit();
 
   return (
     <div class="list-group details-row-container">
@@ -473,24 +536,45 @@ const MerchantDetails = ({
           </IntoView>
         )}
 
-      {user.merchant && (
-        <DetailRow
-          label="Limit per Transaction"
-          value={() => (
-            <div className="transaction-limit">
-              <Amount value={user.merchant.max_payment_amount} currency="INR" />
-              <small class="help-content">
-                <i class="i i-info-circle" />
-                <Popover align="right" theme="dark">
-                  <PopoverBody>
-                    <div>The maximum INR limit for only a single transaction.</div>
-                  </PopoverBody>
-                </Popover>
-              </small>
-            </div>
-          )}
-        />
-      )}
+      <DetailRow
+        label={() => (
+          <div class="transaction-limit">
+            <span>Limit per transaction</span>
+            <small class="help-content">
+              <i class="i i-info-circle" />
+              <Popover align="right" theme="dark">
+                <PopoverBody>
+                  <div>The maximum INR limit for only a single transaction.</div>
+                </PopoverBody>
+              </Popover>
+            </small>
+
+            {transactionLimitWorkflowStatus.workflow_status &&
+              ['open', 'activated'].includes(transactionLimitWorkflowStatus.workflow_status) && (
+                <div class="transaction-limit__change-info inprogress">
+                  You request to increase to transaction limit has been received. Our team is going
+                  through the information provided by you.
+                </div>
+              )}
+            {transactionLimitWorkflowStatus.workflow_status &&
+              ['rejected'].includes(transactionLimitWorkflowStatus.workflow_status) && (
+                <div class="transaction-limit__change-info rejected">
+                  {transactionLimitWorkflowStatus.rejection_reason_message}
+                </div>
+              )}
+          </div>
+        )}
+        value={() => (
+          <div>
+            <Amount value={user.merchant.max_payment_amount} currency="INR" />
+            {showTransactionLimitEdit && (
+              <Button.Transparent onClick={onUpdateTransactionLimitClick}>
+                <i class="i i-edit p-l" />
+              </Button.Transparent>
+            )}
+          </div>
+        )}
+      />
 
       {user.canGenerateTnCPage && !user.business_website && !user.isAccepted && (
         <DetailRow

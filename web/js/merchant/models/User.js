@@ -692,6 +692,10 @@ export default class User {
     return this.getExpStatus('website_self_serve');
   }
 
+  get isTransactionLimitUpdateSelfServeOn() {
+    return this.getExpStatus('transaction_limit_update_self_serve');
+  }
+
   get isCreditPullEnabled() {
     return this.isFeatureEnabled('show_credit_score');
   }

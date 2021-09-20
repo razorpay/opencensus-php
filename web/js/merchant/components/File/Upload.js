@@ -1,10 +1,24 @@
-import { readableFileSize, titleCase } from 'common/utils/rzp-utils';
-import { classList } from 'common/utils/rzp-utils';
-import { isBlank } from 'common/utils/rzp-utils';
-
+import React from 'react';
+import { readableFileSize, titleCase, classList, isBlank } from 'common/utils/rzp-utils';
 import Staged from './Staged';
 
-/**
+const fileTypesMap = {
+  csv: 'text/csv,application/vnd.ms-excel',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', //new excel format
+  pdf: 'application/pdf',
+  xls: 'application/vnd.ms-excel', //Old microsoft excel sheets.
+  image: 'image/*',
+  jpg: 'image/jpeg',
+  png: 'image/png',
+  xml: 'text/xml',
+};
+
+// File type = docs are not safe to upload in general
+const unsafeFileTypes = ['doc', 'docx'];
+
+const MAX_API_LIMIT = 25 * 1024 * 1024; // Max 25MB limit from api
+
+/*
  * Common component to handle file upload
  * @props
  *  - {Boolean, default: false} `showStagedFileStatus` - shows the status of staged file in staged component
@@ -39,6 +53,7 @@ export default class FileUpload extends React.Component {
     onCloseClick: () => {},
     renderStagedChildren: () => null,
     hideLoader: false,
+    stagedFileStatus: '',
   };
 
   constructor(props) {
@@ -53,6 +68,7 @@ export default class FileUpload extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.defaultValue !== this.props.defaultValue) {
+      // eslint-disable-next-line react/no-did-update-set-state
       this.setState({
         isDocPreUploaded: !!this.props.defaultValue,
       });
@@ -60,18 +76,23 @@ export default class FileUpload extends React.Component {
   }
 
   updateFile = (file) => {
-    /* 
+    /*
       added a check to verifiy if any file is dropped or selected to the UI componenet
-      as because there might be a case when on reselection if we cancel this updateFile method is triggered 
+      as because there might be a case when on reselection if we cancel this updateFile method is triggered
      */
     if (file) {
       // check if file type is allowed
       if (this.isFileAllowed(file)) {
-        this.props.onDrop && this.props.onDrop(file);
+        if (this.props.onDrop) this.props.onDrop(file);
 
-        this.setState({ files: [...this.state.files, file] }, () => {
-          this.props.onFileChange && this.onFileChange(file);
-        });
+        this.setState(
+          (prevState) => {
+            return { files: [...prevState.files, file] };
+          },
+          () => {
+            if (this.props.onFileChange) this.onFileChange(file);
+          },
+        );
       }
     }
   };
@@ -116,7 +137,7 @@ export default class FileUpload extends React.Component {
     //- windows sends empty file.type if it is not set in user registry
     //- so manually add file type from the map
     if (isBlank(type)) {
-      let probableTypes = fileTypesMap[file.name.split('.').pop()];
+      const probableTypes = fileTypesMap[file.name.split('.').pop()];
       type = probableTypes.split(',')[0];
     }
 
@@ -138,10 +159,10 @@ export default class FileUpload extends React.Component {
 
     // Uploaded file type matches given pattern
     const isValidFilePattern = acceptedTypes.some((aT) => {
-      let types = aT.split(',');
+      const types = aT.split(',');
 
-      for (let t of types) {
-        let pattern = new RegExp(t.trim());
+      for (const t of types) {
+        const pattern = new RegExp(t.trim());
         if (pattern.test(type)) {
           return true;
         }
@@ -204,15 +225,17 @@ export default class FileUpload extends React.Component {
       return;
     }
     this.setState(
-      {
-        files: this.state.files.filter((_, index) => index !== fileIndex),
+      (prevState) => {
+        return {
+          files: prevState.files.filter((_, index) => index !== fileIndex),
+        };
       },
       () => {
         // resetting the input value attribute so that user can reupload the same file
         if (this.fileInputElement && this.fileInputElement.current) {
           this.fileInputElement.current.value = '';
         }
-        this.props.onCloseClick && this.props.onCloseClick(fileIndex);
+        if (this.props.onCloseClick) this.props.onCloseClick(fileIndex);
       },
     );
   };
@@ -224,16 +247,20 @@ export default class FileUpload extends React.Component {
     this.setState({ isFileDraggedInside: false }); // Reset the state
 
     try {
-      this.props.onFileDrop && this.props.onFileDrop();
-    } catch (err) {}
+      if (this.props.onFileDrop) this.props.onFileDrop();
+    } catch (err) {
+      // empty catch block
+    }
 
-    for (let index in files) {
+    // eslint-disable-next-line guard-for-in
+    for (const index in files) {
       let file;
       if (dataTransfer.items) {
         if (files[index].kind === 'file') {
           file = files[index].getAsFile();
         } else {
-          continue;
+          // eslint-disable-next-line no-continue
+          continue; // disabling because no clue what this logic does
         }
       } else {
         file = files[index];
@@ -249,12 +276,29 @@ export default class FileUpload extends React.Component {
 
   toggleDragWithFile = (e) => {
     e.preventDefault();
-    this.setState({ isFileDraggedInside: !this.state.isFileDraggedInside });
+    // this.setState({ isFileDraggedInside: !this.state.isFileDraggedInside });
+    this.setState((prevState) => {
+      return {
+        isFileDraggedInside: !prevState.isFileDraggedInside,
+      };
+    });
   };
 
   handleFileInputChange = (event) => {
     event.preventDefault();
     this.updateFile(event.currentTarget.files[0]);
+  };
+
+  showAcceptedFileTypes = (showAcceptInfo) => {
+    const acceptedFileTypes = this.getAcceptedFileTypesInfo();
+
+    if (acceptedFileTypes && showAcceptInfo) {
+      return (
+        <p class="Dropzone-content-desc--secondary text-muted small-text">{acceptedFileTypes}</p>
+      );
+    } else {
+      return null;
+    }
   };
 
   render() {
@@ -277,10 +321,19 @@ export default class FileUpload extends React.Component {
       imgFilePreviewUrl,
       removeFileButtonLabel,
       hideLoader,
+      customClassName = '', // for adding custom css over the fileupload component
     } = this.props;
-    let { isDocPreUploaded } = this.state;
+    const { isDocPreUploaded } = this.state;
 
-    const { stagedFileStatus, uploadedBytes } = onFileChange ? this.state : this.props;
+    let stagedFileStatus, uploadedBytes;
+
+    if (onFileChange) {
+      stagedFileStatus = this.state.stagedFileStatus;
+      uploadedBytes = this.state.uploadedBytes;
+    } else {
+      stagedFileStatus = this.props.stagedFileStatus;
+      uploadedBytes = this.props.uploadedBytes;
+    }
 
     let files = this.props.files || this.state.files;
     // if doc is pre-uploaded inserting one dummy file object to be provided to Staged
@@ -288,7 +341,7 @@ export default class FileUpload extends React.Component {
 
     return (
       <div
-        class="Dropzone"
+        class={classList('Dropzone', customClassName)}
         id={`Dropzone-${name}`}
         onDragLeave={isDocPreUploaded ? undefined : this.toggleDragWithFile}
       >
@@ -315,7 +368,7 @@ export default class FileUpload extends React.Component {
                 <React.Fragment>
                   <img
                     class="Dropzone-file-icon"
-                    src={'/dist/css/assets/files/file-placeholder.svg'}
+                    src="/dist/css/assets/files/file-placeholder.svg"
                     alt=""
                   />
                   <div class="Dropzone-content-desc">
@@ -325,15 +378,7 @@ export default class FileUpload extends React.Component {
                         <React.Fragment>({readableFileSize(maxSize)} Max)</React.Fragment>
                       )}
                     </p>
-                    {do {
-                      const acceptedFileTypes = this.getAcceptedFileTypesInfo();
-
-                      if (acceptedFileTypes && showAcceptInfo) {
-                        <p class="Dropzone-content-desc--secondary text-muted small-text">
-                          {acceptedFileTypes}
-                        </p>;
-                      }
-                    }}
+                    {this.showAcceptedFileTypes(showAcceptInfo)}
                   </div>
                   <input
                     type="file"
@@ -367,7 +412,7 @@ export default class FileUpload extends React.Component {
             class={classList(
               'Dropzone-cavity',
               'Dropzone-cavity--staged',
-              stagedFileStatus && 'Dropzone-cavity--' + stagedFileStatus,
+              stagedFileStatus && `Dropzone-cavity--${stagedFileStatus}`,
               disabled && 'Dropzone-cavity--disabled',
               dropZoneCavityClassName,
             )}
@@ -405,6 +450,7 @@ export default class FileUpload extends React.Component {
 
 // To prevent accidental drop on window while on /activation route.
 function handleUnsafeDrop(e) {
+  // eslint-disable-next-line no-restricted-globals
   e = e || event;
   e.preventDefault();
 }
@@ -413,30 +459,14 @@ function handleUnsafeDrop(e) {
 export function addDropShield(selector) {
   const el = document.querySelector(selector);
 
-  el && el.addEventListener('drop', handleUnsafeDrop, false);
-  el && el.addEventListener('dragover', handleUnsafeDrop, false);
+  if (el) el.addEventListener('drop', handleUnsafeDrop, false);
+  if (el) el.addEventListener('dragover', handleUnsafeDrop, false);
 }
 
 // Remove the events in componentWillUnMount
 export function removeDropShield(selector) {
   const el = document.querySelector(selector);
 
-  el && el.removeEventListener('drop', handleUnsafeDrop);
-  el && el.removeEventListener('dragover', handleUnsafeDrop);
+  if (el) el.removeEventListener('drop', handleUnsafeDrop);
+  if (el) el.removeEventListener('dragover', handleUnsafeDrop);
 }
-
-const MAX_API_LIMIT = 25 * 1024 * 1024; // Max 25MB limit from api
-
-const fileTypesMap = {
-  csv: 'text/csv,application/vnd.ms-excel',
-  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', //new excel format
-  pdf: 'application/pdf',
-  xls: 'application/vnd.ms-excel', //Old microsoft excel sheets.
-  image: 'image/*',
-  jpg: 'image/jpeg',
-  png: 'image/png',
-  xml: 'text/xml',
-};
-
-// File type = docs are not safe to upload in general
-const unsafeFileTypes = ['doc', 'docx'];

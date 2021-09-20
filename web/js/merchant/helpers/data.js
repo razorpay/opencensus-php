@@ -44,7 +44,7 @@ export const states = {
 export const roles = {
   [rolesList.OWNER]: {
     label: 'Owner',
-    desc: 'Will become the owner of your workspace. Your id will be changed to an manager role'
+    desc: 'Will become the owner of your workspace. Your id will be changed to an manager role',
   },
   [rolesList.MANAGER]: {
     label: 'Manager',
@@ -153,3 +153,27 @@ export const INTENT_CREDIT_USE_OPTIONS = [
   'Purchase inventory/raw material',
   'Other business expenses',
 ];
+
+// Transaction limits for different business categories for unregisterd & registered merchants
+// In ₹
+// Blacklisted categories for unregistered merchants: Gaming, Government
+export const TRANSACTION_LIMIT_CONSTANTS = {
+  financial_services: [100000, 1000000], // [unregistered, registered]
+  education: [200000, 1000000],
+  healthcare: [100000, 500000],
+  utilities: [50000, 200000],
+  government: [null, 1000000],
+  logistics: [100000, 500000],
+  tours_and_travel: [100000, 1000000],
+  transport: [100000, 500000],
+  ecommerce: [200000, 1000000],
+  food: [100000, 200000],
+  it_and_software: [100000, 1000000],
+  gaming: [null, 200000],
+  media_and_entertainment: [100000, 200000],
+  services: [100000, 500000],
+  housing: [100000, 1000000],
+  not_for_profit: [100000, 1000000],
+  social: [100000, 200000],
+  others: [100000, 500000],
+};
