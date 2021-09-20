@@ -39,7 +39,7 @@ const QUILL_OPTIONS = {
 };
 
 @connect(null, { showNotification })
-export default class extends React.PureComponent {
+export default class WysiwygDescription extends React.PureComponent {
   state = { isFocused: false };
 
   constructor(props) {
