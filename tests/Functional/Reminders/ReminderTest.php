@@ -184,8 +184,12 @@ class ReminderTest extends TestCase
         ]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/reminders/send/test/terminal/terminal_created_webhook/' . $terminal->getId();
-        
+
         $this->startTest();
+
+        $terminal = $this->getDbLastEntity('terminal');
+
+        $this->assertEquals('activated', $terminal->getStatus());
     }
 
     protected function createNegativeBalanceReminder()

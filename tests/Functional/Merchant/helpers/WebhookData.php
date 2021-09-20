@@ -900,7 +900,7 @@ return [
                 'terminal' => [
                     'entity' => [
                         'entity'            => 'terminal',
-                        'status'            => 'pending',
+                        'status'            => 'activated',
                         'enabled'           =>  true,
                         'mpan' => [
                             'mc_mpan'    => '1234567890123456',

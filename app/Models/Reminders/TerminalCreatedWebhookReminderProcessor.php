@@ -4,6 +4,7 @@ namespace RZP\Models\Reminders;
 
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Terminal\Status;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\ServerErrorException;
 
@@ -26,8 +27,12 @@ class TerminalCreatedWebhookReminderProcessor extends ReminderProcessor
         $terminal = null;
 
         try {
-            
+
             $terminal = $this->repo->$entity->findOrFail($id);
+
+            $terminal->setStatus(Status::ACTIVATED);
+
+            $this->repo->saveOrFail($terminal);
 
             $this->app['events']->dispatch('api.terminal.created', ['main' => $terminal]);
         }
