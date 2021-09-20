@@ -5,6 +5,7 @@ namespace RZP\Services\Segment;
 
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\AbstractEventClient;
@@ -76,6 +77,8 @@ class SegmentAnalyticsClient extends AbstractEventClient
                 'event_action'                  => $eventName,
             ];
 
+            $properties += $this->getUserProperties($merchant);
+
             $eventLabel = EventCode::EVENT_LABELS[$eventName] ?? "";
 
             if(empty($eventLabel) === false)
@@ -84,9 +87,10 @@ class SegmentAnalyticsClient extends AbstractEventClient
             }
 
             $eventData = [
-                'type'          => 'track',
-                'properties'    => $properties,
-                'event'         => $eventName,
+                'type'                  => 'track',
+                'properties'            => $properties,
+                'event'                 => $eventName,
+                Constants::INTEGRATIONS => $this->getIntegrations($merchant)
             ];
 
             $this->pushEvent($merchant, $eventData);
@@ -133,6 +137,53 @@ class SegmentAnalyticsClient extends AbstractEventClient
         {
             $properties[$attribute] = $merchantDetail->getAttribute($attribute);
         }
+
+        return $properties;
+    }
+
+    protected function getIntegrations(Merchant\Entity $merchant)
+    {
+        $user = $this->app['basicauth']->getUser() ?? $merchant->users()->first();
+
+        if (empty($user) === true)
+        {
+            return [];
+        }
+
+        $appsflyerId = null;
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserId(
+            $merchant->getId() ,$user->getId());
+
+        if(empty($userDeviceDetail) === false)
+        {
+            $appsflyerId = $userDeviceDetail->getAppsFlyerId();
+        }
+
+        return [
+            Constants::APPSFLYER     => [
+                Constants::APPSFLYERID => $appsflyerId
+            ]
+        ];
+    }
+
+    protected function getUserProperties(Merchant\Entity $merchant)
+    {
+        $user = $this->app['basicauth']->getUser() ?? $merchant->users()->first();
+
+        if (empty($user) === true)
+        {
+            return [];
+        }
+
+        $userId = $user->getId();
+
+        $properties = [
+            Constants::SOURCE           => 'BE',
+            Constants::MODE             => $this->app['basicauth']->getMode() ?? "live",
+            Constants::USER_ID          => $userId,
+            Constants::USER_ROLE        => $this->app['basicauth']->getUserRole(),
+        ];
 
         return $properties;
     }
@@ -220,4 +271,5 @@ class SegmentAnalyticsClient extends AbstractEventClient
             $this->trace->error(TraceCode::EVENT_POST_FAILED, $errorContext);
         }
     }
+
 }

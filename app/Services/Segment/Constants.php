@@ -22,4 +22,13 @@ class Constants
         Merchant\Detail\Entity::BUSINESS_SUBCATEGORY,
         Merchant\Detail\Entity::ACTIVATION_FORM_MILESTONE
     ];
+
+    //common event properties
+    const SOURCE        = 'source';
+    const MODE          = 'mode';
+    const USER_ROLE     = 'user_role';
+    const USER_ID       = 'user_id';
+    const INTEGRATIONS  = 'integrations';
+    const APPSFLYER     = 'AppsFlyer';
+    const APPSFLYERID   = 'appsFlyerId';
 }

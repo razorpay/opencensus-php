@@ -2152,7 +2152,7 @@ class Core extends Base\Core
 
         $customProperties['activation_status'] = $currentActivationStatus;
 
-        $properties = $this->getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails);
+        $properties = $this->getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails, $currentActivationStatus);
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $merchant, $properties, SegmentEvent::ACTIVATION_STATUS_CHANGE);
@@ -2197,12 +2197,13 @@ class Core extends Base\Core
         $this->app->hubspot->trackHubspotEvent($merchant->getEmail(), $properties);
     }
 
-    protected function getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails)
+    protected function getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails, $previousActivationStatus)
     {
         $activationStatus = $merchantDetails->getActivationStatus();
         $properties = [
-            'activation_status' => $merchantDetails->getActivationStatus(),
-            'mcc'               => $merchant->getCategory()
+            'activation_status'         => $merchantDetails->getActivationStatus(),
+            'previous_activation_status'=> $previousActivationStatus,
+            'mcc'                       => $merchant->getCategory()
         ];
         if ($activationStatus === Status::INSTANTLY_ACTIVATED)
         {

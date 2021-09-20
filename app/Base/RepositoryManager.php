@@ -78,6 +78,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Workflow\Repository                          $workflow
  * @property Models\Workflow\Action\Checker\Repository           $action_checker
  * @property Models\Comment\Repository                           $comment
+ * @property Models\State\Repository                             $state
  * @property Models\Workflow\Action\State\Repository             $action_state
  * @property Models\Merchant\AutoKyc\Escalations\Repository      $merchant_auto_kyc_escalations
  * @property Models\Workflow\PayoutAmountRules\Repository        $workflow_payout_amount_rules

@@ -44,4 +44,15 @@ class Repository extends Base\Repository
                     ->where(Entity::NAME, $request->getStatus())
                     ->firstOrFailPublic();
     }
+
+    public function getPreviousActivationStatus(string $merchantId)
+    {
+        return $this->newQuery()
+            ->select(Entity::NAME)
+            ->where(Entity::ENTITY_ID, '=', $merchantId)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->skip(1)
+            ->take(1)
+            ->first();
+    }
 }

@@ -10,7 +10,7 @@ class EventCode
      * Onboarding Events
      */
 
-    const ACTIVATION_STATUS_CHANGE  = "Activation Status toggle";
+    const ACTIVATION_STATUS_CHANGE  = "Activation Status changed";
 
     const DEDUPE                    = 'Dedupe';
 

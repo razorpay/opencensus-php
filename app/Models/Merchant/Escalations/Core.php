@@ -189,9 +189,13 @@ class Core extends Base\Core
         {
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+            $previousActivationStatus = $this->repo->state->getPreviousActivationStatus($merchant->getId());
+
             $properties = [
                 'mtu'                         => true,
-                'first_transaction_timestamp' => Carbon::now()->getTimestamp()
+                'first_transaction_timestamp' => Carbon::now()->getTimestamp(),
+                'activation_status'           => $merchant->merchantDetail->getActivationStatus(),
+                'previous_activation_status'  => $previousActivationStatus['name']
             ];
 
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
