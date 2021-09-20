@@ -60,4 +60,5 @@ class Category
     const FRESHCHAT                    = 'freshchat';
     const RECON                        = 'recon';
     const FTS_DASHBOARD_ADMIN          = 'fts_dashboard_admin';
+    const MERCHANT_BULK_UPDATE         = 'merchant_bulk_update';
 }

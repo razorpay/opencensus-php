@@ -78,9 +78,9 @@ use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow;
 use RZP\Mail\Merchant\SecondFactorAuth as SecondFactorAuthMail;
+use RZP\Models\BulkWorkflowAction\Constants as BulkActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
-
 
 class Core extends Base\Core
 {
@@ -1066,32 +1066,66 @@ class Core extends Base\Core
         }
     }
 
+
+    protected function deleteRiskTags($merchantTags, $merchant)
+    {
+        foreach ($merchantTags as $merchantTag)
+        {
+            if (in_array(strtolower($merchantTag),Merchant\Constants::RISK_TAG_LIST))
+            {
+                $this->deleteTag($merchant->getId(), $merchantTag);
+            }
+        }
+    }
+
+    protected function addOrClearRiskTag($merchant, $riskAttributes)
+    {
+        $merchantTags = $merchant->tagNames();
+
+        if ((isset($riskAttributes[BulkActionConstants::CLEAR_RISK_TAGS]) === true)
+            and (int)($riskAttributes[BulkActionConstants::CLEAR_RISK_TAGS]) === 1)
+        {
+            $this->deleteRiskTags($merchantTags, $merchant);
+        }
+        else if (isset($riskAttributes[BulkActionConstants::RISK_TAG]) === true)
+        {
+            array_push($merchantTags, $riskAttributes[BulkActionConstants::RISK_TAG]);
+
+            $this->addTags($merchant->getId(), [
+                'tags'  => $merchantTags,
+            ], false);
+        }
+    }
+
     public function action($merchant, $input, bool $useWorkflows = true)
     {
         $merchant->getValidator()->validateInput('action', $input);
 
         $action = $input['action'];
-        
+
         if($this->shouldValidateTag($useWorkflows) === true)
         {
             (new Validator)->validateRiskPermissionForAction($merchant,$action);
         }
-        
+
         $internationalProducts = array_key_exists(ProductInternationalMapper::INTERNATIONAL_PRODUCTS, $input) ?
             $input[ProductInternationalMapper::INTERNATIONAL_PRODUCTS] :
             null;
 
+        $riskAttributes = $input[BulkActionConstants::RISK_ATTRIBUTES] ?? null;
+
         $originalMerchant = clone $merchant;
 
         $function = camel_case($action);
-        
+
         $this->repo->transactionOnLiveAndTest(function() use (
             $merchant,
             $function,
             $useWorkflows,
             $originalMerchant,
             $action,
-            $internationalProducts
+            $internationalProducts,
+            $riskAttributes
         ) {
             $this->handleInternationalAction($action, $merchant, $internationalProducts);
 
@@ -1101,6 +1135,8 @@ class Core extends Base\Core
             {
                 $this->triggerWorkFlowForMerchantEditAction($originalMerchant, $merchant, $action);
             }
+
+            $this->addOrClearRiskTag($merchant, $riskAttributes);
 
             $this->repo->saveOrFail($merchant);
         });
@@ -1153,7 +1189,7 @@ class Core extends Base\Core
         {
             return true;
         }
-        
+
         return false;
     }
     public function merchantAction(string $merchantId, array $input)

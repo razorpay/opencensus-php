@@ -11,11 +11,13 @@ use Crypt;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Services\Mock;
+use RZP\Models\Comment;
 use RZP\Models\Base\EsDao;
 use RZP\Services\UfhService;
 use RZP\Error\PublicErrorCode;
 use Functional\Helpers\BvsTrait;
 use Illuminate\Http\UploadedFile;
+use RZP\Models\BulkWorkflowAction;
 use RZP\Jobs\FundAccountValidation;
 use Illuminate\Hashing\BcryptHasher;
 use Illuminate\Encryption\Encrypter;
@@ -29,6 +31,7 @@ use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Workflow\Action as Action;
 use RZP\Models\Workflow\Action\Differ\Entity;
 use RZP\Models\User\Constants as UserConstants;
 use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
@@ -36,8 +39,10 @@ use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
 use RZP\Models\Workflow\Observer\EmailChangeObserver;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Services\Mock\DruidService as MockDruidService;
+use RZP\Tests\Functional\Fixtures\Entity\Permission as PermissionEntity;
 use RZP\Tests\Functional\Helpers\MocksRedisTrait;
 use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Models\Admin\Permission\Repository as PermissionRepo;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -48,7 +53,6 @@ use RZP\Models\Merchant\Detail\Status as ActivationStatus;
 use RZP\Models\Workflow\Observer\PaymentMethodChangeObserver;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use \RZP\Models\Workflow\Observer\Constants as ObserverConstants;
-
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
 use RZP\Models\Admin;
@@ -104,7 +108,7 @@ use RZP\Exception\GatewayErrorException;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Pricing\Repository as PricingRepo;
-
+use RZP\Models\BulkWorkflowAction\Constants as BulkActionConstants;
 use function foo\func;
 
 class MerchantTest extends TestCase
@@ -680,6 +684,7 @@ class MerchantTest extends TestCase
     public function testSuspendMerchantBulkWithoutPermissionFail()
     {
         $this->createMerchantsForSuspendMerchantBulkTest();
+        $this->removePermission(PermissionName::EDIT_MERCHANT_SUSPEND_BULK);
 
         $this->ba->adminAuth();
 
@@ -697,6 +702,17 @@ class MerchantTest extends TestCase
             'id'    => '10000000000055',
             'email' => 'test2@razorpay.com',
         ]);
+    }
+
+    private function removePermission($permission)
+    {
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = (new PermissionRepo())->fetch(['name'=>$permission]);
+
+        $role->permissions()->detach($perm->firstOrFail()->getId());
     }
 
     public function testEditBulkMerchantAttributes()
@@ -740,6 +756,14 @@ class MerchantTest extends TestCase
         ]);
 
         $this->setAdminForInternalAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_hold_funds_bulk']);
+
+        $role->permissions()->attach($perm->getId());
 
         $this->ba->adminAuth('live');
 
@@ -11363,6 +11387,14 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_hold_funds_bulk']);
+
+        $role->permissions()->attach($perm->getId());
+
         $this->ba->adminAuth('live');
 
         $this->startTest();
@@ -11514,6 +11546,8 @@ class MerchantTest extends TestCase
         $this->fixtures->merchant->edit('10000000000044', ['live' => true, 'activated' => 1]);
         $this->fixtures->merchant->edit('10000000000055', ['live' => true, 'activated' => 1]);
 
+        $this->removePermission(PermissionName::EDIT_MERCHANT_TOGGLE_LIVE_BULK);
+
         $this->ba->adminAuth();
 
         $this->startTest();
@@ -11532,6 +11566,8 @@ class MerchantTest extends TestCase
         ]);
         $this->fixtures->merchant->edit('10000000000044', ['live' => false, 'activated' => 1]);
         $this->fixtures->merchant->edit('10000000000055', ['live' => false, 'activated' => 1]);
+
+        $this->removePermission(PermissionName::EDIT_MERCHANT_TOGGLE_LIVE_BULK);
 
         $this->ba->adminAuth();
 
@@ -12107,5 +12143,285 @@ class MerchantTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testEditBulkEnableLiveNewFlow()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_toggle_live_bulk']);
+
+        $this->fixtures->merchant->edit('10000000000044', ['live' => false, 'activated' => 1]);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->setupWorkflow('toggle live',PermissionName::EXECUTE_MERCHANT_TOGGLE_LIVE_BULK, "test");
+
+        $this->enableRazorXTreatmentForFeature(
+            BulkActionConstants::BULK_RISK_ACTION_WORKFLOW_TRIGGER_FEATURE,'on');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+
+    public function testEditBulkEnableLiveNewFlowWithoutPermission()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $this->removePermission(PermissionName::EDIT_MERCHANT_TOGGLE_LIVE_BULK);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000044');
+
+        $this->assertFalse($merchant->isLive());
+    }
+
+    public function testEditBulkDisableLiveNewFlowWithCorrectAttributes()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $this->createMerchant([
+            'id'    => '10000000000004',
+            'email' => 'test2@razorpay.com',
+        ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_toggle_live_bulk']);
+
+        $this->fixtures->merchant->edit('10000000000044', ['live' => true, 'activated' => 1]);
+
+        $this->fixtures->merchant->edit('10000000000004', ['live' => true, 'activated' => 1]);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->setupWorkflow('toggle live',PermissionName::EXECUTE_MERCHANT_TOGGLE_LIVE_BULK, "test");
+
+        $this->enableRazorXTreatmentForFeature(
+            BulkActionConstants::BULK_RISK_ACTION_WORKFLOW_TRIGGER_FEATURE,'on');
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->assertNotNull($resp['id']);
+
+        $this->assertEquals('bulk_workflow_action', $resp['entity_name']);
+    }
+
+    public function testEditBulkReleaseFundsNewFlow()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_hold_funds_bulk']);
+
+        $this->fixtures->merchant->edit('10000000000044', [
+            'live'          => false,
+            'activated'     => 1,
+            'hold_funds'    => true,
+        ]);
+
+        $this->fixtures->create('bank_account', [
+            'type'           => 'merchant',
+            'merchant_id'    => '10000000000044',
+            'entity_id'      => '10000000000044',
+            'account_number' => '10010101011',
+            'ifsc_code'      => 'RAZRB000000',
+        ]);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->setupWorkflow('Execute Release Funds Bulk',PermissionName::EXECUTE_MERCHANT_HOLD_FUNDS_BULK, "test");
+
+        $this->enableRazorXTreatmentForFeature(
+            BulkActionConstants::BULK_RISK_ACTION_WORKFLOW_TRIGGER_FEATURE,'on');
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditBulkHoldFundsNewFlow()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_hold_funds_bulk']);
+
+        $this->fixtures->merchant->edit('10000000000044', ['live' => false, 'activated' => 1]);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->setupWorkflow('Execute Hold Funds Bulk',PermissionName::EXECUTE_MERCHANT_HOLD_FUNDS_BULK, "test");
+
+        $this->enableRazorXTreatmentForFeature(
+            BulkActionConstants::BULK_RISK_ACTION_WORKFLOW_TRIGGER_FEATURE,'on');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditBulkSuspendMerchantNewFlow()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_suspend_bulk']);
+
+        $this->fixtures->merchant->edit('10000000000044', ['live' => true, 'activated' => 1]);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->setupWorkflow('Execute merchant suspend bulk', PermissionName::EXECUTE_MERCHANT_SUSPEND_BULK, "test");
+
+        $this->enableRazorXTreatmentForFeature(
+            BulkActionConstants::BULK_RISK_ACTION_WORKFLOW_TRIGGER_FEATURE,'on');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditBulkDisableLiveNewFlowWithoutRiskAttributes()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_toggle_live_bulk']);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->enableRazorXTreatmentForFeature(
+            BulkActionConstants::BULK_RISK_ACTION_WORKFLOW_TRIGGER_FEATURE,'on');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditBulkDisableLiveNewFlowIncorrectRiskAttributes()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_toggle_live_bulk']);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->enableRazorXTreatmentForFeature(
+            BulkActionConstants::BULK_RISK_ACTION_WORKFLOW_TRIGGER_FEATURE,'on');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    protected function setupWorkflows($permissionWorkflowNameMap)
+    {
+        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
+
+        $permissionNames = array_keys($permissionWorkflowNameMap);
+
+        foreach ($permissionNames as $permissionName)
+        {
+            $permission = $this->getDbEntity('permission', ['name' => $permissionName], 'live');
+
+            DB::connection('live')->table('permission_map')->insert(
+                [
+                    'entity_id'     => Org::RZP_ORG,
+                    'entity_type'   => 'org',
+                    'permission_id' => $permission->getId(),
+                ]);
+        }
+
+
+        $org = (new OrgRepository)->getRazorpayOrg();
+
+        $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
+
+        foreach ($permissionWorkflowNameMap as $permissionName => $workflowName)
+        {
+            $workflow = $this->createWorkflow([
+                                                  'org_id'      => '100000razorpay',
+                                                  'name'        => $workflowName,
+                                                  'permissions' => [$permissionName],
+                                                  'levels' => [
+                                                      [
+                                                          'level' => 1,
+                                                          'op_type' => 'or',
+                                                          'steps' => [
+                                                              [
+                                                                  'reviewer_count' => 1,
+                                                                  'role_id' => Org::ADMIN_ROLE,
+                                                              ],
+                                                          ],
+                                                      ],
+                                                  ],
+                                              ], 'test');
+        }
+    }
+
+    protected function mockRazorxTreatment(string $returnValue = 'On')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn($returnValue);
     }
 }

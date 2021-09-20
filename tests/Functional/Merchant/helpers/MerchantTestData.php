@@ -9295,4 +9295,214 @@ return [
            ],
         ],
     ],
+
+    'testEditBulkEnableLiveNewFlow' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'live_enable',
+                'risk_attributes' => [
+                    'clear_risk_tags' => '1',
+                    ],
+                ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testEditBulkEnableLiveNewFlowWithoutPermission' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'live_enable',
+                'risk_attributes' => [
+                    'clear_risk_tags' => '1',
+                    'trigger_communication' => '1',
+                ]
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testEditBulkSuspendMerchantNewFlow' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'suspend',
+                'risk_attributes' => [
+                    'risk_reason' => 'high_cts',
+                    'risk_source' => 'high_fts',
+                    'risk_tag'     => 'risk_review_watchlist',
+                    'trigger_communication' => '1'
+                ]
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testEditBulkHoldFundsNewFlow' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'hold_funds',
+                'risk_attributes' => [
+                    'risk_reason' => 'high_cts',
+                    'risk_source' => 'high_fts',
+                    'risk_tag'     => 'risk_review_watchlist',
+                    'trigger_communication' => '1'
+                ]
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testEditBulkReleaseFundsNewFlow' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'release_funds',
+                'risk_attributes' => [
+                    'clear_risk_tags' => '1',
+                ]
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testEditBulkDisableLiveNewFlowWithCorrectAttributes' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044', '10000000000004'],
+                'action'       => 'live_disable',
+                'risk_attributes' => [
+                    'risk_reason' => 'high_cts',
+                    'risk_source' => 'high_fts',
+                    'risk_tag'     => 'risk_review_watchlist',
+                    'trigger_communication' => '1'
+                ]
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testEditBulkDisableLiveNewFlowWithoutRiskAttributes' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'live_disable',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Risk Attributes are not provided',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testEditBulkDisableLiveNewFlowIncorrectRiskAttributes' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'live_disable',
+                'risk_attributes' => [
+                    'risk_reason' => 'wjjjr',
+                    'risk_source' => 'high_fts',
+                    'risk_tag'     => 'risk_review_watchlist',
+                    'trigger_communication' => '1',
+                ]
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected risk reason is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
 ];

@@ -542,6 +542,15 @@ final class Constants
         ],
     ];
 
+    const BULK_RISK_ACTIONS = [
+        Action::SUSPEND,
+        Action::HOLD_FUNDS,
+        Action::LIVE_DISABLE,
+        Action::UNSUSPEND,
+        Action::RELEASE_FUNDS,
+        Action::LIVE_ENABLE
+    ];
+
     const CA_STATUS_MAP = [
         'created'       => 'Request received',
         'picked'        => 'Process started',
@@ -554,26 +563,37 @@ final class Constants
         'processed'     => 'Activation In Progress'
     ];
 
-    const MS_RISK_REVIEW_ONHOLD_TAG     = 'ms_risk_review_onhold';
-    const MS_RISK_REVIEW_SUSPEND_TAG    = 'ms_risk_review_suspend';
-    const SC_RISK_REVIEW_ONHOLD_TAG     = 'sc_risk_review_onhold';
-    const SC_RISK_REVIEW_SUSPEND_TAG    = 'sc_risk_review_suspend';
-    const RISK_REVIEW_ONHOLD_TAG        = 'risk_review_onhold';
-    const RISK_REVIEW_SUSPEND_TAG       = 'risk_review_suspend';
-    const RISK_REVIEW_WATCHLIST_TAG     = 'risk_review_watchlist';
-    const MS_RISK_REVIEW_WATCHLIST_TAG  = 'ms_risk_review_watchlist';
-    const SC_RISK_REVIEW_WATCHLIST_TAG  = 'ms_risk_review_watchlist';
+    // TODO: Move it to common place.
+    // Risk Tags is part of merchant constants as well as bulkworkflowaction constants
+    // Ideally should be in one place and to be used as source of truth for risk tags
+    const RISK_TAG_RISK_REVIEW_SUSPEND      = 'risk_review_suspend';
+    const RISK_TAG_RISK_REVIEW_ONHOLD       = 'risk_review_onhold';
+    const RISK_TAG_RISK_REVIEW_DISABLE_LIVE = 'risk_review_disable_live';
+    const RISK_TAG_RISK_REVIEW_WATCHLIST    = 'risk_review_watchlist';
+    const RISK_TAG_SC_RISK_REVIEW_SUSPEND   = 'sc_risk_review_suspend';
+    const RISK_TAG_SC_RISK_REVIEW_ONHOLD    = 'sc_risk_review_onhold';
+    const RISK_TAG_SC_RISK_REVIEW_WATCHLIST = 'sc_risk_review_watchlist';
+    const RISK_TAG_SC_FEATURE_BLOCKED       = 'sc_feature_blocked';
+    const RISK_TAG_MS_RISK_REVIEW_SUSPEND   = 'ms_risk_review_suspend';
+    const RISK_TAG_MS_RISK_REVIEW_WATCHLIST = 'ms_risk_review_watchlist';
+    // NOTE: not part of the latest risk tag shared by product
+    // But kept for backward compatibility
+    const RISK_TAG_MS_RISK_REVIEW_ONHOLD    = 'ms_risk_review_onhold';
 
     const RISK_TAG_LIST = [
-        self::MS_RISK_REVIEW_ONHOLD_TAG,
-        self::MS_RISK_REVIEW_SUSPEND_TAG,
-        self::SC_RISK_REVIEW_ONHOLD_TAG,
-        self::SC_RISK_REVIEW_SUSPEND_TAG,
-        self::RISK_REVIEW_ONHOLD_TAG,
-        self::RISK_REVIEW_SUSPEND_TAG,
-        self::RISK_REVIEW_WATCHLIST_TAG,
-        self::MS_RISK_REVIEW_WATCHLIST_TAG,
-        self::SC_RISK_REVIEW_WATCHLIST_TAG,
+        self::RISK_TAG_RISK_REVIEW_SUSPEND,
+        self::RISK_TAG_RISK_REVIEW_ONHOLD,
+        self::RISK_TAG_RISK_REVIEW_DISABLE_LIVE,
+        self::RISK_TAG_RISK_REVIEW_WATCHLIST,
+        self::RISK_TAG_SC_RISK_REVIEW_SUSPEND,
+        self::RISK_TAG_SC_RISK_REVIEW_ONHOLD,
+        self::RISK_TAG_SC_RISK_REVIEW_WATCHLIST,
+        self::RISK_TAG_SC_FEATURE_BLOCKED,
+        self::RISK_TAG_MS_RISK_REVIEW_SUSPEND,
+        self::RISK_TAG_MS_RISK_REVIEW_WATCHLIST,
+        // NOTE: not part of the latest risk tag shared by product
+        // But kept for backward compatibility
+        self::RISK_TAG_MS_RISK_REVIEW_ONHOLD,
     ];
 
     const RISK_CONSTRUCTIVE_ACTION_LIST = [
@@ -581,6 +601,6 @@ final class Constants
         Action::LIVE_ENABLE,
         Action::RELEASE_FUNDS,
     ];
+
+    const USE_WORKFLOWS = 'use_workflows';
 }
-
-

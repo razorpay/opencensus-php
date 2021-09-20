@@ -320,6 +320,8 @@ class Service
     public function setDiff($diff)
     {
         $this->diff = $diff;
+
+        return $this;
     }
 
     public function getDiff()

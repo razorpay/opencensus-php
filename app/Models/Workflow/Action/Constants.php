@@ -19,6 +19,9 @@ class Constants
         Permission\Name::MERCHANT_RISK_ALERT_FOH             => \RZP\Models\MerchantRiskAlert\Service::class,
         Permission\Name::EDIT_MERCHANT_PG_INTERNATIONAL      => \RZP\Models\Typeform\Service::class,
         Permission\Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL => \RZP\Models\Typeform\Service::class,
+        Permission\Name::EXECUTE_MERCHANT_SUSPEND_BULK       => \RZP\Models\BulkWorkflowAction\Service::class,
+        Permission\Name::EXECUTE_MERCHANT_HOLD_FUNDS_BULK    => \RZP\Models\BulkWorkflowAction\Service::class,
+        Permission\Name::EXECUTE_MERCHANT_TOGGLE_LIVE_BULK   => \RZP\Models\BulkWorkflowAction\Service::class,
     ];
 
     const CLOSE_OPERATION_UNSUPPORTED_PERMISSIONS = [

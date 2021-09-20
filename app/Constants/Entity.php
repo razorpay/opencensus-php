@@ -224,6 +224,7 @@ class Entity
     const ACTION_COMMENT                = 'action_comment';
     const ACTION_CHECKER                = 'action_checker';
     const WORKFLOW_ACTION               = 'workflow_action';
+    const BULK_WORKFLOW_ACTION          = 'bulk_workflow_action';
     const WORKFLOW_PAYOUT_AMOUNT_RULES  = 'workflow_payout_amount_rules';
 
     // Generic comment and state entities

@@ -420,7 +420,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->action($id, $input);
+        $data = $this->service()->action($id, $input, $input[Merchant\Constants::USE_WORKFLOWS] ?? true);
 
         return ApiResponse::json($data);
     }

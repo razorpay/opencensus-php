@@ -339,10 +339,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'trigger_communication' => ['sms'],
+                'trigger_communication' => '1',
                 'risk_tag'	            => 'risk_review_suspend',
-                'risk_sources'          => ['high_fts'],
-                'risk_reasons'          => ['high_fts']
+                'risk_source'          => 'high_fts',
+                'risk_reason'          => 'high_fts'
             ],
         ],
     ],
@@ -352,18 +352,18 @@ return [
             'method'  => 'PUT',
             'url'     => '/w-actions/%s/risk_attributes',
             'content' => [
-                'trigger_communication' =>['sms'],
+                'trigger_communication' =>'1',
                 'risk_tag'	            => 'risk_review_suspend',
-                'risk_sources'          => ['high_fts'],
-                'risk_reasons'          => ['high_fts']
+                'risk_source'          => 'high_fts',
+                'risk_reason'          => 'high_fts'
             ]
         ],
         'response' => [
             'content' => [
-                'trigger_communication' =>['sms'],
+                'trigger_communication' => '1',
                 'risk_tag'	            => 'risk_review_suspend',
-                'risk_sources'          => ['high_fts'],
-                'risk_reasons'          => ['high_fts']
+                'risk_source'          => 'high_fts',
+                'risk_reason'          => 'high_fts'
             ],
         ],
     ],
@@ -373,10 +373,10 @@ return [
             'method'  => 'PUT',
             'url'     => '/w-actions/%s/risk_attributes',
             'content' => [
-                'trigger_communication' =>['sms'],
+                'trigger_communication' => '1',
                 'risk_tag'	            => 'risk_review_suspend',
-                'risk_sources'          => ['asdf'],
-                'risk_reasons'          => ['high_fts']
+                'risk_source'          => 'asdf',
+                'risk_reason'          => 'high_fts'
             ]
         ],
         'response' => [

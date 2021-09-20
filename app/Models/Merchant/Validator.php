@@ -25,6 +25,7 @@ use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
+use RZP\Models\BulkWorkflowAction\Constants as BulkActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow\InternationalActivationFlow;
@@ -84,8 +85,10 @@ class Validator extends Base\Validator
         Action::UNSUSPEND             => Permission::EDIT_MERCHANT_SUSPEND_BULK,
         Action::LIVE_DISABLE          => Permission::EDIT_MERCHANT_TOGGLE_LIVE_BULK,
         Action::LIVE_ENABLE           => Permission::EDIT_MERCHANT_TOGGLE_LIVE_BULK,
+        Action::HOLD_FUNDS            => Permission::EDIT_MERCHANT_HOLD_FUNDS_BULK,
+        Action::RELEASE_FUNDS         => Permission::EDIT_MERCHANT_HOLD_FUNDS_BULK
     ];
-    
+
     const MERCHANT_RISK_ATTRIBUTES = [
         Entity::MAX_PAYMENT_AMOUNT
     ];
@@ -209,6 +212,7 @@ class Validator extends Base\Validator
     protected static $actionRules = [
         Entity::ACTION                                      => 'required|custom',
         ProductInternationalMapper::INTERNATIONAL_PRODUCTS  => 'sometimes|array',
+        BulkActionConstants::RISK_ATTRIBUTES                => 'sometimes|array',
     ];
 
     protected static $change2faSettingRules = [
@@ -931,7 +935,6 @@ class Validator extends Base\Validator
 
     public function validateAdminPermissionForAction($action)
     {
-
         if (array_key_exists($action, self::ACTION_PERMISSION_MAP_FOR_MERCHANT_EDIT_BULK) === true)
         {
             $app = App::getFacadeRoot();
@@ -942,7 +945,7 @@ class Validator extends Base\Validator
             $admin->hasPermissionOrFail(self::ACTION_PERMISSION_MAP_FOR_MERCHANT_EDIT_BULK[$action]);
         }
     }
-    
+
     /**
      * if the contructive action is being performed by non-risk l3 on a merchant tagged by risk ops,
      * then the validator should throw validation exception
@@ -956,18 +959,18 @@ class Validator extends Base\Validator
         {
             return;
         }
-        
+
         $tags = $merchant->tagNames();
-        
+
         $taggedByRiskOps = false;
-        
+
         //Check if the merchant is tagged by Risk team
         foreach ($tags as $tag)
         {
             if (in_array(strtolower($tag), Constants::RISK_TAG_LIST) === true)
             {
                 $taggedByRiskOps = true;
-               
+
                 break;
             }
         }
@@ -976,12 +979,12 @@ class Validator extends Base\Validator
         {
             return;
         }
-        
+
         //if the merchant is tagged, we need check the permission
         $app = App::getFacadeRoot();
-        
+
         $admin = $app['basicauth']->getAdmin();
-        
+
         $adminPermissions = $admin->getPermissionsList();
 
         if (in_array(Permission::MERCHANT_RISK_CONSTRUCTIVE_ACTION, $adminPermissions, true) === false)
@@ -1353,7 +1356,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateSuspend()
+    public function validateSuspend()
     {
         $merchant = $this->entity;
 
@@ -1364,7 +1367,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateUnsuspend()
+    public function validateUnsuspend()
     {
         $merchant = $this->entity;
 
@@ -1381,6 +1384,7 @@ class Validator extends Base\Validator
     public function validateLiveDisable()
     {
         $merchant = $this->entity;
+
         $this->validateIsActivated($merchant);
         $this->validateSuspend();
 
@@ -1397,9 +1401,11 @@ class Validator extends Base\Validator
     public function validateLiveEnable()
     {
         $merchant = $this->entity;
+
         $this->validateIsActivated($merchant);
         $this->validateSuspend();
-        if ($merchant->isLive())
+
+        if ($merchant->isLive() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_LIVE);
@@ -1428,7 +1434,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateHoldFunds()
+    public function validateHoldFunds()
     {
         $merchant = $this->entity;
 
@@ -1439,7 +1445,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateReleaseFunds()
+    public function validateReleaseFunds()
     {
         $merchant = $this->entity;
 

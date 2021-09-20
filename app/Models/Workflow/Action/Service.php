@@ -161,16 +161,6 @@ class Service extends Base\Service
         return $action->toArrayPublic();
     }
 
-    public function getActionRiskAttributes(string $actionId)
-    {
-        return  $this->core()->getActionRiskAttributes($actionId);
-    }
-
-    public function updateActionRiskAttributes(string $actionId, array $input)
-    {
-        return $this->core()->updateActionRiskAttributes($actionId,$input);
-    }
-
     public function closeAction(string $id)
     {
         Entity::verifyIdAndStripSign($id);

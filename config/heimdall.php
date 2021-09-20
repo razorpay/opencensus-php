@@ -1520,6 +1520,38 @@ return [
                 'description'   => 'Add more creds to the FTS source account. This may also update baking account details creds depending upon the source of the request',
                 'assignable'    => true,
             ],
+        ],
+        PermissionCategory::MERCHANT_BULK_UPDATE => [
+            Permission::EDIT_MERCHANT_SUSPEND_BULK               => [
+                'description' => 'Edit request for bulk suspend and unsuspend',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+            Permission::EDIT_MERCHANT_TOGGLE_LIVE_BULK            => [
+                'description' => 'Edit request for enable and disable live',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+            Permission::EDIT_MERCHANT_HOLD_FUNDS_BULK             => [
+                'description' => 'Edit request for bulk hold funds and release funds',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+            Permission::EXECUTE_MERCHANT_SUSPEND_BULK               => [
+                'description' => 'execute request for bulk suspend and unsuspend',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+            Permission::EXECUTE_MERCHANT_TOGGLE_LIVE_BULK            => [
+                'description' => 'execute request for enable and disable live',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+            Permission::EXECUTE_MERCHANT_HOLD_FUNDS_BULK             => [
+                'description' => 'Edit request for bulk hold funds and release funds',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
         ]
     ],
 

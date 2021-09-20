@@ -66,22 +66,6 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getActionRiskAttributes(string $id)
-    {
-        $data = $this->service(E::WORKFLOW_ACTION)->getActionRiskAttributes($id);
-
-        return ApiResponse::json($data);
-    }
-    
-    public function updateActionRiskAttributes(string $id)
-    {
-        $input = Request::all();
-
-        $data = $this->service(E::WORKFLOW_ACTION)->updateActionRiskAttributes($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
     public function createWorkflow()
     {
         $input = Request::all();

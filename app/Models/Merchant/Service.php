@@ -62,6 +62,7 @@ use RZP\Models\Settlement\Bucket;
 use RZP\Models\Admin as MainAdmin;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Services\SalesForceClient;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\SubMerchantTaggingJob;
 use RZP\Error\PublicErrorDescription;
 use RZP\Jobs\CallBackFillReferredApp;
@@ -85,6 +86,7 @@ use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Pricing\Entity as PricingEntity;
+use RZP\Models\BulkWorkflowAction as BulkAction;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Workflow\Service as WorkflowService;
@@ -110,7 +112,6 @@ use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerForPG;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForPG;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantPartner as CreateSubMerchantPartnerForX;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForX;
-
 
 class Service extends Base\Service
 {
@@ -1273,7 +1274,7 @@ class Service extends Base\Service
         }
         return ["is_admin_as_merchant" => false];
     }
-    
+
     public function assignSettlementScheduleIncludingLinkedAccounts($id, $input)
     {
         $this->trace->info(TraceCode::SCHEDULE_ASSIGN_RAZORX_SUCCESS, []);
@@ -1807,6 +1808,11 @@ class Service extends Base\Service
                 'input'       => $input,
                 'useWorkflows'=> $useWorkflows
             ]);
+
+        if (isset($input[Constants::USE_WORKFLOWS]))
+        {
+            unset($input[Constants::USE_WORKFLOWS]);
+        }
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
@@ -2466,7 +2472,35 @@ class Service extends Base\Service
 
         if (isset($input['action']) === true)
         {
-            (new Validator)->validateAdminPermissionForAction($input['action']);
+            $action = $input['action'];
+
+            (new Validator)->validateAdminPermissionForAction($action);
+
+            if(in_array($action, Constants::BULK_RISK_ACTIONS) === true)
+            {
+                $mode = $this->mode ??  Mode::LIVE ;
+
+                $variant = $this->app->razorx->getTreatment(
+                    UniqueIdEntity::generateUniqueId(),
+                    BulkAction\Constants::BULK_RISK_ACTION_WORKFLOW_TRIGGER_FEATURE,
+                    $mode);
+
+                $this->trace->info(
+                    TraceCode::MERCHANT_BULK_RISK_ACTION_RAZORX_VARIANT,
+                    [
+                        "razorx_variant" => $variant,
+                        "mode"           => $mode,
+                    ]
+                );
+
+                if(strtolower($variant) === 'on')
+                {
+                    // NOTE: if succesfull will throw early workflow exception
+                    // if non succesfull will throw an exception
+                    // (due to validation or workflow creation error)
+                    (new BulkAction\Core())->handleBulkAction($input);
+                }
+            }
         }
 
         $merchantIds = $input['merchant_ids'];
