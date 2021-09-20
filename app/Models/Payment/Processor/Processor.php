@@ -3579,7 +3579,7 @@ class Processor
         {
             return false;
         }
-        
+
         return true;
     }
 

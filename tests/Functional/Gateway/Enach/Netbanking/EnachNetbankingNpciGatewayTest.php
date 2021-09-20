@@ -172,6 +172,49 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertArrayNotHasKey(IFSC::UTBI, $banks);
     }
 
+    public function testPreferencesForEnabledEmandateBanks()
+    {
+        $orderInput = [
+            'amount' => 0,
+            'payment_capture' => true,
+            'method' => Method::EMANDATE,
+        ];
+
+        $order = $this->createOrder($orderInput);
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testPreferencesForDebitOnlyBank'];
+
+        $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
+
+        $content = $this->startTest($testData);
+
+        $banks = $content['methods']['recurring']['emandate'];
+
+        $authTypeBanks = array_values($banks);
+
+        $debtcount = 0;
+        $netcount  = 0;
+
+        foreach($authTypeBanks as $value)
+        {
+            if (in_array('debitcard', $value['auth_types']))
+            {
+                $debtcount++;
+            }
+
+            if (in_array('netbanking', $value['auth_types']))
+            {
+                $netcount++;
+            }
+        }
+
+        $this->assertEquals(32, $debtcount);
+        $this->assertEquals(39, $netcount);
+
+    }
+
     public function testPaymentWithDisplayFeature()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::ENACH_INTERMEDIATE]);
