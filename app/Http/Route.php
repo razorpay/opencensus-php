@@ -931,6 +931,7 @@ class Route
         'tokens_upi_vpa_bulk_cron'                 => ['post',     'tokens/upi/vpa/bulk',                            'CustomerController@postTokensUpiVpaBulk'                           ],
         'reminder_send'                            => ['post',     'reminders/send/{mode}/{entity}/{namespace}/{id}','RemindersController@sendReminder'                                  ],
         'reminder_service'                         => ['any',      'reminders/service/{path?}',                      'RemindersController@handleAny'                                     ],
+        'spinnaker_reminder_service'               => ['post',     'reminders/service/batch/service/control',        'RemindersController@handleDisableVerifySpinnaker'                                     ],
         'offline_verification_service_get'         => ['get',      'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
         'offline_verification_service_put'         => ['put',      'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
         'offline_verification_service_post'        => ['post',     'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
@@ -2369,6 +2370,7 @@ class Route
         'edge_list_rate_limit_limits'             => ['get',      'edge/rate_limiter/limits',                                  'EdgeThrottleController@listLimits'                         ],
         'edge_update_rate_limit_limit'            => ['patch',    'edge/rate_limiter/limit/{id}',                              'EdgeThrottleController@updateLimit'                        ],
         'edge_delete_rate_limit_limit'            => ['delete',   'edge/rate_limiter/limit/{id}',                              'EdgeThrottleController@deleteLimit'                        ],
+        'edge_update_rate_limit_spinnaker'        => ['patch',    'spinnaker/edge/rate_limiter/limit/{id}',                    'EdgeThrottleController@updateLimit'                        ],
 
 
         //merchant document related routes
@@ -3718,6 +3720,8 @@ class Route
 
         // IPL bot
         'throttle_create_config_spinnaker',
+        'spinnaker_reminder_service',
+        'edge_update_rate_limit_spinnaker',
 
         'add_verify_disabled_gateway',
         'p2p_retrieve_banks_cron',
@@ -10336,7 +10340,9 @@ class Route
         ],
         'spinnaker' => [
             'throttle_create_config_spinnaker',
-            'add_verify_disabled_gateway'
+            'add_verify_disabled_gateway',
+            'spinnaker_reminder_service',
+            'edge_update_rate_limit_spinnaker'
         ],
 
         'mozart' => [

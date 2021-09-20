@@ -135,6 +135,23 @@ class RemindersController extends Controller
         return ApiResponse::json($response, $statusCode);
     }
 
+    public function handleDisableVerifySpinnaker() {
+        $method = Request::method();
+        $data = Request::all();
+
+        if (isset($data['active']) === true) {
+            $data['active'] = (bool) $data['active'];
+        }
+
+        $response = $this->reminders->sendAnyRequest('batch/service/control', $method, $data);
+
+        $statusCode = $response['status_code'];
+
+        unset($response['status_code']);
+
+        return ApiResponse::json($response, $statusCode);
+    }
+
     public function remindersAdmin($path = '')
     {
         $method = Request::method();
