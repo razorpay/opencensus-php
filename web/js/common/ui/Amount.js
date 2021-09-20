@@ -1,5 +1,5 @@
 import React from 'react';
-import { Popover, PopoverBody } from 'common/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { getFormattedAmount, classList } from 'common/utils/rzp-utils';
 
 const currencies = {
