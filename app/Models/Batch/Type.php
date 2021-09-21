@@ -144,6 +144,12 @@ class Type
 
     const ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS  = 'icici_lead_account_activation_comments';
 
+    //cbk => chargeback
+    const HITACHI_CBK_MASTERCARD = 'hitachi_cbk_mastercard';
+
+    const HITACHI_CBK_VISA = 'hitachi_cbk_visa';
+
+    const HITACHI_CBK_RUPAY = 'hitachi_cbk_rupay';
 
     const INTERNAL_INSTRUMENT_REQUEST = 'internal_instrument_request';
 
@@ -223,6 +229,9 @@ class Type
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
         self::WEBSITE_CHECKER,
+        self::HITACHI_CBK_MASTERCARD,
+        self::HITACHI_CBK_VISA,
+        self::HITACHI_CBK_RUPAY,
     ];
 
     /**
@@ -495,6 +504,9 @@ class Type
         self::MPAN                          => Name::MPAN_BATCH_UPLOAD,
         self::EMANDATE                      => Name::EMANDATE_BATCH_UPLOAD,
         self::NACH                          => Name::NACH_BATCH_UPLOAD,
+        self::HITACHI_CBK_MASTERCARD        => Name::BULK_HITACHI_CHARGEBACK,
+        self::HITACHI_CBK_VISA              => Name::BULK_HITACHI_CHARGEBACK,
+        self::HITACHI_CBK_RUPAY             => Name::BULK_HITACHI_CHARGEBACK,
     ];
 
     public static $workflowApplicableBatchTypes = [

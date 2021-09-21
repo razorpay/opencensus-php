@@ -1072,6 +1072,54 @@ class Header
     const LAST_UPDATED_ON_TIME      = 'Last updated on time';
     const COMMENT_OR_REMARKS        = 'Comment/Remarks';
 
+    //Mastercard
+    const SR_NO                                = "Sr. No";
+    const CARD_NUMBER                          = "Card Number";
+    const ARN                                  = "ARN";
+    const HITACHI_MASTERCARD_AMOUNT            = "Amt (4)";
+    const HITACHI_MASTERCARD_CURRENCY          = "Currency (49)";
+    const HITACHI_MASTERCARD_BILLING_AMOUNT    = "Billing Amt (30)";
+    const HITACHI_MASTERCARD_BILLING_CURRENCY  = "Billing currency (149)";
+    const HITACHI_MASTERCARD_TXN_DATE          = "Txn Date (12)";
+    const HITACHI_MASTERCARD_SETTLEMENT_DATE   = "Settelment Date";
+    const HITACHI_MASTERCARD_MID               = " MID (42)";
+    const HITACHI_MASTERCARD_TID               = "TID (41)";
+    const HITACHI_MASTERCARD_ME_NAME           = "ME Name (43)";
+    const HITACHI_MASTERCARD_AUTH_CODE         = "Auth Code (38)";
+    const HITACHI_MASTERCARD_RRN               = "RRN (37)";
+    const HITACHI_MASTERCARD_MCC               = "MCC (26)";
+    const HITACHI_MASTERCARD_CHARGEBACK_REF_NO = "CB Reference No (95)";
+    const CHARGEBACK_DATE                      = "CB Date";
+    const HITACHI_MASTERCARD_DOC_INDICATOR     = "Doc Indicator(0262)";
+    const HITACHI_MASTERCARD_REASON_CODE       = "Reason Code (25)";
+    const HITACHI_MASTERCARD_MESSAGE_TEXT      = "Message Text (72)";
+    const FULFILMENT_TAT                       = "Fulfilement TAT";
+    const AGEING_DAYS                          = "Ageing Days";
+    const HITACHI_MASTERCARD_TYPE              = "Type";
+
+    // Visa and RUPAY
+    const CHARGEBACK_AMOUNT    = "Chgbk Amt";
+    const SOURCE_AMOUNT        = "Source Amt";
+    const SOURCE_CURRENCY      = "Source Currency";
+    const BILLING_AMOUNT       = "Billing Amt";
+    const BILLING_CURRENCY     = "Billing Currency";
+    const TXN_DATE             = "Txn Date";
+    const HITCAHI_MID          = "MID";
+    const HITCAHI_TID          = "TID";
+    const ME_NAME              = "ME Name";
+    const AUTH_CODE            = "Auth Code";
+    const RRN                  = "RRN";
+    const MCC_CODE             = "MCC Code";
+    const CHARGEBACK_REF_NO    = "CB Reference No";
+    const DOC_INDICATOR        = "Doc Indicator";
+    const REASON_CODE          = "Reason Code";
+    const MESSAGE_TEXT         = "Message Text";
+    const DUPLICATE_RRN        = "Duplicate RRN";
+    const DATE_OF_ISSUE        = "Date of Issue";
+    const HITACHI_DISPUTE_TYPE = "Dispute Type";
+    const SETTLEMENT_DATE      = "Settlement Date";
+
+
     // Internal Instrument Request
     const INTERNAL_INSTRUMENT_REQUEST_ID = 'internal_instrument_request_id';
 
@@ -3686,6 +3734,97 @@ class Header
                 self::LAST_UPDATED_ON_DATE,
                 self::LAST_UPDATED_ON_TIME,
                 self::COMMENT_OR_REMARKS
+            ]
+        ],
+
+        Type::HITACHI_CBK_MASTERCARD => [
+            self::INPUT => [
+                self::SR_NO,
+                self::CARD_NUMBER,
+                self::ARN,
+                self::HITACHI_MASTERCARD_AMOUNT,
+                self::HITACHI_MASTERCARD_CURRENCY,
+                self::HITACHI_MASTERCARD_BILLING_AMOUNT,
+                self::HITACHI_MASTERCARD_BILLING_CURRENCY,
+                self::HITACHI_MASTERCARD_TXN_DATE,
+                self::HITACHI_MASTERCARD_SETTLEMENT_DATE,
+                self::HITACHI_MASTERCARD_MID,
+                self::HITACHI_MASTERCARD_TID,
+                self::HITACHI_MASTERCARD_ME_NAME,
+                self::HITACHI_MASTERCARD_AUTH_CODE,
+                self::HITACHI_MASTERCARD_RRN,
+                self::HITACHI_MASTERCARD_MCC,
+                self::HITACHI_MASTERCARD_CHARGEBACK_REF_NO,
+                self::CHARGEBACK_DATE,
+                self::HITACHI_MASTERCARD_DOC_INDICATOR,
+                self::HITACHI_MASTERCARD_REASON_CODE,
+                self::HITACHI_MASTERCARD_MESSAGE_TEXT,
+                self::FULFILMENT_TAT,
+                self::AGEING_DAYS,
+                self::HITACHI_MASTERCARD_TYPE,
+            ]
+        ],
+
+        Type::HITACHI_CBK_VISA => [
+            self::INPUT => [
+                self::SR_NO,
+                self::CARD_NUMBER,
+                self::ARN,
+                self::CHARGEBACK_AMOUNT,
+                self::CURRENCY,
+                self::SOURCE_AMOUNT,
+                self::SOURCE_CURRENCY,
+                self::BILLING_AMOUNT,
+                self::BILLING_CURRENCY,
+                self::TXN_DATE,
+                self::SETTLEMENT_DATE,
+                self::HITCAHI_MID,
+                self::HITCAHI_TID,
+                self::ME_NAME,
+                self::AUTH_CODE,
+                self::RRN,
+                self::MCC_CODE,
+                self::CHARGEBACK_REF_NO,
+                self::CHARGEBACK_DATE,
+                self::DOC_INDICATOR,
+                self::REASON_CODE,
+                self::MESSAGE_TEXT,
+                self::FULFILMENT_TAT,
+                self::DUPLICATE_RRN,
+                self::AGEING_DAYS,
+                self::DATE_OF_ISSUE,
+                self::HITACHI_DISPUTE_TYPE,
+            ]
+        ],
+
+        Type::HITACHI_CBK_RUPAY => [
+            self::INPUT => [
+                self::SR_NO,
+                self::CARD_NUMBER,
+                self::ARN,
+                self::CHARGEBACK_AMOUNT,
+                self::CURRENCY,
+                self::SOURCE_AMOUNT,
+                self::SOURCE_CURRENCY,
+                self::BILLING_AMOUNT,
+                self::BILLING_CURRENCY,
+                self::TXN_DATE,
+                self::SETTLEMENT_DATE,
+                self::HITCAHI_MID,
+                self::HITCAHI_TID,
+                self::ME_NAME,
+                self::AUTH_CODE,
+                self::RRN,
+                self::MCC_CODE,
+                self::CHARGEBACK_REF_NO,
+                self::CHARGEBACK_DATE,
+                self::DOC_INDICATOR,
+                self::REASON_CODE,
+                self::MESSAGE_TEXT,
+                self::FULFILMENT_TAT,
+                self::AGEING_DAYS,
+                self::DATE_OF_ISSUE,
+                self::HITACHI_DISPUTE_TYPE,
             ]
         ],
 

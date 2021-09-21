@@ -714,6 +714,8 @@ class Name
 
     const WEBSITE_CHECKER = 'website_checker';
 
+    const BULK_HITACHI_CHARGEBACK = 'bulk_hitachi_chargeback';
+
     // Recon service permission
     const RECON_OPERATION                              = 'recon_operation';
     const RECON_ADMIN_OPERATION                        = 'recon_admin_operation';
