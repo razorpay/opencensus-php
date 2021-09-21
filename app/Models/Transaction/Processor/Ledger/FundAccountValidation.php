@@ -18,6 +18,12 @@ class FundAccountValidation extends Base
     const FAV_FAILED    = "fav_failed";
     const FAV_REVERSED  = "fav_reversed";
 
+    /***
+     * @param Entity $fundAccountValidation
+     * @param string $transactorType
+     * @param int $transactorDate
+     * @param array $ftsSourceAccountInformation
+     */
     public function pushTransactionToLedger(Entity $fundAccountValidation,
                                             string $transactorType,
                                             int $transactorDate,
@@ -53,6 +59,15 @@ class FundAccountValidation extends Base
             $ftsSourceAccountData = [];
             $apiTransactionId = null;
             $transactorId = null;
+
+            $commission = (string)$fundAccountValidation->getFee();
+            $tax = (string)$fundAccountValidation->getTax();
+
+            // For postpaid merchant, commission and tax will be zero, as they get collected later not during these flows.
+            if ($fundAccountValidation->merchant->isPostpaid() === true){
+                $commission = '0';
+                $tax = '0';
+            }
 
             switch ($transactorType)
             {
@@ -90,8 +105,8 @@ class FundAccountValidation extends Base
                 self::CURRENCY           => $fundAccountValidation->getCurrency(),
                 self::AMOUNT             => (string) $fundAccountValidation->getAmount(),
                 self::BASE_AMOUNT        => (string) $fundAccountValidation->getBaseAmount(),
-                self::COMMISSION         => (string) $fundAccountValidation->getFee(),
-                self::TAX                => (string) $fundAccountValidation->getTax(),
+                self::COMMISSION         => $commission,
+                self::TAX                => $tax,
                 self::NOTES              => json_encode($notes),
                 self::TRANSACTOR_ID      => $transactorId,
                 self::TRANSACTOR_TYPE    => $transactorType,
