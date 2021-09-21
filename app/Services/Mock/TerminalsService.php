@@ -126,6 +126,12 @@ class TerminalsService extends BaseTerminalsService
                 'success' => true,
             ];
         }
+        if ($path === 'v2/terminal_test_otp/ifttt')
+        {
+            return [
+                'success' => true,
+            ];
+        }
         return [];
     }
 }

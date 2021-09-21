@@ -333,7 +333,7 @@ class TerminalController extends Controller
 
         // TODO: do some signature/secret validation here
 
-        $path = "v2/terminal_test_otp/sms_sync";
+        $path = "v2/terminal_test_otp/ifttt";
 
         $data = [
             'data' => $input
