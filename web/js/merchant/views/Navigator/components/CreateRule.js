@@ -1,24 +1,19 @@
+import React, { Fragment } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import Input, { Description, Label } from 'common/new-ui/Input';
+import Input from 'common/new-ui/Input';
 import { deepClone } from 'common/utils/rzp-utils';
-import { merchantFetch } from 'merchant/utils/ajax';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import Precondition from './Precondition';
 import ProviderRules from './ProviderRules';
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter, Link, Redirect } from 'react-router-dom';
 import DeactivateRule from './DeactivateRule';
-import { Redirect } from 'react-router-dom';
-import { Fragment } from 'react';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { rupeesToPaise } from 'common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
-import { get_unique, SMART_ROUTER, parameters, createMappedProviders } from './util';
-import PreconditionPopover from './PreconditionPopover';
 import { CSSTransition } from 'react-transition-group';
 
 import {
-  getRules,
   changeRuleMode,
   getRule,
   fetchRules,
@@ -29,6 +24,10 @@ import {
 } from 'merchant/reducers/navigator/details';
 import { ReorderRules } from './ReorderRule';
 import {
+  get_unique,
+  SMART_ROUTER,
+  parameters,
+  createMappedProviders,
   isExpressionValid,
   mapRulesArrayToObject,
   mapRulesObjectToArray,
@@ -39,7 +38,7 @@ import {
   total_live_rules,
   DEFAULT_RULE,
   getRuleStatus,
-  getRuleScore,
+  rzpGateways,
 } from './util';
 import { PreconditionModel } from '../models/PreconditionModel';
 import FullPageCover from './FullPageCover';
@@ -66,9 +65,9 @@ import FullPageCoverHeader from './FullPageCoverHeader';
     fetchRules,
     closeModal,
     deleteRule,
-    reorderRules: reorderRules,
-    createRule: createRule,
-    changeRuleMode: changeRuleMode,
+    reorderRules,
+    createRule,
+    changeRuleMode,
   },
 )
 export default class CreateRule extends React.Component {
@@ -77,13 +76,28 @@ export default class CreateRule extends React.Component {
   };
   componentDidMount() {
     document.addEventListener('keydown', this.escFunction);
+
+    const params = deepClone(parameters);
+    this.getAllWallets()
+      .then((res) => {
+        params.forEach((p, index, obj) => {
+          if (p.name === 'Wallets') {
+            if (res.length != 0) {
+              p.values = res;
+            } else {
+              obj.splice(index, 1);
+            }
+          }
+        });
+      })
+      .finally(() => this.setState({ PARAMETERS: params }));
+
     if (this.props.match.params.id) {
       const id = this.props.match.params.id;
-      this.setState({ loading: true });
       getRule(id)
         .then((rule) => {
           this.setState({
-            rule: rule,
+            rule,
             loading: false,
             update: true,
             steps: {
@@ -116,14 +130,37 @@ export default class CreateRule extends React.Component {
     }
   }
 
-  updateStep(index, data) {
-    const steps = this.state.steps;
-    Object.keys(steps).forEach((k) => {
-      steps[k].edit = false;
+  getAllWallets = () => {
+    return new Promise((resolve) => {
+      const { terminalProviders } = this.props;
+      const data = [];
+      const mapData = {};
+      terminalProviders.forEach((provider) => {
+        if (provider.Gateway_details.wallet_metadata) {
+          const wallets = provider.Gateway_details.wallet_metadata?.wallets || [];
+          data.push(...wallets);
+          let key = `${provider.Gateway}_${provider.Terminal_id}`;
+          if (rzpGateways.includes(provider.Gateway)) {
+            key = provider.Gateway;
+          }
+          mapData[key] = wallets;
+        }
+      });
+      const result = data.map((w) => ({ value: w }));
+      this.setState({ mapWalletProvider: mapData });
+      resolve(result);
     });
-    steps[index] = { ...steps[index], ...data };
-    // steps[index] = { ...steps[index], ...data };
-    this.setState({ steps });
+  };
+
+  updateStep(index, data) {
+    this.setState((prevState) => {
+      const steps = prevState.steps;
+      Object.keys(steps).forEach((k) => {
+        steps[k].edit = false;
+      });
+      steps[index] = { ...steps[index], ...data };
+      return { steps };
+    });
   }
 
   componentWillUnmount() {
@@ -137,8 +174,7 @@ export default class CreateRule extends React.Component {
   };
 
   state = {
-    is_default: false,
-    loading: false,
+    loading: !!this.props.match.params.id,
     update: false,
     redirect: null,
     rule: {
@@ -165,10 +201,12 @@ export default class CreateRule extends React.Component {
         show: false,
       },
     },
+    PARAMETERS: [],
+    mapWalletProvider: {},
   };
 
   deactivateRule = () => {
-    return new Promise((res, rej) => {
+    return new Promise((res) => {
       this.props.openModal({
         size: 'large',
         component: (
@@ -194,54 +232,12 @@ export default class CreateRule extends React.Component {
             is_valid = false;
           }
         });
-      } else {
-        if (!isExpressionValid(precondition)) {
-          is_valid = false;
-        }
+      } else if (!isExpressionValid(precondition)) {
+        is_valid = false;
       }
     }
     return is_valid;
   }
-
-  openCheckout = () => {
-    let user = {
-      name: 'adi',
-      email: 'aditya.dewaskar@razorpay.com',
-      contact_mobile: 9999999999,
-    };
-    let amountInPaise = rupeesToPaise(1);
-
-    let options = {
-      amount: amountInPaise,
-      key: 'rzp_test_vNg6XJagghVNFK',
-      prefill: {
-        name: user.name,
-        email: user.email,
-        contact: user.contact_mobile,
-      },
-      notes: {
-        dashboard: true,
-      },
-      handler: function (transaction = {}) {},
-    };
-
-    return new Promise((resolve, reject) => {
-      try {
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-        resolve();
-      } catch (e) {
-        reject(`An error occured - ${e.message}`);
-      }
-    }).catch((error) => {
-      this.setState({
-        status: {
-          type: 'error',
-          message: error,
-        },
-      });
-    });
-  };
 
   get isProviderRulesValid() {
     let is_valid = true;
@@ -252,7 +248,7 @@ export default class CreateRule extends React.Component {
     Object.keys(rules).forEach((k) => {
       let total_load = 0;
       rules[k].forEach((r) => {
-        let load = Number(r.additional_attribute[1].value);
+        const load = Number(r.additional_attribute[1].value);
         total_load += load;
         if (!(isExpressionValid(r.expression.operands[0]) && load > 0)) {
           is_valid = false;
@@ -274,6 +270,24 @@ export default class CreateRule extends React.Component {
       this.isProviderRulesValid
     );
   }
+
+  isSelectedValidProvider = (MAPPED_PROVIDERS) => {
+    let is_valid = true;
+    const rules = mapRulesArrayToObject(this.state.rule.rules);
+    Object.keys(rules).forEach((k) => {
+      rules[k].forEach((r) => {
+        if (r.expression.operands[0].operands[0].value === '$provider.id') {
+          const provider = r.expression.operands[0].operands[1].value;
+          MAPPED_PROVIDERS.forEach((p) => {
+            if (p.id === provider && p.disabled) {
+              is_valid = false;
+            }
+          });
+        }
+      });
+    });
+    return is_valid;
+  };
 
   addNewRow = (provider_priority) => {
     const rule = this.state.rule;
@@ -350,13 +364,13 @@ export default class CreateRule extends React.Component {
     }
   };
 
-  createRule = (data, mode) => {
+  createRule = (data) => {
     // data.rules = setRuleMode(data.rules, mode);
     return this.props.createRule(data);
   };
 
   reorderRules = (rules, rule) => {
-    let body = {
+    const body = {
       order: {
         ordered_names: rules.map((r) => r.name),
       },
@@ -368,22 +382,24 @@ export default class CreateRule extends React.Component {
   };
 
   goNext = (i, cb) => {
-    let steps = { ...this.state.steps };
-    steps[i] = {
-      edit: false,
-      show: true,
-    };
-    steps[i + 1] = {
-      show: true,
-      edit: true,
-    };
-    this.setState({ steps }, cb);
+    this.setState((prevState) => {
+      const steps = { ...prevState.steps };
+      steps[i] = {
+        edit: false,
+        show: true,
+      };
+      steps[i + 1] = {
+        show: true,
+        edit: true,
+      };
+      return { steps };
+    }, cb);
   };
 
   reqBody = (mode) => {
     const rule = deepClone(this.state.rule);
     rule.rules.forEach((r) => {
-      let random = get_unique();
+      const random = get_unique();
       // check this for later and replace this with uuid
       r.name = `${random}_${rule.name}`;
       // r.score = this.props.rules.length + 1;
@@ -409,7 +425,7 @@ export default class CreateRule extends React.Component {
 
   cleanRule = (rule) => {
     rule.rules.forEach((r) => {
-      let random = get_unique();
+      const random = get_unique();
       r.name = `${random}_${rule.name}`;
       r.expression.operands.forEach((o, index) => {
         if (o.operands[0].value === '$merchant.id') {
@@ -428,31 +444,57 @@ export default class CreateRule extends React.Component {
 
   addPriority = () => {
     const pp = Object.keys(mapRulesArrayToObject(this.state.rule.rules)).length + 1;
-    const r = this.addNewRow(pp);
+    this.addNewRow(pp);
   };
 
   render() {
     if (this.state.redirect) {
       return <Redirect to={this.state.redirect} />;
     }
-    let PARAMETERS = deepClone(parameters);
+
+    const { PARAMETERS } = this.state;
     const rules = deepClone(this.props.rules);
 
     const { user, providers, terminalProviders } = this.props;
-    let MAPPED_PROVIDERS = createMappedProviders(user.isAddProviderEnabled, providers, terminalProviders);
+    let MAPPED_PROVIDERS = createMappedProviders(
+      user.isAddProviderEnabled,
+      providers,
+      terminalProviders,
+    );
 
+    const selectedWallets = [];
     let is_netbanking = false;
     let is_smart_router = false;
+    let is_wallet = false;
     if (this.state.rule.precondition) {
       if (this.state.rule.precondition.type === 'logical') {
         this.state.rule.precondition.operands.forEach((o) => {
           if (o.operands[1].value.includes('netbanking')) {
             is_netbanking = true;
           }
+          if (
+            o.operands[1].value.includes('wallet') ||
+            o.operands[0].value === '$payment.optimizer_wallet'
+          ) {
+            is_wallet = true;
+            if (o.operands[0].value === '$payment.optimizer_wallet' && o.operands[1].value != '') {
+              selectedWallets.push(...o.operands[1].value.split(','));
+            }
+          }
         });
       } else {
-        if (this.state.rule.precondition.operands[1].value.includes('netbanking')) {
+        const operands = this.state.rule.precondition.operands;
+        if (operands[1].value.includes('netbanking')) {
           is_netbanking = true;
+        }
+        if (
+          operands[1].value.includes('wallet') ||
+          operands[0].value === '$payment.optimizer_wallet'
+        ) {
+          is_wallet = true;
+          if (operands[0].value === '$payment.optimizer_wallet' && operands[1].value != '') {
+            selectedWallets.push(...operands[1].value.split(','));
+          }
         }
       }
     }
@@ -464,13 +506,29 @@ export default class CreateRule extends React.Component {
         }
       });
     });
-    if (is_netbanking) {
+    if (is_netbanking || is_wallet) {
       MAPPED_PROVIDERS = MAPPED_PROVIDERS.map((p) => {
         if (p.id == SMART_ROUTER) {
           p.disabled = true;
+          if (is_wallet) {
+            p.disabled_message = 'Wallet is not supported on Smart Router.';
+          } else {
+            p.disabled_message =
+              'Smart Router cannot be added as a provider for conditions with Net Banking currently.';
+          }
+        } else if (is_wallet && selectedWallets.length != 0) {
+          const { mapWalletProvider } = this.state;
+          let disable = true;
+          selectedWallets.forEach((w) => {
+            if (mapWalletProvider[p.id]?.includes(w)) {
+              disable = false;
+            }
+          });
+          if (disable) {
+            p.disabled = true;
+            p.disabled_message = 'Selected wallet is not supported on this provider.';
+          }
         }
-        p.disabled_message =
-          'Smart Router cannot be added as a provider for conditions with Net Banking currently.';
         return p;
       });
     }
@@ -487,6 +545,7 @@ export default class CreateRule extends React.Component {
         }
       });
     }
+    const isValidProvider = this.isSelectedValidProvider(MAPPED_PROVIDERS);
 
     return (
       <FullPageCover>
@@ -515,7 +574,6 @@ export default class CreateRule extends React.Component {
                     <Link to={'/optimizer/rules'}>
                       <span
                         style={{
-                          fontSize: '20px',
                           cursor: 'pointer',
                           color: 'rgba(22, 47, 86, 0.54)',
                           fontSize: '17px',
@@ -597,10 +655,11 @@ export default class CreateRule extends React.Component {
                                       value={removeMid(this.state.rule.name)}
                                       placeholder="Rule Name"
                                       onChange={(e) => {
-                                        const rule = this.state.rule;
-                                        rule.name = appendMid(e.target.value);
-                                        this.setState({
-                                          rule,
+                                        const value = e.target.value;
+                                        this.setState((prevState) => {
+                                          const rule = prevState.rule;
+                                          rule.name = appendMid(value);
+                                          return { rule };
                                         });
                                       }}
                                     />
@@ -631,11 +690,12 @@ export default class CreateRule extends React.Component {
                                       name="description"
                                       placeholder="Rule Description"
                                       onChange={(e) => {
-                                        const rule = this.state.rule;
-                                        rule.description = e.target.value;
+                                        const value = e.target.value;
+                                        this.setState((prevState) => {
+                                          const rule = prevState.rule;
+                                          rule.description = value;
 
-                                        this.setState({
-                                          rule,
+                                          return { rule };
                                         });
                                       }}
                                     />
@@ -727,9 +787,11 @@ export default class CreateRule extends React.Component {
                               readonly={!this.state.steps[2].edit}
                               precondition={this.state.rule.precondition}
                               update={(precondition) => {
-                                const rule = this.state.rule;
-                                rule.precondition = precondition;
-                                this.setState({ rule: rule });
+                                this.setState((prevState) => {
+                                  const rule = prevState.rule;
+                                  rule.precondition = precondition;
+                                  return { rule };
+                                });
                               }}
                               parent={'create-rule'}
                             />
@@ -796,19 +858,21 @@ export default class CreateRule extends React.Component {
                         providers={MAPPED_PROVIDERS}
                         addNewRow={(pp, rp) => this.addNewRow(pp, rp)}
                         update={(e) => {
-                          const rule = this.state.rule;
-                          let R = {};
-                          Object.keys(e).forEach((k, index) => {
-                            let ni = index + 1;
-                            e[k].forEach((r) => {
-                              r.additional_attribute[0].value = `${ni}`;
-                              r.score = rule.score;
+                          this.setState((prevState) => {
+                            const rule = prevState.rule;
+                            const R = {};
+                            Object.keys(e).forEach((k, index) => {
+                              const ni = index + 1;
+                              e[k].forEach((r) => {
+                                r.additional_attribute[0].value = `${ni}`;
+                                r.score = rule.score;
+                              });
+                              R[ni] = e[k];
                             });
-                            R[ni] = e[k];
+                            const arrRules = mapRulesObjectToArray(R);
+                            rule.rules = arrRules;
+                            return { rule };
                           });
-                          const rules = mapRulesObjectToArray(R);
-                          rule.rules = rules;
-                          this.setState({ rule });
                         }}
                         rules={mapRulesArrayToObject(this.state.rule.rules)}
                         readonly={!this.state.steps[3].edit}
@@ -850,7 +914,7 @@ export default class CreateRule extends React.Component {
                               this.goNext(3);
                             }}
                             className="btn btn-primary pull-right"
-                            disabled={!this.isProviderRulesValid}
+                            disabled={!this.isProviderRulesValid || !isValidProvider}
                           >
                             Next <i className="i i-arrow-forward" />
                           </button>
@@ -888,8 +952,8 @@ export default class CreateRule extends React.Component {
                             <Fragment>
                               <button
                                 onClick={() => {
-                                  const rule = this.reqBody('test');
-                                  let score = rules.length + 1;
+                                  let rule = this.reqBody('test');
+                                  const score = rules.length + 1;
                                   rule.rules.forEach((r) => {
                                     r.score = score;
                                   });
@@ -906,30 +970,32 @@ export default class CreateRule extends React.Component {
                                             }
                                           });
                                           this.props.closeModal();
-                                          return this.createRule(rule, 'test');
+                                          return this.createRule(rule);
                                         });
                                     });
                                   } else {
-                                    promise = this.createRule(rule, 'test');
+                                    promise = this.createRule(rule);
                                   }
                                   promise
-                                    .then((rule) => {
-                                      rule = { ...rule, current: true };
+                                    .then((respRule) => {
+                                      rule = { ...respRule, current: true };
                                       this.props.openModal({
                                         size: 'large',
                                         component: (
                                           <ReorderRules
                                             rules={[...rules.filter((r) => r.id !== rule.id), rule]}
-                                            onSuccess={(rules) => {
-                                              this.props.reorderRules(rules, rule).then(() => {
-                                                this.props.showNotification({
-                                                  type: 'success',
-                                                  message: 'Rule made live successully',
-                                                  closeTimeout: 5000,
+                                            onSuccess={(orderedRules) => {
+                                              this.props
+                                                .reorderRules(orderedRules, rule)
+                                                .then(() => {
+                                                  this.props.showNotification({
+                                                    type: 'success',
+                                                    message: 'Rule made live successully',
+                                                    closeTimeout: 5000,
+                                                  });
+                                                  this.props.closeModal();
+                                                  this.setState({ redirect: '/optimizer/rules' });
                                                 });
-                                                this.props.closeModal();
-                                                this.setState({ redirect: '/optimizer/rules' });
-                                              });
                                             }}
                                             onClose={() => {
                                               this.context
@@ -967,8 +1033,7 @@ export default class CreateRule extends React.Component {
                                 style={{ marginRight: '10px' }}
                                 onClick={() => {
                                   const rule = this.reqBody('test');
-                                  let promise;
-                                  let score = rules.length + 1;
+                                  const score = rules.length + 1;
                                   this.context
                                     .confirm({
                                       header: 'Are you sure want to save rule as draft?',
@@ -980,9 +1045,9 @@ export default class CreateRule extends React.Component {
                                       rule.rules.forEach((r) => {
                                         r.score = score;
                                       });
-                                      return this.createRule(rule, 'test');
+                                      return this.createRule(rule);
                                     })
-                                    .then((rule) => {
+                                    .then(() => {
                                       this.props.showNotification({
                                         type: 'success',
                                         message: 'Rule saved as draft successully',
@@ -1009,13 +1074,12 @@ export default class CreateRule extends React.Component {
                                 onClick={() => {
                                   const rule = this.cleanRule(this.state.rule);
                                   rule.rules.forEach((r) => {
-                                    let temp = r.name.split('_');
+                                    const temp = r.name.split('_');
                                     temp.pop();
                                     temp.pop();
                                     temp.push(rule.name);
                                     r.name = temp.join('_');
                                   });
-                                  let promise;
                                   this.context
                                     .confirm({
                                       header: 'Are you sure you want to publish edits?',
@@ -1026,7 +1090,7 @@ export default class CreateRule extends React.Component {
                                     .then(() => {
                                       return this.props.updateRule(rule);
                                     })
-                                    .then((R) => {
+                                    .then(() => {
                                       this.props.showNotification({
                                         type: 'success',
                                         message: 'Rule has been updated successully',
@@ -1064,12 +1128,12 @@ export default class CreateRule extends React.Component {
                                           component: (
                                             <ReorderRules
                                               rules={rules}
-                                              onSuccess={(rules) => {
+                                              onSuccess={(orderedRules) => {
                                                 let args;
                                                 if (getRuleStatus(rule) === 'test') {
-                                                  args = [rules, rule];
+                                                  args = [orderedRules, rule];
                                                 } else {
-                                                  args = [rules];
+                                                  args = [orderedRules];
                                                 }
                                                 this.props
                                                   .reorderRules(...args)
@@ -1144,9 +1208,12 @@ export default class CreateRule extends React.Component {
                                               return getRule(this.state.rule.id);
                                             })
                                             .then(() => this.props.fetchRules())
-                                            .then((rules) => {
-                                              this.setState({
-                                                rule: rules.find((r) => r.id == this.state.rule.id),
+                                            .then((respRules) => {
+                                              this.setState((prevState) => {
+                                                const findRule = respRules.find(
+                                                  (r) => r.id == prevState.rule.id,
+                                                );
+                                                return { rule: findRule };
                                               });
                                               this.props.showNotification({
                                                 type: 'success',
@@ -1178,7 +1245,7 @@ export default class CreateRule extends React.Component {
                                   onClick={() => {
                                     const rule = this.cleanRule(this.state.rule);
                                     rule.rules.forEach((r) => {
-                                      let temp = r.name.split('_');
+                                      const temp = r.name.split('_');
                                       temp.pop();
                                       temp.pop();
                                       temp.push(rule.name);
@@ -1194,7 +1261,7 @@ export default class CreateRule extends React.Component {
                                       .then(() => {
                                         return this.props.updateRule(rule);
                                       })
-                                      .then((rule) => {
+                                      .then(() => {
                                         this.props.showNotification({
                                           type: 'success',
                                           message: 'Draft rule has been updated',

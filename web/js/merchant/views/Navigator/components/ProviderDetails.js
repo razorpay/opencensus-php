@@ -86,7 +86,7 @@ export default class ProviderDetails extends Component {
                     value={() => (
                       <div className="provider-api-details">
                         {detailsKeys.map((key, index) => {
-                          if (key != 'Payment Methods') {
+                          if (key != 'Payment Methods' && !key.includes('metadata')) {
                             return (
                               <Fragment key={index}>
                                 <div className="key-name">{titleCase(key)}</div>
@@ -97,6 +97,8 @@ export default class ProviderDetails extends Component {
                                 </div>
                               </Fragment>
                             );
+                          } else {
+                            return null;
                           }
                         })}
                       </div>

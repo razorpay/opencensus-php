@@ -4,17 +4,6 @@ const getExpStatus = (name) => {
   return (((window.rzp_user && window.rzp_user.experiments) || {})[name] || {}).result === 'on';
 };
 
-export const getValue = (type, value) => {
-  let r;
-  if (type == 'parameter') {
-    r = parameters;
-  }
-  if (type == 'operator') {
-    r = operators;
-  }
-  return r.find((p) => p.value == value) || '';
-};
-
 export const operators = [
   {
     name: 'One Of',
@@ -178,6 +167,85 @@ const customIdentifierParameter = [
   },
 ];
 
+const walletPrameter = getExpStatus('optimizer_wallets')
+  ? [
+      {
+        name: 'Wallets',
+        value: '$payment.optimizer_wallet',
+        description: 'Freecharge, olamoney, mobikwik',
+        id: 14,
+        values: [
+          {
+            value: 'airtelmoney',
+          },
+          {
+            value: 'amazonpay',
+          },
+          {
+            value: 'citrus',
+          },
+          {
+            value: 'freecharge',
+          },
+          {
+            value: 'jiomoney',
+          },
+          {
+            value: 'mobikwik',
+          },
+          {
+            value: 'olamoney',
+          },
+          {
+            value: 'paypal',
+          },
+          {
+            value: 'paytm',
+          },
+          {
+            value: 'payumoney',
+          },
+          {
+            value: 'payzapp',
+          },
+          {
+            value: 'phonepe',
+          },
+          {
+            value: 'sbibuddy',
+          },
+          {
+            value: 'zeta',
+          },
+          {
+            value: 'citibankrewards',
+          },
+          {
+            value: 'itzcash',
+          },
+          {
+            value: 'paycash',
+          },
+        ],
+        operators: {
+          '==': {
+            multiple: false,
+            type: 'dropdown',
+          },
+          in: {
+            multiple: true,
+            type: 'dropdown',
+          },
+          '!=': {
+            multiple: false,
+            type: 'dropdown',
+          },
+        },
+        type: 'string',
+      },
+    ]
+  : [];
+
 const emiDurationParameter = getExpStatus('optimizer_emi_duration')
   ? [
       {
@@ -238,6 +306,7 @@ const emiDurationParameter = getExpStatus('optimizer_emi_duration')
     ]
   : [];
 
+const walletMethod = getExpStatus('optimizer_wallets') ? [{ value: 'wallet' }] : [];
 const emiMethod = getExpStatus('optimizer_emi_duration') ? [{ value: 'emi' }] : [];
 
 export const parameters = [
@@ -291,6 +360,7 @@ export const parameters = [
       {
         value: 'upi_collect',
       },
+      ...walletMethod,
       ...emiMethod,
     ],
     operators: {
@@ -640,6 +710,7 @@ export const parameters = [
   },
   ...customIdentifierParameter,
   ...emiDurationParameter,
+  ...walletPrameter,
 ];
 export const PROVIDERS = [
   { name: 'Smart Router1', id: 1, value: 'smartrouter' },
@@ -662,6 +733,17 @@ export const logical_operators = [
   },
 ];
 
+export const getValue = (type, value) => {
+  let r;
+  if (type == 'parameter') {
+    r = parameters;
+  }
+  if (type == 'operator') {
+    r = operators;
+  }
+  return r.find((p) => p.value == value) || '';
+};
+
 export const isExpressionValid = (expression) => {
   return (
     expression.operands[0] &&
@@ -680,13 +762,7 @@ export const getConditionOn = (precondition) => {
   } else {
     val = getValue('parameter', precondition.operands[0].value).name;
   }
-};
-
-export const domain_model_to_object = (ns = namespace) => {
-  var obj = {};
-  const keys = [...ns.domain_model.entities];
-  const O = appendKeyToObject(keys, obj);
-  return O;
+  return val;
 };
 
 export const namespace = {
@@ -808,7 +884,7 @@ export const namespace = {
 };
 
 export const getRuleScore = (rule) => {
-  let score = rule.rules.length ? rule.rules[0].score : null;
+  const score = rule.rules.length ? rule.rules[0].score : null;
   return score;
 };
 
@@ -865,11 +941,11 @@ export const mapRulesArrayToObject = (RULES) => {
 };
 
 export const appendMid = (value) => {
-  return value + '_' + window.rzp_user.current;
+  return `${value}_${window.rzp_user.current}`;
 };
 
 export const removeMid = (value) => {
-  let temp = value.split('_');
+  const temp = value.split('_');
   temp.pop();
   return temp.join('_');
   // here we remove mid at the end one
@@ -884,28 +960,29 @@ export const setRuleMode = (rules, mode) => {
   });
   return rules;
 };
+
+export const getRuleStatus = (r) => {
+  const status = r.additional_attributes[0].values[0] || 'test';
+  return status;
+};
+
 export const total_live_rules = (rules) => {
   return rules.filter((r) => getRuleStatus(r) === 'live');
 };
 
-export const getRuleStatus = (rule) => {
-  let status;
-  status = rule.additional_attributes[0].values[0] || 'test';
-  return status;
-};
-
 export const get_unique = () => Math.floor(Math.random() * 100000000000);
 
-export const uniqueArray = function (arr) {
-  var o = {},
-    a = [],
-    i,
-    e;
+export const uniqueArray = (arr) => {
+  const o = {};
+  const a = [];
+  let i, e;
   for (i = 0; (e = arr[i]); i++) {
     o[e] = 1;
   }
   for (e in o) {
-    a.push(e);
+    if (o.hasOwnProperty(e)) {
+      a.push(e);
+    }
   }
   return a;
 };

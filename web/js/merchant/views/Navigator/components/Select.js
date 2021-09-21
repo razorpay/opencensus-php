@@ -1,10 +1,7 @@
+import React from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink } from 'react-router-dom';
-import { Fragment } from 'react';
-import Input, { Description, Label } from 'common/new-ui/Input';
-import { titleCase, deepClone } from 'common/utils/rzp-utils';
+import { titleCase } from 'common/utils/rzp-utils';
 import ClickOutside from './ClickOutside';
-import Field from 'common/new-ui/Input';
 import { SMART_ROUTER, gatewayLogos } from './util';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
@@ -12,17 +9,20 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
   return state;
 })
 export default class Select extends React.Component {
-  state = { value: '', selected: {}, show_list: false, inp_value: '' };
+  state = { show_list: false };
   tick = `https://cdn.razorpay.com/static/assets/razorpayx/payout-links/tick.svg`;
   render() {
-    var selected = {};
+    let selected = {};
     if (this.props.selected && this.props.selected.length) {
-      this.props.selected.forEach((s) => {
+      this.props.selected.forEach((s, index, obj) => {
         selected[s.id] = s;
+        if (s.disabled) {
+          obj.splice(index, 1);
+        }
       });
     }
     const VALUE = this.props.selected ? this.props.selected.map((s) => s.name) : null;
-    const IDS = ["upi_intent", "upi_collect", "BARB_R", "PUNB_R"];
+    const IDS = ['upi_intent', 'upi_collect', 'BARB_R', 'PUNB_R'];
     return (
       <ClickOutside
         onClickOutside={() => {
@@ -46,7 +46,7 @@ export default class Select extends React.Component {
               <ul class="unlisted">
                 {this.props.options.map((o, index) => {
                   return (
-                    <span>
+                    <span key={index}>
                       <li
                         class={o.disabled ? 'disabled' : ''}
                         key={index}
@@ -54,12 +54,10 @@ export default class Select extends React.Component {
                           if (!o.disabled) {
                             if (!this.props.multiple) {
                               selected = { [o.id]: o };
+                            } else if (selected[o.id]) {
+                              delete selected[o.id];
                             } else {
-                              if (selected[o.id]) {
-                                delete selected[o.id];
-                              } else {
-                                selected[o.id] = o;
-                              }
+                              selected[o.id] = o;
                             }
                             const value = Object.keys(selected).map((key) => selected[key]);
                             this.props.select(value);
@@ -70,12 +68,15 @@ export default class Select extends React.Component {
                           <div className="row">
                             <div className="col-xs-10">
                               {this.props.session.user.isAddProviderEnabled &&
-                                ((o.id != SMART_ROUTER && typeof o.id == 'string' && o.id.split("_").length === 2 &&
-                                IDS.indexOf(o.id) === -1) || o.id === 'razorpay') && (
-                                <div className="recommended-provider-img-block">
-                                  <img src={gatewayLogos[o.id.split("_")[0]]} />
-                                </div>
-                              )}
+                                ((o.id != SMART_ROUTER &&
+                                  typeof o.id == 'string' &&
+                                  o.id.split('_').length === 2 &&
+                                  IDS.indexOf(o.id) === -1) ||
+                                  o.id === 'razorpay') && (
+                                  <div className="recommended-provider-img-block">
+                                    <img src={gatewayLogos[o.id.split('_')[0]]} />
+                                  </div>
+                                )}
                               <b class="optn-text">{titleCase(o.name)}</b>
                               {o.id === SMART_ROUTER ? (
                                 <span className="recommended-provider">
