@@ -5237,4 +5237,23 @@ class Core extends Base\Core
     {
         $this->app->hubspot->skipMerchantOnboardingComm($email);
     }
+
+    public function uploadInvoiceForIncreaseTransactionLimit(Detail\Entity $merchantDetails, $invoiceProof)
+    {
+        $fileInputs = [
+            Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL => $invoiceProof
+        ];
+
+        $fileAttributes = (new Detail\Service())->storeActivationFile($merchantDetails, $fileInputs);
+
+        if ((is_array($fileAttributes) === false) or
+            (isset($fileAttributes[Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL]) === false))
+        {
+            throw new Exception\ServerErrorException(
+                'Invoice URL upload failed',
+                ErrorCode::SERVER_ERROR);
+        }
+
+        return $fileAttributes[Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL][Document\Constants::FILE_ID];
+    }
 }

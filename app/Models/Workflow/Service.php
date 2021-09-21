@@ -277,7 +277,6 @@ class Service extends Base\Service
             DifferEntity::ACTION_ID                 => $actionId,
         ]);
 
-
         $orgId = $this->app['workflow']->getWorkflowMaker()->getOrgId();
 
         $actionId = Action\Entity::verifyIdAndStripSign($actionId);

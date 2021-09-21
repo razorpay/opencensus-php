@@ -2429,4 +2429,29 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function postIncreaseTransactionLimitSelfServe()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postIncreaseTransactionLimitSelfServe($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postTransactionLimitWorkflowApprove()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postTransactionLimitWorkflowApprove($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantWorkflowDetails(string $workflowType)
+    {
+        $response = $this->service()->getMerchantWorkflowDetails($workflowType);
+
+        return ApiResponse::json($response);
+    }
 }

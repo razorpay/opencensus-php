@@ -291,6 +291,10 @@ return [
                 'description' => 'Ability to view a terminal',
                 'assignable' => true,
             ],
+            Permission::INCREASE_TRANSACTION_LIMIT          => [
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
             Permission::TOGGLE_TERMINAL                     => [
                 'description' => 'Ability to enable or disable a terminal',
                 'assignable' => true,

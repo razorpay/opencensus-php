@@ -40,11 +40,16 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Document\FileHandler\Factory;
 use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Models\Workflow\Observer as WorkflowObserver;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
+use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Workflow\Action\Differ\Core as DifferCore;
 use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
+use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstant;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
@@ -1833,5 +1838,33 @@ class Service extends Base\Service
                 $actionId, [WorkflowAction\Entity::ADMIN]);
 
         return $this->core()->getDecryptedWebsiteCommentForWebsiteSelfServe($comments);
+    }
+
+    public function getAgentApprovedTransactionLimit(Merchant\Entity $merchant)
+    {
+
+        $actionEntity = (new WorkFlowActionCore())->fetchOpenActionOnEntityOperation($merchant->getMerchantId(),
+            $merchant->getEntity(),
+            PermissionName::INCREASE_TRANSACTION_LIMIT,
+            $merchant->getOrgId()
+        )->first();
+
+        $differEntity = (new DifferCore)->fetchRequest($actionEntity->getId());
+
+        if (empty($differEntity) === true)
+        {
+            throw new Exception\ServerErrorException('Workflow action differ entity not found',
+                ErrorCode::SERVER_ERROR);
+        }
+
+        $this->trace->info(TraceCode::GET_AGENT_APPROVED_TRANSACTION_LIMIT, [
+            DifferEntity::ACTION_ID                                  => $actionEntity->getId(),
+            DifferEntity::WORKFLOW_OBSERVER_DATA                     => $differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [],
+        ]);
+
+        if(isset($differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA][WorkflowObserver\Constants::APPROVED_TRANSACTION_LIMIT]) == true)
+        {
+            return $differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA][WorkflowObserver\Constants::APPROVED_TRANSACTION_LIMIT];
+        }
     }
 }

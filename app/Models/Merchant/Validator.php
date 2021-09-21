@@ -23,7 +23,9 @@ use RZP\Models\Merchant\Detail;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Admin\Permission\Name as Permission;
+use \RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Exception\BadRequestValidationFailureException;
+use \RZP\Models\Workflow\Action\Entity as ActionEntity;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 use RZP\Models\BulkWorkflowAction\Constants as BulkActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
@@ -498,6 +500,12 @@ class Validator extends Base\Validator
 
     protected static $toggleFeeBearerRules = [
         Entity::FEE_BEARER      => 'required|string|in:platform,customer|custom:toggle_fee_bearer',
+    ];
+
+    protected static $transactionLimitSelfServeRules = [
+        Constants::NEW_TRANSACTION_LIMIT_BY_MERCHANT      => 'required|integer|min:1',
+        Constants::TRANSACTION_LIMIT_INCREASE_REASON      => 'required|string|min:100',
+        Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
     ];
 
     public function validateMerchantForProductInternational(Entity $merchant)
@@ -2141,6 +2149,164 @@ class Validator extends Base\Validator
         if ($merchantFeeBearer == $feeBearer)
         {
             throw new Exception\BadRequestValidationFailureException('The new fee bearer is same as the previous fee bearer');
+        }
+    }
+
+    public function validateIncreaseTransactionLimitConditions(Entity $merchant, array $input, bool $isBusinessRegistered)
+    {
+        $oldLimit = $merchant->getMaxPaymentAmount();
+
+        $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
+
+        $businessCategory = $merchantDetails->getBusinessCategory();
+
+        $this->validateIsActivated($merchant);
+
+        $this->validateInput('transaction_limit_self_serve', $input);
+
+        $this->validateTransactionLimitNotSameAsCurrent($input, $oldLimit);
+
+        $this->validateRequestNotRaisedInLastThirtyDays($merchant);
+
+        $this->validateNotExceedingMaximumLimit($merchant, $input, $isBusinessRegistered, $businessCategory);
+
+        $this->validateNotUnregiesteredGamingOrGovernmentBusinessCategory($businessCategory, $isBusinessRegistered);
+
+        $this->validateCtsOrFtsLessThanFive($merchant);
+    }
+
+    protected function validateTransactionLimitNotSameAsCurrent(array $input, int $oldLimit)
+    {
+        if($input[Constants::NEW_TRANSACTION_LIMIT_BY_MERCHANT] == $oldLimit)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The new transaction limit is same as the current transaction limit'
+            );
+        }
+    }
+
+    protected function validateRequestNotRaisedInLastThirtyDays(Entity $merchant)
+    {
+        $workflowType = Constants::INCREASE_TRANSACTION_LIMIT;
+
+        [$entityId, $entity] = (new Core())->fetchWorkflowData($workflowType, $merchant);
+
+        $action = (new ActionCore)->fetchLastUpdatedWorkflowActionInPermissionList(
+            $entityId,
+            $entity,
+            [Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::PERMISSION]]
+        );
+
+        if (empty($action) === false)
+        {
+            $updatedTime = $action->getAttribute(ActionEntity::UPDATED_AT);
+
+            $currentTime = time();
+
+            $checkTime = strtotime('+30 days', $updatedTime);
+
+            if ($currentTime < $checkTime)
+            {
+                $updatedDate = date('d-M-Y', $updatedTime);
+
+                $checkDate = date('d-M-Y', $checkTime);
+
+                $description = 'Our partner banks have already evaluated your profile for transaction limit updation on ' . $updatedDate . ', please wait till ' . $checkDate . ' to send another request to our partner banks';
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_EDIT_TRANSACTION_LIMIT_REQUEST_MADE_IN_LAST_30_DAYS,
+                    null,
+                    [
+                        'updatedDate' => $updatedDate,
+                        'checkDate' => $checkDate
+                    ],
+                    $description
+                );
+            }
+        }
+    }
+
+    protected function validateNotExceedingMaximumLimit(Entity $merchant, array $input, bool $isBusinessRegistered, $businessCategory)
+    {
+        $oldLimit = $merchant->getMaxPaymentAmount();
+
+        if ($isBusinessRegistered === true)
+        {
+            if(array_key_exists($businessCategory,  Constants::registeredMerchantMaximumTransactionLimit) === true)
+            {
+                $maxCategoryLimit = Constants::registeredMerchantMaximumTransactionLimit[$businessCategory];
+            }
+            else
+            {
+                $maxCategoryLimit = Constants::registeredMerchantMaximumTransactionLimit[Detail\BusinessCategory::OTHERS];
+            }
+        }
+        else
+        {
+            if(array_key_exists($businessCategory,  Constants::unregisteredMerchantMaximumTransactionLimit) === true)
+            {
+                $maxCategoryLimit = Constants::unregisteredMerchantMaximumTransactionLimit[$businessCategory];
+            }
+            else
+            {
+                $maxCategoryLimit = Constants::unregisteredMerchantMaximumTransactionLimit[Detail\BusinessCategory::OTHERS];
+            }
+        }
+
+        //If a merchant already has maximum category transaction limit set and then if they try to further increase their transaction limit
+        //then this message has to be displayed
+        //“Your transaction limit cannot be increased any further, as per the guidelines set by our partner banks”
+        $this->checkIfEqualToMaximumLimit($oldLimit, $maxCategoryLimit, $input);
+
+        //If the old value set is less than the maximum category transaction limit and tries to increase their transaction limit more than the maximum category transaction limit
+        $this->checkIfGreaterThanMaximumLimit($input[Constants::NEW_TRANSACTION_LIMIT_BY_MERCHANT], $maxCategoryLimit);
+    }
+
+    protected function checkIfEqualToMaximumLimit(int $oldLimit, int $maxCategoryLimit, array $input)
+    {
+        if (($oldLimit === $maxCategoryLimit) and
+            ($input[Constants::NEW_TRANSACTION_LIMIT_BY_MERCHANT] > $maxCategoryLimit))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Your transaction limit cannot be increased any further, as per the guidelines set by our partner banks'
+            );
+        }
+    }
+
+    protected function checkIfGreaterThanMaximumLimit(int $newLimit, int $maxCategoryLimit)
+    {
+        if ($newLimit > $maxCategoryLimit)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Enter lower Transaction Limit value'
+            );
+        }
+    }
+
+    protected function validateNotUnregiesteredGamingOrGovernmentBusinessCategory($businessCategory, bool $isBusinessRegistered)
+    {
+        if (($isBusinessRegistered === false) and
+            (($businessCategory === Detail\BusinessCategory::GAMING) or
+            ($businessCategory === Detail\BusinessCategory::GOVERNMENT)))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCESS_DENIED
+            );
+        }
+    }
+
+    protected function validateCtsOrFtsLessThanFive(Entity $merchant)
+    {
+        $merchantId = $merchant->getMerchantId();
+
+        $resultArray =(new Core())->getMerchantRiskData($merchantId);
+
+        if(($resultArray['domestic_merchant_chargeback_to_sale_ratio_(%)'][0]['lifetime'] > 5.0) or
+            ($resultArray['domestic_merchant_fraud_to_sale_ratio_(%)'][0]['lifetime'] > 5.0))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EDIT_TRANSACTION_LIMIT_CTS_OR_FTS_MORE_THAN_5
+            );
         }
     }
 }

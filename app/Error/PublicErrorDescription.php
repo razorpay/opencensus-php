@@ -19,7 +19,7 @@ class PublicErrorDescription
     //        %x72 /          ; r    carriage return U+000D
     //        %x74 /          ; t    tab             U+0009
     //
-    
+
     const BAD_REQUEST_REFUND_RECEIPT_ALREADY_PRESENT                            = 'Duplicate receipt found for this refund request.';
     const GATEWAY_ERROR                                                         = 'Payment processing failed due to error at bank or wallet gateway';
     const SERVER_ERROR                                                          = 'We are facing some trouble completing your request at the moment. Please try again shortly.';
@@ -370,6 +370,9 @@ class PublicErrorDescription
     const BAD_REQUEST_BANK_TRANSFER_FEE_CALCULATED_GREATER_THAN_PAYMENT_AMOUNT  = 'Fee calculated is greater than the payment amount.';
 
     const BAD_REQUEST_IIN_NOT_EXISTS                                            = 'IIN does not exist';
+
+    const BAD_REQUEST_EDIT_TRANSACTION_LIMIT_REQUEST_MADE_IN_LAST_30_DAYS       = 'Bad Request Edit Transaction Limit Request Made In Last 30 Days';
+    const BAD_REQUEST_EDIT_TRANSACTION_LIMIT_CTS_OR_FTS_MORE_THAN_5             = 'The transaction limit cannot be updated for your account. Please reach out to our support team for further clarification';
 
     // Virtual VPA Prefix
     const BAD_REQUEST_VIRTUAL_VPA_PREFIX_UNAVAILABLE                            = 'This prefix is already in use. Please try another prefix.';

@@ -72,6 +72,7 @@ use RZP\Models\Partner\RateLimitBatch;
 use RZP\Jobs\CallBackFillMerchantApps;
 use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Comment\Core as CommentCore;
 use RZP\Mail\InstrumentRequest\StatusNotify;
 use RZP\Models\Settlement\SettlementTrait;
 use RZP\Models\Batch\Header as BatchHeader;
@@ -102,6 +103,8 @@ use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
+use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
+use RZP\Models\Workflow\Action\Entity as WorkFlowActionEntity;
 use RZP\Constants\{Environment, Mode, Entity as CE, Product};
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Batch\Helpers\SubMerchant as SubMerchantBatchHelper;
@@ -111,6 +114,7 @@ use RZP\Models\Merchant\Balance\BalanceConfig\Service as BalanceConfigService;
 use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerForPG;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForPG;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantPartner as CreateSubMerchantPartnerForX;
+use RZP\Mail\Merchant\IncreaseTransactionLimitRequestApprove as TransactionLimitMerchantMail;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForX;
 
 class Service extends Base\Service
@@ -7291,5 +7295,149 @@ class Service extends Base\Service
         $newPlan = (new Pricing\Core)->create([PricingEntity::PLAN_NAME => $planName, PricingEntity::RULES => $newRules], $ruleOrgId);
 
         return $newPlan[0][PricingEntity::PLAN_ID];
+    }
+
+    public function postIncreaseTransactionLimitSelfServe(array $input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_INCREASE_TRANSACTION_LIMIT_INPUT,[
+           Constants::INPUT => $input
+        ]);
+
+        $merchant = $this->merchant;
+
+        $merchantId = $merchant->getMerchantId();
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $businessType = $merchantDetails->getBusinessType();
+
+        $isBusinessRegistered = in_array($businessType, [Merchant\Detail\BusinessType::INDIVIDUAL, Merchant\Detail\BusinessType::NOT_YET_REGISTERED]) ? false : true;
+
+        (new Validator)->validateIncreaseTransactionLimitConditions($merchant, $input, $isBusinessRegistered);
+
+        if ((isset($input[Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL]) === true) and
+            (is_object($input[Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL]) === true))
+        {
+            $input[Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL] = (new Core())->uploadInvoiceForIncreaseTransactionLimit($merchantDetails, $input[Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL]);
+        }
+
+        $oldMerchantData = $merchant;
+
+        $newMerchantData = clone $oldMerchantData;
+
+        $newMerchantData->setMaxPaymentAmount($input[Constants::NEW_TRANSACTION_LIMIT_BY_MERCHANT]);
+
+        $this->app['workflow']
+            ->setPermission(Permission::INCREASE_TRANSACTION_LIMIT)
+            ->setEntityAndId($merchant->getEntity(), $merchant->getId())
+            ->setInput([
+                Entity::MERCHANT_ID         => $merchantId,
+                Entity::MAX_PAYMENT_AMOUNT  => $input[Constants::NEW_TRANSACTION_LIMIT_BY_MERCHANT]
+            ])
+            ->setController(Constants::INCREASE_TRANSACTION_LIMIT_POST_WORKFLOW_APPROVE)
+            ->handle($oldMerchantData, $newMerchantData, true);
+
+        $this->addCommentForIncreaseTransactionLimitPostWorkflowCreation($merchant, $input);
+
+        return [Entity::MAX_PAYMENT_AMOUNT => $merchant->getMaxPaymentAmount()];
+    }
+
+    protected function addCommentForIncreaseTransactionLimitPostWorkflowCreation(Entity $merchant, array $input)
+    {
+        $workFlowAction = (new WorkFlowActionCore())->fetchOpenActionOnEntityOperation($merchant->getMerchantId(),
+            $merchant->getEntity(),
+            Permission::INCREASE_TRANSACTION_LIMIT,
+            $merchant->getOrgId()
+        )->first();
+
+        if (is_null($workFlowAction) === true)
+        {
+            throw new Exception\ServerErrorException('Workflow Action Not Found',
+                ErrorCode::SERVER_ERROR_WORKFLOW_ACTION_CREATE_FAILED);
+        }
+
+        $this->addCommentForTransactionLimitIncreaseReason($workFlowAction, $input);
+
+        if (empty($input[Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL]) === false)
+        {
+            $this->addCommentForTransactionLimitInvoiceUrl($workFlowAction, $input);
+        }
+    }
+
+    protected function addCommentForTransactionLimitIncreaseReason(WorkFlowActionEntity $workFlowAction, array $input)
+    {
+        $comment = sprintf(Constants::TRANSACTION_LIMIT_INCREASE_REASON_COMMENT,
+            $input[Constants::TRANSACTION_LIMIT_INCREASE_REASON]
+        );
+
+        $commentEntity = (new CommentCore())->create([
+            Constants::COMMENT => $comment,
+        ]);
+
+        $commentEntity->entity()->associate($workFlowAction);
+
+        $this->repo->saveOrFail($commentEntity);
+    }
+
+    protected function addCommentForTransactionLimitInvoiceUrl(WorkFlowActionEntity $workFlowAction, array $input)
+    {
+        $comment = sprintf(Constants::TRANSACTION_LIMIT_INCREASE_SUPPORT_DOCUMENT_URL_COMMENT,
+            $this->app->config->get('applications.dashboard.url'),
+            $input[Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL]
+        );
+
+        $commentEntity = (new CommentCore())->create([
+            Constants::COMMENT => $comment,
+        ]);
+
+        $commentEntity->entity()->associate($workFlowAction);
+
+        $this->repo->saveOrFail($commentEntity);
+    }
+
+    public function postTransactionLimitWorkflowApprove(array $input)
+    {
+        $merchantId = $input[Constants::MERCHANT_ID];
+
+        $merchant = $this->repo->merchant->findorFailPublic($merchantId);
+
+        $newTransactionLimit = (new Merchant\Detail\Service())->getAgentApprovedTransactionLimit($merchant);
+
+        $this->merchant->setMaxPaymentAmount($newTransactionLimit);
+
+        $this->repo->merchant->saveOrFail($this->merchant);
+
+        $this->trace->info(TraceCode::MERCHANT_TRANSACTION_LIMIT_UPDATE_SUCCESS,[
+            Constants::UPDATED_TRANSACTION_LIMIT => $newTransactionLimit
+        ]);
+
+        $merchantPrimaryOwner = $this->merchant->primaryOwner()->toArrayPublic();
+
+        $mailInstance = new TransactionLimitMerchantMail($this->merchant->toArray(), $newTransactionLimit, $merchantPrimaryOwner);
+
+        Mail::queue($mailInstance);
+    }
+
+    public function getMerchantWorkflowDetails(string $workflowType)
+    {
+        $merchant = $this->merchant;
+
+        $merchantCore = new Merchant\Core;
+
+        [$entityId, $entity] = $merchantCore->fetchWorkflowData($workflowType, $merchant);
+
+        $this->trace->info(
+            TraceCode::GET_MERCHANT_WORKFLOW_DETAILS,
+            [
+                'entity_id'  => $entityId,
+                'entity'     => $entity
+            ]);
+
+        $action = (new Action\Core())->fetchLastUpdatedWorkflowActionInPermissionList(
+            $entityId,
+            $entity,
+            [Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::PERMISSION]]);
+
+        return (new WorkflowService)->getWorkflowDetailsWithRejectionMessage($action);
     }
 }

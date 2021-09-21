@@ -2467,6 +2467,8 @@ class Route
         'get_free_payouts_attributes'              => ['get',      'payouts/{balance_id}/free_payout',                          'PayoutController@getFreePayoutsAttributes'               ],
         'admin_get_free_payouts_attributes'        => ['get',      'admin/payouts/{balance_id}/free_payout',                    'PayoutController@getFreePayoutsAttributes'               ],
 
+        'increase_transaction_limit_self_serve'    => ['post',     'merchant/transaction_limit',                                'MerchantController@postIncreaseTransactionLimitSelfServe' ],
+        'merchant_workflow_details'                => ['get',      'merchant/{workflowType}/details',                           'MerchantController@getMerchantWorkflowDetails'            ],
 
         //route to add additional website and delete additional websites(plural) through admin dashboard
         'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                   ],
@@ -4179,6 +4181,8 @@ class Route
         'token_fetch_card',
         'token_fetch_vpa',
         'subscription_fetch_emandate_detail',
+        'increase_transaction_limit_self_serve',
+        'merchant_workflow_details',
         'user_edit_self',
         'user_otp_create',
         'user_verify_contact',
@@ -5545,6 +5549,7 @@ class Route
         'admin_fetch_entity_by_id'                 => Permission::VIEW_ALL_ENTITY,
         'external_admin_fetch_entity_by_id'        => Permission::EXTERNAL_ADMIN_VIEW_ALL_ENTITY,
         'merchant_activation_update'               => Permission::EDIT_MERCHANT,
+        'increase_transaction_limit_self_serve'    => Permission::INCREASE_TRANSACTION_LIMIT,
         'merchant_upload'                          => Permission::UPLOAD_MERCHANT,
         'merchant_assign_pricing'                  => Permission::EDIT_MERCHANT_PRICING,
         'merchant_get_banks'                       => Permission::VIEW_MERCHANT_BANKS,
@@ -7820,6 +7825,8 @@ class Route
             'update_partner_intent',
             'update_partner_type',
             'update_survey_tracker',
+            'increase_transaction_limit_self_serve',
+            'merchant_workflow_details',
             'update_payment_config',
             'update_wait_timeout',
             'upi_get_bank_list',

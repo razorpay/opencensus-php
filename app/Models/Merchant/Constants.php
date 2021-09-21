@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use RZP\Models\Admin\ConfigKey;
 use \RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Detail\Status as ActivationStatus;
 
@@ -138,6 +139,18 @@ final class Constants
     const NEW_FEE_BEARER                                = 'new_fee_bearer';
     const SELF_SERVE_FOR_FEE_BEARER                     = 'SelfServe';
 
+    const COMMENT                                       = 'comment';
+    const NEW_TRANSACTION_LIMIT_BY_MERCHANT             = 'new_transaction_limit_by_merchant';
+    const TRANSACTION_LIMIT_INCREASE_REASON             = 'transaction_limit_increase_reason';
+    const TRANSACTION_LIMIT_INCREASE_INVOICE_URL        = 'transaction_limit_increase_invoice_url';
+    const INCREASE_TRANSACTION_LIMIT                    = 'increase_transaction_limit';
+    const UPDATED_TRANSACTION_LIMIT                     = 'updated_transaction_limit';
+
+    const INCREASE_TRANSACTION_LIMIT_POST_WORKFLOW_APPROVE          = 'RZP\Http\Controllers\MerchantController@postTransactionLimitWorkflowApprove';
+
+    const TRANSACTION_LIMIT_INCREASE_REASON_COMMENT                 = 'Transaction Limit Increase Reason: %s';
+    const TRANSACTION_LIMIT_INCREASE_SUPPORT_DOCUMENT_URL_COMMENT   = 'Support Document (Invoice) URL: %sadmin/entity/ufh.files/live/file_%s';
+
     public static $EntityBatchActionSettingParams = [
         self::BATCH_ACTION,
         self::IDEMPOTENT_ID,
@@ -218,6 +231,48 @@ final class Constants
     const NEEDS_CLARIFICATION       =    "needs_clarification";
     const FAQS                      =    "faqs";
     const THANKS                    =    "thanks";
+
+    const unregisteredMerchantMaximumTransactionLimit = [
+        BusinessCategory::FINANCIAL_SERVICES        => 10000000,
+        BusinessCategory::EDUCATION                 => 20000000,
+        BusinessCategory::HEALTHCARE                => 10000000,
+        BusinessCategory::UTILITIES                 => 5000000,
+        BusinessCategory::LOGISTICS                 => 10000000,
+        BusinessCategory::TOURS_AND_TRAVEL          => 10000000,
+        BusinessCategory::TRANSPORT                 => 10000000,
+        BusinessCategory::ECOMMERCE                 => 20000000,
+        BusinessCategory::FOOD                      => 10000000,
+        BusinessCategory::IT_AND_SOFTWARE           => 10000000,
+        BusinessCategory::GAMING                    => 10000000,
+        BusinessCategory::MEDIA_AND_ENTERTAINMENT   => 10000000,
+        BusinessCategory::SERVICES                  => 10000000,
+        BusinessCategory::HOUSING                   => 10000000,
+        BusinessCategory::NOT_FOR_PROFIT            => 10000000,
+        BusinessCategory::SOCIAL                    => 10000000,
+        BusinessCategory::OTHERS                    => 10000000,
+    ];
+
+    const registeredMerchantMaximumTransactionLimit = [
+        BusinessCategory::FINANCIAL_SERVICES        => 100000000,
+        BusinessCategory::EDUCATION                 => 100000000,
+        BusinessCategory::HEALTHCARE                => 50000000,
+        BusinessCategory::UTILITIES                 => 20000000,
+        BusinessCategory::GOVERNMENT                => 100000000,
+        BusinessCategory::LOGISTICS                 => 50000000,
+        BusinessCategory::TOURS_AND_TRAVEL          => 100000000,
+        BusinessCategory::TRANSPORT                 => 50000000,
+        BusinessCategory::ECOMMERCE                 => 100000000,
+        BusinessCategory::FOOD                      => 20000000,
+        BusinessCategory::IT_AND_SOFTWARE           => 100000000,
+        BusinessCategory::GAMING                    => 20000000,
+        BusinessCategory::MEDIA_AND_ENTERTAINMENT   => 20000000,
+        BusinessCategory::SERVICES                  => 50000000,
+        BusinessCategory::HOUSING                   => 100000000,
+        BusinessCategory::NOT_FOR_PROFIT            => 100000000,
+        BusinessCategory::SOCIAL                    => 20000000,
+        BusinessCategory::OTHERS                    => 50000000,
+    ];
+
     /**
      * Partner types that are allowed to view and manage
      * partner settings like client creds.
@@ -362,6 +417,10 @@ final class Constants
             self::PERMISSION => Permission::UPDATE_MERCHANT_WEBSITE,
             self::ENTITY     => \RZP\Constants\Entity::MERCHANT_DETAIL,
         ],
+        self::INCREASE_TRANSACTION_LIMIT   => [
+            self::PERMISSION   => Permission::INCREASE_TRANSACTION_LIMIT,
+            self::ENTITY       => \RZP\Constants\Entity::MERCHANT,
+        ]
     ];
 
     // Merchant Email Types For Instrumentation

@@ -11,23 +11,30 @@ class Constants
     const EDIT_PAYMENT_METHOD                   =   'merchant_put_payment_methods';
     const EMAIL_CHANGE                          =   'merchant_edit_email';
     const MERCHANT_ACTIVATION_STATUS            =   'merchant_activation_status';
+
     const MERCHANT_SAVE_BUSINESS_WEBSITE        =   'merchant_save_business_website';
+
+    const INCREASE_TRANSACTION_LIMIT_SELF_SERVE =   'increase_transaction_limit_self_serve';
+
+    const APPROVED_TRANSACTION_LIMIT            =   'approved_transaction_limit';
 
     const APPROVE                               =   'approve';
 
     const WORKFLOW_VS_OBSERVER= [
 
-        self::SCHEDULED_SETTLEMENT           => ScheduleSettlementObserver::class,
+        self::SCHEDULED_SETTLEMENT                  => ScheduleSettlementObserver::class,
 
-        self::MERCHANT_ACTION                => MerchantActionObserver::class,
+        self::MERCHANT_ACTION                       => MerchantActionObserver::class,
 
-        self::EDIT_PAYMENT_METHOD            => PaymentMethodChangeObserver::class,
+        self::EDIT_PAYMENT_METHOD                   => PaymentMethodChangeObserver::class,
 
-        self::EMAIL_CHANGE                   => EmailChangeObserver::class,
+        self::EMAIL_CHANGE                          => EmailChangeObserver::class,
 
-        self::MERCHANT_ACTIVATION_STATUS     => MerchantActivationStatusObserver::class,
+        self::MERCHANT_ACTIVATION_STATUS            => MerchantActivationStatusObserver::class,
 
-        self::MERCHANT_SAVE_BUSINESS_WEBSITE => BusinessWebsiteSelfServeObserver::class,
+        self::MERCHANT_SAVE_BUSINESS_WEBSITE        => BusinessWebsiteSelfServeObserver::class,
+
+        self::INCREASE_TRANSACTION_LIMIT_SELF_SERVE => TransactionLimitSelfServeObserver::class
 
     ];
 

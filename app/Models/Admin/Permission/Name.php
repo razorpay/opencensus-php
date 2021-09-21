@@ -73,6 +73,7 @@ class Name
     const EDIT_MERCHANT_METHODS               = 'edit_merchant_methods';
     const EDIT_MERCHANT_TERMINAL              = 'edit_merchant_terminal';
     const EDIT_MERCHANT_PRICING               = 'edit_merchant_pricing';
+    const INCREASE_TRANSACTION_LIMIT          = 'increase_transaction_limit';
     const VIEW_MERCHANT_COMPANY_INFO          = 'view_merchant_company_info';
     const VIEW_MERCHANT_CREDITS_LOG           = 'view_merchant_credits_log';
     const ADD_MERCHANT_CREDITS                = 'add_merchant_credits';

@@ -9483,4 +9483,89 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testUnregisteredIncreaseTransactionLimitWorkflowApprove' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/transaction_limit',
+            'content' => [
+                'new_transaction_limit_by_merchant' => 1000000,
+                'transaction_limit_increase_reason' => 'comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason'
+            ],
+        ],
+        'response' => [
+            'content'=> [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testIncreaseTransactionLimitRoleFailure' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/transaction_limit',
+            'content' => [
+                'new_transaction_limit_by_merchant' => 1000000,
+                'transaction_limit_increase_reason' => 'comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testIncreaseTransactionMerchantActivationFailure' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/transaction_limit',
+            'content' => [
+                'new_transaction_limit_by_merchant' => 1000000,
+                'transaction_limit_increase_reason' => 'comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' =>  ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+        ],
+    ],
+
+    'testRejectionReasonNotificationForMerchantWorkflowType' => [
+        'request'  => [
+            'content' => [
+            ],
+            'url'     => '/merchant/{workflowType}/details',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'workflow_exists'          => true,
+                'workflow_status'          => 'rejected',
+                'rejection_reason_message' => 'Test body'
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

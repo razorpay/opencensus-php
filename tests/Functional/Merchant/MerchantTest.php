@@ -12,6 +12,7 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Services\Mock;
 use RZP\Models\Comment;
+use RZP\Models\User\Role;
 use RZP\Models\Base\EsDao;
 use RZP\Services\UfhService;
 use RZP\Error\PublicErrorCode;
@@ -36,6 +37,7 @@ use RZP\Models\Workflow\Action\Differ\Entity;
 use RZP\Models\User\Constants as UserConstants;
 use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
 use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
+use RZP\Mail\Merchant\RejectionReasonNotification;
 use RZP\Models\Workflow\Observer\EmailChangeObserver;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Services\Mock\DruidService as MockDruidService;
@@ -12129,5 +12131,391 @@ class MerchantTest extends TestCase
 
         $this->app->razorx->method('getTreatment')
             ->willReturn($returnValue);
+    }
+
+    protected function setupMerchantWithMerchantDetails(array $predefinedMerchant = [], array $predefinedMerchantDetails = [], string $role = Role::OWNER)
+    {
+        $merchant = $this->fixtures->create('merchant', $predefinedMerchant);
+
+        $merchantId = $merchant['id'];
+
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user->id,
+            'merchant_id' => $merchantId,
+            'role'        => $role,
+        ]);
+
+        $predefinedMerchantDetails = array_merge(['merchant_id'  => $merchantId], $predefinedMerchantDetails );
+
+        $this->fixtures->create('merchant_detail', $predefinedMerchantDetails);
+
+        return [$merchantId, $user->id];
+    }
+
+    public function testUnregisteredIncreaseTransactionLimitWorkflowApprove()
+    {
+        $predefinedMerchant = [
+            'activated'          => 1,
+            'max_payment_amount' => 10000
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 2,
+            'business_category'  => Merchant\Detail\BusinessCategory::MEDIA_AND_ENTERTAINMENT
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $this->setupWorkflow('increase_transaction_limit', PermissionName::INCREASE_TRANSACTION_LIMIT, 'test');
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertNotEmpty($workflowAction);
+
+        $workflowActionId = $workflowAction['id'];
+
+        $this->esClient->indices()->refresh();
+
+        $observerData = ['approved_transaction_limit' => '800000'];
+
+        $this->updateObserverData($workflowActionId, $observerData);
+
+        $insertedObserverData = $this->getWorkflowData();
+
+        $this->assertNotEmpty($insertedObserverData);
+
+        $insertedObserverData = $insertedObserverData['workflow_observer_data'];
+
+        $this->assertArraySelectiveEquals($insertedObserverData, $observerData);
+
+        $this->performWorkflowAction($workflowActionId, true);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals(800000 , $merchant->getMaxPaymentAmount());
+    }
+
+    public function testRegisteredIncreaseTransactionLimitWorkflowApprove()
+    {
+        $predefinedMerchant = [
+            'activated'          => 1,
+            'max_payment_amount' => 10000
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 4,
+            'business_category'  => Merchant\Detail\BusinessCategory::OTHERS
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $druidService = $this->getMockBuilder(MockDruidService::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods([ 'getDataFromDruid'])
+            ->getMock();
+
+        $this->app->instance('druid.service', $druidService);
+
+        $dataFromDruid = $this->testData['testGetRiskData']['druid_response'];
+
+        $dataFromDruid['Domestic_cts_overall_merchant_id'] = $merchantId;
+
+        $dataFromDruid['Domestic_FTS_merchant_id'] = $merchantId;
+
+        $druidService->method('getDataFromDruid')
+            ->willReturn([null, [$dataFromDruid]]);
+
+        $testData = $this->testData['testUnregisteredIncreaseTransactionLimitWorkflowApprove'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->setupWorkflow('increase_transaction_limit', PermissionName::INCREASE_TRANSACTION_LIMIT, 'test');
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertNotEmpty($workflowAction);
+
+        $workflowActionId = $workflowAction['id'];
+
+        $this->esClient->indices()->refresh();
+
+        $observerData = ['approved_transaction_limit' => '800000'];
+
+        $this->updateObserverData($workflowActionId, $observerData);
+
+        $insertedObserverData = $this->getWorkflowData();
+
+        $this->assertNotEmpty($insertedObserverData);
+
+        $insertedObserverData = $insertedObserverData['workflow_observer_data'];
+
+        $this->assertArraySelectiveEquals($insertedObserverData, $observerData);
+
+        $this->performWorkflowAction($workflowActionId, true);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals(800000 , $merchant->getMaxPaymentAmount());
+    }
+
+    public function testIncreaseTransactionLimitRoleFailure()
+    {
+        $predefinedMerchant = [
+            'activated'          => 1,
+            'max_payment_amount' => 10000
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 4,
+            'business_category'  => Merchant\Detail\BusinessCategory::OTHERS
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails, 'manager');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userId);
+
+        $this->startTest();
+    }
+
+    public function testIncreaseTransactionMerchantActivationFailure()
+    {
+        $predefinedMerchant = [
+            'activated'          => 0,
+            'max_payment_amount' => 10000
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 2,
+            'business_category'  => Merchant\Detail\BusinessCategory::OTHERS
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userId);
+
+        $this->startTest();
+    }
+
+    public function testIncreaseTransactionLimitSameAsPreviousFailure()
+    {
+        $predefinedMerchant = [
+            'activated'          => 1,
+            'max_payment_amount' => 1000000
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 2,
+            'business_category'  => Merchant\Detail\BusinessCategory::OTHERS
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $testData = $this->testData['testIncreaseTransactionMerchantActivationFailure'];
+
+        $testData['response']['content']['error']['description'] = 'The new transaction limit is same as the current transaction limit';
+
+        $testData['exception']['class'] = 'RZP\Exception\BadRequestValidationFailureException';
+
+        $testData['exception']['internal_error_code'] = ErrorCode::BAD_REQUEST_VALIDATION_FAILURE;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userId);
+
+        $this->startTest();
+    }
+
+    public function testIncreaseTransactionLimitMaximumLimitFailure()
+    {
+        $predefinedMerchant = [
+            'activated'          => 1,
+            'max_payment_amount' => 10000000
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 2,
+            'business_category'  => Merchant\Detail\BusinessCategory::MEDIA_AND_ENTERTAINMENT
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $testData = $this->testData['testIncreaseTransactionMerchantActivationFailure'];
+
+        $testData['request']['content']['new_transaction_limit_by_merchant'] = 15000000;
+
+        $testData['response']['content']['error']['description'] = 'Your transaction limit cannot be increased any further, as per the guidelines set by our partner banks';
+
+        $testData['exception']['class'] = 'RZP\Exception\BadRequestValidationFailureException';
+
+        $testData['exception']['internal_error_code'] = ErrorCode::BAD_REQUEST_VALIDATION_FAILURE;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userId);
+
+        $this->startTest();
+    }
+
+    public function testIncreaseTransactionLimitUnregisteredMerchantBlacklistFailure()
+    {
+        $predefinedMerchant = [
+            'activated'          => 1,
+            'max_payment_amount' => 10000
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 2,
+            'business_category'  => Merchant\Detail\BusinessCategory::GAMING
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $testData = $this->testData['testIncreaseTransactionMerchantActivationFailure'];
+
+        $testData['response']['content']['error']['description'] = PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED;
+
+        $testData['exception']['internal_error_code'] = ErrorCode::BAD_REQUEST_ACCESS_DENIED;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userId);
+
+        $this->startTest();
+    }
+
+    public function testIncreaseTransactionLimitRegisteredCtsFailure()
+    {
+        $predefinedMerchant = [
+            'activated'          => 1,
+            'max_payment_amount' => 10000
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 4,
+            'business_category'  => Merchant\Detail\BusinessCategory::OTHERS
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $druidService = $this->getMockBuilder(MockDruidService::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getDataFromDruid'])
+            ->getMock();
+
+        $this->app->instance('druid.service', $druidService);
+
+        $dataFromDruid = $this->testData['testGetRiskData']['druid_response'];
+
+        $dataFromDruid['Domestic_cts_overall_merchant_id'] = $merchantId;
+
+        $dataFromDruid['Domestic_FTS_merchant_id'] = $merchantId;
+
+        $dataFromDruid['Domestic_cts_overall_lifetime_cts'] = 5.04;
+
+        $druidService->method('getDataFromDruid')
+            ->willReturn([null, [$dataFromDruid]]);
+
+        $testData = $this->testData['testIncreaseTransactionMerchantActivationFailure'];
+
+        $testData['response']['content']['error']['description'] = PublicErrorDescription::BAD_REQUEST_EDIT_TRANSACTION_LIMIT_CTS_OR_FTS_MORE_THAN_5;
+
+        $testData['exception']['internal_error_code'] = ErrorCode::BAD_REQUEST_EDIT_TRANSACTION_LIMIT_CTS_OR_FTS_MORE_THAN_5;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userId);
+
+        $this->startTest();
+    }
+
+    protected function testRejectionReasonNotificationForMerchantWorkflowType(string $merchantId, string $workflowType)
+    {
+        Mail::fake();
+
+        $user = $this->getDbLastEntity('user');
+
+        $this->esClient->indices()->refresh();
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertNotEmpty($workflowAction);
+
+        $workflowActionId = $workflowAction['id'];
+
+        $rejectionReason = ['subject' => 'Test subject', 'body' => 'Test body'];
+
+        $observerData = [ 'rejection_reason' => $rejectionReason, 'ticket_id' => '123', 'fd_instance' => 'rzp' ];
+
+        $this->updateObserverData($workflowActionId, $observerData);
+
+        $insertedObserverData = $this->getWorkflowData();
+
+        $this->assertNotEmpty($insertedObserverData);
+
+        $insertedObserverData = $insertedObserverData['workflow_observer_data'];
+
+        $expectedObserverData = ['rejection_reason' => json_encode($rejectionReason), 'ticket_id' => '123', 'fd_instance' => 'rzp' ];
+
+        $this->assertArraySelectiveEquals($insertedObserverData, $expectedObserverData);
+
+        $this->performWorkflowAction($workflowActionId, false);
+
+        Mail::assertQueued(RejectionReasonNotification::class, function ($mail) use($user)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('Test body', $data['messageBody']);
+
+            $this->assertEquals('emails.merchant.rejection_reason_notification', $mail->view);
+
+            $mail->hasTo($user['email']);
+
+            return true;
+        });
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/" . $workflowType . "/details";
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $user['id']);
+
+        $this->startTest();
+    }
+
+    public function testRejectionReasonMerchantNotificationForTransactionLimitSelfServe()
+    {
+        $predefinedMerchant = [
+            'activated'          => 1,
+            'max_payment_amount' => 10000
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 2,
+            'business_category'  => Merchant\Detail\BusinessCategory::MEDIA_AND_ENTERTAINMENT
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $this->setupWorkflow('increase_transaction_limit', PermissionName::INCREASE_TRANSACTION_LIMIT, 'test');
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $testData = $this->testData['testUnregisteredIncreaseTransactionLimitWorkflowApprove'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $this->testRejectionReasonNotificationForMerchantWorkflowType($merchantId,MerchantConstants::INCREASE_TRANSACTION_LIMIT);
     }
 }
