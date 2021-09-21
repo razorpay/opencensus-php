@@ -19,6 +19,7 @@ use RZP\Http\Response\StatusCode;
 use RZP\Models\PayoutLink\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\PayoutLink\Validator;
+use RZP\Models\BankingAccountService;
 use RZP\Models\Batch\Type as BatchType;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Vpa\Entity as VpaEntity;
@@ -29,8 +30,9 @@ use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
-use RZP\Models\WalletAccount\Entity as WalletAccountEntity;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\WalletAccount\Entity as WalletAccountEntity;
+use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 
 /**
  * Class PayoutLinks
@@ -415,10 +417,17 @@ class PayoutLinks
 
         $settings = array_pull($response['settings'], self::MODE, []);
 
-        $allowUpi = $this->allowUpi($payoutLinkInfo, $settings, $merchant);
+        $bankingAccount = $this->getBankingAccountInfo($merchant, $payoutLinkInfo['account_number']);
+
+        if ($bankingAccount === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_NO_BANKING_ACCOUNT_FOR_PAYOUT_LINK);
+        }
+
+        $allowUpi = $this->allowUpi($payoutLinkInfo, $settings, $merchant, $bankingAccount);
 
         // allow amazon pay
-        $allowAmazonPay = $this->allowAmazonPay($payoutLinkInfo, $settings, $merchant);
+        $allowAmazonPay = $this->allowAmazonPay($payoutLinkInfo, $settings, $merchant, $bankingAccount);
 
         $isProduction = $this->getEnvironment() === Environment::PRODUCTION;
 
@@ -762,20 +771,26 @@ class PayoutLinks
      * @param array $payoutLinkInfo
      * @param array $settings
      * @param MerchantEntity $merchant
+     * @param BankingAccountEntity|null $bankingAccount
      * @return bool
      */
-    protected function allowUpi(array $payoutLinkInfo, array $settings, MerchantEntity $merchant)
+    protected function allowUpi(array $payoutLinkInfo, array $settings,
+                                MerchantEntity $merchant,
+                                BankingAccountEntity $bankingAccount)
     {
         $channelSupportsUpi = true;
 
         $upiEnabledInSettings = ((key_exists('UPI', $settings) === true) and
             (boolval($settings['UPI']) === true));
 
-        $bankingAccount = $this->getBankingAccountInfo($merchant, $payoutLinkInfo);
-
-        if ($bankingAccount->getChannel() === Channel::RBL)
+        if($bankingAccount->getChannel() === Channel::RBL)
         {
             $channelSupportsUpi = $merchant->isFeatureEnabled(Features::RBL_CA_UPI);
+        }
+        // UPI is supported for ICICI. Slack Thread: https://razorpay.slack.com/archives/CR3K6S6C8/p1631695277360000
+        else if($bankingAccount->getChannel() === Channel::ICICI)
+        {
+            $channelSupportsUpi = true;
         }
 
         $amountLessThanLac = $payoutLinkInfo['amount'] <= Validator::MAX_UPI_AMOUNT ? true : false;
@@ -783,7 +798,9 @@ class PayoutLinks
         return $upiEnabledInSettings and $channelSupportsUpi and $amountLessThanLac;
     }
 
-    protected function allowAmazonPay(array $payoutLinkInfo, array $settings, MerchantEntity $merchant) {
+    protected function allowAmazonPay(array $payoutLinkInfo, array $settings,
+                                      MerchantEntity $merchant,
+                                      BankingAccountEntity $bankingAccount) {
         // Amazon pay will only be enabled for merchants that have the Amazon Pay feature enabled (that is, DISABLE_X_AMAZONPAY set to false)
         if($this->getAmazonPayWalletFeatureEnabled($merchant)) {
             $channelSupportsAmazonPay = true;
@@ -791,9 +808,8 @@ class PayoutLinks
             $amazonPayEnabledInSettings = ((key_exists(Entity::AMAZON_PAY, $settings) === true) and
                 (boolval($settings[Entity::AMAZON_PAY]) === true));
 
-            $bankingAccount = $this->getBankingAccountInfo($merchant, $payoutLinkInfo);
-
-            if ($bankingAccount->getChannel() === Channel::RBL)
+            // Amazon Pay is not supported for ICICI https://razorpay.slack.com/archives/CR3K6S6C8/p1631702904362300?thread_ts=1631695277.360000&cid=CR3K6S6C8
+            if ($bankingAccount->getChannel() === Channel::RBL || $bankingAccount->getChannel() === Channel::ICICI)
             {
                 $channelSupportsAmazonPay = false;
             }
@@ -805,10 +821,19 @@ class PayoutLinks
         return false;
     }
 
-    protected function getBankingAccountInfo(MerchantEntity $merchant, array $payoutLinkInfo) {
-        return $this->repo
-            ->banking_account
-            ->findByMerchantAndAccountNumberPublic($merchant, $payoutLinkInfo['account_number']);
+    protected function getBankingAccountInfo(MerchantEntity $merchant, string $accountNumber)
+    {
+        $bankingAccountList = $merchant->activeBankingAccounts();
+
+        foreach ($bankingAccountList as $bankingAccount)
+        {
+            if($bankingAccount->getAccountNumber() === $accountNumber)
+            {
+                return $bankingAccount;
+            }
+        }
+
+        return null;
     }
 
     protected function getAmazonPayWalletFeatureEnabled(MerchantEntity $merchant) {

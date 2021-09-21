@@ -568,6 +568,8 @@ class PayoutLinkMicroserviceTest extends TestCase
     {
         $newMerchant = $this->fixtures->create('merchant');
 
+        $this->prepareBankingAccountData($newMerchant->getId());
+
         $vpaDetails = $this->fixtures->create('vpa', [
             'username' => 'testing',
             'handle'   => 'handle',
@@ -605,6 +607,8 @@ class PayoutLinkMicroserviceTest extends TestCase
     public function testMaskedGetHostedPageDataForBankAccount()
     {
         $newMerchant = $this->fixtures->create('merchant');
+
+        $this->prepareBankingAccountData($newMerchant->getId());
 
         $baDetails = $this->fixtures->create('bank_account', [
             'ifsc_code' => 'IFSC12345',
@@ -645,6 +649,8 @@ class PayoutLinkMicroserviceTest extends TestCase
     {
         $newMerchant = $this->fixtures->create('merchant');
 
+        $this->prepareBankingAccountData($newMerchant->getId());
+
         $walletDetails = $this->fixtures->create('wallet_account', [
             'phone' => '9040434917',
             'email' => 'testing@gmail.com',
@@ -684,6 +690,8 @@ class PayoutLinkMicroserviceTest extends TestCase
     {
         $newMerchant = $this->fixtures->create('merchant');
 
+        $this->prepareBankingAccountData($newMerchant->getId());
+
         $walletDetails = $this->fixtures->create('wallet_account', [
             'phone' => '9040434917',
             'email' => 'testing@gmail.com',
@@ -721,6 +729,8 @@ class PayoutLinkMicroserviceTest extends TestCase
     {
         $newMerchant = $this->fixtures->create('merchant');
 
+        $this->prepareBankingAccountData($newMerchant->getId());
+
         $response = $this->mockGetHostedResponseForIssuedPL();
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
@@ -741,6 +751,8 @@ class PayoutLinkMicroserviceTest extends TestCase
     public function testMaskedDescriptionForGetHostedPageForCancelledPayoutLink()
     {
         $newMerchant = $this->fixtures->create('merchant');
+
+        $this->prepareBankingAccountData($newMerchant->getId());
 
         $response = $this->mockGetHostedResponseForCancelledPL();
 
@@ -763,6 +775,8 @@ class PayoutLinkMicroserviceTest extends TestCase
     {
         $newMerchant = $this->fixtures->create('merchant');
 
+        $this->prepareBankingAccountData($newMerchant->getId());
+
         $response = $this->mockGetHostedResponseForIssuedPLEmptyDescription();
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
@@ -784,6 +798,8 @@ class PayoutLinkMicroserviceTest extends TestCase
     {
         $newMerchant = $this->fixtures->create('merchant');
 
+        $this->prepareBankingAccountData($newMerchant->getId());
+
         $response = $this->mockGetHostedResponseForIssuedPLNullDescription();
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
@@ -799,6 +815,30 @@ class PayoutLinkMicroserviceTest extends TestCase
         $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
         //checking that the utility method mask_by_percentage works fine for null string
         $this->assertEquals(null, $data['description'], "description not null");
+    }
+
+    private function prepareBankingAccountData($merchantId)
+    {
+        $xBalance1 = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => $merchantId,
+                'type'              => 'banking',
+                'account_type'      => 'shared',
+                'account_number'    => '2224440041626905',
+                'balance'           => 300,
+            ]);
+
+        $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => $merchantId,
+            'balance_id'            => $xBalance1->getId(),
+            'channel'               => 'yesbank',
+            'status'                => 'activated',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
     }
 
     private function mockGetHostedResponseForProcessedPL(string $faId)
@@ -820,6 +860,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $response['payout_link_response']['amount'] = 1000;
         $response['payout_link_response']['id'] = 'poutlk_123456';
         $response['payout_link_response']['status'] = 'processed';
+        $response["payout_link_response"]["account_number"] = "2224440041626905";
         $response['payout_link_response']['fund_account_id'] = 'fa_'.$faId;
         $response['payout_link_response']['currency'] = 'INR';
         $response['payout_link_response']['description'] = 'testing';
@@ -837,6 +878,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $response['settings'] = ['mode' => $mode];
         $response['payout_link_response']['amount'] = 1000;
         $response['payout_link_response']['id'] = 'poutlk_123456';
+        $response["payout_link_response"]["account_number"] = "2224440041626905";
         $response['payout_link_response']['status'] = 'issued';
         $response['payout_link_response']['currency'] = 'INR';
         $response['payout_link_response']['description'] = 'testing';
@@ -853,6 +895,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $response['settings'] = ['mode' => $mode];
         $response['payout_link_response']['amount'] = 1000;
         $response['payout_link_response']['id'] = 'poutlk_123456';
+        $response["payout_link_response"]["account_number"] = "2224440041626905";
         $response['payout_link_response']['status'] = 'cancelled';
         $response['payout_link_response']['currency'] = 'INR';
         $response['payout_link_response']['description'] = 'testing';
@@ -869,6 +912,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $response['settings'] = ['mode' => $mode];
         $response['payout_link_response']['amount'] = 1000;
         $response['payout_link_response']['id'] = 'poutlk_123456';
+        $response["payout_link_response"]["account_number"] = "2224440041626905";
         $response['payout_link_response']['status'] = 'issued';
         $response['payout_link_response']['currency'] = 'INR';
         $response['payout_link_response']['description'] = '';
@@ -885,6 +929,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $response['settings'] = ['mode' => $mode];
         $response['payout_link_response']['amount'] = 1000;
         $response['payout_link_response']['id'] = 'poutlk_123456';
+        $response["payout_link_response"]["account_number"] = "2224440041626905";
         $response['payout_link_response']['status'] = 'issued';
         $response['payout_link_response']['currency'] = 'INR';
         $response['payout_link_response']['contact']['name'] = 'test';
@@ -899,6 +944,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $response["settings"] = ["mode" => $mode];
         $response["payout_link_response"]["amount"] = $amount;
         $response["payout_link_response"]["id"] = "poutlk_123456";
+        $response["payout_link_response"]["account_number"] = "2224440041626905";
         $response["payout_link_response"]["status"] = "issued";
         $response["payout_link_response"]["currency"] = "INR";
         $response["payout_link_response"]["description"] = "testing";
@@ -917,5 +963,93 @@ class PayoutLinkMicroserviceTest extends TestCase
             ->willReturn($channel);
         return $baMock;
     }
+
+    /**
+     * test: upi is always enabled and amazon pay is always disabled for ICICI
+     * 1. settings enabled
+     * 2. amount <10000
+     * 3. channel = ICICI
+     */
+    public function testHostedPageForIciciBankingAccount()
+    {
+        $merchantId = '10000000000000';
+
+        $iciciAccountNumber = '9177278012';
+
+        $payoutLinkId = 'poutlk_1000000000';
+
+        $this->setupMerchantBankingAccounts($merchantId, $iciciAccountNumber);
+
+        $response = $this->mockedMSResponse($payoutLinkId, $iciciAccountNumber);
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->disableOriginalConstructor()
+            ->setMethods(array('makeRequest', 'getEnvironment'))
+            ->getMock();
+
+        $mock->method('makeRequest')
+            ->willReturn($response);
+
+        $mock->method('getEnvironment')
+            ->willReturn(Environment::TESTING);
+
+        $data = $mock->getHostedPageData($payoutLinkId, $this->getMerchantEntity($merchantId));
+
+        $this->assertEquals(true, $data['allow_upi']);
+
+        $this->assertEquals(false, $data['allow_amazon_pay']);
+    }
+
+    private function setupMerchantBankingAccounts($merchantId, $iciciAccountNumber)
+    {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        // create a icici balance. mock will take care of creating a banking account for icici
+        $this->fixtures->create('balance', [
+            'merchant_id'    => $merchantId,
+            'account_type'   => 'direct',
+            'type'           => 'banking',
+            'channel'        => 'icici',
+            'balance'        => 10000000,
+            'account_number' => $iciciAccountNumber,
+        ]);
+
+        $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => $merchantId,
+            'channel'               => 'yesbank',
+            'status'                => 'activated',
+        ]);
+    }
+
+    private function getMerchantEntity($merchantId)
+    {
+        $merchant = new Merchant\Entity();
+
+        $merchant['billing_label'] = 'abc';
+
+        $merchant['id'] = $merchantId;
+
+        return $merchant;
+    }
+
+    private function mockedMSResponse($payoutLinkId, $accountNumber)
+    {
+        $mode['AMAZONPAY'] = 1;
+        $mode['UPI'] = 1;
+        $response['settings'] = ['mode' => $mode];
+        $response['payout_link_response']['amount'] = 1000;
+        $response['payout_link_response']['id'] = $payoutLinkId;
+        $response['payout_link_response']['status'] = 'issued';
+        $response['payout_link_response']['account_number'] = $accountNumber;
+        $response['payout_link_response']['currency'] = 'INR';
+        $response['payout_link_response']['description'] = 'testing';
+        $response['payout_link_response']['contact']['name'] = 'ABC';
+        $response['payout_link_response']['contact']['email'] = 'abc@abc.com';
+        $response['payout_link_response']['contact']['contact'] = '+918877665544';
+        return $response;
+    }
+
 }
 
