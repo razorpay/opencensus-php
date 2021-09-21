@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Support\Facades\Redis;
 
+use RZP\Base\Repository;
+use RZP\Constants\Mode;
 use RZP\Jobs;
 use RZP\Exception;
 use RZP\Base\Fetch;
@@ -36,7 +38,7 @@ use RZP\Jobs\SFAllMerchantToUnclaimedGroup;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
-use RZP\Models\{Admin\Permission\Name, Base, Base\EsRepository, Batch, Admin\Org, Pricing\Feature};
+use RZP\Models\{Admin\Permission\Name, Base, Base\EsRepository, Base\UniqueIdEntity, Batch, Admin\Org, Pricing\Feature};
 
 class Service extends Base\Service
 {
@@ -305,7 +307,7 @@ class Service extends Base\Service
 
         Entity::validateEntityOrFailPublic($entity);
 
-        if ($entity === Entity::PAYMENT || $entity === Entity::ORDER)
+        if ( ($entity === Entity::PAYMENT OR $entity === Entity::ORDER ) AND $this->isExperimentEnabled(Repository::REARCH_TIDB_EXPERIMENT) === true)
         {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
@@ -1292,5 +1294,21 @@ class Service extends Base\Service
 
         return $response;
 
+    }
+
+    // for fetching the experiment
+    protected function isExperimentEnabled($experiment)
+    {
+        $app = $this->app;
+
+        $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
+            $experiment, $app['basicauth']->getMode() ?? Mode::LIVE);
+
+        $this->trace->info(TraceCode::REARCH_TIDB_EXPERIMENT_VARIANT, [
+            'variant' => $variant,
+            'experiment' => $experiment,
+        ]);
+
+        return ($variant === 'on');
     }
 }
