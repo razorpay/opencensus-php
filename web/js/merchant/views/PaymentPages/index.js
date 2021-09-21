@@ -12,8 +12,6 @@ import QuickGuide from './QuickGuide';
 
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
-import PaymentPagePluginsBanner from 'merchant/components/Announcements/PaymentPagePlugins';
-
 @connect((state) => {
   return {
     paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
@@ -31,13 +29,6 @@ export default class PaymentPagesContainer extends Component {
 
     return (
       <>
-        <div className="banner-container">
-          <PaymentPagePluginsBanner
-            bannerKey={`payment-pages-plugins-${user.current}`}
-            merchantId={user.current}
-            email={user.email}
-          />
-        </div>
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
 
