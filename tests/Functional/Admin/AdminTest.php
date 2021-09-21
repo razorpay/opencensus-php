@@ -1754,4 +1754,28 @@ class AdminTest extends TestCase
 
         return $entities;
     }
+
+    public function testToggleWhatsappNotificationOn()
+    {
+        $merchant = $this->fixtures->create('merchant',['id'=>'20000000000000']);
+
+        $this->fixtures->user->createUserForMerchant($merchant['id'], ['contact_mobile' =>'1234567890']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testToggleWhatsappNotificationOff()
+    {
+        $merchant = $this->fixtures->create('merchant',['id'=>'20000000000000']);
+
+        $this->fixtures->merchant->addFeatures(['axis_whatsapp_enable'],$merchant["id"]);
+
+        $this->fixtures->user->createUserForMerchant($merchant['id'], ['contact_mobile' =>'1234567890']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 }

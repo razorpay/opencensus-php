@@ -26,13 +26,17 @@ use RZP\Constants\AdminFetch;
 use RZP\Models\Payment\Method;
 use RZP\Jobs\SFMerchantPocUpdate;
 use RZP\Jobs\SFMerchantPocAsync;
+use RZP\Models\User\Core as UserCore;
 use RZP\Services\Mozart as MozartBase;
 use RZP\Models\GeoIP\Service as GeoIP;
+use RZP\Models\Feature as FeatureModel;
 use RZP\Models\Admin\Admin as AdminModel;
+use RZP\Models\User\Service as UserService;
 use RZP\Jobs\SFAllMerchantToUnclaimedGroup;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
-use RZP\Models\{Admin\Permission\Name, Base, Base\EsRepository, Batch, Admin\Org};
+use RZP\Models\{Admin\Permission\Name, Base, Base\EsRepository, Batch, Admin\Org, Pricing\Feature};
 
 class Service extends Base\Service
 {
@@ -1247,6 +1251,46 @@ class Service extends Base\Service
         $validator->validateEntityTypeForExternalAdmin($entityType);
 
         $validator->validateInput('external_admin_fetch_multiple_' . $entityType, $input);
+
+    }
+
+    /**
+     * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
+     */
+    public function toggleWhatsappNotification(string $id,array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $user = $merchant->primaryOwner();
+
+        $this->trace->info(TraceCode::ADMIN_USER_FETCH,
+            [
+                'user id'   =>  $user->getId(),
+            ]
+        );
+
+        if ($input["enable"] == true)
+        {
+            $featureParams = [
+                FeatureModel\Entity::ENTITY_ID => $id,
+                FeatureModel\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                FeatureModel\Entity::NAMES => ['axis_whatsapp_enable'],
+                FeatureModel\Entity::SHOULD_SYNC => true,
+            ];
+
+            $response = (new FeatureModel\Service)->addFeatures($featureParams, "accounts", $id);
+
+            array_merge($response, (new UserService)->optInForWhatsapp(["source"=>$input["source"]],$user));
+
+            return $response;
+        }
+
+        $response = (new FeatureModel\Service)->deleteEntityFeature("accounts",$id,'axis_whatsapp_enable',[FeatureModel\Entity::SHOULD_SYNC => true]);
+
+        array_merge($response, (new UserService)->optOutForWhatsapp(["source"=>$input["source"]],$user));
+
+        return $response;
 
     }
 }

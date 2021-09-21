@@ -1652,6 +1652,7 @@ class Route
         'customer_flagging_entity_details'         => ['get',      'customer_flagging/entity_details/{id}',          'RiskController@getEntityDetails'                                   ],
         'customer_flagging_post_grievance'         => ['post',     'customer_flagging/post_customer_grievance',      'RiskController@postCustomerGrievance'                              ],
         'customer_flagging_post_grievance_options' => ['options',  'customer_flagging/post_customer_grievance',      'RiskController@allowCors'                                          ],
+        'toggle_whatsapp_notifications'            => ['post',     'admin/toggle_whatsapp_notification/{id}',        'AdminController@toggleWhatsappNotification'                        ],
 
         //PurposeCode Route
         'purpose_code_fetch'                       => ['get',      'purposecode',                                    'MerchantController@getPurposeCodeDetails'                          ],
@@ -4523,6 +4524,7 @@ class Route
         'payout_links_bulk_resend_notification_admin',
         'payout_links_settings_post',
         'payout_links_settings_get',
+        'toggle_whatsapp_notifications',
         'add_additional_website',
         'delete_additional_websites',
         'reminder_admin',
@@ -6388,9 +6390,8 @@ class Route
         'metro_project_create'                            => Permission::METRO_PROJECT_CREATE,
         'metro_project_credentials_create'                => Permission::METRO_PROJECT_CREDENTIALS_CREATE,
         'metro_project_topic_update'                      => Permission::METRO_PROJECT_TOPIC_UPDATE,
-
         'retry_payouts_on_service'                        => Permission::RETRY_PAYOUTS_ON_SERVICE,
-
+        'toggle_whatsapp_notifications'                   => Permission::EDIT_MERCHANT_FEATURES,
         'complete_submerchant_onboarding'                 => Permission::MERCHANT_ACTIONS,
 
         'merchant_save_business_website'                  => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
@@ -9554,6 +9555,7 @@ class Route
             'user_opt_in_status_whatsapp',
             'user_opt_in_whatsapp',
             'user_opt_out_whatsapp',
+            'toggle_whatsapp_notifications',
             'user_otp_create',
             'user_resend_otp_2fa',
             'user_resend_verification',

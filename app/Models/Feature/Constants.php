@@ -827,11 +827,13 @@ class Constants
 
     const AXIS_PAYPAL_ENABLE = 'axis_paypal_enable';
 
+    const ORG_AXIS_WHATSAPP = 'axis_whatsapp';
+
+    const AXIS_WHATSAPP_ENABLE = 'axis_whatsapp_enable';
     /**
      * Feature flag to send Compliance changes in a request
      */
     const SEND_DCC_COMPLIANCE = 'send_dcc_compliance';
-
 
     /**
      * Feature flag to give access to 'bulk payout approval using file' from admin dashboard
@@ -1204,6 +1206,8 @@ class Constants
         self::LEDGER_JOURNAL_WRITES           => true,
         self::ORG_AXIS_PAYPAL                 => true,
         self::AXIS_PAYPAL_ENABLE              => true,
+        self::ORG_AXIS_WHATSAPP               => true,
+        self::AXIS_WHATSAPP_ENABLE            => true,
         self::AVS                             => true,
         self::MFN                             => true,
         self::SEND_DCC_COMPLIANCE             => true,

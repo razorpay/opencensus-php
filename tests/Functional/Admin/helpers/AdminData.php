@@ -1405,4 +1405,48 @@ return [
             ],
         ],
     ],
+
+    'testToggleWhatsappNotificationOn'   =>  [
+        'request'  => [
+            'url'     => '/admin/toggle_whatsapp_notification/20000000000000',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Dashboard'            => true,
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+            'content' => [
+                'source' => 'pg.settings.config',
+                'enable' =>  true,
+            ]
+        ],
+       'response' => [
+           'content' => [
+           ],
+           'status_code' => 200,
+           'success'     => true,
+       ],
+    ],
+
+    'testToggleWhatsappNotificationOff'   =>  [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Dashboard'            => true,
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+            'url'     => '/admin/toggle_whatsapp_notification/20000000000000',
+            'content' => [
+                'source' => 'pg.settings.config',
+                'enable' =>  false,
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+            'success'     => true,
+        ],
+    ],
 ];

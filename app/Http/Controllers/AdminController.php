@@ -502,5 +502,14 @@ class AdminController extends Controller
         return ApiResponse::json($value);
     }
 
+    public function toggleWhatsappNotification(string $id)
+    {
+        $input = Request::all();
+
+        $response  = $this->service()->toggleWhatsappNotification($id,$input);
+
+        return ApiResponse::json($response);
+    }
+
 
 }
