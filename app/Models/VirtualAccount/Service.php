@@ -236,7 +236,7 @@ class Service extends Base\Service
 
         $virtualAccounts = $this->repo
                                 ->virtual_account
-                                ->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_ADMIN);
+                                ->fetch($input, $this->merchant->getId());
 
         return $virtualAccounts->toArrayPublic();
     }
