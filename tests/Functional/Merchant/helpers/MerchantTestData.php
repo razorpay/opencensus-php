@@ -6094,17 +6094,6 @@ return [
         ],
     ],
 
-    'testMerchantSwitchProductWhenXOnboardingExperimentOff' => [
-        'request'  => [
-            'url'     => '/merchants/product-switch',
-            'method'  => 'post',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => []
-        ],
-    ],
-
     'testMerchantSwitchProductWhenL1Incomplete' => [
         'request'  => [
             'url'     => '/merchants/product-switch',
@@ -6117,17 +6106,6 @@ return [
     ],
 
     'testMerchantSwitchProductWhenMerchantNotActivated' => [
-        'request'  => [
-            'url'     => '/merchants/product-switch',
-            'method'  => 'post',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => []
-        ],
-    ],
-
-    'testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff' => [
         'request'  => [
             'url'     => '/merchants/product-switch',
             'method'  => 'post',
