@@ -324,6 +324,9 @@ class Core extends Base\Core
             // Temporary debug logging
             $this->trace->debug(TraceCode::SETTLEMENT_DEBUG_LOG, [
                 'transaction_id' => $txn->getId(),
+                'credit'         => $txn->getCredit(),
+                'debit'          => $txn->getDebit(),
+                'settled_at'     => $txn->getSettledAt(),
             ]);
 
             $this->app['sns']->publish(json_encode($payload), self::SETTLEMENT_TRANSACTION);
