@@ -113,7 +113,7 @@ const PaytmWalletIntegration = (props) => {
         });
       }
     }
-  }, [props.status, props.step, props.user.id, values]);
+  }, []);
 
   useEffect(() => {
     switch (activeStep) {
