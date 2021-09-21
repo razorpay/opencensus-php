@@ -26,9 +26,8 @@ class SetCspHeader
     {
         $env = \App::environment();
 
-        if ($env === 'production')
-        {
-            return 'frame-ancestors self https://*.razorpay.com';
+        if ($env === 'production') {
+            return 'frame-ancestors self https://razorpay.com https://*.razorpay.com';
         }
 
         return 'frame-ancestors self https://*.razorpay.in';
