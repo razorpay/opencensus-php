@@ -8,7 +8,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { getCookie } from '../../utils/cookies';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateUser } from 'merchant_common/reducers/user';
-import LocalStorageService from 'common/utils/localStorage';
+import { setItem } from 'common/utils/localStorage';
 import { caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 import isEmpty from '@universe/utils/isEmpty';
@@ -192,6 +192,11 @@ export const nitroCampaignId = () => {
       version_description: 'Nitro for coimbatore',
       target_product_feature: 'XCA',
     },
+    HzaFJoqZsRDu0c: {
+      version: 'nitro-othercities-v1',
+      version_description: 'Nitro for others cities v1',
+      target_product_feature: 'XCA',
+    },
     HYlnMMJoE1RjFf: {
       version: 'project-nitro-appswitcher',
       version_description: 'Nitro for appswitcher merchants',
@@ -292,6 +297,11 @@ export const nitroCampaignId = () => {
       version_description: 'Nitro for coimabtore',
       target_product_feature: 'XCA+CCC',
     },
+    HzaHdQAoyYFlFJ: {
+      version: 'nitro-othercities-v1',
+      version_description: 'Nitro for others cities v1',
+      target_product_feature: 'XCA+CCC',
+    },
   };
 
   const getExpStatus = (name, experimentNameInAbExperimentsMap) => {
@@ -334,7 +344,7 @@ const selector = formValueSelector('customerDetails');
       [NAME]: (state.session.user.user || {}).name,
       [EMAIL]: (state.session.user.user || {}).email,
       [PHONE]: (state.session.user.user || {}).contact_mobile,
-      ['country_code']: '+91 - ',
+      country_code: '+91 - ',
     },
   }),
   {
@@ -541,7 +551,11 @@ const SubmissionSuccessfull = ({ handleClose }) => {
           Our banking experts will be reaching out to you shortly. In the meantime, we highly
           recommend you keep the required documents for creating a current account handy.
         </p>
-        <a href="https://razorpay.com/docs/razorpayx/current-account/" target="_blank">
+        <a
+          href="https://razorpay.com/docs/razorpayx/current-account/"
+          target="_blank"
+          rel="noreferrer"
+        >
           <Button.Primary class="btn btn-primary" type="button">
             View Documents Required
           </Button.Primary>
@@ -596,7 +610,7 @@ class DetailView extends React.Component {
 
   saveSubmissionSuccessInUser = () => {
     const _settings = this.props.user.user.settings;
-    _settings['clicked_ca_apply_request_done'] = '1';
+    _settings.clicked_ca_apply_request_done = '1';
     merchantFetch({
       url: 'users',
       mode: 'live',
@@ -606,12 +620,12 @@ class DetailView extends React.Component {
       updateUser({ settings: _settings });
     });
 
-    LocalStorageService.setItem('offers_for_you_state', 'hasAppliedCA');
+    setItem('offers_for_you_state', 'hasAppliedCA');
   };
 
   sendDataToHubspot = (formData) => {
-    let formValues = [],
-      formID = '';
+    let formValues = [];
+    let formID = '';
     const { user } = this.props;
 
     if (user.isNitroFormFillEnabled && !this.showKeystoneModal) {
@@ -790,6 +804,7 @@ class DetailView extends React.Component {
                 onClick={() => {
                   if (isNitroFormFillEnabled) this.setState({ showNitroFormFields: true });
                   else return this.save();
+                  return null;
                 }}
               >
                 Apply For Current Account
@@ -850,6 +865,7 @@ const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking, user }) =>
 };
 
 export default compose(
+  // eslint-disable-next-line babel/new-cap
   RTracking({
     page: 'ScheduledNitroBanner',
   }),
