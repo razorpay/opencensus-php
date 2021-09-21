@@ -81,6 +81,10 @@ class Core extends Base\Core
             if (is_null($newCustomTypeDocuments) === false)
             {
                 $newCustomTypeDocuments = array_filter($newCustomTypeDocuments, function($docList){
+                    if (is_array($docList) === false) {
+                        return false;
+                    }
+
                     return (is_sequential_array($docList) === false) || (count($docList) > 0);
                 });
 
