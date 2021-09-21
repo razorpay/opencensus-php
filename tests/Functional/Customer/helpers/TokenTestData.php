@@ -34,7 +34,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'action'  => 'fetch',
             ],
         ],
     ],
@@ -48,7 +47,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'action'  => 'fetchCryptoGram',
             ],
         ],
     ],
@@ -62,7 +60,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'action'  => 'delete',
             ],
         ],
     ],

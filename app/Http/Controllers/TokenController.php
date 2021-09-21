@@ -22,16 +22,28 @@ class TokenController extends Controller
 
     public function fetch()
     {
-        return ApiResponse::json(['action' => 'fetch']);
+        $input = Request::all();
+
+        $data = $this->service()->fetchNetworkToken($input['id']);
+
+        return ApiResponse::json($data);
     }
 
     public function fetchCryptoGram()
     {
-        return ApiResponse::json(['action' => 'fetchCryptoGram']);
+        $input = Request::all();
+
+        $data = $this->service()->fetchCryptoGram($input['id']);
+
+        return ApiResponse::json($data);
     }
 
     public function delete()
     {
-        return ApiResponse::json(['action' => 'delete']);
+        $input = Request::all();
+
+        $data = $this->service()->deleteNetworkToken($input['id']);
+
+        return ApiResponse::json($data);
     }
 }

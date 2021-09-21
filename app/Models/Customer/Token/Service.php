@@ -472,6 +472,62 @@ class Service extends Base\Service
         return $this->generateMockResponse($token);
     }
 
+    public function fetchNetworkToken($id)
+    {
+        $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($token === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Token not found');
+        }
+
+        return $this->generateMockResponse($token);
+    }
+
+    public function fetchCryptoGram($id)
+    {
+        $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($token === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Token not found');
+        }
+
+        return $this->generateMockResponseForCryptoGram($token);
+    }
+
+    public function deleteNetworkToken($id)
+    {
+        $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($token === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Token not found');
+        }
+
+        $token = $this->repo->token->deleteOrFail($token);
+
+        return [];
+    }
+
+    public function generateMockResponseForCryptoGram($token)
+    {
+        $response['provider'] = [
+                'type'  => 'network',
+                'name'  => $token->card->getNetwork(),
+                'data'  => [
+                    'token_reference_number' => $token->card->getIin() . (str_shuffle('81500100002')),
+                    'card_reference_number'  => ($token->card->getNetwork() === 'Visa') ? '' . rand(11, 99) : str_shuffle('11223344556677889900112233445566778899'),
+                    'expiry_month'           => $token->card->getExpiryMonth(),
+                    'expiry_year'            => $token->card->getExpiryYear(),
+            ]];
+
+        return $response;
+    }
+
     public function generateMockResponse($token)
     {
         $response = $token->toArrayPublic();
