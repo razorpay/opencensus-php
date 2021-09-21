@@ -1599,7 +1599,6 @@ class Service extends Base\Service
 
     public function fetchById(string $id, array $input = []): array
     {
-
         $id = Entity::stripSignWithoutValidation($id);
 
         $payment = $this->repo
@@ -1610,11 +1609,14 @@ class Service extends Base\Service
 
         $entity = $payment->toArrayPublicWithExpand();
 
-        $order = $this->repo
-                      ->order
-                      ->findByPublicId($entity['order_id']);
+        if ($entity['order_id'] != null)
+        {
+            $order = $this->repo
+                ->order
+                ->findByPublicId($entity['order_id']);
 
-        $entity['order'] = $order->toArrayPublic();
+            $entity['order'] = $order->toArrayPublic();
+        }
 
         return $entity;
     }

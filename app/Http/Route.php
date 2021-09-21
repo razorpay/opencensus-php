@@ -10462,7 +10462,8 @@ class Route
             'create_ledger_payout_service',
             'internal_merchant_fetch',
             'payout_purpose_get_internal',
-            'create_payment_payout_service_axis_cc'
+            'payment_fetch_by_id_internal',
+            'create_payment_payout_service_axis_cc',
         ],
 
         'ledger' => [

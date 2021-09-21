@@ -311,6 +311,33 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals("txn_" . $response['transaction_id'], $txn['id']);
     }
 
+   // fetch payment created from payouts service, currently used in axis cc
+    public function testPaymentsFetchFromPayoutsService()
+    {
+        $this->testCreatePayoutServicePaymentCreation();
+
+        $payment = $this->getLastEntity('payment', true, 'live');
+
+        $paymentId = $payment['id'];
+
+        $this->ba->appAuthLive();
+
+        $request = [
+            'method'  => 'GET',
+            'url'     =>  '/payments_internal/'.$paymentId,
+            'content' => [
+
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['status'], 'authorized');
+        $this->assertEquals($response['entity'],'payment');
+        $this->assertNotNull($response);
+        $this->assertEquals($response['id'],$paymentId);
+    }
+
     // Check payout Create fta func on processor base
     public function testCreatePayoutServiceFtaCreation($mode = 'IMPS')
     {
@@ -321,6 +348,8 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+
+   //check create payment from payouts service for axis cc
     public function testCreatePayoutServicePaymentCreation()
     {
         $this->fixtures->merchant->addFeatures(['direct_debit']);
