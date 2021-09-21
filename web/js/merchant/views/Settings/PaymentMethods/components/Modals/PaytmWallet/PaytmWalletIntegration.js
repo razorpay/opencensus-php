@@ -99,8 +99,7 @@ const PaytmWalletIntegration = (props) => {
         getPaytmCredentials(props.user.id).then(({ data }) => {
           const fields = data[0];
           const identifiers = fields.identifiers;
-          const secrets = fields.secrets;
-          if (identifiers && secrets) {
+          if (identifiers) {
             return setValues({
               ...values,
               merchant_id: identifiers.gateway_merchant_id,
