@@ -202,7 +202,7 @@ const MerchantDetails = ({
       actionName: 'Merchant clicks on edit',
       screen: 'My account screen',
       properties: {
-        currentLimit: `${user.merchant.max_payment_amount}`,
+        currentLimit: `${user?.merchant?.max_payment_amount}`,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
@@ -536,45 +536,47 @@ const MerchantDetails = ({
           </IntoView>
         )}
 
-      <DetailRow
-        label={() => (
-          <div class="transaction-limit">
-            <span>Limit per transaction</span>
-            <small class="help-content">
-              <i class="i i-info-circle" />
-              <Popover align="right" theme="dark">
-                <PopoverBody>
-                  <div>The maximum INR limit for only a single transaction.</div>
-                </PopoverBody>
-              </Popover>
-            </small>
+      {user.merchant && (
+        <DetailRow
+          label={() => (
+            <div class="transaction-limit">
+              <span>Limit per transaction</span>
+              <small class="help-content">
+                <i class="i i-info-circle" />
+                <Popover align="right" theme="dark">
+                  <PopoverBody>
+                    <div>The maximum INR limit for only a single transaction.</div>
+                  </PopoverBody>
+                </Popover>
+              </small>
 
-            {transactionLimitWorkflowStatus.workflow_status &&
-              ['open', 'activated'].includes(transactionLimitWorkflowStatus.workflow_status) && (
-                <div class="transaction-limit__change-info inprogress">
-                  You request to increase to transaction limit has been received. Our team is going
-                  through the information provided by you.
-                </div>
+              {transactionLimitWorkflowStatus.workflow_status &&
+                ['open', 'activated'].includes(transactionLimitWorkflowStatus.workflow_status) && (
+                  <div class="transaction-limit__change-info inprogress">
+                    You request to increase to transaction limit has been received. Our team is
+                    going through the information provided by you.
+                  </div>
+                )}
+              {transactionLimitWorkflowStatus.workflow_status &&
+                ['rejected'].includes(transactionLimitWorkflowStatus.workflow_status) && (
+                  <div class="transaction-limit__change-info rejected">
+                    {transactionLimitWorkflowStatus.rejection_reason_message}
+                  </div>
+                )}
+            </div>
+          )}
+          value={() => (
+            <div>
+              <Amount value={user.merchant.max_payment_amount} currency="INR" />
+              {showTransactionLimitEdit && (
+                <Button.Transparent onClick={onUpdateTransactionLimitClick}>
+                  <i class="i i-edit p-l" />
+                </Button.Transparent>
               )}
-            {transactionLimitWorkflowStatus.workflow_status &&
-              ['rejected'].includes(transactionLimitWorkflowStatus.workflow_status) && (
-                <div class="transaction-limit__change-info rejected">
-                  {transactionLimitWorkflowStatus.rejection_reason_message}
-                </div>
-              )}
-          </div>
-        )}
-        value={() => (
-          <div>
-            <Amount value={user.merchant.max_payment_amount} currency="INR" />
-            {showTransactionLimitEdit && (
-              <Button.Transparent onClick={onUpdateTransactionLimitClick}>
-                <i class="i i-edit p-l" />
-              </Button.Transparent>
-            )}
-          </div>
-        )}
-      />
+            </div>
+          )}
+        />
+      )}
 
       {user.canGenerateTnCPage && !user.business_website && !user.isAccepted && (
         <DetailRow
