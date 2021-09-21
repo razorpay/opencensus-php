@@ -52,6 +52,8 @@ class Name
     const EDIT_MERCHANT_BANK_DETAIL           = 'edit_merchant_bank_detail';
     const EDIT_IIN_RULE                       = 'edit_iin_rule';
     const EDIT_IIN_RULE_BULK                  = 'edit_iin_rule_bulk';
+    const IIN_BATCH_UPLOAD                    = 'iin_batch_upload';
+    const MPAN_BATCH_UPLOAD                   = 'mpan_batch_upload';
     const EDIT_ACTIVATE_MERCHANT              = 'edit_activate_merchant';
     const EDIT_MERCHANT_KEY_ACCESS            = 'edit_merchant_key_access';
     const EDIT_MERCHANT_ENABLE_LIVE           = 'edit_merchant_enable_live';

@@ -489,6 +489,10 @@ class Type
         self::PAYOUT_LINK_BULK              => Name::PAYOUT_LINKS_ADMIN_BULK_CREATE,
         self::CAPTURE_SETTING               => Name::CAPTURE_SETTING_BATCH_UPLOAD,
         self::WEBSITE_CHECKER               => Name::WEBSITE_CHECKER,
+        self::IIN_HITACHI_VISA              => Name::IIN_BATCH_UPLOAD,
+        self::IIN_MC_MASTERCARD             => Name::IIN_BATCH_UPLOAD,
+        self::IIN_NPCI_RUPAY                => Name::IIN_BATCH_UPLOAD,
+        self::MPAN                          => Name::MPAN_BATCH_UPLOAD,
         self::EMANDATE                      => Name::EMANDATE_BATCH_UPLOAD,
         self::NACH                          => Name::NACH_BATCH_UPLOAD,
     ];

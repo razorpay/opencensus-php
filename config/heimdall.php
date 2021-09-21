@@ -1088,6 +1088,14 @@ return [
                 'description' => 'Upload batch file to assign credits to merchants in bulk',
                 'assignable'  => true,
             ],
+            Permission::IIN_BATCH_UPLOAD                    => [
+                'description' => 'Used to update IINs in bulk',
+                'assignable'  => true
+            ],
+            Permission::MPAN_BATCH_UPLOAD                   => [
+                'description' => 'Upload mpan creation batch',
+                'assignable'  => true
+            ],
             Permission::EMANDATE_BATCH_UPLOAD => [
                 'description' => 'Upload batch file to process e-mandate payments',
                 'assignable'  => true,
