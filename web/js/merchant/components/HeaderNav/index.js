@@ -3,9 +3,9 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
-import NotificationsDropdown from 'common/ui/NotificationsDropdown';
 import WhatsNew from 'common/ui/WhatsNew/Old';
 import NotificationIcon from 'common/ui/WhatsNew/Icon';
+import ErrorFallbackComponent from 'common/ui/WhatsNew/ErrorFallbackComponent';
 import HighlightTestMode from 'merchant/components/HighlightTestMode';
 import { toggleMobileMenu } from 'merchant/reducers/app';
 import { isMobileDevice } from 'merchant/components/Home/data';
@@ -15,8 +15,9 @@ import NavFragment from './NavFragment';
 import ModesDropdown from './SwitchMode';
 import AppSwitcher from './AppSwitcher';
 import ProfileDropdown from './ProfileDropdown';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
-const analytics = (action) => {
+const analyticsAction = (action) => {
   window.rzpAnalytics({
     eventCategory: 'Dashboard - Header',
     eventAction: action,
@@ -68,32 +69,32 @@ export default class HeaderNav extends Component {
   }
 
   onToggleAppMenu() {
-    analytics('Click - Sidebar Toggle');
+    analyticsAction('Click - Sidebar Toggle');
     this.props.toggleMobileMenu();
   }
 
   render() {
     const {
-        user,
-        mode,
-        showGSTModal,
-        modeFormatted,
-        onSwitchMode,
-        onSwitchMerchant,
-        showMobileNav,
-        analytics,
-        activePageName,
-      } = this.props,
-      fragmentSpecificProps = {
-        mode,
-      },
-      commonProps = {
-        user,
-        showGSTModal,
-        modeFormatted,
-        onSwitchMode,
-        onSwitchMerchant,
-      };
+      user,
+      mode,
+      showGSTModal,
+      modeFormatted,
+      onSwitchMode,
+      onSwitchMerchant,
+      showMobileNav,
+      analytics,
+      activePageName,
+    } = this.props;
+    const fragmentSpecificProps = {
+      mode,
+    };
+    const commonProps = {
+      user,
+      showGSTModal,
+      modeFormatted,
+      onSwitchMode,
+      onSwitchMerchant,
+    };
 
     return (
       <div class="nav-wrapper">
@@ -131,75 +132,37 @@ export default class HeaderNav extends Component {
                   </li>
                 )}
                 <ShowWhen
-                  additionalCondition={(user) =>
-                    user.isOrgAllowedFunctionality('external_links') &&
-                    !user.isWhatsNewSectionEnabled &&
-                    !user.isOrgAxis
-                  }
-                >
-                  <li id="notifications-dropdown">
-                    <NotificationsDropdown
-                      analytics={analytics}
-                      showMobileNav={showMobileNav}
-                      {...commonProps}
-                    />
-                  </li>
-                </ShowWhen>
-                <ShowWhen
-                  additionalCondition={(user) =>
-                    user.isOrgAllowedFunctionality('external_links') &&
-                    (user.isAnnouncementTextEnabled || user.isWhatsNewTextEnabled) &&
-                    !user.isOrgAxis
+                  additionalCondition={(usr) =>
+                    usr.isOrgAllowedFunctionality('external_links') &&
+                    (usr.isAnnouncementTextEnabled || usr.isWhatsNewTextEnabled) &&
+                    !usr.isOrgAxis
                   }
                 >
                   <li id="whats-new-section">
-                    {user.isWhatsNewLazyEnabled ? (
-                      <NotificationIcon
-                        analytics={analytics}
-                        showMobileNav={showMobileNav}
-                        {...commonProps}
-                      />
-                    ) : (
-                      <WhatsNew
-                        analytics={analytics}
-                        showMobileNav={showMobileNav}
-                        {...commonProps}
-                      />
-                    )}
+                    <ErrorBoundary FallbackComponent={ErrorFallbackComponent}>
+                      {user.isWhatsNewLazyEnabled ? (
+                        <NotificationIcon
+                          analytics={analytics}
+                          showMobileNav={showMobileNav}
+                          {...commonProps}
+                        />
+                      ) : (
+                        <WhatsNew
+                          analytics={analytics}
+                          showMobileNav={showMobileNav}
+                          {...commonProps}
+                        />
+                      )}
+                    </ErrorBoundary>
                   </li>
                 </ShowWhen>
                 <ShowWhen
-                  additionalCondition={(user) =>
-                    user.isAppSwitcherEnabled && user.isAccepted && !user.isOrgAxis
+                  additionalCondition={(usr) =>
+                    usr.isAppSwitcherEnabled && usr.isAccepted && !usr.isOrgAxis
                   }
                 >
                   <li id="app-switcher">
                     <AppSwitcher analytics={analytics} {...commonProps} />
-                  </li>
-                </ShowWhen>
-                <ShowWhen
-                  additionalCondition={(user) =>
-                    user.isOrgAllowedFunctionality('external_links') &&
-                    user.isWhatsNewSectionEnabled &&
-                    !user.isAnnouncementTextEnabled &&
-                    !user.isWhatsNewTextEnabled &&
-                    !user.isOrgAxis
-                  }
-                >
-                  <li id="whats-new-section">
-                    {user.isWhatsNewLazyEnabled ? (
-                      <NotificationIcon
-                        analytics={analytics}
-                        showMobileNav={showMobileNav}
-                        {...commonProps}
-                      />
-                    ) : (
-                      <WhatsNew
-                        analytics={analytics}
-                        showMobileNav={showMobileNav}
-                        {...commonProps}
-                      />
-                    )}
                   </li>
                 </ShowWhen>
                 <li id="profile-dropdown">
