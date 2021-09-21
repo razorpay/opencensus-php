@@ -131,12 +131,14 @@ class UpiMindgateGatewayTest extends TestCase
                 Metric::DIMENSION_STATUS            => 'success',
                 Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
                 Metric::DIMENSION_UPI_PSP           => 'none',
+                Metric::DIMENSION_STATUS_CODE       => 200
             ],
             [
                 Metric::DIMENSION_ACTION            => 'callback',
                 Metric::DIMENSION_STATUS            => 'success',
                 Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
                 Metric::DIMENSION_UPI_PSP           => 'none',
+                Metric::DIMENSION_STATUS_CODE       => 200
             ],
         ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT_V3));
 
@@ -640,7 +642,7 @@ class UpiMindgateGatewayTest extends TestCase
                 Metric::DIMENSION_PAYMENT_METHOD    => 'upi',
                 Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
                 Metric::DIMENSION_TPV               => '0',
-                Metric::DIMENSION_STATUS_CODE       =>  null,
+                Metric::DIMENSION_STATUS_CODE       =>  200,
             ],
             [
                 Metric::DIMENSION_STATUS            => 'failed',

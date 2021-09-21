@@ -281,7 +281,7 @@ class Gateway
 
             $response = $this->$action($input);
 
-            $this->pushDimensions($action, $input, Metric::SUCCESS);
+            $this->pushDimensions($action, $input, Metric::SUCCESS, null, 200);
 
             if ($this->wasGatewayHit === true)
             {
