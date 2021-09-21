@@ -2471,6 +2471,9 @@ class Route
         'increase_transaction_limit_self_serve'    => ['post',     'merchant/transaction_limit',                                'MerchantController@postIncreaseTransactionLimitSelfServe' ],
         'merchant_workflow_details'                => ['get',      'merchant/{workflowType}/details',                           'MerchantController@getMerchantWorkflowDetails'            ],
 
+        'add_additional_website_self_serve'        => ['post',      'merchant/additional_website/{urlType}',                     'MerchantController@postAddAdditionalWebsiteSelfServe'    ],
+        'additional_website_status'                => ['get',       'merchant/additional_website_status',                        'MerchantController@getAdditionalWebsiteWorkflowStatus'   ],
+
         //route to add additional website and delete additional websites(plural) through admin dashboard
         'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                   ],
         'delete_additional_websites'              => ['delete',    'merchant/{id}/websites',                                    'MerchantController@deleteAdditionalWebsites'               ],
@@ -4155,6 +4158,8 @@ class Route
         'merchant_get_preferences',
         'merchant_post_preferences',
         'fetch_merchant_products',
+        'add_additional_website_self_serve',
+        'additional_website_status',
 
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
@@ -5456,6 +5461,7 @@ class Route
         'merchant_activation_update_website_status'=> Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
         'merchant_activation_update_website'       => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
         'add_additional_website'                   => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
+        'add_additional_website_self_serve'        => Permission::ADD_ADDITIONAL_WEBSITE,
         'delete_additional_websites'               => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
         'payout_links_settings_post'               => Permission::EDIT_MERCHANT,
         'payout_links_settings_get'                => Permission::EDIT_MERCHANT,
@@ -6982,6 +6988,8 @@ class Route
             'accounting_integration_tally_delete_integration',
             'activate_live_offline_device',
             'activate_test_offline_device',
+            'add_additional_website_self_serve',
+            'additional_website_status',
             'get_merchant_data_for_segment',
             'addon_delete',
             'addon_fetch',

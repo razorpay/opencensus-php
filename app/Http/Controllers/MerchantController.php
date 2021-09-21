@@ -2268,7 +2268,7 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
-    
+
     public function createPartnerActivationForPartners()
     {
         $input = Request::all();
@@ -2453,5 +2453,30 @@ class MerchantController extends Controller
         $response = $this->service()->getMerchantWorkflowDetails($workflowType);
 
         return ApiResponse::json($response);
+    }
+
+    public function postAddAdditionalWebsiteSelfServe(string $urlType)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->postAddAdditionalWebsiteSelfServe($urlType, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function putAddAdditionalWebsiteSelfServePostWorkflowApproval()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->putAddAdditionalWebsiteSelfServePostWorkflowApproval($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getAdditionalWebsiteWorkflowStatus()
+    {
+        $status = $this->service(E::MERCHANT_DETAIL)->getAdditionalWebsiteWorkflowStatus();
+
+        return ApiResponse::json(['status' => $status]);
     }
 }

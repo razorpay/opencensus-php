@@ -100,6 +100,7 @@ class UserRolesScope
             'merchant_save_business_website'        => [Role::OWNER],
             'merchant_toggle_fee_bearer'            => [Role::OWNER],
             'increase_transaction_limit_self_serve' => [Role::OWNER, Role::ADMIN],
+            'add_additional_website_self_serve'     => [Role::OWNER, Role::ADMIN],
             // Merchant user routes
             'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
 

@@ -399,6 +399,7 @@ class Name
 
     // Permission to add business website.
     const EDIT_MERCHANT_WEBSITE_DETAIL        = 'edit_merchant_website_detail';
+    const ADD_ADDITIONAL_WEBSITE              = 'add_additional_website';
     const OFFLINE_VERIFICATION_SERVICE_VIEW   = 'offline_verification_service_view';
     const OFFLINE_VERIFICATION_SERVICE_EDIT   = 'offline_verification_service_edit';
 

@@ -5286,6 +5286,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const GET_AGENT_APPROVED_TRANSACTION_LIMIT                      = 'GET_AGENT_APPROVED_TRANSACTION_LIMIT';
 
+    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_ACTION_NOT_FOUND    = 'ADD_ADDITIONAL_WEBSITE_WORKFLOW_ACTION_NOT_FOUND';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

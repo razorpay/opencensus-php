@@ -220,6 +220,41 @@ class Constants
 
     const  UPDATE_BUSINESS_WEBSITE_CONTROLLER  = 'RZP\Http\Controllers\MerchantController@putBusinessWebsiteUpdatePostWorkflow';
 
+    const ADD_ADDITIONAL_WEBSITE_CONTROLLER     = 'RZP\Http\Controllers\MerchantController@putAddAdditionalWebsiteSelfServePostWorkflowApproval';
+
+    const ADDITIONAL_WEBSITE_MAIN_PAGE          = 'additional_website_main_page';
+    const ADDITIONAL_WEBSITE_ABOUT_US           = 'additional_website_about_us';
+    const ADDITIONAL_WEBSITE_CONTACT_US         = 'additional_website_contact_us';
+    const ADDITIONAL_WEBSITE_PRICING_DETAILS    = 'additional_website_pricing_details';
+    const ADDITIONAL_WEBSITE_PRIVACY_POLICY     = 'additional_website_privacy_policy';
+    const ADDITIONAL_WEBSITE_TNC                = 'additional_website_tnc';
+    const ADDITIONAL_WEBSITE_REFUND_POLICY      = 'additional_website_refund_policy';
+    const ADDITIONAL_WEBSITE_TEST_USERNAME      = 'additional_website_test_username';
+    const ADDITIONAL_WEBSITE_TEST_PASSWORD      = 'additional_website_test_password';
+    const ADDITIONAL_WEBSITE_REASON             = 'additional_website_reason';
+    const ADDITIONAL_WEBSITE_PROOF_URL          = 'additional_website_proof_url';
+
+    const DEDUPE_STATUS                         = 'dedupe_status';
+    const DEDUPE_FLAGGED_MIDS                   = 'dedupe_flagged_MIDs';
+    const DEDUPE_STATUS_FALSE                   = 'Dedupe Status: false';
+
+    const ADDITIONAL_APP_URL                    = 'additional_app_url';
+    const ADDITIONAL_APP_TEST_USERNAME          = 'additional_app_test_username';
+    const ADDITIONAL_APP_TEST_PASSWORD          = 'additional_app_test_password';
+    const ADDITIONAL_APP_REASON                 = 'additional_app_reason';
+
+    const COMMENT                               = 'comment';
+    const INPUT                                 = 'input';
+
+    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_PAGES_COMMENT_STRUCTURE             = 'Main Page: %s, About Us Page: %s, Contact Us Page: %s, Pricing Details Page: %s, Privacy Policy Page: %s,Terms and Condition Page: %s, Refund Policy Page: %s';
+    const ADD_ADDITIONAL_APP_WORKFLOW_PAGE_COMMENT_STRUCTURE                  = 'App URL: %s';
+    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_DEDUPE_COMMENT_STRUCTURE            = 'Dedupe Status: true, Dedupe Flagged MIDs: %s';
+    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_TEST_CREDENTIALS_COMMENT_STRUCTURE  = 'Test Username: %s, Test Password: %s';
+    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_REASON_COMMENT_STRUCTURE            = 'Reason for adding: %s';
+    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_URL_COMMENT_STRUCTURE               = 'Domain Registration/Ownership Proof URL: %sadmin/entity/ufh.files/live/file_%s';
+
+    const ENCRYPTED_ADDITIONAL_WEBSITE_CREDENTIALS_IDENTIFIER                 = 'additional_website_credentials_.';
+
     const COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX = 'company_search_attempt_count';
     const COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_SEC       = 10800;
     const COMPANY_SEARCH_MAX_ATTEMPT                    = 30;

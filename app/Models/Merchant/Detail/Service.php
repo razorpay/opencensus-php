@@ -1840,6 +1840,45 @@ class Service extends Base\Service
         return $this->core()->getDecryptedWebsiteCommentForWebsiteSelfServe($comments);
     }
 
+    public function postAddAdditionalWebsiteSelfServe($urlType, $input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_ADD_ADDITIONAL_WEBSITE_DETAILS,
+            [
+                DetailConstants::URL_TYPE   => $urlType,
+                Constants::INPUT            => $input
+            ]
+        );
+
+        $core = new Core();
+
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        $response = $core->postAddAdditionalWebsiteSelfServe($merchantDetails, $urlType, $input);
+
+        return $response;
+    }
+
+    public function putAddAdditionalWebsiteSelfServePostWorkflowApproval(array $input)
+    {
+        $merchantId = $input[Constants::MERCHANT_ID];
+
+        $newUrl = ($input[DetailConstants::URL_TYPE] === DetailConstants::URL_TYPE_WEBSITE) ? $input[DetailConstants::ADDITIONAL_WEBSITE_MAIN_PAGE] : $input[DetailConstants::ADDITIONAL_APP_URL];
+
+        $additionalWebsite = [Entity::ADDITIONAL_WEBSITE => $newUrl];
+
+        $response = $this->putAdditionalWebsite($merchantId, $additionalWebsite);
+
+        return $response;
+    }
+
+    public function getAdditionalWebsiteWorkflowStatus()
+    {
+        $status = (new Merchant\Service())->openWorkflowExists(Constants::ADD_ADDITIONAL_WEBSITE);
+
+        return $status;
+    }
+
     public function getAgentApprovedTransactionLimit(Merchant\Entity $merchant)
     {
 

@@ -2502,4 +2502,118 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testAddAdditionalWebsiteSelfServeWorkflowApprove' => [
+        'request'  => [
+            'content' => [
+                'additional_website_main_page'          => 'https://www.example.com',
+                'additional_website_about_us'           => 'https://www.example.com/about_us',
+                'additional_website_contact_us'         => 'https://www.example.com/contact_us',
+                'additional_website_pricing_details'    => 'https://www.example.com/pricing_details',
+                'additional_website_privacy_policy'     => 'https://www.example.com/privacy_policy',
+                'additional_website_refund_policy'      => 'https://www.example.com/refund_policy',
+                'additional_website_tnc'                => 'https://www.example.com/website_tnc',
+                'additional_website_test_username'      => 'username',
+                'additional_website_test_password'      => 'password',
+                'additional_website_reason'             => 'comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason'
+            ],
+            'url'     => '/merchant/additional_website/website',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testAddAdditionalWebsiteSelfServeMerchantActivationFailure' => [
+        'request'   => [
+            'content' => [
+                'additional_website_main_page'          => 'https://www.example.com',
+                'additional_website_about_us'           => 'https://www.example.com/about_us',
+                'additional_website_contact_us'         => 'https://www.example.com/contact_us',
+                'additional_website_pricing_details'    => 'https://www.example.com/pricing_details',
+                'additional_website_privacy_policy'     => 'https://www.example.com/privacy_policy',
+                'additional_website_refund_policy'      => 'https://www.example.com/refund_policy',
+                'additional_website_tnc'                => 'https://www.example.com/website_tnc',
+                'additional_website_test_username'      => 'username',
+                'additional_website_test_password'      => 'password',
+                'additional_website_reason'             => 'comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason'
+            ],
+            'url'     => '/merchant/additional_website/website',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        =>  PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' =>  PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' =>  ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+        ],
+    ],
+
+    'testAddAdditionalWebsiteSelfServeRoleFailure' => [
+        'request'   => [
+            'content' => [
+                'additional_website_main_page'          => 'https://www.example.com',
+                'additional_website_about_us'           => 'https://www.example.com/about_us',
+                'additional_website_contact_us'         => 'https://www.example.com/contact_us',
+                'additional_website_pricing_details'    => 'https://www.example.com/pricing_details',
+                'additional_website_privacy_policy'     => 'https://www.example.com/privacy_policy',
+                'additional_website_refund_policy'      => 'https://www.example.com/refund_policy',
+                'additional_website_tnc'                => 'https://www.example.com/website_tnc',
+                'additional_website_test_username'      => 'username',
+                'additional_website_test_password'      => 'password',
+                'additional_website_reason'             => 'comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason'
+            ],
+            'url'     => '/merchant/additional_website/website',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testAddAdditionalApp' => [
+        'request'  => [
+            'content' => [
+                'additional_app_url'              => 'https://play.google.com/store/apps/details?id=com.abc.app.test',
+                'additional_app_test_username'    => 'username',
+                'additional_app_test_password'    => 'password',
+                'additional_app_reason'           => 'comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason'
+            ],
+            'url'     => '/merchant/additional_website/app',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

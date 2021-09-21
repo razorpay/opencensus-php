@@ -77,6 +77,7 @@ class Workflow
         Permission::DELETE_SHIELD_LIST_ITEM,
         Permission::MERCHANT_RISK_ALERT_FOH,
         Permission::EDIT_MERCHANT_RISK_ATTRIBUTES,
+        Permission::ADD_ADDITIONAL_WEBSITE,
         Permission::INCREASE_TRANSACTION_LIMIT,
     ];
 

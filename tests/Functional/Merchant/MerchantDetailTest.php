@@ -8,6 +8,7 @@ use Config;
 
 use RZP\Constants;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base\EsDao;
 use RZP\Models\Merchant\Core;
 use RZP\Models\User\Role;
@@ -18,6 +19,7 @@ use RZP\Mail\Merchant\Rejection;
 use Functional\Helpers\BvsTrait;
 use Illuminate\Http\UploadedFile;
 use RZP\Services\SalesForceClient;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\ServerErrorException;
@@ -3531,9 +3533,9 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
-    private function setupMerchantWithMerchantDetails(array $predefinedMerchantDetails = [], string $role = Role::OWNER)
+   private function setupMerchantWithMerchantDetails(array $predefinedMerchant = [], array $predefinedMerchantDetails = [], string $role = Role::OWNER)
     {
-        $merchant = $this->fixtures->create('merchant', ['has_key_access' => true]);
+        $merchant = $this->fixtures->create('merchant', $predefinedMerchant);
 
         $merchantId = $merchant['id'];
 
@@ -3545,7 +3547,7 @@ class MerchantDetailTest extends OAuthTestCase
             'role'        => $role,
         ]);
 
-        $predefinedMerchantDetails = array_merge(['merchant_id'  => $merchantId, 'activation_status' => 'activated' ], $predefinedMerchantDetails );
+        $predefinedMerchantDetails = array_merge(['merchant_id'  => $merchantId], $predefinedMerchantDetails );
 
         $this->fixtures->create('merchant_detail', $predefinedMerchantDetails);
 
@@ -3576,7 +3578,7 @@ class MerchantDetailTest extends OAuthTestCase
 
     private function saveBusinessWebsiteMakerFlow(array $predefinedMerchantDetails = [], string $permissionName = PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL, bool $addTestCredentials = true)
     {
-        [$merchantId , $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchantDetails);
+        [$merchantId , $userId] = $this->setupMerchantWithMerchantDetails(['has_key_access' => true], $predefinedMerchantDetails);
 
         if($addTestCredentials === true)
         {
@@ -3653,7 +3655,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::UPDATE_MERCHANT_WEBSITE);
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
 
@@ -3681,7 +3683,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $merchantId = $this->saveBusinessWebsiteMakerFlow();
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['activation_status' => 'activated']);
 
         [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId);
 
@@ -3707,7 +3709,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::UPDATE_MERCHANT_WEBSITE);
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
 
@@ -3718,14 +3720,14 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testBusinessWebsiteOpenWorkflowStatus()
     {
-        $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::UPDATE_MERCHANT_WEBSITE);
+        $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         $this->startTest();
     }
 
     public function testUpdateBusinessWebsiteAppRoleFail()
     {
-        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails([], Role::SELLERAPP);
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails(['has_key_access' => true], ['activation_status' => 'activated'], Role::SELLERAPP);
 
         $this->setupWorkflow("update_website", PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
 
@@ -3740,7 +3742,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::UPDATE_MERCHANT_WEBSITE);
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
 
@@ -3757,7 +3759,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::UPDATE_MERCHANT_WEBSITE , false);
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE , false);
 
         [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
 
@@ -3774,7 +3776,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com'], PermissionName::UPDATE_MERCHANT_WEBSITE);
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
 
@@ -3798,5 +3800,201 @@ class MerchantDetailTest extends OAuthTestCase
         $this->ba->proxyAuth('rzp_test_'.$merchantId, $user['id'] );
 
         $this->startTest();
+    }
+    public function testAddAdditionalWebsiteSelfServeWorkflowApprove()
+    {
+        $predefinedMerchant = [
+            'has_key_access'        => true,
+            'whitelisted_domains'   => ['sample.com', 'abc.com']
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_website'      => 'https://www.businesssample.com',
+            'additional_websites'   => ['https://www.sample.com', 'https://www.abc.com'],
+            'activation_status'     => 'activated'
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $this->setupWorkflow('website_domain_whitelist', PermissionName::ADD_ADDITIONAL_WEBSITE);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+
+        (new PermissionRepository)->findByOrgIdAndPermission(
+            Org::RZP_ORG, PermissionName::ADD_ADDITIONAL_WEBSITE
+        );
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertNotEmpty($workflowAction);
+
+        $this->esClient->indices()->refresh();
+
+        $this->performWorkflowAction($workflowAction['id'], true );
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertContains('https://www.example.com' , $merchantDetails->getAdditionalWebsites());
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertContains('example.com', $merchant->getWhitelistedDomains());
+    }
+
+    public function testAddAdditionalWebsiteSelfServeMerchantActivationFailure()
+    {
+        $predefinedMerchantDetails = [
+            'activation_status'     => 'under_review'
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails([], $predefinedMerchantDetails);
+
+        $this->setupWorkflow('website_domain_whitelist', PermissionName::ADD_ADDITIONAL_WEBSITE);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+    }
+
+    public function testAddAdditionalWebsiteSelfServeRoleFailure()
+    {
+        $predefinedMerchantDetails = [
+            'activation_status'     => 'activated'
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails([], $predefinedMerchantDetails, Role::MANAGER);
+
+        $this->setupWorkflow('website_domain_whitelist', PermissionName::ADD_ADDITIONAL_WEBSITE);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+    }
+
+    public function testAddAdditionalWebsiteSelfServeBusinessWebsiteFailure()
+    {
+        $predefinedMerchantDetails = [
+            'activation_status'     => 'activated',
+            'business_website'      => null
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails([], $predefinedMerchantDetails);
+
+        $testData = $this->testData['testAddAdditionalWebsiteSelfServeMerchantActivationFailure'];
+
+        $testData['response']['content']['error']['description'] = PublicErrorDescription::BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET;
+
+        $testData['exception']['internal_error_code'] = ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->setupWorkflow('website_domain_whitelist', PermissionName::ADD_ADDITIONAL_WEBSITE);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+    }
+
+    public function testAddAdditionalWebsiteSelfServeAccessKeyFailure()
+    {
+        $predefinedMerchant = [
+            'has_key_access'        => false,
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_website'      => 'https://www.businesssample.com',
+            'activation_status'     => 'activated'
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $testData = $this->testData['testAddAdditionalWebsiteSelfServeMerchantActivationFailure'];
+
+        $testData['response']['content']['error']['description'] = PublicErrorDescription::BAD_REQUEST_MERCHANT_NO_KEY_ACCESS;
+
+        $testData['exception']['internal_error_code'] = ErrorCode::BAD_REQUEST_MERCHANT_NO_KEY_ACCESS;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->setupWorkflow('website_domain_whitelist', PermissionName::ADD_ADDITIONAL_WEBSITE);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+    }
+
+    public function testAddAdditionalWebsiteSelfServeMaxLimitFailure()
+    {
+        $predefinedMerchant = [
+            'has_key_access'        => true,
+        ];
+
+        $websites = $this->getCollectionOfWebsites(5);
+
+        $predefinedMerchantDetails = [
+            'business_website'      => 'https://www.businesssample.com',
+            'additional_websites'   => $websites,
+            'activation_status'     => 'activated'
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $testData = $this->testData['testAddAdditionalWebsiteSelfServeMerchantActivationFailure'];
+
+        $testData['response']['content']['error']['description'] = 'Additional websites may not have more than 5 items';
+
+        $testData['exception']['class'] = 'RZP\Exception\BadRequestValidationFailureException';
+
+        $testData['exception']['internal_error_code'] = ErrorCode::BAD_REQUEST_VALIDATION_FAILURE;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->setupWorkflow('website_domain_whitelist', PermissionName::ADD_ADDITIONAL_WEBSITE);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+    }
+
+    public function testAddAdditionalApp()
+    {
+        $predefinedMerchant = [
+            'has_key_access'        => true,
+        ];
+
+        $predefinedMerchantDetails = [
+            'activation_status'     => 'activated',
+            'business_website'      => 'https://www.businesssample.com',
+            'additional_websites'   => [
+                'https://www.sample.com',
+                'https://www.abc.com'
+            ]
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $this->setupWorkflow('website_domain_whitelist', PermissionName::ADD_ADDITIONAL_WEBSITE);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+
+        (new PermissionRepository)->findByOrgIdAndPermission(
+            Org::RZP_ORG, PermissionName::ADD_ADDITIONAL_WEBSITE
+        );
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertNotEmpty($workflowAction);
+
+        $this->esClient->indices()->refresh();
+
+        $this->performWorkflowAction($workflowAction['id'], true );
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertContains('https://play.google.com/store/apps/details?id=com.abc.app.test', $merchantDetails->getAdditionalWebsites());
     }
 }

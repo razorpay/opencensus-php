@@ -222,6 +222,8 @@ class RouteTeamMap
         'merchant_save_business_website'           => [self::TEAM_PAYMENTS_DASHBOARD],
         'decrypt_merchant_website_comment'         => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_toggle_fee_bearer'               => [self::TEAM_PAYMENTS_DASHBOARD],
+        'add_additional_website_self_serve'        => [self::TEAM_PAYMENTS_DASHBOARD],
+        'additional_website_status'                => [self::TEAM_PAYMENTS_DASHBOARD],
         'increase_transaction_limit_self_serve'    => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_workflow_details'                => [self::TEAM_PAYMENTS_DASHBOARD],
 

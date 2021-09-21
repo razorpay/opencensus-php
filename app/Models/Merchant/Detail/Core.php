@@ -74,6 +74,8 @@ use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
+use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
+use RZP\Models\Workflow\Action\Entity as WorkFlowActionEntity;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Models\Merchant\Request\Constants as RequestConstants;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
@@ -5094,5 +5096,238 @@ class Core extends Base\Core
         }
 
         throw new BadRequestException(ErrorCode::BAD_REQUEST_ENCRYPTED_COMMENT_NOT_FOUND);
+    }
+
+    public function postAddAdditionalWebsiteSelfServe(Entity $merchantDetails, string $urlType, array $input)
+    {
+        $merchant = $merchantDetails->merchant;
+
+        $merchantDetails->getValidator()->validateAddAdditionalWebsiteConditions($merchantDetails);
+
+        $newUrl = ($urlType === DetailConstants::URL_TYPE_WEBSITE) ? $input[DetailConstants::ADDITIONAL_WEBSITE_MAIN_PAGE] : $input[DetailConstants::ADDITIONAL_APP_URL];
+
+        $input = array_merge($input, [DetailConstants::URL_TYPE => $urlType]);
+
+        if($urlType === DetailConstants::URL_TYPE_WEBSITE)
+        {
+            $merchantDetails->getValidator()->validateInput('additional_website_check', $input);
+
+            if ((isset($input[DetailConstants::ADDITIONAL_WEBSITE_PROOF_URL]) === true) and
+                (is_object($input[DetailConstants::ADDITIONAL_WEBSITE_PROOF_URL]) === true))
+            {
+                $input[DetailConstants::ADDITIONAL_WEBSITE_PROOF_URL] = $this->uploadAdditionalWebsiteProof($merchantDetails, $input[DetailConstants::ADDITIONAL_WEBSITE_PROOF_URL]);
+            }
+        }
+        else
+        {
+            $merchantDetails->getValidator()->validateInput('additional_app_check', $input);
+        }
+
+        $input[DetailConstants::MERCHANT_ID] = $merchant->getMerchantId();
+
+        $oldMerchantDetails = $merchantDetails;
+
+        $newMerchantDetails = clone $oldMerchantDetails;
+
+        $newMerchantDetails->setAdditionalWebsites([$merchantDetails->getAdditionalWebsites(), $newUrl]);
+
+        $this->app['workflow']
+            ->setEntityAndId($merchantDetails->getEntity(), $merchantDetails->getMerchantId())
+            ->setPermission(Permission\Name::ADD_ADDITIONAL_WEBSITE)
+            ->setInput($input)
+            ->setController(DetailConstants::ADD_ADDITIONAL_WEBSITE_CONTROLLER)
+            ->handle($oldMerchantDetails, $newMerchantDetails, true);
+
+        [$status , $matchedMerchantIds] = $this->dedupeCheckForAdditionalWebsite($merchant, $newUrl);
+
+        $input[DetailConstants::DEDUPE_STATUS] = $status;
+
+        $input[DetailConstants::DEDUPE_FLAGGED_MIDS] = implode(',' , $matchedMerchantIds);
+
+        $this->addCommentForAddAdditionalWebsitePostWorkflowCreation($merchantDetails, $input, $urlType);
+
+        return [Entity::ADDITIONAL_WEBSITES => $merchantDetails->getAdditionalWebsites()];
+    }
+
+    protected function uploadAdditionalWebsiteProof(Entity $merchantDetails, $additionalWebsiteProof)
+    {
+        $fileInputs = [
+            DetailConstants::ADDITIONAL_WEBSITE_PROOF_URL => $additionalWebsiteProof
+        ];
+
+        $fileAttributes = (new Detail\Service())->storeActivationFile($merchantDetails, $fileInputs);
+
+        if ((is_array($fileAttributes) === false) or
+            (isset($fileAttributes[DetailConstants::ADDITIONAL_WEBSITE_PROOF_URL]) === false))
+        {
+            throw new Exception\ServerErrorException(
+                'Additional Website Domain Registration/Ownership Proof URL upload failed',
+                ErrorCode::SERVER_ERROR);
+        }
+
+        return $fileAttributes[DetailConstants::ADDITIONAL_WEBSITE_PROOF_URL][Document\Constants::FILE_ID];
+    }
+
+    public function dedupeCheckForAdditionalWebsite(Merchant\Entity $merchant, string $newUrl)
+    {
+        $merchant->merchantDetail->setWebsite($newUrl);
+
+        [$status, $matchedMerchantIds] = $this->dedupeCore->matchAndGetMatchedMIDs($merchant);
+
+        return [$status, $matchedMerchantIds];
+    }
+
+    protected function addCommentForAddAdditionalWebsitePostWorkflowCreation(Entity $merchantDetails, array $input, string $urlType)
+    {
+        $workFlowAction = (new WorkFlowActionCore())->fetchOpenActionOnEntityOperation($merchantDetails->getMerchantId(),
+            $merchantDetails->getEntity(),
+            Permission\Name::ADD_ADDITIONAL_WEBSITE,
+            $merchantDetails->merchant->getOrgId()
+        )->first();
+
+        if (is_null($workFlowAction) === true)
+        {
+            throw new Exception\ServerErrorException('Workflow Action Not Found',
+                ErrorCode::SERVER_ERROR_WORKFLOW_ACTION_CREATE_FAILED);
+        }
+
+        $this->createCommentForAddAdditionalWebsitePages($workFlowAction, $input, $urlType);
+
+        $this->createCommentForAddAdditionalWebsiteDedupe($workFlowAction, $input);
+
+        if (((empty($input[DetailConstants::ADDITIONAL_WEBSITE_TEST_USERNAME]) === false) and
+            (empty($input[DetailConstants::ADDITIONAL_WEBSITE_TEST_PASSWORD]) === false)) or
+            ((empty($input[DetailConstants::ADDITIONAL_APP_TEST_USERNAME]) === false) and
+            (empty($input[DetailConstants::ADDITIONAL_APP_TEST_PASSWORD]) === false)))
+        {
+            $this->createCommentForAddAdditionalWebsiteTestCredentials($workFlowAction, $input, $urlType);
+        }
+
+        $this->createCommentForAddAdditionalWebsiteReason($workFlowAction, $input, $urlType);
+
+        if (($urlType === DetailConstants::URL_TYPE_WEBSITE) and
+            (empty($input[DetailConstants::ADDITIONAL_WEBSITE_PROOF_URL]) === false))
+        {
+            $this->createCommentForAddAdditionalWebsiteUrlProof($workFlowAction, $input);
+        }
+    }
+
+    protected function createCommentForAddAdditionalWebsitePages(WorkFlowActionEntity $workFlowAction, array $input, string $urlType)
+    {
+        if ($urlType === DetailConstants::URL_TYPE_WEBSITE)
+        {
+            $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_PAGES_COMMENT_STRUCTURE,
+                $input[DetailConstants::ADDITIONAL_WEBSITE_MAIN_PAGE],
+                $input[DetailConstants::ADDITIONAL_WEBSITE_ABOUT_US],
+                $input[DetailConstants::ADDITIONAL_WEBSITE_CONTACT_US],
+                $input[DetailConstants::ADDITIONAL_WEBSITE_PRICING_DETAILS],
+                $input[DetailConstants::ADDITIONAL_WEBSITE_PRIVACY_POLICY],
+                $input[DetailConstants::ADDITIONAL_WEBSITE_TNC],
+                $input[DetailConstants::ADDITIONAL_WEBSITE_REFUND_POLICY]
+            );
+        }
+        else
+        {
+            $comment = sprintf(DetailConstants::ADD_ADDITIONAL_APP_WORKFLOW_PAGE_COMMENT_STRUCTURE,
+                $input[DetailConstants::ADDITIONAL_APP_URL]
+            );
+        }
+
+        $commentEntity = (new CommentCore())->create([
+            DetailConstants::COMMENT => $comment,
+        ]);
+
+        $commentEntity->entity()->associate($workFlowAction);
+
+        $this->repo->saveOrFail($commentEntity);
+    }
+
+    protected function createCommentForAddAdditionalWebsiteDedupe(WorkFlowActionEntity $workFlowAction, array $input)
+    {
+        $comment = DetailConstants::DEDUPE_STATUS_FALSE;
+
+        if ($input[DetailConstants::DEDUPE_STATUS] === true)
+        {
+            $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_DEDUPE_COMMENT_STRUCTURE,
+                $input[DetailConstants::DEDUPE_FLAGGED_MIDS]
+            );
+        }
+
+        $commentEntity = (new CommentCore())->create([
+            DetailConstants::COMMENT => $comment,
+        ]);
+
+        $commentEntity->entity()->associate($workFlowAction);
+
+        $this->repo->saveOrFail($commentEntity);
+    }
+
+    protected function createCommentForAddAdditionalWebsiteTestCredentials(WorkFlowActionEntity $workFlowAction, array $input, string $urlType)
+    {
+        if($urlType === DetailConstants::URL_TYPE_WEBSITE)
+        {
+            $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_TEST_CREDENTIALS_COMMENT_STRUCTURE,
+                $input[DetailConstants::ADDITIONAL_WEBSITE_TEST_USERNAME],
+                $input[DetailConstants::ADDITIONAL_WEBSITE_TEST_PASSWORD]
+            );
+        }
+        else
+        {
+            $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_TEST_CREDENTIALS_COMMENT_STRUCTURE,
+                $input[DetailConstants::ADDITIONAL_APP_TEST_USERNAME],
+                $input[DetailConstants::ADDITIONAL_APP_TEST_PASSWORD]
+            );
+        }
+
+        $encryptedComment = DetailConstants::ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER . encrypt($comment);
+
+        $commentEntity = (new CommentCore())->create([
+            DetailConstants::COMMENT => $encryptedComment,
+        ]);
+
+        $commentEntity->entity()->associate($workFlowAction);
+
+        $this->repo->saveOrFail($commentEntity);
+    }
+
+    protected function createCommentForAddAdditionalWebsiteReason(WorkFlowActionEntity $workFlowAction, array $input, string $urlType)
+    {
+        if($urlType === DetailConstants::URL_TYPE_WEBSITE)
+        {
+            $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_REASON_COMMENT_STRUCTURE,
+                $input[DetailConstants::ADDITIONAL_WEBSITE_REASON]
+            );
+        }
+        else
+        {
+            $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_REASON_COMMENT_STRUCTURE,
+                $input[DetailConstants::ADDITIONAL_APP_REASON]
+            );
+        }
+
+
+        $commentEntity = (new CommentCore())->create([
+            DetailConstants::COMMENT => $comment,
+        ]);
+
+        $commentEntity->entity()->associate($workFlowAction);
+
+        $this->repo->saveOrFail($commentEntity);
+    }
+
+    protected function createCommentForAddAdditionalWebsiteUrlProof(WorkFlowActionEntity $workFlowAction, array $input)
+    {
+        $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_URL_COMMENT_STRUCTURE,
+            $this->app->config->get('applications.dashboard.url'),
+            $input[DetailConstants::ADDITIONAL_WEBSITE_PROOF_URL]
+        );
+
+        $commentEntity = (new CommentCore())->create([
+            DetailConstants::COMMENT => $comment,
+        ]);
+
+        $commentEntity->entity()->associate($workFlowAction);
+
+        $this->repo->saveOrFail($commentEntity);
     }
 }

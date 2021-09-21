@@ -239,6 +239,11 @@ return [
                 'workflow'    => false,
             ],
 
+            Permission::ADD_ADDITIONAL_WEBSITE            => [
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+
             Permission::EDIT_IIN_RULE                       => '',
             Permission::EDIT_IIN_RULE_BULK                  => [
                 'description' => 'Bulk Edit IIN Rule',

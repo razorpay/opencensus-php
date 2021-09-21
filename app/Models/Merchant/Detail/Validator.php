@@ -425,6 +425,29 @@ class Validator extends Base\Validator
         DetailConstants::URL_TYPE                   => 'required|string|in:'.DetailConstants::URL_TYPE_APP,
     ];
 
+    protected static $additionalWebsiteCheckRules = [
+        DetailConstants::ADDITIONAL_WEBSITE_MAIN_PAGE          => 'required|max:255|active_url',
+        DetailConstants::ADDITIONAL_WEBSITE_ABOUT_US           => 'required|max:255|active_url',
+        DetailConstants::ADDITIONAL_WEBSITE_CONTACT_US         => 'required|max:255|active_url',
+        DetailConstants::ADDITIONAL_WEBSITE_PRICING_DETAILS    => 'required|max:255|active_url',
+        DetailConstants::ADDITIONAL_WEBSITE_PRIVACY_POLICY     => 'required|max:255|active_url',
+        DetailConstants::ADDITIONAL_WEBSITE_TNC                => 'required|max:255|active_url',
+        DetailConstants::ADDITIONAL_WEBSITE_REFUND_POLICY      => 'required|max:255|active_url',
+        DetailConstants::ADDITIONAL_WEBSITE_TEST_USERNAME      => 'sometimes|string|max:50',
+        DetailConstants::ADDITIONAL_WEBSITE_TEST_PASSWORD      => 'sometimes|string|max:50',
+        DetailConstants::ADDITIONAL_WEBSITE_REASON             => 'required|string|min:100',
+        DetailConstants::ADDITIONAL_WEBSITE_PROOF_URL          => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
+        DetailConstants::URL_TYPE                              => 'required|string|in:website',
+    ];
+
+    protected static $additionalAppCheckRules = [
+        DetailConstants::ADDITIONAL_APP_URL             => 'required|string|active_url|max:255',
+        DetailConstants::ADDITIONAL_APP_TEST_USERNAME   => 'sometimes|string|max:50',
+        DetailConstants::ADDITIONAL_APP_TEST_PASSWORD   => 'sometimes|string|max:50',
+        DetailConstants::ADDITIONAL_APP_REASON          => 'required|string|min:100',
+        DetailConstants::URL_TYPE                       => 'required|string|in:app',
+    ];
+
     public function validateBusinessRegisteredState(string $attribute, $value)
     {
         if(empty($value) === true)
@@ -1322,4 +1345,54 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateAddAdditionalWebsiteConditions(Entity $merchantDetails)
+    {
+        $merchant = $merchantDetails->merchant;
+
+        //check if merchant status is activated
+        if($merchantDetails->getActivationStatus() != Status::ACTIVATED)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED);
+        }
+
+        $businessWebsite = $merchantDetails->getWebsite();
+
+        //check if merchant has a business website set
+        $merchantDetails->getValidator()->validateMerchantHasBusinessWebsiteSet($businessWebsite);
+
+        $keyAccess = $merchant->getHasKeyAccess();
+
+        //check if merchant has been provided with key access
+        $merchantDetails->getValidator()->validateMerchantHasKeyAccess($keyAccess);
+
+        $additionalWebsites = $merchantDetails->getAdditionalWebsites();
+
+        //check that no. of additional websites should not be more than 5
+        $merchantDetails->getValidator()->validateAdditionalWebsiteLimit($additionalWebsites);
+    }
+
+    public function validateMerchantHasBusinessWebsiteSet($businessWebsite)
+    {
+        if (empty($businessWebsite) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET);
+        }
+    }
+
+    public function validateMerchantHasKeyAccess(bool $keyAccess)
+    {
+        if ($keyAccess === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_KEY_ACCESS);
+        }
+    }
+
+    public function validateAdditionalWebsiteLimit(array $additionalWebsites)
+    {
+        if (sizeof($additionalWebsites) >= 5)
+        {
+            throw new Exception\BadRequestValidationFailureException('Additional websites may not have more than 5 items');
+        }
+    }
 }

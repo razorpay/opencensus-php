@@ -202,6 +202,7 @@ final class Constants
     const  IN_REVIEW                = 'in_review';
     const  APPROVED                 = 'approved';
     const  UPDATE_BUSINESS_WEBSITE  = 'update_business_website';
+    const  ADD_ADDITIONAL_WEBSITE   = 'add_additional_website';
 
     const ENABLE_INTERNATIONAL_PG      = 'enable_international_pg';
     const ENABLE_INTERNATIONAL_PROD_V2 = 'enable_international_prod_v2';
@@ -415,6 +416,10 @@ final class Constants
         ],
         self::UPDATE_BUSINESS_WEBSITE   => [
             self::PERMISSION => Permission::UPDATE_MERCHANT_WEBSITE,
+            self::ENTITY     => \RZP\Constants\Entity::MERCHANT_DETAIL,
+        ],
+        self::ADD_ADDITIONAL_WEBSITE   => [
+            self::PERMISSION => Permission::ADD_ADDITIONAL_WEBSITE,
             self::ENTITY     => \RZP\Constants\Entity::MERCHANT_DETAIL,
         ],
         self::INCREASE_TRANSACTION_LIMIT   => [
