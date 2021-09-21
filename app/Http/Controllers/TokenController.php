@@ -13,7 +13,11 @@ class TokenController extends Controller
 {
     public function create()
     {
-        return ApiResponse::json(['action' => 'create']);
+        $input = Request::all();
+
+        $data = $this->service()->createNetworkToken($input);
+
+        return ApiResponse::json($data);
     }
 
     public function fetch()

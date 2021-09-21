@@ -123,6 +123,16 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getByMethodAndMerchant($method, $merchant)
+    {
+       return $this->newQuery()
+                    ->where(Entity::METHOD, '=', $method)
+                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
+                    ->orderBy(Token\Entity::CREATED_AT, 'desc')
+                    ->orderBy(Token\Entity::ID, 'desc')
+                    ->get();
+    }
+
     public function getByMethodAndCustomerId($method, $customer)
     {
         return $this->newQuery()

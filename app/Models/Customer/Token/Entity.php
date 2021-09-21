@@ -119,6 +119,11 @@ class Entity extends Base\PublicEntity
 
     const BILLING_ADDRESS       = 'billing_address';
 
+    /*
+     * authentication data key in the input
+     */
+    const AUTHENTICATION_DATA   = 'authenitaction_data';
+
     protected static $sign      = 'token';
 
     protected $entity           = 'token';
@@ -271,6 +276,17 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = [
         self::IFSC,
+    ];
+
+    public static $networkTokenUnsetAttributes = [
+        self::TOKEN,
+        self::BANK,
+        self::WALLET,
+        self::RECURRING,
+        self::AUTH_TYPE,
+        self::MRN,
+        self::DCC_ENABLED,
+        self::BILLING_ADDRESS,
     ];
 
     public function customer()

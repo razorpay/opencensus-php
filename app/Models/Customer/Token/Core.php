@@ -848,14 +848,30 @@ class Core extends Base\Core
         return $this->$func($existingTokens, $token);
     }
 
+    protected function validateExistingNetworkToken($token)
+    {
+        $existingTokens = $this->repo->token->getByMethodAndMerchant(
+                                $token->getMethod(), $token->merchant);
+
+        $func = 'validateExistingToken' . studly_case($token->getMethod());
+
+        return $this->$func($existingTokens, $token);
+    }
+
     protected function validateExistingTokenCard($existingTokens, $newToken)
     {
         $vaultToken = $newToken->card->getVaultToken();
 
+        $expiryMonth = $newToken->card->getExpiryMonth();
+
+        $expiryYear = $newToken->card->getExpiryYear();
+
         foreach ($existingTokens as $token)
         {
             if (($token->hasCard() === true) and
-                ($token->card->getVaultToken() === $vaultToken))
+                ($token->card->getVaultToken()  === $vaultToken) and
+                ($token->card->getExpiryMonth() === $expiryMonth) and
+                ($token->card->getExpiryYear()  === $expiryYear))
             {
                 return $token;
             }
@@ -1101,5 +1117,49 @@ class Core extends Base\Core
                 TokenActionsHandler::dispatch($tokenData, $this->mode);
             }
         }
+    }
+
+    public function createNetworkToken($input)
+    {
+        (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN, $input);
+
+        if (empty($input[Token\Entity::AUTHENTICATION_DATA]) === false)
+        {
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION_DATA]);
+        }
+
+        $input['card'][Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
+
+        $card = (new Card\Core)->create($input['card'], $this->merchant);
+
+        $this->trace->info(
+            TraceCode::NETWORK_TOKEN_CREATE
+        );
+
+        $token = new Token\Entity;
+
+        $createTokenInput = [
+            Entity::METHOD      => Method::CARD,
+            Entity::CARD_ID     => $card->getId(),
+        ];
+
+        $token->build($createTokenInput);
+
+        $token->card()->associate($card);
+
+        $token->setExpiredAt($card->getExpiryTimestamp());
+
+        $token->merchant()->associate($this->merchant);
+
+        $existingToken = $this->validateExistingNetworkToken($token);
+
+        if (empty($existingToken) === false)
+        {
+            return $existingToken;
+        }
+
+        $this->repo->saveOrFail($token);
+
+        return $token;
     }
 }

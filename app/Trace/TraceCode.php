@@ -5276,6 +5276,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFRESH_SCHEDULED_DOWNTIME_CACHE                    = 'REFRESH_SCHEDULED_DOWNTIME_CACHE';
     const FAILED_TO_REFRESH_SCHEDULED_PAYMENT_DOWNTIME_CACHE  = 'FAILED_TO_REFRESH_SCHEDULED_PAYMENT_DOWNTIME_CACHE';
     const RETURN_PAGE_DOWNTIMES_FROM_CACHE                    = 'RETURN_PAGE_DOWNTIMES_FROM_CACHE';
+    const NETWORK_TOKEN_CREATE                                = 'NETWORK_TOKEN_CREATE';
 
 
     protected static $messages = [

@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer\Token;
 
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Customer\AppToken;
@@ -462,5 +463,47 @@ class Service extends Base\Service
         }
 
         return $token->toArrayPublic();
+    }
+
+    public function createNetworkToken($input)
+    {
+        $token = $this->core->createNetworkToken($input);
+
+        return $this->generateMockResponse($token);
+    }
+
+    public function generateMockResponse($token)
+    {
+        $response = $token->toArrayPublic();
+
+        foreach (Token\Entity::$networkTokenUnsetAttributes as $attribute)
+        {
+            unset($response[$attribute]);
+        }
+
+        foreach (Card\Entity::$networkTokenCardUnsetAttributes as $attribute)
+        {
+            unset($response['card'][$attribute]);
+        }
+
+        $response['card']['token_iin']       = $token->card->getIin();
+
+        $response[Card\Entity::EXPIRY_MONTH] = $token->card->getExpiryMonth();
+
+        $response[Card\Entity::EXPIRY_YEAR]  = $token->card->getExpiryYear();
+
+        $response['status'] = ($token->isExpired() === true) ? 'deactivated' : 'activated';
+
+        $response['service_providers'] = [[
+                'type'  => 'network',
+                'name'  => $token->card->getNetwork(),
+                'data'  => [
+                    'token_reference_number' => $token->card->getVaultToken(),
+                    'card_reference_number'  => $token->card->getGlobalFingerPrint(),
+                    'interoperable'          => true,
+                ],
+            ]];
+
+        return $response;
     }
 }

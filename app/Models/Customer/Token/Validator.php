@@ -14,7 +14,9 @@ use RZP\Models\PaperMandate\Constants as PaperMandateConstants;
 
 class Validator extends Base\Validator
 {
-    const CREATE_DIRECT = 'create_direct';
+    const CREATE_DIRECT        = 'create_direct';
+    const CREATE_NETWORK_TOKEN = 'create_network_token';
+    const CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA = 'create_network_token_authentication_data';
 
     /**
      * token epoch constrains :
@@ -58,6 +60,20 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         Entity::ACCOUNT_TYPE
+    ];
+
+    protected static $createNetworkTokenRules = [
+        Entity::CARD                 => 'required|array',
+        Entity::METHOD               => 'required|in:card',
+        Entity::AUTHENTICATION_DATA  => 'sometimes',
+    ];
+
+    protected static $createNetworkTokenAuthenticationDataRules = [
+        'platform'          => 'required|string',
+        'cavv'              => 'required|string',
+        'cavv_algorithm'    => 'required|string',
+        'eci'               => 'required|string',
+        'xid'               => 'required|string',
     ];
 
     protected static function validateBank($attribute, $value)

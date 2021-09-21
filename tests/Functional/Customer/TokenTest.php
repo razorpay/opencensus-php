@@ -23,7 +23,19 @@ class TokenTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertEquals('card', $response['method']);
+
+        $this->assertEquals('12', $response['expiry_month']);
+
+        $this->assertEquals('2023', $response['expiry_year']);
+
+        $this->assertNotNull($response['service_providers']);
+
+        $response2 = $this->startTest();
+
+        $this->assertEquals($response['id'], $response2['id']);
     }
 
     public function testFetchToken()
