@@ -1315,6 +1315,40 @@ return [
         ],
     ],
 
+    'testDisputeFetchForAdminGatewayDisputeNetwork'    => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/admin/dispute?gateway_dispute_source=network',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 1,
+                'items'         => [
+                    [
+                        'gateway_dispute_id' => '4342frf34r',
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testDisputeFetchForAdminGatewayDisputeCustomer'    => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/admin/dispute?gateway_dispute_source=customer',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 1,
+                'items'         => [
+                    [
+                        'gateway_dispute_id' => 'DISPUTE1348184',
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testDisputeFetchCountProxyAuth'    => [
         'request'   => [
             'method'        => 'get',

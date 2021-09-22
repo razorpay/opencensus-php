@@ -2763,5 +2763,29 @@ class DisputeTest extends TestCase
             ],
         ];
     }
+    public function testDisputeFetchForAdminGatewayDisputeNetwork()
+    {
+        $this->ba->adminAuth();
 
+        $this->fixtures->create('dispute', ['gateway_dispute_id' => '4342frf34r']);
+
+        $this->fixtures->create('dispute', ['gateway_dispute_id' => 'DISPUTE1348184']);
+
+        $testData = $this->updateFetchTestData();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testDisputeFetchForAdminGatewayDisputeCustomer()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('dispute', ['gateway_dispute_id' => '4342frf34r']);
+
+        $this->fixtures->create('dispute', ['gateway_dispute_id' => 'DISPUTE1348184']);
+
+        $testData = $this->updateFetchTestData();
+
+        $this->runRequestResponseFlow($testData);
+    }
 }

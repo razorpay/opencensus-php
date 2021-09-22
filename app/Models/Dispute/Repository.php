@@ -302,4 +302,20 @@ class Repository extends Base\Repository
 
         $query->orderBy(Entity::INTERNAL_RESPOND_BY, 'asc');
     }
+
+    protected function addQueryParamGatewayDisputeSource($query, $params)
+    {
+        $dbColumn = $this->dbColumn(Entity::GATEWAY_DISPUTE_ID);
+
+        $param = $params[Entity::GATEWAY_DISPUTE_SOURCE];
+
+        if ($param === Constants::GATEWAY_DISPUTE_SOURCE_CUSTOMER)
+        {
+            $query->where($dbColumn,'like','DISPUTE%');
+        }
+        elseif ($param === Constants::GATEWAY_DISPUTE_SOURCE_NETWORK)
+        {
+            $query->where($dbColumn, 'not like', 'DISPUTE%');
+        }
+    }
 }

@@ -2107,6 +2107,14 @@ class AdminFetch
                     Fetch::LABEL        => 'Prioritize on Internal Respond By Disputes',
                     Fetch::TYPE         => Fetch::TYPE_BOOLEAN,
                 ],
+                Dispute\Entity::GATEWAY_DISPUTE_SOURCE             => [
+                    Fetch::LABEL        => 'Gateway Dispute Source',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        Dispute\Constants::GATEWAY_DISPUTE_SOURCE_CUSTOMER,
+                        Dispute\Constants::GATEWAY_DISPUTE_SOURCE_NETWORK,
+                    ],
+                ],
 
             ],
 

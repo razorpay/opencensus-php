@@ -21,6 +21,7 @@ class Fetch extends BaseFetch
             Entity::INTERNAL_RESPOND_BY_FROM    => 'sometimes|epoch',
             Entity::INTERNAL_RESPOND_BY_TO      => 'sometimes|epoch',
             Entity::ORDER_BY_INTERNAL_RESPOND   => 'sometimes|boolean',
+            Entity::GATEWAY_DISPUTE_SOURCE      => 'sometimes|string|in:customer,network',
         ],
     ];
 
@@ -40,6 +41,7 @@ class Fetch extends BaseFetch
             Entity::INTERNAL_RESPOND_BY_FROM,
             Entity::INTERNAL_RESPOND_BY_TO,
             Entity::ORDER_BY_INTERNAL_RESPOND,
+            Entity::GATEWAY_DISPUTE_SOURCE,
         ],
         AuthType::PROXY_AUTH => [
             self::EXPAND_EACH,

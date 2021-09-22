@@ -66,6 +66,7 @@ class Entity extends Base\PublicEntity
     const INTERNAL_RESPOND_BY_FROM = 'internal_respond_by_from';
     const INTERNAL_RESPOND_BY_TO   = 'internal_respond_by_to';
     const ORDER_BY_INTERNAL_RESPOND= 'order_by_internal_respond';
+    const GATEWAY_DISPUTE_SOURCE     = 'gateway_dispute_source';
 
     /**
      *  Field for edit input, when accepted chargeback amount
