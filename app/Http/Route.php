@@ -9779,6 +9779,7 @@ class Route
             'fund_account_list_internal',
             'payout_create_internal',
             'payout_fetch_multiple_internal',
+            'payout_fetch_by_id_internal',
             'merchant_fetch_internal',
             'payout_links_send_email',
             'payout_links_send_demo_email',
