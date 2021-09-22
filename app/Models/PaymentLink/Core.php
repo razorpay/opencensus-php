@@ -1879,8 +1879,9 @@ class Core extends Base\Core
         }
 
         $request = [
-            'entity_id' => $paymentLink->getPublicId(),
-            'checks'    => ['profanity_check']
+            'entity_id'         => $paymentLink->getId(),
+            'checks'            => ['profanity_check'],
+            'payment_page_id'   => $paymentLink->getPublicId(),
         ];
         try {
             $this->trace->info(

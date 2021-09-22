@@ -164,7 +164,7 @@ class AppsRiskCheck extends Job
     {
         return Config::get('app.payment_link_hosted_base_url')
             . "/"
-            .  $this->params['entity_id']
+            .  $this->params['payment_page_id']
             . "/view";
     }
 }
