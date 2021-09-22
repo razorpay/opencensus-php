@@ -54,7 +54,8 @@ class Announcement extends Component {
 
     this.handleClose = this.handleClose.bind(this);
     this.bannerRef = createRef();
-    this.observer = new IntersectionObserver(this.checkIfInViewport, { threshold: 1 });
+    if (window.IntersectionObserver)
+      this.observer = new IntersectionObserver(this.checkIfInViewport, { threshold: 1 });
   }
 
   checkIfInViewport = (entries) => {
@@ -70,7 +71,7 @@ class Announcement extends Component {
               card_id,
             }),
           );
-          if (this.bannerRef?.current) this.observer.unobserve(this.bannerRef.current);
+          if (this.bannerRef?.current) this.observer?.unobserve(this.bannerRef.current);
         }, 5000);
       else if (this.timeoutID) clearTimeout(this.timeoutID);
     });
@@ -88,11 +89,11 @@ class Announcement extends Component {
         card_id,
       }),
     );
-    if (this.bannerRef.current) this.observer.observe(this.bannerRef.current);
+    if (this.bannerRef?.current) this.observer?.observe(this.bannerRef.current);
   }
 
   componentWillUnmount = () => {
-    if (this.bannerRef?.current) this.observer.unobserve(this.bannerRef.current);
+    if (this.bannerRef?.current) this.observer?.unobserve(this.bannerRef.current);
   };
 
   getTitle = () => {
