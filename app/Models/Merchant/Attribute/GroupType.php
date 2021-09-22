@@ -32,7 +32,7 @@ class GroupType
             Type::VENDOR_PAYMENTS,
             Type::CORPORATE_CARDS,
             Type::INSTANT_SETTLEMENTS,
-            Type::UNKNOWN
+            Type::OTHERS
         ],
 
         Group::X_MERCHANT_SOURCE => [
