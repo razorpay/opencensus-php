@@ -24,7 +24,9 @@ function showPartnerIntent(props) {
     size: 'xlarge',
     disableClose: false,
     component: <PartnerOnbr closeModal={props.closeModal} disableClose={false} />,
-    className: props.isMobileResolution ? 'partner-onboarding-popup mobile-app-popup': 'partner-onboarding-popup',
+    className: props.isMobileResolution
+      ? 'partner-onboarding-popup mobile-app-popup'
+      : 'partner-onboarding-popup',
   });
 }
 
@@ -46,6 +48,42 @@ function appTileClickHandler(props, appSlug) {
 }
 // Helpers END
 
+// new app banner
+function NewAppBanner(props) {
+  const { isMobileResolution } = props;
+  return (
+    <div className="new-app-banner">
+      <div className="new-app-icon">
+        <img src="/dist/css/assets/app-store/new-app-icon.svg" />
+      </div>
+      <div className="new-app-message">
+        <p>Don’t miss out on our</p>
+        <p>
+          <b>newly added apps</b>
+          <br /> to the marketplace.
+        </p>
+      </div>
+      <div className="arrow-head-container">
+        {isMobileResolution ? (
+          <>
+            <img className="arrow-head-top" src="/dist/css/assets/app-store/mob-down-head-1.svg" />
+            <img className="arrow-head-mid" src="/dist/css/assets/app-store/mob-down-head-2.svg" />
+            <img
+              className="arrow-head-bottom"
+              src="/dist/css/assets/app-store/mob-down-head-3.svg"
+            />
+          </>
+        ) : (
+          <>
+            <img className="arrow-head-top" src="/dist/css/assets/app-store/down-head-1.svg" />
+            <img className="arrow-head-bottom" src="/dist/css/assets/app-store/down-head-2.svg" />
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Sub-components START
 function BecomePartner(props) {
   return (
@@ -64,7 +102,7 @@ function BecomePartner(props) {
               className="btn btn-primary"
               href="https://razorpay.com/app-store/developer-guide"
             >
-              View Developer Guide <i className="i i-arrow-forward"></i>
+              View Developer Guide <i className="i i-arrow-forward" />
             </a>
           </div>
         </div>
@@ -74,7 +112,7 @@ function BecomePartner(props) {
 
           <div className="partner-links">
             <button className="btn btn-primary" onClick={() => showPartnerIntent(props)}>
-              Become a Partner <i className="i i-arrow-forward"></i>
+              Become a Partner <i className="i i-arrow-forward" />
             </button>
           </div>
         </div>
@@ -92,13 +130,12 @@ function BecomePartner(props) {
 function PartnerAppCard(props) {
   const product = props.product;
   const [cardHoverBgColor, setCardHoverBgColor] = useState(``);
-
   return (
     <div className="product-col">
       <Link
         onClick={() => appTileClickHandler(props, product.slug)}
         className="product-wrapper"
-        to={'/app-store/' + product.slug}
+        to={`/app-store/${product.slug}`}
         onMouseEnter={() => setCardHoverBgColor(product.brandColor)}
         onMouseLeave={() => setCardHoverBgColor(``)}
       >
@@ -106,8 +143,8 @@ function PartnerAppCard(props) {
           <div className="image-col">
             <div className="product-image-background">
               <img
-                alt={'Logo of ' + product.title}
-                src={'/dist/css/assets/app-store/partner-logos/' + product.logo}
+                alt={`Logo of ${product.title}`}
+                src={`/dist/css/assets/app-store/partner-logos/${product.logo}`}
               />
             </div>
           </div>
@@ -115,7 +152,7 @@ function PartnerAppCard(props) {
             <h2 className="product-title">{product.title}</h2>
             <span className="product-category">{product.category}</span>
           </div>
-          <span className="left-strip" style={{ background: cardHoverBgColor }}></span>
+          <span className="left-strip" style={{ background: cardHoverBgColor }} />
         </div>
 
         <div className="product-description">
@@ -125,10 +162,10 @@ function PartnerAppCard(props) {
         <div className="more-details-container">
           <Link
             className="mode-details-arrow-anchor"
-            to={'/app-store/' + product.slug}
+            to={`/app-store/${product.slug}`}
             style={{ background: cardHoverBgColor }}
           >
-            <i className="i i-arrow-forward"></i>
+            <i className="i i-arrow-forward" />
           </Link>
           <svg
             className="hover-vector"
@@ -159,7 +196,7 @@ function PartnerAppStore(props) {
         <div className="appstore-header text-white">
           <div className="back-to-dashboard-button-container">
             <Link to="/dashboard">
-              <i className="i i-arrow-back"></i> Back To Dashboard
+              <i className="i i-arrow-back" /> Back To Dashboard
             </Link>
           </div>
 
@@ -199,6 +236,8 @@ function PartnerAppStore(props) {
             <img className="dots-4" src="/dist/css/assets/app-store/dots.svg" />
           </div>
         )}
+        {/* New banner */}
+        <NewAppBanner {...props} />
 
         {/* Main part that holds partner cards */}
         <div className="partner-products-container">
@@ -207,7 +246,7 @@ function PartnerAppStore(props) {
               return null;
             }
 
-            return <PartnerAppCard key={'app-' + index} product={product} {...props} />;
+            return <PartnerAppCard key={`app-${index}`} product={product} {...props} />;
           })}
         </div>
       </section>
@@ -226,6 +265,7 @@ export default connect(
   }),
   { openModal, closeModal },
 )(
+  // eslint-disable-next-line babel/new-cap
   RTracking(() => {
     window.rzpQ.component('PartnerAppStore');
   })(PartnerAppStore),

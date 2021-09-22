@@ -1,4 +1,15 @@
 export const partnerProducts = {
+  aisensy: {
+    slug: 'aisensy',
+    title: 'AiSensy',
+    url:
+      'https://app.aisensy.com/signup?utm_source=razorpay&utm_medium=cta&utm_campaign=integration&utm_id=rzp',
+    category: 'Customer Communications',
+    description: 'Share payment links and invoice links through Whatsapp to your customers',
+    logo: 'Aisensy.png', // relative to web/css/assets/app-store/partner-logo/
+    brandColor: '#51BC6E',
+    isNew: true,
+  },
   'whatsapp-bot-payment-link': {
     title: 'Payment Links Bot',
     detailsPageTitle: 'Whatsapp Bot for Payment Links',

@@ -105,6 +105,35 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
         top: 700px;
         left: 10px;
 
+    .new-app-banner
+      margin 50px 76px 0px
+      position relative
+      z-index 2
+      height 107px
+      background linear-gradient(90.75deg, #61E1AE -50.51%, #FFFFFF 95.18%)
+      border-radius 5px
+      display flex
+      align-items center
+      position relative
+      .new-app-icon
+        margin: 0px 42px
+      .new-app-message
+        color: #162F56
+        font-size: 20px
+        & > p
+          & > br
+            display none
+      .arrow-head-container
+        position absolute
+        right 0px
+        .arrow-head-top
+          position absolute
+          right 0px
+          top -50px
+        .arrow-head-bottom
+          position absolute
+          right 0px
+          top 0px
     /* Product Tiles Section */
     .partner-products-container
       padding: 50px 76px;
@@ -311,6 +340,31 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
 
           .more-details-container
             opacity: 1;
+      .new-app-banner
+        margin 28px 0px 0px
+        background none
+        .new-app-icon
+          display none
+        .new-app-message
+          margin-left 37px
+          font-size 18px
+          & > p
+            & > br
+              display block
+        .arrow-head-container
+          right 20px
+          .arrow-head-top
+            position absolute
+            right 0px
+            top -30px
+          .arrow-head-mid
+            position absolute
+            right 0px
+            top 0px
+          .arrow-head-bottom
+            position absolute
+            right 0px
+            top 30px
 
     hr.section-divider
       display: none;
@@ -504,7 +558,17 @@ $paragraphColor = rgba(22, 47, 86, 0.74); /* Shade 970 */
             margin: 0px;
             padding: 2px 0px;
             padding-left: 10px;
-
+        
+        .how-to-use-video
+          margin-top 50px
+          p
+            color: #162F56;
+            margin-bottom 20px
+          iframe
+            max-width 100%
+        .queries-section
+          margin-top 50px
+          font-size 14px
         ol
           counter-reset: section;
           list-style-type: none;
