@@ -13,6 +13,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Models\PaymentsUpi;
 
@@ -467,6 +468,8 @@ class Service extends Base\Service
 
     public function createNetworkToken($input)
     {
+        $this->validateMode();
+
         $token = $this->core->createNetworkToken($input);
 
         return $this->generateMockResponse($token);
@@ -474,6 +477,8 @@ class Service extends Base\Service
 
     public function fetchNetworkToken($id)
     {
+        $this->validateMode();
+
         $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
 
         if ($token === null)
@@ -487,6 +492,8 @@ class Service extends Base\Service
 
     public function fetchCryptoGram($id)
     {
+        $this->validateMode();
+
         $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
 
         if ($token === null)
@@ -500,6 +507,8 @@ class Service extends Base\Service
 
     public function deleteNetworkToken($id)
     {
+        $this->validateMode();
+
         $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
 
         if ($token === null)
@@ -513,6 +522,15 @@ class Service extends Base\Service
         return [];
     }
 
+
+    public function validateMode()
+    {
+        if ($this->app['rzp.mode'] !== 'test')
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+    }
     public function generateMockResponseForCryptoGram($token)
     {
         $response['provider'] = [

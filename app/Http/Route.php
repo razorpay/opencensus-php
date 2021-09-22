@@ -10645,10 +10645,6 @@ class Route
         'bbps_bill_payments'                   => [Feature::FEATURE_BBPS],
         'patch_dispute_contest_by_id'          => [Feature::DISPUTE_PRESENTMENT],
         'post_dispute_accept_by_id'            => [Feature::DISPUTE_PRESENTMENT],
-        'token_create'                         => [Feature::NETWORK_TOKENIZATION],
-        'token_fetch'                          => [Feature::NETWORK_TOKENIZATION],
-        'token_fetch_cryptogram'               => [Feature::NETWORK_TOKENIZATION],
-        'token_delete'                         => [Feature::NETWORK_TOKENIZATION],
     ];
 
     /**

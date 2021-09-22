@@ -4485,13 +4485,31 @@ trait Authorize
         if ($payment->isMethodCardOrEmi() and
             ($payment->isGooglePayCard() === false))
         {
-            $payment->setSave(false);
-
             $payment->setRecurring(false);
 
             $vault = $payment->shouldSaveCard();
 
             $gatewayInput['card'] = $this->createCardEntity($input['card'], $vault, $this->merchant, $input);
+
+            // dummy code to test network tokenization for merchants in test mode
+            if (($this->app['rzp.mode'] === 'test') and
+                ($payment->getSave() === true))
+            {
+                $payment->setSave(true);
+
+                $createInput = [
+                    'method' => 'card',
+                    'card' => $input['card']
+                ];
+
+                $token = (new Token\Core)->createNetworkToken($createInput);
+
+                $this->payment->localToken()->associate($token);
+            }
+            else
+            {
+                $payment->setSave(false);
+            }
         }
     }
 

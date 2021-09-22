@@ -37,6 +37,30 @@ class TokenTest extends TestCase
         $response2 = $this->startTest();
 
         $this->assertEquals($response['id'], $response2['id']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['save'] = 1;
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($payment['token_id']);
+
+        $fetchPayload = $this->testData['testFetchToken'];
+
+        $fetchPayload['request']['content'] = ['id' => $payment['token_id']];
+
+        $this->ba->privateAuth();
+
+        $fetchResponse = $this->startTest($fetchPayload);
+
+        $this->assertEquals('card', $fetchResponse['method']);
+
+        $this->assertEquals('12', $fetchResponse['expiry_month']);
+
+        $this->assertEquals('2024', $fetchResponse['expiry_year']);
     }
 
     public function testFetchToken()
