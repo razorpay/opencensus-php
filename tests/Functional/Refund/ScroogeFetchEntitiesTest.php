@@ -1282,7 +1282,7 @@ class ScroogeFetchEntitiesTest extends TestCase
         return [$input, $expectedOutput];
     }
 
-    // test extra data bank_transfer entity
+    // test various extra data fetch on bank_transfer entity
     public function scroogeFetchEntitiesV2SubTest14($subTestArgs): array
     {
         $paymentId = substr($subTestArgs['payment']['id'], 4);
@@ -1314,7 +1314,8 @@ class ScroogeFetchEntitiesTest extends TestCase
         ]);
 
         $bankTransfer->forceFill([
-           BankTransferEntity::GATEWAY => 'hdfc'
+            BankTransferEntity::GATEWAY => 'hdfc',
+            BankTransferEntity::UTR => '124802075266',
         ]);
 
         $bankTransfer->save();
@@ -1323,12 +1324,16 @@ class ScroogeFetchEntitiesTest extends TestCase
             'payment_ids' => [
                 $paymentId
             ],
-            'extra_data' => ['payer_bank_account'],
+            'extra_data' => ['payment_utr', 'payer_bank_account'],
         ];
 
         $expectedOutput = [
             $paymentId => [
                 'extra_data' => [
+                    'payment_utr' => [
+                        'data' => '124802075266',
+                        'error' => NULL,
+                    ],
                     'payer_bank_account' => [
                         'data' => NULL,
                         'error' => NULL,

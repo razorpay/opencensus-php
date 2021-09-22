@@ -1162,6 +1162,25 @@ class Service extends Base\Service
         return in_array($cardIssuer, TransferMode::getSupportedIssuers());
     }
 
+
+    protected function getPaymentExtraDataPaymentUtr(Payment\Entity $payment)
+    {
+        if ($payment->isBankTransfer() === true)
+        {
+            $paymentId = $payment->getId();
+
+            $bankTransfer = $this->repo->bank_transfer->findByPaymentId($paymentId);
+
+            if (empty($bankTransfer) === false)
+            {
+                return $bankTransfer->getUtr();
+            }
+
+        }
+
+        return null;
+    }
+
     public function fetchMultiple($input)
     {
         // We are masking status for merchants

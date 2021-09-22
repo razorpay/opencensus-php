@@ -729,7 +729,7 @@ class Scrooge
      */
     public function sendStatusUpdate(array $input, string $mode) : array
     {
-        return $this->sendRequest(self::RefundBaseURL . '/' . self::URLS['payouts_status_update'],
+        return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['payouts_status_update'],
             Requests::POST, $input, true);
     }
 

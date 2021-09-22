@@ -3385,6 +3385,8 @@ trait Refund
             $input['card_id'] = $payment->getCardId();
         }
 
+        $input['vault_token'] = $payment->card->getVaultToken();
+
         return $input;
     }
 
