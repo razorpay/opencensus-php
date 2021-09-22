@@ -28,7 +28,7 @@ class RecordAccountIdForSyncTest extends TestCase
         $merchant = $this->fixtures->merchant->create();
         Event::assertDispatched(RecordSyncEvent::class,
             function(RecordSyncEvent $e) use ($merchant) {
-                return $merchant->getMerchantId() === $e->accountId;
+                return $merchant->getMerchantId() === $e->entity->getMerchantId();
             }
         );
     }
@@ -46,7 +46,7 @@ class RecordAccountIdForSyncTest extends TestCase
 
         Event::assertDispatched(RecordSyncEvent::class,
             function(RecordSyncEvent $e) use ($merchant) {
-                return $merchant->getMerchantId() === $e->accountId;
+                return $merchant->getMerchantId() === $e->entity->getMerchantId();
             }
         );
     }
@@ -59,7 +59,7 @@ class RecordAccountIdForSyncTest extends TestCase
         $merchantDetail = $this->fixtures->merchantDetail->create();
         Event::assertDispatched(RecordSyncEvent::class,
             function(RecordSyncEvent $e) use ($merchantDetail) {
-                return $merchantDetail->getMerchantId() === $e->accountId;
+                return $merchantDetail->getMerchantId() === $e->entity->getMerchantId();
             }
         );
     }
@@ -77,7 +77,7 @@ class RecordAccountIdForSyncTest extends TestCase
 
         Event::assertDispatched(RecordSyncEvent::class,
             function(RecordSyncEvent $e) use ($merchantDetail) {
-                return $merchantDetail->getMerchantId() === $e->accountId;
+                return $merchantDetail->getMerchantId() === $e->entity->getMerchantId();
             }
         );
     }
@@ -94,7 +94,7 @@ class RecordAccountIdForSyncTest extends TestCase
         $document = $this->fixtures->merchantDocument->create($attributes);
         Event::assertDispatched(RecordSyncEvent::class,
             function(RecordSyncEvent $e) use ($document) {
-                return $document->getMerchantId() === $e->accountId;
+                return $document->getMerchantId() === $e->entity->getMerchantId();
             }
         );
     }
@@ -116,7 +116,7 @@ class RecordAccountIdForSyncTest extends TestCase
 
         Event::assertDispatched(RecordSyncEvent::class,
             function(RecordSyncEvent $e) use ($document) {
-                return $document->getMerchantId() === $e->accountId;
+                return $document->getMerchantId() === $e->entity->getMerchantId();
             }
         );
     }
@@ -133,7 +133,7 @@ class RecordAccountIdForSyncTest extends TestCase
         $email = $this->fixtures->merchantEmail->create($attributes);
         Event::assertDispatched(RecordSyncEvent::class,
             function(RecordSyncEvent $e) use ($email) {
-                return $email->getMerchantId() === $e->accountId;
+                return $email->getMerchantId() === $e->entity->getMerchantId();
             }
         );
     }
@@ -155,7 +155,7 @@ class RecordAccountIdForSyncTest extends TestCase
 
         Event::assertDispatched(RecordSyncEvent::class,
             function(RecordSyncEvent $e) use ($email) {
-                return $email->getMerchantId() === $e->accountId;
+                return $email->getMerchantId() === $e->entity->getMerchantId();
             }
         );
     }
@@ -172,7 +172,7 @@ class RecordAccountIdForSyncTest extends TestCase
         $stakeholder = $this->fixtures->stakeholder->create($attributes);
         Event::assertDispatched(RecordSyncEvent::class,
             function(RecordSyncEvent $e) use ($stakeholder) {
-                return $stakeholder->getMerchantId() === $e->accountId;
+                return $stakeholder->getMerchantId() === $e->entity->getMerchantId();
             }
         );
     }
@@ -194,7 +194,7 @@ class RecordAccountIdForSyncTest extends TestCase
 
         Event::assertDispatched(RecordSyncEvent::class,
             function(RecordSyncEvent $e) use ($stakeholder) {
-                return $stakeholder->getMerchantId() === $e->accountId;
+                return $stakeholder->getMerchantId() === $e->entity->getMerchantId();
             }
         );
     }

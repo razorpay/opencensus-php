@@ -8,6 +8,8 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Metric;
 use RZP\Constants\Mode;
 use RZP\Exception\LogicException;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Base\PublicEntity;
 use RZP\Trace\TraceCode;
 use Razorpay\Outbox\Job\Core as Outbox;
 
@@ -38,6 +40,8 @@ class SyncEventManager
     // accountIds are stored as [id => id] instead of plain arrays to behave as sets
     protected $liveAccountIds = [];
     protected $testAccountIds = [];
+
+    protected $stats = ['total' => ['count' => 0]];
 
     public function __construct(Application $app)
     {
@@ -107,13 +111,14 @@ class SyncEventManager
     /**
      * Records account id to be published for sync
      *
-     * @param string $accountId
-     * @param string $mode
+     * @param PublicEntity $entity
      *
-     * @throws LogicException
      */
-    public function recordAccountSync(string $accountId, $mode = Mode::LIVE)
+    public function recordAccountSync(PublicEntity $entity)
     {
+        $accountId = $entity->getMerchantId();
+        $mode = $entity->getConnectionName();
+
         switch ($mode) {
             case Mode::LIVE:
                 $this->liveAccountIds[$accountId] = $accountId;
@@ -130,6 +135,23 @@ class SyncEventManager
                     'accountId' => $accountId,
                     'mode' => $mode,
                 ]);
+        }
+
+        // for live mode, store the stats like the number of updates for each entity etc..
+        if ($mode == Mode::LIVE)
+        {
+            // we log before the stats are updated as we want to see the number of updates
+            // already applied in the request flow before the current update
+            $logData = $this->getLogData($entity);
+            $this->logEntityUpdate($logData);
+
+            $entityName = $entity->getEntityName();
+            if (array_key_exists($entityName, $this->stats) === false)
+            {
+                $this->stats[$entityName] = ['count' => 0];
+            }
+            $this->stats[$entityName]['count']++;
+            $this->stats['total']['count']++;
         }
     }
 
@@ -229,6 +251,57 @@ class SyncEventManager
             $context[Metric::LABEL_ASYNC_JOB_NAME] ?? Metric::LABEL_NONE_VALUE;
 
         return $context;
+    }
+
+    public function logEntityFetch(array $logData)
+    {
+        if ((config('app.acs.verbose_log') === true) or ($this->stats['total']['count'] > 0))
+        {
+            app('trace')->info(TraceCode::ACS_ENTITY_FETCH, $logData);
+        }
+    }
+
+    public function logEntityUpdate(array $logData)
+    {
+        if ((config('app.acs.verbose_log') === true) or ($this->stats['total']['count'] > 0))
+        {
+            app('trace')->info(TraceCode::ACS_ENTITY_UPDATE, $logData);
+        }
+    }
+
+    public function getLogData(PublicEntity $entity, PublicCollection $collection = null)
+    {
+        if ($collection == null)
+        {
+            $collection = new PublicCollection;
+        }
+        $runningInQueue = app()->runningInQueue();
+        $logData = ['route' => 'none', 'async_job_name' => 'none'];
+        if ($runningInQueue === true)
+        {
+            $logData['async_job_name'] = app('worker.ctx')->getJobName();
+            $logData['mode'] = app('worker.ctx')->getMode();
+        }
+        else
+        {
+            $logData['route'] = app('request.ctx')->getRoute();
+            $logData['internal_app_name'] = app('request.ctx')->getInternalAppName();
+            $logData['mode'] = app('request.ctx')->getMode();
+        }
+        $logData['connection'] = $entity->getConnection()->getName();
+        $logData['is_transaction_active'] = app('repo')->isTransactionActive();
+        $logData['stats'] = $this->stats;
+
+        $logData['entity'] = [
+            'name' => $entity->getEntityName(),
+            'id' => $entity->getId(), 'merchant_id' => $entity->getMerchantId(),
+            'collection' => [
+                'ids' => $collection->map(function($item, $key) {return $item->getId();})->all(),
+                'merchant_ids' => $collection->map(function ($item, $key){return $item->getMerchantId();})->all(),
+            ]
+        ];
+
+        return $logData;
     }
 
 }

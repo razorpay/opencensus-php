@@ -9,6 +9,8 @@ use Razorpay\Outbox\Encrypt\AES256GCMEncrypt;
 use Razorpay\Outbox\Job\Core as OutboxCore;
 use Razorpay\Outbox\Job\Repository;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Email;
 use RZP\Modules\Acs\SyncEventManager;
 use RZP\Tests\Functional\TestCase;
 
@@ -110,6 +112,77 @@ class SyncEventManagerTest extends TestCase
         $manager->publishOutboxJobs($metadata);
     }
 
+    public function testLogForEntityFetchWithTransaction()
+    {
+        $manager = $this->getMockBuilder(SyncEventManager::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['logEntityFetch','logEntityUpdate'])
+            ->getMock();
+
+        $mockData = [
+            'route' => null,
+            'internal_app_name' => null,
+            'mode' => null,
+            'connection' => 'test',
+            'async_job_name' => 'none',
+            'entity' => ['name' => 'merchant_email', 'id' => null, 'merchant_id' => null, 'collection' => ['ids' => [], 'merchant_ids' => []]],
+            'is_transaction_active' => true,
+            'stats' => [
+                'total' => ['count' => 0],
+            ],
+        ];
+        $manager->expects($this->once())->method('logEntityFetch')->with($mockData);
+
+        $this->app->instance('acs.syncManager', $manager);
+
+        app('repo')->transaction(function (){
+            (new Email\Repository)->getEmailByType('chargeback', '10000000000000');
+        });
+    }
+
+    public function testLogForEntityFetch()
+    {
+        $manager = $this->getMockBuilder(SyncEventManager::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['logEntityFetch','logEntityUpdate'])
+            ->getMock();
+
+        $mockData = [
+            'route' => null,
+            'internal_app_name' => null,
+            'mode' => null,
+            'connection' => 'test',
+            'async_job_name' => 'none',
+            'entity' => ['name' => 'merchant_email', 'id' => '', 'merchant_id' => '', 'collection' => ['ids' => ['HxLynPYNwGIRrQ'], 'merchant_ids' => ['10000000000000']]],
+            'is_transaction_active' => false,
+            'stats' => [
+                'merchant_email' => ['count' => 1],
+                'total' => ['count' => 1],
+            ],
+        ];
+        $manager->expects($this->once())->method('logEntityFetch')->with($mockData);
+
+        $mockData = [
+            'route' => null,
+            'internal_app_name' => null,
+            'mode' => null,
+            'connection' => 'live',
+            'async_job_name' => 'none',
+            'entity' => ['name' => 'merchant_email', 'id' => 'HxLynPYNwGIRrQ', 'merchant_id' => '10000000000000', 'collection' => ['ids' => [], 'merchant_ids' => []]],
+            'is_transaction_active' => false,
+            'stats' => [
+                'total' => ['count' => 0],
+            ],
+        ];
+        $manager->expects($this->once())->method('logEntityUpdate')->with($mockData);
+
+        $this->app->instance('acs.syncManager', $manager);
+
+        $this->fixtures->create('merchant_email', ['id' => 'HxLynPYNwGIRrQ','type' => 'chargeback']);
+
+        (new Email\Repository)->getEmailByType('chargeback', '10000000000000');
+    }
+
     protected function getMockedManagerWithAccountIds(
         $liveModeAccountIds = [],
         $testModeAccountIds = [],
@@ -122,11 +195,17 @@ class SyncEventManagerTest extends TestCase
             ->getMock();
 
         foreach ($liveModeAccountIds as $accountId) {
-            $manager->recordAccountSync($accountId, Mode::LIVE);
+            $merchant = new Merchant\Entity(['id' => $accountId]);
+            $merchant->setConnection(Mode::LIVE);
+
+            $manager->recordAccountSync($merchant);
         }
 
         foreach ($testModeAccountIds as $accountId) {
-            $manager->recordAccountSync($accountId, Mode::TEST);
+            $merchant = new Merchant\Entity(['id' => $accountId]);
+            $merchant->setConnection(Mode::TEST);
+
+            $manager->recordAccountSync($merchant);
         }
 
         return $manager;

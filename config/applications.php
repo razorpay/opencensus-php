@@ -1075,6 +1075,7 @@ return [
 
     'acs' => [
         'sync_enabled' => env('ACS_SYNC_ENABLED', false),
+        'verbose_log' => env('ACS_VERBOSE_LOG_ENABLED', false),
     ],
 
     'recon'         => [

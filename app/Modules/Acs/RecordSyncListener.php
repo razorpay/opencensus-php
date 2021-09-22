@@ -24,6 +24,6 @@ class RecordSyncListener
      */
     public function handle(RecordSyncEvent $event)
     {
-        $this->syncEventManager->recordAccountSync($event->accountId, $event->mode);
+        $this->syncEventManager->recordAccountSync($event->entity);
     }
 }

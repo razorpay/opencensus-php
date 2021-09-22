@@ -5150,6 +5150,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACS_FETCH_ACCOUNT_DETAILS                             = 'ACS_FETCH_ACCOUNT_DETAILS';
     const ACS_TRIGGER_SYNC                                      = 'ACS_TRIGGER_SYNC';
     const ACS_TRIGGER_SYNC_ERROR                                = 'ACS_TRIGGER_SYNC_ERROR';
+    const ACS_ENTITY_FETCH                                      = 'ACS_ENTITY_FETCH';
+    const ACS_ENTITY_UPDATE                                     = 'ACS_ENTITY_UPDATE';
+    const ACS_ENTITY_FETCH_EXCEPTION                            = 'ACS_ENTITY_FETCH_EXCEPTION';
 
     # Onboarding APIs
     const MERCHANT_PRODUCT_CONFIG_REQUEST                       = 'MERCHANT_PRODUCT_CONFIG_REQUEST';

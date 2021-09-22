@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Acs;
 use RZP\Constants\Mode;
 use RZP\Jobs\TriggerAcsFullSync;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Modules\Acs\RecordSyncEvent;
 use RZP\Trace\TraceCode;
 
@@ -21,7 +22,8 @@ class Service extends Base\Service
         {
             foreach ($input['account_ids'] as $id)
             {
-                event(new RecordSyncEvent($id, $mode));
+                $entity = (new Merchant\Entity)->setConnection($mode)->setId($id);
+                event(new RecordSyncEvent($entity));
             }
         }
 

@@ -6,6 +6,10 @@ use Illuminate\Database\Query\JoinClause;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Entity as E;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Modules\Acs\SyncEventManager;
 
 class BuilderEx extends \Razorpay\Spine\BuilderEx
 {
@@ -104,5 +108,27 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
         }
 
         return false;
+    }
+
+    public function get($columns = ['*'])
+    {
+        $collection = parent::get($columns);
+
+        try
+        {
+            $entityName = $this->getModel()->getEntityName();
+            if (in_array($entityName, E::ACS_SYNCED_ENTITIES) === true)
+            {
+                $logData = app(SyncEventManager::SINGLETON_NAME)->getLogData($this->getModel(), $collection);
+
+                app(SyncEventManager::SINGLETON_NAME)->logEntityFetch($logData);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            app('trace')->traceException($ex, Trace::ERROR, TraceCode::ACS_ENTITY_FETCH_EXCEPTION, []);
+        }
+
+        return $collection;
     }
 }

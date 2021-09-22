@@ -14,7 +14,7 @@ class SyncEventObserver
      */
     public function created(PublicEntity $entity)
     {
-        event(new RecordSyncEvent($entity->getMerchantId(), $entity->getConnectionName()));
+        event(new RecordSyncEvent($entity));
     }
 
     /**
@@ -25,7 +25,7 @@ class SyncEventObserver
      */
     public function updated(PublicEntity $entity)
     {
-        event(new RecordSyncEvent($entity->getMerchantId(), $entity->getConnectionName()));
+        event(new RecordSyncEvent($entity));
     }
 
     /**
@@ -36,6 +36,6 @@ class SyncEventObserver
      */
     public function deleted(PublicEntity $entity)
     {
-        event(new RecordSyncEvent($entity->getMerchantId(), $entity->getConnectionName()));
+        event(new RecordSyncEvent($entity));
     }
 }
