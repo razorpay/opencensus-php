@@ -4,6 +4,7 @@ namespace RZP\Models\Dispute;
 
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Http\BasicAuth\Type as AuthType;
+use RZP\Models\Payment\Entity as Payment;
 
 class Fetch extends BaseFetch
 {
@@ -21,7 +22,9 @@ class Fetch extends BaseFetch
             Entity::INTERNAL_RESPOND_BY_FROM    => 'sometimes|epoch',
             Entity::INTERNAL_RESPOND_BY_TO      => 'sometimes|epoch',
             Entity::ORDER_BY_INTERNAL_RESPOND   => 'sometimes|boolean',
+            Payment::GATEWAY                    => 'sometimes|string',
             Entity::GATEWAY_DISPUTE_SOURCE      => 'sometimes|string|in:customer,network',
+
         ],
     ];
 
@@ -41,6 +44,7 @@ class Fetch extends BaseFetch
             Entity::INTERNAL_RESPOND_BY_FROM,
             Entity::INTERNAL_RESPOND_BY_TO,
             Entity::ORDER_BY_INTERNAL_RESPOND,
+            Payment::GATEWAY,
             Entity::GATEWAY_DISPUTE_SOURCE,
         ],
         AuthType::PROXY_AUTH => [

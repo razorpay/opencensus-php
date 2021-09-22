@@ -1240,6 +1240,27 @@ return [
             ],
         ],
     ],
+
+    'testDisputeFetchForAdminGatewayFilter'   => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/admin/dispute?gateway=sharp',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 2,
+                'items'         => [
+                    [
+                        'amount'              => 5000,
+                    ],
+                    [
+                        'amount'              => 5000,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testDisputeFetchLifecycleForAdmin' => [
         'request' => [
             'url'       => '/admin/dispute/',

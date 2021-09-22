@@ -947,6 +947,27 @@ class DisputeTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testDisputeFetchForAdminGatewayFilter()
+    {
+        $this->ba->adminAuth();
+
+        $paymentId1 = $this->fixtures->create('payment:captured', ['gateway' => 'sharp'])->getId();
+
+        $this->fixtures->create('dispute', ['payment_id' => $paymentId1, 'amount' => 5000]);
+
+        $paymentId2 = $this->fixtures->create('payment:captured', ['gateway' => 'hdfc'])->getId();
+
+        $this->fixtures->create('dispute', ['payment_id' => $paymentId2, 'amount' => 6000]);
+
+        $paymentId3 = $this->fixtures->create('payment:captured', ['gateway' => 'sharp'])->getId();
+
+        $this->fixtures->create('dispute', ['payment_id' => $paymentId3, 'amount' => 5000]);
+
+        $testData = $this->updateFetchTestData();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     /**
      * Creating a endpoint in proxy auth to fetch only the count of disputes which match a particular query
      * Query params allowed are same as /disputes in proxy/private auth

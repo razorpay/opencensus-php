@@ -271,6 +271,21 @@ class Repository extends Base\Repository
         return ['count' => $count];
     }
 
+    protected function addQueryParamGateway($query, $params)
+    {
+        $disputePaymentIdColumn = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $paymentIdColumn = $this->repo->payment->dbColumn(Entity::ID);
+
+        $dbColumn = $this->repo->payment->dbColumn(Payment::GATEWAY);
+
+        $param = $params[Payment::GATEWAY];
+
+        $query->join(Table::PAYMENT, $disputePaymentIdColumn, '=', $paymentIdColumn)
+            ->select(Table::DISPUTE.'.*')
+            ->where($dbColumn, $param);
+    }
+
     protected function addQueryParamInternalRespondByFrom($query, $params)
     {
         $dbColumn = $this->dbColumn(Entity::INTERNAL_RESPOND_BY);
