@@ -3903,6 +3903,9 @@ class Route
     ];
 
     public static $proxy = [
+        'fetch_payments_ongoing_downtimes',
+        'fetch_payments_resolved_downtimes',
+        'fetch_payments_scheduled_downtimes',
         'merchant_store_add',
         'merchant_store_fetch',
         'bbps_bill_payments',
