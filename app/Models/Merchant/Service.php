@@ -1285,15 +1285,15 @@ class Service extends Base\Service
 
         $merchantIds = $this->repo->merchant->fetchLinkedAccountMids($id);
 
-        array_push($merchantIds, $id);
+        array_unshift($merchantIds, $id);
 
         $scheduleTaskCore = new ScheduleTask\Core();
 
         $succeededIds = [];
 
-        $scheduleTask = $this->repo->transaction(function() use($merchantIds, $input, $scheduleTaskCore, & $succeededIds)
+        $scheduleTask = $this->repo->transaction(function() use($merchantIds, $id, $input, $scheduleTaskCore, & $succeededIds)
         {
-            $scheduleTask = null;
+            $parentMerchantScheduleTask = null;
 
             foreach ($merchantIds as $merchantId)
             {
@@ -1301,11 +1301,13 @@ class Service extends Base\Service
 
                 $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
 
-                $scheduleTask = $scheduleTaskCore->createOrUpdate($merchant, $merchant, $input);
+                $scheduleTaskObj = $scheduleTaskCore->createOrUpdate($merchant, $merchant, $input);
+
+                $parentMerchantScheduleTask = ($merchantId === $id) ? $scheduleTaskObj : $parentMerchantScheduleTask;
 
                 array_push($succeededIds, $merchantId);
             }
-            return $scheduleTask;
+            return $parentMerchantScheduleTask;
         });
 
         $this->trace->info(
