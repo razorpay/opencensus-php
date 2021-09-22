@@ -346,9 +346,11 @@ class Terminal extends Base
         $attributes = [
             'merchant_id'           => '10000000000000',
             'gateway'               => 'payu',
-            'card'                  => 0,
+            'card'                  => 1,
             'netbanking'            => 1,
             'upi'                   => 1,
+            'emi'                   => 1,
+            'emi_subvention'        => 'customer',
             'gateway_merchant_id'   => 'abcd',
             'network_category'      => 'ecommerce',
             'gateway_secure_secret' => 'secret',

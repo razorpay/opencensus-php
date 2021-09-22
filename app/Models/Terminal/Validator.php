@@ -264,6 +264,8 @@ class Validator extends Base\Validator
         Entity::VPA                                     => 'sometimes|string',
         Entity::MODE                                    => 'sometimes|in:2',
         Entity::NOTES                                   => 'sometimes|string',
+        Entity::EMI                                     => 'sometimes|boolean',
+        Entity::EMI_SUBVENTION                          => 'sometimes|in:customer,merchant',
     ];
 
     protected static $cashfreeTerminalRules = [
@@ -655,6 +657,7 @@ class Validator extends Base\Validator
     protected static $payuEditTerminalRules = [
         Entity::NETBANKING                 => 'sometimes|boolean|in:0,1',
         Entity::CARD                       => 'sometimes|boolean|in:0,1',
+        Entity::EMI                        => 'sometimes|boolean|in:0,1',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
         Entity::MODE                       => 'sometimes|in:2',
@@ -666,6 +669,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::NOTES                      => 'sometimes|string',
+        Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
     ];
 
     protected static $cashfreeEditTerminalRules = [
@@ -2309,7 +2313,8 @@ class Validator extends Base\Validator
 
         if (($input[Entity::GATEWAY] === Gateway::BAJAJ) or
             ($input[Entity::GATEWAY] === Gateway::HDFC_DEBIT_EMI) or
-            ($input[Entity::GATEWAY] === Gateway::AXIS_MIGS))
+            ($input[Entity::GATEWAY] === Gateway::AXIS_MIGS) or
+            ($input[Entity::GATEWAY] === Gateway::PAYU))
         {
             return;
         }

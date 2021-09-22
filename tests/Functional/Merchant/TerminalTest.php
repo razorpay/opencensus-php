@@ -1443,6 +1443,38 @@ class TerminalTest extends TestCase
         $this->assertEquals( ["non_recurring", "direct_settlement_with_refund"], $content['type']);
     }
 
+    public function testEditPayuEmiTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'payu',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret' => "1231424",
+                'card' => 1,
+                'emi'  => 1,
+                'mode' => 2,
+                'type'    => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+        $tid = $terminal['id'];
+
+        $data = [
+            'emi' => "1",
+            'emi_subvention' => 'customer',
+            'type'    => [
+                'non_recurring' => '1'
+            ],
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+        $this->assertEquals( "1", $content['emi']);
+        $this->assertEquals( ["non_recurring", "direct_settlement_with_refund"], $content['type']);
+    }
+
     public function testEditCashfreeUpiTerminal()
     {
         $terminal = $this->fixtures->create(
