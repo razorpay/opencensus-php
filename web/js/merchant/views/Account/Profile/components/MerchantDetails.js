@@ -310,7 +310,7 @@ const MerchantDetails = ({
   const showTransactionLimitEdit =
     user.role === 'owner' &&
     user.isOrgRZP &&
-    !user.isTransactionLimitUpdateSelfServeOn &&
+    user.isTransactionLimitUpdateSelfServeOn &&
     (transactionLimitWorkflowStatus.workflow_exists === false ||
       !['open', 'approved'].includes(transactionLimitWorkflowStatus.workflow_status)) &&
     isMerchantAllowedToEditLimit();
